@@ -13,7 +13,6 @@
 
 package org.neo4j.neoclipse.property;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -67,10 +66,10 @@ public enum NodeTypes {
     HEADER_MS("ms"),
     AGGREGATION("aggregation"),
     COUNT("count"),
-    CALL_ANALYZIS("call analyzis"),
+    CALL_ANALYSIS("call analysis"),
     S_ROW("s_row"),
     GIS("gis","name"),
-    CALL_ANALYZIS_ROOT("call analyzis root"),
+    CALL_ANALYSIS_ROOT("call analysis root"),
     S_CELL("s_cell"),
     BSC("bsc"),
     DELTA_NETWORK("delta_network"),

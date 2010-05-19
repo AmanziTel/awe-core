@@ -55,7 +55,7 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
         
         type = NeoUtils.getNodeType(node);
         
-        if (type.equals(NodeTypes.CALL_ANALYZIS_ROOT.getId())) {
+        if (type.equals(NodeTypes.CALL_ANALYSIS_ROOT.getId())) {
             name = "Call Analysis: " + node.getProperty(INeoConstants.PROPERTY_VALUE_NAME) + " (" + node.getProperty(CallProperties.CALL_TYPE.getId()) + ")";
         }        
         else if (type.equals(NodeTypes.S_CELL.getId())) {
@@ -76,11 +76,11 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
         ArrayList<NeoNode> children = new ArrayList<NeoNode>();
         
         Iterator<Node> iterator;
-        if (type.equals(NodeTypes.CALL_ANALYZIS_ROOT.getId())) {
+        if (type.equals(NodeTypes.CALL_ANALYSIS_ROOT.getId())) {
             iterator = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, 
                                      GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
         }
-        else if (type.equals(NodeTypes.CALL_ANALYZIS.getId())) {
+        else if (type.equals(NodeTypes.CALL_ANALYSIS.getId())) {
             StatisticsCallType callType = StatisticsCallType.valueOf((String)getParent().getNode().getProperty(CallProperties.CALL_TYPE.getId()));          
             if (callType.getLevel().equals(StatisticsCallType.FIRST_LEVEL)) {
                 Node root = node.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();

@@ -207,7 +207,7 @@ public class CallStatistics {
     private Node createRootStatisticsNode(Node datasetNode, StatisticsCallType callType) {
         Node result = neoService.createNode();
         
-        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALL_ANALYZIS_ROOT.getId());
+        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALL_ANALYSIS_ROOT.getId());
         result.setProperty(INeoConstants.PROPERTY_NAME_NAME, INeoConstants.CALL_ANALYZIS_ROOT);
         result.setProperty(INeoConstants.PROPERTY_VALUE_NAME, NeoUtils.getNodeName(datasetNode,neoService));
         result.setProperty(CallProperties.CALL_TYPE.getId(), callType.toString());
@@ -361,7 +361,7 @@ public class CallStatistics {
             Node result = neoService.createNode();
         
             result.setProperty(INeoConstants.PROPERTY_NAME_NAME, period.getId());
-            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALL_ANALYZIS.getId());
+            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALL_ANALYSIS.getId());
             parent.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
             
             return result;

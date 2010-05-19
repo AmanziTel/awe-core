@@ -331,7 +331,7 @@ public class StatisticsDataLoader {
     private Node createRootStatisticsNode(StatisticsCallType callType) {
         Node result = service.createNode();
         
-        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALL_ANALYZIS_ROOT.getId());
+        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALL_ANALYSIS_ROOT.getId());
         result.setProperty(INeoConstants.PROPERTY_NAME_NAME, INeoConstants.CALL_ANALYZIS_ROOT);
         result.setProperty(INeoConstants.PROPERTY_VALUE_NAME, NeoUtils.getNodeName(virtualDataset,service));
         result.setProperty(CallProperties.CALL_TYPE.getId(), callType.toString());
@@ -410,7 +410,7 @@ public class StatisticsDataLoader {
         Node result = service.createNode();
         
         result.setProperty(INeoConstants.PROPERTY_NAME_NAME, period.getId());
-        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALL_ANALYZIS.getId());
+        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALL_ANALYSIS.getId());
         parent.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
         
         if (undPeriodNode!=null) {
