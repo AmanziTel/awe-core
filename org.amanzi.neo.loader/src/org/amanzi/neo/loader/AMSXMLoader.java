@@ -169,7 +169,8 @@ public class AMSXMLoader extends AbstractCallLoader {
     private static Long getTime(String stringData) throws ParseException {
         int i = stringData.lastIndexOf(':');
         StringBuilder time = new StringBuilder(stringData.substring(0, i)).append(stringData.substring(i + 1, stringData.length()));
-        return formatter.parse(time.toString()).getTime();
+        long time2 = formatter.parse(time.toString()).getTime();
+        return time2;
     }
 
     /**
@@ -1050,7 +1051,7 @@ public class AMSXMLoader extends AbstractCallLoader {
                     createAttachmentNode(collector);
                 }
             }
-            msgCall.setCallSetupEndTime(timeEnd);
+            msgCall.setAcknowlegeTime(timeEnd- msgCall.getCallSetupBegin());
         }
 
         /**
@@ -1144,8 +1145,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             }
             Long reciveTime = (Long)node.getProperty("receiveTime", null);
             if (reciveTime!=null){
-                msgCall.setCallTerminationBegin(reciveTime);
-                msgCall.setCallTerminationEnd(reciveTime);
+                msgCall.setResivedTime(reciveTime-msgCall.getCallSetupBegin());
             }
             if (node.hasProperty("errorCode") || node.hasProperty("errCode")) {
                 msgCall.setCallResult(CallResult.FAILURE);

@@ -66,12 +66,12 @@ public abstract class AbstractCallLoader extends DriveLoader {
      * Timestamp Index for Calls
      */
     private final HashMap<String, MultiPropertyIndex<Long>> callTimestampIndexes = new HashMap<String, MultiPropertyIndex<Long>>();
-    private Long acknowlegeTime;
+
 
     /**
      * Creates a Call node and sets properties
      */
-    protected void saveCall(Call call) {        
+    protected  void saveCall(Call call) {        
         if ((call != null) && (call.getCallType() != null)) {
             CallType callType = call.getCallType();
             Transaction tx = neo.beginTx();
@@ -139,9 +139,10 @@ public abstract class AbstractCallLoader extends DriveLoader {
         Node probeCallNode = call.getCallerProbe();
         Node callNode = createCallNode(call.getCallSetupBegin(), call.getRelatedNodes(), probeCallNode);
 
-        long receivedTime = call.getCallTerminationBegin() - call.getCallSetupEnd();
         //TODO remove fake mechanism after investigation
-        long acknTime = acknowlegeTime==null?call.getCallTerminationEnd()-call.getCallTerminationBegin():acknowlegeTime;
+        long receivedTime = call.getResivedTime()==null?call.getCallTerminationBegin() - call.getCallSetupEnd():call.getResivedTime();
+        //TODO remove fake mechanism after investigation
+        long acknTime = call.getAcknowlegeTime()==null?call.getCallTerminationEnd()-call.getCallTerminationBegin():call.getAcknowlegeTime();
         
         LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
 
@@ -274,7 +275,8 @@ public abstract class AbstractCallLoader extends DriveLoader {
      * @since 1.0.0
      */
     public static class Call {
-        
+        private Long acknowlegeTime;
+        private Long resivedTime;
         /*
          * List of Duration Parameters
          */
@@ -515,7 +517,23 @@ public abstract class AbstractCallLoader extends DriveLoader {
                 calleeProbes.add(calleeProbe);
             }
         }
+        /**
+         * Gets the acknowlege time.
+         *
+         * @return the acknowlege time
+         */
+        public Long getAcknowlegeTime() {
+            return acknowlegeTime;
+        }
 
+        /**
+         * Sets the acknowlege time.
+         *
+         * @param acknowlegeTime the new acknowlege time
+         */
+        public void setAcknowlegeTime(Long acknowlegeTime) {
+            this.acknowlegeTime = acknowlegeTime;
+        }
         /**
          * @return Returns the callType.
          */
@@ -528,6 +546,14 @@ public abstract class AbstractCallLoader extends DriveLoader {
          */
         public void setCallType(CallType callType) {
             this.callType = callType;
+        }
+
+        public Long getResivedTime() {
+            return resivedTime;
+        }
+
+        public void setResivedTime(Long resivedTime) {
+            this.resivedTime = resivedTime;
         }
         
     }
@@ -544,21 +570,5 @@ public abstract class AbstractCallLoader extends DriveLoader {
         return new Node[]{networkNode,datasetNode};
     }
 
-    /**
-     * Gets the acknowlege time.
-     *
-     * @return the acknowlege time
-     */
-    public Long getAcknowlegeTime() {
-        return acknowlegeTime;
-    }
 
-    /**
-     * Sets the acknowlege time.
-     *
-     * @param acknowlegeTime the new acknowlege time
-     */
-    public void setAcknowlegeTime(Long acknowlegeTime) {
-        this.acknowlegeTime = acknowlegeTime;
-    }
 }
