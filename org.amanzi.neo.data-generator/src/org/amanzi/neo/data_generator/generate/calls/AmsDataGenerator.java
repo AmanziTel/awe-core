@@ -14,11 +14,8 @@
 package org.amanzi.neo.data_generator.generate.calls;
 
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import org.amanzi.neo.data_generator.data.calls.Call;
@@ -27,8 +24,6 @@ import org.amanzi.neo.data_generator.data.calls.CallGroup;
 import org.amanzi.neo.data_generator.data.calls.GeneratedCallsData;
 import org.amanzi.neo.data_generator.data.calls.Probe;
 import org.amanzi.neo.data_generator.data.calls.ProbeData;
-import org.amanzi.neo.data_generator.generate.IDataGenerator;
-import org.amanzi.neo.data_generator.utils.RandomValueGenerator;
 import org.amanzi.neo.data_generator.utils.call.CommandCreator;
 import org.amanzi.neo.data_generator.utils.call.CallFileBuilder;
 
@@ -39,38 +34,12 @@ import org.amanzi.neo.data_generator.utils.call.CallFileBuilder;
  * @author Shcharbatsevich_A
  * @since 1.0.0
  */
-public abstract class AmsDataGenerator implements IDataGenerator{
-    
-    private static final String PROBE_NUMBER_PREFIX = "110";
-    private static final String ZERO = "0";
+public abstract class AmsDataGenerator extends CallStatisticsDataGenerator{
     
     private static final long MAX_KEY_VALUE = (long)1E10;
-    private static final int MAX_LA = 10000;
-    private static final double MAX_FREQUENCY = 999;
     private static final long MAX_NETWORK_ID = 125000;
     
-    protected static final int MILLISECONDS = 1000;
-    protected static final long HOUR = 60*60*MILLISECONDS;
-    private static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss,SSS";
-    private static final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat(TIMESTAMP_FORMAT);
-    private static long START_TIME; 
-    
-    static{
-        try {
-            START_TIME = TIME_FORMATTER.parse("2008-01-01 00:00:00,000").getTime();
-        } catch (ParseException e) {
-            START_TIME = new Date(1249344651495L).getTime();
-        }
-    }
-    
-    private String directory;
     private Long networkIdentity;
-    private Long startTime;
-    
-    private Integer hours;
-    private Integer calls;
-    private Integer callVariance;
-    private Integer probesCount;
     private List<Probe> probes;
     
     /**
@@ -85,12 +54,7 @@ public abstract class AmsDataGenerator implements IDataGenerator{
     public AmsDataGenerator(String aDirectory,Integer aHours, Integer aHourDrift,
                         Integer aCallsPerHour, Integer aCallPerHourVariance,
                         Integer aProbes){
-        directory = aDirectory;
-        hours = aHours;
-        calls = aCallsPerHour;
-        callVariance = aCallPerHourVariance;
-        probesCount = aProbes;
-        startTime = START_TIME+aHourDrift*HOUR;
+        super(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
     }
     
     /**
@@ -107,45 +71,10 @@ public abstract class AmsDataGenerator implements IDataGenerator{
         return networkIdentity;
     }
     
-    /**
-     * @return Returns the startTime.
-     */
-    public Long getStartTime() {
-        return startTime;
-    }
-    
-    /**
-     * @return Returns the probesCount.
-     */
-    public Integer getProbesCount() {
-        return probesCount;
-    }
-    
-    /**
-     * @return Returns the hours.
-     */
-    public Integer getHours() {
-        return hours;
-    }
-    
-    /**
-     * @return Returns the calls.
-     */
-    public Integer getCalls() {
-        return calls;
-    }
-    
-    /**
-     * @return Returns the callVariance.
-     */
-    public Integer getCallVariance() {
-        return callVariance;
-    }
-    
     @Override
     public GeneratedCallsData generate(){
         List<CallGroup> data;
-        if (hours>0&&probesCount>0&&calls>0) {
+        if (getHours()>0&&getProbesCount()>0&&getCalls()>0) {
             networkIdentity = getRandomGenerator().getLongValue(0L, MAX_NETWORK_ID);
             initProbes();
             data = buildData();
@@ -165,7 +94,7 @@ public abstract class AmsDataGenerator implements IDataGenerator{
      */
     private void saveData(List<CallGroup> data) {
         try {
-            CallFileBuilder fileBuilder = new CallFileBuilder(directory,getDirectoryPostfix());
+            CallFileBuilder fileBuilder = new CallFileBuilder(getDirectory(),getDirectoryPostfix());
             fileBuilder.saveData(data);
         } catch (IOException e) {
             throw (RuntimeException) new RuntimeException( ).initCause( e );
@@ -178,14 +107,14 @@ public abstract class AmsDataGenerator implements IDataGenerator{
      * Initialize probes.
      */
     private void initProbes(){
+       Integer probesCount = getProbesCount();
        probes = new ArrayList<Probe>(probesCount); 
        int defLength = probesCount.toString().length();
-       RandomValueGenerator generator = getRandomGenerator();
        for(int i=1; i<=probesCount; i++){
            String name = getProbeName(i, defLength);
            String number = PROBE_NUMBER_PREFIX+name;           
-           Integer la = generator.getIntegerValue(0, MAX_LA);
-           Double fr = generator.getDoubleValue(0.0, MAX_FREQUENCY);
+           Integer la = getLa();
+           Double fr = getFrequency();
            Probe probe = new Probe(name, number, la, fr);
            probes.add(probe);
        }
@@ -256,10 +185,6 @@ public abstract class AmsDataGenerator implements IDataGenerator{
             time = getRandomGenerator().getLongValue(start, end);
         }
         return time;
-    }
-    
-    protected Long getStartOfHour(Integer hour){
-        return startTime+HOUR*hour;
     }
     
     /**
@@ -336,13 +261,6 @@ public abstract class AmsDataGenerator implements IDataGenerator{
         return getRandomGenerator().getLongValue(0L, MAX_KEY_VALUE);
     }
     
-    /**
-     * Getter for random generator.
-     *
-     * @return {@link RandomValueGenerator}
-     */
-    protected RandomValueGenerator getRandomGenerator() {
-        return RandomValueGenerator.getGenerator();
-    }
+    
 
 }

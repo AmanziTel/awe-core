@@ -21,7 +21,7 @@ import java.util.Set;
 
 /**
  * <p>
- * Secaond level statistics headers for all call types. TODO uncomment headers after "audio delay" statistics will be created.
+ * Second level statistics headers for all call types. 
  * </p>
  * @author Shcharbatsevich_A
  * @since 1.0.0
@@ -36,10 +36,10 @@ public enum AggregationCallTypes {
                                             AggregationStatisticsHeaders.SC4,
                                             AggregationStatisticsHeaders.SC4_ZW2_AVG,
                                             AggregationStatisticsHeaders.SC4_ZW2_MIN,
-                                            AggregationStatisticsHeaders.SC4_ZW2_MAX/*,
+                                            AggregationStatisticsHeaders.SC4_ZW2_MAX,
                                             AggregationStatisticsHeaders.SC5_ZW1_AVG,
                                             AggregationStatisticsHeaders.SC5_ZW1_MIN,
-                                            AggregationStatisticsHeaders.SC5_ZW1_MAX*/),
+                                            AggregationStatisticsHeaders.SC5_ZW1_MAX),
      GROUP(StatisticsCallType.GROUP,AggregationStatisticsHeaders.GC1,
                                     AggregationStatisticsHeaders.GC2_ZW2_AVG,
                                     AggregationStatisticsHeaders.GC2_ZW2_MIN,
@@ -48,10 +48,10 @@ public enum AggregationCallTypes {
                                     AggregationStatisticsHeaders.GC4,
                                     AggregationStatisticsHeaders.GC4_ZW2_AVG,
                                     AggregationStatisticsHeaders.GC4_ZW2_MIN,
-                                    AggregationStatisticsHeaders.GC4_ZW2_MAX/*,
+                                    AggregationStatisticsHeaders.GC4_ZW2_MAX,
                                     AggregationStatisticsHeaders.GC5_ZW1_AVG,
                                     AggregationStatisticsHeaders.GC5_ZW1_MIN,
-                                    AggregationStatisticsHeaders.GC5_ZW1_MAX*/),
+                                    AggregationStatisticsHeaders.GC5_ZW1_MAX),
      ITSI_CC(StatisticsCallType.ITSI_CC, AggregationStatisticsHeaders.INH_CC),
      TSM(StatisticsCallType.TSM, AggregationStatisticsHeaders.TSM),
      SDS(StatisticsCallType.SDS, AggregationStatisticsHeaders.SDS),

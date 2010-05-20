@@ -35,6 +35,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser.Order;
 
@@ -54,7 +55,8 @@ public class AggregationCallStatisticsBuilder {
     private HashMap<CallTimePeriods, List<Node>> sourceRows = new HashMap<CallTimePeriods, List<Node>>();
     
     private HashMap<AggregationCallTypes, Boolean> havingStats = new HashMap<AggregationCallTypes, Boolean>();
-    private Long minTime;
+
+    private Transaction transaction;
     
     /**
      * Constructor.
@@ -73,8 +75,13 @@ public class AggregationCallStatisticsBuilder {
      * @param sourceStatistics HashMap<StatisticsCallType, Node> (first level statistics)
      * @return Node (root of created statistics)
      */
-    public Node createAggregationStatistics(CallTimePeriods period, HashMap<StatisticsCallType, Node> sourceStatistics){
-        return createAggrStatisticsByPeriod(null, period, sourceStatistics);
+    public Node createAggregationStatistics(CallTimePeriods period, HashMap<StatisticsCallType, Node> sourceStatistics,Long minTime, Long maxTime){
+        transaction = service.beginTx();
+        try {
+            return createAggrStatisticsByPeriod(null, period, sourceStatistics, maxTime, maxTime);
+        } finally {
+            updateTransaction(false);
+        }
     }
     
     /**
@@ -84,39 +91,68 @@ public class AggregationCallStatisticsBuilder {
      * @param highestPeriod CallTimePeriods
      * @return Node (root for statistics)
      */
-    private Node createAggrStatisticsByPeriod(Node parent, CallTimePeriods period, HashMap<StatisticsCallType, Node> sourceStatistics){
+    private Node createAggrStatisticsByPeriod(Node parent, CallTimePeriods period, HashMap<StatisticsCallType, Node> sourceStatistics,Long minTime, Long maxTime){
         if(period == null){
             return parent;
         }
-        Node rootNode = createAggrStatisticsByPeriod(parent, period.getUnderlyingPeriod(), sourceStatistics);
-        Statistics utilStatistics = buildUtilStatistics(period, sourceStatistics);
-        if(utilStatistics!=null){
-            if(rootNode == null){
-                rootNode = createRootStatisticsNode();
-            }
-            Node statisticsNode = getStatisticsNode(rootNode, period);
-            List<Node> currSourceRows = sourceRows.get(period);
-            Node srow = createRow(statisticsNode, minTime, currSourceRows, period); 
-            for(AggregationCallTypes stat : AggregationCallTypes.values()){  
-                if(!havingStats.get(stat)){
-                    continue;
+        Node rootNode = createAggrStatisticsByPeriod(parent, period.getUnderlyingPeriod(), sourceStatistics, minTime, maxTime);
+        Long start = period.getFirstTime(minTime);
+        Long nextStart = getNextStartDate(period, maxTime, start);
+        do{
+            Statistics utilStatistics = buildUtilStatistics(period, sourceStatistics,start,nextStart);
+            if(utilStatistics!=null){
+                if(rootNode == null){
+                    rootNode = createRootStatisticsNode();
                 }
-                rootNode.setProperty(stat.getRealType().getId().getProperty(), true);
-                for(IAggrStatisticsHeaders aggrHeader : stat.getAggrHeaders()){
-                    List<Number> sources = new ArrayList<Number>();
-                    List<Node> sourceCells = new ArrayList<Node>();
-                    for(IStatisticsHeader header : aggrHeader.getDependendHeaders()){
-                        Number value = (Number)utilStatistics.get(header);
-                        sources.add(value);                        
-                        sourceCells.addAll(utilStatistics.getAllAffectedCalls(header));
+                Node statisticsNode = getStatisticsNode(rootNode, period);
+                List<Node> currSourceRows = sourceRows.get(period);
+                Node srow = createRow(statisticsNode, start, currSourceRows, period); 
+                for(AggregationCallTypes stat : AggregationCallTypes.values()){  
+                    if(!havingStats.get(stat)){
+                        continue;
                     }
-                    Object statValue = getStatValue(aggrHeader, sources);
-                    createCell(period, aggrHeader, statValue, srow, sourceCells);
+                    rootNode.setProperty(stat.getRealType().getId().getProperty(), true);
+                    for(IAggrStatisticsHeaders aggrHeader : stat.getAggrHeaders()){
+                        List<Number> sources = new ArrayList<Number>();
+                        List<Node> sourceCells = new ArrayList<Node>();
+                        for(IStatisticsHeader header : aggrHeader.getDependendHeaders()){
+                            System.out.println("Header "+ header); //TODO delete
+                            Number value = (Number)utilStatistics.get(header);
+                            if (value!=null) {
+                                sources.add(value);
+                                sourceCells.addAll(utilStatistics.getAllAffectedCalls(header));
+                            }
+                        }
+                        Object statValue = getStatValue(aggrHeader, sources);
+                        createCell(period, aggrHeader, statValue, srow, sourceCells);
+                    }
                 }
-            }            
-        }
-        minTime = null;
+                sourceRows.put(period, null);
+                updateTransaction(true);
+            }
+            start = nextStart;
+            nextStart = getNextStartDate(period, maxTime, start);
+        }while(start < maxTime);
         return  rootNode;
+    }
+    
+    private void updateTransaction(boolean needNew) {
+        if (transaction!=null) {
+            transaction.success();
+            transaction.finish();
+            
+        }
+        if(needNew){
+            transaction = service.beginTx();
+        }
+    }
+    
+    private long getNextStartDate(CallTimePeriods period, long endDate, long currentStartDate) {
+        long nextStartDate = period.addPeriod(currentStartDate);
+        if(!period.equals(CallTimePeriods.HOURLY)&&(nextStartDate > endDate)){
+            nextStartDate = endDate;
+        }
+        return nextStartDate;
     }
     
     /**
@@ -126,7 +162,7 @@ public class AggregationCallStatisticsBuilder {
      * @param sourceStatistics HashMap<StatisticsCallType, Node>
      * @return statistics
      */
-    private Statistics buildUtilStatistics(CallTimePeriods period, HashMap<StatisticsCallType, Node> sourceStatistics){
+    private Statistics buildUtilStatistics(CallTimePeriods period, HashMap<StatisticsCallType, Node> sourceStatistics, Long start, Long end){
         Statistics result = null;
         for(AggregationCallTypes stat : AggregationCallTypes.values()){
             StatisticsCallType realType = stat.getRealType();
@@ -139,22 +175,24 @@ public class AggregationCallStatisticsBuilder {
             if(result==null){
                 result = new Statistics();
             }
-            List<Node> currSourceRows = getAllPeriodRows(periodNode);
+            List<Node> currSourceRows = getAllPeriodRows(periodNode,start,end);
             for(Node row : currSourceRows){
-                Long currTime = (Long)row.getProperty(INeoConstants.PROPERTY_TIME_NAME, null);
-                if(minTime==null||minTime>currTime){
-                    minTime=currTime;
-                }
                 HashMap<IStatisticsHeader, Node> sourceCells = getAllRowCells(row, realType);
                 for (IStatisticsHeader utilHeader : stat.getUtilHeaders()) {
                     for (IStatisticsHeader header : ((IAggrStatisticsHeaders)utilHeader).getDependendHeaders()) {                            
-                        Node cell = sourceCells.get(header);
+                        Node cell = sourceCells.get(header);                        
                         Number value = utilHeader.getStatisticsData(cell, null);
                         result.updateHeaderWithCall(utilHeader, value, cell);
                     }
                 }
             }
-            sourceRows.put(period, currSourceRows);
+            List<Node> allSource = sourceRows.get(period);
+            if(allSource==null){
+                allSource = currSourceRows;
+            }else{
+                allSource.addAll(currSourceRows);
+            }
+            sourceRows.put(period, allSource);
         }
         return result;
     }
@@ -188,12 +226,15 @@ public class AggregationCallStatisticsBuilder {
      * @param periodNode Node
      * @return List of nodes
      */
-    private List<Node> getAllPeriodRows(Node periodNode){
+    private List<Node> getAllPeriodRows(Node periodNode, Long start,Long end){
         List<Node> result = new ArrayList<Node>();
         Iterator<Node> rows = NeoUtils.getChildTraverser(periodNode).iterator();
         while (rows.hasNext()) {
             Node row = rows.next();
-            result.add(row);
+            Long time = (Long)row.getProperty(INeoConstants.PROPERTY_TIME_NAME);
+            if (start<=time&&time<end) {
+                result.add(row);
+            }
         }
         return result;
     }

@@ -129,6 +129,13 @@ public class StatisticsDataLoader {
     }
     
     /**
+     * @return Returns the virtualDataset.
+     */
+    public Node getVirtualDataset() {
+        return virtualDataset;
+    }
+    
+    /**
      * Run to load data.
      *
      * @param monitor IProgressMonitor
@@ -146,7 +153,7 @@ public class StatisticsDataLoader {
         transaction = service.beginTx();
         try{
             network = findOrCreateNetworkNode(); 
-            virtualDataset = getVirtualDataset();
+            virtualDataset = findVirtualDataset();
             for (File file : allFiles) {
                 monitor.subTask("Loading file " + file.getAbsolutePath());
                 loadFile(file);
@@ -615,7 +622,7 @@ public class StatisticsDataLoader {
     /**
      * @return empty virtual dataset node (calls).
      */
-    private Node getVirtualDataset() {
+    private Node findVirtualDataset() {
         Node realDataset = findDatasetNode();
         Node result;
         DriveTypes amsCalls = DriveTypes.AMS_CALLS;
@@ -665,7 +672,7 @@ public class StatisticsDataLoader {
         initCommonBorders();
         CallTimePeriods period = getHighestPeriod(minTime,maxTime);
         AggregationCallStatisticsBuilder aggrStatisticsBuilder = new AggregationCallStatisticsBuilder(virtualDataset, service);
-        aggrStatisticsBuilder.createAggregationStatistics(period, roots);
+        aggrStatisticsBuilder.createAggregationStatistics(period, roots,minTime,maxTime);
     }
     
     /**

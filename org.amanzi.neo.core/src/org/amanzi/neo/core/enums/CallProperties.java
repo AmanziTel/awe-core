@@ -38,7 +38,9 @@ public enum CallProperties {
     MESS_RECEIVE_TIME("message received time"),
     MESS_ACKNOWLEDGE_TIME("message acknowledge time"),
     ALM_MESSAGE_DELAY("alarm delay"),
-    ALM_FIRST_MESS_DELAY("first alarm delay");
+    ALM_FIRST_MESS_DELAY("first alarm delay"),
+    CC_HANDOVER_TIME("handover time"),
+    CC_RESELECTION_TIME("reselection time");
 
     private final String id;
 

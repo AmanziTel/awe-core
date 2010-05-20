@@ -100,6 +100,8 @@ public class CallStatistics {
     private CallTimePeriods highPeriod;
     
     private HashMap<StatisticsCallType, ICallStatisticsConstants> statisticsConstants = new HashMap<StatisticsCallType, ICallStatisticsConstants>();
+
+    private Transaction transaction;
     
    /**
      * Creates Calculator of Call Statistics
@@ -115,21 +117,13 @@ public class CallStatistics {
         statisticsConstants.put(StatisticsCallType.INDIVIDUAL, new IndividualCallConstants());
         statisticsConstants.put(StatisticsCallType.GROUP, new GroupCallConstants());
         
-        Transaction tx = neoService.beginTx();
-        try {
-            statisticNode = createStatistics();
-            Pair<Long, Long> minMax = getTimeBounds(datasetNode);
-            long minTime = minMax.getLeft();
-            long maxTime = minMax.getRight();
-            highPeriod = getHighestPeriod(minTime, maxTime); 
-            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
-                    new UpdateDatabaseEvent(UpdateViewEventType.STATISTICS));
-        }
-        catch (Exception e) {
-            tx.failure();
-        } finally {
-            tx.finish();
-        }
+        statisticNode = createStatistics();
+        Pair<Long, Long> minMax = getTimeBounds(datasetNode);
+        long minTime = minMax.getLeft();
+        long maxTime = minMax.getRight();
+        highPeriod = getHighestPeriod(minTime, maxTime); 
+        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
+                new UpdateDatabaseEvent(UpdateViewEventType.STATISTICS));
     }
     
     /**
@@ -139,10 +133,13 @@ public class CallStatistics {
      * @throws IOException 
      */
     private HashMap<StatisticsCallType, Node> createStatistics() throws IOException {
-        Transaction tx = neoService.beginTx();
+        transaction = neoService.beginTx();
         Node parentNode = null;
         HashMap<StatisticsCallType, Node> result = new HashMap<StatisticsCallType, Node>();
         
+        long minTime = 0L;
+        long maxTime = 0L;
+        CallTimePeriods period = null;
         try {
             if (datasetNode == null) {
                 datasetNode = NeoUtils.getAllDatasetNodes(neoService).get(amsDatasetName);
@@ -161,10 +158,10 @@ public class CallStatistics {
             }
             
             Pair<Long, Long> minMax = getTimeBounds(datasetNode);
-            long minTime = minMax.getLeft();
-            long maxTime = minMax.getRight();
+            minTime = minMax.getLeft();
+            maxTime = minMax.getRight();
         
-            CallTimePeriods period = getHighestPeriod(minTime, maxTime);
+            period = getHighestPeriod(minTime, maxTime);
             
             for (StatisticsCallType callType : StatisticsCallType.getTypesByLevel(StatisticsCallType.FIRST_LEVEL)) {
                 Collection<Node> probesByCallType = NeoUtils.getAllProbesOfDataset(datasetNode, callType.getId());
@@ -184,24 +181,35 @@ public class CallStatistics {
                         timeIndex.initialize(neoService, null);
                         createStatistics(parentNode, null, null, probe, timeIndex, period, callType, minTime, maxTime);                        
                     }
+                    transaction = commit(transaction);
                 }
                 previousSRowNodes.clear();
             }
-            AggregationCallStatisticsBuilder aggrStatisticsBuilder = new AggregationCallStatisticsBuilder(datasetNode, neoService);
-            parentNode = aggrStatisticsBuilder.createAggregationStatistics(period, result);
-            if (parentNode!=null) {
-                result.put(StatisticsCallType.AGGREGATION_STATISTICS, parentNode); 
-            }
-            tx.success();
+            
+            transaction.success();
         }
         catch (Exception e) {            
-            tx.failure();
+            transaction.failure();
             NeoCorePlugin.error(null, e);
         }
         finally {
-            tx.finish();
+            transaction.finish();
+        }
+        AggregationCallStatisticsBuilder aggrStatisticsBuilder = new AggregationCallStatisticsBuilder(datasetNode, neoService);
+        parentNode = aggrStatisticsBuilder.createAggregationStatistics(period, result,minTime,maxTime);
+        if (parentNode!=null) {
+            result.put(StatisticsCallType.AGGREGATION_STATISTICS, parentNode); 
         }
         return result;
+    }
+    
+    protected Transaction commit(Transaction tx) {
+        if (tx != null) {
+            tx.success();
+            tx.finish();
+            return neoService.beginTx();
+        }
+        return null;
     }
     
     private Node createRootStatisticsNode(Node datasetNode, StatisticsCallType callType) {
@@ -330,9 +338,9 @@ public class CallStatistics {
             
             currentStartDate = nextStartDate;
             nextStartDate = getNextStartDate(period, endDate, currentStartDate);
+            transaction = commit(transaction);
         }
         while (currentStartDate < endDate);
-        
         return statistics;
     }
 

@@ -22,4 +22,5 @@ Import-Package: org.neo4j.neoclipse.view
 Export-Package: org.amanzi.awe.views.calls,
  org.amanzi.awe.views.calls.enums,
  org.amanzi.awe.views.calls.statistics,
- org.amanzi.awe.views.calls.statistics.constants
+ org.amanzi.awe.views.calls.statistics.constants,
+ org.amanzi.awe.views.calls.upload

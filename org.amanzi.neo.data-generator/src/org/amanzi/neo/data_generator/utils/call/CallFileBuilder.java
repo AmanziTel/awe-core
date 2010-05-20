@@ -17,12 +17,16 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.List;
 
 import org.amanzi.neo.data_generator.data.calls.CallData;
 import org.amanzi.neo.data_generator.data.calls.CallGroup;
 import org.amanzi.neo.data_generator.data.calls.CommandRow;
 import org.amanzi.neo.data_generator.data.calls.ProbeData;
+import org.amanzi.neo.data_generator.data.calls.csv.CsvData;
+import org.amanzi.neo.data_generator.data.calls.csv.CsvHeaders;
+import org.amanzi.neo.data_generator.data.calls.csv.FileData;
 
 /**
  * Save call data to files.
@@ -43,6 +47,8 @@ public class CallFileBuilder {
     private static final String PROBE_FILE_SEPARATOR = "#";
     private static final String PROBE_FILE_POSTFIX = "2";
     private static final String PROBE_FILE_EXTENSION = ".log";
+    
+    private static final String CSV_SEPARATOR = ",";
     
     private String path;
     private String pairDirectoryPostfix;
@@ -206,5 +212,48 @@ public class CallFileBuilder {
         }
         result.mkdir();
         return result;
+    }
+    
+    public void saveCsvData(CsvData data)throws IOException{
+        File resDir = new File(path);
+        if(resDir.exists()){
+            throw new IllegalStateException("Dublicate directory name <"+path+">.");
+        }
+        resDir.mkdir();
+        savePart(data.getPart1(), CsvHeaders.FIRST_PART, resDir);
+        savePart(data.getPart2(), CsvHeaders.SECOND_PART, resDir);
+        
+    }
+    
+    private void savePart(HashMap<String, FileData> files, int part, File directory) throws IOException{
+        List<CsvHeaders> headers = CsvHeaders.getHeadersForPart(part);
+        StringBuilder headerLine = new StringBuilder();
+        for(CsvHeaders header : headers){
+            headerLine.append(header.getFullName()).append(CSV_SEPARATOR);
+        }
+        for(String fileName : files.keySet()){
+            File file = new File(directory,fileName);
+            FileData fileData = files.get(fileName);
+            if(file.exists()){
+                throw new IllegalStateException("Dublicate file name <"+fileName+">.");
+            }
+            file.createNewFile();
+            FileOutputStream fos = new FileOutputStream(file);
+            PrintWriter out = new PrintWriter(fos);
+            try{
+                out.println(headerLine.toString()); 
+                for(int i=0; i<fileData.getLineCount();i++){
+                   StringBuilder line = new StringBuilder();
+                   for(CsvHeaders header : headers){
+                       line.append(header.convertValueToString(fileData.getCellValue(i, header))).append(CSV_SEPARATOR);
+                   }
+                   out.println(line.toString());
+                }
+            }
+            finally{
+                out.flush();
+                out.close();
+            }
+        }
     }
 }

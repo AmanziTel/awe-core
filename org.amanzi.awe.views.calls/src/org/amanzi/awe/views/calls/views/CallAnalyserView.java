@@ -36,6 +36,7 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -137,6 +138,7 @@ public class CallAnalyserView extends ViewPart {
     private Color color2;
     private Comparator<PeriodWrapper> comparator;
     private int sortOrder = 0;
+    private Composite frame;
     // private DateTime dateEnd;
 
 
@@ -409,7 +411,7 @@ public class CallAnalyserView extends ViewPart {
 
             }
         };
-        Composite frame = new Composite(parent, SWT.FILL);
+        frame = new Composite(parent, SWT.FILL);
         FormLayout formLayout = new FormLayout();
         formLayout.marginHeight = 0;
         formLayout.marginWidth = 0;
@@ -912,30 +914,49 @@ public class CallAnalyserView extends ViewPart {
      *forms property list depends of selected dataset
      */
     protected void formPropertyList() {
-        Node drive = callDataset.get(cDrive.getText());
+        final Node drive = callDataset.get(cDrive.getText());
         if (drive == null) {
             return;
         }
-        
-        try {
-            CallStatistics statistics = new CallStatistics(drive, NeoServiceProvider.getProvider().getService());
-            Set<StatisticsCallType> callTypes = statistics.getStatisticNode().keySet();
-            if (callTypes.size() == 1) {
-                StatisticsCallType type = callTypes.iterator().next();
-                formCallType(type);                
+        frame.setEnabled(false);
+        Job statGetter = new Job("Get statistics") {            
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                try {
+                    final CallStatistics statistics = new CallStatistics(drive, NeoServiceProvider.getProvider().getService());
+                    ActionUtil.getInstance().runTask(new Runnable() {
+                        @Override
+                        public void run() {
+                            Transaction tx = NeoUtils.beginTransaction();
+                            try {
+                                Set<StatisticsCallType> callTypes = statistics.getStatisticNode().keySet();
+                                if (callTypes.size() == 1) {
+                                    StatisticsCallType type = callTypes.iterator().next();
+                                    formCallType(type);                
+                                }
+                                else {
+                                    formCallType(callTypes);
+                                }
+                                StatisticsCallType callType = getCallType();
+                                formProbeCall(drive, callType);
+                                formPeriods(statistics);
+                                labelProvider.updateHeaders(callType);
+                                updateTable(false);
+                            } finally {
+                                tx.finish();
+                                frame.setEnabled(true);
+                            }
+                        }
+                    }, true);
+                    
+                } catch (IOException e) {
+                    // TODO Handle IOException
+                    throw (RuntimeException)new RuntimeException().initCause(e);
+                }
+                return Status.OK_STATUS;
             }
-            else {
-                formCallType(callTypes);
-            }
-            StatisticsCallType callType = getCallType();
-            formProbeCall(drive, callType);
-            formPeriods(statistics);
-            labelProvider.updateHeaders(callType);
-            updateTable(false);
-        } catch (IOException e) {
-            // TODO Handle IOException
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        }
+        };
+        statGetter.schedule();
 
     }
 

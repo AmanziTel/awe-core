@@ -43,9 +43,9 @@ public enum StatisticsCallType {
                                 AggregationStatisticsHeaders.SC4_ZW2_AVG,
                                 AggregationStatisticsHeaders.SC4_ZW2_MIN,
                                 AggregationStatisticsHeaders.SC4_ZW2_MAX,
-                                /*AggregationStatisticsHeaders.SC5_ZW1_AVG,
+                                AggregationStatisticsHeaders.SC5_ZW1_AVG,
                                 AggregationStatisticsHeaders.SC5_ZW1_MIN,
-                                AggregationStatisticsHeaders.SC5_ZW1_MAX,*/
+                                AggregationStatisticsHeaders.SC5_ZW1_MAX,
                                 AggregationStatisticsHeaders.GC1,
                                 AggregationStatisticsHeaders.GC2_ZW2_AVG,
                                 AggregationStatisticsHeaders.GC2_ZW2_MIN,
@@ -55,9 +55,9 @@ public enum StatisticsCallType {
                                 AggregationStatisticsHeaders.GC4_ZW2_AVG,
                                 AggregationStatisticsHeaders.GC4_ZW2_MIN,
                                 AggregationStatisticsHeaders.GC4_ZW2_MAX,
-                                /*AggregationStatisticsHeaders.GC5_ZW1_AVG,
+                                AggregationStatisticsHeaders.GC5_ZW1_AVG,
                                 AggregationStatisticsHeaders.GC5_ZW1_MIN,
-                                AggregationStatisticsHeaders.GC5_ZW1_MAX,*/
+                                AggregationStatisticsHeaders.GC5_ZW1_MAX,
                                 AggregationStatisticsHeaders.INH_CC,
                                 AggregationStatisticsHeaders.TSM,
                                 AggregationStatisticsHeaders.SDS,
@@ -106,7 +106,7 @@ public enum StatisticsCallType {
                             StatisticsHeaders.AUDIO_QUAL_Z1_L1,
                             StatisticsHeaders.AUDIO_QUAL_Z1_L2,
                             StatisticsHeaders.AUDIO_QUAL_Z1_L3,
-                            StatisticsHeaders.AUDIO_QUAL_Z1_L4/*,
+                            StatisticsHeaders.AUDIO_QUAL_Z1_L4,
                             StatisticsHeaders.IND_DELAY_COUNT_P1,
                             StatisticsHeaders.IND_DELAY_COUNT_P2,
                             StatisticsHeaders.IND_DELAY_COUNT_P3,
@@ -125,7 +125,7 @@ public enum StatisticsCallType {
                             StatisticsHeaders.IND_DELAY_Z1_L1,
                             StatisticsHeaders.IND_DELAY_Z1_L2,
                             StatisticsHeaders.IND_DELAY_Z1_L3,
-                            StatisticsHeaders.IND_DELAY_Z1_L4*/),
+                            StatisticsHeaders.IND_DELAY_Z1_L4),
     
     /**
      * Group calls.
@@ -171,7 +171,7 @@ public enum StatisticsCallType {
                             StatisticsHeaders.AUDIO_QUAL_Z1_L1,
                             StatisticsHeaders.AUDIO_QUAL_Z1_L2,
                             StatisticsHeaders.AUDIO_QUAL_Z1_L3,
-                            StatisticsHeaders.AUDIO_QUAL_Z1_L4/*,
+                            StatisticsHeaders.AUDIO_QUAL_Z1_L4,
                             StatisticsHeaders.GR_DELAY_COUNT_P1,
                             StatisticsHeaders.GR_DELAY_COUNT_P2,
                             StatisticsHeaders.GR_DELAY_COUNT_P3,
@@ -190,7 +190,7 @@ public enum StatisticsCallType {
                             StatisticsHeaders.GR_DELAY_Z1_L1,
                             StatisticsHeaders.GR_DELAY_Z1_L2,
                             StatisticsHeaders.GR_DELAY_Z1_L3,
-                            StatisticsHeaders.GR_DELAY_Z1_L4*/),
+                            StatisticsHeaders.GR_DELAY_Z1_L4),
     /**
      * SDS messages.
      */

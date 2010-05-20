@@ -47,7 +47,10 @@ public class RandomValueGenerator {
      * @return Long
      */
     public Long getLongValue(Long start, Long end){
-        checkParameters(start, end);
+        Number checkResult = checkParameters(start, end);
+        if(checkResult!=null){
+            return checkResult.longValue();
+        }
         return new Double(start+(end-start)*getRandomValue()).longValue();
     }
     
@@ -59,7 +62,10 @@ public class RandomValueGenerator {
      * @return Double
      */
     public Double getDoubleValue(Double start, Double end){
-        checkParameters(start, end);
+        Number checkResult = checkParameters(start, end);
+        if(checkResult!=null){
+            return checkResult.doubleValue();
+        }
         return start+(end-start)*getRandomValue();
     }
     
@@ -72,7 +78,10 @@ public class RandomValueGenerator {
      */
     public Float getFloatValue(final Float start, final Float end)
     {
-        checkParameters(start, end);
+        Number checkResult = checkParameters(start, end);
+        if(checkResult!=null){
+            return checkResult.floatValue();
+        }
         return start + (end - start) * ( (float) getRandomValue() );
     }
     
@@ -93,7 +102,10 @@ public class RandomValueGenerator {
      * @return Integer
      */
     public Integer getIntegerValue(Integer start, Integer end){
-        checkParameters(start, end);
+        Number checkResult = checkParameters(start, end);
+        if(checkResult!=null){
+            return checkResult.intValue();
+        }
         int count = end - start;
         double step = 1.0/count;
         double value = getRandomValue();
@@ -111,11 +123,15 @@ public class RandomValueGenerator {
      * @param start Number
      * @param end Number
      */
-    private void checkParameters(Number start, Number end) {
-        if(end.doubleValue()<=start.doubleValue()){
+    private Number checkParameters(Number start, Number end) {
+        if(start.equals(end)){
+            return start;
+        }
+        if(end.doubleValue()<start.doubleValue()){
             throw new IllegalArgumentException("Incorrect parameters: end <"+end
                     +"> less or equals with start <"+start+">.");
         }
+        return null;
     }
     
     /**

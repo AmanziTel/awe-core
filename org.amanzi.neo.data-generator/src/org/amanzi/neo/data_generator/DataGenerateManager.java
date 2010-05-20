@@ -28,6 +28,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.amanzi.neo.data_generator.data.calls.GeneratedCallsData;
 import org.amanzi.neo.data_generator.generate.IDataGenerator;
+import org.amanzi.neo.data_generator.generate.calls.CsvDataGenerator;
 import org.amanzi.neo.data_generator.generate.calls.GroupCallsGenerator;
 import org.amanzi.neo.data_generator.generate.calls.ITSIAttachDataGenerator;
 import org.amanzi.neo.data_generator.generate.calls.IndividualCallsGenerator;
@@ -134,6 +135,22 @@ public class DataGenerateManager {
     public static IDataGenerator getItsiAttachGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour,
             Integer aCallPerHourVariance, Integer aProbes) {
         return new ITSIAttachDataGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
+    }
+    
+    /**
+     * Returns AMS data generator for Csv statistics data.
+     * 
+     * @param aDirectory String (path to save data)
+     * @param aHours Integer (count of hours)
+     * @param aHourDrift Integer (drift of start time)
+     * @param aCallsPerHour Integer (call count in hour)
+     * @param aCallPerHourVariance Integer (call variance in hour)
+     * @param aProbes Integer (probes count)
+     * @return AmsDataGenerator.
+     */
+    public static IDataGenerator getCsvStatisticsGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour,
+            Integer aCallPerHourVariance, Integer aProbes, boolean needDuplicates) {
+        return new CsvDataGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes,needDuplicates);
     }
 
     /**
