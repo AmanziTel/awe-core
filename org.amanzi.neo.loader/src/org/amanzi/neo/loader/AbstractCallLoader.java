@@ -66,6 +66,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
      * Timestamp Index for Calls
      */
     private final HashMap<String, MultiPropertyIndex<Long>> callTimestampIndexes = new HashMap<String, MultiPropertyIndex<Long>>();
+    private Long acknowlegeTime;
 
     /**
      * Creates a Call node and sets properties
@@ -139,7 +140,8 @@ public abstract class AbstractCallLoader extends DriveLoader {
         Node callNode = createCallNode(call.getCallSetupBegin(), call.getRelatedNodes(), probeCallNode);
 
         long receivedTime = call.getCallTerminationBegin() - call.getCallSetupEnd();
-        long acknTime = call.getCallTerminationEnd()-call.getCallTerminationBegin();
+        //TODO remove fake mechanism after investigation
+        long acknTime = acknowlegeTime==null?call.getCallTerminationEnd()-call.getCallTerminationBegin():acknowlegeTime;
         
         LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
 
@@ -540,5 +542,23 @@ public abstract class AbstractCallLoader extends DriveLoader {
     @Override
     public Node[] getRootNodes() {
         return new Node[]{networkNode,datasetNode};
+    }
+
+    /**
+     * Gets the acknowlege time.
+     *
+     * @return the acknowlege time
+     */
+    public Long getAcknowlegeTime() {
+        return acknowlegeTime;
+    }
+
+    /**
+     * Sets the acknowlege time.
+     *
+     * @param acknowlegeTime the new acknowlege time
+     */
+    public void setAcknowlegeTime(Long acknowlegeTime) {
+        this.acknowlegeTime = acknowlegeTime;
     }
 }
