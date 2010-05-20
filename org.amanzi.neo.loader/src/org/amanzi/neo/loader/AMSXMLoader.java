@@ -23,9 +23,11 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -114,6 +116,7 @@ public class AMSXMLoader extends AbstractCallLoader {
     private final Map<String, Node> probeCache = new HashMap<String, Node>();
     private final Map<String, Node> probeCallCache = new HashMap<String, Node>();
     private final Map<String, String> phoneNumberCache = new HashMap<String, String>();
+    private final Map<String, Set<String>> groupCall = new HashMap<String, Set<String>>();
     /** active file node for event dataset */
     private Node datasetFileNode;
 
@@ -290,6 +293,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             saveCall(msgCall);
             msgCall = null;
         }
+        groupCall.clear();
     }
 
     /**
@@ -724,7 +728,29 @@ public class AMSXMLoader extends AbstractCallLoader {
                     if (getPropertyMap().get("errorCode") != null) {
                         tocttcGroup.setCallResult(CallResult.FAILURE);
                     }
-                    tocttcGroup.addCalleeProbe(probeCallCache.get(getPropertyMap().get("probeID")));
+                    Node calleeProbe = probeCallCache.get(getPropertyMap().get("probeID"));
+                    if (calleeProbe == null) {
+                        Set<String> probesIdSet = groupCall.get(tocttcGroup.getCalledPhoneNumber());
+                        if (probesIdSet == null) {
+                            LOGGER.error("Not found probe for TTC tag");
+                            tocttcGroup.setCallResult(CallResult.FAILURE);
+                        } else {
+                            for (String probeId:probesIdSet){
+                                Node probe=probeCache.get(probeId);
+                                if (probe==null){
+                                    LOGGER.error("Not found probe with id ="+probeId);
+                                }else {
+                                    //TODO check documentation
+                                    if (probe.equals(tocttcGroup.getCallerProbe())){
+                                        continue;
+                                    }
+                                    tocttcGroup.addCalleeProbe(probe);
+                                }
+                            }
+                        }
+                    } else {
+                        tocttcGroup.addCalleeProbe(calleeProbe);
+                    }
                     tocttcGroup.addRelatedNode(node);
 
                 }
@@ -873,7 +899,7 @@ public class AMSXMLoader extends AbstractCallLoader {
                     }
                     Node callerProbe = probeCallCache.get(getPropertyMap().get("probeID"));
                     tocttcGroup.setCallerProbe(callerProbe);
-                    tocttcGroup.setCalledPhoneNumber((String)callerProbe.getProperty("phoneNumber", null));
+                    tocttcGroup.setCalledPhoneNumber(getPropertyMap().get("calledNumber"));
                     tocttcGroup.setCallSetupBeginTime((Long)node.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, 0l));
                     tocttcGroup.setCallTerminationBegin((Long)node.getProperty("releaseTime", 0l));
                 }
@@ -1158,13 +1184,28 @@ public class AMSXMLoader extends AbstractCallLoader {
         @Override
         protected void handleCollector() throws ParseException {
             super.handleCollector();
+            
             List<PropertyCollector> collectorList = getSubCollectors();
+            String id = getPropertyMap().get("probeID");
+            boolean haveProbeId = StringUtils.isNotEmpty(id);
             for (PropertyCollector collector : collectorList) {
                 if (collector.getName().equals("attachment")) {
                     createAttachmentNode(collector);
+                    if (haveProbeId){
+                        String phone = collector.getPropertyMap().get("gssi");
+                        if (StringUtils.isNotEmpty(id)&&StringUtils.isNotEmpty(phone)){
+                            Set<String> probes = groupCall.get(phone);
+                            if (probes==null){
+                                probes=new HashSet<String>();
+                                groupCall.put(phone, probes);
+                            }
+                            probes.add(id);
+                        }  
+                    }
                 }
             }
 
+            
         }
 
         /**
