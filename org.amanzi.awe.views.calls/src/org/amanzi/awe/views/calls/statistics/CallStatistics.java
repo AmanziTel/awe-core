@@ -122,8 +122,20 @@ public class CallStatistics {
         long minTime = minMax.getLeft();
         long maxTime = minMax.getRight();
         highPeriod = getHighestPeriod(minTime, maxTime); 
+        buildSecondLevelStatistics(minTime, maxTime);
         NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
                 new UpdateDatabaseEvent(UpdateViewEventType.STATISTICS));
+    }
+
+    private void buildSecondLevelStatistics(long minTime, long maxTime) {
+        Node secondLevel = statisticNode.get(StatisticsCallType.AGGREGATION_STATISTICS);
+        if(secondLevel==null){
+            AggregationCallStatisticsBuilder aggrStatisticsBuilder = new AggregationCallStatisticsBuilder(datasetNode, neoService);
+            secondLevel = aggrStatisticsBuilder.createAggregationStatistics(highPeriod, statisticNode,minTime,maxTime);
+            if (secondLevel!=null) {
+                statisticNode.put(StatisticsCallType.AGGREGATION_STATISTICS, secondLevel); 
+            }
+        }
     }
     
     /**
@@ -137,9 +149,6 @@ public class CallStatistics {
         Node parentNode = null;
         HashMap<StatisticsCallType, Node> result = new HashMap<StatisticsCallType, Node>();
         
-        long minTime = 0L;
-        long maxTime = 0L;
-        CallTimePeriods period = null;
         try {
             if (datasetNode == null) {
                 datasetNode = NeoUtils.getAllDatasetNodes(neoService).get(amsDatasetName);
@@ -158,10 +167,10 @@ public class CallStatistics {
             }
             
             Pair<Long, Long> minMax = getTimeBounds(datasetNode);
-            minTime = minMax.getLeft();
-            maxTime = minMax.getRight();
+            long minTime = minMax.getLeft();
+            long maxTime = minMax.getRight();
         
-            period = getHighestPeriod(minTime, maxTime);
+            CallTimePeriods period = getHighestPeriod(minTime, maxTime);
             
             for (StatisticsCallType callType : StatisticsCallType.getTypesByLevel(StatisticsCallType.FIRST_LEVEL)) {
                 Collection<Node> probesByCallType = NeoUtils.getAllProbesOfDataset(datasetNode, callType.getId());
@@ -194,11 +203,6 @@ public class CallStatistics {
         }
         finally {
             transaction.finish();
-        }
-        AggregationCallStatisticsBuilder aggrStatisticsBuilder = new AggregationCallStatisticsBuilder(datasetNode, neoService);
-        parentNode = aggrStatisticsBuilder.createAggregationStatistics(period, result,minTime,maxTime);
-        if (parentNode!=null) {
-            result.put(StatisticsCallType.AGGREGATION_STATISTICS, parentNode); 
         }
         return result;
     }

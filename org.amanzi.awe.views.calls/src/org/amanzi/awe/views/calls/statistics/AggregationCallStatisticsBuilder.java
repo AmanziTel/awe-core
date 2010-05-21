@@ -116,7 +116,6 @@ public class AggregationCallStatisticsBuilder {
                         List<Number> sources = new ArrayList<Number>();
                         List<Node> sourceCells = new ArrayList<Node>();
                         for(IStatisticsHeader header : aggrHeader.getDependendHeaders()){
-                            System.out.println("Header "+ header); //TODO delete
                             Number value = (Number)utilStatistics.get(header);
                             if (value!=null) {
                                 sources.add(value);

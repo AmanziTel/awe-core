@@ -37,7 +37,6 @@ import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
 import org.amanzi.awe.views.calls.enums.StatisticsHeaders;
 import org.amanzi.awe.views.calls.enums.StatisticsType;
-import org.amanzi.awe.views.calls.statistics.AggregationCallStatisticsBuilder;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
@@ -148,18 +147,19 @@ public class StatisticsDataLoader {
         monitor.beginTask("Loading AMS statistics data", 2);
         monitor.subTask("Searching for files to load");
         ArrayList<File> allFiles = getAllFiles(directoryName);
-        monitor = SubMonitor.convert(monitor, allFiles.size());
-        monitor.beginTask("Loading AMS statistics data", allFiles.size());
+        int filesCount = allFiles.size();
+        IProgressMonitor subMonitor = SubMonitor.convert(monitor, filesCount);
+        subMonitor.beginTask("Loading AMS statistics data", filesCount);
         transaction = service.beginTx();
         try{
             network = findOrCreateNetworkNode(); 
             virtualDataset = findVirtualDataset();
             for (File file : allFiles) {
-                monitor.subTask("Loading file " + file.getAbsolutePath());
+                subMonitor.subTask("Loading file " + file.getAbsolutePath());
                 loadFile(file);
-                monitor.worked(1);                   
+                subMonitor.worked(1);                   
             }
-            buildHighperiodStatistics();
+            buildHighperiodStatistics(monitor);
             finish();
         }catch(Throwable e){
             LOGGER.error("Problem in loader.",e);
@@ -190,11 +190,11 @@ public class StatisticsDataLoader {
     /**
      * Finish all.
      */
-    private void finish(){        
-        Node gis = gisNodes.get(datasetName);
-        network.setProperty(INeoConstants.MIN_TIMESTAMP, minTime);
-        network.setProperty(INeoConstants.MAX_TIMESTAMP, maxTime);
-        
+    private void finish(){ 
+        if (minTime!=null&&maxTime!=null) {
+            virtualDataset.setProperty(INeoConstants.MIN_TIMESTAMP, minTime);
+            virtualDataset.setProperty(INeoConstants.MAX_TIMESTAMP, maxTime);
+        }
         NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
                 new UpdateDatabaseEvent(UpdateViewEventType.GIS));
         try {
@@ -661,18 +661,21 @@ public class StatisticsDataLoader {
     /**
      * Build statistics for higher periods.
      */
-    private void buildHighperiodStatistics(){
-        HashMap<StatisticsCallType, Node> roots = new HashMap<StatisticsCallType, Node>(statRoots.size());
+    private void buildHighperiodStatistics(IProgressMonitor monitor){
+        int statSize = statRoots.size();
+        HashMap<StatisticsCallType, Node> roots = new HashMap<StatisticsCallType, Node>(statSize);
+        monitor = SubMonitor.convert(monitor, statSize);
+        monitor.beginTask("Build statistics for higher periods", statSize);
         for(StatisticsCallType type : statRoots.keySet()){
             CallTimePeriods highestPeriod = getHighestPeriod(type);            
-            StatInfo newInfo = buildStatisticsFromUnderling(highestPeriod, type);
-            statRoots.put(type, newInfo);
-            roots.put(type, newInfo.getRoot());
+            if (highestPeriod!=null) {
+                StatInfo newInfo = buildStatisticsFromUnderling(highestPeriod, type);
+                statRoots.put(type, newInfo);
+                roots.put(type, newInfo.getRoot());
+            }
+            monitor.worked(1);
         }
         initCommonBorders();
-        CallTimePeriods period = getHighestPeriod(minTime,maxTime);
-        AggregationCallStatisticsBuilder aggrStatisticsBuilder = new AggregationCallStatisticsBuilder(virtualDataset, service);
-        aggrStatisticsBuilder.createAggregationStatistics(period, roots,minTime,maxTime);
     }
     
     /**
@@ -697,6 +700,7 @@ public class StatisticsDataLoader {
         previousRows.clear();
         do{
             HashMap<String, ProbeInfo> allProbes = sourceStat.getProbes();
+            int commCount = 0;
             for(String probeName : allProbes.keySet()){
                 Node probe = probes.get(probeName);
                 List<Node> sourceRows = allProbes.get(probeName).getRowsInTime(start, nextStart);
@@ -710,11 +714,16 @@ public class StatisticsDataLoader {
                 }
                 ProbeInfo info = new ProbeInfo(probeName);
                 info.addRow(start, row);
-                result.addProbeInfo(info);                
+                result.addProbeInfo(info);
+                commCount++;
+                if (commCount>10) {
+                    commit(true);
+                }
             }
-            start = nextStart;
-            nextStart = getNextStartTime(start, end, period);
-        }while(nextStart<end);
+            start = nextStart;            
+            nextStart = getNextStartTime(start, end, period);            
+        }while(start<end);    
+        
         return result;
     }
     
@@ -793,7 +802,7 @@ public class StatisticsDataLoader {
      * @return Long
      */
     private Long getNextStartTime(Long start, Long end, CallTimePeriods period){
-        Long nextStart = period.getLastTime(start);
+        Long nextStart = period.addPeriod(start);
         if(nextStart>end){
             nextStart = end;
         }
@@ -808,6 +817,9 @@ public class StatisticsDataLoader {
      */
     private CallTimePeriods getHighestPeriod(StatisticsCallType callType){
         Long[] borders = statBorders.get(callType);
+        if(borders==null){
+            return null;
+        }
         return getHighestPeriod(borders[0], borders[1]);
     }
     
