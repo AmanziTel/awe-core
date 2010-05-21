@@ -192,8 +192,8 @@ public class StatisticsDataLoader {
      */
     private void finish(){        
         Node gis = gisNodes.get(datasetName);
-        gis.setProperty(INeoConstants.MIN_TIMESTAMP, minTime);
-        gis.setProperty(INeoConstants.MAX_TIMESTAMP, maxTime);
+        network.setProperty(INeoConstants.MIN_TIMESTAMP, minTime);
+        network.setProperty(INeoConstants.MAX_TIMESTAMP, maxTime);
         
         NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
                 new UpdateDatabaseEvent(UpdateViewEventType.GIS));
