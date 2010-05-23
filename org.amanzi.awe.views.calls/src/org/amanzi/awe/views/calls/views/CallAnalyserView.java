@@ -162,12 +162,12 @@ public class CallAnalyserView extends ViewPart {
                 return;
             }
             GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+            Traverser sRowTraverser = inputWr.getSrowTraverser(service);
             Transaction tx = service.beginTx();
-            try {
-                Traverser sRowTraverser = inputWr.getSrowTraverser(service);
+            try {                
                 if (sRowTraverser != null) {
                     StatisticsCallType callType = getCallType();
-                    for (Node sRow : inputWr.getSrowTraverser(service)) {
+                    for (Node sRow : sRowTraverser) {
                         elements.add(new PeriodWrapper(sRow,callType));
                     }
                 }
@@ -923,7 +923,7 @@ public class CallAnalyserView extends ViewPart {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-                    final CallStatistics statistics = new CallStatistics(drive, NeoServiceProvider.getProvider().getService());
+                    final CallStatistics statistics = new CallStatistics(drive, NeoServiceProvider.getProvider().getService(), monitor);
                     ActionUtil.getInstance().runTask(new Runnable() {
                         @Override
                         public void run() {
@@ -1134,8 +1134,9 @@ public class CallAnalyserView extends ViewPart {
             for (Node node : NeoUtils.getChildTraverser(sRow)) {
                 String name = NeoUtils.getNodeName(node);
                 IStatisticsHeader header = callType.getHeaderByTitle(name);
-                if (header != null) {
-                    mappedValue.put(header, getFormattedValue(node.getProperty(INeoConstants.PROPERTY_VALUE_NAME, ERROR_VALUE)));
+                if (header != null) {                   
+                    Object value = node.getProperty(INeoConstants.PROPERTY_VALUE_NAME, ERROR_VALUE);
+                    mappedValue.put(header, getFormattedValue(value));
                 }
             }
             if (!callType.equals(StatisticsCallType.AGGREGATION_STATISTICS)) {
@@ -1275,7 +1276,7 @@ public class CallAnalyserView extends ViewPart {
                     return NeoUtils.emptyTraverser(probe);
                 }
                 if(callType.equals(StatisticsCallType.AGGREGATION_STATISTICS)){
-                    NeoUtils.getChildTraverser(periodNode);
+                    return NeoUtils.getChildTraverser(periodNode);
                 }
                 return NeoUtils.getChildTraverser(periodNode, new ReturnableEvaluator() {
 

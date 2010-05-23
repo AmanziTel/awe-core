@@ -52,6 +52,7 @@ public class AggregationCallStatisticsBuilder {
     
     private Node dataset;    
     private HashMap<CallTimePeriods, Node> previousSCellNodes = new HashMap<CallTimePeriods, Node>();
+    private HashMap<CallTimePeriods, Node> previousSRowNodes = new HashMap<CallTimePeriods, Node>();
     private HashMap<CallTimePeriods, List<Node>> sourceRows = new HashMap<CallTimePeriods, List<Node>>();
     
     private HashMap<AggregationCallTypes, Boolean> havingStats = new HashMap<AggregationCallTypes, Boolean>();
@@ -78,7 +79,7 @@ public class AggregationCallStatisticsBuilder {
     public Node createAggregationStatistics(CallTimePeriods period, HashMap<StatisticsCallType, Node> sourceStatistics,Long minTime, Long maxTime){
         transaction = service.beginTx();
         try {
-            return createAggrStatisticsByPeriod(null, period, sourceStatistics, maxTime, maxTime);
+            return createAggrStatisticsByPeriod(null, period, sourceStatistics, minTime, maxTime);
         } finally {
             updateTransaction(false);
         }
@@ -98,13 +99,16 @@ public class AggregationCallStatisticsBuilder {
         Node rootNode = createAggrStatisticsByPeriod(parent, period.getUnderlyingPeriod(), sourceStatistics, minTime, maxTime);
         Long start = period.getFirstTime(minTime);
         Long nextStart = getNextStartDate(period, maxTime, start);
+        Node statisticsNode = null;
         do{
             Statistics utilStatistics = buildUtilStatistics(period, sourceStatistics,start,nextStart);
             if(utilStatistics!=null){
                 if(rootNode == null){
                     rootNode = createRootStatisticsNode();
                 }
-                Node statisticsNode = getStatisticsNode(rootNode, period);
+                if (statisticsNode==null) {
+                    statisticsNode = getStatisticsNode(rootNode, period);
+                }
                 List<Node> currSourceRows = sourceRows.get(period);
                 Node srow = createRow(statisticsNode, start, currSourceRows, period); 
                 for(AggregationCallTypes stat : AggregationCallTypes.values()){  
@@ -127,11 +131,12 @@ public class AggregationCallStatisticsBuilder {
                     }
                 }
                 sourceRows.put(period, null);
+                previousSCellNodes.put(period, null);
                 updateTransaction(true);
             }
             start = nextStart;
             nextStart = getNextStartDate(period, maxTime, start);
-        }while(start < maxTime);
+        }while(nextStart < maxTime);
         return  rootNode;
     }
     
@@ -178,10 +183,12 @@ public class AggregationCallStatisticsBuilder {
             for(Node row : currSourceRows){
                 HashMap<IStatisticsHeader, Node> sourceCells = getAllRowCells(row, realType);
                 for (IStatisticsHeader utilHeader : stat.getUtilHeaders()) {
-                    for (IStatisticsHeader header : ((IAggrStatisticsHeaders)utilHeader).getDependendHeaders()) {                            
+                    for (IStatisticsHeader header : ((IAggrStatisticsHeaders)utilHeader).getDependendHeaders()) {
                         Node cell = sourceCells.get(header);                        
-                        Number value = utilHeader.getStatisticsData(cell, null);
-                        result.updateHeaderWithCall(utilHeader, value, cell);
+                        if (cell!=null) {
+                            Number value = utilHeader.getStatisticsData(cell, null);
+                            result.updateHeaderWithCall(utilHeader, value, cell);
+                        }
                     }
                 }
             }
@@ -275,8 +282,15 @@ public class AggregationCallStatisticsBuilder {
         for(Node source : sources){
             result.createRelationshipTo(source, GeoNeoRelationshipTypes.SOURCE);
         }
-        root.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
         
+        Node previousNode = previousSRowNodes.get(period);
+        if (previousNode == null) {
+            root.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
+        }
+        else {
+            previousNode.createRelationshipTo(result, GeoNeoRelationshipTypes.NEXT);
+        }
+        previousSRowNodes.put(period, result);
         return result;
     }
     

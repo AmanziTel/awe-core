@@ -192,6 +192,8 @@ public class StatisticsDataLoader {
      */
     private void finish(){ 
         if (minTime!=null&&maxTime!=null) {
+            network.setProperty(INeoConstants.MIN_TIMESTAMP, minTime);
+            network.setProperty(INeoConstants.MAX_TIMESTAMP, maxTime);
             virtualDataset.setProperty(INeoConstants.MIN_TIMESTAMP, minTime);
             virtualDataset.setProperty(INeoConstants.MAX_TIMESTAMP, maxTime);
         }

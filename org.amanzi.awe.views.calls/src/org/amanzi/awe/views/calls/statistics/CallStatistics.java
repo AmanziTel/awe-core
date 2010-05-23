@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 
 import org.amanzi.awe.statistic.CallTimePeriods;
@@ -37,6 +38,9 @@ import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.index.MultiPropertyIndex;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -111,13 +115,28 @@ public class CallStatistics {
      */
     public CallStatistics(Node drive, GraphDatabaseService service) throws IOException {
         assert drive != null;
+        initilizeStatistics(drive, service, new NullProgressMonitor());
+    }
+    
+    /**
+     * Creates Calculator of Call Statistics
+     * 
+     * @param drive Dataset Node
+     * @throws IOException if was problem in initializing of indexes
+     */
+    public CallStatistics(Node drive, GraphDatabaseService service, IProgressMonitor monitor) throws IOException {
+        assert drive != null;
+        initilizeStatistics(drive, service, monitor);
+    }
+
+    private void initilizeStatistics(Node drive, GraphDatabaseService service, IProgressMonitor monitor) throws IOException {
         datasetNode = drive;
         neoService = service;
         
         statisticsConstants.put(StatisticsCallType.INDIVIDUAL, new IndividualCallConstants());
         statisticsConstants.put(StatisticsCallType.GROUP, new GroupCallConstants());
         
-        statisticNode = createStatistics();
+        statisticNode = createStatistics(monitor);
         Pair<Long, Long> minMax = getTimeBounds(datasetNode);
         long minTime = minMax.getLeft();
         long maxTime = minMax.getRight();
@@ -126,6 +145,8 @@ public class CallStatistics {
         NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
                 new UpdateDatabaseEvent(UpdateViewEventType.STATISTICS));
     }
+    
+    
 
     private void buildSecondLevelStatistics(long minTime, long maxTime) {
         Node secondLevel = statisticNode.get(StatisticsCallType.AGGREGATION_STATISTICS);
@@ -144,7 +165,7 @@ public class CallStatistics {
      * @return Root statistics Node
      * @throws IOException 
      */
-    private HashMap<StatisticsCallType, Node> createStatistics() throws IOException {
+    private HashMap<StatisticsCallType, Node> createStatistics(IProgressMonitor monitor) throws IOException {
         transaction = neoService.beginTx();
         Node parentNode = null;
         HashMap<StatisticsCallType, Node> result = new HashMap<StatisticsCallType, Node>();
@@ -170,11 +191,14 @@ public class CallStatistics {
             long minTime = minMax.getLeft();
             long maxTime = minMax.getRight();
         
-            CallTimePeriods period = getHighestPeriod(minTime, maxTime);
-            
-            for (StatisticsCallType callType : StatisticsCallType.getTypesByLevel(StatisticsCallType.FIRST_LEVEL)) {
+            CallTimePeriods period = getHighestPeriod(minTime, maxTime);            
+            List<StatisticsCallType> callTypes = StatisticsCallType.getTypesByLevel(StatisticsCallType.FIRST_LEVEL);
+            IProgressMonitor subMonitor = SubMonitor.convert(monitor, callTypes.size());
+            subMonitor.beginTask("Create AMS statistics", callTypes.size());
+            for (StatisticsCallType callType : callTypes) {
                 Collection<Node> probesByCallType = NeoUtils.getAllProbesOfDataset(datasetNode, callType.getId());
                 if (probesByCallType.isEmpty()) {
+                    subMonitor.worked(1);
                     continue;
                 }
                 
@@ -193,6 +217,7 @@ public class CallStatistics {
                     transaction = commit(transaction);
                 }
                 previousSRowNodes.clear();
+                subMonitor.worked(1);
             }
             
             transaction.success();
