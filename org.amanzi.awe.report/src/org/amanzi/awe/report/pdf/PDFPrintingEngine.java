@@ -143,8 +143,7 @@ public class PDFPrintingEngine {
             graphics.dispose();
             document.newPage();
         } catch (Exception e) {
-            // TODO Handle FileNotFoundException
-            e.printStackTrace();
+            LOGGER.error(e);
         } finally{
         document.close();
         writer.close();
