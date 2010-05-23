@@ -54,87 +54,91 @@ include Amanzi::Report::Filters
 def automation
   map=GIS.maps.first.copy
   layer=map.layers.find(:type=>'drive').first
-  puts layer
-  resource = layer.findGeoResource(GeoNeo.java_class)
-  if !resource.nil?
-    geoNeo=resource.resolve(GeoNeo.java_class,nil)
-    gisNode=geoNeo.getMainGisNode
-    style=styles "default" do |ss|
-      cs=color_scheme do
-        add 255,0,204
-        add 102,102,102
-        add 51,51,255
-        add 0,204,204
-        add 255,153,153
-        add 255,0,0
-        add 153,255,204
-        add 0,102,153
-        add 255,255,0
-        add 153,0,255
-        add 102,102,0
-        add 0,204,0
-        add 255,153,0
-        add 153,153,255
+  if !layer.nil?
+    resource = layer.findGeoResource(GeoNeo.java_class)
+    if !resource.nil?
+      geoNeo=resource.resolve(GeoNeo.java_class,nil)
+      gisNode=geoNeo.getMainGisNode
+      style=styles "default" do |ss|
+        cs=color_scheme do
+          add 255,0,204
+          add 102,102,102
+          add 51,51,255
+          add 0,204,204
+          add 255,153,153
+          add 255,0,0
+          add 153,255,204
+          add 0,102,153
+          add 255,255,0
+          add 153,0,255
+          add 102,102,0
+          add 0,204,0
+          add 255,153,0
+          add 153,153,255
+        end
+        add :circle, cs
       end
-      add :circle, cs
-    end
-    Neo4j::Transaction.run {
-      report_props=Hash.new
-      properties_node=gisNode.outgoing(:PROPERTIES).depth(1).first
-      traverser=properties_node.outgoing(:CHILD).depth(1).filter do
-        get_property("name")=="integer"
-      end
-      traverser.each do |node|
-        puts "node #{node}"
-        node.rels.each do |rel|
-          property=rel[:property]
-          max=rel['max value']
-          min=rel["min value"]
-          count=rel[:count]
-          if min!=max
-            if ((max-min)>=10)
-              puts "property=#{property} min=#{min} max=#{max} count=#{count}"
-              puts "#{property} is divided into 10 parts"
-              delta=(max-min)/10
-              values=[]
-              for i in (0..10)
-                if i==10
-                  val=max
+      if !gisNode.nil?
+        Neo4j::Transaction.run {
+          report_props=Hash.new
+          properties_node=gisNode.rel(:NEXT).end_node.outgoing(:PROPERTIES).depth(1).first
+          traverser=properties_node.outgoing(:CHILD).depth(1).filter do
+            get_property("name")=="integer"
+          end
+          traverser.each do |node|
+            puts "node #{node}"
+            node.rels.each do |rel|
+              property=rel[:property]
+              max=rel['max value']
+              min=rel["min value"]
+              count=rel[:count]
+              if min!=max
+                if ((max-min)>=10)
+                  puts "property=#{property} min=#{min} max=#{max} count=#{count}"
+                  puts "#{property} is divided into 10 parts"
+                  delta=(max-min)/10
+                  values=[]
+                  for i in (0..10)
+                    if i==10
+                      val=max
+                    else
+                      val=min+delta*i
+                    end
+                    values<<val.round
+                  end
+                  report_props[property]=values
                 else
-                  val=min+delta*i
+                  puts "property=#{property} min=#{min} max=#{max} count=#{count}"
+                  puts "#{property} passed to report as is"
+                  #traverse
                 end
-                values<<val.round
+              else
+                #  puts "Report will not be generated for #{property}"
               end
-              report_props[property]=values
-            else
-              puts "property=#{property} min=#{min} max=#{max} count=#{count}"
-              puts "#{property} passed to report as is"
-              #traverse
             end
-          else
-          #  puts "Report will not be generated for #{property}"
           end
-        end
-      end
-      report_props.each_pair do |prop,vals|
-        puts prop
-        group_filter=filters prop do
-          for i in 1..vals.length-1
-            puts "#{vals[i-1]} - #{vals[i]}"
-            f1=filter :condition=>:ge, :value=>vals[i-1]
-            f2=filter :condition=>:le, :value=>vals[i]
-            add f1 & f2
+          report_props.each_pair do |prop,vals|
+            puts prop
+            group_filter=filters prop do
+              for i in 1..vals.length-1
+                puts "#{vals[i-1]} - #{vals[i]}"
+                f1=filter :condition=>:ge, :value=>vals[i-1]
+                f2=filter :condition=>:le, :value=>vals[i]
+                add f1 & f2
+              end
+            end
+            #automatic generation of reports based on filters
+            #        run1(map,gisNode[:name],nil,group_filter,style).save
           end
-        end
-        #automatic generation of reports based on filters
-        run1(map,gisNode[:name],nil,group_filter,style).save
-      end
 
-      map=GIS.maps.first.copy
-      #automatic generation of distribution analysis reports
-      gisNode.outgoing(:AGGREGATION).depth(1).each do |aggr|
-        run(map,gisNode[:name],nil,aggr).save
+          map=GIS.maps.first.copy
+          puts map
+          #automatic generation of distribution analysis reports
+          gisNode.rel(:NEXT).end_node.outgoing(:AGGREGATION).depth(1).each do |aggr|
+            run(map,gisNode[:name],nil,aggr).save
+          end
+        }
       end
-    }
+    end
   end
 end

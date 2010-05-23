@@ -58,8 +58,9 @@ include_class org.jfree.data.time.TimeSeriesCollection
       traverser.first
     end
 
-    def find_aggr_node(dataset_node,property, distribute, select)
-      traverser=dataset_node.outgoing(:AGGREGATION).depth(1).filter do
+    def find_aggr_node(gis_node,property, distribute, select)
+    dataset_node=gis_node.rel(:NEXT).end_node
+    traverser=dataset_node.outgoing(:AGGREGATION).depth(1).filter do
         prop_name=get_property('name')
         prop_distr=get_property('distribute')
         prop_select=get_property('select')
@@ -336,7 +337,8 @@ include_class org.jfree.data.time.TimeSeriesCollection
     def map(title,parameters,&block)
       begin
       udig_map=parameters[:map]
-      puts "map: #{udig_map.getID()}"
+      puts udig_map.nil?
+#      puts "map: #{udig_map.getID()}"
       currMap=ReportMap.new(title,udig_map)
       currMap.height=parameters[:height]
       currMap.width=parameters[:width]
