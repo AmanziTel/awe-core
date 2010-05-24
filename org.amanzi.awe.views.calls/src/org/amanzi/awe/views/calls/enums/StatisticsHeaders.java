@@ -57,7 +57,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
             if(isValueInBorders(connectionTime, callConstants.getCallConnTimeP1(), callConstants.getCallConnTimeP2(),true,false)){
                 return 1;
@@ -71,7 +71,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
             if(isValueInBorders(connectionTime, callConstants.getCallConnTimeP2(), callConstants.getCallConnTimeP3(),true,false)){
                 return 1;
@@ -85,7 +85,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
             if(isValueInBorders(connectionTime, callConstants.getCallConnTimeP3(), callConstants.getCallConnTimeP4(), true, false)){
                 return 1;
@@ -99,7 +99,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
             if(isValueInBorders(connectionTime, callConstants.getCallConnTimeP4(), callConstants.getCallConnTimeL1(), true, false)){
                 return 1;
@@ -113,7 +113,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
             if(isValueInBorders(connectionTime, callConstants.getCallConnTimeL1(), callConstants.getCallConnTimeL2(), true, false)){
                 return 1;
@@ -127,7 +127,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
             if(isValueInBorders(connectionTime, callConstants.getCallConnTimeL2(), callConstants.getCallConnTimeL3(), true, false)){
                 return 1;
@@ -141,7 +141,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
             if(isValueInBorders(connectionTime, callConstants.getCallConnTimeL3(), callConstants.getCallConnTimeL4(), true, false)){
                 return 1;
@@ -155,7 +155,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
             if(isValueInBorders(connectionTime, callConstants.getCallConnTimeL4(), callConstants.getCallConnTimeLimit(), true, true)){
                 return 1;
@@ -196,7 +196,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
             if(isValueInBorders(connectionTime, callConstants.getCallConnTimeP1(), callConstants.getCallConnTimeP2(),true,false)){
                 return connectionTime;
@@ -210,7 +210,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
             if(isValueInBorders(connectionTime, callConstants.getCallConnTimeP2(), callConstants.getCallConnTimeP3(),true,false)){
                 return connectionTime;
@@ -224,7 +224,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
             if(isValueInBorders(connectionTime, callConstants.getCallConnTimeP3(), callConstants.getCallConnTimeP4(),true,false)){
                 return connectionTime;
@@ -238,7 +238,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
             if(isValueInBorders(connectionTime, callConstants.getCallConnTimeP4(), callConstants.getCallConnTimeL1(),true,false)){
                 return connectionTime;
@@ -252,7 +252,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
             if(isValueInBorders(connectionTime, callConstants.getCallConnTimeL1(), callConstants.getCallConnTimeL2(),true,false)){
                 return connectionTime;
@@ -266,7 +266,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
             if(isValueInBorders(connectionTime, callConstants.getCallConnTimeL2(), callConstants.getCallConnTimeL3(),true,false)){
                 return connectionTime;
@@ -280,7 +280,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
             if(isValueInBorders(connectionTime, callConstants.getCallConnTimeL3(), callConstants.getCallConnTimeL4(),true,false)){
                 return connectionTime;
@@ -294,7 +294,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
             if(isValueInBorders(connectionTime, callConstants.getCallConnTimeL4(), callConstants.getCallConnTimeLimit(),true,true)){
                 return connectionTime;
@@ -306,8 +306,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
             if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants)){
-                float durationTime = getCallDurationTime(callNode);
-                if(durationTime>=((ICallStatisticsConstants)constants).getIndivCallDurationTime()){
+                Float durationTime = getCallDurationTime(callNode);
+                if(durationTime!=null&&durationTime>=((ICallStatisticsConstants)constants).getIndivCallDurationTime()){
                     return 1;
                 }
             }
@@ -1235,9 +1235,10 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float receiveTime = getMessageReceiveTime(callNode);
-            float acknowledgeTime = getMessageAcknowledgeTime(callNode);
-            if(receiveTime<=MessageConstants.TSM_SEND_TIME_LIMIT
+            Float receiveTime = getMessageReceiveTime(callNode);
+            Float acknowledgeTime = getMessageAcknowledgeTime(callNode);
+            if(receiveTime!=null&&acknowledgeTime!=null
+                    && receiveTime<=MessageConstants.TSM_SEND_TIME_LIMIT
                     && acknowledgeTime<=MessageConstants.TSM_REPLY_TIME_LIMIT){
                 return 1;
             }
@@ -1250,8 +1251,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float receiveTime = getMessageReceiveTime(callNode);
-            if(receiveTime<=MessageConstants.SDS_SEND_TIME_LIMIT){
+            Float receiveTime = getMessageReceiveTime(callNode);
+            if(receiveTime!=null&&receiveTime<=MessageConstants.SDS_SEND_TIME_LIMIT){
                 return 1;
             }
             return null;
@@ -1332,7 +1333,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z1_P1, AlarmConstants.ALM_DELAY_Z1_P2, true, false)){
                 return 1;
             }
@@ -1345,7 +1346,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z1_P2, AlarmConstants.ALM_DELAY_Z1_P3, true, false)){
                 return 1;
             }
@@ -1358,7 +1359,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z1_P3, AlarmConstants.ALM_DELAY_Z1_P4, true, false)){
                 return 1;
             }
@@ -1371,7 +1372,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z1_P4, AlarmConstants.ALM_DELAY_Z1_L1, true, false)){
                 return 1;
             }
@@ -1384,7 +1385,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z1_L1, AlarmConstants.ALM_DELAY_Z1_L2, true, false)){
                 return 1;
             }
@@ -1397,7 +1398,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z1_L2, AlarmConstants.ALM_DELAY_Z1_L3, true, false)){
                 return 1;
             }
@@ -1410,7 +1411,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z1_L3, AlarmConstants.ALM_DELAY_Z1_L3, true, false)){
                 return 1;
             }
@@ -1423,7 +1424,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(delayTime>=AlarmConstants.ALM_DELAY_Z1_L4){
                 return 1;
             }
@@ -1436,7 +1437,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z2_P1, AlarmConstants.ALM_DELAY_Z2_P2, true, false)){
                 return 1;
             }
@@ -1449,7 +1450,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z2_P2, AlarmConstants.ALM_DELAY_Z2_P3, true, false)){
                 return 1;
             }
@@ -1462,7 +1463,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z2_P3, AlarmConstants.ALM_DELAY_Z2_P4, true, false)){
                 return 1;
             }
@@ -1475,7 +1476,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z2_P4, AlarmConstants.ALM_DELAY_Z2_L1, true, false)){
                 return 1;
             }
@@ -1488,7 +1489,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z2_L1, AlarmConstants.ALM_DELAY_Z2_L2, true, false)){
                 return 1;
             }
@@ -1501,7 +1502,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z2_L2, AlarmConstants.ALM_DELAY_Z2_L3, true, false)){
                 return 1;
             }
@@ -1514,7 +1515,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z2_L3, AlarmConstants.ALM_DELAY_Z2_L4, true, false)){
                 return 1;
             }
@@ -1527,7 +1528,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(delayTime>=AlarmConstants.ALM_DELAY_Z2_L4){
                 return 1;
             }
@@ -1540,7 +1541,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_P1, AlarmConstants.ALM_DELAY_Z3_P2, true, false)){
                 return 1;
             }
@@ -1553,7 +1554,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_P2, AlarmConstants.ALM_DELAY_Z3_P3, true, false)){
                 return 1;
             }
@@ -1566,7 +1567,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_P3, AlarmConstants.ALM_DELAY_Z3_P4, true, false)){
                 return 1;
             }
@@ -1579,7 +1580,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_P4, AlarmConstants.ALM_DELAY_Z3_L1, true, false)){
                 return 1;
             }
@@ -1592,7 +1593,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_L1, AlarmConstants.ALM_DELAY_Z3_L2, true, false)){
                 return 1;
             }
@@ -1605,7 +1606,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_L2, AlarmConstants.ALM_DELAY_Z3_L3, true, false)){
                 return 1;
             }
@@ -1618,7 +1619,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_L3, AlarmConstants.ALM_DELAY_Z3_L4, true, false)){
                 return 1;
             }
@@ -1631,8 +1632,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
-            if(delayTime>=AlarmConstants.ALM_DELAY_Z3_L4){
+            Float delayTime = getMessageDelayTime(callNode);
+            if(delayTime!=null&&delayTime>=AlarmConstants.ALM_DELAY_Z3_L4){
                 return 1;
             }
             return null;
@@ -1644,7 +1645,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getFirstMessageDelayTime(callNode);
+            Float delayTime = getFirstMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z4_P1, AlarmConstants.ALM_DELAY_Z4_P2, true, false)){
                 return 1;
             }
@@ -1657,7 +1658,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getFirstMessageDelayTime(callNode);
+            Float delayTime = getFirstMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z4_P2, AlarmConstants.ALM_DELAY_Z4_P3, true, false)){
                 return 1;
             }
@@ -1670,7 +1671,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getFirstMessageDelayTime(callNode);
+            Float delayTime = getFirstMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z4_P3, AlarmConstants.ALM_DELAY_Z4_P4, true, false)){
                 return 1;
             }
@@ -1683,7 +1684,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getFirstMessageDelayTime(callNode);
+            Float delayTime = getFirstMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z4_P4, AlarmConstants.ALM_DELAY_Z4_L1, true, false)){
                 return 1;
             }
@@ -1696,7 +1697,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getFirstMessageDelayTime(callNode);
+            Float delayTime = getFirstMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z4_L1, AlarmConstants.ALM_DELAY_Z4_L2, true, false)){
                 return 1;
             }
@@ -1709,7 +1710,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getFirstMessageDelayTime(callNode);
+            Float delayTime = getFirstMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z4_L2, AlarmConstants.ALM_DELAY_Z4_L3, true, false)){
                 return 1;
             }
@@ -1722,7 +1723,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getFirstMessageDelayTime(callNode);
+            Float delayTime = getFirstMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z4_L3, AlarmConstants.ALM_DELAY_Z4_L4, true, false)){
                 return 1;
             }
@@ -1735,8 +1736,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getFirstMessageDelayTime(callNode);
-            if(delayTime>=AlarmConstants.ALM_DELAY_Z4_L4){
+            Float delayTime = getFirstMessageDelayTime(callNode);
+            if(delayTime!=null&&delayTime>=AlarmConstants.ALM_DELAY_Z4_L4){
                 return 1;
             }
             return null;
@@ -1748,7 +1749,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_P1, AlarmConstants.ALM_DELAY_Z3_P2, true, false)){
                 return delayTime;
             }
@@ -1761,7 +1762,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_P2, AlarmConstants.ALM_DELAY_Z3_P3, true, false)){
                 return delayTime;
             }
@@ -1774,7 +1775,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_P3, AlarmConstants.ALM_DELAY_Z3_P4, true, false)){
                 return delayTime;
             }
@@ -1787,7 +1788,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_P4, AlarmConstants.ALM_DELAY_Z3_L1, true, false)){
                 return delayTime;
             }
@@ -1800,7 +1801,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_L1, AlarmConstants.ALM_DELAY_Z3_L2, true, false)){
                 return delayTime;
             }
@@ -1813,7 +1814,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_L2, AlarmConstants.ALM_DELAY_Z3_L3, true, false)){
                 return delayTime;
             }
@@ -1826,7 +1827,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = getMessageDelayTime(callNode);
             if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_L3, AlarmConstants.ALM_DELAY_Z3_L4, true, false)){
                 return delayTime;
             }
@@ -1839,8 +1840,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float delayTime = getMessageDelayTime(callNode);
-            if(delayTime>=AlarmConstants.ALM_DELAY_Z3_L4){
+            Float delayTime = getMessageDelayTime(callNode);
+            if(delayTime!=null&&delayTime>=AlarmConstants.ALM_DELAY_Z3_L4){
                 return delayTime;
             }
             return null;
@@ -1864,8 +1865,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float connectionTime = getCallConnectionTime(callNode);
-            if(connectionTime<=AlarmConstants.EMG_CALL_CONN_TIME_LIMIT){
+            Float connectionTime = getCallConnectionTime(callNode);
+            if(connectionTime!=null&&connectionTime<=AlarmConstants.EMG_CALL_CONN_TIME_LIMIT){
                 return 1;
             }
             return null;
@@ -1877,8 +1878,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             if(!isCallSuccess(callNode)){
                 return null;
             }
-            float connectionTime = getCallConnectionTime(callNode);
-            if(connectionTime<=AlarmConstants.HELP_CALL_CONN_TIME_LIMIT){
+            Float connectionTime = getCallConnectionTime(callNode);
+            if(connectionTime!=null&&connectionTime<=AlarmConstants.HELP_CALL_CONN_TIME_LIMIT){
                 return 1;
             }
             return null;
@@ -1893,8 +1894,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ATT_SUCCESS("SUCCESS",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float connectionTime = getCallDurationTime(callNode);
-            if(connectionTime<=ItsiAttachConstants.TIME_LIMIT){
+            Float updateTime = getCallDurationTime(callNode);
+            if(updateTime!=null&&updateTime<=ItsiAttachConstants.TIME_LIMIT){
                 return 1;
             }
             return null;
@@ -1903,7 +1904,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ATT_DELAY_P1("DELAY_P1",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float updateTime = getCallDurationTime(callNode);
+            Float updateTime = getCallDurationTime(callNode);
             if(isValueInBorders(updateTime, ItsiAttachConstants.DELAY_P1_LOW, ItsiAttachConstants.DELAY_P2_LOW, true, false)){
                 return 1;
             }
@@ -1913,7 +1914,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ATT_DELAY_P2("DELAY_P2",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float updateTime = getCallDurationTime(callNode);
+            Float updateTime = getCallDurationTime(callNode);
             if(isValueInBorders(updateTime, ItsiAttachConstants.DELAY_P2_LOW, ItsiAttachConstants.DELAY_P3_LOW, true, false)){
                 return 1;
             }
@@ -1923,7 +1924,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ATT_DELAY_P3("DELAY_P3",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float updateTime = getCallDurationTime(callNode);
+            Float updateTime = getCallDurationTime(callNode);
             if(isValueInBorders(updateTime, ItsiAttachConstants.DELAY_P3_LOW, ItsiAttachConstants.DELAY_P4_LOW, true, false)){
                 return 1;
             }
@@ -1933,7 +1934,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ATT_DELAY_P4("DELAY_P4",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float updateTime = getCallDurationTime(callNode);
+            Float updateTime = getCallDurationTime(callNode);
             if(isValueInBorders(updateTime, ItsiAttachConstants.DELAY_P4_LOW, ItsiAttachConstants.DELAY_L1_LOW, true, false)){
                 return 1;
             }
@@ -1943,7 +1944,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ATT_DELAY_L1("DELAY_L1",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float updateTime = getCallDurationTime(callNode);
+            Float updateTime = getCallDurationTime(callNode);
             if(isValueInBorders(updateTime, ItsiAttachConstants.DELAY_L1_LOW, ItsiAttachConstants.DELAY_L2_LOW, true, false)){
                 return 1;
             }
@@ -1953,7 +1954,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ATT_DELAY_L2("DELAY_L2",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float updateTime = getCallDurationTime(callNode);
+            Float updateTime = getCallDurationTime(callNode);
             if(isValueInBorders(updateTime, ItsiAttachConstants.DELAY_L2_LOW, ItsiAttachConstants.DELAY_L3_LOW, true, false)){
                 return 1;
             }
@@ -1963,7 +1964,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ATT_DELAY_L3("DELAY_L3",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float updateTime = getCallDurationTime(callNode);
+            Float updateTime = getCallDurationTime(callNode);
             if(isValueInBorders(updateTime, ItsiAttachConstants.DELAY_L3_LOW, ItsiAttachConstants.DELAY_L4_LOW, true, false)){
                 return 1;
             }
@@ -1973,7 +1974,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ATT_DELAY_L4("DELAY_L4",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float updateTime = getCallDurationTime(callNode);
+            Float updateTime = getCallDurationTime(callNode);
             if(isValueInBorders(updateTime, ItsiAttachConstants.DELAY_L4_LOW, ItsiAttachConstants.TIME_LIMIT, true, true)){
                 return 1;
             }
@@ -1995,8 +1996,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_HO_SUCCESS("HO_SUCCESS",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float handoverTime = getCallHandoverTime(callNode);
-            if(handoverTime<=CcHoConstants.HANDOVER_TIME_LIMIT){
+            Float handoverTime = getCallHandoverTime(callNode);
+            if(handoverTime!=null&&handoverTime<=CcHoConstants.HANDOVER_TIME_LIMIT){
                 return 1;
             }
             return null;
@@ -2005,8 +2006,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_RES_SUCCESS("RES_SUCCESS",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float reselectionTime = getCallReselectionTime(callNode);
-            if(reselectionTime<=CcHoConstants.HANDOVER_TIME_LIMIT){
+            Float reselectionTime = getCallReselectionTime(callNode);
+            if(reselectionTime!=null&&reselectionTime<=CcHoConstants.HANDOVER_TIME_LIMIT){
                 return 1;
             }
             return null;
@@ -2015,7 +2016,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_HO_TIME_P1("HO_TIME_P1",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float handoverTime = getCallHandoverTime(callNode);
+            Float handoverTime = getCallHandoverTime(callNode);
             if(isValueInBorders(handoverTime, CcHoConstants.HANDOVER_DELAY_P1_LOW, CcHoConstants.HANDOVER_DELAY_P2_LOW, false, true)){
                 return 1;
             }
@@ -2025,7 +2026,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_HO_TIME_P2("HO_TIME_P2",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float handoverTime = getCallHandoverTime(callNode);
+            Float handoverTime = getCallHandoverTime(callNode);
             if(isValueInBorders(handoverTime, CcHoConstants.HANDOVER_DELAY_P2_LOW, CcHoConstants.HANDOVER_DELAY_P3_LOW, false, true)){
                 return 1;
             }
@@ -2035,7 +2036,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_HO_TIME_P3("HO_TIME_P3",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float handoverTime = getCallHandoverTime(callNode);
+            Float handoverTime = getCallHandoverTime(callNode);
             if(isValueInBorders(handoverTime, CcHoConstants.HANDOVER_DELAY_P3_LOW, CcHoConstants.HANDOVER_DELAY_P4_LOW, false, true)){
                 return 1;
             }
@@ -2045,7 +2046,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_HO_TIME_P4("HO_TIME_P4",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float handoverTime = getCallHandoverTime(callNode);
+            Float handoverTime = getCallHandoverTime(callNode);
             if(isValueInBorders(handoverTime, CcHoConstants.HANDOVER_DELAY_P4_LOW, CcHoConstants.HANDOVER_DELAY_L1_LOW, false, true)){
                 return 1;
             }
@@ -2055,7 +2056,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_HO_TIME_L1("HO_TIME_L1",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float handoverTime = getCallHandoverTime(callNode);
+            Float handoverTime = getCallHandoverTime(callNode);
             if(isValueInBorders(handoverTime, CcHoConstants.HANDOVER_DELAY_L1_LOW, CcHoConstants.HANDOVER_DELAY_L2_LOW, false, true)){
                 return 1;
             }
@@ -2065,7 +2066,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_HO_TIME_L2("HO_TIME_L2",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float handoverTime = getCallHandoverTime(callNode);
+            Float handoverTime = getCallHandoverTime(callNode);
             if(isValueInBorders(handoverTime, CcHoConstants.HANDOVER_DELAY_L2_LOW, CcHoConstants.HANDOVER_DELAY_L3_LOW, false, true)){
                 return 1;
             }
@@ -2075,7 +2076,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_HO_TIME_L3("HO_TIME_L3",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float handoverTime = getCallHandoverTime(callNode);
+            Float handoverTime = getCallHandoverTime(callNode);
             if(isValueInBorders(handoverTime, CcHoConstants.HANDOVER_DELAY_L3_LOW, CcHoConstants.HANDOVER_DELAY_L4_LOW, false, true)){
                 return 1;
             }
@@ -2085,8 +2086,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_HO_TIME_L4("HO_TIME_L4",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float handoverTime = getCallHandoverTime(callNode);
-            if(handoverTime>CcHoConstants.HANDOVER_DELAY_L4_LOW){
+            Float handoverTime = getCallHandoverTime(callNode);
+            if(handoverTime!=null&&handoverTime>CcHoConstants.HANDOVER_DELAY_L4_LOW){
                 return 1;
             }
             return null;
@@ -2095,7 +2096,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_RES_TIME_P1("RES_TIME_P1",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float reselectionTime = getCallReselectionTime(callNode);
+            Float reselectionTime = getCallReselectionTime(callNode);
             if(isValueInBorders(reselectionTime, CcHoConstants.HANDOVER_DELAY_P1_LOW, CcHoConstants.HANDOVER_DELAY_P2_LOW, false, true)){
                 return 1;
             }
@@ -2105,7 +2106,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_RES_TIME_P2("RES_TIME_P2",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float reselectionTime = getCallReselectionTime(callNode);
+            Float reselectionTime = getCallReselectionTime(callNode);
             if(isValueInBorders(reselectionTime, CcHoConstants.HANDOVER_DELAY_P2_LOW, CcHoConstants.HANDOVER_DELAY_P3_LOW, false, true)){
                 return 1;
             }
@@ -2115,7 +2116,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_RES_TIME_P3("RES_TIME_P3",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float reselectionTime = getCallReselectionTime(callNode);
+            Float reselectionTime = getCallReselectionTime(callNode);
             if(isValueInBorders(reselectionTime, CcHoConstants.HANDOVER_DELAY_P3_LOW, CcHoConstants.HANDOVER_DELAY_P4_LOW, false, true)){
                 return 1;
             }
@@ -2125,7 +2126,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_RES_TIME_P4("RES_TIME_P4",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float reselectionTime = getCallReselectionTime(callNode);
+            Float reselectionTime = getCallReselectionTime(callNode);
             if(isValueInBorders(reselectionTime, CcHoConstants.HANDOVER_DELAY_P4_LOW, CcHoConstants.HANDOVER_DELAY_L1_LOW, false, true)){
                 return 1;
             }
@@ -2135,7 +2136,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_RES_TIME_L1("RES_TIME_L1",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float reselectionTime = getCallReselectionTime(callNode);
+            Float reselectionTime = getCallReselectionTime(callNode);
             if(isValueInBorders(reselectionTime, CcHoConstants.HANDOVER_DELAY_L1_LOW, CcHoConstants.HANDOVER_DELAY_L2_LOW, false, true)){
                 return 1;
             }
@@ -2145,7 +2146,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_RES_TIME_L2("RES_TIME_L2",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float reselectionTime = getCallReselectionTime(callNode);
+            Float reselectionTime = getCallReselectionTime(callNode);
             if(isValueInBorders(reselectionTime, CcHoConstants.HANDOVER_DELAY_L2_LOW, CcHoConstants.HANDOVER_DELAY_L3_LOW, false, true)){
                 return 1;
             }
@@ -2155,7 +2156,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_RES_TIME_L3("RES_TIME_L3",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float reselectionTime = getCallReselectionTime(callNode);
+            Float reselectionTime = getCallReselectionTime(callNode);
             if(isValueInBorders(reselectionTime, CcHoConstants.HANDOVER_DELAY_L3_LOW, CcHoConstants.HANDOVER_DELAY_L4_LOW, false, true)){
                 return 1;
             }
@@ -2165,8 +2166,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_RES_TIME_L4("RES_TIME_L4",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            float reselectionTime = getCallReselectionTime(callNode);
-            if(reselectionTime>CcHoConstants.HANDOVER_DELAY_L4_LOW){
+            Float reselectionTime = getCallReselectionTime(callNode);
+            if(reselectionTime!=null&&reselectionTime>CcHoConstants.HANDOVER_DELAY_L4_LOW){
                 return 1;
             }
             return null;
@@ -2672,8 +2673,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
      * @return boolean
      */
     protected boolean isCallSuccess(Node callNode){
-        CallResult callResult = CallResult.valueOf((String)callNode.getProperty(CallProperties.CALL_RESULT.getId()));
-        return callResult.equals(CallResult.SUCCESS);
+        CallResult callResult = CallResult.valueOf((String)callNode.getProperty(CallProperties.CALL_RESULT.getId(),null));
+        return (callResult!=null)&&(callResult.equals(CallResult.SUCCESS));
     }
     
     /**
@@ -2687,8 +2688,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
         if(!isCallSuccess(callNode)){
             return false;
         }
-        float connectionTime = getCallConnectionTime(callNode);
-        return connectionTime<=constants.getCallConnTimeLimit();
+        Float connectionTime = getCallConnectionTime(callNode);
+        return connectionTime!=null&&connectionTime<=constants.getCallConnTimeLimit();
     }
     
     /**
@@ -2702,8 +2703,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
         if(!isCallInTimeLimit(callNode, constants)){
             return false;
         }
-        float callDuration = getCallDurationTime(callNode)-getCallConnectionTime(callNode)-getCallTerminationTime(callNode);
-        return callDuration < MAX_DURATION_FOR_DELAY;
+        Float duration = getCallDurationTime(callNode);
+        Float connection = getCallConnectionTime(callNode);
+        Float termination = getCallTerminationTime(callNode);
+        float callDuration = duration-connection-termination;
+        return (duration!=null)&&(connection!=null)&&(termination!=null)&&(callDuration < MAX_DURATION_FOR_DELAY);
     }
     
     /**
@@ -2712,9 +2716,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
      * @param callNode Node (call)
      * @return float
      */
-    protected float getCallConnectionTime(Node callNode){
-        long connectionTime = (Long)callNode.getProperty(CallProperties.SETUP_DURATION.getId());
-        return (float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
+    protected Float getCallConnectionTime(Node callNode){
+        Long connectionTime = (Long)callNode.getProperty(CallProperties.SETUP_DURATION.getId(),null);        
+        return connectionTime==null?null:(float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
     }
     
     /**
@@ -2723,9 +2727,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
      * @param callNode Node (call)
      * @return float
      */
-    protected float getCallDurationTime(Node callNode){
-        long connectionTime = (Long)callNode.getProperty(CallProperties.CALL_DURATION.getId()); 
-        return ((float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR);
+    protected Float getCallDurationTime(Node callNode){
+        Long connectionTime = (Long)callNode.getProperty(CallProperties.CALL_DURATION.getId(),null); 
+        return connectionTime==null?null:((float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR);
     }
     
     /**
@@ -2734,9 +2738,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
      * @param callNode Node (call)
      * @return float
      */
-    protected float getCallTerminationTime(Node callNode){
-        long connectionTime = (Long)callNode.getProperty(CallProperties.TERMINATION_DURATION.getId());
-        return (float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
+    protected Float getCallTerminationTime(Node callNode){
+        Long connectionTime = (Long)callNode.getProperty(CallProperties.TERMINATION_DURATION.getId(),null);
+        return connectionTime==null?null:(float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
     }
     
     /**
@@ -2745,9 +2749,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
      * @param callNode Node (call)
      * @return float
      */
-    protected float getCallHandoverTime(Node callNode){
-        long connectionTime = (Long)callNode.getProperty(CallProperties.CC_HANDOVER_TIME.getId());
-        return (float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
+    protected Float getCallHandoverTime(Node callNode){
+        Long connectionTime = (Long)callNode.getProperty(CallProperties.CC_HANDOVER_TIME.getId(),null);
+        return connectionTime==null?null:(float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
     }
     
     /**
@@ -2756,9 +2760,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
      * @param callNode Node (call)
      * @return float
      */
-    protected float getCallReselectionTime(Node callNode){
-        long connectionTime = (Long)callNode.getProperty(CallProperties.CC_RESELECTION_TIME.getId());
-        return (float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
+    protected Float getCallReselectionTime(Node callNode){
+        Long connectionTime = (Long)callNode.getProperty(CallProperties.CC_RESELECTION_TIME.getId(),null);
+        return connectionTime==null?null:(float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
     }
     
     /**
@@ -2768,7 +2772,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
      * @return Float[]
      */
     protected float[] getCallAudioQuality(Node callNode){
-        return (float[])callNode.getProperty(CallProperties.LQ.getId()); 
+        return (float[])callNode.getProperty(CallProperties.LQ.getId(),new float[]{}); 
     }
     
     /**
@@ -2799,7 +2803,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
      * @return Float[]
      */
     protected float[] getCallAudioDelay(Node callNode){
-        float[] delays = (float[])callNode.getProperty(CallProperties.DELAY.getId());
+        float[] delays = (float[])callNode.getProperty(CallProperties.DELAY.getId(),new float[]{});
         return delays;
     }
     
@@ -2809,9 +2813,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
      * @param callNode Node (call)
      * @return float
      */
-    protected float getMessageReceiveTime(Node callNode){
-        long receiveTime = (Long)callNode.getProperty(CallProperties.MESS_RECEIVE_TIME.getId());
-        return (float)receiveTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
+    protected Float getMessageReceiveTime(Node callNode){
+        Long receiveTime = (Long)callNode.getProperty(CallProperties.MESS_RECEIVE_TIME.getId(),null);
+        return receiveTime==null?null:(float)receiveTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
     }
     
     /**
@@ -2820,9 +2824,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
      * @param callNode Node (call)
      * @return float
      */
-    protected float getMessageAcknowledgeTime(Node callNode){
-        long receiveTime = (Long)callNode.getProperty(CallProperties.MESS_ACKNOWLEDGE_TIME.getId());
-        return (float)receiveTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
+    protected Float getMessageAcknowledgeTime(Node callNode){
+        Long receiveTime = (Long)callNode.getProperty(CallProperties.MESS_ACKNOWLEDGE_TIME.getId(),null);
+        return receiveTime==null?null:(float)receiveTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
     }
     
     /**
@@ -2831,9 +2835,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
      * @param callNode Node (call)
      * @return float
      */
-    protected float getMessageDelayTime(Node callNode){
-        long receiveTime = (Long)callNode.getProperty(CallProperties.ALM_MESSAGE_DELAY.getId());
-        return (float)receiveTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
+    protected Float getMessageDelayTime(Node callNode){
+        Long receiveTime = (Long)callNode.getProperty(CallProperties.ALM_MESSAGE_DELAY.getId(),null);
+        return receiveTime==null?null:(float)receiveTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
     }
     
     /**
@@ -2842,9 +2846,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
      * @param callNode Node (call)
      * @return float
      */
-    protected float getFirstMessageDelayTime(Node callNode){
-        long receiveTime = (Long)callNode.getProperty(CallProperties.ALM_FIRST_MESS_DELAY.getId());
-        return (float)receiveTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
+    protected Float getFirstMessageDelayTime(Node callNode){
+        Long receiveTime = (Long)callNode.getProperty(CallProperties.ALM_FIRST_MESS_DELAY.getId(),null);
+        return receiveTime==null?null:(float)receiveTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
     }
     
     /**
@@ -2879,6 +2883,6 @@ public enum StatisticsHeaders implements IStatisticsHeader{
      * @return boolean
      */
     protected boolean isValueInBorders(Float value, Float start, Float end, boolean inclStart, boolean inclEnd){
-        return ((inclStart&&start.equals(value))||start<value) && (value<end||(inclEnd&&end.equals(value)));
+        return value!=null&&((inclStart&&start.equals(value))||start<value) && (value<end||(inclEnd&&end.equals(value)));
     }
 }

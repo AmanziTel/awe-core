@@ -367,8 +367,8 @@ public class AggregationCallStatisticsBuilder {
                 return null;
             }
             Float second = secObj.floatValue();
-            if(second.equals(0)){
-                return 0f;
+            if(second.equals(0f)){
+                return null;
             }
             return first/second;
         }
