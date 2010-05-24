@@ -28,10 +28,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.DriveTypes;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
@@ -60,22 +62,32 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
+// TODO: Auto-generated Javadoc
 /**
  * <p>
  * AMS XML Loader
  * </p>
+ * .
  * 
  * @author tsinkel_a
  * @since 1.0.0
  */
 public class AMSXMLoader extends AbstractCallLoader {
-    /** TOC-TTC call */
+
+    /** TOC-TTC call. */
     private AMSCall tocttc;
+
+    /** The tocttc group. */
     private AMSCall tocttcGroup;
+
+    /** The msg call. */
     private AMSCall msgCall;
 
     /** The Constant subNodes. */
     protected final static Map<String, Class< ? extends AbstractEvent>> subNodes = new HashMap<String, Class< ? extends AbstractEvent>>();
+
+    /** The Constant EMER_PRIORITY. */
+    public static final Integer EMER_PRIORITY = 15;
     /** Initialize events map */
     static {
         subNodes.put("itsiAttach", ItsiAttach.class);
@@ -114,14 +126,27 @@ public class AMSXMLoader extends AbstractCallLoader {
 
     /** The probe cache. */
     private final Map<String, Node> probeCache = new HashMap<String, Node>();
+
+    /** The probe call cache. */
     private final Map<String, Node> probeCallCache = new HashMap<String, Node>();
+
+    /** The phone number cache. */
     private final Map<String, String> phoneNumberCache = new HashMap<String, String>();
+
+    /** The group call. */
     private final Map<String, Set<String>> groupCall = new HashMap<String, Set<String>>();
-    /** active file node for event dataset */
+
+    /** active file node for event dataset. */
     private Node datasetFileNode;
 
     // TODO change after implement feature 1131
 
+    /**
+     * Gets the storing node.
+     * 
+     * @param key the key
+     * @return the storing node
+     */
     @Override
     protected Node getStoringNode(Integer key) {
         switch (key) {
@@ -136,6 +161,12 @@ public class AMSXMLoader extends AbstractCallLoader {
         }
     }
 
+    /**
+     * Gets the prymary type.
+     * 
+     * @param key the key
+     * @return the prymary type
+     */
     @Override
     protected String getPrymaryType(Integer key) {
         switch (key) {
@@ -149,11 +180,22 @@ public class AMSXMLoader extends AbstractCallLoader {
             return null;
         }
     }
+
+    /**
+     * Need parce headers.
+     * 
+     * @return true, if successful
+     */
     @Override
     protected boolean needParceHeaders() {
         return false;
     }
 
+    /**
+     * Parses the line.
+     * 
+     * @param line the line
+     */
     @Override
     protected void parseLine(String line) {
         // do nothing
@@ -208,7 +250,7 @@ public class AMSXMLoader extends AbstractCallLoader {
      */
     private void addDriveIndexes() {
         try {
-            addIndex(NodeTypes.PROBE.getId(), NeoUtils.getLocationIndexProperty(networkName));
+            addIndex(NodeTypes.MP.getId(), NeoUtils.getLocationIndexProperty(networkName));
             addIndex(NodeTypes.M.getId(), NeoUtils.getTimeIndexProperty(dataset));
             addIndex(NodeTypes.CALL.getId(), NeoUtils.getTimeIndexProperty(DriveTypes.AMS_CALLS.getFullDatasetName(dataset)));
         } catch (IOException e) {
@@ -216,6 +258,12 @@ public class AMSXMLoader extends AbstractCallLoader {
         }
     }
 
+    /**
+     * Run.
+     * 
+     * @param monitor the monitor
+     * @throws IOException Signals that an I/O exception has occurred.
+     */
     @Override
     public void run(IProgressMonitor monitor) throws IOException {
         monitor.beginTask("Loading AMS data", 2);
@@ -356,6 +404,8 @@ public class AMSXMLoader extends AbstractCallLoader {
 
         /** The defined values. */
         protected final Map<String, Class< ? extends Object>> definedValues;
+
+        /** The parameter map. */
         protected final Map<String, AMSCommandParameters> parameterMap;
 
         /** The header. */
@@ -409,7 +459,7 @@ public class AMSXMLoader extends AbstractCallLoader {
         /**
          * Handle property store (stored property in neo Node).
          * 
-         * @throws ParseException
+         * @throws ParseException the parse exception
          */
         protected void handleCollector() throws ParseException {
             Long timestamp = null;
@@ -458,6 +508,15 @@ public class AMSXMLoader extends AbstractCallLoader {
             setIndexProperty(header, node, amsCommandParameters.getName(), amsCommandParameters.convert(parsedValue));
         }
 
+        /**
+         * Gets the parced value.
+         * 
+         * @param key the key
+         * @param value the value
+         * @param castMap the cast map
+         * @return the parced value
+         * @throws ParseException the parse exception
+         */
         protected Pair<Object, Class< ? extends Object>> getParcedValue(String key, String value, Map<String, Class< ? extends Object>> castMap) throws ParseException {
 
             Class< ? extends Object> klass = castMap.get(key);
@@ -515,27 +574,34 @@ public class AMSXMLoader extends AbstractCallLoader {
             definedValues.put("locationAreaAfter", Integer.class);
             definedValues.put("errorCode", Integer.class);
         }
+
+        /**
+         * Handle collector.
+         * 
+         * @throws ParseException the parse exception
+         */
         @Override
         protected void handleCollector() throws ParseException {
             super.handleCollector();
             handleCall();
         }
+
         /**
-         *
+         * Handle call.
          */
         private void handleCall() {
-            Call call=new Call();
+            Call call = new Call();
             call.addRelatedNode(node);
             call.setCallType(CallType.ITSI_ATTACH);
             Long beginTime = (Long)node.getProperty("itsiAtt_Req", null);
-            if (beginTime!=null){
-                call.setCallSetupBeginTime(beginTime); 
-                call.setCallSetupEndTime(beginTime); 
+            if (beginTime != null) {
+                call.setCallSetupBeginTime(beginTime);
+                call.setCallSetupEndTime(beginTime);
             }
             Long endTime = (Long)node.getProperty("itsiAtt_Accept", null);
-            if (endTime!=null){
-                call.setCallTerminationBegin(endTime); 
-                call.setCallTerminationEnd(endTime); 
+            if (endTime != null) {
+                call.setCallTerminationBegin(endTime);
+                call.setCallTerminationEnd(endTime);
             }
             if (node.hasProperty("errorCode") || node.hasProperty("errCode")) {
                 call.setCallResult(CallResult.FAILURE);
@@ -602,38 +668,39 @@ public class AMSXMLoader extends AbstractCallLoader {
             definedValues.put("locationAreaAfter", Integer.class);
             definedValues.put("errorCode", Integer.class);
         }
+
+        /**
+         * Handle collector.
+         * 
+         * @throws ParseException the parse exception
+         */
         @Override
         protected void handleCollector() throws ParseException {
             super.handleCollector();
             handleCall();
         }
+
         /**
-        *
-        */
-       private void handleCall() {
-           Call call=new Call();
-           call.addRelatedNode(node);
-           call.setCallType(CallType.ITSI_CC);
-           Long beginTime = (Long)node.getProperty("ho_Req", null);
-           if (beginTime!=null){
-               call.setCallSetupBeginTime(beginTime); 
-               call.setCallSetupEndTime(beginTime); 
-           }
-           Long endTime = (Long)node.getProperty("ho_Accept", null);
-           if (endTime!=null){
-               call.setCallTerminationBegin(endTime); 
-               call.setCallTerminationEnd(endTime); 
-           }
-           if (node.hasProperty("errorCode") || node.hasProperty("errCode")) {
-               call.setCallResult(CallResult.FAILURE);
-           } else {
-               call.setCallResult(CallResult.SUCCESS);
-           }
-           Node callerProbe = probeCallCache.get(getPropertyMap().get("probeID"));
-           call.setCallerProbe(callerProbe);
-           call.addRelatedNode(node);
-           saveCall(call);
-       }
+         * Handle call.
+         */
+        private void handleCall() {
+            Call call = new Call();
+            call.addRelatedNode(node);
+            call.setCallType(CallType.ITSI_CC);
+            Long beginTime = (Long)node.getProperty("ho_Req", null);
+            call.setHandoverTime(beginTime);
+            Long endTime = (Long)node.getProperty("ho_Accept", null);
+            call.setReselectionTime(endTime);
+            if (node.hasProperty("errorCode") || node.hasProperty("errCode")) {
+                call.setCallResult(CallResult.FAILURE);
+            } else {
+                call.setCallResult(CallResult.SUCCESS);
+            }
+            Node callerProbe = probeCallCache.get(getPropertyMap().get("probeID"));
+            call.setCallerProbe(callerProbe);
+            call.addRelatedNode(node);
+            saveCall(call);
+        }
 
     }
 
@@ -647,9 +714,17 @@ public class AMSXMLoader extends AbstractCallLoader {
      * @since 1.0.0
      */
     public class Ttc extends AbstractEvent {
+
+        /** The pesq cast map. */
         protected final Map<String, Class< ? extends Object>> pesqCastMap;
+
+        /** The last mm. */
         Node lastMM = null;
+
+        /** The hook. */
         private Integer hook = null;
+
+        /** The simplex. */
         private Integer simplex = null;
 
         /**
@@ -678,6 +753,13 @@ public class AMSXMLoader extends AbstractCallLoader {
 
         }
 
+        /**
+         * Handle ams command.
+         * 
+         * @param amsCommandParameters the ams command parameters
+         * @param key the key
+         * @param parsedValue the parsed value
+         */
         @Override
         protected void handleAMSCommand(AMSCommandParameters amsCommandParameters, String key, Object parsedValue) {
             super.handleAMSCommand(amsCommandParameters, key, parsedValue);
@@ -690,6 +772,11 @@ public class AMSXMLoader extends AbstractCallLoader {
             }
         }
 
+        /**
+         * Handle collector.
+         * 
+         * @throws ParseException the parse exception
+         */
         @Override
         protected void handleCollector() throws ParseException {
             super.handleCollector();
@@ -706,6 +793,9 @@ public class AMSXMLoader extends AbstractCallLoader {
             }
         }
 
+        /**
+         * Handle call.
+         */
         protected void handleCall() {
             if (hook == null || simplex == null) {
                 return;
@@ -736,13 +826,13 @@ public class AMSXMLoader extends AbstractCallLoader {
                             LOGGER.error("Not found probe for TTC tag");
                             tocttcGroup.setCallResult(CallResult.FAILURE);
                         } else {
-                            for (String probeId:probesIdSet){
-                                Node probe=probeCache.get(probeId);
-                                if (probe==null){
-                                    LOGGER.error("Not found probe with id ="+probeId);
-                                }else {
-                                    //TODO check documentation
-                                    if (probe.equals(tocttcGroup.getCallerProbe())){
+                            for (String probeId : probesIdSet) {
+                                Node probe = probeCache.get(probeId);
+                                if (probe == null) {
+                                    LOGGER.error("Not found probe with id =" + probeId);
+                                } else {
+                                    // TODO check documentation
+                                    if (probe.equals(tocttcGroup.getCallerProbe())) {
                                         continue;
                                     }
                                     tocttcGroup.addCalleeProbe(probe);
@@ -763,7 +853,7 @@ public class AMSXMLoader extends AbstractCallLoader {
          * Creates the attachment node.
          * 
          * @param collector the collector
-         * @throws ParseException
+         * @throws ParseException the parse exception
          */
         private void createAttachmentNode(PropertyCollector collector) throws ParseException {
             Node mm = neo.createNode();
@@ -804,10 +894,20 @@ public class AMSXMLoader extends AbstractCallLoader {
      * @since 1.0.0
      */
     public class Toc extends AbstractEvent {
+
+        /** The pesq cast map. */
         protected final Map<String, Class< ? extends Object>> pesqCastMap;
+
+        /** The last mm. */
         Node lastMM = null;
+
+        /** The call. */
         AMSCall call = null;;
+
+        /** The hook. */
         Integer hook = null;
+
+        /** The simplex. */
         Integer simplex = null;
 
         /**
@@ -837,6 +937,13 @@ public class AMSXMLoader extends AbstractCallLoader {
             parameterMap.put("priority", AMSCommandParameters.PRIORITY);
         }
 
+        /**
+         * Handle ams command.
+         * 
+         * @param amsCommandParameters the ams command parameters
+         * @param key the key
+         * @param parsedValue the parsed value
+         */
         @Override
         protected void handleAMSCommand(AMSCommandParameters amsCommandParameters, String key, Object parsedValue) {
             super.handleAMSCommand(amsCommandParameters, key, parsedValue);
@@ -849,6 +956,11 @@ public class AMSXMLoader extends AbstractCallLoader {
             }
         }
 
+        /**
+         * Handle collector.
+         * 
+         * @throws ParseException the parse exception
+         */
         @Override
         protected void handleCollector() throws ParseException {
             super.handleCollector();
@@ -862,6 +974,9 @@ public class AMSXMLoader extends AbstractCallLoader {
 
         }
 
+        /**
+         * Handle call.
+         */
         protected void handleCall() {
             if (hook != null && simplex != null) {
 
@@ -869,6 +984,12 @@ public class AMSXMLoader extends AbstractCallLoader {
                     tocttc = new AMSCall();
                     call = tocttc;
                     tocttc.setCallType(CallType.INDIVIDUAL);
+                    String priority = getPropertyMap().get("priority");
+                    if (priority != null) {
+                        if (Integer.valueOf(priority) >= EMER_PRIORITY) {
+                            tocttc.setCallType(CallType.HELP);
+                        }
+                    }
                     tocttc.addRelatedNode(node);
                     Long disconnectTime = (Long)node.getProperty("disconnectTime", null);
                     if (disconnectTime != null) {
@@ -888,6 +1009,12 @@ public class AMSXMLoader extends AbstractCallLoader {
                     tocttcGroup = new AMSCall();
                     call = tocttc;
                     tocttcGroup.setCallType(CallType.GROUP);
+                    String priority = getPropertyMap().get("priority");
+                    if (priority != null) {
+                        if (Integer.valueOf(priority) >= EMER_PRIORITY) {
+                            tocttcGroup.setCallType(CallType.EMERGENCY);
+                        }
+                    }
                     tocttcGroup.addRelatedNode(node);
                     Long disconnectTime = (Long)node.getProperty("disconnectTime", null);
                     if (disconnectTime != null) {
@@ -911,7 +1038,7 @@ public class AMSXMLoader extends AbstractCallLoader {
          * Creates the attachment node.
          * 
          * @param collector the collector
-         * @throws ParseException
+         * @throws ParseException the parse exception
          */
         private void createAttachmentNode(PropertyCollector collector) throws ParseException {
             Node mm = neo.createNode();
@@ -952,7 +1079,11 @@ public class AMSXMLoader extends AbstractCallLoader {
      * @since 1.0.0
      */
     public class Tpc extends AbstractEvent {
+
+        /** The pd result. */
         protected final Map<String, Class< ? extends Object>> pdResult;
+
+        /** The last mm. */
         Node lastMM = null;
 
         /**
@@ -978,6 +1109,11 @@ public class AMSXMLoader extends AbstractCallLoader {
 
         }
 
+        /**
+         * Handle collector.
+         * 
+         * @throws ParseException the parse exception
+         */
         @Override
         protected void handleCollector() throws ParseException {
             super.handleCollector();
@@ -993,7 +1129,7 @@ public class AMSXMLoader extends AbstractCallLoader {
          * Creates the attachment node.
          * 
          * @param collector the collector
-         * @throws ParseException
+         * @throws ParseException the parse exception
          */
         private void createAttachmentNode(PropertyCollector collector) throws ParseException {
             Node mm = neo.createNode();
@@ -1018,8 +1154,14 @@ public class AMSXMLoader extends AbstractCallLoader {
      * @since 1.0.0
      */
     public class SendMsg extends AbstractEvent {
+
+        /** The send report. */
         protected final Map<String, Class< ? extends Object>> sendReport;
+
+        /** The last mm. */
         Node lastMM = null;
+
+        /** The time end. */
         Long timeEnd;
 
         /**
@@ -1041,6 +1183,11 @@ public class AMSXMLoader extends AbstractCallLoader {
             sendReport.put("status", Integer.class);
         }
 
+        /**
+         * Handle collector.
+         * 
+         * @throws ParseException the parse exception
+         */
         @Override
         protected void handleCollector() throws ParseException {
             super.handleCollector();
@@ -1051,11 +1198,11 @@ public class AMSXMLoader extends AbstractCallLoader {
                     createAttachmentNode(collector);
                 }
             }
-            msgCall.setAcknowlegeTime(timeEnd- msgCall.getCallSetupBegin());
+            msgCall.setAcknowlegeTime(timeEnd - msgCall.getCallSetupBegin());
         }
 
         /**
-         *
+         * Handle call.
          */
         private void handleCall() {
             assert msgCall == null;
@@ -1075,20 +1222,20 @@ public class AMSXMLoader extends AbstractCallLoader {
             msgCall.addRelatedNode(node);
             msgCall.setCalledPhoneNumber(getPropertyMap().get("calledNumber"));
             String type = getPropertyMap().get("msgType");
-            if (type.equals("12")){
+            if (type.equals("12")) {
                 msgCall.setCallType(CallType.SDS);
-            }else{
+            } else {
                 assert type.equals("13");
                 msgCall.setCallType(CallType.TSM);
             }
-            
+
         }
 
         /**
          * Creates the attachment node.
          * 
          * @param collector the collector
-         * @throws ParseException
+         * @throws ParseException the parse exception
          */
         private void createAttachmentNode(PropertyCollector collector) throws ParseException {
             Node mm = neo.createNode();
@@ -1098,8 +1245,8 @@ public class AMSXMLoader extends AbstractCallLoader {
             Map<String, String> map = collector.getPropertyMap();
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 Object parseValue = getParcedValue(entry.getKey(), entry.getValue(), sendReport).getLeft();
-                if (sendReport.get(entry.getKey())==Timestamp.class){
-                    timeEnd=Math.max(timeEnd, (Long)parseValue);
+                if (sendReport.get(entry.getKey()) == Timestamp.class) {
+                    timeEnd = Math.max(timeEnd, (Long)parseValue);
                 }
                 setProperty(mm, entry.getKey(), parseValue);
             }
@@ -1116,6 +1263,8 @@ public class AMSXMLoader extends AbstractCallLoader {
      * @since 1.0.0
      */
     public class ReceiveMsg extends AbstractEvent {
+
+        /** The last mm. */
         Node lastMM = null;
 
         /**
@@ -1133,23 +1282,33 @@ public class AMSXMLoader extends AbstractCallLoader {
             definedValues.put("releaseTime", Integer.class);
             definedValues.put("errorCode", Integer.class);
         }
+
+        /**
+         * Handle collector.
+         * 
+         * @throws ParseException the parse exception
+         */
         @Override
         protected void handleCollector() throws ParseException {
             super.handleCollector();
             handleCall();
         }
+
+        /**
+         * Handle call.
+         */
         private void handleCall() {
-            if (msgCall==null){
-                LOGGER.debug("Found resive message without send event "+basename);
+            if (msgCall == null) {
+                LOGGER.debug("Found resive message without send event " + basename);
                 return;
             }
             Long reciveTime = (Long)node.getProperty("receiveTime", null);
-            if (reciveTime!=null){
-                msgCall.setResivedTime(reciveTime-msgCall.getCallSetupBegin());
+            if (reciveTime != null) {
+                msgCall.setResivedTime(reciveTime - msgCall.getCallSetupBegin());
             }
             if (node.hasProperty("errorCode") || node.hasProperty("errCode")) {
                 msgCall.setCallResult(CallResult.FAILURE);
-            } 
+            }
             msgCall.addCalleeProbe(probeCallCache.get(getPropertyMap().get("probeID")));
             msgCall.addRelatedNode(node);
         }
@@ -1181,31 +1340,35 @@ public class AMSXMLoader extends AbstractCallLoader {
             definedValues.put("errorCode", Integer.class);
         }
 
+        /**
+         * Handle collector.
+         * 
+         * @throws ParseException the parse exception
+         */
         @Override
         protected void handleCollector() throws ParseException {
             super.handleCollector();
-            
+
             List<PropertyCollector> collectorList = getSubCollectors();
             String id = getPropertyMap().get("probeID");
             boolean haveProbeId = StringUtils.isNotEmpty(id);
             for (PropertyCollector collector : collectorList) {
                 if (collector.getName().equals("attachment")) {
                     createAttachmentNode(collector);
-                    if (haveProbeId){
+                    if (haveProbeId) {
                         String phone = collector.getPropertyMap().get("gssi");
-                        if (StringUtils.isNotEmpty(id)&&StringUtils.isNotEmpty(phone)){
+                        if (StringUtils.isNotEmpty(id) && StringUtils.isNotEmpty(phone)) {
                             Set<String> probes = groupCall.get(phone);
-                            if (probes==null){
-                                probes=new HashSet<String>();
+                            if (probes == null) {
+                                probes = new HashSet<String>();
                                 groupCall.put(phone, probes);
                             }
                             probes.add(id);
-                        }  
+                        }
                     }
                 }
             }
 
-            
         }
 
         /**
@@ -1221,6 +1384,81 @@ public class AMSXMLoader extends AbstractCallLoader {
             Map<String, String> map = collector.getPropertyMap();
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 setProperty(mm, entry.getKey(), entry.getValue());
+            }
+        }
+    }
+
+    /**
+     * The Class CompleteGpsData.
+     */
+    public class CompleteGpsData extends PropertyCollector {
+        /** The Constant TAG_NAME. */
+        public static final String TAG_NAME = "completeGpsData";
+
+        /**
+         * Instantiates a new complete gps data.
+         * 
+         * @param tagName the tag name
+         * @param parent the parent
+         */
+        public CompleteGpsData(String tagName, IXmlTag parent) {
+            super(tagName, parent, false);
+        }
+
+        /**
+         * End element.
+         * 
+         * @param localName the local name
+         * @param chars the chars
+         * @return the i xml tag
+         */
+        @Override
+        public IXmlTag endElement(String localName, StringBuilder chars) {
+
+            if (openTag == null) {
+                try {
+                    handleGpsData();
+
+                } catch (Exception e) {
+                    NeoLoaderPlugin.exception(e);
+                    LOGGER.error("event parsed with exception:", e);
+                }
+                return parent;
+            }
+            propertyMap.put(localName, chars.toString());
+            openTag = null;
+            return this;
+        }
+
+        /**
+         * Handle gps data.
+         */
+        private void handleGpsData() {
+            String probeID = getPropertyMap().get("probeID");
+            Node probe = probeCache.get(probeID);
+            if (probe == null) {
+                LOGGER.error(String.format("Not found probe with id=%s", probeID));
+                return;
+            }
+            String gpsSentence = getPropertyMap().get("gpsSentence");
+            if (StringUtils.isEmpty(gpsSentence)) {
+                return;
+            }
+            GPSData gps = new GPSData(gpsSentence);
+            if (gps.haveValidLocation()) {
+                Transaction tx = neo.beginTx();
+                try {
+                    Node mp = neo.createNode();
+                    probe.createRelationshipTo(mp, GeoNeoRelationshipTypes.LOCATION);
+                    gps.store(mp);
+                    GisProperties gis = getGisProperties(networkName);
+                    gis.updateBBox(gps.lat, gps.lon);
+                    gis.checkCRS(((Double)gps.lat).floatValue(), ((Double)gps.lon).floatValue(),null);
+                    index(mp);
+                    tx.success();
+                } finally {
+                    tx.finish();
+                }
             }
         }
     }
@@ -1384,23 +1622,140 @@ public class AMSXMLoader extends AbstractCallLoader {
                 return new ProbeIDNumberMap(tagName, null);
             } else if (EventTag.TAG_NAME.equals(tagName)) {
                 return new EventTag(tagName, null);
+            } else if (CompleteGpsData.TAG_NAME.equals(tagName)) {
+                return new CompleteGpsData(tagName, null);
             }
             return null;
         }
 
     }
 
+    /**
+     * <p>
+     * AMS call
+     * </p>
+     * 
+     * @author tsinkel_a
+     * @since 1.0.0
+     */
     public static class AMSCall extends Call {
+
+        /** The called phone number. */
         protected String calledPhoneNumber;
 
+        /**
+         * Gets the called phone number.
+         * 
+         * @return the called phone number
+         */
         public String getCalledPhoneNumber() {
             return calledPhoneNumber;
         }
 
+        /**
+         * Sets the called phone number.
+         * 
+         * @param callerPhoneNumber the new called phone number
+         */
         public void setCalledPhoneNumber(String callerPhoneNumber) {
             this.calledPhoneNumber = callerPhoneNumber;
         }
 
     }
 
+    /**
+     * <p>
+     * Contains information about gps data
+     * </p>
+     * .
+     * 
+     * @author tsinkel_a
+     * @since 1.0.0
+     */
+    public static class GPSData {
+
+        /** The valid. */
+        private boolean valid;
+
+        /** The command id. */
+        private String commandId;
+
+        /** The lat. */
+        private double lat;
+
+        /** The lon. */
+        private double lon;
+
+        /**
+         * Instantiates a new gPS data.
+         * 
+         * @param gpsSentence the gps sentence
+         */
+        public GPSData(String gpsSentence) {
+            valid = false;
+            parse(gpsSentence);
+        }
+
+        /**
+         * Parses the.
+         * 
+         * @param gpsSentence the gps sentence
+         */
+        private void parse(String gpsSentence) {
+            valid = false;
+            StringTokenizer st = new StringTokenizer(gpsSentence, ",");
+            if (st.hasMoreTokens()) {
+                commandId = st.nextToken();
+                // NOW parse only GPGLL command
+                if (!commandId.equalsIgnoreCase("$GPGLL")) {
+                    return;
+                }
+
+                try {
+                    String latStr = st.nextToken();
+                    String latNS = st.nextToken();
+                    String lonStr = st.nextToken();
+                    String lonNS = st.nextToken();
+                    String time = st.nextToken();
+                    String validate = st.nextToken();
+                    if (validate.equalsIgnoreCase("A")) {
+                        lat = Double.parseDouble(latStr);
+                        if (latNS.equalsIgnoreCase("S")) {
+                            lat = -lat;
+                        }
+                        lon = Double.parseDouble(lonStr);
+                        if (latNS.equalsIgnoreCase("W")) {
+                            lon = -lon;
+                        }
+                        valid=true;
+                    }
+                } catch (Exception e) {
+                    NeoLoaderPlugin.exception(e);
+                    valid = false;
+                    return;
+                }
+            }
+        }
+
+        /**
+         * Store.
+         * 
+         * @param mp the mp
+         */
+        public void store(Node mp) {
+            assert valid;
+            mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat);
+            mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon);
+        }
+
+        /**
+         * Have valid location.
+         * 
+         * @return true, if successful
+         */
+        public boolean haveValidLocation() {
+            return valid;
+        }
+
+    }
 }

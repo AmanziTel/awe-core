@@ -122,4 +122,20 @@ public enum NetworkTypes {
         }
     }
 
+    /**
+     * Check type.
+     *
+     * @param node the node
+     * @param service the service
+     * @return true, if successful
+     */
+    public boolean checkType(Node node, GraphDatabaseService service) {
+        Transaction tx = NeoUtils.beginTx(service);
+        try {
+            return getId().equals(node.getProperty(PROPERTY_NAME, ""));
+        } finally {
+            NeoUtils.finishTx(tx);
+        }
+    }
+
 }

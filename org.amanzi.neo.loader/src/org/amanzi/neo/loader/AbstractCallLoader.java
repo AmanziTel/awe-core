@@ -89,9 +89,10 @@ public abstract class AbstractCallLoader extends DriveLoader {
                     storeMessageCall(call);
                     break;
                 case ITSI_ATTACH:
-                case ITSI_CC:
                     storeITSICall(call);
                     break;
+                case ITSI_CC:
+                    storeITSICCCall(call);
                 default:
                     NeoCorePlugin.error("Unknown call type "+callType+".", null);
                 }
@@ -168,14 +169,34 @@ public abstract class AbstractCallLoader extends DriveLoader {
     private void storeITSICall(Call call) {
         Node probeCallNode = call.getCallerProbe();
         Node callNode = createCallNode(call.getCallSetupBegin(), call.getRelatedNodes(), probeCallNode);
-
+        
         long updateTime = call.getCallTerminationEnd() - call.getCallSetupBegin();
         
         LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
         setIndexProperty(headers, callNode, CallProperties.CALL_DURATION.getId(), updateTime);
+        
+        setIndexProperty(headers, callNode, CallProperties.CALL_TYPE.getId(), call.getCallType().toString());
+        setIndexProperty(headers, callNode, CallProperties.CALL_RESULT.getId(), call.getCallResult().toString());
+        
+        callNode.createRelationshipTo(probeCallNode, ProbeCallRelationshipType.CALLER);
+        
+        for (Node calleeProbe : call.getCalleeProbes()) {
+            callNode.createRelationshipTo(calleeProbe, ProbeCallRelationshipType.CALLEE);
+        }
+        
+        probeCallNode.setProperty(call.getCallType().getProperty(), true);
+    }
+    private void storeITSICCCall(Call call) {
+        Node probeCallNode = call.getCallerProbe();
+        Node callNode = createCallNode(call.getCallSetupBegin(), call.getRelatedNodes(), probeCallNode);
+
+        
+        LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
 
         setIndexProperty(headers, callNode, CallProperties.CALL_TYPE.getId(), call.getCallType().toString());
         setIndexProperty(headers, callNode, CallProperties.CALL_RESULT.getId(), call.getCallResult().toString());
+        setIndexProperty(headers, callNode, CallProperties.CC_HANDOVER_TIME.getId(), call.getHandoverTime());
+        setIndexProperty(headers, callNode, CallProperties.CC_RESELECTION_TIME.getId(), call.getReselectionTime());
         
         callNode.createRelationshipTo(probeCallNode, ProbeCallRelationshipType.CALLER);
         
@@ -277,6 +298,9 @@ public abstract class AbstractCallLoader extends DriveLoader {
     public static class Call {
         private Long acknowlegeTime;
         private Long resivedTime;
+        //for ITSI_CC
+        private Long handoverTime;
+        private Long reselectionTime;
         /*
          * List of Duration Parameters
          */
@@ -554,6 +578,34 @@ public abstract class AbstractCallLoader extends DriveLoader {
 
         public void setResivedTime(Long resivedTime) {
             this.resivedTime = resivedTime;
+        }
+
+        /**
+         * @param handoverTime The handoverTime to set.
+         */
+        public void setHandoverTime(Long handoverTime) {
+            this.handoverTime = handoverTime;
+        }
+
+        /**
+         * @return Returns the handoverTime.
+         */
+        public Long getHandoverTime() {
+            return handoverTime;
+        }
+
+        /**
+         * @param reselectionTime The reselectionTime to set.
+         */
+        public void setReselectionTime(Long reselectionTime) {
+            this.reselectionTime = reselectionTime;
+        }
+
+        /**
+         * @return Returns the reselectionTime.
+         */
+        public Long getReselectionTime() {
+            return reselectionTime;
         }
         
     }
