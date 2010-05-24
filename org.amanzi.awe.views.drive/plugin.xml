@@ -23,6 +23,16 @@
       </view>
    </extension>
    <extension
+         point="org.eclipse.ui.views">
+      <view
+            name="Correlation List"
+            icon="icons/drive.png"
+            category="org.amanzi.awe.script"
+            class="org.amanzi.awe.views.drive.views.CorrelationList"
+            id="org.amanzi.awe.views.drive.views.CorrelationList">
+      </view>
+   </extension>
+   <extension
          point="org.eclipse.ui.perspectiveExtensions">
       <perspectiveExtension
             targetID="org.amanzi.awe.perspective">
