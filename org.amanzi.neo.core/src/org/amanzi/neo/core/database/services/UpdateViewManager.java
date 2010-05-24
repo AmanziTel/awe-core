@@ -18,9 +18,12 @@ import org.amanzi.neo.core.database.services.events.ShowPreparedViewEvent;
 import org.amanzi.neo.core.database.services.events.ShowViewEvent;
 import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEvent;
+import org.amanzi.neo.core.utils.ActionUtil;
 import org.eclipse.core.runtime.ISafeRunnable;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.SafeRunner;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 
 /**
  * Manager updating cells from bd
@@ -85,6 +88,23 @@ public class UpdateViewManager {
      * @param event UpdateDatabaseEvent
      */
     public void fireUpdateView(final UpdateViewEvent event) {
+        Display display = PlatformUI.getWorkbench().getDisplay();
+        boolean currentThread = (display == null) ||
+                                PlatformUI.getWorkbench().isClosing() ||                                 
+                                Thread.currentThread().equals(display.getThread());
+        if (currentThread) {
+            fireEvent(event);
+        }else{
+            ActionUtil.getInstance().runTask(new Runnable() {
+                @Override
+                public void run() {
+                    fireEvent(event);
+                }
+            }, true);
+        }
+	}
+
+    private void fireEvent(final UpdateViewEvent event) {
         if(event instanceof ShowViewEvent){
             SafeRunner.run(new ISafeRunnable() {
                 @Override
@@ -117,7 +137,7 @@ public class UpdateViewManager {
     			});
     		}
         }
-	}
+    }
     
     /**
      * Fires <code>ShowPreparedViewEvent</code> to listeners.
