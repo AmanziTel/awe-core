@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 
+import org.amanzi.awe.views.drive.views.CorrelationList;
 import org.amanzi.awe.views.drive.views.CorrelationManager;
 import org.amanzi.awe.views.drive.views.DriveInquirerView;
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -108,6 +109,10 @@ public class DriveInquirerPlugin extends AbstractUIPlugin implements IUpdateView
                 reuseView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(CorrelationManager.ID);
                 if (reuseView != null) {
                     ((CorrelationManager)reuseView).updateGisNode();
+                }
+                reuseView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(CorrelationList.ID);
+                if (reuseView != null) {
+                    ((CorrelationList)reuseView).updateGisNode();
                 }
             }
         }, true);

@@ -13,40 +13,21 @@
 
 package org.amanzi.awe.views.drive.views;
 
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import net.refractions.udig.catalog.IGeoResource;
-import net.refractions.udig.project.ILayer;
-import net.refractions.udig.project.IMap;
-import net.refractions.udig.project.ui.ApplicationGIS;
-
-import org.amanzi.awe.catalog.neo.GeoNeo;
-import org.amanzi.awe.views.drive.DriveInquirerPlugin;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.icons.IconManager;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.core.utils.PropertyHeader;
 import org.apache.log4j.Logger;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -54,25 +35,19 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.part.ViewPart;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -86,10 +61,10 @@ import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * Table contains list of properties of M-nodes for correlation of selected network and drive.
  * </p>
+ * 
  * @author Saelenchits_N
  * @since 1.0.0
  */
@@ -99,25 +74,23 @@ public class CorrelationList extends ViewPart {
      * The ID of the view as specified by the extension.
      */
     public static final String ID = "org.amanzi.awe.views.drive.views.CorrelationList";
-    private static final String REMOVE_CORRELATION = "Remove correlation between '%s' and '%s'.";
-    private static final int DEL_IND = 4;
+    private static final int FIX_COLUMN_COUNT = 1;
     /** int DEF_SIZE field */
-    protected static final int DEF_SIZE = 150;
-    public static final String LBL_DELETE = "delete";
-    public static final String NO_TIME = "---";
+    protected static final int DEF_SIZE = 100;
     private Combo cDrive;
     private Combo cNetwork;
-    private Button bCorrelate;
     private TableViewer table;
     private final GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
     private final LinkedHashMap<String, Node> gisDriveNodes = new LinkedHashMap<String, Node>();
     private final LinkedHashMap<String, Node> gisNetworkNodes = new LinkedHashMap<String, Node>();
     private TableLabelProvider labelProvider;
     private TableContentProvider provider;
-    protected Point point;
+    protected ArrayList<String> tableColNames = new ArrayList<String>(1);
+    protected List<RowWrapper> tableData = new ArrayList<RowWrapper>(0);
 
     @Override
     public void createPartControl(Composite parent) {
+
         Composite frame = new Composite(parent, SWT.FILL);
         FormLayout formLayout = new FormLayout();
         formLayout.marginHeight = 0;
@@ -146,8 +119,6 @@ public class CorrelationList extends ViewPart {
         layoutData.minimumWidth = 150;
         cDrive.setLayoutData(layoutData);
 
-        bCorrelate = new Button(child, SWT.PUSH);
-        bCorrelate.setText("correlate");
         table = new TableViewer(frame, SWT.BORDER | SWT.FULL_SELECTION);
         FormData fData = new FormData();
         fData.left = new FormAttachment(0, 0);
@@ -155,12 +126,13 @@ public class CorrelationList extends ViewPart {
         fData.top = new FormAttachment(child, 2);
         fData.bottom = new FormAttachment(100, -2);
         table.getControl().setLayoutData(fData);
+        table.getControl().setVisible(false);
         labelProvider = new TableLabelProvider();
         labelProvider.createTableColumn();
         provider = new TableContentProvider();
         table.setContentProvider(provider);
+
         addListeners();
-        hookContextMenu();
         updateGisNode();
     }
 
@@ -168,7 +140,7 @@ public class CorrelationList extends ViewPart {
      *add listeners on visual items
      */
     private void addListeners() {
-        cNetwork.addSelectionListener(new SelectionListener(){
+        cNetwork.addSelectionListener(new SelectionListener() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -179,278 +151,100 @@ public class CorrelationList extends ViewPart {
             public void widgetDefaultSelected(SelectionEvent e) {
                 widgetDefaultSelected(e);
             }
-            
+
         });
-        
-        
-        bCorrelate.addSelectionListener(new SelectionListener() {
+
+        cDrive.addSelectionListener(new SelectionListener() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                correlateNetworkDrive();
+                driveChangeSelection();
             }
 
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
-                widgetSelected(e);
+                widgetDefaultSelected(e);
             }
+
         });
-        table.getControl().addMouseListener(new MouseListener() {
 
-            @Override
-            public void mouseUp(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseDown(MouseEvent e) {
-                point = new Point(e.x, e.y);
-                if (e.button == 1) {
-                    deleteRow(e);
-                }
-            }
-
-            @Override
-            public void mouseDoubleClick(MouseEvent e) {
-            }
-        });
     }
 
     /**
-     *
+     * Listener that called when drive changed
+     */
+    protected void driveChangeSelection() {
+        LOGGER.debug("Drive selection changed");
+        tableColNames.clear();
+        table.getControl().setVisible(false);
+        tableData.clear();
+        Node curDriveNode = gisDriveNodes.get(cDrive.getText());
+        final String datasetName = curDriveNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString();
+        Node curNetworkNode = gisNetworkNodes.get(cNetwork.getText());
+        String[] columns = new PropertyHeader(curDriveNode).getAllFields();
+
+        Transaction tx = service.beginTx();
+        try {
+            Traverser correlationSectors = curNetworkNode.traverse(Order.DEPTH_FIRST, NeoUtils.getStopEvaluator(2), ReturnableEvaluator.ALL_BUT_START_NODE,
+                    CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+
+            for (Node correlationSector : correlationSectors) {
+                Traverser correlatedMNodes = correlationSector.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
+
+                    @Override
+                    public boolean isStopNode(TraversalPosition currentPos) {
+                        if (currentPos.depth() == 1) {
+                            return currentPos.lastRelationshipTraversed().getProperty(INeoConstants.NETWORK_GIS_NAME, "").equals(datasetName);
+                        }
+                        return currentPos.depth() >= 2;
+                    }
+                }, new ReturnableEvaluator() {
+
+                    @Override
+                    public boolean isReturnableNode(TraversalPosition currentPos) {
+                        return currentPos.depth() == 2;
+                    }
+
+                }, CorrelationRelationshipTypes.CORRELATED, Direction.OUTGOING, GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING);
+                for (Node correlatedMNode : correlatedMNodes) {
+                    tableData.add(new RowWrapper(correlationSector, correlatedMNode));
+                }
+            }
+        } finally {
+            tx.finish();
+        }
+
+        tableColNames.addAll(Arrays.asList(columns));
+        labelProvider.refreshTable();
+        table.getControl().setVisible(true);
+    }
+
+    /**
+     * Listener that called when network changed
      */
     private void networkChangeSelection() {
         LOGGER.debug("Network selection changed");
-        
-        Node refNode = service.getReferenceNode();
-        gisDriveNodes.clear();
 
-        Transaction tx = service.beginTx();
-        try {
-            for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
-                Node node = relationship.getEndNode();
-                Object type = node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").toString();
-                if (NeoUtils.isGisNode(node)) {
-                    String id = NeoUtils.getSimpleNodeName(node, null);
-                    if (type.equals(GisTypes.DRIVE.getHeader())) {
-                        gisDriveNodes.put(id, node);
-                    }
+        gisDriveNodes.clear();
+        tableColNames.clear();
+        tableData.clear();
+        table.getControl().setVisible(false);
+
+        Node curNetworkNode = gisNetworkNodes.get(cNetwork.getText());
+        Traverser datasetsTraverser = NeoUtils.getAllCorrelatedDatasets(curNetworkNode, service);
+
+        for (Node dataset : datasetsTraverser) {
+            Object type = dataset.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").toString();
+            if (NeoUtils.isGisNode(dataset)) {
+                String id = NeoUtils.getSimpleNodeName(dataset, null);
+                if (type.equals(GisTypes.DRIVE.getHeader())) {
+                    gisDriveNodes.put(id, dataset);
                 }
             }
-        } finally {
-            tx.finish();
         }
         cDrive.setItems(gisDriveNodes.keySet().toArray(new String[0]));
-        
-    }
 
-    /**
-     * @param e
-     */
-    protected void deleteRow(MouseEvent e) {
-        Point p = new Point(e.x, e.y);
-        TableItem item = table.getTable().getItem(p);
-        if (item != null) {
-            if (item.getBounds(DEL_IND).contains(p)) {
-                removeCorrelation((RowWrapper)item.getData());
-            }
-        }
-
-    }
-
-    /**
-     * Creates a popup menu
-     */
-
-    private void hookContextMenu() {
-        MenuManager menuMgr = new MenuManager("#PopupMenu");
-        menuMgr.setRemoveAllWhenShown(true);
-        menuMgr.addMenuListener(new IMenuListener() {
-            public void menuAboutToShow(IMenuManager manager) {
-                fillContextMenu(manager);
-            }
-        });
-        Menu menu = menuMgr.createContextMenu(table.getControl());
-        table.getControl().setMenu(menu);
-        getSite().registerContextMenu(menuMgr, table);
-    }
-
-
-    /**
-     * fills context menu
-     * 
-     * @param manager - menu manager
-     */
-    protected void fillContextMenu(IMenuManager manager) {
-        Table tabl = table.getTable();
-        if (point != null) {
-            TableItem item = tabl.getItem(point);
-            if (item != null) {
-                final RowWrapper wrapper = (RowWrapper)item.getData();
-                manager.add(new Action(String.format(REMOVE_CORRELATION, wrapper.getNetworkName(), wrapper.getDriveName())) {
-                    @Override
-                    public void run() {
-                        removeCorrelation(wrapper);
-                    }
-                });
-            }
-        }
-    }
-
-    /**
-     * Remove correlation
-     * 
-     * @param wrapper - correlation wrapper
-     */
-    protected void removeCorrelation(final RowWrapper wrapper) {
-        Transaction tx = service.beginTx();
-        try {
-
-            Job removeCorrelationJob = new Job("Remove correlation") {
-
-                @Override
-                protected IStatus run(IProgressMonitor monitor) {
-                    managerRemoveNetworkDriveCorrelation(monitor, wrapper);
-                    updateDriveLayer(wrapper.getNetworkNode(), wrapper.getDriveNode());
-                    return Status.OK_STATUS;
-                }
-            };
-            removeCorrelationJob.schedule();
-        } finally {
-            tx.finish();
-        }
-
-    }
-
-    /**
-     * Remove correlation manager
-     * 
-     * @param monitor
-     * @param wrapper - correlation wrapper
-     * @return
-     */
-    protected void managerRemoveNetworkDriveCorrelation(IProgressMonitor monitor, RowWrapper wrapper) {
-        Transaction tx = service.beginTx();
-        NeoUtils.addTransactionLog(tx, Thread.currentThread(), "managerRemoveNetworkDriveCorrelation");
-        try {
-            wrapper.getRelation().delete();
-            tx.success();
-            tx.finish();
-            updateInputFromDisplay();
-            tx = service.beginTx();
-            Node root = NeoUtils.findOrCreateSectorDriveRoot(wrapper.getDriveNode(), service, false);
-            for (Relationship relation : root.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
-                Node node = relation.getOtherNode(root);
-                Iterable<Relationship> relationships = node.getRelationships(NetworkRelationshipTypes.SECTOR, Direction.OUTGOING);
-                for (Relationship sectorRelation : relationships) {
-                    if (sectorRelation.getProperty(INeoConstants.NETWORK_GIS_NAME).equals(wrapper.getNetworkName())) {
-                        relation.delete();
-                        break;
-                    }
-                }
-            }
-            tx.success();
-        } finally {
-            tx.finish();
-        }
-    }
-
-    /**
-     * Correlate network-drive trees correlate network and drive gis nodes
-     */
-    protected void correlateNetworkDrive() {
-        final Node networkGis = gisNetworkNodes.get(cNetwork.getText());
-        final Node driveGis = gisDriveNodes.get(cDrive.getText());
-        if (networkGis == null || driveGis == null) {
-            return;
-        }
-        Job correlateJob = new Job("correlate") {
-
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                SubMonitor monitor2 = SubMonitor.convert(monitor, 100);
-                setNetworkDriveCorrelation(monitor2, networkGis, driveGis);
-                updateInputFromDisplay();
-                updateDriveLayer(networkGis, driveGis);
-                
-                return Status.OK_STATUS;
-            }
-
-        };
-        correlateJob.schedule();
-    }
-
-    /**
-     * correlation manager
-     * 
-     * @param monitor - IProgressMonitor
-     * @param driveGis - drive gis node
-     * @param networkGis - network gis node
-     */
-    protected void setNetworkDriveCorrelation(IProgressMonitor monitor, Node networkGis, Node driveGis) {
-        Transaction tx = service.beginTx();
-        Long startTime = null;
-        Long endTime = null;
-        int perc = 0;
-        NeoUtils.addTransactionLog(tx, Thread.currentThread(), "setNetworkDriveCorrelation");
-        Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(driveGis, null);
-        long totalTime = minMax.getRight() - minMax.getLeft();
-        int prevPerc = 0;
-        try {
-            for (Relationship relation : networkGis.getRelationships(CorrelationRelationshipTypes.LINKED_NETWORK_DRIVE,
-                    Direction.OUTGOING)) {
-                if (relation.getOtherNode(networkGis).equals(driveGis)) {
-                    return;
-                }
-            }
-            Relationship storeRelation = networkGis.createRelationshipTo(driveGis, CorrelationRelationshipTypes.LINKED_NETWORK_DRIVE);
-            Traverser traverse = driveGis
-                    .traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
-
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    Node node = currentPos.currentNode();
-                    return node.hasProperty(INeoConstants.SECTOR_ID_PROPERTIES)&&NeoUtils.isDrivePointNode(node);
-                }
-                    }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.LOCATION,
-                            Direction.OUTGOING);
-            Node sectorDriveRoot = NeoUtils.findOrCreateSectorDriveRoot(driveGis, service, false);
-            int count = 0;
-            for (Node node : traverse) {
-                Node sectorDrive = NeoUtils.findOrCreateSectorDrive(NeoUtils.getSimpleNodeName(driveGis, null), sectorDriveRoot,
-                        node, service, false);
-                if (sectorDrive != null) {
-                    NeoUtils.linkWithSector(networkGis, sectorDrive, null);
-                }
-                Long time = NeoUtils.getNodeTime(node);
-                startTime = startTime == null ? time : Math.min(startTime, time);
-                endTime = endTime == null ? time : Math.max(endTime, time);
-                count++;
-                perc = (int)((time - minMax.getLeft()) * 100 / totalTime);
-                if (perc > prevPerc) {
-                    monitor.worked(perc - prevPerc);
-                    prevPerc = perc;
-                }
-                storeRelation.setProperty(INeoConstants.COUNT_TYPE_NAME, count);
-                if (startTime == null) {
-                    storeRelation.removeProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE);
-                } else {
-                    storeRelation.setProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, startTime);
-                }
-                if (endTime == null) {
-                    storeRelation.removeProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE);
-                } else {
-                    storeRelation.setProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE, endTime);
-                }
-            }
-            tx.success();
-
-        } catch (Exception e) {
-            // TODO remove catch all exception after debug
-            // e.printStackTrace();
-            DriveInquirerPlugin.error(e.getLocalizedMessage(), e);
-        } finally {
-            tx.finish();
-        }
+        // labelProvider.refreshTable();
     }
 
     /**
@@ -458,7 +252,7 @@ public class CorrelationList extends ViewPart {
      */
     public void formGisLists() {
         Node refNode = service.getReferenceNode();
-        gisDriveNodes.clear();
+        // gisDriveNodes.clear();
         gisNetworkNodes.clear();
 
         Transaction tx = service.beginTx();
@@ -468,9 +262,7 @@ public class CorrelationList extends ViewPart {
                 Object type = node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").toString();
                 if (NeoUtils.isGisNode(node)) {
                     String id = NeoUtils.getSimpleNodeName(node, null);
-                    if (type.equals(GisTypes.DRIVE.getHeader())) {
-//                        gisDriveNodes.put(id, node);
-                    } else if (type.equals(GisTypes.NETWORK.getHeader())) {
+                    if (type.equals(GisTypes.NETWORK.getHeader())) {
                         gisNetworkNodes.put(id, node);
                     }
                 }
@@ -538,9 +330,7 @@ public class CorrelationList extends ViewPart {
      * @since 1.0.0
      */
     private class TableLabelProvider extends LabelProvider implements ITableLabelProvider {
-        private final Image delete = IconManager.getIconManager().getNeoImage("DELETE_ENABLED");
         private final ArrayList<TableColumn> columns = new ArrayList<TableColumn>();
-
 
         /**
          *create column table
@@ -549,45 +339,59 @@ public class CorrelationList extends ViewPart {
             Table tabl = table.getTable();
             TableViewerColumn column;
             TableColumn col;
-            if (columns.isEmpty()) {
-                column = new TableViewerColumn(table, SWT.LEFT);
-                col = column.getColumn();
-                col.setText("Network");
-                columns.add(col);
+
+            column = new TableViewerColumn(table, SWT.LEFT);
+            col = column.getColumn();
+            col.setText("Sector ID");
+            columns.add(col);
+            col.setWidth(DEF_SIZE);
+            col.setResizable(true);
+
+            tabl.setHeaderVisible(true);
+            tabl.setLinesVisible(true);
+            table.setLabelProvider(this);
+            table.refresh();
+        }
+
+        /**
+         * Refresh table
+         */
+        public void refreshTable() {
+            Table tabl = table.getTable();
+            TableViewerColumn column;
+            TableColumn col;
+
+            // col = columns.get(0);
+            // col.setText("Site ID");
+            // columns.add(col);
+            // col.setWidth(DEF_SIZE);
+            // col.setResizable(true);
+
+            int i = 0;
+            for (; i < tableColNames.size() && i < columns.size() - FIX_COLUMN_COUNT; i++) {
+                col = columns.get(i + FIX_COLUMN_COUNT);
+                col.setText(tableColNames.get(i));
                 col.setWidth(DEF_SIZE);
                 col.setResizable(true);
-
-                column = new TableViewerColumn(table, SWT.LEFT);
-                col = column.getColumn();
-                col.setText("Drive");
-                columns.add(col);
-                col.setWidth(DEF_SIZE);
-                col.setResizable(true);
-
-                column = new TableViewerColumn(table, SWT.LEFT);
-                col = column.getColumn();
-                col.setText("Count");
-                columns.add(col);
-                col.setWidth(75);
-                col.setResizable(true);
-
-                column = new TableViewerColumn(table, SWT.LEFT);
-                col = column.getColumn();
-                col.setText("Time");
-                columns.add(col);
-                col.setWidth(DEF_SIZE);
-                col.setResizable(true);
-
-                column = new TableViewerColumn(table, SWT.LEFT);
-                col = column.getColumn();
-                col.setText("Delete");
-                columns.add(col);
-                col.setWidth(100);
-                col.setResizable(true);
-
-                // TODO implement other column if necessary
-
             }
+            if (tableColNames.size() > columns.size() - FIX_COLUMN_COUNT) {
+                for (; i < tableColNames.size(); i++) {
+                    column = new TableViewerColumn(table, SWT.LEFT);
+                    col = column.getColumn();
+                    col.setText(tableColNames.get(i));
+                    columns.add(col);
+                    col.setWidth(DEF_SIZE);
+                    col.setResizable(true);
+                }
+            } else if (tableColNames.size() < columns.size() - FIX_COLUMN_COUNT) {
+                i += FIX_COLUMN_COUNT;
+                for (; i < columns.size(); i++) {
+                    col = columns.get(i);
+                    col.setWidth(0);
+                    col.setResizable(false);
+                }
+            }
+
             tabl.setHeaderVisible(true);
             tabl.setLinesVisible(true);
             table.setLabelProvider(this);
@@ -597,25 +401,17 @@ public class CorrelationList extends ViewPart {
         @Override
         public String getColumnText(Object element, int columnIndex) {
             RowWrapper wrapper = (RowWrapper)element;
-            String result = "";
-            if (columnIndex == DEL_IND) {
-                return LBL_DELETE;
-            } else if (columnIndex == 0) {
-                return wrapper.getNetworkName();
-            } else if (columnIndex == 1) {
-                return wrapper.getDriveName();
-            } else if (columnIndex == 2) {
-                return String.valueOf(wrapper.getCount());
-            } else if (columnIndex == 3) {
-                return wrapper.getFormatTime();
+            if (columnIndex == 0) {
+                return wrapper.getSectorId();
+            } else {
+                return wrapper.getPropertyByIndex(columnIndex);
             }
-            return result;
         }
 
         @Override
         public Image getColumnImage(Object element, int columnIndex) {
-           
-            return columnIndex == DEL_IND ? delete : null;
+            // return columnIndex == DEL_IND ? delete : null;
+            return null;
         }
     }
 
@@ -627,14 +423,14 @@ public class CorrelationList extends ViewPart {
      */
 
     private class TableContentProvider implements IStructuredContentProvider {
-        List<RowWrapper> elements = new ArrayList<RowWrapper>();
+        // List<RowWrapper> elements = new ArrayList<RowWrapper>();
 
         public TableContentProvider() {
         }
 
         @Override
         public Object[] getElements(Object inputElement) {
-            return elements.toArray(new RowWrapper[0]);
+            return tableData.toArray(new RowWrapper[0]);
         }
 
         @Override
@@ -643,17 +439,18 @@ public class CorrelationList extends ViewPart {
 
         @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-            elements.clear();
-            if (newInput == null) {
-                return;
-            }
-            Traverser linkedNetworkTraverser = NeoUtils.getLinkedNetworkTraverser(service);
-            for (Node node : linkedNetworkTraverser) {
-                for (Relationship relation : node.getRelationships(CorrelationRelationshipTypes.LINKED_NETWORK_DRIVE,
-                        Direction.OUTGOING)) {
-                    elements.add(new RowWrapper(node, relation));
-                }
-            }
+            // elements.clear();
+            // if (newInput == null) {
+            // return;
+            // }
+            // Traverser linkedNetworkTraverser = NeoUtils.getLinkedNetworkTraverser(service);
+            // for (Node node : linkedNetworkTraverser) {
+            // for (Relationship relation :
+            // node.getRelationships(CorrelationRelationshipTypes.LINKED_NETWORK_DRIVE,
+            // Direction.OUTGOING)) {
+            // elements.add(new RowWrapper(node, relation));
+            // }
+            // }
         }
     }
 
@@ -662,23 +459,13 @@ public class CorrelationList extends ViewPart {
      * Wrapper of one row of table
      * </p>
      * 
-     * @author Cinkel_A
+     * @author Saelenchits_N
      * @since 1.0.0
      */
     private class RowWrapper {
 
-        private String networkName;        
-        private final Node driveNode;
-        private String driveName;
-        private final Relationship relation;
-        private final Node networkNode;
-        private Long startTime;
-        private Long endTime;
-        private int count;
-        private SimpleDateFormat sf;
-        private SimpleDateFormat sf2;
-        private SimpleDateFormat sfMulDay1;
-        private SimpleDateFormat sfMulDay2;
+        private Node siteCorrelationNode;
+        private Node mCorrelatedNnode;
 
         /**
          * Constructor
@@ -686,117 +473,36 @@ public class CorrelationList extends ViewPart {
          * @param node network node
          * @param relation - relation
          */
-        public RowWrapper(Node node, Relationship relation) {
-            this.networkNode = node;
-            this.relation = relation;
-            Transaction tx = service.beginTx();
-            try {
-                networkName = NeoUtils.getSimpleNodeName(node, "");
-                driveNode = relation.getOtherNode(node);
-                driveName = NeoUtils.getSimpleNodeName(driveNode, "");
-                startTime = (Long)relation.getProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, null);
-                endTime = (Long)relation.getProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE, null);
-                count = (Integer)relation.getProperty(INeoConstants.COUNT_TYPE_NAME, 0);
-
-            } finally {
-                tx.finish();
-            }
+        public RowWrapper(Node siteCorrelationNode, Node mCorrelatedNnode) {
+            this.siteCorrelationNode = siteCorrelationNode;
+            this.mCorrelatedNnode = mCorrelatedNnode;
         }
 
         /**
-         * @return Returns the networkName.
+         * @param columnIndex
+         * @return
          */
-        public String getNetworkName() {
-            return networkName;
+        public String getPropertyByIndex(int columnIndex) {
+            return mCorrelatedNnode.getProperty(tableColNames.get(columnIndex - 1), "").toString();
         }
 
         /**
-         * @return Returns the driveName.
+         * @return
          */
-        public String getDriveName() {
-            return driveName;
-        }
-
-        /**
-         * @return Returns the driveNode.
-         */
-        public Node getDriveNode() {
-            return driveNode;
-        }
-
-        /**
-         * @return Returns the relation.
-         */
-        public Relationship getRelation() {
-            return relation;
-        }
-
-        /**
-         * @return Returns the networkNode.
-         */
-        public Node getNetworkNode() {
-            return networkNode;
-        }
-
-        /**
-         * @return Returns the count.
-         */
-        public int getCount() {
-            return count;
-        }
-        
-        public String getFormatTime() {
-            if (startTime == null || endTime == null) {
-                return NO_TIME;
-            }
-            StringBuilder sb = new StringBuilder();
-            if (endTime - startTime <= 24 * 60 * 60 * 1000) {
-                sf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-                sf2 = new SimpleDateFormat("hh:mm:ss");
-                sb.append(sf.format(new Date(startTime)));
-                sb.append("-").append(sf2.format(endTime));
-            } else {
-                sfMulDay1 = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-                sfMulDay2 = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-                sb.append(sfMulDay1.format(new Date(startTime)));
-                sb.append(" to ").append(sfMulDay2.format(endTime));
-            }
-            return sb.toString();
+        public String getSectorId() {
+            return siteCorrelationNode.getProperty(INeoConstants.SECTOR_ID_PROPERTIES, "").toString();
         }
     }
-
-    /**
-     * updates drive layers if both layer are present on map
-     * 
-     * @param gisNetwork - network gis node
-     * @param gisDrive - network drive node
-     */
-    public void updateDriveLayer(Node gisNetwork, Node gisDrive) {
-        IMap activeMap = ApplicationGIS.getActiveMap();
-        if (activeMap != ApplicationGIS.NO_MAP) {
-            try {
-                ILayer layerDrive = null;
-                ILayer layerNetwork = null;
-                for (ILayer layer : activeMap.getMapLayers()) {
-                    IGeoResource resourse = layer.findGeoResource(GeoNeo.class);
-                    if (resourse != null) {
-                        GeoNeo geo = resourse.resolve(GeoNeo.class, null);
-                        Node layerGisNode = geo.getMainGisNode();
-                        if (layerGisNode.equals(gisDrive)) {
-                            layerDrive = layer;
-                        } else if (layerGisNode.equals(gisNetwork)) {
-                            layerNetwork = layer;
-                        }
-                        if (layerDrive != null && layerNetwork != null) {
-                            layerDrive.refresh(null);
-                            return;
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            }
-        }
-    }
-
+    //
+    // @Override
+    // public Collection<UpdateViewEventType> getType() {
+    // Collection<UpdateViewEventType> spr = new HashSet<UpdateViewEventType>();
+    // spr.add(UpdateViewEventType.GIS);
+    // return spr;
+    // }
+    //
+    // @Override
+    // public void updateView(UpdateViewEvent event) {
+    // updateGisNode();
+    // }
 }

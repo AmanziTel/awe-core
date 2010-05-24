@@ -77,32 +77,33 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 /**
  * <p>
  * Utility class that provides common methods for work with neo nodes
- * </p>.
- *
+ * </p>
+ * .
+ * 
  * @author Cinkel_A
  * @since 1.0.0
  */
 public class NeoUtils {
-    
+
     /** The Constant TIMESTAMP_INDEX_NAME. */
     private static final String TIMESTAMP_INDEX_NAME = "Index-timestamp-";
-    
+
     /** The Constant LOCATION_INDEX_NAME. */
     private static final String LOCATION_INDEX_NAME = "Index-location-";
-    
+
     /** The Constant LOGGER. */
     private static final Logger LOGGER = Logger.getLogger(NeoUtils.class);
-    
+
     /**
      * Instantiates a new neo utils.
      */
     private NeoUtils() {
-        
+
     }
 
     /**
      * delete all incoming reference.
-     *
+     * 
      * @param node the node
      */
     public static void deleteIncomingRelations(Node node) {
@@ -113,7 +114,7 @@ public class NeoUtils {
 
     /**
      * gets node name.
-     *
+     * 
      * @param node node
      * @param defValue default value
      * @return node name or defValue
@@ -124,7 +125,7 @@ public class NeoUtils {
 
     /**
      * gets node name.
-     *
+     * 
      * @param node node
      * @return node name or defValue
      */
@@ -134,7 +135,7 @@ public class NeoUtils {
 
     /**
      * Gets node name.
-     *
+     * 
      * @param node node
      * @return node name or empty string
      */
@@ -152,7 +153,7 @@ public class NeoUtils {
 
     /**
      * Gets node name.
-     *
+     * 
      * @param node node
      * @param service the service
      * @return node name or empty string
@@ -171,7 +172,7 @@ public class NeoUtils {
 
     /**
      * Gets node name.
-     *
+     * 
      * @param node node
      * @param defValue default value
      * @return node name or empty string
@@ -188,7 +189,7 @@ public class NeoUtils {
 
     /**
      * Gets node name.
-     *
+     * 
      * @param node node
      * @param defValue default value
      * @param service the service
@@ -205,7 +206,7 @@ public class NeoUtils {
 
     /**
      * check node by type.
-     *
+     * 
      * @param node node
      * @return true if node is file node
      */
@@ -215,7 +216,7 @@ public class NeoUtils {
 
     /**
      * check node by type.
-     *
+     * 
      * @param node node
      * @return true if node is file node
      */
@@ -225,7 +226,7 @@ public class NeoUtils {
 
     /**
      * check node by type.
-     *
+     * 
      * @param node node
      * @return true if node is file node
      */
@@ -235,7 +236,7 @@ public class NeoUtils {
 
     /**
      * check node by type.
-     *
+     * 
      * @param node node
      * @return true if node is file node
      */
@@ -245,7 +246,7 @@ public class NeoUtils {
 
     /**
      * Is this node a Probe node.
-     *
+     * 
      * @param node node to check
      * @return is this node a Probe node
      */
@@ -255,7 +256,7 @@ public class NeoUtils {
 
     /**
      * Is this node a Probe Calls node.
-     *
+     * 
      * @param node node to check
      * @return is this node a Probe Calls node
      */
@@ -265,17 +266,17 @@ public class NeoUtils {
 
     /**
      * Is this node a Call node.
-     *
+     * 
      * @param node node to check
      * @return is this node a Call node
      */
     public static boolean isCallNode(Node node) {
         return node != null && NodeTypes.CALL.getId().equals(getNodeType(node, ""));
     }
-    
+
     /**
      * Is this node a SCell node.
-     *
+     * 
      * @param node node to check
      * @return is this node a Call node
      */
@@ -285,7 +286,7 @@ public class NeoUtils {
 
     /**
      * gets stop evaluator with necessary depth.
-     *
+     * 
      * @param depth - depth
      * @return stop evaluator
      */
@@ -300,7 +301,7 @@ public class NeoUtils {
 
     /**
      * finds gis node by name.
-     *
+     * 
      * @param gisName name of gis node
      * @return gis node or null
      */
@@ -321,7 +322,7 @@ public class NeoUtils {
 
     /**
      * finds gis node by name.
-     *
+     * 
      * @param gisName name of gis node
      * @param service the service
      * @return gis node or null
@@ -343,8 +344,8 @@ public class NeoUtils {
     }
 
     /**
-     * finds root 
-     *
+     * finds root
+     * 
      * @param type the type
      * @param nodeName name of gis node
      * @param service the service
@@ -361,7 +362,7 @@ public class NeoUtils {
 
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
-                    if (currentPos.depth()!=2){
+                    if (currentPos.depth() != 2) {
                         return false;
                     }
                     Node node = currentPos.currentNode();
@@ -376,12 +377,12 @@ public class NeoUtils {
 
     /**
      * Gets the all root traverser.
-     *
+     * 
      * @param service the service
      * @param additionalReturnableEvaluator the additional returnableEvaluator
      * @return the all root traverser
      */
-    public static Traverser getAllRootTraverser(GraphDatabaseService service,final ReturnableEvaluator additionalReturnableEvaluator) {
+    public static Traverser getAllRootTraverser(GraphDatabaseService service, final ReturnableEvaluator additionalReturnableEvaluator) {
         return service.getReferenceNode().traverse(Order.DEPTH_FIRST, getStopEvaluator(2), new ReturnableEvaluator() {
 
             @Override
@@ -389,13 +390,14 @@ public class NeoUtils {
                 if (currentPos.depth() != 2) {
                     return false;
                 }
-                return additionalReturnableEvaluator==null||additionalReturnableEvaluator.isReturnableNode(currentPos);
+                return additionalReturnableEvaluator == null || additionalReturnableEvaluator.isReturnableNode(currentPos);
             }
         }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
     }
+
     /**
      * check node by type.
-     *
+     * 
      * @param node node
      * @return true if node is gis node
      */
@@ -405,7 +407,7 @@ public class NeoUtils {
 
     /**
      * check node by type.
-     *
+     * 
      * @param node node
      * @return true if node is gis node
      */
@@ -415,7 +417,7 @@ public class NeoUtils {
 
     /**
      * check node by type.
-     *
+     * 
      * @param node node
      * @return true if node is gis node
      */
@@ -449,12 +451,12 @@ public class NeoUtils {
 
     /**
      * Finds gis node by child.
-     *
+     * 
      * @param childNode child
      * @return gis node or null
      */
     public static Node findGisNodeByChild(Node childNode) {
-        if (childNode==null){
+        if (childNode == null) {
             return null;
         }
         Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
@@ -466,7 +468,9 @@ public class NeoUtils {
                     Node node = currentPos.currentNode();
                     return isGisNode(node);
                 }
-            }, NetworkRelationshipTypes.CHILD, Direction.INCOMING, GeoNeoRelationshipTypes.NEXT, Direction.INCOMING,GeoNeoRelationshipTypes.VIRTUAL_DATASET,Direction.INCOMING,NetworkRelationshipTypes.NEIGHBOUR_DATA,Direction.INCOMING,NetworkRelationshipTypes.TRANSMISSION_DATA,Direction.INCOMING).iterator();
+            }, NetworkRelationshipTypes.CHILD, Direction.INCOMING, GeoNeoRelationshipTypes.NEXT, Direction.INCOMING, GeoNeoRelationshipTypes.VIRTUAL_DATASET,
+                    Direction.INCOMING, NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.INCOMING, NetworkRelationshipTypes.TRANSMISSION_DATA, Direction.INCOMING)
+                    .iterator();
             tx.success();
             return gisIterator.hasNext() ? gisIterator.next() : null;
         } finally {
@@ -476,7 +480,7 @@ public class NeoUtils {
 
     /**
      * Finds gis node by child.
-     *
+     * 
      * @param childNode child
      * @param service NeoService
      * @return gis node or null
@@ -501,7 +505,6 @@ public class NeoUtils {
 
     /**
      * Reset geo neo service.
-     *
      */
     public static void resetGeoNeoService() {
         try {
@@ -526,7 +529,7 @@ public class NeoUtils {
 
     /**
      * begins new neo4j transaction.
-     *
+     * 
      * @return transaction
      */
     public static Transaction beginTransaction() {
@@ -536,19 +539,19 @@ public class NeoUtils {
 
     /**
      * Finds Neighbour of network.
-     *
+     * 
      * @param network - network GIS node
      * @param name - Neighbour name
      * @return Neighbour node or null;
      */
     public static Node findNeighbour(Node network, final String name) {
-        
+
         return findNeighbour(network, name, NeoServiceProvider.getProvider().getService());
     }
 
     /**
      * Finds Neighbour of network.
-     *
+     * 
      * @param network - network GIS node
      * @param name - Neighbour name
      * @param neo the neo
@@ -577,7 +580,7 @@ public class NeoUtils {
 
     /**
      * Gets array of Numeric Fields.
-     *
+     * 
      * @param node - node
      * @return array or null if properties do not exist
      */
@@ -619,7 +622,7 @@ public class NeoUtils {
 
     /**
      * Gets Neighbour name of relation.
-     *
+     * 
      * @param relation relation
      * @param defValue default value
      * @return name or default value if property do not exist
@@ -630,10 +633,10 @@ public class NeoUtils {
 
     /**
      * Return neighbour relations of selected neighbour list.
-     *
+     * 
      * @param node node
      * @param neighbourName neighbour list name (if null then will returns all neighbour relations
-     * of this node)
+     *        of this node)
      * @return neighbour relations of selected neighbour list
      */
     public static Iterable<Relationship> getNeighbourRelations(Node node, String neighbourName) {
@@ -652,10 +655,10 @@ public class NeoUtils {
 
     /**
      * Return neighbour relations of selected neighbour list.
-     *
+     * 
      * @param node node
      * @param neighbourName neighbour list name (if null then will returns all neighbour relations
-     * of this node)
+     *        of this node)
      * @return neighbour relations of selected neighbour list
      */
     public static Iterable<Relationship> getTransmissionRelations(Node node, String neighbourName) {
@@ -674,7 +677,7 @@ public class NeoUtils {
 
     /**
      * gets neighbour property name.
-     *
+     * 
      * @param aNeighbourName - name of neighbour
      * @return property name
      */
@@ -684,7 +687,7 @@ public class NeoUtils {
 
     /**
      * get Transmission property name.
-     *
+     * 
      * @param aTransmissionName name of transmission
      * @return property name
      */
@@ -694,7 +697,7 @@ public class NeoUtils {
 
     /**
      * Finds node by child.
-     *
+     * 
      * @param node - node
      * @param nodeType - type of finding node
      * @return node or null
@@ -722,7 +725,7 @@ public class NeoUtils {
 
     /**
      * Get all fields property.
-     *
+     * 
      * @param node - node
      * @return array of fields or null
      */
@@ -739,7 +742,7 @@ public class NeoUtils {
 
     /**
      * delete node and all relation from/to it.
-     *
+     * 
      * @param node - node to delete
      */
     public static void deleteSingleNode(Node node) {
@@ -757,7 +760,7 @@ public class NeoUtils {
 
     /**
      * Gets chart node of current node.
-     *
+     * 
      * @param node node
      * @param aggNode aggregation node
      * @return node or null
@@ -784,7 +787,7 @@ public class NeoUtils {
 
     /**
      * get timestamp of node.
-     *
+     * 
      * @param node node
      * @return (Long) timestamp
      */
@@ -813,7 +816,7 @@ public class NeoUtils {
 
     /**
      * get Traverser of all file node.
-     *
+     * 
      * @param gis - gis node
      * @return Traverser
      */
@@ -829,7 +832,7 @@ public class NeoUtils {
 
     /**
      * gets node by id.
-     *
+     * 
      * @param nodeId node id
      * @return node
      */
@@ -839,7 +842,7 @@ public class NeoUtils {
 
     /**
      * Finds Transmission of network.
-     *
+     * 
      * @param network - network GIS node
      * @param name - Transmission name
      * @param neo - NeoService
@@ -868,7 +871,7 @@ public class NeoUtils {
 
     /**
      * Gets name of ms childs.
-     *
+     * 
      * @param node - mp node
      * @param msName - property , that forms the name
      * @return cummulative name
@@ -896,7 +899,7 @@ public class NeoUtils {
 
     /**
      * finds or create if necessary SectorDriveRoot node.
-     *
+     * 
      * @param root - root node of drive network
      * @param service the service
      * @param isNewTransaction the is new transaction
@@ -925,7 +928,7 @@ public class NeoUtils {
 
     /**
      * find or create sector-drive node.
-     *
+     * 
      * @param aDriveName the a drive name
      * @param sectorDriveRoot the sector drive root
      * @param mpNode - mp node
@@ -973,7 +976,7 @@ public class NeoUtils {
 
     /**
      * Finds or create if not exist child node. Assumes existence of transaction.
-     *
+     * 
      * @param service the service
      * @param parentNode parent node
      * @param nodeName the node name
@@ -1007,7 +1010,7 @@ public class NeoUtils {
 
     /**
      * Finds or create if not exist child node. Assumes existence of transaction.
-     *
+     * 
      * @param service the service
      * @param parentNode parent node
      * @param nodeName the node name
@@ -1032,7 +1035,7 @@ public class NeoUtils {
 
     /**
      * get all network gis nodes which linked with drive nodes.
-     *
+     * 
      * @param service NeoService
      * @return Traverser
      */
@@ -1061,7 +1064,7 @@ public class NeoUtils {
 
     /**
      * finish transaction if it not null.
-     *
+     * 
      * @param tx -Transaction or null
      */
     public static void finishTx(Transaction tx) {
@@ -1072,7 +1075,7 @@ public class NeoUtils {
 
     /**
      * mark success transaction if it not null.
-     *
+     * 
      * @param tx -Transaction or null
      */
     public static void successTx(Transaction tx) {
@@ -1083,7 +1086,7 @@ public class NeoUtils {
 
     /**
      * begin transaction.
-     *
+     * 
      * @param service the service
      * @return Transaction if service present else null
      */
@@ -1093,7 +1096,7 @@ public class NeoUtils {
 
     /**
      * link SectorDrive node with sector node.
-     *
+     * 
      * @param networkGis network gis node
      * @param sectorDrive - SectorDrive node
      * @param service - neo service if null then transaction do not created
@@ -1137,7 +1140,7 @@ public class NeoUtils {
 
     /**
      * get list of all event of mp node.
-     *
+     * 
      * @param mpNode mp node
      * @param service - neo service if null then transaction do not created
      * @return list of all event of mp node
@@ -1170,7 +1173,7 @@ public class NeoUtils {
 
     /**
      * Adds the transaction log.
-     *
+     * 
      * @param transaction the transaction
      * @param thread the thread
      * @param description the description
@@ -1189,7 +1192,7 @@ public class NeoUtils {
 
     /**
      * gets name of timestamp index.
-     *
+     * 
      * @param datasetName - dataset name
      * @return index name
      */
@@ -1199,7 +1202,7 @@ public class NeoUtils {
 
     /**
      * gets name of location index.
-     *
+     * 
      * @param datasetName - dataset name
      * @return index name
      */
@@ -1209,25 +1212,25 @@ public class NeoUtils {
 
     /**
      * Returns pair of min and max timestamps for this dataset.
-     *
+     * 
      * @param driveGisNode drive gis node
      * @param service neoservice if null then transaction do not created
      * @return pair of min and max timestamps
      */
     public static Pair<Long, Long> getMinMaxTimeOfDataset(Node driveGisNode, GraphDatabaseService service) {
         Transaction tx = beginTx(service);
-        
+
         try {
-            //TODO only for fast fix - remove code after testing 
-            if (isGisNode(driveGisNode)){
-                StringBuilder st=new StringBuilder("should be fixed - gets this property from root node instead gis node!\n");
-                for (StackTraceElement elem:Thread.currentThread().getStackTrace()){
+            // TODO only for fast fix - remove code after testing
+            if (isGisNode(driveGisNode)) {
+                StringBuilder st = new StringBuilder("should be fixed - gets this property from root node instead gis node!\n");
+                for (StackTraceElement elem : Thread.currentThread().getStackTrace()) {
                     st.append("\tat ").append(elem).append("\n");
                 }
                 LOGGER.error(st.toString());
-                return getMinMaxTimeOfDataset(driveGisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT,Direction.OUTGOING).getOtherNode(driveGisNode), service);
+                return getMinMaxTimeOfDataset(driveGisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(driveGisNode), service);
             }
-            //--
+            // --
             Pair<Long, Long> pair = new Pair<Long, Long>((Long)driveGisNode.getProperty(INeoConstants.MIN_TIMESTAMP, null), (Long)driveGisNode.getProperty(
                     INeoConstants.MAX_TIMESTAMP, null));
             return pair;
@@ -1238,7 +1241,7 @@ public class NeoUtils {
 
     /**
      * Gets timestamp index property.
-     *
+     * 
      * @param name - dataset name
      * @return timestamp index property
      * @throws IOException Signals that an I/O exception has occurred.
@@ -1249,7 +1252,7 @@ public class NeoUtils {
 
     /**
      * Get location index.
-     *
+     * 
      * @param name - dataset name
      * @return location index
      * @throws IOException Signals that an I/O exception has occurred.
@@ -1261,7 +1264,7 @@ public class NeoUtils {
 
     /**
      * Searches for the Probe node by it's name.
-     *
+     * 
      * @param networkNode Network that should contain Probe
      * @param probeName name of Probe
      * @param service the service
@@ -1298,22 +1301,22 @@ public class NeoUtils {
 
         return result;
     }
-    
+
     /**
      * Build probe name like: 'name (La: local area, F: frequency)'.
-     *
+     * 
      * @param probeName String (real probe name)
      * @param la Integer (local area)
      * @param frequency Float
      * @return String
      */
-    public static String buildProbeName(String probeName,Integer la, Float frequency){
-        return probeName+" (LA: "+la+", F: "+frequency+")";
+    public static String buildProbeName(String probeName, Integer la, Float frequency) {
+        return probeName + " (LA: " + la + ", F: " + frequency + ")";
     }
 
     /**
      * Returns a Probe Calls node for current dataset and network.
-     *
+     * 
      * @param datasetNode the dataset node
      * @param probesName name of probe
      * @param probesNode node for probe
@@ -1358,7 +1361,7 @@ public class NeoUtils {
 
     /**
      * Returns last Call from Probe Calls queue.
-     *
+     * 
      * @param probeCallsNode Probe Calls node
      * @param service Neo service
      * @return last Call node
@@ -1383,7 +1386,7 @@ public class NeoUtils {
 
     /**
      * Return type of dataset.
-     *
+     * 
      * @param datasetNode dataset node
      * @param service neoservice if null then transaction do not created
      * @return DriveTypes or null
@@ -1400,7 +1403,7 @@ public class NeoUtils {
 
     /**
      * Checks if is virtual dataset.
-     *
+     * 
      * @param datasetNode the dataset node
      * @return true, if is virtual dataset
      */
@@ -1410,7 +1413,7 @@ public class NeoUtils {
 
     /**
      * Gets all dataset nodes.
-     *
+     * 
      * @param service neoservice can not be null
      * @return Map
      */
@@ -1435,10 +1438,10 @@ public class NeoUtils {
             finishTx(tx);
         }
     }
-    
+
     /**
      * Find or create virtual dataset node.
-     *
+     * 
      * @param realDatasetNode the real dataset node
      * @param virtualDatasetName the virtual dataset name
      * @param neo the neo
@@ -1463,7 +1466,6 @@ public class NeoUtils {
                 virtualDataset.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.DATASET.getId());
                 virtualDataset.setProperty(INeoConstants.PROPERTY_NAME_NAME, virtualDatasetName);
 
-
                 realDatasetNode.createRelationshipTo(virtualDataset, GeoNeoRelationshipTypes.VIRTUAL_DATASET);
             }
             tx.success();
@@ -1477,10 +1479,10 @@ public class NeoUtils {
         }
 
     }
-    
+
     /**
      * Find or create virtual dataset node.
-     *
+     * 
      * @param realDatasetNode the real dataset node
      * @param driveType the drive type
      * @param neo the neo
@@ -1492,17 +1494,17 @@ public class NeoUtils {
         final String virtualDatasetName = driveType.getFullDatasetName(realDatasetName);
         Node node = findOrCreateVirtualDatasetNode(realDatasetNode, virtualDatasetName, neo);
         DriveTypes nodeType = DriveTypes.getNodeType(node, neo);
-        if (nodeType==null){
+        if (nodeType == null) {
             driveType.setTypeToNode(node, neo);
-        }else{
-           assert nodeType==driveType; 
+        } else {
+            assert nodeType == driveType;
         }
         return node;
     }
 
     /**
      * Creates the gis node.
-     *
+     * 
      * @param parent the parent
      * @param gisName the gis name
      * @param gisType the gis type
@@ -1534,7 +1536,7 @@ public class NeoUtils {
 
     /**
      * Gets the all dataset nodes by type.
-     *
+     * 
      * @param datasetType the dataset type
      * @param service the service
      * @return the all dataset nodes by type
@@ -1563,7 +1565,7 @@ public class NeoUtils {
 
     /**
      * Get traverser by child of node (one child ).
-     *
+     * 
      * @param rootNode - root node;
      * @return Traverser
      */
@@ -1573,7 +1575,7 @@ public class NeoUtils {
 
     /**
      * Gets the child traverser.
-     *
+     * 
      * @param rootNode the root node
      * @param stopEvaluator the stop evaluator
      * @return the child traverser
@@ -1584,7 +1586,7 @@ public class NeoUtils {
 
     /**
      * Gets the child traverser.
-     *
+     * 
      * @param rootNode the root node
      * @param returnableEvaluator the returnable evaluator
      * @return the child traverser
@@ -1595,7 +1597,7 @@ public class NeoUtils {
 
     /**
      * Get traverser by child of node (one child ).
-     *
+     * 
      * @param rootNode - root node;
      * @param stopEvaluator the stop evaluator
      * @param returnableEvaluator the returnable evaluator
@@ -1614,7 +1616,7 @@ public class NeoUtils {
 
     /**
      * return empty traverser.
-     *
+     * 
      * @param rootNode - root node
      * @return empty traverser
      */
@@ -1636,7 +1638,7 @@ public class NeoUtils {
 
     /**
      * get parent of current node.
-     *
+     * 
      * @param service NeoService if null then new transaction created
      * @param childNode child node
      * @return parent node or null
@@ -1665,7 +1667,7 @@ public class NeoUtils {
 
     /**
      * Return type of gis.
-     *
+     * 
      * @param gisNode GIS node
      * @param service neoservice if null then transaction do not created
      * @return GisTypes or null
@@ -1682,7 +1684,7 @@ public class NeoUtils {
 
     /**
      * Return location node of current drive node.
-     *
+     * 
      * @param node - drive node
      * @param service neoservice if null then transaction do not created
      * @return location node or null
@@ -1699,7 +1701,7 @@ public class NeoUtils {
 
     /**
      * Calculates is Probe has Calls of choosen type in current dataset.
-     *
+     * 
      * @param datasetNode Dataset to check
      * @param type type of Calls
      * @param probeName name of Probe
@@ -1723,7 +1725,7 @@ public class NeoUtils {
 
     /**
      * Returns all Probe Nodes related to Dataset.
-     *
+     * 
      * @param datasetNode Dataset Node
      * @param type the type
      * @return all Probe Nodes
@@ -1749,7 +1751,7 @@ public class NeoUtils {
 
     /**
      * Get location pair.
-     *
+     * 
      * @param locationNode - location node
      * @param service neoservice if null then transaction do not created
      * @return Pair
@@ -1768,7 +1770,7 @@ public class NeoUtils {
 
     /**
      * Check transaction on thread.
-     *
+     * 
      * @param service the service
      * @param description the description
      */
@@ -1781,7 +1783,7 @@ public class NeoUtils {
 
     /**
      * get format date string.
-     *
+     * 
      * @param startTime - begin timestamp
      * @param endTime end timestamp
      * @param dayFormat the day format
@@ -1793,14 +1795,14 @@ public class NeoUtils {
         }
         Calendar endTimeCal = Calendar.getInstance();
         endTimeCal.setTimeInMillis(endTime);
-        
+
         Calendar startTimeCal = Calendar.getInstance();
         startTimeCal.setTimeInMillis(startTime);
-        
+
         String pattern = "yyyy-MM-dd " + dayFormat;
         SimpleDateFormat sf = new SimpleDateFormat(pattern);
-        
-        StringBuilder sb = new StringBuilder();        
+
+        StringBuilder sb = new StringBuilder();
         if (endTime - startTime <= 24 * 60 * 60 * 1000 && startTimeCal.get(Calendar.DAY_OF_WEEK) == endTimeCal.get(Calendar.DAY_OF_WEEK)) {
             SimpleDateFormat sf2 = new SimpleDateFormat(dayFormat);
             sb.append(sf.format(startTimeCal.getTime()));
@@ -1815,7 +1817,7 @@ public class NeoUtils {
 
     /**
      * gets formated node name.
-     *
+     * 
      * @param node node
      * @param defName the def name
      * @return node name or defValue
@@ -1844,7 +1846,7 @@ public class NeoUtils {
 
     /**
      * Find multi property index.
-     *
+     * 
      * @param indexName the index name
      * @param neoService the neo service
      * @return the node
@@ -1867,7 +1869,7 @@ public class NeoUtils {
 
     /**
      * gets name of index.
-     *
+     * 
      * @param basename - gis name
      * @param propertyName - property name
      * @param type - node type
@@ -1879,15 +1881,15 @@ public class NeoUtils {
 
     /**
      * Gets all OSS nodes.
-     *
+     * 
      * @param service the service
      * @return the all oss
      */
     public static Collection<Node> getAllOss(GraphDatabaseService service) {
         Transaction tx = beginTx(service);
         try {
-            return getAllRootTraverser(service,new ReturnableEvaluator() {
-                
+            return getAllRootTraverser(service, new ReturnableEvaluator() {
+
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     return NodeTypes.OSS.checkNode(currentPos.currentNode());
@@ -1900,7 +1902,7 @@ public class NeoUtils {
 
     /**
      * Gets all OSS nodes.
-     *
+     * 
      * @param service the service
      * @return the all gpeh
      */
@@ -1922,7 +1924,7 @@ public class NeoUtils {
 
     /**
      * Gets all childs of reference node.
-     *
+     * 
      * @param service the service
      * @param evaluator the evaluator
      * @return the all reference child
@@ -1938,11 +1940,11 @@ public class NeoUtils {
 
     /**
      * add child to node.
-     *
+     * 
      * @param mainNode root node
      * @param subNode child node
      * @param lastChild - last child node (in not known or mainNode do not have childs lastChild
-     * should be= null)
+     *        should be= null)
      * @param neo - neoservice
      */
     public static void addChild(Node mainNode, Node subNode, Node lastChild, GraphDatabaseService neo) {
@@ -1956,7 +1958,7 @@ public class NeoUtils {
             } else {
                 lastChild.createRelationshipTo(subNode, GeoNeoRelationshipTypes.NEXT);
             }
-            //save last child like properti in main node
+            // save last child like properti in main node
             mainNode.setProperty(INeoConstants.LAST_CHILD_ID, subNode.getId());
             successTx(tx);
         } finally {
@@ -1964,10 +1966,10 @@ public class NeoUtils {
         }
 
     }
-    
+
     /**
      * return last child of node.
-     *
+     * 
      * @param mainNode root node
      * @param neo service
      * @return the node
@@ -1975,11 +1977,11 @@ public class NeoUtils {
     public static Node findLastChild(Node mainNode, GraphDatabaseService neo) {
         Transaction tx = beginTx(neo);
         try {
-            Long lastChild = (Long)mainNode.getProperty(INeoConstants.LAST_CHILD_ID,null);
-            if (lastChild!=null){
-               Node result= neo.getNodeById(lastChild);
-               assert !result.hasRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
-               return result;
+            Long lastChild = (Long)mainNode.getProperty(INeoConstants.LAST_CHILD_ID, null);
+            if (lastChild != null) {
+                Node result = neo.getNodeById(lastChild);
+                assert !result.hasRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+                return result;
             }
             Iterator<Node> iterator = getChildTraverser(mainNode, new ReturnableEvaluator() {
 
@@ -1997,7 +1999,7 @@ public class NeoUtils {
     /**
      * This code finds the specified network node in the database, creating its own transaction for
      * that.
-     *
+     * 
      * @param gisNode the gis node
      * @param basename the basename
      * @param filename the filename
@@ -2026,7 +2028,7 @@ public class NeoUtils {
 
     /**
      * find Or Create Filter root node.
-     *
+     * 
      * @param service NeoService
      * @return filter root node
      */
@@ -2051,7 +2053,7 @@ public class NeoUtils {
 
     /**
      * Sets node name.
-     *
+     * 
      * @param node node
      * @param name - name
      * @param service NeoService - if null then used current transaction
@@ -2072,7 +2074,7 @@ public class NeoUtils {
 
     /**
      * Gets relationsip type by type name.
-     *
+     * 
      * @param relation the relation
      * @return DeletableRelationshipType
      */
@@ -2119,7 +2121,7 @@ public class NeoUtils {
 
     /**
      * Save color in database.
-     *
+     * 
      * @param node node
      * @param property property name
      * @param rgb color
@@ -2148,7 +2150,7 @@ public class NeoUtils {
 
     /**
      * Gets color.
-     *
+     * 
      * @param node - node
      * @param property - property name
      * @param defaultColor - default color (return if no color stored in property)
@@ -2219,43 +2221,46 @@ public class NeoUtils {
     }
 
     /**
-     * Find sector by next rules: baseName  must be defined, ci or name must be defined (lac used only if ci!=null).
-     *
+     * Find sector by next rules: baseName must be defined, ci or name must be defined (lac used
+     * only if ci!=null).
+     * 
      * @param baseName the base name
      * @param ci the ci
      * @param lac the lac
      * @param name the name
-     * @param returnFirsElement -will be handled only if (ci==null||(ac==null&&name==null)) true:  if result has multiple nodes - return first; false=if result has multiple nodes - return null
+     * @param returnFirsElement -will be handled only if (ci==null||(ac==null&&name==null)) true: if
+     *        result has multiple nodes - return first; false=if result has multiple nodes - return
+     *        null
      * @param index the index
      * @param service the service
      * @return the node
      */
-    public static Node findSector(String baseName, Integer ci, Integer lac, String name, boolean returnFirsElement,LuceneIndexService index, GraphDatabaseService service) {
-        assert baseName != null &&( ci != null ||name!=null) && index != null;
+    public static Node findSector(String baseName, Integer ci, Integer lac, String name, boolean returnFirsElement, LuceneIndexService index, GraphDatabaseService service) {
+        assert baseName != null && (ci != null || name != null) && index != null;
         Transaction tx = beginTx(service);
         try {
-            if (ci==null){
+            if (ci == null) {
                 String indexName = getLuceneIndexKeyByProperty(baseName, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR);
-                IndexHits<Node> nodesName = index.getNodes(indexName, name);   
-                Node sector=nodesName.size()>0?nodesName.next():null;
-                if (nodesName.size()==1){
+                IndexHits<Node> nodesName = index.getNodes(indexName, name);
+                Node sector = nodesName.size() > 0 ? nodesName.next() : null;
+                if (nodesName.size() == 1) {
                     nodesName.close();
                     return sector;
-                }else{
+                } else {
                     nodesName.close();
-                    return returnFirsElement?sector:null;
+                    return returnFirsElement ? sector : null;
                 }
             }
             String indexName = getLuceneIndexKeyByProperty(baseName, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR);
             IndexHits<Node> nodesCi = index.getNodes(indexName, ci);
-            if (lac==null&&name==null){
-                Node sector=nodesCi.size()>0?nodesCi.next():null;
-                if (nodesCi.size()==1){
+            if (lac == null && name == null) {
+                Node sector = nodesCi.size() > 0 ? nodesCi.next() : null;
+                if (nodesCi.size() == 1) {
                     nodesCi.close();
                     return sector;
-                }else{
+                } else {
                     nodesCi.close();
-                    return returnFirsElement?sector:null;
+                    return returnFirsElement ? sector : null;
                 }
             }
             boolean canCheck = true;
@@ -2273,14 +2278,14 @@ public class NeoUtils {
                 }
             }
             if (canCheck) {
-                if (lac!=null){
-                    nodesCi.close(); 
+                if (lac != null) {
+                    nodesCi.close();
                     nodesCi = index.getNodes(indexName, ci);
                 }
                 if (name != null) {
                     for (Node sector : nodesCi) {
                         Object sectorName = sector.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
-                        if (name.equals(sectorName)&&(lac==null||!sector.hasProperty(INeoConstants.PROPERTY_SECTOR_LAC))) {
+                        if (name.equals(sectorName) && (lac == null || !sector.hasProperty(INeoConstants.PROPERTY_SECTOR_LAC))) {
                             return sector;
                         }
                     }
@@ -2292,10 +2297,9 @@ public class NeoUtils {
         }
     }
 
-
     /**
      * Find sector.
-     *
+     * 
      * @param baseName the base name
      * @param ci the ci
      * @param rnc the rnc
@@ -2304,36 +2308,35 @@ public class NeoUtils {
      * @return the node
      */
     public static Node findSector(String baseName, Integer ci, String rnc, LuceneIndexService luceneService, GraphDatabaseService service) {
-        assert baseName != null && ci != null &&rnc!=null && luceneService != null;
+        assert baseName != null && ci != null && rnc != null && luceneService != null;
         Transaction tx = beginTx(service);
         try {
             String indexName = getLuceneIndexKeyByProperty(baseName, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR);
             IndexHits<Node> nodesCi = luceneService.getNodes(indexName, ci);
-            for (Node node:nodesCi){
-                Object rncId = node.getProperty(GpehReportUtil.RNC_ID,null);
-                if (rnc.equals(rncId)){
+            for (Node node : nodesCi) {
+                Object rncId = node.getProperty(GpehReportUtil.RNC_ID, null);
+                if (rnc.equals(rncId)) {
                     return node;
                 }
             }
             return null;
-        }finally{
+        } finally {
             finishTx(tx);
         }
     }
 
-
     /**
      * Gets the cRS.
-     *
+     * 
      * @param gisNode the gis node
      * @param service the service
      * @return the cRS
      */
     public static CoordinateReferenceSystem getCRS(Node gisNode, GraphDatabaseService service) {
-        if (gisNode==null){
+        if (gisNode == null) {
             return null;
         }
-        CoordinateReferenceSystem crs=null;
+        CoordinateReferenceSystem crs = null;
         Transaction tx = beginTx(service);
         try {
             if (gisNode.hasProperty(INeoConstants.PROPERTY_CRS_NAME)) {
@@ -2353,21 +2356,20 @@ public class NeoUtils {
             System.err.println("Failed to interpret CRS: " + crs_e.getMessage());
             crs_e.printStackTrace(System.err);
             return null;
-        }finally{
+        } finally {
             finishTx(tx);
         }
     }
 
-
     /**
      * Gets the relationship type by name.
-     *
+     * 
      * @param name the name
      * @return the relationship type by name
      */
     public static RelationshipType getRelationshipTypeByName(final String name) {
         return new RelationshipType() {
-            
+
             @Override
             public String name() {
                 return name;
@@ -2375,100 +2377,122 @@ public class NeoUtils {
         };
     }
 
-
     /**
-     * Find root node 
-     *
-     * @param node the node - node from datast/network 
+     * Find root node
+     * 
+     * @param node the node - node from datast/network
      * @return the node
      */
-    public static Node findRoot(Node node,GraphDatabaseService service) {
+    public static Node findRoot(Node node, GraphDatabaseService service) {
         Transaction tx = beginTx(service);
-        try{
-        if (isRoootNode(node)){
-            return node;
-        }else if (isGisNode(node)){
-            return node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(node); 
-        }else{
-            Iterator<Node> rootIterator = node.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+        try {
+            if (isRoootNode(node)) {
+                return node;
+            } else if (isGisNode(node)) {
+                return node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(node);
+            } else {
+                Iterator<Node> rootIterator = node.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
 
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    return isRoootNode(currentPos.currentNode());
-                }
-            }, NetworkRelationshipTypes.CHILD, Direction.INCOMING, GeoNeoRelationshipTypes.NEXT, Direction.INCOMING,GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING,GeoNeoRelationshipTypes.VIRTUAL_DATASET,Direction.INCOMING).iterator();
-            tx.success();
-            return rootIterator.hasNext() ? rootIterator.next() : null;
-        }
-        }finally{
+                    @Override
+                    public boolean isReturnableNode(TraversalPosition currentPos) {
+                        return isRoootNode(currentPos.currentNode());
+                    }
+                }, NetworkRelationshipTypes.CHILD, Direction.INCOMING, GeoNeoRelationshipTypes.NEXT, Direction.INCOMING, GeoNeoRelationshipTypes.LOCATION,
+                        Direction.INCOMING, GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.INCOMING).iterator();
+                tx.success();
+                return rootIterator.hasNext() ? rootIterator.next() : null;
+            }
+        } finally {
             finishTx(tx);
         }
     }
 
-
     /**
      * Checks if is rooot node.
-     *
+     * 
      * @param node the node
      * @return true, if is rooot node (OR its VIRTUAL dataset)
      */
     public static boolean isRoootNode(Node node) {
-        if (node==null||!node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)||node.hasRelationship(GeoNeoRelationshipTypes.VIRTUAL_DATASET,Direction.INCOMING)){
+        if (node == null || !node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) || node.hasRelationship(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.INCOMING)) {
             return false;
         }
-        String typeId=(String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME);
-        return NodeTypes.DATASET.getId().equals(typeId)||NodeTypes.NETWORK.getId().equals(typeId)||NodeTypes.OSS.getId().equals(typeId);
+        String typeId = (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME);
+        return NodeTypes.DATASET.getId().equals(typeId) || NodeTypes.NETWORK.getId().equals(typeId) || NodeTypes.OSS.getId().equals(typeId);
     }
-
 
     /**
      * Gets the primary type of dataset node
-     *
+     * 
      * @param dataNode the root node
      * @param service the service
      * @return the primary type or null
      */
     public static String getPrimaryType(Node dataNode, GraphDatabaseService service) {
         Transaction tx = beginTx(service);
-        try{
-            return (String)dataNode.getProperty(INeoConstants.PRIMARY_TYPE_ID,null);
-        }finally{
+        try {
+            return (String)dataNode.getProperty(INeoConstants.PRIMARY_TYPE_ID, null);
+        } finally {
             finishTx(tx);
         }
     }
 
     /**
      * Sets the primary type.
-     *
+     * 
      * @param dataNode the data node
      * @param primaryType the primary type
      * @param service the service
      */
-    public static void setPrimaryType(Node dataNode, String primaryType,GraphDatabaseService service) {
-        setPropertyToNode(dataNode,INeoConstants.PRIMARY_TYPE_ID,primaryType,service);
+    public static void setPrimaryType(Node dataNode, String primaryType, GraphDatabaseService service) {
+        setPropertyToNode(dataNode, INeoConstants.PRIMARY_TYPE_ID, primaryType, service);
     }
-
 
     /**
      * Sets the property to node.
-     *
+     * 
      * @param node the node
      * @param propertyName the property name
      * @param value the value
      * @param service the service
      */
-    private static void setPropertyToNode(Node node, String propertyName, Object value , GraphDatabaseService service) {
+    private static void setPropertyToNode(Node node, String propertyName, Object value, GraphDatabaseService service) {
         Transaction tx = beginTx(service);
-        try{
-            if (value==null){
-                node.removeProperty(propertyName); 
-            }else{
-                node.setProperty(INeoConstants.PRIMARY_TYPE_ID,value);
+        try {
+            if (value == null) {
+                node.removeProperty(propertyName);
+            } else {
+                node.setProperty(INeoConstants.PRIMARY_TYPE_ID, value);
             }
             successTx(tx);
-        }finally{
+        } finally {
             finishTx(tx);
         }
     }
+
+    /**
+     * Gets the traverser of all datasets by network node
+     * 
+     * @param networkNode network node
+     * @param service the service
+     * @return Traverser
+     */
+    public static Traverser getAllCorrelatedDatasets(Node networkNode, GraphDatabaseService service) {
+        Transaction tx = beginTx(service);
+        try {
+            return networkNode.traverse(Order.DEPTH_FIRST, NeoUtils.getStopEvaluator(2), new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    return currentPos.notStartNode() && currentPos.lastRelationshipTraversed().isType(CorrelationRelationshipTypes.CORRELATED);
+
+                }
+            }, CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING, CorrelationRelationshipTypes.CORRELATED, Direction.INCOMING);
+        } finally {
+            finishTx(tx);
+        }
+
+    }
+
 
 }
