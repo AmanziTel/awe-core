@@ -132,7 +132,7 @@ public class CallStatistics {
     private void initilizeStatistics(Node drive, GraphDatabaseService service, IProgressMonitor monitor) throws IOException {
         datasetNode = drive;
         neoService = service;
-        
+        monitor.subTask("Getting statistics");
         statisticsConstants.put(StatisticsCallType.INDIVIDUAL, new IndividualCallConstants());
         statisticsConstants.put(StatisticsCallType.GROUP, new GroupCallConstants());
         

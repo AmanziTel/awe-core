@@ -57,6 +57,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableCursor;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
@@ -114,7 +115,7 @@ public class CallAnalyserView extends ViewPart {
      */
     public static final String ID = "org.amanzi.awe.views.calls.views.CallAnalyserView";
 
-    private static final int MIN_FIELD_WIDTH = 100;
+    private static final int MIN_FIELD_WIDTH = 110;
     public static final int DEF_SIZE = 100;
     private static final String KEY_ALL = ALL_VALUE;
     public static final int MAX_TABLE_LEN = 500;
@@ -139,6 +140,7 @@ public class CallAnalyserView extends ViewPart {
     private Comparator<PeriodWrapper> comparator;
     private int sortOrder = 0;
     private Composite frame;
+    private Composite parent;
     // private DateTime dateEnd;
 
 
@@ -388,6 +390,7 @@ public class CallAnalyserView extends ViewPart {
      * This is a callback that will allow us to create the viewer and initialize it.
      */
     public void createPartControl(Composite parent) {
+        this.parent = parent;
         color1 = new Color(Display.getCurrent(), 240, 240, 240);
         color2 = new Color(Display.getCurrent(), 255, 255, 255);
         sortOrder = 0;
@@ -658,7 +661,9 @@ public class CallAnalyserView extends ViewPart {
         callDataset.clear();
         callDataset = NeoUtils.getAllDatasetNodesByType(DriveTypes.AMS_CALLS, NeoServiceProvider.getProvider().getService());
         cDrive.setItems(callDataset.keySet().toArray(new String[0]));
-
+        cCallType.clearSelection();
+        cProbe.clearSelection();
+        cPeriod.clearSelection();
     }
 
     /**
@@ -918,7 +923,8 @@ public class CallAnalyserView extends ViewPart {
         if (drive == null) {
             return;
         }
-        frame.setEnabled(false);
+        parent.setCursor(new Cursor(parent.getDisplay(), SWT.CURSOR_WAIT));
+        frame.setEnabled(false);        
         Job statGetter = new Job("Get statistics") {            
             @Override
             protected IStatus run(IProgressMonitor monitor) {
@@ -945,6 +951,7 @@ public class CallAnalyserView extends ViewPart {
                             } finally {
                                 tx.finish();
                                 frame.setEnabled(true);
+                                parent.setCursor(new Cursor(parent.getDisplay(), SWT.CURSOR_ARROW));                                
                             }
                         }
                     }, true);
