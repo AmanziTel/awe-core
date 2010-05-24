@@ -148,9 +148,9 @@ public class GroupCallsStatTest extends CallStatisticsTest{
         result.add(AggregationStatisticsHeaders.GC4_ZW2_AVG);
         result.add(AggregationStatisticsHeaders.GC4_ZW2_MIN);
         result.add(AggregationStatisticsHeaders.GC4_ZW2_MAX);
-        /*result.add(AggregationStatisticsHeaders.GC5_ZW1_AVG);
+        result.add(AggregationStatisticsHeaders.GC5_ZW1_AVG);
         result.add(AggregationStatisticsHeaders.GC5_ZW1_MIN);
-        result.add(AggregationStatisticsHeaders.GC5_ZW1_MAX);*/
+        result.add(AggregationStatisticsHeaders.GC5_ZW1_MAX);
         return result;
     }
 

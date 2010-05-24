@@ -146,9 +146,9 @@ public class IndividualCallStatTest extends CallStatisticsTest{
         result.add(AggregationStatisticsHeaders.SC4_ZW2_AVG);
         result.add(AggregationStatisticsHeaders.SC4_ZW2_MIN);
         result.add(AggregationStatisticsHeaders.SC4_ZW2_MAX);
-        /*result.add(AggregationStatisticsHeaders.SC5_ZW1_AVG);
+        result.add(AggregationStatisticsHeaders.SC5_ZW1_AVG);
         result.add(AggregationStatisticsHeaders.SC5_ZW1_MIN);
-        result.add(AggregationStatisticsHeaders.SC5_ZW1_MAX);*/
+        result.add(AggregationStatisticsHeaders.SC5_ZW1_MAX);
         return result;
     }
 

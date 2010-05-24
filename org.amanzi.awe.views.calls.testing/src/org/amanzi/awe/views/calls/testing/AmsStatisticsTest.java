@@ -236,8 +236,8 @@ public abstract class AmsStatisticsTest {
         Node datasetNode = loadData(dataDir);
         Transaction tx = getNeo().beginTx();
         try {
-            CallStatistics statistics = new CallStatistics(datasetNode, getNeo());
-            assertResult(generated, statistics, aHours);
+            CallStatistics statistics = new CallStatistics(datasetNode, getNeo(), true);
+            assertResult(generated, statistics, aHours, aDrift);
         } finally {
             tx.finish();
         }
@@ -261,7 +261,7 @@ public abstract class AmsStatisticsTest {
             Integer aProbes, String dataDir) throws IOException, ParseException {
         IDataGenerator generator = getDataGenerator(aHours, aDrift, aCallsPerHour, aCallPerHourVariance, aProbes, dataDir);
         List<CallGroup> generated = ((GeneratedCallsData)generator.generate()).getData();
-        return buildStatisticsByGenerated(generated, aHours);
+        return buildStatisticsByGenerated(generated, aHours, aDrift);
     }
     
     /**
@@ -286,14 +286,14 @@ public abstract class AmsStatisticsTest {
      * @param statistics CallStatistics (for check)
      * @param hours Integer (count of hours)
      */
-    protected void assertResult(HashMap<Integer, ProbeStat> generated,CallStatistics statistics, Integer hours){
+    protected void assertResult(HashMap<Integer, ProbeStat> generated,CallStatistics statistics, Integer hours, Integer drift){
         Node hourlyNode = statistics.getPeriodNode(CallTimePeriods.HOURLY, getCallType());
         assertPeriodStatistics(hourlyNode, CallTimePeriods.HOURLY, generated,statistics);
         if(hours>1){
             Node dailyNode = statistics.getPeriodNode(CallTimePeriods.DAILY, getCallType());
             assertPeriodStatistics(dailyNode, CallTimePeriods.DAILY, generated,statistics);
         }
-        if(hours>DAY){
+        if(hours+drift>DAY){
             Node weekNode = statistics.getPeriodNode(CallTimePeriods.WEEKLY, getCallType());
             assertPeriodStatistics(weekNode, CallTimePeriods.WEEKLY, generated,statistics);
             Node monthNode = statistics.getPeriodNode(CallTimePeriods.MONTHLY, getCallType());
@@ -332,25 +332,25 @@ public abstract class AmsStatisticsTest {
         assertFalse(period.getId()+" node does not exists.",statNode==null);
         assertUnderlyingStatCount(statNode, period,0);
         List<Node> allRows = new ArrayList<Node>(NeoUtils.getChildTraverser(statNode).getAllNodes());
-        assertEquals("Incorrect count of rows in "+period.getId()+" period for second level statistics.",1,allRows.size());
-        Node row = allRows.get(0);
-        
-        Traverser traverse = row.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
-            @Override
-            public boolean isReturnableNode(TraversalPosition currentPos) {
-                Node node = currentPos.currentNode();
-                return currentPos.depth()>0&&NodeTypes.getNodeType(node, getNeo()).equals(NodeTypes.S_ROW);
-            }            
-        }, GeoNeoRelationshipTypes.SOURCE,Direction.OUTGOING);
-        assertEquals("Incorrect count of source rows in "+period.getId()+" period for second level statistics.",generated.getSourceCount(),traverse.getAllNodes().size());
-        
-        List<HashMap<IStatisticsHeader, Number>> realAggrStat = getRealAggrStat(row);
-        HashMap<IStatisticsHeader, Number> real = realAggrStat.get(0);
-        HashMap<IStatisticsHeader, Number> bySource = realAggrStat.get(1);
-        HashMap<IStatisticsHeader, Number> etalon = generated.getRowValuesForCheck(generated.getAllTimesSorted().get(0));
-        assertEquals("Wrong cell count in second level statistics (period "+period.getId()+").",etalon.size(), real.size());
-        for(IStatisticsHeader header : etalon.keySet()){
-            assertCellValue(etalon, bySource, real, header, period);
+        for (Node row : allRows) {
+            Long rowTime = getRowTime(row);
+            Traverser traverse = row.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    Node node = currentPos.currentNode();
+                    return currentPos.depth() > 0 && NodeTypes.getNodeType(node, getNeo()).equals(NodeTypes.S_ROW);
+                }
+            }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING);
+            assertEquals("Incorrect count of source rows in " + period.getId() + " period for second level statistics.", generated
+                    .getSourceCount(rowTime), traverse.getAllNodes().size());
+            List<HashMap<IStatisticsHeader, Number>> realAggrStat = getRealAggrStat(row);
+            HashMap<IStatisticsHeader, Number> real = realAggrStat.get(0);
+            HashMap<IStatisticsHeader, Number> bySource = realAggrStat.get(1);            
+            HashMap<IStatisticsHeader, Number> etalon = generated.getRowValuesForCheck(rowTime);
+            assertEquals("Wrong cell count in second level statistics (period " + period.getId() + ").", etalon.size(), real.size());
+            for (IStatisticsHeader header : etalon.keySet()) {
+                assertCellValue(etalon, bySource, real, header, period);
+            }
         }
     }
     
@@ -708,8 +708,8 @@ public abstract class AmsStatisticsTest {
      * @return HashMapHashMap<Integer, ProbeStat>
      * @throws ParseException (problem in gets parameters)
      */
-    private HashMap<Integer, ProbeStat> buildStatisticsByGenerated(List<CallGroup> generated, int hours)throws ParseException{
-        if(hours> DAY){
+    private HashMap<Integer, ProbeStat> buildStatisticsByGenerated(List<CallGroup> generated, int hours, int drift)throws ParseException{
+        if(hours+drift> DAY){
             return buildStatistcsByPeriod(generated, CallTimePeriods.MONTHLY);
         }
         if(hours>1){
@@ -755,7 +755,8 @@ public abstract class AmsStatisticsTest {
         for(IAggrStatisticsHeaders aggr : aggrHeaders){
             allUtilHeaders.addAll(aggr.getDependendHeaders());
         }
-        HashMap<IStatisticsHeader, Number> utilValues = new HashMap<IStatisticsHeader, Number>(allUtilHeaders.size());        
+        int utilCount = allUtilHeaders.size();
+        HashMap<Long,HashMap<IStatisticsHeader, Number>> utilValues = new HashMap<Long,HashMap<IStatisticsHeader, Number>>(utilCount);        
         PeriodStat periodStat = new PeriodStat(period);
         for(Integer probe : statistics.keySet()){
             if(probe.equals(SECOND_LEVEL_STAT_ID)){
@@ -764,21 +765,29 @@ public abstract class AmsStatisticsTest {
             PeriodStat currStat = statistics.get(probe).getStatisticsByPeriod(getCallType(),period);
             for(Long time : currStat.getAllTimesSorted()){
                 HashMap<IStatisticsHeader, Number> row = currStat.getRowValues(time);
+                HashMap<IStatisticsHeader, Number> utilRow = utilValues.get(time);
+                if(utilRow==null){
+                    utilRow = new HashMap<IStatisticsHeader, Number>(utilCount);
+                    utilValues.put(time, utilRow);
+                }
                 for(IStatisticsHeader util : allUtilHeaders){
                     for(IStatisticsHeader real : ((IAggrStatisticsHeaders)util).getDependendHeaders()){
                         Number value = row.get(real);
-                        Number curr = utilValues.get(util);
-                        utilValues.put(util, updateValueByHeader(curr, value, util));
+                        Number curr = utilRow.get(util);
+                        utilRow.put(util, updateValueByHeader(curr, value, util));
                     }
                 }
-                periodStat.incSourceCount();
+                periodStat.incSourceCount(time);
             }
         }
-        HashMap<IStatisticsHeader, Number> resultRow = new HashMap<IStatisticsHeader, Number>();
-        for(IAggrStatisticsHeaders aggr : aggrHeaders){
-            resultRow.put(aggr, getAggrStatValue(utilValues, aggr));
+        for (Long time : utilValues.keySet()) {
+            HashMap<IStatisticsHeader, Number> utilRow = utilValues.get(time);
+            HashMap<IStatisticsHeader, Number> resultRow = new HashMap<IStatisticsHeader, Number>();
+            for (IAggrStatisticsHeaders aggr : aggrHeaders) {
+                resultRow.put(aggr, getAggrStatValue(utilRow, aggr));
+            }
+            periodStat.addRow(time, resultRow);
         }
-        periodStat.addRow(0L, resultRow);
         aggrStat.addStatistcs(StatisticsCallType.AGGREGATION_STATISTICS,periodStat);
         return statistics;
     }
@@ -836,7 +845,7 @@ public abstract class AmsStatisticsTest {
             }
             start = end;
             end = getNextStartDate(period, lastDate, start);
-        }while(end<lastDate);
+        }while(start<lastDate);
         return result;
     }
     
@@ -865,8 +874,7 @@ public abstract class AmsStatisticsTest {
             }
             PeriodStat periodStat = stat.getStatisticsByPeriod(getCallType(),CallTimePeriods.HOURLY);
             if(periodStat == null){
-                periodStat = new PeriodStat(CallTimePeriods.HOURLY);
-                periodStat.incSourceCount();
+                periodStat = new PeriodStat(CallTimePeriods.HOURLY);                
                 stat.addStatistcs(getCallType(),periodStat);
             }
             for(CallData callData : group.getData()){
@@ -990,7 +998,7 @@ public abstract class AmsStatisticsTest {
         
         private CallTimePeriods period;
         private HashMap<Long, HashMap<IStatisticsHeader, Number>> data;
-        private int sourceCount=0;
+        private HashMap<Long, Integer> sourceCount = new HashMap<Long, Integer>();
         
         public PeriodStat(CallTimePeriods periodKey) {
             period = periodKey;
@@ -1082,12 +1090,13 @@ public abstract class AmsStatisticsTest {
         /**
          * @return Returns the sourceCount.
          */
-        public int getSourceCount() {
-            return sourceCount;
+        public Integer getSourceCount(Long time) {
+            return sourceCount.get(time);
         }
         
-        public void incSourceCount(){
-            sourceCount++;
+        public void incSourceCount(Long time){
+            Integer value = sourceCount.get(time);            
+            sourceCount.put(time, value==null?1:value+1);
         }
     }
     

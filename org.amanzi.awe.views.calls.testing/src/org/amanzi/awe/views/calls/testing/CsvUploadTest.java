@@ -123,7 +123,7 @@ public class CsvUploadTest extends AmsStatisticsTest{
     
     @Override
     protected Node loadData(String dataDir) throws IOException {
-        StatisticsDataLoader loader = new StatisticsDataLoader(dataDir, "test", "test network", getNeo());
+        StatisticsDataLoader loader = new StatisticsDataLoader(dataDir, "test", "test network", getNeo(), true);
         loader.run(new NullProgressMonitor());
         return loader.getVirtualDataset();
     }
@@ -133,7 +133,7 @@ public class CsvUploadTest extends AmsStatisticsTest{
             Integer aCallPerHourVariance, Integer aProbes, String dataDir) throws IOException, ParseException {
         IDataGenerator generator = getDataGenerator(aHours, aDrift, aCallsPerHour, aCallPerHourVariance, aProbes, dataDir);
         CsvData generated = (CsvData)generator.generate();
-        return buildStatisticsByGenerated(generated, aHours);
+        return buildStatisticsByGenerated(generated, aHours, aDrift);
     }
 
     /**
@@ -142,8 +142,8 @@ public class CsvUploadTest extends AmsStatisticsTest{
      * @param hours
      * @return HashMap<Integer, ProbeStat>
      */
-    private HashMap<Integer, ProbeStat> buildStatisticsByGenerated(CsvData generated, Integer hours) {
-        if(hours> DAY){
+    private HashMap<Integer, ProbeStat> buildStatisticsByGenerated(CsvData generated, Integer hours, Integer drift) {
+        if(hours+drift> DAY){
             return buildStatistcsByPeriod(generated, CallTimePeriods.MONTHLY);
         }
         if(hours>1){
@@ -184,22 +184,22 @@ public class CsvUploadTest extends AmsStatisticsTest{
             aggrStat = new ProbeStat(SECOND_LEVEL_STAT_ID);
             statistics.put(SECOND_LEVEL_STAT_ID, aggrStat);
         }
-        HashMap<AggregationCallTypes,HashMap<IStatisticsHeader, Number>> allUtilValues = new HashMap<AggregationCallTypes,HashMap<IStatisticsHeader, Number>>();        
         PeriodStat periodStat = new PeriodStat(period);
-        for(Integer probe : statistics.keySet()){
-            if(probe.equals(SECOND_LEVEL_STAT_ID)){
-                continue;
-            }
-            for (AggregationCallTypes stat : AggregationCallTypes.values()) {
-                StatisticsCallType callType = stat.getRealType();
-                HashMap<IStatisticsHeader, Number> utilValues = allUtilValues.get(stat);
-                if(utilValues==null){
-                    utilValues = new HashMap<IStatisticsHeader, Number>();
-                    allUtilValues.put(stat, utilValues);
+        for(AggregationCallTypes stat : AggregationCallTypes.values()){
+            StatisticsCallType callType = stat.getRealType();
+            HashMap<Long,HashMap<IStatisticsHeader, Number>> allUtilValues = new HashMap<Long,HashMap<IStatisticsHeader, Number>>();
+            for(Integer probe : statistics.keySet()){
+                if(probe.equals(SECOND_LEVEL_STAT_ID)){
+                    continue;
                 }
                 PeriodStat currStat = statistics.get(probe).getStatisticsByPeriod(callType, period);
                 for (Long time : currStat.getAllTimesSorted()) {
                     HashMap<IStatisticsHeader, Number> row = currStat.getRowValues(time);
+                    HashMap<IStatisticsHeader, Number> utilValues = allUtilValues.get(time);
+                    if(utilValues==null){
+                        utilValues = new HashMap<IStatisticsHeader, Number>();
+                        allUtilValues.put(time, utilValues);
+                    }
                     for (IStatisticsHeader util : stat.getUtilHeaders()) {
                         for (IStatisticsHeader real : ((IAggrStatisticsHeaders)util).getDependendHeaders()) {
                             Number value = row.get(real);
@@ -207,21 +207,24 @@ public class CsvUploadTest extends AmsStatisticsTest{
                             utilValues.put(util, updateValueByHeader(curr, value, util));
                         }
                     }
-                    periodStat.incSourceCount();
+                    periodStat.incSourceCount(time);
                 }
             }
+            for (Long time : allUtilValues.keySet()) {
+                HashMap<IStatisticsHeader, Number> utilValues = allUtilValues.get(time);
+                if(utilValues==null){
+                    continue;
+                }
+                HashMap<IStatisticsHeader, Number> resultRow = periodStat.getRowValues(time);                
+                if(resultRow==null){
+                    resultRow = new HashMap<IStatisticsHeader, Number>();
+                    periodStat.addRow(time, resultRow);
+                }
+                for (IStatisticsHeader aggr : stat.getAggrHeaders()) {
+                    resultRow.put(aggr, getAggrStatValue(utilValues, (IAggrStatisticsHeaders)aggr));
+                }
+            }            
         }
-        HashMap<IStatisticsHeader, Number> resultRow = new HashMap<IStatisticsHeader, Number>();
-        for (AggregationCallTypes stat : AggregationCallTypes.values()) {
-            HashMap<IStatisticsHeader, Number> utilValues = allUtilValues.get(stat);
-            if(utilValues==null){
-                continue;
-            }
-            for (IStatisticsHeader aggr : stat.getAggrHeaders()) {
-                resultRow.put(aggr, getAggrStatValue(utilValues, (IAggrStatisticsHeaders)aggr));
-            }
-        }
-        periodStat.addRow(0L, resultRow);
         aggrStat.addStatistcs(StatisticsCallType.AGGREGATION_STATISTICS,periodStat);
         return statistics;
     }
@@ -254,7 +257,7 @@ public class CsvUploadTest extends AmsStatisticsTest{
                     startTime = start;
                 }
                 for(CsvHeaders header : CsvHeaders.values()){
-                    if(header.getPart()==CsvHeaders.COMMON_PART || header.getFullName().contains("C-5_DELAY_")){ //TODO delete second after 'audio delay' corrected
+                    if(header.getPart()==CsvHeaders.COMMON_PART){ 
                         continue;
                     }
                     currentCallType = HeaderTypes.getTypeByHeader(header.getFullName()).getRealType();
@@ -353,10 +356,10 @@ public class CsvUploadTest extends AmsStatisticsTest{
     }
     
     @Override
-    protected void assertResult(HashMap<Integer, ProbeStat> generated, CallStatistics statistics, Integer hours) {
+    protected void assertResult(HashMap<Integer, ProbeStat> generated, CallStatistics statistics, Integer hours, Integer drift) {
         for (StatisticsCallType callType : getFirstLevelStatTypes()) {
             currentCallType = callType;
-            super.assertResult(generated, statistics, hours);
+            super.assertResult(generated, statistics, hours, drift);
         }
     }
 

@@ -104,8 +104,10 @@ public class StatisticsDataLoader {
     private HashMap<StatisticsCallType, Node> previousCells = new HashMap<StatisticsCallType, Node>();
     private HashMap<StatisticsCallType, Node> previousRows = new HashMap<StatisticsCallType, Node>();
     private HashMap<StatisticsCallType, Long[]> statBorders = new HashMap<StatisticsCallType, Long[]>();
-    Long minTime;
-    Long maxTime;
+    private Long minTime;
+    private Long maxTime;
+    
+    private boolean isTest;
     
     private GraphDatabaseService service;
     
@@ -124,6 +126,25 @@ public class StatisticsDataLoader {
         if(service == null){
             service = NeoServiceProvider.getProvider().getService();
         }
+        initHeaders();
+    }
+    
+    /**
+     * Constructor.
+     * @param directory String (name of file directory)
+     * @param dataset String (virtual dataset name)
+     * @param network String (network name)
+     * @param neo GraphDatabaseService
+     */
+    public StatisticsDataLoader(String directory, String dataset, String network, GraphDatabaseService neo, boolean testing){
+        directoryName = directory;
+        networkName = network;
+        datasetName = dataset;
+        service = neo;
+        if(service == null){
+            service = NeoServiceProvider.getProvider().getService();
+        }
+        isTest = testing;
         initHeaders();
     }
     
@@ -197,8 +218,9 @@ public class StatisticsDataLoader {
             virtualDataset.setProperty(INeoConstants.MIN_TIMESTAMP, minTime);
             virtualDataset.setProperty(INeoConstants.MAX_TIMESTAMP, maxTime);
         }
-        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
-                new UpdateDatabaseEvent(UpdateViewEventType.GIS));
+        if (!isTest) {
+            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDatabaseEvent(UpdateViewEventType.GIS));
+        }
         try {
             addDataToCatalog();
         } catch (MalformedURLException e) {

@@ -107,6 +107,8 @@ public class CallStatistics {
 
     private Transaction transaction;
     
+    private boolean isTest = false;
+    
    /**
      * Creates Calculator of Call Statistics
      * 
@@ -116,6 +118,19 @@ public class CallStatistics {
     public CallStatistics(Node drive, GraphDatabaseService service) throws IOException {
         assert drive != null;
         initilizeStatistics(drive, service, new NullProgressMonitor());
+    }
+    
+    /**
+     * Creates Calculator of Call Statistics
+     * 
+     * @param drive Dataset Node
+     * @throws IOException if was problem in initializing of indexes
+     */
+    public CallStatistics(Node drive, GraphDatabaseService service, boolean testing) throws IOException {
+        assert drive != null;
+        isTest=testing;
+        initilizeStatistics(drive, service, new NullProgressMonitor());
+        
     }
     
     /**
@@ -142,8 +157,10 @@ public class CallStatistics {
         long maxTime = minMax.getRight();
         highPeriod = getHighestPeriod(minTime, maxTime); 
         buildSecondLevelStatistics(minTime, maxTime);
-        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
-                new UpdateDatabaseEvent(UpdateViewEventType.STATISTICS));
+        if (!isTest) {
+            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
+                    new UpdateDatabaseEvent(UpdateViewEventType.STATISTICS));
+        }
     }
     
     

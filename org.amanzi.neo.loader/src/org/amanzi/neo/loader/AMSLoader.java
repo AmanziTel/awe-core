@@ -575,11 +575,17 @@ public class AMSLoader extends AbstractCallLoader {
 			CommandSyntax syntax = AMSCommandPackage.getCommandSyntax(commandName);
 			if (syntax == CommandSyntax.SET) { 
 			    int equalsIndex = commandName.indexOf("=");			    
-				if (!commandName.contains("AT+CMGS")) {
-				    tokenizer = new StringTokenizer(commandName.substring(equalsIndex + 1).trim());
+				String params = commandName.substring(equalsIndex + 1).trim();
+                if (!commandName.contains("AT+CMGS")) {
+				    tokenizer = new StringTokenizer(params);
                 }else{
                     //add message data.
-                    tokenizer = new StringTokenizer(commandName.substring(equalsIndex + 1).trim()+","+tokenizer.nextToken("|"));
+                    String mayBeMessage = tokenizer.nextToken("|");
+                    if(mayBeMessage.contains(CallEvents.ERROR.commandName)){
+                        tokenizer = new StringTokenizer(params);
+                    }else{
+                        tokenizer = new StringTokenizer(params+","+mayBeMessage);
+                    }
                 }
 				commandName = commandName.substring(0, equalsIndex);
 			}
@@ -843,6 +849,7 @@ public class AMSLoader extends AbstractCallLoader {
 	 * @param timestamp timestamp of event
 	 */
 	private void processCallEvent(Node relatedNode, CallEvents event, long timestamp, HashMap<String, Object> properties) {
+	    Call founded;
 	    switch (event) {	   
 	    case CALL_SETUP_BEGIN:
 	        if (messages == null) {
@@ -885,7 +892,7 @@ public class AMSLoader extends AbstractCallLoader {
 	    case PESQ:
 	        if (call != null) {
 	            call.addLq((Float)properties.get(AMSCommandParameters.PESQ_LISTENING_QUALITIY.getName()));
-	            call.addDelay((Float)properties.get(AMSCommandParameters.ESTIMATED_DELAY.getName()));
+	            //call.addDelay((Float)properties.get(AMSCommandParameters.ESTIMATED_DELAY.getName()));//TODO make correct getting data
 	        }
 	        break;
 	    case CALL_TERMINATION_BEGIN:
@@ -919,39 +926,38 @@ public class AMSLoader extends AbstractCallLoader {
             }else{
                 loadedType = CallType.SDS;
             }
-	        boolean add = false;
+	        founded = null;
             for(Call message : messages){
                 if(message.getCallSetupBegin()==0){
-                    message.setCallSetupBeginTime(timestamp);
-                    message.setCallerProbe(currentProbeCalls);
-                    message.setCallType(loadedType);
-                    add = true;
+                    founded = message;
                     break;
                 }
             }
-            if(!add){
-                Call message = new Call();
-                message.setCallSetupBeginTime(timestamp);
-                message.setCallerProbe(currentProbeCalls);
-                message.setCallType(loadedType);
-                messages.add(message);
+            if(founded==null){
+                founded = new Call();
+                messages.add(founded);
             }
+            founded.setCallSetupBeginTime(timestamp);
+            founded.setCallerProbe(currentProbeCalls);
+            founded.setCallType(loadedType);            
 	        callerProbeCalls = currentProbeCalls;
 	        break;
 	    case SEND_MESSAGE_BEGIN:
 	        if (messages != null) {
-	            boolean added = false;
+	            founded = null;
 	            for(Call message : messages){
                     if(message.getCallSetupEnd()==0){
-                        message.setCallSetupEndTime(timestamp);
-                        added = true;
+                        founded = message;
                         break;
                     }
                 }
-	            if(!added){
-	                Call message = new Call();	                
-	                message.setCallSetupEndTime(timestamp);
-	                messages.add(message);
+	            if(founded==null){
+	                founded = new Call();
+	                messages.add(founded);
+	            }
+	            founded.setCallSetupEndTime(timestamp);
+	            if(properties.get(AMSCommandParameters.SENDED_MESSAGE.getName())==null){
+	                founded.setCallResult(CallResult.FAILURE);
 	            }
             }
 	        break;
@@ -959,38 +965,38 @@ public class AMSLoader extends AbstractCallLoader {
 	        if(messages==null){
 	            messages = new ArrayList<Call>();
             }
-	        boolean founded = false;
+	        founded = null;
             for(Call message : messages){
                 if(message.getCallTerminationBegin()==0){
-                    message.setCallTerminationBegin(timestamp);
-                    message.setCallResult(CallResult.SUCCESS);
-                    founded = true;
+                    founded = message;
                     break;
                 }
             }
-            if(!founded){
-                Call message = new Call();
-                message.setCallTerminationBegin(timestamp);
-                message.setCallResult(CallResult.SUCCESS);
-                messages.add(message);
+            if(founded==null){
+                founded = new Call();                
+                messages.add(founded);
             }
-	        break;
+            founded.setCallTerminationBegin(timestamp);
+            if (founded.getCallResult()==null) {
+                founded.setCallResult(CallResult.SUCCESS);
+            }
+            break;
 	    case MESS_ACKN_GET:
 	        if(messages!=null){
-	            boolean added = false;
+	            founded = null;
 	            for(Call message : messages){
 	                if(message.getCallTerminationEnd()==0){
-	                    message.setCallTerminationEnd(timestamp);
-	                    message.setCallResult(CallResult.SUCCESS);
-	                    added = true;
+	                    founded = message;
 	                    break;
 	                }
 	            }
-	            if(!added){
-	                Call message = new Call();
-	                message.setCallTerminationEnd(timestamp);
-	                message.setCallResult(CallResult.SUCCESS);
-	                messages.add(message);
+	            if(founded==null){
+	                founded = new Call();
+	                messages.add(founded);
+	            }
+	            founded.setCallTerminationEnd(timestamp);
+	            if (founded.getCallResult()==null) {
+	                founded.setCallResult(CallResult.SUCCESS);
 	            }
             }
 	        break;
