@@ -110,7 +110,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
 
     private void storeRealCall(Call call) {
         Node probeCallNode = call.getCallerProbe();
-        Node callNode = createCallNode(call.getCallSetupBegin(), call.getRelatedNodes(), probeCallNode);
+        Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
 
         long setupDuration = call.getCallSetupEnd() - call.getCallSetupBegin();
         long terminationDuration = call.getCallTerminationEnd() - call.getCallTerminationBegin();
@@ -138,7 +138,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
     
     private void storeMessageCall(Call call) {
         Node probeCallNode = call.getCallerProbe();
-        Node callNode = createCallNode(call.getCallSetupBegin(), call.getRelatedNodes(), probeCallNode);
+        Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
 
         //TODO remove fake mechanism after investigation
         long receivedTime = call.getResivedTime()==null?call.getCallTerminationBegin() - call.getCallSetupEnd():call.getResivedTime();
@@ -168,7 +168,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
     
     private void storeITSICall(Call call) {
         Node probeCallNode = call.getCallerProbe();
-        Node callNode = createCallNode(call.getCallSetupBegin(), call.getRelatedNodes(), probeCallNode);
+        Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
         
         long updateTime = call.getCallTerminationEnd() - call.getCallSetupBegin();
         
@@ -188,7 +188,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
     }
     private void storeITSICCCall(Call call) {
         Node probeCallNode = call.getCallerProbe();
-        Node callNode = createCallNode(call.getCallSetupBegin(), call.getRelatedNodes(), probeCallNode);
+        Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
 
         
         LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
@@ -298,6 +298,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
     public static class Call {
         private Long acknowlegeTime;
         private Long resivedTime;
+        private Long timestamp = null;
         //for ITSI_CC
         private Long handoverTime;
         private Long reselectionTime;
@@ -606,6 +607,21 @@ public abstract class AbstractCallLoader extends DriveLoader {
          */
         public Long getReselectionTime() {
             return reselectionTime;
+        }
+
+        /**
+         * @return Returns the timestamp.
+         */
+        public Long getTimestamp() {
+            // TODO remove fake after refactoring
+            return timestamp == null ? getCallSetupBegin() : timestamp;
+        }
+
+        /**
+         * @param timestamp The timestamp to set.
+         */
+        public void setTimestamp(Long timestamp) {
+            this.timestamp = timestamp;
         }
         
     }

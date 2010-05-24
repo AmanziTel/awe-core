@@ -410,7 +410,7 @@ public class AMSXMLoader extends AbstractCallLoader {
 
         /** The header. */
         protected LinkedHashMap<String, Header> header;
-
+        protected Long timestamp = null;
         /**
          * Instantiates a new abstract event.
          * 
@@ -438,6 +438,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             if (openTag == null) {
                 Transaction tx = neo.beginTx();
                 try {
+                    timeStamp = null;
                     createEventChild();
                     handleCollector();
                     index(node);
@@ -462,7 +463,7 @@ public class AMSXMLoader extends AbstractCallLoader {
          * @throws ParseException the parse exception
          */
         protected void handleCollector() throws ParseException {
-            Long timestamp = null;
+
             Map<String, String> map = getPropertyMap();
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 Pair<Object, Class< ? extends Object>> pair = getParcedValue(entry.getKey(), entry.getValue(), definedValues);
@@ -983,6 +984,7 @@ public class AMSXMLoader extends AbstractCallLoader {
                 if (hook == 0 && simplex == 0) {
                     tocttc = new AMSCall();
                     call = tocttc;
+                    tocttc.setTimestamp(timestamp);
                     tocttc.setCallType(CallType.INDIVIDUAL);
                     String priority = getPropertyMap().get("priority");
                     if (priority != null) {
@@ -1007,7 +1009,9 @@ public class AMSXMLoader extends AbstractCallLoader {
                     tocttc.setCallTerminationBegin((Long)node.getProperty("releaseTime", 0l));
                 } else if (hook == 1 && simplex == 1) {
                     tocttcGroup = new AMSCall();
+
                     call = tocttc;
+                    tocttcGroup.setTimestamp(timestamp);
                     tocttcGroup.setCallType(CallType.GROUP);
                     String priority = getPropertyMap().get("priority");
                     if (priority != null) {
@@ -1209,6 +1213,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             msgCall = new AMSCall();
 
             msgCall.addRelatedNode(node);
+            msgCall.setTimestamp(timestamp);
             Long sendTime = (Long)node.getProperty("sendTime", null);
             msgCall.setCallSetupBeginTime(sendTime);
             timeEnd = sendTime;
@@ -1724,7 +1729,7 @@ public class AMSXMLoader extends AbstractCallLoader {
                             lat = -lat;
                         }
                         lon = Double.parseDouble(lonStr);
-                        if (latNS.equalsIgnoreCase("W")) {
+                        if (lonNS.equalsIgnoreCase("W")) {
                             lon = -lon;
                         }
                         valid=true;
