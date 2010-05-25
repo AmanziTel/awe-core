@@ -294,6 +294,15 @@ public class CorrelationList extends ViewPart {
         table.setInput("");
     }
 
+    public void showCurrentCorrelation(Node networkNode, Node driveNode) {
+        updateGisNode();
+        cNetwork.setText(networkNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString());
+        networkChangeSelection();
+        cNetwork.setText(driveNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString());
+        driveChangeSelection();
+
+    }
+
     /**
      *Change list of gis items
      * 

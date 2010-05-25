@@ -21,6 +21,7 @@ import org.amanzi.awe.views.drive.views.CorrelationManager;
 import org.amanzi.awe.views.drive.views.DriveInquirerView;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.listener.IUpdateViewListener;
+import org.amanzi.neo.core.database.services.events.NewCorrelationEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.utils.ActionUtil;
@@ -28,6 +29,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
@@ -40,58 +42,58 @@ public class DriveInquirerPlugin extends AbstractUIPlugin implements IUpdateView
     static {
         Collection<UpdateViewEventType> spr = new HashSet<UpdateViewEventType>();
         spr.add(UpdateViewEventType.GIS);
+        spr.add(UpdateViewEventType.NEW_CORRELATION);
         handedTypes = Collections.unmodifiableCollection(spr);
     }
-	// The plug-in ID
+    // The plug-in ID
     public static final String PLUGIN_ID = "org.amanzi.awe.views.drive";
 
-	// The shared instance
-	private static DriveInquirerPlugin plugin;
-	
-	/**
-	 * The constructor
-	 */
-	public DriveInquirerPlugin() {
-	}
+    // The shared instance
+    private static DriveInquirerPlugin plugin;
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
-	 */
-	public void start(BundleContext context) throws Exception {
-		super.start(context);
-		plugin = this;
+    /**
+     * The constructor
+     */
+    public DriveInquirerPlugin() {
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
+     */
+    public void start(BundleContext context) throws Exception {
+        super.start(context);
+        plugin = this;
         NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
-	}
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
-	 */
-	public void stop(BundleContext context) throws Exception {
-		plugin = null;
-		super.stop(context);
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
+     */
+    public void stop(BundleContext context) throws Exception {
+        plugin = null;
+        super.stop(context);
+    }
 
-	/**
-	 * Returns the shared instance
-	 *
-	 * @return the shared instance
-	 */
-	public static DriveInquirerPlugin getDefault() {
-		return plugin;
-	}
+    /**
+     * Returns the shared instance
+     * 
+     * @return the shared instance
+     */
+    public static DriveInquirerPlugin getDefault() {
+        return plugin;
+    }
 
-	/**
-	 * Returns an image descriptor for the image file at the given
-	 * plug-in relative path
-	 *
-	 * @param path the path
-	 * @return the image descriptor
-	 */
-	public static ImageDescriptor getImageDescriptor(String path) {
-		return imageDescriptorFromPlugin(PLUGIN_ID, path);
-	}
+    /**
+     * Returns an image descriptor for the image file at the given plug-in relative path
+     * 
+     * @param path the path
+     * @return the image descriptor
+     */
+    public static ImageDescriptor getImageDescriptor(String path) {
+        return imageDescriptorFromPlugin(PLUGIN_ID, path);
+    }
 
     /**
      *updates ReuseAnalyserView
@@ -101,8 +103,7 @@ public class DriveInquirerPlugin extends AbstractUIPlugin implements IUpdateView
 
             @Override
             public void run() {
-                IViewPart reuseView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(
-                        DriveInquirerView.ID);
+                IViewPart reuseView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(DriveInquirerView.ID);
                 if (reuseView != null) {
                     ((DriveInquirerView)reuseView).updateGisNode();
                 }
@@ -128,9 +129,31 @@ public class DriveInquirerPlugin extends AbstractUIPlugin implements IUpdateView
     public static void error(String message, Throwable e) {
         getDefault().getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, 0, message == null ? "" : message, e)); //$NON-NLS-1$
     }
+
     @Override
     public void updateView(UpdateViewEvent event) {
-        updateView();
+        if (event.getType() == UpdateViewEventType.NEW_CORRELATION) {
+            final NewCorrelationEvent newCorrelaionEvent = (NewCorrelationEvent)event;
+            ActionUtil.getInstance().runTask(new Runnable() {
+
+                @Override
+                public void run() {
+                    IViewPart reuseView;
+                    try {
+                        reuseView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(CorrelationList.ID);
+                    } catch (PartInitException e) {
+                        // TODO Handle PartInitException
+                        throw (RuntimeException)new RuntimeException().initCause(e);
+                    }
+                    if (reuseView != null) {
+                        ((CorrelationList)reuseView).showCurrentCorrelation(newCorrelaionEvent.getNetworkNode(), newCorrelaionEvent.getDriveNode());
+                    }
+                }
+            }, true);
+
+        } else {
+            updateView();
+        }
     }
 
     @Override
