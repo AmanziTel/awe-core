@@ -542,7 +542,7 @@ public class TEMSLoader extends DriveLoader {
            return datasetNode;
         }
         else {
-            return getVirtualDataset(DriveTypes.MS);
+            return getVirtualDataset(DriveTypes.MS,false);
         }
         
     }

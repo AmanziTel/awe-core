@@ -60,7 +60,7 @@ private StatisticsCallType cellType;
     }
     @Test
     public void testCompareStatistics()throws IOException, ParseException{
-        stat1TimeCorrelator=0;//-3*60*60*1000;
+        stat1TimeCorrelator=Long.parseLong(Messages.getString("StatisticsTest.set1_correlation")); //$NON-NLS-1$
         CallStatistics stat1 = createStatistics(loadXMLData());
         CallStatistics stat2 = createStatistics(loadCSVData());
         compareStatistics(stat1,stat2);
@@ -91,10 +91,10 @@ private StatisticsCallType cellType;
                continue;
            }
            if (node1==null){
-               errors.append('\n').append(String.format("AMS Statistic: not found root node for periods=%s and type=%s",CallTimePeriods.HOURLY,type));
+               errors.append('\n').append("Type: ").append(getCallType()).append(" ").append(String.format("AMS Statistic: not found root node for periods=%s and type=%s",CallTimePeriods.HOURLY,type)); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                continue;
            }else if (node2==null){
-               errors.append('\n').append(String.format("CSV Statistic: not found root node for periods=%s and type=%s",CallTimePeriods.HOURLY,type));
+               errors.append('\n').append("Type: ").append(getCallType()).append(" ").append(String.format("CSV Statistic: not found root node for periods=%s and type=%s",CallTimePeriods.HOURLY,type)); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                continue;               
            }
            compareRootNode(node1,node2,errors);
@@ -109,7 +109,7 @@ private StatisticsCallType cellType;
         Assert.assertNotNull(node1);
         Assert.assertNotNull(node2);
          Iterator<Node> stat1SrowIter = NeoUtils.getChildTraverser(node1).iterator();
-         Iterator<Node> stat2SrowIter = NeoUtils.getChildTraverser(node1).iterator();
+         Iterator<Node> stat2SrowIter = NeoUtils.getChildTraverser(node2).iterator();
         while (stat1SrowIter.hasNext()||stat2SrowIter.hasNext()){
             Node sRow1 = stat1SrowIter.hasNext()?stat1SrowIter.next():null;
             Node sRow2 = stat2SrowIter.hasNext()?stat2SrowIter.next():null;
@@ -117,19 +117,19 @@ private StatisticsCallType cellType;
             Long time2;
             do {
                 if (sRow1==null){
-                    dropAllRows("AMS Statistic",sRow2,stat2SrowIter,errors);
+                    dropAllRows("AMS Statistic",sRow2,stat2SrowIter,errors); //$NON-NLS-1$
                     return;
                 }else if (sRow2==null){
-                    dropAllRows("CSV Statistic",sRow1,stat1SrowIter,errors);
+                    dropAllRows("CSV Statistic",sRow1,stat1SrowIter,errors); //$NON-NLS-1$
                     return;         
                 }
                 time1 = NeoUtils.getNodeTime(sRow1) + stat1TimeCorrelator;
                 time2 = NeoUtils.getNodeTime(sRow2);
                 if (time1 < time2) {
-                    sRow1 = dropSrowToTime("CSV Statistic", sRow1,stat1SrowIter, time2,errors);
+                    sRow1 = dropSrowToTime("CSV Statistic", sRow1,stat1SrowIter, time2,errors); //$NON-NLS-1$
                     time1 = sRow1==null?-1:NeoUtils.getNodeTime(sRow1) + stat1TimeCorrelator;
                 } else if (time2 < time1) {
-                    sRow2 = dropSrowToTime("AMS Statistic", sRow2,stat2SrowIter, time1,errors);
+                    sRow2 = dropSrowToTime("AMS Statistic", sRow2,stat2SrowIter, time1,errors); //$NON-NLS-1$
                     time2 = sRow2==null?-1:NeoUtils.getNodeTime(sRow2);
                 }
             } while (!time1.equals(time2));
@@ -149,7 +149,7 @@ private StatisticsCallType cellType;
             Number value2 = map2.get(header);
             boolean isEqual = value1==null?value2==null:value1.equals(value2);
             if (!isEqual){
-                errors.append('\n').append(String.format("Headers %s is not equals for '%s'=%s, and '%s'=%s",header,name1,value1,name2,value2));
+                errors.append('\n').append("Type: ").append(getCallType()).append(" ").append(String.format("Headers %s is not equals for '%s'=%s, and '%s'=%s",header,name1,value1,name2,value2)); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             }
             
         }
@@ -157,14 +157,14 @@ private StatisticsCallType cellType;
     }
     
     private Node dropSrowToTime(String prefix, Node sRow, Iterator<Node> sRowIterator, long time, StringBuilder errors) {
-        errors.append('\n').append(String.format("%s do not have sRow %s",prefix, NeoUtils.getNodeName(sRow)));
+        errors.append('\n').append("Type: ").append(getCallType()).append(" ").append(String.format("%s do not have sRow %s",prefix, NeoUtils.getNodeName(sRow))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         while (sRowIterator.hasNext()){
             Node result = sRowIterator.next();
             Long nodeTime = NeoUtils.getNodeTime(result);
             if (nodeTime>=time){
                 return result;
             }
-            errors.append('\n').append(String.format("%s do not have sRow %s",prefix, NeoUtils.getNodeName(result)));
+            errors.append('\n').append("Type: ").append(getCallType()).append(" ").append(String.format("%s do not have sRow %s",prefix, NeoUtils.getNodeName(result))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         }
         return null;
     }
@@ -176,10 +176,10 @@ private StatisticsCallType cellType;
      * @param stat2SrowIter
      */
     private void dropAllRows(String prefix, Node sRow, Iterator<Node> sRowIterator, StringBuilder errors) {
-        errors.append('\n').append(String.format("%s do not have sRow %s",prefix, NeoUtils.getNodeName(sRow)));
+        errors.append('\n').append("Type: ").append(getCallType()).append(" ").append(String.format("%s do not have sRow %s",prefix, NeoUtils.getNodeName(sRow))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         while (sRowIterator.hasNext()) {
             Node node = sRowIterator.next();
-            errors.append('\n').append(String.format("%s do not have sRow %s",prefix, NeoUtils.getNodeName(node)));
+            errors.append('\n').append("Type: ").append(getCallType()).append(" ").append(String.format("%s do not have sRow %s",prefix, NeoUtils.getNodeName(node))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         }
     }
     /**
@@ -195,15 +195,15 @@ private StatisticsCallType cellType;
      * @throws IOException Signals that an I/O exception has occurred.
      */
     private Node loadCSVData() throws IOException {
-        String dataDir="files/csv/";
-        StatisticsDataLoader loader = new StatisticsDataLoader(dataDir, "test", "test network", getNeo(), true);
+        String dataDir=Messages.getString("CSV_ROOT"); //$NON-NLS-1$
+        StatisticsDataLoader loader = new StatisticsDataLoader(dataDir, "test", "test network", getNeo(), true); //$NON-NLS-1$ //$NON-NLS-2$
         loader.run(new NullProgressMonitor());
         return loader.getVirtualDataset();
     }
 
     private Node loadXMLData() throws IOException {
-        String dataDir="files/xml/";
-        AMSXMLoader loader=new AMSXMLoader(dataDir,null,"testXML","testXMLNetwork",getNeo(),true);
+        String dataDir=Messages.getString("XML_ROOT"); //$NON-NLS-1$
+        AMSXMLoader loader=new AMSXMLoader(dataDir,null,"testXML","testXMLNetwork",getNeo(),true); //$NON-NLS-1$ //$NON-NLS-2$
         loader.run(new NullProgressMonitor());
         return loader.getVirtualDataset();
         

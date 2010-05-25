@@ -152,7 +152,7 @@ public abstract class DriveLoader extends AbstractLoader {
         if (virtualFile == null) {
             Transaction tx = neo.beginTx();
             try {
-                Node virtualDatasetNode = getVirtualDataset(DriveTypes.MS);
+                Node virtualDatasetNode = getVirtualDataset(DriveTypes.MS,false);
                 Pair<Boolean, Node> pair = NeoUtils.findOrCreateFileNode(neo, virtualDatasetNode, basename, filename);
                 virtualFile = pair.getRight();
                 virtualFile.createRelationshipTo(firstChildNode, GeoNeoRelationshipTypes.CHILD);
@@ -432,7 +432,7 @@ public Node[] getRootNodes() {
 	 * @param datasetType type of Dataset
 	 * @return dataset node
 	 */
-    protected Node getVirtualDataset(DriveTypes datasetType) {
+    protected Node getVirtualDataset(DriveTypes datasetType,boolean haveGis) {
         final String name = datasetType.getFullDatasetName(dataset);
 		Node virtualDataset = virtualDatasets.get(name);
 		if (virtualDataset != null) {
@@ -440,7 +440,9 @@ public Node[] getRootNodes() {
 		}
 		virtualDataset = NeoUtils.findOrCreateVirtualDatasetNode(datasetNode, datasetType, neo);
 		//also we should create a GIS node for this dataset
-//		findOrCreateGISNode(virtualDataset, GisTypes.DRIVE.getHeader());
+		if (haveGis){
+		    findOrCreateGISNode(virtualDataset, GisTypes.DRIVE.getHeader());
+		}
 		
 		if (virtualDataset != null) {
 		    virtualDatasets.put(name, virtualDataset);

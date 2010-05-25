@@ -409,7 +409,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             datasetNode = findOrCreateDatasetNode(neo.getReferenceNode(), dataset);
             findOrCreateGISNode(datasetNode, GisTypes.DRIVE.getHeader());
 
-            callDataset = getVirtualDataset(DriveTypes.AMS_CALLS);
+            callDataset = getVirtualDataset(DriveTypes.AMS_CALLS,true);
 
             tx.success();
         } catch (Exception e) {
