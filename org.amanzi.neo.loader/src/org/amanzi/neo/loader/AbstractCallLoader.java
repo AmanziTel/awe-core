@@ -141,10 +141,12 @@ public abstract class AbstractCallLoader extends DriveLoader {
         Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
 
         //TODO remove fake mechanism after investigation
-        long receivedTime = call.getReceivedTime()==null?call.getCallTerminationBegin() - call.getCallSetupEnd():call.getReceivedTime();
+        long callSetupEnd = call.getCallSetupEnd();
+        long callTerminationEnd = call.getCallTerminationEnd();
+        long receivedTime = call.getReceivedTime()==null?callTerminationEnd - callSetupEnd:call.getReceivedTime();
         //TODO remove fake mechanism after investigation
-        long acknTime = call.getAcknowlegeTime()==null?call.getCallTerminationEnd()-call.getCallTerminationBegin():call.getAcknowlegeTime();
-        
+        long callTerminationBegin = call.getCallTerminationBegin();
+        long acknTime = call.getAcknowlegeTime()==null?callTerminationBegin-callSetupEnd:call.getAcknowlegeTime();
         LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
 
         if (call.getCallType().equals(CallType.ALARM)) {

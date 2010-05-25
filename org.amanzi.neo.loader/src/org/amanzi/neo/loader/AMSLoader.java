@@ -946,7 +946,8 @@ public class AMSLoader extends AbstractCallLoader {
 	        if (messages != null) {
 	            founded = null;
 	            for(Call message : messages){
-                    if(message.getCallSetupEnd()==0){
+                    long callSetupEnd = message.getCallSetupEnd();
+                    if(callSetupEnd==0||callSetupEnd>timestamp){
                         founded = message;
                         break;
                     }
@@ -967,7 +968,7 @@ public class AMSLoader extends AbstractCallLoader {
             }
 	        founded = null;
             for(Call message : messages){
-                if(message.getCallTerminationBegin()==0){
+                if(message.getCallTerminationEnd()==0){
                     founded = message;
                     break;
                 }
@@ -976,7 +977,7 @@ public class AMSLoader extends AbstractCallLoader {
                 founded = new Call();                
                 messages.add(founded);
             }
-            founded.setCallTerminationBegin(timestamp);
+            founded.setCallTerminationEnd(timestamp);
             if (founded.getCallResult()==null) {
                 founded.setCallResult(CallResult.SUCCESS);
             }
@@ -985,7 +986,7 @@ public class AMSLoader extends AbstractCallLoader {
 	        if(messages!=null){
 	            founded = null;
 	            for(Call message : messages){
-	                if(message.getCallTerminationEnd()==0){
+	                if(message.getCallTerminationBegin()==0){
 	                    founded = message;
 	                    break;
 	                }
@@ -994,10 +995,7 @@ public class AMSLoader extends AbstractCallLoader {
 	                founded = new Call();
 	                messages.add(founded);
 	            }
-	            founded.setCallTerminationEnd(timestamp);
-	            if (founded.getCallResult()==null) {
-	                founded.setCallResult(CallResult.SUCCESS);
-	            }
+	            founded.setCallTerminationBegin(timestamp);
             }
 	        break;
 	    case START_ITSI:

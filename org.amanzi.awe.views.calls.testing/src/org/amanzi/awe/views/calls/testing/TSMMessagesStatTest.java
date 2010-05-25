@@ -128,9 +128,9 @@ public class TSMMessagesStatTest extends MessagesStatisticsTest{
         HashMap<IStatisticsHeader, Number> result = new HashMap<IStatisticsHeader, Number>(getCallType().getHeaders().size());
         result.put(StatisticsHeaders.TSM_MESSAGE_ATTEMPT, 1);
         Float callDuration = getTimeByKey(call, CallParameterNames.DURATION_TIME);
-        Float callAcknoledge = getTimeByKey(call, CallParameterNames.ACKNOWLEDGE_TIME);
+        Float callAcknowledge = getTimeByKey(call, CallParameterNames.ACKNOWLEDGE_TIME);
         if(callDuration<=MessageConstants.TSM_SEND_TIME_LIMIT
-                && callAcknoledge<=MessageConstants.TSM_REPLY_TIME_LIMIT){
+                && callAcknowledge<=MessageConstants.TSM_REPLY_TIME_LIMIT){
             result.put(StatisticsHeaders.TSM_MESSAGE_SUCC, 1);
         }
         return result;

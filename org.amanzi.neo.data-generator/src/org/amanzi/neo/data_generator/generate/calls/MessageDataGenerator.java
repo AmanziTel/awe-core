@@ -28,7 +28,7 @@ import org.amanzi.neo.data_generator.utils.call.CommandCreator;
 
 /**
  * <p>
- * Common class for all messages data.  TODO correct acknowledge time
+ * Common class for all messages data.  
  * </p>
  * @author Shcharbatsevich_A
  * @since 1.0.0
@@ -106,11 +106,11 @@ public abstract class MessageDataGenerator extends AmsDataGenerator{
             CommandRow cmgs = CommandCreator.getCmgsRow(233,2,30);
             sourceCommands.add(CommandCreator.getCmgsRow(start, atCmgs, cmgs));
             
+            time = start+acknowledge;
+            sourceCommands.add(CommandCreator.getUnsoCmgsRow(time,cmgs));            
+            
             time = start+duration;
             receiverCommands.add(CommandCreator.getCtsdsrRow(time, aiService, sourceKey, recKey, message));
-            
-            time+=acknowledge;
-            sourceCommands.add(CommandCreator.getUnsoCmgsRow(time,cmgs));
             callData.addCall(call);
         }
         return callData;
@@ -133,7 +133,7 @@ public abstract class MessageDataGenerator extends AmsDataGenerator{
     }
     
     /**
-     * Create messages for one call. TODO correct acknowledge time.
+     * Create messages for one call. 
      *
      * @param hour int
      * @return Call[]
@@ -152,9 +152,10 @@ public abstract class MessageDataGenerator extends AmsDataGenerator{
             Call call = getEmptyCall(start);
             call.addParameter(CallParameterNames.DURATION_TIME, duration);
             call.addParameter(CallParameterNames.MESSAGE, messages[i]);
-            Long acknTime = generator.getLongValue(acknBorders[0], acknBorders[1]);
+            Long maxAckn = duration<acknBorders[1]?duration:acknBorders[1];
+            Long acknTime = generator.getLongValue(acknBorders[0], maxAckn);
             call.addParameter(CallParameterNames.ACKNOWLEDGE_TIME, acknTime);
-            start = start+duration+acknTime;
+            start = start+duration;
             result[i] = call;
         }
         return result;

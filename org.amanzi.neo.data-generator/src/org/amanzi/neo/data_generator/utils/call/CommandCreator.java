@@ -534,6 +534,7 @@ public class CommandCreator {
     public static CommandRow getUnsoCmgsRow(Long time,CommandRow cmgs){
         CommandRow row = new CommandRow(UNSOLICITED);
         row.setTime(new Date(time));
+        row.setPrefix(DEFAULT_COMMAND_PREFIX_READ);
         row.getAdditional().add(cmgs.getCommandAsString());
         return row;
     }
