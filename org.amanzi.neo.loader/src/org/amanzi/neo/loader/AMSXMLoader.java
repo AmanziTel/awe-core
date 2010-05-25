@@ -53,6 +53,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.swt.widgets.Display;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.xml.sax.Attributes;
@@ -243,6 +244,33 @@ public class AMSXMLoader extends AbstractCallLoader {
         initialize("AMS", null, directoryName, display, datasetName);
 
         // timestampFormat = new SimpleDateFormat(TIMESTAMP_FORMAT);
+    }
+
+    /**
+     * @param dataDir
+     * @param object
+     * @param string
+     * @param string2
+     * @param neo
+     * @param b
+     */
+    public AMSXMLoader(String directoryName, Display display, String datasetName, String networkName, GraphDatabaseService neo, boolean isTest) {
+        driveType = DriveTypes.AMS;
+        handler = new ReadContentHandler(new Factory());
+        if (datasetName == null) {
+            int startIndex = directoryName.lastIndexOf(File.separator);
+            if (startIndex < 0) {
+                startIndex = 0;
+            } else {
+                startIndex++;
+            }
+            datasetName = directoryName.substring(startIndex);
+        }
+
+        this.directoryName = directoryName;
+        this.filename = directoryName;
+        this.networkName = networkName;
+        initialize("AMS", neo, directoryName, display, datasetName);
     }
 
     /**
@@ -438,7 +466,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             if (openTag == null) {
                 Transaction tx = neo.beginTx();
                 try {
-                    timeStamp = null;
+                    timestamp = null;
                     createEventChild();
                     handleCollector();
                     index(node);
