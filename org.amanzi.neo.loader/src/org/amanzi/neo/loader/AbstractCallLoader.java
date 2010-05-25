@@ -141,7 +141,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
         Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
 
         //TODO remove fake mechanism after investigation
-        long receivedTime = call.getResivedTime()==null?call.getCallTerminationBegin() - call.getCallSetupEnd():call.getResivedTime();
+        long receivedTime = call.getReceivedTime()==null?call.getCallTerminationBegin() - call.getCallSetupEnd():call.getReceivedTime();
         //TODO remove fake mechanism after investigation
         long acknTime = call.getAcknowlegeTime()==null?call.getCallTerminationEnd()-call.getCallTerminationBegin():call.getAcknowlegeTime();
         
@@ -573,7 +573,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
             this.callType = callType;
         }
 
-        public Long getResivedTime() {
+        public Long getReceivedTime() {
             return resivedTime;
         }
 
