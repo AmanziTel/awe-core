@@ -654,7 +654,7 @@ public abstract class AmsStatisticsTest {
     protected HashMap<IStatisticsHeader, Number> buildCellDataMap(Node row){
         HashMap<IStatisticsHeader, Number> result = new HashMap<IStatisticsHeader, Number>();
         Traverser traverse = NeoUtils.getChildTraverser(row);
-        for(Node cell : traverse.getAllNodes()){
+        for(Node cell : traverse){
             IStatisticsHeader header = getCellHeader(cell, getCallType());
             Number value = getCellValue(cell, header);
             result.put(header, value);
@@ -957,8 +957,8 @@ public abstract class AmsStatisticsTest {
      */
     public static class ProbeStat{
         
-        private Integer probeKey;
-        private HashMap<StatisticsCallType,HashMap<CallTimePeriods, PeriodStat>> data;
+        private final Integer probeKey;
+        private final HashMap<StatisticsCallType,HashMap<CallTimePeriods, PeriodStat>> data;
         
         public ProbeStat(Integer probe) {
             probeKey = probe;
@@ -996,9 +996,9 @@ public abstract class AmsStatisticsTest {
      */
     public class PeriodStat{
         
-        private CallTimePeriods period;
-        private HashMap<Long, HashMap<IStatisticsHeader, Number>> data;
-        private HashMap<Long, Integer> sourceCount = new HashMap<Long, Integer>();
+        private final CallTimePeriods period;
+        private final HashMap<Long, HashMap<IStatisticsHeader, Number>> data;
+        private final HashMap<Long, Integer> sourceCount = new HashMap<Long, Integer>();
         
         public PeriodStat(CallTimePeriods periodKey) {
             period = periodKey;

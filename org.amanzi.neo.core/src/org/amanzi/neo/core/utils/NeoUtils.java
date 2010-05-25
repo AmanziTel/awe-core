@@ -799,14 +799,17 @@ public class NeoUtils {
             }
         }
         // TODO: This code only supports Romes data, we need TEMS support also (later)
-        String time = (String)node.getProperty("time", null);
+        Object time = node.getProperty("time", null);
         if (time == null) {
             return null;
+        }
+        if (time instanceof Long){
+            return (Long)time;
         }
         SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");
         Date timeD;
         try {
-            timeD = df.parse(time);
+            timeD = df.parse(time.toString());
         } catch (ParseException e) {
             NeoCorePlugin.error(e.getLocalizedMessage(), e);
             return null;
