@@ -23,6 +23,7 @@ import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -208,13 +209,13 @@ public class CorrelationList extends ViewPart {
                             // ""));
                             return !currentPos.lastRelationshipTraversed().getProperty(INeoConstants.NETWORK_GIS_NAME, "").equals(datasetName);
                         }
-                        return currentPos.depth() >= 2;
+                        return NodeTypes.M.checkNode(currentPos.currentNode()) || currentPos.depth() >= 2;
                     }
                 }, new ReturnableEvaluator() {
 
                     @Override
                     public boolean isReturnableNode(TraversalPosition currentPos) {
-                        return currentPos.depth() == 2;
+                        return NodeTypes.M.checkNode(currentPos.currentNode());
                     }
 
                 }, CorrelationRelationshipTypes.CORRELATED, Direction.OUTGOING, GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING);
