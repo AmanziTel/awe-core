@@ -452,23 +452,13 @@ public class CallStatistics {
         result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.S_CELL.getId());
         result.setProperty(INeoConstants.PROPERTY_NAME_NAME, header.getTitle());
         Object value = statistics.get(header);
-        if (value == null) {
-            switch (header.getType()) {
-            case COUNT:
-                value = new Integer(0);
-                break;
-            default:
-                value = new Float(0);
-                break;
-            }                        
-        }
-        else {        
+        if (value != null)  {        
             for (Node callNode : statistics.getAllAffectedCalls(header)) {
                 result.createRelationshipTo(callNode, GeoNeoRelationshipTypes.SOURCE);            
             }
             statistics.getAllAffectedCalls(header).clear();
+            result.setProperty(INeoConstants.PROPERTY_VALUE_NAME, value);
         }
-        result.setProperty(INeoConstants.PROPERTY_VALUE_NAME, value);
         
         statistics.updateSourceNodes(header, result);
         

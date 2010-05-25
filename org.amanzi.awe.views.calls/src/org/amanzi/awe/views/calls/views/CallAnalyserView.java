@@ -25,6 +25,7 @@ import org.amanzi.awe.views.calls.Messages;
 import org.amanzi.awe.views.calls.enums.AggregationCallTypes;
 import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
+import org.amanzi.awe.views.calls.enums.StatisticsType;
 import org.amanzi.awe.views.calls.statistics.CallStatistics;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -1142,8 +1143,8 @@ public class CallAnalyserView extends ViewPart {
                 String name = NeoUtils.getNodeName(node);
                 IStatisticsHeader header = callType.getHeaderByTitle(name);
                 if (header != null) {                   
-                    Object value = node.getProperty(INeoConstants.PROPERTY_VALUE_NAME, ERROR_VALUE);
-                    mappedValue.put(header, getFormattedValue(value));
+                    Object value = node.getProperty(INeoConstants.PROPERTY_VALUE_NAME, null);
+                    mappedValue.put(header, getFormattedValue(value, header));
                 }
             }
             if (!callType.equals(StatisticsCallType.AGGREGATION_STATISTICS)) {
@@ -1162,7 +1163,14 @@ public class CallAnalyserView extends ViewPart {
             }
         }
         
-        private String getFormattedValue(Object value){
+        private String getFormattedValue(Object value,IStatisticsHeader header){
+            if(value == null){
+               if(header.getType().equals(StatisticsType.COUNT)){
+                   value = 0;
+               }else{
+                   value = 0f;
+               }
+            }            
             if(value instanceof Float){
                 BigDecimal decValue = new BigDecimal(((Float)value).doubleValue());
                 if (decValue.equals(BigDecimal.ZERO)) {

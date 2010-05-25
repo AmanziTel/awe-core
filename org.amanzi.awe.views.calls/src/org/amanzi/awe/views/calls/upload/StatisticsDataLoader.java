@@ -103,7 +103,6 @@ public class StatisticsDataLoader {
     private HashMap<StatisticsCallType, StatInfo> statRoots = new HashMap<StatisticsCallType, StatInfo>();
     private HashMap<StatisticsCallType, Node> previousCells = new HashMap<StatisticsCallType, Node>();
     private HashMap<StatisticsCallType, Node> previousRows = new HashMap<StatisticsCallType, Node>();
-    private HashMap<StatisticsCallType, Long[]> statBorders = new HashMap<StatisticsCallType, Long[]>();
     private Long minTime;
     private Long maxTime;
     
@@ -228,19 +227,6 @@ public class StatisticsDataLoader {
         }
     }
     
-    private void initCommonBorders(){
-        minTime = null;
-        maxTime = null;
-        for(Long[] borders : statBorders.values()){
-            if(minTime==null||minTime<borders[0]){
-                minTime = borders[0];
-            }
-            if(maxTime==null||maxTime>borders[1]){
-                maxTime = borders[1];
-            }
-        }
-    }
-    
     /**
      * Add loaded data to catalog.
      *
@@ -344,9 +330,11 @@ public class StatisticsDataLoader {
                 StatisticsCallType callType = headers.getCallTypeByHeader(header);
                 if(callType!=null){
                     Node row = getRowNode(callType, start, end, probeName, la, frequency);
-                    Object value = header.parseValue(cells[i]);
-                    IStatisticsHeader real = header.getRealHeader();
-                    createSCellNode(row,null, value, real, callType);
+                    Object value = header.parseValue(cells[i]); //TODO value must be null if calls count is zero.
+                    if (value!=null) {
+                        IStatisticsHeader real = header.getRealHeader();
+                        createSCellNode(row, null, value, real, callType);
+                    }
                 }
             }
         }
@@ -391,17 +379,11 @@ public class StatisticsDataLoader {
             Node probe = getProbeNode(probeName, la, frequency,callType);
             row = createRowNode(start, end, probe,null, statRoots.get(callType).getPeriodNode(),callType, CallTimePeriods.HOURLY);
             probeInfo.addRow(start, row);
-            Long[] borders = statBorders.get(callType);
-            if(borders == null){
-                borders = new Long[]{start,end};
-                statBorders.put(callType, borders);
-            }else{
-                if(start<borders[0]){
-                    borders[0]=start;
-                }
-                if(end>borders[1]){
-                    borders[1]=end;
-                }
+            if(minTime==null||start<minTime){
+                minTime=start;
+            }
+            if(maxTime==null||end>maxTime){
+                maxTime=end;
             }
         }
         return row;
@@ -503,19 +485,9 @@ public class StatisticsDataLoader {
         
         result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.S_CELL.getId());
         result.setProperty(INeoConstants.PROPERTY_NAME_NAME, header.getTitle());
-        if (value == null) {
-            switch (header.getType()) {
-            case COUNT:
-                value = new Integer(0);
-                break;
-            default:
-                value = new Float(0);
-                break;
-            }                        
+        if (value != null) {
+            result.setProperty(INeoConstants.PROPERTY_VALUE_NAME, value);                       
         }
-        
-        result.setProperty(INeoConstants.PROPERTY_VALUE_NAME, value);
-        
         Node previousNode = previousCells.get(callType);
         if (previousNode == null) {
             row.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
@@ -691,7 +663,7 @@ public class StatisticsDataLoader {
         monitor = SubMonitor.convert(monitor, statSize);
         monitor.beginTask("Build statistics for higher periods", statSize);
         for(StatisticsCallType type : statRoots.keySet()){
-            CallTimePeriods highestPeriod = getHighestPeriod(type);            
+            CallTimePeriods highestPeriod = getHighestPeriod(minTime,maxTime);            
             if (highestPeriod!=null) {
                 StatInfo newInfo = buildStatisticsFromUnderling(highestPeriod, type);
                 statRoots.put(type, newInfo);
@@ -699,7 +671,6 @@ public class StatisticsDataLoader {
             }
             monitor.worked(1);
         }
-        initCommonBorders();
     }
     
     /**
@@ -717,9 +688,8 @@ public class StatisticsDataLoader {
         Node statRoot = sourceStat.getRoot();
         Node periodNode = createPeriodNode(statRoot, period, sourceStat.getPeriodNode());
         StatInfo result = new StatInfo(statRoot, periodNode);
-        Long[] borders = statBorders.get(callType);
-        Long start = borders[0];
-        Long end = borders[1];
+        Long start = period.getFirstTime(minTime);
+        Long end = maxTime;
         Long nextStart = getNextStartTime(start, end, period);
         previousRows.clear();
         do{
@@ -727,7 +697,7 @@ public class StatisticsDataLoader {
             int commCount = 0;
             for(String probeName : allProbes.keySet()){
                 Node probe = probes.get(probeName);
-                List<Node> sourceRows = allProbes.get(probeName).getRowsInTime(start, nextStart);
+                List<Node> sourceRows = allProbes.get(probeName).getRowsInTime(period.getUnderlyingPeriod().getFirstTime(start), nextStart);
                 Node row = createRowNode(start, end, probe, sourceRows, periodNode, callType, period);
                 HashMap<IStatisticsHeader, List<Node>> cellsMap = getCellsMap(sourceRows, callType);
                 previousCells.clear();
@@ -736,9 +706,12 @@ public class StatisticsDataLoader {
                     Object cellValue = getCellValue(header, sourceCells);
                     createSCellNode(row, sourceCells, cellValue, header, callType);
                 }
-                ProbeInfo info = new ProbeInfo(probeName);
-                info.addRow(start, row);
-                result.addProbeInfo(info);
+                ProbeInfo info = result.getProbeInfo(probeName);
+                if(info==null){
+                    info = new ProbeInfo(probeName);
+                    result.addProbeInfo(info);
+                }
+                info.addRow(start, row);                
                 commCount++;
                 if (commCount>10) {
                     commit(true);
@@ -836,26 +809,21 @@ public class StatisticsDataLoader {
     /**
      * Get highest period.
      *
-     * @param callType StatisticsCallType
+     * @param start Long
+     * @param end Long
      * @return CallTimePeriods
      */
-    private CallTimePeriods getHighestPeriod(StatisticsCallType callType){
-        Long[] borders = statBorders.get(callType);
-        if(borders==null){
-            return null;
-        }
-        return getHighestPeriod(borders[0], borders[1]);
-    }
-    
     private CallTimePeriods getHighestPeriod(Long start, Long end){
-        Long delta = end - start;
-        if(delta<=HOUR){
-            return CallTimePeriods.HOURLY;
+        long delta = CallTimePeriods.DAILY.getFirstTime(maxTime) - CallTimePeriods.DAILY.getFirstTime(minTime);
+        if (delta >= DAY) {
+            return CallTimePeriods.MONTHLY;
         }
-        if(delta<=DAY){
+        delta = CallTimePeriods.HOURLY.getFirstTime(maxTime) - CallTimePeriods.HOURLY.getFirstTime(minTime);
+        if (delta >= HOUR) {
             return CallTimePeriods.DAILY;
         }
-        return CallTimePeriods.MONTHLY;
+        
+        return CallTimePeriods.HOURLY;
     }
     
     /**

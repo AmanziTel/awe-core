@@ -308,17 +308,7 @@ public class AggregationCallStatisticsBuilder {
         
         result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.S_CELL.getId());
         result.setProperty(INeoConstants.PROPERTY_NAME_NAME, header.getTitle());
-        if (value == null) {
-            switch (header.getType()) {
-            case COUNT:
-                value = new Integer(0);
-                break;
-            default:
-                value = new Float(0);
-                break;
-            }                        
-        }
-        else {
+        if (value != null) {
             switch (header.getType()) {
             case PERCENT:
                 value = (Float)value*100f;
@@ -330,9 +320,8 @@ public class AggregationCallStatisticsBuilder {
             for (Node source : sources) {
                 result.createRelationshipTo(source, GeoNeoRelationshipTypes.SOURCE);            
             }
-        }
-        result.setProperty(INeoConstants.PROPERTY_VALUE_NAME, value);
-        
+            result.setProperty(INeoConstants.PROPERTY_VALUE_NAME, value);
+        }       
         Node previousNode = previousSCellNodes.get(period);
         if (previousNode == null) {
             row.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
@@ -362,6 +351,9 @@ public class AggregationCallStatisticsBuilder {
         StatisticsType type = header.getType();
         Float first = firstObj.floatValue();
         if(type.equals(StatisticsType.AVERAGE)||type.equals(StatisticsType.PERCENT)){
+            if(sources.size()<2){
+                return null;
+            }
             Number secObj = sources.get(1);
             if(secObj==null){
                 return null;

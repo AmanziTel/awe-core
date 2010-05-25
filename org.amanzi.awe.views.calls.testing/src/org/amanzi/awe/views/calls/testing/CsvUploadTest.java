@@ -178,6 +178,41 @@ public class CsvUploadTest extends AmsStatisticsTest{
     }
     
     @Override
+    protected PeriodStat collectStatisticsByUnderling(PeriodStat undStatistics, CallTimePeriods period) {
+        List<Long> times = undStatistics.getAllTimesSorted();
+        Long startTime = getStartTime();
+        PeriodStat result = new PeriodStat(period);
+        Long start = startTime==null?times.get(0):startTime;
+        start = period.getFirstTime(start);
+        Long lastDate = period.getUnderlyingPeriod().addPeriod(times.get(times.size()-1));
+        Long end = getNextStartDate(period, lastDate, start);
+        do{
+            List<HashMap<IStatisticsHeader, Number>> dataInBorders = undStatistics.getDataInBorders(start, end);
+            if (!dataInBorders.isEmpty()) {
+                HashMap<IStatisticsHeader, Number> newRow = new HashMap<IStatisticsHeader, Number>();
+                for (HashMap<IStatisticsHeader, Number> row : dataInBorders) {
+                    updateStatRowWithNulls(newRow, row);
+                }
+                result.addRow(start, newRow);
+            }
+            start = end;
+            end = getNextStartDate(period, lastDate, start);
+        }while(start<lastDate);
+        return result;
+    }
+    
+    private void updateStatRowWithNulls(HashMap<IStatisticsHeader, Number> updated, HashMap<IStatisticsHeader, Number> source){
+        for(IStatisticsHeader header : getCallType().getHeaders()){
+            Number updValue = updated.get(header);
+            Number sourceValue = source.get(header);
+            if(sourceValue==null){
+                sourceValue = 0;
+            }
+            updated.put(header, updateValueByHeader(updValue, sourceValue, header));
+        }
+    }
+    
+    @Override
     protected HashMap<Integer, ProbeStat> buildAggregationStatistics(HashMap<Integer, ProbeStat> statistics, CallTimePeriods period) {
         ProbeStat aggrStat = statistics.get(SECOND_LEVEL_STAT_ID);
         if(aggrStat==null){
@@ -203,6 +238,9 @@ public class CsvUploadTest extends AmsStatisticsTest{
                     for (IStatisticsHeader util : stat.getUtilHeaders()) {
                         for (IStatisticsHeader real : ((IAggrStatisticsHeaders)util).getDependendHeaders()) {
                             Number value = row.get(real);
+                            if(value == null){
+                                value = 0;
+                            }
                             Number curr = utilValues.get(util);
                             utilValues.put(util, updateValueByHeader(curr, value, util));
                         }

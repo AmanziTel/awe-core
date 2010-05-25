@@ -147,7 +147,7 @@ public class IndividualCallsGenerator extends CallDataGenerator {
         
         CallData callData = new CallData(getKey(),source, receiver);
         callData.addCall(call);
-        //TODO Priority and audio delay
+        //TODO Priority
         return callData;
     }
 

@@ -178,7 +178,7 @@ public class GroupCallsGenerator extends CallDataGenerator{
                 time1 = getRamdomTime(time1, rest);
             }
         }
-        //TODO priority and call quality
+        //TODO priority
         CallData callData = new CallData(getKey(),source, receivers);
         callData.addCall(call);
         return callData;

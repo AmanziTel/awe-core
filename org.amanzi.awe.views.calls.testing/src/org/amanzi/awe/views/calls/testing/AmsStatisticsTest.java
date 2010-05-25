@@ -671,10 +671,10 @@ public abstract class AmsStatisticsTest {
      */
     protected Number getCellValue(Node cell, IStatisticsHeader header){
         if(header.getType().equals(StatisticsType.COUNT)){
-            Integer value = (Integer)cell.getProperty(INeoConstants.PROPERTY_VALUE_NAME);
+            Integer value = (Integer)cell.getProperty(INeoConstants.PROPERTY_VALUE_NAME,0);
             return value.longValue();
         }
-        return (Float)cell.getProperty(INeoConstants.PROPERTY_VALUE_NAME);
+        return (Float)cell.getProperty(INeoConstants.PROPERTY_VALUE_NAME,0f);
     }
     
     /**
@@ -849,7 +849,7 @@ public abstract class AmsStatisticsTest {
         return result;
     }
     
-    private Long getNextStartDate(CallTimePeriods period, Long endDate, Long currentStartDate) {
+    protected Long getNextStartDate(CallTimePeriods period, Long endDate, Long currentStartDate) {
         Long nextStartDate = period.addPeriod(currentStartDate);
         if(!period.equals(CallTimePeriods.HOURLY)&&(nextStartDate>endDate)){
             nextStartDate = endDate;
