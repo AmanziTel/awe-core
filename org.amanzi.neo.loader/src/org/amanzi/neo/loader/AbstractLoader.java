@@ -978,7 +978,7 @@ public abstract class AbstractLoader {
      */
     public void run(IProgressMonitor monitor) throws IOException {
         if (monitor != null)
-            monitor.subTask(basename);
+            monitor.beginTask(basename, 100);
         CountingFileInputStream is = new CountingFileInputStream(new File(filename));
         String characterSet = NeoLoaderPlugin.getDefault().getCharacterSet();
         BufferedReader reader = new BufferedReader(new InputStreamReader(is, characterSet));
