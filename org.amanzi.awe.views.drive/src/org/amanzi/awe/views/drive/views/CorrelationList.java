@@ -180,21 +180,32 @@ public class CorrelationList extends ViewPart {
         tableData.clear();
         Node curDriveNode = gisDriveNodes.get(cDrive.getText());
         final String datasetName = curDriveNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString();
+
         Node curNetworkNode = gisNetworkNodes.get(cNetwork.getText());
         String[] columns = new PropertyHeader(curDriveNode).getAllFields();
 
         Transaction tx = service.beginTx();
         try {
-            Traverser correlationSectors = curNetworkNode.traverse(Order.DEPTH_FIRST, NeoUtils.getStopEvaluator(2), ReturnableEvaluator.ALL_BUT_START_NODE,
+            Traverser correlationSectors = curNetworkNode.traverse(Order.DEPTH_FIRST, NeoUtils.getStopEvaluator(2), new ReturnableEvaluator(){
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    return currentPos.depth() == 2;
+                }
+                
+            },
                     CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
 
             for (Node correlationSector : correlationSectors) {
+//                LOGGER.debug("correlationSector = " + correlationSector.getProperty("sector_id", ""));
+//                LOGGER.debug("correlationSector = " + correlationSector);
                 Traverser correlatedMNodes = correlationSector.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
 
                     @Override
                     public boolean isStopNode(TraversalPosition currentPos) {
                         if (currentPos.depth() == 1) {
-                            return currentPos.lastRelationshipTraversed().getProperty(INeoConstants.NETWORK_GIS_NAME, "").equals(datasetName);
+//                            LOGGER.debug(currentPos.lastRelationshipTraversed().getProperty(INeoConstants.NETWORK_GIS_NAME, ""));
+                            return !currentPos.lastRelationshipTraversed().getProperty(INeoConstants.NETWORK_GIS_NAME, "").equals(datasetName);
                         }
                         return currentPos.depth() >= 2;
                     }
@@ -237,7 +248,7 @@ public class CorrelationList extends ViewPart {
             Object type = dataset.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").toString();
             if (NeoUtils.isGisNode(dataset)) {
                 String id = NeoUtils.getSimpleNodeName(dataset, null);
-                if (type.equals(GisTypes.DRIVE.getHeader())) {
+                if (type.equals(GisTypes.DRIVE.getHeader()) || type.equals(GisTypes.OSS.getHeader())) {
                     gisDriveNodes.put(id, dataset);
                 }
             }
@@ -464,8 +475,8 @@ public class CorrelationList extends ViewPart {
      */
     private class RowWrapper {
 
-        private Node siteCorrelationNode;
-        private Node mCorrelatedNnode;
+        private final Node siteCorrelationNode;
+        private final Node mCorrelatedNnode;
 
         /**
          * Constructor
@@ -483,7 +494,13 @@ public class CorrelationList extends ViewPart {
          * @return
          */
         public String getPropertyByIndex(int columnIndex) {
-            return mCorrelatedNnode.getProperty(tableColNames.get(columnIndex - 1), "").toString();
+            if(columnIndex > tableColNames.size())
+                return "";
+//            try {
+                return mCorrelatedNnode.getProperty(tableColNames.get(columnIndex - 1), "").toString();
+//            } catch (IndexOutOfBoundsException e) {
+//                return e.getMessage();
+//            }
         }
 
         /**
