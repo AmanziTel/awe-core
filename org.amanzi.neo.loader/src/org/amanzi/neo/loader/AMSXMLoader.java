@@ -1041,6 +1041,10 @@ public class AMSXMLoader extends AbstractCallLoader {
                     tocttc.setCalledPhoneNumber(getPropertyMap().get("calledNumber"));
                     tocttc.setCallSetupBeginTime((Long)node.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, 0l));
                     tocttc.setCallTerminationBegin((Long)node.getProperty("releaseTime", 0l));
+                    Integer ct = (Integer)node.getProperty("causeForTermination",1);
+                    if (ct!=1){
+                        tocttc.setCallResult(CallResult.FAILURE);  
+                    }
                 } else if (hook == 1 && simplex == 1) {
                     tocttcGroup = new AMSCall();
 
@@ -1068,6 +1072,10 @@ public class AMSXMLoader extends AbstractCallLoader {
                     tocttcGroup.setCalledPhoneNumber(getPropertyMap().get("calledNumber"));
                     tocttcGroup.setCallSetupBeginTime((Long)node.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, 0l));
                     tocttcGroup.setCallTerminationBegin((Long)node.getProperty("releaseTime", 0l));
+                    Integer ct = (Integer)node.getProperty("causeForTermination",1);
+                    if (ct!=1){
+                        tocttcGroup.setCallResult(CallResult.FAILURE);  
+                    }
                 }
             }
         }
