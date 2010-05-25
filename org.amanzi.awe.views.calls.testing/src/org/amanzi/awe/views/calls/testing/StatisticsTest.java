@@ -16,6 +16,7 @@ package org.amanzi.awe.views.calls.testing;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -25,6 +26,7 @@ import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
 import org.amanzi.awe.views.calls.statistics.CallStatistics;
 import org.amanzi.awe.views.calls.upload.StatisticsDataLoader;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.data_generator.data.calls.Call;
 import org.amanzi.neo.data_generator.generate.IDataGenerator;
@@ -35,8 +37,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser.Order;
 
 /**
  * TODO Purpose of 
@@ -49,6 +56,7 @@ import org.neo4j.graphdb.Transaction;
 public class StatisticsTest extends AmsStatisticsTest {
 private long stat1TimeCorrelator=0;
 private StatisticsCallType cellType;
+private HashSet<Node> handleRow;
     
     /**
      * Prepare operations before execute test.
@@ -60,6 +68,7 @@ private StatisticsCallType cellType;
     }
     @Test
     public void testCompareStatistics()throws IOException, ParseException{
+        handleRow = new HashSet<Node>();
         stat1TimeCorrelator=Long.parseLong(Messages.getString("StatisticsTest.set1_correlation")); //$NON-NLS-1$
         CallStatistics stat1 = createStatistics(loadXMLData());
         CallStatistics stat2 = createStatistics(loadCSVData());
@@ -108,38 +117,73 @@ private StatisticsCallType cellType;
     private void compareRootNode(Node node1, Node node2, StringBuilder errors) {
         Assert.assertNotNull(node1);
         Assert.assertNotNull(node2);
-         Iterator<Node> stat1SrowIter = NeoUtils.getChildTraverser(node1).iterator();
-         Iterator<Node> stat2SrowIter = NeoUtils.getChildTraverser(node2).iterator();
-        while (stat1SrowIter.hasNext()||stat2SrowIter.hasNext()){
-            Node sRow1 = stat1SrowIter.hasNext()?stat1SrowIter.next():null;
-            Node sRow2 = stat2SrowIter.hasNext()?stat2SrowIter.next():null;
-            Long time1;
-            Long time2;
-            do {
-                if (sRow1==null){
-                    dropAllRows("AMS Statistic",sRow2,stat2SrowIter,errors); //$NON-NLS-1$
-                    return;
-                }else if (sRow2==null){
-                    dropAllRows("CSV Statistic",sRow1,stat1SrowIter,errors); //$NON-NLS-1$
-                    return;         
-                }
-                time1 = NeoUtils.getNodeTime(sRow1) + stat1TimeCorrelator;
-                time2 = NeoUtils.getNodeTime(sRow2);
-                if (time1 < time2) {
-                    sRow1 = dropSrowToTime("CSV Statistic", sRow1,stat1SrowIter, time2,errors); //$NON-NLS-1$
-                    time1 = sRow1==null?-1:NeoUtils.getNodeTime(sRow1) + stat1TimeCorrelator;
-                } else if (time2 < time1) {
-                    sRow2 = dropSrowToTime("AMS Statistic", sRow2,stat2SrowIter, time1,errors); //$NON-NLS-1$
-                    time2 = sRow2==null?-1:NeoUtils.getNodeTime(sRow2);
-                }
-            } while (!time1.equals(time2));
-            compareSRow(sRow1,sRow2,errors);
-        }
+         for (Node sRow1:NeoUtils.getChildTraverser(node1)){
+             String probeName=getProbeName(sRow1);
+             long time1 = NeoUtils.getNodeTime(sRow1) + stat1TimeCorrelator;
+             Node sRow2=findSrow(node2,time1,probeName);
+             if (sRow2==null){
+                 errors.append('\n').append("Type: ").append(getCallType()).append(" ").append(String.format("Probe %s, Not found probe for row %s", probeName,NeoUtils.getNodeName(sRow1))); //$NON-NLS-1$ //
+                 continue;                
+             }
+             handleRow.add(sRow2);
+             compareSRow(sRow1,sRow2,errors,probeName);
+         }
+         for (Node sRow2:NeoUtils.getChildTraverser(node2)){
+             if (!handleRow.contains(sRow2)){
+                 errors.append('\n').append("Type: ").append(getCallType()).append(" ").append(String.format("Not found in AMS Statistics rows %s", NeoUtils.getNodeName(sRow2))); //$NON-NLS-1$  
+             }
+         }
+         handleRow.clear();
         
     }
 
 
-    private void compareSRow(Node sRow1, Node sRow2, StringBuilder errors) {
+    private Node findSrow(Node node2, final long time1,final  String probeName) {
+        final boolean notLevel1=!getCallType().getLevel().equals(StatisticsCallType.FIRST_LEVEL);
+        final boolean haveLa = notLevel1||probeName.contains(" ");
+        Iterator<Node> it = NeoUtils.getChildTraverser(node2, new ReturnableEvaluator() {
+            
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                Node srow=currentPos.currentNode();
+                Long time = NeoUtils.getNodeTime(srow);
+                
+                if  (time!=time1){
+                    return false;
+                }
+                if(notLevel1){
+                    return true;
+                }
+                String name = getProbeName(srow); 
+                if (name==null){
+                    System.out.println("Not found probe for srow "+srow+" "+NeoUtils.getNodeName(srow));
+                    return false;
+                }
+                return haveLa?probeName.equals(name):name.startsWith(probeName);
+            }
+        }).iterator();
+        return it.hasNext()?it.next():null;
+    }
+    /**
+     *
+     * @param sRow1
+     * @return
+     */
+    private String getProbeName(Node sRow1) {
+        if (StatisticsCallType.FIRST_LEVEL.equals(getCallType().getLevel())){
+           Iterator<Node> it = sRow1.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+                
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    return NeoUtils.isProbeNode(currentPos.currentNode());
+                }
+            },GeoNeoRelationshipTypes.SOURCE,Direction.OUTGOING).iterator();
+            return it.hasNext()?NeoUtils.getNodeName(it.next()):null;
+        }else{
+            return null;
+        }
+    }
+    private void compareSRow(Node sRow1, Node sRow2, StringBuilder errors, String probeName) {
         String name1 = NeoUtils.getNodeName(sRow1);
         String name2 = NeoUtils.getNodeName(sRow2);
         HashMap<IStatisticsHeader, Number> map1 = buildCellDataMap(sRow1);
@@ -149,7 +193,11 @@ private StatisticsCallType cellType;
             Number value2 = map2.get(header);
             boolean isEqual = value1==null?value2==null:value1.equals(value2);
             if (!isEqual){
-                errors.append('\n').append("Type: ").append(getCallType()).append(" ").append(String.format("Headers %s is not equals for '%s'=%s, and '%s'=%s",header,name1,value1,name2,value2)); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                errors.append('\n');
+                if (getCallType().getLevel().equals(StatisticsCallType.FIRST_LEVEL)){
+                    errors.append("Probe: ").append(probeName).append(" ");
+                }
+                errors.append("Type: ").append(getCallType()).append(" ").append(String.format("Headers %s is not equals for '%s'=%s, and '%s'=%s",header,name1,value1,name2,value2)); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             }
             
         }
