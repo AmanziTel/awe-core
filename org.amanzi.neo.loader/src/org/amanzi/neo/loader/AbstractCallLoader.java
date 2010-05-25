@@ -637,6 +637,12 @@ public abstract class AbstractCallLoader extends DriveLoader {
     public Node[] getRootNodes() {
         return new Node[]{networkNode,datasetNode};
     }
-
+    /**
+    *
+    * @return
+    */
+   public Node getVirtualDataset() {
+       return callDataset;
+   }
 
 }

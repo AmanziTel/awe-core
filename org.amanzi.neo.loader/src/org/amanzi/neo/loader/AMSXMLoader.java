@@ -140,6 +140,8 @@ public class AMSXMLoader extends AbstractCallLoader {
     /** active file node for event dataset. */
     private Node datasetFileNode;
 
+    private final boolean isTest;
+
     // TODO change after implement feature 1131
 
     /**
@@ -240,7 +242,7 @@ public class AMSXMLoader extends AbstractCallLoader {
         this.directoryName = directoryName;
         this.filename = directoryName;
         this.networkName = networkName;
-
+        isTest=false;
         initialize("AMS", null, directoryName, display, datasetName);
 
         // timestampFormat = new SimpleDateFormat(TIMESTAMP_FORMAT);
@@ -270,6 +272,7 @@ public class AMSXMLoader extends AbstractCallLoader {
         this.directoryName = directoryName;
         this.filename = directoryName;
         this.networkName = networkName;
+        this.isTest=isTest;
         initialize("AMS", neo, directoryName, display, datasetName);
     }
 
@@ -335,7 +338,9 @@ public class AMSXMLoader extends AbstractCallLoader {
             finishUp();
 
             cleanupGisNode();
-            finishUpGis();
+            if (!isTest){
+                finishUpGis();
+            }
             tx.success();
         } finally {
             tx.finish();
@@ -715,6 +720,7 @@ public class AMSXMLoader extends AbstractCallLoader {
         private void handleCall() {
             Call call = new Call();
             call.addRelatedNode(node);
+            call.setTimestamp(timestamp);
             call.setCallType(CallType.ITSI_CC);
             Long beginTime = (Long)node.getProperty("ho_Req", null);
             call.setHandoverTime(beginTime);
@@ -1791,4 +1797,6 @@ public class AMSXMLoader extends AbstractCallLoader {
         }
 
     }
+
+
 }
