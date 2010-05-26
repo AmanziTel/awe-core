@@ -37,6 +37,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
@@ -69,6 +70,7 @@ public class StatisticsTest extends AmsStatisticsTest {
         prepareMainDirectory();
         initProjectService();
         handleRow = new HashSet<Node>();
+        stat1TimeCorrelator=0;
     }
 
     @Test
@@ -79,7 +81,7 @@ public class StatisticsTest extends AmsStatisticsTest {
         compareStatistics(stat1, stat2);
 
     }
-
+    @Ignore 
     @Test
     public void testCompareLogStatistics() throws IOException, ParseException {
         CallStatistics stat1 = createStatistics(loadLogData());
