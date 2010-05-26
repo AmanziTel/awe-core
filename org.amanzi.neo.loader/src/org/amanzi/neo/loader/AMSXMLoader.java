@@ -105,7 +105,8 @@ public class AMSXMLoader extends AbstractCallLoader {
     public static Logger LOGGER = Logger.getLogger(AMSXMLoader.class);
 
     /** The formatter. */
-    private static SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss,SSSz");
+    //TODO temporary remove handling of time zone
+    private static SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss,SSS");//,SSSz");
 
     /** The directory name. */
     private final String directoryName;
