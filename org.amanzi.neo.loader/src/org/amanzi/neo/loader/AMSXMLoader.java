@@ -753,7 +753,7 @@ public class AMSXMLoader extends AbstractCallLoader {
 
         /** The pesq cast map. */
         protected final Map<String, Class< ? extends Object>> pesqCastMap;
-        Float delay=0f;
+        int  delay=0;
         int delayCount=0;
         /** The last mm. */
         Node lastMM = null;
@@ -819,7 +819,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             super.handleCollector();
             List<PropertyCollector> collectorList = getSubCollectors();
             handleCall();
-            delay = 0f;
+            delay = 0;
             delayCount = 0;
             for (PropertyCollector collector : collectorList) {
                 if (collector.getName().equals("pesqResult")) {
@@ -827,11 +827,12 @@ public class AMSXMLoader extends AbstractCallLoader {
                 }
             }
             if (delayCount > 0) {
+                delay=delay/delayCount;
                 if (tocttc != null) {
-                    tocttc.addDelay(delay / delayCount);
+                    tocttc.addDelay(delay/1000f );
                 }
                 if (tocttcGroup != null) {
-                    tocttcGroup.addDelay(delay / delayCount);
+                    tocttcGroup.addDelay(delay/1000f);
                 }
             }
             if (tocttc != null && hook != null && simplex != null && hook == 0 && simplex == 0) {
@@ -911,7 +912,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 Object parseValue = getParcedValue(entry.getKey(), entry.getValue(), pesqCastMap).getLeft();
                 if (entry.getKey().equals("delay")) {
-                    delay+=((Number)parseValue).floatValue()/1000f;
+                    delay+=((Number)parseValue).intValue();
                     delayCount++;
                 }
                 if (entry.getKey().equals("pesq")) {
@@ -941,7 +942,7 @@ public class AMSXMLoader extends AbstractCallLoader {
         /** The pesq cast map. */
         protected final Map<String, Class< ? extends Object>> pesqCastMap;
 
-        Float delay=0f;
+        int delay=0;
         int delayCount=0;
         /** The last mm. */
         Node lastMM = null;
@@ -1011,7 +1012,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             super.handleCollector();
             List<PropertyCollector> collectorList = getSubCollectors();
             handleCall();
-             delay=0f;
+             delay=0;
              delayCount=0;
             for (PropertyCollector collector : collectorList) {
                 if (collector.getName().equals("pesqResult")) {
@@ -1019,11 +1020,12 @@ public class AMSXMLoader extends AbstractCallLoader {
                 }
             }
             if (delayCount > 0) {
+                delay=delay/delayCount;
                 if (tocttc != null) {
-                    tocttc.addDelay(delay / delayCount);
+                    tocttc.addDelay(delay/1000f );
                 }
                 if (tocttcGroup != null) {
-                    tocttcGroup.addDelay(delay / delayCount);
+                    tocttcGroup.addDelay(delay/1000f);
                 }
             }
 
@@ -1118,7 +1120,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 Object parseValue = getParcedValue(entry.getKey(), entry.getValue(), pesqCastMap).getLeft();
                 if (entry.getKey().equals("delay")) {
-                    delay+=((Number)parseValue).floatValue()/1000f;
+                    delay+=((Number)parseValue).intValue();
                     delayCount++;
                 }
                 if (entry.getKey().equals("pesq")) {
