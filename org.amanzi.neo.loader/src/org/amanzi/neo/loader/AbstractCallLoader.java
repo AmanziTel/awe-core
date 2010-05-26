@@ -501,7 +501,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
          */
         private float[] addToArray(float[] original, float value) {
             float[] result = new float[original.length + 1];
-            result = Arrays.copyOf(this.lq, result.length);
+            result = Arrays.copyOf(original, result.length);
             result[result.length - 1] = value;
             return result;
         }
