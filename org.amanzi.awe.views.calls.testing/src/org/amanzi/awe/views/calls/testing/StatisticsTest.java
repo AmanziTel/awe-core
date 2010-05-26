@@ -152,9 +152,8 @@ public class StatisticsTest extends AmsStatisticsTest {
             long time1 = NeoUtils.getNodeTime(sRow1) + stat1TimeCorrelator;
             Node sRow2 = findSrow(node2, time1, probeName);
             if (sRow2 == null) {
-                errors
-                        .append('\n')
-                        .append("Type: ").append(getCallType()).append(" ").append(String.format("Probe %s, Not found probe for row %s", probeName, NeoUtils.getNodeName(sRow1))); //$NON-NLS-1$ //
+                errors.append('\n')
+                        .append("Type: ").append(getCallType()).append(" ").append(String.format("Probe %s, Not found same row in Stst2 for row %s", probeName, NeoUtils.getNodeName(sRow1))); //$NON-NLS-1$ //
                 continue;
             }
             handleRow.add(sRow2);
