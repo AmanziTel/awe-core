@@ -105,14 +105,16 @@ public class AMSCorrellator {
                 throw new InterruptedException("correlation was interrupted"); //$NON-NLS-1$
             }
             Node gisFrom = !isTest ? NeoUtils.findGisNode(secondDataset) : NeoUtils.findGisNode(secondDataset, neoService) ;
-            Node disTo = !isTest ? NeoUtils.findGisNode(firstDataset) : NeoUtils.findGisNode(firstDataset, neoService);
-            Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(disTo, neoService);
+            Node gisTo = !isTest ? NeoUtils.findGisNode(firstDataset) : NeoUtils.findGisNode(firstDataset, neoService);
+            
+            Node datasetFrom = gisFrom.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode();
+            Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(datasetFrom, neoService);
             assert minMax!=null;
             long begin=minMax.getLeft();
             long end=minMax.getRight();
             monitor.beginTask("correlate", (int)(end-begin));
             gisProperFrom = new GisProperties(gisFrom);
-            gisProperTo = new GisProperties(disTo);
+            gisProperTo = new GisProperties(gisTo);
             gisProperFrom.initCRS();
             gisProperTo.setCrs(gisProperFrom.getCrs());
             gisProperTo.saveCRS();
