@@ -850,7 +850,7 @@ public class AMSXMLoader extends AbstractCallLoader {
                 }
             } else if (tocttcGroup != null) {
                 if (hook == 1 && simplex == 1) {
-                    tocttcGroup.setCallSetupEndTime((Long)node.getProperty("connectTime", 0l));
+//                    tocttcGroup.setCallSetupEndTime((Long)node.getProperty("connectTime", 0l));
                     tocttcGroup.setCallTerminationEnd((Long)node.getProperty("releaseTime", 0l));
                     if (getPropertyMap().get("errorCode") != null) {
                         tocttcGroup.setCallResult(CallResult.FAILURE);
@@ -901,10 +901,10 @@ public class AMSXMLoader extends AbstractCallLoader {
                 Object parseValue = getParcedValue(entry.getKey(), entry.getValue(), pesqCastMap).getLeft();
                 if (entry.getKey().equals("delay")) {
                     if (tocttc != null) {
-                        tocttc.addDelay(((Number)parseValue).floatValue());
+                        tocttc.addDelay(((Number)parseValue).floatValue()/1000f);
                     }
                     if (tocttcGroup != null) {
-                        tocttcGroup.addDelay(((Number)parseValue).floatValue());
+                        tocttcGroup.addDelay(((Number)parseValue).floatValue()/1000f);
                     }
                 }
                 if (entry.getKey().equals("pesq")) {
@@ -1072,6 +1072,8 @@ public class AMSXMLoader extends AbstractCallLoader {
                     tocttcGroup.setCallerProbe(callerProbe);
                     tocttcGroup.setCalledPhoneNumber(getPropertyMap().get("calledNumber"));
                     tocttcGroup.setCallSetupBeginTime((Long)node.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, 0l));
+                    tocttcGroup.setCallSetupEndTime((Long)node.getProperty("connectTime", 0l));
+                    
                     tocttcGroup.setCallTerminationBegin((Long)node.getProperty("releaseTime", 0l));
                     Integer ct = (Integer)node.getProperty("causeForTermination",1);
                     if (ct!=1){
@@ -1097,10 +1099,10 @@ public class AMSXMLoader extends AbstractCallLoader {
                 Object parseValue = getParcedValue(entry.getKey(), entry.getValue(), pesqCastMap).getLeft();
                 if (entry.getKey().equals("delay")) {
                     if (tocttc != null) {
-                        tocttc.addDelay(((Number)parseValue).floatValue());
+                        tocttc.addDelay(((Number)parseValue).floatValue()/1000f);
                     }
                     if (tocttcGroup != null) {
-                        tocttcGroup.addDelay(((Number)parseValue).floatValue());
+                        tocttcGroup.addDelay(((Number)parseValue).floatValue()/1000f);
                     }
                 }
                 if (entry.getKey().equals("pesq")) {
