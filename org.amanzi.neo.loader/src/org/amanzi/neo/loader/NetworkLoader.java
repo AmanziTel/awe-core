@@ -172,7 +172,7 @@ public class NetworkLoader extends AbstractLoader {
         luceneInd = NeoServiceProvider.getProvider().getIndexService();
         addNetworkIndexes();
     }
-    
+
     /**
      * Constructor for loading data in test mode, with no display and NeoService passed
      * 
@@ -184,9 +184,9 @@ public class NetworkLoader extends AbstractLoader {
         initialize("Network", neo, filename, null);
         initializeKnownHeaders();
         addNetworkIndexes();
-        if(indexService==null){
+        if (indexService == null) {
             luceneInd = NeoServiceProvider.getProvider().getIndexService();
-        }else{
+        } else {
             luceneInd = indexService;
         }
     }
@@ -376,7 +376,7 @@ public class NetworkLoader extends AbstractLoader {
                     sectorData.add(header);
                 }
             }
-            is3G=headerMap.headers.keySet().contains("gsm_ne");
+            is3G = headerMap.headers.keySet().contains("gsm_ne");
         }
 
         private void setData(List<String> fields) {
@@ -401,6 +401,7 @@ public class NetworkLoader extends AbstractLoader {
                 return value.toString();
             }
         }
+
         private Integer getInteger(String key) {
             Object value = lineData.get(key);
             if (value instanceof Number) {
@@ -409,6 +410,7 @@ public class NetworkLoader extends AbstractLoader {
                 return (Integer)value;
             }
         }
+
         private Float getFloat(String key) {
             Object value = lineData.get(key);
             if (value instanceof Integer) {
@@ -445,6 +447,7 @@ public class NetworkLoader extends AbstractLoader {
 
         /**
          * is 3g network file?
+         * 
          * @return
          */
         public boolean is3G() {
@@ -464,7 +467,7 @@ public class NetworkLoader extends AbstractLoader {
         try {
             if (networkHeader == null) {
                 networkHeader = new NetworkHeader(fields);
-                sitesType =networkHeader.is3G()?NetworkSiteType.SITE_3G:NetworkSiteType.SITE_2G;
+                sitesType = networkHeader.is3G() ? NetworkSiteType.SITE_3G : NetworkSiteType.SITE_2G;
             } else {
                 networkHeader.setData(fields);
             }
@@ -481,8 +484,8 @@ public class NetworkLoader extends AbstractLoader {
                 // return;
                 siteField = sectorField.substring(0, sectorField.length() - 1);
             }
-            //Lagutko, 24.02.2010, sector name can be repeatable (for example 'sector1') so we need
-            //additional variable for Lucene Index 
+            // Lagutko, 24.02.2010, sector name can be repeatable (for example 'sector1') so we need
+            // additional variable for Lucene Index
             String sectorIndexName = sectorField;
             if (trimSectorName) {
                 sectorField = sectorField.replaceAll(siteField + "[\\:\\-]?", "");
@@ -527,24 +530,24 @@ public class NetworkLoader extends AbstractLoader {
                     }
                 } else {
 
-                    if (latitude==0&&longitude==0){
-                        //not stored site!
+                    if (latitude == 0 && longitude == 0) {
+                        // not stored site!
                         return;
                     }
                     newSite = addChild(siteRoot, NodeTypes.SITE, siteName);
                     sitesType.setSiteType(newSite, neo);
+
+                    (site == null ? network : site).createRelationshipTo(newSite, GeoNeoRelationshipTypes.NEXT);
+                    site = newSite;
+                    siteNumber++;
+
                 }
-                // TODO and maybe add create GeoNeoRelationshipTypes.NEXT between sites if
-                // necessary!
-                (site == null ? network : site).createRelationshipTo(newSite, GeoNeoRelationshipTypes.NEXT);
-                site = newSite;
-                siteNumber++;
 
                 GisProperties gisProperties = getGisProperties(basename);
                 gisProperties.updateBBox(latitude, longitude);
                 if (gisProperties.getCrs() == null) {
                     gisProperties.checkCRS(latitude, longitude, networkHeader.getCrsHint());
-                    if (!isTest()&&gisProperties.getCrs() != null) {
+                    if (!isTest() && gisProperties.getCrs() != null) {
                         CoordinateReferenceSystem crs = askCRSChoise(gisProperties);
                         if (crs != null) {
                             gisProperties.setCrs(crs);
@@ -554,24 +557,25 @@ public class NetworkLoader extends AbstractLoader {
                 }
                 site.setProperty(INeoConstants.PROPERTY_LAT_NAME, latitude.doubleValue());
                 site.setProperty(INeoConstants.PROPERTY_LON_NAME, longitude.doubleValue());
-                
+
                 index(site);
             }
             debug("New Sector: " + sectorField);
             // TODO check by necessary sector
-            Integer ci=networkHeader.getInteger(INeoConstants.PROPERTY_SECTOR_CI);
-            Integer lac=networkHeader.getInteger(INeoConstants.PROPERTY_SECTOR_LAC);
-//            Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorIndexName);
-            Node sector = NeoUtils.findSector(basename, ci,lac,sectorIndexName,true,luceneInd,neo);
+            Integer ci = networkHeader.getInteger(INeoConstants.PROPERTY_SECTOR_CI);
+            Integer lac = networkHeader.getInteger(INeoConstants.PROPERTY_SECTOR_LAC);
+            // Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename,
+            // INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorIndexName);
+            Node sector = NeoUtils.findSector(basename, ci, lac, sectorIndexName, true, luceneInd, neo);
             if (sector != null) {
                 // TODO check
             } else {
                 sector = addChild(site, NodeTypes.SECTOR, sectorField, sectorIndexName);
-                if (ci!=null){
+                if (ci != null) {
                     sector.setProperty(INeoConstants.PROPERTY_SECTOR_CI, ci);
                     luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR), ci);
                 }
-                if (lac!=null){
+                if (lac != null) {
                     sector.setProperty(INeoConstants.PROPERTY_SECTOR_LAC, lac);
                     luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_SECTOR_LAC, NodeTypes.SECTOR), lac);
                 }
@@ -603,7 +607,7 @@ public class NetworkLoader extends AbstractLoader {
     }
 
     private Node addChild(Node parent, NodeTypes type, String name) {
-    	return addChild(parent, type, name, name);
+        return addChild(parent, type, name, name);
     }
 
     /**
