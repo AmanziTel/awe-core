@@ -263,6 +263,7 @@ public class NemoLoader extends DriveLoader {
                     Node mm = neo.createNode();
                     if (timestamp != 0) {
                         mm.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+                        updateTimestampMinMax(2, timestamp);
                     }
                     findOrCreateVirtualFileNode(mm);
                     NodeTypes.MM.setNodeType(mm, neo);

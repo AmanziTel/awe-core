@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 import net.refractions.udig.catalog.IGeoResource;
@@ -578,7 +579,12 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
                     gisDriveNodes.put(id, node);
                 }
             }
-
+           LinkedHashMap<String, Node> dataset = NeoUtils.getAllDatasetNodes(service);
+           for (Map.Entry<String, Node>entry:dataset.entrySet()){
+              if (NeoUtils.isVirtualDataset(entry.getValue())&&!entry.getValue().hasRelationship(GeoNeoRelationshipTypes.NEXT,Direction.INCOMING)){
+                  gisDriveNodes.put(entry.getKey(), entry.getValue()); 
+              }
+           }
             return gisDriveNodes.keySet().toArray(new String[] {});
         } finally {
             tx.finish();
@@ -1401,7 +1407,7 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
             cEvent.select(0);
 
             initializeIndex(cDrive.getText());
-            Node root=gis.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(gis);
+            Node root=NeoUtils.isGisNode(gis)?gis.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(gis):gis;
             Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(root, null);
             beginGisTime = minMax.getLeft();
             endGisTime = minMax.getRight();
