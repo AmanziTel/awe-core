@@ -298,7 +298,7 @@ public class CorrelationList extends ViewPart {
         updateGisNode();
         cNetwork.setText(networkNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString());
         networkChangeSelection();
-        cNetwork.setText(driveNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString());
+        cDrive.setText(driveNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString());
         driveChangeSelection();
 
     }
