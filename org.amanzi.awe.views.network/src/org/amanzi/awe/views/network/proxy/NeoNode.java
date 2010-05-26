@@ -106,14 +106,15 @@ public class NeoNode {
             Iterator<Node> childrens = null;
             if (NeoUtils.isProbeCallsNode(node)) {
             	childrens = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE,
-						  				  ProbeCallRelationshipType.CALLEE, Direction.INCOMING,
 						  				  ProbeCallRelationshipType.CALLER, Direction.INCOMING).iterator();
             }
             else if (NeoUtils.getNodeType(node).equals(NodeTypes.PROBE.getId())) {
                 childrens = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, 
                                           ProbeCallRelationshipType.CALLS, Direction.OUTGOING).iterator();
-            }
-            else {
+            } else if(NeoUtils.getNodeType(node).equals(NodeTypes.CALL.getId())){
+                childrens = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, 
+                        ProbeCallRelationshipType.CALL_M, Direction.OUTGOING).iterator();
+            } else {
             	childrens = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
             							  NetworkRelationshipTypes.CHILD,Direction.OUTGOING).iterator();
             }

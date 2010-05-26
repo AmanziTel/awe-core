@@ -139,7 +139,16 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
     
     @Override
     public boolean hasChildren() {
-        return node.hasRelationship(GeoNeoRelationshipTypes.SOURCE,Direction.OUTGOING)||node.hasRelationship(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING);
+        if (type.equals(NodeTypes.PROBE.getId())) {
+            return node.hasRelationship(GeoNeoRelationshipTypes.SOURCE, Direction.INCOMING);
+        }
+        if (type.equals(NodeTypes.S_CELL.getId())) {
+            return node.hasRelationship(GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING);
+        }
+        if (type.equals(NodeTypes.CALL.getId())) {
+            return node.hasRelationship(ProbeCallRelationshipType.CALL_M, Direction.OUTGOING);
+        }
+        return node.hasRelationship(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING);
     }
 
     /**
