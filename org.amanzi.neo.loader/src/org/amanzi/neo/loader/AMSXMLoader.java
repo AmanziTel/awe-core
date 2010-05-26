@@ -753,7 +753,8 @@ public class AMSXMLoader extends AbstractCallLoader {
 
         /** The pesq cast map. */
         protected final Map<String, Class< ? extends Object>> pesqCastMap;
-
+        Float delay=0f;
+        int delayCount=0;
         /** The last mm. */
         Node lastMM = null;
 
@@ -818,9 +819,19 @@ public class AMSXMLoader extends AbstractCallLoader {
             super.handleCollector();
             List<PropertyCollector> collectorList = getSubCollectors();
             handleCall();
+            delay = 0f;
+            delayCount = 0;
             for (PropertyCollector collector : collectorList) {
                 if (collector.getName().equals("pesqResult")) {
                     createAttachmentNode(collector);
+                }
+            }
+            if (delayCount > 0) {
+                if (tocttc != null) {
+                    tocttc.addDelay(delay / delayCount);
+                }
+                if (tocttcGroup != null) {
+                    tocttcGroup.addDelay(delay / delayCount);
                 }
             }
             if (tocttc != null && hook != null && simplex != null && hook == 0 && simplex == 0) {
@@ -896,8 +907,6 @@ public class AMSXMLoader extends AbstractCallLoader {
             NeoUtils.addChild(node, mm, lastMM, neo);
             NodeTypes.MM.setNodeType(mm, neo);
             lastMM = mm;
-            Float delay=0f;
-            int delayCount=0;
             Map<String, String> map = collector.getPropertyMap();
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 Object parseValue = getParcedValue(entry.getKey(), entry.getValue(), pesqCastMap).getLeft();
@@ -914,14 +923,6 @@ public class AMSXMLoader extends AbstractCallLoader {
                     }
                 }
                 setProperty(mm, entry.getKey(), parseValue);
-            }
-            if (delayCount > 0) {
-                if (tocttc != null) {
-                    tocttc.addDelay(delay / delayCount);
-                }
-                if (tocttcGroup != null) {
-                    tocttcGroup.addDelay(delay / delayCount);
-                }
             }
         }
     }
@@ -940,7 +941,8 @@ public class AMSXMLoader extends AbstractCallLoader {
         /** The pesq cast map. */
         protected final Map<String, Class< ? extends Object>> pesqCastMap;
 
-
+        Float delay=0f;
+        int delayCount=0;
         /** The last mm. */
         Node lastMM = null;
 
@@ -1009,9 +1011,19 @@ public class AMSXMLoader extends AbstractCallLoader {
             super.handleCollector();
             List<PropertyCollector> collectorList = getSubCollectors();
             handleCall();
+             delay=0f;
+             delayCount=0;
             for (PropertyCollector collector : collectorList) {
                 if (collector.getName().equals("pesqResult")) {
                     createAttachmentNode(collector);
+                }
+            }
+            if (delayCount > 0) {
+                if (tocttc != null) {
+                    tocttc.addDelay(delay / delayCount);
+                }
+                if (tocttcGroup != null) {
+                    tocttcGroup.addDelay(delay / delayCount);
                 }
             }
 
@@ -1101,8 +1113,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             NeoUtils.addChild(node, mm, lastMM, neo);
             NodeTypes.MM.setNodeType(mm, neo);
             lastMM = mm;
-            Float delay=0f;
-            int delayCount=0;
+
             Map<String, String> map = collector.getPropertyMap();
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 Object parseValue = getParcedValue(entry.getKey(), entry.getValue(), pesqCastMap).getLeft();
@@ -1120,14 +1131,7 @@ public class AMSXMLoader extends AbstractCallLoader {
                 }
                 setProperty(mm, entry.getKey(), parseValue);
             }
-            if (delayCount > 0) {
-                if (tocttc != null) {
-                    tocttc.addDelay(delay / delayCount);
-                }
-                if (tocttcGroup != null) {
-                    tocttcGroup.addDelay(delay / delayCount);
-                }
-            }
+
         }
     }
 
