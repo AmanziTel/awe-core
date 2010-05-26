@@ -149,10 +149,13 @@ public abstract class DriveLoader extends AbstractLoader {
      * @param measurement point to add as first point to file node if created
      */
     protected void findOrCreateVirtualFileNode(Node firstChildNode) {
+        findOrCreateVirtualFileNode(firstChildNode,DriveTypes.MS);
+    }
+    protected void findOrCreateVirtualFileNode(Node firstChildNode,DriveTypes type) {
         if (virtualFile == null) {
             Transaction tx = neo.beginTx();
             try {
-                Node virtualDatasetNode = getVirtualDataset(DriveTypes.MS,false);
+                Node virtualDatasetNode = getVirtualDataset(type,false);
                 Pair<Boolean, Node> pair = NeoUtils.findOrCreateFileNode(neo, virtualDatasetNode, basename, filename);
                 virtualFile = pair.getRight();
                 virtualFile.createRelationshipTo(firstChildNode, GeoNeoRelationshipTypes.CHILD);

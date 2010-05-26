@@ -2764,7 +2764,7 @@ public enum NemoEvents {
                             if (!parameters.hasNext()){break;};
                             param.add(getStringValue(parameters));
                         }
-                        parsedSbParameters.put("CQI_", param.toArray(new String[0]));
+                        parsedSbParameters.put("CQI", param.toArray(new String[0]));
                     }
                 }
 

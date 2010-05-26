@@ -70,7 +70,6 @@ public class NemoLoader extends DriveLoader {
     protected SimpleDateFormat timeFormat;
     protected LinkedHashMap<String, Header> headers;
     private final LinkedHashMap<String, Header> headersVirt;
-    private Node virtualDataset;
     private Node virtualMnode = null;
     protected Float curLat;
     protected Float curLon;
@@ -215,8 +214,8 @@ public class NemoLoader extends DriveLoader {
             }
             Node ms = neo.createNode();
             findOrCreateFileNode(ms);
-            ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
             event.store(ms, headers);
+            ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
             if (timestamp != 0) {
                 ms.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
             }
@@ -536,7 +535,7 @@ public class NemoLoader extends DriveLoader {
         if (key == 1) {
             return datasetNode;
         } else {
-            return virtualDataset;
+            return  getVirtualDataset(DriveTypes.MS,false);
         }
     }
     @Override
