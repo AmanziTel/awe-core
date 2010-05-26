@@ -94,6 +94,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
                     break;
                 case ITSI_CC:
                     storeITSICCCall(call);
+                    break;
                 default:
                     NeoCorePlugin.error("Unknown call type "+callType+".", null);
                 }
