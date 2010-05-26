@@ -29,6 +29,7 @@ import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
+import org.amanzi.neo.core.enums.CallProperties.CallResult;
 import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.index.MultiPropertyIndex;
@@ -157,7 +158,8 @@ public abstract class AbstractCallLoader extends DriveLoader {
             setIndexProperty(headers, callNode, CallProperties.MESS_ACKNOWLEDGE_TIME.getId(), acknTime);
         }
         setIndexProperty(headers, callNode, CallProperties.CALL_TYPE.getId(), call.getCallType().toString());
-        setIndexProperty(headers, callNode, CallProperties.CALL_RESULT.getId(), call.getCallResult().toString());
+        CallResult callResult = call.getCallResult()==null?CallResult.FAILURE:call.getCallResult();
+        setIndexProperty(headers, callNode, CallProperties.CALL_RESULT.getId(), callResult.toString());
         
         callNode.createRelationshipTo(probeCallNode, ProbeCallRelationshipType.CALLER);
         
