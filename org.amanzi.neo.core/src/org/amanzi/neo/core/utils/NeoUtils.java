@@ -120,7 +120,7 @@ public class NeoUtils {
      * @return node name or defValue
      */
     public static String getNodeType(Node node, String defValue) {
-        return (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, defValue);
+        return node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, defValue).toString();
     }
 
     /**
