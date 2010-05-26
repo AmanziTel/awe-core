@@ -56,7 +56,7 @@ public enum DriveTypes {
 
         @Override
         public String getFullDatasetName(String datasetName) {
-            return datasetName + " (measurment)";
+            return datasetName + " (measurement)";
         }
     },
     OSS("oss", "", ""),
