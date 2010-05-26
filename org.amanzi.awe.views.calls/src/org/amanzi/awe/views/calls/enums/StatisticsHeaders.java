@@ -621,10 +621,10 @@ public enum StatisticsHeaders implements IStatisticsHeader{
             return null;
         }
     },
-    IND_DELAY_COUNT_P1("DELAY_COUNT_P1", StatisticsType.COUNT) {
+    IND_DELAY_COUNT_P1("DELAY_COUNT_P1", StatisticsType.COUNT) {//TODO may be union delays for Group and Individual
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            if(isCallDuratiomGood(callNode, (ICallStatisticsConstants)constants)){
+            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
                 List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayP1(), callConstants.getIndivCallDelayP2(), true, true);
                 if(!good.isEmpty()){
@@ -637,7 +637,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_COUNT_P2("DELAY_COUNT_P2", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            if(isCallDuratiomGood(callNode, (ICallStatisticsConstants)constants)){
+            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
                 List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayP2(), callConstants.getIndivCallDelayP3(), false, true);
                 if(!good.isEmpty()){
@@ -650,7 +650,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_COUNT_P3("DELAY_COUNT_P3", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            if(isCallDuratiomGood(callNode, (ICallStatisticsConstants)constants)){
+            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
                 List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayP3(), callConstants.getIndivCallDelayP4(), false, true);
                 if(!good.isEmpty()){
@@ -663,7 +663,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_COUNT_P4("DELAY_COUNT_P4", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            if(isCallDuratiomGood(callNode, (ICallStatisticsConstants)constants)){
+            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
                 List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayP4(), callConstants.getIndivCallDelayL1(), false, true);
                 if(!good.isEmpty()){
@@ -676,7 +676,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_COUNT_L1("DELAY_COUNT_L1", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            if(isCallDuratiomGood(callNode, (ICallStatisticsConstants)constants)){
+            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
                 List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayL1(), callConstants.getIndivCallDelayL2(), false, true);
                 if(!good.isEmpty()){
@@ -689,7 +689,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_COUNT_L2("DELAY_COUNT_L2", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            if(isCallDuratiomGood(callNode, (ICallStatisticsConstants)constants)){
+            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
                 List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayL2(), callConstants.getIndivCallDelayL3(), false, true);
                 if(!good.isEmpty()){
@@ -702,7 +702,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_COUNT_L3("DELAY_COUNT_L3", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            if(isCallDuratiomGood(callNode, (ICallStatisticsConstants)constants)){
+            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
                 List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayL3(), callConstants.getIndivCallDelayL4(), false, true);
                 if(!good.isEmpty()){
@@ -715,7 +715,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_COUNT_L4("DELAY_COUNT_L4", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            if(isCallDuratiomGood(callNode, (ICallStatisticsConstants)constants)){
+            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants)){
                 float[] callAudioDelays = getCallAudioDelay(callNode);
                 int result = 0; 
                 for(float callAudioDelay : callAudioDelays){
@@ -733,7 +733,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_MIN("DELAY_MIN", StatisticsType.MIN) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            if(isCallDuratiomGood(callNode, (ICallStatisticsConstants)constants)){
+            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants)){
                 float[] callAudioDelay = getCallAudioDelay(callNode);
                 if(callAudioDelay!=null&&callAudioDelay.length>0){
                     float result = callAudioDelay[0];
@@ -751,7 +751,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_MAX("DELAY_MAX", StatisticsType.MAX) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            if(isCallDuratiomGood(callNode, (ICallStatisticsConstants)constants)){
+            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants)){
                 float[] callAudioDelay = getCallAudioDelay(callNode);
                 if(callAudioDelay!=null&&callAudioDelay.length>0){
                     float result = callAudioDelay[0];
@@ -769,7 +769,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_TOTAL("DELAY_TOTAL", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            if(isCallDuratiomGood(callNode, (ICallStatisticsConstants)constants)){
+            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants)){
                 float[] callAudioDelay = getCallAudioDelay(callNode);
                 if(callAudioDelay!=null&&callAudioDelay.length>0){
                     float result = 0;
@@ -785,7 +785,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_Z1_P1("DELAY_Z1_P1", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            if(isCallDuratiomGood(callNode, (ICallStatisticsConstants)constants)){
+            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
                 List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayP1(), callConstants.getIndivCallDelayP2(), true, true);
                 if(!good.isEmpty()){
@@ -802,7 +802,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_Z1_P2("DELAY_Z1_P2", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            if(isCallDuratiomGood(callNode, (ICallStatisticsConstants)constants)){
+            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
                 List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayP2(), callConstants.getIndivCallDelayP3(), false, true);
                 if(!good.isEmpty()){
@@ -819,7 +819,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_Z1_P3("DELAY_Z1_P3", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            if(isCallDuratiomGood(callNode, (ICallStatisticsConstants)constants)){
+            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
                 List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayP3(), callConstants.getIndivCallDelayP4(), false, true);
                 if(!good.isEmpty()){
@@ -836,7 +836,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_Z1_P4("DELAY_Z1_P4", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            if(isCallDuratiomGood(callNode, (ICallStatisticsConstants)constants)){
+            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
                 List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayP4(), callConstants.getIndivCallDelayL1(), false, true);
                 if(!good.isEmpty()){
@@ -853,7 +853,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_Z1_L1("DELAY_Z1_L1", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            if(isCallDuratiomGood(callNode, (ICallStatisticsConstants)constants)){
+            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
                 List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayL1(), callConstants.getIndivCallDelayL2(), false, true);
                 if(!good.isEmpty()){
@@ -870,7 +870,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_Z1_L2("DELAY_Z1_L2", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            if(isCallDuratiomGood(callNode, (ICallStatisticsConstants)constants)){
+            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
                 List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayL2(), callConstants.getIndivCallDelayL3(), false, true);
                 if(!good.isEmpty()){
@@ -887,7 +887,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_Z1_L3("DELAY_Z1_L3", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            if(isCallDuratiomGood(callNode, (ICallStatisticsConstants)constants)){
+            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
                 List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayL3(), callConstants.getIndivCallDelayL4(), false, true);
                 if(!good.isEmpty()){
@@ -904,7 +904,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_Z1_L4("DELAY_Z1_L4", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants) {
-            if(isCallDuratiomGood(callNode, (ICallStatisticsConstants)constants)){
+            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants)){
                 float[] callAudioDelays = getCallAudioDelay(callNode);
                 float result = 0; 
                 for(float callAudioDelay : callAudioDelays){

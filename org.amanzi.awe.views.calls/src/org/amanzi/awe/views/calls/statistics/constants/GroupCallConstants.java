@@ -52,14 +52,14 @@ public class GroupCallConstants implements ICallStatisticsConstants {
     public final float GROUP_CALL_QUAL_L3 = 2.2f;
 
     public final float GROUP_CALL_DELAY_P1 = 0;
-    public final float GROUP_CALL_DELAY_P2 = 150;
-    public final float GROUP_CALL_DELAY_P3 = 250;
-    public final float GROUP_CALL_DELAY_P4 = 300;
+    public final float GROUP_CALL_DELAY_P2 = 0.15f;
+    public final float GROUP_CALL_DELAY_P3 = 0.25f;
+    public final float GROUP_CALL_DELAY_P4 = 0.3f;
 
-    public final float GROUP_CALL_DELAY_L1 = 350;
-    public final float GROUP_CALL_DELAY_L2 = 400;
-    public final float GROUP_CALL_DELAY_L3 = 450;
-    public final float GROUP_CALL_DELAY_L4 = 550;
+    public final float GROUP_CALL_DELAY_L1 = 0.35f;
+    public final float GROUP_CALL_DELAY_L2 = 0.4f;
+    public final float GROUP_CALL_DELAY_L3 = 0.45f;
+    public final float GROUP_CALL_DELAY_L4 = 0.55f;
 
     /**
      * @return Returns the indivCallConnTimeP1.
