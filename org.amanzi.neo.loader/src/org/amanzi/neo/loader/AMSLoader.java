@@ -666,8 +666,9 @@ public class AMSLoader extends AbstractCallLoader {
 	 * @param commandName name of command
 	 * @param parameters parameters of command
 	 */
-	private void updateMNode(Node mNode, String commandName, HashMap<String, Object> parameters) {
+	private void updateMNode(Node mNode, AbstractAMSCommand command, HashMap<String, Object> parameters) {
 		LinkedHashMap<String, Header> headers = getHeaderMap(REAL_DATASET_HEADER_INDEX).headers;
+		String commandName = command.getName();
 		mNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, commandName);
         setProperty(headers, mNode, INeoConstants.PROPERTY_TYPE_EVENT, commandName);
 		if (parameters != null) {
@@ -677,7 +678,7 @@ public class AMSLoader extends AbstractCallLoader {
 				    setProperty(headers, mNode, name, parameters.get(name));
 				}
 				else {
-					setPropertyToMmNodes(mNode, name, (List<?>)value);
+					setPropertyToMmNodes(mNode, name, (List<?>)value, command.getMMName());
 				}
 			}
 		}
@@ -715,7 +716,7 @@ public class AMSLoader extends AbstractCallLoader {
 	 * @param name name of property
 	 * @param properties list of values for this property
 	 */
-	private void setPropertyToMmNodes(Node msNode, String name, List<?> properties) {
+	private void setPropertyToMmNodes(Node msNode, String name, List<?> properties, String nodeName) {
 		Node previousMmNode = null;
 		
 		for (int i = 0; i < properties.size(); i++) {
@@ -726,7 +727,9 @@ public class AMSLoader extends AbstractCallLoader {
 			
 			if (mmNode == null) {
 				mmNode = neo.createNode();
-				mmNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.MM.getId());if (previousMmNode != null) {
+				mmNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.MM.getId());
+				mmNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, nodeName);
+				if (previousMmNode != null) {
 	                previousMmNode.createRelationshipTo(mmNode, GeoNeoRelationshipTypes.NEXT);
 	            }
 	            else {
@@ -836,7 +839,7 @@ public class AMSLoader extends AbstractCallLoader {
 			}
 		}
 		
-		updateMNode(mNode, command.getName(), result);		
+		updateMNode(mNode, command, result);		
 		
 		return isCallCommand;
 	}

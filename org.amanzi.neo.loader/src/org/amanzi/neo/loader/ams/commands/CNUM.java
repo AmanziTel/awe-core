@@ -82,4 +82,8 @@ class CNUM extends AbstractAMSCommand {
 		return false;
 	}
 
+	@Override
+    public String getMMName() {
+        return "attached group";
+    }
 }

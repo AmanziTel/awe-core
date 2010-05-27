@@ -59,7 +59,7 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
             name = "Call Analysis: " + node.getProperty(INeoConstants.PROPERTY_VALUE_NAME) + " (" + node.getProperty(CallProperties.CALL_TYPE.getId()) + ")";
         }        
         else if (type.equals(NodeTypes.S_CELL.getId())) {
-            name = node.getProperty(INeoConstants.PROPERTY_NAME_NAME) + ": " + node.getProperty(INeoConstants.PROPERTY_VALUE_NAME,"");
+            name = node.getProperty(INeoConstants.PROPERTY_NAME_NAME) + ": " + node.getProperty(INeoConstants.PROPERTY_VALUE_NAME,"0");
         }        
         hasChildren();
     }

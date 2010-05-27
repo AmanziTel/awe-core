@@ -47,4 +47,8 @@ public class CSPRTC extends AbstractAMSCommand {
         return false;
     }
 
+    @Override
+    public String getMMName() {
+        return "";
+    }
 }

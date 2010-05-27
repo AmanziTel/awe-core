@@ -54,4 +54,8 @@ public class CTSDC extends AbstractAMSCommand {
 		return true;
 	}
 
+	@Override
+    public String getMMName() {
+        return "";
+    }
 }

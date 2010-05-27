@@ -45,4 +45,9 @@ public class ATCMGS extends AbstractAMSCommand {
     public boolean isCallCommand() {
         return true;
     }
+    
+    @Override
+    public String getMMName() {
+        return "";
+    }
 }

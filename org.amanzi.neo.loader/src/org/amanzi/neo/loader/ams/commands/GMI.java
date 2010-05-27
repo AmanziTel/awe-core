@@ -48,5 +48,10 @@ public class GMI extends AbstractAMSCommand {
     public boolean isCallCommand() {
         return false;
     }
+    
+    @Override
+    public String getMMName() {
+        return "";
+    }
 
 }

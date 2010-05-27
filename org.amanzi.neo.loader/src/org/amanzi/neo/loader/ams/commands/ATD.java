@@ -49,4 +49,8 @@ class ATD extends AbstractAMSCommand {
 		return false;
 	}
 
+	@Override
+    public String getMMName() {
+        return "";
+    }
 }

@@ -44,4 +44,9 @@ public class CSPTSS extends AbstractAMSCommand {
         return false;
     }
     
+    @Override
+    public String getMMName() {
+        return "";
+    }
+    
 }

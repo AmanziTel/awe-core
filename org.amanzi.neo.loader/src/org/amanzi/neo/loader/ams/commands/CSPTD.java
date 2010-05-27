@@ -44,4 +44,9 @@ public class CSPTD extends AbstractAMSCommand {
     public boolean isCallCommand() {
         return false;
     }
+    
+    @Override
+    public String getMMName() {
+        return "";
+    }
 }

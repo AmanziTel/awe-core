@@ -86,4 +86,9 @@ public class CTSP extends AbstractAMSCommand {
     public boolean isCallCommand() {
         return false;
     }
+    
+    @Override
+    public String getMMName() {
+        return "service profile";
+    }
 }

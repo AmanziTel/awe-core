@@ -57,4 +57,8 @@ public class PESQ extends AbstractAMSCommand {
 		return true;
 	}
 
+	@Override
+    public String getMMName() {
+        return "";
+    }
 }

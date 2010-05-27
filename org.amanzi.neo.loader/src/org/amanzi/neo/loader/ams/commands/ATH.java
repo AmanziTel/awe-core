@@ -49,4 +49,8 @@ class ATH extends AbstractAMSCommand {
 		return true;
 	}
 
+	@Override
+    public String getMMName() {
+        return "";
+    }
 }

@@ -64,6 +64,13 @@ public abstract class AbstractAMSCommand {
 	public abstract String getName();
 	
 	/**
+     * Returns name of mm node
+     *
+     * @return name of mm node
+     */
+    public abstract String getMMName();
+	
+	/**
 	 * Returns a delimiter for Parameter
 	 *
 	 * @return

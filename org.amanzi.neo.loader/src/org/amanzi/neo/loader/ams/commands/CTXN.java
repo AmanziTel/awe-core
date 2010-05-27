@@ -45,4 +45,9 @@ public class CTXN extends AbstractAMSCommand {
     public boolean isCallCommand() {
         return false;
     }
+    
+    @Override
+    public String getMMName() {
+        return "";
+    }
 }

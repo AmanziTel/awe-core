@@ -907,6 +907,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             Node mm = neo.createNode();
             NeoUtils.addChild(node, mm, lastMM, neo);
             NodeTypes.MM.setNodeType(mm, neo);
+            mm.setProperty(INeoConstants.PROPERTY_NAME_NAME, "pesq");
             lastMM = mm;
             Map<String, String> map = collector.getPropertyMap();
             for (Map.Entry<String, String> entry : map.entrySet()) {
@@ -1114,6 +1115,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             Node mm = neo.createNode();
             NeoUtils.addChild(node, mm, lastMM, neo);
             NodeTypes.MM.setNodeType(mm, neo);
+            mm.setProperty(INeoConstants.PROPERTY_NAME_NAME, "pesq");
             lastMM = mm;
 
             Map<String, String> map = collector.getPropertyMap();
@@ -1203,6 +1205,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             Node mm = neo.createNode();
             NeoUtils.addChild(node, mm, lastMM, neo);
             NodeTypes.MM.setNodeType(mm, neo);
+            mm.setProperty(INeoConstants.PROPERTY_NAME_NAME, "pdResult");
             lastMM = mm;
             Map<String, String> map = collector.getPropertyMap();
             for (Map.Entry<String, String> entry : map.entrySet()) {
@@ -1310,6 +1313,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             Node mm = neo.createNode();
             NeoUtils.addChild(node, mm, lastMM, neo);
             NodeTypes.MM.setNodeType(mm, neo);
+            mm.setProperty(INeoConstants.PROPERTY_NAME_NAME, "sendReport");
             lastMM = mm;
             Map<String, String> map = collector.getPropertyMap();
             for (Map.Entry<String, String> entry : map.entrySet()) {
@@ -1449,6 +1453,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             Node mm = neo.createNode();
             NeoUtils.addChild(node, mm, lastMM, neo);
             NodeTypes.MM.setNodeType(mm, neo);
+            mm.setProperty(INeoConstants.PROPERTY_NAME_NAME, "attachment");
             lastMM = mm;
             Map<String, String> map = collector.getPropertyMap();
             for (Map.Entry<String, String> entry : map.entrySet()) {
