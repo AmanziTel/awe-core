@@ -461,7 +461,7 @@ public class NeoUtils {
         }
         Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
         try {
-            Iterator<Node> gisIterator = childNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+            Iterator<Node> gisIterator = childNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
 
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
@@ -1697,6 +1697,9 @@ public class NeoUtils {
         try {
             return node.hasRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING) ? node.getSingleRelationship(GeoNeoRelationshipTypes.LOCATION,
                     Direction.OUTGOING).getOtherNode(node) : null;
+        }catch (Exception e) {
+            // TODO: FAST FAKE - because some nodes can few location - exception is possible. fix after difinition mobile probe.
+            return null;
         } finally {
             finishTx(tx);
         }

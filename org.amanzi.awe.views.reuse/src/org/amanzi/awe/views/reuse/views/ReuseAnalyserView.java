@@ -939,6 +939,7 @@ public class ReuseAnalyserView extends ViewPart {
      */
     protected void chartUpdate(final Node aggrNode) {
         if (aggrNode == null) {
+            setVisibleForChart(true);
             return;
         }
         String chartTitle = ActionUtil.runJobWithResult(new RunnableWithResult<String>() {
@@ -968,6 +969,7 @@ public class ReuseAnalyserView extends ViewPart {
         if (chartTitle == null) {
             chart.setTitle(ERROR_CHART);
             chart.fireChartChanged();
+            setVisibleForChart(true);
             return;
         }
         chart.setTitle(chartTitle);
