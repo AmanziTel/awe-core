@@ -114,7 +114,6 @@ import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.neoclipse.Activator;
 
-
 /**
  * This View contains a tree of objects found in the database. The tree is built based on the
  * existence of the NetworkRelationshipTypes.CHILD relation, and the set of Root nodes defined by
@@ -131,7 +130,7 @@ public class NetworkTreeView extends ViewPart {
      * ID of this View
      */
     public static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NetworkTreeView";
-    
+
     public static final String TRANSMISSION_VIEW_ID = "org.amanzi.awe.views.neighbours.views.TransmissionView";
     public static final String NEIGHBOUR_VIEW_ID = "org.amanzi.awe.views.neighbours.views.NeighboursView";
     public static final String DB_GRAPH_VIEW_ID = "org.neo4j.neoclipse.view.NeoGraphViewPart";
@@ -187,7 +186,7 @@ public class NetworkTreeView extends ViewPart {
                     if (viewer != event.getViewer()) {
                         return;
                     }
-                    showSelection(node,true);
+                    showSelection(node, true);
                     showSelectionOnMap(node);
                 }
             }
@@ -270,8 +269,8 @@ public class NetworkTreeView extends ViewPart {
      * @param node - node to select
      */
     public void selectNode(Node node) {
-        viewer.reveal(new NeoNode(node,0));
-        viewer.setSelection(new StructuredSelection(new Object[] {new NeoNode(node,0)}));
+        viewer.reveal(new NeoNode(node, 0));
+        viewer.setSelection(new StructuredSelection(new Object[] {new NeoNode(node, 0)}));
     }
 
     /**
@@ -288,7 +287,7 @@ public class NetworkTreeView extends ViewPart {
             public boolean isReturnableNode(TraversalPosition currentPos) {
                 String type = NeoUtils.getNodeType(currentPos.currentNode(), "");
                 return !(type.equals(NodeTypes.AWE_PROJECT.getId()) || type.equals(NodeTypes.GIS.getId()))
-                        && NeoUtils.getFormatedNodeName(currentPos.currentNode(),"").toLowerCase().contains(text);
+                        && NeoUtils.getFormatedNodeName(currentPos.currentNode(), "").toLowerCase().contains(text);
             }
         }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
         // TODO needs sort by name
@@ -354,9 +353,7 @@ public class NetworkTreeView extends ViewPart {
     protected void setEditable(boolean editable) {
         if (editable) {
             TextCellEditor textCellEditor = new TextCellEditor(viewer.getTree());
-            viewer
-                    .setCellEditors(new CellEditor[] {textCellEditor, textCellEditor, textCellEditor, textCellEditor,
-                            textCellEditor});
+            viewer.setCellEditors(new CellEditor[] {textCellEditor, textCellEditor, textCellEditor, textCellEditor, textCellEditor});
             viewer.setColumnProperties(new String[] {"name"});
             ICellModifier modifier = new ICellModifier() {
 
@@ -443,7 +440,7 @@ public class NetworkTreeView extends ViewPart {
             @Override
             public void run() {
                 IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
-                showSelection((NeoNode)selection.getFirstElement(),false);
+                showSelection((NeoNode)selection.getFirstElement(), false);
             }
 
             @Override
@@ -460,8 +457,7 @@ public class NetworkTreeView extends ViewPart {
 
             @Override
             public boolean isEnabled() {
-                return ((IStructuredSelection)viewer.getSelection()).size() == 1
-                        && ApplicationGIS.getActiveMap() != ApplicationGIS.NO_MAP;
+                return ((IStructuredSelection)viewer.getSelection()).size() == 1 && ApplicationGIS.getActiveMap() != ApplicationGIS.NO_MAP;
             }
         });
         NeighbourAction neighb = new NeighbourAction((IStructuredSelection)viewer.getSelection());
@@ -479,7 +475,7 @@ public class NetworkTreeView extends ViewPart {
      */
     protected void showSelectionOnMap(NeoNode node) {
         Node gis = getGisNode(node.getNode());
-        if (gis==null){
+        if (gis == null) {
             return;
         }
         UpdatePropertiesAndMapEvent event = new UpdatePropertiesAndMapEvent(gis, null, false);
@@ -524,8 +520,7 @@ public class NetworkTreeView extends ViewPart {
 
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
-                return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(
-                        NodeTypes.GIS.getId());
+                return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.GIS.getId());
             }
         }, NetworkRelationshipTypes.CHILD, Direction.INCOMING, GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
         return traverse.iterator().hasNext() ? traverse.iterator().next() : null;
@@ -539,10 +534,9 @@ public class NetworkTreeView extends ViewPart {
     private void showSelection(NeoNode nodeToSelect, boolean isDrillDoun) {
         try {
             if (isDrillDoun) {
-                NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
-                        new UpdateDrillDownEvent(nodeToSelect.getNode(), NetworkTreeView.NETWORK_TREE_VIEW_ID));
-            }else{
-                NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent(DB_GRAPH_VIEW_ID,nodeToSelect.getNode()));
+                NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDrillDownEvent(nodeToSelect.getNode(), NetworkTreeView.NETWORK_TREE_VIEW_ID));
+            } else {
+                NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent(DB_GRAPH_VIEW_ID, nodeToSelect.getNode()));
             }
             showThisView();
         } catch (Exception e) {
@@ -618,7 +612,7 @@ public class NetworkTreeView extends ViewPart {
      * @since 1.0.0
      */
     private final class NetworkSelectionListener implements ISelectionChangedListener {
-        
+
         @SuppressWarnings("unchecked")
         @Override
         public void selectionChanged(SelectionChangedEvent event) {
@@ -631,12 +625,12 @@ public class NetworkTreeView extends ViewPart {
             Set<Node> selection = new HashSet<Node>();
             while (iterator.hasNext()) {
                 NeoNode selectedNode = (NeoNode)iterator.next();
-                if(needAddNodeToSelect(selectedNode)){
+                if (needAddNodeToSelect(selectedNode)) {
                     selection.add(selectedNode.getNode());
                 }
             }
             NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(new ChangeSelectionEvent(null, selection));
-        }        
+        }
 
         /**
          * Add selected node
@@ -648,16 +642,13 @@ public class NetworkTreeView extends ViewPart {
                 return false;
             }
             String nodeType = selectedNode.getType();
-            return NodeTypes.SITE.getId().equals(nodeType) || NodeTypes.SECTOR.getId().equals(nodeType)
-                    || NodeTypes.CITY.getId().equals(nodeType)
-                    || NodeTypes.BSC.getId().equals(nodeType) || NodeTypes.DELTA_NETWORK.getId().equals(nodeType)
-                    || NodeTypes.DELTA_SITE.getId().equals(nodeType) || NodeTypes.DELTA_SECTOR.getId().equals(nodeType) || NodeTypes.MISSING_SITES.getId().equals(nodeType)
+            return NodeTypes.SITE.getId().equals(nodeType) || NodeTypes.SECTOR.getId().equals(nodeType) || NodeTypes.CITY.getId().equals(nodeType)
+                    || NodeTypes.BSC.getId().equals(nodeType) || NodeTypes.DELTA_NETWORK.getId().equals(nodeType) || NodeTypes.DELTA_SITE.getId().equals(nodeType)
+                    || NodeTypes.DELTA_SECTOR.getId().equals(nodeType) || NodeTypes.MISSING_SITES.getId().equals(nodeType)
                     || NodeTypes.MISSING_SECTORS.getId().equals(nodeType) || NodeTypes.MISSING_SITE.getId().equals(nodeType)
                     || NodeTypes.MISSING_SECTOR.getId().equals(nodeType) || NodeTypes.M.getId().equalsIgnoreCase(nodeType)
-                    || NodeTypes.PROBE.getId().equalsIgnoreCase(nodeType)
-                    || NodeTypes.MP.getId().equalsIgnoreCase(nodeType)
-                    || NodeTypes.FILE.getId().equalsIgnoreCase(nodeType)
-                    || NodeTypes.DATASET.getId().equalsIgnoreCase(nodeType);
+                    || NodeTypes.PROBE.getId().equalsIgnoreCase(nodeType) || NodeTypes.MP.getId().equalsIgnoreCase(nodeType)
+                    || NodeTypes.FILE.getId().equalsIgnoreCase(nodeType) || NodeTypes.DATASET.getId().equalsIgnoreCase(nodeType);
         }
 
     }
@@ -702,17 +693,15 @@ public class NetworkTreeView extends ViewPart {
             if (node.hasProperty(INeoConstants.PROPERTY_LAT_NAME)) {
                 if (node.hasProperty(INeoConstants.PROPERTY_LON_NAME)) {
                     try {
-                        return new double[] {(Float)node.getProperty(INeoConstants.PROPERTY_LON_NAME),
-                                (Float)node.getProperty(INeoConstants.PROPERTY_LAT_NAME)};
+                        return new double[] {(Float)node.getProperty(INeoConstants.PROPERTY_LON_NAME), (Float)node.getProperty(INeoConstants.PROPERTY_LAT_NAME)};
                     } catch (ClassCastException e) {
-                        return new double[] {(Double)node.getProperty(INeoConstants.PROPERTY_LON_NAME),
-                                (Double)node.getProperty(INeoConstants.PROPERTY_LAT_NAME)};
+                        return new double[] {(Double)node.getProperty(INeoConstants.PROPERTY_LON_NAME), (Double)node.getProperty(INeoConstants.PROPERTY_LAT_NAME)};
                     }
                 }
             }
             // try to up by 1 lvl
-            Traverser traverse = node.traverse(Traverser.Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
-                    ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.BOTH);
+            Traverser traverse = node.traverse(Traverser.Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
+                    NetworkRelationshipTypes.CHILD, Direction.BOTH);
             if (traverse.iterator().hasNext()) {
                 node = traverse.iterator().next();
             } else {
@@ -754,8 +743,7 @@ public class NetworkTreeView extends ViewPart {
          */
         public RenameAction(IStructuredSelection selection) {
             text = "Rename";
-            enabled = selection.size() == 1 && selection.getFirstElement() instanceof NeoNode
-                    && !(selection.getFirstElement() instanceof Root);
+            enabled = selection.size() == 1 && selection.getFirstElement() instanceof NeoNode && !(selection.getFirstElement() instanceof Root);
             if (enabled) {
                 neoNode = (NeoNode)selection.getFirstElement();
                 node = neoNode.getNode();
@@ -791,18 +779,15 @@ public class NetworkTreeView extends ViewPart {
 
         @Override
         public void run() {
-            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent(TRANSMISSION_VIEW_ID,getInputNodes(selection)));
-            /*IViewPart transmissionView;
-            try {
-                transmissionView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(
-                        TransmissionView.ID);
-            } catch (PartInitException e) {
-                NeoCorePlugin.error(e.getLocalizedMessage(), e);
-                transmissionView = null;
-            }
-            if (transmissionView != null) {
-                ((TransmissionView)transmissionView).setInput(getInputNodes(selection));
-            }*/
+            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent(TRANSMISSION_VIEW_ID, getInputNodes(selection)));
+            /*
+             * IViewPart transmissionView; try { transmissionView =
+             * PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(
+             * TransmissionView.ID); } catch (PartInitException e) {
+             * NeoCorePlugin.error(e.getLocalizedMessage(), e); transmissionView = null; } if
+             * (transmissionView != null) {
+             * ((TransmissionView)transmissionView).setInput(getInputNodes(selection)); }
+             */
         }
 
     }
@@ -847,7 +832,7 @@ public class NetworkTreeView extends ViewPart {
 
         @Override
         public void run() {
-            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent(NEIGHBOUR_VIEW_ID,getInputNodes(selection)));
+            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent(NEIGHBOUR_VIEW_ID, getInputNodes(selection)));
         }
 
         /**
@@ -1008,14 +993,19 @@ public class NetworkTreeView extends ViewPart {
             final Node networkNode;
             Transaction transaction = NeoServiceProvider.getProvider().getService().beginTx();
             try {
-                gisNode = getGisNode(nodesToDelete.get(0).getNode());
                 networkNode = getParentNode(nodesToDelete.get(0).getNode(), "network");
+                gisNode = getGisNode(nodesToDelete.get(0).getNode());
                 for (NeoNode neoNode : nodesToDelete) {
                     Node node = neoNode.getNode();
                     for (Relationship relation : node.getRelationships(NetworkRelationshipTypes.CHILD, Direction.INCOMING)) {
                         relation.delete();
                     }
                 }
+                // for (Relationship relation :
+                // gisNode.getRelationships(NetworkRelationshipTypes.CHILD, Direction.INCOMING)) {
+                // relation.delete();
+                // }
+                // gisNode.delete();
                 transaction.success();
             } finally {
                 transaction.finish();
@@ -1044,7 +1034,7 @@ public class NetworkTreeView extends ViewPart {
                         monitor.subTask("Extracting " + neoNode.toString());
                         Node node = neoNode.getNode();
                         cleanTree(node, monitor); // Delete non-tree relations (and relink gis
-                                                    // next
+                        // next
                         // links)
                         deleteIncomingRelations(node); // only delete all incoming relations once
                         // we've dealt with the GIS relations in
@@ -1078,6 +1068,7 @@ public class NetworkTreeView extends ViewPart {
                         // TODO: Remove this code once we trust the delete function more fully
                         fixOrphanedNodes(gisNode, networkNode, monitor);
                     }
+
                     monitor.done();
                     return Status.OK_STATUS;
                 }
@@ -1090,8 +1081,8 @@ public class NetworkTreeView extends ViewPart {
                         final long refId = NeoServiceProvider.getProvider().getService().getReferenceNode().getId();
                         final long netId = networkNode.getId();
                         monitor.subTask("Searching for orphaned nodes");
-                        for (Node node : gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL,
-                                GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
+                        for (Node node : gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, GeoNeoRelationshipTypes.NEXT,
+                                Direction.OUTGOING)) {
                             if (!node.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
 
                                 @Override
@@ -1109,6 +1100,11 @@ public class NetworkTreeView extends ViewPart {
                                 orphanNames.add(node.getProperty("name", node.toString()).toString());
                             }
                         }
+                        for (Relationship relation : gisNode.getRelationships(NetworkRelationshipTypes.CHILD, Direction.INCOMING)) {
+                            relation.delete();
+                        }
+                        gisNode.delete();
+
                         transaction.success();
                     } finally {
                         transaction.finish();
@@ -1126,8 +1122,8 @@ public class NetworkTreeView extends ViewPart {
                         try {
                             String parentType = "unknown";
                             try {
-                                parentType = networkNode.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)
-                                        .iterator().next().getEndNode().getProperty("type").toString();
+                                parentType = networkNode.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator().next().getEndNode().getProperty(
+                                        "type").toString();
                             } catch (Exception e) {
                             }
                             Node parent = NeoServiceProvider.getProvider().getService().createNode();
@@ -1135,8 +1131,7 @@ public class NetworkTreeView extends ViewPart {
                             parent.setProperty("type", parentType);
                             networkNode.createRelationshipTo(parent, NetworkRelationshipTypes.CHILD);
                             for (Node node : orphans) {
-                                for (Relationship relation : node.getRelationships(NetworkRelationshipTypes.CHILD,
-                                        Direction.INCOMING)) {
+                                for (Relationship relation : node.getRelationships(NetworkRelationshipTypes.CHILD, Direction.INCOMING)) {
                                     relation.delete();
                                 }
                                 parent.createRelationshipTo(node, NetworkRelationshipTypes.CHILD);
@@ -1153,8 +1148,8 @@ public class NetworkTreeView extends ViewPart {
                     Transaction transaction = NeoServiceProvider.getProvider().getService().beginTx();
                     try {
                         for (@SuppressWarnings("unused")
-                        Node nodeToClean : node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL,
-                                NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                        Node nodeToClean : node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL, NetworkRelationshipTypes.CHILD,
+                                Direction.OUTGOING)) {
                             size++;
                         }
                         transaction.success();
@@ -1167,8 +1162,8 @@ public class NetworkTreeView extends ViewPart {
                 private void cleanTree(Node node, IProgressMonitor monitor) {
                     Transaction transaction = NeoServiceProvider.getProvider().getService().beginTx();
                     try {
-                        for (Node nodeToClean : node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
-                                ReturnableEvaluator.ALL, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                        for (Node nodeToClean : node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, NetworkRelationshipTypes.CHILD,
+                                Direction.OUTGOING)) {
                             cleanNode(nodeToClean);
                             monitor.worked(1);
                             if (monitor.isCanceled()) {
@@ -1213,7 +1208,6 @@ public class NetworkTreeView extends ViewPart {
 
             };
             job.schedule(50);
-
         }
 
         @Override
@@ -1248,14 +1242,12 @@ public class NetworkTreeView extends ViewPart {
             if (getPreviousReport() != null) {
                 MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.YES | SWT.NO);
                 msg.setText("Delta Report");
-                msg.setMessage("Delta report already exists: " + getName() + "\n\nThis will be deleted if you continue.\n\n"
-                        + getText() + "?");
+                msg.setMessage("Delta report already exists: " + getName() + "\n\nThis will be deleted if you continue.\n\n" + getText() + "?");
                 int result = msg.open();
                 if (result != SWT.YES) {
                     return;
                 }
-                (new DeleteAction(Arrays.asList(new NeoNode[] {previousReport}), "Deleting previous delta report: " + getName()))
-                        .run();
+                (new DeleteAction(Arrays.asList(new NeoNode[] {previousReport}), "Deleting previous delta report: " + getName())).run();
             }
             // TODO: Consider building on previous report instead of rebuilding for performance
             // reasons
@@ -1281,8 +1273,8 @@ public class NetworkTreeView extends ViewPart {
                         // for performance
                         // but currently has no affect, since we delete previous reports
                         // TODO: Either enable building on previous reports, or delete this code
-                        for (Node node : reportNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
-                                ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                        for (Node node : reportNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
+                                NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
                             for (NeoNode networkNode : getValidNodes()) {
                                 if (node.getProperty("name", "").equals(networkNode.toString())) {
                                     missingSitesNodes.put(networkNode.toString(), node);
@@ -1331,14 +1323,13 @@ public class NetworkTreeView extends ViewPart {
                         TreeMap<String, DeltaSite> siteMap = new TreeMap<String, DeltaSite>();
                         for (NeoNode networkNode : getValidNodes()) {
                             String networkName = networkNode.toString();
-                            for (Node site : networkNode.getNode().traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH,
-                                    new ReturnableEvaluator() {
+                            for (Node site : networkNode.getNode().traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
 
-                                        @Override
-                                        public boolean isReturnableNode(TraversalPosition currentPos) {
-                                            return currentPos.currentNode().getProperty("type", "").toString().equals("site");
-                                        }
-                                    }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                                @Override
+                                public boolean isReturnableNode(TraversalPosition currentPos) {
+                                    return currentPos.currentNode().getProperty("type", "").toString().equals("site");
+                                }
+                            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
                                 String siteName = site.getProperty("name", "").toString();
                                 if (siteMap.containsKey(siteName)) {
                                     siteMap.get(siteName).put(networkName, site);
@@ -1380,8 +1371,7 @@ public class NetworkTreeView extends ViewPart {
                             deltaSitesNodes.get(entry.getKey()).setProperty("sites_count", deltaSites.get(entry.getKey()).size());
                         }
                         for (NeoNode networkNode : getValidNodes()) {
-                            missingSitesNodes.get(networkNode.toString()).setProperty("site_count",
-                                    missingSites.get(networkNode).size());
+                            missingSitesNodes.get(networkNode.toString()).setProperty("site_count", missingSites.get(networkNode).size());
                         }
                         // Persist current state
                         tx = commit(neo, tx);
@@ -1394,8 +1384,7 @@ public class NetworkTreeView extends ViewPart {
                                 Node missingSite = neo.createNode();
                                 missingSite.setProperty("name", site.name);
                                 missingSite.setProperty("type", "missing_site");
-                                missingSitesNodes.get(networkNode.toString()).createRelationshipTo(missingSite,
-                                        NetworkRelationshipTypes.CHILD);
+                                missingSitesNodes.get(networkNode.toString()).createRelationshipTo(missingSite, NetworkRelationshipTypes.CHILD);
                                 for (Node node : site.nodes.values()) {
                                     missingSite.createRelationshipTo(node, NetworkRelationshipTypes.MISSING);
                                 }
@@ -1484,8 +1473,7 @@ public class NetworkTreeView extends ViewPart {
         public String getText() {
             if (reportText == null) {
                 if (getValidNodes().size() == 2) {
-                    reportText = "Calculate differences between '" + getValidNodes().get(0) + "' and '" + getValidNodes().get(1)
-                            + "'";
+                    reportText = "Calculate differences between '" + getValidNodes().get(0) + "' and '" + getValidNodes().get(1) + "'";
                 } else {
                     reportText = "Select two networks, sites or sectors to compare";
                 }
@@ -1546,8 +1534,8 @@ public class NetworkTreeView extends ViewPart {
         @Override
         public void run() {
             StringBuffer sb = new StringBuffer("report '").append(reportNode.getNode().getProperty("name"));
-            sb.append("' do\n  author '").append(System.getProperty("user.name")).append("'\n  date '").append(
-                    new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'");
+            sb.append("' do\n  author '").append(System.getProperty("user.name")).append("'\n  date '").append(new SimpleDateFormat("yyyy-MM-dd").format(new Date()))
+                    .append("'");
             for (NeoNode node : reportNode.getChildren()) {
                 sb.append("\n  table '").append(node.getNode().getProperty("name")).append("' do\n");
                 NeoNode[] children = node.getChildren();
@@ -1574,14 +1562,12 @@ public class NetworkTreeView extends ViewPart {
                             }
                         }
                         // add sites
-                        Iterable<Relationship> relationshipsToSite = neoNode.getNode().getRelationships(
-                                NetworkRelationshipTypes.DIFFERENT, Direction.OUTGOING);
+                        Iterable<Relationship> relationshipsToSite = neoNode.getNode().getRelationships(NetworkRelationshipTypes.DIFFERENT, Direction.OUTGOING);
                         for (Relationship relToSite : relationshipsToSite) {
                             Node siteNode = relToSite.getEndNode();
                             ids.add(siteNode.getId());
                             // add sectors
-                            Iterable<Relationship> relationshipsToSector = siteNode.getRelationships(
-                                    NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+                            Iterable<Relationship> relationshipsToSector = siteNode.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
                             for (Relationship relToSector : relationshipsToSector) {
                                 ids.add(relToSector.getEndNode().getId());
                             }
@@ -1590,13 +1576,14 @@ public class NetworkTreeView extends ViewPart {
                         ids.add(neoNode.getNode().getId());
                     }
                 }
-                
+
                 addArray(sb, ids.toArray(), "    self.nodes=");
                 addArray(sb, properties.toArray(), "    self.properties=");
                 sb.append("  end");
             }
             sb.append("\nend");
-            IProject project = ResourcesPlugin.getWorkspace().getRoot().getProjects()[0];//TODO correct
+            IProject project = ResourcesPlugin.getWorkspace().getRoot().getProjects()[0];// TODO
+            // correct
             IFile file;
             int i = 0;
             while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) {
@@ -1658,7 +1645,7 @@ public class NetworkTreeView extends ViewPart {
                 if (node instanceof NeoNode) {
                     NeoNode neoNode = (NeoNode)node;
                     String type = neoNode.getType();
-                    if (type!=null&&type.equals("delta_report")) {
+                    if (type != null && type.equals("delta_report")) {
                         reportNode = neoNode;
                         return true;
                     }
@@ -1699,13 +1686,12 @@ public class NetworkTreeView extends ViewPart {
                 if (!deltas.containsKey(deltaKey)) {
                     HashMap<String, Pair> delta = new HashMap<String, Pair>();
                     deltas.put(deltaKey, delta);
-                    String[] networks = new String[] {deltaSitesNode.getProperty("network1").toString(),
-                            deltaSitesNode.getProperty("network2").toString()};
+                    String[] networks = new String[] {deltaSitesNode.getProperty("network1").toString(), deltaSitesNode.getProperty("network2").toString()};
                     for (String network : networks) {
                         Node site = nodes.get(network);
                         addProperties(delta, site, null);
-                        for (Node sector : site.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
-                                ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                        for (Node sector : site.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
+                                NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
                             addProperties(delta, sector, sector.getProperty("name").toString());
                         }
                     }
@@ -1713,7 +1699,7 @@ public class NetworkTreeView extends ViewPart {
                     ArrayList<String> identical = new ArrayList<String>();
                     for (Map.Entry<String, Pair> entry : delta.entrySet()) {
                         if (entry.getValue().same()) {
-                            identical.add(entry.getKey());                           
+                            identical.add(entry.getKey());
                         }
                     }
                     for (String key : identical) {
