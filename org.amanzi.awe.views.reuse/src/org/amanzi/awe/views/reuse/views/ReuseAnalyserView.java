@@ -1770,6 +1770,9 @@ public class ReuseAnalyserView extends ViewPart {
                     String propertyVal = node.getProperty(propertyName).toString();
                     List<Node> nodesToLink = getNodeToLink(node, gisTypes);
                     for (Node nodeToLink : nodesToLink) {
+                        if (nodeToLink==null){
+                            continue;
+                        }
                     	for (Column column : columns) {
                     		if (propertyVal.equals(column.propertyValue)) {
                     			column.getNode().createRelationshipTo(nodeToLink, NetworkRelationshipTypes.AGGREGATE);
@@ -1796,7 +1799,8 @@ public class ReuseAnalyserView extends ViewPart {
     	if (gisTypes == GisTypes.NETWORK) {
             result.add(node);
         } else {
-            result.add(NeoUtils.getLocationNode(node, null));
+            Node locationNode = NeoUtils.getLocationNode(node, null);
+            result.add(locationNode==null?node:locationNode);
         }
         
         
