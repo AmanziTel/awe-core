@@ -199,7 +199,7 @@ public class MultiPropertyIndex<E extends Object> {
             if (indexNode == null) {
                 indexNode = neo.createNode();
                 indexNode.setProperty("index", indices);
-                indexNode.setProperty("type", NodeTypes.MULTY_INDEX.getId());
+                indexNode.setProperty("type", NodeTypes.MULTI_INDEX.getId());
                 indexNode.setProperty("level", level);
                 indexNode.setProperty("min", converter.serialize(min));
                 indexNode.setProperty("max", converter.serialize(max));

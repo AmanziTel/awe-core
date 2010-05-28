@@ -42,7 +42,7 @@ public enum NodeTypes {
     NEIGHBOUR("neighbours"),
     MM("mm"),
     CALL("call"),
-    GIS_PROPERTIES("gis_properties"),
+    GIS_PROPERTIES("properties"),
     NETWORK("network"),
     HILBERT_INDEX("hilbert_index",false),
     CALLS("calls"),

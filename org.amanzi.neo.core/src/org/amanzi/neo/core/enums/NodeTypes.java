@@ -133,7 +133,7 @@ public enum NodeTypes {
             return res;
         }
     },
-    GIS_PROPERTIES("gis_properties"){
+    GIS_PROPERTIES("properties"){
         @Override
         protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
             DeletableRelationshipType linkType = getLinkType(cameFrom);
@@ -403,7 +403,7 @@ public enum NodeTypes {
     MISSING_SECTORS("missing_sectors"), 
     MISSING_SITE("missing_site"),
     MISSING_SECTOR("missing_sector"),
-    MULTY_INDEX("multy_index"){
+    MULTI_INDEX("multi_index"){
         @Override
         protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
             DeletableRelationshipType linkType = getLinkType(cameFrom);
