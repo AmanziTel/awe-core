@@ -95,6 +95,7 @@ public class INeoConstants {
      * name of chart error property
      */
     public static final String PROPERTY_CHART_ERROR_NAME = "error_node";
+    public static final String PROPERTY_CHART_ERROR_DESCRIPTION = "error_description";
     /** INeoConstants PROPERTY_ALL_CHANNEL_NAME field */
     public static final String PROPERTY_ALL_CHANNELS_NAME = "All Channels";
     /** INeoConstants PROPERTY_OLD_NAME field */

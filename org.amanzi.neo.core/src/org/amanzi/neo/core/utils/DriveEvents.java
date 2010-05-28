@@ -331,13 +331,13 @@ public enum DriveEvents {
     }
 
     public static DriveEvents getEvents(Node node, GraphDatabaseService neo) {
-        Transaction tx = neo.beginTx();
+        Transaction tx = NeoUtils.beginTx(neo);
         try {
             String eventType = (String)node.getProperty(INeoConstants.PROPERTY_DRIVE_TYPE_EVENT, null);
 
             return DriveEvents.getEnumById(eventType);
         } finally {
-            tx.finish();
+            NeoUtils.finishTx(tx);
         }
     }
 

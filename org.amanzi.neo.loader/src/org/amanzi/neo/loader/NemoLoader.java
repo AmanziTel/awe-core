@@ -35,6 +35,7 @@ import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.DriveEvents;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
@@ -93,6 +94,7 @@ public class NemoLoader extends DriveLoader {
         pointNode = null;
         initializeKnownHeaders();
         addDriveIndexes();
+        initializeLuceneIndex();
         possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
 
     }
@@ -114,9 +116,13 @@ public class NemoLoader extends DriveLoader {
         pointNode = null;
         initializeKnownHeaders();
         addDriveIndexes();
+        initializeLuceneIndex();
         possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
     }
-    
+    @Override
+    protected void initializeLuceneIndex() {
+        index = NeoServiceProvider.getProvider().getIndexService();
+    } 
     /**
      * initialize headers
      */
@@ -226,6 +232,9 @@ public class NemoLoader extends DriveLoader {
                 ms.createRelationshipTo(pointNode, GeoNeoRelationshipTypes.LOCATION);
                 if (timestamp != 0) {
                     pointNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+                }
+                if (event.driveEvents!=null){
+                    index.index(pointNode, INeoConstants.EVENTS_LUCENE_INDEX_NAME, dataset);
                 }
             }
             ms.setProperty(INeoConstants.PROPERTY_NAME_NAME, id);
@@ -351,7 +360,7 @@ public class NemoLoader extends DriveLoader {
         protected List<String> parameters;
         protected Map<String, Object> parsedParameters;
         protected NemoEvents event;
-
+        DriveEvents driveEvents=null;
 
         /**
          * constructor
@@ -420,6 +429,7 @@ public class NemoLoader extends DriveLoader {
             if (parParam.isEmpty()) {
                 return;
             }
+            driveEvents=(DriveEvents)parParam.remove(NemoEvents.DRIVE_EVENTS);
             subNodes = (List<Map<String, Object>>)parParam.remove(NemoEvents.SUB_NODES);
             // add context field
             if (parParam.containsKey(NemoEvents.FIRST_CONTEXT_NAME)) {
@@ -492,7 +502,6 @@ public class NemoLoader extends DriveLoader {
          */
         public void store(Node msNode, Map<String, Header> statisticHeaders) {
             storeProperties(msNode, INeoConstants.PROPERTY_TYPE_EVENT, eventId, statisticHeaders);
-            final DriveEvents driveEvents = event.getDriveEvents(parsedParameters);
             if (driveEvents != null) {
                 driveEvents.setEventType(msNode, neo);
             }

@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.amanzi.awe_feature"
+      id="org.amanzi.awe"
       label="Feature for branding Amanzi Wireless Explorer"
       version="1.0.0"
-      provider-name="amanzi.org">
+      provider-name="amanzi.org"
+      plugin="org.amanzi.awe">
 
    <description url="http://www.amanzi.org/awe">
       Amanzi Wireless Explorer - customizable GIS and data management for mobile radio network planning and optimization

@@ -480,11 +480,27 @@ public enum NemoEvents {
                 key = "Call type";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "CS fail. status";
-                parsedParameters.put(key, getIntegerValue(parameters));
+                Integer callStatus = getIntegerValue(parameters);
+                if (callStatus!=null){
+                    if (callStatus==6||callStatus==7){
+                        parsedParameters.put(DRIVE_EVENTS, DriveEvents.CALL_BLOCKED);
+                    }else{
+                        parsedParameters.put(DRIVE_EVENTS, DriveEvents.UNKNOWN_BAD);
+                    }
+                }
+                parsedParameters.put(key, callStatus);
                 parsedParameters.put("CS disc. cause", getIntegerValue(parameters));
             } else if ("1.86".equals(version)) {
                 String key = "CS fail. status";
-                parsedParameters.put(key, getIntegerValue(parameters));
+                Integer callStatus = getIntegerValue(parameters);
+                if (callStatus!=null){
+                    if (callStatus==6||callStatus==7){
+                        parsedParameters.put(DRIVE_EVENTS, DriveEvents.CALL_BLOCKED);
+                    }else{
+                        parsedParameters.put(DRIVE_EVENTS, DriveEvents.UNKNOWN_BAD);
+                    }
+                }
+                parsedParameters.put(key, callStatus);
                 key = "CS fail. time";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "CS fail. cause";
@@ -509,13 +525,39 @@ public enum NemoEvents {
                 key = "Call type";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "CS disc. status";
-                parsedParameters.put(key, getIntegerValue(parameters));
+                Integer discStatus = getIntegerValue(parameters);
+                if (discStatus!=null){
+                    if (discStatus<2){
+                        parsedParameters.put(DRIVE_EVENTS, DriveEvents.CALL_SUCCESS); 
+                    }else if (discStatus<4){
+                        parsedParameters.put(DRIVE_EVENTS, DriveEvents.CALL_DROPPED);
+                    }else if (discStatus==4){
+                        parsedParameters.put(DRIVE_EVENTS, DriveEvents.HANDOVER_FAILURE);
+                    }else{
+                        //TODO ckeck correct type
+                        parsedParameters.put(DRIVE_EVENTS, DriveEvents.CALL_DROPPED);
+                    }
+                }
+                parsedParameters.put(key, discStatus);
                 parsedParameters.put("CS disc. cause", getIntegerValue(parameters));
             } else if ("1.86".equals(version)) {
                 String key = "CS disc. status";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "CS call dur.";
-                parsedParameters.put(key, getIntegerValue(parameters));
+                Integer discStatus = getIntegerValue(parameters);
+                if (discStatus!=null){
+                    if (discStatus<2){
+                        parsedParameters.put(DRIVE_EVENTS, DriveEvents.CALL_SUCCESS); 
+                    }else if (discStatus<4){
+                        parsedParameters.put(DRIVE_EVENTS, DriveEvents.CALL_DROPPED);
+                    }else if (discStatus==4){
+                        parsedParameters.put(DRIVE_EVENTS, DriveEvents.HANDOVER_FAILURE);
+                    }else{
+                        //TODO ckeck correct type
+                        parsedParameters.put(DRIVE_EVENTS, DriveEvents.CALL_DROPPED);
+                    }
+                }
+                parsedParameters.put(key, discStatus);
                 key = "CS disc. cause";
                 parsedParameters.put(key, getIntegerValue(parameters));
             }
@@ -4510,6 +4552,7 @@ public enum NemoEvents {
         @Override
         public Map<String, Object> fill(String version, List<String> params) {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
+            parsedParameters.put(DRIVE_EVENTS, DriveEvents.HANDOVER_SUCCESS);
             if ("2.01".equals(version)) {
                 String key = "Handover context ID";
                 List<String> contextName = new ArrayList<String>(1);
@@ -4524,6 +4567,7 @@ public enum NemoEvents {
         public Map<String, Object> fill(String version, List<String> params) {
             Iterator<String> parameters = params.iterator();
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
+            parsedParameters.put(DRIVE_EVENTS, DriveEvents.HANDOVER_FAILURE);
             if ("2.01".equals(version)) {
                 String key = "System";
                 final TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
@@ -4624,7 +4668,11 @@ public enum NemoEvents {
                 final TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
                 parsedParameters.put(key, system.getName());
                 if (system.equals(TechnologySystems.UMTS_FDD)) {
-                    parsedParameters.put("SHO status", getIntegerValue(parameters));
+                    Integer shoStatus = getIntegerValue(parameters);
+                    parsedParameters.put("SHO status", shoStatus);
+                    if (shoStatus!=null){
+                        parsedParameters.put(DRIVE_EVENTS, shoStatus==1?DriveEvents.HANDOVER_SUCCESS:DriveEvents.HANDOVER_FAILURE); 
+                    }
                     parsedParameters.put("RRC cause", getIntegerValue(parameters));
                     Integer addCount = getIntegerValue(parameters);
                     Integer removeCount = getIntegerValue(parameters);
@@ -4652,7 +4700,11 @@ public enum NemoEvents {
                 final Integer system = getIntegerValue(parameters);
                 parsedParameters.put("System", system);
                 if (system == 12 || system == 13 || system == 20 || system == 21 || system == 31 || system == 33 || system == 34) {
-                    parsedParameters.put("SHO status", getIntegerValue(parameters));
+                    Integer shoStatus = getIntegerValue(parameters);
+                    if (shoStatus!=null){
+                        parsedParameters.put(DRIVE_EVENTS, shoStatus==1?DriveEvents.HANDOVER_SUCCESS:DriveEvents.HANDOVER_FAILURE); 
+                    }
+                    parsedParameters.put("SHO status", shoStatus);
                     parsedParameters.put("RRC cause", getIntegerValue(parameters));
                     parsedParameters.put("#SCs added", getIntegerValue(parameters));
                     parsedParameters.put("#SCs removed", getIntegerValue(parameters));
@@ -8427,6 +8479,7 @@ public enum NemoEvents {
     };
     public static String FIRST_CONTEXT_NAME = "FIRST_CONTEXT_NAMEFIRST_CONTEXT_NAME";
     public static String SUB_NODES = "SUB_NODES";
+    public static String DRIVE_EVENTS = "DRIVE_EVENTS";
     private static HashMap<String, NemoEvents> eventsList = new HashMap<String, NemoEvents>();
     static {
         for (NemoEvents event : NemoEvents.values()) {
@@ -8524,9 +8577,5 @@ public enum NemoEvents {
         }
 
         return Float.parseFloat(value);
-    }
-
-    public DriveEvents getDriveEvents(Map<String, Object> parsedParameters) {
-        return null;
     }
 }
