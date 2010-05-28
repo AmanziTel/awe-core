@@ -106,7 +106,7 @@ public class AMSXMLoader extends AbstractCallLoader {
 
     /** The formatter. */
     //TODO temporary remove handling of time zone
-    private static SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss,SSS");//,SSSz");
+    private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss,SSS");//,SSSz");
 
     /** The directory name. */
     private final String directoryName;
@@ -212,7 +212,7 @@ public class AMSXMLoader extends AbstractCallLoader {
      * @return the time
      * @throws ParseException the parse exception
      */
-    private static Long getTime(String stringData) throws ParseException {
+    private Long getTime(String stringData) throws ParseException {
         int i = stringData.lastIndexOf(':');
         StringBuilder time = new StringBuilder(stringData.substring(0, i)).append(stringData.substring(i + 1, stringData.length()));
         long time2 = formatter.parse(time.toString()).getTime();
