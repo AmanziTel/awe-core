@@ -172,9 +172,9 @@ public class RelationshipTypeView extends ViewPart implements
         hookContextMenu();
         hookDoubleClickAction();
         contributeToActionBars();
+        getSite().getPage().addSelectionListener(this );
         getSite().getPage().addSelectionListener( NeoGraphViewPart.ID, this );
         getSite().setSelectionProvider( viewer );
-        getSite().getPage().addSelectionListener( ID, this );
     }
 
     /**
