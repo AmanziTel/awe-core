@@ -5,12 +5,15 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,6 +24,7 @@ import net.refractions.udig.project.ui.ApplicationGIS;
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.ChangeSelectionEvent;
 import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.views.calls.CallAnalyserPlugin;
 import org.amanzi.awe.views.calls.ExportSpreadsheetWizard;
 import org.amanzi.awe.views.calls.Messages;
 import org.amanzi.awe.views.calls.enums.AggregationCallTypes;
@@ -40,6 +44,7 @@ import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.Pair;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -57,6 +62,10 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableCursor;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Cursor;
@@ -69,6 +78,7 @@ import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.DateTime;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
@@ -107,6 +117,8 @@ public class CallAnalyserView extends ViewPart {
     private static final String LBL_PROBE = Messages.CAV_LBL_PROBE;
     private static final String LBL_PERIOD = Messages.CAV_LBL_PERIOD;
     private static final String LBL_CALL_TYPE = Messages.CAV_LBL_CALL_TYPE;
+    private static final String LBL_START_TIME = Messages.CAV_LBL_START_TIME;
+    private static final String LBL_END_TIME = Messages.CAV_LBL_END_TIME;
 
     // column name
     private static final String COL_PERIOD = Messages.CAV_COL_PERIOD;
@@ -117,7 +129,8 @@ public class CallAnalyserView extends ViewPart {
      */
     public static final String ID = "org.amanzi.awe.views.calls.views.CallAnalyserView";
 
-    private static final int MIN_FIELD_WIDTH = 110;
+    private static final int MIN_FIELD_WIDTH = 150;
+    private static final int MIN_COLUMN_WIDTH = 220;
     public static final int DEF_SIZE = 100;
     private static final String KEY_ALL = ALL_VALUE;
     public static final int MAX_TABLE_LEN = 500;
@@ -129,8 +142,7 @@ public class CallAnalyserView extends ViewPart {
     private Combo cDrive;
 
     private TableViewer tableViewer;
-    private Combo cProbe;
-    // private DateTime dateStart;
+    private Combo cProbe;    
     private ViewContentProvider provider;
     private ViewLabelProvider labelProvider;
     private Combo cPeriod;
@@ -140,11 +152,32 @@ public class CallAnalyserView extends ViewPart {
     private Color color1;
     private Color color2;
     private Comparator<PeriodWrapper> comparator;
-    private int sortOrder = 0;
+    private List<Integer> sortedColumns = new LinkedList<Integer>();
     private Composite frame;
     private Composite parent;
-    // private DateTime dateEnd;
+    private DateTime dateStart;
+    private DateTime timeStart;
+    private DateTime dateEnd;
+    private DateTime timeEnd;
 
+    
+    private enum SortOrder{
+        NONE("icons/None.gif"),
+        ASC("icons/Asc.png"),
+        DESC("icons/Desc.png");
+        private String iconPath;
+        
+        private SortOrder(String icon) {
+            iconPath = icon;
+        }
+        
+        /**
+         * @return Returns the iconPath.
+         */
+        public String getIconPath() {
+            return iconPath;
+        }
+    }
 
     /*
      * The content provider class is responsible for providing objects to the view. It can wrap
@@ -172,7 +205,9 @@ public class CallAnalyserView extends ViewPart {
                 if (sRowTraverser != null) {
                     StatisticsCallType callType = getCallType();
                     for (Node sRow : sRowTraverser) {
-                        elements.add(new PeriodWrapper(sRow,callType));
+                        if (isRowInTime(sRow)) {
+                            elements.add(new PeriodWrapper(sRow, callType));
+                        }
                     }
                 }
             } finally {
@@ -180,6 +215,13 @@ public class CallAnalyserView extends ViewPart {
             }
             sort();
 
+        }
+        
+        private boolean isRowInTime(Node row){
+            Long start = getStartTime();
+            Long end = getEndTime();
+            Long time = (Long)row.getProperty(INeoConstants.PROPERTY_TIME_NAME, null);            
+            return (time!=null)&&((start==null||start<=time)&&(end==null||time<=end));
         }
 
         public void dispose() {
@@ -251,7 +293,7 @@ public class CallAnalyserView extends ViewPart {
 
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        sortOrder = 0;
+                        sortedColumns = new LinkedList<Integer>();
                         if (provider != null) {
                             provider.sort();
                         }
@@ -296,7 +338,7 @@ public class CallAnalyserView extends ViewPart {
                     col = column.getColumn();             
                     String title = columnHeader.getTitle();
                     GC gc = new GC(col.getParent());
-                    col.setText(columnHeader.getTitle());
+                    col.setText(title);
                     columnHeaders.add(new ColumnHeaders(col, columnHeader));
                     col.setWidth(gc.textExtent(title).x + 20);
                     gc.dispose();
@@ -312,12 +354,17 @@ public class CallAnalyserView extends ViewPart {
 
         private void addSotrListeners() {
             for (int i=0;i<columnHeaders.size();i++) {
-                final int ind = i;
-                columnHeaders.get(i).getColumn().addSelectionListener(new SelectionListener() {
+                final Integer ind = i;
+                final ColumnHeaders currHeader = columnHeaders.get(i);
+                currHeader.getColumn().addSelectionListener(new SelectionListener() {
                     
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        sortOrder = ind;
+                        if(sortedColumns.contains(ind)){
+                            sortedColumns.remove(ind);
+                        }
+                        sortedColumns.add(ind);
+                        currHeader.updateSortOrder();
                         if (provider != null) {
                             provider.sort();
                         }
@@ -336,6 +383,7 @@ public class CallAnalyserView extends ViewPart {
         public void updateHeaders(StatisticsCallType callType){
             Table tabl = tableViewer.getTable();
             columnHeaders = new ArrayList<ColumnHeaders>();
+            sortedColumns.clear();
             int lastNum = 0;
             columnHeaders.add(new ColumnHeaders(columns.get(lastNum++), null));
             List<IStatisticsHeader> headers = callType.getHeaders();
@@ -386,6 +434,31 @@ public class CallAnalyserView extends ViewPart {
             return null;
         }
     }
+    
+    private int simpleCompare(PeriodWrapper o1, PeriodWrapper o2, int column){        
+        ColumnHeaders header = columnHeaders.get(column);
+        SortOrder order = sortedColumns.isEmpty()?SortOrder.ASC:header.sortOrder;
+        if (header == null) {
+            return 0;
+        }
+        String value1 = header.getValue(o1, column);
+        if (value1 == null) {
+            value1 = "";
+        }
+        String value2 = header.getValue(o2, column);
+        if (value2 == null) {
+            value2 = "";
+        }
+        switch (order) {
+        case DESC:
+            return value2.compareTo(value1);
+        case ASC:
+            return value1.compareTo(value2);
+        default:
+            return 0;
+        }
+        
+    }
 
 
     /**
@@ -395,25 +468,20 @@ public class CallAnalyserView extends ViewPart {
         this.parent = parent;
         color1 = new Color(Display.getCurrent(), 240, 240, 240);
         color2 = new Color(Display.getCurrent(), 255, 255, 255);
-        sortOrder = 0;
+        sortedColumns = new LinkedList<Integer>();
         comparator = new Comparator<PeriodWrapper>() {
-
             @Override
             public int compare(PeriodWrapper o1, PeriodWrapper o2) {
-                ColumnHeaders header = columnHeaders.get(sortOrder);
-                if (header == null) {
-                    return 0;
+                if(sortedColumns.isEmpty()){
+                    return simpleCompare(o1, o2, 0);
                 }
-                String value1 = header.getValue(o1, sortOrder);
-                if (value1 == null) {
-                    value1 = "";
-                }
-                String value2 = header.getValue(o2, sortOrder);
-                if (value2 == null) {
-                    value2 = "";
-                }
-                return value1.compareTo(value2);
-
+                int result = 0;
+                int ind = sortedColumns.size();
+                do{
+                    ind--;
+                    result = simpleCompare(o1, o2, sortedColumns.get(ind));
+                }while(ind>0&&result==0);
+                return result;
             }
         };
         frame = new Composite(parent, SWT.FILL);
@@ -425,89 +493,206 @@ public class CallAnalyserView extends ViewPart {
         // create row composite
         Composite rowComposite = new Composite(frame, SWT.FILL);
         FormData fData = new FormData();
-        fData.left = new FormAttachment(0, 2);
-        fData.right = new FormAttachment(100, -2);
+        fData.left = new FormAttachment(0, 0);
+        fData.right = new FormAttachment(100, 0);
         rowComposite.setLayoutData(fData);
         FormLayout layout = new FormLayout();
         layout.marginHeight = 2;
         layout.marginWidth = 3;
-        rowComposite.setLayout(layout);
-        // ------ fill row
-        // drive
-        FormData layoutData = new FormData();
-        layoutData.left = new FormAttachment(0, 2);
-        layoutData.top = new FormAttachment(0, 5);
+        rowComposite.setLayout(layout);  
+     // ------ fill row
+        Composite column1 = new Composite(rowComposite, SWT.FILL);
+        fData = new FormData();
+        fData.left = new FormAttachment(0, 0);
+        fData.width = MIN_COLUMN_WIDTH;
+        column1.setLayoutData(fData);
+        layout = new FormLayout();
+        layout.marginHeight = 2;
+        layout.marginWidth = 3;
+        column1.setLayout(layout);
         
-        Label label = new Label(rowComposite, SWT.FLAT);
+        Composite cell1 = new Composite(column1, SWT.FILL);
+        fData = new FormData();
+        fData.left = new FormAttachment(0, 0);
+        fData.width = MIN_COLUMN_WIDTH;
+        cell1.setLayoutData(fData);
+        layout = new FormLayout();
+        layout.marginHeight = 2;
+        layout.marginWidth = 3;
+        cell1.setLayout(layout);
+        
+        Label label = new Label(cell1, SWT.FLAT);
         label.setText(LBL_DRIVE);
-        label.setLayoutData(layoutData);
-        cDrive = new Combo(rowComposite, SWT.DROP_DOWN | SWT.READ_ONLY);
-        layoutData = new FormData();
-        layoutData.left = new FormAttachment(label, 2);
-        layoutData.width = MIN_FIELD_WIDTH;        
-        cDrive.setLayoutData(layoutData);
+        fData = new FormData();
+        fData.left = new FormAttachment(0, 0);
+        fData.bottom = new FormAttachment(100,-4);
+        label.setLayoutData(fData);
+        cDrive = new Combo(cell1, SWT.DROP_DOWN | SWT.READ_ONLY);
+        fData = new FormData();
+        fData.right = new FormAttachment(100, -2);
+        fData.width = MIN_FIELD_WIDTH;               
+        cDrive.setLayoutData(fData);
         
-        //call type
-        layoutData = new FormData();
-        layoutData.left = new FormAttachment(cDrive, 2);
-        layoutData.top = new FormAttachment(0, 5);
-        label = new Label(rowComposite, SWT.FLAT);
-        label.setText(LBL_CALL_TYPE);
-        label.setLayoutData(layoutData);
-        cCallType = new Combo(rowComposite, SWT.DROP_DOWN | SWT.READ_ONLY);
-        layoutData = new FormData();
-        layoutData.left = new FormAttachment(label, 2);
-        layoutData.width = MIN_FIELD_WIDTH;
-        cCallType.setLayoutData(layoutData);
+        Composite cell2 = new Composite(column1, SWT.FILL);
+        fData = new FormData();
+        fData.left = new FormAttachment(0, 0);
+        fData.top = new FormAttachment(cell1,2);
+        fData.width = MIN_COLUMN_WIDTH;
+        cell2.setLayoutData(fData);
+        layout = new FormLayout();
+        layout.marginHeight = 2;
+        layout.marginWidth = 3;
+        cell2.setLayout(layout);
         
-        // probe
-        layoutData = new FormData();
-        layoutData.left = new FormAttachment(cCallType, 2);
-        layoutData.top = new FormAttachment(0, 5);
-        label = new Label(rowComposite, SWT.FLAT);
-        label.setText(LBL_PROBE);
-        label.setLayoutData(layoutData);
-        cProbe = new Combo(rowComposite, SWT.DROP_DOWN | SWT.READ_ONLY);
-        layoutData = new FormData();
-        layoutData.left = new FormAttachment(label, 2);
-        layoutData.width = MIN_FIELD_WIDTH;
-        cProbe.setLayoutData(layoutData);
-        // // Start time
-        // label = new Label(rowComposite, SWT.FLAT);
-        // label.setText(LBL_START_TIME);
-        // label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-        // dateStart = new DateTime(rowComposite, SWT.FILL | SWT.BORDER | SWT.TIME | SWT.LONG);
-        // GridData dateStartlayoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        // dateStartlayoutData.minimumWidth = 75;
-        // dateStart.setLayoutData(dateStartlayoutData);
-        //
-        // // end time
-        // label = new Label(rowComposite, SWT.FLAT);
-        // label.setText(LBL_END_TIME);
-        // label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-        // dateEnd = new DateTime(rowComposite, SWT.FILL | SWT.BORDER | SWT.TIME | SWT.LONG);
-        // dateStartlayoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        // dateStartlayoutData.minimumWidth = 75;
-        // dateEnd.setLayoutData(dateStartlayoutData);
-
-        // Period
-        layoutData = new FormData();
-        layoutData.left = new FormAttachment(cProbe, 2);
-        layoutData.top = new FormAttachment(0, 5);
-        label = new Label(rowComposite, SWT.FLAT);
+        label = new Label(cell2, SWT.FLAT);
         label.setText(LBL_PERIOD);
-        label.setLayoutData(layoutData);
-        cPeriod = new Combo(rowComposite, SWT.DROP_DOWN | SWT.READ_ONLY);
-        layoutData = new FormData();
-        layoutData.left = new FormAttachment(label, 2);
-        layoutData.width = MIN_FIELD_WIDTH;
-        cPeriod.setLayoutData(layoutData);        
+        fData = new FormData();
+        fData.left = new FormAttachment(0, 0);
+        fData.bottom = new FormAttachment(100,-4);
+        label.setLayoutData(fData);
+        cPeriod = new Combo(cell2, SWT.DROP_DOWN | SWT.READ_ONLY);
+        fData = new FormData();
+        fData.right = new FormAttachment(100, -2);
+        fData.width = MIN_FIELD_WIDTH;
+        cPeriod.setLayoutData(fData); 
         
-        bExport = new Button(rowComposite, SWT.PUSH);
+        Composite column2 = new Composite(rowComposite, SWT.FILL);
+        fData = new FormData();
+        fData.left = new FormAttachment(column1, 2);
+        fData.width = MIN_COLUMN_WIDTH+10;
+        column2.setLayoutData(fData);
+        layout = new FormLayout();
+        layout.marginHeight = 2;
+        layout.marginWidth = 3;
+        column2.setLayout(layout);
+        
+        cell1 = new Composite(column2, SWT.FILL);
+        fData = new FormData();
+        fData.left = new FormAttachment(0, 0);
+        fData.width = MIN_COLUMN_WIDTH+10;
+        cell1.setLayoutData(fData);
+        layout = new FormLayout();
+        layout.marginHeight = 2;
+        layout.marginWidth = 3;
+        cell1.setLayout(layout);
+        
+        label = new Label(cell1, SWT.FLAT);
+        label.setText(LBL_CALL_TYPE);
+        fData = new FormData();
+        fData.left = new FormAttachment(0, 0);
+        fData.bottom = new FormAttachment(100,-4);
+        label.setLayoutData(fData);
+        cCallType = new Combo(cell1, SWT.DROP_DOWN | SWT.READ_ONLY);
+        fData = new FormData();
+        fData.right = new FormAttachment(100, -2);
+        fData.width = MIN_FIELD_WIDTH;
+        cCallType.setLayoutData(fData);
+        
+        cell2 = new Composite(column2, SWT.FILL);
+        fData = new FormData();
+        fData.left = new FormAttachment(0, 0);
+        fData.top = new FormAttachment(cell1,2);
+        fData.width = MIN_COLUMN_WIDTH+10;
+        cell2.setLayoutData(fData);
+        layout = new FormLayout();
+        layout.marginHeight = 2;
+        layout.marginWidth = 3;
+        cell2.setLayout(layout);
+        
+        label = new Label(cell2, SWT.FLAT);
+        label.setText(LBL_START_TIME);
+        fData = new FormData();
+        fData.left = new FormAttachment(0, 0);
+        fData.bottom = new FormAttachment(100,-4);
+        label.setLayoutData(fData);
+        dateStart = new DateTime(cell2, SWT.FILL | SWT.BORDER | SWT.DATE | SWT.MEDIUM);
+        fData = new FormData();
+        fData.right = new FormAttachment(95, -MIN_FIELD_WIDTH/3);
+        fData.width = 2*MIN_FIELD_WIDTH/3;
+        dateStart.setLayoutData(fData);
+        timeStart = new DateTime(cell2, SWT.FILL | SWT.BORDER | SWT.TIME | SWT.SHORT);
+        fData = new FormData();
+        fData.left = new FormAttachment(dateStart, 2);
+        fData.right = new FormAttachment(100, -2);
+        fData.width = MIN_FIELD_WIDTH/3;
+        timeStart.setLayoutData(fData);
+        
+        Composite column3 = new Composite(rowComposite, SWT.FILL);
+        fData = new FormData();
+        fData.left = new FormAttachment(column2, 2);
+        fData.width = MIN_COLUMN_WIDTH;
+        column3.setLayoutData(fData);
+        layout = new FormLayout();
+        layout.marginHeight = 2;
+        layout.marginWidth = 3;
+        column3.setLayout(layout);
+        
+        cell1 = new Composite(column3, SWT.FILL);
+        fData = new FormData();
+        fData.left = new FormAttachment(0, 0);
+        fData.width = MIN_COLUMN_WIDTH;
+        cell1.setLayoutData(fData);
+        layout = new FormLayout();
+        layout.marginHeight = 2;
+        layout.marginWidth = 3;
+        cell1.setLayout(layout);
+        
+        label = new Label(cell1, SWT.FLAT);
+        label.setText(LBL_PROBE);
+        fData = new FormData();
+        fData.left = new FormAttachment(0, 0);
+        fData.bottom = new FormAttachment(100,-4);
+        label.setLayoutData(fData);
+        cProbe = new Combo(cell1, SWT.DROP_DOWN | SWT.READ_ONLY);
+        fData = new FormData();
+        fData.right = new FormAttachment(100, -2);
+        fData.width = MIN_FIELD_WIDTH;
+        cProbe.setLayoutData(fData);
+        
+        cell2 = new Composite(column3, SWT.FILL);
+        fData = new FormData();
+        fData.left = new FormAttachment(0, 0);
+        fData.top = new FormAttachment(cell1,2);
+        fData.width = MIN_COLUMN_WIDTH;
+        cell2.setLayoutData(fData);
+        layout = new FormLayout();
+        layout.marginHeight = 2;
+        layout.marginWidth = 3;
+        cell2.setLayout(layout);
+        
+        label = new Label(cell2, SWT.FLAT);
+        label.setText(LBL_END_TIME);
+        fData = new FormData();
+        fData.left = new FormAttachment(0, 0);
+        fData.bottom = new FormAttachment(100,-4);
+        label.setLayoutData(fData);
+        dateEnd = new DateTime(cell2, SWT.FILL | SWT.BORDER | SWT.DATE | SWT.MEDIUM);
+        fData = new FormData();
+        fData.right = new FormAttachment(95, -MIN_FIELD_WIDTH/3);
+        fData.width = 2*MIN_FIELD_WIDTH/3;
+        dateEnd.setLayoutData(fData);
+        timeEnd = new DateTime(cell2, SWT.FILL | SWT.BORDER | SWT.TIME | SWT.SHORT);
+        fData = new FormData();
+        fData.left = new FormAttachment(dateEnd, 2);
+        fData.right = new FormAttachment(100, -2);
+        fData.width = MIN_FIELD_WIDTH/3;
+        timeEnd.setLayoutData(fData);
+        
+        Composite column4 = new Composite(rowComposite, SWT.FILL);
+        fData = new FormData();
+        fData.left = new FormAttachment(column3, 2);
+        fData.right = new FormAttachment(100, 0);
+        column4.setLayoutData(fData);
+        layout = new FormLayout();
+        layout.marginHeight = 2;
+        layout.marginWidth = 3;
+        column4.setLayout(layout);
+        
+        bExport = new Button(column4, SWT.PUSH);
         bExport.setText(LB_EXPORT);
-        layoutData = new FormData();
-        layoutData.right = new FormAttachment(100, -2);
-        bExport.setLayoutData(layoutData);
+        fData = new FormData();
+        fData.right = new FormAttachment(100, 0);
+        bExport.setLayoutData(fData);
         
         // ------- table
         tableViewer = new TableViewer(frame, SWT.BORDER | SWT.FULL_SELECTION);
@@ -522,6 +707,26 @@ public class CallAnalyserView extends ViewPart {
         hookContextMenu();
         addListeners();
         initialize();
+        setDefaultTime();
+    }
+    
+    private void setTime(DateTime dateFild,DateTime timeFild, Long time){
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTimeInMillis(time);
+        dateFild.setYear(calendar.get(Calendar.YEAR));
+        dateFild.setMonth(calendar.get(Calendar.MONTH));
+        dateFild.setDay(calendar.get(Calendar.DAY_OF_MONTH));
+        timeFild.setHours(calendar.get(Calendar.HOUR_OF_DAY));
+        timeFild.setMinutes(0);
+        timeFild.setSeconds(0);
+    }
+    
+    private Long getTime(DateTime dateFild,DateTime timeFild){
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTimeInMillis(0L);
+        calendar.set(dateFild.getYear(), dateFild.getMonth(), dateFild.getDay(), 
+                timeFild.getHours(), timeFild.getMinutes());
+        return calendar.getTimeInMillis();
     }
 
     /**
@@ -777,54 +982,91 @@ public class CallAnalyserView extends ViewPart {
                 widgetSelected(e);
             }
         });
-        // dateStart.addFocusListener(new FocusListener() {
-        //
-        // @Override
-        // public void focusLost(FocusEvent e) {
-        // changeDate();
-        // }
-        //
-        // @Override
-        // public void focusGained(FocusEvent e) {
-        // }
-        // });
-        // dateStart.addKeyListener(new KeyListener() {
-        //
-        // @Override
-        // public void keyReleased(KeyEvent e) {
-        // if (e.keyCode == '\r' || e.keyCode == SWT.KEYPAD_CR) {
-        // changeDate();
-        // }
-        // }
-        //
-        // @Override
-        // public void keyPressed(KeyEvent e) {
-        // }
-        // });
-        // dateStart.addFocusListener(new FocusListener() {
-        //
-        // @Override
-        // public void focusLost(FocusEvent e) {
-        // changeDate();
-        // }
-        //
-        // @Override
-        // public void focusGained(FocusEvent e) {
-        // }
-        // });
-        // dateEnd.addKeyListener(new KeyListener() {
-        //
-        // @Override
-        // public void keyReleased(KeyEvent e) {
-        // if (e.keyCode == '\r' || e.keyCode == SWT.KEYPAD_CR) {
-        // changeDate();
-        // }
-        // }
-        //
-        // @Override
-        // public void keyPressed(KeyEvent e) {
-        // }
-        // });
+         dateStart.addFocusListener(new FocusListener() {        
+             @Override
+             public void focusLost(FocusEvent e) {
+                 changeDate();
+             }
+            
+             @Override
+             public void focusGained(FocusEvent e) {
+             }
+         });
+         dateStart.addKeyListener(new KeyListener() {        
+             @Override
+             public void keyReleased(KeyEvent e) {
+                 if (e.keyCode == '\r' || e.keyCode == SWT.KEYPAD_CR) {
+                     changeDate();
+                 }
+             }
+            
+             @Override
+             public void keyPressed(KeyEvent e) {
+             }
+         });
+         timeStart.addFocusListener(new FocusListener() {             
+             @Override
+             public void focusLost(FocusEvent e) {
+                 changeDate();
+             }
+            
+             @Override
+             public void focusGained(FocusEvent e) {
+             }
+         });
+         timeStart.addKeyListener(new KeyListener() {        
+             @Override
+             public void keyReleased(KeyEvent e) {
+                 if (e.keyCode == '\r' || e.keyCode == SWT.KEYPAD_CR) {
+                     changeDate();
+                 }
+             }
+            
+             @Override
+             public void keyPressed(KeyEvent e) {
+             }
+         });
+         dateEnd.addFocusListener(new FocusListener() {        
+             @Override
+             public void focusLost(FocusEvent e) {
+                 changeDate();
+             }
+            
+             @Override
+             public void focusGained(FocusEvent e) {
+             }
+         });
+         dateEnd.addKeyListener(new KeyListener() {        
+             @Override
+             public void keyReleased(KeyEvent e) {
+                 if (e.keyCode == '\r' || e.keyCode == SWT.KEYPAD_CR) {
+                     changeDate();
+                 }
+             }            
+             @Override
+             public void keyPressed(KeyEvent e) {
+             }
+         });
+         timeEnd.addFocusListener(new FocusListener() {             
+             @Override
+             public void focusLost(FocusEvent e) {
+                 changeDate();
+             }            
+             @Override
+             public void focusGained(FocusEvent e) {
+             }
+         });
+         timeEnd.addKeyListener(new KeyListener() {        
+             @Override
+             public void keyReleased(KeyEvent e) {
+                 if (e.keyCode == '\r' || e.keyCode == SWT.KEYPAD_CR) {
+                     changeDate();
+                 }
+             }            
+             @Override
+             public void keyPressed(KeyEvent e) {
+             }
+         });
     }
 
     /**
@@ -843,20 +1085,49 @@ public class CallAnalyserView extends ViewPart {
         }
 
     }
+    
+    protected Long getStartTime(){
+        return getTime(dateStart, timeStart);
+    }
+    
+    protected Long getEndTime(){
+        return getTime(dateEnd, timeEnd);
+    }
 
     /**
      *change start or end time
      */
     protected void changeDate() {
+        CallTimePeriods period = getTimePeriod();
+        if (period!=null) {
+            setTime(dateStart, timeStart, period.getFirstTime(getStartTime())); //set correct time for period
+            setTime(dateEnd, timeEnd, period.getFirstTime(getEndTime()));
+        }else{
+            setDefaultTime();
+        }
         updateTable(false);
+    }
+
+
+    private void setDefaultTime() {
+        Long time = CallTimePeriods.HOURLY.getFirstTime(System.currentTimeMillis());
+        setTime(dateStart, timeStart, time);
+        setTime(dateEnd, timeEnd, time);
     }
 
     /**
      *change period
      */
     protected void changePeriod() {
-        StatisticsCallType callType = getCallType();
-        labelProvider.updateHeaders(callType);
+        Node drive = callDataset.get(cDrive.getText());
+        if(drive!=null){
+            GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+            Pair<Long, Long> times = NeoUtils.getMinMaxTimeOfDataset(drive, service);
+            setTime(dateStart, timeStart, times.getLeft()); 
+            setTime(dateEnd, timeEnd, times.getRight());
+        }else{
+            setDefaultTime();
+        }
         updateTable(false);
     }
     
@@ -916,7 +1187,11 @@ public class CallAnalyserView extends ViewPart {
      */
     private InputWrapper createInputWrapper(boolean showEmpty) {
         return new InputWrapper(probeCallDataset.get(cProbe.getText()), callDataset.get(cDrive.getText()),
-                CallTimePeriods.findById(cPeriod.getText()), cCallType.getText(), showEmpty);
+                getTimePeriod(), cCallType.getText(), showEmpty);
+    }
+
+    private CallTimePeriods getTimePeriod() {
+        return CallTimePeriods.findById(cPeriod.getText());
     }
 
     /**
@@ -925,6 +1200,7 @@ public class CallAnalyserView extends ViewPart {
     protected void formPropertyList() {
         final Node drive = callDataset.get(cDrive.getText());
         if (drive == null) {
+            setDefaultTime();
             return;
         }
         parent.setCursor(new Cursor(parent.getDisplay(), SWT.CURSOR_WAIT));
@@ -933,7 +1209,9 @@ public class CallAnalyserView extends ViewPart {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-                    final CallStatistics statistics = new CallStatistics(drive, NeoServiceProvider.getProvider().getService(), monitor);
+                    GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+                    final CallStatistics statistics = new CallStatistics(drive, service, monitor);
+                    final Pair<Long, Long> times = NeoUtils.getMinMaxTimeOfDataset(drive, service);
                     ActionUtil.getInstance().runTask(new Runnable() {
                         @Override
                         public void run() {
@@ -950,6 +1228,8 @@ public class CallAnalyserView extends ViewPart {
                                 StatisticsCallType callType = getCallType();
                                 formProbeCall(drive, callType);
                                 formPeriods(statistics);
+                                setTime(dateStart, timeStart, times.getLeft());
+                                setTime(dateEnd, timeEnd, times.getRight());
                                 labelProvider.updateHeaders(callType);
                                 updateTable(false);
                             } finally {
@@ -1065,6 +1345,7 @@ public class CallAnalyserView extends ViewPart {
         final private TableColumn column;
         private final IStatisticsHeader header;
         private String name;
+        private SortOrder sortOrder = SortOrder.NONE;
 
 
         /**
@@ -1114,6 +1395,21 @@ public class CallAnalyserView extends ViewPart {
          */
         public TableColumn getColumn() {
             return column;
+        }
+        
+        private void updateSortOrder() {
+            switch (sortOrder) {
+            case NONE:
+            case ASC:
+                sortOrder = SortOrder.DESC;
+                break;
+            case DESC:
+                sortOrder = SortOrder.ASC;
+                break;
+            default:
+                break;
+            }
+            //column.setImage(CallAnalyserPlugin.getImageDescriptor(sortOrder.getIconPath()).createImage());
         }
     }
 
