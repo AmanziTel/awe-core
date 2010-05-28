@@ -52,7 +52,6 @@ import org.amanzi.neo.core.enums.gpeh.Parameters;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.GpehReportUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.gpeh.GPEHEvent;
 import org.amanzi.neo.loader.gpeh.GPEHMainFile;
 import org.amanzi.neo.loader.gpeh.GPEHParser;
@@ -578,21 +577,8 @@ public void printStats(boolean verbose) {
     @Override
     protected void finishUp() {
         super.finishUp();
-        for (Map.Entry<Integer, Pair<Long, Long>> entry : timeStamp.entrySet()) {
-            Node storeNode = getStoringNode(entry.getKey());
-            if (storeNode != null) {
-                Long minTimeStamp = entry.getValue().getLeft();
-                if (minTimeStamp != null) {
-                    storeNode.setProperty(INeoConstants.MIN_TIMESTAMP, minTimeStamp);
-                }
-                Long maxTimeStamp = entry.getValue().getRight();
-                if (maxTimeStamp != null) {
-                    storeNode.setProperty(INeoConstants.MAX_TIMESTAMP, maxTimeStamp);
-                }
-            }
-        }
 
-        super.cleanupGisNode();//(datasetNode == null ? file : datasetNode);
+//        super.cleanupGisNode();//(datasetNode == null ? file : datasetNode);
         sendUpdateEvent(UpdateViewEventType.OSS);
     }
 

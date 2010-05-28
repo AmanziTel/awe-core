@@ -74,6 +74,7 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -100,7 +101,6 @@ public abstract class AbstractLoader {
     private long savedData = 0;
     private long started = System.currentTimeMillis();
     private boolean headerWasParced;
-    protected HashMap<Integer, Pair<Long, Long>> timeStamp = new HashMap<Integer, Pair<Long, Long>>();
 
     // private ArrayList<MultiPropertyIndex<?>> indexes = new
     // ArrayList<MultiPropertyIndex<?>>();
@@ -1238,7 +1238,19 @@ public abstract class AbstractLoader {
             addRootToProject();
         }
         commit(true);
-        
+        for (Map.Entry<Integer, Pair<Long, Long>> entry : StoringNodeProperties.timeStamp.entrySet()) {
+            Node storeNode = getStoringNode(entry.getKey());
+            if (storeNode != null) {
+                Long minTimeStamp = entry.getValue().getLeft();
+                if (minTimeStamp != null) {
+                    storeNode.setProperty(INeoConstants.MIN_TIMESTAMP, minTimeStamp);
+                }
+                Long maxTimeStamp = entry.getValue().getRight();
+                if (maxTimeStamp != null) {
+                    storeNode.setProperty(INeoConstants.MAX_TIMESTAMP, maxTimeStamp);
+                }
+            }
+        }
     }
 
 
@@ -1550,7 +1562,11 @@ public abstract class AbstractLoader {
                 Node gis = gisProperties.getGis();
                 if (gisProperties.getBbox() != null) {
                     gis.setProperty(INeoConstants.PROPERTY_BBOX_NAME, gisProperties.getBbox());
-                    gis.setProperty(INeoConstants.COUNT_TYPE_NAME, gisProperties.savedData);
+//                    gis.setProperty(INeoConstants.COUNT_TYPE_NAME, gisProperties.savedData);
+                    Traverser nextTraves = gis.traverse(Order.DEPTH_FIRST, NeoUtils.getStopEvaluator(1), ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+                    for(Node nextNode : nextTraves){
+                        nextNode.setProperty(INeoConstants.COUNT_TYPE_NAME, gisProperties.savedData);
+                    }
                 }
                 HashSet<Node> nodeToDelete = new HashSet<Node>();
                 for (Relationship relation : gis.getRelationships(NetworkRelationshipTypes.AGGREGATION, Direction.OUTGOING)) {
@@ -1715,6 +1731,21 @@ public abstract class AbstractLoader {
         }
     }
 
+    public static class StoringNodeProperties{
+        public static HashMap<Integer, Pair<Long, Long>> timeStamp = new HashMap<Integer, Pair<Long, Long>>();
+        private long dataCountre;
+        
+        public StoringNodeProperties() {
+//            dataCountre = (Long)getSN.getProperty(INeoConstants.COUNT_TYPE_NAME, 0L);
+        }
+        /**
+         *inc saved;
+         */
+        public void incSaved() {
+            dataCountre++;
+        }
+        
+    }
     public static class GisProperties {
         private final Node gis;
         private CRS crs;
@@ -1851,10 +1882,10 @@ public abstract class AbstractLoader {
      * @param timestamp
      */
     protected void updateTimestampMinMax(Integer key, final long timestamp) {
-        Pair<Long, Long> pair = timeStamp.get(key);
+        Pair<Long, Long> pair = StoringNodeProperties.timeStamp.get(key);
         if (pair == null) {
             pair = new Pair<Long, Long>(null, null);
-            timeStamp.put(key, pair);
+            StoringNodeProperties.timeStamp.put(key, pair);
         }
         Long minTimeStamp = pair.getLeft() == null ? timestamp : Math.min(pair.getLeft(), timestamp);
         Long maxTimeStamp = pair.getRight() == null ? timestamp : Math.max(pair.getRight(), timestamp);

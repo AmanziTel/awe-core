@@ -16,7 +16,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -369,20 +368,6 @@ public abstract class DriveLoader extends AbstractLoader {
     @Override
     protected void finishUp() {
         super.finishUp();
-        for (Map.Entry<Integer, Pair<Long, Long>> entry : timeStamp.entrySet()) {
-            Node storeNode = getStoringNode(entry.getKey());
-            if (storeNode != null) {
-                Long minTimeStamp = entry.getValue().getLeft();
-                if (minTimeStamp != null) {
-                    storeNode.setProperty(INeoConstants.MIN_TIMESTAMP, minTimeStamp);
-                }
-                Long maxTimeStamp = entry.getValue().getRight();
-                if (maxTimeStamp != null) {
-                    storeNode.setProperty(INeoConstants.MAX_TIMESTAMP, maxTimeStamp);
-                }
-            }
-        }
-
         super.cleanupGisNode();//(datasetNode == null ? file : datasetNode);
     }
 
