@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import junit.framework.Assert;
 
@@ -201,6 +202,23 @@ public class AMSCorrellatorTest {
     }
     
     /**
+     * Gets property from default resource bungle.
+     * @param aKey String (key)
+     * @return String (property)
+     */
+    protected String getProperty(String aKey){
+        return ResourceBundle.getBundle(getDefaultBungleName()).getString(aKey);
+    }
+    
+    /**
+     * Gets name of default resource bungle.
+     * @return String 
+     */
+    protected String getDefaultBungleName(){
+        return this.getClass().getName();
+    }
+    
+    /**
      * Returns name of directory for save generated data.
      *
      * @return String
@@ -276,8 +294,8 @@ public class AMSCorrellatorTest {
     @Test
     public void testCorrelateData() throws Exception
     {
-        String amsDataDirectoryPath = "d:\\AWE documentation\\test data\\correlation test\\2009-08-04 part 1"; //getAsmDataDirectoryPath();
-        String nemoDataDirectoryPath = "D:\\AWE documentation\\test data\\correlation test\\NA45_S-Bahn + Nord_09Aug04.dt1";//getNemoDataDirectoryPath();
+        String amsDataDirectoryPath = getProperty("correlate-test.ams_path");//"d:\\AWE documentation\\test data\\correlation test\\2009-08-04 part 1"; //getAsmDataDirectoryPath();
+        String nemoDataDirectoryPath = getProperty("correlate-test.nemo_path");//"D:\\AWE documentation\\test data\\correlation test\\NA45_S-Bahn + Nord_09Aug04.dt1";//getNemoDataDirectoryPath();
         //List<CallGroup> amsData = generateAmsData( 1 , 0 , 1 , 1 , 2 , amsDataDirectoryPath);       
         //createProbeIndex(amsData);
         //generateNemoData(amsData, nemoDataDirectoryPath);

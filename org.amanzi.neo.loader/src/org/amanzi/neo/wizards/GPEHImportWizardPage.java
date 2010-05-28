@@ -14,6 +14,7 @@
 package org.amanzi.neo.wizards;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -274,6 +275,7 @@ public class GPEHImportWizardPage extends WizardPage {
             ossMap.put(NeoUtils.getNodeName(node, service), node);
         }
         final String[] result = ossMap.keySet().toArray(new String[0]);
+        Arrays.sort(result);
         return result;
     }
 

@@ -14,6 +14,7 @@
 package org.amanzi.neo.loader.dialogs;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -297,6 +298,7 @@ public class CorrelateDialog {
             		result.add((String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME));
             	}
             }
+            Collections.sort(result);
             return result.toArray(new String[] {});
         } finally {
             tx.finish();
@@ -320,6 +322,7 @@ public class CorrelateDialog {
             		result.add((String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME));
             	}
             }
+            Collections.sort(result);
             return result.toArray(new String[] {});
         } finally {
             tx.finish();

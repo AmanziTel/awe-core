@@ -254,7 +254,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
             } catch (MalformedURLException e) {
                 throw (RuntimeException)new RuntimeException().initCause(e);
             }
-            if (neighborNode!=null) {
+            if (neighborNode!=null&&!isTest()) {
                 sendUpdateEvent(UpdateViewEventType.NEIGHBOUR);
             }
         }

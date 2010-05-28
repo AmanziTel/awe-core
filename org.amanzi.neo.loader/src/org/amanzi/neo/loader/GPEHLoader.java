@@ -241,8 +241,9 @@ public class GPEHLoader extends DriveLoader {
             commit(false);
         }
         
-        finishUpGis();
-        
+        if (!isTest()) {
+            finishUpGis();
+        }
         addLayersToMap();
     }
 
@@ -579,7 +580,9 @@ public void printStats(boolean verbose) {
         super.finishUp();
 
 //        super.cleanupGisNode();//(datasetNode == null ? file : datasetNode);
-        sendUpdateEvent(UpdateViewEventType.OSS);
+        if (!isTest()) {
+            sendUpdateEvent(UpdateViewEventType.OSS);
+        }
     }
 
 

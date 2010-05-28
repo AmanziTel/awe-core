@@ -12,6 +12,7 @@
  */
 package org.amanzi.neo.wizards;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 import org.amanzi.neo.core.INeoConstants;
@@ -152,8 +153,9 @@ public class NeighbourImportWizardPage extends WizardPage {
                     members.put(id, node);
                 }
             }
-
-            return members.keySet().toArray(new String[] {});
+            String[] result = members.keySet().toArray(new String[] {});
+            Arrays.sort(result);
+            return result;
         } finally {
             tx.finish();
         }

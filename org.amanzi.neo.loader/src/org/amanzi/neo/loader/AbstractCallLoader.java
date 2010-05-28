@@ -26,7 +26,6 @@ import java.util.Set;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.CallProperties;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.enums.CallProperties.CallResult;
@@ -243,12 +242,6 @@ public abstract class AbstractCallLoader extends DriveLoader {
 
             //create relationship to Dataset Calls
             NeoUtils.addChild(callDataset, result, lastCallInDataset, neo);
-            if (lastCallInDataset == null) {
-                callDataset.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
-            }
-            else {
-                lastCallInDataset.createRelationshipTo(result, GeoNeoRelationshipTypes.NEXT);
-            }
             lastCallInDataset = result;
             
             transaction.success();

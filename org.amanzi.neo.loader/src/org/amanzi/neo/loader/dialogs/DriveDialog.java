@@ -348,7 +348,9 @@ public class DriveDialog {
         for (Node node : allDatasetTraverser) {
             dataset.put((String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME), node);
         }
-        cDataset.setItems(dataset.keySet().toArray(new String[0]));
+        String[] items = dataset.keySet().toArray(new String[0]);
+        Arrays.sort(items);
+        cDataset.setItems(items);
         cDataset.addModifyListener(new ModifyListener() {
 
             @Override

@@ -195,7 +195,9 @@ public class RomesLoader extends DriveLoader {
     protected void finishUp() {
         saveData();
         super.finishUp();
-        sendUpdateEvent(UpdateViewEventType.GIS);
+        if (!isTest()) {
+            sendUpdateEvent(UpdateViewEventType.GIS);
+        }
     }
 
     /**

@@ -73,6 +73,8 @@ public class NeighbourLoader {
     private final GraphDatabaseService neo;
     private final LuceneIndexService index;
     private final String gisName;
+    
+    private boolean isTest = false;
 
     /**
      * Constructor
@@ -87,6 +89,22 @@ public class NeighbourLoader {
         this.baseName = new File(fileName).getName();
         gisName = NeoUtils.getSimpleNodeName(networkNode, "", neo);
         index = NeoServiceProvider.getProvider().getIndexService();
+    }
+    
+    /**
+     * Constructor
+     * 
+     * @param networkNode network Node
+     * @param fileName Neighbour file Name
+     */
+    public NeighbourLoader(Node networkNode, String fileName, GraphDatabaseService neo, LuceneIndexService indexService, boolean isTesting) {
+        network = NeoUtils.findRoot(networkNode,neo);
+        this.fileName = fileName;
+        this.neo = neo;
+        this.baseName = new File(fileName).getName();
+        gisName = NeoUtils.getSimpleNodeName(networkNode, "", neo);
+        index = indexService;
+        isTest = isTesting;
     }
 
     /**
@@ -160,7 +178,10 @@ public class NeighbourLoader {
             if (reader != null) {
                 reader.close();
             }
-            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDatabaseEvent(UpdateViewEventType.NEIGHBOUR));
+            if (!isTest) {
+                NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
+                        new UpdateDatabaseEvent(UpdateViewEventType.NEIGHBOUR));
+            }
             tx.finish();
             // 8.02.2010 Shcharbatsevich A. - check header for null.
             if (header != null) {

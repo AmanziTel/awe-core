@@ -35,6 +35,7 @@ import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser.Order;
+import org.neo4j.index.lucene.LuceneIndexService;
 
 /**
  * <p>
@@ -110,13 +111,14 @@ public class NeighbourLoaderTest extends AbstractLoaderTest{
 		initProjectService();
 		String fileDirectory = getFileDirectory();
 		String filename = getProperty("test_loader.common.net_file");
-		NetworkLoader networkLoader = new NetworkLoader(getNeo(), fileDirectory + filename);
+		LuceneIndexService index = initIndex();
+        NetworkLoader networkLoader = new NetworkLoader(getNeo(), fileDirectory + filename, index);
         networkLoader.setup();
         networkLoader.setLimit(1000);
         networkLoader.setCommitSize(1000);
         networkLoader.run(null);
         gis = findGisNode(filename);
-        NeighbourLoader loader = new NeighbourLoader(gis, fileDirectory + getDbName(aTestKey), getNeo());
+        NeighbourLoader loader = new NeighbourLoader(gis, fileDirectory + getDbName(aTestKey), getNeo(),index, true);
         IProgressMonitor monitor = new NullProgressMonitor();
         loader.run(monitor);
 		return loader;

@@ -4,7 +4,6 @@ import java.util.Date;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -130,32 +129,29 @@ public class NemoDataGenerator implements IDataGenerator
         {
             dataDirectory.mkdir();
         }
-        File file = new File(baseDirectoryPath + File.separator + fileName);        
+        File file = new File(dataDirectory, fileName);        
         if(file.exists()){
             throw new IllegalStateException("Dublicate file name <"+fileName+">.");
         }
+        FileOutputStream fos = null;
         PrintWriter out = null;
         try
         {
-            file.createNewFile();
-            FileOutputStream outputStream = new FileOutputStream(file);
-            out = new PrintWriter(outputStream);
+            //file.createNewFile();
+            fos = new FileOutputStream(file);
+            out = new PrintWriter(fos);
             if(date != null)
             {
-                out.append("#START,15:27:17.145,,\"");
-                out.append(dateFormat.format(date));
-                out.append("\"\n");
+                out.println("#START,15:27:17.145,,\""+dateFormat.format(date)+"\"");
             }
             for(PointData pointData : generatedLines)
             {
-                out.append(pointData.toString() + "\n");
+                out.println(pointData.toString());
             }            
         }
         catch (FileNotFoundException e) {
             // TODO: inform logic 
-        }
-        catch (IOException e) {
-            // TODO: inform logic
+            e.printStackTrace();
         }
         finally
         {

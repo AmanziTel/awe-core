@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.wizards;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -309,7 +310,9 @@ public class NetworkSiteImportWizardPage extends WizardPage {
                 }
             }
 
-            return members.keySet().toArray(new String[] {});
+            String[] result = members.keySet().toArray(new String[] {});
+            Arrays.sort(result);
+            return result;
         } finally {
             tx.finish();
         }

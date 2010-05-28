@@ -134,7 +134,9 @@ public class OSSCounterLoader extends AbstractLoader {
     @Override
     protected void finishUp() {
         super.finishUp();
-        sendUpdateEvent(UpdateViewEventType.OSS);
+        if (!isTest()) {
+            sendUpdateEvent(UpdateViewEventType.OSS);
+        }
     }
 
     /**

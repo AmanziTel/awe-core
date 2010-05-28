@@ -14,6 +14,7 @@ package org.amanzi.neo.wizards;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -241,6 +242,7 @@ public class AMSImportWizardPage extends WizardPage {
                     datasetMembers.add(name);
                 }
             }
+            Collections.sort(datasetMembers);
             return datasetMembers.toArray(new String[] {});
         } finally {
             tx.finish();
@@ -270,7 +272,7 @@ public class AMSImportWizardPage extends WizardPage {
                     networkMembers.add(id);
                 }
             }
-
+            Collections.sort(networkMembers);
             return networkMembers.toArray(new String[] {});
         } finally {
             tx.finish();

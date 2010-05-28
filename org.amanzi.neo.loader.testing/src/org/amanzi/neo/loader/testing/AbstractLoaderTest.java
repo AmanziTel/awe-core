@@ -13,6 +13,7 @@
 package org.amanzi.neo.loader.testing;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -24,9 +25,16 @@ import java.util.ResourceBundle;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.index.lucene.LuceneIndexService;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 
@@ -53,6 +61,7 @@ public abstract class AbstractLoaderTest {
 	public static final int IGNORE = 0;
 	public static final int ONLY_ONE = 1;
 	public static final int MANY = 2;
+	public static final int CHECK_COUNT_AND_NOT_NODE = 3;
 	
 	private List<Node> visitedNodes;
 	
@@ -272,7 +281,7 @@ public abstract class AbstractLoaderTest {
 	    		return;
 	    	}
 	    	visitedNodes = new ArrayList<Node>();
-	    	assertNode(root);
+	    	assertNode(root,false);
 	    	transacation.success();
 	    }
     	finally{
@@ -284,20 +293,38 @@ public abstract class AbstractLoaderTest {
      * Check node with all links (recursive).
      * @param aNode Node
      */
-    protected void assertNode(Node aNode){
+    protected void assertNode(Node aNode, boolean inLine){
     	visitedNodes.add(aNode);
     	Node referenceNode = getNeo().getReferenceNode();
 		boolean isReference = aNode.equals(referenceNode);
-    	String typeA = isReference?"root":(String) aNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME);
+    	final String typeA = isReference?"root":(String) aNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME);
     	List<String> necessaryLinks = parceStringToList(getProperty("test_loader.necessary_links.type_"+typeA));
     	List<String> ignoreLinks = parceStringToList(getProperty("test_loader.common_ignore_links"));
     	HashMap<String, Integer> checkedLinks = new HashMap<String, Integer>();
+    	boolean hasNext = false;
     	for(Relationship link : aNode.getRelationships()){
     		String linkType = link.getType().name();
     		if(ignoreLinks.contains(linkType)){
     			continue;
     		}
     		boolean isOut = link.getStartNode().equals(aNode);
+    		if(isOut&&!inLine&&linkType.equals("NEXT")&&!typeA.equals("gis")){
+    		    assertFalse("More then one NEXT link.",hasNext);
+    		    Traverser line = aNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, 
+    		            new ReturnableEvaluator() {
+                    
+                            @Override
+                            public boolean isReturnableNode(TraversalPosition currentPos) {
+                                Node node = currentPos.currentNode();
+                                return !currentPos.isStartNode()&&node.getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(typeA);
+                            }
+                        }, GeoNeoRelationshipTypes.NEXT,Direction.OUTGOING);
+    		    for(Node node : line){
+    		        assertNode(node, true);
+    		    }
+    		    hasNext=true;
+    		    continue;
+    		}
 			String postfix = isOut?"out":"in";
 			Node linked = link.getOtherNode(aNode);
 			isReference = linked.equals(referenceNode);
@@ -310,21 +337,21 @@ public abstract class AbstractLoaderTest {
 				throw new AssertionError("Wrong link <" + currKey + ">.");
 			}
 			String linkKey = linkType+"_"+postfix+"_"+typeB;
-			if(result==ONLY_ONE){
+			necessaryLinks.remove(linkKey);
+			if(result==ONLY_ONE||result==CHECK_COUNT_AND_NOT_NODE){
 				Integer before = checkedLinks.get(linkKey);
 				assertTrue("More then one link, key <"+currKey+">.",before==null);
 			}
 			if(result==IGNORE){
 				continue;
 			}
-			necessaryLinks.remove(linkKey);
 			Integer before = checkedLinks.get(linkKey);
 			if(before == null){
 				before = 0;
 			}
 			checkedLinks.put(linkKey, before++);
-			if (!visitedNodes.contains(linked)) {
-				assertNode(linked);
+			if (!visitedNodes.contains(linked)&&result!=CHECK_COUNT_AND_NOT_NODE) {
+				assertNode(linked,false);
 			}
     	}
     	assertTrue("Node <"+typeA+"> has no necessary links: "
