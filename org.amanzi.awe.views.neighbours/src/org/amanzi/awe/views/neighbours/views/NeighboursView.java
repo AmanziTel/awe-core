@@ -549,6 +549,7 @@ public class NeighboursView extends ViewPart {
             for (Relationship relation : network.getRelationships(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING)) {
                 neighbourName.add(NeoUtils.getSimpleNodeName(relation.getOtherNode(network), null));
             }
+            Collections.sort(neighbourName);
             neighbour.setItems(neighbourName.toArray(new String[0]));
         // }finally{
         // tx.finish();

@@ -16,6 +16,7 @@ package org.amanzi.awe.views.drive.views;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -457,6 +458,7 @@ public class CorrelationManager extends ViewPart {
         int oldInd = cList.getSelectionIndex();
         String item = oldInd >= 0 ? cList.getItem(oldInd) : null;
         String[] items = gisMap.keySet().toArray(new String[] {});
+        Arrays.sort(items);
         cList.setItems(items);
         if (oldInd >= 0) {
             for (int i = 0; i < items.length; i++) {

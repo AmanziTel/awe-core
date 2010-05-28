@@ -194,7 +194,9 @@ public class NeighbourAnalyser extends ViewPart {
         }finally{
             tx.finish();
         }
-        cNeighbour.setItems(neighbour.keySet().toArray(new String[0]));
+        String[] result = neighbour.keySet().toArray(new String[0]);
+        Arrays.sort(result);
+        cNeighbour.setItems(result);
     }
 
 
@@ -207,7 +209,9 @@ public class NeighbourAnalyser extends ViewPart {
         for (Node node:NeoUtils.getAllGpeh(neo)){
             gpeh.put(NeoUtils.getSimpleNodeName(node, ""), node);
         }
-        cGpeh.setItems(gpeh.keySet().toArray(new String[0]));
+        String[] result = gpeh.keySet().toArray(new String[0]);
+        Arrays.sort(result);
+        cGpeh.setItems(result);
     }
 
 

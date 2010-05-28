@@ -15,6 +15,7 @@ package org.amanzi.awe.views.kpi;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -432,7 +433,9 @@ public class KpiView extends ViewPart {
                     drives.put(id, node);
                 }
             }
-            return drives.keySet().toArray(new String[] {});
+            String[] result = drives.keySet().toArray(new String[] {});
+            Arrays.sort(result);
+            return result;
         } finally {
             tx.finish();
         }
@@ -467,7 +470,9 @@ public class KpiView extends ViewPart {
                     directories.put(id, node);
                 }
             }
-            return directories.keySet().toArray(new String[] {});
+            String[] result = directories.keySet().toArray(new String[] {});
+            Arrays.sort(result);
+            return result;
         } finally {
             tx.finish();
         }
@@ -526,7 +531,9 @@ public class KpiView extends ViewPart {
                     networks.put(id, node);
                 }
             }
-            return networks.keySet().toArray(new String[] {});
+            String[] result = networks.keySet().toArray(new String[] {});
+            Arrays.sort(result);
+            return result;
         } finally {
             tx.finish();
         }

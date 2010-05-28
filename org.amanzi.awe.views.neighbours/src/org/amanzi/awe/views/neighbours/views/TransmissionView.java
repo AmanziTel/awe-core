@@ -532,6 +532,7 @@ public class TransmissionView extends ViewPart {
         for (Relationship relation : network.getRelationships(NetworkRelationshipTypes.TRANSMISSION_DATA, Direction.OUTGOING)) {
             neighbourName.add(NeoUtils.getSimpleNodeName(relation.getOtherNode(network), null));
         }
+        Collections.sort(neighbourName);
         neighbour.setItems(neighbourName.toArray(new String[0]));
         // }finally{
         // tx.finish();

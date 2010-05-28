@@ -36,6 +36,7 @@ import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.RefreshPropertiesEvent;
 import org.amanzi.awe.report.editor.ReportEditor;
 import org.amanzi.awe.views.reuse.Distribute;
+import org.amanzi.awe.views.reuse.Messages;
 import org.amanzi.awe.views.reuse.ReusePlugin;
 import org.amanzi.awe.views.reuse.Select;
 import org.amanzi.integrator.awe.AWEProjectManager;
@@ -122,38 +123,36 @@ import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
  */
 public class ReuseAnalyserView extends ViewPart {
     private static final Logger LOGGER = Logger.getLogger(ReuseAnalyserView.class);
-    /** String UNKNOWN_ERROR field. */
-    private static final String ERROR_TITLE = "Chart calculation";   
 
     /** String TOOL_TIP_LOG field */
-    private static final String TOOL_TIP_LOG = "Change the scale of the y-axis to be log10";
-    private static final String TOOL_TIP_DATA = "Select the set of data to analyse";
-    private static final String TOOL_TIP_PROPERTY = "Select which property of the data to calculate the statistics for";
-    private static final String TOOL_TIP_DISTRIBUTE = "Decide how to divide the range of values into discrete categories for statistics and charting";
-    private static final String TOOL_TIP_SELECT = "If each data element has multiple values for the selected property, decide how to combine them";
-    private static final String TOOL_TIP_ADJACENCY = "Add color to adjacent chart categories when selecting in the chart";
-    private static final String TOOL_TIP_SELECTED_VALUES = "Select a category in the chart for displaying on the map";
+    private static final String TOOL_TIP_LOG = Messages.ReuseAnalayserView_TOOL_TIP_LOG;
+    private static final String TOOL_TIP_DATA = Messages.ReuseAnalayserView_TOOL_TIP_DATA;
+    private static final String TOOL_TIP_PROPERTY = Messages.ReuseAnalayserView_TOOL_TIP_PROPERTY;
+    private static final String TOOL_TIP_DISTRIBUTE = Messages.ReuseAnalayserView_TOOL_TIP_DISTRIBUTE;
+    private static final String TOOL_TIP_SELECT = Messages.ReuseAnalayserView_TOOL_TIP_SELECT;
+    private static final String TOOL_TIP_ADJACENCY = Messages.ReuseAnalayserView_TOOL_TIP_ADJACENCY;
+    private static final String TOOL_TIP_SELECTED_VALUES = Messages.ReuseAnalayserView_TOOL_TIP_SELECTED_VALUES;
     // labels
-    private static final String SELECT_LABEL = "Select";
-    private static final String DISTRIBUTE_LABEL = "Distribute";
-    private static final String LABEL_INFO = "Selected values";
-    private static final String LABEL_INFO_BLEND = "Selected values";
-
-
-    private static final String LOG_LABEL = "Logarithmic counts";
+    private static final String SELECT_LABEL = Messages.ReuseAnalayserView_SELECT_LABEL;
+    private static final String DISTRIBUTE_LABEL = Messages.ReuseAnalayserView_DISTRIBUTE_LABEL;
+    private static final String LABEL_INFO = Messages.ReuseAnalayserView_LABEL_INFO;
+    private static final String LABEL_INFO_BLEND = Messages.ReuseAnalayserView_LABEL_INFO_BLEND;
+    private static final String ERROR_TITLE = Messages.ReuseAnalayserView_ERROR_TITLE;
+    private static final String LOG_LABEL = Messages.ReuseAnalayserView_LOG_LABEL;
+    
     /** String ADJACENCY field */
-    private static final String ADJACENCY = "Adjacency";
+    private static final String ADJACENCY = Messages.ReuseAnalayserView_FIELD_ADJACENCY;
     /** String PROPERTY_LABEL field */
-    private static final String PROPERTY_LABEL = "Property";
+    private static final String PROPERTY_LABEL = Messages.ReuseAnalayserView_FIELD_PROPERTY_LABEL;
     /** String GIS_LABEL field */
-    private static final String GIS_LABEL = "Data";
+    private static final String GIS_LABEL = Messages.ReuseAnalayserView_FIELD_GIS_LABEL;
     /** String COUNT_AXIS field */
-    private static final String COUNT_AXIS = "Count";
+    private static final String COUNT_AXIS = Messages.ReuseAnalayserView_FIELD_COUNT_AXIS;
     /** String VALUES_DOMAIN field */
-    private static final String VALUES_DOMAIN = "Value";
-    private static final String ROW_KEY = "values";
-    private static final String COLOR_LABEL = "color properties";
-    private static final String REPORT_LABEL = "Report";
+    private static final String VALUES_DOMAIN = Messages.ReuseAnalayserView_FIELD_VALUES_DOMAIN;
+    private static final String ROW_KEY = Messages.ReuseAnalayserView_ROW_KEY;
+    private static final String COLOR_LABEL = Messages.ReuseAnalayserView_COLOR_LABEL;
+    private static final String REPORT_LABEL = Messages.ReuseAnalayserView_REPORT_LABEL;
 
 
     private final Map<String, String[]> aggregatedProperties = new HashMap<String, String[]>();
@@ -191,7 +190,7 @@ public class ReuseAnalyserView extends ViewPart {
     private Button blend;
     private ColorEditor colorLeft;
     private ColorEditor colorRight;
-    private Label lBlend;
+    private Label lBlend; 
     private List<String> allFields;
     private List<String> numericFields;
     private Button bReport;
@@ -453,6 +452,7 @@ public class ReuseAnalyserView extends ViewPart {
                     cSelect.setEnabled(isAggregatedDataset(rootNode));
                     formPropertyList(rootNode);
                 }
+                Collections.sort(propertyList);
                 propertyCombo.setItems(propertyList.toArray(new String[] {}));
             }
 
@@ -1422,7 +1422,9 @@ public class ReuseAnalyserView extends ViewPart {
                 members.put(id + "-> " + neigh.getProperty(INeoConstants.PROPERTY_NAME_NAME), neigh);
             }
         }
-        return members.keySet().toArray(new String[] {});
+        List<String> result = new ArrayList<String>(members.keySet());
+        Collections.sort(result);
+        return result.toArray(new String[] {});
     }
 
     /**

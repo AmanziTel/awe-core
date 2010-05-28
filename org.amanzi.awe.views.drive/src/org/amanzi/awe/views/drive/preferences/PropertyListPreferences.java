@@ -14,6 +14,7 @@
 package org.amanzi.awe.views.drive.preferences;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -104,7 +105,9 @@ public class PropertyListPreferences extends PreferencePage implements IWorkbenc
             cAvaliableProperties = new Combo(mainFrame, SWT.DROP_DOWN | SWT.READ_ONLY);
             layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
             cAvaliableProperties.setLayoutData(layoutData);
-            cAvaliableProperties.setItems(avaliableProperties.toArray(new String[0]));
+            String[] items = avaliableProperties.toArray(new String[0]);
+            Arrays.asList(items);
+            cAvaliableProperties.setItems(items);
 
             bAddProperty = new Button(mainFrame, SWT.PUSH);
             bAddProperty.setText("Add");

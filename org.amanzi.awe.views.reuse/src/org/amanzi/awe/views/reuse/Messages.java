@@ -46,6 +46,30 @@ public class Messages extends NLS {
     public static String TableConfigWizard_label_visible;
     public static String TableConfigWizard_label_invisible;
     
+    public static String ReuseAnalayserView_UNKNOWN_ERROR;
+    public static String ReuseAnalayserView_TOOL_TIP_LOG;
+    public static String ReuseAnalayserView_TOOL_TIP_DATA;
+    public static String ReuseAnalayserView_TOOL_TIP_PROPERTY;
+    public static String ReuseAnalayserView_TOOL_TIP_DISTRIBUTE;
+    public static String ReuseAnalayserView_TOOL_TIP_SELECT;
+    public static String ReuseAnalayserView_TOOL_TIP_ADJACENCY;
+    public static String ReuseAnalayserView_TOOL_TIP_SELECTED_VALUES;
+    public static String ReuseAnalayserView_SELECT_LABEL;
+    public static String ReuseAnalayserView_DISTRIBUTE_LABEL;
+    public static String ReuseAnalayserView_LABEL_INFO;
+    public static String ReuseAnalayserView_LABEL_INFO_BLEND;
+    public static String ReuseAnalayserView_ERROR_TITLE;
+    public static String ReuseAnalayserView_ERROR_MSG;
+    public static String ReuseAnalayserView_LOG_LABEL;
+    public static String ReuseAnalayserView_FIELD_ADJACENCY;
+    public static String ReuseAnalayserView_FIELD_PROPERTY_LABEL;
+    public static String ReuseAnalayserView_FIELD_GIS_LABEL;
+    public static String ReuseAnalayserView_FIELD_COUNT_AXIS;
+    public static String ReuseAnalayserView_FIELD_VALUES_DOMAIN;
+    public static String ReuseAnalayserView_ROW_KEY;
+    public static String ReuseAnalayserView_COLOR_LABEL;
+    public static String ReuseAnalayserView_REPORT_LABEL;
+    
     private Messages() {
     }
 

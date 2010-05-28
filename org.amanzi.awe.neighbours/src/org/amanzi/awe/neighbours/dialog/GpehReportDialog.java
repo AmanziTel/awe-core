@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.neighbours.dialog;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 
 import org.amanzi.awe.neighbours.gpeh.GpehReportCreator;
@@ -365,7 +366,9 @@ public class GpehReportDialog extends Dialog {
         } finally {
             tx.finish();
         }
-        cNetwork.setItems(network.keySet().toArray(new String[0]));
+        String[] result = network.keySet().toArray(new String[0]);
+        Arrays.sort(result);
+        cNetwork.setItems(result);
     }
 
     /**
@@ -376,7 +379,9 @@ public class GpehReportDialog extends Dialog {
         for (Node node : NeoUtils.getAllGpeh(neo)) {
             gpeh.put(NeoUtils.getSimpleNodeName(node, ""), node);
         }
-        cGpeh.setItems(gpeh.keySet().toArray(new String[0]));
+        String[] result = gpeh.keySet().toArray(new String[0]);
+        Arrays.sort(result);
+        cGpeh.setItems(result);
     }
 
 }

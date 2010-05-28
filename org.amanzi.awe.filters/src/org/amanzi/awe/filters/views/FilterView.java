@@ -12,6 +12,9 @@
  */
 package org.amanzi.awe.filters.views;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -476,7 +479,9 @@ public class FilterView extends ViewPart {
                     dataMap.put(NeoUtils.getNodeName(node), node);
                 }
             }
-            cGis.setItems(dataMap.keySet().toArray(new String[0]));
+            List<String> result = new ArrayList<String>(dataMap.keySet());
+            Collections.sort(result);
+            cGis.setItems(result.toArray(new String[0]));
         } finally {
             tx.finish();
         }
@@ -1566,7 +1571,7 @@ public class FilterView extends ViewPart {
     private void updatePropertyHelp(Node data) {
 
         String[] fields;
-        if (data != null) {
+        if (data != null) {            
             fields = new PropertyHeader(data).getAllFields();
         } else {
             fields = new String[0];
@@ -1574,6 +1579,7 @@ public class FilterView extends ViewPart {
         if (fields == null) {
             fields = new String[0];
         }
+        Arrays.sort(fields);
         String txt = cGroupProperty.getText();
         cGroupProperty.setItems(fields);
         cGroupProperty.setText(txt);

@@ -585,7 +585,9 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
                   gisDriveNodes.put(entry.getKey(), entry.getValue()); 
               }
            }
-            return gisDriveNodes.keySet().toArray(new String[] {});
+            String[] result = gisDriveNodes.keySet().toArray(new String[] {});
+            Arrays.sort(result);
+            return result;
         } finally {
             tx.finish();
         }
@@ -1403,6 +1405,7 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
             if (events != null) {
                 eventList.addAll(events);
             }
+            Collections.sort(eventList);
             cEvent.setItems(eventList.toArray(new String[0]));
             cEvent.select(0);
 
@@ -2240,7 +2243,9 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
     public void propertyChange(PropertyChangeEvent event) {
         if (propertyListsConstantValue != getPreferenceStore().getString(DataLoadPreferences.PROPERY_LISTS)) {
             formPropertyList();
-            cPropertyList.setItems(propertyLists.keySet().toArray(new String[0]));
+            String[] result = propertyLists.keySet().toArray(new String[0]);
+            Arrays.sort(result);
+            cPropertyList.setItems(result);
             updatePropertyList();
         }
     }

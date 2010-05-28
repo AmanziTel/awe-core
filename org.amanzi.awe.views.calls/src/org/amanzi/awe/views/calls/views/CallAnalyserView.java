@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -661,7 +662,9 @@ public class CallAnalyserView extends ViewPart {
     private void formCallDataset() {
         callDataset.clear();
         callDataset = NeoUtils.getAllDatasetNodesByType(DriveTypes.AMS_CALLS, NeoServiceProvider.getProvider().getService());
-        cDrive.setItems(callDataset.keySet().toArray(new String[0]));
+        List<String> datasets = new ArrayList<String>(callDataset.keySet());
+        Collections.sort(datasets);
+        cDrive.setItems(datasets.toArray(new String[0]));
         cCallType.clearSelection();
         cProbe.clearSelection();
         cPeriod.clearSelection();
@@ -988,7 +991,9 @@ public class CallAnalyserView extends ViewPart {
                 tx.finish();
             }
         }
-        cProbe.setItems(probeCallDataset.keySet().toArray(new String[0]));
+        String[] result = probeCallDataset.keySet().toArray(new String[0]);
+        Arrays.sort(result);
+        cProbe.setItems(result);
         cProbe.setText(KEY_ALL);
     }
     

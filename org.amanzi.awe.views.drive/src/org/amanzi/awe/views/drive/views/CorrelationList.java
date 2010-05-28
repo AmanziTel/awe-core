@@ -255,7 +255,9 @@ public class CorrelationList extends ViewPart {
                 }
             }
         }
-        cDrive.setItems(gisDriveNodes.keySet().toArray(new String[0]));
+        String[] result = gisDriveNodes.keySet().toArray(new String[0]);
+        Arrays.sort(result);
+        cDrive.setItems(result);
     }
 
     /**
@@ -313,6 +315,7 @@ public class CorrelationList extends ViewPart {
         int oldInd = cList.getSelectionIndex();
         String item = oldInd >= 0 ? cList.getItem(oldInd) : null;
         String[] items = gisMap.keySet().toArray(new String[] {});
+        Arrays.sort(items);
         cList.setItems(items);
         if (oldInd >= 0) {
             for (int i = 0; i < items.length; i++) {

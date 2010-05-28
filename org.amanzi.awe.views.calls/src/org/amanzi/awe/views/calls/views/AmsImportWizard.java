@@ -16,6 +16,7 @@ package org.amanzi.awe.views.calls.views;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import org.amanzi.awe.views.calls.CallAnalyserPlugin;
 import org.amanzi.awe.views.calls.Messages;
@@ -246,6 +247,7 @@ public class AmsImportWizard extends Wizard implements IImportWizard {
                         datasets.add(name);
                     }
                 }
+                Collections.sort(datasets);
                 return datasets.toArray(new String[] {});
             } finally {
                 tx.finish();
@@ -270,7 +272,7 @@ public class AmsImportWizard extends Wizard implements IImportWizard {
                         networks.add(id);
                     }
                 }
-
+                Collections.sort(networks);
                 return networks.toArray(new String[] {});
             } finally {
                 tx.finish();

@@ -561,6 +561,7 @@ public class MessageAndEventTableView extends ViewPart {
                 table.getControl().setVisible(false);
             }
         }
+        Arrays.sort(propNames);
         cProperty.setItems(propNames);
         updateExpression();
     }
@@ -1229,13 +1230,34 @@ public class MessageAndEventTableView extends ViewPart {
      * @param dataset
      * @return String
      */
-    private String getMemKey(String dataset) {
-        String memKey = dataset.replace(" ", "_");
-        memKey = memKey.replace(".", "_");
-        memKey = memKey.replace("%", "_");
-        memKey = memKey.replace("/", "_");
-        memKey = memKey.replace("\\", "_");
-        memKey = memKey.replace("+", "_");
+    private String getMemKey(String dataset) {        
+        String memKey = dataset.replace(" ","_");
+        memKey = memKey.replace(".","_");
+        memKey = memKey.replace(",","_");
+        memKey = memKey.replace("%","_");
+        memKey = memKey.replace("/","_");
+        memKey = memKey.replace("\\","_");
+        memKey = memKey.replace("+","_");
+        memKey = memKey.replace("-","_");
+        memKey = memKey.replace("=","_");
+        memKey = memKey.replace("(","_");
+        memKey = memKey.replace(")","_");
+        memKey = memKey.replace("!","_");
+        memKey = memKey.replace("\"","_");
+        memKey = memKey.replace("#","_");
+        memKey = memKey.replace("$","_");
+        memKey = memKey.replace("^","_");
+        memKey = memKey.replace("&","_");
+        memKey = memKey.replace("*","_");
+        memKey = memKey.replace("<","_");
+        memKey = memKey.replace(">","_");
+        memKey = memKey.replace("?","_");
+        memKey = memKey.replace("{","_");
+        memKey = memKey.replace("}","_");
+        memKey = memKey.replace("[","_");
+        memKey = memKey.replace("]","_");
+        memKey = memKey.replace("~","_");
+        memKey = memKey.replace("|","_");
         return memKey;
     }
     
