@@ -42,6 +42,7 @@ import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.awe.views.network.property.NetworkPropertySheetPage;
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
+import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.services.events.ShowPreparedViewEvent;
@@ -113,6 +114,8 @@ import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.neoclipse.Activator;
+import org.rubypeople.rdt.core.IRubyProject;
+import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
 /**
  * This View contains a tree of objects found in the database. The tree is built based on the
@@ -1582,7 +1585,17 @@ public class NetworkTreeView extends ViewPart {
                 sb.append("  end");
             }
             sb.append("\nend");
-            IProject project = ResourcesPlugin.getWorkspace().getRoot().getProjects()[0];// TODO
+            String aweProjectName = AWEProjectManager.getActiveProjectName();
+            IRubyProject rubyProject;
+            try {
+                rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, aweProjectName);
+            } catch (CoreException e2) {
+                // TODO Handle CoreException
+                throw (RuntimeException)new RuntimeException().initCause(e2);
+            }
+            
+            final IProject project = rubyProject.getProject();
+
             // correct
             IFile file;
             int i = 0;

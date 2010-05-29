@@ -43,6 +43,7 @@ import net.refractions.udig.ui.graphics.Glyph;
 import org.amanzi.awe.catalog.neo.GeoConstant;
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.views.drive.preferences.PropertyListPreferences;
+import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
@@ -135,6 +136,8 @@ import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser.Order;
+import org.rubypeople.rdt.core.IRubyProject;
+import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
 
 /**
@@ -972,7 +975,16 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
         // .append(dateStart.getHours()).append(":").append(dateStart.getMinutes()).append(":").append(dateStart.getSeconds())
         // .append("'\n    self.length='").append(sLength.getSelection()).append("'\n  end\nend");
 
-        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProjects()[0];// TODO correct
+        String aweProjectName = AWEProjectManager.getActiveProjectName();
+        IRubyProject rubyProject;
+        try {
+            rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, aweProjectName);
+        } catch (CoreException e2) {
+            // TODO Handle CoreException
+            throw (RuntimeException)new RuntimeException().initCause(e2);
+        }
+        
+        final IProject project = rubyProject.getProject();
         IFile file;
         int i = 0;
         while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) { //$NON-NLS-1$ //$NON-NLS-2$

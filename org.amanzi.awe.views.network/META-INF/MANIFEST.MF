@@ -13,7 +13,10 @@ Require-Bundle: org.eclipse.core.runtime,
  org.amanzi.gef;bundle-version="1.0.0",
  org.neo4j.neoclipse;bundle-version="0.4.0",
  org.eclipse.core.resources,
- org.eclipse.ui.ide
+ org.eclipse.ui.ide,
+ org.amanzi.integrator.awe,
+ org.rubypeople.rdt.core,
+ org.rubypeople.rdt.ui
 Eclipse-LazyStart: true
 Export-Package: org.amanzi.awe.awe.views.view.provider,
  org.amanzi.awe.views.network,
