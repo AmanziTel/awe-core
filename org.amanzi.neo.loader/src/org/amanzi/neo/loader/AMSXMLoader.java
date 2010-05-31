@@ -883,7 +883,9 @@ public class AMSXMLoader extends AbstractCallLoader {
                                     if (probe.equals(tocttcGroup.getCallerProbe())) {
                                         continue;
                                     }
-                                    tocttcGroup.addCalleeProbe(probe);
+                                    
+                                    //get probes call node                                    
+                                    tocttcGroup.addCalleeProbe(probeCallCache.get(probeId));
                                 }
                             }
                         }
