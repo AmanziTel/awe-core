@@ -15,6 +15,7 @@ package org.amanzi.awe.views.network.view;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1655,21 +1656,21 @@ public class NetworkTreeView extends ViewPart {
                 i++;
             }
             LOGGER.debug("Repost script:\n" + sb.toString());
-            InputStream is = new ByteArrayInputStream(sb.toString().getBytes());
+            InputStream is;
             try {
+                is = new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
                 file.create(is, true, null);
                 is.close();
-            } catch (CoreException e) {
-                // TODO Handle CoreException
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 // TODO Handle IOException
+                LOGGER.error(e.getMessage(),e);
                 throw (RuntimeException)new RuntimeException().initCause(e);
             }
             try {
                 getViewSite().getPage().openEditor(new FileEditorInput(file), "org.amanzi.awe.report.editor.ReportEditor");
             } catch (PartInitException e) {
                 // TODO Handle PartInitException
+                LOGGER.error(e.getMessage(),e);
                 throw (RuntimeException)new RuntimeException().initCause(e);
             }
         }

@@ -73,7 +73,7 @@ public class ReportCommandHandler extends AbstractHandler {
                 StringBuffer sb = new StringBuffer("report '").append("report" + i).append("' do\nauthor '").append(
                         System.getProperty("user.name")).append("'\ndate '").append(
                         new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\nend");
-                InputStream is = new ByteArrayInputStream(sb.toString().getBytes());
+                InputStream is = new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
                 file.create(is, true, null);
                 is.close();
             } catch (CoreException e1) {

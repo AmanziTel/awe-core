@@ -175,7 +175,7 @@ public abstract class AnalysisWizard extends Wizard {
                 i++;
             }
 
-            InputStream is = new ByteArrayInputStream(reportScript.getBytes());
+            InputStream is = new ByteArrayInputStream(reportScript.getBytes("UTF-8"));
             file.create(is, true, null);
             is.close();
             PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().openEditor(new FileEditorInput(file),

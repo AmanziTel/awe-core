@@ -2047,7 +2047,7 @@ public class ReuseAnalyserView extends ViewPart {
         sb.append("    chart.select='").append(select.toString()).append("'\n");
         sb.append("  end\nend");
         LOGGER.debug("Report script:\n" + sb.toString());
-        InputStream is = new ByteArrayInputStream(sb.toString().getBytes());
+        InputStream is = new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
             file.create(is, true, null);
             is.close();
             getViewSite().getPage().openEditor(new FileEditorInput(file), ReportEditor.class.getName());

@@ -18,6 +18,7 @@ import java.awt.Shape;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -991,7 +992,13 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
             i++;
         }
         LOGGER.debug("Report script:\n" + sb.toString()); //$NON-NLS-1$
-        InputStream is = new ByteArrayInputStream(sb.toString().getBytes());
+        InputStream is;
+        try {
+            is = new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException e1) {
+            // TODO Handle UnsupportedEncodingException
+            throw (RuntimeException) new RuntimeException( ).initCause( e1 );
+        }
         try {
             file.create(is, true, null);
             is.close();
