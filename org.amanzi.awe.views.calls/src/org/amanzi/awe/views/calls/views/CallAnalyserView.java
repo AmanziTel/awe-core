@@ -1364,6 +1364,7 @@ public class CallAnalyserView extends ViewPart {
             this.column = column;
             this.header = header;
             name = column.getText();
+            updateColumnImage();
         }
 
         /**
@@ -1415,7 +1416,15 @@ public class CallAnalyserView extends ViewPart {
             default:
                 break;
             }
-            //column.setImage(CallAnalyserPlugin.getImageDescriptor(sortOrder.getIconPath()).createImage());
+            updateColumnImage();
+        }
+
+        private void updateColumnImage() {
+            Image image = null;
+            if (!sortOrder.equals(SortOrder.NONE)) {
+                image = CallAnalyserPlugin.getImageDescriptor(sortOrder.getIconPath()).createImage();
+            }
+            column.setImage(image);
         }
     }
 
