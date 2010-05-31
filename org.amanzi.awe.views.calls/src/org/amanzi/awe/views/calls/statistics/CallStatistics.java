@@ -213,6 +213,7 @@ public class CallStatistics {
             IProgressMonitor subMonitor = SubMonitor.convert(monitor, callTypes.size());
             subMonitor.beginTask("Create AMS statistics", callTypes.size());
             for (StatisticsCallType callType : callTypes) {
+                
                 Collection<Node> probesByCallType = NeoUtils.getAllProbesOfDataset(datasetNode, callType.getId());
                 if (probesByCallType.isEmpty()) {
                     subMonitor.worked(1);
@@ -222,6 +223,9 @@ public class CallStatistics {
                 parentNode = createRootStatisticsNode(datasetNode, callType);
                 result.put(callType, parentNode);
                 for (Node probe : probesByCallType) {
+                    if(monitor.isCanceled()){
+                        break;
+                    }
                     String probeName = (String)probe.getProperty(INeoConstants.PROPERTY_NAME_NAME);
                     Node probeCallsNode = NeoUtils.getCallsNode(datasetNode, probeName, probe, neoService);
                     String callProbeName = (String)probeCallsNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
@@ -234,6 +238,9 @@ public class CallStatistics {
                     transaction = commit(transaction);
                 }
                 previousSRowNodes.clear();
+                if(monitor.isCanceled()){
+                    break;
+                }
                 subMonitor.worked(1);
             }
             
