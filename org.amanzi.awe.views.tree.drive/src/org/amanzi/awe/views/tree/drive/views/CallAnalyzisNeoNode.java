@@ -59,9 +59,14 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
             name = "Call Analysis: " + node.getProperty(INeoConstants.PROPERTY_VALUE_NAME) + " (" + node.getProperty(CallProperties.CALL_TYPE.getId()) + ")";
         }        
         else if (type.equals(NodeTypes.S_CELL.getId())) {
-            name = node.getProperty(INeoConstants.PROPERTY_NAME_NAME) + ": " + node.getProperty(INeoConstants.PROPERTY_VALUE_NAME,"0");
+            name = node.getProperty(INeoConstants.PROPERTY_NAME_NAME) + ": " + node.getProperty(INeoConstants.PROPERTY_VALUE_NAME,"0")+" ("+getSCellTime(node)+")";
         }        
         hasChildren();
+    }
+    
+    private String getSCellTime(Node cell){
+        Node row = NeoUtils.getParent(null, cell);
+        return NeoUtils.getNodeName(row);
     }
     
     protected CallAnalyzisNeoNode(Node probeNode, Node statisticsNode, int number) {
