@@ -60,7 +60,7 @@ public abstract class DriveLoader extends AbstractLoader {
     //TODO: Lagutko, 17.12.2009, maybe create this indexes on rendering but not on importing? 
     protected static LuceneIndexService index;
     
-    private final HashMap<String, Node> virtualDatasets = new HashMap<String, Node>();
+    protected final HashMap<String, Node> virtualDatasets = new HashMap<String, Node>();
 
     /**
      * Initialize Loader with a specified set of parameters 

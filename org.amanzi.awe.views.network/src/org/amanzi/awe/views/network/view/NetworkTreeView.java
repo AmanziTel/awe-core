@@ -56,7 +56,6 @@ import org.amanzi.neo.core.utils.NeoUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -992,33 +991,75 @@ public class NetworkTreeView extends ViewPart {
             // First we cut the selected nodes out of the tree so the user does not try interact
             // with them
             // and so a delta report action below will not use them
-            final Node gisNode;
-            final Node networkNode;
+            //
             Transaction transaction = NeoServiceProvider.getProvider().getService().beginTx();
+            final Node networkNode;
+            final Node datasetNode;
+            final boolean containseDatasetNode;
+            final Node gisNode;
             try {
                 networkNode = getParentNode(nodesToDelete.get(0).getNode(), "network");
-                gisNode = getGisNode(nodesToDelete.get(0).getNode());
-                for (NeoNode neoNode : nodesToDelete) {
-                    Node node = neoNode.getNode();
-                    for (Relationship relation : node.getRelationships(NetworkRelationshipTypes.CHILD, Direction.INCOMING)) {
-                        relation.delete();
+                if (networkNode == null) {
+                    datasetNode = getParentNode(nodesToDelete.get(0).getNode(), "dataset");
+                    boolean f = false;
+                    if (datasetNode != null) {
+                        for (NeoNode n : nodesToDelete) {
+                            if (datasetNode.equals(n.getNode())) {
+                                f = true;
+                                break;
+                            }
+                        }
                     }
+                    containseDatasetNode = f;
+                } else {
+                    datasetNode = null;
+                    containseDatasetNode = false;
                 }
-                // for (Relationship relation :
-                // gisNode.getRelationships(NetworkRelationshipTypes.CHILD, Direction.INCOMING)) {
-                // relation.delete();
-                // }
-                // gisNode.delete();
-                transaction.success();
+                gisNode = getGisNode(nodesToDelete.get(0).getNode());
             } finally {
                 transaction.finish();
+            }
+            Job job = new Job(getText()) {
+
+                @Override
+                protected IStatus run(IProgressMonitor monitor) {
+                    Transaction transaction = NeoServiceProvider.getProvider().getService().beginTx();
+                    try {
+
+                        for (NeoNode neoNode : nodesToDelete) {
+                            Node node = neoNode.getNode();
+                            for (Relationship relation : node.getRelationships(NetworkRelationshipTypes.CHILD, Direction.INCOMING)) {
+                                relation.delete();
+                            }
+                        }
+                        // for (Relationship relation :
+                        // gisNode.getRelationships(NetworkRelationshipTypes.CHILD,
+                        // Direction.INCOMING)) {
+                        // relation.delete();
+                        // }
+                        // gisNode.delete();
+                        transaction.success();
+                        return Status.OK_STATUS;
+                    } finally {
+                        transaction.finish();
+                    }
+                }
+
+            };
+            job.schedule();
+            try {
+                job.join();
+            } catch (InterruptedException e1) {
+                e1.printStackTrace();
+                // TODO Handle InterruptedException
+                throw (RuntimeException)new RuntimeException().initCause(e1);
             }
             NeoServiceProvider.getProvider().commit();
             viewer.refresh();
 
             // Create a job for deleting all the nodes and sub-nodes in the disconnected graph from
             // the database
-            Job job = new Job(getText()) {
+            job = new Job(getText()) {
 
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
@@ -1070,6 +1111,17 @@ public class NetworkTreeView extends ViewPart {
                     if (gisNode != null && networkNode != null) {
                         // TODO: Remove this code once we trust the delete function more fully
                         fixOrphanedNodes(gisNode, networkNode, monitor);
+                    } else if (gisNode != null && containseDatasetNode) {
+                        Transaction transaction = NeoServiceProvider.getProvider().getService().beginTx();
+                        try {
+                            for (Relationship relation : gisNode.getRelationships()) {
+                                relation.delete();
+                            }
+                            gisNode.delete();
+                            transaction.success();
+                        } finally {
+                            transaction.finish();
+                        }
                     }
 
                     monitor.done();

@@ -545,7 +545,8 @@ public class NemoLoader extends DriveLoader {
         if (key == 1) {
             return datasetNode;
         } else {
-            return  getVirtualDataset(DriveTypes.MS,false);
+            final String name = DriveTypes.MS.getFullDatasetName(dataset);
+            return virtualDatasets.get(name);
         }
     }
     @Override
