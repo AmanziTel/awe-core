@@ -106,6 +106,7 @@ public class CallStatistics {
     private HashMap<StatisticsCallType, ICallStatisticsConstants> statisticsConstants = new HashMap<StatisticsCallType, ICallStatisticsConstants>();
 
     private Transaction transaction;
+    private IProgressMonitor monitor;
     
     private boolean isTest = false;
     
@@ -144,22 +145,25 @@ public class CallStatistics {
         initilizeStatistics(drive, service, monitor);
     }
 
-    private void initilizeStatistics(Node drive, GraphDatabaseService service, IProgressMonitor monitor) throws IOException {
+    private void initilizeStatistics(Node drive, GraphDatabaseService service, IProgressMonitor aMonitor) throws IOException {
         datasetNode = drive;
         neoService = service;
+        this.monitor = aMonitor;
         monitor.subTask("Getting statistics");
         statisticsConstants.put(StatisticsCallType.INDIVIDUAL, new IndividualCallConstants());
         statisticsConstants.put(StatisticsCallType.GROUP, new GroupCallConstants());
         
-        statisticNode = createStatistics(monitor);
+        statisticNode = createStatistics();
         Pair<Long, Long> minMax = getTimeBounds(datasetNode);
         long minTime = minMax.getLeft();
         long maxTime = minMax.getRight();
         highPeriod = getHighestPeriod(minTime, maxTime); 
-        buildSecondLevelStatistics(minTime, maxTime);
-        if (!isTest) {
-            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
-                    new UpdateDatabaseEvent(UpdateViewEventType.STATISTICS));
+        if (!monitor.isCanceled()) {
+            buildSecondLevelStatistics(minTime, maxTime);
+            if (!isTest) {
+                NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
+                        new UpdateDatabaseEvent(UpdateViewEventType.STATISTICS));
+            }
         }
     }
     
@@ -182,7 +186,7 @@ public class CallStatistics {
      * @return Root statistics Node
      * @throws IOException 
      */
-    private HashMap<StatisticsCallType, Node> createStatistics(IProgressMonitor monitor) throws IOException {
+    private HashMap<StatisticsCallType, Node> createStatistics() throws IOException {
         transaction = neoService.beginTx();
         Node parentNode = null;
         HashMap<StatisticsCallType, Node> result = new HashMap<StatisticsCallType, Node>();
@@ -369,6 +373,9 @@ public class CallStatistics {
         }
         
         do {
+            if(monitor.isCanceled()){
+                break;
+            }
             Node sRow = createSRowNode(statisticsNode, new Date(period.getFirstTime(currentStartDate)), probeNode, highLevelSRow, period);
             
             Statistics periodStatitics = new Statistics();
