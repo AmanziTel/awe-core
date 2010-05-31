@@ -446,7 +446,7 @@ public class StatisticsDataLoader {
      */
     private Node createRowNode(Long start, Long end, Node probe, List<Node> sourceRows, Node parent, StatisticsCallType callType, CallTimePeriods period){
         Node result = service.createNode();
-        String name = NeoUtils.getFormatDateString(start, period.addPeriod(start), "HH:mm");
+        String name = NeoUtils.getFormatDateStringForSrow(start, period.addPeriod(start), "HH:mm");
         result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.S_ROW.getId());
         result.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
         result.setProperty(INeoConstants.PROPERTY_TIME_NAME, start);

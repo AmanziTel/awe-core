@@ -1121,9 +1121,10 @@ public class CallAnalyserView extends ViewPart {
     protected void changePeriod() {
         Node drive = callDataset.get(cDrive.getText());
         if(drive!=null){
+            CallTimePeriods period = getTimePeriod();
             GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
             Pair<Long, Long> times = NeoUtils.getMinMaxTimeOfDataset(drive, service);
-            setTime(dateStart, timeStart, times.getLeft()); 
+            setTime(dateStart, timeStart, period.getFirstTime(times.getLeft())); 
             setTime(dateEnd, timeEnd, times.getRight());
         }else{
             setDefaultTime();

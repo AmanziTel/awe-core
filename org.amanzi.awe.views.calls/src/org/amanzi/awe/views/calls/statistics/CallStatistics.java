@@ -344,7 +344,7 @@ public class CallStatistics {
             Node sCell = statisticsNodes.next();
             
             String headerName = (String)sCell.getProperty(INeoConstants.PROPERTY_NAME_NAME);
-            Object value = sCell.getProperty(INeoConstants.PROPERTY_VALUE_NAME);
+            Object value = sCell.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
             IStatisticsHeader header = callType.getHeaderByTitle(headerName);
             
             statistics.updateHeaderWithCall(header, value, sCell);
@@ -438,7 +438,7 @@ public class CallStatistics {
     
     private Node createSRowNode(Node parent, Date startDate, Node probeNode, Node highLevelSRow, CallTimePeriods period) {
         Node result = neoService.createNode();
-        String name = NeoUtils.getFormatDateString(startDate.getTime(), period.addPeriod(startDate.getTime()), "HH:mm");
+        String name = NeoUtils.getFormatDateStringForSrow(startDate.getTime(), period.addPeriod(startDate.getTime()), "HH:mm");
         result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.S_ROW.getId());
         result.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
         result.setProperty(INeoConstants.PROPERTY_TIME_NAME, startDate.getTime());

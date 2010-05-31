@@ -274,7 +274,7 @@ public class AggregationCallStatisticsBuilder {
      */
     private Node createRow(Node root,Long start,List<Node> sources, CallTimePeriods period){
         Node result = service.createNode();
-        String name = NeoUtils.getFormatDateString(start, period.addPeriod(start), "HH:mm");
+        String name = NeoUtils.getFormatDateStringForSrow(start, period.addPeriod(start), "HH:mm");
         result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.S_ROW.getId());
         result.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
         result.setProperty(INeoConstants.PROPERTY_TIME_NAME, start);

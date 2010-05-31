@@ -115,6 +115,8 @@ public abstract class AbstractLoader {
     private boolean indexesInitialized = false;
 
     protected CSVParser parser;
+    
+    private StoringNodeProperties storingProperties = new StoringNodeProperties();
 
     protected class Header {
         private static final int MAX_PROPERTY_VALUE_COUNT = 100; // discard
@@ -1238,7 +1240,7 @@ public abstract class AbstractLoader {
             addRootToProject();
         }
         commit(true);
-        for (Map.Entry<Integer, Pair<Long, Long>> entry : StoringNodeProperties.timeStamp.entrySet()) {
+        for (Map.Entry<Integer, Pair<Long, Long>> entry : storingProperties.timeStamp.entrySet()) {
             Node storeNode = getStoringNode(entry.getKey());
             if (storeNode != null) {
                 Long minTimeStamp = entry.getValue().getLeft();
@@ -1732,7 +1734,7 @@ public abstract class AbstractLoader {
     }
 
     public static class StoringNodeProperties{
-        public static HashMap<Integer, Pair<Long, Long>> timeStamp = new HashMap<Integer, Pair<Long, Long>>();
+        public HashMap<Integer, Pair<Long, Long>> timeStamp = new HashMap<Integer, Pair<Long, Long>>();
         private long dataCountre;
         
         public StoringNodeProperties() {
@@ -1882,10 +1884,10 @@ public abstract class AbstractLoader {
      * @param timestamp
      */
     protected void updateTimestampMinMax(Integer key, final long timestamp) {
-        Pair<Long, Long> pair = StoringNodeProperties.timeStamp.get(key);
+        Pair<Long, Long> pair = storingProperties.timeStamp.get(key);
         if (pair == null) {
             pair = new Pair<Long, Long>(null, null);
-            StoringNodeProperties.timeStamp.put(key, pair);
+            storingProperties.timeStamp.put(key, pair);
         }
         Long minTimeStamp = pair.getLeft() == null ? timestamp : Math.min(pair.getLeft(), timestamp);
         Long maxTimeStamp = pair.getRight() == null ? timestamp : Math.max(pair.getRight(), timestamp);

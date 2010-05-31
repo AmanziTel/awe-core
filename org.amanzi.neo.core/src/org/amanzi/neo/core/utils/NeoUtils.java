@@ -53,6 +53,7 @@ import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
 import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
 import org.apache.log4j.Logger;
+import org.apache.xml.resolver.apps.resolver;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.graphics.RGB;
 import org.geotools.referencing.CRS;
@@ -1819,6 +1820,100 @@ public class NeoUtils {
             sb.append(" to ").append(sfMulDay2.format(endTimeCal.getTime()));
         }
         return sb.toString();
+    }
+    
+    /**
+     * get format date string.
+     * 
+     * @param startTime - begin timestamp
+     * @param endTime end timestamp
+     * @param dayFormat the day format
+     * @return the format date string
+     */
+    public static String getFormatDateStringForSrow(Long startTime, Long endTime, String dayFormat) {
+        if (startTime == null || endTime == null) {
+            return "No time";
+        }
+        long delta = endTime - startTime;
+        if (delta == 60 * 60 * 1000){
+            return getNameForHourlySRow(startTime, endTime, dayFormat);
+        }
+        if (delta == 24 * 60 * 60 * 1000){
+            return getNameForDailySRow(startTime);
+        }
+        if (delta == 7 * 24 * 60 * 60 * 1000){
+            return getNameForWeeklySRow(startTime);
+        }
+        return getNameForMonthlySRow(startTime);
+    }
+    
+    public static String getNameForHourlySRow(Long startTime, Long endTime, String dayFormat){
+        Calendar endTimeCal = Calendar.getInstance();
+        endTimeCal.setTimeInMillis(endTime);
+
+        Calendar startTimeCal = Calendar.getInstance();
+        startTimeCal.setTimeInMillis(startTime);
+
+        String pattern = "yyyy-MM-dd " + dayFormat;
+        SimpleDateFormat sf = new SimpleDateFormat(pattern);
+
+        StringBuilder sb = new StringBuilder();
+        if (startTimeCal.get(Calendar.DAY_OF_WEEK) == endTimeCal.get(Calendar.DAY_OF_WEEK)) {
+            SimpleDateFormat sf2 = new SimpleDateFormat(dayFormat);
+            sb.append(sf.format(startTimeCal.getTime()));
+            sb.append("-").append(sf2.format(endTimeCal.getTime()));
+        } else {
+            SimpleDateFormat sfMulDay2 = new SimpleDateFormat(pattern);
+            sb.append(sf.format(startTimeCal.getTime()));
+            sb.append(" to ").append(sfMulDay2.format(endTimeCal.getTime()));
+        }
+        return sb.toString();
+    }
+    
+    public static String getNameForDailySRow(Long startTime){
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat sf = new SimpleDateFormat(pattern);
+        return sf.format(new Date(startTime));
+    }
+    
+    public static String getNameForWeeklySRow(Long startTime){
+        Calendar startTimeCal = Calendar.getInstance();
+        startTimeCal.setTimeInMillis(startTime);
+        return "Week "+startTimeCal.get(Calendar.WEEK_OF_YEAR);
+    }
+
+    public static String getNameForMonthlySRow(Long startTime){
+        Calendar startTimeCal = Calendar.getInstance();
+        startTimeCal.setTimeInMillis(startTime);
+        int month = startTimeCal.get(Calendar.MONTH);
+        switch (month) {
+        case Calendar.JANUARY:
+            return "January";
+        case Calendar.FEBRUARY:
+            return "February";
+        case Calendar.MARCH:
+            return "March";
+        case Calendar.APRIL:
+            return "April";
+        case Calendar.MAY:
+            return "May";
+        case Calendar.JUNE:
+            return "June";
+        case Calendar.JULY:
+            return "July";
+        case Calendar.AUGUST:
+            return "August";
+        case Calendar.SEPTEMBER:
+            return "September";
+        case Calendar.OCTOBER:
+            return "October";
+        case Calendar.NOVEMBER:
+            return "November";
+        case Calendar.DECEMBER:
+            return "December";
+        default:
+            return "Month "+month;
+        }
     }
 
     /**
