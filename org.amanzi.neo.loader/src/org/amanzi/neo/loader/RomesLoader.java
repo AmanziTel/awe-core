@@ -253,7 +253,8 @@ public class RomesLoader extends DriveLoader {
                 GisProperties gisProperties = getGisProperties(dataset);
                 gisProperties.updateBBox(currentLatitude, currentLongitude);
                 gisProperties.checkCRS(currentLatitude, currentLongitude, null);
-                gisProperties.incSaved();
+                // gisProperties.incSaved();
+                storingProperties.values().iterator().next().incSaved();
                 transaction.success();
             } finally {
                 transaction.finish();

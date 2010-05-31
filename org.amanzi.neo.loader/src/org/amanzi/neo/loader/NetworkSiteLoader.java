@@ -124,7 +124,7 @@ public class NetworkSiteLoader extends AbstractLoader {
                 }
             }
 
-            gisNodes.values().iterator().next().incSaved();
+            storingProperties.values().iterator().next().incSaved();
             transaction.success();
             // return true;
         } catch (Exception e) {

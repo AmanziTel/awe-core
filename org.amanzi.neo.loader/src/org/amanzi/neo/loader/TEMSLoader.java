@@ -392,7 +392,10 @@ public class TEMSLoader extends DriveLoader {
                     GisProperties gisProperties = getGisProperties(dataset);
                     gisProperties.updateBBox(currentLatitude, currentLongitude);
                     gisProperties.checkCRS(currentLatitude, currentLongitude, null);
-                    gisProperties.incSaved();
+                    // gisProperties.incSaved();
+                    if (storingProperties.get(1) != null) {
+                        storingProperties.get(1).incSaved();
+                    }
                 }
                 if (!signals.isEmpty()) {
                     if (mp == null) {
@@ -410,7 +413,11 @@ public class TEMSLoader extends DriveLoader {
                         GisProperties gisProperties = getGisProperties(dataset);
                         gisProperties.updateBBox(currentLatitude, currentLongitude);
                         gisProperties.checkCRS(currentLatitude, currentLongitude, null);
-                        gisProperties.incSaved();
+                        // gisProperties.incSaved();
+                        if (storingProperties.get(1) != null) {
+                            storingProperties.get(1).incSaved();
+                        }
+
                     }
 
                     LinkedHashMap<String, Header> statisticHeader = getHeaderMap(2).headers;

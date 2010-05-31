@@ -219,6 +219,7 @@ public class NemoLoader extends DriveLoader {
                 timestamp = 0;
             }
             Node ms = neo.createNode();
+
             findOrCreateFileNode(ms);
             event.store(ms, headers);
             ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());

@@ -343,7 +343,10 @@ public class AMSLoader extends AbstractCallLoader {
                 dirNode = currentDirectoryNode;
                 
                 newFile = true;
-                headersMap.clear();
+                for (StoringProperty sProp : storingProperties.values()) {
+                    sProp.setHeaders(null);
+                }
+                // headersMap.clear();
                 getHeaderMap(REAL_DATASET_HEADER_INDEX).typedProperties = null;
                 getHeaderMap(CALL_DATASET_HEADER_INDEX).typedProperties = null;
     

@@ -230,7 +230,9 @@ public class GPSLoader extends DriveLoader {
                 GisProperties gisProperties = getGisProperties(dataset);
                 gisProperties.updateBBox(currentLatitude, currentLongitude);
                 gisProperties.checkCRS(currentLatitude, currentLongitude, null);
-                gisProperties.incSaved();
+
+                storingProperties.values().iterator().next().incSaved();
+                // gisProperties.incSaved();
                 transaction.success();
             } finally {
                 transaction.finish();

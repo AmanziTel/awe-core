@@ -49,7 +49,6 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.CSVParser;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.loader.NetworkLoader.CRS;
@@ -74,19 +73,21 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 public abstract class AbstractLoader {
     private static final Logger LOGGER = Logger.getLogger(AbstractLoader.class);
-//    private static final Logger LOGGER = Logger.getLogger(AbstractLoader.class);
-    
+    // private static final Logger LOGGER = Logger.getLogger(AbstractLoader.class);
+
     /** AbstractLoader DEFAULT_DIRRECTORY_LOADER field */
     public static final String DEFAULT_DIRRECTORY_LOADER = "DEFAULT_DIRRECTORY_LOADER";
 
-    protected Map<Integer, HeaderMaps> headersMap = new HashMap<Integer, HeaderMaps>();
+    // protected HashMap<Integer, HeaderMaps> headersMap = new HashMap<Integer, HeaderMaps>();
+    // protected HashMap<Integer, Pair<Long, Long>> timeStamp = new HashMap<Integer, Pair<Long,
+    // Long>>();
+    protected HashMap<Integer, StoringProperty> storingProperties = new HashMap<Integer, StoringProperty>();
     private String typeName = "CSV";
     protected GraphDatabaseService neo;
     private NeoServiceProvider neoProvider;
@@ -110,13 +111,10 @@ public abstract class AbstractLoader {
     @SuppressWarnings("unchecked")
     public static final Class[] NUMERIC_PROPERTY_TYPES = new Class[] {Integer.class, Long.class, Float.class, Double.class};
     @SuppressWarnings("unchecked")
-    public static final Class[] KNOWN_PROPERTY_TYPES = new Class[] {Integer.class, Long.class, Float.class, Double.class,
-            String.class};
+    public static final Class[] KNOWN_PROPERTY_TYPES = new Class[] {Integer.class, Long.class, Float.class, Double.class, String.class};
     private boolean indexesInitialized = false;
 
     protected CSVParser parser;
-    
-    private StoringNodeProperties storingProperties = new StoringNodeProperties();
 
     protected class Header {
         private static final int MAX_PROPERTY_VALUE_COUNT = 100; // discard
@@ -125,11 +123,12 @@ public abstract class AbstractLoader {
         String key;
         String name;
         HashMap<Class< ? extends Object>, Integer> parseTypes = new HashMap<Class< ? extends Object>, Integer>();
-        Double min=Double.POSITIVE_INFINITY;
-        Double max=Double.NEGATIVE_INFINITY;
+        Double min = Double.POSITIVE_INFINITY;
+        Double max = Double.NEGATIVE_INFINITY;
         HashMap<Object, Integer> values = new HashMap<Object, Integer>();
         int parseCount = 0;
-        int countALL=0;
+        int countALL = 0;
+
         Header(String name, String key, int index) {
             this.index = index;
             this.name = name;
@@ -143,9 +142,9 @@ public abstract class AbstractLoader {
             this(old.name, old.key, old.index);
             this.parseCount = old.parseCount;
             this.values = old.values;
-            this.min=old.min;
-            this.max=old.max;
-            this.countALL=old.countALL;
+            this.min = old.min;
+            this.max = old.max;
+            this.countALL = old.countALL;
         }
 
         protected boolean invalid(String field) {
@@ -579,8 +578,7 @@ public abstract class AbstractLoader {
      * @return edited String
      */
     protected final static String cleanHeader(String header) {
-        return header.replaceAll("[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+", "_").replaceAll("[^\\w]+", "_").replaceAll("_+", "_")
-                .replaceAll("\\_$", "").toLowerCase();
+        return header.replaceAll("[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+", "_").replaceAll("[^\\w]+", "_").replaceAll("_+", "_").replaceAll("\\_$", "").toLowerCase();
     }
 
     /**
@@ -652,11 +650,16 @@ public abstract class AbstractLoader {
      * @param headerId
      * @return
      */
-    protected HeaderMaps getHeaderMap(Integer headerMapId) {
-        HeaderMaps header = headersMap.get(headerMapId);
+    protected HeaderMaps getHeaderMap(Integer index) {
+        StoringProperty sProp = storingProperties.get(index);
+        if (sProp == null) {
+            sProp = new StoringProperty(getStoringNode(index));
+            storingProperties.put(index, sProp);
+        }
+        HeaderMaps header = sProp.getHeaders();
         if (header == null) {
             header = new HeaderMaps();
-            headersMap.put(headerMapId, header);
+            sProp.setHeaders(header);
         }
         return header;
     }
@@ -736,8 +739,8 @@ public abstract class AbstractLoader {
         int index = 0;
         for (String headerName : fields) {
             String header = cleanHeader(headerName);
-            for (HeaderMaps headerMap : headersMap.values()) {
-
+            for (StoringProperty sProp : storingProperties.values()) {
+                HeaderMaps headerMap = sProp.getHeaders();
                 if (headerMap.headerAllowed(header)) {
                     boolean added = false;
                     debug("Added header[" + index + "] = " + header);
@@ -765,7 +768,8 @@ public abstract class AbstractLoader {
         }
         // Now add any new properties created from other existing properties
         // using mapping rules
-        for (HeaderMaps headerMap : headersMap.values()) {
+        for (StoringProperty sProp : storingProperties.values()) {
+            HeaderMaps headerMap = sProp.getHeaders();
             for (String key : headerMap.mappedHeaders.keySet()) {
                 if (headerMap.headers.containsKey(key)) {
                     MappedHeaderRule mapRule = headerMap.mappedHeaders.get(key);
@@ -817,8 +821,8 @@ public abstract class AbstractLoader {
 
     protected final LinkedHashMap<String, Object> makeDataMap(List<String> fields) {
         LinkedHashMap<String, Object> map = new LinkedHashMap<String, Object>();
-        for (HeaderMaps headerMap : headersMap.values()) {
-
+        for (StoringProperty sProp : storingProperties.values()) {
+            HeaderMaps headerMap = sProp.getHeaders();
             for (String key : headerMap.headers.keySet()) {
                 try {
                     Header header = headerMap.headers.get(key);
@@ -827,11 +831,9 @@ public abstract class AbstractLoader {
                         continue;
                     }
                     Object value = header.parse(field);
-                    map.put(key, value); // TODO: Decide if we should actually
-                    // use the name here
-
-                    // Now speed up parsing once we are certain of the column
-                    // types
+                    map.put(key, value);
+                    // TODO: Decide if we should actually use the name here
+                    // Now speed up parsing once we are certain of the column types
                     if (header.shouldConvert()) {
                         Class< ? extends Object> klass = header.knownType();
                         if (klass == Integer.class) {
@@ -908,66 +910,63 @@ public abstract class AbstractLoader {
     protected boolean isOverLimit() {
         return limit > 0 && savedData > limit;
     }
+
     protected boolean setNewIndexProperty(Map<String, Header> headers, Node eventNode, String key, Object parsedValue) {
-       if (eventNode.hasProperty(key)){
-           return false;
-       }
-       setIndexProperty(headers, eventNode, key, parsedValue);
-       return true;
+        if (eventNode.hasProperty(key)) {
+            return false;
+        }
+        setIndexProperty(headers, eventNode, key, parsedValue);
+        return true;
     }
+
     /**
-     * Sets index property 
+     * Sets index property
+     * 
      * @param headers index header
      * @param eventNode node
      * @param key property key
      * @param parsedValue parsed value
      */
     protected void setIndexProperty(Map<String, Header> headers, Node eventNode, String key, Object parsedValue) {
-        if (parsedValue==null){
+        if (parsedValue == null) {
             return;
         }
         eventNode.setProperty(key, parsedValue);
         Header header = headers.get(key);
         if (header == null) {
             header = new Header(key, key, 1);
-            
+
             headers.put(key, header);
         }
         header.parseCount++;
         header.incValue(parsedValue);
         header.incType(parsedValue.getClass());
     }
+
     /**
-     * Sets index property 
+     * Sets index property
+     * 
      * @param headers index header
      * @param eventNode node
      * @param key property key
      * @param nonParsedValue parsed value
      */
     protected void setIndexPropertyNotParcedValue(LinkedHashMap<String, Header> headers, Node eventNode, String key, String nonParsedValue) {
-       if (StringUtils.isEmpty(nonParsedValue)){
-           return;
-       }
-       Header header = headers.get(key);
-       if (header == null) {
-           header = new Header(key, key, 1);
-           
-           headers.put(key, header);
-       }
-       Object value = header.parse(nonParsedValue);
-       eventNode.setProperty(key, value);
-   }
-    private void incSaved() {
-        savedData++;
+        if (StringUtils.isEmpty(nonParsedValue)) {
+            return;
+        }
+        Header header = headers.get(key);
+        if (header == null) {
+            header = new Header(key, key, 1);
+
+            headers.put(key, header);
+        }
+        Object value = header.parse(nonParsedValue);
+        eventNode.setProperty(key, value);
     }
 
-    protected void incSaved(String gisName) {
-        incSaved();
-        GisProperties gisPr = gisNodes.get(gisName);
-        if (gisPr != null) {
-            gisPr.incSaved();
-        }
-
+    private void incSaved() {
+        savedData++;
     }
 
     /**
@@ -1062,6 +1061,7 @@ public abstract class AbstractLoader {
         }
         indSet.add(index);
     }
+
     protected void removeIndex(String nodeType, MultiPropertyIndex< ? > index) {
         ArrayList<MultiPropertyIndex< ? >> indList = indexes.get(nodeType);
         if (indList != null) {
@@ -1086,6 +1086,7 @@ public abstract class AbstractLoader {
             }
         }
     }
+
     protected void index(Node node) {
         String nodeType = NeoUtils.getNodeType(node, "");
         ArrayList<MultiPropertyIndex< ? >> indList = indexes.get(nodeType);
@@ -1127,6 +1128,7 @@ public abstract class AbstractLoader {
             }
         }
     }
+
     protected void flushIndexes() {
         for (Entry<String, ArrayList<MultiPropertyIndex< ? >>> entry : indexes.entrySet()) {
 
@@ -1186,7 +1188,6 @@ public abstract class AbstractLoader {
         indexesInitialized = true;
     }
 
-
     protected void finishUpIndexes() {
         for (Entry<String, ArrayList<MultiPropertyIndex< ? >>> entry : indexes.entrySet()) {
             for (MultiPropertyIndex< ? > index : entry.getValue()) {
@@ -1240,32 +1241,23 @@ public abstract class AbstractLoader {
             addRootToProject();
         }
         commit(true);
-        for (Map.Entry<Integer, Pair<Long, Long>> entry : storingProperties.timeStamp.entrySet()) {
+
+        for (Map.Entry<Integer, StoringProperty> entry : storingProperties.entrySet()) {
             Node storeNode = getStoringNode(entry.getKey());
-            if (storeNode != null) {
-                Long minTimeStamp = entry.getValue().getLeft();
-                if (minTimeStamp != null) {
-                    storeNode.setProperty(INeoConstants.MIN_TIMESTAMP, minTimeStamp);
-                }
-                Long maxTimeStamp = entry.getValue().getRight();
-                if (maxTimeStamp != null) {
-                    storeNode.setProperty(INeoConstants.MAX_TIMESTAMP, maxTimeStamp);
-                }
-            }
+            entry.getValue().storeTimeStamp(storeNode);
+
+            storeNode.setProperty(INeoConstants.COUNT_TYPE_NAME, entry.getValue().getDataCounter());
         }
+
     }
-
-
-
-
 
     /**
      * Adds the root to project.
      */
     protected void addRootToProject() {
-        for (Node root:getRootNodes()){
+        for (Node root : getRootNodes()) {
             String aweProjectName = LoaderUtils.getAweProjectName();
-            if (root!=null){
+            if (root != null) {
                 NeoCorePlugin.getDefault().getProjectService().addDataNodeToProject(aweProjectName, root);
             }
         }
@@ -1304,8 +1296,6 @@ public abstract class AbstractLoader {
         return gisProperties.getGis();
     }
 
-
-
     protected void deleteTree(Node root) {
         if (root != null) {
             for (Relationship relationship : root.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
@@ -1325,20 +1315,22 @@ public abstract class AbstractLoader {
             node.delete();
         }
     }
+
     protected abstract String getPrymaryType(Integer key);
+
     protected void saveProperties() {
-        for (Map.Entry<Integer, HeaderMaps> entryHeader : headersMap.entrySet()) {
-            Node storingRootNode = getStoringNode(entryHeader.getKey());
-            if (storingRootNode != null) {
+        for (Map.Entry<Integer, StoringProperty> spEntry : storingProperties.entrySet()) {
+            HeaderMaps headers = spEntry.getValue().getHeaders();
+            Node storingRootNode = getStoringNode(spEntry.getKey());
+            if (storingRootNode != null && headers != null) {
                 Transaction transaction = neo.beginTx();
                 try {
-                    String primaryType=getPrymaryType(entryHeader.getKey());
-                    if (StringUtils.isNotEmpty(primaryType)){
+                    String primaryType = getPrymaryType(spEntry.getKey());
+                    if (StringUtils.isNotEmpty(primaryType)) {
                         NeoUtils.setPrimaryType(storingRootNode, primaryType, neo);
                     }
                     Node propNode;
-                    Relationship propRel = storingRootNode.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES,
-                            Direction.OUTGOING);
+                    Relationship propRel = storingRootNode.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
                     if (propRel == null) {
                         propNode = neo.createNode();
                         propNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, NeoUtils.getNodeName(storingRootNode, neo));
@@ -1348,29 +1340,28 @@ public abstract class AbstractLoader {
                         propNode = propRel.getEndNode();
                     }
                     HashMap<String, Node> propTypeNodes = new HashMap<String, Node>();
-                    for (Node node : propNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
-                            ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                    for (Node node : propNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE,
+                            GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
                         propTypeNodes.put(node.getProperty("name").toString(), node);
                     }
                     for (Class< ? extends Object> klass : KNOWN_PROPERTY_TYPES) {
                         String typeName = makePropertyTypeName(klass);
-                        List<String> properties = entryHeader.getValue().getProperties(klass);
+                        List<String> properties = headers.getProperties(klass);
                         if (properties != null && properties.size() > 0) {
                             Node propTypeNode = propTypeNodes.get(typeName);
                             if (propTypeNode == null) {
                                 propTypeNode = neo.createNode();
                                 propTypeNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, typeName);
                                 propTypeNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.GIS_PROPERTY.getId());
-                                savePropertiesToNode(entryHeader.getValue(), propTypeNode, properties);
+                                savePropertiesToNode(headers, propTypeNode, properties);
                                 propNode.createRelationshipTo(propTypeNode, GeoNeoRelationshipTypes.CHILD);
                             } else {
                                 TreeSet<String> combinedProperties = new TreeSet<String>();
-                                String[] previousProperties = (String[])propTypeNode.getProperty(
-                                        INeoConstants.NODE_TYPE_PROPERTIES, null);
+                                String[] previousProperties = (String[])propTypeNode.getProperty(INeoConstants.NODE_TYPE_PROPERTIES, null);
                                 if (previousProperties != null)
                                     combinedProperties.addAll(Arrays.asList(previousProperties));
                                 combinedProperties.addAll(properties);
-                                savePropertiesToNode(entryHeader.getValue(), propTypeNode, combinedProperties);
+                                savePropertiesToNode(headers, propTypeNode, combinedProperties);
                             }
                         }
                     }
@@ -1494,7 +1485,9 @@ public abstract class AbstractLoader {
             addDataToCatalog();
         }
     }
-    public abstract Node[]getRootNodes();
+
+    public abstract Node[] getRootNodes();
+
     /**
      * Is this a test case running outside AWE application
      * 
@@ -1505,8 +1498,8 @@ public abstract class AbstractLoader {
     }
 
     public void clearCaches() {
-        for (HeaderMaps headerMap : headersMap.values()) {
-            headerMap.clearCaches();
+        for (StoringProperty sProp : storingProperties.values()) {
+            sProp.getHeaders().clearCaches();
         }
     }
 
@@ -1537,18 +1530,16 @@ public abstract class AbstractLoader {
     }
 
     public static void sendUpdateEvent(UpdateViewEventType aType) {
-        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
-                new UpdateDatabaseEvent(aType));
+        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDatabaseEvent(aType));
     }
-    
+
     /**
      * Clean all gis nodes of any old statistics, and then update the basic statistics
-     * 
      */
     protected final void cleanupGisNode() {
         for (GisProperties gisProperties : gisNodes.values()) {
             cleanupGisNode(gisProperties);
-       }
+        }
     }
 
     /**
@@ -1564,11 +1555,8 @@ public abstract class AbstractLoader {
                 Node gis = gisProperties.getGis();
                 if (gisProperties.getBbox() != null) {
                     gis.setProperty(INeoConstants.PROPERTY_BBOX_NAME, gisProperties.getBbox());
-//                    gis.setProperty(INeoConstants.COUNT_TYPE_NAME, gisProperties.savedData);
-                    Traverser nextTraves = gis.traverse(Order.DEPTH_FIRST, NeoUtils.getStopEvaluator(1), ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
-                    for(Node nextNode : nextTraves){
-                        nextNode.setProperty(INeoConstants.COUNT_TYPE_NAME, gisProperties.savedData);
-                    }
+                    // gis.setProperty(INeoConstants.COUNT_TYPE_NAME, gisProperties.savedData);
+
                 }
                 HashSet<Node> nodeToDelete = new HashSet<Node>();
                 for (Relationship relation : gis.getRelationships(NetworkRelationshipTypes.AGGREGATION, Direction.OUTGOING)) {
@@ -1583,10 +1571,10 @@ public abstract class AbstractLoader {
             }
         }
     }
-    
+
     /**
      * Collects a list of GIS nodes that should be added to map
-     *
+     * 
      * @return list of GIS nodes
      */
     protected ArrayList<Node> getGisNodes() {
@@ -1613,11 +1601,10 @@ public abstract class AbstractLoader {
         return System.currentTimeMillis() - started;
     }
 
-
-
     private void printHeaderStats() {
         notify("Determined Columns:");
-        for (HeaderMaps hm : headersMap.values()) {
+        for (StoringProperty sProp : storingProperties.values()) {
+            HeaderMaps hm = sProp.getHeaders();
             for (String key : hm.headers.keySet()) {
                 Header header = hm.headers.get(key);
                 if (header.parseCount > 0) {
@@ -1663,6 +1650,7 @@ public abstract class AbstractLoader {
     protected GisProperties getGisProperties(String name) {
         return gisNodes.get(name);
     }
+
     protected class HeaderMaps {
         protected HashMap<Class< ? extends Object>, List<String>> typedProperties = null;
         protected ArrayList<Pattern> headerFilters = new ArrayList<Pattern>();
@@ -1714,7 +1702,6 @@ public abstract class AbstractLoader {
             return typedProperties.get(klass);
         }
 
-
         private void makeTypedProperties() {
             this.typedProperties = new HashMap<Class< ? extends Object>, List<String>>();
             for (Class< ? extends Object> klass : KNOWN_PROPERTY_TYPES) {
@@ -1733,39 +1720,116 @@ public abstract class AbstractLoader {
         }
     }
 
-    public static class StoringNodeProperties{
-        public HashMap<Integer, Pair<Long, Long>> timeStamp = new HashMap<Integer, Pair<Long, Long>>();
-        private long dataCountre;
-        
-        public StoringNodeProperties() {
-//            dataCountre = (Long)getSN.getProperty(INeoConstants.COUNT_TYPE_NAME, 0L);
+    public static class StoringProperty {
+        // private Node storingNode;
+        private long dataCounter;
+        private Long timeStampMin;
+        private Long timeStampMax;
+        private HeaderMaps headers;
+
+        public StoringProperty(Node storingNode) {
+            // this.storingNode = storingNode;
+            // dataCounter = (Long)storingNode.getProperty(INeoConstants.COUNT_TYPE_NAME, 0L);
         }
+
+        /**
+         * @param storeNode node for store
+         */
+        public void storeTimeStamp(Node storeNode) {
+            if (storeNode != null) {
+                if (timeStampMin != null) {
+                    storeNode.setProperty(INeoConstants.MIN_TIMESTAMP, timeStampMin);
+                }
+                if (timeStampMax != null) {
+                    storeNode.setProperty(INeoConstants.MAX_TIMESTAMP, timeStampMax);
+                }
+            }
+        }
+
         /**
          *inc saved;
          */
         public void incSaved() {
-            dataCountre++;
+            dataCounter++;
         }
-        
+
+        /**
+         * @return Returns the dataCountre.
+         */
+        public long getDataCounter() {
+            return dataCounter;
+        }
+
+        /**
+         * @return Returns the timeStampMin.
+         */
+        public Long getTimeStampMin() {
+            return timeStampMin;
+        }
+
+        /**
+         * @param timeStampMin The timeStampMin to set.
+         */
+        public void setTimeStampMin(Long timeStampMin) {
+            this.timeStampMin = timeStampMin;
+        }
+
+        /**
+         * @return Returns the timeStampMax.
+         */
+        public Long getTimeStampMax() {
+            return timeStampMax;
+        }
+
+        /**
+         * @param timeStampMax The timeStampMax to set.
+         */
+        public void setTimeStampMax(Long timeStampMax) {
+            this.timeStampMax = timeStampMax;
+        }
+
+        /**
+         * @return Returns the headers.
+         */
+        public HeaderMaps getHeaders() {
+            return headers;
+        }
+
+        /**
+         * @param headers The headers to set.
+         */
+        public void setHeaders(HeaderMaps headers) {
+            this.headers = headers;
+        }
+
+        /**
+         * @param dataCounter The dataCounter to set.
+         */
+        public void setDataCounter(long dataCounter) {
+            this.dataCounter = dataCounter;
+        }
+
     }
+
     public static class GisProperties {
         private final Node gis;
         private CRS crs;
         private double[] bbox;
-        private long savedData;
+
+        // private long savedData;
 
         public GisProperties(Node gis) {
             this.gis = gis;
             bbox = (double[])gis.getProperty(INeoConstants.PROPERTY_BBOX_NAME, null);
-            savedData = (Long)gis.getProperty(INeoConstants.COUNT_TYPE_NAME, 0L);
+            // savedData = (Long)gis.getProperty(INeoConstants.COUNT_TYPE_NAME, 0L);
         }
 
         /**
          *inc saved;
          */
-        public void incSaved() {
-            savedData++;
-        }
+        // public void incSaved() {
+        // savedData++;
+        // }
 
         protected final void checkCRS(float lat, float lon, String hint) {
             if (crs == null) {
@@ -1783,6 +1847,7 @@ public abstract class AbstractLoader {
                 crs = CRS.fromCRS((String)gis.getProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME), (String)gis.getProperty(INeoConstants.PROPERTY_CRS_NAME));
             }
         }
+
         /**
          * ubdate bbox
          * 
@@ -1803,6 +1868,7 @@ public abstract class AbstractLoader {
                     bbox[3] = lat;
             }
         }
+
         /**
          * @return Returns the gis.
          */
@@ -1830,7 +1896,7 @@ public abstract class AbstractLoader {
         public CRS getCrs() {
             return crs;
         }
-        
+
         /**
          *save bbox to gis node
          */
@@ -1844,10 +1910,10 @@ public abstract class AbstractLoader {
          *save CRS to gis node
          */
         public void saveCRS() {
-            if (getCrs()!= null) {
+            if (getCrs() != null) {
                 gis.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());// TODO remove?
-                                                                                     // - not used
-                                                                                     // in GeoNeo
+                // - not used
+                // in GeoNeo
                 gis.setProperty(INeoConstants.PROPERTY_CRS_NAME, crs.toString());
             }
         }
@@ -1861,7 +1927,7 @@ public abstract class AbstractLoader {
             setCrs(CRS.fromCRS(crs));
         }
     }
-    
+
     /**
      * @param key -key of value from preference store
      * @return array of possible headers
@@ -1878,22 +1944,24 @@ public abstract class AbstractLoader {
         }
         return result.toArray(new String[0]);
     }
+
     /**
      * Updates Min and Max timestamp values for this gis
-     *
+     * 
      * @param timestamp
      */
     protected void updateTimestampMinMax(Integer key, final long timestamp) {
-        Pair<Long, Long> pair = storingProperties.timeStamp.get(key);
-        if (pair == null) {
-            pair = new Pair<Long, Long>(null, null);
-            storingProperties.timeStamp.put(key, pair);
+        StoringProperty sProp = storingProperties.get(key);
+        if (sProp == null) {
+            sProp = new StoringProperty(getStoringNode(key));
+            storingProperties.put(key, sProp);
         }
-        Long minTimeStamp = pair.getLeft() == null ? timestamp : Math.min(pair.getLeft(), timestamp);
-        Long maxTimeStamp = pair.getRight() == null ? timestamp : Math.max(pair.getRight(), timestamp);
-        pair.setLeft(minTimeStamp);
-        pair.setRight(maxTimeStamp);
+        Long minTimeStamp = sProp.getTimeStampMin() == null ? timestamp : Math.min(sProp.getTimeStampMin(), timestamp);
+        Long maxTimeStamp = sProp.getTimeStampMax() == null ? timestamp : Math.max(sProp.getTimeStampMax(), timestamp);
+        sProp.setTimeStampMin(minTimeStamp);
+        sProp.setTimeStampMax(maxTimeStamp);
     }
+
     /**
      * Sets property to node (if value!=null)
      * 
@@ -1906,6 +1974,7 @@ public abstract class AbstractLoader {
             node.setProperty(key, value);
         }
     }
+
     /**
      * @param gisProperties
      * @return
@@ -1949,29 +2018,26 @@ public abstract class AbstractLoader {
         });
         return result;
     }
-    
+
     /**
      * Calculates list of files to import
-     *
+     * 
      * @param directoryName directory to import
-     * @param extension extension of File (can be null) 
+     * @param extension extension of File (can be null)
      * @return list of files to import
      */
     protected ArrayList<File> getAllLogFilePathes(String directoryName, String extension) {
         File directory = new File(directoryName);
         ArrayList<File> result = new ArrayList<File>();
-        
+
         for (File childFile : directory.listFiles()) {
             if (childFile.isDirectory()) {
                 result.addAll(getAllLogFilePathes(childFile.getAbsolutePath(), extension));
-            }
-            else if (childFile.isFile() &&
-                     ((extension == null) || 
-                     childFile.getName().endsWith(extension))) {
+            } else if (childFile.isFile() && ((extension == null) || childFile.getName().endsWith(extension))) {
                 result.add(childFile);
             }
         }
         return result;
-        
+
     }
 }

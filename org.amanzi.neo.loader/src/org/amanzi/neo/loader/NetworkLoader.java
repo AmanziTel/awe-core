@@ -589,7 +589,7 @@ public class NetworkLoader extends AbstractLoader {
                 String key = entry.getKey();
                 sector.setProperty(key, entry.getValue());
             }
-            getGisProperties(basename).incSaved();
+            storingProperties.values().iterator().next().incSaved();
             transaction.success();
             // return true;
         } catch (Exception e) {
