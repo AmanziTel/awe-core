@@ -1233,9 +1233,7 @@ public class CallAnalyserView extends ViewPart {
                                 labelProvider.updateHeaders(callType);
                                 updateTable(false);
                             } finally {
-                                tx.finish();
-                                frame.setEnabled(true);
-                                parent.setCursor(new Cursor(parent.getDisplay(), SWT.CURSOR_ARROW));                                
+                                tx.finish();                                                                
                             }
                         }
                     }, true);
@@ -1243,6 +1241,14 @@ public class CallAnalyserView extends ViewPart {
                 } catch (IOException e) {
                     // TODO Handle IOException
                     throw (RuntimeException)new RuntimeException().initCause(e);
+                } finally {
+                    ActionUtil.getInstance().runTask(new Runnable() {
+                        @Override
+                        public void run() {
+                            frame.setEnabled(true);
+                            parent.setCursor(new Cursor(parent.getDisplay(), SWT.CURSOR_ARROW));
+                        }
+                    }, true);
                 }
                 return Status.OK_STATUS;
             }

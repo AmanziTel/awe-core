@@ -249,6 +249,7 @@ public class CallStatistics {
         catch (Exception e) {            
             transaction.failure();
             NeoCorePlugin.error(null, e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
         }
         finally {
             transaction.finish();
