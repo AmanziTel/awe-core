@@ -136,7 +136,7 @@ public class AggregationCallStatisticsBuilder {
             }
             start = nextStart;
             nextStart = getNextStartDate(period, maxTime, start);
-        }while(nextStart < maxTime);
+        }while(start < maxTime);
         return  rootNode;
     }
     
