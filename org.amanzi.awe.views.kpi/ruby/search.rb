@@ -67,6 +67,7 @@ def counters(options={})
     puts oss_node
     counter_node=filter(oss_node,'file', {"name"=>file}).first
     oss_type=counter_node["oss_type"]
+    puts oss_type
     if oss_type=="RNC Counters Data"
       type_property_name='mv'
     elsif oss_type=="APD"
@@ -80,15 +81,9 @@ def counters(options={})
     puts "counters finished: #{Time.now}"
     NodeSet.new traverser
   else
-    if !$counter_root_node.nil?
-      oss_type=$counter_root_node["oss_type"]
-      if oss_type=="RNC Counters Data"
-        type_property_name='mv'
-      elsif oss_type=="APD"
-        type_property_name='m'
-      else #TODO
-        type_property_name='m'
-      end
+    if !$counter_root_node.nil? and !$directory_node.nil?
+      oss_type=$directory_node["oss_type"]
+      type_property_name=$directory_node["primary_type"]
       traverser=filter($counter_root_node,type_property_name, options)
       traverser.stop_on {get_property('type')=='file'}
       NodeSet.new traverser
@@ -106,6 +101,7 @@ end
 
 def filter(root_node,type_name,options={})
   puts "filter: #{Time.now}"
+  puts type_name
   root_node.outgoing(:CHILD, :NEXT).depth(:all).filter do
     node_properties = props # defined in Neo4j::NodeMixin
     if node_properties["type"]==type_name
@@ -164,7 +160,10 @@ class PropertySet
 
   def count_internal
     num=0
-    @node_set.each {|n|  num += 1  if(!n.props[@property].nil?)}
+    @node_set.each {|n|  
+      puts n.props
+      num += 1  if(!n.props[@property].nil?)
+    }
     num
   end
 
@@ -298,8 +297,8 @@ def calculate_average(sites, aggregation)
       months=Hash.new
       dates.each do |date,times|
         parsed_date=ParseDate.parsedate(date)
-        day=parsed_date[1]
-        month=parsed_date[2]
+        day=parsed_date[2]
+        month=parsed_date[1]
         hours=Hash.new
         times.each do |time,values|
           hour=ParseDate.parsedate(time)[3]

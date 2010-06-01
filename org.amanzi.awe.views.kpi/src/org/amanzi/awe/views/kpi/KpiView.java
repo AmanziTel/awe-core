@@ -466,8 +466,9 @@ public class KpiView extends ViewPart {
                         && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
                         && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString().equalsIgnoreCase(
                                 NodeTypes.GIS.getId()) && GisTypes.OSS.getHeader().equals(type)) {
-                    String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-                    directories.put(id, node);
+                    Node datasetNode = node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode();
+                    String id = datasetNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+                    directories.put(id, datasetNode);
                 }
             }
             String[] result = directories.keySet().toArray(new String[] {});

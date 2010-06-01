@@ -38,6 +38,9 @@ def init
     $event_property=name=~/\.asc|\.FMT/?"event_type":"event_id"
   end
   
+  directoryId=KPIPlugin.getDefault.getDirectoryId
+  $directory_node=if directoryId==nil then nil else Neo4j.load_node(directoryId) end
+  
   counterId=KPIPlugin.getDefault.getCounterId
   $counter_root_node=if counterId==nil then nil else Neo4j.load_node(counterId) end
 end
