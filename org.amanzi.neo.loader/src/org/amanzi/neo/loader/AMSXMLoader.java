@@ -106,7 +106,7 @@ public class AMSXMLoader extends AbstractCallLoader {
 
     /** The formatter. */
     //TODO temporary remove handling of time zone
-    private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss,SSS");//,SSSz");
+    private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss,SSS");//,SSSz");
 
     /** The directory name. */
     private final String directoryName;
@@ -1806,7 +1806,9 @@ public class AMSXMLoader extends AbstractCallLoader {
                         valid=true;
                     }
                 } catch (Exception e) {
-                    NeoLoaderPlugin.exception(e);
+                    String message = "can't parse GPS data: "+gpsSentence;
+                    NeoLoaderPlugin.error(message);
+                    LOGGER.error(message, e);
                     valid = false;
                     return;
                 }
