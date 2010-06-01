@@ -159,6 +159,7 @@ public class OldNemoVersionLoader extends NemoLoader {
             pointNode = mp;
             curLat = lat;
             curLon = lon;
+            getGisProperties(dataset).incSaved();
         } catch (Exception e) {
             e.printStackTrace();
             NeoLoaderPlugin.error(e.getLocalizedMessage());
