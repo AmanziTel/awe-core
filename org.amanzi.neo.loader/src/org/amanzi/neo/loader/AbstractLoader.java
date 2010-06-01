@@ -1556,7 +1556,6 @@ public abstract class AbstractLoader {
                 if (gisProperties.getBbox() != null) {
                     gis.setProperty(INeoConstants.PROPERTY_BBOX_NAME, gisProperties.getBbox());
                     gis.setProperty(INeoConstants.COUNT_TYPE_NAME, gisProperties.savedData);
-
                 }
                 HashSet<Node> nodeToDelete = new HashSet<Node>();
                 for (Relationship relation : gis.getRelationships(NetworkRelationshipTypes.AGGREGATION, Direction.OUTGOING)) {
@@ -1729,7 +1728,8 @@ public abstract class AbstractLoader {
 
         public StoringProperty(Node storingNode) {
             // this.storingNode = storingNode;
-            // dataCounter = (Long)storingNode.getProperty(INeoConstants.COUNT_TYPE_NAME, 0L);
+            if(storingNode != null)
+             dataCounter = (Long)storingNode.getProperty(INeoConstants.COUNT_TYPE_NAME, 0L);
         }
 
         /**
