@@ -98,18 +98,18 @@ public class NemoLoader extends DriveLoader {
         possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
 
     }
-    
+
     /**
-    * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
-    * @param time date to which time data will be appended
-    * @param filename of file to load
-    * @param dataset to add data to
-    */
-    public NemoLoader(final Calendar time,final String filename,final String dataset,final GraphDatabaseService neo)
-    {
+     * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
+     * 
+     * @param time date to which time data will be appended
+     * @param filename of file to load
+     * @param dataset to add data to
+     */
+    public NemoLoader(final Calendar time, final String filename, final String dataset, final GraphDatabaseService neo) {
         _workDate = time;
         driveType = DriveTypes.NEMO2;
-        initialize("Nemo", neo , filename, null, dataset);
+        initialize("Nemo", neo, filename, null, dataset);
         headers = getHeaderMap(1).headers;
         headersVirt = getHeaderMap(2).headers;
         timeFormat = new SimpleDateFormat(TIME_FORMAT);
@@ -119,10 +119,12 @@ public class NemoLoader extends DriveLoader {
         initializeLuceneIndex();
         possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
     }
+
     @Override
     protected void initializeLuceneIndex() {
         index = NeoServiceProvider.getProvider().getIndexService();
-    } 
+    }
+
     /**
      * initialize headers
      */
@@ -173,8 +175,7 @@ public class NemoLoader extends DriveLoader {
             Float lon = (Float)event.parsedParameters.get("lon");
             Float lat = (Float)event.parsedParameters.get("lat");
             String time = event.time;
-            if ((lon == null || lat == null) ||
-                (lon == 0) && (lat == 0)) {
+            if ((lon == null || lat == null) || (lon == 0) && (lat == 0)) {
                 return;
             }
             Node mp = neo.createNode();
@@ -191,6 +192,8 @@ public class NemoLoader extends DriveLoader {
             pointNode = mp;
             curLat = lat;
             curLon = lon;
+            
+            getGisProperties(dataset).incSaved();
         } catch (Exception e) {
             NeoLoaderPlugin.error(e.getLocalizedMessage());
             return;
@@ -220,6 +223,13 @@ public class NemoLoader extends DriveLoader {
             }
             Node ms = neo.createNode();
 
+            StoringProperty sProp = storingProperties.get(1);
+            if(sProp == null){
+                sProp = new StoringProperty(getStoringNode(1));
+                storingProperties.put(1, sProp);
+            }
+            sProp.incSaved();
+            
             findOrCreateFileNode(ms);
             event.store(ms, headers);
             ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
@@ -234,13 +244,14 @@ public class NemoLoader extends DriveLoader {
                 if (timestamp != 0) {
                     pointNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
                 }
-                if (event.driveEvents!=null){
+                if (event.driveEvents != null) {
                     index.index(pointNode, INeoConstants.EVENTS_LUCENE_INDEX_NAME, dataset);
                 }
             }
             ms.setProperty(INeoConstants.PROPERTY_NAME_NAME, id);
             index(ms);
             parentMnode = ms;
+            
             transaction.success();
         } catch (Exception e) {
             e.printStackTrace();
@@ -284,11 +295,11 @@ public class NemoLoader extends DriveLoader {
                     }
                     virtualMnode = mm;
                     for (String key : propertyMap.keySet()) {
-                        
+
                         Object parsedValue = propertyMap.get(key);
-                        if (parsedValue!=null&&parsedValue.getClass().isArray()){
+                        if (parsedValue != null && parsedValue.getClass().isArray()) {
                             setProperty(mm, key, parsedValue);
-                        }else{
+                        } else {
                             setIndexProperty(headersVirt, mm, key, parsedValue);
                         }
                     }
@@ -337,7 +348,7 @@ public class NemoLoader extends DriveLoader {
             addIndex(NodeTypes.M.getId(), NeoUtils.getTimeIndexProperty(dataset));
             addIndex(NodeTypes.MP.getId(), NeoUtils.getLocationIndexProperty(dataset));
             String virtualDatasetName = DriveTypes.MS.getFullDatasetName(dataset);
-            
+
             addIndex(NodeTypes.MM.getId(), NeoUtils.getTimeIndexProperty(virtualDatasetName));
             addMappedIndex(MM_KEY, NodeTypes.MP.getId(), NeoUtils.getLocationIndexProperty(virtualDatasetName));
         } catch (IOException e) {
@@ -361,7 +372,7 @@ public class NemoLoader extends DriveLoader {
         protected List<String> parameters;
         protected Map<String, Object> parsedParameters;
         protected NemoEvents event;
-        DriveEvents driveEvents=null;
+        DriveEvents driveEvents = null;
 
         /**
          * constructor
@@ -425,12 +436,12 @@ public class NemoLoader extends DriveLoader {
                 LOGGER.debug(eventId);
                 LOGGER.debug(parameters.toString());
                 // TODO Handle Exception
-                throw (RuntimeException) new RuntimeException( ).initCause( e1 );
+                throw (RuntimeException)new RuntimeException().initCause(e1);
             }
             if (parParam.isEmpty()) {
                 return;
             }
-            driveEvents=(DriveEvents)parParam.remove(NemoEvents.DRIVE_EVENTS);
+            driveEvents = (DriveEvents)parParam.remove(NemoEvents.DRIVE_EVENTS);
             subNodes = (List<Map<String, Object>>)parParam.remove(NemoEvents.SUB_NODES);
             // add context field
             if (parParam.containsKey(NemoEvents.FIRST_CONTEXT_NAME)) {
@@ -454,14 +465,14 @@ public class NemoLoader extends DriveLoader {
                 }
                 _workDate.setTime(date);
             }
-            //Pechko_E make property names Ruby-compatible
-           Set<Entry<String, Object>> entrySet = parParam.entrySet();
-           //TODO Check may be a new map is unnecessary and we can use parsedParameters
-           Map<String, Object> parParamCleaned=new HashMap<String, Object>(parParam.size());
-           for (Entry<String, Object> entry:entrySet){
-               parParamCleaned.put(AbstractLoader.cleanHeader(entry.getKey()), entry.getValue());
-           }
-           parsedParameters.putAll(parParamCleaned);
+            // Pechko_E make property names Ruby-compatible
+            Set<Entry<String, Object>> entrySet = parParam.entrySet();
+            // TODO Check may be a new map is unnecessary and we can use parsedParameters
+            Map<String, Object> parParamCleaned = new HashMap<String, Object>(parParam.size());
+            for (Entry<String, Object> entry : entrySet) {
+                parParamCleaned.put(AbstractLoader.cleanHeader(entry.getKey()), entry.getValue());
+            }
+            parsedParameters.putAll(parParamCleaned);
             if (statisticHeaders == null) {
                 return;
             }
@@ -550,6 +561,7 @@ public class NemoLoader extends DriveLoader {
             return virtualDatasets.get(name);
         }
     }
+
     @Override
     protected String getPrymaryType(Integer key) {
         if (key == 1) {
@@ -557,13 +569,14 @@ public class NemoLoader extends DriveLoader {
         } else {
             return NodeTypes.HEADER_MS.getId();
         }
-        
+
     }
+
     @Override
     protected boolean needParceHeaders() {
         return false;
     }
-    
+
     @Override
     protected void finishUp() {
         super.finishUp();
