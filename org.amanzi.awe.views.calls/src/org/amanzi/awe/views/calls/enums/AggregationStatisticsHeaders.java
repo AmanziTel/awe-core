@@ -53,7 +53,7 @@ public enum AggregationStatisticsHeaders implements IAggrStatisticsHeaders {
             return value!=null&&value.floatValue()>SecondLevelConstants.MAX_SC2_MAX;
         }
     },
-    SC3("SC3", StatisticsType.AVERAGE,UtilAggregationHeaders.SC_CALL_DISC_TIME,UtilAggregationHeaders.SC_SUCC_SETUP_COUNT) {
+    SC3("SC3", StatisticsType.PERCENT,UtilAggregationHeaders.SC_CALL_DISC_TIME,UtilAggregationHeaders.SC_SUCC_SETUP_COUNT) {
         @Override
         public boolean isShouldBeFlagged(Number value) {
             return value!=null&&value.floatValue()<SecondLevelConstants.MIN_SC3;
@@ -104,7 +104,7 @@ public enum AggregationStatisticsHeaders implements IAggrStatisticsHeaders {
     GC1("GC1", StatisticsType.PERCENT,UtilAggregationHeaders.GC_SUCC_SETUP_COUNT,UtilAggregationHeaders.GC_ATTEMPT_COUNT) {
         @Override
         public boolean isShouldBeFlagged(Number value) {
-            return false;   //TODO add condition
+            return value!=null&&value.floatValue()<SecondLevelConstants.MIN_GC1;
         }
     },
     GC2_ZW2_AVG("GC2 ZW2(AVG)", StatisticsType.AVERAGE,UtilAggregationHeaders.GC_SETUP_TIME_TOTAL,UtilAggregationHeaders.GC_SUCC_SETUP_COUNT) {
@@ -122,25 +122,25 @@ public enum AggregationStatisticsHeaders implements IAggrStatisticsHeaders {
     GC2_ZW2_MAX("GC2 ZW2(MAX)", StatisticsType.MAX,UtilAggregationHeaders.GC_SETUP_TIME_MAX) {
         @Override
         public boolean isShouldBeFlagged(Number value) {
-            return false;   //TODO add condition
+            return value!=null&&value.floatValue()>SecondLevelConstants.MAX_GC2_MAX;
         }
     },
-    GC3("GC3", StatisticsType.AVERAGE,UtilAggregationHeaders.GC_CALL_DISC_TIME,UtilAggregationHeaders.GC_SUCC_SETUP_COUNT) {
+    GC3("GC3", StatisticsType.PERCENT,UtilAggregationHeaders.GC_CALL_DISC_TIME,UtilAggregationHeaders.GC_SUCC_SETUP_COUNT) {
         @Override
         public boolean isShouldBeFlagged(Number value) {
-            return false;   //TODO add condition
+            return value!=null&&value.floatValue()<SecondLevelConstants.MIN_GC3;
         }
     },
     GC4("GC4", StatisticsType.PERCENT,UtilAggregationHeaders.GC_AUDIO_QUAL_SUCC,UtilAggregationHeaders.GC_SUCC_SETUP_COUNT) {
         @Override
         public boolean isShouldBeFlagged(Number value) {
-            return false;   //TODO add condition
+            return value!=null&&value.floatValue()<SecondLevelConstants.MIN_GC4;
         }
     },
     GC4_ZW2_AVG("GC4 ZW2(AVG)", StatisticsType.AVERAGE,UtilAggregationHeaders.GC_AUDIO_QUAL_TOTAL,UtilAggregationHeaders.GC_AUDIO_QUAL_COUNT) {
         @Override
         public boolean isShouldBeFlagged(Number value) {
-            return false;   //TODO add condition
+            return value!=null&&value.floatValue()>SecondLevelConstants.MAX_GC4_AVERAGE;
         }
     },
     GC4_ZW2_MIN("GC4 ZW2(MIN)", StatisticsType.MIN,UtilAggregationHeaders.GC_AUDIO_QUAL_MIN) {
@@ -158,7 +158,7 @@ public enum AggregationStatisticsHeaders implements IAggrStatisticsHeaders {
     GC5_ZW1_AVG("GC5 ZW1(AVG)", StatisticsType.AVERAGE,UtilAggregationHeaders.GC_DELAY_TOTAL,UtilAggregationHeaders.GC_DELAY_COUNT) {
         @Override
         public boolean isShouldBeFlagged(Number value) {
-            return false;   //TODO add condition
+            return value!=null&&value.floatValue()>SecondLevelConstants.MAX_GC5_AVERAGE;
         }
     },
     GC5_ZW1_MIN("GC5 ZW1(MIN)", StatisticsType.MIN,UtilAggregationHeaders.GC_DELAY_MIN) {
@@ -176,25 +176,25 @@ public enum AggregationStatisticsHeaders implements IAggrStatisticsHeaders {
     INH_CC("INH CC", StatisticsType.PERCENT,UtilAggregationHeaders.INH_CC_SUCCESS,UtilAggregationHeaders.INH_CC_ATTEMPT) {
         @Override
         public boolean isShouldBeFlagged(Number value) {
-            return false;   //TODO add condition
+            return value!=null&&value.floatValue()<SecondLevelConstants.MIN_INH_CC;
         }
     },
     TSM("TSM", StatisticsType.PERCENT,UtilAggregationHeaders.TSM_SUCCESS,UtilAggregationHeaders.TSM_ATTEMPT) {
         @Override
         public boolean isShouldBeFlagged(Number value) {
-            return false;   //TODO add condition
+            return value!=null&&value.floatValue()<SecondLevelConstants.MIN_TSM;
         }
     },
     SDS("SDS", StatisticsType.PERCENT,UtilAggregationHeaders.SDS_SUCCESS,UtilAggregationHeaders.SDS_ATTEMPT) {
         @Override
         public boolean isShouldBeFlagged(Number value) {
-            return false;   //TODO add condition
+            return value!=null&&value.floatValue()<SecondLevelConstants.MIN_SDS;
         }
     },
     INH_AT("INH AT", StatisticsType.PERCENT,UtilAggregationHeaders.INH_ATT_SUCCESS,UtilAggregationHeaders.INH_ATT_ATTEMPT) {
         @Override
         public boolean isShouldBeFlagged(Number value) {
-            return false;   //TODO add condition
+            return value!=null&&value.floatValue()<SecondLevelConstants.MIN_INH_ATT;
         }
     };
     
@@ -228,5 +228,11 @@ public enum AggregationStatisticsHeaders implements IAggrStatisticsHeaders {
         return null;
     }
     
+    /**
+     * Check value for flag.
+     *
+     * @param value Number.
+     * @return boolean
+     */
     public abstract boolean isShouldBeFlagged(Number value);
 }
