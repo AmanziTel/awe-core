@@ -276,7 +276,7 @@ public class NemoLoader extends DriveLoader {
                         updateTimestampMinMax(2, timestamp);
                     }
                     findOrCreateVirtualFileNode(mm);
-                    NodeTypes.MM.setNodeType(mm, neo);
+                    NodeTypes.HEADER_MS.setNodeType(mm, neo);
                     mm.setProperty(INeoConstants.PROPERTY_NAME_NAME, event.eventId);
                     findOrCreateVirtualFileNode(mm);
                     if (virtualMnode != null) {
@@ -555,7 +555,7 @@ public class NemoLoader extends DriveLoader {
         if (key == 1) {
             return NodeTypes.M.getId();
         } else {
-            return NodeTypes.MM.getId();
+            return NodeTypes.HEADER_MS.getId();
         }
         
     }
