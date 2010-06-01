@@ -53,7 +53,6 @@ import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
 import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
 import org.apache.log4j.Logger;
-import org.apache.xml.resolver.apps.resolver;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.graphics.RGB;
 import org.geotools.referencing.CRS;
@@ -1830,21 +1829,20 @@ public class NeoUtils {
      * @param dayFormat the day format
      * @return the format date string
      */
-    public static String getFormatDateStringForSrow(Long startTime, Long endTime, String dayFormat) {
+    public static String getFormatDateStringForSrow(Long startTime, Long endTime, String dayFormat, String periodId) {
         if (startTime == null || endTime == null) {
             return "No time";
         }
-        long delta = endTime - startTime;
-        if (delta == 60 * 60 * 1000){
+        if (periodId.equals("hourly")){
             return getNameForHourlySRow(startTime, endTime, dayFormat);
         }
-        if (delta == 24 * 60 * 60 * 1000){
+        if (periodId.equals("daily")){
             return getNameForDailySRow(startTime);
         }
-        if (delta == 7 * 24 * 60 * 60 * 1000){
-            return getNameForWeeklySRow(startTime);
+        if (periodId.equals("weekly")){
+            return getNameForWeeklySRow(startTime, endTime);
         }
-        return getNameForMonthlySRow(startTime);
+        return getNameForMonthlySRow(startTime, endTime);
     }
     
     public static String getNameForHourlySRow(Long startTime, Long endTime, String dayFormat){
@@ -1876,46 +1874,71 @@ public class NeoUtils {
         return sf.format(new Date(startTime));
     }
     
-    public static String getNameForWeeklySRow(Long startTime){
+    public static String getNameForWeeklySRow(Long startTime, Long endTime){
         Calendar startTimeCal = Calendar.getInstance();
         startTimeCal.setTimeInMillis(startTime);
-        return "Week "+startTimeCal.get(Calendar.WEEK_OF_YEAR);
+        String result = "Week "+startTimeCal.get(Calendar.WEEK_OF_YEAR);
+        if(isNeedAddYear(startTime, endTime)){
+            result = result + ", "+startTimeCal.get(Calendar.YEAR);
+        }
+        return result;
     }
 
-    public static String getNameForMonthlySRow(Long startTime){
+    public static String getNameForMonthlySRow(Long startTime, Long endTime){
         Calendar startTimeCal = Calendar.getInstance();
         startTimeCal.setTimeInMillis(startTime);
         int month = startTimeCal.get(Calendar.MONTH);
+        boolean needYear = isNeedAddYear(startTime, endTime);
+        int year = startTimeCal.get(Calendar.YEAR);
         switch (month) {
         case Calendar.JANUARY:
-            return "January";
+            return "January"+(needYear?(" "+year):"");
         case Calendar.FEBRUARY:
-            return "February";
+            return "February"+(needYear?(" "+year):"");
         case Calendar.MARCH:
-            return "March";
+            return "March"+(needYear?(" "+year):"");
         case Calendar.APRIL:
-            return "April";
+            return "April"+(needYear?(" "+year):"");
         case Calendar.MAY:
-            return "May";
+            return "May"+(needYear?(" "+year):"");
         case Calendar.JUNE:
-            return "June";
+            return "June"+(needYear?(" "+year):"");
         case Calendar.JULY:
-            return "July";
+            return "July"+(needYear?(" "+year):"");
         case Calendar.AUGUST:
-            return "August";
+            return "August"+(needYear?(" "+year):"");
         case Calendar.SEPTEMBER:
-            return "September";
+            return "September"+(needYear?(" "+year):"");
         case Calendar.OCTOBER:
-            return "October";
+            return "October"+(needYear?(" "+year):"");
         case Calendar.NOVEMBER:
-            return "November";
+            return "November"+(needYear?(" "+year):"");
         case Calendar.DECEMBER:
-            return "December";
+            return "December"+(needYear?(" "+year):"");
         default:
-            return "Month "+month;
+            return "Month "+month+(needYear?(" "+year):"");
         }
     }
 
+    private static boolean isNeedAddYear(Long start, Long end){
+        Calendar currTimeCal = Calendar.getInstance();
+        currTimeCal.setTimeInMillis(System.currentTimeMillis());
+        int currYear = currTimeCal.get(Calendar.YEAR);
+
+        Calendar startTimeCal = Calendar.getInstance();
+        startTimeCal.setTimeInMillis(start);
+        
+        int startYear = startTimeCal.get(Calendar.YEAR);
+        if(startYear!=currYear){
+            return true;
+        }
+        
+        Calendar endTimeCal = Calendar.getInstance();
+        endTimeCal.setTimeInMillis(end);
+        int endYear = endTimeCal.get(Calendar.YEAR);
+        return startYear!=endYear;
+    }
+    
     /**
      * gets formated node name.
      * 
