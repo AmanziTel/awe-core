@@ -175,13 +175,7 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
             if (probeIterator.hasNext()) {
                 parentNode = probeIterator.next();
             }else{
-                parentNode = node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-
-                    @Override
-                    public boolean isReturnableNode(TraversalPosition currentPos) {
-                        return !currentPos.isStartNode();
-                    }
-                }, GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).iterator().next();
+                parentNode = NeoUtils.getParent(null, node);
             }
             return new CallAnalyzisNeoNode(parentNode, statisticsNode, nextNum);
         } else {

@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.amanzi.awe.views.calls.statistics.constants.IStatisticsConstants;
+import org.amanzi.awe.views.calls.statistics.constants.SecondLevelConstants;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -28,34 +29,174 @@ import org.neo4j.graphdb.Node;
  */
 public enum AggregationStatisticsHeaders implements IAggrStatisticsHeaders {
 
-    SC1("SC1", StatisticsType.PERCENT,UtilAggregationHeaders.SC_SUCC_SETUP_COUNT,UtilAggregationHeaders.SC_ATTEMPT_COUNT),
-    SC2_ZW2_AVG("SC2 ZW2(AVG)", StatisticsType.AVERAGE,UtilAggregationHeaders.SC_SETUP_TIME_TOTAL,UtilAggregationHeaders.SC_SUCC_SETUP_COUNT),
-    SC2_ZW2_MIN("SC2 ZW2(MIN)", StatisticsType.MIN,UtilAggregationHeaders.SC_SETUP_TIME_MIN),
-    SC2_ZW2_MAX("SC2 ZW2(MAX)", StatisticsType.MAX,UtilAggregationHeaders.SC_SETUP_TIME_MAX),
-    SC3("SC3", StatisticsType.AVERAGE,UtilAggregationHeaders.SC_CALL_DISC_TIME,UtilAggregationHeaders.SC_SUCC_SETUP_COUNT),
-    SC4("SC4", StatisticsType.PERCENT,UtilAggregationHeaders.SC_AUDIO_QUAL_SUCC,UtilAggregationHeaders.SC_SUCC_SETUP_COUNT),
-    SC4_ZW2_AVG("SC4 ZW2(AVG)", StatisticsType.AVERAGE,UtilAggregationHeaders.SC_AUDIO_QUAL_TOTAL,UtilAggregationHeaders.SC_AUDIO_QUAL_COUNT),
-    SC4_ZW2_MIN("SC4 ZW2(MIN)", StatisticsType.MIN,UtilAggregationHeaders.SC_AUDIO_QUAL_MIN),
-    SC4_ZW2_MAX("SC4 ZW2(MAX)", StatisticsType.MAX,UtilAggregationHeaders.SC_AUDIO_QUAL_MAX),
-    SC5_ZW1_AVG("SC5 ZW1(AVG)", StatisticsType.AVERAGE,UtilAggregationHeaders.SC_DELAY_TOTAL,UtilAggregationHeaders.SC_DELAY_COUNT),
-    SC5_ZW1_MIN("SC5 ZW1(MIN)", StatisticsType.MIN,UtilAggregationHeaders.SC_DELAY_MIN),
-    SC5_ZW1_MAX("SC5 ZW1(MAX)", StatisticsType.MAX,UtilAggregationHeaders.SC_DELAY_MAX),
-    GC1("GC1", StatisticsType.PERCENT,UtilAggregationHeaders.GC_SUCC_SETUP_COUNT,UtilAggregationHeaders.GC_ATTEMPT_COUNT),
-    GC2_ZW2_AVG("GC2 ZW2(AVG)", StatisticsType.AVERAGE,UtilAggregationHeaders.GC_SETUP_TIME_TOTAL,UtilAggregationHeaders.GC_SUCC_SETUP_COUNT),
-    GC2_ZW2_MIN("GC2 ZW2(MIN)", StatisticsType.MIN,UtilAggregationHeaders.GC_SETUP_TIME_MIN),
-    GC2_ZW2_MAX("GC2 ZW2(MAX)", StatisticsType.MAX,UtilAggregationHeaders.GC_SETUP_TIME_MAX),
-    GC3("GC3", StatisticsType.AVERAGE,UtilAggregationHeaders.GC_CALL_DISC_TIME,UtilAggregationHeaders.GC_SUCC_SETUP_COUNT),
-    GC4("GC4", StatisticsType.PERCENT,UtilAggregationHeaders.GC_AUDIO_QUAL_SUCC,UtilAggregationHeaders.GC_SUCC_SETUP_COUNT),
-    GC4_ZW2_AVG("GC4 ZW2(AVG)", StatisticsType.AVERAGE,UtilAggregationHeaders.GC_AUDIO_QUAL_TOTAL,UtilAggregationHeaders.GC_AUDIO_QUAL_COUNT),
-    GC4_ZW2_MIN("GC4 ZW2(MIN)", StatisticsType.MIN,UtilAggregationHeaders.GC_AUDIO_QUAL_MIN),
-    GC4_ZW2_MAX("GC4 ZW2(MAX)", StatisticsType.MAX,UtilAggregationHeaders.GC_AUDIO_QUAL_MAX),
-    GC5_ZW1_AVG("GC5 ZW1(AVG)", StatisticsType.AVERAGE,UtilAggregationHeaders.GC_DELAY_TOTAL,UtilAggregationHeaders.GC_DELAY_COUNT),
-    GC5_ZW1_MIN("GC5 ZW1(MIN)", StatisticsType.MIN,UtilAggregationHeaders.GC_DELAY_MIN),
-    GC5_ZW1_MAX("GC5 ZW1(MAX)", StatisticsType.MAX,UtilAggregationHeaders.GC_DELAY_MAX),
-    INH_CC("INH CC", StatisticsType.PERCENT,UtilAggregationHeaders.INH_CC_SUCCESS,UtilAggregationHeaders.INH_CC_ATTEMPT),
-    TSM("TSM", StatisticsType.PERCENT,UtilAggregationHeaders.TSM_SUCCESS,UtilAggregationHeaders.TSM_ATTEMPT),
-    SDS("SDS", StatisticsType.PERCENT,UtilAggregationHeaders.SDS_SUCCESS,UtilAggregationHeaders.SDS_ATTEMPT),
-    INH_AT("INH AT", StatisticsType.PERCENT,UtilAggregationHeaders.INH_ATT_SUCCESS,UtilAggregationHeaders.INH_ATT_ATTEMPT);
+    SC1("SC1", StatisticsType.PERCENT,UtilAggregationHeaders.SC_SUCC_SETUP_COUNT,UtilAggregationHeaders.SC_ATTEMPT_COUNT) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return value!=null&&value.floatValue()<SecondLevelConstants.MIN_SC1;
+        }
+    },
+    SC2_ZW2_AVG("SC2 ZW2(AVG)", StatisticsType.AVERAGE,UtilAggregationHeaders.SC_SETUP_TIME_TOTAL,UtilAggregationHeaders.SC_SUCC_SETUP_COUNT) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return value!=null&&value.floatValue()>SecondLevelConstants.MAX_SC2_AVERAGE;
+        }
+    },
+    SC2_ZW2_MIN("SC2 ZW2(MIN)", StatisticsType.MIN,UtilAggregationHeaders.SC_SETUP_TIME_MIN) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return false;   //TODO add condition
+        }
+    },
+    SC2_ZW2_MAX("SC2 ZW2(MAX)", StatisticsType.MAX,UtilAggregationHeaders.SC_SETUP_TIME_MAX) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return value!=null&&value.floatValue()>SecondLevelConstants.MAX_SC2_MAX;
+        }
+    },
+    SC3("SC3", StatisticsType.AVERAGE,UtilAggregationHeaders.SC_CALL_DISC_TIME,UtilAggregationHeaders.SC_SUCC_SETUP_COUNT) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return value!=null&&value.floatValue()<SecondLevelConstants.MIN_SC3;
+        }
+    },
+    SC4("SC4", StatisticsType.PERCENT,UtilAggregationHeaders.SC_AUDIO_QUAL_SUCC,UtilAggregationHeaders.SC_SUCC_SETUP_COUNT) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return value!=null&&value.floatValue()<SecondLevelConstants.MIN_SC4;
+        }
+    },
+    SC4_ZW2_AVG("SC4 ZW2(AVG)", StatisticsType.AVERAGE,UtilAggregationHeaders.SC_AUDIO_QUAL_TOTAL,UtilAggregationHeaders.SC_AUDIO_QUAL_COUNT) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return value!=null&&value.floatValue()>SecondLevelConstants.MAX_SC4_AVERAGE;
+        }
+    },
+    SC4_ZW2_MIN("SC4 ZW2(MIN)", StatisticsType.MIN,UtilAggregationHeaders.SC_AUDIO_QUAL_MIN) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return false;   //TODO add condition
+        }
+    },
+    SC4_ZW2_MAX("SC4 ZW2(MAX)", StatisticsType.MAX,UtilAggregationHeaders.SC_AUDIO_QUAL_MAX) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return false;   //TODO add condition
+        }
+    },
+    SC5_ZW1_AVG("SC5 ZW1(AVG)", StatisticsType.AVERAGE,UtilAggregationHeaders.SC_DELAY_TOTAL,UtilAggregationHeaders.SC_DELAY_COUNT) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return value!=null&&value.floatValue()>SecondLevelConstants.MAX_SC5_AVERAGE;
+        }
+    },
+    SC5_ZW1_MIN("SC5 ZW1(MIN)", StatisticsType.MIN,UtilAggregationHeaders.SC_DELAY_MIN) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return false;   //TODO add condition
+        }
+    },
+    SC5_ZW1_MAX("SC5 ZW1(MAX)", StatisticsType.MAX,UtilAggregationHeaders.SC_DELAY_MAX) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return false;   //TODO add condition
+        }
+    },
+    GC1("GC1", StatisticsType.PERCENT,UtilAggregationHeaders.GC_SUCC_SETUP_COUNT,UtilAggregationHeaders.GC_ATTEMPT_COUNT) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return false;   //TODO add condition
+        }
+    },
+    GC2_ZW2_AVG("GC2 ZW2(AVG)", StatisticsType.AVERAGE,UtilAggregationHeaders.GC_SETUP_TIME_TOTAL,UtilAggregationHeaders.GC_SUCC_SETUP_COUNT) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return false;   //TODO add condition
+        }
+    },
+    GC2_ZW2_MIN("GC2 ZW2(MIN)", StatisticsType.MIN,UtilAggregationHeaders.GC_SETUP_TIME_MIN) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return false;   //TODO add condition
+        }
+    },
+    GC2_ZW2_MAX("GC2 ZW2(MAX)", StatisticsType.MAX,UtilAggregationHeaders.GC_SETUP_TIME_MAX) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return false;   //TODO add condition
+        }
+    },
+    GC3("GC3", StatisticsType.AVERAGE,UtilAggregationHeaders.GC_CALL_DISC_TIME,UtilAggregationHeaders.GC_SUCC_SETUP_COUNT) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return false;   //TODO add condition
+        }
+    },
+    GC4("GC4", StatisticsType.PERCENT,UtilAggregationHeaders.GC_AUDIO_QUAL_SUCC,UtilAggregationHeaders.GC_SUCC_SETUP_COUNT) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return false;   //TODO add condition
+        }
+    },
+    GC4_ZW2_AVG("GC4 ZW2(AVG)", StatisticsType.AVERAGE,UtilAggregationHeaders.GC_AUDIO_QUAL_TOTAL,UtilAggregationHeaders.GC_AUDIO_QUAL_COUNT) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return false;   //TODO add condition
+        }
+    },
+    GC4_ZW2_MIN("GC4 ZW2(MIN)", StatisticsType.MIN,UtilAggregationHeaders.GC_AUDIO_QUAL_MIN) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return false;   //TODO add condition
+        }
+    },
+    GC4_ZW2_MAX("GC4 ZW2(MAX)", StatisticsType.MAX,UtilAggregationHeaders.GC_AUDIO_QUAL_MAX) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return false;   //TODO add condition
+        }
+    },
+    GC5_ZW1_AVG("GC5 ZW1(AVG)", StatisticsType.AVERAGE,UtilAggregationHeaders.GC_DELAY_TOTAL,UtilAggregationHeaders.GC_DELAY_COUNT) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return false;   //TODO add condition
+        }
+    },
+    GC5_ZW1_MIN("GC5 ZW1(MIN)", StatisticsType.MIN,UtilAggregationHeaders.GC_DELAY_MIN) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return false;   //TODO add condition
+        }
+    },
+    GC5_ZW1_MAX("GC5 ZW1(MAX)", StatisticsType.MAX,UtilAggregationHeaders.GC_DELAY_MAX) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return false;   //TODO add condition
+        }
+    },
+    INH_CC("INH CC", StatisticsType.PERCENT,UtilAggregationHeaders.INH_CC_SUCCESS,UtilAggregationHeaders.INH_CC_ATTEMPT) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return false;   //TODO add condition
+        }
+    },
+    TSM("TSM", StatisticsType.PERCENT,UtilAggregationHeaders.TSM_SUCCESS,UtilAggregationHeaders.TSM_ATTEMPT) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return false;   //TODO add condition
+        }
+    },
+    SDS("SDS", StatisticsType.PERCENT,UtilAggregationHeaders.SDS_SUCCESS,UtilAggregationHeaders.SDS_ATTEMPT) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return false;   //TODO add condition
+        }
+    },
+    INH_AT("INH AT", StatisticsType.PERCENT,UtilAggregationHeaders.INH_ATT_SUCCESS,UtilAggregationHeaders.INH_ATT_ATTEMPT) {
+        @Override
+        public boolean isShouldBeFlagged(Number value) {
+            return false;   //TODO add condition
+        }
+    };
     
     private String headerTitle;
     private StatisticsType headerType;
@@ -86,4 +227,6 @@ public enum AggregationStatisticsHeaders implements IAggrStatisticsHeaders {
     public Number getStatisticsData(Node dataNode, IStatisticsConstants constants) {
         return null;
     }
+    
+    public abstract boolean isShouldBeFlagged(Number value);
 }

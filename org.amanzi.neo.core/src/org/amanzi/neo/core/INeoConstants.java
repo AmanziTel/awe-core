@@ -59,7 +59,8 @@ public class INeoConstants {
     public static final String PROPERTY_STATS = "stats_properties";
     public static final String EVENT_ID = "event_id";
     public static final String EVENT_CONTEXT_ID = "context_id";
-    public static final String LAST_CALL_NODE_ID_PROPERTY_NAME = "last_call_node_id";    
+    public static final String LAST_CALL_NODE_ID_PROPERTY_NAME = "last_call_node_id";  
+    public static final String PROPERTY_FLAGGED_NAME = "flagged";
     // dataset property
     public static final String DRIVE_TYPE = "drive_type";
     /*

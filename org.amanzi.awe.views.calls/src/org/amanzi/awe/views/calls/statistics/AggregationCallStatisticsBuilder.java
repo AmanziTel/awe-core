@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.amanzi.awe.statistic.CallTimePeriods;
 import org.amanzi.awe.views.calls.enums.AggregationCallTypes;
+import org.amanzi.awe.views.calls.enums.AggregationStatisticsHeaders;
 import org.amanzi.awe.views.calls.enums.IAggrStatisticsHeaders;
 import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
@@ -330,7 +331,18 @@ public class AggregationCallStatisticsBuilder {
             previousNode.createRelationshipTo(result, GeoNeoRelationshipTypes.NEXT);
         }
         previousSCellNodes.put(period, result);
-        
+        setFlags((AggregationStatisticsHeaders)header, (Number)value, result, sources);
+    }
+    
+    private void setFlags(AggregationStatisticsHeaders header, Number value, Node cell, List<Node> sources){
+        boolean flagged = header.isShouldBeFlagged(value);
+        cell.setProperty(INeoConstants.PROPERTY_FLAGGED_NAME, flagged);
+        for(Node source : sources){
+            boolean beforeFlagged = (Boolean)source.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, false);
+            if (!beforeFlagged){
+                source.setProperty(INeoConstants.PROPERTY_FLAGGED_NAME, flagged);
+            }
+        }
     }
     
     /**
