@@ -155,7 +155,7 @@ public class ProbeLoader extends AbstractLoader{
 
                 gisProperties.updateBBox(currentLatitude, currentLongitude);
                 gisProperties.checkCRS(currentLatitude.floatValue(), currentLongitude.floatValue(), null);
-                // gisProperties.incSaved();
+                gisProperties.incSaved();
             }
             storingProperties.values().iterator().next().incSaved();
             transaction.success();

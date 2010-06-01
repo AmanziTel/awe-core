@@ -590,6 +590,7 @@ public class NetworkLoader extends AbstractLoader {
                 sector.setProperty(key, entry.getValue());
             }
             storingProperties.values().iterator().next().incSaved();
+            getGisProperties(basename).incSaved();
             transaction.success();
             // return true;
         } catch (Exception e) {

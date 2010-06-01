@@ -123,7 +123,7 @@ public class NetworkSiteLoader extends AbstractLoader {
                     luceneInd.index(siteNode, NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_SITE_NO, NodeTypes.SITE), entry.getValue().toString());
                 }
             }
-
+            gisNodes.values().iterator().next().incSaved();
             storingProperties.values().iterator().next().incSaved();
             transaction.success();
             // return true;

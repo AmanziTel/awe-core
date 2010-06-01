@@ -1245,8 +1245,8 @@ public abstract class AbstractLoader {
         for (Map.Entry<Integer, StoringProperty> entry : storingProperties.entrySet()) {
             Node storeNode = getStoringNode(entry.getKey());
             entry.getValue().storeTimeStamp(storeNode);
-
-            storeNode.setProperty(INeoConstants.COUNT_TYPE_NAME, entry.getValue().getDataCounter());
+            if (storeNode != null)
+                storeNode.setProperty(INeoConstants.COUNT_TYPE_NAME, entry.getValue().getDataCounter());
         }
 
     }
@@ -1555,7 +1555,7 @@ public abstract class AbstractLoader {
                 Node gis = gisProperties.getGis();
                 if (gisProperties.getBbox() != null) {
                     gis.setProperty(INeoConstants.PROPERTY_BBOX_NAME, gisProperties.getBbox());
-                    // gis.setProperty(INeoConstants.COUNT_TYPE_NAME, gisProperties.savedData);
+                    gis.setProperty(INeoConstants.COUNT_TYPE_NAME, gisProperties.savedData);
 
                 }
                 HashSet<Node> nodeToDelete = new HashSet<Node>();
@@ -1720,7 +1720,7 @@ public abstract class AbstractLoader {
         }
     }
 
-    public static class StoringProperty {
+    public class StoringProperty {
         // private Node storingNode;
         private long dataCounter;
         private Long timeStampMin;
@@ -1815,21 +1815,20 @@ public abstract class AbstractLoader {
         private final Node gis;
         private CRS crs;
         private double[] bbox;
-
-        // private long savedData;
+        private long savedData;
 
         public GisProperties(Node gis) {
             this.gis = gis;
             bbox = (double[])gis.getProperty(INeoConstants.PROPERTY_BBOX_NAME, null);
-            // savedData = (Long)gis.getProperty(INeoConstants.COUNT_TYPE_NAME, 0L);
+            savedData = (Long)gis.getProperty(INeoConstants.COUNT_TYPE_NAME, 0L);
         }
 
         /**
          *inc saved;
          */
-        // public void incSaved() {
-        // savedData++;
-        // }
+        public void incSaved() {
+            savedData++;
+        }
 
         protected final void checkCRS(float lat, float lon, String hint) {
             if (crs == null) {
