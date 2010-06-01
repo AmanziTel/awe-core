@@ -68,7 +68,7 @@ public enum AggregationStatisticsHeaders implements IAggrStatisticsHeaders {
     SC4_ZW2_AVG("SC4 ZW2(AVG)", StatisticsType.AVERAGE,UtilAggregationHeaders.SC_AUDIO_QUAL_TOTAL,UtilAggregationHeaders.SC_AUDIO_QUAL_COUNT) {
         @Override
         public boolean isShouldBeFlagged(Number value) {
-            return value!=null&&value.floatValue()>SecondLevelConstants.MAX_SC4_AVERAGE;
+            return value!=null&&value.floatValue()<SecondLevelConstants.MIN_SC4_AVERAGE;
         }
     },
     SC4_ZW2_MIN("SC4 ZW2(MIN)", StatisticsType.MIN,UtilAggregationHeaders.SC_AUDIO_QUAL_MIN) {
@@ -140,7 +140,7 @@ public enum AggregationStatisticsHeaders implements IAggrStatisticsHeaders {
     GC4_ZW2_AVG("GC4 ZW2(AVG)", StatisticsType.AVERAGE,UtilAggregationHeaders.GC_AUDIO_QUAL_TOTAL,UtilAggregationHeaders.GC_AUDIO_QUAL_COUNT) {
         @Override
         public boolean isShouldBeFlagged(Number value) {
-            return value!=null&&value.floatValue()>SecondLevelConstants.MAX_GC4_AVERAGE;
+            return value!=null&&value.floatValue()<SecondLevelConstants.MIN_GC4_AVERAGE;
         }
     },
     GC4_ZW2_MIN("GC4 ZW2(MIN)", StatisticsType.MIN,UtilAggregationHeaders.GC_AUDIO_QUAL_MIN) {

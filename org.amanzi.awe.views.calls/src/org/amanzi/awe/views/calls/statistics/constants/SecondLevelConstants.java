@@ -30,7 +30,7 @@ public class SecondLevelConstants {
     public static float MIN_SC3 = 99f;
 
     public static float MIN_SC4 = 97f;
-    public static float MAX_SC4_AVERAGE = 2f; //SC-4-MOS
+    public static float MIN_SC4_AVERAGE = 2f; //SC-4-MOS
     
     public static float MAX_SC5_AVERAGE = 0.35f;
     
@@ -41,7 +41,7 @@ public class SecondLevelConstants {
     public static float MIN_GC3 = 99f;
     
     public static float MIN_GC4 = 97f;
-    public static float MAX_GC4_AVERAGE = 2f;
+    public static float MIN_GC4_AVERAGE = 2f;
     
     public static float MAX_GC5_AVERAGE = 0.36f;
     
