@@ -35,12 +35,12 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.CallProperties.CallResult;
 import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.loader.NetworkLoader.CRS;
 import org.amanzi.neo.loader.ams.parameters.AMSCommandParameters;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.sax_parsers.AbstractTag;
@@ -56,6 +56,7 @@ import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.Traverser;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
@@ -393,10 +394,32 @@ public class AMSXMLoader extends AbstractCallLoader {
         }
 
         basename = networkName;
-        networkGis = findOrCreateGISNode(basename, GisTypes.NETWORK.getHeader(), NetworkTypes.PROBE);
-        networkNode = findOrCreateNetworkNode(networkGis);
+//        networkGis = findOrCreateGISNode(basename, GisTypes.NETWORK.getHeader(), NetworkTypes.PROBE);
+//        networkNode = findOrCreateNetworkNode(networkGis);
+        driveType=DriveTypes.PROBE;
+        networkNode = findOrCreateDatasetNode(neo.getReferenceNode(), networkName);
+        networkGis=findOrCreateGISNode(networkNode, GisTypes.DRIVE.getHeader());
+        getGisProperties(networkName).setCrs(CRS.fromCRS("geographic","EPSG:4326"));
         this.networkName = basename;
         basename = oldBasename;
+        fillProbeMap(networkNode);
+    }
+
+    /**
+     *
+     * @param networkNode
+     */
+    private void fillProbeMap(Node networkNode) {
+        Transaction tx = neo.beginTx();
+        try{
+            Traverser probeTraverser = NeoUtils.getChildTraverser(networkNode);
+            for (Node probe:probeTraverser){
+               String id=NeoUtils.getNodeName(probe);
+               probeCache.put(id, probe);
+            }
+        }finally{
+            tx.finish();
+        }
     }
 
     /**
@@ -407,6 +430,7 @@ public class AMSXMLoader extends AbstractCallLoader {
     private void initializeDatasets(String datasetName) {
         Transaction tx = neo.beginTx();
         try {
+            driveType=DriveTypes.AMS;
             datasetNode = findOrCreateDatasetNode(neo.getReferenceNode(), dataset);
             findOrCreateGISNode(datasetNode, GisTypes.DRIVE.getHeader());
 
@@ -1526,7 +1550,20 @@ public class AMSXMLoader extends AbstractCallLoader {
                 try {
                     Node mp = neo.createNode();
                     probe.createRelationshipTo(mp, GeoNeoRelationshipTypes.LOCATION);
+
                     gps.store(mp);
+                    String time=getPropertyMap().get("deliveryTime");
+                    String name="mp";
+                    NeoUtils.setNodeName(mp, name, neo);
+                    if (StringUtils.isNotEmpty(time)){
+                        try {
+                            Long timestamp = getTime(time);
+                            mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+                        } catch (ParseException e) {
+                            LOGGER.error("wrong data: "+time, e);
+                        }
+                        
+                    }
                     GisProperties gis = getGisProperties(networkName);
                     gis.updateBBox(gps.lat, gps.lon);
                     gis.checkCRS(((Double)gps.lat).floatValue(), ((Double)gps.lon).floatValue(),null);
@@ -1646,7 +1683,18 @@ public class AMSXMLoader extends AbstractCallLoader {
             if (probeCache.get(id) != null) {
                 return;
             }
-            Node probeNew = NeoUtils.findOrCreateProbeNode(networkNode, id, neo);
+            
+            Node probeNew;
+            Transaction tx = neo.beginTx();
+            try{
+                probeNew=neo.createNode();
+                NodeTypes.PROBE.setNodeType(probeNew, neo);
+                probeNew.setProperty(INeoConstants.PROPERTY_NAME_NAME, id);
+                NeoUtils.addChild(networkNode, probeNew, null, neo);
+                tx.success();
+            }finally{
+                tx.finish();
+            }
             Node currentProbeCalls = NeoUtils.getCallsNode(callDataset, id, probeNew, neo);
             probeCache.put(id, probeNew);
             probeCallCache.put(id, currentProbeCalls);
@@ -1762,6 +1810,8 @@ public class AMSXMLoader extends AbstractCallLoader {
         /** The lon. */
         private double lon;
 
+        private String time;
+
         /**
          * Instantiates a new gPS data.
          * 
@@ -1792,7 +1842,7 @@ public class AMSXMLoader extends AbstractCallLoader {
                     String latNS = st.nextToken();
                     String lonStr = st.nextToken();
                     String lonNS = st.nextToken();
-                    String time = st.nextToken();
+                     time = st.nextToken();
                     String validate = st.nextToken();
                     if (validate.equalsIgnoreCase("A")) {
                         lat = Double.parseDouble(latStr);
@@ -1824,7 +1874,10 @@ public class AMSXMLoader extends AbstractCallLoader {
             assert valid;
             mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat);
             mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon);
+            NodeTypes.MP.setNodeType(mp, null);
         }
+
+
 
         /**
          * Have valid location.
