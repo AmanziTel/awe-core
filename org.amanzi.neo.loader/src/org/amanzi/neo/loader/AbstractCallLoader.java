@@ -119,12 +119,23 @@ public abstract class AbstractCallLoader extends DriveLoader {
 
         LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
 
-        setIndexProperty(headers, callNode, CallProperties.SETUP_DURATION.getId(), setupDuration);
+        if (setupDuration<0) {
+            setIndexProperty(headers, callNode, CallProperties.SETUP_DURATION.getId(), Double.NaN);
+        }else{
+            setIndexProperty(headers, callNode, CallProperties.SETUP_DURATION.getId(), setupDuration);
+        }
         setIndexProperty(headers, callNode, CallProperties.CALL_TYPE.getId(), call.getCallType().toString());
         setIndexProperty(headers, callNode, CallProperties.CALL_RESULT.getId(), call.getCallResult().toString());
-        setIndexProperty(headers, callNode, CallProperties.CALL_DURATION.getId(), callDuration);
-        setIndexProperty(headers, callNode, CallProperties.TERMINATION_DURATION.getId(), terminationDuration);
-        
+        if (callDuration<0) {
+            setIndexProperty(headers, callNode, CallProperties.CALL_DURATION.getId(), Double.NaN);
+        }else{
+            setIndexProperty(headers, callNode, CallProperties.CALL_DURATION.getId(), callDuration);
+        }
+        if (terminationDuration<0) {
+            setIndexProperty(headers, callNode, CallProperties.TERMINATION_DURATION.getId(), Double.NaN);
+        }else{
+            setIndexProperty(headers, callNode, CallProperties.TERMINATION_DURATION.getId(), terminationDuration);
+        }
         callNode.setProperty(CallProperties.LQ.getId(), call.getLq());
         callNode.setProperty(CallProperties.DELAY.getId(), call.getDelay());
         
@@ -151,11 +162,27 @@ public abstract class AbstractCallLoader extends DriveLoader {
         LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
 
         if (call.getCallType().equals(CallType.ALARM)) {
-            setIndexProperty(headers, callNode, CallProperties.ALM_MESSAGE_DELAY.getId(), receivedTime);
-            setIndexProperty(headers, callNode, CallProperties.ALM_FIRST_MESS_DELAY.getId(), acknTime);
+            if (receivedTime<0) {
+                setIndexProperty(headers, callNode, CallProperties.ALM_MESSAGE_DELAY.getId(), Double.NaN);
+            }else{
+                setIndexProperty(headers, callNode, CallProperties.ALM_MESSAGE_DELAY.getId(), receivedTime);
+            }
+            if (acknTime<0) {
+                setIndexProperty(headers, callNode, CallProperties.ALM_FIRST_MESS_DELAY.getId(), Double.NaN);
+            }else{
+                setIndexProperty(headers, callNode, CallProperties.ALM_FIRST_MESS_DELAY.getId(), acknTime);
+            }
         } else {
-            setIndexProperty(headers, callNode, CallProperties.MESS_RECEIVE_TIME.getId(), receivedTime);
-            setIndexProperty(headers, callNode, CallProperties.MESS_ACKNOWLEDGE_TIME.getId(), acknTime);
+            if (receivedTime<0) {
+                setIndexProperty(headers, callNode, CallProperties.MESS_RECEIVE_TIME.getId(), Double.NaN);
+            }else{
+                setIndexProperty(headers, callNode, CallProperties.MESS_RECEIVE_TIME.getId(), receivedTime);
+            }
+            if (acknTime<0) {
+                setIndexProperty(headers, callNode, CallProperties.MESS_ACKNOWLEDGE_TIME.getId(), Double.NaN);
+            }else{
+                setIndexProperty(headers, callNode, CallProperties.MESS_ACKNOWLEDGE_TIME.getId(), acknTime);
+            }
         }
         setIndexProperty(headers, callNode, CallProperties.CALL_TYPE.getId(), call.getCallType().toString());
         CallResult callResult = call.getCallResult()==null?CallResult.FAILURE:call.getCallResult();
@@ -177,8 +204,11 @@ public abstract class AbstractCallLoader extends DriveLoader {
         long updateTime = call.getCallTerminationEnd() - call.getCallSetupBegin();
         
         LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
-        setIndexProperty(headers, callNode, CallProperties.CALL_DURATION.getId(), updateTime);
-        
+        if (updateTime<0) {
+            setIndexProperty(headers, callNode, CallProperties.CALL_DURATION.getId(), Double.NaN);
+        }else{
+            setIndexProperty(headers, callNode, CallProperties.CALL_DURATION.getId(), updateTime);
+        }
         setIndexProperty(headers, callNode, CallProperties.CALL_TYPE.getId(), call.getCallType().toString());
         setIndexProperty(headers, callNode, CallProperties.CALL_RESULT.getId(), call.getCallResult().toString());
         
@@ -199,9 +229,18 @@ public abstract class AbstractCallLoader extends DriveLoader {
 
         setIndexProperty(headers, callNode, CallProperties.CALL_TYPE.getId(), call.getCallType().toString());
         setIndexProperty(headers, callNode, CallProperties.CALL_RESULT.getId(), call.getCallResult().toString());
-        setIndexProperty(headers, callNode, CallProperties.CC_HANDOVER_TIME.getId(), call.getHandoverTime());
-        setIndexProperty(headers, callNode, CallProperties.CC_RESELECTION_TIME.getId(), call.getReselectionTime());
-        
+        Long handoverTime = call.getHandoverTime();
+        if (handoverTime==null||handoverTime<0) {
+            setIndexProperty(headers, callNode, CallProperties.CC_HANDOVER_TIME.getId(), Double.NaN);
+        }else{
+            setIndexProperty(headers, callNode, CallProperties.CC_HANDOVER_TIME.getId(), handoverTime);
+        }
+        Long reselectionTime = call.getReselectionTime();
+        if (reselectionTime==null||reselectionTime<0) {
+            setIndexProperty(headers, callNode, CallProperties.CC_RESELECTION_TIME.getId(), Double.NaN);
+        }else{
+            setIndexProperty(headers, callNode, CallProperties.CC_RESELECTION_TIME.getId(), reselectionTime);
+        }
         callNode.createRelationshipTo(probeCallNode, ProbeCallRelationshipType.CALLER);
         
         for (Node calleeProbe : call.getCalleeProbes()) {

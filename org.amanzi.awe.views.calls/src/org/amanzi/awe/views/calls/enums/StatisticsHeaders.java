@@ -2717,7 +2717,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
      * @return float
      */
     protected Float getCallConnectionTime(Node callNode){
-        Long connectionTime = (Long)callNode.getProperty(CallProperties.SETUP_DURATION.getId(),null);        
+        Object property = callNode.getProperty(CallProperties.SETUP_DURATION.getId(),null);
+        Long connectionTime = property.equals(Double.NaN)?null:(Long)property;        
         return connectionTime==null?null:(float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
     }
     
@@ -2728,7 +2729,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
      * @return float
      */
     protected Float getCallDurationTime(Node callNode){
-        Long connectionTime = (Long)callNode.getProperty(CallProperties.CALL_DURATION.getId(),null); 
+        Object property = callNode.getProperty(CallProperties.CALL_DURATION.getId(),null);
+        Long connectionTime = property.equals(Double.NaN)?null:(Long)property; 
         return connectionTime==null?null:((float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR);
     }
     
@@ -2739,7 +2741,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
      * @return float
      */
     protected Float getCallTerminationTime(Node callNode){
-        Long connectionTime = (Long)callNode.getProperty(CallProperties.TERMINATION_DURATION.getId(),null);
+        Object property = callNode.getProperty(CallProperties.TERMINATION_DURATION.getId(),null);
+        Long connectionTime = property.equals(Double.NaN)?null:(Long)property;
         return connectionTime==null?null:(float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
     }
     
@@ -2750,7 +2753,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
      * @return float
      */
     protected Float getCallHandoverTime(Node callNode){
-        Long connectionTime = (Long)callNode.getProperty(CallProperties.CC_HANDOVER_TIME.getId(),null);
+        Object property = callNode.getProperty(CallProperties.CC_HANDOVER_TIME.getId(),null);
+        Long connectionTime = property.equals(Double.NaN)?null:(Long)property;
         return connectionTime==null?null:(float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
     }
     
@@ -2761,7 +2765,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
      * @return float
      */
     protected Float getCallReselectionTime(Node callNode){
-        Long connectionTime = (Long)callNode.getProperty(CallProperties.CC_RESELECTION_TIME.getId(),null);
+        Object property = callNode.getProperty(CallProperties.CC_RESELECTION_TIME.getId(),null);
+        Long connectionTime = property.equals(Double.NaN)?null:(Long)property;
         return connectionTime==null?null:(float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
     }
     
@@ -2814,7 +2819,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
      * @return float
      */
     protected Float getMessageReceiveTime(Node callNode){
-        Long receiveTime = (Long)callNode.getProperty(CallProperties.MESS_RECEIVE_TIME.getId(),null);
+        Object property = callNode.getProperty(CallProperties.MESS_RECEIVE_TIME.getId(),null);
+        Long receiveTime = property.equals(Double.NaN)?null:(Long)property;
         return receiveTime==null?null:(float)receiveTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
     }
     
@@ -2825,7 +2831,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
      * @return float
      */
     protected Float getMessageAcknowledgeTime(Node callNode){
-        Long receiveTime = (Long)callNode.getProperty(CallProperties.MESS_ACKNOWLEDGE_TIME.getId(),null);
+        Object property = callNode.getProperty(CallProperties.MESS_ACKNOWLEDGE_TIME.getId(),null);
+        Long receiveTime = property.equals(Double.NaN)?null:(Long)property;
         return receiveTime==null?null:(float)receiveTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
     }
     
@@ -2836,7 +2843,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
      * @return float
      */
     protected Float getMessageDelayTime(Node callNode){
-        Long receiveTime = (Long)callNode.getProperty(CallProperties.ALM_MESSAGE_DELAY.getId(),null);
+        Object property = callNode.getProperty(CallProperties.ALM_MESSAGE_DELAY.getId(),null);
+        Long receiveTime = property.equals(Double.NaN)?null:(Long)property;
         return receiveTime==null?null:(float)receiveTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
     }
     
@@ -2847,7 +2855,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
      * @return float
      */
     protected Float getFirstMessageDelayTime(Node callNode){
-        Long receiveTime = (Long)callNode.getProperty(CallProperties.ALM_FIRST_MESS_DELAY.getId(),null);
+        Object property = callNode.getProperty(CallProperties.ALM_FIRST_MESS_DELAY.getId(),null);
+        Long receiveTime = property.equals(Double.NaN)?null:(Long)property;
         return receiveTime==null?null:(float)receiveTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
     }
     
