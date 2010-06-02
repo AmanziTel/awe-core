@@ -321,9 +321,12 @@ public class AMSXMLoader extends AbstractCallLoader {
             long count = 0;
             long time = System.currentTimeMillis();
             for (File logFile : allFiles) {
+                if (monitor.isCanceled()){
+                    return;
+                }
                 monitor.subTask("Loading file " + logFile.getAbsolutePath());
                 try {
-                    handleFile(logFile);
+                    handleFile(logFile,monitor);
                 } catch (Exception e) {
                     // TODO Handle SAXException
                     throw (RuntimeException)new RuntimeException().initCause(e);
@@ -353,10 +356,14 @@ public class AMSXMLoader extends AbstractCallLoader {
      * Handle file.
      * 
      * @param singleFile the file
+     * @param monitor 
      * @throws SAXException the sAX exception
      * @throws IOException Signals that an I/O exception has occurred.
      */
-    private void handleFile(File singleFile) throws SAXException, IOException {
+    private void handleFile(File singleFile, IProgressMonitor monitor) throws SAXException, IOException {
+        if (monitor.isCanceled()){
+            return;
+        }
         tocttc = null;
         tocttcGroup = null;
         lastDatasetNode = null;
