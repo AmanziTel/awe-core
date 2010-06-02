@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Awe Plug-in
+Bundle-SymbolicName: net.refractions.udig.awe
+Bundle-Version: 1.0.0
+Bundle-Vendor: amanzi.org
