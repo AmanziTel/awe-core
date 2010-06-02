@@ -108,11 +108,8 @@ public class AMSCorrellator {
             Node gisTo = !isTest ? NeoUtils.findGisNode(firstDataset) : NeoUtils.findGisNode(firstDataset, neoService);
             
             Node datasetFrom = gisFrom.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode();
-            Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(datasetFrom, neoService);
-            assert minMax!=null;
-            long begin=minMax.getLeft();
-            long end=minMax.getRight();
-            monitor.beginTask("correlate", (int)(end-begin));
+            int count = ((Long)datasetFrom.getProperty(INeoConstants.COUNT_TYPE_NAME, 0L)).intValue();
+            monitor.beginTask("correlate", count);
             gisProperFrom = new GisProperties(gisFrom);
             gisProperTo = new GisProperties(gisTo);
             gisProperFrom.initCRS();
@@ -147,10 +144,7 @@ public class AMSCorrellator {
                 Node mpNode = determineNode(nodeTime);
 								
 				correlateNodes(firstM, callNode, mpNode);
-				if (nodeTime>begin){
-				    monitor.worked((int)(nodeTime-begin));
-				    begin=nodeTime;
-				}
+				monitor.worked(1);
 			}
             gisProperTo.saveBBox();
             gisProperToCall.saveBBox();
