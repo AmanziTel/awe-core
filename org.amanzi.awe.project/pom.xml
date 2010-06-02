@@ -14,33 +14,6 @@
   	<generatedBuildProperties>root.properties</generatedBuildProperties>
   </properties>
   <build>
-  	<finalName>${parent.artifactId}-0.10.${BUILD_NUMBER}</finalName>  	
-    <plugins>
-      <plugin>
-        <groupId>org.sonatype.tycho</groupId>
-        <artifactId>maven-osgi-packaging-plugin</artifactId>
-        <version>0.7.0</version>
-        <configuration>
-          <environments>
-            <environment>
-              <os>linux</os>
-              <ws>gtk</ws>
-              <arch>x86</arch>
-            </environment>
-            <environment>
-              <os>win32</os>
-              <ws>win32</ws>
-              <arch>x86</arch>
-            </environment>
-            <environment>
-              <os>macosx</os>
-              <ws>carbon</ws>
-              <arch>x86</arch>
-            </environment>
-          </environments>
-          <directoryName>awe</directoryName>          
-        </configuration>
-      </plugin>
-    </plugins>
+  	<finalName>${parent.artifactId}-0.10.${BUILD_NUMBER}</finalName>
   </build>
 </project>
