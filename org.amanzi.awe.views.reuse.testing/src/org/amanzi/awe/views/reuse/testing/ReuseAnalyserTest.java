@@ -48,11 +48,10 @@ public class ReuseAnalyserTest {
     static CommonTestUtil util;
     @BeforeClass
     public static void init(){
-        
+        util=new CommonTestUtil(DATABASE_NAME, MAIN_DIR); 
     }
     @Test
     public void testCalculation() throws IOException{
-        util=new CommonTestUtil(DATABASE_NAME, MAIN_DIR); 
         Transaction tx = util.getNeo().beginTx();
         try{
             Node root=createStructure();
@@ -106,6 +105,6 @@ public class ReuseAnalyserTest {
     @AfterClass
     public static void finishAll(){
         util.shutdownNeo();
-        util.clearDirectory(new File(util.getMainDirectory(false)));
+        CommonTestUtil.clearDirectory(new File(util.getMainDirectory(false)));
     }
 }
