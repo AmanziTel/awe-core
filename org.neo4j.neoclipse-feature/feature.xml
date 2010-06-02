@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.neo4j.neoclipse.feature"
+      id="org.neo4j.neoclipse"
       label="Neoclipse Feature"
       version="0.4.1"
-      provider-name="Neo4j.org">
+      provider-name="Neo4j.org"
+      plugin="org.neo4j.neoclipse">
 
    <description url="http://wiki.neo4j.org/content/Neoclipse">
       Neo4j integration for Eclipse

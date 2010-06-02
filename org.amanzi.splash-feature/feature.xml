@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.amanzi.splash_feature"
+      id="org.amanzi.splash"
       label="Splash"
       version="1.0.0"
       provider-name="amanzi.org">
