@@ -13,9 +13,8 @@
 package org.amanzi.awe.views.network.view;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import java.io.File;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,6 +54,8 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.service.listener.NeoServiceProviderEventAdapter;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.apache.log4j.Logger;
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -97,9 +98,12 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IPageLayout;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
@@ -468,7 +472,96 @@ public class NetworkTreeView extends ViewPart {
         TransmissionAction transmission = new TransmissionAction((IStructuredSelection)viewer.getSelection());
         manager.add(transmission);
         manager.add(new DeleteAction((IStructuredSelection)viewer.getSelection()));
+        manager.add(new Action("Open in text editor") {
+            @Override
+            public void run() {
+                IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
+                openFileFromNode((NeoNode)selection.getFirstElement());
+            }
 
+            @Override
+            public boolean isEnabled() {
+                IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
+                return (selection.size() == 1 && canBeOpenInEditor((NeoNode)selection.getFirstElement()));
+            }
+        });
+
+    }
+    
+    private void openFileFromNode(NeoNode neoNode){ //TODO fire event
+        Transaction transaction = getService().beginTx();
+        String filename = "";
+        try {
+            Node fileNode = getFileNode(neoNode);
+            if (fileNode == null) {
+                throw new RuntimeException("Not found file for node "+neoNode);
+            }
+            filename = (String)fileNode.getProperty(INeoConstants.PROPERTY_FILENAME_NAME, null);
+            if (filename == null) {
+                throw new RuntimeException("File node for node "+neoNode+" has no file name.");
+            }
+            File file = new File(filename);
+            if(!file.exists()){
+                throw new RuntimeException("Can not found file "+filename);
+            }
+        } finally {
+            transaction.finish();
+        }
+        IFileStore file = EFS.getLocalFileSystem().getStore(new Path(filename));
+        FileStoreEditorInput editorInput = new FileStoreEditorInput(file);
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        IEditorDescriptor desc = workbench.getEditorRegistry().getDefaultEditor(file.getName());
+        
+        try {            
+            if(desc==null){
+                getViewSite().getPage().openEditor(editorInput, "org.eclipse.ui.DefaultTextEditor");
+            }else{
+                getViewSite().getPage().openEditor(editorInput, desc.getId());
+            }
+        } catch (PartInitException e) {
+            throw (RuntimeException) new RuntimeException().initCause(e);
+        }
+
+
+    }
+    
+    private boolean canBeOpenInEditor(NeoNode neoNode){
+        Transaction transaction = getService().beginTx();
+        try {
+            Node node = neoNode.getNode();
+            if(NodeTypes.getNodeType(node, null).equals(NodeTypes.M)){
+                return true;
+            }
+            Node fileNode = getFileNode(neoNode);
+            if (fileNode == null) {
+                return false;
+            }
+            String filename = (String)fileNode.getProperty(INeoConstants.PROPERTY_FILENAME_NAME, null);
+            if (filename == null) {
+                return false;
+            }
+            File file = new File(filename);
+            return file.exists();
+        } finally {
+            transaction.finish();
+        }
+    }
+    
+    private Node getFileNode(NeoNode neoNode){
+        Node node = neoNode.getNode();
+        NodeTypes nodeType = NodeTypes.getNodeType(node, null);
+        if(nodeType.equals(NodeTypes.FILE)){
+            return node;
+        }
+        if(nodeType.equals(NodeTypes.M)){
+            while(!nodeType.equals(NodeTypes.FILE)&&node!=null){
+                node = NeoUtils.getParent(null, node);
+                nodeType = NodeTypes.getNodeType(node, null);
+            }
+            return node;
+        }
+        //TODO Support this for any node with a file node in the parent tree (depth max 3).
+        return null;
     }
 
     /**
@@ -993,7 +1086,7 @@ public class NetworkTreeView extends ViewPart {
             // with them
             // and so a delta report action below will not use them
             //
-            Transaction transaction = NeoServiceProvider.getProvider().getService().beginTx();
+            Transaction transaction = getService().beginTx();
             final Node networkNode;
             final Node datasetNode;
             final boolean containseDatasetNode;
@@ -1024,7 +1117,7 @@ public class NetworkTreeView extends ViewPart {
 
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
-                    Transaction transaction = NeoServiceProvider.getProvider().getService().beginTx();
+                    Transaction transaction = getService().beginTx();
                     try {
 
                         for (NeoNode neoNode : nodesToDelete) {
@@ -1113,7 +1206,7 @@ public class NetworkTreeView extends ViewPart {
                         // TODO: Remove this code once we trust the delete function more fully
                         fixOrphanedNodes(gisNode, networkNode, monitor);
                     } else if (gisNode != null && containseDatasetNode) {
-                        Transaction transaction = NeoServiceProvider.getProvider().getService().beginTx();
+                        Transaction transaction = getService().beginTx();
                         try {
                             for (Relationship relation : gisNode.getRelationships()) {
                                 relation.delete();
@@ -1132,9 +1225,9 @@ public class NetworkTreeView extends ViewPart {
                 private void fixOrphanedNodes(final Node gisNode, final Node networkNode, IProgressMonitor monitor) {
                     final ArrayList<Node> orphans = new ArrayList<Node>();
                     final ArrayList<String> orphanNames = new ArrayList<String>();
-                    Transaction transaction = NeoServiceProvider.getProvider().getService().beginTx();
+                    Transaction transaction = getService().beginTx();
                     try {
-                        final long refId = NeoServiceProvider.getProvider().getService().getReferenceNode().getId();
+                        final long refId = getService().getReferenceNode().getId();
                         final long netId = networkNode.getId();
                         monitor.subTask("Searching for orphaned nodes");
                         for (Node node : gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, GeoNeoRelationshipTypes.NEXT,
@@ -1174,7 +1267,7 @@ public class NetworkTreeView extends ViewPart {
                             if (count++ > 10)
                                 break;
                         }
-                        transaction = NeoServiceProvider.getProvider().getService().beginTx();
+                        transaction = getService().beginTx();
                         try {
                             String parentType = "unknown";
                             try {
@@ -1182,7 +1275,7 @@ public class NetworkTreeView extends ViewPart {
                                         "type").toString();
                             } catch (Exception e) {
                             }
-                            Node parent = NeoServiceProvider.getProvider().getService().createNode();
+                            Node parent = getService().createNode();
                             parent.setProperty("name", Integer.toString(orphans.size()) + " - Orphans from failed deletion");
                             parent.setProperty("type", parentType);
                             networkNode.createRelationshipTo(parent, NetworkRelationshipTypes.CHILD);
@@ -1201,7 +1294,7 @@ public class NetworkTreeView extends ViewPart {
 
                 private int getTreeSize(Node node) {
                     int size = 0;
-                    Transaction transaction = NeoServiceProvider.getProvider().getService().beginTx();
+                    Transaction transaction = getService().beginTx();
                     try {
                         for (@SuppressWarnings("unused")
                         Node nodeToClean : node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL, NetworkRelationshipTypes.CHILD,
@@ -1216,7 +1309,7 @@ public class NetworkTreeView extends ViewPart {
                 }
 
                 private void cleanTree(Node node, IProgressMonitor monitor) {
-                    Transaction transaction = NeoServiceProvider.getProvider().getService().beginTx();
+                    Transaction transaction = getService().beginTx();
                     try {
                         for (Node nodeToClean : node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, NetworkRelationshipTypes.CHILD,
                                 Direction.OUTGOING)) {
@@ -1838,6 +1931,10 @@ public class NetworkTreeView extends ViewPart {
         if (result == Dialog.CANCEL)
             return oldName;
         return dialog.getValue();
+    }
+
+    private GraphDatabaseService getService() {
+        return NeoServiceProvider.getProvider().getService();
     }
 
     /**

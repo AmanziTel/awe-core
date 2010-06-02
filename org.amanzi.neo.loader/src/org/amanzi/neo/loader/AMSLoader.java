@@ -500,7 +500,7 @@ public class AMSLoader extends AbstractCallLoader {
 		else {
 			startIndex++;
 		}
-		
+		String commonFilename = filename;
 		//we should load all files #1, #2 and #3 in a single file node
 		if (newFile) {
 			String tempName = filename.substring(startIndex, filename.lastIndexOf("#"));
@@ -515,7 +515,9 @@ public class AMSLoader extends AbstractCallLoader {
 		}
 		
 		if (file == null) {
-            file = NeoUtils.findOrCreateFileNode(neo, currentDirectoryNode, basename, filename).getRight();
+		  //we should load all files #1, #2 and #3 in a single file node, but only #2 should be opened in editor.
+		    commonFilename = commonFilename.substring(0,commonFilename.lastIndexOf("#")+1)+"2.log";
+		    file = NeoUtils.findOrCreateFileNode(neo, currentDirectoryNode, basename, commonFilename).getRight();
             file.createRelationshipTo(mp, GeoNeoRelationshipTypes.CHILD);
 		}		
 	}

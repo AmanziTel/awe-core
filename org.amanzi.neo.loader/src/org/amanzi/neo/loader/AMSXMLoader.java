@@ -360,7 +360,7 @@ public class AMSXMLoader extends AbstractCallLoader {
         tocttc = null;
         tocttcGroup = null;
         lastDatasetNode = null;
-        datasetFileNode = NeoUtils.findOrCreateFileNode(neo, datasetNode, singleFile.getName(), singleFile.getName()).getRight();
+        datasetFileNode = NeoUtils.findOrCreateFileNode(neo, datasetNode, singleFile.getName(), singleFile.getPath()).getRight();
         XMLReader rdr = XMLReaderFactory.createXMLReader("org.apache.xerces.parsers.SAXParser");
         rdr.setContentHandler(handler);
         in = new CountingFileInputStream(singleFile);

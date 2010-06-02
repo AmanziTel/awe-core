@@ -16,7 +16,9 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.ide,
  org.amanzi.integrator.awe,
  org.rubypeople.rdt.core,
- org.rubypeople.rdt.ui
+ org.rubypeople.rdt.ui,
+ org.eclipse.ui.editors;bundle-version="3.3.2",
+ org.eclipse.core.filesystem;bundle-version="1.1.0"
 Eclipse-LazyStart: true
 Export-Package: org.amanzi.awe.awe.views.view.provider,
  org.amanzi.awe.views.network,
