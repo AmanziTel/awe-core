@@ -456,10 +456,22 @@ public class NeoUtils {
      * @return gis node or null
      */
     public static Node findGisNodeByChild(Node childNode) {
+        return findGisNodeByChild(childNode,NeoServiceProvider.getProvider().getService());
+
+    }
+
+    /**
+     * Finds gis node by child.
+     * 
+     * @param childNode child
+     * @param service NeoService
+     * @return gis node or null
+     */
+    public static Node findGisNodeByChild(Node childNode, GraphDatabaseService service) {
         if (childNode == null) {
             return null;
         }
-        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+        Transaction tx = service.beginTx();
         try {
             Iterator<Node> gisIterator = childNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
 
@@ -471,31 +483,6 @@ public class NeoUtils {
             }, NetworkRelationshipTypes.CHILD, Direction.INCOMING, GeoNeoRelationshipTypes.NEXT, Direction.INCOMING, GeoNeoRelationshipTypes.VIRTUAL_DATASET,
                     Direction.INCOMING, NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.INCOMING, NetworkRelationshipTypes.TRANSMISSION_DATA, Direction.INCOMING)
                     .iterator();
-            tx.success();
-            return gisIterator.hasNext() ? gisIterator.next() : null;
-        } finally {
-            tx.finish();
-        }
-    }
-
-    /**
-     * Finds gis node by child.
-     * 
-     * @param childNode child
-     * @param service NeoService
-     * @return gis node or null
-     */
-    public static Node findGisNodeByChild(Node childNode, GraphDatabaseService service) {
-        Transaction tx = service.beginTx();
-        try {
-            Iterator<Node> gisIterator = childNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
-
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    Node node = currentPos.currentNode();
-                    return isGisNode(node);
-                }
-            }, NetworkRelationshipTypes.CHILD, Direction.INCOMING, GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).iterator();
             tx.success();
             return gisIterator.hasNext() ? gisIterator.next() : null;
         } finally {
@@ -740,21 +727,22 @@ public class NeoUtils {
 
     }
 
+
     /**
      * delete node and all relation from/to it.
      * 
      * @param node - node to delete
      */
-    public static void deleteSingleNode(Node node) {
-        Transaction tx = beginTransaction();
+    public static void deleteSingleNode(Node node,GraphDatabaseService service) {
+        Transaction tx = beginTx(service);
         try {
             for (Relationship relation : node.getRelationships()) {
                 relation.delete();
             }
             node.delete();
-            tx.success();
+            successTx(tx);
         } finally {
-            tx.finish();
+            finishTx(tx);
         }
     }
 

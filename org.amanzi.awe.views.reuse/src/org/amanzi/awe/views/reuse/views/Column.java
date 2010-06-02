@@ -21,9 +21,9 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
@@ -69,7 +69,7 @@ public class Column implements Comparable<Column> {
      *
      * @param prevCol the prev col
      */
-    public void merge(Column prevCol) {
+    public void merge(Column prevCol,GraphDatabaseService service) {
         minValue = prevCol.minValue;
         range += prevCol.range;
         node.setProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, minValue);
@@ -78,7 +78,7 @@ public class Column implements Comparable<Column> {
             node.createRelationshipTo(relation.getOtherNode(node), NetworkRelationshipTypes.AGGREGATE);
         }
         Node parentMain = prevCol.getNode().getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(prevCol.getNode());
-        NeoUtils.deleteSingleNode(prevCol.getNode());
+        NeoUtils.deleteSingleNode(prevCol.getNode(),service);
         node.setProperty(INeoConstants.PROPERTY_NAME_NAME, getColumnName());
         prevCol.setNode(null);
         parentMain.createRelationshipTo(node, GeoNeoRelationshipTypes.CHILD);
@@ -124,11 +124,11 @@ public class Column implements Comparable<Column> {
      * @param distribute the distribute
      * @param propertyValue the property value
      */
-    public Column(Node aggrNode, Node parentNode, double curValue, double range, Distribute distribute, Object propertyValue) {
+    public Column(Node aggrNode, Node parentNode, double curValue, double range, Distribute distribute, Object propertyValue,GraphDatabaseService service) {
         this(curValue, range);
         this.distribute = distribute;
         this.propertyValue = propertyValue;
-        node = NeoServiceProvider.getProvider().getService().createNode();
+        node = service.createNode();
         node.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.COUNT.getId());
         node.setProperty(INeoConstants.PROPERTY_NAME_NAME, getColumnName());
         node.setProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, minValue);

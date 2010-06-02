@@ -26,6 +26,7 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
@@ -457,11 +458,11 @@ public class PropertyHeader {
          * @param value - number value
          * @return (cast to type of property)value
          */
-        public Object getWrappedValue(Number value) {
+        public Object getWrappedValue(Number value,GraphDatabaseService service) {
             if (value == null) {
                 return null;
             }
-            String name = NeoUtils.getSimpleNodeName(typeNode, "");
+            String name = NeoUtils.getSimpleNodeName(typeNode, "",service);
             if (name.equals("long")) {
                 return value.longValue();
             }

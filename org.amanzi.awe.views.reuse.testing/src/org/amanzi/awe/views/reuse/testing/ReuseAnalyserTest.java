@@ -53,9 +53,9 @@ public class ReuseAnalyserTest {
     @Test
     public void testCalculation() throws IOException{
         util=new CommonTestUtil(DATABASE_NAME, MAIN_DIR); 
-        Node root=createStructure();
         Transaction tx = util.getNeo().beginTx();
         try{
+            Node root=createStructure();
             ReturnableEvaluator propertyReturnableEvalvator =createReturnableEvaluator(root);
             tx.success();
             tx.finish();

@@ -31,7 +31,6 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.PropertyHeader;
@@ -216,14 +215,14 @@ public class ReuseAnalyserModel {
             // List<Number> aggregatedValues = new ArrayList<Number>();
             final GisTypes typeOfGis;
             int totalWork;
-            gisNode = NeoUtils.findGisNodeByChild(gisNode);
+            gisNode = NeoUtils.findGisNodeByChild(gisNode,service);
             if (gisNode==null/*||NeoUtils.getNodeType(gisNode, "").equals(NodeTypes.OSS.getId())*/){
                 select = Select.EXISTS;
                 totalWork = 1000;  
                 typeOfGis = GisTypes.NETWORK;
                 
             } else {
-                GeoNeo geoNode = new GeoNeo(NeoServiceProvider.getProvider().getService(), gisNode);
+                GeoNeo geoNode = new GeoNeo(service, gisNode);
                 typeOfGis = geoNode.getGisType();
                 if (typeOfGis == GisTypes.NETWORK){
                     select = Select.EXISTS;
@@ -247,7 +246,7 @@ public class ReuseAnalyserModel {
                     Pair<Double, Double> pair = statistics.getMinMax();
                     min = pair.getLeft();
                     max = pair.getRight();
-                    propertyValue = statistics.getWrappedValue(1);
+                    propertyValue = statistics.getWrappedValue(1,service);
                 }
             }
             int missingPropertyCount = 0;
@@ -387,7 +386,7 @@ public class ReuseAnalyserModel {
             double curValue = min;
             Node parentNode = aggrNode;
             while (curValue <= max) {
-                Column col = new Column(aggrNode, parentNode, curValue, range, distribute, propertyValue);
+                Column col = new Column(aggrNode, parentNode, curValue, range, distribute, propertyValue,service);
                 parentNode = col.getNode();
                 keySet.add(col);
                 result.put(col, 0); // make sure distribution is continuous (includes gaps)
@@ -472,7 +471,7 @@ public class ReuseAnalyserModel {
             Column prev_col = null;
             for (Column column : keySet) {
                 if (prev_col != null && result.get(prev_col) == 0 && result.get(column) == 0) {
-                    column.merge(prev_col);
+                    column.merge(prev_col,service);
                     result.remove(prev_col);
 
                 }
@@ -497,7 +496,7 @@ public class ReuseAnalyserModel {
          * @return true if no error present
          */
         private boolean createStringChart(Node gisNode, Node aggrNode, String propertyName, Distribute distribute, Select select, IProgressMonitor monitor) {
-            Transaction tx = NeoUtils.beginTransaction();
+            Transaction tx = service.beginTx();
             try {
                 GisTypes gisTypes = NeoUtils.getGisType(gisNode, null);
                 Node propertyNode = new PropertyHeader(gisNode).getPropertyNode(propertyName);
@@ -512,7 +511,7 @@ public class ReuseAnalyserModel {
                 }
                 Node parent = aggrNode;
                 for (String property : propertyValue) {
-                    Column column = new Column(aggrNode, parent, 0, 0.0, distribute, property);
+                    Column column = new Column(aggrNode, parent, 0, 0.0, distribute, property,service);
                     column.setValue(((Number)propertyNode.getProperty(property)).intValue());
                     parent = column.getNode();
                     columns.add(column);
@@ -573,7 +572,7 @@ public class ReuseAnalyserModel {
         private boolean computeTransmissionStatistics(Node neighbour, Node aggrNode, String propertyName, Distribute distribute, Select select, IProgressMonitor monitor) {
             Node rootNode = neighbour.getSingleRelationship(NetworkRelationshipTypes.TRANSMISSION_DATA, Direction.INCOMING).getOtherNode(neighbour);
             final String neighbourName = NeoUtils.getSimpleNodeName(neighbour, "");
-            GeoNeo geoNode = new GeoNeo(NeoServiceProvider.getProvider().getService(), NeoUtils.findGisNodeByChild(rootNode));
+            GeoNeo geoNode = new GeoNeo(service, NeoUtils.findGisNodeByChild(rootNode,service));
             int totalWork = (int)geoNode.getCount() * 2;
             LOGGER.debug("Starting to compute statistics for " + propertyName + " with estimated work size of " + totalWork);
             monitor.beginTask("Calculating statistics for " + propertyName, totalWork);
@@ -655,7 +654,7 @@ public class ReuseAnalyserModel {
             double curValue = min;
             Node parentNode = aggrNode;
             while (curValue <= max) {
-                Column col = new Column(aggrNode, parentNode, curValue, range, distribute, propertyValue);
+                Column col = new Column(aggrNode, parentNode, curValue, range, distribute, propertyValue,service);
                 parentNode = col.getNode();
                 keySet.add(col);
                 result.put(col, 0); // make sure distribution is continuous (includes gaps)
@@ -693,7 +692,7 @@ public class ReuseAnalyserModel {
             for (Column column : keySet) {
                 if (prev_col != null && result.get(prev_col) == 0 && result.get(column) == 0) {
                     result.remove(prev_col);
-                    column.merge(prev_col);
+                    column.merge(prev_col,service);
                 }
                 prev_col = column;
             }
@@ -720,7 +719,7 @@ public class ReuseAnalyserModel {
         private boolean computeNeighbourStatistics(Node neighbour, Node aggrNode, String propertyName, Distribute distribute, Select select, IProgressMonitor monitor) {
             Node rootNode = neighbour.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.INCOMING).getOtherNode(neighbour);
             final String neighbourName = NeoUtils.getSimpleNodeName(neighbour, "");
-            GeoNeo geoNode = new GeoNeo(NeoServiceProvider.getProvider().getService(), NeoUtils.findGisNodeByChild(rootNode));
+            GeoNeo geoNode = new GeoNeo(service, NeoUtils.findGisNodeByChild(rootNode,service));
             int totalWork = (int)geoNode.getCount() * 2;
             LOGGER.debug("Starting to compute statistics for " + propertyName + " with estimated work size of " + totalWork);
             monitor.beginTask("Calculating statistics for " + propertyName, totalWork);
@@ -801,7 +800,7 @@ public class ReuseAnalyserModel {
             double curValue = min;
             Node parentNode = aggrNode;
             while (curValue <= max) {
-                Column col = new Column(aggrNode, parentNode, curValue, range, distribute, propertyValue);
+                Column col = new Column(aggrNode, parentNode, curValue, range, distribute, propertyValue,service);
                 parentNode = col.getNode();
                 keySet.add(col);
                 result.put(col, 0); // make sure distribution is continuous (includes gaps)
@@ -839,7 +838,7 @@ public class ReuseAnalyserModel {
             for (Column column : keySet) {
                 if (prev_col != null && result.get(prev_col) == 0 && result.get(column) == 0) {
                     result.remove(prev_col);
-                    column.merge(prev_col);
+                    column.merge(prev_col,service);
                 }
                 prev_col = column;
             }
