@@ -49,7 +49,7 @@ public class CommonTestUtil {
      * @return String
      */
     public  String getMainDirectory(boolean create){
-        new File(databaseDir).mkdirs();
+        new File(mainDirectory).mkdirs();
         return mainDirectory;
     }
     /**
