@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?pde version="3.5"?>
+<?pde version="3.1"?>
 
-<product name="Amanzi Wireless Explorer" id="org.amanzi.awe.product" application="org.amanzi.awe.id1" useFeatures="true" includeLaunchers="true">
+<product name="Amanzi Wireless Explorer" id="org.amanzi.awe.product" application="org.amanzi.awe.id1" useFeatures="true">
 
    <aboutInfo>
       <image path="/org.amanzi.awe/nl/en/about.gif"/>
@@ -20,12 +20,7 @@ For more information and support visit http://www.amanzitel.com/page/AWE
       </text>
    </aboutInfo>
 
-   <configIni use="default">
-      <linux>/org.amanzi.awe.project/config.ini</linux>
-      <macosx>/org.amanzi.awe.project/config.ini</macosx>
-      <solaris>/org.amanzi.awe.project/config.ini</solaris>
-      <win32>/org.amanzi.awe.project/config.ini</win32>
-   </configIni>
+   <configIni use="default"/>
 
    <launcherArgs>
       <vmArgs>-Xmx800M -XX:MaxPermSize=128m -Dosgi.parentClassloader=ext</vmArgs>
@@ -48,8 +43,8 @@ For more information and support visit http://www.amanzitel.com/page/AWE
    </launcher>
 
    <vm>
-      <linux>jre1.6.0_11_gdal</linux>
-      <windows>jre6</windows>
+      <linux type="jre">jre1.6.0_11_gdal</linux>
+      <windows type="jre">jre6</windows>
    </vm>
 
    <plugins>
@@ -58,16 +53,11 @@ For more information and support visit http://www.amanzitel.com/page/AWE
    <features>
       <feature id="org.eclipse.rcp" version="3.3.3.r33x_r20080129-8y8eE9UEUWI6qujeED0xT7bc"/>
       <feature id="org.eclipse.rcp.nls1" version="3.2.0.v200606220026"/>
-      <feature id="net.refractions.udig_base" version="1.1.0"/>
-      <feature id="net.refractions.udig_language" version="1.1.0"/>
-      <feature id="net.refractions.udig_printing" version="1.1.0"/>
-      <feature id="net.refractions.udig_application" version="1.1.1"/>
-      <feature id="net.refractions.udig_platform" version="1.1.1"/>
-      <feature id="org.amanzi.splash_feature" version="1.0.0"/>
       <feature id="org.amanzi.splash.extras_feature" version="1.0.0.qualifier"/>
-      <feature id="org.neo4j.neoclipse.feature" version="0.4.1"/>
+      <feature id="net.refractions.udig" version="1.1.0"/>
+      <feature id="org.amanzi.splash" version="1.0.0"/>
+      <feature id="org.neo4j.neoclipse" version="0.4.1"/>
       <feature id="org.amanzi.awe" version="1.0.0"/>
    </features>
-
 
 </product>
