@@ -123,8 +123,6 @@ public class NetworkSiteLoader extends AbstractLoader {
                     luceneInd.index(siteNode, NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_SITE_NO, NodeTypes.SITE), entry.getValue().toString());
                 }
             }
-            gisNodes.values().iterator().next().incSaved();
-            storingProperties.values().iterator().next().incSaved();
             transaction.success();
             // return true;
         } catch (Exception e) {
@@ -159,8 +157,10 @@ public class NetworkSiteLoader extends AbstractLoader {
                 site.setProperty(INeoConstants.PROPERTY_NAME_NAME, siteField);
                 luceneInd.index(site, NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteField);
                 networkNode.createRelationshipTo(site, NetworkRelationshipTypes.CHILD);
-                debug("Added '" + siteField + "' as child of '" + networkNode.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+                storingProperties.values().iterator().next().incSaved();
+                gisNodes.values().iterator().next().incSaved();
 
+                debug("Added '" + siteField + "' as child of '" + networkNode.getProperty(INeoConstants.PROPERTY_NAME_NAME));
             } finally {
                 tx.finish();
             }
@@ -315,6 +315,16 @@ public class NetworkSiteLoader extends AbstractLoader {
             return true;
         }
         return false;
+    }
+    /**
+     * After all lines have been parsed, this method is called, allowing the implementing class the
+     * opportunity to save any cached information, or write any final statistics. It is not abstract
+     * because it is possible, or even probable, to write an importer that does not need it.
+     */
+    @Override
+    protected void finishUp() {
+        super.finishUp();
+        super.cleanupGisNode();//(datasetNode == null ? file : datasetNode);
     }
 
 }

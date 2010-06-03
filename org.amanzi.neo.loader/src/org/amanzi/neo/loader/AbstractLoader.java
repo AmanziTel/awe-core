@@ -1555,8 +1555,8 @@ public abstract class AbstractLoader {
                 Node gis = gisProperties.getGis();
                 if (gisProperties.getBbox() != null) {
                     gis.setProperty(INeoConstants.PROPERTY_BBOX_NAME, gisProperties.getBbox());
-                    gis.setProperty(INeoConstants.COUNT_TYPE_NAME, gisProperties.savedData);
                 }
+                gis.setProperty(INeoConstants.COUNT_TYPE_NAME, gisProperties.savedData);
                 HashSet<Node> nodeToDelete = new HashSet<Node>();
                 for (Relationship relation : gis.getRelationships(NetworkRelationshipTypes.AGGREGATION, Direction.OUTGOING)) {
                     nodeToDelete.add(relation.getEndNode());

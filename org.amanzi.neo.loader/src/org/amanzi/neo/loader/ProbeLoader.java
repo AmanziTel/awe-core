@@ -38,12 +38,12 @@ import org.neo4j.graphdb.Traverser.Order;
 
 /**
  * <p>
- *
  * </p>
+ * 
  * @author Cinkel_A
  * @since 1.0.0
  */
-public class ProbeLoader extends AbstractLoader{
+public class ProbeLoader extends AbstractLoader {
 
     private boolean needParceHeader;
     private Node network;
@@ -51,10 +51,10 @@ public class ProbeLoader extends AbstractLoader{
     private GisProperties gisProperties;
 
     public ProbeLoader(String gisName, String filename, Display display) {
-        needParceHeader=true;
+        needParceHeader = true;
         network = null;
         initialize("Probe", null, filename, display);
-        basename=gisName;
+        basename = gisName;
         initializeKnownHeaders();
         addNetworkIndexes();
     }
@@ -71,18 +71,22 @@ public class ProbeLoader extends AbstractLoader{
         }
 
     }
+
     @Override
     protected Node getStoringNode(Integer key) {
         return network;
     }
+
     @Override
     protected String getPrymaryType(Integer key) {
         return NodeTypes.PROBE.getId();
     }
+
     @Override
     public Node[] getRootNodes() {
-        return new Node[]{network};
+        return new Node[] {network};
     }
+
     @Override
     protected boolean needParceHeaders() {
         if (needParceHeader) {
@@ -91,6 +95,7 @@ public class ProbeLoader extends AbstractLoader{
         }
         return false;
     }
+
     /**
      * Build a map of internal header names to format specific names for types that need to be known
      * in the algorithms later.
@@ -128,36 +133,35 @@ public class ProbeLoader extends AbstractLoader{
             NeoLoaderPlugin.error("Probe not stored:\t" + lineData);
             return;
         }
-        Node mp=null;
+        Node mp = null;
         Transaction transaction = neo.beginTx();
         try {
             Node probeNode = findOrCreateProbe(network, probeName);
             for (Map.Entry<String, Object> entry : lineData.entrySet()) {
                 if (INeoConstants.PROPERTY_LAT_NAME.equals(entry.getKey()) || INeoConstants.PROPERTY_LON_NAME.equals(entry.getKey())) {
-                    if (mp==null){
-                        mp=neo.createNode();
+                    if (mp == null) {
+                        mp = neo.createNode();
                         NodeTypes.MP.setNodeType(mp, neo);
                         probeNode.createRelationshipTo(mp, GeoNeoRelationshipTypes.LOCATION);
                     }
                     mp.setProperty(entry.getKey(), ((Number)entry.getValue()).doubleValue());
                 } else {
-                probeNode.setProperty(entry.getKey(), entry.getValue());
+                    probeNode.setProperty(entry.getKey(), entry.getValue());
                 }
 
             }
-            if (mp!=null){
+            if (mp != null) {
                 index(mp);
             }
             index(probeNode);
             Double currentLatitude = (Double)probeNode.getProperty(INeoConstants.PROPERTY_LAT_NAME, null);
             Double currentLongitude = (Double)probeNode.getProperty(INeoConstants.PROPERTY_LON_NAME, null);
             if (currentLatitude != null && currentLongitude != null) {
-
                 gisProperties.updateBBox(currentLatitude, currentLongitude);
                 gisProperties.checkCRS(currentLatitude.floatValue(), currentLongitude.floatValue(), null);
-                gisProperties.incSaved();
             }
-            storingProperties.values().iterator().next().incSaved();
+            gisProperties.incSaved();
+            
             transaction.success();
         } finally {
             transaction.finish();
@@ -171,9 +175,9 @@ public class ProbeLoader extends AbstractLoader{
      * @return
      */
     private Node findOrCreateProbe(Node networkNode, final String probeName) {
-        //TODO use luciene index by name!
-        Transaction tx=neo.beginTx();
-        try{
+        // TODO use luciene index by name!
+        Transaction tx = neo.beginTx();
+        try {
             Iterator<Node> iterator = networkNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
                 @Override
@@ -189,9 +193,10 @@ public class ProbeLoader extends AbstractLoader{
             result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.PROBE.getId());
             result.setProperty(INeoConstants.PROPERTY_NAME_NAME, probeName);
             network.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
+            storingProperties.values().iterator().next().incSaved();
             tx.success();
             return result;
-        }finally{
+        } finally {
             tx.finish();
         }
 
@@ -200,6 +205,9 @@ public class ProbeLoader extends AbstractLoader{
     @Override
     protected void finishUp() {
         super.finishUp();
+        gisNodes.clear();
+        gisNodes.put("", gisProperties);
+        super.cleanupGisNode();
         gisProperties.saveBBox();
         gisProperties.saveCRS();
         try {
