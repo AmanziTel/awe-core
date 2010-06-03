@@ -128,6 +128,7 @@ public class IdenLoader extends DriveLoader {
             	NeoUtils.addChild(file, node, lastChild, neo);
             }
             lastChild = node;
+            storingProperties.values().iterator().next().incSaved();
         } finally {
             transaction.finish();
         }

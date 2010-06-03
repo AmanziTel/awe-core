@@ -110,6 +110,7 @@ public class APDLoader extends AbstractLoader {
             index(node);
             NeoUtils.addChild(fileNode, node, lastChild, neo);
             lastChild = node;
+            storingProperties.values().iterator().next().incSaved();
         } finally {
             transaction.finish();
         }

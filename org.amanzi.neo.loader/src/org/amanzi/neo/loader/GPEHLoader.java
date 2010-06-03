@@ -397,6 +397,7 @@ public void printStats(boolean verbose) {
             tx.success();
             index(eventNode);
             eventLastNode = eventNode;
+            storingProperties.values().iterator().next().incSaved();
         } finally {
             tx.finish();
         }

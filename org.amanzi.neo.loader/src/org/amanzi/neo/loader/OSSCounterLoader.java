@@ -391,6 +391,7 @@ public class OSSCounterLoader extends AbstractLoader {
                 mvNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, MV_TYPE);
                 NeoUtils.addChild(parentNode.miNode, mvNode, lastMvChild, neo);
                 lastMvChild = mvNode;
+                storingProperties.values().iterator().next().incSaved();
             } finally {
                 tx.finish();
             }
