@@ -1398,9 +1398,7 @@ public class NetworkTreeView extends ViewPart {
                 }
                 (new DeleteAction(Arrays.asList(new NeoNode[] {previousReport}), "Deleting previous delta report: " + getName())).run();
             }
-            // TODO: Consider building on previous report instead of rebuilding for performance
-            // reasons
-            makePreviousReport();
+
 
             NeoServiceProvider.getProvider().commit();
             Job job = new Job(getName()) {
@@ -1408,6 +1406,9 @@ public class NetworkTreeView extends ViewPart {
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
                     monitor.beginTask(getName(), 100);
+                    // TODO: Consider building on previous report instead of rebuilding for performance
+                    // reasons
+                    makePreviousReport();
                     int initPerc = 5;
                     int searchPerc = 15;
                     int calcPerc = 40;

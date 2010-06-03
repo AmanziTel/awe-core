@@ -124,7 +124,7 @@ public class Root extends NeoNode {
                         }
                     }
                 }
-                if(networkNodes.size()+deltaNodes.hashCode()>MAX_CHILDREN_COUNT){
+                if(networkNodes.size()+deltaNodes.size()>MAX_CHILDREN_COUNT){
                     break;
                 }
             }           
