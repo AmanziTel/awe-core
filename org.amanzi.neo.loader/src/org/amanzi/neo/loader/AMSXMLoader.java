@@ -116,8 +116,6 @@ public class AMSXMLoader extends AbstractCallLoader {
     /** The network name. */
     private String networkName;
 
-    /** The network gis. */
-    private Node networkGis;
 
     /** The last dataset node. */
     private Node lastDatasetNode;
@@ -147,10 +145,12 @@ public class AMSXMLoader extends AbstractCallLoader {
     private final boolean isTest;
     
     /** The event set. */
-    private Set<PropertyCollector>eventSet;
+    private final Set<AbstractEvent>eventSet=new HashSet<AbstractEvent>();
     
     /** The gps set. */
-    private Map<Long,GPSData>gpsSet;
+    private final Set<GPSData>gpsSet=new HashSet<GPSData>();
+
+    private Node datasetGis;
 
     // TODO change after implement feature 1131
 
@@ -222,6 +222,9 @@ public class AMSXMLoader extends AbstractCallLoader {
      * @throws ParseException the parse exception
      */
     private Long getTime(String stringData) throws ParseException {
+        if (stringData==null){
+            return null;
+        }
         int i = stringData.lastIndexOf(':');
         StringBuilder time = new StringBuilder(stringData.substring(0, i)).append(stringData.substring(i + 1, stringData.length()));
         long time2 = formatter.parse(time.toString()).getTime();
@@ -293,7 +296,7 @@ public class AMSXMLoader extends AbstractCallLoader {
      */
     private void addDriveIndexes() {
         try {
-            addIndex(NodeTypes.MP.getId(), NeoUtils.getLocationIndexProperty(networkName));
+            addIndex(NodeTypes.MP.getId(), NeoUtils.getLocationIndexProperty(dataset));
             addIndex(NodeTypes.M.getId(), NeoUtils.getTimeIndexProperty(dataset));
             addIndex(NodeTypes.CALL.getId(), NeoUtils.getTimeIndexProperty(DriveTypes.AMS_CALLS.getFullDatasetName(dataset)));
         } catch (IOException e) {
@@ -374,6 +377,8 @@ public class AMSXMLoader extends AbstractCallLoader {
         if (monitor.isCanceled()){
             return;
         }
+        eventSet.clear();
+        gpsSet.clear();
         tocttc = null;
         tocttcGroup = null;
         lastDatasetNode = null;
@@ -395,6 +400,95 @@ public class AMSXMLoader extends AbstractCallLoader {
             msgCall = null;
         }
         groupCall.clear();
+        handleLocations();
+    }
+
+
+    /**
+     * Handle locations.
+     */
+    private void handleLocations() {
+        if (gpsSet.isEmpty()||eventSet.isEmpty()) {
+            return;
+        }
+        Transaction tx = neo.beginTx();
+        
+        try{
+        if (gpsSet.size() == 1) {
+            createOneMP();
+        } else {
+            
+            Pair<GPSData,GPSData>minMaxOnTime=getMinMaxGpsByTime(gpsSet);
+            GPSData min = minMaxOnTime.getLeft();
+            GPSData max = minMaxOnTime.getRight();
+            if (min.timestamp==max.timestamp){
+               createOneMP(); 
+            } else {
+                //y=ax+b
+                //a=(y2-y1)/(x2-x1) b= y1-ax1;
+                long difTime = max.timestamp-min.timestamp;
+                double aLat=(max.lat-min.lat)/difTime;
+                double aLon=(max.lon-min.lon)/difTime;
+                double bLat=min.lat-aLat*min.timestamp;
+                double bLon=min.lon-aLon*min.timestamp;
+                for (AbstractEvent event : eventSet) {
+                    if (event.node != null && event.timestamp != null) {
+                        Node mp = neo.createNode();
+                        NeoUtils.setNodeName(mp, "mp", neo);
+                        double lat=aLat*event.timestamp+bLat;
+                        double lon=aLon*event.timestamp+bLon;
+                        mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat);
+                        mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon);
+                         mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, event.timestamp);
+                        NodeTypes.MP.setNodeType(mp, null);
+                        GisProperties gisProperties = getGisProperties(dataset);
+                        gisProperties.updateBBox(lat, lon);
+                        gisProperties.incSaved();
+                        index(mp);
+                        event.node.createRelationshipTo(mp, GeoNeoRelationshipTypes.LOCATION);
+                    }
+                }
+            }
+        }
+        tx.success();
+        }finally{
+            tx.finish();
+        }
+    }
+
+    private void createOneMP() {
+        Node mp = neo.createNode();
+        NeoUtils.setNodeName(mp, "mp", neo);
+        GPSData gpsData = gpsSet.iterator().next();
+        gpsData.store(mp);
+        GisProperties gisProperties = getGisProperties(dataset);
+        gisProperties.updateBBox(gpsData.lat, gpsData.lon);
+        gisProperties.incSaved();
+        index(mp);
+        for (AbstractEvent event : eventSet) {
+            if (event.node != null) {
+                event.node.createRelationshipTo(mp, GeoNeoRelationshipTypes.LOCATION);
+            }
+        }
+    }
+
+    /**
+     *
+     * @param gpsSet2
+     * @return
+     */
+    private Pair<GPSData, GPSData> getMinMaxGpsByTime(Set<GPSData> gpsSet) {
+        GPSData min=null;
+        GPSData max=null;
+        for (GPSData data:gpsSet){
+            if (min==null||min.timestamp>data.timestamp){
+                min=data;
+            }
+            if (max==null||max.timestamp<data.timestamp){
+                max=data;
+            }
+        }
+        return new Pair<GPSData, GPSData>(min, max);
     }
 
     /**
@@ -411,12 +505,12 @@ public class AMSXMLoader extends AbstractCallLoader {
         }
 
         basename = networkName;
-        networkGis = findOrCreateGISNode(basename, GisTypes.NETWORK.getHeader(), NetworkTypes.PROBE);
+        Node networkGis = findOrCreateGISNode(basename, GisTypes.NETWORK.getHeader(), NetworkTypes.PROBE);
         networkNode = findOrCreateNetworkNode(networkGis);
 //        driveType=DriveTypes.PROBE;
 //        networkNode = findOrCreateDatasetNode(neo.getReferenceNode(), networkName);
 //        networkGis=findOrCreateGISNode(networkNode, GisTypes.DRIVE.getHeader());
-        getGisProperties(networkName).setCrs(CRS.fromCRS("geographic","EPSG:4326"));
+        //getGisProperties(networkName).setCrs(CRS.fromCRS("geographic","EPSG:4326"));
         this.networkName = basename;
         basename = oldBasename;
         fillProbeMap(networkNode);
@@ -450,8 +544,8 @@ public class AMSXMLoader extends AbstractCallLoader {
         try {
             driveType=DriveTypes.AMS;
             datasetNode = findOrCreateDatasetNode(neo.getReferenceNode(), dataset);
-            findOrCreateGISNode(datasetNode, GisTypes.DRIVE.getHeader());
-
+            datasetGis=findOrCreateGISNode(datasetNode, GisTypes.DRIVE.getHeader());
+            getGisProperties(dataset).setCrs(CRS.fromCRS("geographic","EPSG:4326"));
             callDataset = getVirtualDataset(DriveTypes.AMS_CALLS,true);
 
             tx.success();
@@ -501,6 +595,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             definedValues = new HashMap<String, Class< ? extends Object>>();
             parameterMap = new HashMap<String, AMSCommandParameters>();
             header = getHeaderMap(REAL_DATASET_HEADER_INDEX).headers;
+            eventSet.add(this);
         }
 
        /**
@@ -1595,32 +1690,43 @@ public class AMSXMLoader extends AbstractCallLoader {
             }
             GPSData gps = new GPSData(gpsSentence);
             if (gps.haveValidLocation()) {
-                Transaction tx = neo.beginTx();
+                String stringData=null;
                 try {
-                    Node mp = neo.createNode();
-                    probe.createRelationshipTo(mp, GeoNeoRelationshipTypes.LOCATION);
-
-                    gps.store(mp);
-                    String time=getPropertyMap().get("deliveryTime");
-                    String name="mp";
-                    NeoUtils.setNodeName(mp, name, neo);
-                    if (StringUtils.isNotEmpty(time)){
-                        try {
-                            Long timestamp = getTime(time);
-                            mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
-                        } catch (ParseException e) {
-                            LOGGER.error("wrong data: "+time, e);
-                        }
-                        
+                    stringData = getPropertyMap().get("deliveryTime");
+                    Long time = getTime(stringData);
+                    if (time!=null){
+                        gps.setTimestamp(time);
+                        gpsSet.add(gps);
                     }
-                    GisProperties gis = getGisProperties(networkName);
-                    gis.updateBBox(gps.lat, gps.lon);
-                    gis.checkCRS(((Double)gps.lat).floatValue(), ((Double)gps.lon).floatValue(),null);
-                    index(mp);
-                    tx.success();
-                } finally {
-                    tx.finish();
+                } catch (ParseException e) {
+                    LOGGER.error(String.format("Can't parse time: %s ",stringData ),e);
                 }
+//                Transaction tx = neo.beginTx();
+//                try {
+//                    Node mp = neo.createNode();
+//                    probe.createRelationshipTo(mp, GeoNeoRelationshipTypes.LOCATION);
+//
+//                    gps.store(mp);
+//                    String time=getPropertyMap().get("deliveryTime");
+//                    String name="mp";
+//                    NeoUtils.setNodeName(mp, name, neo);
+//                    if (StringUtils.isNotEmpty(time)){
+//                        try {
+//                            Long timestamp = getTime(time);
+//                            mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+//                        } catch (ParseException e) {
+//                            LOGGER.error("wrong data: "+time, e);
+//                        }
+//                        
+//                    }
+//                    GisProperties gis = getGisProperties(networkName);
+//                    gis.updateBBox(gps.lat, gps.lon);
+//                    gis.checkCRS(((Double)gps.lat).floatValue(), ((Double)gps.lon).floatValue(),null);
+//                    index(mp);
+//                    tx.success();
+//                } finally {
+//                    tx.finish();
+//                }
             }
         }
     }
@@ -1861,6 +1967,9 @@ public class AMSXMLoader extends AbstractCallLoader {
 
         /** The lon. */
         private double lon;
+        
+        /** The timestamp. */
+        private long timestamp;
 
         /** The time. */
         private String time;
@@ -1874,6 +1983,17 @@ public class AMSXMLoader extends AbstractCallLoader {
             valid = false;
             parse(gpsSentence);
         }
+
+
+        /**
+         * Sets the time.
+         *
+         * @param time the new time
+         */
+        public void setTimestamp(long time) {
+            timestamp = time;
+        }
+        
 
         /**
          * Parses the.
@@ -1927,6 +2047,9 @@ public class AMSXMLoader extends AbstractCallLoader {
             assert valid;
             mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat);
             mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon);
+            if (timestamp>0){
+                mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+            }
             NodeTypes.MP.setNodeType(mp, null);
         }
 
@@ -1939,6 +2062,16 @@ public class AMSXMLoader extends AbstractCallLoader {
          */
         public boolean haveValidLocation() {
             return valid;
+        }
+
+
+        /**
+         * Gets the timestamp.
+         *
+         * @return the timestamp
+         */
+        public Long getTimestamp() {
+            return timestamp;
         }
 
     }
