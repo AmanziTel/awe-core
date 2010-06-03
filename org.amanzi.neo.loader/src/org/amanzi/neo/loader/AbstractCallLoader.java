@@ -112,7 +112,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
     private void storeRealCall(Call call) {
         Node probeCallNode = call.getCallerProbe();
         Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
-        callNode.setProperty(INeoConstants.PROPERY_IS_INCLUSIVE, call.isInclusive());
+        callNode.setProperty(INeoConstants.PROPERTY_IS_INCLUSIVE, call.isInclusive());
         long setupDuration = call.getCallSetupEnd() - call.getCallSetupBegin();
         long terminationDuration = call.getCallTerminationEnd() - call.getCallTerminationBegin();
         long callDuration = call.getCallTerminationEnd() - call.getCallSetupBegin();
@@ -151,7 +151,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
     private void storeMessageCall(Call call) {
         Node probeCallNode = call.getCallerProbe();
         Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
-        callNode.setProperty(INeoConstants.PROPERY_IS_INCLUSIVE, call.isInclusive());
+        callNode.setProperty(INeoConstants.PROPERTY_IS_INCLUSIVE, call.isInclusive());
         //TODO remove fake mechanism after investigation
         long callSetupEnd = call.getCallSetupEnd();
         long callTerminationEnd = call.getCallTerminationEnd();
@@ -200,7 +200,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
     private void storeITSICall(Call call) {
         Node probeCallNode = call.getCallerProbe();
         Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
-        callNode.setProperty(INeoConstants.PROPERY_IS_INCLUSIVE, call.isInclusive());
+        callNode.setProperty(INeoConstants.PROPERTY_IS_INCLUSIVE, call.isInclusive());
         long updateTime = call.getCallTerminationEnd() - call.getCallSetupBegin();
         
         LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
@@ -223,7 +223,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
     private void storeITSICCCall(Call call) {
         Node probeCallNode = call.getCallerProbe();
         Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
-        callNode.setProperty(INeoConstants.PROPERY_IS_INCLUSIVE, call.isInclusive());
+        callNode.setProperty(INeoConstants.PROPERTY_IS_INCLUSIVE, call.isInclusive());
         
         LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
 
