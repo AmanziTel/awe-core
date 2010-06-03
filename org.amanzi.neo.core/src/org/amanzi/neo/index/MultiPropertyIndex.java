@@ -230,6 +230,15 @@ public class MultiPropertyIndex<E extends Object> {
         public Object serialize(Object[] data) throws IOException;
 
         public E[] deserialize(Object buffer) throws IOException;
+
+        /**
+         *
+         * @param e
+         * @param stepSize
+         * @return
+         */
+        public E correctOrig(E e, E stepSize);
+
     }
 
     public static class MultiFloatConverter extends PropertyIndex.FloatConverter implements MultiValueConverter<Float> {
@@ -253,6 +262,11 @@ public class MultiPropertyIndex<E extends Object> {
                 result[i] = (Float)data[i];
             }
             return result;
+        }
+
+        @Override
+        public Float correctOrig(Float e, Float stepSize) {
+            return e+stepSize/2;
         }
     }
 
@@ -278,6 +292,11 @@ public class MultiPropertyIndex<E extends Object> {
             }
             return result;
         }
+
+        @Override
+        public Double correctOrig(Double e, Double stepSize) {
+            return e+stepSize/2;
+        }
     }
 
     public static class MultiIntegerConverter extends PropertyIndex.IntegerConverter implements MultiValueConverter<Integer> {
@@ -302,6 +321,11 @@ public class MultiPropertyIndex<E extends Object> {
             }
             return result;
         }
+
+        @Override
+        public Integer correctOrig(Integer e, Integer stepSize) {
+            return e+stepSize/2;
+        }
     }
 
     public static class MultiLongConverter extends PropertyIndex.LongConverter implements MultiValueConverter<Long> {
@@ -325,6 +349,11 @@ public class MultiPropertyIndex<E extends Object> {
                 result[i] = (Long)data[i];
             }
             return result;
+        }
+
+        @Override
+        public Long correctOrig(Long e, Long stepSize) {
+            return e+stepSize/2;
         }
     }
 
@@ -351,7 +380,7 @@ public class MultiPropertyIndex<E extends Object> {
         if (properties == null || properties.length < 1 || properties[0].length() < 1)
             throw new IllegalArgumentException("Index properties must be a non-empty array of non-empty strings");
         this.properties = properties;
-        this.step = step;
+        this.step = step%2==1?step:step+1;
         this.converter = converter;
         this.name = name;
     }
@@ -394,6 +423,11 @@ public class MultiPropertyIndex<E extends Object> {
             }
             if (levels.size() > 0) {
                 this.origin = Arrays.copyOf(levels.get(0).min, levels.get(0).min.length);
+                E stepSize = converter.stepSize(0, step);
+                for (int i = 0; i < origin.length; i++) {
+                    origin[i]=converter.correctOrig(origin[i],stepSize);
+                }
+                
             }
         }
     }

@@ -168,12 +168,12 @@ public class PropertyIndex<E extends Comparable<E>> {
 
         @Override
         public int indexOf(Long value, Long origin, Long stepSize) {
-            return (int)((value - origin) / stepSize);
+            return (int)((value - (origin-stepSize/2)) / stepSize);
         }
 
         @Override
         public Long valueOf(Integer index, Long origin, Long stepSize) {
-            return origin + (long)index * stepSize;
+            return (origin-stepSize/2) + (long)index * stepSize;
         }
 
         @Override
@@ -200,12 +200,12 @@ public class PropertyIndex<E extends Comparable<E>> {
 
         @Override
         public int indexOf(Integer value, Integer origin, Integer stepSize) {
-            return (value - origin) / stepSize;
+            return (value - (origin-stepSize/2)) / stepSize;
         }
 
         @Override
         public Integer valueOf(Integer index, Integer origin, Integer stepSize) {
-            return origin + index * stepSize;
+            return (origin-stepSize/2) + index * stepSize;
         }
 
         @Override
@@ -233,12 +233,12 @@ public class PropertyIndex<E extends Comparable<E>> {
         @Override
         public int indexOf(Float value, Float origin, Float stepSize) {
             // We found Math.floor() performed as well as 'if+cast+floor', so use it only
-            return (int)(Math.floor((value - origin) / stepSize));
+            return (int)(Math.floor((value - (origin-stepSize/2)) / stepSize));
         }
 
         @Override
         public Float valueOf(Integer index, Float origin, Float stepSize) {
-            return origin + (float)index * stepSize;
+            return (origin-stepSize/2) + (float)index * stepSize;
         }
 
         @Override
@@ -266,12 +266,12 @@ public class PropertyIndex<E extends Comparable<E>> {
         @Override
         public int indexOf(Double value, Double origin, Double stepSize) {
         	// We found Math.floor() performed as well as 'if+cast+floor', so use it only
-            return (int)(Math.floor((value - origin) / stepSize));
+            return (int)(Math.floor((value - (origin-stepSize/2)) / stepSize));
         }
 
         @Override
         public Double valueOf(Integer index, Double origin, Double stepSize) {
-            return origin + (double)index * stepSize;
+            return (origin-stepSize/2) + (double)index * stepSize;
         }
 
         @Override
@@ -477,6 +477,7 @@ public class PropertyIndex<E extends Comparable<E>> {
                 levels.add(new IndexLevel(level, existingLevelNodes.get(level)));
             }
             if (levels.size() > 0) {
+                //TODO check correct set
                 this.origin = levels.get(0).min;
             }
         }
