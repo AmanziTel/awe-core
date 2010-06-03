@@ -35,6 +35,7 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
+import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.CallProperties.CallResult;
 import org.amanzi.neo.core.enums.CallProperties.CallType;
@@ -142,7 +143,14 @@ public class AMSXMLoader extends AbstractCallLoader {
     /** active file node for event dataset. */
     private Node datasetFileNode;
 
+    /** The is test. */
     private final boolean isTest;
+    
+    /** The event set. */
+    private Set<PropertyCollector>eventSet;
+    
+    /** The gps set. */
+    private Map<Long,GPSData>gpsSet;
 
     // TODO change after implement feature 1131
 
@@ -251,12 +259,14 @@ public class AMSXMLoader extends AbstractCallLoader {
     }
 
     /**
-     * @param dataDir
-     * @param object
-     * @param string
-     * @param string2
-     * @param neo
-     * @param b
+     * Instantiates a new aMSXM loader.
+     *
+     * @param directoryName the directory name
+     * @param display the display
+     * @param datasetName the dataset name
+     * @param networkName the network name
+     * @param neo the neo
+     * @param isTest the is test
      */
     public AMSXMLoader(String directoryName, Display display, String datasetName, String networkName, GraphDatabaseService neo, boolean isTest) {
         driveType = DriveTypes.AMS;
@@ -354,9 +364,9 @@ public class AMSXMLoader extends AbstractCallLoader {
 
     /**
      * Handle file.
-     * 
+     *
      * @param singleFile the file
-     * @param monitor 
+     * @param monitor the monitor
      * @throws SAXException the sAX exception
      * @throws IOException Signals that an I/O exception has occurred.
      */
@@ -401,11 +411,11 @@ public class AMSXMLoader extends AbstractCallLoader {
         }
 
         basename = networkName;
-//        networkGis = findOrCreateGISNode(basename, GisTypes.NETWORK.getHeader(), NetworkTypes.PROBE);
-//        networkNode = findOrCreateNetworkNode(networkGis);
-        driveType=DriveTypes.PROBE;
-        networkNode = findOrCreateDatasetNode(neo.getReferenceNode(), networkName);
-        networkGis=findOrCreateGISNode(networkNode, GisTypes.DRIVE.getHeader());
+        networkGis = findOrCreateGISNode(basename, GisTypes.NETWORK.getHeader(), NetworkTypes.PROBE);
+        networkNode = findOrCreateNetworkNode(networkGis);
+//        driveType=DriveTypes.PROBE;
+//        networkNode = findOrCreateDatasetNode(neo.getReferenceNode(), networkName);
+//        networkGis=findOrCreateGISNode(networkNode, GisTypes.DRIVE.getHeader());
         getGisProperties(networkName).setCrs(CRS.fromCRS("geographic","EPSG:4326"));
         this.networkName = basename;
         basename = oldBasename;
@@ -413,8 +423,9 @@ public class AMSXMLoader extends AbstractCallLoader {
     }
 
     /**
+     * Fill probe map.
      *
-     * @param networkNode
+     * @param networkNode the network node
      */
     private void fillProbeMap(Node networkNode) {
         Transaction tx = neo.beginTx();
@@ -475,6 +486,8 @@ public class AMSXMLoader extends AbstractCallLoader {
 
         /** The header. */
         protected LinkedHashMap<String, Header> header;
+        
+        /** The timestamp. */
         protected Long timestamp = null;
         /**
          * Instantiates a new abstract event.
@@ -490,6 +503,17 @@ public class AMSXMLoader extends AbstractCallLoader {
             header = getHeaderMap(REAL_DATASET_HEADER_INDEX).headers;
         }
 
+       /**
+        * Check inclusive.
+        *
+        * @param call the call
+        */
+       protected void checkInclusive(Call call) {
+           if (!call.isInclusive()){
+               PropertyCollector isInclus = getSubCollectorByName("isInconclusive");
+               call.setInclusive(isInclus!=null);
+           }
+       }
         /**
          * End element.
          * 
@@ -677,6 +701,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             Node callerProbe = probeCallCache.get(getPropertyMap().get("probeID"));
             call.setCallerProbe(callerProbe);
             call.addRelatedNode(node);
+            checkInclusive(call);
             saveCall(call);
         }
     }
@@ -766,6 +791,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             Node callerProbe = probeCallCache.get(getPropertyMap().get("probeID"));
             call.setCallerProbe(callerProbe);
             call.addRelatedNode(node);
+            checkInclusive(call);
             saveCall(call);
         }
 
@@ -784,7 +810,11 @@ public class AMSXMLoader extends AbstractCallLoader {
 
         /** The pesq cast map. */
         protected final Map<String, Class< ? extends Object>> pesqCastMap;
+        
+        /** The delay. */
         int  delay=0;
+        
+        /** The delay count. */
         int delayCount=0;
         /** The last mm. */
         Node lastMM = null;
@@ -889,7 +919,7 @@ public class AMSXMLoader extends AbstractCallLoader {
                     }
                     tocttc.addRelatedNode(node);
                     tocttc.addCalleeProbe(probeCallCache.get(phoneNumberCache.get(tocttc.getCalledPhoneNumber())));
-
+                    checkInclusive(tocttc);
                 }
             } else if (tocttcGroup != null) {
                 if (hook == 1 && simplex == 1) {
@@ -924,6 +954,7 @@ public class AMSXMLoader extends AbstractCallLoader {
                         tocttcGroup.addCalleeProbe(calleeProbe);
                     }
                     tocttcGroup.addRelatedNode(node);
+                    checkInclusive(tocttcGroup);
 
                 }
             }
@@ -976,7 +1007,10 @@ public class AMSXMLoader extends AbstractCallLoader {
         /** The pesq cast map. */
         protected final Map<String, Class< ? extends Object>> pesqCastMap;
 
+        /** The delay. */
         int delay=0;
+        
+        /** The delay count. */
         int delayCount=0;
         /** The last mm. */
         Node lastMM = null;
@@ -1088,6 +1122,7 @@ public class AMSXMLoader extends AbstractCallLoader {
                         tocttc.setCallTerminationBegin(disconnectTime);
                     }
                     if (node.hasProperty("errorCode") || node.hasProperty("errCode")) {
+                        
                         tocttc.setCallResult(CallResult.FAILURE);
                     } else {
                         tocttc.setCallResult(CallResult.SUCCESS);
@@ -1101,6 +1136,7 @@ public class AMSXMLoader extends AbstractCallLoader {
                     if (ct!=1){
                         tocttc.setCallResult(CallResult.FAILURE);  
                     }
+                    checkInclusive(tocttc);
                 } else if (hook == 1 && simplex == 1) {
                     tocttcGroup = new AMSCall();
 
@@ -1134,6 +1170,7 @@ public class AMSXMLoader extends AbstractCallLoader {
                     if (ct!=1){
                         tocttcGroup.setCallResult(CallResult.FAILURE);  
                     }
+                    checkInclusive(tocttcGroup);
                 }
             }
         }
@@ -1333,6 +1370,7 @@ public class AMSXMLoader extends AbstractCallLoader {
                 assert type.equals("13");
                 msgCall.setCallType(CallType.TSM);
             }
+            checkInclusive(msgCall);
 
         }
 
@@ -1417,7 +1455,11 @@ public class AMSXMLoader extends AbstractCallLoader {
             }
             msgCall.addCalleeProbe(probeCallCache.get(getPropertyMap().get("probeID")));
             msgCall.addRelatedNode(node);
+            checkInclusive(msgCall);
+
         }
+
+
     }
 
     /**
@@ -1690,18 +1732,19 @@ public class AMSXMLoader extends AbstractCallLoader {
             if (probeCache.get(id) != null) {
                 return;
             }
-            
-            Node probeNew;
-            Transaction tx = neo.beginTx();
-            try{
-                probeNew=neo.createNode();
-                NodeTypes.PROBE.setNodeType(probeNew, neo);
-                probeNew.setProperty(INeoConstants.PROPERTY_NAME_NAME, id);
-                NeoUtils.addChild(networkNode, probeNew, null, neo);
-                tx.success();
-            }finally{
-                tx.finish();
-            }
+            Node probeNew = NeoUtils.findOrCreateProbeNode(networkNode, id, neo);
+
+//            Node probeNew;
+//            Transaction tx = neo.beginTx();
+//            try{
+//                probeNew=neo.createNode();
+//                NodeTypes.PROBE.setNodeType(probeNew, neo);
+//                probeNew.setProperty(INeoConstants.PROPERTY_NAME_NAME, id);
+//                NeoUtils.addChild(networkNode, probeNew, null, neo);
+//                tx.success();
+//            }finally{
+//                tx.finish();
+//            }
             Node currentProbeCalls = NeoUtils.getCallsNode(callDataset, id, probeNew, neo);
             probeCache.put(id, probeNew);
             probeCallCache.put(id, currentProbeCalls);
@@ -1764,8 +1807,8 @@ public class AMSXMLoader extends AbstractCallLoader {
     /**
      * <p>
      * AMS call
-     * </p>
-     * 
+     * </p>.
+     *
      * @author tsinkel_a
      * @since 1.0.0
      */
@@ -1782,6 +1825,8 @@ public class AMSXMLoader extends AbstractCallLoader {
         public String getCalledPhoneNumber() {
             return calledPhoneNumber;
         }
+
+
 
         /**
          * Sets the called phone number.
@@ -1817,6 +1862,7 @@ public class AMSXMLoader extends AbstractCallLoader {
         /** The lon. */
         private double lon;
 
+        /** The time. */
         private String time;
 
         /**
