@@ -167,4 +167,5 @@ public class INeoConstants {
     public static final String M_EVENT_TYPE = "m_type";
     public static final String M_PROBE_ID = "probe_id";
     public static final String PRIMARY_TYPE_ID = "primary_type";
+    public static final String PROPERTY_IS_INCLUSIVE = "is_inclusive";
 }
