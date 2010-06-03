@@ -18,6 +18,7 @@
   <modules>
     <module>org.amanzi.awe.project</module>
     <module>com.lowagie.itext</module>
+    <module>net.refractions.udig.awe</module>
     <module>net.refractions.udig.catalog.mitab</module>
     <module>net.refractions.udig.printing.model</module>
     <module>net.refractions.udig.printing.model.edit</module>
