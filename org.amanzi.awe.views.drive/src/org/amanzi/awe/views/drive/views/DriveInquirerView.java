@@ -60,7 +60,6 @@ import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
@@ -1420,11 +1419,11 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
             PropertyHeader propertyHeader = new PropertyHeader(gis);
             Collection<String> events = propertyHeader.getEvents();
             eventList = new ArrayList<String>();
-            eventList.add(ALL_EVENTS);
             if (events != null) {
                 eventList.addAll(events);
             }
             Collections.sort(eventList);
+            eventList.add(0, ALL_EVENTS);
             cEvent.setItems(eventList.toArray(new String[0]));
             cEvent.select(0);
 
