@@ -170,7 +170,7 @@ public class CallStatistics {
         long maxTime = minMax.getRight();
         setHighPeriod(minTime, maxTime); 
         if (!monitor.isCanceled()) {
-            buildSecondLevelStatistics(minTime, maxTime);
+            buildSecondLevelStatistics(minTime, maxTime, false);
             if (!isTest) {
                 NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
                         new UpdateDatabaseEvent(UpdateViewEventType.STATISTICS));
@@ -237,15 +237,22 @@ public class CallStatistics {
     }
     
     /**
+     * @return Returns the previousSCellNodes.
+     */
+    protected HashMap<CallTimePeriods, Node> getPreviousSCellNodes() {
+        return previousSCellNodes;
+    }
+    
+    /**
      * Build aggregation statistics
      *
      * @param minTime Long
      * @param maxTime Long
      */
-    protected void buildSecondLevelStatistics(long minTime, long maxTime) {
+    protected void buildSecondLevelStatistics(long minTime, long maxTime, boolean isInconclusive) {
         Node secondLevel = statisticNode.get(StatisticsCallType.AGGREGATION_STATISTICS);
         if(secondLevel==null){
-            AggregationCallStatisticsBuilder aggrStatisticsBuilder = new AggregationCallStatisticsBuilder(datasetNode, neoService);
+            AggregationCallStatisticsBuilder aggrStatisticsBuilder = new AggregationCallStatisticsBuilder(datasetNode, neoService, isInconclusive);
             secondLevel = aggrStatisticsBuilder.createAggregationStatistics(highPeriod, statisticNode,minTime,maxTime);
             if (secondLevel!=null) {
                 statisticNode.put(StatisticsCallType.AGGREGATION_STATISTICS, secondLevel); 
@@ -261,7 +268,7 @@ public class CallStatistics {
      * @throws IOException 
      */
     protected HashMap<StatisticsCallType, Node> createStatistics() throws IOException {
-        startTransaction();
+        startTransaction(false);
         Node parentNode = null;
         HashMap<StatisticsCallType, Node> result = new HashMap<StatisticsCallType, Node>();
         
@@ -349,8 +356,10 @@ public class CallStatistics {
         return result;
     }
 
-    protected void startTransaction() {
-        transaction = neoService.beginTx();
+    protected void startTransaction(boolean inAnyCase) {
+        if (transaction==null||inAnyCase) {
+            transaction = neoService.beginTx();
+        }
     }
     
     /**
@@ -372,7 +381,7 @@ public class CallStatistics {
         Node result = neoService.createNode();
         
         result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALL_ANALYSIS_ROOT.getId());
-        result.setProperty(INeoConstants.PROPERTY_NAME_NAME, INeoConstants.CALL_ANALYZIS_ROOT + "(inconclusive)");
+        result.setProperty(INeoConstants.PROPERTY_NAME_NAME, INeoConstants.CALL_ANALYZIS_ROOT);
         result.setProperty(INeoConstants.PROPERTY_VALUE_NAME, NeoUtils.getNodeName(datasetNode,neoService));
         result.setProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE, isInconclusive);
         result.setProperty(CallProperties.CALL_TYPE.getId(), callType.toString());
@@ -408,16 +417,28 @@ public class CallStatistics {
         }
     }
     
-    private Long getSCellTime(Node sCell, Node probeNode) {
+    private Long getSCellTime(Node sCell, Node probeNode, boolean inconclusive) {
         Node sRow = NeoUtils.getParent(neoService, sCell);
         
-        if (sRow.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-            
-            @Override
-            public boolean isReturnableNode(TraversalPosition currentPos) {
-                return NeoUtils.isProbeNode(currentPos.currentNode());
-            }
-        }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator().next().equals(probeNode)) {        
+        Iterator<Node> rowIterator;
+        if (inconclusive) {
+            rowIterator = sRow.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    return NeoUtils.isProbeNode(currentPos.currentNode());
+                }
+            }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator();
+        }else{
+            rowIterator = sRow.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    return NeoUtils.isProbeNode(currentPos.currentNode());
+                }
+            }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator();
+        }
+        if (rowIterator.hasNext()&&rowIterator.next().equals(probeNode)) {        
             return (Long)sRow.getProperty(INeoConstants.PROPERTY_TIME_NAME);
         }
         else {
@@ -425,13 +446,13 @@ public class CallStatistics {
         }
     }
     
-    protected Statistics getStatisticsFromDatabase(Node statisticsNode, StatisticsCallType callType, final long minDate, final long maxDate, final Node probeNode) {
+    protected Statistics getStatisticsFromDatabase(Node statisticsNode, StatisticsCallType callType, final long minDate, final long maxDate, final Node probeNode, final boolean inconclusive) {
         Iterator<Node> statisticsNodes = statisticsNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
             
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
                 if (NeoUtils.getNodeType(currentPos.currentNode()).equals(NodeTypes.S_CELL.getId())) {
-                    Long sCellTime = getSCellTime(currentPos.currentNode(), probeNode);
+                    Long sCellTime = getSCellTime(currentPos.currentNode(), probeNode, inconclusive);
                     if ((sCellTime != null) && (sCellTime >= minDate) && (sCellTime < maxDate)) {
                         return true;
                     }
@@ -486,7 +507,7 @@ public class CallStatistics {
                 periodStatitics = getStatisticsByHour(null, timeIndex, callType, currentStartDate, nextStartDate);
             }
             else {
-                periodStatitics = getStatisticsFromDatabase(statisticsNode, callType, currentStartDate, nextStartDate, probeNode);
+                periodStatitics = getStatisticsFromDatabase(statisticsNode, callType, currentStartDate, nextStartDate, probeNode, false);
                 if (periodStatitics == null) {
                     periodStatitics = createStatistics(parentNode, statisticsNode, sRow, probeNode, timeIndex, period.getUnderlyingPeriod(), callType, currentStartDate, nextStartDate);
                 }

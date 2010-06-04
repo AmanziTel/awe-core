@@ -56,7 +56,8 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
         type = NeoUtils.getNodeType(node);
         
         if (type.equals(NodeTypes.CALL_ANALYSIS_ROOT.getId())) {
-            name = "Call Analysis: " + node.getProperty(INeoConstants.PROPERTY_VALUE_NAME) + " (" + node.getProperty(CallProperties.CALL_TYPE.getId()) + ")";
+            boolean inconclusive = (Boolean)node.getProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE, false);
+            name = "Call Analysis"+(inconclusive?"*":"")+": " + node.getProperty(INeoConstants.PROPERTY_VALUE_NAME) + " (" + node.getProperty(CallProperties.CALL_TYPE.getId()) + ")";
         }        
         else if (type.equals(NodeTypes.S_CELL.getId())) {
             name = node.getProperty(INeoConstants.PROPERTY_NAME_NAME) + ": " + node.getProperty(INeoConstants.PROPERTY_VALUE_NAME,"0")+" ("+getSCellTime(node)+")";
@@ -101,13 +102,25 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     Node node2 = currentPos.currentNode();
-                    Node probe = node2.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+                    boolean inconclusive = (Boolean)NeoUtils.getParent(null,statisticsNode).getProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE, false);
+                    Node probe;
+                    if (inconclusive) {
+                        probe = node2.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
 
-                        @Override
-                        public boolean isReturnableNode(TraversalPosition currentPos) {
-                            return NeoUtils.isProbeNode(currentPos.currentNode());
-                        }
-                    }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator().next();
+                            @Override
+                            public boolean isReturnableNode(TraversalPosition currentPos) {
+                                return NeoUtils.isProbeNode(currentPos.currentNode());
+                            }
+                        }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator().next();
+                    }else{
+                        probe = node2.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+                            @Override
+                            public boolean isReturnableNode(TraversalPosition currentPos) {
+                                return NeoUtils.isProbeNode(currentPos.currentNode());
+                            }
+                        }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator().next();
+                    }
                     
                     return probe.equals(node);
                 }
@@ -164,13 +177,25 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
         if (type.equals(NodeTypes.PROBE.getId())) {
             return new CallAnalyzisNeoNode(statisticsNode, statisticsNode, nextNum);
         } else if (type.equals(NodeTypes.S_ROW.getId())) {
-            Iterator<Node> probeIterator = node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+            boolean inconclusive = (Boolean)NeoUtils.getParent(null,statisticsNode).getProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE, false);
+            Iterator<Node> probeIterator;
+            if (inconclusive) {
+                probeIterator = node.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
 
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    return NeoUtils.isProbeNode(currentPos.currentNode());
-                }
-            }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator();
+                    @Override
+                    public boolean isReturnableNode(TraversalPosition currentPos) {
+                        return NeoUtils.isProbeNode(currentPos.currentNode());
+                    }
+                }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator();
+            }else{
+                probeIterator = node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+                    @Override
+                    public boolean isReturnableNode(TraversalPosition currentPos) {
+                        return NeoUtils.isProbeNode(currentPos.currentNode());
+                    }
+                }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator();
+            }
             Node parentNode;
             if (probeIterator.hasNext()) {
                 parentNode = probeIterator.next();

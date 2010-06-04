@@ -50,6 +50,7 @@ import org.neo4j.graphdb.Traverser.Order;
 public class AggregationCallStatisticsBuilder {
     
     private GraphDatabaseService service;  
+    private boolean inconclusive;
     
     private Node dataset;    
     private HashMap<CallTimePeriods, Node> previousSCellNodes = new HashMap<CallTimePeriods, Node>();
@@ -65,9 +66,10 @@ public class AggregationCallStatisticsBuilder {
      * @param datasetNode Node (virtual dataset)
      * @param neo GraphDatabaseService
      */
-    public AggregationCallStatisticsBuilder(Node datasetNode,GraphDatabaseService neo) {
+    public AggregationCallStatisticsBuilder(Node datasetNode,GraphDatabaseService neo, boolean isInconclusive) {
         dataset = datasetNode;
         service = neo;
+        inconclusive = isInconclusive;
     }
     
     /**
@@ -407,6 +409,7 @@ public class AggregationCallStatisticsBuilder {
         result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALL_ANALYSIS_ROOT.getId());
         result.setProperty(INeoConstants.PROPERTY_NAME_NAME, INeoConstants.CALL_ANALYZIS_ROOT);
         result.setProperty(INeoConstants.PROPERTY_VALUE_NAME, NeoUtils.getNodeName(dataset,service));
+        result.setProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE, inconclusive);
         result.setProperty(CallProperties.CALL_TYPE.getId(), StatisticsCallType.AGGREGATION_STATISTICS.toString());
         
         dataset.createRelationshipTo(result, ProbeCallRelationshipType.CALL_ANALYSIS);

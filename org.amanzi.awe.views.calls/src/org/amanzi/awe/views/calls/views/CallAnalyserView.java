@@ -204,14 +204,15 @@ public class CallAnalyserView extends ViewPart {
                 return;
             }
             GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
-            Traverser sRowTraverser = inputWr.getSrowTraverser(service,getInclInconclusive());
+            boolean inclInconclusive = getInclInconclusive();
+            Traverser sRowTraverser = inputWr.getSrowTraverser(service,inclInconclusive);
             Transaction tx = service.beginTx();
             try {                
                 if (sRowTraverser != null) {
                     StatisticsCallType callType = getCallType();
                     for (Node sRow : sRowTraverser) {
                         if (isRowInTime(sRow)) {
-                            elements.add(new PeriodWrapper(sRow, callType));
+                            elements.add(new PeriodWrapper(sRow, callType,inclInconclusive));
                         }
                     }
                 }
@@ -1292,13 +1293,15 @@ public class CallAnalyserView extends ViewPart {
                                 setTime(dateEnd, timeEnd, times.getRight());
                                 labelProvider.updateHeaders(callType);
                                 updateTable(false);
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             } finally {
                                 tx.finish();                                                                
                             }
                         }
                     }, true);
                     
-                } catch (IOException e) {
+                } catch (Exception e) {
                     // TODO Handle IOException
                     throw (RuntimeException)new RuntimeException().initCause(e);
                 } finally {
@@ -1314,7 +1317,6 @@ public class CallAnalyserView extends ViewPart {
             }
         };
         statGetter.schedule();
-
     }
 
 
@@ -1529,7 +1531,7 @@ public class CallAnalyserView extends ViewPart {
          * @param endTime - end time
          * @param indexPartName - index name
          */
-        public PeriodWrapper(Node sRow, StatisticsCallType callType) {
+        public PeriodWrapper(Node sRow, StatisticsCallType callType, boolean isInconclusive) {
             super();
             this.sRow = sRow;
             mappedValue.clear();
@@ -1544,13 +1546,25 @@ public class CallAnalyserView extends ViewPart {
                 }
             }
             if (!callType.equals(StatisticsCallType.AGGREGATION_STATISTICS)) {
-                probeNode = sRow.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+                Iterator<Node> source = sRow.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
                     @Override
                     public boolean isReturnableNode(TraversalPosition currentPos) {
                         return NeoUtils.isProbeNode(currentPos.currentNode());
                     }
-                }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator().next();
+                }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator();
+                if (source.hasNext()) {
+                    probeNode = source.next();
+                }else if (isInconclusive){
+                    source = sRow.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+
+                        @Override
+                        public boolean isReturnableNode(TraversalPosition currentPos) {
+                            return NeoUtils.isProbeNode(currentPos.currentNode());
+                        }
+                    }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator();
+                    probeNode =  source.next();
+                }
                 host = NeoUtils.getNodeName(probeNode).split(" ")[0];
                 Number f = (Number)probeNode.getProperty(INeoConstants.PROBE_F, null);
                 Number la = (Number)probeNode.getProperty(INeoConstants.PROBE_LA, null);
@@ -1687,8 +1701,7 @@ public class CallAnalyserView extends ViewPart {
         /**
          * @return
          */
-        public Traverser getSrowTraverser(GraphDatabaseService service, boolean inclInconclusive) {
-
+        public Traverser getSrowTraverser(final GraphDatabaseService service,final boolean inclInconclusive) {
             try {
                 CallStatistics statistic;
                 if (inclInconclusive) {
@@ -1724,7 +1737,7 @@ public class CallAnalyserView extends ViewPart {
             } catch (IOException e) {
                 NeoCorePlugin.error(e.getLocalizedMessage(), e);
                 return NeoUtils.emptyTraverser(probe);
-            }
+            }            
         }
 
         /**

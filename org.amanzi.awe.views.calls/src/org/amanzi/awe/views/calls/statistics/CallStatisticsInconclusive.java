@@ -15,7 +15,6 @@ package org.amanzi.awe.views.calls.statistics;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -89,7 +88,7 @@ public class CallStatisticsInconclusive extends CallStatistics {
         long maxTime = minMax.getRight();
         setHighPeriod(minTime, maxTime); 
         if (!getMonitor().isCanceled()) {
-            buildSecondLevelStatistics(minTime, maxTime);
+            buildSecondLevelStatistics(minTime, maxTime, true);
             if (!isTest()) {
                 NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
                         new UpdateDatabaseEvent(UpdateViewEventType.STATISTICS));
@@ -98,7 +97,7 @@ public class CallStatisticsInconclusive extends CallStatistics {
     }
 
     private HashMap<StatisticsCallType, Node> createStatisticInconclusive() throws IOException {
-        startTransaction();
+        startTransaction(false);
         Node parentNode = null;
         HashMap<StatisticsCallType, Node> result = new HashMap<StatisticsCallType, Node>();
         final GraphDatabaseService neoService = getNeoService();
@@ -131,10 +130,10 @@ public class CallStatisticsInconclusive extends CallStatistics {
             }
             
             HashMap<StatisticsCallType, Node> sourseStatistics = createStatistics();
+            startTransaction(true);//transaction was finished in create source statistics.
             Pair<Long, Long> minMax = getTimeBounds(datasetNode);
             long minTime = minMax.getLeft();
             long maxTime = minMax.getRight();
-            System.out.println("Common start "+new Date(minTime)+", end "+new Date(maxTime)); //TODO delete
             CallTimePeriods period = getHighestPeriod(minTime, maxTime);            
             List<StatisticsCallType> callTypes = StatisticsCallType.getTypesByLevel(StatisticsCallType.FIRST_LEVEL);
             IProgressMonitor subMonitor = SubMonitor.convert(getMonitor(), callTypes.size());
@@ -168,6 +167,7 @@ public class CallStatisticsInconclusive extends CallStatistics {
                 }
                 subMonitor.worked(1);
             }
+            getTransaction().success();
             
         }catch (Exception e) {            
             getTransaction().failure();
@@ -182,7 +182,6 @@ public class CallStatisticsInconclusive extends CallStatistics {
     
     private Statistics createStatisticsInconclusive(Node parentNode, Node sourseRootNode, Node highStatisticsNode, Node highLevelSRow, Node probeNode, MultiPropertyIndex<Long> timeIndex, CallTimePeriods period, StatisticsCallType callType, long startDate, long endDate) {
         Statistics statistics = new Statistics();
-        System.out.println("Start "+new Date(startDate)+", end "+new Date(endDate)+ " for period "+period); //TODO delete
         long currentStartDate = period.getFirstTime(startDate);
         long nextStartDate = getNextStartDate(period, endDate, currentStartDate);
         
@@ -197,19 +196,18 @@ public class CallStatisticsInconclusive extends CallStatistics {
         }
         
         do {
-            //System.out.println("Start "+new Date(currentStartDate)+", next start "+new Date(currentStartDate)+", end "+new Date(endDate)); //TODO delete
             if(getMonitor().isCanceled()){
                 break;
             }
-            Node sourceRow = sourceRows.get(currentStartDate);
-            Node row = createSRowNode(statisticsNode, currentStartDate, sourceRow==null?probeNode:sourceRow, highLevelSRow, period);
+            Node sourceRow = sourceRows.get(period.getFirstTime(currentStartDate));
+            Node row = createSRowNode(statisticsNode, period.getFirstTime(currentStartDate), sourceRow==null?probeNode:sourceRow, highLevelSRow, period);
             
             Statistics periodStatitics = new Statistics();
             if (period == CallTimePeriods.HOURLY) {
                 periodStatitics = getStatisticsByHour(sourceRow, timeIndex, callType, currentStartDate, nextStartDate);
             }
             else {
-                periodStatitics = getStatisticsFromDatabase(statisticsNode, callType, currentStartDate, nextStartDate, sourceRow==null?probeNode:sourceRow);
+                periodStatitics = getStatisticsFromDatabase(statisticsNode, callType, currentStartDate, nextStartDate, sourceRow==null?probeNode:sourceRow, true);
                 if (periodStatitics == null) {
                     periodStatitics = createStatisticsInconclusive(parentNode, sourseRootNode, statisticsNode, row, probeNode, timeIndex, period.getUnderlyingPeriod(), callType, currentStartDate, nextStartDate);
                 }
@@ -218,7 +216,7 @@ public class CallStatisticsInconclusive extends CallStatistics {
             for (IStatisticsHeader header : callType.getHeaders()) {                
                 createSCellNode(row, periodStatitics, header, period);
             }
-            
+            getPreviousSCellNodes().put(period, null);
             currentStartDate = nextStartDate;
             nextStartDate = getNextStartDate(period, endDate, currentStartDate);
             commit();
