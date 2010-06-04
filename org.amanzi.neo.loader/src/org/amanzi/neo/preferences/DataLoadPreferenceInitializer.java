@@ -88,6 +88,7 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
             def = null;
         }
         pref.setDefault(DataLoadPreferences.COMMON_CRS_LIST, def.toString());
+        pref.setDefault(DataLoadPreferences.SELECTED_DATA, "");
     }
 
 }
