@@ -16,5 +16,6 @@ Require-Bundle: org.eclipse.ui,
  org.rubypeople.rdt.ui,
  org.eclipse.ui.ide,
  org.amanzi.scripting.jruby,
- org.amanzi.awe.gps;bundle-version="1.0.0"
+ org.amanzi.awe.gps;bundle-version="1.0.0",
+ org.amanzi.neo.loader;bundle-version="1.0.0"
 Eclipse-LazyStart: true

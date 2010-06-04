@@ -9,7 +9,29 @@
       </command>
       <command
       		id="org.amanzi.awe.wizards.Correlation"
+      		
       		name="GEOptimA">
+      </command>
+      <command id="org.amanzi.awe.wizards.geoptima.select"
+      		 name="Select Data Source">
+      </command>
+      <command id="org.amanzi.awe.wizards.geoptima.load"
+      		 name="Load Data Source">
+      </command>
+      <command id="org.amanzi.awe.wizards.geoptima.correlate"
+      		 name="Correlate Data Sources">
+      </command>
+      <command id="org.amanzi.awe.wizards.geoptima.export"
+      		 name="Export to otherApplication">
+      </command>
+      <command id="org.amanzi.awe.wizards.geoptima.replay"
+      		 name="Replay Subscriber Locations">
+      </command>
+      <command id="org.amanzi.awe.wizards.geoptima.reports"
+      		 name="Reports">
+      </command>
+      <command id="org.amanzi.awe.wizards.geoptima.visualise"
+      		 name="Visualise">
       </command>
       <command
             id="org.amanzi.awe.wizards.NetViewCommand"
@@ -25,6 +47,34 @@
       <handler
       		class="org.amanzi.awe.wizards.geoptima.GeoptimaHandler"
       		commandId="org.amanzi.awe.wizards.Correlation">
+      </handler>
+      <handler
+      		class="org.amanzi.awe.wizards.geoptima.SelectDataSourceHandler"
+      		commandId="org.amanzi.awe.wizards.geoptima.select">
+      </handler>
+      <handler
+      		class="org.amanzi.awe.wizards.geoptima.GeoptimaHandler"
+      		commandId="org.amanzi.awe.wizards.geoptima.load">
+      </handler>
+      <handler
+      		class="org.amanzi.awe.wizards.geoptima.GeoptimaHandler"
+      		commandId="org.amanzi.awe.wizards.geoptima.correlate">
+      </handler>
+      <handler
+      		class="org.amanzi.awe.wizards.geoptima.GeoptimaHandler"
+      		commandId="org.amanzi.awe.wizards.geoptima.export">
+      </handler>
+      <handler
+      		class="org.amanzi.awe.wizards.geoptima.GeoptimaHandler"
+      		commandId="org.amanzi.awe.wizards.geoptima.replay">
+      </handler>
+      <handler
+      		class="org.amanzi.awe.wizards.geoptima.GeoptimaHandler"
+      		commandId="org.amanzi.awe.wizards.geoptima.reports">
+      </handler>
+      <handler
+      		class="org.amanzi.awe.wizards.geoptima.GeoptimaHandler"
+      		commandId="org.amanzi.awe.wizards.geoptima.visualise">
       </handler>
       <handler
             class="org.amanzi.awe.wizards.netview.NetViewHandler"
@@ -47,9 +97,13 @@
             <command
             	  commandId="org.amanzi.awe.wizards.Correlation"
             	  id="org.amanzi.awe.wizards.Correlation"
+            	  style="pulldown" 
             	  label="GEOptimA"
             	  mnemonic="GEOptimA">
+            	  
             </command>
+
+
             <command
                   commandId="org.amanzi.awe.wizards.NetViewCommand"
                   id="org.amanzi.awe.wizards.NetViewCommand"
@@ -58,6 +112,38 @@
             </command>
          </toolbar>
       </menuContribution>
+           <menuContribution locationURI="menu:org.amanzi.awe.wizards.Correlation">
+      <command
+       		commandId="org.amanzi.awe.wizards.geoptima.select"
+      		id="org.amanzi.awe.wizards.geoptima.select"
+      		 icon="icons/16/select_data.png">
+      </command>
+      <command
+       		commandId="org.amanzi.awe.wizards.geoptima.load"
+      		 icon="icons/16/load_data.png">
+      </command>
+      <command
+       		commandId="org.amanzi.awe.wizards.geoptima.correlate"
+      		 icon="icons/16/correlate.png">
+      </command>
+      <command
+       		commandId="org.amanzi.awe.wizards.geoptima.export"
+      		 icon="icons/16/export.png">
+      </command>
+      <command
+       		commandId="org.amanzi.awe.wizards.geoptima.replay"
+      		 icon="icons/16/replay.png">
+      </command>
+      <command
+       		commandId="org.amanzi.awe.wizards.geoptima.reports"
+      		 icon="icons/16/reports.png">
+      </command>
+      <command
+       		commandId="org.amanzi.awe.wizards.geoptima.visualise"
+      		 icon="icons/16/visualise.png">
+      </command>
+     </menuContribution>
+      
    </extension>
 
 </plugin>

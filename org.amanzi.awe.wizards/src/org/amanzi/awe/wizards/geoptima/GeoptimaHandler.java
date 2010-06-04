@@ -13,22 +13,12 @@
 
 package org.amanzi.awe.wizards.geoptima;
 
-import javax.media.jai.operator.DilateDescriptor;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardDialog;
-import org.eclipse.ui.IObjectActionDelegate;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
-
-import com.sun.media.jai.util.RWLock;
 
 /**
  * TODO Purpose of
@@ -43,6 +33,8 @@ public class GeoptimaHandler extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         try {
+            if (true)
+                return null;
             IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
             GeoptimaWizard reportWizard = new GeoptimaWizard();
             reportWizard.init(window.getWorkbench(), null);
