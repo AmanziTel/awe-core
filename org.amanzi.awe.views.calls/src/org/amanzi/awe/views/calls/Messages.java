@@ -41,6 +41,8 @@ public class Messages extends NLS {
     public static String CAV_LBL_CALL_TYPE;
     public static String CAV_COL_PERIOD;
     public static String CAV_COL_HOST;
+    public static String CAV_LB_EXPORT;
+    public static String CAV_LB_INCONCLUSIVE;
     
     public static String AIW_PAGE_TITLE;
     public static String AIW_PAGE_DESCR;

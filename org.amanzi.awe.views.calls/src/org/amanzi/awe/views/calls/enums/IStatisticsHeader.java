@@ -40,8 +40,9 @@ public interface IStatisticsHeader {
      * Returns null if call does not good for this header.
      *
      * @param dataNode Node (call or cell)
+     * @param inclInconclusive boolean (is include inconclusive calls)
      * @return Number
      */
-    public Number getStatisticsData(Node dataNode, IStatisticsConstants constants);
+    public Number getStatisticsData(Node dataNode, IStatisticsConstants constants, boolean inclInconclusive);
 
 }

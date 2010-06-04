@@ -224,7 +224,7 @@ public enum AggregationStatisticsHeaders implements IAggrStatisticsHeaders {
     }
 
     @Override
-    public Number getStatisticsData(Node dataNode, IStatisticsConstants constants) {
+    public Number getStatisticsData(Node dataNode, IStatisticsConstants constants, boolean inclInconclusive) {
         return null;
     }
     

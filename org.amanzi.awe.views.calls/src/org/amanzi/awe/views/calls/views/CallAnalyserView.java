@@ -32,6 +32,7 @@ import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
 import org.amanzi.awe.views.calls.enums.StatisticsType;
 import org.amanzi.awe.views.calls.statistics.CallStatistics;
+import org.amanzi.awe.views.calls.statistics.CallStatisticsInconclusive;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.services.events.ShowPreparedViewEvent;
@@ -119,6 +120,8 @@ public class CallAnalyserView extends ViewPart {
     private static final String LBL_CALL_TYPE = Messages.CAV_LBL_CALL_TYPE;
     private static final String LBL_START_TIME = Messages.CAV_LBL_START_TIME;
     private static final String LBL_END_TIME = Messages.CAV_LBL_END_TIME;
+    private static final String LB_EXPORT = Messages.CAV_LB_EXPORT;
+    private static final String LB_INCONCLUSIVE = Messages.CAV_LB_INCONCLUSIVE;
 
     // column name
     private static final String COL_PERIOD = Messages.CAV_COL_PERIOD;
@@ -134,7 +137,7 @@ public class CallAnalyserView extends ViewPart {
     public static final int DEF_SIZE = 100;
     private static final String KEY_ALL = ALL_VALUE;
     public static final int MAX_TABLE_LEN = 500;
-    private static final String LB_EXPORT = "Export";
+    
     private List<ColumnHeaders> columnHeaders = new ArrayList<ColumnHeaders>();
     private LinkedHashMap<String, Node> callDataset = new LinkedHashMap<String, Node>();
     private LinkedHashMap<String, Node> probeCallDataset = new LinkedHashMap<String, Node>();
@@ -160,6 +163,7 @@ public class CallAnalyserView extends ViewPart {
     private DateTime timeStart;
     private DateTime dateEnd;
     private DateTime timeEnd;
+    private Button bInclInconclusive;
 
     
     private enum SortOrder{
@@ -200,7 +204,7 @@ public class CallAnalyserView extends ViewPart {
                 return;
             }
             GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
-            Traverser sRowTraverser = inputWr.getSrowTraverser(service);
+            Traverser sRowTraverser = inputWr.getSrowTraverser(service,getInclInconclusive());
             Transaction tx = service.beginTx();
             try {                
                 if (sRowTraverser != null) {
@@ -697,11 +701,39 @@ public class CallAnalyserView extends ViewPart {
         layout.marginWidth = 3;
         column4.setLayout(layout);
         
-        bExport = new Button(column4, SWT.PUSH);
+        cell1 = new Composite(column4, SWT.FILL);
+        fData = new FormData();
+        fData.left = new FormAttachment(0, 0);
+        fData.right = new FormAttachment(100, 0);
+        cell1.setLayoutData(fData);
+        layout = new FormLayout();
+        layout.marginHeight = 2;
+        layout.marginWidth = 3;
+        cell1.setLayout(layout);
+        
+        bExport = new Button(cell1, SWT.PUSH);
         bExport.setText(LB_EXPORT);
         fData = new FormData();
         fData.right = new FormAttachment(100, 0);
         bExport.setLayoutData(fData);
+        
+        cell2 = new Composite(column4, SWT.FILL);
+        fData = new FormData();
+        fData.left = new FormAttachment(0, 0);
+        fData.top = new FormAttachment(cell1,2);
+        fData.width = MIN_COLUMN_WIDTH;
+        cell2.setLayoutData(fData);
+        layout = new FormLayout();
+        layout.marginHeight = 2;
+        layout.marginWidth = 3;
+        cell2.setLayout(layout);
+        
+        bInclInconclusive = new Button(cell2, SWT.CHECK);
+        bInclInconclusive.setText(LB_INCONCLUSIVE);
+        fData = new FormData();
+        fData.left = new FormAttachment(dateEnd, 2);
+        fData.width = MIN_FIELD_WIDTH;
+        bInclInconclusive.setLayoutData(fData);
         
         // ------- table
         tableViewer = new TableViewer(frame, SWT.BORDER | SWT.FULL_SELECTION);
@@ -1076,6 +1108,18 @@ public class CallAnalyserView extends ViewPart {
              public void keyPressed(KeyEvent e) {
              }
          });
+         bInclInconclusive.addSelectionListener(new SelectionListener() {
+
+             @Override
+             public void widgetSelected(SelectionEvent e) {
+                 formPropertyList();
+             }
+
+             @Override
+             public void widgetDefaultSelected(SelectionEvent e) {
+                 widgetSelected(e);
+             }
+         });
     }
 
     /**
@@ -1213,6 +1257,7 @@ public class CallAnalyserView extends ViewPart {
             setDefaultTime();
             return;
         }
+        final boolean inclInconclusive = getInclInconclusive();
         parent.setCursor(new Cursor(parent.getDisplay(), SWT.CURSOR_WAIT));
         frame.setEnabled(false);        
         Job statGetter = new Job("Get statistics") {            
@@ -1220,7 +1265,12 @@ public class CallAnalyserView extends ViewPart {
             protected IStatus run(IProgressMonitor monitor) {
                 try {
                     GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
-                    final CallStatistics statistics = new CallStatistics(drive, service, monitor);
+                    final CallStatistics statistics;
+                    if (inclInconclusive) {
+                        statistics = new CallStatisticsInconclusive(drive, service, monitor);
+                    }else{
+                        statistics = new CallStatistics(drive, service, monitor);
+                    }
                     final Pair<Long, Long> times = NeoUtils.getMinMaxTimeOfDataset(drive, service);
                     ActionUtil.getInstance().runTask(new Runnable() {
                         @Override
@@ -1265,6 +1315,11 @@ public class CallAnalyserView extends ViewPart {
         };
         statGetter.schedule();
 
+    }
+
+
+    private boolean getInclInconclusive() {
+        return bInclInconclusive.getSelection();
     }
 
     /**
@@ -1632,10 +1687,15 @@ public class CallAnalyserView extends ViewPart {
         /**
          * @return
          */
-        public Traverser getSrowTraverser(GraphDatabaseService service) {
+        public Traverser getSrowTraverser(GraphDatabaseService service, boolean inclInconclusive) {
 
             try {
-                CallStatistics statistic = new CallStatistics(drive, service);
+                CallStatistics statistic;
+                if (inclInconclusive) {
+                    statistic = new CallStatisticsInconclusive(drive, service);
+                }else{
+                    statistic = new CallStatistics(drive, service);
+                }
                 periodNode = statistic.getPeriodNode(periods, callType);
                 
                 if (showEmpty) {
