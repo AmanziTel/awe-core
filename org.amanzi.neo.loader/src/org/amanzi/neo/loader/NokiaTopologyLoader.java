@@ -161,7 +161,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
     */
    private Node initNeighbour() {
        neighbourName = basename;
-       Node result = NeoUtils.findNeighbour(gisNode, neighbourName, neo);
+       Node result = NeoUtils.findNeighbour(networkNode, neighbourName, neo);
        if (result != null) {
            return result;
        }

@@ -187,7 +187,7 @@ public class AggregationCallStatisticsBuilder {
                     for (IStatisticsHeader header : ((IAggrStatisticsHeaders)utilHeader).getDependendHeaders()) {
                         Node cell = sourceCells.get(header);                        
                         if (cell!=null) {
-                            Number value = utilHeader.getStatisticsData(cell, null);
+                            Number value = utilHeader.getStatisticsData(cell, null, false);
                             result.updateHeaderWithCall(utilHeader, value, cell);
                         }
                     }
