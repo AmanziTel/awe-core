@@ -71,22 +71,33 @@ public class ReportModel {
     private static final String GEO_NEO_CLASS="geo_neo_class";
     public ReportModel() {
         try {
-            initializeJRubyInterpreter();
+            initializeJRubyInterpreter(null, null);
         } catch (IOException e) {
             // TODO Handle IOException
+            LOGGER.error(e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+    }
+    public ReportModel(String[] additionalLoadPaths, String[] initScripts) {
+        try {
+            initializeJRubyInterpreter(additionalLoadPaths, initScripts);
+        } catch (IOException e) {
+            // TODO Handle IOException
+            LOGGER.error(e);
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
     public ReportModel(String rubyProjectName) {
         try {
-            initializeJRubyInterpreter();
+            initializeJRubyInterpreter(null, null);
         } catch (IOException e) {
             // TODO Handle IOException
+            LOGGER.error(e);
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
 
-    public void initializeJRubyInterpreter() throws IOException {
+    public void initializeJRubyInterpreter(String[] additionalLoadPaths, final String[] initScripts) throws IOException {
         RubyInstanceConfig config = null;
         config = new RubyInstanceConfig() {
             {
@@ -104,10 +115,13 @@ public class ReportModel {
         };
 
         runtime = Ruby.newInstance(config);
-        String[] loadPaths=new String[1];
+        int n = additionalLoadPaths==null?1:additionalLoadPaths.length+1;
+        String[] loadPaths=new String[n];
+        if (additionalLoadPaths!=null)
+        System.arraycopy(additionalLoadPaths, 0, loadPaths, 1, additionalLoadPaths.length);
         URL entry = Platform.getBundle(KPIPlugin.PLUGIN_ID).getEntry("ruby");
         loadPaths[0] = FileLocator.resolve(entry).getFile();
-        LOGGER.debug("load paths:"+ loadPaths[0]);
+//        LOGGER.debug("load paths:"+ loadPaths[0]);
         
         runtime.getLoadService().init(ScriptUtils.makeLoadPath(loadPaths));
 
@@ -133,6 +147,16 @@ public class ReportModel {
             protected IStatus run(IProgressMonitor monitor) {
                 LOGGER.debug("[DEBUG]Initializing Ruby runtime...");
                 runtime.evalScriptlet(scriptInput);
+                if (initScripts!=null){
+                    for (String script:initScripts){
+                        try {
+                            runtime.evalScriptlet(ReportUtils.readScript(script));
+                        } catch (IOException e) {
+                            // TODO Handle IOException
+                            throw (RuntimeException) new RuntimeException( ).initCause( e );
+                        }
+                    }
+                }
                 LOGGER.debug("[DEBUG]finished");
                 return Status.OK_STATUS;
             }

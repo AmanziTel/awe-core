@@ -84,6 +84,7 @@
     <module>org.amanzi.awe.neighbours</module>
     <module>org.amanzi.awe.wizards</module>
     <module>org.amanzi.awe.gps</module>
+    <module>org.amanzi.awe.report.o2</module>
   </modules>
   <build>
     <plugins>	  

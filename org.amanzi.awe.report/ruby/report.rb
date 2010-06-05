@@ -9,8 +9,6 @@ require 'ruby/gis'
 require 'ruby/filters'
 require "ruby/style"
 require "initKpi"
-#todo delete
-require 'ruby/auto/report_aggregation'
 include_class org.amanzi.neo.core.database.nodes.CellID
 include_class org.amanzi.neo.core.service.NeoServiceProvider
 
@@ -82,7 +80,10 @@ include_class org.jfree.data.time.TimeSeriesCollection
       if type==:bar
         ds=DefaultCategoryDataset.new()
         nodes.each do |node|
+          puts node.props
           values.each do |value|
+          puts node[value]
+          puts node[category]
             ds.addValue(java.lang.Double.parseDouble(node[value].to_s), value, node[category].to_s);
           end
         end
@@ -493,6 +494,8 @@ end
               end
             end
           else
+            puts params[:values]
+            puts params[:categories]
             if params[:values].is_a? String
               #            setDataset(create_chart_dataset(nodes,params[:categories],[params[:values]]))
               @datasets<<create_chart_dataset(nodes,params[:categories],[params[:values]])

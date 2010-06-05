@@ -13,8 +13,6 @@
 
 package org.amanzi.awe.report.pdf;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.amanzi.awe.report.ReportPlugin;
@@ -22,9 +20,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 
-import com.lowagie.text.BadElementException;
 import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
 import com.lowagie.text.Image;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfPageEventHelper;
@@ -43,11 +39,9 @@ public class AWEPageEvent extends PdfPageEventHelper {
     private Image logo;
 
     public AWEPageEvent() {
-         final URL entry = Platform.getBundle(ReportPlugin.PLUGIN_ID).getEntry("icons/amanzi_tel_logo.png");
-         String file;
         try {
-            file = FileLocator.resolve(entry).getFile();
-            logo=Image.getInstance(file);
+         final URL entry = FileLocator.toFileURL(Platform.getBundle(ReportPlugin.PLUGIN_ID).getEntry("icons/amanzi_tel_logo.png"));
+            logo=Image.getInstance(entry.getPath());
             logo.setAbsolutePosition(0, 0);
         } catch (Exception e) {
            LOGGER.error(e);
