@@ -281,7 +281,7 @@ public class UTRANLoader extends AbstractLoader {
 
         this.monitor = monitor;
         mainTx = neo.beginTx();
-        NeoUtils.addTransactionLog(mainTx, Thread.currentThread(), "GPEHLoader");
+        NeoUtils.addTransactionLog(mainTx, Thread.currentThread(), "UTRANLoader");
         try {
             initializeIndexes();
             // monitor = SubMonitor.convert(monitor, sizeAll);
@@ -2308,6 +2308,7 @@ public class UTRANLoader extends AbstractLoader {
             if (sector == null) {
                 sector = neo.createNode();
                 sector.setProperty(INeoConstants.SECTOR_TYPE, UTRAN_SEC_TYPE);
+                storingProperties.values().iterator().next().incSaved();
                 NodeTypes.SECTOR.setNodeType(sector, neo);
                 NeoUtils.setNodeName(sector, cellName, neo);
                 String indexName;
