@@ -113,26 +113,39 @@
          </toolbar>
       </menuContribution>
            <menuContribution locationURI="menu:org.amanzi.awe.wizards.Correlation">
+
       <command
        		commandId="org.amanzi.awe.wizards.geoptima.select"
       		id="org.amanzi.awe.wizards.geoptima.select"
+      		      		  style="push"
       		 icon="icons/16/select_data.png">
+
       </command>
-      <command
-       		commandId="org.amanzi.awe.wizards.geoptima.load"
-      		 icon="icons/16/load_data.png">
-      </command>
+     	<menu id="org.amanzi.awe.wizards.geoptima.load2"
+                label="Load Data Source"
+                style="push"
+                icon="icons/16/load_data.png"
+                mnemonic="Load Data Source">
+        </menu>
+      
+
       <command
        		commandId="org.amanzi.awe.wizards.geoptima.correlate"
+       		 style="push"
       		 icon="icons/16/correlate.png">
+
       </command>
       <command
        		commandId="org.amanzi.awe.wizards.geoptima.export"
+       		 style="push"
       		 icon="icons/16/export.png">
+
       </command>
       <command
        		commandId="org.amanzi.awe.wizards.geoptima.replay"
+       		 style="push"
       		 icon="icons/16/replay.png">
+      		 
       </command>
       <command
        		commandId="org.amanzi.awe.wizards.geoptima.reports"
@@ -142,6 +155,38 @@
        		commandId="org.amanzi.awe.wizards.geoptima.visualise"
       		 icon="icons/16/visualise.png">
       </command>
+     </menuContribution>
+     <menuContribution locationURI="menu:org.amanzi.awe.wizards.geoptima.load2">
+             <command
+                   commandId="org.amanzi.neo.loader.commands.LoadNetworkSite"
+            icon="icons/16/network_site.png"
+            id="org.amanzi.neo.loader.LoadNetworkSite.level2"
+             style="push"
+                   tooltip="Load Network Data"
+                   label="Load Network Data"
+                   mnemonic="Load Network Data">
+           <parameter name="org.amanzi.neo.loader.commands.addtoselect" value="true">
+           </parameter>
+             </command>
+             <command
+                   commandId="org.amanzi.neo.loader.commands.LoadGPEHHandler"
+            icon="icons/16/delta_network.png"
+            id="org.amanzi.neo.loader.LoadGPEH.level2"
+             style="push"
+                   tooltip="Load OSS Data">
+                        <parameter name="org.amanzi.neo.loader.commands.addtoselect" value="true">
+           </parameter>
+             </command>
+             <command
+                   commandId="org.amanzi.neo.loader.commands.LoadDrive"
+            icon="icons/16/drive.png"
+            id="org.amanzi.neo.loader.LoadDrive.level2"
+             style="push"
+                   tooltip="Load Drive Data">
+             <parameter name="org.amanzi.neo.loader.commands.addtoselect" value="true">
+           </parameter>
+             </command>
+             
      </menuContribution>
       
    </extension>

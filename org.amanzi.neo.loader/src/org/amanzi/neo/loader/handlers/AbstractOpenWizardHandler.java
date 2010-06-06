@@ -34,7 +34,7 @@ public abstract class AbstractOpenWizardHandler  extends AbstractHandler{
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         IWorkbenchWindow workbenchWindow= HandlerUtil.getActiveWorkbenchWindowChecked(event);
-        IImportWizard wizard=getWizardInstance();
+        IImportWizard wizard = getWizardInstance(event);
         wizard.init(workbenchWindow.getWorkbench(), null);
         Shell parent = workbenchWindow.getShell();
         WizardDialog dialog = new WizardDialog(parent, wizard);
@@ -44,9 +44,11 @@ public abstract class AbstractOpenWizardHandler  extends AbstractHandler{
     }
 
     /**
-     *return wizard instance 
+     *return wizard instance
+     * 
+     * @param event
      * @return
      */
-    protected abstract IImportWizard getWizardInstance();
+    protected abstract IImportWizard getWizardInstance(ExecutionEvent event);
 
 }

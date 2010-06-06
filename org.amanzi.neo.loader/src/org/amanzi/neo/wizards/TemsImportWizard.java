@@ -33,6 +33,7 @@ public class TemsImportWizard extends Wizard implements IImportWizard {
     /** String PAGE_DESCR field */
     private static final String PAGE_DESCR = NeoLoaderPluginMessages.TemsImportWizard_PAGE_DESCR;
     private TemsImportWizardPage mainPage;
+    private boolean addToSelect;
 
     @Override
     public boolean performFinish() {
@@ -49,5 +50,9 @@ public class TemsImportWizard extends Wizard implements IImportWizard {
     public void addPages() {
         super.addPages();
         addPage(mainPage);
+    }
+
+    public void addToSelectParam(String addToSelect) {
+        this.addToSelect = addToSelect != null && "true".equalsIgnoreCase(addToSelect);
     }
 }

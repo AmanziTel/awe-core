@@ -14,6 +14,7 @@
 package org.amanzi.neo.loader.handlers;
 
 import org.amanzi.neo.wizards.GPEHImportWizard;
+import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.ui.IImportWizard;
 
 /**
@@ -26,8 +27,11 @@ import org.eclipse.ui.IImportWizard;
 public class LoadGPEHHandler extends AbstractOpenWizardHandler {
 
     @Override
-    protected IImportWizard getWizardInstance() {
-        return new GPEHImportWizard();
+    protected IImportWizard getWizardInstance(ExecutionEvent event) {
+        String addToSelect = event.getParameter(LoadNetworkSiteHandler.PARAM_ADD_TO_SELECT);
+        final GPEHImportWizard gpehImportWizard = new GPEHImportWizard();
+        gpehImportWizard.addToSelectParam(addToSelect);
+        return gpehImportWizard;
     }
 
 }

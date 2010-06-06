@@ -16,11 +16,16 @@
              categoryId="org.amanzi.neo.loader.commands.category"
              id="org.amanzi.neo.loader.commands.LoadNetworkSite"
              name="Add Site Data">
+          <commandParameter id="org.amanzi.neo.loader.commands.addtoselect" name="add to select" optional="true">
+        </commandParameter>
+             
        </command>
        <command
              categoryId="org.amanzi.neo.loader.commands.category"
              id="org.amanzi.neo.loader.commands.LoadDrive"
              name="Load Drive Data">
+                       <commandParameter id="org.amanzi.neo.loader.commands.addtoselect" name="add to select" optional="true">
+        </commandParameter>
        </command>
        <command
              categoryId="org.amanzi.neo.loader.commands.category"
@@ -46,6 +51,8 @@
              categoryId="org.amanzi.neo.loader.commands.category"
              id="org.amanzi.neo.loader.commands.LoadGPEHHandler"
              name="Load OSS Data">
+                       <commandParameter id="org.amanzi.neo.loader.commands.addtoselect" name="add to select" optional="true">
+        </commandParameter>
        </command>   
     </extension>
     <extension

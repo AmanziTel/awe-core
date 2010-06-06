@@ -47,6 +47,7 @@ public class GPEHImportWizard extends Wizard implements IImportWizard {
 
     private GPEHImportWizardPage mainPage;
     private Display display;
+    private boolean addToSelect;
 
     @Override
     public boolean performFinish() {
@@ -99,4 +100,7 @@ public class GPEHImportWizard extends Wizard implements IImportWizard {
         display = workbench.getDisplay();
     }
 
+    public void addToSelectParam(String addToSelect) {
+        this.addToSelect = addToSelect != null && "true".equalsIgnoreCase(addToSelect);
+    }
 }

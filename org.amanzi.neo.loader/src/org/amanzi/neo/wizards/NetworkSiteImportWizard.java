@@ -53,6 +53,7 @@ public class NetworkSiteImportWizard extends Wizard implements IImportWizard {
     private static final String PAGE_DESCR = NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_DESCR;
     private NetworkSiteImportWizardPage mainPage;
     private Display display;
+    private boolean addToSelect;
 
     @Override
     public boolean performFinish() {
@@ -135,5 +136,12 @@ public class NetworkSiteImportWizard extends Wizard implements IImportWizard {
     public void addPages() {
         super.addPages();
         addPage(mainPage);
+    }
+
+    /**
+     * @param addToSelect
+     */
+    public void addToSelectParam(String addToSelect) {
+        this.addToSelect = addToSelect != null && "true".equalsIgnoreCase(addToSelect);
     }
 }
