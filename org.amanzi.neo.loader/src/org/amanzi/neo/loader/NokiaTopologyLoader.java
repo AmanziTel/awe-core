@@ -184,7 +184,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
     }
     @Override
     protected String getPrymaryType(Integer key) {
-        return NodeTypes.M.getId();
+        return NodeTypes.SECTOR.getId();
     }
     @Override
     public Node[] getRootNodes() {
@@ -323,6 +323,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
         if(oldLat.equals(0.0) || oldLon.equals(0.0)){
             GisProperties gisProperties = getGisProperties(basename);
             gisProperties.updateBBox(latitude, longitude);
+            gisProperties.incSaved();
             if (gisProperties.getCrs() == null) {
                 gisProperties.checkCRS(latitude, longitude, "");
                 if (!isTest()&&gisProperties.getCrs() != null) {
@@ -720,7 +721,8 @@ public class NokiaTopologyLoader extends AbstractLoader {
 //                sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
                 if(sector == null){
                     Node parent = getSiteNode(getKeyFromDistName(2),isGsm);
-                    sector = addChild(parent, NodeTypes.SECTOR, sectorName);                    
+                    sector = addChild(parent, NodeTypes.SECTOR, sectorName);
+                    storingProperties.values().iterator().next().incSaved();
                 }
                 if (isGsm) {
                     sectorMap.put(btsKey, sector);
