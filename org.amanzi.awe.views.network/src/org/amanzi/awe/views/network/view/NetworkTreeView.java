@@ -72,6 +72,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.ICellModifier;
@@ -131,6 +132,9 @@ import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
  */
 
 public class NetworkTreeView extends ViewPart {
+    
+    private static final int MAX_FILE_SIZE = 102400;
+
     private static final Logger LOGGER = Logger.getLogger(NetworkTreeView.class);
 
     /*
@@ -482,27 +486,33 @@ public class NetworkTreeView extends ViewPart {
             @Override
             public boolean isEnabled() {
                 IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
-                return (selection.size() == 1 && canBeOpenInEditor((NeoNode)selection.getFirstElement()));
+                return selection.size() == 1;
             }
         });
 
     }
     
-    private void openFileFromNode(NeoNode neoNode){ //TODO fire event
+    private void openFileFromNode(NeoNode neoNode){ 
         Transaction transaction = getService().beginTx();
         String filename = "";
         try {
             Node fileNode = getFileNode(neoNode);
             if (fileNode == null) {
-                throw new RuntimeException("Not found file for node "+neoNode);
+                showCanNotOpenMessage();
+                return;
             }
             filename = (String)fileNode.getProperty(INeoConstants.PROPERTY_FILENAME_NAME, null);
             if (filename == null) {
-                throw new RuntimeException("File node for node "+neoNode+" has no file name.");
+                showCanNotOpenMessage();
+                return;
             }
-            File file = new File(filename);
+            File file = new File(filename);            
             if(!file.exists()){
-                throw new RuntimeException("Can not found file "+filename);
+                showCanNotOpenMessage();
+                return;
+            }
+            if(file.length()>MAX_FILE_SIZE&&!userConfirmTooLarge(file.getName())){
+                return;
             }
         } finally {
             transaction.finish();
@@ -525,28 +535,6 @@ public class NetworkTreeView extends ViewPart {
 
     }
     
-    private boolean canBeOpenInEditor(NeoNode neoNode){
-        Transaction transaction = getService().beginTx();
-        try {
-            Node node = neoNode.getNode();
-            if(NodeTypes.getNodeType(node, null).equals(NodeTypes.M)){
-                return true;
-            }
-            Node fileNode = getFileNode(neoNode);
-            if (fileNode == null) {
-                return false;
-            }
-            String filename = (String)fileNode.getProperty(INeoConstants.PROPERTY_FILENAME_NAME, null);
-            if (filename == null) {
-                return false;
-            }
-            File file = new File(filename);
-            return file.exists();
-        } finally {
-            transaction.finish();
-        }
-    }
-    
     private Node getFileNode(NeoNode neoNode){
         Node node = neoNode.getNode();
         NodeTypes nodeType = NodeTypes.getNodeType(node, null);
@@ -562,6 +550,15 @@ public class NetworkTreeView extends ViewPart {
         }
         //TODO Support this for any node with a file node in the parent tree (depth max 3).
         return null;
+    }
+    
+    protected void showCanNotOpenMessage(){
+        MessageDialog.openInformation(viewer.getControl().getShell(), "No file found", "No file found for this data");
+    }
+    
+    protected boolean userConfirmTooLarge(String filemane){
+        return MessageDialog.openConfirm(viewer.getControl().getShell(), "File is quite large", 
+                "The file "+filemane+" is quite large, do you want to open it anyway?");
     }
 
     /**
