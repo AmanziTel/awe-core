@@ -14,7 +14,7 @@
   	<generatedBuildProperties>root.properties</generatedBuildProperties>
   </properties>
   <build>
-  	<finalName>${parent.artifactId}.ams-0.10.${BUILD_NUMBER}</finalName>
+  	<finalName>${parent.artifactId}.ams-1.0.${BUILD_NUMBER}</finalName>
   	<plugins>
       <plugin>
         <groupId>org.sonatype.tycho</groupId>
