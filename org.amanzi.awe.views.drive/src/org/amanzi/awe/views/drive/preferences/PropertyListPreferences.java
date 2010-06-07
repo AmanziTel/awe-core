@@ -89,7 +89,7 @@ public class PropertyListPreferences extends PreferencePage implements IWorkbenc
         createTableColumn();
 
         viewer.setContentProvider(provider);
-        // viewer.setLabelProvider(new TableLabelProvider());
+
         GridData layoutData = new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1);
         viewer.getControl().setLayoutData(layoutData);
         viewer.getControl().setToolTipText(
@@ -212,7 +212,7 @@ public class PropertyListPreferences extends PreferencePage implements IWorkbenc
     }
 
     /**
-     *Create the table columns of the Neighbour types view.
+     *Create the table columns
      */
     private void createTableColumn() {
         Table table = viewer.getTable();
