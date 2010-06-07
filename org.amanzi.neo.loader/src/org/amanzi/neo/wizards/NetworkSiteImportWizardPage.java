@@ -202,7 +202,7 @@ public class NetworkSiteImportWizardPage extends WizardPage {
             }
         });
         editor.setFileExtensions(LoadNetwork.NETWORK_FILE_EXTENSIONS);
-
+        editor.setFileExtensionNames(LoadNetwork.NETWORK_FILE_NAMES);
         label = new Label(main, SWT.LEFT);
         label.setText(NeoLoaderPluginMessages.NetworkSiteImportWizard_DATA_TYPE);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));

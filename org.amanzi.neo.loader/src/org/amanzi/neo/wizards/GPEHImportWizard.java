@@ -45,7 +45,7 @@ import org.eclipse.ui.IWorkbench;
  */
 public class GPEHImportWizard extends Wizard implements IImportWizard {
 
-    private GPEHImportWizardPage mainPage;
+    private OSSImportWizardPage mainPage;
     private Display display;
     private boolean addToSelect;
 
@@ -95,7 +95,7 @@ public class GPEHImportWizard extends Wizard implements IImportWizard {
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
-        mainPage = new GPEHImportWizardPage("ossPage1");
+        mainPage = new OSSImportWizardPage("ossPage1");
         setWindowTitle(NeoLoaderPluginMessages.GpehWindowTitle);
         display = workbench.getDisplay();
     }

@@ -48,7 +48,7 @@ import org.neo4j.graphdb.Node;
  * @author Cinkel_A
  * @since 1.0.0
  */
-public class GPEHImportWizardPage extends WizardPage {
+public class OSSImportWizardPage extends WizardPage {
     private boolean manualDatasetEdit;
     private Combo dataset;
     // private final Object mon=new Object();
@@ -66,7 +66,7 @@ public class GPEHImportWizardPage extends WizardPage {
      * 
      * @param pageName
      */
-    protected GPEHImportWizardPage(String pageName) {
+    protected OSSImportWizardPage(String pageName) {
         super(pageName);
         setTitle(NeoLoaderPluginMessages.GpehTitle);
         setDescription(NeoLoaderPluginMessages.GpehDescr);
@@ -249,8 +249,11 @@ public class GPEHImportWizardPage extends WizardPage {
             if (!(file.isAbsolute() && file.exists())) {
                 return false;
             }
-            // GPEH handle only directories
-            if (file.isFile() && ossDirType.left() == OssType.GPEH) {
+            // GPEH & RNC handle only directories
+            if (file.isFile() && (ossDirType.left() == OssType.GPEH || ossDirType.left() == OssType.COUNTER)) {
+                return false;
+            }
+            if (!file.isFile() && (ossDirType.left() == OssType.APD|| ossDirType.left() == OssType.iDEN)) {
                 return false;
             }
             Node ossNode = ossMap.get(datasetName);

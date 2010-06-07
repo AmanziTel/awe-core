@@ -47,16 +47,17 @@ public class LoadNetwork extends AbstractActionTool {
      * Names of supported files for Network
      */
     public static final String[] NETWORK_FILE_NAMES = {
+        "All Files (*.*)",
         "Comma Separated Values Files (*.csv)",
         "Plain Text Files (*.txt)",
         "OpenOffice.org Spreadsheet Files (*.sxc)",
         "Microsoft Excel Spreadsheet Files (*.xls)",
-        "All Files (*.*)" };
+        "eXtensible Markup Language Files (*.xml)"};
     
     /*
      * Extensions of supported files for Network
      */
-    public static final String[] NETWORK_FILE_EXTENSIONS = {"*.csv", "*.txt", "*.sxc", "*.xls", "*.xml","*.*"};
+    public static final String[] NETWORK_FILE_EXTENSIONS = {"*.*","*.csv", "*.txt", "*.sxc", "*.xls", "*.xml"};
 
     // private static String directory = null;
 

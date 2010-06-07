@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.FileDialog;
 public class FileFieldEditorExt extends FileFieldEditor {
     private String defaulDirrectory;
     private String[] ext;
+    private String[] extNames;
 
     /**
      * Creates a file field editor.
@@ -87,6 +88,9 @@ public class FileFieldEditorExt extends FileFieldEditor {
         if (ext != null) {
             dialog.setFilterExtensions(ext);
         }
+        if (extNames != null) {
+            dialog.setFilterNames(extNames);
+        }
         String file = dialog.open();
         if (file != null) {
             setDefaulDirectory(dialog.getFilterPath());
@@ -103,5 +107,18 @@ public class FileFieldEditorExt extends FileFieldEditor {
     public void setFileExtensions(String[] extensions) {
         this.ext = extensions;
         super.setFileExtensions(extensions);
+        }
+    /**
+     * @return Returns the extNames.
+     */
+    public String[] getFileExtensionNames() {
+        return extNames;
+    }
+
+    /**
+     * @param extNames The extNames to set.
+     */
+    public void setFileExtensionNames(String[] extNames) {
+        this.extNames = extNames;
     }
 }
