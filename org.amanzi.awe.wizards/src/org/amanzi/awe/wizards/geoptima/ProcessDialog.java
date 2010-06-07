@@ -13,12 +13,25 @@
 
 package org.amanzi.awe.wizards.geoptima;
 
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
+
+import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.preferences.DataLoadPreferences;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
 import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -28,6 +41,10 @@ import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.Traverser;
 
 /**
  * TODO Purpose of 
@@ -45,6 +62,10 @@ public class ProcessDialog extends Dialog implements IPropertyChangeListener {
     private Shell shell;
     private Combo cData;
     private Combo cCorrelate;
+    protected String property;
+    protected GraphDatabaseService service;
+    protected Map<String, Node> datamap = new TreeMap<String, Node>();
+    protected Map<String, Node> corData = new TreeMap<String, Node>();
     /**
      * @param parent
      */
@@ -56,6 +77,9 @@ public class ProcessDialog extends Dialog implements IPropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent event) {
+        if (property != getPreferenceStore().getString(DataLoadPreferences.SELECTED_DATA)) {
+            formData();
+        }
     }
 
     public int open() {
@@ -93,10 +117,45 @@ public class ProcessDialog extends Dialog implements IPropertyChangeListener {
     }
 
     private void beforeOpen() {
+        service = NeoServiceProvider.getProvider().getService();
         formData();
     }
 
     protected void formData() {
+        property = getPreferenceStore().getString(DataLoadPreferences.SELECTED_DATA);
+        Set<Node> storedData = new LinkedHashSet<Node>();
+        if (StringUtils.isNotEmpty(property)) {
+            Transaction tx = service.beginTx();
+            try {
+                StringTokenizer st = new StringTokenizer(property, DataLoadPreferences.CRS_DELIMETERS);
+                while (st.hasMoreTokens()) {
+                    String nodeId = st.nextToken();
+                    Node node = service.getNodeById(Long.parseLong(nodeId));
+                    storedData.add(node);
+                }
+            } finally {
+                tx.finish();
+            }
+        }
+        formDataList(storedData);
+    }
+
+    /**
+     * @param storedData
+     */
+    protected void formDataList(Set<Node> storedData) {
+        formdataMap(storedData);
+        cData.setItems(datamap.keySet().toArray(new String[0]));
+    }
+
+    /**
+     * @param storedData
+     */
+    protected void formdataMap(Set<Node> storedData) {
+        datamap.clear();
+        for (Node node : storedData) {
+            datamap.put(NeoUtils.getNodeName(node), node);
+        }
     }
 
     private void createContents(final Shell shell) {
@@ -111,11 +170,24 @@ public class ProcessDialog extends Dialog implements IPropertyChangeListener {
         cData.setLayoutData(layoutData);
         label = new Label(shell, SWT.NONE);
         label.setText("Correlate data:");
+        cData.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                formCorrelateData();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
         cCorrelate = new Combo(shell, SWT.FILL | SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
         layoutData = new GridData();
         layoutData.grabExcessHorizontalSpace = true;
         layoutData.widthHint = 200;
         cCorrelate.setLayoutData(layoutData);
+        cCorrelate.setEnabled(false);
         Button bCorrelate = new Button(shell, SWT.PUSH);
         bCorrelate.setText(getProcessButtonLabel());
         bCorrelate.addSelectionListener(new SelectionAdapter() {
@@ -148,6 +220,40 @@ public class ProcessDialog extends Dialog implements IPropertyChangeListener {
     /**
      *
      */
+    protected void formCorrelateData() {
+        final Node dataNode = datamap.get(cData.getText());
+        corData.clear();
+        
+        if (dataNode != null) {
+            formCorrelateMap(dataNode);
+        }
+        final String[] array = corData.keySet().toArray(new String[0]);
+        cCorrelate.setItems(array);
+        cCorrelate.setEnabled(array.length > 0);
+    }
+
+    /**
+     * @param dataNode
+     */
+    protected void formCorrelateMap(Node dataNode) {
+        corData.clear();
+        if (!NodeTypes.NETWORK.checkNode(dataNode)) {
+            return;
+        }
+        Transaction tx = service.beginTx();
+        try {
+            Traverser travers = NeoUtils.getAllCorrelatedDatasets(dataNode, service);
+            for (Node data : travers) {
+                corData.put(NeoUtils.getNodeName(data), data);
+            }
+        } finally {
+            tx.finish();
+        }
+    }
+
+    /**
+     *
+     */
     protected void processBtn() {
     }
 
@@ -167,5 +273,9 @@ public class ProcessDialog extends Dialog implements IPropertyChangeListener {
      */
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public IPreferenceStore getPreferenceStore() {
+        return NeoLoaderPlugin.getDefault().getPreferenceStore();
     }
 }

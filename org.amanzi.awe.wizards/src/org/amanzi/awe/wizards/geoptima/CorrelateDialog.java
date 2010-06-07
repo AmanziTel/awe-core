@@ -401,7 +401,7 @@ public class CorrelateDialog extends Dialog implements IPropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent event) {
-        if (property != getPreferenceStore().getString(DataLoadPreferences.PROPERY_LISTS)) {
+        if (property != getPreferenceStore().getString(DataLoadPreferences.SELECTED_DATA)) {
             formInput();
         }
     }
