@@ -280,7 +280,7 @@ public class CorrelateDialog extends Dialog implements IPropertyChangeListener {
         for (Node node:corelatedNodes){
             elem.add(new TableElem(node, service));
         }
-        return null;
+        return elem.toArray(new TableElem[0]);
     }
 
     protected void correlate() {

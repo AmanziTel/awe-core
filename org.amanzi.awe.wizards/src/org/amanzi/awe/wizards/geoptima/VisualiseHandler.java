@@ -16,36 +16,23 @@ package org.amanzi.awe.wizards.geoptima;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 /**
- * TODO Purpose of
+ * TODO Purpose of 
  * <p>
+ *
  * </p>
- * 
- * @author Pechko_E
+ * @author TsAr
  * @since 1.0.0
  */
-@Deprecated
-// TODO remove candidate or add action on geoptima toolbar
-public class GeoptimaHandler extends AbstractHandler {
+public class VisualiseHandler extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        try {
-            if (true)
-                return null;
-            IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
-            GeoptimaWizard reportWizard = new GeoptimaWizard();
-            reportWizard.init(window.getWorkbench(), null);
-            WizardDialog dialog = new WizardDialog(window.getShell(), reportWizard);
-            dialog.open();
-        } catch (RuntimeException e) {
-            // TODO Handle RuntimeException
-            throw (RuntimeException) new RuntimeException( ).initCause( e );
-        }
+        IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
+        new ProcessDialog(window.getShell(), "Visualise", "Add on Map").open();
         return null;
     }
 

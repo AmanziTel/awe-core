@@ -65,15 +65,15 @@
       		commandId="org.amanzi.awe.wizards.geoptima.export">
       </handler>
       <handler
-      		class="org.amanzi.awe.wizards.geoptima.GeoptimaHandler"
+      		class="org.amanzi.awe.wizards.geoptima.ReplayHandler"
       		commandId="org.amanzi.awe.wizards.geoptima.replay">
       </handler>
       <handler
-      		class="org.amanzi.awe.wizards.geoptima.GeoptimaHandler"
+      		class="org.amanzi.awe.wizards.geoptima.ReportHandler"
       		commandId="org.amanzi.awe.wizards.geoptima.reports">
       </handler>
       <handler
-      		class="org.amanzi.awe.wizards.geoptima.GeoptimaHandler"
+      		class="org.amanzi.awe.wizards.geoptima.VisualiseHandler"
       		commandId="org.amanzi.awe.wizards.geoptima.visualise">
       </handler>
       <handler

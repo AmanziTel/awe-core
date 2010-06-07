@@ -15,17 +15,21 @@ package org.amanzi.awe.wizards.geoptima;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.StringTokenizer;
 
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoTreeContentProvider;
 import org.amanzi.neo.core.utils.NeoTreeElement;
 import org.amanzi.neo.core.utils.NeoTreeLabelProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
 import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
@@ -60,6 +64,8 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
     private int status;
     private Shell shell;
     private CheckboxTreeViewer viewer;
+    private String property;
+    private GraphDatabaseService service;
 
     /**
      * @param parent
@@ -70,8 +76,35 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent event) {
+        if (property != getPreferenceStore().getString(DataLoadPreferences.PROPERY_LISTS)) {
+            formInput();
+        }
     }
 
+
+    private void formInput() {
+        service = NeoServiceProvider.getProvider().getService();
+        property = getPreferenceStore().getString(DataLoadPreferences.SELECTED_DATA);
+        viewer.setInput(property);
+        viewer.setAllChecked(false);
+        validateExportButton();
+    }
+
+    /**
+     *
+     */
+    private void validateExportButton() {
+        // TODo implement
+    }
+
+    /**
+     * Returs preference store
+     * 
+     * @return IPreferenceStore
+     */
+    public IPreferenceStore getPreferenceStore() {
+        return NeoLoaderPlugin.getDefault().getPreferenceStore();
+    }
     public int open() {
         Shell parentShell = getParent();
         Shell shell = new Shell(parentShell, getStyle());
@@ -103,6 +136,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
      *
      */
     private void beforeOpen() {
+        formInput();
     }
 
     /**
@@ -120,7 +154,8 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
         viewer.setLabelProvider(new NeoTreeLabelProvider());
         viewer.setContentProvider(new TreeContentProvider());
         layoutData = new GridData(SWT.FILL, SWT.FILL, false, true, 2, 1);
-        layoutData.heightHint = 200;
+        layoutData.widthHint = 300;
+        layoutData.heightHint = 400;
         viewer.getControl().setLayoutData(layoutData);
         Button bCorrelate = new Button(shell, SWT.PUSH);
         bCorrelate.setText("Export");
@@ -135,9 +170,10 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
 
         Button btnOk = new Button(shell, SWT.PUSH);
         btnOk.setText("OK");
-        GridData gdBtnCancel = new GridData();
-        gdBtnCancel.horizontalAlignment = GridData.END;
-        btnOk.setLayoutData(gdBtnCancel);
+        GridData gdBtnOk = new GridData();
+        gdBtnOk.horizontalAlignment = GridData.END;
+        gdBtnOk.widthHint = 70;
+        btnOk.setLayoutData(gdBtnOk);
         btnOk.addSelectionListener(new SelectionAdapter() {
 
             @Override
@@ -152,6 +188,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
             @Override
             public void checkStateChanged(CheckStateChangedEvent event) {
                 // TODO implement
+                validateExportButton();
             }
         });
 
@@ -163,11 +200,11 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
     protected void export() {
     }
 
-    private static class TreeContentProvider extends NeoTreeContentProvider {
+    private class TreeContentProvider extends NeoTreeContentProvider {
         LinkedHashSet<TreeElem> elements = new LinkedHashSet<TreeElem>();
         @Override
         public Object[] getElements(Object inputElement) {
-            return null;
+            return elements.toArray(new TreeElem[0]);
         }
 
         @Override
@@ -176,7 +213,22 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
 
         @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-
+            if (newInput == null) {
+                elements.clear();
+            } else {
+                Transaction tx = service.beginTx();
+                try {
+                    String nodeSet = (String)newInput;
+                    StringTokenizer st = new StringTokenizer(nodeSet, DataLoadPreferences.CRS_DELIMETERS);
+                    while (st.hasMoreTokens()) {
+                        String nodeId = st.nextToken();
+                        Node node = service.getNodeById(Long.parseLong(nodeId));
+                        elements.add(new TreeElem(ElemType.ROOT, null, node, null, service));
+                    }
+                } finally {
+                    tx.finish();
+                }
+            }
         }
 
     }
@@ -207,6 +259,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
                 break;
             }
         }
+
         @Override
         public NeoTreeElement[] getChildren() {
             //TODO handle correlate
@@ -239,7 +292,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
                     String[] allProperties = new PropertyHeader(node).getAllFields();
                     if (allProperties!=null){
                         for (String string : allProperties) {
-                            networkElements.add(new TreeElem(ElemType.PROPERTY, string, null, this, service)); 
+                            networkElements.add(new TreeElem(ElemType.PROPERTY, string, node, this, service));
                         }
                     }
                     return networkElements.toArray(new TreeElem[0]);  
@@ -301,6 +354,43 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
                 return false;
             }
             
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = super.hashCode();
+            result = prime * result + ((elemType == null) ? 0 : elemType.hashCode());
+            result = prime * result + ((parent == null) ? 0 : parent.hashCode());
+            result = prime * result + ((node == null) ? 0 : node.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (!super.equals(obj))
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            TreeElem other = (TreeElem)obj;
+            if (elemType == null) {
+                if (other.elemType != null)
+                    return false;
+            } else if (!elemType.equals(other.elemType))
+                return false;
+            if (parent == null) {
+                if (other.parent != null)
+                    return false;
+            } else if (!parent.equals(other.parent))
+                return false;
+            if (node == null) {
+                if (other.node != null)
+                    return false;
+            } else if (!node.equals(other.node))
+                return false;
+            return true;
         }
         
     }

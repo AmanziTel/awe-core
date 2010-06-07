@@ -581,6 +581,9 @@ public enum NodeTypes {
     public static NodeTypes getNodeType(PropertyContainer container,GraphDatabaseService service) {
         Transaction tx = service==null?null:service.beginTx();
         try{
+            if (container == null) {
+                return null;
+            }
             return getEnumById((String)container.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null));
         }finally{
             if (service!=null){

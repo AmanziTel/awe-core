@@ -42,7 +42,7 @@ public abstract class NeoTreeElement implements IAdaptable {
     public NeoTreeElement(Node node, GraphDatabaseService service) {
         this.node = node;
         this.service = service;
-        text = NeoUtils.getSimpleNodeName(node, "", service);
+        text = node == null ? "" : NeoUtils.getSimpleNodeName(node, "", service);
         type = NodeTypes.getNodeType(node, null);
         image = type == null ? null : type.getImage();
     }
