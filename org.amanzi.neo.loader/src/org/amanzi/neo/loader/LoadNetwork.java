@@ -47,7 +47,7 @@ public class LoadNetwork extends AbstractActionTool {
      * Names of supported files for Network
      */
     public static final String[] NETWORK_FILE_NAMES = {
-        "All Files (*.*)",
+        "All supported (*.*)",
         "Comma Separated Values Files (*.csv)",
         "Plain Text Files (*.txt)",
         "OpenOffice.org Spreadsheet Files (*.sxc)",
