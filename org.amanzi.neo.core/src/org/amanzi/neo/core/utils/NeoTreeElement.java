@@ -20,9 +20,8 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * Wrapper of Node for using in views
  * </p>
  * @author TsAr
  * @since 1.0.0
@@ -34,6 +33,12 @@ public abstract class NeoTreeElement implements IAdaptable {
     protected final Node node;
     protected final GraphDatabaseService service;
 
+    /**
+     * Instantiates a new neo tree element.
+     *
+     * @param node the node
+     * @param service the service
+     */
     public NeoTreeElement(Node node, GraphDatabaseService service) {
         this.node = node;
         this.service = service;
@@ -113,6 +118,14 @@ public abstract class NeoTreeElement implements IAdaptable {
      */
     public Node getNode() {
         return node;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public void setImage(Image image) {
+        this.image = image;
     }
 
 

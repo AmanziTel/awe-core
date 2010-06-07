@@ -507,4 +507,8 @@ public class PropertyHeader {
         }
         return null;
     }
+
+    public boolean isHavePropertyNode() {
+        return havePropertyNode;
+    }
 }

@@ -2590,7 +2590,7 @@ public class NeoUtils {
      * @return Traverser
      */
     public static Traverser getAllCorrelatedDatasets(Node networkNode, GraphDatabaseService service) {
-        Transaction tx = beginTx(service);
+       // Transaction tx = beginTx(service);
         try {
             return networkNode.traverse(Order.DEPTH_FIRST, NeoUtils.getStopEvaluator(2), new ReturnableEvaluator() {
 
@@ -2601,7 +2601,7 @@ public class NeoUtils {
                 }
             }, CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING, CorrelationRelationshipTypes.CORRELATED, Direction.INCOMING);
         } finally {
-            finishTx(tx);
+         //   finishTx(tx);
         }
 
     }

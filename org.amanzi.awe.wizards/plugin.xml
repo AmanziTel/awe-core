@@ -57,11 +57,11 @@
       		commandId="org.amanzi.awe.wizards.geoptima.load">
       </handler>
       <handler
-      		class="org.amanzi.awe.wizards.geoptima.GeoptimaHandler"
+      		class="org.amanzi.awe.wizards.geoptima.CorrelateHandler"
       		commandId="org.amanzi.awe.wizards.geoptima.correlate">
       </handler>
       <handler
-      		class="org.amanzi.awe.wizards.geoptima.GeoptimaHandler"
+      		class="org.amanzi.awe.wizards.geoptima.ExportHandler"
       		commandId="org.amanzi.awe.wizards.geoptima.export">
       </handler>
       <handler
