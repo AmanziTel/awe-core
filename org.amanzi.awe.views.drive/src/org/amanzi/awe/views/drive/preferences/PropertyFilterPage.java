@@ -15,6 +15,8 @@ package org.amanzi.awe.views.drive.preferences;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.preferences.DataLoadPreferences;
@@ -47,8 +49,8 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 /**
- * TODO Purpose of
  * <p>
+ * Preference filter page. This page provides the ability to edit options for filtering.
  * </p>
  * 
  * @author NiCK
@@ -56,7 +58,15 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
  */
 public class PropertyFilterPage extends PreferencePage implements IWorkbenchPreferencePage {
     private static final Logger LOGGER = Logger.getLogger(PropertyFilterPage.class);
-    protected static final Color BAD_COLOR = new Color(null, 255, 0, 0);
+
+    protected static final Color RED = new Color(null, 255, 0, 0);
+    protected static final Color GREEN = new Color(null, 0, 255, 0);
+    protected static final Color BLUE = new Color(null, 0, 0, 255);
+    protected static final Color GRAY = new Color(null, 200, 200, 200);
+    protected static final Color BLACK = new Color(null, 0, 0, 0);
+
+    protected static final Color BAD_COLOR = RED;
+
     protected static final int indEncludance = 0;
     protected static final int indDataset = 1;
     protected static final int indProperty = 2;
@@ -67,16 +77,16 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
     @Override
     protected Control createContents(Composite parent) {
         mainFrame = new Group(parent, SWT.NULL);
+        ((Group)mainFrame).setText("List of rules");
 
         GridLayout mainLayout = new GridLayout(3, false);
-
         mainFrame.setLayout(mainLayout);
-
+        
         Label label = new Label(mainFrame, SWT.LEFT);
-
         label.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1));
-        label.setText("Property lists");
-
+        label.setText("To create a new rule, just click on \"NEW\" cell and enter needed values.\n" +
+                "To delete a rule it is need to mark it's operation type as \"remove\". Rule will be removed during saving the changes.");
+        
         viewer = new TableViewer(mainFrame, SWT.BORDER | SWT.FULL_SELECTION);
         TableContentProvider provider = new TableContentProvider();
         createTableColumn();
@@ -85,7 +95,10 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
 
         GridData layoutData = new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1);
         viewer.getControl().setLayoutData(layoutData);
-        viewer.getControl().setToolTipText("ToolTipText");
+//        viewer.getControl().setToolTipText(
+//                "To create a new rule, just click on \"NEW\" cell and enter needed values.\n" +
+//                "To delete a rule it is need to mark it as \"remove\". Rule will be removed during saving the changes.");
+
         layoutData.grabExcessVerticalSpace = true;
         layoutData.grabExcessHorizontalSpace = true;
 
@@ -214,7 +227,8 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
             if (item.getBounds(indEncludance).contains(p)) {
                 RowWr row = (RowWr)item.getData();
                 row.setOperationCase(row.getOperationCase().nextCase());
-                viewer.refresh();
+                updateTable();
+
             }
         }
 
@@ -236,12 +250,60 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
         viewer.refresh();
     }
 
+    /**
+     * @param property
+     * @return
+     */
+    public boolean validateProperty(String property) {
+        if (!property.isEmpty())
+            return validateRegExp(property);
+        return false;
+    }
+
+    /**
+     * @param dataset
+     * @return
+     */
+    public boolean validateDataset(String dataset) {
+        if (dataset.isEmpty())
+            return true;
+        return validateRegExp(dataset);
+
+    }
+
+    /**
+     * Simple regular expression validation
+     * 
+     * @param string
+     */
+    public boolean validateRegExp(String string) {
+        try {
+            Pattern.compile(string);
+        } catch (PatternSyntaxException e) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Check if all data on page valid.
+     * 
+     * @return
+     */
+    private boolean isPageValid() {
+        for (RowWr row : filterRules) {
+            if (row.getOperationCase() != OperationCase.NEW && row.getOperationCase() != OperationCase.REMOVE_CANDIDAT
+                    && !(row.isPropertyValid() && row.isDatasetValid()))
+                return false;
+        }
+        return true;
+    }
+
     @Override
     public boolean performOk() {
         StringBuilder result = new StringBuilder();
-        // checkEmpty();
         for (RowWr wr : filterRules) {
-            if (wr.getOperationCase() != OperationCase.NEW) {
+            if (wr.getOperationCase() != OperationCase.NEW && wr.getOperationCase() != OperationCase.REMOVE_CANDIDAT) {
                 result.append(DataLoadPreferences.CRS_DELIMETERS);
                 result.append(wr.getOperationCase().getStringValue());
                 result.append(DataLoadPreferences.CRS_DELIMETERS);
@@ -260,6 +322,8 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
         private OperationCase operationCase = OperationCase.NEW;
         private String dataset;
         private String property;
+        private boolean isDatasetValid;
+        private boolean isPropertyValid;
 
         /**
          * @param listName
@@ -284,6 +348,7 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
          */
         public void setOperationCase(OperationCase operationCase) {
             this.operationCase = operationCase;
+            setValid(isPageValid());
         }
 
         /**
@@ -298,6 +363,8 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
          */
         public void setDataset(String dataset) {
             this.dataset = dataset;
+            isDatasetValid = validateDataset(this.dataset);
+            setValid(isPageValid());
         }
 
         /**
@@ -312,14 +379,24 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
          */
         public void setProperty(String property) {
             this.property = property;
+            isPropertyValid = validateProperty(this.property);
+            setValid(isPageValid());
         }
 
         /**
-         * @return
+         * @return Returns the isDatasetValid.
          */
-        // public boolean isValid() {
-        // return isValidName() && isValidProperties();
-        // }
+        public boolean isDatasetValid() {
+            return isDatasetValid;
+        }
+
+        /**
+         * @return Returns the isPropertyValid.
+         */
+        public boolean isPropertyValid() {
+            return isPropertyValid;
+        }
+
     }
 
     /*
@@ -362,8 +439,8 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
 
         @Override
         protected boolean canEdit(Object element) {
-            // TODO cells not editable if OC == NEW
-            return columnIndex != indEncludance;
+            RowWr row = (RowWr)element;
+            return columnIndex != indEncludance && row.getOperationCase() != OperationCase.NEW;
         }
 
         @Override
@@ -422,15 +499,19 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
 
         @Override
         public Color getForeground(Object element) {
-            // TODO color mark
-            // RowWr wrapper = (RowWr)element;
-            boolean result;
-            if (columnIndex == 0) {
-                result = false;
-            } else {
-                result = true;
+            RowWr row = (RowWr)element;
+            if (row.getOperationCase() == OperationCase.NEW || row.getOperationCase() == OperationCase.REMOVE_CANDIDAT)
+                return GRAY;
+            switch (columnIndex) {
+            case indEncludance:
+                return row.getOperationCase() == OperationCase.INCLUDE ? GREEN : BLUE;
+            case indDataset:
+                return row.isDatasetValid() ? BLACK : BAD_COLOR;
+            case indProperty:
+                return row.isPropertyValid() ? BLACK : BAD_COLOR;
+            default:
+                return BLACK;
             }
-            return result ? null : BAD_COLOR;
         }
 
         @Override
@@ -451,7 +532,7 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
     }
 
     public enum OperationCase {
-        INCLUDE("Include"), EXCLUDE("Exclude"), NEW("");
+        INCLUDE("Include"), EXCLUDE("Exclude"), NEW("NEW"), REMOVE_CANDIDAT("remove");
 
         private final String stringValue;
 
@@ -464,7 +545,7 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
             case INCLUDE:
                 return EXCLUDE;
             case EXCLUDE:
-                return INCLUDE;
+                return REMOVE_CANDIDAT;
             default:
                 return INCLUDE;
             }
@@ -490,5 +571,12 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
     @Override
     public IPreferenceStore getPreferenceStore() {
         return NeoLoaderPlugin.getDefault().getPreferenceStore();
+    }
+    @Override
+    protected void performDefaults() {
+        super.performDefaults();
+        getPreferenceStore().setToDefault(DataLoadPreferences.FILTER_RULES);
+        formRulesList();
+        viewer.setInput("");
     }
 }
