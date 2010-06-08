@@ -190,5 +190,14 @@
      </menuContribution>
       
    </extension>
+   <extension
+         point="net.refractions.udig.mapgraphic.mapgraphic">
+      <mapGraphic
+            class="org.amanzi.awe.wizards.geoptima.VisualiseLayer"
+            icon="icons/16/replay.png"
+            id="org.amanzi.awe.wizards.geoptima.VisualiseLayer"
+            name="Replay by time">
+      </mapGraphic>
+   </extension>
 
 </plugin>
