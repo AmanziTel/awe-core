@@ -255,9 +255,10 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
      * @return
      */
     public boolean validateProperty(String property) {
-        if (!property.isEmpty())
-            return validateRegExp(property);
-        return false;
+//        if (!property.isEmpty())
+//            return validateRegExp(property);
+//        return false;
+        return !property.isEmpty();
     }
 
     /**
@@ -265,10 +266,10 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
      * @return
      */
     public boolean validateDataset(String dataset) {
-        if (dataset.isEmpty())
-            return true;
-        return validateRegExp(dataset);
-
+//        if (dataset.isEmpty())
+//            return true;
+//        return validateRegExp(dataset);
+        return true;
     }
 
     /**
