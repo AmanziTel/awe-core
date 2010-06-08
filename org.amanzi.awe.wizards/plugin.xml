@@ -199,5 +199,13 @@
             name="Replay by time">
       </mapGraphic>
    </extension>
+   <extension
+         point="net.refractions.udig.project.mapInterceptor">
+      <mapClosing
+            class="org.amanzi.awe.wizards.geoptima.VisualiseLayer"
+            id="org.amanzi.awe.wizards.mapClosing1"
+            name="Map Close Interceptor">
+      </mapClosing>
+   </extension>
 
 </plugin>
