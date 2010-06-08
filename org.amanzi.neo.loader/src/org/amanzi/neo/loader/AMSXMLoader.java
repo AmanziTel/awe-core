@@ -583,6 +583,9 @@ public class AMSXMLoader extends AbstractCallLoader {
         
         /** The timestamp. */
         protected Long timestamp = null;
+        
+        protected Node lastMM = null;
+        
         /**
          * Instantiates a new abstract event.
          * 
@@ -603,7 +606,7 @@ public class AMSXMLoader extends AbstractCallLoader {
         *
         * @param call the call
         */
-       protected void checkInclusive(Call call) {
+       protected void checkInconclusive(Call call) {
            if (!call.isInclusive()){
                PropertyCollector isInclus = getSubCollectorByName("isInconclusive");
                call.setInclusive(isInclus!=null);
@@ -675,6 +678,7 @@ public class AMSXMLoader extends AbstractCallLoader {
                     }
                     setIndexProperty(header, node, entry.getKey(), parsedValue);
                 }
+                createAttachmentNode(isInclus);
             }
             if (timestamp != null) {
                 node.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
@@ -730,6 +734,30 @@ public class AMSXMLoader extends AbstractCallLoader {
             NeoUtils.addChild(datasetFileNode, node, lastDatasetNode, neo);
             lastDatasetNode = node;
             setNewIndexProperty(header, node, INeoConstants.PROPERTY_NAME_NAME, getClass().getSimpleName());
+        }
+        
+        /**
+         * Creates the attachment node.
+         * 
+         * @param collector the collector
+         * @throws ParseException the parse exception
+         */
+        private void createAttachmentNode(PropertyCollector collector) throws ParseException {
+            Node mm = neo.createNode();
+            NeoUtils.addChild(node, mm, lastMM, neo);
+            NodeTypes.MM.setNodeType(mm, neo);
+            mm.setProperty(INeoConstants.PROPERTY_NAME_NAME, "ntp");
+            lastMM = mm;
+            Map<String, String> map = collector.getPropertyMap();
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                Object parsedValue = getParcedValue(entry.getKey(), entry.getValue(), definedValues).getLeft();
+                if (entry.getKey().equals("errCode")) {
+                    parsedValue = Integer.parseInt(entry.getValue());
+                } else {
+                    parsedValue = entry.getValue();
+                }
+                setIndexProperty(header, mm, entry.getKey(), parsedValue);
+            }
         }
 
     }
@@ -796,7 +824,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             Node callerProbe = probeCallCache.get(getPropertyMap().get("probeID"));
             call.setCallerProbe(callerProbe);
             call.addRelatedNode(node);
-            checkInclusive(call);
+            checkInconclusive(call);
             saveCall(call);
         }
     }
@@ -886,7 +914,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             Node callerProbe = probeCallCache.get(getPropertyMap().get("probeID"));
             call.setCallerProbe(callerProbe);
             call.addRelatedNode(node);
-            checkInclusive(call);
+            checkInconclusive(call);
             saveCall(call);
         }
 
@@ -1014,7 +1042,7 @@ public class AMSXMLoader extends AbstractCallLoader {
                     }
                     tocttc.addRelatedNode(node);
                     tocttc.addCalleeProbe(probeCallCache.get(phoneNumberCache.get(tocttc.getCalledPhoneNumber())));
-                    checkInclusive(tocttc);
+                    checkInconclusive(tocttc);
                 }
             } else if (tocttcGroup != null) {
                 if (hook == 1 && simplex == 1) {
@@ -1049,7 +1077,7 @@ public class AMSXMLoader extends AbstractCallLoader {
                         tocttcGroup.addCalleeProbe(calleeProbe);
                     }
                     tocttcGroup.addRelatedNode(node);
-                    checkInclusive(tocttcGroup);
+                    checkInconclusive(tocttcGroup);
 
                 }
             }
@@ -1231,7 +1259,7 @@ public class AMSXMLoader extends AbstractCallLoader {
                     if (ct!=1){
                         tocttc.setCallResult(CallResult.FAILURE);  
                     }
-                    checkInclusive(tocttc);
+                    checkInconclusive(tocttc);
                 } else if (hook == 1 && simplex == 1) {
                     tocttcGroup = new AMSCall();
 
@@ -1265,7 +1293,7 @@ public class AMSXMLoader extends AbstractCallLoader {
                     if (ct!=1){
                         tocttcGroup.setCallResult(CallResult.FAILURE);  
                     }
-                    checkInclusive(tocttcGroup);
+                    checkInconclusive(tocttcGroup);
                 }
             }
         }
@@ -1465,7 +1493,7 @@ public class AMSXMLoader extends AbstractCallLoader {
                 assert type.equals("13");
                 msgCall.setCallType(CallType.TSM);
             }
-            checkInclusive(msgCall);
+            checkInconclusive(msgCall);
 
         }
 
@@ -1550,7 +1578,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             }
             msgCall.addCalleeProbe(probeCallCache.get(getPropertyMap().get("probeID")));
             msgCall.addRelatedNode(node);
-            checkInclusive(msgCall);
+            checkInconclusive(msgCall);
 
         }
 
