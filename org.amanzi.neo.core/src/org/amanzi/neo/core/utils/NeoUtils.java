@@ -601,7 +601,7 @@ public class NeoUtils {
                 }
                 return result.toArray(new String[0]);
             }
-            return null;
+            return new String[0];
         } finally {
             tx.finish();
         }
