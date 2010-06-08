@@ -139,7 +139,6 @@ import org.neo4j.graphdb.Traverser.Order;
 import org.rubypeople.rdt.core.IRubyProject;
 import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
-
 /**
  * <p>
  * Drive Inquirer View
@@ -148,9 +147,9 @@ import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
  * @author Saelenchits_N
  * @since 1.0.0
  */
-public class DriveInquirerView  extends ViewPart implements IPropertyChangeListener {
+public class DriveInquirerView extends ViewPart implements IPropertyChangeListener {
     private static final Logger LOGGER = Logger.getLogger(DriveInquirerView.class);
-    
+
     /* Data constants */
     public static final String ID = "org.amanzi.awe.views.drive.views.DriveInquirerView"; //$NON-NLS-1$
     private static final int MIN_FIELD_WIDTH = 50;
@@ -438,6 +437,12 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
         initEvents();
     }
 
+    @Override
+    public void dispose() {
+        NeoLoaderPlugin.getDefault().getPluginPreferences().removePropertyChangeListener(this);
+        super.dispose();
+    }
+
     /**
      * Init events
      */
@@ -530,7 +535,7 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
         if (lists.length > 1 && lists.length % 2 != 0) {
             displayErrorMessage(Messages.DriveInquirerView_16);
         }
-        if(lists.length == 1 && lists[0] == "")
+        if (lists.length == 1 && lists[0] == "")
             return;
         for (int i = 0; i < lists.length; i += 2) {
             List<String> allPr = Arrays.asList(lists[i + 1].split(",")); //$NON-NLS-1$
@@ -576,18 +581,17 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
             for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
                 Node node = relationship.getEndNode();
                 Object type = node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").toString(); //$NON-NLS-1$
-                if (NeoUtils.isGisNode(node) && (type.equals(GisTypes.OSS.getHeader()) || type.equals(GisTypes.DRIVE.getHeader())) || 
-                    NodeTypes.OSS.checkNode(node)) {
+                if (NeoUtils.isGisNode(node) && (type.equals(GisTypes.OSS.getHeader()) || type.equals(GisTypes.DRIVE.getHeader())) || NodeTypes.OSS.checkNode(node)) {
                     String id = NeoUtils.getSimpleNodeName(node, null);
                     gisDriveNodes.put(id, node);
                 }
             }
-           LinkedHashMap<String, Node> dataset = NeoUtils.getAllDatasetNodes(service);
-           for (Map.Entry<String, Node>entry:dataset.entrySet()){
-              if (NeoUtils.isVirtualDataset(entry.getValue())&&!entry.getValue().hasRelationship(GeoNeoRelationshipTypes.NEXT,Direction.INCOMING)){
-                  gisDriveNodes.put(entry.getKey(), entry.getValue()); 
-              }
-           }
+            LinkedHashMap<String, Node> dataset = NeoUtils.getAllDatasetNodes(service);
+            for (Map.Entry<String, Node> entry : dataset.entrySet()) {
+                if (NeoUtils.isVirtualDataset(entry.getValue()) && !entry.getValue().hasRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING)) {
+                    gisDriveNodes.put(entry.getKey(), entry.getValue());
+                }
+            }
             String[] result = gisDriveNodes.keySet().toArray(new String[] {});
             Arrays.sort(result);
             return result;
@@ -983,7 +987,7 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
             // TODO Handle CoreException
             throw (RuntimeException)new RuntimeException().initCause(e2);
         }
-        
+
         final IProject project = rubyProject.getProject();
         IFile file;
         int i = 0;
@@ -996,7 +1000,7 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
             is = new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
         } catch (UnsupportedEncodingException e1) {
             // TODO Handle UnsupportedEncodingException
-            throw (RuntimeException) new RuntimeException( ).initCause( e1 );
+            throw (RuntimeException)new RuntimeException().initCause(e1);
         }
         try {
             file.create(is, true, null);
@@ -1166,7 +1170,7 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
      */
     private void setTimeFromField() {
         GregorianCalendar cl = new GregorianCalendar();
-        if (dateStartTimestamp!=null){
+        if (dateStartTimestamp != null) {
             cl.setTimeInMillis(dateStartTimestamp);
         }
         cl.set(Calendar.HOUR_OF_DAY, dateStart.getHours());
@@ -1287,7 +1291,7 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
      */
     private Long getSelectedProperty2(double crosshair) {
         Integer result = null;
-        if(xydatasets.size()>1){
+        if (xydatasets.size() > 1) {
             result = getCrosshairIndex(xydatasets.get(1), crosshair);
         }
         if (result != null) {
@@ -1305,7 +1309,7 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
      */
     private Long getSelectedProperty1(double crosshair) {
         Integer result = getCrosshairIndex(xydatasets.get(0), crosshair);
-        if (result != null && xydatasets.size()>1) {
+        if (result != null && xydatasets.size() > 1) {
             return xydatasets.get(1).collection.getSeries(0).getDataItem(result).getValue().longValue();
         } else {
             return null;
@@ -1428,7 +1432,7 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
             cEvent.select(0);
 
             initializeIndex(cDrive.getText());
-            Node root=NeoUtils.isGisNode(gis)?gis.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(gis):gis;
+            Node root = NeoUtils.isGisNode(gis) ? gis.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(gis) : gis;
             Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(root, null);
             beginGisTime = minMax.getLeft();
             endGisTime = minMax.getRight();
@@ -2191,14 +2195,14 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
             nodeWrapper.eventName = cEvent.getText();
             changeName(labelProvider.columns.get(1), nodeWrapper.eventName);
 
-//            nodeWrapper.nEvents.clear();
+            // nodeWrapper.nEvents.clear();
             nodeWrapper.nEvents = new Node[3];
             nodeWrapper.time = new Long[3];;
 
             if (crosshair < 0.1) {
                 return;
             }
-//            nodeWrapper.time.add(null);
+            // nodeWrapper.time.add(null);
             nodeWrapper.time[1] = crosshair.longValue();
             nodeWrapper.time[0] = getPreviousTime(nodeWrapper.time[1]);
             nodeWrapper.time[2] = getNextTime(nodeWrapper.time[1]);
@@ -2209,7 +2213,7 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
             fillProperty(crosshair, eventDataset.collection, nodeWrapper.nEvents, nodeWrapper.time);
 
         }
-        
+
         /**
          * @param tableColumn
          * @param name
@@ -2267,6 +2271,7 @@ public class DriveInquirerView  extends ViewPart implements IPropertyChangeListe
             updatePropertyList();
         }
     }
+
     /**
      *update drive combobox
      */

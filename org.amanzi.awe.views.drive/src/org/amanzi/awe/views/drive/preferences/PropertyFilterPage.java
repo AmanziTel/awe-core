@@ -18,10 +18,11 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.preferences.DataLoadPreferences;
+import org.amanzi.neo.propertyFilter.OperationCase;
 import org.apache.log4j.Logger;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -60,9 +61,9 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
     private static final Logger LOGGER = Logger.getLogger(PropertyFilterPage.class);
 
     protected static final Color RED = new Color(null, 255, 0, 0);
-    protected static final Color GREEN = new Color(null, 0, 255, 0);
+    protected static final Color GREEN = new Color(null, 0, 200, 0);
     protected static final Color BLUE = new Color(null, 0, 0, 255);
-    protected static final Color GRAY = new Color(null, 200, 200, 200);
+    protected static final Color GRAY = new Color(null, 120, 120, 120);
     protected static final Color BLACK = new Color(null, 0, 0, 0);
 
     protected static final Color BAD_COLOR = RED;
@@ -73,6 +74,11 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
     private Composite mainFrame;
     private TableViewer viewer;
     private final List<RowWr> filterRules = new ArrayList<RowWr>();
+
+    public PropertyFilterPage() {
+        super();
+        setPreferenceStore(NeoLoaderPlugin.getDefault().getPreferenceStore());
+    }
 
     @Override
     protected Control createContents(Composite parent) {
@@ -119,7 +125,9 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
      */
     private void formRulesList() {
         filterRules.clear();
+        LOGGER.debug(NeoCorePlugin.getDefault().getPluginPreferences().getString(DataLoadPreferences.FILTER_RULES));
         String val = getPreferenceStore().getString(DataLoadPreferences.FILTER_RULES);
+        LOGGER.debug(val);
         int propertyIndex = indEncludance;
         RowWr wr = null;
         for (String str : val.split(DataLoadPreferences.CRS_DELIMETERS)) {
@@ -315,16 +323,18 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
         }
         String string = result.length() > 0 ? result.substring(DataLoadPreferences.CRS_DELIMETERS.length()) : result.toString();
         getPreferenceStore().setValue(DataLoadPreferences.FILTER_RULES, string);
+        NeoCorePlugin.getDefault().getPluginPreferences().setValue(DataLoadPreferences.FILTER_RULES, string);
+        LOGGER.debug(NeoCorePlugin.getDefault().getPluginPreferences().getString(DataLoadPreferences.FILTER_RULES));
         return true;
 
     }
 
-    public class RowWr {
+    private class RowWr {
         private OperationCase operationCase = OperationCase.NEW;
-        private String dataset;
-        private String property;
-        private boolean isDatasetValid;
-        private boolean isPropertyValid;
+        private String dataset = "";
+        private String property = "";
+        private boolean isDatasetValid = true;
+        private boolean isPropertyValid = false;
 
         /**
          * @param listName
@@ -424,7 +434,7 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
 
     }
 
-    public class TableEditableSupport extends EditingSupport {
+    private class TableEditableSupport extends EditingSupport {
 
         private final TextCellEditor editor;
         private final int columnIndex;
@@ -532,47 +542,10 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
         }
     }
 
-    public enum OperationCase {
-        INCLUDE("Include"), EXCLUDE("Exclude"), NEW("NEW"), REMOVE_CANDIDAT("remove");
-
-        private final String stringValue;
-
-        private OperationCase(String stringValue) {
-            this.stringValue = stringValue;
-        }
-
-        public OperationCase nextCase() {
-            switch (this) {
-            case INCLUDE:
-                return EXCLUDE;
-            case EXCLUDE:
-                return REMOVE_CANDIDAT;
-            default:
-                return INCLUDE;
-            }
-        }
-
-        public String getStringValue() {
-            return stringValue;
-        }
-
-        public static OperationCase getEnumById(String enumId) {
-            if (enumId == null) {
-                return null;
-            }
-            for (OperationCase operationCase : OperationCase.values()) {
-                if (operationCase.getStringValue().equals(enumId)) {
-                    return operationCase;
-                }
-            }
-            return null;
-        }
-    }
-
-    @Override
-    public IPreferenceStore getPreferenceStore() {
-        return NeoLoaderPlugin.getDefault().getPreferenceStore();
-    }
+    // @Override
+    // public IPreferenceStore getPreferenceStore() {
+    // return NeoLoaderPlugin.getDefault().getPreferenceStore();
+    // }
     @Override
     protected void performDefaults() {
         super.performDefaults();
@@ -580,4 +553,30 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
         formRulesList();
         viewer.setInput("");
     }
+    
+
+    // public static boolean isPropertyValid(String dataset, String propery){
+    // String val =
+    // NeoLoaderPlugin.getDefault().getPreferenceStore().getString(DataLoadPreferences.FILTER_RULES);
+    // int propertyIndex = indEncludance;
+    // List<RowWr> filterRules = new ArrayList<RowWr>();
+    // RowWr wr = null;
+    // for (String str : val.split(DataLoadPreferences.CRS_DELIMETERS)) {
+    // if (propertyIndex == indEncludance) {
+    // wr = new RowWr(null, "", "");
+    // wr.setOperationCase(OperationCase.getEnumById(str));
+    // propertyIndex = indDataset;
+    // } else if (propertyIndex == indDataset) {
+    // wr.setDataset(str);
+    // propertyIndex = indProperty;
+    // } else if (propertyIndex == indProperty) {
+    // wr.setProperty(str);
+    // propertyIndex = indEncludance;
+    // filterRules.add(wr);
+    // }
+    // }
+    //        
+    // return false;
+    // }
+    
 }

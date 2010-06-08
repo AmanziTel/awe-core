@@ -107,6 +107,7 @@ public class NeoCorePlugin extends Plugin implements IUpdateViewListener {
      */
     @Override
     public void stop(BundleContext context) throws Exception {
+        savePluginPreferences();
         plugin = null;
         super.stop(context);
     }

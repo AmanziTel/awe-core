@@ -50,6 +50,9 @@ import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.PropertyHeader;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
+import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.preferences.DataLoadPreferences;
+import org.amanzi.neo.propertyFilter.PropertyFilterModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -59,6 +62,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
+import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -81,6 +86,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IViewSite;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
@@ -121,7 +128,7 @@ import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
  * @author Cinkel_A
  * @since 1.0.0
  */
-public class ReuseAnalyserView extends ViewPart {
+public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListener {
     private static final Logger LOGGER = Logger.getLogger(ReuseAnalyserView.class);
 
     /** String TOOL_TIP_LOG field */
@@ -139,7 +146,7 @@ public class ReuseAnalyserView extends ViewPart {
     private static final String LABEL_INFO_BLEND = Messages.ReuseAnalayserView_LABEL_INFO_BLEND;
     private static final String ERROR_TITLE = Messages.ReuseAnalayserView_ERROR_TITLE;
     private static final String LOG_LABEL = Messages.ReuseAnalayserView_LOG_LABEL;
-    
+
     /** String ADJACENCY field */
     private static final String ADJACENCY = Messages.ReuseAnalayserView_FIELD_ADJACENCY;
     /** String PROPERTY_LABEL field */
@@ -154,7 +161,6 @@ public class ReuseAnalyserView extends ViewPart {
     private static final String COLOR_LABEL = Messages.ReuseAnalayserView_COLOR_LABEL;
     private static final String REPORT_LABEL = Messages.ReuseAnalayserView_REPORT_LABEL;
 
-
     private final Map<String, String[]> aggregatedProperties = new HashMap<String, String[]>();
     private Label gisSelected;
     private Combo gisCombo;
@@ -165,7 +171,7 @@ public class ReuseAnalyserView extends ViewPart {
     private Label lDistribute;
     private Combo cDistribute;
     private HashMap<String, Node> members;
-    protected ArrayList<String> propertyList;
+    protected List<String> propertyList;
     private Spinner spinAdj;
     private Label spinLabel;
     private ChartComposite chartFrame;
@@ -190,7 +196,7 @@ public class ReuseAnalyserView extends ViewPart {
     private Button blend;
     private ColorEditor colorLeft;
     private ColorEditor colorRight;
-    private Label lBlend; 
+    private Label lBlend;
     private List<String> allFields;
     private List<String> numericFields;
     private Button bReport;
@@ -215,7 +221,7 @@ public class ReuseAnalyserView extends ViewPart {
     private static final RGB DEFAULT_RIGHT = new RGB(0, 255, 0);
     private static final RGB DEFAULT_MIDDLE = new RGB(127, 127, 0);
     private static final String THIRD_BLEND = "third color";
-    ReuseAnalyserModel model=null;
+    ReuseAnalyserModel model = null;
     private static final String ERROR_CHART = "Error Chart";
 
     @Override
@@ -735,7 +741,7 @@ public class ReuseAnalyserView extends ViewPart {
 
     private boolean isAggregatedDataset(Node gisNode) {
         Node gis = NeoUtils.findGisNodeByChild(gisNode);
-        if (gis==null){
+        if (gis == null) {
             return false;
         }
         GeoNeo geoNeo = new GeoNeo(NeoServiceProvider.getProvider().getService(), gis);
@@ -1085,7 +1091,7 @@ public class ReuseAnalyserView extends ViewPart {
         float ratio = 0;
         float ratio2 = 0;
         float perc = size <= 0 ? 1 : (float)1 / size;
-        float percMid1 = midColumnIndex == 0 ? 1 : (float)1 / (midColumnIndex );
+        float percMid1 = midColumnIndex == 0 ? 1 : (float)1 / (midColumnIndex);
         float percMid2 = size - midColumnIndex == 0 ? 1 : (float)1 / (size - midColumnIndex);
         for (int i = 0; i < dataset.nodeList.size(); i++) {
             ChartNode chart = dataset.nodeList.get(i);
@@ -1097,9 +1103,9 @@ public class ReuseAnalyserView extends ViewPart {
                             if (i < midColumnIndex) {
                                 colrRgb = blend(leftRgb, middleRgb, ratio);
                                 ratio += percMid1;
-                            } else if (i==midColumnIndex){
-                                colrRgb =  middleRgb;
-                            }else {
+                            } else if (i == midColumnIndex) {
+                                colrRgb = middleRgb;
+                            } else {
                                 ratio2 += percMid2;
                                 if (ratio2 > 1) {
                                     ratio2 = 1;
@@ -1215,7 +1221,7 @@ public class ReuseAnalyserView extends ViewPart {
      * @param columnKey property node for redraw action
      */
     protected void fireLayerDrawEvent(Node gisNode, Node aggrNode, ChartNode columnKey) {
-        gisNode=NeoUtils.findGisNodeByChild(gisNode);
+        gisNode = NeoUtils.findGisNodeByChild(gisNode);
         // necessary for visible changes in renderers
         NeoServiceProvider.getProvider().commit();
         int adj = spinAdj.getSelection();
@@ -1239,8 +1245,8 @@ public class ReuseAnalyserView extends ViewPart {
     protected void findOrCreateAggregateNodeInNewThread(final Node rootNode, final String propertyName) {
         // TODO restore focus after job execute or not necessary?
         String select = cSelect.getText();
-        //TODO Pechko_E: during refactoring of the following code 
-        //refactor also generateReport()
+        // TODO Pechko_E: during refactoring of the following code
+        // refactor also generateReport()
         if (!cSelect.isEnabled()) {
             select = Select.EXISTS.toString();
         }
@@ -1254,7 +1260,7 @@ public class ReuseAnalyserView extends ViewPart {
         private final Node gisNode;
         private final String propertyName;
         private Node node;
-        private  String distribute;
+        private String distribute;
         private final String select;
 
         public ComputeStatisticsJob(Node gisNode, String propertyName, String distribute, String select) {
@@ -1268,9 +1274,9 @@ public class ReuseAnalyserView extends ViewPart {
         @Override
         public IStatus run(IProgressMonitor monitor) {
             try {
-                if (!calculate(monitor)){
+                if (!calculate(monitor)) {
                     if (!distribute.equals(Distribute.AUTO.toString())) {
-                        distribute=Distribute.AUTO.toString();
+                        distribute = Distribute.AUTO.toString();
                         final Runnable setAutoDistribute = new Runnable() {
                             @Override
                             public void run() {
@@ -1280,7 +1286,7 @@ public class ReuseAnalyserView extends ViewPart {
                         };
                         ActionUtil.getInstance().runTask(setAutoDistribute, true);
                         calculate(monitor);
-                    }                  
+                    }
                 }
                 ActionUtil.getInstance().runTask(new Runnable() {
                     @Override
@@ -1317,7 +1323,7 @@ public class ReuseAnalyserView extends ViewPart {
                 node = model.findOrCreateAggregateNode(gisNode, propertyName, isStringProperty(propertyName), distribute, select, monitor);
                 Boolean haveError = (Boolean)node.getProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME, false);
                 if (haveError) {
-                    final String errDescr=String.valueOf(node.getProperty(INeoConstants.PROPERTY_CHART_ERROR_DESCRIPTION, ""));
+                    final String errDescr = String.valueOf(node.getProperty(INeoConstants.PROPERTY_CHART_ERROR_DESCRIPTION, ""));
                     ActionUtil.getInstance().runTask(new Runnable() {
 
                         @Override
@@ -1331,16 +1337,9 @@ public class ReuseAnalyserView extends ViewPart {
             } finally {
                 tx.finish();
             }
-        }       
+        }
 
     }
-
- 
-
- 
-
-
-
 
     /**
      * @param propertyName
@@ -1350,11 +1349,6 @@ public class ReuseAnalyserView extends ViewPart {
         return aggregatedProperties.keySet().contains(propertyName);
     }
 
-
-
-
-
- 
     /**
      * Creation list of property by selected node
      * 
@@ -1375,30 +1369,31 @@ public class ReuseAnalyserView extends ViewPart {
             propertyList.add(INeoConstants.PROPERTY_ALL_CHANNELS_NAME);
         }
         setVisibleForChart(false);
-        final String nodeTypeId=getNodeTypeId(node);
+        final String nodeTypeId = getNodeTypeId(node);
         ReturnableEvaluator propertyReturnableEvalvator = new ReturnableEvaluator() {
-            
+
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
                 return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(nodeTypeId);
             }
         };
-        model=new ReuseAnalyserModel(aggregatedProperties, propertyReturnableEvalvator, NeoServiceProvider.getProvider().getService());
-    }
+        propertyList = new PropertyFilterModel().filerProperties(gisCombo.getText(), propertyList);
+        model = new ReuseAnalyserModel(aggregatedProperties, propertyReturnableEvalvator, NeoServiceProvider.getProvider().getService());
 
+    }
 
     /**
      * Gets the node type id.
-     *
+     * 
      * @param node the node
      * @return the node type id
      */
     private String getNodeTypeId(Node node) {
         GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
-        return NeoUtils.getPrimaryType(node,service);
+        return NeoUtils.getPrimaryType(node, service);
     }
 
- /**
+    /**
      * Forms list of GIS nodes
      * 
      * @return array of GIS nodes
@@ -1589,8 +1584,8 @@ public class ReuseAnalyserView extends ViewPart {
         chartFrame.setLayoutData(dChart);
 
         FormData dReport = new FormData();
-//        dReport.left = new FormAttachment(ttblendInformation, 15);
-        dReport.right=new FormAttachment(100,-2);
+        // dReport.left = new FormAttachment(ttblendInformation, 15);
+        dReport.right = new FormAttachment(100, -2);
         dReport.top = new FormAttachment(tSelectedInformation, 5, SWT.CENTER);
         bReport.setLayoutData(dReport);
     }
@@ -1599,37 +1594,37 @@ public class ReuseAnalyserView extends ViewPart {
     public void setFocus() {
     }
 
-//    /**
-//     * <p>
-//     * Implementation of ReturnableEvaluator Returns necessary MS or sector nodes
-//     * </p>
-//     * 
-//     * @author Cinkel_A
-//     * @since 1.0.0
-//     */
-//    private static final class PropertyReturnableEvalvator implements ReturnableEvaluator {
-//        private final HashSet<String> propertyList;
-//
-//        public PropertyReturnableEvalvator() {
-//            super();
-//            propertyList = new HashSet<String>();
-//            propertyList.add(NodeTypes.M.getId());
-//            propertyList.add("mv");
-//            propertyList.add(NodeTypes.SECTOR.getId());
-//            propertyList.add(NodeTypes.HEADER_MS.getId());
-//            propertyList.add(NodeTypes.PROBE.getId());
-//            propertyList.add(NodeTypes.CALL.getId());
-//            propertyList.add(NodeTypes.UTRAN_DATA.getId());
-//            propertyList.add(NodeTypes.GPEH_EVENT.getId());
-//        }
-//
-//        @Override
-//        public boolean isReturnableNode(TraversalPosition traversalposition) {
-//            Node curNode = traversalposition.currentNode();
-//            Object type = curNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null);
-//            return type != null && propertyList.contains(type);
-//        }
-//    }
+    // /**
+    // * <p>
+    // * Implementation of ReturnableEvaluator Returns necessary MS or sector nodes
+    // * </p>
+    // *
+    // * @author Cinkel_A
+    // * @since 1.0.0
+    // */
+    // private static final class PropertyReturnableEvalvator implements ReturnableEvaluator {
+    // private final HashSet<String> propertyList;
+    //
+    // public PropertyReturnableEvalvator() {
+    // super();
+    // propertyList = new HashSet<String>();
+    // propertyList.add(NodeTypes.M.getId());
+    // propertyList.add("mv");
+    // propertyList.add(NodeTypes.SECTOR.getId());
+    // propertyList.add(NodeTypes.HEADER_MS.getId());
+    // propertyList.add(NodeTypes.PROBE.getId());
+    // propertyList.add(NodeTypes.CALL.getId());
+    // propertyList.add(NodeTypes.UTRAN_DATA.getId());
+    // propertyList.add(NodeTypes.GPEH_EVENT.getId());
+    // }
+    //
+    // @Override
+    // public boolean isReturnableNode(TraversalPosition traversalposition) {
+    // Node curNode = traversalposition.currentNode();
+    // Object type = curNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null);
+    // return type != null && propertyList.contains(type);
+    // }
+    // }
 
     /**
      * <p>
@@ -2007,47 +2002,46 @@ public class ReuseAnalyserView extends ViewPart {
     private void generateReport() {
         IFile file;
         try {
-        int i = 0;
-//        Node node = selectedGisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode();
-        //find or create AWE and RDT project
-        String aweProjectName = AWEProjectManager.getActiveProjectName();
-        IRubyProject rubyProject;
-        try {
-            rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, aweProjectName);
-        } catch (CoreException e2) {
-            // TODO Handle CoreException
-            throw (RuntimeException)new RuntimeException().initCause(e2);
-        }
+            int i = 0;
+            // Node node = selectedGisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT,
+            // Direction.OUTGOING).getEndNode();
+            // find or create AWE and RDT project
+            String aweProjectName = AWEProjectManager.getActiveProjectName();
+            IRubyProject rubyProject;
+            try {
+                rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, aweProjectName);
+            } catch (CoreException e2) {
+                // TODO Handle CoreException
+                throw (RuntimeException)new RuntimeException().initCause(e2);
+            }
 
-        final IProject project = rubyProject.getProject();
+            final IProject project = rubyProject.getProject();
 
-        while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) {
-            i++;
-        }
-        //the following code depends on code from findOrCreateAggregateNodeInNewThread()
-        final Select select = !cSelect.isEnabled()?Select.EXISTS:Select.findSelectByValue(cSelect.getText());
-        final String distribute = Distribute.findEnumByValue(cDistribute.getText()).getDescription();
-        final String propName = propertyCombo.getText();
-        StringBuffer sb = new StringBuffer("report '").append("Distribution analysis of ").append(gisCombo.getText()).append(" ").append(propName).append(
-                "' do\n");
-        sb.append("  author '").append(System.getProperty("user.name")).append("'\n");
-        sb.append("  date '").append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\n");
-        sb.append("  text 'Distribution analysis of ").append(gisCombo.getText()).append(" ").append(propName)
-                    .append(", with values distributed ").append(distribute).append(" and calculated using ").append(select.getDescription())
-                    .append("'\n");
-        sb.append("  map 'Drive map', :map => GIS.maps.first.copy, :width => 600, :height => 400 do |m|\n");
-        sb.append("    layer = m.layers.find(:type => 'drive').first\n");
-        sb.append("  end\n");
-        sb.append("  chart '").append(propName).append("' do |chart| \n");
-        sb.append("    chart.domain_axis='Value'\n");
-        sb.append("    chart.range_axis='Count'\n");
-        sb.append("    chart.statistics='").append(gisCombo.getText()).append("'\n");
-        sb.append("    chart.property='").append(propName).append("'\n");
-        sb.append("    chart.distribute='").append(cDistribute.getText()).append("'\n");
-        sb.append("    chart.select='").append(select.toString()).append("'\n");
-        sb.append("  end\nend");
-        LOGGER.debug("Report script:\n" + sb.toString());
-        InputStream is = new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
+            while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) {
+                i++;
+            }
+            // the following code depends on code from findOrCreateAggregateNodeInNewThread()
+            final Select select = !cSelect.isEnabled() ? Select.EXISTS : Select.findSelectByValue(cSelect.getText());
+            final String distribute = Distribute.findEnumByValue(cDistribute.getText()).getDescription();
+            final String propName = propertyCombo.getText();
+            StringBuffer sb = new StringBuffer("report '").append("Distribution analysis of ").append(gisCombo.getText()).append(" ").append(propName).append("' do\n");
+            sb.append("  author '").append(System.getProperty("user.name")).append("'\n");
+            sb.append("  date '").append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\n");
+            sb.append("  text 'Distribution analysis of ").append(gisCombo.getText()).append(" ").append(propName).append(", with values distributed ")
+                    .append(distribute).append(" and calculated using ").append(select.getDescription()).append("'\n");
+            sb.append("  map 'Drive map', :map => GIS.maps.first.copy, :width => 600, :height => 400 do |m|\n");
+            sb.append("    layer = m.layers.find(:type => 'drive').first\n");
+            sb.append("  end\n");
+            sb.append("  chart '").append(propName).append("' do |chart| \n");
+            sb.append("    chart.domain_axis='Value'\n");
+            sb.append("    chart.range_axis='Count'\n");
+            sb.append("    chart.statistics='").append(gisCombo.getText()).append("'\n");
+            sb.append("    chart.property='").append(propName).append("'\n");
+            sb.append("    chart.distribute='").append(cDistribute.getText()).append("'\n");
+            sb.append("    chart.select='").append(select.toString()).append("'\n");
+            sb.append("  end\nend");
+            LOGGER.debug("Report script:\n" + sb.toString());
+            InputStream is = new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
             file.create(is, true, null);
             is.close();
             getViewSite().getPage().openEditor(new FileEditorInput(file), ReportEditor.class.getName());
@@ -2056,9 +2050,10 @@ public class ReuseAnalyserView extends ViewPart {
             showErrorDlg(e);
         }
     }
+
     /**
      * Displays the error dialog for the exception
-     *
+     * 
      * @param e exception to be printed
      */
     private void showErrorDlg(final Exception e) {
@@ -2067,10 +2062,41 @@ public class ReuseAnalyserView extends ViewPart {
 
             @Override
             public void run() {
-                ErrorDialog.openError(display.getActiveShell(), "Error", "Report can't be created due to the following error:",
-                        new Status(Status.ERROR, ReusePlugin.PLUGIN_ID, e.getClass().getName(), e));
+                ErrorDialog.openError(display.getActiveShell(), "Error", "Report can't be created due to the following error:", new Status(Status.ERROR,
+                        ReusePlugin.PLUGIN_ID, e.getClass().getName(), e));
             }
 
         });
     }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent event) {
+        if (event.getProperty().equals(DataLoadPreferences.FILTER_RULES)) {
+            int selectedGisInd = gisCombo.getSelectionIndex();
+            if (selectedGisInd < 0) {
+                propertyList = new ArrayList<String>();
+                setVisibleForChart(false);
+                tSelectedInformation.setText("");
+            } else {
+                Node rootNode = members.get(gisCombo.getText());
+                cSelect.setEnabled(isAggregatedDataset(rootNode));
+                formPropertyList(rootNode);
+            }
+            Collections.sort(propertyList);
+            propertyCombo.setItems(propertyList.toArray(new String[] {}));
+        }
+    }
+
+    @Override
+    public void init(IViewSite site) throws PartInitException {
+        super.init(site);
+        NeoLoaderPlugin.getDefault().getPluginPreferences().addPropertyChangeListener(this);
+    }
+
+    @Override
+    public void dispose() {
+        NeoLoaderPlugin.getDefault().getPluginPreferences().removePropertyChangeListener(this);
+        super.dispose();
+    }
+
 }

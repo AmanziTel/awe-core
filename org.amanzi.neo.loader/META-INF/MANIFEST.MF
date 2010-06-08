@@ -28,6 +28,7 @@ Bundle-ClassPath: .,
 Export-Package: org.amanzi.neo.loader,
  org.amanzi.neo.loader.correlate,
  org.amanzi.neo.loader.internal;uses:="org.amanzi.neo.loader.preferences,org.eclipse.core.runtime,org.osgi.framework",
- org.amanzi.neo.preferences
+ org.amanzi.neo.preferences,
+ org.amanzi.neo.propertyFilter
 Bundle-Activator: org.amanzi.neo.loader.internal.NeoLoaderPlugin
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
