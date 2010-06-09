@@ -43,7 +43,6 @@ import net.refractions.udig.ui.graphics.Glyph;
 
 import org.amanzi.awe.catalog.neo.GeoConstant;
 import org.amanzi.awe.catalog.neo.GeoNeo;
-import org.amanzi.awe.views.drive.preferences.PropertyListPreferences;
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -65,11 +64,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
 import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.PreferenceDialog;
-import org.eclipse.jface.preference.PreferenceManager;
-import org.eclipse.jface.preference.PreferenceNode;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -790,23 +785,25 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                Node gis = getGisDriveNode();
-                PropertyListPreferences page = new PropertyListPreferences();
-                if (gis != null) {
-                    page.setAvaliableProperties(Arrays.asList(new PropertyHeader(gis).getNumericFields()));
-                }
-
-                page.setTitle(Messages.DriveInquirerView_20);
+                // Node gis = getGisDriveNode();
+                // PropertyListPreferences page = new PropertyListPreferences();
+                // if (gis != null) {
+                // page.setAvaliableProperties(Arrays.asList(new
+                // PropertyHeader(gis).getNumericFields()));
+                // }
+                //
+                // page.setTitle(Messages.DriveInquirerView_20);
+                // //
                 // page.setSubTitle("Select the coordinate reference system from the list of commonly used CRS's, or add a new one with the Add button");
-                page.init(PlatformUI.getWorkbench());
-                PreferenceManager mgr = new PreferenceManager();
-                IPreferenceNode node = new PreferenceNode("1", page); //$NON-NLS-1$
-                mgr.addToRoot(node);
+                // page.init(PlatformUI.getWorkbench());
+                // PreferenceManager mgr = new PreferenceManager();
+                //                IPreferenceNode node = new PreferenceNode("1", page); //$NON-NLS-1$
+                // mgr.addToRoot(node);
                 Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-                PreferenceDialog pdialog = new PreferenceDialog(shell, mgr);;
-                if (pdialog.open() == PreferenceDialog.OK) {
-                    page.performOk();
-
+                DriveInquirerPropertyConfig pdialog = new DriveInquirerPropertyConfig(shell, getGisDriveNode());;
+                if (pdialog.open() == SWT.OK) {
+                    // page.performOk();
+                    // TODO implement refresh
                     // result = page.getCRS();
                 }
             }
