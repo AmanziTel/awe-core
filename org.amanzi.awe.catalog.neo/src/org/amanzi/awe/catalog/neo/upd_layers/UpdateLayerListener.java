@@ -15,7 +15,6 @@ package org.amanzi.awe.catalog.neo.upd_layers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,10 +33,8 @@ import org.amanzi.awe.catalog.neo.upd_layers.events.RefreshPropertiesEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesAndMapEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesEvent;
-import org.amanzi.neo.core.INeoConstants;
-import org.geotools.referencing.CRS;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.neo4j.graphdb.Node;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -52,7 +49,7 @@ import com.vividsolutions.jts.geom.Coordinate;
  */
 public class UpdateLayerListener {
     
-    private ILayer layer;
+    private final ILayer layer;
     
     /**
      * Constructor.
@@ -185,12 +182,13 @@ public class UpdateLayerListener {
             IMap map = layer.getMap();
             CoordinateReferenceSystem crs = null;
             if (event.isNeedCentered()) {
-                if (gis.hasProperty(INeoConstants.PROPERTY_CRS_NAME)) {
-                    crs = CRS.decode(gis.getProperty(INeoConstants.PROPERTY_CRS_NAME).toString());
-                } else if (gis.hasProperty(INeoConstants.PROPERTY_CRS_HREF_NAME)) {
-                    URL crsURL = new URL(gis.getProperty(INeoConstants.PROPERTY_CRS_HREF_NAME).toString());
-                    crs = CRS.decode(crsURL.getContent().toString());
-                }
+                crs=NeoUtils.getCRS(gis, null, null);
+//                if (gis.hasProperty(INeoConstants.PROPERTY_CRS_NAME)) {
+//                    crs = CRS.decode(gis.getProperty(INeoConstants.PROPERTY_CRS_NAME).toString());
+//                } else if (gis.hasProperty(INeoConstants.PROPERTY_CRS_HREF_NAME)) {
+//                    URL crsURL = new URL(gis.getProperty(INeoConstants.PROPERTY_CRS_HREF_NAME).toString());
+//                    crs = CRS.decode(crsURL.getContent().toString());
+//                }
                 double[] c = event.getCoords();
                 if (c == null) {
                     return;
@@ -203,8 +201,6 @@ public class UpdateLayerListener {
             } else {
                 layer.refresh(null);
             }
-        } catch (NoSuchAuthorityCodeException e) {
-            throw (RuntimeException)new RuntimeException().initCause(e);
         } catch (MalformedURLException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         } catch (IOException e) {

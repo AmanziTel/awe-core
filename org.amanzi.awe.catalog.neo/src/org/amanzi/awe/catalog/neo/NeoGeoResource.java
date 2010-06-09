@@ -20,7 +20,6 @@ import net.refractions.udig.catalog.ui.CatalogUIPlugin;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.UpdateViewManager;
 import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.icons.IconManager;
@@ -41,15 +40,17 @@ import org.neo4j.graphdb.Transaction;
  */
 public class NeoGeoResource extends IGeoResource {
     // private URL identifierUrl;
-    private String identifier;
-	private NeoService service;
-	private Node gisNode;
+    private final String identifier;
+	private final NeoService service;
+	private final Node gisNode;
 	private GeoNeo geoNeo;
     private URL identifierFull;
+    private final GraphDatabaseService neo;
 
 	public NeoGeoResource(NeoService service,
 			GraphDatabaseService neo, Node gisNode) {
 		this.service = service;
+        this.neo = neo;
 		this.gisNode = gisNode;
 		this.geoNeo = new GeoNeo(neo, this.gisNode);
 
@@ -58,7 +59,15 @@ public class NeoGeoResource extends IGeoResource {
                                       // this.gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME));
         identifierFull = this.getIdentifier();
 	}
-
+	public void updateCRS(){
+	    Transaction tx = neo.beginTx();
+	    try{
+	        geoNeo = new GeoNeo(neo, this.gisNode);
+	        info=null;
+	    }finally{
+	        tx.finish();
+	    }
+	}
 	@Override
 	public URL getIdentifier() {
         Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
@@ -95,7 +104,8 @@ public class NeoGeoResource extends IGeoResource {
 
     private NeoGeoResourceInfo info;
 
-	public NeoGeoResourceInfo getInfo(IProgressMonitor monitor)
+	@Override
+    public NeoGeoResourceInfo getInfo(IProgressMonitor monitor)
 			throws IOException {
 		if (info == null) {
 			synchronized (this) {
@@ -130,12 +140,14 @@ public class NeoGeoResource extends IGeoResource {
 		return geoNeo;
 	}
 
-	public <T> boolean canResolve(Class<T> adaptee) {
+	@Override
+    public <T> boolean canResolve(Class<T> adaptee) {
 		return adaptee.isAssignableFrom(GeoNeo.class)
  || adaptee.isAssignableFrom(Node.class) || super.canResolve(adaptee);
 	}
 
-	public <T> T resolve(Class<T> adaptee, IProgressMonitor monitor)
+	@Override
+    public <T> T resolve(Class<T> adaptee, IProgressMonitor monitor)
 			throws IOException {
 		if (adaptee.isAssignableFrom(GeoNeo.class)) {
 			return adaptee.cast(getGeoNeo(monitor));

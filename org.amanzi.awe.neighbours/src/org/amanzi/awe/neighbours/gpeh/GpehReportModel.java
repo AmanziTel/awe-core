@@ -94,7 +94,7 @@ public class GpehReportModel {
         this.gpeh = gpeh;
 
         networkName = NeoUtils.getNodeName(network, service);
-        crs = NeoUtils.getCRS(NeoUtils.findGisNodeByChild(network, service), service);
+        crs = NeoUtils.getCRS(NeoUtils.findGisNodeByChild(network, service), service,null);
         gpehEventsName = NeoUtils.getNodeName(gpeh, service);
         this.service = service;
         intraFrequencyICDM = null;

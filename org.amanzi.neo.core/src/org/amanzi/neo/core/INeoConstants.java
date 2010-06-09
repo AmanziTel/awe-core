@@ -53,6 +53,7 @@ public class INeoConstants {
     public static final String PROPERTY_CRS_NAME = "crs";
     public static final String PROPERTY_CRS_HREF_NAME = "crs_href";
     public static final String PROPERTY_CRS_TYPE_NAME = "crs_type";
+    public static final String PROPERTY_WKT_CRS= "crs_wkt";
     public static final String PROPERTY_PROJECT_NAME = "project";
     public static final String PROPERTY_DESCRIPTION_NAME = "description";
     public static final String PROPERTY_DATA = "data_properties";

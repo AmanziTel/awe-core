@@ -12,7 +12,6 @@
  */
 package org.amanzi.awe.catalog.neo;
 
-import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,7 +33,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -243,24 +241,25 @@ public class GeoNeo {
      */
     public CoordinateReferenceSystem getCRS(CoordinateReferenceSystem defaultCRS) {
         if (crs == null) {
-            crs = defaultCRS; // default if crs cannot be found below
-            try {
-                if (gisNode.hasProperty(INeoConstants.PROPERTY_CRS_NAME)) {
-                    // The simple approach is to name the CRS, eg. EPSG:4326 (GeoNeo spec prefers a
-                    // new naming standard, but I'm not sure geotools knows it)
-                    crs = CRS.decode(gisNode.getProperty(INeoConstants.PROPERTY_CRS_NAME).toString());
-                } else if (gisNode.hasProperty(INeoConstants.PROPERTY_CRS_HREF_NAME)) {
-                    // TODO: This type is specified in GeoNeo spec, but what the HREF means is not,
-                    // so we assume it is a live URL that will feed a CRS specification directly
-                    // TODO: Lagutko: gisNode.hasProperty() has 'crs_href' as parameter, but
-                    // gisNode.getProperty() has only 'href'. What is right?
-                    URL crsURL = new URL(gisNode.getProperty(INeoConstants.PROPERTY_CRS_HREF_NAME).toString());
-                    crs = CRS.decode(crsURL.getContent().toString());
-                }
-            } catch (Exception crs_e) {
-                System.err.println("Failed to interpret CRS: " + crs_e.getMessage());
-                crs_e.printStackTrace(System.err);
-            }
+            crs=NeoUtils.getCRS(gisNode, null,defaultCRS);
+//            crs = defaultCRS; // default if crs cannot be found below
+//            try {
+//                if (gisNode.hasProperty(INeoConstants.PROPERTY_CRS_NAME)) {
+//                    // The simple approach is to name the CRS, eg. EPSG:4326 (GeoNeo spec prefers a
+//                    // new naming standard, but I'm not sure geotools knows it)
+//                    crs = CRS.decode(gisNode.getProperty(INeoConstants.PROPERTY_CRS_NAME).toString());
+//                } else if (gisNode.hasProperty(INeoConstants.PROPERTY_CRS_HREF_NAME)) {
+//                    // TODO: This type is specified in GeoNeo spec, but what the HREF means is not,
+//                    // so we assume it is a live URL that will feed a CRS specification directly
+//                    // TODO: Lagutko: gisNode.hasProperty() has 'crs_href' as parameter, but
+//                    // gisNode.getProperty() has only 'href'. What is right?
+//                    URL crsURL = new URL(gisNode.getProperty(INeoConstants.PROPERTY_CRS_HREF_NAME).toString());
+//                    crs = CRS.decode(crsURL.getContent().toString());
+//                }
+//            } catch (Exception crs_e) {
+//                System.err.println("Failed to interpret CRS: " + crs_e.getMessage());
+//                crs_e.printStackTrace(System.err);
+//            }
         }
         return crs;
     }

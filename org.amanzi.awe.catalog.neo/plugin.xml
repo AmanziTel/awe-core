@@ -29,6 +29,13 @@
             name="Layer Remove Interceptor">
       </layerRemoved>
    </extension>
+   <extension
+         point="net.refractions.udig.project.mapInterceptor">
+      <mapCreation
+            class="org.amanzi.awe.catalog.neo.listeners.MapCreateInterceptor"
+            id="org.amanzi.awe.catalog.neo.mapCreation1">
+      </mapCreation>
+   </extension>
 <!--
    <extension
          point="net.refractions.udig.project.mapInterceptor">

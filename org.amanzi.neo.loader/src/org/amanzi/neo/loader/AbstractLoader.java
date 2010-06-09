@@ -1910,6 +1910,9 @@ public abstract class AbstractLoader {
          */
         public void saveCRS() {
             if (getCrs() != null) {
+                if (crs.getWkt()!=null){
+                    gis.setProperty(INeoConstants.PROPERTY_WKT_CRS, crs.getWkt());
+                }
                 gis.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());// TODO remove?
                 // - not used
                 // in GeoNeo

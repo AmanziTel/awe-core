@@ -344,9 +344,8 @@ public class NeoUtils {
     }
 
     /**
-     * finds root
-     * 
-     * @param type the type
+     * finds root.
+     *
      * @param nodeName name of gis node
      * @param service the service
      * @return gis node or null
@@ -730,8 +729,9 @@ public class NeoUtils {
 
     /**
      * delete node and all relation from/to it.
-     * 
+     *
      * @param node - node to delete
+     * @param service the service
      */
     public static void deleteSingleNode(Node node,GraphDatabaseService service) {
         Transaction tx = beginTx(service);
@@ -1811,10 +1811,11 @@ public class NeoUtils {
     
     /**
      * get format date string.
-     * 
+     *
      * @param startTime - begin timestamp
      * @param endTime end timestamp
      * @param dayFormat the day format
+     * @param periodId the period id
      * @return the format date string
      */
     public static String getFormatDateStringForSrow(Long startTime, Long endTime, String dayFormat, String periodId) {
@@ -1833,6 +1834,14 @@ public class NeoUtils {
         return getNameForMonthlySRow(startTime, endTime);
     }
     
+    /**
+     * Gets the name for hourly s row.
+     *
+     * @param startTime the start time
+     * @param endTime the end time
+     * @param dayFormat the day format
+     * @return the name for hourly s row
+     */
     public static String getNameForHourlySRow(Long startTime, Long endTime, String dayFormat){
         Calendar endTimeCal = Calendar.getInstance();
         endTimeCal.setTimeInMillis(endTime);
@@ -1856,12 +1865,25 @@ public class NeoUtils {
         return sb.toString();
     }
     
+    /**
+     * Gets the name for daily s row.
+     *
+     * @param startTime the start time
+     * @return the name for daily s row
+     */
     public static String getNameForDailySRow(Long startTime){
         String pattern = "yyyy-MM-dd";
         SimpleDateFormat sf = new SimpleDateFormat(pattern);
         return sf.format(new Date(startTime));
     }
     
+    /**
+     * Gets the name for weekly s row.
+     *
+     * @param startTime the start time
+     * @param endTime the end time
+     * @return the name for weekly s row
+     */
     public static String getNameForWeeklySRow(Long startTime, Long endTime){
         Calendar startTimeCal = Calendar.getInstance();
         startTimeCal.setTimeInMillis(startTime);
@@ -1872,6 +1894,13 @@ public class NeoUtils {
         return result;
     }
 
+    /**
+     * Gets the name for monthly s row.
+     *
+     * @param startTime the start time
+     * @param endTime the end time
+     * @return the name for monthly s row
+     */
     public static String getNameForMonthlySRow(Long startTime, Long endTime){
         Calendar startTimeCal = Calendar.getInstance();
         startTimeCal.setTimeInMillis(startTime);
@@ -1908,6 +1937,13 @@ public class NeoUtils {
         }
     }
 
+    /**
+     * Checks if is need add year.
+     *
+     * @param start the start
+     * @param end the end
+     * @return true, if is need add year
+     */
     private static boolean isNeedAddYear(Long start, Long end){
         Calendar currTimeCal = Calendar.getInstance();
         currTimeCal.setTimeInMillis(System.currentTimeMillis());
@@ -2438,42 +2474,6 @@ public class NeoUtils {
     }
 
     /**
-     * Gets the cRS.
-     * 
-     * @param gisNode the gis node
-     * @param service the service
-     * @return the cRS
-     */
-    public static CoordinateReferenceSystem getCRS(Node gisNode, GraphDatabaseService service) {
-        if (gisNode == null) {
-            return null;
-        }
-        CoordinateReferenceSystem crs = null;
-        Transaction tx = beginTx(service);
-        try {
-            if (gisNode.hasProperty(INeoConstants.PROPERTY_CRS_NAME)) {
-                // The simple approach is to name the CRS, eg. EPSG:4326 (GeoNeo spec prefers a
-                // new naming standard, but I'm not sure geotools knows it)
-                crs = CRS.decode(gisNode.getProperty(INeoConstants.PROPERTY_CRS_NAME).toString());
-            } else if (gisNode.hasProperty(INeoConstants.PROPERTY_CRS_HREF_NAME)) {
-                // TODO: This type is specified in GeoNeo spec, but what the HREF means is not,
-                // so we assume it is a live URL that will feed a CRS specification directly
-                // TODO: Lagutko: gisNode.hasProperty() has 'crs_href' as parameter, but
-                // gisNode.getProperty() has only 'href'. What is right?
-                URL crsURL = new URL(gisNode.getProperty(INeoConstants.PROPERTY_CRS_HREF_NAME).toString());
-                crs = CRS.decode(crsURL.getContent().toString());
-            }
-            return crs;
-        } catch (Exception crs_e) {
-            System.err.println("Failed to interpret CRS: " + crs_e.getMessage());
-            crs_e.printStackTrace(System.err);
-            return null;
-        } finally {
-            finishTx(tx);
-        }
-    }
-
-    /**
      * Gets the relationship type by name.
      * 
      * @param name the name
@@ -2490,9 +2490,10 @@ public class NeoUtils {
     }
 
     /**
-     * Find root node
-     * 
+     * Find root node.
+     *
      * @param node the node - node from datast/network
+     * @param service the service
      * @return the node
      */
     public static Node findRoot(Node node, GraphDatabaseService service) {
@@ -2534,8 +2535,8 @@ public class NeoUtils {
     }
 
     /**
-     * Gets the primary type of dataset node
-     * 
+     * Gets the primary type of dataset node.
+     *
      * @param dataNode the root node
      * @param service the service
      * @return the primary type or null
@@ -2583,8 +2584,8 @@ public class NeoUtils {
     }
 
     /**
-     * Gets the traverser of all datasets by network node
-     * 
+     * Gets the traverser of all datasets by network node.
+     *
      * @param networkNode network node
      * @param service the service
      * @return Traverser
@@ -2606,5 +2607,61 @@ public class NeoUtils {
 
     }
 
+
+    /**
+     * Sets the crs.
+     *
+     * @param mainGisNode the main gis node
+     * @param crs the crs
+     * @param service the service
+     */
+    public static void setCRS(Node mainGisNode, CoordinateReferenceSystem crs, GraphDatabaseService service) {
+        Transaction tx = beginTx(service);
+        try{
+            String type = "geographic";
+            String epsg = crs.getIdentifiers().iterator().next().toString();
+            mainGisNode.setProperty(INeoConstants.PROPERTY_WKT_CRS, crs.toWKT());
+            mainGisNode.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, type);
+            mainGisNode.setProperty(INeoConstants.PROPERTY_CRS_NAME, epsg);
+            successTx(tx);
+        }finally{
+           finishTx(tx);
+        }
+    }
+    
+    /**
+     * Gets the cRS.
+     *
+     * @param gisNode the gis node
+     * @param service the service
+     * @param defaultCRS the default crs
+     * @return the cRS
+     */
+    public static CoordinateReferenceSystem getCRS(Node gisNode,GraphDatabaseService service, CoordinateReferenceSystem defaultCRS) {
+            CoordinateReferenceSystem crs = defaultCRS; // default if crs cannot be found below
+            Transaction tx = beginTx(service);
+            try {
+                if (gisNode.hasProperty(INeoConstants.PROPERTY_WKT_CRS)){
+                    crs = CRS.parseWKT((String)gisNode.getProperty(INeoConstants.PROPERTY_WKT_CRS));
+                }else if (gisNode.hasProperty(INeoConstants.PROPERTY_CRS_NAME)) {
+                    // The simple approach is to name the CRS, eg. EPSG:4326 (GeoNeo spec prefers a
+                    // new naming standard, but I'm not sure geotools knows it)
+                    crs = CRS.decode(gisNode.getProperty(INeoConstants.PROPERTY_CRS_NAME).toString());
+                } else if (gisNode.hasProperty(INeoConstants.PROPERTY_CRS_HREF_NAME)) {
+                    // TODO: This type is specified in GeoNeo spec, but what the HREF means is not,
+                    // so we assume it is a live URL that will feed a CRS specification directly
+                    // TODO: Lagutko: gisNode.hasProperty() has 'crs_href' as parameter, but
+                    // gisNode.getProperty() has only 'href'. What is right?
+                    URL crsURL = new URL(gisNode.getProperty(INeoConstants.PROPERTY_CRS_HREF_NAME).toString());
+                    crs = CRS.decode(crsURL.getContent().toString());
+                }
+            } catch (Exception crs_e) {
+                System.err.println("Failed to interpret CRS: " + crs_e.getMessage());
+                crs_e.printStackTrace(System.err);
+            }finally{
+                finishTx(tx);
+            }
+        return crs;
+    }
 
 }

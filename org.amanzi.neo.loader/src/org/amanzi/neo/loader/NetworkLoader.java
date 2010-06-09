@@ -74,6 +74,7 @@ public class NetworkLoader extends AbstractLoader {
     public static class CRS {
         protected String type = null;
         protected String epsg = null;
+        protected String wkt = null;
 
         private CRS() {
         }
@@ -89,6 +90,7 @@ public class NetworkLoader extends AbstractLoader {
 
         public static CRS fromLocation(float lat, float lon, String hint) {
             CRS crs = new CRS();
+            crs.wkt=null;
             crs.type = "geographic";
             crs.epsg = "EPSG:4326";
             if ((lat > 90 || lat < -90) && (lon > 180 || lon < -180)) {
@@ -104,6 +106,7 @@ public class NetworkLoader extends AbstractLoader {
 
         public static CRS fromCRS(String crsType, String crsName) {
             CRS crs = new CRS();
+            crs.wkt=null;
             crs.type = crsType;
             crs.epsg = crsName;
             return crs;
@@ -114,9 +117,14 @@ public class NetworkLoader extends AbstractLoader {
          */
         public static CRS fromCRS(CoordinateReferenceSystem crs) {
             CRS result = new CRS();
+            result.wkt=crs.toWKT(); 
             result.type = "geographic";
             result.epsg = crs.getIdentifiers().iterator().next().toString();
             return result;
+        }
+
+        public String getWkt() {
+            return wkt;
         }
     }
 
