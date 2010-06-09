@@ -110,6 +110,7 @@ public enum CallProperties {
         HELP("has_help"),
         ITSI_ATTACH("has_attach"),
         ITSI_CC("has_itsi_cc"),
+        ITSI_HO("has_itsi_ho"),
         CS_DATA("has_csd"),
         PS_DATA("has_psd");
         
