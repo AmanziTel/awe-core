@@ -272,20 +272,10 @@ public enum StatisticsCallType {
                                         StatisticsHeaders.ATT_DELAY_L3,
                                         StatisticsHeaders.ATT_DELAY_L4),
     /**
-     * ITSI CC (Handover/cell change) call type.
+     * ITSI CC (cell change) call type.
      */
-    ITSI_CC("HO/CC (Handover/cell change)",CallType.ITSI_CC,30,1, StatisticsHeaders.CC_HO_ATTEMPTS,
-                                StatisticsHeaders.CC_RES_ATTEMPTS,
-                                StatisticsHeaders.CC_HO_SUCCESS,
+    ITSI_CC("Cell change",CallType.ITSI_CC,30,1, StatisticsHeaders.CC_RES_ATTEMPTS,
                                 StatisticsHeaders.CC_RES_SUCCESS,
-                                StatisticsHeaders.CC_HO_TIME_P1,
-                                StatisticsHeaders.CC_HO_TIME_P2,
-                                StatisticsHeaders.CC_HO_TIME_P3,
-                                StatisticsHeaders.CC_HO_TIME_P4,
-                                StatisticsHeaders.CC_HO_TIME_L1,
-                                StatisticsHeaders.CC_HO_TIME_L2,
-                                StatisticsHeaders.CC_HO_TIME_L3,
-                                StatisticsHeaders.CC_HO_TIME_L4,
                                 StatisticsHeaders.CC_RES_TIME_P1,
                                 StatisticsHeaders.CC_RES_TIME_P2,
                                 StatisticsHeaders.CC_RES_TIME_P3,
@@ -294,6 +284,19 @@ public enum StatisticsCallType {
                                 StatisticsHeaders.CC_RES_TIME_L2,
                                 StatisticsHeaders.CC_RES_TIME_L3,
                                 StatisticsHeaders.CC_RES_TIME_L4),
+    /**
+     * ITSI HO (Handover) call type.
+     */
+    ITSI_HO("Handover",CallType.ITSI_HO,30,1, StatisticsHeaders.CC_HO_ATTEMPTS,
+                                            StatisticsHeaders.CC_HO_SUCCESS,
+                                            StatisticsHeaders.CC_HO_TIME_P1,
+                                            StatisticsHeaders.CC_HO_TIME_P2,
+                                            StatisticsHeaders.CC_HO_TIME_P3,
+                                            StatisticsHeaders.CC_HO_TIME_P4,
+                                            StatisticsHeaders.CC_HO_TIME_L1,
+                                            StatisticsHeaders.CC_HO_TIME_L2,
+                                            StatisticsHeaders.CC_HO_TIME_L3,
+                                            StatisticsHeaders.CC_HO_TIME_L4),
     /**
      * Circuit-switched data call type.                       
      */

@@ -24,6 +24,7 @@ import org.amanzi.awe.views.calls.enums.AggregationStatisticsHeaders;
 import org.amanzi.awe.views.calls.enums.IAggrStatisticsHeaders;
 import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
+import org.amanzi.awe.views.calls.enums.StatisticsFlags;
 import org.amanzi.awe.views.calls.enums.StatisticsType;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.CallProperties;
@@ -119,6 +120,10 @@ public class AggregationCallStatisticsBuilder {
                         continue;
                     }
                     rootNode.setProperty(stat.getRealType().getId().getProperty(), true);
+                    StatisticsCallType additionalType = stat.getAdditionalType();
+                    if(additionalType!=null){
+                        rootNode.setProperty(additionalType.getId().getProperty(), true);
+                    }
                     for(IAggrStatisticsHeaders aggrHeader : stat.getAggrHeaders()){
                         List<Number> sources = new ArrayList<Number>();
                         List<Node> sourceCells = new ArrayList<Node>();
@@ -173,6 +178,7 @@ public class AggregationCallStatisticsBuilder {
         Statistics result = null;
         for(AggregationCallTypes stat : AggregationCallTypes.values()){
             StatisticsCallType realType = stat.getRealType();
+            StatisticsCallType additionalType = stat.getAdditionalType();
             Node periodNode = getPeriodNode(period, realType, sourceStatistics);
             if(periodNode==null){
                 havingStats.put(stat, false);
@@ -185,6 +191,9 @@ public class AggregationCallStatisticsBuilder {
             List<Node> currSourceRows = getAllPeriodRows(periodNode,start,end);
             for(Node row : currSourceRows){
                 HashMap<IStatisticsHeader, Node> sourceCells = getAllRowCells(row, realType);
+                if(additionalType!=null){
+                    sourceCells.putAll(getAllRowCells(row, additionalType));
+                }
                 for (IStatisticsHeader utilHeader : stat.getUtilHeaders()) {
                     for (IStatisticsHeader header : ((IAggrStatisticsHeaders)utilHeader).getDependendHeaders()) {
                         Node cell = sourceCells.get(header);                        
@@ -337,12 +346,12 @@ public class AggregationCallStatisticsBuilder {
     }
     
     private void setFlags(AggregationStatisticsHeaders header, Number value, Node cell, List<Node> sources){
-        boolean flagged = header.isShouldBeFlagged(value);
-        cell.setProperty(INeoConstants.PROPERTY_FLAGGED_NAME, flagged);
+        StatisticsFlags flag = header.getFlagByValue(value);        
+        cell.setProperty(INeoConstants.PROPERTY_FLAGGED_NAME, flag.getId());
         for(Node source : sources){
-            boolean beforeFlagged = (Boolean)source.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, false);
-            if (!beforeFlagged){
-                source.setProperty(INeoConstants.PROPERTY_FLAGGED_NAME, flagged);
+            StatisticsFlags beforeFlag = StatisticsFlags.getFlagById((String)source.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, StatisticsFlags.NONE.getId()));
+            if (beforeFlag==null||beforeFlag.getOrder()<flag.getOrder()){
+                source.setProperty(INeoConstants.PROPERTY_FLAGGED_NAME, flag.getId());
             }
         }
     }
