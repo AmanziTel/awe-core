@@ -32,8 +32,8 @@ import org.apache.log4j.PropertyConfigurator;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.neoclipse.view.NeoGraphViewPart;
@@ -46,7 +46,7 @@ import org.osgi.framework.BundleContext;
  * @since 1.0.0
  */
 
-public class NeoCorePlugin extends Plugin implements IUpdateViewListener {
+public class NeoCorePlugin extends AbstractUIPlugin implements IUpdateViewListener {
 
     /*
      * Plugin's ID
@@ -107,7 +107,7 @@ public class NeoCorePlugin extends Plugin implements IUpdateViewListener {
      */
     @Override
     public void stop(BundleContext context) throws Exception {
-        savePluginPreferences();
+        // savePluginPreferences();
         plugin = null;
         super.stop(context);
     }

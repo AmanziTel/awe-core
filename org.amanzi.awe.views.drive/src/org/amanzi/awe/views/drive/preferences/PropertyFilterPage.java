@@ -18,9 +18,9 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.propertyFilter.OperationCase;
 import org.amanzi.neo.preferences.DataLoadPreferences;
-import org.amanzi.neo.propertyFilter.OperationCase;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.CellEditor;
@@ -81,12 +81,13 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
     private Button bBottom;
 
     private int counter;
-    
+
     private final List<RowWr> filterRules = new ArrayList<RowWr>();
 
     public PropertyFilterPage() {
         super();
-        setPreferenceStore(NeoLoaderPlugin.getDefault().getPreferenceStore());
+        // setPreferenceStore(NeoLoaderPlugin.getDefault().getPreferenceStore());
+        setPreferenceStore(NeoCorePlugin.getDefault().getPreferenceStore());
     }
 
     @Override
@@ -249,10 +250,10 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
                         return;
                     filterRules.remove(selectedRow);
                     RowWr movingRow = selectedRow;
-                    for(int i = 0; i<selectedIndex;i++){
+                    for (int i = 0; i < selectedIndex; i++) {
                         RowWr cash = filterRules.get(i);
                         filterRules.remove(i);
-                        
+
                     }
                     ArrayList<RowWr> newFilterRules = new ArrayList<RowWr>(filterRules.size());
                     newFilterRules.addAll(filterRules);
@@ -319,7 +320,7 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
                 widgetSelected(e);
             }
         });
-        
+
         bBottom.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -478,7 +479,7 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
             super();
             this.operationCase = operationCase;
             this.dataset = dataset;
-//            this.property = property;
+            // this.property = property;
             this.property = "" + counter++;
 
         }

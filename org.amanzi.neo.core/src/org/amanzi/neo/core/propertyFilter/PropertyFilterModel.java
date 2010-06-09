@@ -11,13 +11,13 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.propertyFilter;
+package org.amanzi.neo.core.propertyFilter;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
-import org.amanzi.neo.preferences.DataLoadPreferences;
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.preferences.NeoCorePreferencesConstants;
 
 /**
  * <p>
@@ -68,10 +68,10 @@ public class PropertyFilterModel {
     }
 
     private void loadData() {
-        String val = NeoLoaderPlugin.getDefault().getPreferenceStore().getString(DataLoadPreferences.FILTER_RULES);
+        String val = NeoCorePlugin.getDefault().getPreferenceStore().getString(NeoCorePreferencesConstants.FILTER_RULES);
         int propertyIndex = indEncludance;
         Filter filter = null;
-        for (String str : val.split(DataLoadPreferences.CRS_DELIMETERS)) {
+        for (String str : val.split(NeoCorePreferencesConstants.CRS_DELIMETERS)) {
             if (propertyIndex == indEncludance) {
                 filter = new Filter(null, "", "");
                 filter.setOperationCase(OperationCase.getEnumById(str));

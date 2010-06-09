@@ -41,18 +41,18 @@ import org.amanzi.awe.views.reuse.ReusePlugin;
 import org.amanzi.awe.views.reuse.Select;
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.preferences.NeoCorePreferencesConstants;
+import org.amanzi.neo.core.propertyFilter.PropertyFilterModel;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.PropertyHeader;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
-import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
-import org.amanzi.neo.preferences.DataLoadPreferences;
-import org.amanzi.neo.propertyFilter.PropertyFilterModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -2071,7 +2071,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
 
     @Override
     public void propertyChange(PropertyChangeEvent event) {
-        if (event.getProperty().equals(DataLoadPreferences.FILTER_RULES)) {
+        if (event.getProperty().equals(NeoCorePreferencesConstants.FILTER_RULES)) {
             int selectedGisInd = gisCombo.getSelectionIndex();
             if (selectedGisInd < 0) {
                 propertyList = new ArrayList<String>();
@@ -2090,12 +2090,12 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
     @Override
     public void init(IViewSite site) throws PartInitException {
         super.init(site);
-        NeoLoaderPlugin.getDefault().getPluginPreferences().addPropertyChangeListener(this);
+        NeoCorePlugin.getDefault().getPluginPreferences().addPropertyChangeListener(this);
     }
 
     @Override
     public void dispose() {
-        NeoLoaderPlugin.getDefault().getPluginPreferences().removePropertyChangeListener(this);
+        NeoCorePlugin.getDefault().getPluginPreferences().removePropertyChangeListener(this);
         super.dispose();
     }
 

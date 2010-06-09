@@ -11,13 +11,14 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.propertyFilter;
+package org.amanzi.neo.core.propertyFilter;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
+ * Enum contains all posible operation cases for property filter page
  * </p>
+ * 
  * @author NiCK
  * @since 1.0.0
  */
