@@ -277,6 +277,9 @@ public class StatisticsDataLoader {
         while ((line = reader.readLine()) != null) {
             if(!hasHeaders){
                 hasHeaders = parseHeaders(line);
+                if(!headers.hasStatisticsHeaders()){
+                    break;
+                }
             }else{
                 parseLine(line);
             }
@@ -859,7 +862,8 @@ public class StatisticsDataLoader {
         INDIVIDUAL(StatisticsCallType.INDIVIDUAL, "SL-SRV-SC"),
         GROUP(StatisticsCallType.GROUP, "SL-SRV-GC"),
         ITSI_ATTACH(StatisticsCallType.ITSI_ATTACH,"SL-INH-ATT"),
-        ITSI_CC(StatisticsCallType.ITSI_CC,"SL-INH-CC_"),
+        ITSI_CC(StatisticsCallType.ITSI_CC,"SL-INH-CC_RES"),
+        ITSI_HO(StatisticsCallType.ITSI_HO,"SL-INH-CC_HO"),
         TSM(StatisticsCallType.TSM,"SL-SRV-TSM"),
         SDS(StatisticsCallType.SDS,"SL-SRV-SDS"),
         EMERGENCY(StatisticsCallType.EMERGENCY,"SL-SRV-EC-1"),
@@ -1072,11 +1076,14 @@ public class StatisticsDataLoader {
          * @return StatisticsHeaders
          */
         private IStatisticsHeader getStatisticsHeader(StatisticsCallType callType, String name){
+            System.out.println("Came with name "+ name); //TODO delete.
             if(callType==null){
                 return null;
             }
+            System.out.println("Came 1 with name "+ name+", call type "+callType); //TODO delete.
             for(IStatisticsHeader header : callType.getHeaders()){
                 if(name.endsWith(header.getTitle())){
+                    System.out.println("Find header "+header); //TODO delete.
                     return header;
                 }
             }
@@ -1106,6 +1113,10 @@ public class StatisticsDataLoader {
             for(Header header : dataHeaders){
                 allHeaders.put(header.getNumber(), header);
             }
+        }
+        
+        public boolean hasStatisticsHeaders(){
+            return !statisticsHeaders.isEmpty();
         }
     }
     

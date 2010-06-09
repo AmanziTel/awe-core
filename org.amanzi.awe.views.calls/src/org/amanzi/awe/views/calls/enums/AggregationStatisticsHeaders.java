@@ -65,7 +65,7 @@ public enum AggregationStatisticsHeaders implements IAggrStatisticsHeaders {
     SC3("SC3", StatisticsType.PERCENT,UtilAggregationHeaders.SC_CALL_DISC_TIME,UtilAggregationHeaders.SC_SUCC_SETUP_COUNT) {
         @Override
         public StatisticsFlags getFlagByValue(Number value) {
-            if(value!=null&&value.floatValue()>SecondLevelConstants.MIN_SC3){
+            if(value!=null&&value.floatValue()<SecondLevelConstants.MIN_SC3){
                 return StatisticsFlags.RED;
             }
             return StatisticsFlags.NONE;
@@ -74,7 +74,7 @@ public enum AggregationStatisticsHeaders implements IAggrStatisticsHeaders {
     SC4("SC4", StatisticsType.PERCENT,UtilAggregationHeaders.SC_AUDIO_QUAL_SUCC,UtilAggregationHeaders.SC_SUCC_SETUP_COUNT) {
         @Override
         public StatisticsFlags getFlagByValue(Number value) {
-            if(value!=null&&value.floatValue()>SecondLevelConstants.MIN_SC4){
+            if(value!=null&&value.floatValue()<SecondLevelConstants.MIN_SC4){
                 return StatisticsFlags.RED;
             }
             return StatisticsFlags.NONE;
@@ -83,7 +83,7 @@ public enum AggregationStatisticsHeaders implements IAggrStatisticsHeaders {
     SC4_ZW2_AVG("SC4 ZW2(AVG)", StatisticsType.AVERAGE,UtilAggregationHeaders.SC_AUDIO_QUAL_TOTAL,UtilAggregationHeaders.SC_AUDIO_QUAL_COUNT) {
         @Override
         public StatisticsFlags getFlagByValue(Number value) {
-            if(value!=null&&value.floatValue()>SecondLevelConstants.MIN_SC4_AVERAGE){
+            if(value!=null&&value.floatValue()<SecondLevelConstants.MIN_SC4_AVERAGE){
                 return StatisticsFlags.RED;
             }
             return StatisticsFlags.NONE;
