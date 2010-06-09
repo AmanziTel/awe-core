@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.amanzi.neo.propertyFilter.OperationCase;
@@ -35,10 +34,13 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
@@ -73,6 +75,13 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
     protected static final int indProperty = 2;
     private Composite mainFrame;
     private TableViewer viewer;
+    private Button bUp;
+    private Button bTop;
+    private Button bDown;
+    private Button bBottom;
+
+    private int counter;
+    
     private final List<RowWr> filterRules = new ArrayList<RowWr>();
 
     public PropertyFilterPage() {
@@ -87,26 +96,44 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
 
         GridLayout mainLayout = new GridLayout(3, false);
         mainFrame.setLayout(mainLayout);
-        
+
         Label label = new Label(mainFrame, SWT.LEFT);
         label.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1));
-        label.setText("To create a new rule, just click on \"NEW\" cell and enter needed values.\n" +
-                "To delete a rule it is need to mark it's operation type as \"remove\". Rule will be removed during saving the changes.");
-        
+        label.setText("To create a new rule, just click on \"NEW\" cell and enter needed values.\n"
+                + "To delete a rule it is need to mark it's operation type as \"remove\". Rule will be removed during saving the changes.");
+
         viewer = new TableViewer(mainFrame, SWT.BORDER | SWT.FULL_SELECTION);
         TableContentProvider provider = new TableContentProvider();
         createTableColumn();
 
         viewer.setContentProvider(provider);
 
-        GridData layoutData = new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1);
+        GridData layoutData = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 4);
         viewer.getControl().setLayoutData(layoutData);
-//        viewer.getControl().setToolTipText(
-//                "To create a new rule, just click on \"NEW\" cell and enter needed values.\n" +
-//                "To delete a rule it is need to mark it as \"remove\". Rule will be removed during saving the changes.");
-
+        // viewer.getControl().setToolTipText(
+        // "To create a new rule, just click on \"NEW\" cell and enter needed values.\n" +
+        // "To delete a rule it is need to mark it as \"remove\". Rule will be removed during saving the changes.");
         layoutData.grabExcessVerticalSpace = true;
         layoutData.grabExcessHorizontalSpace = true;
+
+        bTop = new Button(mainFrame, SWT.PUSH);
+        bUp = new Button(mainFrame, SWT.PUSH);
+        bDown = new Button(mainFrame, SWT.PUSH);
+        bBottom = new Button(mainFrame, SWT.PUSH);
+
+        bTop.setText("Top");
+        bUp.setText("Up");
+        bDown.setText("Down");
+        bBottom.setText("Bottom");
+
+        layoutData = new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false);
+        bTop.setLayoutData(layoutData);
+        bUp.setLayoutData(layoutData);
+        bDown.setLayoutData(layoutData);
+        bBottom.setLayoutData(layoutData);
+
+        // layoutData.grabExcessVerticalSpace = true;
+        // layoutData.grabExcessHorizontalSpace = true;
 
         viewer.setInput("");
 
@@ -125,9 +152,9 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
      */
     private void formRulesList() {
         filterRules.clear();
-        LOGGER.debug(NeoCorePlugin.getDefault().getPluginPreferences().getString(DataLoadPreferences.FILTER_RULES));
+        // LOGGER.debug(NeoCorePlugin.getDefault().getPluginPreferences().getString(DataLoadPreferences.FILTER_RULES));
         String val = getPreferenceStore().getString(DataLoadPreferences.FILTER_RULES);
-        LOGGER.debug(val);
+        // LOGGER.debug(val);
         int propertyIndex = indEncludance;
         RowWr wr = null;
         for (String str : val.split(DataLoadPreferences.CRS_DELIMETERS)) {
@@ -144,23 +171,6 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
                 filterRules.add(wr);
             }
         }
-
-        // ArrayList<RowWr> newPropertyLists = new ArrayList<RowWr>(filterRules.size() + 1);
-        // for (RowWr row : filterRules) {
-        // if (row.getIsInclude() != null) {
-        // newPropertyLists.add(row);
-        // }
-        // }
-
-        // Collections.sort(newPropertyLists, new Comparator<RowWr>() {
-        // @Override
-        // public int compare(RowWr arg0, RowWr arg1) {
-        // return arg0.getListName().compareTo(arg1.getListName());
-        // }
-        // });
-
-        // propertyLists.clear();
-        // propertyLists.addAll(newPropertyLists);
         filterRules.add(new RowWr(OperationCase.NEW, "", ""));
     }
 
@@ -223,12 +233,135 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
             public void mouseDoubleClick(MouseEvent e) {
             }
         });
+
+        bTop.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                // TODO optimize algorithm
+                TableItem item = viewer.getTable().getItem(viewer.getTable().getSelectionIndex());
+                if (item != null) {
+                    RowWr selectedRow = (RowWr)item.getData();
+                    if (selectedRow.getOperationCase() == OperationCase.NEW)
+                        return;
+                    int selectedIndex = filterRules.indexOf(selectedRow);
+                    if (selectedIndex == 0)
+                        return;
+                    filterRules.remove(selectedRow);
+                    RowWr movingRow = selectedRow;
+                    for(int i = 0; i<selectedIndex;i++){
+                        RowWr cash = filterRules.get(i);
+                        filterRules.remove(i);
+                        
+                    }
+                    ArrayList<RowWr> newFilterRules = new ArrayList<RowWr>(filterRules.size());
+                    newFilterRules.addAll(filterRules);
+                    filterRules.clear();
+                    filterRules.add(selectedRow);
+                    for (RowWr row : newFilterRules) {
+                        filterRules.add(row);
+                    }
+                    updateTable();
+                }
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+
+        bUp.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                TableItem item = viewer.getTable().getItem(viewer.getTable().getSelectionIndex());
+                if (item != null) {
+                    RowWr selectedRow = (RowWr)item.getData();
+                    if (selectedRow.getOperationCase() == OperationCase.NEW)
+                        return;
+                    int selectedIndex = filterRules.indexOf(selectedRow);
+                    if (selectedIndex == 0)
+                        return;
+                    RowWr targetRow = filterRules.get(selectedIndex - 1);
+                    filterRules.set(selectedIndex, targetRow);
+                    filterRules.set(selectedIndex - 1, selectedRow);
+                    updateTable();
+                }
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+        bDown.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                TableItem item = viewer.getTable().getItem(viewer.getTable().getSelectionIndex());
+                if (item != null) {
+                    RowWr selectedRow = (RowWr)item.getData();
+                    if (selectedRow.getOperationCase() == OperationCase.NEW)
+                        return;
+                    int selectedIndex = filterRules.indexOf(selectedRow);
+                    if (selectedIndex == filterRules.size() - 2)
+                        return;
+                    RowWr targetRow = filterRules.get(selectedIndex + 1);
+                    filterRules.set(selectedIndex, targetRow);
+                    filterRules.set(selectedIndex + 1, selectedRow);
+                    updateTable();
+                }
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+        
+        bBottom.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                TableItem item = viewer.getTable().getItem(viewer.getTable().getSelectionIndex());
+                if (item != null) {
+                    RowWr selectedRow = (RowWr)item.getData();
+                    if (selectedRow.getOperationCase() == OperationCase.NEW)
+                        return;
+                    int selectedIndex = filterRules.indexOf(selectedRow);
+                    if (selectedIndex == filterRules.size() - 2)
+                        return;
+                    filterRules.remove(selectedRow);
+                    filterRules.add(selectedRow);
+                    updateTable();
+                }
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
     }
+
+    // private void sortRules() {
+    // Collections.sort(filterRules, new Comparator<RowWr>() {
+    // @Override
+    // public int compare(RowWr arg0, RowWr arg1) {
+    // if (arg0.getOperationCase() == OperationCase.NEW)
+    // return -1;
+    // else if (arg1.getOperationCase() == OperationCase.NEW)
+    // return 1;
+    // return ((Integer)arg0.getSerialNumber()).compareTo(arg1.getSerialNumber());
+    // }
+    // });
+    // }
 
     /**
      * @param e
      */
-    protected void changeIncludance(MouseEvent e) {
+    private void changeIncludance(MouseEvent e) {
         Point p = new Point(e.x, e.y);
         TableItem item = viewer.getTable().getItem(p);
         if (item != null) {
@@ -263,9 +396,9 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
      * @return
      */
     public boolean validateProperty(String property) {
-//        if (!property.isEmpty())
-//            return validateRegExp(property);
-//        return false;
+        // if (!property.isEmpty())
+        // return validateRegExp(property);
+        // return false;
         return !property.isEmpty();
     }
 
@@ -274,9 +407,9 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
      * @return
      */
     public boolean validateDataset(String dataset) {
-//        if (dataset.isEmpty())
-//            return true;
-//        return validateRegExp(dataset);
+        // if (dataset.isEmpty())
+        // return true;
+        // return validateRegExp(dataset);
         return true;
     }
 
@@ -323,8 +456,9 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
         }
         String string = result.length() > 0 ? result.substring(DataLoadPreferences.CRS_DELIMETERS.length()) : result.toString();
         getPreferenceStore().setValue(DataLoadPreferences.FILTER_RULES, string);
-        NeoCorePlugin.getDefault().getPluginPreferences().setValue(DataLoadPreferences.FILTER_RULES, string);
-        LOGGER.debug(NeoCorePlugin.getDefault().getPluginPreferences().getString(DataLoadPreferences.FILTER_RULES));
+        // NeoCorePlugin.getDefault().getPluginPreferences().setValue(DataLoadPreferences.FILTER_RULES,
+        // string);
+        // LOGGER.debug(NeoCorePlugin.getDefault().getPluginPreferences().getString(DataLoadPreferences.FILTER_RULES));
         return true;
 
     }
@@ -344,7 +478,9 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
             super();
             this.operationCase = operationCase;
             this.dataset = dataset;
-            this.property = property;
+//            this.property = property;
+            this.property = "" + counter++;
+
         }
 
         /**
@@ -407,7 +543,6 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
         public boolean isPropertyValid() {
             return isPropertyValid;
         }
-
     }
 
     /*
@@ -553,7 +688,6 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
         formRulesList();
         viewer.setInput("");
     }
-    
 
     // public static boolean isPropertyValid(String dataset, String propery){
     // String val =
@@ -578,5 +712,5 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
     //        
     // return false;
     // }
-    
+
 }
