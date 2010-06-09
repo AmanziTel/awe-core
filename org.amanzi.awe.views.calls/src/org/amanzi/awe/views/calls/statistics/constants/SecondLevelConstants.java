@@ -24,7 +24,7 @@ public class SecondLevelConstants {
     
     public static float MIN_SC1 = 99f;
     
-    public static float MAX_SC2_AVERAGE = 15f;
+    public static float MAX_SC2_AVERAGE = 5f;
     public static float MAX_SC2_MAX = 15f;
     
     public static float MIN_SC3 = 99f;

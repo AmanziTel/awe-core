@@ -286,6 +286,54 @@ public enum UtilAggregationHeaders implements IAggrStatisticsHeaders {
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
+    },
+    EC1_ATTEMPT("EC1_ATTEMPT",StatisticsType.COUNT,StatisticsHeaders.EC1_ATTEMPT){
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    EC1_SUCCESS("EC1_SUCCESS",StatisticsType.COUNT,StatisticsHeaders.EC1_SUCCESS){
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    EC2_ATTEMPT("EC2_ATTEMPT",StatisticsType.COUNT,StatisticsHeaders.EC2_ATTEMPT){
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    EC2_SUCCESS("EC2_SUCCESS",StatisticsType.COUNT,StatisticsHeaders.EC2_SUCCESS){
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    IP_ATTEMPT("IP_ATTEMPT",StatisticsType.COUNT,StatisticsHeaders.IP_ATTEMPTS){
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    IP_SUCCESS("IP_SUCCESS",StatisticsType.COUNT,StatisticsHeaders.IP_SUCCESS){
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    CSD_ATTEMPT("CSD_ATTEMPT",StatisticsType.COUNT,StatisticsHeaders.CSD_ATTEMPTS){
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    CSD_SUCCESS("CSD_SUCCESS",StatisticsType.COUNT,StatisticsHeaders.CSD_SUCCESS){
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
     };
     
     private String headerTitle;

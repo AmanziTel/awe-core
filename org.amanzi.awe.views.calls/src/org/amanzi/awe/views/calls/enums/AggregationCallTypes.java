@@ -28,7 +28,7 @@ import java.util.Set;
  */
 public enum AggregationCallTypes {
 
-     INDIVIDUAL(StatisticsCallType.INDIVIDUAL,AggregationStatisticsHeaders.SC1,
+     INDIVIDUAL(StatisticsCallType.INDIVIDUAL,null,AggregationStatisticsHeaders.SC1,
                                             AggregationStatisticsHeaders.SC2_ZW2_AVG,
                                             AggregationStatisticsHeaders.SC2_ZW2_MIN,
                                             AggregationStatisticsHeaders.SC2_ZW2_MAX,
@@ -40,7 +40,7 @@ public enum AggregationCallTypes {
                                             AggregationStatisticsHeaders.SC5_ZW1_AVG,
                                             AggregationStatisticsHeaders.SC5_ZW1_MIN,
                                             AggregationStatisticsHeaders.SC5_ZW1_MAX),
-     GROUP(StatisticsCallType.GROUP,AggregationStatisticsHeaders.GC1,
+     GROUP(StatisticsCallType.GROUP,null,AggregationStatisticsHeaders.GC1,
                                     AggregationStatisticsHeaders.GC2_ZW2_AVG,
                                     AggregationStatisticsHeaders.GC2_ZW2_MIN,
                                     AggregationStatisticsHeaders.GC2_ZW2_MAX,
@@ -52,12 +52,17 @@ public enum AggregationCallTypes {
                                     AggregationStatisticsHeaders.GC5_ZW1_AVG,
                                     AggregationStatisticsHeaders.GC5_ZW1_MIN,
                                     AggregationStatisticsHeaders.GC5_ZW1_MAX),
-     ITSI_CC(StatisticsCallType.ITSI_CC, AggregationStatisticsHeaders.INH_CC),
-     TSM(StatisticsCallType.TSM, AggregationStatisticsHeaders.TSM),
-     SDS(StatisticsCallType.SDS, AggregationStatisticsHeaders.SDS),
-     ITSI_ATT(StatisticsCallType.ITSI_ATTACH, AggregationStatisticsHeaders.INH_AT);
+     ITSI_CC(StatisticsCallType.ITSI_CC,StatisticsCallType.ITSI_HO, AggregationStatisticsHeaders.INH_CC),
+     TSM(StatisticsCallType.TSM,null, AggregationStatisticsHeaders.TSM),
+     SDS(StatisticsCallType.SDS,null, AggregationStatisticsHeaders.SDS),
+     ITSI_ATT(StatisticsCallType.ITSI_ATTACH,null, AggregationStatisticsHeaders.INH_AT);
+     //EMERGENCY(StatisticsCallType.EMERGENCY,null,AggregationStatisticsHeaders.EC1),
+     //HELP(StatisticsCallType.HELP,null,AggregationStatisticsHeaders.EC2),
+     //CS_DATA(StatisticsCallType.CS_DATA,null,AggregationStatisticsHeaders.CSD),
+     //PS_DATA(StatisticsCallType.PS_DATA,null,AggregationStatisticsHeaders.IP);
      
      private StatisticsCallType realType;
+     private StatisticsCallType additionalType;
      private List<IAggrStatisticsHeaders> aggrHeaders;
      
      /**
@@ -66,9 +71,10 @@ public enum AggregationCallTypes {
       * @param utilCount int (count of utility headers)
       * @param allHeaders IAggrStatisticsHeaders (utility and aggregation headers)
       */
-     private AggregationCallTypes(StatisticsCallType real, IAggrStatisticsHeaders... allHeaders) {
+     private AggregationCallTypes(StatisticsCallType real, StatisticsCallType additional, IAggrStatisticsHeaders... allHeaders) {
          realType = real;
          aggrHeaders = Arrays.asList(allHeaders);
+         additionalType = additional;
      }
      
      /**
@@ -77,6 +83,13 @@ public enum AggregationCallTypes {
      public StatisticsCallType getRealType() {
          return realType;
      }
+     
+     /**
+     * @return Returns the additionalType.
+     */
+    public StatisticsCallType getAdditionalType() {
+        return additionalType;
+    }
      
      /**
       * @return Returns the aggrHeaders.

@@ -30,6 +30,7 @@ import org.amanzi.awe.views.calls.Messages;
 import org.amanzi.awe.views.calls.enums.AggregationCallTypes;
 import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
+import org.amanzi.awe.views.calls.enums.StatisticsFlags;
 import org.amanzi.awe.views.calls.enums.StatisticsType;
 import org.amanzi.awe.views.calls.statistics.CallStatistics;
 import org.amanzi.awe.views.calls.statistics.CallStatisticsInconclusive;
@@ -154,7 +155,6 @@ public class CallAnalyserView extends ViewPart {
     private Button bExport;
     private Color color1;
     private Color color2;
-    private Color colorFlagged;
     private Comparator<PeriodWrapper> comparator;
     private List<Integer> sortedColumns = new LinkedList<Integer>();
     private Composite frame;
@@ -248,14 +248,12 @@ public class CallAnalyserView extends ViewPart {
             Color color = color1;
             PeriodWrapper element = elements.get(0);
             element.setColor(color);
-            element.setFlaggedColor(colorFlagged);
             for (int i = 1; i < elements.size(); i++) {
                 element = elements.get(i);
                 if (comparator.compare(elements.get(i - 1), element) != 0) {
                     color = color == color1 ? color2 : color1;
                 }
                 element.setColor(color);
-                element.setFlaggedColor(colorFlagged);
             }
         }
     }
@@ -481,7 +479,6 @@ public class CallAnalyserView extends ViewPart {
         this.parent = parent;
         color1 = new Color(Display.getCurrent(), 240, 240, 240);
         color2 = new Color(Display.getCurrent(), 255, 255, 255);
-        colorFlagged = new Color(Display.getCurrent(), 255, 0, 0);
         sortedColumns = new LinkedList<Integer>();
         comparator = new Comparator<PeriodWrapper>() {
             @Override
@@ -1517,13 +1514,13 @@ public class CallAnalyserView extends ViewPart {
     public static class PeriodWrapper {
         private final Node sRow;
         private Map<IStatisticsHeader, String> mappedValue = new HashMap<IStatisticsHeader, String>();
-        private Map<IStatisticsHeader, Boolean> flaggedValue = new HashMap<IStatisticsHeader, Boolean>();
+        private Map<IStatisticsHeader, StatisticsFlags> flaggedValue = new HashMap<IStatisticsHeader, StatisticsFlags>();
         private String host;
         private String probeF = "";
         private String probeLA = "";
         private Node probeNode;
         private Color color;
-        private Color flaggedColor;
+        
         /**
          * Constructor
          * 
@@ -1541,8 +1538,8 @@ public class CallAnalyserView extends ViewPart {
                 if (header != null) {                   
                     Object value = node.getProperty(INeoConstants.PROPERTY_VALUE_NAME, null);
                     mappedValue.put(header, getFormattedValue(value, header));
-                    boolean flagged = (Boolean)node.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, false);
-                    flaggedValue.put(header, flagged);
+                    StatisticsFlags flag = StatisticsFlags.getFlagById((String)node.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, StatisticsFlags.NONE.getId()));
+                    flaggedValue.put(header, flag);
                 }
             }
             if (!callType.equals(StatisticsCallType.AGGREGATION_STATISTICS)) {
@@ -1600,11 +1597,11 @@ public class CallAnalyserView extends ViewPart {
             if(header==null){
                 return color;
             }
-            Boolean flagged = flaggedValue.get(header);
-            if(flagged==null||!flagged){
+            StatisticsFlags flagged = flaggedValue.get(header);
+            if(flagged==null||flagged.equals(StatisticsFlags.NONE)){
                 return color;
             }
-            return flaggedColor;
+            return flagged.getColor();
         }
 
         /**
@@ -1649,13 +1646,6 @@ public class CallAnalyserView extends ViewPart {
          */
         public void setColor(Color color) {
             this.color = color;
-        }
-        
-        /**
-         * @param color The color to set.
-         */
-        public void setFlaggedColor(Color color) {
-            this.flaggedColor = color;
         }
 
     }
