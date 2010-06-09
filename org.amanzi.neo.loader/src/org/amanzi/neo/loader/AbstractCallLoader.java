@@ -32,6 +32,7 @@ import org.amanzi.neo.core.enums.CallProperties.CallResult;
 import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.index.MultiPropertyIndex;
+import org.eclipse.core.runtime.IAdaptable;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
@@ -112,6 +113,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
     private void storeRealCall(Call call) {
         Node probeCallNode = call.getCallerProbe();
         Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
+        call.setNode(callNode);
         callNode.setProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE, call.isInclusive());
         long setupDuration = call.getCallSetupEnd() - call.getCallSetupBegin();
         long terminationDuration = call.getCallTerminationEnd() - call.getCallTerminationBegin();
@@ -151,6 +153,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
     private void storeMessageCall(Call call) {
         Node probeCallNode = call.getCallerProbe();
         Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
+        call.setNode(callNode);
         callNode.setProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE, call.isInclusive());
         //TODO remove fake mechanism after investigation
         long callSetupEnd = call.getCallSetupEnd();
@@ -200,6 +203,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
     private void storeITSICall(Call call) {
         Node probeCallNode = call.getCallerProbe();
         Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
+        call.setNode(callNode);
         callNode.setProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE, call.isInclusive());
         long updateTime = call.getCallTerminationEnd() - call.getCallSetupBegin();
         
@@ -223,6 +227,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
     private void storeITSICCCall(Call call) {
         Node probeCallNode = call.getCallerProbe();
         Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
+        call.setNode(callNode);
         callNode.setProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE, call.isInclusive());
         
         LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
@@ -332,7 +337,8 @@ public abstract class AbstractCallLoader extends DriveLoader {
      * @author Lagutko_N
      * @since 1.0.0
      */
-    public static class Call {
+    public static class Call implements IAdaptable {
+        private Node node = null;
         private boolean isInclusive=false;
         private Long acknowlegeTime;
         private Long resivedTime;
@@ -341,6 +347,16 @@ public abstract class AbstractCallLoader extends DriveLoader {
         private Long handoverTime;
         private Long reselectionTime;
         
+        @Override
+        public Object getAdapter(Class adapter) {
+            if (adapter == Node.class) {
+                return getNode();
+            } else if (adapter == Long.class) {
+                return getTimestamp();
+            }
+            return null;
+        }
+
         /*
          * List of Duration Parameters
          */
@@ -669,6 +685,20 @@ public abstract class AbstractCallLoader extends DriveLoader {
 
         public void setInclusive(boolean isInclusive) {
             this.isInclusive = isInclusive;
+        }
+
+        /**
+         * @return Returns the node.
+         */
+        public Node getNode() {
+            return node;
+        }
+
+        /**
+         * @param node The node to set.
+         */
+        public void setNode(Node node) {
+            this.node = node;
         }
         
     }

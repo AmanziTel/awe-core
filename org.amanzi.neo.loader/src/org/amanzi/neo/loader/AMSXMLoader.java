@@ -51,6 +51,7 @@ import org.amanzi.neo.loader.sax_parsers.PropertyCollector;
 import org.amanzi.neo.loader.sax_parsers.ReadContentHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.swt.widgets.Display;
@@ -76,6 +77,9 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @since 1.0.0
  */
 public class AMSXMLoader extends AbstractCallLoader {
+
+    /** String CALL_MP_KEY field */
+    public static final String CALL_MP_KEY = "call";
 
     /** TOC-TTC call. */
     private AMSCall tocttc;
@@ -107,15 +111,14 @@ public class AMSXMLoader extends AbstractCallLoader {
     public static Logger LOGGER = Logger.getLogger(AMSXMLoader.class);
 
     /** The formatter. */
-    //TODO temporary remove handling of time zone
-    private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss,SSS");//,SSSz");
+    // TODO temporary remove handling of time zone
+    private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss,SSS");// ,SSSz");
 
     /** The directory name. */
     private final String directoryName;
 
     /** The network name. */
     private String networkName;
-
 
     /** The last dataset node. */
     private Node lastDatasetNode;
@@ -137,20 +140,23 @@ public class AMSXMLoader extends AbstractCallLoader {
 
     /** The group call. */
     private final Map<String, Set<String>> groupCall = new HashMap<String, Set<String>>();
+    private final Map<String, Set<Call>> sortedCall = new HashMap<String, Set<Call>>();
 
     /** active file node for event dataset. */
     private Node datasetFileNode;
 
     /** The is test. */
     private final boolean isTest;
-    
+
     /** The event set. */
-    private final Set<AbstractEvent>eventSet=new HashSet<AbstractEvent>();
-    
+    private final Set<AbstractEvent> eventSet = new HashSet<AbstractEvent>();
+
     /** The gps set. */
-    private final Set<GPSData>gpsSet=new HashSet<GPSData>();
+    private final Map<String, Set<GPSData>> gpsMap = new HashMap<String, Set<GPSData>>();
 
     private Node datasetGis;
+
+    private String calldatasetName;
 
     // TODO change after implement feature 1131
 
@@ -222,7 +228,7 @@ public class AMSXMLoader extends AbstractCallLoader {
      * @throws ParseException the parse exception
      */
     private Long getTime(String stringData) throws ParseException {
-        if (stringData==null){
+        if (stringData == null) {
             return null;
         }
         int i = stringData.lastIndexOf(':');
@@ -255,7 +261,7 @@ public class AMSXMLoader extends AbstractCallLoader {
         this.directoryName = directoryName;
         this.filename = directoryName;
         this.networkName = networkName;
-        isTest=false;
+        isTest = false;
         initialize("AMS", null, directoryName, display, datasetName);
 
         // timestampFormat = new SimpleDateFormat(TIMESTAMP_FORMAT);
@@ -263,7 +269,7 @@ public class AMSXMLoader extends AbstractCallLoader {
 
     /**
      * Instantiates a new aMSXM loader.
-     *
+     * 
      * @param directoryName the directory name
      * @param display the display
      * @param datasetName the dataset name
@@ -287,7 +293,7 @@ public class AMSXMLoader extends AbstractCallLoader {
         this.directoryName = directoryName;
         this.filename = directoryName;
         this.networkName = networkName;
-        this.isTest=isTest;
+        this.isTest = isTest;
         initialize("AMS", neo, directoryName, display, datasetName);
     }
 
@@ -297,6 +303,7 @@ public class AMSXMLoader extends AbstractCallLoader {
     private void addDriveIndexes() {
         try {
             addIndex(NodeTypes.MP.getId(), NeoUtils.getLocationIndexProperty(dataset));
+            addMappedIndex(CALL_MP_KEY, NodeTypes.MP.getId(), NeoUtils.getLocationIndexProperty(DriveTypes.AMS_CALLS.getFullDatasetName(dataset)));
             addIndex(NodeTypes.M.getId(), NeoUtils.getTimeIndexProperty(dataset));
             addIndex(NodeTypes.CALL.getId(), NeoUtils.getTimeIndexProperty(DriveTypes.AMS_CALLS.getFullDatasetName(dataset)));
         } catch (IOException e) {
@@ -334,12 +341,12 @@ public class AMSXMLoader extends AbstractCallLoader {
             long count = 0;
             long time = System.currentTimeMillis();
             for (File logFile : allFiles) {
-                if (monitor.isCanceled()){
+                if (monitor.isCanceled()) {
                     return;
                 }
                 monitor.subTask("Loading file " + logFile.getAbsolutePath());
                 try {
-                    handleFile(logFile,monitor);
+                    handleFile(logFile, monitor);
                 } catch (Exception e) {
                     // TODO Handle SAXException
                     throw (RuntimeException)new RuntimeException().initCause(e);
@@ -356,7 +363,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             finishUp();
 
             cleanupGisNode();
-            if (!isTest){
+            if (!isTest) {
                 finishUpGis();
             }
             tx.success();
@@ -367,18 +374,18 @@ public class AMSXMLoader extends AbstractCallLoader {
 
     /**
      * Handle file.
-     *
+     * 
      * @param singleFile the file
      * @param monitor the monitor
      * @throws SAXException the sAX exception
      * @throws IOException Signals that an I/O exception has occurred.
      */
     private void handleFile(File singleFile, IProgressMonitor monitor) throws SAXException, IOException {
-        if (monitor.isCanceled()){
+        if (monitor.isCanceled()) {
             return;
         }
         eventSet.clear();
-        gpsSet.clear();
+        gpsMap.clear();
         tocttc = null;
         tocttcGroup = null;
         lastDatasetNode = null;
@@ -400,92 +407,130 @@ public class AMSXMLoader extends AbstractCallLoader {
             msgCall = null;
         }
         groupCall.clear();
-        handleLocations();
-    }
 
+        handleLocations();
+        sortedCall.clear();
+    }
 
     /**
      * Handle locations.
      */
     private void handleLocations() {
-        if (gpsSet.isEmpty()||eventSet.isEmpty()) {
+        if (gpsMap.isEmpty() || eventSet.isEmpty()) {
             return;
         }
-        Transaction tx = neo.beginTx();
-        
-        try{
-        if (gpsSet.size() == 1) {
-            createOneMP();
-        } else {
-            
-            Pair<GPSData,GPSData>minMaxOnTime=getMinMaxGpsByTime(gpsSet);
-            GPSData min = minMaxOnTime.getLeft();
-            GPSData max = minMaxOnTime.getRight();
-            if (min.timestamp==max.timestamp){
-               createOneMP(); 
-            } else {
-                //y=ax+b
-                //a=(y2-y1)/(x2-x1) b= y1-ax1;
-                long difTime = max.timestamp-min.timestamp;
-                double aLat=(max.lat-min.lat)/difTime;
-                double aLon=(max.lon-min.lon)/difTime;
-                double bLat=min.lat-aLat*min.timestamp;
-                double bLon=min.lon-aLon*min.timestamp;
-                for (AbstractEvent event : eventSet) {
-                    if (event.node != null && event.timestamp != null) {
-                        Node mp = neo.createNode();
-                        NeoUtils.setNodeName(mp, "mp", neo);
-                        double lat=aLat*event.timestamp+bLat;
-                        double lon=aLon*event.timestamp+bLon;
-                        mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat);
-                        mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon);
-                         mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, event.timestamp);
-                        NodeTypes.MP.setNodeType(mp, null);
-                        GisProperties gisProperties = getGisProperties(dataset);
-                        gisProperties.updateBBox(lat, lon);
-                        gisProperties.incSaved();
-                        index(mp);
-                        event.node.createRelationshipTo(mp, GeoNeoRelationshipTypes.LOCATION);
-                    }
-                }
-            }
-        }
-        tx.success();
-        }finally{
-            tx.finish();
-        }
-    }
-
-    private void createOneMP() {
-        Node mp = neo.createNode();
-        NeoUtils.setNodeName(mp, "mp", neo);
-        GPSData gpsData = gpsSet.iterator().next();
-        gpsData.store(mp);
-        GisProperties gisProperties = getGisProperties(dataset);
-        gisProperties.updateBBox(gpsData.lat, gpsData.lon);
-        gisProperties.incSaved();
-        index(mp);
+        Map<String, Set<AbstractEvent>> sortedEvent = new HashMap<String, Set<AbstractEvent>>();
         for (AbstractEvent event : eventSet) {
-            if (event.node != null) {
-                event.node.createRelationshipTo(mp, GeoNeoRelationshipTypes.LOCATION);
+            if (StringUtils.isEmpty(event.probeId)) {
+                continue;
             }
+            Set<AbstractEvent> set = sortedEvent.get(event.probeId);
+            if (set == null) {
+                set = new HashSet<AbstractEvent>();
+                sortedEvent.put(event.probeId, set);
+            }
+            set.add(event);
+        }
+        Transaction tx = neo.beginTx();
+        try {
+            for (Map.Entry<String, Set<GPSData>> entry : gpsMap.entrySet()) {
+                Set<AbstractEvent> evSet = sortedEvent.get(entry.getKey());
+                Set<Call> callSet = sortedCall.get(entry.getKey());
+                createLocations(entry, evSet, dataset);
+                createLocations(entry, callSet, calldatasetName);
+            }
+            tx.success();
+        } finally {
+            tx.finish();
         }
     }
 
     /**
      *
+     * @param entry
+     * @param evSet
+     */
+    private void createLocations(Map.Entry<String, Set<GPSData>> entry, Set< ? extends IAdaptable> evSet, String dataset) {
+        if (evSet != null) {
+            if (entry.getValue().size() == 1) {
+                createOneMP(entry.getValue().iterator().next(), evSet, dataset);
+            } else {
+                Pair<GPSData, GPSData> minMaxOnTime = getMinMaxGpsByTime(entry.getValue());
+                GPSData min = minMaxOnTime.getLeft();
+                GPSData max = minMaxOnTime.getRight();
+                if (min.timestamp == max.timestamp) {
+                    createOneMP(min, evSet, dataset);
+                } else {
+                    long difTime = max.timestamp - min.timestamp;
+                    double aLat = (max.lat - min.lat) / difTime;
+                    double aLon = (max.lon - min.lon) / difTime;
+                    double bLat = min.lat - aLat * min.timestamp;
+                    double bLon = min.lon - aLon * min.timestamp;
+                    for (IAdaptable event : evSet) {
+                        Node node = (Node)event.getAdapter(Node.class);
+                        Long timestamp = (Long)event.getAdapter(Long.class);
+                        if (node != null && timestamp != null) {
+                            Node mp = neo.createNode();
+                            NeoUtils.setNodeName(mp, "mp", neo);
+                            double lat = aLat * timestamp + bLat;
+                            double lon = aLon * timestamp + bLon;
+                            mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat);
+                            mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon);
+                            mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+                            NodeTypes.MP.setNodeType(mp, null);
+                            GisProperties gisProperties = getGisProperties(dataset);
+                            gisProperties.updateBBox(lat, lon);
+                            gisProperties.incSaved();
+                            if (this.dataset.equals(dataset)) {
+                                index(mp);
+                            } else {
+                                assert DriveTypes.AMS_CALLS.getFullDatasetName(this.dataset).equals(dataset);
+                                index(CALL_MP_KEY, mp);
+                            }
+                            node.createRelationshipTo(mp, GeoNeoRelationshipTypes.LOCATION);
+                            // TODO add call location
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void createOneMP(GPSData gpsData, Set< ? extends IAdaptable> evSet, String dataset) {
+        Node mp = neo.createNode();
+        NeoUtils.setNodeName(mp, "mp", neo);
+        gpsData.store(mp);
+        GisProperties gisProperties = getGisProperties(dataset);
+        gisProperties.updateBBox(gpsData.lat, gpsData.lon);
+        gisProperties.incSaved();
+        if (this.dataset.equals(dataset)) {
+            index(mp);
+        } else {
+            assert DriveTypes.AMS_CALLS.getFullDatasetName(this.dataset).equals(dataset);
+            index(CALL_MP_KEY, mp);
+        }
+        for (IAdaptable event : evSet) {
+            Node node = (Node)event.getAdapter(Node.class);
+            if (node != null) {
+                node.createRelationshipTo(mp, GeoNeoRelationshipTypes.LOCATION);
+                // TODO add call location
+            }
+        }
+    }
+
+    /**
      * @param gpsSet2
      * @return
      */
     private Pair<GPSData, GPSData> getMinMaxGpsByTime(Set<GPSData> gpsSet) {
-        GPSData min=null;
-        GPSData max=null;
-        for (GPSData data:gpsSet){
-            if (min==null||min.timestamp>data.timestamp){
-                min=data;
+        GPSData min = null;
+        GPSData max = null;
+        for (GPSData data : gpsSet) {
+            if (min == null || min.timestamp > data.timestamp) {
+                min = data;
             }
-            if (max==null||max.timestamp<data.timestamp){
-                max=data;
+            if (max == null || max.timestamp < data.timestamp) {
+                max = data;
             }
         }
         return new Pair<GPSData, GPSData>(min, max);
@@ -507,10 +552,10 @@ public class AMSXMLoader extends AbstractCallLoader {
         basename = networkName;
         Node networkGis = findOrCreateGISNode(basename, GisTypes.NETWORK.getHeader(), NetworkTypes.PROBE);
         networkNode = findOrCreateNetworkNode(networkGis);
-//        driveType=DriveTypes.PROBE;
-//        networkNode = findOrCreateDatasetNode(neo.getReferenceNode(), networkName);
-//        networkGis=findOrCreateGISNode(networkNode, GisTypes.DRIVE.getHeader());
-        //getGisProperties(networkName).setCrs(CRS.fromCRS("geographic","EPSG:4326"));
+        // driveType=DriveTypes.PROBE;
+        // networkNode = findOrCreateDatasetNode(neo.getReferenceNode(), networkName);
+        // networkGis=findOrCreateGISNode(networkNode, GisTypes.DRIVE.getHeader());
+        // getGisProperties(networkName).setCrs(CRS.fromCRS("geographic","EPSG:4326"));
         this.networkName = basename;
         basename = oldBasename;
         fillProbeMap(networkNode);
@@ -518,18 +563,18 @@ public class AMSXMLoader extends AbstractCallLoader {
 
     /**
      * Fill probe map.
-     *
+     * 
      * @param networkNode the network node
      */
     private void fillProbeMap(Node networkNode) {
         Transaction tx = neo.beginTx();
-        try{
+        try {
             Traverser probeTraverser = NeoUtils.getChildTraverser(networkNode);
-            for (Node probe:probeTraverser){
-               String id=NeoUtils.getNodeName(probe);
-               probeCache.put(id, probe);
+            for (Node probe : probeTraverser) {
+                String id = NeoUtils.getNodeName(probe);
+                probeCache.put(id, probe);
             }
-        }finally{
+        } finally {
             tx.finish();
         }
     }
@@ -542,12 +587,12 @@ public class AMSXMLoader extends AbstractCallLoader {
     private void initializeDatasets(String datasetName) {
         Transaction tx = neo.beginTx();
         try {
-            driveType=DriveTypes.AMS;
+            driveType = DriveTypes.AMS;
             datasetNode = findOrCreateDatasetNode(neo.getReferenceNode(), dataset);
-            datasetGis=findOrCreateGISNode(datasetNode, GisTypes.DRIVE.getHeader());
-            getGisProperties(dataset).setCrs(CRS.fromCRS("geographic","EPSG:4326"));
-            callDataset = getVirtualDataset(DriveTypes.AMS_CALLS,true);
-
+            datasetGis = findOrCreateGISNode(datasetNode, GisTypes.DRIVE.getHeader());
+            getGisProperties(dataset).setCrs(CRS.fromCRS("geographic", "EPSG:4326"));
+            callDataset = getVirtualDataset(DriveTypes.AMS_CALLS, true);
+            calldatasetName = DriveTypes.AMS_CALLS.getFullDatasetName(dataset);
             tx.success();
         } catch (Exception e) {
             tx.failure();
@@ -567,10 +612,12 @@ public class AMSXMLoader extends AbstractCallLoader {
      * @author tsinkel_a
      * @since 1.0.0
      */
-    public abstract class AbstractEvent extends PropertyCollector {
+    public abstract class AbstractEvent extends PropertyCollector implements IAdaptable {
 
         /** The node. */
         protected Node node;
+        protected String probeId;
+
 
         /** The defined values. */
         protected final Map<String, Class< ? extends Object>> definedValues;
@@ -580,12 +627,12 @@ public class AMSXMLoader extends AbstractCallLoader {
 
         /** The header. */
         protected LinkedHashMap<String, Header> header;
-        
+
         /** The timestamp. */
         protected Long timestamp = null;
-        
+
         protected Node lastMM = null;
-        
+
         /**
          * Instantiates a new abstract event.
          * 
@@ -601,17 +648,27 @@ public class AMSXMLoader extends AbstractCallLoader {
             eventSet.add(this);
         }
 
-       /**
-        * Check inclusive.
-        *
-        * @param call the call
-        */
-       protected void checkInconclusive(Call call) {
-           if (!call.isInclusive()){
-               PropertyCollector isInclus = getSubCollectorByName("isInconclusive");
-               call.setInclusive(isInclus!=null);
-           }
-       }
+        @Override
+        public Object getAdapter(Class adapter) {
+            if (adapter == Node.class) {
+                return node;
+            } else if (adapter == Long.class) {
+                return timestamp;
+            }
+            return null;
+        }
+        /**
+         * Check inclusive.
+         * 
+         * @param call the call
+         */
+        protected void checkInconclusive(Call call) {
+            if (!call.isInclusive()) {
+                PropertyCollector isInclus = getSubCollectorByName("isInconclusive");
+                call.setInclusive(isInclus != null);
+            }
+        }
+
         /**
          * End element.
          * 
@@ -684,6 +741,7 @@ public class AMSXMLoader extends AbstractCallLoader {
                 node.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
                 updateTimestampMinMax(REAL_DATASET_HEADER_INDEX, timestamp);
             }
+            probeId = getPropertyMap().get("probeID");
         }
 
         /**
@@ -706,7 +764,8 @@ public class AMSXMLoader extends AbstractCallLoader {
          * @return the parced value
          * @throws ParseException the parse exception
          */
-        protected Pair<Object, Class< ? extends Object>> getParcedValue(String key, String value, Map<String, Class< ? extends Object>> castMap) throws ParseException {
+        protected Pair<Object, Class< ? extends Object>> getParcedValue(String key, String value, Map<String, Class< ? extends Object>> castMap)
+                throws ParseException {
 
             Class< ? extends Object> klass = castMap.get(key);
             if (klass == null) {
@@ -735,7 +794,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             lastDatasetNode = node;
             setNewIndexProperty(header, node, INeoConstants.PROPERTY_NAME_NAME, getClass().getSimpleName());
         }
-        
+
         /**
          * Creates the attachment node.
          * 
@@ -821,7 +880,16 @@ public class AMSXMLoader extends AbstractCallLoader {
             } else {
                 call.setCallResult(CallResult.SUCCESS);
             }
-            Node callerProbe = probeCallCache.get(getPropertyMap().get("probeID"));
+            final String probe = getPropertyMap().get("probeID");
+            Node callerProbe = probeCallCache.get(probe);
+            if (!StringUtils.isEmpty(probe)) {
+                Set<Call> callSet = sortedCall.get(probe);
+                if (callSet == null) {
+                    callSet = new HashSet<Call>();
+                    sortedCall.put(probe, callSet);
+                }
+                callSet.add(call);
+            }
             call.setCallerProbe(callerProbe);
             call.addRelatedNode(node);
             checkInconclusive(call);
@@ -911,7 +979,16 @@ public class AMSXMLoader extends AbstractCallLoader {
             } else {
                 call.setCallResult(CallResult.SUCCESS);
             }
-            Node callerProbe = probeCallCache.get(getPropertyMap().get("probeID"));
+            String probe = getPropertyMap().get("probeID");
+            Node callerProbe = probeCallCache.get(probe);
+            if (!StringUtils.isEmpty(probe)) {
+                Set<Call> callSet = sortedCall.get(probe);
+                if (callSet == null) {
+                    callSet = new HashSet<Call>();
+                    sortedCall.put(probe, callSet);
+                }
+                callSet.add(call);
+            }
             call.setCallerProbe(callerProbe);
             call.addRelatedNode(node);
             checkInconclusive(call);
@@ -933,12 +1010,12 @@ public class AMSXMLoader extends AbstractCallLoader {
 
         /** The pesq cast map. */
         protected final Map<String, Class< ? extends Object>> pesqCastMap;
-        
+
         /** The delay. */
-        int  delay=0;
-        
+        int delay = 0;
+
         /** The delay count. */
-        int delayCount=0;
+        int delayCount = 0;
         /** The last mm. */
         Node lastMM = null;
 
@@ -1011,12 +1088,12 @@ public class AMSXMLoader extends AbstractCallLoader {
                 }
             }
             if (delayCount > 0) {
-                delay=delay/delayCount;
+                delay = delay / delayCount;
                 if (tocttc != null) {
-                    tocttc.addDelay(delay/1000f );
+                    tocttc.addDelay(delay / 1000f);
                 }
                 if (tocttcGroup != null) {
-                    tocttcGroup.addDelay(delay/1000f);
+                    tocttcGroup.addDelay(delay / 1000f);
                 }
             }
             if (tocttc != null && hook != null && simplex != null && hook == 0 && simplex == 0) {
@@ -1041,12 +1118,13 @@ public class AMSXMLoader extends AbstractCallLoader {
                         tocttc.setCallResult(CallResult.FAILURE);
                     }
                     tocttc.addRelatedNode(node);
-                    tocttc.addCalleeProbe(probeCallCache.get(phoneNumberCache.get(tocttc.getCalledPhoneNumber())));
+                    probeId = phoneNumberCache.get(tocttc.getCalledPhoneNumber());
+                    tocttc.addCalleeProbe(probeCallCache.get(probeId));
                     checkInconclusive(tocttc);
                 }
             } else if (tocttcGroup != null) {
                 if (hook == 1 && simplex == 1) {
-//                    tocttcGroup.setCallSetupEndTime((Long)node.getProperty("connectTime", 0l));
+                    // tocttcGroup.setCallSetupEndTime((Long)node.getProperty("connectTime", 0l));
                     tocttcGroup.setCallTerminationEnd((Long)node.getProperty("releaseTime", 0l));
                     if (getPropertyMap().get("errorCode") != null) {
                         tocttcGroup.setCallResult(CallResult.FAILURE);
@@ -1067,8 +1145,9 @@ public class AMSXMLoader extends AbstractCallLoader {
                                     if (probe.equals(tocttcGroup.getCallerProbe())) {
                                         continue;
                                     }
-                                    
-                                    //get probes call node                                    
+
+                                    // get probes call node
+                                    this.probeId = probeId;
                                     tocttcGroup.addCalleeProbe(probeCallCache.get(probeId));
                                 }
                             }
@@ -1100,7 +1179,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 Object parseValue = getParcedValue(entry.getKey(), entry.getValue(), pesqCastMap).getLeft();
                 if (entry.getKey().equals("delay")) {
-                    delay+=((Number)parseValue).intValue();
+                    delay += ((Number)parseValue).intValue();
                     delayCount++;
                 }
                 if (entry.getKey().equals("pesq")) {
@@ -1131,10 +1210,10 @@ public class AMSXMLoader extends AbstractCallLoader {
         protected final Map<String, Class< ? extends Object>> pesqCastMap;
 
         /** The delay. */
-        int delay=0;
-        
+        int delay = 0;
+
         /** The delay count. */
-        int delayCount=0;
+        int delayCount = 0;
         /** The last mm. */
         Node lastMM = null;
 
@@ -1203,20 +1282,20 @@ public class AMSXMLoader extends AbstractCallLoader {
             super.handleCollector();
             List<PropertyCollector> collectorList = getSubCollectors();
             handleCall();
-             delay=0;
-             delayCount=0;
+            delay = 0;
+            delayCount = 0;
             for (PropertyCollector collector : collectorList) {
                 if (collector.getName().equals("pesqResult")) {
                     createAttachmentNode(collector);
                 }
             }
             if (delayCount > 0) {
-                delay=delay/delayCount;
+                delay = delay / delayCount;
                 if (tocttc != null) {
-                    tocttc.addDelay(delay/1000f );
+                    tocttc.addDelay(delay / 1000f);
                 }
                 if (tocttcGroup != null) {
-                    tocttcGroup.addDelay(delay/1000f);
+                    tocttcGroup.addDelay(delay / 1000f);
                 }
             }
 
@@ -1245,19 +1324,28 @@ public class AMSXMLoader extends AbstractCallLoader {
                         tocttc.setCallTerminationBegin(disconnectTime);
                     }
                     if (node.hasProperty("errorCode") || node.hasProperty("errCode")) {
-                        
+
                         tocttc.setCallResult(CallResult.FAILURE);
                     } else {
                         tocttc.setCallResult(CallResult.SUCCESS);
                     }
-                    Node callerProbe = probeCallCache.get(getPropertyMap().get("probeID"));
+                    final String probe = getPropertyMap().get("probeID");
+                    Node callerProbe = probeCallCache.get(probe);
+                    if (!StringUtils.isEmpty(probe)) {
+                        Set<Call> callSet = sortedCall.get(probe);
+                        if (callSet == null) {
+                            callSet = new HashSet<Call>();
+                            sortedCall.put(probe, callSet);
+                        }
+                        callSet.add(tocttc);
+                    }
                     tocttc.setCallerProbe(callerProbe);
                     tocttc.setCalledPhoneNumber(getPropertyMap().get("calledNumber"));
                     tocttc.setCallSetupBeginTime((Long)node.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, 0l));
                     tocttc.setCallTerminationBegin((Long)node.getProperty("releaseTime", 0l));
-                    Integer ct = (Integer)node.getProperty("causeForTermination",1);
-                    if (ct!=1){
-                        tocttc.setCallResult(CallResult.FAILURE);  
+                    Integer ct = (Integer)node.getProperty("causeForTermination", 1);
+                    if (ct != 1) {
+                        tocttc.setCallResult(CallResult.FAILURE);
                     }
                     checkInconclusive(tocttc);
                 } else if (hook == 1 && simplex == 1) {
@@ -1287,11 +1375,11 @@ public class AMSXMLoader extends AbstractCallLoader {
                     tocttcGroup.setCalledPhoneNumber(getPropertyMap().get("calledNumber"));
                     tocttcGroup.setCallSetupBeginTime((Long)node.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, 0l));
                     tocttcGroup.setCallSetupEndTime((Long)node.getProperty("connectTime", 0l));
-                    
+
                     tocttcGroup.setCallTerminationBegin((Long)node.getProperty("releaseTime", 0l));
-                    Integer ct = (Integer)node.getProperty("causeForTermination",1);
-                    if (ct!=1){
-                        tocttcGroup.setCallResult(CallResult.FAILURE);  
+                    Integer ct = (Integer)node.getProperty("causeForTermination", 1);
+                    if (ct != 1) {
+                        tocttcGroup.setCallResult(CallResult.FAILURE);
                     }
                     checkInconclusive(tocttcGroup);
                 }
@@ -1315,7 +1403,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 Object parseValue = getParcedValue(entry.getKey(), entry.getValue(), pesqCastMap).getLeft();
                 if (entry.getKey().equals("delay")) {
-                    delay+=((Number)parseValue).intValue();
+                    delay += ((Number)parseValue).intValue();
                     delayCount++;
                 }
                 if (entry.getKey().equals("pesq")) {
@@ -1482,7 +1570,16 @@ public class AMSXMLoader extends AbstractCallLoader {
             } else {
                 msgCall.setCallResult(CallResult.SUCCESS);
             }
-            Node callerProbe = probeCallCache.get(getPropertyMap().get("probeID"));
+            final String probe = getPropertyMap().get("probeID");
+            Node callerProbe = probeCallCache.get(probe);
+            if (!StringUtils.isEmpty(probe)) {
+                Set<Call> callSet = sortedCall.get(probe);
+                if (callSet == null) {
+                    callSet = new HashSet<Call>();
+                    sortedCall.put(probe, callSet);
+                }
+                callSet.add(msgCall);
+            } 
             msgCall.setCallerProbe(callerProbe);
             msgCall.addRelatedNode(node);
             msgCall.setCalledPhoneNumber(getPropertyMap().get("calledNumber"));
@@ -1576,12 +1673,12 @@ public class AMSXMLoader extends AbstractCallLoader {
             if (node.hasProperty("errorCode") || node.hasProperty("errCode")) {
                 msgCall.setCallResult(CallResult.FAILURE);
             }
-            msgCall.addCalleeProbe(probeCallCache.get(getPropertyMap().get("probeID")));
+            probeId = getPropertyMap().get("probeID");
+            msgCall.addCalleeProbe(probeCallCache.get(probeId));
             msgCall.addRelatedNode(node);
             checkInconclusive(msgCall);
 
         }
-
 
     }
 
@@ -1713,48 +1810,55 @@ public class AMSXMLoader extends AbstractCallLoader {
                 return;
             }
             String gpsSentence = getPropertyMap().get("gpsSentence");
-            if (StringUtils.isEmpty(gpsSentence)) {
+            String probeId = getPropertyMap().get("probeID");
+            if (StringUtils.isEmpty(gpsSentence) || StringUtils.isEmpty(probeId)) {
                 return;
             }
             GPSData gps = new GPSData(gpsSentence);
             if (gps.haveValidLocation()) {
-                String stringData=null;
+                String stringData = null;
                 try {
                     stringData = getPropertyMap().get("deliveryTime");
                     Long time = getTime(stringData);
-                    if (time!=null){
+                    if (time != null) {
                         gps.setTimestamp(time);
+                        Set<GPSData> gpsSet = gpsMap.get(probeId);
+                        if (gpsSet == null) {
+                            gpsSet = new HashSet<GPSData>();
+                            gpsMap.put(probeId, gpsSet);
+                        }
                         gpsSet.add(gps);
                     }
                 } catch (ParseException e) {
-                    LOGGER.error(String.format("Can't parse time: %s ",stringData ),e);
+                    LOGGER.error(String.format("Can't parse time: %s ", stringData), e);
                 }
-//                Transaction tx = neo.beginTx();
-//                try {
-//                    Node mp = neo.createNode();
-//                    probe.createRelationshipTo(mp, GeoNeoRelationshipTypes.LOCATION);
-//
-//                    gps.store(mp);
-//                    String time=getPropertyMap().get("deliveryTime");
-//                    String name="mp";
-//                    NeoUtils.setNodeName(mp, name, neo);
-//                    if (StringUtils.isNotEmpty(time)){
-//                        try {
-//                            Long timestamp = getTime(time);
-//                            mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
-//                        } catch (ParseException e) {
-//                            LOGGER.error("wrong data: "+time, e);
-//                        }
-//                        
-//                    }
-//                    GisProperties gis = getGisProperties(networkName);
-//                    gis.updateBBox(gps.lat, gps.lon);
-//                    gis.checkCRS(((Double)gps.lat).floatValue(), ((Double)gps.lon).floatValue(),null);
-//                    index(mp);
-//                    tx.success();
-//                } finally {
-//                    tx.finish();
-//                }
+                // Transaction tx = neo.beginTx();
+                // try {
+                // Node mp = neo.createNode();
+                // probe.createRelationshipTo(mp, GeoNeoRelationshipTypes.LOCATION);
+                //
+                // gps.store(mp);
+                // String time=getPropertyMap().get("deliveryTime");
+                // String name="mp";
+                // NeoUtils.setNodeName(mp, name, neo);
+                // if (StringUtils.isNotEmpty(time)){
+                // try {
+                // Long timestamp = getTime(time);
+                // mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+                // } catch (ParseException e) {
+                // LOGGER.error("wrong data: "+time, e);
+                // }
+                //                        
+                // }
+                // GisProperties gis = getGisProperties(networkName);
+                // gis.updateBBox(gps.lat, gps.lon);
+                // gis.checkCRS(((Double)gps.lat).floatValue(),
+                // ((Double)gps.lon).floatValue(),null);
+                // index(mp);
+                // tx.success();
+                // } finally {
+                // tx.finish();
+                // }
             }
         }
     }
@@ -1868,17 +1972,17 @@ public class AMSXMLoader extends AbstractCallLoader {
             }
             Node probeNew = NeoUtils.findOrCreateProbeNode(networkNode, id, neo);
 
-//            Node probeNew;
-//            Transaction tx = neo.beginTx();
-//            try{
-//                probeNew=neo.createNode();
-//                NodeTypes.PROBE.setNodeType(probeNew, neo);
-//                probeNew.setProperty(INeoConstants.PROPERTY_NAME_NAME, id);
-//                NeoUtils.addChild(networkNode, probeNew, null, neo);
-//                tx.success();
-//            }finally{
-//                tx.finish();
-//            }
+            // Node probeNew;
+            // Transaction tx = neo.beginTx();
+            // try{
+            // probeNew=neo.createNode();
+            // NodeTypes.PROBE.setNodeType(probeNew, neo);
+            // probeNew.setProperty(INeoConstants.PROPERTY_NAME_NAME, id);
+            // NeoUtils.addChild(networkNode, probeNew, null, neo);
+            // tx.success();
+            // }finally{
+            // tx.finish();
+            // }
             Node currentProbeCalls = NeoUtils.getCallsNode(callDataset, id, probeNew, neo);
             probeCache.put(id, probeNew);
             probeCallCache.put(id, currentProbeCalls);
@@ -1941,8 +2045,9 @@ public class AMSXMLoader extends AbstractCallLoader {
     /**
      * <p>
      * AMS call
-     * </p>.
-     *
+     * </p>
+     * .
+     * 
      * @author tsinkel_a
      * @since 1.0.0
      */
@@ -1959,8 +2064,6 @@ public class AMSXMLoader extends AbstractCallLoader {
         public String getCalledPhoneNumber() {
             return calledPhoneNumber;
         }
-
-
 
         /**
          * Sets the called phone number.
@@ -1995,7 +2098,7 @@ public class AMSXMLoader extends AbstractCallLoader {
 
         /** The lon. */
         private double lon;
-        
+
         /** The timestamp. */
         private long timestamp;
 
@@ -2012,16 +2115,14 @@ public class AMSXMLoader extends AbstractCallLoader {
             parse(gpsSentence);
         }
 
-
         /**
          * Sets the time.
-         *
+         * 
          * @param time the new time
          */
         public void setTimestamp(long time) {
             timestamp = time;
         }
-        
 
         /**
          * Parses the.
@@ -2043,7 +2144,7 @@ public class AMSXMLoader extends AbstractCallLoader {
                     String latNS = st.nextToken();
                     String lonStr = st.nextToken();
                     String lonNS = st.nextToken();
-                     time = st.nextToken();
+                    time = st.nextToken();
                     String validate = st.nextToken();
                     if (validate.equalsIgnoreCase("A")) {
                         lat = Double.parseDouble(latStr);
@@ -2054,10 +2155,10 @@ public class AMSXMLoader extends AbstractCallLoader {
                         if (lonNS.equalsIgnoreCase("W")) {
                             lon = -lon;
                         }
-                        valid=true;
+                        valid = true;
                     }
                 } catch (Exception e) {
-                    String message = "can't parse GPS data: "+gpsSentence;
+                    String message = "can't parse GPS data: " + gpsSentence;
                     NeoLoaderPlugin.error(message);
                     LOGGER.error(message, e);
                     valid = false;
@@ -2075,13 +2176,11 @@ public class AMSXMLoader extends AbstractCallLoader {
             assert valid;
             mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat);
             mp.setProperty(INeoConstants.PROPERTY_LON_NAME, lon);
-            if (timestamp>0){
+            if (timestamp > 0) {
                 mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
             }
             NodeTypes.MP.setNodeType(mp, null);
         }
-
-
 
         /**
          * Have valid location.
@@ -2092,10 +2191,9 @@ public class AMSXMLoader extends AbstractCallLoader {
             return valid;
         }
 
-
         /**
          * Gets the timestamp.
-         *
+         * 
          * @return the timestamp
          */
         public Long getTimestamp() {
@@ -2103,6 +2201,5 @@ public class AMSXMLoader extends AbstractCallLoader {
         }
 
     }
-
 
 }
