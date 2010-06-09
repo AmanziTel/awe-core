@@ -11,22 +11,27 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.data_generator.generate.calls;
+package org.amanzi.neo.data_generator.generate.calls.log_data;
+
+import org.amanzi.neo.data_generator.utils.call.CallGeneratorUtils;
+
 
 /**
  * <p>
- * Generate data for SDS messages.
+ * Generate TSM messages data.
  * </p>
  * @author Shcharbatsevich_A
  * @since 1.0.0
  */
-public class SDSDataGenerator extends MessageDataGenerator{
+public class TSMDataGenerator extends MessageDataGenerator{
     
-    private static final int AI_SERVICE = 12;
-    private static final String PAIR_DIRECTORY_POSTFIX = "SDS";
-    private static final String[] MESSAGES = new String[]{"Hello","Hello World! This is a SDS","Hello World! This is a full SDS-4 message containing 120 characters of user data. ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789"};
-    private static final Long[] DURATION_BORDERS = new Long[]{1L,MILLISECONDS*30L};
-    private static final Long[] ACKNOWLEDGE_BORDERS = new Long[]{1L,MILLISECONDS*5L};
+    private static final String PAIR_DIRECTORY_POSTFIX = "TSM";
+    public static Float TSM_SEND_TIME_LIMIT = 15f;
+    public static Float TSM_REPLY_TIME_LIMIT = 5f;
+    private static final int AI_SERVICE = 13;
+    private static final String[] MESSAGES = new String[]{"8000"};
+    private static final Long[] DURATION_BORDERS = new Long[]{1L,CallGeneratorUtils.MILLISECONDS*20L};
+    private static final Long[] ACKNOWLEDGE_BORDERS = new Long[]{1L,CallGeneratorUtils.MILLISECONDS*6L};
     
     /**
      * @param aDirectory
@@ -36,13 +41,13 @@ public class SDSDataGenerator extends MessageDataGenerator{
      * @param aCallPerHourVariance
      * @param aProbes
      */
-    public SDSDataGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour,
+    public TSMDataGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour,
             Integer aCallPerHourVariance, Integer aProbes) {
         super(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
     }
 
     @Override
-    protected String getDirectoryPostfix() {
+    protected String getTypeKey() {
         return PAIR_DIRECTORY_POSTFIX;
     }
 
@@ -53,7 +58,7 @@ public class SDSDataGenerator extends MessageDataGenerator{
 
     @Override
     protected int getMessagesCount() {
-        return getRandomGenerator().getIntegerValue(1, 3);
+        return 1;
     }
 
     @Override

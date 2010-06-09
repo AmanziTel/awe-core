@@ -40,6 +40,7 @@ public abstract class CallStatisticsTest extends AmsStatisticsTest{
     
     private float[] callDurationBorders;
     private float[] audioQualityBorders;
+    private float[] audioDelayBorders;
     
     /**
      * Gets call audio quality.
@@ -111,6 +112,31 @@ public abstract class CallStatisticsTest extends AmsStatisticsTest{
         return result;
     }
     
+    protected Integer getAudioDelayPeriod(Float audioDelay){
+        for(int i=0; i<PERIODS_COUNT; i++){
+            float start = audioDelayBorders[i];
+            float end = audioDelayBorders[i+1];
+            if(start<audioDelay && audioDelay<=end){
+                return i;
+            }
+        }
+        return PERIODS_COUNT-1;
+    }
+    
+    protected HashMap<Integer, List<Float>> getDelayMap(List<Float> audioDelays){
+        HashMap<Integer, List<Float>> result = new HashMap<Integer, List<Float>>(PERIODS_COUNT);
+        for(Float curr : audioDelays){
+            Integer period = getAudioDelayPeriod(curr);
+            List<Float> list = result.get(period);
+            if(list==null){
+                list = new ArrayList<Float>();
+                result.put(period, list);
+            }
+            list.add(curr);
+        }
+        return result;
+    }
+    
     /**
      * Initialize Call duration borders.
      */
@@ -137,6 +163,16 @@ public abstract class CallStatisticsTest extends AmsStatisticsTest{
         audioQualityBorders[6] = constants.getIndivCallQualL2();
         audioQualityBorders[7] = constants.getIndivCallQualL3();
         audioQualityBorders[8] = constants.getIndivCallQualMin();
+        audioDelayBorders = new float[PERIODS_COUNT+1];
+        audioDelayBorders[0] = constants.getIndivCallDelayP1();        
+        audioDelayBorders[1] = constants.getIndivCallDelayP2();
+        audioDelayBorders[2] = constants.getIndivCallDelayP3();
+        audioDelayBorders[3] = constants.getIndivCallDelayP4();
+        audioDelayBorders[4] = constants.getIndivCallDelayL1();
+        audioDelayBorders[5] = constants.getIndivCallDelayL2();
+        audioDelayBorders[6] = constants.getIndivCallDelayL3();
+        audioDelayBorders[7] = constants.getIndivCallDelayL4();
+        audioDelayBorders[8] = 1;
     }
     
     @Override

@@ -29,11 +29,12 @@ import javax.xml.transform.stream.StreamResult;
 import org.amanzi.neo.data_generator.data.calls.GeneratedCallsData;
 import org.amanzi.neo.data_generator.generate.IDataGenerator;
 import org.amanzi.neo.data_generator.generate.calls.CsvDataGenerator;
-import org.amanzi.neo.data_generator.generate.calls.GroupCallsGenerator;
-import org.amanzi.neo.data_generator.generate.calls.ITSIAttachDataGenerator;
-import org.amanzi.neo.data_generator.generate.calls.IndividualCallsGenerator;
-import org.amanzi.neo.data_generator.generate.calls.SDSDataGenerator;
-import org.amanzi.neo.data_generator.generate.calls.TSMDataGenerator;
+import org.amanzi.neo.data_generator.generate.calls.log_data.GroupCallsGenerator;
+import org.amanzi.neo.data_generator.generate.calls.log_data.ITSIAttachDataGenerator;
+import org.amanzi.neo.data_generator.generate.calls.log_data.IndividualCallsGenerator;
+import org.amanzi.neo.data_generator.generate.calls.log_data.SDSDataGenerator;
+import org.amanzi.neo.data_generator.generate.calls.log_data.TSMDataGenerator;
+import org.amanzi.neo.data_generator.generate.calls.xml_data.IndividualCallXmlDataGenerator;
 import org.amanzi.neo.data_generator.generate.nemo.NemoDataGenerator;
 import org.amanzi.neo.data_generator.generate.nokia.NokiaTopologyGenerator;
 import org.amanzi.neo.data_generator.utils.NeoDataUtils;
@@ -70,6 +71,22 @@ public class DataGenerateManager {
     public static IDataGenerator getIndividualAmsGenerator(String aDirectory, Integer aHours, Integer aHourDrift,
             Integer aCallsPerHour, Integer aCallPerHourVariance, Integer aProbes) {
         return new IndividualCallsGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
+    }
+    
+    /**
+     * Returns AMS data generator for individual calls (xml).
+     * 
+     * @param aDirectory String (path to save data)
+     * @param aHours Integer (count of hours)
+     * @param aHourDrift Integer (drift of start time)
+     * @param aCallsPerHour Integer (call count in hour)
+     * @param aCallPerHourVariance Integer (call variance in hour)
+     * @param aProbes Integer (probes count)
+     * @return AmsDataGenerator.
+     */
+    public static IDataGenerator getXmlIndividualAmsGenerator(String aDirectory, Integer aHours, Integer aHourDrift,
+            Integer aCallsPerHour, Integer aCallPerHourVariance, Integer aProbes) {
+        return new IndividualCallXmlDataGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
     }
 
     /**

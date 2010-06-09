@@ -222,6 +222,7 @@ public class CsvUploadTest extends AmsStatisticsTest{
         PeriodStat periodStat = new PeriodStat(period);
         for(AggregationCallTypes stat : AggregationCallTypes.values()){
             StatisticsCallType callType = stat.getRealType();
+            StatisticsCallType addType = stat.getAdditionalType();
             HashMap<Long,HashMap<IStatisticsHeader, Number>> allUtilValues = new HashMap<Long,HashMap<IStatisticsHeader, Number>>();
             for(Integer probe : statistics.keySet()){
                 if(probe.equals(SECOND_LEVEL_STAT_ID)){
@@ -246,6 +247,28 @@ public class CsvUploadTest extends AmsStatisticsTest{
                         }
                     }
                     periodStat.incSourceCount(time);
+                }
+                if(addType!=null){
+                    currStat = statistics.get(probe).getStatisticsByPeriod(addType, period);
+                    for (Long time : currStat.getAllTimesSorted()) {
+                        HashMap<IStatisticsHeader, Number> row = currStat.getRowValues(time);
+                        HashMap<IStatisticsHeader, Number> utilValues = allUtilValues.get(time);
+                        if(utilValues==null){
+                            utilValues = new HashMap<IStatisticsHeader, Number>();
+                            allUtilValues.put(time, utilValues);
+                        }
+                        for (IStatisticsHeader util : stat.getUtilHeaders()) {
+                            for (IStatisticsHeader real : ((IAggrStatisticsHeaders)util).getDependendHeaders()) {
+                                Number value = row.get(real);
+                                if(value == null){
+                                    value = 0;
+                                }
+                                Number curr = utilValues.get(util);
+                                utilValues.put(util, updateValueByHeader(curr, value, util));
+                            }
+                        }
+                        periodStat.incSourceCount(time);
+                    }
                 }
             }
             for (Long time : allUtilValues.keySet()) {
@@ -429,7 +452,8 @@ private enum HeaderTypes{
         INDIVIDUAL(StatisticsCallType.INDIVIDUAL, "SL-SRV-SC"),
         GROUP(StatisticsCallType.GROUP, "SL-SRV-GC"),
         ITSI_ATTACH(StatisticsCallType.ITSI_ATTACH,"SL-INH-ATT"),
-        ITSI_CC(StatisticsCallType.ITSI_CC,"SL-INH-CC_"),
+        ITSI_CC(StatisticsCallType.ITSI_CC,"SL-INH-CC_RES"),
+        ITSI_HO(StatisticsCallType.ITSI_HO,"SL-INH-CC_HO"),
         TSM(StatisticsCallType.TSM,"SL-SRV-TSM"),
         SDS(StatisticsCallType.SDS,"SL-SRV-SDS"),
         EMERGENCY(StatisticsCallType.EMERGENCY,"SL-SRV-EC-1"),

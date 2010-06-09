@@ -42,9 +42,17 @@ public class CallData {
      * @param second ProbeData receiver data
      */
     public CallData(Long aKey,ProbeData source,ProbeData... receivers) {
-        key = aKey;
+        this(aKey);
         sourceProbe = source;
-        receiverProbes = Arrays.asList(receivers);
+        receiverProbes = Arrays.asList(receivers);        
+    }
+    
+    /**
+     * Constructor.
+     * @param aKey Long
+     */
+    protected CallData(Long aKey) {
+        key = aKey;
         calls = new ArrayList<Call>();
     }
     

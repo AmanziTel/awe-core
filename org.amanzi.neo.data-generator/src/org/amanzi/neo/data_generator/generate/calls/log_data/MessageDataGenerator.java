@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.data_generator.generate.calls;
+package org.amanzi.neo.data_generator.generate.calls.log_data;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +24,7 @@ import org.amanzi.neo.data_generator.data.calls.CommandRow;
 import org.amanzi.neo.data_generator.data.calls.Probe;
 import org.amanzi.neo.data_generator.data.calls.ProbeData;
 import org.amanzi.neo.data_generator.utils.RandomValueGenerator;
+import org.amanzi.neo.data_generator.utils.call.CallGeneratorUtils;
 import org.amanzi.neo.data_generator.utils.call.CommandCreator;
 
 /**
@@ -149,7 +150,7 @@ public abstract class MessageDataGenerator extends AmsDataGenerator{
         for(int i=0; i<messCount; i++){
             Long duration = generator.getLongValue(borders[0], borders[1]);
             start = generator.getLongValue(start, start+duration/2);
-            Call call = getEmptyCall(start);
+            Call call = CallGeneratorUtils.getEmptyCall(start,getCallPriority());
             call.addParameter(CallParameterNames.DURATION_TIME, duration);
             call.addParameter(CallParameterNames.MESSAGE, messages[i]);
             Long maxAckn = duration<acknBorders[1]?duration:acknBorders[1];

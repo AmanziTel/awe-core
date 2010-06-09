@@ -19,6 +19,7 @@ import java.util.Date;
 
 import org.amanzi.neo.data_generator.generate.IDataGenerator;
 import org.amanzi.neo.data_generator.utils.RandomValueGenerator;
+import org.amanzi.neo.data_generator.utils.call.CallGeneratorUtils;
 
 /**
  * <p>
@@ -35,8 +36,6 @@ public abstract class CallStatisticsDataGenerator implements IDataGenerator {
     private static final int MAX_LA = 10000;
     private static final double MAX_FREQUENCY = 999;
         
-    protected static final int MILLISECONDS = 1000;
-    protected static final long HOUR = 60*60*MILLISECONDS;
     private static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss,SSS";
     private static final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat(TIMESTAMP_FORMAT);
     private static long START_TIME; 
@@ -74,7 +73,7 @@ public abstract class CallStatisticsDataGenerator implements IDataGenerator {
         calls = aCallsPerHour;
         callVariance = aCallPerHourVariance;
         probesCount = aProbes;
-        startTime = START_TIME+aHourDrift*HOUR;
+        startTime = START_TIME+aHourDrift*CallGeneratorUtils.HOUR;
     }
     
     /**
@@ -143,6 +142,6 @@ public abstract class CallStatisticsDataGenerator implements IDataGenerator {
     }
     
     protected Long getStartOfHour(Integer hour){
-        return getStartTime()+HOUR*hour;
+        return getStartTime()+CallGeneratorUtils.HOUR*hour;
     }
 }

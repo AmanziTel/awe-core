@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.data_generator.generate.calls;
+package org.amanzi.neo.data_generator.generate.calls.log_data;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +23,8 @@ import org.amanzi.neo.data_generator.data.calls.CallParameterNames;
 import org.amanzi.neo.data_generator.data.calls.CommandRow;
 import org.amanzi.neo.data_generator.data.calls.Probe;
 import org.amanzi.neo.data_generator.data.calls.ProbeData;
-import org.amanzi.neo.data_generator.utils.RandomValueGenerator;
+import org.amanzi.neo.data_generator.utils.call.CallConstants;
+import org.amanzi.neo.data_generator.utils.call.CallGeneratorUtils;
 import org.amanzi.neo.data_generator.utils.call.CommandCreator;
 
 /**
@@ -34,10 +35,6 @@ import org.amanzi.neo.data_generator.utils.call.CommandCreator;
  * @since 1.0.0
  */
 public class IndividualCallsGenerator extends CallDataGenerator {
-    
-    private static final float[] CALL_DURATION_BORDERS = new float[]{0.01f,1.25f,2.5f,3.75f,5,7.5f,10,12.5f,45,1000};
-    private static final float[] AUDIO_QUAL_BORDERS = new float[]{-0.5f,4.5f};
-    private final float CALL_DURATION_TIME = 60;
     
     private static final String PAIR_DIRECTORY_POSTFIX = "IndividualCall";
 
@@ -129,7 +126,7 @@ public class IndividualCallsGenerator extends CallDataGenerator {
         receiverCommands.add(CommandCreator.getUnsoCtcrRow(endAll,ctcrRow));
         Long rest = endHour-endAll;
         if(rest<0){
-            rest = HOUR;
+            rest = CallGeneratorUtils.HOUR;
         }
         time = getRamdomTime(0L, rest);
         Long time1 = time;
@@ -152,43 +149,33 @@ public class IndividualCallsGenerator extends CallDataGenerator {
     }
 
     @Override
-    protected String getDirectoryPostfix() {
+    protected String getTypeKey() {
         return PAIR_DIRECTORY_POSTFIX;
     }
 
     @Override
     protected List<CallGroup> initCallGroups() {
         List<CallGroup> result = new ArrayList<CallGroup>();
-        Integer probesCount = getProbesCount();
-        int sourceCount = probesCount/2+(probesCount%2==0?0:1);
-        RandomValueGenerator generator = getRandomGenerator();
-        while (result.isEmpty()) {
-            for (int i = 1; i <= sourceCount; i++) {
-                for (int j = sourceCount + 1; j <= probesCount; j++) {
-                    boolean canBePair = generator.getBooleanValue();
-                    if (canBePair) {
-                        result.add(getCallGroup(i, j));
-                        result.add(getCallGroup(j, i));
-                    }
-                }
-            }
+        List<List<Integer>> pairs = CallGeneratorUtils.initCallPairs(getProbesCount());
+        for(List<Integer> pair : pairs){
+            result.add(getCallGroup(pair.get(0), pair.get(1)));
         }
         return result;
     }
 
     @Override
     protected float[] getCallDurationBorders() {
-        return CALL_DURATION_BORDERS;
+        return CallConstants.IND_CALL_DURATION_BORDERS;
     }
 
     @Override
     protected float[] getAudioQualityBorders() {
-        return AUDIO_QUAL_BORDERS;
+        return CallConstants.IND_AUDIO_QUAL_BORDERS;
     }
 
     @Override
     protected Long getMinCallDuration() {
-        return (long)(CALL_DURATION_TIME*MILLISECONDS);
+        return (long)(CallConstants.IND_CALL_DURATION_TIME*CallGeneratorUtils.MILLISECONDS);
     }
 
     @Override

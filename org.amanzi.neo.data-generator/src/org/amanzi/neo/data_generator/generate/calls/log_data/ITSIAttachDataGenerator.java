@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.data_generator.generate.calls;
+package org.amanzi.neo.data_generator.generate.calls.log_data;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +24,7 @@ import org.amanzi.neo.data_generator.data.calls.CommandRow;
 import org.amanzi.neo.data_generator.data.calls.Probe;
 import org.amanzi.neo.data_generator.data.calls.ProbeData;
 import org.amanzi.neo.data_generator.utils.RandomValueGenerator;
+import org.amanzi.neo.data_generator.utils.call.CallGeneratorUtils;
 import org.amanzi.neo.data_generator.utils.call.CommandCreator;
 
 /**
@@ -36,7 +37,7 @@ import org.amanzi.neo.data_generator.utils.call.CommandCreator;
 public class ITSIAttachDataGenerator extends AmsDataGenerator {
     
     private static final String PAIR_DIRECTORY_POSTFIX = "ITSI-Attach";
-    private static final Long[] DURATION_BORDERS = new Long[]{10L,MILLISECONDS*50L};
+    private static final Long[] DURATION_BORDERS = new Long[]{10L,CallGeneratorUtils.MILLISECONDS*50L};
 
     /**
      * @param aDirectory
@@ -111,7 +112,7 @@ public class ITSIAttachDataGenerator extends AmsDataGenerator {
         Long startOfHour = getStartOfHour(hour);
         Long endOfHour = getStartOfHour(hour+1);
         Long start = getRamdomTime(startOfHour, endOfHour-duration/2);
-        Call call = getEmptyCall(start);
+        Call call = CallGeneratorUtils.getEmptyCall(start,getCallPriority());
         call.addParameter(CallParameterNames.DURATION_TIME, duration);
         return call;
     }
@@ -122,7 +123,7 @@ public class ITSIAttachDataGenerator extends AmsDataGenerator {
     }
 
     @Override
-    protected String getDirectoryPostfix() {
+    protected String getTypeKey() {
         return PAIR_DIRECTORY_POSTFIX;
     }
 

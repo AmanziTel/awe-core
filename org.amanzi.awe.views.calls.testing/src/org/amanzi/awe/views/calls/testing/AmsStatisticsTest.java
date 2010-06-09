@@ -523,7 +523,8 @@ public abstract class AmsStatisticsTest {
         Integer prNum = getProbeNumber(probe);
         ProbeStat statData = generated.get(prNum);
         Long rowTime = getRowTime(row);
-        HashMap<IStatisticsHeader, Number> prData = statData.getStatisticsByPeriod(getCallType(),period).getRowValuesForCheck(rowTime);
+        StatisticsCallType callType = getCallType();
+        HashMap<IStatisticsHeader, Number> prData = statData.getStatisticsByPeriod(callType,period).getRowValuesForCheck(rowTime);
         HashMap<IStatisticsHeader, Number> sourceData = null;        
         if (period.getUnderlyingPeriod()!=null) {
             sourceData = buildStatDataByNodes(row);

@@ -32,7 +32,7 @@ import org.amanzi.neo.data_generator.data.nokia.SiteData;
 import org.amanzi.neo.data_generator.generate.IDataGenerator;
 import org.amanzi.neo.data_generator.utils.RandomValueGenerator;
 import org.amanzi.neo.data_generator.utils.nokia.NokiaFileBuilder;
-import org.amanzi.neo.data_generator.utils.nokia.SavedTag;
+import org.amanzi.neo.data_generator.utils.xml_data.SavedTag;
 
 /**
  * <p>

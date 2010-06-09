@@ -1076,14 +1076,11 @@ public class StatisticsDataLoader {
          * @return StatisticsHeaders
          */
         private IStatisticsHeader getStatisticsHeader(StatisticsCallType callType, String name){
-            System.out.println("Came with name "+ name); //TODO delete.
             if(callType==null){
                 return null;
             }
-            System.out.println("Came 1 with name "+ name+", call type "+callType); //TODO delete.
             for(IStatisticsHeader header : callType.getHeaders()){
                 if(name.endsWith(header.getTitle())){
-                    System.out.println("Find header "+header); //TODO delete.
                     return header;
                 }
             }

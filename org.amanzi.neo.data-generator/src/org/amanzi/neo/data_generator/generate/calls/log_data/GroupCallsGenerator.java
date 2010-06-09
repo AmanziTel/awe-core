@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.data_generator.generate.calls;
+package org.amanzi.neo.data_generator.generate.calls.log_data;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +23,7 @@ import org.amanzi.neo.data_generator.data.calls.CallParameterNames;
 import org.amanzi.neo.data_generator.data.calls.CommandRow;
 import org.amanzi.neo.data_generator.data.calls.Probe;
 import org.amanzi.neo.data_generator.data.calls.ProbeData;
+import org.amanzi.neo.data_generator.utils.call.CallGeneratorUtils;
 import org.amanzi.neo.data_generator.utils.call.CommandCreator;
 
 /**
@@ -152,7 +153,7 @@ public class GroupCallsGenerator extends CallDataGenerator{
         sourceCommands.add(CommandCreator.getAthRow(end,ctcrRow));
         rest = endHour-end;
         if(rest<0){
-            rest = HOUR;
+            rest = CallGeneratorUtils.HOUR;
         }
         time = getRamdomTime(0L, rest);
         for(int i=0; i<resCount; i++){
@@ -186,7 +187,7 @@ public class GroupCallsGenerator extends CallDataGenerator{
     
 
     @Override
-    protected String getDirectoryPostfix() {
+    protected String getTypeKey() {
         return PAIR_DIRECTORY_POSTFIX;
     }
 
@@ -253,7 +254,7 @@ public class GroupCallsGenerator extends CallDataGenerator{
 
     @Override
     protected Long getMinCallDuration() {
-        return (long)(CALL_DURATION_TIME*MILLISECONDS);
+        return (long)(CALL_DURATION_TIME*CallGeneratorUtils.MILLISECONDS);
     }
 
     @Override

@@ -13,10 +13,10 @@
 
 package org.amanzi.neo.data_generator.utils.nokia;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
+
+import org.amanzi.neo.data_generator.utils.xml_data.SavedTag;
+import org.amanzi.neo.data_generator.utils.xml_data.XMLFileBuilder;
 
 /**
  * <p>
@@ -25,7 +25,7 @@ import java.io.PrintWriter;
  * @author Shcharbatsevich_A
  * @since 1.0.0
  */
-public class NokiaFileBuilder {
+public class NokiaFileBuilder extends XMLFileBuilder{
     
     private String path;
     private String fileName;
@@ -41,28 +41,6 @@ public class NokiaFileBuilder {
         path = aPath;
         fileName = aFileName;
     }
-    
-    /**
-     * Initialize path.
-     *
-     * @return File
-     */
-    private File initFile()throws IOException{
-        File directory = new File(path);
-        if(directory.exists()){
-            if(!directory.isDirectory()){
-                throw new IllegalArgumentException("Path <"+path+"> is not directory!");
-            }
-        }else{
-            directory.mkdir();
-        }        
-        File file = new File(directory,fileName);
-        if(file.exists()){
-            throw new IllegalStateException("Dublicate file name <"+fileName+">.");
-        }
-        file.createNewFile();
-        return file;
-    }
 
     /**
      * Save generated data.
@@ -70,32 +48,12 @@ public class NokiaFileBuilder {
      * @param aRoot SavedTag (root tag for data)
      */
     public void saveData(SavedTag aRoot)throws IOException{
-        File file = initFile();        
-        FileOutputStream fos = new FileOutputStream(file);
-        PrintWriter out = new PrintWriter(fos);
-        try{
-            out.println(FILE_PREFIX);
-            printTag(aRoot, out,"");
-        }
-        finally{
-            out.flush();
-            out.close();
-        }
+        saveFile(path, fileName, aRoot);
+    }
+
+    @Override
+    protected String getPrefix() {
+        return FILE_PREFIX;
     }
     
-    /**
-     * Print tag with inner tags.
-     *
-     * @param tag SavedTag (tag for print)
-     * @param out PrintWriter
-     */
-    private void printTag(SavedTag tag, PrintWriter out, String tabs){
-        out.println(tabs+tag.getTagOpenString());
-        if (!tag.isEmpty()&&tag.getData()==null) {
-            for (SavedTag inner : tag.getInnerTags()) {
-                printTag(inner, out, tabs+"\t");
-            }
-            out.println(tabs+tag.getTagCloseString());
-        }
-    }
 }

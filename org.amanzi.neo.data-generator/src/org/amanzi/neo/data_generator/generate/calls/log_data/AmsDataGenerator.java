@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.data_generator.generate.calls;
+package org.amanzi.neo.data_generator.generate.calls.log_data;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,6 +24,7 @@ import org.amanzi.neo.data_generator.data.calls.CallGroup;
 import org.amanzi.neo.data_generator.data.calls.GeneratedCallsData;
 import org.amanzi.neo.data_generator.data.calls.Probe;
 import org.amanzi.neo.data_generator.data.calls.ProbeData;
+import org.amanzi.neo.data_generator.generate.calls.CallStatisticsDataGenerator;
 import org.amanzi.neo.data_generator.utils.call.CommandCreator;
 import org.amanzi.neo.data_generator.utils.call.CallFileBuilder;
 
@@ -92,16 +93,21 @@ public abstract class AmsDataGenerator extends CallStatisticsDataGenerator{
      * @param data
      * @throws IOException
      */
-    private void saveData(List<CallGroup> data) {
+    protected void saveData(List<CallGroup> data) {
         try {
-            CallFileBuilder fileBuilder = new CallFileBuilder(getDirectory(),getDirectoryPostfix());
+            CallFileBuilder fileBuilder = new CallFileBuilder(getDirectory(),getTypeKey());
             fileBuilder.saveData(data);
         } catch (IOException e) {
             throw (RuntimeException) new RuntimeException( ).initCause( e );
         }
     }
     
-    protected abstract String getDirectoryPostfix();
+    /**
+     * Key for save data by call type (directory postfix or part of file name)
+     *
+     * @return String
+     */
+    protected abstract String getTypeKey();
     
     /**
      * Initialize probes.
@@ -151,16 +157,6 @@ public abstract class AmsDataGenerator extends CallStatisticsDataGenerator{
      * @return {@link CallData}
      */
     protected abstract CallData buildCallCommands(CallGroup group,Integer hour, Call... calls);
-    
-    /**
-     * Create new empty call
-     *
-     * @param start
-     * @return Call.
-     */
-    protected Call getEmptyCall(Long start){
-        return new Call(start, getCallPriority());
-    }
     
     /**
      * Get call priority value.

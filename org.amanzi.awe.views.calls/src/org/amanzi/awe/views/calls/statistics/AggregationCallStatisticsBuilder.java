@@ -180,6 +180,10 @@ public class AggregationCallStatisticsBuilder {
             StatisticsCallType realType = stat.getRealType();
             StatisticsCallType additionalType = stat.getAdditionalType();
             Node periodNode = getPeriodNode(period, realType, sourceStatistics);
+            Node addNode = null;
+            if (additionalType!=null) {
+                addNode = getPeriodNode(period, additionalType, sourceStatistics);
+            }
             if(periodNode==null){
                 havingStats.put(stat, false);
                 continue;
@@ -191,9 +195,6 @@ public class AggregationCallStatisticsBuilder {
             List<Node> currSourceRows = getAllPeriodRows(periodNode,start,end);
             for(Node row : currSourceRows){
                 HashMap<IStatisticsHeader, Node> sourceCells = getAllRowCells(row, realType);
-                if(additionalType!=null){
-                    sourceCells.putAll(getAllRowCells(row, additionalType));
-                }
                 for (IStatisticsHeader utilHeader : stat.getUtilHeaders()) {
                     for (IStatisticsHeader header : ((IAggrStatisticsHeaders)utilHeader).getDependendHeaders()) {
                         Node cell = sourceCells.get(header);                        
@@ -204,11 +205,30 @@ public class AggregationCallStatisticsBuilder {
                     }
                 }
             }
+            List<Node> addSourceRows = null;
+            if (addNode!=null) {
+                addSourceRows = getAllPeriodRows(addNode, start, end);
+                for (Node row : addSourceRows) {
+                    HashMap<IStatisticsHeader, Node> sourceCells = getAllRowCells(row, additionalType);
+                    for (IStatisticsHeader utilHeader : stat.getUtilHeaders()) {
+                        for (IStatisticsHeader header : ((IAggrStatisticsHeaders)utilHeader).getDependendHeaders()) {
+                            Node cell = sourceCells.get(header);
+                            if (cell != null) {
+                                Number value = utilHeader.getStatisticsData(cell, null, false);
+                                result.updateHeaderWithCall(utilHeader, value, cell);
+                            }
+                        }
+                    }
+                }
+            }
             List<Node> allSource = sourceRows.get(period);
             if(allSource==null){
                 allSource = currSourceRows;
             }else{
                 allSource.addAll(currSourceRows);
+            }
+            if(addSourceRows!=null){
+                allSource.addAll(addSourceRows);
             }
             sourceRows.put(period, allSource);
         }
