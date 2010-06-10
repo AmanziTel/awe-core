@@ -227,7 +227,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
         
         probeCallNode.setProperty(call.getCallType().getProperty(), true);
     }
-    private void storeITSICCCall(Call call) {
+    private void storeITSIHOCall(Call call) {
         Node probeCallNode = call.getCallerProbe();
         Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
         call.setNode(callNode);
@@ -251,7 +251,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
         
         probeCallNode.setProperty(call.getCallType().getProperty(), true);
     }
-    private void storeITSIHOCall(Call call) {
+    private void storeITSICCCall(Call call) {
         Node probeCallNode = call.getCallerProbe();
         Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
         callNode.setProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE, call.isInclusive());
