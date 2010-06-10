@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.preferences.NeoCorePreferencesConstants;
 import org.amanzi.neo.core.propertyFilter.OperationCase;
 import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.apache.log4j.Logger;
@@ -154,7 +155,7 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
     private void formRulesList() {
         filterRules.clear();
         // LOGGER.debug(NeoCorePlugin.getDefault().getPluginPreferences().getString(DataLoadPreferences.FILTER_RULES));
-        String val = getPreferenceStore().getString(DataLoadPreferences.FILTER_RULES);
+        String val = getPreferenceStore().getString(NeoCorePreferencesConstants.FILTER_RULES);
         // LOGGER.debug(val);
         int propertyIndex = indEncludance;
         RowWr wr = null;
@@ -455,8 +456,8 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
                 result.append(wr.getProperty());
             }
         }
-        String string = result.length() > 0 ? result.substring(DataLoadPreferences.CRS_DELIMETERS.length()) : result.toString();
-        getPreferenceStore().setValue(DataLoadPreferences.FILTER_RULES, string);
+        String string = result.length() > 0 ? result.substring(NeoCorePreferencesConstants.CRS_DELIMETERS.length()) : result.toString();
+        getPreferenceStore().setValue(NeoCorePreferencesConstants.FILTER_RULES, string);
         // NeoCorePlugin.getDefault().getPluginPreferences().setValue(DataLoadPreferences.FILTER_RULES,
         // string);
         // LOGGER.debug(NeoCorePlugin.getDefault().getPluginPreferences().getString(DataLoadPreferences.FILTER_RULES));
@@ -685,7 +686,7 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
     @Override
     protected void performDefaults() {
         super.performDefaults();
-        getPreferenceStore().setToDefault(DataLoadPreferences.FILTER_RULES);
+        getPreferenceStore().setToDefault(NeoCorePreferencesConstants.FILTER_RULES);
         formRulesList();
         viewer.setInput("");
     }
