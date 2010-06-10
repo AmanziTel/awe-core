@@ -13,7 +13,11 @@
 
 package org.amanzi.awe.views.calls.testing;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,6 +28,8 @@ import org.amanzi.awe.statistic.CallTimePeriods;
 import org.amanzi.awe.views.calls.enums.IAggrStatisticsHeaders;
 import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
+import org.amanzi.awe.views.calls.enums.StatisticsHeaders;
+import org.amanzi.awe.views.calls.enums.StatisticsType;
 import org.amanzi.awe.views.calls.statistics.CallStatistics;
 import org.amanzi.awe.views.calls.upload.StatisticsDataLoader;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -49,9 +55,8 @@ import org.neo4j.graphdb.Traverser.Order;
 
 /**
  * <p>
- * Load and compare 2 statistics in file message.properties: CSV_ROOT - path to csv dir
- * XML_ROOT= path to xml dir
- * LOG_ROOT= path to AMS LOG dir
+ * Load and compare 2 statistics in file message.properties: CSV_ROOT - path to csv dir XML_ROOT=
+ * path to xml dir LOG_ROOT= path to AMS LOG dir
  * </p>
  * 
  * @author tsinkel_a
@@ -61,6 +66,10 @@ public class StatisticsTest extends AmsStatisticsTest {
     private long stat1TimeCorrelator = 0;
     private StatisticsCallType cellType;
     private HashSet<Node> handleRow;
+    private BufferedWriter logNotExist;
+    private BufferedWriter logComparingWarning;
+    private boolean haveLog;
+    private boolean ignoreNotExistElement;
 
     /**
      * Prepare operations before execute test.
@@ -70,18 +79,38 @@ public class StatisticsTest extends AmsStatisticsTest {
         prepareMainDirectory();
         initProjectService();
         handleRow = new HashSet<Node>();
-        stat1TimeCorrelator=0;
+        stat1TimeCorrelator = 0;
+        haveLog = "true".equalsIgnoreCase((Messages.getString("LOG_ON")));
+        logNotExist = new BufferedWriter(new NullWriter());
+        logComparingWarning = new BufferedWriter(new NullWriter());
+        ignoreNotExistElement = "true".equalsIgnoreCase((Messages.getString("ignoreNotExist")));
     }
 
     @Test
     public void testCompareStatistics() throws IOException, ParseException {
+        if (haveLog) {
+            File logFile = new File(Messages.getString("LOGGERS_DIR"));
+            long time = System.currentTimeMillis();
+            String name = "CSV_XMLlogNotExist" + time;
+            File fileLog = new File(logFile, name);
+            logNotExist = new BufferedWriter(new FileWriter(fileLog));
+            name = "CSV_XMLComparingWarning" + time;
+            fileLog = new File(logFile, name);
+            logComparingWarning = new BufferedWriter(new FileWriter(fileLog));
+        }
+        try{
         stat1TimeCorrelator = Long.parseLong(Messages.getString("StatisticsTest.set1_correlation")); //$NON-NLS-1$
         CallStatistics stat1 = createStatistics(loadXMLData());
         CallStatistics stat2 = createStatistics(loadCSVData());
         compareStatistics(stat1, stat2);
+        }finally{
+            logNotExist.close();
+            logComparingWarning.close();
+        }
 
     }
-    @Ignore 
+
+    @Ignore
     @Test
     public void testCompareLogStatistics() throws IOException, ParseException {
         CallStatistics stat1 = createStatistics(loadLogData());
@@ -90,10 +119,9 @@ public class StatisticsTest extends AmsStatisticsTest {
 
     }
 
-
     /**
      * Creates the statistics.
-     *
+     * 
      * @param dataset the dataset
      * @return the call statistics
      * @throws IOException Signals that an I/O exception has occurred.
@@ -102,10 +130,9 @@ public class StatisticsTest extends AmsStatisticsTest {
         return new CallStatistics(dataset, getNeo(), true);
     }
 
-
     /**
      * Compare statistics.
-     *
+     * 
      * @param stat1 the stat1
      * @param stat2 the stat2
      */
@@ -121,14 +148,19 @@ public class StatisticsTest extends AmsStatisticsTest {
                     continue;
                 }
                 if (node1 == null) {
-                    errors
-                            .append('\n')
-                            .append("Type: ").append(getCallType()).append(" ").append(String.format("AMS Statistic: not found root node for periods=%s and type=%s", CallTimePeriods.HOURLY, type)); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    StringBuilder err = new StringBuilder("Type: ").append(getCallType()).append(" ").append(
+                            String.format("AMS Statistic: not found root node for periods=%s and type=%s", CallTimePeriods.HOURLY, type));
+                    addToLog(logNotExist, err.append('\n').toString());
+                    if (!ignoreNotExistElement) {
+                        errors.append('\n').append(err);
+                    }
                     continue;
                 } else if (node2 == null) {
-                    errors
-                            .append('\n')
-                            .append("Type: ").append(getCallType()).append(" ").append(String.format("CSV Statistic: not found root node for periods=%s and type=%s", CallTimePeriods.HOURLY, type)); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    StringBuilder err = new StringBuilder("Type: ").append(getCallType()).append(" ").append(String.format("CSV Statistic: not found root node for periods=%s and type=%s", CallTimePeriods.HOURLY, type)); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    addToLog(logNotExist, err.append('\n').toString());
+                    if (!ignoreNotExistElement) {
+                        errors.append('\n').append(err);
+                    }
                     continue;
                 }
                 compareRootNode(node1, node2, errors);
@@ -139,9 +171,17 @@ public class StatisticsTest extends AmsStatisticsTest {
         }
     }
 
+    private void addToLog(BufferedWriter log, String string) {
+        try {
+            log.write(string);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Compare root node.
-     *
+     * 
      * @param node1 the root of stat1
      * @param node2 the root of stat2
      * @param errors the errors
@@ -154,8 +194,12 @@ public class StatisticsTest extends AmsStatisticsTest {
             long time1 = NeoUtils.getNodeTime(sRow1) + stat1TimeCorrelator;
             Node sRow2 = findSrow(node2, time1, probeName);
             if (sRow2 == null) {
-                errors.append('\n')
-                        .append("Type: ").append(getCallType()).append(" ").append(String.format("Probe %s, Not found same row in Stst2 for row %s", probeName, NeoUtils.getNodeName(sRow1))); //$NON-NLS-1$ //
+                StringBuilder err = new StringBuilder("Type: ").append(getCallType()).append(" ").append(String.format("Probe %s, Not found same row in Stst2 for row %s", probeName, NeoUtils.getNodeName(sRow1))); //$NON-NLS-1$ //
+
+                addToLog(logNotExist, err.append('\n').toString());
+                if (!ignoreNotExistElement) {
+                    errors.append('\n').append(err);
+                }
                 continue;
             }
             handleRow.add(sRow2);
@@ -163,8 +207,11 @@ public class StatisticsTest extends AmsStatisticsTest {
         }
         for (Node sRow2 : NeoUtils.getChildTraverser(node2)) {
             if (!handleRow.contains(sRow2)) {
-                errors.append('\n')
-                        .append("Type: ").append(getCallType()).append(" ").append(String.format("Not found in AMS Statistics rows %s", NeoUtils.getNodeName(sRow2))); //$NON-NLS-1$  
+                StringBuilder err = new StringBuilder("Type: ").append(getCallType()).append(" ").append(String.format("Not found in AMS Statistics rows %s", NeoUtils.getNodeName(sRow2))); //$NON-NLS-1$  
+                addToLog(logNotExist, err.append('\n').toString());
+                if (!ignoreNotExistElement) {
+                    errors.append('\n').append(err);
+                }
             }
         }
         handleRow.clear();
@@ -173,10 +220,10 @@ public class StatisticsTest extends AmsStatisticsTest {
 
     /**
      * Find srow.
-     *
+     * 
      * @param node2 the stat node
-     * @param time1  - sRow time
-     * @param probeName the probe name 
+     * @param time1 - sRow time
+     * @param probeName the probe name
      * @return the node
      */
     private Node findSrow(Node node2, final long time1, final String probeName) {
@@ -226,10 +273,52 @@ public class StatisticsTest extends AmsStatisticsTest {
             return null;
         }
     }
-
+//    private static ArrayList<ArrayList<StatisticsHeaders>> header=new ArrayList<ArrayList<StatisticsHeaders>>();
+//    static{
+//        ArrayList<StatisticsHeaders>set=new ArrayList<StatisticsHeaders>();
+//        set.add(StatisticsHeaders.ATT_DELAY_L1);
+//        set.add(StatisticsHeaders.ATT_DELAY_L2);
+//        set.add(StatisticsHeaders.ATT_DELAY_L3);
+//        set.add(StatisticsHeaders.ATT_DELAY_L4);
+//        set.add(StatisticsHeaders.ATT_DELAY_P1);
+//        set.add(StatisticsHeaders.ATT_DELAY_P2);
+//        set.add(StatisticsHeaders.ATT_DELAY_P3);
+//        set.add(StatisticsHeaders.ATT_DELAY_P4);
+//        header.add(set);
+//        set=new ArrayList<StatisticsHeaders>();
+//        set.add(StatisticsHeaders.IND_DELAY_COUNT_L1);
+//        set.add(StatisticsHeaders.IND_DELAY_COUNT_L2);
+//        set.add(StatisticsHeaders.IND_DELAY_COUNT_L3);
+//        set.add(StatisticsHeaders.IND_DELAY_COUNT_L4);
+//        set.add(StatisticsHeaders.IND_DELAY_COUNT_P1);
+//        set.add(StatisticsHeaders.IND_DELAY_COUNT_P2);
+//        set.add(StatisticsHeaders.IND_DELAY_COUNT_P3);
+//        set.add(StatisticsHeaders.IND_DELAY_COUNT_P4);
+//        header.add(set);
+//        set=new ArrayList<StatisticsHeaders>();
+//        set.add(StatisticsHeaders.GR_DELAY_COUNT_L1);
+//        set.add(StatisticsHeaders.GR_DELAY_COUNT_L2);
+//        set.add(StatisticsHeaders.GR_DELAY_COUNT_L3);
+//        set.add(StatisticsHeaders.GR_DELAY_COUNT_L4);
+//        set.add(StatisticsHeaders.GR_DELAY_COUNT_P1);
+//        set.add(StatisticsHeaders.GR_DELAY_COUNT_P2);
+//        set.add(StatisticsHeaders.GR_DELAY_COUNT_P3);
+//        set.add(StatisticsHeaders.GR_DELAY_COUNT_P4);
+//        header.add(set);
+//        set=new ArrayList<StatisticsHeaders>();
+//        set.add(StatisticsHeaders.GR_DELAY_COUNT_L1);
+//        set.add(StatisticsHeaders.GR_DELAY_COUNT_L2);
+//        set.add(StatisticsHeaders.GR_DELAY_COUNT_L3);
+//        set.add(StatisticsHeaders.GR_DELAY_COUNT_L4);
+//        set.add(StatisticsHeaders.GR_DELAY_COUNT_P1);
+//        set.add(StatisticsHeaders.GR_DELAY_COUNT_P2);
+//        set.add(StatisticsHeaders.GR_DELAY_COUNT_P3);
+//        set.add(StatisticsHeaders.GR_DELAY_COUNT_P4);
+//        header.add(set);
+//    }
     /**
      * Compare s row.
-     *
+     * 
      * @param sRow1 the s row1 sRow from statistic1
      * @param sRow2 the s row2 sRow from statistic2
      * @param errors the errors - error collector
@@ -241,9 +330,44 @@ public class StatisticsTest extends AmsStatisticsTest {
         HashMap<IStatisticsHeader, Number> map1 = buildCellDataMap(sRow1);
         HashMap<IStatisticsHeader, Number> map2 = buildCellDataMap(sRow2);
         for (IStatisticsHeader header : getCallType().getHeaders()) {
+            boolean isEqual;
             Number value1 = map1.get(header);
             Number value2 = map2.get(header);
-            boolean isEqual = value1 == null ? value2 == null : value1.equals(value2);
+            if (header instanceof StatisticsHeaders){
+                value1=value1==null?0:value1;
+                value2=value2==null?0:value2;
+                StatisticsHeaders statHeader = (StatisticsHeaders)header;
+                double mod;
+                if (statHeader.name().startsWith("ATT_DELAY")||statHeader.name().startsWith("IND_DELAY_COUNT")||statHeader.name().startsWith("GR_DELAY_COUNT")){
+                   if (statHeader.getType()==StatisticsType.COUNT){
+                       mod=2;
+                   }else{
+                       mod=0.001;
+                   }
+                }else if (statHeader.name().startsWith("AUDIO_QUAL")){
+                    if (statHeader.getType()==StatisticsType.COUNT){
+                        mod=2;
+                    }else{
+                        mod=0.01;
+                    }
+                }else{
+                    mod=0.001;
+                }
+                double abs = Math.abs(value1.doubleValue()-value2.doubleValue());
+                isEqual=abs<=mod;
+                if (abs!=0){
+                    StringBuilder err = new StringBuilder(); 
+                    if (getCallType().getLevel().equals(StatisticsCallType.FIRST_LEVEL)) {
+                        err.append("Probe: ").append(probeName).append(" ");
+                    }
+                    err
+                            .append("Type: ").append(getCallType()).append(" ").append(String.format("Headers %s is not equals for '%s'=%s, and '%s'=%s", header, name1, value1, name2, value2)); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+
+                    addToLog(logComparingWarning, err.append('\n').toString());
+                }
+            }else{
+                isEqual= value1 == null ? value2 == null : value1.equals(value2);
+            }
             if (!isEqual) {
                 errors.append('\n');
                 if (getCallType().getLevel().equals(StatisticsCallType.FIRST_LEVEL)) {
@@ -262,13 +386,12 @@ public class StatisticsTest extends AmsStatisticsTest {
      */
     @AfterClass
     public static void finishAll() {
-        clearMainDirectory();
+        // clearMainDirectory();
     }
-
 
     /**
      * Load csv data.
-     *
+     * 
      * @return the call dataset node
      * @throws IOException Signals that an I/O exception has occurred.
      */
@@ -281,7 +404,7 @@ public class StatisticsTest extends AmsStatisticsTest {
 
     /**
      * Load xml data.
-     *
+     * 
      * @return the call dataset node
      * @throws IOException Signals that an I/O exception has occurred.
      */
@@ -294,7 +417,7 @@ public class StatisticsTest extends AmsStatisticsTest {
 
     /**
      * Load log data.
-     *
+     * 
      * @return the call dataset node
      * @throws IOException Signals that an I/O exception has occurred.
      */
@@ -338,4 +461,19 @@ public class StatisticsTest extends AmsStatisticsTest {
         return false;
     }
 
+    public static class NullWriter extends Writer {
+
+        @Override
+        public void close() throws IOException {
+        }
+
+        @Override
+        public void flush() throws IOException {
+        }
+
+        @Override
+        public void write(char[] cbuf, int off, int len) throws IOException {
+        }
+
+    }
 }
