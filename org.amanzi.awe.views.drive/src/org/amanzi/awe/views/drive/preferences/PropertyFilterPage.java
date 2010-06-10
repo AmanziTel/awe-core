@@ -238,7 +238,6 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                // TODO optimize algorithm
                 TableItem item = viewer.getTable().getItem(viewer.getTable().getSelectionIndex());
                 if (item != null) {
                     RowWr selectedRow = (RowWr)item.getData();
@@ -247,20 +246,12 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
                     int selectedIndex = filterRules.indexOf(selectedRow);
                     if (selectedIndex == 0)
                         return;
-                    filterRules.remove(selectedRow);
-                    RowWr movingRow = selectedRow;
-                    for (int i = 0; i < selectedIndex; i++) {
-                        RowWr cash = filterRules.get(i);
-                        filterRules.remove(i);
-
-                    }
                     ArrayList<RowWr> newFilterRules = new ArrayList<RowWr>(filterRules.size());
+                    newFilterRules.add(selectedRow);
+                    filterRules.remove(selectedRow);
                     newFilterRules.addAll(filterRules);
                     filterRules.clear();
-                    filterRules.add(selectedRow);
-                    for (RowWr row : newFilterRules) {
-                        filterRules.add(row);
-                    }
+                    filterRules.addAll(newFilterRules);
                     updateTable();
                 }
             }

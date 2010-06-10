@@ -250,6 +250,7 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
 
         bAddPropertyList = new Button(child, SWT.PUSH);
         bAddPropertyList.setText(Messages.DriveInquirerView_7);
+        bAddPropertyList.setEnabled(false);
 
         chart = createChart();
         chartFrame = new ChartCompositeImpl(frame, SWT.NONE, chart, true);
@@ -789,7 +790,7 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
                 // PropertyListPreferences page = new PropertyListPreferences();
                 // if (gis != null) {
                 // page.setAvaliableProperties(Arrays.asList(new
-                // PropertyHeader(gis).getNumericFields()));
+                // PropertyHeader(getGisDriveNode()).getNumericFields()));
                 // }
                 //
                 // page.setTitle(Messages.DriveInquirerView_20);
@@ -1404,8 +1405,10 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
     private void changeDrive() {
         if (cDrive.getSelectionIndex() < 0) {
             setsVisible(false);
+            bAddPropertyList.setEnabled(false);
         } else {
             formPropertyLists();
+            bAddPropertyList.setEnabled(true);
         }
     }
 
