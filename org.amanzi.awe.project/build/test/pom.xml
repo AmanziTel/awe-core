@@ -85,6 +85,7 @@
     <module>org.amanzi.awe.wizards</module>
     <module>org.amanzi.awe.gps</module>
     <module>org.amanzi.awe.report.o2</module>
+    <module>org.amanzi.neo.data-generator</module>
     <module>org.amanzi.neo.loader.testing</module>
   </modules>
   <build>
