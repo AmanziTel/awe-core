@@ -112,7 +112,7 @@ public class AMSXMLoader extends AbstractCallLoader {
 
     /** The formatter. */
     // TODO temporary remove handling of time zone
-    private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss,SSS");// ,SSSz");
+    private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss,SSS");// ,SSSz");
 
     /** The directory name. */
     private final String directoryName;
