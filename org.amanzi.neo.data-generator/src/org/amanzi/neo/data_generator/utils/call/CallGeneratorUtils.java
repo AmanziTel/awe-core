@@ -165,4 +165,35 @@ public class CallGeneratorUtils {
         return result;
     }
     
+    /**
+     * Build all possible gropes.
+     *
+     * @param size int Group size
+     * @param probesCount int all probes count.
+     * @return List<List<Integer>>
+     */
+    public static List<List<Integer>> buildAllGroups(int size, int probesCount){
+        List<List<Integer>> result = new ArrayList<List<Integer>>();
+        if(size == 1){
+            for(int i=1;i<=probesCount; i++){
+                List<Integer> group = new ArrayList<Integer>(size);
+                group.add(i);
+                result.add(group);
+            }
+            return result;
+        }
+        List<List<Integer>> before = buildAllGroups(size-1, probesCount);
+        for(int i=1;i<=probesCount; i++){
+            for(List<Integer> group : before){
+                if(!group.contains(i)){
+                    List<Integer> newGroup = new ArrayList<Integer>(size);
+                    newGroup.addAll(group);
+                    newGroup.add(i);
+                    result.add(newGroup);
+                }                
+            }
+        }
+        return result;
+    }
+    
 }

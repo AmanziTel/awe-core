@@ -28,5 +28,10 @@ public class CallConstants {
     public static final float[] IND_AUDIO_QUAL_BORDERS = new float[]{-0.5f,4.5f};
     public static final int[] IND_AUDIO_DELAY_BORDERS = new int[]{1,1000};
     public static final float IND_CALL_DURATION_TIME = 60;
+    
+    public static final float[] GR_CALL_DURATION_BORDERS = new float[]{0.01f,0.125f,0.25f,0.375f,0.5f,0.75f,1,2,5,1000};
+    public static final float[] GR_AUDIO_QUAL_BORDERS = new float[]{-0.5f,4.5f};
+    public static final int[] GR_AUDIO_DELAY_BORDERS = new int[]{1,1000};
+    public static final float GR_CALL_DURATION_TIME = 20;
 
 }

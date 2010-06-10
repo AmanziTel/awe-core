@@ -23,6 +23,7 @@ import org.amanzi.neo.data_generator.data.calls.CallParameterNames;
 import org.amanzi.neo.data_generator.data.calls.CommandRow;
 import org.amanzi.neo.data_generator.data.calls.Probe;
 import org.amanzi.neo.data_generator.data.calls.ProbeData;
+import org.amanzi.neo.data_generator.utils.call.CallConstants;
 import org.amanzi.neo.data_generator.utils.call.CallGeneratorUtils;
 import org.amanzi.neo.data_generator.utils.call.CommandCreator;
 
@@ -35,9 +36,6 @@ import org.amanzi.neo.data_generator.utils.call.CommandCreator;
  */
 public class GroupCallsGenerator extends CallDataGenerator{
     
-    private static final float[] CALL_DURATION_BORDERS = new float[]{0.01f,0.125f,0.25f,0.375f,0.5f,0.75f,1,2,5,1000};
-    private static final float[] AUDIO_QUAL_BORDERS = new float[]{-0.5f,4.5f};
-    private final float CALL_DURATION_TIME = 20;
     private static final String PAIR_DIRECTORY_POSTFIX = "GroupCall";
     
     private int maxGroupSize;
@@ -197,7 +195,7 @@ public class GroupCallsGenerator extends CallDataGenerator{
         int groupSize = 1;
         while (groupSize<maxGroupSize) {
             groupSize++;            
-            List<List<Integer>> groups = buildAllGroups(groupSize);
+            List<List<Integer>> groups = CallGeneratorUtils.buildAllGroups(groupSize, getProbesCount());
             for(List<Integer> group : groups){
                 boolean canBeGroup = getRandomGenerator().getBooleanValue();
                 if(canBeGroup){
@@ -211,54 +209,23 @@ public class GroupCallsGenerator extends CallDataGenerator{
         return result;
     }
 
-    /**
-     * Build all possible gropes.
-     *
-     * @param size int Group size
-     * @return List<List<Integer>>
-     */
-    private List<List<Integer>> buildAllGroups(int size){
-        Integer probesCount = getProbesCount();
-        List<List<Integer>> result = new ArrayList<List<Integer>>();
-        if(size == 1){
-            for(int i=1;i<=probesCount; i++){
-                List<Integer> group = new ArrayList<Integer>(size);
-                group.add(i);
-                result.add(group);
-            }
-            return result;
-        }
-        List<List<Integer>> before = buildAllGroups(size-1);
-        for(int i=1;i<=probesCount; i++){
-            for(List<Integer> group : before){
-                if(!group.contains(i)){
-                    List<Integer> newGroup = new ArrayList<Integer>(size);
-                    newGroup.addAll(group);
-                    newGroup.add(i);
-                    result.add(newGroup);
-                }                
-            }
-        }
-        return result;
-    }
-
     @Override
     protected float[] getCallDurationBorders() {
-        return CALL_DURATION_BORDERS;
+        return CallConstants.GR_CALL_DURATION_BORDERS;
     }
 
     @Override
     protected float[] getAudioQualityBorders() {
-        return AUDIO_QUAL_BORDERS;
+        return CallConstants.GR_AUDIO_QUAL_BORDERS;
     }
 
     @Override
     protected Long getMinCallDuration() {
-        return (long)(CALL_DURATION_TIME*CallGeneratorUtils.MILLISECONDS);
+        return (long)(CallConstants.GR_CALL_DURATION_TIME*CallGeneratorUtils.MILLISECONDS);
     }
 
     @Override
     protected Integer getCallPriority() {
-        return 1; //TODO correct.
+        return 0; //TODO correct.
     }
 }

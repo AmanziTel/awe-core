@@ -37,7 +37,7 @@ public abstract class CallXmlDataGenerator extends AmsXmlDataGenerator{
     private static final String TOC_TAG_NAME = "toc";
     private static final String TTC_TAG_NAME = "ttc";
     
-    private static final String TAG_PR_PROBE_ID = "probeID";
+    protected static final String TAG_PR_PROBE_ID = "probeID";
     private static final String TAG_PR_CALLED_NUMBER = "calledNumber";
     private static final String TAG_PR_HOOK = "hook";
     private static final String TAG_PR_SIMPLEX = "simplex"; 
@@ -85,34 +85,38 @@ public abstract class CallXmlDataGenerator extends AmsXmlDataGenerator{
         return calls;
     }
     
-    protected SavedTag getTocTag(Probe source, Probe received, Call call, Long... times){
+    protected SavedTag getTocTag(Probe source, String number, Call call, int hook, int simplex, int termCause, Long... times){
         SavedTag result = new SavedTag(TOC_TAG_NAME, false);
         result.addInnerTag(getPropertyTag(TAG_PR_PROBE_ID, "PROBE0"+source.getName())); 
-        result.addInnerTag(getPropertyTag(TAG_PR_CALLED_NUMBER, received.getPhoneNumber()));  
-        result.addInnerTag(getPropertyTag(TAG_PR_HOOK, 0));  
-        result.addInnerTag(getPropertyTag(TAG_PR_SIMPLEX, 0)); 
+        result.addInnerTag(getPropertyTag(TAG_PR_CALLED_NUMBER, number));  
+        result.addInnerTag(getPropertyTag(TAG_PR_HOOK, hook));  
+        result.addInnerTag(getPropertyTag(TAG_PR_SIMPLEX, simplex)); 
         result.addInnerTag(getPropertyTag(TAG_PR_PRIORITY, call.getPriority())); 
         result.addInnerTag(getPropertyTag(TAG_PR_CONFIG_TIME, getTimeString(times[0])));  
         result.addInnerTag(getPropertyTag(TAG_PR_SETUP_TIME, getTimeString(times[1])));  
         result.addInnerTag(getPropertyTag(TAG_PR_CONNECT_TIME, getTimeString(times[2])));  
         result.addInnerTag(getPropertyTag(TAG_PR_DISCONNECT_TIME, getTimeString(times[3])));  
         result.addInnerTag(getPropertyTag(TAG_PR_RELEASE_TIME, getTimeString(times[4])));  
-        result.addInnerTag(getPropertyTag(TAG_PR_TERMINATION_CAUSE, 1));  
+        result.addInnerTag(getPropertyTag(TAG_PR_TERMINATION_CAUSE, termCause));  
         addPesqTags(result, call, source, times[5], times[6]);
         return result;
     }
     
-    protected SavedTag getTtcTag(Probe source, Probe received, Call call, Long... times){
+    protected SavedTag getTtcTag(Probe source, Probe received, boolean putRecName, Call call, int hook, int simplex, int termCause, Long... times){
         SavedTag result = new SavedTag(TTC_TAG_NAME, false);
-        result.addInnerTag(getEmptyTag(TAG_PR_PROBE_ID)); 
+        if (putRecName) {
+            result.addInnerTag(getPropertyTag(TAG_PR_PROBE_ID, "PROBE0"+received.getName()));
+        }else{
+            result.addInnerTag(getEmptyTag(TAG_PR_PROBE_ID));
+        }
         result.addInnerTag(getPropertyTag(TAG_PR_CALLING_NUMBER, source.getPhoneNumber()));  
-        result.addInnerTag(getPropertyTag(TAG_PR_HOOK, 0));  
-        result.addInnerTag(getPropertyTag(TAG_PR_SIMPLEX, 0)); 
+        result.addInnerTag(getPropertyTag(TAG_PR_HOOK, hook));  
+        result.addInnerTag(getPropertyTag(TAG_PR_SIMPLEX, simplex)); 
         result.addInnerTag(getPropertyTag(TAG_PR_INDICATION_TIME, getTimeString(times[0]))); 
         result.addInnerTag(getPropertyTag(TAG_PR_ANSWER_TIME, getTimeString(times[1])));  
         result.addInnerTag(getPropertyTag(TAG_PR_CONNECT_TIME, getTimeString(times[2])));  
         result.addInnerTag(getPropertyTag(TAG_PR_RELEASE_TIME, getTimeString(times[3])));  
-        result.addInnerTag(getPropertyTag(TAG_PR_TERMINATION_CAUSE, 1));
+        result.addInnerTag(getPropertyTag(TAG_PR_TERMINATION_CAUSE, termCause));
         addPesqTags(result, call, received, times[3], times[4]);
         return result;
     }

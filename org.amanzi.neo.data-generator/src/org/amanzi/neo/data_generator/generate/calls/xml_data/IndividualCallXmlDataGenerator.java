@@ -77,10 +77,10 @@ public class IndividualCallXmlDataGenerator extends CallXmlDataGenerator{
         SavedTag commonTag = generateCommonTestDataTags(sourceProbe,receiverProbe);
         rootTag.addInnerTag(commonTag);
         SavedTag eventsTag = getEventsTag();
-        eventsTag.addInnerTag(getTocTag(sourceProbe,receiverProbe,call,start,setupTime,sConTime,discTime,relTime,end, endHour));
+        eventsTag.addInnerTag(getTocTag(sourceProbe,receiverProbe.getPhoneNumber(),call,0,0,1,start,setupTime,sConTime,discTime,relTime,end, endHour));
         rootTag.addInnerTag(eventsTag);
         eventsTag = getEventsTag();
-        eventsTag.addInnerTag(getTtcTag(sourceProbe,receiverProbe,call,indicTime,ansTime,rConTime,end, endHour));
+        eventsTag.addInnerTag(getTtcTag(sourceProbe,receiverProbe,false,call,0,0,1,indicTime,ansTime,rConTime,end, endHour));
         rootTag.addInnerTag(eventsTag);
         SavedTag gpsDataTag = getGpsDataTag();
         //gps

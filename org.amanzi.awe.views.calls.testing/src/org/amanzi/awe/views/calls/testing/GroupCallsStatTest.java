@@ -62,7 +62,7 @@ public class GroupCallsStatTest extends CallStatisticsTest{
      */
     @Test
     public void testCallStatisicsOneHour()throws IOException, ParseException{
-        executeTest(1,5,2,1,3);
+        executeTest(1,5,5,3,3);
     }
     
     /**
@@ -152,6 +152,20 @@ public class GroupCallsStatTest extends CallStatisticsTest{
         result.add(AggregationStatisticsHeaders.GC5_ZW1_MIN);
         result.add(AggregationStatisticsHeaders.GC5_ZW1_MAX);
         return result;
+    }
+    
+    /**
+     * @return Returns the maxGroupSize.
+     */
+    public int getMaxGroupSize() {
+        return maxGroupSize;
+    }
+    
+    /**
+     * @param maxGroupSize The maxGroupSize to set.
+     */
+    public void setMaxGroupSize(int maxGroupSize) {
+        this.maxGroupSize = maxGroupSize;
     }
 
 }

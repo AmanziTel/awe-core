@@ -46,7 +46,7 @@ public abstract class AmsXmlDataGenerator extends AmsDataGenerator{
     private static final String EVENTS_TAG_NAME = "events";
     private static final String GPS_DATA_TAG_NAME = "gpsData";
     
-    private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss,SSS");
+    private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss,SSS");
 
     /**
      * Constructor.

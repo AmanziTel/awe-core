@@ -34,6 +34,7 @@ import org.amanzi.neo.data_generator.generate.calls.log_data.ITSIAttachDataGener
 import org.amanzi.neo.data_generator.generate.calls.log_data.IndividualCallsGenerator;
 import org.amanzi.neo.data_generator.generate.calls.log_data.SDSDataGenerator;
 import org.amanzi.neo.data_generator.generate.calls.log_data.TSMDataGenerator;
+import org.amanzi.neo.data_generator.generate.calls.xml_data.GroupCallXmlDataGenerator;
 import org.amanzi.neo.data_generator.generate.calls.xml_data.IndividualCallXmlDataGenerator;
 import org.amanzi.neo.data_generator.generate.nemo.NemoDataGenerator;
 import org.amanzi.neo.data_generator.generate.nokia.NokiaTopologyGenerator;
@@ -104,6 +105,23 @@ public class DataGenerateManager {
     public static IDataGenerator getGroupAmsGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour,
             Integer aCallPerHourVariance, Integer aProbes, Integer aMaxGroupSize) {
         return new GroupCallsGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes, aMaxGroupSize);
+    }
+    
+    /**
+     * Returns AMS data generator for group calls (xml).
+     * 
+     * @param aDirectory String (path to save data)
+     * @param aHours Integer (count of hours)
+     * @param aHourDrift Integer (drift of start time)
+     * @param aCallsPerHour Integer (call count in hour)
+     * @param aCallPerHourVariance Integer (call variance in hour)
+     * @param aProbes Integer (probes count)
+     * @param aMaxGroupSize the a max group size
+     * @return AmsDataGenerator.
+     */
+    public static IDataGenerator getXmlGroupAmsGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour,
+            Integer aCallPerHourVariance, Integer aProbes, Integer aMaxGroupSize) {
+        return new GroupCallXmlDataGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes, aMaxGroupSize);
     }
     
     /**
