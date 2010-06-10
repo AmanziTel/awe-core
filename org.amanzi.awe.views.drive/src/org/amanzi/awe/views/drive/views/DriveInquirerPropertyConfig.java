@@ -17,7 +17,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.AbstractDialog;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
@@ -37,7 +41,15 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
 
 /**
  * <p>
@@ -57,6 +69,8 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
     private List<String> propertyList = new ArrayList<String>();
     private final List<String> propertySlip = new ArrayList<String>();
 
+    private final GraphDatabaseService service;
+
     /**
      * @param parent
      * @param title
@@ -65,6 +79,7 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
         super(parent, "Dataset properties configuration (under construction)", SWT.RESIZE | SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.CENTER);
         this.dataset = dataset;
         status = SWT.CANCEL;
+        service = NeoServiceProvider.getProvider().getService();
     }
 
     @Override
@@ -89,7 +104,7 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
 
         propertyListTable.setLabelProvider(new PropertyListLabelProvider());
 
-        propertySlipTable = CheckboxTableViewer.newCheckList(shell, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.CHECK);
+        propertySlipTable = CheckboxTableViewer.newCheckList(shell, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
         data = new GridData(SWT.FILL, SWT.FILL, true, true);
         data.horizontalSpan = 2;
         data.heightHint = 200;
@@ -99,12 +114,6 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
         propertySlipTable.setContentProvider(new PropertySlipContentProvider());
 
         propertySlipTable.setLabelProvider(new PropertyListLabelProvider());
-
-        propertySlipTable.add("testSlipProperty");
-        propertySlipTable.add("testSlipProperty");
-        propertySlipTable.add("testSlipProperty");
-        propertySlipTable.add("testSlipProperty");
-        propertySlipTable.add("testSlipProperty");
 
         Button btnOk = new Button(shell, SWT.PUSH);
         btnOk.setText("OK");
@@ -117,6 +126,7 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 status = SWT.OK;
+                perfomSave();
                 shell.close();
             }
 
@@ -143,42 +153,76 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
         propertyListTable.setInput("");
     }
 
+    /**
+     *
+     */
+    protected void perfomSave() {
+        Transaction tx = NeoUtils.beginTransaction();
+        try {
+            Traverser tr = dataset.traverse(Order.BREADTH_FIRST, NeoUtils.getStopEvaluator(2), new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    Relationship rel = currentPos.lastRelationshipTraversed();
+                    return rel != null && rel.isType(GeoNeoRelationshipTypes.PROPERTIES);
+                }
+            }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
+            // Relationship relation =
+            // dataset.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES,
+            // Direction.OUTGOING);
+            Object[] selected = propertyListTable.getCheckedElements();
+            List<String> selectedList = new ArrayList<String>(selected.length);
+            for (Object singleSelection : selected) {
+                selectedList.add((String)singleSelection);
+            }
+
+            tr.iterator().next().setProperty("selected_propertis", selectedList.toArray(new String[0]));
+
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            NeoCorePlugin.error(null, e);
+        } finally {
+            NeoUtils.finishTx(tx);
+        }
+    }
+
     private void init() {
         propertyList.clear();
         propertyList = Arrays.asList(new PropertyHeader(dataset).getNumericFields());
 
     }
 
-    /**
-     *
-     */
-    // public void init(IWorkbench workbench) {
-    // // Arrays.asList(new
-    // // PropertyHeader(gis).getNumericFields())
-    // }
-
     private void addListeners() {
         propertyListTable.addCheckStateListener(new ICheckStateListener() {
 
             @Override
             public void checkStateChanged(CheckStateChangedEvent event) {
-                if(event.getChecked()){
-                    addPropertySlip((String)event.getElement());
-                }
-                // event.getElement()
-                // LOGGER.debug(event);
-                LOGGER.debug("Checked: " + event.getChecked());
-                LOGGER.debug("Object: " + event.getElement());
+                updatePropertySlip();
             }
         });
     }
 
     /**
-     *
      * @param element
      */
-    protected void addPropertySlip(String element) {
-        
+    protected void updatePropertySlip() {
+        propertySlipTable.getControl().setVisible(false);
+        Object[] selectedPropertes = propertyListTable.getCheckedElements();
+        ArrayList<String> newSlipPropertyList = new ArrayList<String>();
+        propertySlip.clear();
+        for (Object newSlipProperty : selectedPropertes) {
+            for (String property : propertySlip) {
+                newSlipPropertyList.add(property + ", " + newSlipProperty);
+            }
+            newSlipPropertyList.add(newSlipProperty.toString());
+            propertySlip.addAll(newSlipPropertyList);
+            newSlipPropertyList.clear();
+        }
+        LOGGER.debug(selectedPropertes.length);
+        LOGGER.debug(propertySlip.size());
+        propertySlipTable.setInput("");
+        propertySlipTable.getControl().setVisible(true);
     }
 
     /**
