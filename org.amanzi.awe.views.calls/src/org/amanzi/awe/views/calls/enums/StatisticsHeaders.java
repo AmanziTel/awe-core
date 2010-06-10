@@ -13,19 +13,16 @@
 
 package org.amanzi.awe.views.calls.enums;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.amanzi.awe.views.calls.statistics.CallStatisticsUtills;
 import org.amanzi.awe.views.calls.statistics.constants.AlarmConstants;
 import org.amanzi.awe.views.calls.statistics.constants.CcHoConstants;
 import org.amanzi.awe.views.calls.statistics.constants.ICallStatisticsConstants;
 import org.amanzi.awe.views.calls.statistics.constants.IStatisticsConstants;
 import org.amanzi.awe.views.calls.statistics.constants.ItsiAttachConstants;
 import org.amanzi.awe.views.calls.statistics.constants.MessageConstants;
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.CallProperties;
-import org.amanzi.neo.core.enums.CallProperties.CallResult;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -46,7 +43,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     SUCC_SETUP_COUNT("SUCC_SETUP_COUNT", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 return 1;
             }
             return null;
@@ -55,12 +52,12 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     SETUP_TM_Z1_P1("SETUP_TM_Z1_P1", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = CallStatisticsUtills.getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-            if(isValueInBorders(connectionTime, callConstants.getCallConnTimeP1(), callConstants.getCallConnTimeP2(),true,false)){
+            if(CallStatisticsUtills.isValueInBorders(connectionTime, callConstants.getCallConnTimeP1(), callConstants.getCallConnTimeP2(),true,false)){
                 return 1;
             }
             return null;
@@ -69,12 +66,12 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     SETUP_TM_Z1_P2("SETUP_TM_Z1_P2", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = CallStatisticsUtills.getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-            if(isValueInBorders(connectionTime, callConstants.getCallConnTimeP2(), callConstants.getCallConnTimeP3(),true,false)){
+            if(CallStatisticsUtills.isValueInBorders(connectionTime, callConstants.getCallConnTimeP2(), callConstants.getCallConnTimeP3(),true,false)){
                 return 1;
             }
             return null;
@@ -83,12 +80,12 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     SETUP_TM_Z1_P3("SETUP_TM_Z1_P3", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = CallStatisticsUtills.getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-            if(isValueInBorders(connectionTime, callConstants.getCallConnTimeP3(), callConstants.getCallConnTimeP4(), true, false)){
+            if(CallStatisticsUtills.isValueInBorders(connectionTime, callConstants.getCallConnTimeP3(), callConstants.getCallConnTimeP4(), true, false)){
                 return 1;
             }
             return null;
@@ -97,12 +94,12 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     SETUP_TM_Z1_P4("SETUP_TM_Z1_P4", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = CallStatisticsUtills.getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-            if(isValueInBorders(connectionTime, callConstants.getCallConnTimeP4(), callConstants.getCallConnTimeL1(), true, false)){
+            if(CallStatisticsUtills.isValueInBorders(connectionTime, callConstants.getCallConnTimeP4(), callConstants.getCallConnTimeL1(), true, false)){
                 return 1;
             }
             return null;
@@ -111,12 +108,12 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     SETUP_TM_Z1_L1("SETUP_TM_Z1_L1", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = CallStatisticsUtills.getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-            if(isValueInBorders(connectionTime, callConstants.getCallConnTimeL1(), callConstants.getCallConnTimeL2(), true, false)){
+            if(CallStatisticsUtills.isValueInBorders(connectionTime, callConstants.getCallConnTimeL1(), callConstants.getCallConnTimeL2(), true, false)){
                 return 1;
             }
             return null;
@@ -125,12 +122,12 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     SETUP_TM_Z1_L2("SETUP_TM_Z1_L2", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = CallStatisticsUtills.getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-            if(isValueInBorders(connectionTime, callConstants.getCallConnTimeL2(), callConstants.getCallConnTimeL3(), true, false)){
+            if(CallStatisticsUtills.isValueInBorders(connectionTime, callConstants.getCallConnTimeL2(), callConstants.getCallConnTimeL3(), true, false)){
                 return 1;
             }
             return null;
@@ -139,12 +136,12 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     SETUP_TM_Z1_L3("SETUP_TM_Z1_L3", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = CallStatisticsUtills.getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-            if(isValueInBorders(connectionTime, callConstants.getCallConnTimeL3(), callConstants.getCallConnTimeL4(), true, false)){
+            if(CallStatisticsUtills.isValueInBorders(connectionTime, callConstants.getCallConnTimeL3(), callConstants.getCallConnTimeL4(), true, false)){
                 return 1;
             }
             return null;
@@ -153,12 +150,12 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     SETUP_TM_Z1_L4("SETUP_TM_Z1_L4", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = CallStatisticsUtills.getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-            if(isValueInBorders(connectionTime, callConstants.getCallConnTimeL4(), callConstants.getCallConnTimeLimit(), true, true)){
+            if(CallStatisticsUtills.isValueInBorders(connectionTime, callConstants.getCallConnTimeL4(), callConstants.getCallConnTimeLimit(), true, true)){
                 return 1;
             }
             return null;
@@ -167,8 +164,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     SETUP_TIME_MIN("SETUP_TIME_MIN", StatisticsType.MIN) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
-                return getCallConnectionTime(callNode);
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+                return CallStatisticsUtills.getCallConnectionTime(callNode);
             }
             return null;
         }
@@ -176,8 +173,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     SETUP_TIME_MAX("SETUP_TIME_MAX", StatisticsType.MAX) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
-                return getCallConnectionTime(callNode);
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+                return CallStatisticsUtills.getCallConnectionTime(callNode);
             }
             return null;
         }
@@ -185,8 +182,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     SETUP_TOTAL_DUR("SETUP_TOTAL_DUR", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
-                return getCallConnectionTime(callNode);
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+                return CallStatisticsUtills.getCallConnectionTime(callNode);
             }
             return null;
         }
@@ -194,12 +191,12 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     SETUP_DUR_Z1_P1("SETUP_DUR_Z1_P1",StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = CallStatisticsUtills.getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-            if(isValueInBorders(connectionTime, callConstants.getCallConnTimeP1(), callConstants.getCallConnTimeP2(),true,false)){
+            if(CallStatisticsUtills.isValueInBorders(connectionTime, callConstants.getCallConnTimeP1(), callConstants.getCallConnTimeP2(),true,false)){
                 return connectionTime;
             }
             return null;
@@ -208,12 +205,12 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     SETUP_DUR_Z1_P2("SETUP_DUR_Z1_P2",StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = CallStatisticsUtills.getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-            if(isValueInBorders(connectionTime, callConstants.getCallConnTimeP2(), callConstants.getCallConnTimeP3(),true,false)){
+            if(CallStatisticsUtills.isValueInBorders(connectionTime, callConstants.getCallConnTimeP2(), callConstants.getCallConnTimeP3(),true,false)){
                 return connectionTime;
             }
             return null;
@@ -222,12 +219,12 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     SETUP_DUR_Z1_P3("SETUP_DUR_Z1_P3",StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = CallStatisticsUtills.getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-            if(isValueInBorders(connectionTime, callConstants.getCallConnTimeP3(), callConstants.getCallConnTimeP4(),true,false)){
+            if(CallStatisticsUtills.isValueInBorders(connectionTime, callConstants.getCallConnTimeP3(), callConstants.getCallConnTimeP4(),true,false)){
                 return connectionTime;
             }
             return null;
@@ -236,12 +233,12 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     SETUP_DUR_Z1_P4("SETUP_DUR_Z1_P4",StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = CallStatisticsUtills.getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-            if(isValueInBorders(connectionTime, callConstants.getCallConnTimeP4(), callConstants.getCallConnTimeL1(),true,false)){
+            if(CallStatisticsUtills.isValueInBorders(connectionTime, callConstants.getCallConnTimeP4(), callConstants.getCallConnTimeL1(),true,false)){
                 return connectionTime;
             }
             return null;
@@ -250,12 +247,12 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     SETUP_DUR_Z1_L1("SETUP_DUR_Z1_L1",StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = CallStatisticsUtills.getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-            if(isValueInBorders(connectionTime, callConstants.getCallConnTimeL1(), callConstants.getCallConnTimeL2(),true,false)){
+            if(CallStatisticsUtills.isValueInBorders(connectionTime, callConstants.getCallConnTimeL1(), callConstants.getCallConnTimeL2(),true,false)){
                 return connectionTime;
             }
             return null;
@@ -264,12 +261,12 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     SETUP_DUR_Z1_L2("SETUP_DUR_Z1_L2",StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = CallStatisticsUtills.getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-            if(isValueInBorders(connectionTime, callConstants.getCallConnTimeL2(), callConstants.getCallConnTimeL3(),true,false)){
+            if(CallStatisticsUtills.isValueInBorders(connectionTime, callConstants.getCallConnTimeL2(), callConstants.getCallConnTimeL3(),true,false)){
                 return connectionTime;
             }
             return null;
@@ -278,12 +275,12 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     SETUP_DUR_Z1_L3("SETUP_DUR_Z1_L3",StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = CallStatisticsUtills.getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-            if(isValueInBorders(connectionTime, callConstants.getCallConnTimeL3(), callConstants.getCallConnTimeL4(),true,false)){
+            if(CallStatisticsUtills.isValueInBorders(connectionTime, callConstants.getCallConnTimeL3(), callConstants.getCallConnTimeL4(),true,false)){
                 return connectionTime;
             }
             return null;
@@ -292,12 +289,12 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     SETUP_DUR_Z1_L4("SETUP_DUR_Z1_L4",StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = CallStatisticsUtills.getCallConnectionTime(callNode);
             ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-            if(isValueInBorders(connectionTime, callConstants.getCallConnTimeL4(), callConstants.getCallConnTimeLimit(),true,true)){
+            if(CallStatisticsUtills.isValueInBorders(connectionTime, callConstants.getCallConnTimeL4(), callConstants.getCallConnTimeLimit(),true,true)){
                 return connectionTime;
             }
             return null;
@@ -306,8 +303,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CALL_DISC_TIME("CALL_DISC_TIME",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
-                Float durationTime = getCallDurationTime(callNode);
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+                Float durationTime = CallStatisticsUtills.getCallDurationTime(callNode);
                 if(durationTime!=null&&durationTime>=((ICallStatisticsConstants)constants).getIndivCallDurationTime()){
                     return 1;
                 }
@@ -318,9 +315,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     AUDIO_QUAL_SUCC("AUDIO_QUAL_SUCC", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                float[] audioQuality = getCallAudioQuality(callNode);
+                float[] audioQuality = CallStatisticsUtills.getCallAudioQuality(callNode);
                 if (audioQuality.length>0) {
                     float result = audioQuality[0];
                     for (float quality : audioQuality) {
@@ -328,7 +325,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
                             result = quality;
                         }
                     }
-                    if (isValueInBorders(result, callConstants.getIndivCallQualLimit(), callConstants.getIndivCallQualMax(), true,
+                    if (CallStatisticsUtills.isValueInBorders(result, callConstants.getIndivCallQualLimit(), callConstants.getIndivCallQualMax(), true,
                             true)) {
                         return 1;
                     }
@@ -340,9 +337,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     AUDIO_QUAL_P1("AUDIO_QUAL_P1", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodQualities(callNode, callConstants.getIndivCallQualP1(), callConstants.getIndivCallQualMax(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodQualities(callNode, callConstants.getIndivCallQualP1(), callConstants.getIndivCallQualMax(), false, true);
                 if(!good.isEmpty()){
                     return good.size();
                 }
@@ -353,9 +350,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     AUDIO_QUAL_P2("AUDIO_QUAL_P2", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodQualities(callNode, callConstants.getIndivCallQualP2(), callConstants.getIndivCallQualP1(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodQualities(callNode, callConstants.getIndivCallQualP2(), callConstants.getIndivCallQualP1(), false, true);
                 if(!good.isEmpty()){
                     return good.size();
                 }
@@ -366,9 +363,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     AUDIO_QUAL_P3("AUDIO_QUAL_P3", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodQualities(callNode, callConstants.getIndivCallQualP3(), callConstants.getIndivCallQualP2(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodQualities(callNode, callConstants.getIndivCallQualP3(), callConstants.getIndivCallQualP2(), false, true);
                 if(!good.isEmpty()){
                     return good.size();
                 }
@@ -379,9 +376,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     AUDIO_QUAL_P4("AUDIO_QUAL_P4", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodQualities(callNode, callConstants.getIndivCallQualP4(), callConstants.getIndivCallQualP3(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodQualities(callNode, callConstants.getIndivCallQualP4(), callConstants.getIndivCallQualP3(), false, true);
                 if(!good.isEmpty()){
                     return good.size();
                 }
@@ -392,9 +389,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     AUDIO_QUAL_L1("AUDIO_QUAL_L1", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodQualities(callNode, callConstants.getIndivCallQualL1(), callConstants.getIndivCallQualP4(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodQualities(callNode, callConstants.getIndivCallQualL1(), callConstants.getIndivCallQualP4(), false, true);
                 if(!good.isEmpty()){
                     return good.size();
                 }
@@ -405,9 +402,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     AUDIO_QUAL_L2("AUDIO_QUAL_L2", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodQualities(callNode, callConstants.getIndivCallQualL2(), callConstants.getIndivCallQualL1(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodQualities(callNode, callConstants.getIndivCallQualL2(), callConstants.getIndivCallQualL1(), false, true);
                 if(!good.isEmpty()){
                     return good.size();
                 }
@@ -418,9 +415,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     AUDIO_QUAL_L3("AUDIO_QUAL_L3", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodQualities(callNode, callConstants.getIndivCallQualL3(), callConstants.getIndivCallQualL2(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodQualities(callNode, callConstants.getIndivCallQualL3(), callConstants.getIndivCallQualL2(), false, true);
                 if(!good.isEmpty()){
                     return good.size();
                 }
@@ -431,9 +428,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     AUDIO_QUAL_L4("AUDIO_QUAL_L4", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodQualities(callNode, callConstants.getIndivCallQualMin(), callConstants.getIndivCallQualL3(), true, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodQualities(callNode, callConstants.getIndivCallQualMin(), callConstants.getIndivCallQualL3(), true, true);
                 if(!good.isEmpty()){
                     return good.size();
                 }
@@ -444,9 +441,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     AUDIO_QUAL_MIN("AUDIO_QUAL_MIN", StatisticsType.MIN) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodQualities(callNode, callConstants.getIndivCallQualMin(), callConstants.getIndivCallQualMax(), true, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodQualities(callNode, callConstants.getIndivCallQualMin(), callConstants.getIndivCallQualMax(), true, true);
                 if(!good.isEmpty()){
                     Collections.sort(good);
                     return good.get(0);
@@ -458,9 +455,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     AUDIO_QUAL_MAX("AUDIO_QUAL_MAX", StatisticsType.MAX) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodQualities(callNode, callConstants.getIndivCallQualMin(), callConstants.getIndivCallQualMax(), true, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodQualities(callNode, callConstants.getIndivCallQualMin(), callConstants.getIndivCallQualMax(), true, true);
                 if(!good.isEmpty()){
                     Collections.sort(good);
                     return good.get(good.size()-1);
@@ -472,9 +469,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     AUDIO_QUAL_TOTAL("AUDIO_QUAL_TOTAL", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodQualities(callNode, callConstants.getIndivCallQualMin(), callConstants.getIndivCallQualMax(), true, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodQualities(callNode, callConstants.getIndivCallQualMin(), callConstants.getIndivCallQualMax(), true, true);
                 if(!good.isEmpty()){
                     float result = 0;
                     for(float quality : good){
@@ -489,9 +486,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     AUDIO_QUAL_Z1_P1("AUDIO_QUAL_Z1_P1", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodQualities(callNode, callConstants.getIndivCallQualP1(), callConstants.getIndivCallQualMax(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodQualities(callNode, callConstants.getIndivCallQualP1(), callConstants.getIndivCallQualMax(), false, true);
                 if(!good.isEmpty()){
                     float result = 0;
                     for(float quality : good){
@@ -506,9 +503,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     AUDIO_QUAL_Z1_P2("AUDIO_QUAL_Z1_P2", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodQualities(callNode, callConstants.getIndivCallQualP2(), callConstants.getIndivCallQualP1(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodQualities(callNode, callConstants.getIndivCallQualP2(), callConstants.getIndivCallQualP1(), false, true);
                 if(!good.isEmpty()){
                     float result = 0;
                     for(float quality : good){
@@ -523,9 +520,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     AUDIO_QUAL_Z1_P3("AUDIO_QUAL_Z1_P3", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodQualities(callNode, callConstants.getIndivCallQualP3(), callConstants.getIndivCallQualP2(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodQualities(callNode, callConstants.getIndivCallQualP3(), callConstants.getIndivCallQualP2(), false, true);
                 if(!good.isEmpty()){
                     float result = 0;
                     for(float quality : good){
@@ -540,9 +537,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     AUDIO_QUAL_Z1_P4("AUDIO_QUAL_Z1_P4", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodQualities(callNode, callConstants.getIndivCallQualP4(), callConstants.getIndivCallQualP3(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodQualities(callNode, callConstants.getIndivCallQualP4(), callConstants.getIndivCallQualP3(), false, true);
                 if(!good.isEmpty()){
                     float result = 0;
                     for(float quality : good){
@@ -557,9 +554,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     AUDIO_QUAL_Z1_L1("AUDIO_QUAL_Z1_L1", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodQualities(callNode, callConstants.getIndivCallQualL1(), callConstants.getIndivCallQualP4(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodQualities(callNode, callConstants.getIndivCallQualL1(), callConstants.getIndivCallQualP4(), false, true);
                 if(!good.isEmpty()){
                     float result = 0;
                     for(float quality : good){
@@ -574,9 +571,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     AUDIO_QUAL_Z1_L2("AUDIO_QUAL_Z1_L2", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodQualities(callNode, callConstants.getIndivCallQualL2(), callConstants.getIndivCallQualL1(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodQualities(callNode, callConstants.getIndivCallQualL2(), callConstants.getIndivCallQualL1(), false, true);
                 if(!good.isEmpty()){
                     float result = 0;
                     for(float quality : good){
@@ -591,9 +588,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     AUDIO_QUAL_Z1_L3("AUDIO_QUAL_Z1_L3", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodQualities(callNode, callConstants.getIndivCallQualL3(), callConstants.getIndivCallQualL2(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodQualities(callNode, callConstants.getIndivCallQualL3(), callConstants.getIndivCallQualL2(), false, true);
                 if(!good.isEmpty()){
                     float result = 0;
                     for(float quality : good){
@@ -608,9 +605,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     AUDIO_QUAL_Z1_L4("AUDIO_QUAL_Z1_L4", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodQualities(callNode, callConstants.getIndivCallQualMin(), callConstants.getIndivCallQualL3(), true, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodQualities(callNode, callConstants.getIndivCallQualMin(), callConstants.getIndivCallQualL3(), true, true);
                 if(!good.isEmpty()){
                     float result = 0;
                     for(float quality : good){
@@ -625,9 +622,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_COUNT_P1("DELAY_COUNT_P1", StatisticsType.COUNT) {//TODO may be union delays for Group and Individual
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayP1(), callConstants.getIndivCallDelayP2(), true, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayP1(), callConstants.getIndivCallDelayP2(), true, true);
                 if(!good.isEmpty()){
                     return good.size();
                 }
@@ -638,9 +635,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_COUNT_P2("DELAY_COUNT_P2", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayP2(), callConstants.getIndivCallDelayP3(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayP2(), callConstants.getIndivCallDelayP3(), false, true);
                 if(!good.isEmpty()){
                     return good.size();
                 }
@@ -651,9 +648,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_COUNT_P3("DELAY_COUNT_P3", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayP3(), callConstants.getIndivCallDelayP4(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayP3(), callConstants.getIndivCallDelayP4(), false, true);
                 if(!good.isEmpty()){
                     return good.size();
                 }
@@ -664,9 +661,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_COUNT_P4("DELAY_COUNT_P4", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayP4(), callConstants.getIndivCallDelayL1(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayP4(), callConstants.getIndivCallDelayL1(), false, true);
                 if(!good.isEmpty()){
                     return good.size();
                 }
@@ -677,9 +674,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_COUNT_L1("DELAY_COUNT_L1", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayL1(), callConstants.getIndivCallDelayL2(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayL1(), callConstants.getIndivCallDelayL2(), false, true);
                 if(!good.isEmpty()){
                     return good.size();
                 }
@@ -690,9 +687,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_COUNT_L2("DELAY_COUNT_L2", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayL2(), callConstants.getIndivCallDelayL3(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayL2(), callConstants.getIndivCallDelayL3(), false, true);
                 if(!good.isEmpty()){
                     return good.size();
                 }
@@ -703,9 +700,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_COUNT_L3("DELAY_COUNT_L3", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayL3(), callConstants.getIndivCallDelayL4(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayL3(), callConstants.getIndivCallDelayL4(), false, true);
                 if(!good.isEmpty()){
                     return good.size();
                 }
@@ -716,8 +713,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_COUNT_L4("DELAY_COUNT_L4", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
-                float[] callAudioDelays = getCallAudioDelay(callNode);
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+                float[] callAudioDelays = CallStatisticsUtills.getCallAudioDelay(callNode);
                 int result = 0; 
                 for(float callAudioDelay : callAudioDelays){
                     if(callAudioDelay>((ICallStatisticsConstants)constants).getIndivCallDelayL4()){
@@ -734,8 +731,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_MIN("DELAY_MIN", StatisticsType.MIN) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
-                float[] callAudioDelay = getCallAudioDelay(callNode);
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+                float[] callAudioDelay = CallStatisticsUtills.getCallAudioDelay(callNode);
                 if(callAudioDelay!=null&&callAudioDelay.length>0){
                     float result = callAudioDelay[0];
                     for(float delay : callAudioDelay){
@@ -752,8 +749,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_MAX("DELAY_MAX", StatisticsType.MAX) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
-                float[] callAudioDelay = getCallAudioDelay(callNode);
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+                float[] callAudioDelay = CallStatisticsUtills.getCallAudioDelay(callNode);
                 if(callAudioDelay!=null&&callAudioDelay.length>0){
                     float result = callAudioDelay[0];
                     for(float delay : callAudioDelay){
@@ -770,8 +767,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_TOTAL("DELAY_TOTAL", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
-                float[] callAudioDelay = getCallAudioDelay(callNode);
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+                float[] callAudioDelay = CallStatisticsUtills.getCallAudioDelay(callNode);
                 if(callAudioDelay!=null&&callAudioDelay.length>0){
                     float result = 0;
                     for(float delay : callAudioDelay){
@@ -786,9 +783,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_Z1_P1("DELAY_Z1_P1", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayP1(), callConstants.getIndivCallDelayP2(), true, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayP1(), callConstants.getIndivCallDelayP2(), true, true);
                 if(!good.isEmpty()){
                     float result = 0;
                     for(float delay : good){
@@ -803,9 +800,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_Z1_P2("DELAY_Z1_P2", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayP2(), callConstants.getIndivCallDelayP3(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayP2(), callConstants.getIndivCallDelayP3(), false, true);
                 if(!good.isEmpty()){
                     float result = 0;
                     for(float delay : good){
@@ -820,9 +817,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_Z1_P3("DELAY_Z1_P3", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayP3(), callConstants.getIndivCallDelayP4(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayP3(), callConstants.getIndivCallDelayP4(), false, true);
                 if(!good.isEmpty()){
                     float result = 0;
                     for(float delay : good){
@@ -837,9 +834,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_Z1_P4("DELAY_Z1_P4", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayP4(), callConstants.getIndivCallDelayL1(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayP4(), callConstants.getIndivCallDelayL1(), false, true);
                 if(!good.isEmpty()){
                     float result = 0;
                     for(float delay : good){
@@ -854,9 +851,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_Z1_L1("DELAY_Z1_L1", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayL1(), callConstants.getIndivCallDelayL2(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayL1(), callConstants.getIndivCallDelayL2(), false, true);
                 if(!good.isEmpty()){
                     float result = 0;
                     for(float delay : good){
@@ -871,9 +868,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_Z1_L2("DELAY_Z1_L2", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayL2(), callConstants.getIndivCallDelayL3(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayL2(), callConstants.getIndivCallDelayL3(), false, true);
                 if(!good.isEmpty()){
                     float result = 0;
                     for(float delay : good){
@@ -888,9 +885,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_Z1_L3("DELAY_Z1_L3", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayL3(), callConstants.getIndivCallDelayL4(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayL3(), callConstants.getIndivCallDelayL4(), false, true);
                 if(!good.isEmpty()){
                     float result = 0;
                     for(float delay : good){
@@ -905,8 +902,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     IND_DELAY_Z1_L4("DELAY_Z1_L4", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
-                float[] callAudioDelays = getCallAudioDelay(callNode);
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+                float[] callAudioDelays = CallStatisticsUtills.getCallAudioDelay(callNode);
                 float result = 0; 
                 for(float callAudioDelay : callAudioDelays){
                     if(callAudioDelay>((ICallStatisticsConstants)constants).getIndivCallDelayL4()){
@@ -923,9 +920,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     GR_DELAY_COUNT_P1("DELAY_COUNT_P1", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayP1(), callConstants.getIndivCallDelayP2(), true, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayP1(), callConstants.getIndivCallDelayP2(), true, true);
                 if(!good.isEmpty()){
                     return good.size();
                 }
@@ -936,9 +933,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     GR_DELAY_COUNT_P2("DELAY_COUNT_P2", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayP2(), callConstants.getIndivCallDelayP3(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayP2(), callConstants.getIndivCallDelayP3(), false, true);
                 if(!good.isEmpty()){
                     return good.size();
                 }
@@ -949,9 +946,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     GR_DELAY_COUNT_P3("DELAY_COUNT_P3", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayP3(), callConstants.getIndivCallDelayP4(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayP3(), callConstants.getIndivCallDelayP4(), false, true);
                 if(!good.isEmpty()){
                     return good.size();
                 }
@@ -962,9 +959,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     GR_DELAY_COUNT_P4("DELAY_COUNT_P4", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayP4(), callConstants.getIndivCallDelayL1(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayP4(), callConstants.getIndivCallDelayL1(), false, true);
                 if(!good.isEmpty()){
                     return good.size();
                 }
@@ -975,9 +972,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     GR_DELAY_COUNT_L1("DELAY_COUNT_L1", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayL1(), callConstants.getIndivCallDelayL2(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayL1(), callConstants.getIndivCallDelayL2(), false, true);
                 if(!good.isEmpty()){
                     return good.size();
                 }
@@ -988,9 +985,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     GR_DELAY_COUNT_L2("DELAY_COUNT_L2", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayL2(), callConstants.getIndivCallDelayL3(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayL2(), callConstants.getIndivCallDelayL3(), false, true);
                 if(!good.isEmpty()){
                     return good.size();
                 }
@@ -1001,9 +998,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     GR_DELAY_COUNT_L3("DELAY_COUNT_L3", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayL3(), callConstants.getIndivCallDelayL4(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayL3(), callConstants.getIndivCallDelayL4(), false, true);
                 if(!good.isEmpty()){
                     return good.size();
                 }
@@ -1014,8 +1011,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     GR_DELAY_COUNT_L4("DELAY_COUNT_L4", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
-                float[] callAudioDelays = getCallAudioDelay(callNode);
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+                float[] callAudioDelays = CallStatisticsUtills.getCallAudioDelay(callNode);
                 int result = 0; 
                 for(float callAudioDelay : callAudioDelays){
                     if(callAudioDelay>((ICallStatisticsConstants)constants).getIndivCallDelayL4()){
@@ -1032,8 +1029,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     GR_DELAY_MIN("DELAY_MIN", StatisticsType.MIN) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
-                float[] callAudioDelay = getCallAudioDelay(callNode);
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+                float[] callAudioDelay = CallStatisticsUtills.getCallAudioDelay(callNode);
                 if(callAudioDelay!=null&&callAudioDelay.length>0){
                     float result = callAudioDelay[0];
                     for(float delay : callAudioDelay){
@@ -1050,8 +1047,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     GR_DELAY_MAX("DELAY_MAX", StatisticsType.MAX) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
-                float[] callAudioDelay = getCallAudioDelay(callNode);
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+                float[] callAudioDelay = CallStatisticsUtills.getCallAudioDelay(callNode);
                 if(callAudioDelay!=null&&callAudioDelay.length>0){
                     float result = callAudioDelay[0];
                     for(float delay : callAudioDelay){
@@ -1068,8 +1065,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     GR_DELAY_TOTAL("DELAY_TOTAL", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
-                float[] callAudioDelay = getCallAudioDelay(callNode);
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+                float[] callAudioDelay = CallStatisticsUtills.getCallAudioDelay(callNode);
                 if(callAudioDelay!=null&&callAudioDelay.length>0){
                     float result = 0;
                     for(float delay : callAudioDelay){
@@ -1084,9 +1081,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     GR_DELAY_Z1_P1("DELAY_Z1_P1", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayP1(), callConstants.getIndivCallDelayP2(), true, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayP1(), callConstants.getIndivCallDelayP2(), true, true);
                 if(!good.isEmpty()){
                     float result = 0;
                     for(float delay : good){
@@ -1101,9 +1098,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     GR_DELAY_Z1_P2("DELAY_Z1_P2", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayP2(), callConstants.getIndivCallDelayP3(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayP2(), callConstants.getIndivCallDelayP3(), false, true);
                 if(!good.isEmpty()){
                     float result = 0;
                     for(float delay : good){
@@ -1118,9 +1115,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     GR_DELAY_Z1_P3("DELAY_Z1_P3", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayP3(), callConstants.getIndivCallDelayP4(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayP3(), callConstants.getIndivCallDelayP4(), false, true);
                 if(!good.isEmpty()){
                     float result = 0;
                     for(float delay : good){
@@ -1135,9 +1132,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     GR_DELAY_Z1_P4("DELAY_Z1_P4", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayP4(), callConstants.getIndivCallDelayL1(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayP4(), callConstants.getIndivCallDelayL1(), false, true);
                 if(!good.isEmpty()){
                     float result = 0;
                     for(float delay : good){
@@ -1152,9 +1149,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     GR_DELAY_Z1_L1("DELAY_Z1_L1", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayL1(), callConstants.getIndivCallDelayL2(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayL1(), callConstants.getIndivCallDelayL2(), false, true);
                 if(!good.isEmpty()){
                     float result = 0;
                     for(float delay : good){
@@ -1169,9 +1166,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     GR_DELAY_Z1_L2("DELAY_Z1_L2", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayL2(), callConstants.getIndivCallDelayL3(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayL2(), callConstants.getIndivCallDelayL3(), false, true);
                 if(!good.isEmpty()){
                     float result = 0;
                     for(float delay : good){
@@ -1186,9 +1183,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     GR_DELAY_Z1_L3("DELAY_Z1_L3", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
                 ICallStatisticsConstants callConstants = (ICallStatisticsConstants)constants;
-                List<Float> good = getAllGoodDelays(callNode, callConstants.getIndivCallDelayL3(), callConstants.getIndivCallDelayL4(), false, true);
+                List<Float> good = CallStatisticsUtills.getAllGoodDelays(callNode, callConstants.getIndivCallDelayL3(), callConstants.getIndivCallDelayL4(), false, true);
                 if(!good.isEmpty()){
                     float result = 0;
                     for(float delay : good){
@@ -1203,8 +1200,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     GR_DELAY_Z1_L4("DELAY_Z1_L4", StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
-                float[] callAudioDelays = getCallAudioDelay(callNode);
+            if(CallStatisticsUtills.isCallInTimeLimit(callNode, (ICallStatisticsConstants)constants,inclInconclusive)){
+                float[] callAudioDelays = CallStatisticsUtills.getCallAudioDelay(callNode);
                 float result = 0; 
                 for(float callAudioDelay : callAudioDelays){
                     if(callAudioDelay>((ICallStatisticsConstants)constants).getIndivCallDelayL4()){
@@ -1233,11 +1230,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     TSM_MESSAGE_SUCC("MESSAGE_SUCC",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float receiveTime = getMessageReceiveTime(callNode);
-            Float acknowledgeTime = getMessageAcknowledgeTime(callNode);
+            Float receiveTime = CallStatisticsUtills.getMessageReceiveTime(callNode);
+            Float acknowledgeTime = CallStatisticsUtills.getMessageAcknowledgeTime(callNode);
             if(receiveTime!=null&&acknowledgeTime!=null
                     && receiveTime<=MessageConstants.TSM_SEND_TIME_LIMIT
                     && acknowledgeTime<=MessageConstants.TSM_REPLY_TIME_LIMIT){
@@ -1249,10 +1246,10 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     SDS_MESSAGE_SUCC("MESSAGE_SUCC",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float receiveTime = getMessageReceiveTime(callNode);
+            Float receiveTime = CallStatisticsUtills.getMessageReceiveTime(callNode);
             if(receiveTime!=null&&receiveTime<=MessageConstants.SDS_SEND_TIME_LIMIT){
                 return 1;
             }
@@ -1268,7 +1265,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_SUCCESS("SUCCESS",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallSuccess(callNode,inclInconclusive)){
+            if(CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return 1;
             }
             return null;
@@ -1277,8 +1274,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_TOTAL_SUM("DELAY_TOTAL_SUM",StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallSuccess(callNode,inclInconclusive)){
-                return getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
+                return CallStatisticsUtills.getMessageDelayTime(callNode);
             }
             return null;
         }
@@ -1286,8 +1283,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_TOTAL_MIN("DELAY_TOTAL_MIN",StatisticsType.MIN) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallSuccess(callNode,inclInconclusive)){
-                return getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
+                return CallStatisticsUtills.getMessageDelayTime(callNode);
             }
             return null;
         }
@@ -1295,8 +1292,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_TOTAL_MAX("DELAY_TOTAL_MAX",StatisticsType.MAX) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallSuccess(callNode,inclInconclusive)){
-                return getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
+                return CallStatisticsUtills.getMessageDelayTime(callNode);
             }
             return null;
         }
@@ -1304,8 +1301,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_FIRST_SUM("DELAY_FIRST_SUM",StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallSuccess(callNode,inclInconclusive)){
-                return getFirstMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
+                return CallStatisticsUtills.getFirstMessageDelayTime(callNode);
             }
             return null;
         }
@@ -1313,8 +1310,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_FIRST_MIN("DELAY_FIRST_MIN",StatisticsType.MIN) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallSuccess(callNode,inclInconclusive)){
-                return getFirstMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
+                return CallStatisticsUtills.getFirstMessageDelayTime(callNode);
             }
             return null;
         }
@@ -1322,8 +1319,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_FIRST_MAX("DELAY_FIRST_MAX",StatisticsType.MAX) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(isCallSuccess(callNode,inclInconclusive)){
-                return getFirstMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
+                return CallStatisticsUtills.getFirstMessageDelayTime(callNode);
             }
             return null;
         }
@@ -1331,11 +1328,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z1_P1("DELAY_Z1_P1",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z1_P1, AlarmConstants.ALM_DELAY_Z1_P2, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z1_P1, AlarmConstants.ALM_DELAY_Z1_P2, true, false)){
                 return 1;
             }
             return null;
@@ -1344,11 +1341,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z1_P2("DELAY_Z1_P2",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z1_P2, AlarmConstants.ALM_DELAY_Z1_P3, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z1_P2, AlarmConstants.ALM_DELAY_Z1_P3, true, false)){
                 return 1;
             }
             return null;
@@ -1357,11 +1354,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z1_P3("DELAY_Z1_P3",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z1_P3, AlarmConstants.ALM_DELAY_Z1_P4, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z1_P3, AlarmConstants.ALM_DELAY_Z1_P4, true, false)){
                 return 1;
             }
             return null;
@@ -1370,11 +1367,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z1_P4("DELAY_Z1_P4",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z1_P4, AlarmConstants.ALM_DELAY_Z1_L1, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z1_P4, AlarmConstants.ALM_DELAY_Z1_L1, true, false)){
                 return 1;
             }
             return null;
@@ -1383,11 +1380,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z1_L1("DELAY_Z1_L1",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z1_L1, AlarmConstants.ALM_DELAY_Z1_L2, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z1_L1, AlarmConstants.ALM_DELAY_Z1_L2, true, false)){
                 return 1;
             }
             return null;
@@ -1396,11 +1393,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z1_L2("DELAY_Z1_L2",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z1_L2, AlarmConstants.ALM_DELAY_Z1_L3, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z1_L2, AlarmConstants.ALM_DELAY_Z1_L3, true, false)){
                 return 1;
             }
             return null;
@@ -1409,11 +1406,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z1_L3("DELAY_Z1_L3",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z1_L3, AlarmConstants.ALM_DELAY_Z1_L3, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z1_L3, AlarmConstants.ALM_DELAY_Z1_L3, true, false)){
                 return 1;
             }
             return null;
@@ -1422,10 +1419,10 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z1_L4("DELAY_Z1_L4",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
             if(delayTime>=AlarmConstants.ALM_DELAY_Z1_L4){
                 return 1;
             }
@@ -1435,11 +1432,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z2_P1("DELAY_Z2_P1",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z2_P1, AlarmConstants.ALM_DELAY_Z2_P2, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z2_P1, AlarmConstants.ALM_DELAY_Z2_P2, true, false)){
                 return 1;
             }
             return null;
@@ -1448,11 +1445,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z2_P2("DELAY_Z2_P2",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z2_P2, AlarmConstants.ALM_DELAY_Z2_P3, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z2_P2, AlarmConstants.ALM_DELAY_Z2_P3, true, false)){
                 return 1;
             }
             return null;
@@ -1461,11 +1458,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z2_P3("DELAY_Z2_P3",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z2_P3, AlarmConstants.ALM_DELAY_Z2_P4, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z2_P3, AlarmConstants.ALM_DELAY_Z2_P4, true, false)){
                 return 1;
             }
             return null;
@@ -1474,11 +1471,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z2_P4("DELAY_Z2_P4",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z2_P4, AlarmConstants.ALM_DELAY_Z2_L1, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z2_P4, AlarmConstants.ALM_DELAY_Z2_L1, true, false)){
                 return 1;
             }
             return null;
@@ -1487,11 +1484,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z2_L1("DELAY_Z2_L1",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z2_L1, AlarmConstants.ALM_DELAY_Z2_L2, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z2_L1, AlarmConstants.ALM_DELAY_Z2_L2, true, false)){
                 return 1;
             }
             return null;
@@ -1500,11 +1497,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z2_L2("DELAY_Z2_L2",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z2_L2, AlarmConstants.ALM_DELAY_Z2_L3, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z2_L2, AlarmConstants.ALM_DELAY_Z2_L3, true, false)){
                 return 1;
             }
             return null;
@@ -1513,11 +1510,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z2_L3("DELAY_Z2_L3",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z2_L3, AlarmConstants.ALM_DELAY_Z2_L4, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z2_L3, AlarmConstants.ALM_DELAY_Z2_L4, true, false)){
                 return 1;
             }
             return null;
@@ -1526,10 +1523,10 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z2_L4("DELAY_Z2_L4",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
             if(delayTime>=AlarmConstants.ALM_DELAY_Z2_L4){
                 return 1;
             }
@@ -1539,11 +1536,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z3_P1("DELAY_Z3_P1",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_P1, AlarmConstants.ALM_DELAY_Z3_P2, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_P1, AlarmConstants.ALM_DELAY_Z3_P2, true, false)){
                 return 1;
             }
             return null;
@@ -1552,11 +1549,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z3_P2("DELAY_Z3_P2",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_P2, AlarmConstants.ALM_DELAY_Z3_P3, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_P2, AlarmConstants.ALM_DELAY_Z3_P3, true, false)){
                 return 1;
             }
             return null;
@@ -1565,11 +1562,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z3_P3("DELAY_Z3_P3",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_P3, AlarmConstants.ALM_DELAY_Z3_P4, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_P3, AlarmConstants.ALM_DELAY_Z3_P4, true, false)){
                 return 1;
             }
             return null;
@@ -1578,11 +1575,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z3_P4("DELAY_Z3_P4",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_P4, AlarmConstants.ALM_DELAY_Z3_L1, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_P4, AlarmConstants.ALM_DELAY_Z3_L1, true, false)){
                 return 1;
             }
             return null;
@@ -1591,11 +1588,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z3_L1("DELAY_Z3_L1",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_L1, AlarmConstants.ALM_DELAY_Z3_L2, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_L1, AlarmConstants.ALM_DELAY_Z3_L2, true, false)){
                 return 1;
             }
             return null;
@@ -1604,11 +1601,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z3_L2("DELAY_Z3_L2",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_L2, AlarmConstants.ALM_DELAY_Z3_L3, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_L2, AlarmConstants.ALM_DELAY_Z3_L3, true, false)){
                 return 1;
             }
             return null;
@@ -1617,11 +1614,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z3_L3("DELAY_Z3_L3",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_L3, AlarmConstants.ALM_DELAY_Z3_L4, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_L3, AlarmConstants.ALM_DELAY_Z3_L4, true, false)){
                 return 1;
             }
             return null;
@@ -1630,10 +1627,10 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z3_L4("DELAY_Z3_L4",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
             if(delayTime!=null&&delayTime>=AlarmConstants.ALM_DELAY_Z3_L4){
                 return 1;
             }
@@ -1643,11 +1640,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z4_P1("DELAY_Z4_P1",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getFirstMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z4_P1, AlarmConstants.ALM_DELAY_Z4_P2, true, false)){
+            Float delayTime = CallStatisticsUtills.getFirstMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z4_P1, AlarmConstants.ALM_DELAY_Z4_P2, true, false)){
                 return 1;
             }
             return null;
@@ -1656,11 +1653,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z4_P2("DELAY_Z4_P2",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getFirstMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z4_P2, AlarmConstants.ALM_DELAY_Z4_P3, true, false)){
+            Float delayTime = CallStatisticsUtills.getFirstMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z4_P2, AlarmConstants.ALM_DELAY_Z4_P3, true, false)){
                 return 1;
             }
             return null;
@@ -1669,11 +1666,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z4_P3("DELAY_Z4_P3",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getFirstMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z4_P3, AlarmConstants.ALM_DELAY_Z4_P4, true, false)){
+            Float delayTime = CallStatisticsUtills.getFirstMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z4_P3, AlarmConstants.ALM_DELAY_Z4_P4, true, false)){
                 return 1;
             }
             return null;
@@ -1682,11 +1679,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z4_P4("DELAY_Z4_P4",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getFirstMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z4_P4, AlarmConstants.ALM_DELAY_Z4_L1, true, false)){
+            Float delayTime = CallStatisticsUtills.getFirstMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z4_P4, AlarmConstants.ALM_DELAY_Z4_L1, true, false)){
                 return 1;
             }
             return null;
@@ -1695,11 +1692,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z4_L1("DELAY_Z4_L1",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getFirstMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z4_L1, AlarmConstants.ALM_DELAY_Z4_L2, true, false)){
+            Float delayTime = CallStatisticsUtills.getFirstMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z4_L1, AlarmConstants.ALM_DELAY_Z4_L2, true, false)){
                 return 1;
             }
             return null;
@@ -1708,11 +1705,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z4_L2("DELAY_Z4_L2",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getFirstMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z4_L2, AlarmConstants.ALM_DELAY_Z4_L3, true, false)){
+            Float delayTime = CallStatisticsUtills.getFirstMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z4_L2, AlarmConstants.ALM_DELAY_Z4_L3, true, false)){
                 return 1;
             }
             return null;
@@ -1721,11 +1718,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z4_L3("DELAY_Z4_L3",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getFirstMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z4_L3, AlarmConstants.ALM_DELAY_Z4_L4, true, false)){
+            Float delayTime = CallStatisticsUtills.getFirstMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z4_L3, AlarmConstants.ALM_DELAY_Z4_L4, true, false)){
                 return 1;
             }
             return null;
@@ -1734,10 +1731,10 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_Z4_L4("DELAY_Z4_L4",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getFirstMessageDelayTime(callNode);
+            Float delayTime = CallStatisticsUtills.getFirstMessageDelayTime(callNode);
             if(delayTime!=null&&delayTime>=AlarmConstants.ALM_DELAY_Z4_L4){
                 return 1;
             }
@@ -1747,11 +1744,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_TOTAL_SUM_P1("DELAY_TOTAL_SUM_P1",StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_P1, AlarmConstants.ALM_DELAY_Z3_P2, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_P1, AlarmConstants.ALM_DELAY_Z3_P2, true, false)){
                 return delayTime;
             }
             return null;
@@ -1760,11 +1757,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_TOTAL_SUM_P2("DELAY_TOTAL_SUM_P2",StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_P2, AlarmConstants.ALM_DELAY_Z3_P3, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_P2, AlarmConstants.ALM_DELAY_Z3_P3, true, false)){
                 return delayTime;
             }
             return null;
@@ -1773,11 +1770,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_TOTAL_SUM_P3("DELAY_TOTAL_SUM_P3",StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_P3, AlarmConstants.ALM_DELAY_Z3_P4, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_P3, AlarmConstants.ALM_DELAY_Z3_P4, true, false)){
                 return delayTime;
             }
             return null;
@@ -1786,11 +1783,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_TOTAL_SUM_P4("DELAY_TOTAL_SUM_P4",StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_P4, AlarmConstants.ALM_DELAY_Z3_L1, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_P4, AlarmConstants.ALM_DELAY_Z3_L1, true, false)){
                 return delayTime;
             }
             return null;
@@ -1799,11 +1796,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_TOTAL_SUM_L1("DELAY_TOTAL_SUM_L1",StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_L1, AlarmConstants.ALM_DELAY_Z3_L2, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_L1, AlarmConstants.ALM_DELAY_Z3_L2, true, false)){
                 return delayTime;
             }
             return null;
@@ -1812,11 +1809,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_TOTAL_SUM_L2("DELAY_TOTAL_SUM_L2",StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_L2, AlarmConstants.ALM_DELAY_Z3_L3, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_L2, AlarmConstants.ALM_DELAY_Z3_L3, true, false)){
                 return delayTime;
             }
             return null;
@@ -1825,11 +1822,11 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_TOTAL_SUM_L3("DELAY_TOTAL_SUM_L3",StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
-            if(isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_L3, AlarmConstants.ALM_DELAY_Z3_L4, true, false)){
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(delayTime, AlarmConstants.ALM_DELAY_Z3_L3, AlarmConstants.ALM_DELAY_Z3_L4, true, false)){
                 return delayTime;
             }
             return null;
@@ -1838,10 +1835,10 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_DELAY_TOTAL_SUM_L4("DELAY_TOTAL_SUM_L4",StatisticsType.SUM) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float delayTime = getMessageDelayTime(callNode);
+            Float delayTime = CallStatisticsUtills.getMessageDelayTime(callNode);
             if(delayTime!=null&&delayTime>=AlarmConstants.ALM_DELAY_Z3_L4){
                 return delayTime;
             }
@@ -1863,10 +1860,10 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     EC1_SUCCESS("SUCCESS",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = CallStatisticsUtills.getCallConnectionTime(callNode);
             if(connectionTime!=null&&connectionTime<=AlarmConstants.EMG_CALL_CONN_TIME_LIMIT){
                 return 1;
             }
@@ -1876,10 +1873,10 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     EC2_SUCCESS("SUCCESS",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            if(!isCallSuccess(callNode,inclInconclusive)){
+            if(!CallStatisticsUtills.isCallSuccess(callNode,inclInconclusive)){
                 return null;
             }
-            Float connectionTime = getCallConnectionTime(callNode);
+            Float connectionTime = CallStatisticsUtills.getCallConnectionTime(callNode);
             if(connectionTime!=null&&connectionTime<=AlarmConstants.HELP_CALL_CONN_TIME_LIMIT){
                 return 1;
             }
@@ -1895,7 +1892,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ATT_SUCCESS("SUCCESS",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float updateTime = getCallDurationTime(callNode);
+            Float updateTime = CallStatisticsUtills.getCallDurationTime(callNode);
             if(updateTime!=null&&updateTime<=ItsiAttachConstants.TIME_LIMIT){
                 return 1;
             }
@@ -1905,8 +1902,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ATT_DELAY_P1("DELAY_P1",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float updateTime = getCallDurationTime(callNode);
-            if(isValueInBorders(updateTime, ItsiAttachConstants.DELAY_P1_LOW, ItsiAttachConstants.DELAY_P2_LOW, true, false)){
+            Float updateTime = CallStatisticsUtills.getCallDurationTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(updateTime, ItsiAttachConstants.DELAY_P1_LOW, ItsiAttachConstants.DELAY_P2_LOW, true, false)){
                 return 1;
             }
             return null;
@@ -1915,8 +1912,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ATT_DELAY_P2("DELAY_P2",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float updateTime = getCallDurationTime(callNode);
-            if(isValueInBorders(updateTime, ItsiAttachConstants.DELAY_P2_LOW, ItsiAttachConstants.DELAY_P3_LOW, true, false)){
+            Float updateTime = CallStatisticsUtills.getCallDurationTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(updateTime, ItsiAttachConstants.DELAY_P2_LOW, ItsiAttachConstants.DELAY_P3_LOW, true, false)){
                 return 1;
             }
             return null;
@@ -1925,8 +1922,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ATT_DELAY_P3("DELAY_P3",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float updateTime = getCallDurationTime(callNode);
-            if(isValueInBorders(updateTime, ItsiAttachConstants.DELAY_P3_LOW, ItsiAttachConstants.DELAY_P4_LOW, true, false)){
+            Float updateTime = CallStatisticsUtills.getCallDurationTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(updateTime, ItsiAttachConstants.DELAY_P3_LOW, ItsiAttachConstants.DELAY_P4_LOW, true, false)){
                 return 1;
             }
             return null;
@@ -1935,8 +1932,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ATT_DELAY_P4("DELAY_P4",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float updateTime = getCallDurationTime(callNode);
-            if(isValueInBorders(updateTime, ItsiAttachConstants.DELAY_P4_LOW, ItsiAttachConstants.DELAY_L1_LOW, true, false)){
+            Float updateTime = CallStatisticsUtills.getCallDurationTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(updateTime, ItsiAttachConstants.DELAY_P4_LOW, ItsiAttachConstants.DELAY_L1_LOW, true, false)){
                 return 1;
             }
             return null;
@@ -1945,8 +1942,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ATT_DELAY_L1("DELAY_L1",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float updateTime = getCallDurationTime(callNode);
-            if(isValueInBorders(updateTime, ItsiAttachConstants.DELAY_L1_LOW, ItsiAttachConstants.DELAY_L2_LOW, true, false)){
+            Float updateTime = CallStatisticsUtills.getCallDurationTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(updateTime, ItsiAttachConstants.DELAY_L1_LOW, ItsiAttachConstants.DELAY_L2_LOW, true, false)){
                 return 1;
             }
             return null;
@@ -1955,8 +1952,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ATT_DELAY_L2("DELAY_L2",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float updateTime = getCallDurationTime(callNode);
-            if(isValueInBorders(updateTime, ItsiAttachConstants.DELAY_L2_LOW, ItsiAttachConstants.DELAY_L3_LOW, true, false)){
+            Float updateTime = CallStatisticsUtills.getCallDurationTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(updateTime, ItsiAttachConstants.DELAY_L2_LOW, ItsiAttachConstants.DELAY_L3_LOW, true, false)){
                 return 1;
             }
             return null;
@@ -1965,8 +1962,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ATT_DELAY_L3("DELAY_L3",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float updateTime = getCallDurationTime(callNode);
-            if(isValueInBorders(updateTime, ItsiAttachConstants.DELAY_L3_LOW, ItsiAttachConstants.DELAY_L4_LOW, true, false)){
+            Float updateTime = CallStatisticsUtills.getCallDurationTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(updateTime, ItsiAttachConstants.DELAY_L3_LOW, ItsiAttachConstants.DELAY_L4_LOW, true, false)){
                 return 1;
             }
             return null;
@@ -1975,8 +1972,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ATT_DELAY_L4("DELAY_L4",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float updateTime = getCallDurationTime(callNode);
-            if(isValueInBorders(updateTime, ItsiAttachConstants.DELAY_L4_LOW, ItsiAttachConstants.TIME_LIMIT, true, true)){
+            Float updateTime = CallStatisticsUtills.getCallDurationTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(updateTime, ItsiAttachConstants.DELAY_L4_LOW, ItsiAttachConstants.TIME_LIMIT, true, true)){
                 return 1;
             }
             return null;
@@ -1997,7 +1994,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_HO_SUCCESS("HO_SUCCESS",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float handoverTime = getCallHandoverTime(callNode);
+            Float handoverTime = CallStatisticsUtills.getCallHandoverTime(callNode);
             if(handoverTime!=null&&handoverTime<=CcHoConstants.HANDOVER_TIME_LIMIT){
                 return 1;
             }
@@ -2007,7 +2004,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_RES_SUCCESS("RES_SUCCESS",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float reselectionTime = getCallReselectionTime(callNode);
+            Float reselectionTime = CallStatisticsUtills.getCallReselectionTime(callNode);
             if(reselectionTime!=null&&reselectionTime<=CcHoConstants.HANDOVER_TIME_LIMIT){
                 return 1;
             }
@@ -2017,8 +2014,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_HO_TIME_P1("HO_TIME_P1",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float handoverTime = getCallHandoverTime(callNode);
-            if(isValueInBorders(handoverTime, CcHoConstants.HANDOVER_DELAY_P1_LOW, CcHoConstants.HANDOVER_DELAY_P2_LOW, false, true)){
+            Float handoverTime = CallStatisticsUtills.getCallHandoverTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(handoverTime, CcHoConstants.HANDOVER_DELAY_P1_LOW, CcHoConstants.HANDOVER_DELAY_P2_LOW, false, true)){
                 return 1;
             }
             return null;
@@ -2027,8 +2024,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_HO_TIME_P2("HO_TIME_P2",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float handoverTime = getCallHandoverTime(callNode);
-            if(isValueInBorders(handoverTime, CcHoConstants.HANDOVER_DELAY_P2_LOW, CcHoConstants.HANDOVER_DELAY_P3_LOW, false, true)){
+            Float handoverTime = CallStatisticsUtills.getCallHandoverTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(handoverTime, CcHoConstants.HANDOVER_DELAY_P2_LOW, CcHoConstants.HANDOVER_DELAY_P3_LOW, false, true)){
                 return 1;
             }
             return null;
@@ -2037,8 +2034,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_HO_TIME_P3("HO_TIME_P3",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float handoverTime = getCallHandoverTime(callNode);
-            if(isValueInBorders(handoverTime, CcHoConstants.HANDOVER_DELAY_P3_LOW, CcHoConstants.HANDOVER_DELAY_P4_LOW, false, true)){
+            Float handoverTime = CallStatisticsUtills.getCallHandoverTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(handoverTime, CcHoConstants.HANDOVER_DELAY_P3_LOW, CcHoConstants.HANDOVER_DELAY_P4_LOW, false, true)){
                 return 1;
             }
             return null;
@@ -2047,8 +2044,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_HO_TIME_P4("HO_TIME_P4",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float handoverTime = getCallHandoverTime(callNode);
-            if(isValueInBorders(handoverTime, CcHoConstants.HANDOVER_DELAY_P4_LOW, CcHoConstants.HANDOVER_DELAY_L1_LOW, false, true)){
+            Float handoverTime = CallStatisticsUtills.getCallHandoverTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(handoverTime, CcHoConstants.HANDOVER_DELAY_P4_LOW, CcHoConstants.HANDOVER_DELAY_L1_LOW, false, true)){
                 return 1;
             }
             return null;
@@ -2057,8 +2054,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_HO_TIME_L1("HO_TIME_L1",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float handoverTime = getCallHandoverTime(callNode);
-            if(isValueInBorders(handoverTime, CcHoConstants.HANDOVER_DELAY_L1_LOW, CcHoConstants.HANDOVER_DELAY_L2_LOW, false, true)){
+            Float handoverTime = CallStatisticsUtills.getCallHandoverTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(handoverTime, CcHoConstants.HANDOVER_DELAY_L1_LOW, CcHoConstants.HANDOVER_DELAY_L2_LOW, false, true)){
                 return 1;
             }
             return null;
@@ -2067,8 +2064,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_HO_TIME_L2("HO_TIME_L2",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float handoverTime = getCallHandoverTime(callNode);
-            if(isValueInBorders(handoverTime, CcHoConstants.HANDOVER_DELAY_L2_LOW, CcHoConstants.HANDOVER_DELAY_L3_LOW, false, true)){
+            Float handoverTime = CallStatisticsUtills.getCallHandoverTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(handoverTime, CcHoConstants.HANDOVER_DELAY_L2_LOW, CcHoConstants.HANDOVER_DELAY_L3_LOW, false, true)){
                 return 1;
             }
             return null;
@@ -2077,8 +2074,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_HO_TIME_L3("HO_TIME_L3",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float handoverTime = getCallHandoverTime(callNode);
-            if(isValueInBorders(handoverTime, CcHoConstants.HANDOVER_DELAY_L3_LOW, CcHoConstants.HANDOVER_DELAY_L4_LOW, false, true)){
+            Float handoverTime = CallStatisticsUtills.getCallHandoverTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(handoverTime, CcHoConstants.HANDOVER_DELAY_L3_LOW, CcHoConstants.HANDOVER_DELAY_L4_LOW, false, true)){
                 return 1;
             }
             return null;
@@ -2087,7 +2084,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_HO_TIME_L4("HO_TIME_L4",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float handoverTime = getCallHandoverTime(callNode);
+            Float handoverTime = CallStatisticsUtills.getCallHandoverTime(callNode);
             if(handoverTime!=null&&handoverTime>CcHoConstants.HANDOVER_DELAY_L4_LOW){
                 return 1;
             }
@@ -2097,8 +2094,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_RES_TIME_P1("RES_TIME_P1",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float reselectionTime = getCallReselectionTime(callNode);
-            if(isValueInBorders(reselectionTime, CcHoConstants.HANDOVER_DELAY_P1_LOW, CcHoConstants.HANDOVER_DELAY_P2_LOW, false, true)){
+            Float reselectionTime = CallStatisticsUtills.getCallReselectionTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(reselectionTime, CcHoConstants.HANDOVER_DELAY_P1_LOW, CcHoConstants.HANDOVER_DELAY_P2_LOW, false, true)){
                 return 1;
             }
             return null;
@@ -2107,8 +2104,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_RES_TIME_P2("RES_TIME_P2",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float reselectionTime = getCallReselectionTime(callNode);
-            if(isValueInBorders(reselectionTime, CcHoConstants.HANDOVER_DELAY_P2_LOW, CcHoConstants.HANDOVER_DELAY_P3_LOW, false, true)){
+            Float reselectionTime = CallStatisticsUtills.getCallReselectionTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(reselectionTime, CcHoConstants.HANDOVER_DELAY_P2_LOW, CcHoConstants.HANDOVER_DELAY_P3_LOW, false, true)){
                 return 1;
             }
             return null;
@@ -2117,8 +2114,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_RES_TIME_P3("RES_TIME_P3",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float reselectionTime = getCallReselectionTime(callNode);
-            if(isValueInBorders(reselectionTime, CcHoConstants.HANDOVER_DELAY_P3_LOW, CcHoConstants.HANDOVER_DELAY_P4_LOW, false, true)){
+            Float reselectionTime = CallStatisticsUtills.getCallReselectionTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(reselectionTime, CcHoConstants.HANDOVER_DELAY_P3_LOW, CcHoConstants.HANDOVER_DELAY_P4_LOW, false, true)){
                 return 1;
             }
             return null;
@@ -2127,8 +2124,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_RES_TIME_P4("RES_TIME_P4",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float reselectionTime = getCallReselectionTime(callNode);
-            if(isValueInBorders(reselectionTime, CcHoConstants.HANDOVER_DELAY_P4_LOW, CcHoConstants.HANDOVER_DELAY_L1_LOW, false, true)){
+            Float reselectionTime = CallStatisticsUtills.getCallReselectionTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(reselectionTime, CcHoConstants.HANDOVER_DELAY_P4_LOW, CcHoConstants.HANDOVER_DELAY_L1_LOW, false, true)){
                 return 1;
             }
             return null;
@@ -2137,8 +2134,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_RES_TIME_L1("RES_TIME_L1",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float reselectionTime = getCallReselectionTime(callNode);
-            if(isValueInBorders(reselectionTime, CcHoConstants.HANDOVER_DELAY_L1_LOW, CcHoConstants.HANDOVER_DELAY_L2_LOW, false, true)){
+            Float reselectionTime = CallStatisticsUtills.getCallReselectionTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(reselectionTime, CcHoConstants.HANDOVER_DELAY_L1_LOW, CcHoConstants.HANDOVER_DELAY_L2_LOW, false, true)){
                 return 1;
             }
             return null;
@@ -2147,8 +2144,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_RES_TIME_L2("RES_TIME_L2",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float reselectionTime = getCallReselectionTime(callNode);
-            if(isValueInBorders(reselectionTime, CcHoConstants.HANDOVER_DELAY_L2_LOW, CcHoConstants.HANDOVER_DELAY_L3_LOW, false, true)){
+            Float reselectionTime = CallStatisticsUtills.getCallReselectionTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(reselectionTime, CcHoConstants.HANDOVER_DELAY_L2_LOW, CcHoConstants.HANDOVER_DELAY_L3_LOW, false, true)){
                 return 1;
             }
             return null;
@@ -2157,8 +2154,8 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_RES_TIME_L3("RES_TIME_L3",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float reselectionTime = getCallReselectionTime(callNode);
-            if(isValueInBorders(reselectionTime, CcHoConstants.HANDOVER_DELAY_L3_LOW, CcHoConstants.HANDOVER_DELAY_L4_LOW, false, true)){
+            Float reselectionTime = CallStatisticsUtills.getCallReselectionTime(callNode);
+            if(CallStatisticsUtills.isValueInBorders(reselectionTime, CcHoConstants.HANDOVER_DELAY_L3_LOW, CcHoConstants.HANDOVER_DELAY_L4_LOW, false, true)){
                 return 1;
             }
             return null;
@@ -2167,7 +2164,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_RES_TIME_L4("RES_TIME_L4",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
-            Float reselectionTime = getCallReselectionTime(callNode);
+            Float reselectionTime = CallStatisticsUtills.getCallReselectionTime(callNode);
             if(reselectionTime!=null&&reselectionTime>CcHoConstants.HANDOVER_DELAY_L4_LOW){
                 return 1;
             }
@@ -2643,7 +2640,7 @@ public enum StatisticsHeaders implements IStatisticsHeader{
         }
     };
     
-    protected static final float MAX_DURATION_FOR_DELAY = 10.0f;
+    
     
     private String headerTitle;
     private StatisticsType headerType;
@@ -2667,242 +2664,5 @@ public enum StatisticsHeaders implements IStatisticsHeader{
         return headerType;
     }
     
-    /**
-     * Check call for success.
-     *
-     * @param callNode Node (call)
-     * @return boolean
-     */
-    protected boolean isCallSuccess(Node callNode, boolean inclInconclusive){
-        CallResult callResult = CallResult.valueOf((String)callNode.getProperty(CallProperties.CALL_RESULT.getId(),null));
-        if(callResult==null){
-            return false;
-        }
-        if(callResult.equals(CallResult.SUCCESS)){
-            return true;
-        }
-        if(inclInconclusive){
-            boolean inconclusive = (Boolean)callNode.getProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE,false);
-            return callResult.equals(CallResult.FAILURE)&&inconclusive;
-        }
-        return false;
-    }
     
-    /**
-     * Check call for success and time limit.
-     *
-     * @param callNode  Node (call)
-     * @param constants IStatisticsConstants
-     * @return boolean
-     */
-    protected boolean isCallInTimeLimit(Node callNode, ICallStatisticsConstants constants, boolean inclInconclusive){
-        if(!isCallSuccess(callNode,inclInconclusive)){
-            return false;
-        }
-        Float connectionTime = getCallConnectionTime(callNode);
-        return connectionTime!=null&&connectionTime<=constants.getCallConnTimeLimit();
-    }
-    
-    /**
-     * Check call for success, time limit and duration time for delay.
-     *
-     * @param callNode  Node (call)
-     * @param constants IStatisticsConstants
-     * @return boolean
-     */
-    protected boolean isCallDuratiomGood(Node callNode, ICallStatisticsConstants constants, boolean inclInconclusive){
-        if(!isCallInTimeLimit(callNode, constants,inclInconclusive)){
-            return false;
-        }
-        Float duration = getCallDurationTime(callNode);
-        Float connection = getCallConnectionTime(callNode);
-        Float termination = getCallTerminationTime(callNode);
-        float callDuration = duration-connection-termination;
-        return (duration!=null)&&(connection!=null)&&(termination!=null)&&(callDuration < MAX_DURATION_FOR_DELAY);
-    }
-    
-    /**
-     * Returns call connection time.
-     *
-     * @param callNode Node (call)
-     * @return float
-     */
-    protected Float getCallConnectionTime(Node callNode){
-        Object property = callNode.getProperty(CallProperties.SETUP_DURATION.getId(),null);
-        Long connectionTime = property.equals(Double.NaN)?null:(Long)property;        
-        return connectionTime==null?null:(float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
-    }
-    
-    /**
-     * Returns call duration time.
-     *
-     * @param callNode Node (call)
-     * @return float
-     */
-    protected Float getCallDurationTime(Node callNode){
-        Object property = callNode.getProperty(CallProperties.CALL_DURATION.getId(),null);
-        Long connectionTime = property.equals(Double.NaN)?null:(Long)property; 
-        return connectionTime==null?null:((float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR);
-    }
-    
-    /**
-     * Returns call termination time.
-     *
-     * @param callNode Node (call)
-     * @return float
-     */
-    protected Float getCallTerminationTime(Node callNode){
-        Object property = callNode.getProperty(CallProperties.TERMINATION_DURATION.getId(),null);
-        Long connectionTime = property.equals(Double.NaN)?null:(Long)property;
-        return connectionTime==null?null:(float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
-    }
-    
-    /**
-     * Returns call handover time.
-     *
-     * @param callNode Node (call)
-     * @return float
-     */
-    protected Float getCallHandoverTime(Node callNode){
-        Object property = callNode.getProperty(CallProperties.CC_HANDOVER_TIME.getId(),null);
-        Long connectionTime = property.equals(Double.NaN)?null:(Long)property;
-        return connectionTime==null?null:(float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
-    }
-    
-    /**
-     * Returns call reselection time.
-     *
-     * @param callNode Node (call)
-     * @return float
-     */
-    protected Float getCallReselectionTime(Node callNode){
-        Object property = callNode.getProperty(CallProperties.CC_RESELECTION_TIME.getId(),null);
-        Long connectionTime = property.equals(Double.NaN)?null:(Long)property;
-        return connectionTime==null?null:(float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
-    }
-    
-    /**
-     * Returns call audio sample qualities.
-     *
-     * @param callNode Node (call)
-     * @return Float[]
-     */
-    protected float[] getCallAudioQuality(Node callNode){
-        return (float[])callNode.getProperty(CallProperties.LQ.getId(),new float[]{}); 
-    }
-    
-    /**
-     * Returns call audio sample qualities in borders.
-     *
-     * @param callNode  Node (call)
-     * @param start Float
-     * @param end Float
-     * @param inclStart boolean (is include start)
-     * @param inclEnd boolean (is include end)
-     * @return list of Float
-     */
-    protected List<Float> getAllGoodQualities(Node callNode, Float start, Float end, boolean inclStart, boolean inclEnd){
-        float[] callAudioQualities = getCallAudioQuality(callNode);
-        List<Float> good = new ArrayList<Float>(callAudioQualities.length);
-        for(float callAudioQuality : callAudioQualities){
-            if(isValueInBorders(callAudioQuality, start, end, inclStart, inclEnd)){
-                good.add(callAudioQuality);
-            }
-        }
-        return good;
-    }
-    
-    /**
-     * Returns call audio sample delay.
-     *
-     * @param callNode Node (call)
-     * @return Float[]
-     */
-    protected float[] getCallAudioDelay(Node callNode){
-        float[] delays = (float[])callNode.getProperty(CallProperties.DELAY.getId(),new float[]{});
-        return delays;
-    }
-    
-    /**
-     * Returns message received time.
-     *
-     * @param callNode Node (call)
-     * @return float
-     */
-    protected Float getMessageReceiveTime(Node callNode){
-        Object property = callNode.getProperty(CallProperties.MESS_RECEIVE_TIME.getId(),null);
-        Long receiveTime = property.equals(Double.NaN)?null:(Long)property;
-        return receiveTime==null?null:(float)receiveTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
-    }
-    
-    /**
-     * Returns message acknowledge time.
-     *
-     * @param callNode Node (call)
-     * @return float
-     */
-    protected Float getMessageAcknowledgeTime(Node callNode){
-        Object property = callNode.getProperty(CallProperties.MESS_ACKNOWLEDGE_TIME.getId(),null);
-        Long receiveTime = property.equals(Double.NaN)?null:(Long)property;
-        return receiveTime==null?null:(float)receiveTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
-    }
-    
-    /**
-     * Returns message delay time (alarm).
-     *
-     * @param callNode Node (call)
-     * @return float
-     */
-    protected Float getMessageDelayTime(Node callNode){
-        Object property = callNode.getProperty(CallProperties.ALM_MESSAGE_DELAY.getId(),null);
-        Long receiveTime = property.equals(Double.NaN)?null:(Long)property;
-        return receiveTime==null?null:(float)receiveTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
-    }
-    
-    /**
-     * Returns first message delay time (alarm).
-     *
-     * @param callNode Node (call)
-     * @return float
-     */
-    protected Float getFirstMessageDelayTime(Node callNode){
-        Object property = callNode.getProperty(CallProperties.ALM_FIRST_MESS_DELAY.getId(),null);
-        Long receiveTime = property.equals(Double.NaN)?null:(Long)property;
-        return receiveTime==null?null:(float)receiveTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
-    }
-    
-    /**
-     * Returns call audio sample delays in borders.
-     *
-     * @param callNode  Node (call)
-     * @param start Float
-     * @param end Float
-     * @param inclStart boolean (is include start)
-     * @param inclEnd boolean (is include end)
-     * @return list of Float
-     */
-    protected List<Float> getAllGoodDelays(Node callNode, Float start, Float end, boolean inclStart, boolean inclEnd){
-        float[] callAudioDelays = getCallAudioDelay(callNode);
-        List<Float> good = new ArrayList<Float>(callAudioDelays.length);
-        for(float callAudioDelay : callAudioDelays){
-            if(isValueInBorders(callAudioDelay, start, end, inclStart, inclEnd)){
-                good.add(callAudioDelay);
-            }
-        }
-        return good;
-    }
-
-    /**
-     * Is value between start and end.
-     *
-     * @param value Float
-     * @param start Float
-     * @param end Float
-     * @param inclStart boolean (is include start)
-     * @param inclEnd boolean (is include end)
-     * @return boolean
-     */
-    protected boolean isValueInBorders(Float value, Float start, Float end, boolean inclStart, boolean inclEnd){
-        return value!=null&&((inclStart&&start.equals(value))||start<value) && (value<end||(inclEnd&&end.equals(value)));
-    }
 }

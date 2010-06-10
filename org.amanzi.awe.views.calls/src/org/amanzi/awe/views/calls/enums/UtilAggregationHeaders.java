@@ -237,15 +237,39 @@ public enum UtilAggregationHeaders implements IAggrStatisticsHeaders {
             return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
-    INH_CC_SUCCESS("INH_CC_SUCCESS",StatisticsType.COUNT,StatisticsHeaders.CC_HO_SUCCESS,
+    INH_HO_CC_SUCCESS("INH_HO_CC_SUCCESS",StatisticsType.COUNT,StatisticsHeaders.CC_HO_SUCCESS,
             StatisticsHeaders.CC_RES_SUCCESS) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
-    INH_CC_ATTEMPT("INH_CC_ATTEMPT",StatisticsType.COUNT,StatisticsHeaders.CC_HO_ATTEMPTS,
+    INH_HO_CC_ATTEMPT("INH_HO_CC_ATTEMPT",StatisticsType.COUNT,StatisticsHeaders.CC_HO_ATTEMPTS,
             StatisticsHeaders.CC_RES_ATTEMPTS) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    INH_HO_SUCCESS("INH_HO_SUCCESS",StatisticsType.COUNT,StatisticsHeaders.CC_HO_SUCCESS) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    INH_HO_ATTEMPT("INH_HO_ATTEMPT",StatisticsType.COUNT,StatisticsHeaders.CC_HO_ATTEMPTS) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    INH_CC_SUCCESS("INH_CC_SUCCESS",StatisticsType.COUNT,StatisticsHeaders.CC_RES_SUCCESS) {
+        @Override
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+            return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
+        }
+    },
+    INH_CC_ATTEMPT("INH_CC_ATTEMPT",StatisticsType.COUNT,StatisticsHeaders.CC_RES_ATTEMPTS) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
@@ -298,7 +322,7 @@ public enum UtilAggregationHeaders implements IAggrStatisticsHeaders {
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
-    },
+    }/*, TODO uncomment after support statistics
     EC2_ATTEMPT("EC2_ATTEMPT",StatisticsType.COUNT,StatisticsHeaders.EC2_ATTEMPT){
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
@@ -334,7 +358,7 @@ public enum UtilAggregationHeaders implements IAggrStatisticsHeaders {
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
-    };
+    }*/;
     
     private String headerTitle;
     private StatisticsType headerType;

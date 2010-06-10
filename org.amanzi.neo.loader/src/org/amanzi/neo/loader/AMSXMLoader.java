@@ -363,9 +363,6 @@ public class AMSXMLoader extends AbstractCallLoader {
             finishUp();
 
             cleanupGisNode();
-            if (!isTest) {
-                finishUpGis();
-            }
             tx.success();
         } finally {
             tx.finish();

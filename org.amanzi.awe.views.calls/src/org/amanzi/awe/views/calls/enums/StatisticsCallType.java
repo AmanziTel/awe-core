@@ -58,10 +58,13 @@ public enum StatisticsCallType {
                                 AggregationStatisticsHeaders.GC5_ZW1_AVG,
                                 AggregationStatisticsHeaders.GC5_ZW1_MIN,
                                 AggregationStatisticsHeaders.GC5_ZW1_MAX,
+                                AggregationStatisticsHeaders.INH_HO_CC,
+                                AggregationStatisticsHeaders.INH_HO,
                                 AggregationStatisticsHeaders.INH_CC,
                                 AggregationStatisticsHeaders.TSM,
                                 AggregationStatisticsHeaders.SDS,
-                                AggregationStatisticsHeaders.INH_AT),
+                                AggregationStatisticsHeaders.INH_AT,
+                                AggregationStatisticsHeaders.EC1),
     /**
      * Individual calls.
      */

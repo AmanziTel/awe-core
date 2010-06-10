@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
@@ -730,6 +731,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
         }
         super.finishUpIndexes();
     }
+    
     @Override
     public Node[] getRootNodes() {
         return new Node[]{networkNode,datasetNode};

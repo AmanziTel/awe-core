@@ -39,6 +39,7 @@ import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 
 /**
@@ -366,12 +367,27 @@ public class AggregationCallStatisticsBuilder {
     }
     
     private void setFlags(AggregationStatisticsHeaders header, Number value, Node cell, List<Node> sources){
-        StatisticsFlags flag = header.getFlagByValue(value);        
+        StatisticsFlags flag = header.getFlagByStatValue(value);        
         cell.setProperty(INeoConstants.PROPERTY_FLAGGED_NAME, flag.getId());
         for(Node source : sources){
             StatisticsFlags beforeFlag = StatisticsFlags.getFlagById((String)source.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, StatisticsFlags.NONE.getId()));
             if (beforeFlag==null||beforeFlag.getOrder()<flag.getOrder()){
                 source.setProperty(INeoConstants.PROPERTY_FLAGGED_NAME, flag.getId());
+            }
+            if(!flag.equals(StatisticsFlags.NONE)){
+                Traverser calls = source.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {                    
+                    @Override
+                    public boolean isReturnableNode(TraversalPosition currentPos) {
+                        return NeoUtils.isCallNode(currentPos.currentNode());
+                    }
+                }, GeoNeoRelationshipTypes.SOURCE,Direction.OUTGOING, GeoNeoRelationshipTypes.SOURCE,Direction.OUTGOING);
+                for(Node call : calls){
+                    StatisticsFlags callFlag = header.getFlagByCall(call);
+                    beforeFlag = StatisticsFlags.getFlagById((String)call.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, StatisticsFlags.NONE.getId()));
+                    if (beforeFlag==null||beforeFlag.getOrder()<callFlag.getOrder()){
+                        call.setProperty(INeoConstants.PROPERTY_FLAGGED_NAME, flag.getId());
+                    }
+                }
             }
         }
     }

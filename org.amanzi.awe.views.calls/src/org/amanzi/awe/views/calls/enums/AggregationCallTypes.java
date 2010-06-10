@@ -52,11 +52,13 @@ public enum AggregationCallTypes {
                                     AggregationStatisticsHeaders.GC5_ZW1_AVG,
                                     AggregationStatisticsHeaders.GC5_ZW1_MIN,
                                     AggregationStatisticsHeaders.GC5_ZW1_MAX),
-     ITSI_CC(StatisticsCallType.ITSI_CC,StatisticsCallType.ITSI_HO, AggregationStatisticsHeaders.INH_CC),
+     ITSI_CC(StatisticsCallType.ITSI_CC,StatisticsCallType.ITSI_HO, AggregationStatisticsHeaders.INH_HO_CC,
+                                                                    AggregationStatisticsHeaders.INH_HO,
+                                                                    AggregationStatisticsHeaders.INH_CC),
      TSM(StatisticsCallType.TSM,null, AggregationStatisticsHeaders.TSM),
      SDS(StatisticsCallType.SDS,null, AggregationStatisticsHeaders.SDS),
-     ITSI_ATT(StatisticsCallType.ITSI_ATTACH,null, AggregationStatisticsHeaders.INH_AT);
-     //EMERGENCY(StatisticsCallType.EMERGENCY,null,AggregationStatisticsHeaders.EC1),
+     ITSI_ATT(StatisticsCallType.ITSI_ATTACH,null, AggregationStatisticsHeaders.INH_AT),
+     EMERGENCY(StatisticsCallType.EMERGENCY,null,AggregationStatisticsHeaders.EC1);
      //HELP(StatisticsCallType.HELP,null,AggregationStatisticsHeaders.EC2),
      //CS_DATA(StatisticsCallType.CS_DATA,null,AggregationStatisticsHeaders.CSD),
      //PS_DATA(StatisticsCallType.PS_DATA,null,AggregationStatisticsHeaders.IP);
