@@ -923,6 +923,48 @@ public class AMSXMLoader extends AbstractCallLoader {
             definedValues.put("errorCode", Integer.class);
         }
 
+        @Override
+        protected void handleCollector() throws ParseException {
+            super.handleCollector();
+            handleCall();
+        }
+/**
+ *
+ */
+private void handleCall() {
+    Call call = new Call();
+    call.addRelatedNode(node);
+    call.setTimestamp(timestamp);
+    call.setCallType(CallType.ITSI_CC);
+    Long beginTime = (Long)node.getProperty("cellReselReq", null);
+    Long endTime = (Long)node.getProperty("cellReselAccept", null);
+    if (node.hasProperty("errorCode") || node.hasProperty("errCode")) {
+        call.setCallResult(CallResult.FAILURE);
+    } else {
+        call.setCallResult(CallResult.SUCCESS);
+    }
+    if (beginTime==null||endTime==null){
+        call.setCallResult(CallResult.FAILURE);
+        call.setReselectionTime(-1l);
+    }else{
+        call.setReselectionTime(endTime-beginTime);
+        
+    }
+    String probe = getPropertyMap().get("probeID");
+    Node callerProbe = probeCallCache.get(probe);
+    if (!StringUtils.isEmpty(probe)) {
+        Set<Call> callSet = sortedCall.get(probe);
+        if (callSet == null) {
+            callSet = new HashSet<Call>();
+            sortedCall.put(probe, callSet);
+        }
+        callSet.add(call);
+    }
+    call.setCallerProbe(callerProbe);
+    call.addRelatedNode(node);
+    checkInconclusive(call);
+    saveCall(call);
+}
     }
 
     /**
@@ -969,15 +1011,20 @@ public class AMSXMLoader extends AbstractCallLoader {
             Call call = new Call();
             call.addRelatedNode(node);
             call.setTimestamp(timestamp);
-            call.setCallType(CallType.ITSI_CC);
+            call.setCallType(CallType.ITSI_HO);
             Long beginTime = (Long)node.getProperty("ho_Req", null);
-            call.setHandoverTime(beginTime);
             Long endTime = (Long)node.getProperty("ho_Accept", null);
-            call.setReselectionTime(endTime);
             if (node.hasProperty("errorCode") || node.hasProperty("errCode")) {
                 call.setCallResult(CallResult.FAILURE);
             } else {
                 call.setCallResult(CallResult.SUCCESS);
+            }
+            if (beginTime==null||endTime==null){
+                call.setCallResult(CallResult.FAILURE);
+                call.setHandoverTime(-1l);
+            }else{
+                call.setHandoverTime(endTime-beginTime);
+                
             }
             String probe = getPropertyMap().get("probeID");
             Node callerProbe = probeCallCache.get(probe);

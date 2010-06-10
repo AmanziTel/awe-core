@@ -95,6 +95,9 @@ public abstract class AbstractCallLoader extends DriveLoader {
                 case ITSI_CC:
                     storeITSICCCall(call);
                     break;
+                case ITSI_HO:
+                    storeITSIHOCall(call);
+                    break;
                 default:
                     NeoCorePlugin.error("Unknown call type "+callType+".", null);
                 }
@@ -231,7 +234,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
         callNode.setProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE, call.isInclusive());
         
         LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
-
+        
         setIndexProperty(headers, callNode, CallProperties.CALL_TYPE.getId(), call.getCallType().toString());
         setIndexProperty(headers, callNode, CallProperties.CALL_RESULT.getId(), call.getCallResult().toString());
         Long handoverTime = call.getHandoverTime();
@@ -240,6 +243,23 @@ public abstract class AbstractCallLoader extends DriveLoader {
         }else{
             setIndexProperty(headers, callNode, CallProperties.CC_HANDOVER_TIME.getId(), handoverTime);
         }
+        callNode.createRelationshipTo(probeCallNode, ProbeCallRelationshipType.CALLER);
+        
+        for (Node calleeProbe : call.getCalleeProbes()) {
+            callNode.createRelationshipTo(calleeProbe, ProbeCallRelationshipType.CALLEE);
+        }
+        
+        probeCallNode.setProperty(call.getCallType().getProperty(), true);
+    }
+    private void storeITSIHOCall(Call call) {
+        Node probeCallNode = call.getCallerProbe();
+        Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
+        callNode.setProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE, call.isInclusive());
+        
+        LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
+
+        setIndexProperty(headers, callNode, CallProperties.CALL_TYPE.getId(), call.getCallType().toString());
+        setIndexProperty(headers, callNode, CallProperties.CALL_RESULT.getId(), call.getCallResult().toString());
         Long reselectionTime = call.getReselectionTime();
         if (reselectionTime==null||reselectionTime<0) {
             setIndexProperty(headers, callNode, CallProperties.CC_RESELECTION_TIME.getId(), Double.NaN);
