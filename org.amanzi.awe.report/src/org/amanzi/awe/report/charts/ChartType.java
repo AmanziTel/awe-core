@@ -22,5 +22,5 @@ package org.amanzi.awe.report.charts;
  * @since 1.0.0
  */
 public enum ChartType {
-    BAR,PIE,LINE,TIME;
+    BAR,PIE,LINE,TIME,COMBINED;
 }

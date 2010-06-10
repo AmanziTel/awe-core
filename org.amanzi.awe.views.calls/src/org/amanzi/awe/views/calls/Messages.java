@@ -43,6 +43,7 @@ public class Messages extends NLS {
     public static String CAV_COL_HOST;
     public static String CAV_LB_EXPORT;
     public static String CAV_LB_INCONCLUSIVE;
+    public static String CAV_LB_REPORT;
     
     public static String AIW_PAGE_TITLE;
     public static String AIW_PAGE_DESCR;
@@ -50,6 +51,41 @@ public class Messages extends NLS {
     public static String AIW_NETWORK;
     public static String AIW_DIRECTORY;
     public static String AIW_DIR_EDITOR_TITLE;
+    /*Report keys*/
+    public static String R_SC1_TITLE;
+    public static String R_SC2_ZW2_AVG_TITLE;
+    public static String R_SC2_ZW2_MIN_TITLE;
+    public static String R_SC2_ZW2_MAX_TITLE;
+    public static String R_SC3_TITLE;
+    public static String R_SC4_TITLE;
+    public static String R_SC4_ZW2_MIN_TITLE;
+    public static String R_SC4_ZW2_AVG_TITLE;
+    public static String R_SC4_ZW2_MAX_TITLE;
+    public static String R_SC5_ZW1_AVG_TITLE;
+    public static String R_SC5_ZW1_MIN_TITLE;
+    public static String R_SC5_ZW1_MAX_TITLE;
+    public static String R_GC2_ZW2_AVG_TITLE;
+    public static String R_GC1_TITLE;
+    public static String R_GC2_ZW2_MIN_TITLE;
+    public static String R_GC2_ZW2_MAX_TITLE;
+    public static String R_GC3_TITLE;
+    public static String R_GC4_TITLE;
+    public static String R_GC4_ZW2_AVG_TITLE;
+    public static String R_GC4_ZW2_MIN_TITLE;
+    public static String R_GC5_ZW1_AVG_TITLE;
+    public static String R_GC5_ZW1_MIN_TITLE;
+    public static String R_GC5_ZW1_MAX_TITLE;
+    public static String R_INH_CC_TITLE;
+    public static String R_TSM_TITLE;
+    public static String R_SDS_TITLE;
+    public static String R_INH_AT_TITLE;
+    public static String R_EC1_TITLE;
+    public static String R_EC2_TITLE;
+    public static String R_IP_TITLE;
+    public static String R_CSD_TITLE;
+    public static String R_INH_HO_CC_TITLE;
+    public static String R_INH_HO_TITLE;
+
     
     private Messages() {
     }

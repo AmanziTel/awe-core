@@ -43,6 +43,7 @@ import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.DatasetRenderingOrder;
 import org.jfree.chart.plot.PiePlot;
@@ -50,6 +51,8 @@ import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.StandardBarPainter;
+import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.category.CategoryDataset;
@@ -57,6 +60,8 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.Dataset;
 import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.data.xy.XYBarDataset;
+import org.jfree.data.xy.XYDataset;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -378,6 +383,21 @@ public class Charts {
                 NumberAxis rangeAxis = new NumberAxis("Events");
                 rangeAxis.setVisible(false);
                 xyplot.setRangeAxis(dsNum, rangeAxis);
+            }else if (dataset instanceof XYBarDataset) {
+                XYBarDataset xydataset = (XYBarDataset)dataset;
+                xyplot.setDataset(dsNum, xydataset);
+               
+                XYBarRenderer xyRenderer = new XYBarRenderer();
+                xyRenderer.setBarPainter(new StandardXYBarPainter());
+                xyplot.setRenderer(dsNum, xyRenderer);
+               
+                ValueAxis rangeAxis = xyplot.getRangeAxis();
+                if (rangeAxis == null)
+                    rangeAxis = new NumberAxis("Axis Name");
+                rangeAxis.setVisible(true);
+                xyplot.setRangeAxis(dsNum, rangeAxis);
+                xydataset.setBarWidth(0.0);
+//                xyplot.setRangeAxis(rangeAxis);
             }
         }else if (plot instanceof CategoryPlot){
          // get a reference to the plot for further customisation...

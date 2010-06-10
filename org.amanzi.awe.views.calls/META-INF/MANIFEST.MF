@@ -15,7 +15,10 @@ Require-Bundle: org.eclipse.ui,
  org.rubypeople.rdt.ui;bundle-version="0.9.1",
  org.rubypeople.rdt.core;bundle-version="0.9.1",
  org.eclipse.core.resources;bundle-version="3.3.0",
- org.amanzi.awe.statistic;bundle-version="1.0.0"
+ org.amanzi.awe.statistic;bundle-version="1.0.0",
+ org.amanzi.integrator.awe,
+ org.eclipse.ui.ide,
+ org.apache.log4j
 Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Import-Package: org.neo4j.neoclipse.view

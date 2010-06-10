@@ -1,14 +1,19 @@
 package org.amanzi.awe.views.calls.views;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -28,12 +33,14 @@ import org.amanzi.awe.views.calls.CallAnalyserPlugin;
 import org.amanzi.awe.views.calls.ExportSpreadsheetWizard;
 import org.amanzi.awe.views.calls.Messages;
 import org.amanzi.awe.views.calls.enums.AggregationCallTypes;
+import org.amanzi.awe.views.calls.enums.AggregationStatisticsHeaders;
 import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
 import org.amanzi.awe.views.calls.enums.StatisticsFlags;
 import org.amanzi.awe.views.calls.enums.StatisticsType;
 import org.amanzi.awe.views.calls.statistics.CallStatistics;
 import org.amanzi.awe.views.calls.statistics.CallStatisticsInconclusive;
+import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.services.events.ShowPreparedViewEvent;
@@ -47,8 +54,13 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
+import org.apache.log4j.Logger;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -68,6 +80,7 @@ import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Cursor;
@@ -87,6 +100,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -98,6 +113,8 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
+import org.rubypeople.rdt.core.IRubyProject;
+import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
 /**
  * <p>
@@ -108,7 +125,7 @@ import org.neo4j.graphdb.Traverser.Order;
  * @since 1.0.0
  */
 public class CallAnalyserView extends ViewPart {
-
+    private static final Logger LOGGER = Logger.getLogger(CallAnalyserView.class);
     /** String DRIVE_ID field */
     private static final String DRIVE_ID = "org.amanzi.awe.views.tree.drive.views.DriveTreeView";
     /** String ERROR_VALUE field */
@@ -123,6 +140,7 @@ public class CallAnalyserView extends ViewPart {
     private static final String LBL_END_TIME = Messages.CAV_LBL_END_TIME;
     private static final String LB_EXPORT = Messages.CAV_LB_EXPORT;
     private static final String LB_INCONCLUSIVE = Messages.CAV_LB_INCONCLUSIVE;
+    private static final String LB_REPORT = Messages.CAV_LB_REPORT;
 
     // column name
     private static final String COL_PERIOD = Messages.CAV_COL_PERIOD;
@@ -164,6 +182,8 @@ public class CallAnalyserView extends ViewPart {
     private DateTime dateEnd;
     private DateTime timeEnd;
     private Button bInclInconclusive;
+    private Button btReport;
+    private Button bReport;
 
     
     private enum SortOrder{
@@ -733,6 +753,15 @@ public class CallAnalyserView extends ViewPart {
         fData.width = MIN_FIELD_WIDTH;
         bInclInconclusive.setLayoutData(fData);
         
+        bReport = new Button(cell2,SWT.PUSH);
+        bReport.setText(LB_REPORT);
+        fData = new FormData();
+        fData.left = new FormAttachment(bInclInconclusive, 2);
+        fData.right = new FormAttachment(100, 0);
+//        fData.width = MIN_FIELD_WIDTH;
+        bReport.setLayoutData(fData);
+        bReport.setEnabled(false);
+        
         // ------- table
         tableViewer = new TableViewer(frame, SWT.BORDER | SWT.FULL_SELECTION);
         fData = new FormData();
@@ -1118,10 +1147,86 @@ public class CallAnalyserView extends ViewPart {
                  widgetSelected(e);
              }
          });
+         bReport.addSelectionListener(new SelectionAdapter(){
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                generateReport();
+            }
+             
+         });
     }
 
+    private void generateReport() {
+        String aggregation = cPeriod.getText();
+        StringBuffer sb = new StringBuffer("report '").append(cDrive.getText()).append("; aggregation: ").append(aggregation).append("' do\n  author '").append(System.getProperty("user.name")).append( //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                        "'\n  date '").append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\n");
+        Node dsNode = callDataset.get(cDrive.getText());
+        sb.append("  ds=dataset('").append(dsNode.getProperty("name")).append("')\n");
+        sb
+                .append("  ca_root=find_first(ds,{'type'=>'call analysis root','call_type'=>'AGGREGATION_STATISTICS'},:CALL_ANALYSIS,:VIRTUAL_DATASET)\n");//$NON-NLS-1$
+        sb.append("  ").append(aggregation).append("=find_first(ca_root,{'name'=>'").append(aggregation).append("'},:CHILD)\n");//$NON-NLS-1$
+        for (AggregationStatisticsHeaders header : AggregationStatisticsHeaders.values()) {
+            Float threshold;
+            sb.append("  chart \"").append(header.getTitle()).append("\n").append(header.getComment());
+            if ((threshold = header.getThreshold()) != null)
+                sb.append("; threshold: ").append(threshold);//$NON-NLS-1$
+            sb.append("\" do |chart|\n");//$NON-NLS-1$
+            sb.append("    chart.data=select_properties [\"name\",\"time\"]  do\n");//$NON-NLS-1$
+            sb.append("      from do\n");//$NON-NLS-1$
+            sb.append("        root ").append(aggregation).append("\n");//$NON-NLS-1$
+            sb.append("        traverse :CHILD, :NEXT\n");//$NON-NLS-1$
+            sb.append("        depth :all\n");//$NON-NLS-1$
+            sb.append("        where {get_property(\"type\")==\"s_row\"}\n");//$NON-NLS-1$
+            sb.append("        select_properties \"value\" do\n");//$NON-NLS-1$
+            sb.append("          from do\n");//$NON-NLS-1$
+            sb.append("            traverse :CHILD, :NEXT\n");//$NON-NLS-1$
+            sb.append("            depth :all\n");//$NON-NLS-1$
+            sb.append("            stop_on {get_property(\"type\")==\"s_row\"}\n");//$NON-NLS-1$
+            sb
+                    .append("            where {get_property(\"type\")==\"s_cell\" and get_property(\"name\")==\"").append(header.getTitle()).append("\"}\n");//$NON-NLS-1$
+            sb.append("          end\n");//$NON-NLS-1$
+            sb.append("        end\n");//$NON-NLS-1$
+            sb.append("      end\n");//$NON-NLS-1$
+            sb.append("    end\n");//$NON-NLS-1$
+            sb.append("    chart.type=:combined\n");//$NON-NLS-1$
+            sb.append("    chart.aggregation=:").append(aggregation).append("\n");//$NON-NLS-1$
+            sb.append("    chart.time=\"time\"\n");//$NON-NLS-1$
+            sb.append("    chart.categories=\"name\"\n");//$NON-NLS-1$
+            sb.append("    chart.values=\"value\"\n");//$NON-NLS-1$
+            if (threshold != null)
+                sb.append("    chart.threshold=").append(threshold).append("\n");//$NON-NLS-1$
+            sb.append("  end\n");//$NON-NLS-1$
+        }
+        sb.append("end");
+        String aweProjectName = AWEProjectManager.getActiveProjectName();
+        IRubyProject rubyProject;
+        IFile file;
+        try {
+            rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, aweProjectName);
+            IProject project = rubyProject.getProject();
+            int i = 0;
+            while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) { //$NON-NLS-1$ //$NON-NLS-2$
+                i++;
+            }
+            LOGGER.debug("Report script:\n" + new String(sb.toString().getBytes("UTF-8"), "UTF-8")); //$NON-NLS-1$
+            InputStream is;
+
+            // is = new ByteArrayInputStream(sb.toString().getBytes());
+            is = new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
+            file.create(is, true, null);
+            // file.setCharset("UTF-8",null);
+            is.close();
+            getViewSite().getPage().openEditor(new FileEditorInput(file), "org.amanzi.awe.report.editor.ReportEditor"); //$NON-NLS-1$
+        } catch (Exception e) {
+            LOGGER.error(e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+    }
+
+
     /**
-     *start export job
+     * start export job
      */
     protected void startExport() {
         final IWorkbenchWindow window = getSite().getWorkbenchWindow();
@@ -1146,7 +1251,7 @@ public class CallAnalyserView extends ViewPart {
     }
 
     /**
-     *change start or end time
+     * change start or end time
      */
     protected void changeDate() {
         CallTimePeriods period = getTimePeriod();
@@ -1196,7 +1301,10 @@ public class CallAnalyserView extends ViewPart {
         }
         else {            
             if(callType.equals(StatisticsCallType.AGGREGATION_STATISTICS)){
+                bReport.setEnabled(true);
                 cProbe.setText(KEY_ALL);
+            }else{
+                bReport.setEnabled(false);
             }
             String probeName = cProbe.getText();
             formProbeCall(drive, callType);
