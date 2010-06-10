@@ -81,8 +81,6 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
     private Button bDown;
     private Button bBottom;
 
-    private int counter;
-
     private final List<RowWr> filterRules = new ArrayList<RowWr>();
 
     public PropertyFilterPage() {
@@ -480,9 +478,7 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
             super();
             this.operationCase = operationCase;
             this.dataset = dataset;
-            // this.property = property;
-            this.property = "" + counter++;
-
+             this.property = property;
         }
 
         /**

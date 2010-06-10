@@ -63,6 +63,7 @@ public class PropertyFilterModel {
             }
             result.clear();
             result.addAll(filtered);
+            filtered.clear();
         }
         return result;
     }
