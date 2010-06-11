@@ -87,6 +87,7 @@
     <module>org.amanzi.awe.report.o2</module>
     <module>org.amanzi.neo.data-generator</module>
     <module>org.amanzi.neo.loader.testing</module>
+    <module>org.amanzi.awe.views.calls.testing</module>
   </modules>
   <build>
     <plugins>	  
