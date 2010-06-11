@@ -240,7 +240,7 @@ public class ReuseAnalyserModel {
             Double max = null;
             propertyValue = null;
             if (select == Select.EXISTS) {
-                PropertyHeader header = new PropertyHeader(gisNode);
+                PropertyHeader header = new PropertyHeader(rootNode);
                 PropertyHeader.PropertyStatistics statistics = header.getPropertyStatistic(propertyName);
                 if (statistics != null) {
                     Pair<Double, Double> pair = statistics.getMinMax();
@@ -419,7 +419,7 @@ public class ReuseAnalyserModel {
                         break;
                 }
             } else if (typeOfGis == GisTypes.NETWORK || select == Select.EXISTS) {
-                travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, propertyReturnableEvalvator, NetworkRelationshipTypes.CHILD,
+                travers = rootNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, propertyReturnableEvalvator, NetworkRelationshipTypes.CHILD,
                         Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
                 monitor.subTask("Building results from database");
                 for (Node node : travers) {
