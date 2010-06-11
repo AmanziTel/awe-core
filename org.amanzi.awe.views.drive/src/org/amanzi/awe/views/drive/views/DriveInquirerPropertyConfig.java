@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -104,7 +105,9 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
 
         propertyListTable.setLabelProvider(new PropertyListLabelProvider());
 
-        propertySlipTable = CheckboxTableViewer.newCheckList(shell, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+//        propertySlipTable = CheckboxTableViewer.newCheckList(shell, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+        Table table = new Table(shell, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+        propertySlipTable = new CheckboxTableViewer(table);
         data = new GridData(SWT.FILL, SWT.FILL, true, true);
         data.horizontalSpan = 2;
         data.heightHint = 200;
@@ -151,6 +154,43 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
         addListeners();
         init();
         propertyListTable.setInput("");
+        loadSavedData();
+    }
+
+    /**
+     *
+     */
+    private void loadSavedData() {
+        Object[] savedProperties = null;
+        Transaction tx = NeoUtils.beginTransaction();
+        try {
+            Traverser tr = dataset.traverse(Order.BREADTH_FIRST, NeoUtils.getStopEvaluator(2), new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    Relationship rel = currentPos.lastRelationshipTraversed();
+                    return rel != null && rel.isType(GeoNeoRelationshipTypes.PROPERTIES);
+                }
+            }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
+
+            savedProperties = (Object[])tr.iterator().next().getProperty(INeoConstants.PROPERTY_NAME_SELECTED_PROPERTIES, null);
+            tx.success();
+        } catch (Exception ex) {
+            tx.failure();
+            NeoCorePlugin.error(null, ex);
+        } finally {
+            NeoUtils.finishTx(tx);
+        }
+        if (savedProperties != null)
+            for (Object savedProperty : savedProperties) {
+                for (String existProperty : propertyList) {
+                    if (existProperty.compareTo((String)savedProperty) == 0) {
+                        propertyListTable.setChecked(existProperty, true);
+                        break;
+                    }
+                }
+            }
+        updatePropertySlip();
     }
 
     /**
@@ -174,9 +214,10 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
             List<String> selectedList = new ArrayList<String>(selected.length);
             for (Object singleSelection : selected) {
                 selectedList.add((String)singleSelection);
+                propertyListTable.refresh();
             }
 
-            tr.iterator().next().setProperty("selected_propertis", selectedList.toArray(new String[0]));
+            tr.iterator().next().setProperty(INeoConstants.PROPERTY_NAME_SELECTED_PROPERTIES, selectedList.toArray(new String[0]));
 
             tx.success();
         } catch (Exception e) {
@@ -190,7 +231,6 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
     private void init() {
         propertyList.clear();
         propertyList = Arrays.asList(new PropertyHeader(dataset).getNumericFields());
-
     }
 
     private void addListeners() {
