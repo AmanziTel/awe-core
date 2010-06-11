@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
@@ -64,6 +63,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
 
     /** Header Index for Probe Network Dataset. */
     protected static final int PROBE_NETWORK_HEADER_INDEX = 2;
+    private static final long ERROR_MARK = -1l;
     /*
      * Timestamp Index for Calls
      */
@@ -126,19 +126,19 @@ public abstract class AbstractCallLoader extends DriveLoader {
         LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
 
         if (setupDuration<0) {
-            setIndexProperty(headers, callNode, CallProperties.SETUP_DURATION.getId(), Double.NaN);
+            setIndexProperty(headers, callNode, CallProperties.SETUP_DURATION.getId(), ERROR_MARK);
         }else{
             setIndexProperty(headers, callNode, CallProperties.SETUP_DURATION.getId(), setupDuration);
         }
         setIndexProperty(headers, callNode, CallProperties.CALL_TYPE.getId(), call.getCallType().toString());
         setIndexProperty(headers, callNode, CallProperties.CALL_RESULT.getId(), call.getCallResult().toString());
         if (callDuration<0) {
-            setIndexProperty(headers, callNode, CallProperties.CALL_DURATION.getId(), Double.NaN);
+            setIndexProperty(headers, callNode, CallProperties.CALL_DURATION.getId(), ERROR_MARK);
         }else{
             setIndexProperty(headers, callNode, CallProperties.CALL_DURATION.getId(), callDuration);
         }
         if (terminationDuration<0) {
-            setIndexProperty(headers, callNode, CallProperties.TERMINATION_DURATION.getId(), Double.NaN);
+            setIndexProperty(headers, callNode, CallProperties.TERMINATION_DURATION.getId(), ERROR_MARK);
         }else{
             setIndexProperty(headers, callNode, CallProperties.TERMINATION_DURATION.getId(), terminationDuration);
         }
@@ -170,23 +170,23 @@ public abstract class AbstractCallLoader extends DriveLoader {
 
         if (call.getCallType().equals(CallType.ALARM)) {
             if (receivedTime<0) {
-                setIndexProperty(headers, callNode, CallProperties.ALM_MESSAGE_DELAY.getId(), Double.NaN);
+                setIndexProperty(headers, callNode, CallProperties.ALM_MESSAGE_DELAY.getId(), ERROR_MARK);
             }else{
                 setIndexProperty(headers, callNode, CallProperties.ALM_MESSAGE_DELAY.getId(), receivedTime);
             }
             if (acknTime<0) {
-                setIndexProperty(headers, callNode, CallProperties.ALM_FIRST_MESS_DELAY.getId(), Double.NaN);
+                setIndexProperty(headers, callNode, CallProperties.ALM_FIRST_MESS_DELAY.getId(), ERROR_MARK);
             }else{
                 setIndexProperty(headers, callNode, CallProperties.ALM_FIRST_MESS_DELAY.getId(), acknTime);
             }
         } else {
             if (receivedTime<0) {
-                setIndexProperty(headers, callNode, CallProperties.MESS_RECEIVE_TIME.getId(), Double.NaN);
+                setIndexProperty(headers, callNode, CallProperties.MESS_RECEIVE_TIME.getId(), ERROR_MARK);
             }else{
                 setIndexProperty(headers, callNode, CallProperties.MESS_RECEIVE_TIME.getId(), receivedTime);
             }
             if (acknTime<0) {
-                setIndexProperty(headers, callNode, CallProperties.MESS_ACKNOWLEDGE_TIME.getId(), Double.NaN);
+                setIndexProperty(headers, callNode, CallProperties.MESS_ACKNOWLEDGE_TIME.getId(), ERROR_MARK);
             }else{
                 setIndexProperty(headers, callNode, CallProperties.MESS_ACKNOWLEDGE_TIME.getId(), acknTime);
             }
@@ -213,7 +213,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
         
         LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
         if (updateTime<0) {
-            setIndexProperty(headers, callNode, CallProperties.CALL_DURATION.getId(), Double.NaN);
+            setIndexProperty(headers, callNode, CallProperties.CALL_DURATION.getId(), ERROR_MARK);
         }else{
             setIndexProperty(headers, callNode, CallProperties.CALL_DURATION.getId(), updateTime);
         }
@@ -240,7 +240,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
         setIndexProperty(headers, callNode, CallProperties.CALL_RESULT.getId(), call.getCallResult().toString());
         Long handoverTime = call.getHandoverTime();
         if (handoverTime==null||handoverTime<0) {
-            setIndexProperty(headers, callNode, CallProperties.CC_HANDOVER_TIME.getId(), Double.NaN);
+            setIndexProperty(headers, callNode, CallProperties.CC_HANDOVER_TIME.getId(), ERROR_MARK);
         }else{
             setIndexProperty(headers, callNode, CallProperties.CC_HANDOVER_TIME.getId(), handoverTime);
         }
@@ -263,7 +263,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
         setIndexProperty(headers, callNode, CallProperties.CALL_RESULT.getId(), call.getCallResult().toString());
         Long reselectionTime = call.getReselectionTime();
         if (reselectionTime==null||reselectionTime<0) {
-            setIndexProperty(headers, callNode, CallProperties.CC_RESELECTION_TIME.getId(), Double.NaN);
+            setIndexProperty(headers, callNode, CallProperties.CC_RESELECTION_TIME.getId(), ERROR_MARK);
         }else{
             setIndexProperty(headers, callNode, CallProperties.CC_RESELECTION_TIME.getId(), reselectionTime);
         }
