@@ -21,6 +21,7 @@ import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.database.nodes.StatisticSelectionNode;
 import org.amanzi.neo.core.enums.CallProperties;
+import org.amanzi.neo.core.enums.ColoredFlags;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
@@ -228,5 +229,16 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
             }
         }
         return result;
+    }
+    
+    @Override
+    public String getImageKey() {
+        if (type.equals(NodeTypes.S_CELL.getId())) {
+            ColoredFlags flag = ColoredFlags.getFlagById((String)node.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, ColoredFlags.NONE.getId()));
+            if(!flag.equals(ColoredFlags.NONE)){
+                return getType()+"_"+flag.getId();
+            }
+        }
+        return super.getImageKey();
     }
 }

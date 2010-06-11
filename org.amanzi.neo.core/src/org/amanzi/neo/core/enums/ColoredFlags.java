@@ -11,36 +11,38 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.calls.enums;
+package org.amanzi.neo.core.enums;
 
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 
 /**
  * <p>
- * Flag for statistics.
+ * Colored flags (use in statistics).
  * </p>
  * @author Shcharbatsevich_A
  * @since 1.0.0
  */
-public enum StatisticsFlags {
-
-    RED("red",5, new Color(Display.getCurrent(), 255, 0, 0)),
-    YELLOW("yellow",0, new Color(Display.getCurrent(), 255, 255, 0)),
-    NONE("none",-1, null);
+public enum ColoredFlags {
+    
+    RED("red",5, new Color(Display.getCurrent(), 255, 0, 0), java.awt.Color.red.getRGB()),
+    YELLOW("yellow",0, new Color(Display.getCurrent(), 255, 255, 0), java.awt.Color.yellow.getRGB()),
+    NONE("none",-1, null,-1);
     private String id;
     private Color color;
     private int order;
+    private int rgb;
     
     /**
      * Constructor.
      * @param id
      * @param color
      */
-    private StatisticsFlags(String id, int order, Color color) {
+    private ColoredFlags(String id, int order, Color color, int rgb) {
         this.id = id;
         this.color = color;
         this.order = order;
+        this.rgb = rgb;
     }
     
     /**
@@ -65,17 +67,25 @@ public enum StatisticsFlags {
     }
     
     /**
+     * @return Returns the rgb.
+     */
+    public int getRgb() {
+        return rgb;
+    }
+    
+    /**
      * Returns flag by id.
      *
      * @param id String
      * @return StatisticsFlags
      */
-    public static StatisticsFlags getFlagById(String id){
-        for(StatisticsFlags flag : values()){
+    public static ColoredFlags getFlagById(String id){
+        for(ColoredFlags flag : values()){
             if(flag.id.equals(id)){
                 return flag;
             }
         }
         return null;
     }
+
 }

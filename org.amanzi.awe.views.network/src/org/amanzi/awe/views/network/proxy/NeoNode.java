@@ -146,6 +146,16 @@ public class NeoNode {
     }
     
     /**
+     * Returns key for get Image.
+     *
+     * @return String
+     */
+    
+    public String getImageKey() {
+        return getType();
+    }
+    
+    /**
      * Returns the Node
      *
      * @return node

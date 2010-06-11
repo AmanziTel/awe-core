@@ -36,7 +36,6 @@ import org.amanzi.awe.views.calls.enums.AggregationCallTypes;
 import org.amanzi.awe.views.calls.enums.AggregationStatisticsHeaders;
 import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
-import org.amanzi.awe.views.calls.enums.StatisticsFlags;
 import org.amanzi.awe.views.calls.enums.StatisticsType;
 import org.amanzi.awe.views.calls.statistics.CallStatistics;
 import org.amanzi.awe.views.calls.statistics.CallStatisticsInconclusive;
@@ -46,6 +45,7 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.services.events.ShowPreparedViewEvent;
 import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.core.enums.CallProperties;
+import org.amanzi.neo.core.enums.ColoredFlags;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
@@ -1622,7 +1622,7 @@ public class CallAnalyserView extends ViewPart {
     public static class PeriodWrapper {
         private final Node sRow;
         private Map<IStatisticsHeader, String> mappedValue = new HashMap<IStatisticsHeader, String>();
-        private Map<IStatisticsHeader, StatisticsFlags> flaggedValue = new HashMap<IStatisticsHeader, StatisticsFlags>();
+        private Map<IStatisticsHeader, ColoredFlags> flaggedValue = new HashMap<IStatisticsHeader, ColoredFlags>();
         private String host;
         private String probeF = "";
         private String probeLA = "";
@@ -1646,7 +1646,7 @@ public class CallAnalyserView extends ViewPart {
                 if (header != null) {                   
                     Object value = node.getProperty(INeoConstants.PROPERTY_VALUE_NAME, null);
                     mappedValue.put(header, getFormattedValue(value, header));
-                    StatisticsFlags flag = StatisticsFlags.getFlagById((String)node.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, StatisticsFlags.NONE.getId()));
+                    ColoredFlags flag = ColoredFlags.getFlagById((String)node.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, ColoredFlags.NONE.getId()));
                     flaggedValue.put(header, flag);
                 }
             }
@@ -1705,8 +1705,8 @@ public class CallAnalyserView extends ViewPart {
             if(header==null){
                 return color;
             }
-            StatisticsFlags flagged = flaggedValue.get(header);
-            if(flagged==null||flagged.equals(StatisticsFlags.NONE)){
+            ColoredFlags flagged = flaggedValue.get(header);
+            if(flagged==null||flagged.equals(ColoredFlags.NONE)){
                 return color;
             }
             return flagged.getColor();

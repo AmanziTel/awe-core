@@ -49,7 +49,7 @@ public class DriveTreeLabelProvider extends LabelProvider {
             return manager.getImage(IconManager.NEO_ROOT);
         }
         else if (element instanceof NeoNode) {
-            return manager.getImage(((NeoNode)element).getType());
+            return manager.getImage(((NeoNode)element).getImageKey());
         }
         return null;
     }

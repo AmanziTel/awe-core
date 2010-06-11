@@ -42,6 +42,7 @@ import org.amanzi.awe.views.reuse.Select;
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.enums.ColoredFlags;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
@@ -1877,6 +1878,10 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
                         try {
                             Integer valueToSave = color == null ? null : color.getRGB();
                             if (valueToSave == null) {
+                                ColoredFlags flag = ColoredFlags.getFlagById((String)node.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, ColoredFlags.NONE.getId()));
+                                if(!flag.equals(ColoredFlags.NONE)){
+                                    node.setProperty(INeoConstants.AGGREGATION_COLOR, flag.getRgb());
+                                }
                                 node.removeProperty(INeoConstants.AGGREGATION_COLOR);
                             } else {
                                 node.setProperty(INeoConstants.AGGREGATION_COLOR, valueToSave);

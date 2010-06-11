@@ -24,10 +24,10 @@ import org.amanzi.awe.views.calls.enums.AggregationStatisticsHeaders;
 import org.amanzi.awe.views.calls.enums.IAggrStatisticsHeaders;
 import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
-import org.amanzi.awe.views.calls.enums.StatisticsFlags;
 import org.amanzi.awe.views.calls.enums.StatisticsType;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.CallProperties;
+import org.amanzi.neo.core.enums.ColoredFlags;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
@@ -367,25 +367,36 @@ public class AggregationCallStatisticsBuilder {
     }
     
     private void setFlags(AggregationStatisticsHeaders header, Number value, Node cell, List<Node> sources){
-        StatisticsFlags flag = header.getFlagByStatValue(value);        
+        ColoredFlags flag = header.getFlagByStatValue(value);        
         cell.setProperty(INeoConstants.PROPERTY_FLAGGED_NAME, flag.getId());
         for(Node source : sources){
-            StatisticsFlags beforeFlag = StatisticsFlags.getFlagById((String)source.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, StatisticsFlags.NONE.getId()));
+            ColoredFlags beforeFlag = ColoredFlags.getFlagById((String)source.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, ColoredFlags.NONE.getId()));
             if (beforeFlag==null||beforeFlag.getOrder()<flag.getOrder()){
                 source.setProperty(INeoConstants.PROPERTY_FLAGGED_NAME, flag.getId());
             }
-            if(!flag.equals(StatisticsFlags.NONE)){
+            if(!flag.equals(ColoredFlags.NONE)){
                 Traverser calls = source.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {                    
                     @Override
                     public boolean isReturnableNode(TraversalPosition currentPos) {
                         return NeoUtils.isCallNode(currentPos.currentNode());
                     }
-                }, GeoNeoRelationshipTypes.SOURCE,Direction.OUTGOING, GeoNeoRelationshipTypes.SOURCE,Direction.OUTGOING);
+                }, GeoNeoRelationshipTypes.SOURCE,Direction.OUTGOING);
                 for(Node call : calls){
-                    StatisticsFlags callFlag = header.getFlagByCall(call);
-                    beforeFlag = StatisticsFlags.getFlagById((String)call.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, StatisticsFlags.NONE.getId()));
+                    ColoredFlags callFlag = header.getFlagByCall(call);
+                    beforeFlag = ColoredFlags.getFlagById((String)call.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, ColoredFlags.NONE.getId()));
                     if (beforeFlag==null||beforeFlag.getOrder()<callFlag.getOrder()){
                         call.setProperty(INeoConstants.PROPERTY_FLAGGED_NAME, flag.getId());
+                        Traverser events = call.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, 
+                                new ReturnableEvaluator() {                            
+                                    @Override
+                                    public boolean isReturnableNode(TraversalPosition currentPos) {
+                                        return NeoUtils.isDriveMNode(currentPos.currentNode());
+                                    }
+                                }, ProbeCallRelationshipType.CALL_M, Direction.OUTGOING);
+                        for(Node m : events){
+                            m.setProperty(INeoConstants.AGGREGATION_COLOR, flag.getRgb());
+                            m.setProperty(INeoConstants.PROPERTY_FLAGGED_NAME, flag.getId());
+                        }
                     }
                 }
             }

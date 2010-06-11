@@ -33,6 +33,7 @@ import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -1230,35 +1231,11 @@ public class MessageAndEventTableView extends ViewPart {
      * @param dataset
      * @return String
      */
-    private String getMemKey(String dataset) {        
-        String memKey = dataset.replace(" ","_");
-        memKey = memKey.replace(".","_");
-        memKey = memKey.replace(",","_");
-        memKey = memKey.replace("%","_");
-        memKey = memKey.replace("/","_");
-        memKey = memKey.replace("\\","_");
-        memKey = memKey.replace("+","_");
-        memKey = memKey.replace("-","_");
-        memKey = memKey.replace("=","_");
-        memKey = memKey.replace("(","_");
-        memKey = memKey.replace(")","_");
-        memKey = memKey.replace("!","_");
-        memKey = memKey.replace("\"","_");
-        memKey = memKey.replace("#","_");
-        memKey = memKey.replace("$","_");
-        memKey = memKey.replace("^","_");
-        memKey = memKey.replace("&","_");
-        memKey = memKey.replace("*","_");
-        memKey = memKey.replace("<","_");
-        memKey = memKey.replace(">","_");
-        memKey = memKey.replace("?","_");
-        memKey = memKey.replace("{","_");
-        memKey = memKey.replace("}","_");
-        memKey = memKey.replace("[","_");
-        memKey = memKey.replace("]","_");
-        memKey = memKey.replace("~","_");
-        memKey = memKey.replace("|","_");
-        return memKey;
+    private String getMemKey(String dataset) {   
+        String result = StringEscapeUtils.escapeXml(dataset);
+        result = result.replace(" ", "_");
+        result = result.replace("+", "_");
+        return result;
     }
     
     @Override

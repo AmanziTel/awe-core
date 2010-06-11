@@ -42,7 +42,7 @@ public class CallStatisticsUtills {
     public static Float getCallConnectionTime(Node callNode){
         Object property = callNode.getProperty(CallProperties.SETUP_DURATION.getId(),null);
         Long connectionTime = (property==null||property.equals(Double.NaN))?null:(Long)property;        
-        return connectionTime==null?null:(float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
+        return connectionTime==null||connectionTime<0?null:(float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
     }
     
     /**
@@ -54,7 +54,7 @@ public class CallStatisticsUtills {
     public static Float getCallDurationTime(Node callNode){
         Object property = callNode.getProperty(CallProperties.CALL_DURATION.getId(),null);
         Long connectionTime = (property==null||property.equals(Double.NaN))?null:(Long)property; 
-        return connectionTime==null?null:((float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR);
+        return connectionTime==null||connectionTime<0?null:((float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR);
     }
     
     /**
@@ -66,7 +66,7 @@ public class CallStatisticsUtills {
     public static Float getCallTerminationTime(Node callNode){
         Object property = callNode.getProperty(CallProperties.TERMINATION_DURATION.getId(),null);
         Long connectionTime = (property==null||property.equals(Double.NaN))?null:(Long)property;
-        return connectionTime==null?null:(float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
+        return connectionTime==null||connectionTime<0?null:(float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
     }
     
     /**
@@ -78,7 +78,7 @@ public class CallStatisticsUtills {
     public static Float getCallHandoverTime(Node callNode){
         Object property = callNode.getProperty(CallProperties.CC_HANDOVER_TIME.getId(),null);
         Long connectionTime = (property==null||property.equals(Double.NaN))?null:(Long)property;
-        return connectionTime==null?null:(float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
+        return connectionTime==null||connectionTime<0?null:(float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
     }
     
     /**
@@ -90,7 +90,7 @@ public class CallStatisticsUtills {
     public static Float getCallReselectionTime(Node callNode){
         Object property = callNode.getProperty(CallProperties.CC_RESELECTION_TIME.getId(),null);
         Long connectionTime = (property==null||property.equals(Double.NaN))?null:(Long)property;
-        return connectionTime==null?null:(float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
+        return connectionTime==null||connectionTime<0?null:(float)connectionTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
     }
     
     /**
@@ -123,7 +123,7 @@ public class CallStatisticsUtills {
     public static Float getMessageReceiveTime(Node callNode){
         Object property = callNode.getProperty(CallProperties.MESS_RECEIVE_TIME.getId(),null);
         Long receiveTime = (property==null||property.equals(Double.NaN))?null:(Long)property;
-        return receiveTime==null?null:(float)receiveTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
+        return receiveTime==null||receiveTime<0?null:(float)receiveTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
     }
     
     /**
@@ -135,7 +135,7 @@ public class CallStatisticsUtills {
     public static Float getMessageAcknowledgeTime(Node callNode){
         Object property = callNode.getProperty(CallProperties.MESS_ACKNOWLEDGE_TIME.getId(),null);
         Long receiveTime = (property==null||property.equals(Double.NaN))?null:(Long)property;
-        return receiveTime==null?null:(float)receiveTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
+        return receiveTime==null||receiveTime<0?null:(float)receiveTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
     }
     
     /**
@@ -147,7 +147,7 @@ public class CallStatisticsUtills {
     public static Float getMessageDelayTime(Node callNode){
         Object property = callNode.getProperty(CallProperties.ALM_MESSAGE_DELAY.getId(),null);
         Long receiveTime = (property==null||property.equals(Double.NaN))?null:(Long)property;
-        return receiveTime==null?null:(float)receiveTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
+        return receiveTime==null||receiveTime<0?null:(float)receiveTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
     }
     
     /**
@@ -159,7 +159,7 @@ public class CallStatisticsUtills {
     public static Float getFirstMessageDelayTime(Node callNode){
         Object property = callNode.getProperty(CallProperties.ALM_FIRST_MESS_DELAY.getId(),null);
         Long receiveTime = (property==null||property.equals(Double.NaN))?null:(Long)property;
-        return receiveTime==null?null:(float)receiveTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
+        return receiveTime==null||receiveTime<0?null:(float)receiveTime / ICallStatisticsConstants.MILLISECONDS_FACTOR;
     }
     
     /**

@@ -16,6 +16,7 @@ import java.util.ArrayList;
 
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.ColoredFlags;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
@@ -90,6 +91,17 @@ public class DriveNeoNode extends NeoNode {
                ((isFileNode() || isDatasetNode() || isDirectoryNode()) && 
                node.hasRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) ||  
                node.hasRelationship(ProbeCallRelationshipType.CALL_M, Direction.OUTGOING);
+    }
+    
+    @Override
+    public String getImageKey() {
+        if (NeoUtils.isCallNode(node)) {
+            ColoredFlags flag = ColoredFlags.getFlagById((String)node.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, ColoredFlags.NONE.getId()));
+            if(!flag.equals(ColoredFlags.NONE)){
+                return getType()+"_"+flag.getId();
+            }
+        }
+        return super.getImageKey();
     }
 
     /**
