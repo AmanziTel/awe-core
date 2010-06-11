@@ -82,9 +82,9 @@ public class GroupCallXmlDataGenerator extends CallXmlDataGenerator{
         Long sConTime = start+setupDuration;
         Long end = start+callDuration;
         
-        Long setupTime = getRamdomTime(start, sConTime);
-        Long discTime = getRamdomTime(sConTime, end);
-        Long sRelTime = getRamdomTime(discTime, end);
+        Long setupTime = CallGeneratorUtils.getRamdomTime(start, sConTime);
+        Long discTime = CallGeneratorUtils.getRamdomTime(sConTime, end);
+        Long sRelTime = CallGeneratorUtils.getRamdomTime(discTime, end);
         
         CallXmlData result = new CallXmlData(getKey(), sourceProbe, receiverProbes);
         SavedTag rootTag = getRootTag();
@@ -95,7 +95,7 @@ public class GroupCallXmlDataGenerator extends CallXmlDataGenerator{
         Long time = startHour;
         for(Probe probe : allProbes){
             eventsTag = getEventsTag();
-            time = getRamdomTime(time, start);
+            time = CallGeneratorUtils.getRamdomTime(time, start);
             eventsTag.addInnerTag(getGroupAttachTag(probe, groupNumber, time));
             rootTag.addInnerTag(eventsTag);
         }
@@ -105,10 +105,10 @@ public class GroupCallXmlDataGenerator extends CallXmlDataGenerator{
         eventsTag = getEventsTag();
         boolean setEnd = false;
         for (Probe receiverProbe : receiverProbes) {
-            Long indicTime = getRamdomTime(sConTime, sRelTime);
-            Long ansTime = getRamdomTime(indicTime, sRelTime);
-            Long rConTime = getRamdomTime(ansTime, sRelTime);
-            Long relTime = setEnd?getRamdomTime(sRelTime, end):end;
+            Long indicTime = CallGeneratorUtils.getRamdomTime(sConTime, sRelTime);
+            Long ansTime = CallGeneratorUtils.getRamdomTime(indicTime, sRelTime);
+            Long rConTime = CallGeneratorUtils.getRamdomTime(ansTime, sRelTime);
+            Long relTime = setEnd?CallGeneratorUtils.getRamdomTime(sRelTime, end):end;
             eventsTag.addInnerTag(getTtcTag(sourceProbe, receiverProbe, true, call,1,1,1, indicTime, ansTime, rConTime, relTime, endHour));
             setEnd = true;
         }

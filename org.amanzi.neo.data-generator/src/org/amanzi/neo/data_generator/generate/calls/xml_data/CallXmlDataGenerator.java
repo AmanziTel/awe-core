@@ -37,7 +37,6 @@ public abstract class CallXmlDataGenerator extends AmsXmlDataGenerator{
     private static final String TOC_TAG_NAME = "toc";
     private static final String TTC_TAG_NAME = "ttc";
     
-    protected static final String TAG_PR_PROBE_ID = "probeID";
     private static final String TAG_PR_CALLED_NUMBER = "calledNumber";
     private static final String TAG_PR_HOOK = "hook";
     private static final String TAG_PR_SIMPLEX = "simplex"; 
@@ -127,7 +126,7 @@ public abstract class CallXmlDataGenerator extends AmsXmlDataGenerator{
         List<Integer> audioDelays = (List<Integer>)call.getParameter(CallParameterNames.AUDIO_DELAY+probe.getName());
         Long time = start;
         for(int i=0; i<audioQuals.size(); i++){
-            time = getRamdomTime(time, end);
+            time = CallGeneratorUtils.getRamdomTime(time, end);
             float audioQual = audioQuals.get(i);
             int audioDelay = audioDelays.get(i);
             SavedTag pesq = new SavedTag(PESQ_TAG_NAME, false);

@@ -71,34 +71,34 @@ public abstract class MessageDataGenerator extends AmsDataGenerator{
         for(Call call : calls){
             Long start = call.getStartTime();
             if(source==null||receiver==null){
-                time = getRamdomTime(time, start);
+                time = CallGeneratorUtils.getRamdomTime(time, start);
                 source = getNewProbeData(time, sourceNum);
                 sourceCommands = source.getCommands();
-                time = getRamdomTime(time, start);
+                time = CallGeneratorUtils.getRamdomTime(time, start);
                 receiver = getNewProbeData(time, recNum);
                 receiverCommands = receiver.getCommands();
                 callData = new CallData(getKey(),source, receiver);
             }
             Long duration = (Long)call.getParameter(CallParameterNames.DURATION_TIME);
             Long acknowledge = (Long)call.getParameter(CallParameterNames.ACKNOWLEDGE_TIME);
-            time = getRamdomTime(time, start);
+            time = CallGeneratorUtils.getRamdomTime(time, start);
             sourceCommands.add(CommandCreator.getAtCciRow(time));
             CommandRow sourceCci = CommandCreator.getCciRow(networkIdentity,sourceInfo.getLocalAria(),sourceInfo.getFrequency());
             sourceCommands.add(CommandCreator.getAtCciRow(time,sourceCci));
             
-            time = getRamdomTime(time, start);
+            time = CallGeneratorUtils.getRamdomTime(time, start);
             receiverCommands.add(CommandCreator.getAtCciRow(time));
             CommandRow receiverCci = CommandCreator.getCciRow(networkIdentity,recInfo.getLocalAria(),recInfo.getFrequency());
             receiverCommands.add(CommandCreator.getAtCciRow(time,receiverCci));
             
-            time = getRamdomTime(time, start);
+            time = CallGeneratorUtils.getRamdomTime(time, start);
             
             CommandRow ctsdsRow = CommandCreator.getCtsdsRow(time,aiService,0,0,0,0);
             sourceCommands.add(ctsdsRow);
-            time = getRamdomTime(time, start);
+            time = CallGeneratorUtils.getRamdomTime(time, start);
             sourceCommands.add(CommandCreator.getCtsdsRow(time,ctsdsRow));
             
-            time = getRamdomTime(time, start);
+            time = CallGeneratorUtils.getRamdomTime(time, start);
             String message = call.getParameter(CallParameterNames.MESSAGE).toString();
             CommandRow atCmgs = CommandCreator.getCmgsRow(time, recInfo.getPhoneNumber(), message);
             sourceCommands.add(atCmgs);

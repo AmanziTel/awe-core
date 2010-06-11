@@ -196,4 +196,30 @@ public class CallGeneratorUtils {
         return result;
     }
     
+    public static Call createITSICall(Long startBorder, Long endBorder, int priority){
+        Long duration = getRamdomTime(CallConstants.ITSI_DURATION_BORDERS[0], CallConstants.ITSI_DURATION_BORDERS[1]);
+        Long start = getRamdomTime(startBorder, endBorder-duration/2);
+        Call call = CallGeneratorUtils.getEmptyCall(start,priority);
+        call.addParameter(CallParameterNames.DURATION_TIME, duration);
+        return call;
+    }
+    
+    /**
+     * Returns random time in interval.
+     *
+     * @param start Long
+     * @param end Long
+     * @return Long
+     */
+    public static Long getRamdomTime(Long start, Long end) {
+        if(start.equals(end)){
+            return start;
+        }
+        Long time = getRandomGenerator().getLongValue(start, end);
+        while((start-end>1)&&(time.equals(start)||time.equals(end))){
+            time = getRandomGenerator().getLongValue(start, end);
+        }
+        return time;
+    }
+    
 }

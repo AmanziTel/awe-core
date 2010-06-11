@@ -33,5 +33,7 @@ public class CallConstants {
     public static final float[] GR_AUDIO_QUAL_BORDERS = new float[]{-0.5f,4.5f};
     public static final int[] GR_AUDIO_DELAY_BORDERS = new int[]{1,1000};
     public static final float GR_CALL_DURATION_TIME = 20;
+    
+    public static final Long[] ITSI_DURATION_BORDERS = new Long[]{10L,CallGeneratorUtils.MILLISECONDS*50L};
 
 }

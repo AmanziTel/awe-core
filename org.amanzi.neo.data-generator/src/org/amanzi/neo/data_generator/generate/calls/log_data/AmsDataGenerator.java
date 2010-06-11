@@ -164,24 +164,6 @@ public abstract class AmsDataGenerator extends CallStatisticsDataGenerator{
      * @return Integer
      */
     protected abstract Integer getCallPriority();
-
-    /**
-     * Returns random time in interval.
-     *
-     * @param start Long
-     * @param end Long
-     * @return Long
-     */
-    protected Long getRamdomTime(Long start, Long end) {
-        if(start.equals(end)){
-            return start;
-        }
-        Long time = getRandomGenerator().getLongValue(start, end);
-        while((start-end>1)&&(time.equals(start)||time.equals(end))){
-            time = getRandomGenerator().getLongValue(start, end);
-        }
-        return time;
-    }
     
     /**
      * Initialize new probe data.

@@ -66,22 +66,22 @@ public class IndividualCallsGenerator extends CallDataGenerator {
         Integer sourceNum = group.getSourceProbe();
         List<Integer> receiverNums = group.getReceiverProbes();
         
-        Long time = getRamdomTime(startHour, start);
+        Long time = CallGeneratorUtils.getRamdomTime(startHour, start);
         ProbeData source = getNewProbeData(time, sourceNum);
         Probe sourceInfo = probes.get(sourceNum-1);
-        time = getRamdomTime(time, start);
+        time = CallGeneratorUtils.getRamdomTime(time, start);
         Integer receiverNum = receiverNums.get(0);
         ProbeData receiver = getNewProbeData(start, receiverNum);
         Probe receiverInfo = probes.get(receiverNum-1);
         List<CommandRow> sourceCommands = source.getCommands();
         List<CommandRow> receiverCommands = receiver.getCommands();
         
-        time = getRamdomTime(time, start);
+        time = CallGeneratorUtils.getRamdomTime(time, start);
         sourceCommands.add(CommandCreator.getAtCciRow(time));
         CommandRow sourceCci = CommandCreator.getCciRow(networkIdentity,sourceInfo.getLocalAria(),sourceInfo.getFrequency());
         sourceCommands.add(CommandCreator.getAtCciRow(time,sourceCci));
         
-        time = getRamdomTime(time, start);
+        time = CallGeneratorUtils.getRamdomTime(time, start);
         receiverCommands.add(CommandCreator.getAtCciRow(time));
         CommandRow receiverCci = CommandCreator.getCciRow(networkIdentity,receiverInfo.getLocalAria(),receiverInfo.getFrequency());
         receiverCommands.add(CommandCreator.getAtCciRow(time,receiverCci));
@@ -89,29 +89,29 @@ public class IndividualCallsGenerator extends CallDataGenerator {
         
         CommandRow ctsdcRow = CommandCreator.getCtsdcRow(start,0,0,0,0,0,0,0,1,0,0);
         sourceCommands.add(ctsdcRow);
-        time = getRamdomTime(0L, setupDuration);
+        time = CallGeneratorUtils.getRamdomTime(0L, setupDuration);
         sourceCommands.add(CommandCreator.getCtsdcRow(start+time,ctsdcRow));
-        time = getRamdomTime(time, setupDuration);
+        time = CallGeneratorUtils.getRamdomTime(time, setupDuration);
         CommandRow atdRow = CommandCreator.getAtdRow(start+time, receiver.getNumber());
         sourceCommands.add(atdRow);
         
         
-        time = getRamdomTime(time, setupDuration);
+        time = CallGeneratorUtils.getRamdomTime(time, setupDuration);
         CommandRow ctocp1 = CommandCreator.getCtocpRow(start+time);
         
-        time = getRamdomTime(time, setupDuration);
+        time = CallGeneratorUtils.getRamdomTime(time, setupDuration);
         receiverCommands.add(CommandCreator.getCticnRow(start+time,"0"+source.getNumber()));
-        time = getRamdomTime(time, setupDuration);
+        time = CallGeneratorUtils.getRamdomTime(time, setupDuration);
         CommandRow ataRow = CommandCreator.getAtaRow(start+time);
         receiverCommands.add(ataRow);
         
         
-        time = getRamdomTime(time, setupDuration);
+        time = CallGeneratorUtils.getRamdomTime(time, setupDuration);
         CommandRow ctocp2 = CommandCreator.getCtocpRow(start+time);
         CommandRow ctcc = CommandCreator.getCtccRow(null,1,0,0,0,0,0,1);
         sourceCommands.add(CommandCreator.getAtdRow(atdRow,ctocp1,ctocp2,ctcc));
         
-        time = getRamdomTime(time, setupDuration);
+        time = CallGeneratorUtils.getRamdomTime(time, setupDuration);
         Long end = start+setupDuration;
         ctcc = CommandCreator.getCtccRow(end,1,0,0,0,0,0,1);
         receiverCommands.add(CommandCreator.getAtaRow(ataRow, ctcc));
@@ -128,18 +128,18 @@ public class IndividualCallsGenerator extends CallDataGenerator {
         if(rest<0){
             rest = CallGeneratorUtils.HOUR;
         }
-        time = getRamdomTime(0L, rest);
+        time = CallGeneratorUtils.getRamdomTime(0L, rest);
         Long time1 = time;
         List<Float> audioQuals = (List<Float>)call.getParameter(CallParameterNames.AUDIO_QUALITY+group.getSourceName());
         for(Float quality : audioQuals){
             sourceCommands.add(CommandCreator.getPESQRow(end+time1,quality));
-            time1 = getRamdomTime(time1, rest);
+            time1 = CallGeneratorUtils.getRamdomTime(time1, rest);
         }
         time1 = time;
         audioQuals = (List<Float>)call.getParameter(CallParameterNames.AUDIO_QUALITY+group.getReceiverNames().get(0));
         for(Float quality : audioQuals){   
             receiverCommands.add(CommandCreator.getPESQRow(end+time1,quality));
-            time1 = getRamdomTime(time1, rest);
+            time1 = CallGeneratorUtils.getRamdomTime(time1, rest);
         }
         
         CallData callData = new CallData(getKey(),source, receiver);

@@ -37,7 +37,6 @@ import org.amanzi.neo.data_generator.utils.call.CommandCreator;
 public class ITSIAttachDataGenerator extends AmsDataGenerator {
     
     private static final String PAIR_DIRECTORY_POSTFIX = "ITSI-Attach";
-    private static final Long[] DURATION_BORDERS = new Long[]{10L,CallGeneratorUtils.MILLISECONDS*50L};
 
     /**
      * @param aDirectory
@@ -63,25 +62,25 @@ public class ITSIAttachDataGenerator extends AmsDataGenerator {
         Long startHour = getStartOfHour(hour);
         Long start = call.getStartTime();
         Long duration = (Long)call.getParameter(CallParameterNames.DURATION_TIME);
-        Long time = getRamdomTime(startHour, start);
+        Long time = CallGeneratorUtils.getRamdomTime(startHour, start);
         ProbeData source = getNewProbeData(time, sourceNum);
         List<CommandRow> sourceCommands = source.getCommands();
-        time = getRamdomTime(time, start);
+        time = CallGeneratorUtils.getRamdomTime(time, start);
         sourceCommands.add(CommandCreator.getAtCciRow(time));
         Integer la = sourceInfo.getLocalAria();
         CommandRow cci = CommandCreator.getCciRow(networkIdentity, la, sourceInfo.getFrequency());
         String mni = cci.getParams().get(0).toString();
-        time = getRamdomTime(time, start);
+        time = CallGeneratorUtils.getRamdomTime(time, start);
         sourceCommands.add(CommandCreator.getAtCciRow(time, cci));
-        time = getRamdomTime(time, start);
+        time = CallGeneratorUtils.getRamdomTime(time, start);
         sourceCommands.add(CommandCreator.getCsprtRow(time, true));
-        time = getRamdomTime(time, start);
+        time = CallGeneratorUtils.getRamdomTime(time, start);
         sourceCommands.add(CommandCreator.getCsprtRow(time, false));
-        time = getRamdomTime(time, start);
+        time = CallGeneratorUtils.getRamdomTime(time, start);
         sourceCommands.add(CommandCreator.getCregRow(time));        
         sourceCommands.add(CommandCreator.getCregRow(start, "+CME ERROR: 3"));
       
-        time = getRamdomTime(0L, duration);
+        time = CallGeneratorUtils.getRamdomTime(0L, duration);
         sourceCommands.add(CommandCreator.getCregRow(start+time));
         Long end = start+duration;
         sourceCommands.add(CommandCreator.getCregRow(end, CommandCreator.getCregRow(mni,la)));
@@ -95,26 +94,19 @@ public class ITSIAttachDataGenerator extends AmsDataGenerator {
     protected List<CallData> buildCalls(CallGroup group) {
         List<CallData> calls = new ArrayList<CallData>();
         int hours = getHours();
+        int priority = getCallPriority();
         int callsCount = getCalls();
         int callVariance = getCallVariance();
         for(int i = 0; i<hours; i++){
+            Long startBorder = getStartOfHour(i);
+            Long endBorder = getStartOfHour(i+1);
             int currCallCount = callsCount + RandomValueGenerator.getGenerator().getIntegerValue(-callVariance, callVariance);
-            for(int j = 0; j<currCallCount; j++){                
-                CallData call = buildCallCommands(group, i, createCall(i));
+            for(int j = 0; j<currCallCount; j++){                 
+                CallData call = buildCallCommands(group, i, CallGeneratorUtils.createITSICall(startBorder, endBorder, priority));
                 calls.add(call);
             }
         }
         return calls;
-    }
-    
-    private Call createCall(Integer hour){
-        Long duration = getRamdomTime(DURATION_BORDERS[0], DURATION_BORDERS[1]);
-        Long startOfHour = getStartOfHour(hour);
-        Long endOfHour = getStartOfHour(hour+1);
-        Long start = getRamdomTime(startOfHour, endOfHour-duration/2);
-        Call call = CallGeneratorUtils.getEmptyCall(start,getCallPriority());
-        call.addParameter(CallParameterNames.DURATION_TIME, duration);
-        return call;
     }
 
     @Override
