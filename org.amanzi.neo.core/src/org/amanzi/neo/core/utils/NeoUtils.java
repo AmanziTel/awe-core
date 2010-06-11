@@ -233,6 +233,16 @@ public class NeoUtils {
     public static boolean isDatasetNode(Node node) {
         return node != null && NodeTypes.DATASET.getId().equals(getNodeType(node, ""));
     }
+    
+    /**
+     * check node by type.
+     * 
+     * @param node node
+     * @return true if node is file node
+     */
+    public static boolean isOssNode(Node node) {
+        return node != null && NodeTypes.OSS.getId().equals(getNodeType(node, ""));
+    }
 
     /**
      * check node by type.
@@ -386,7 +396,9 @@ public class NeoUtils {
 
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
-                if (currentPos.depth() != 2) {
+                if (!(NeoUtils.isGisNode(currentPos.currentNode()) ||
+                      NeoUtils.isDatasetNode(currentPos.currentNode()) ||
+                      NeoUtils.isOssNode(currentPos.currentNode()))) {
                     return false;
                 }
                 return additionalReturnableEvaluator == null || additionalReturnableEvaluator.isReturnableNode(currentPos);
