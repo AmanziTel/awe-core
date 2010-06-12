@@ -396,7 +396,7 @@ public class NeoUtils {
 
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
-                if (!(NeoUtils.isGisNode(currentPos.currentNode()) ||
+                if (!(NodeTypes.NETWORK.checkNode(currentPos.currentNode()) ||
                       NeoUtils.isDatasetNode(currentPos.currentNode()) ||
                       NeoUtils.isOssNode(currentPos.currentNode()))) {
                     return false;
