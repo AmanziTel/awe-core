@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -77,6 +79,8 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @since 1.0.0
  */
 public class AMSXMLoader extends AbstractCallLoader {
+    public static final Pattern COORD_PAT_LAT = Pattern.compile("^(\\d{2})(\\d{2}\\.\\d{4})$");;
+    public static final Pattern COORD_PAT_LON = Pattern.compile("^(\\d{3})(\\d{2}\\.\\d{4})$");;
 
     /** String CALL_MP_KEY field */
     public static final String CALL_MP_KEY = "call";
@@ -2192,15 +2196,16 @@ private void handleCall() {
                     time = st.nextToken();
                     String validate = st.nextToken();
                     if (validate.equalsIgnoreCase("A")) {
-                        lat = Double.parseDouble(latStr);
+
+                        valid = true;
+                        lat = parseLat(latStr);
                         if (latNS.equalsIgnoreCase("S")) {
                             lat = -lat;
                         }
-                        lon = Double.parseDouble(lonStr);
+                        lon = parseLon(lonStr);
                         if (lonNS.equalsIgnoreCase("W")) {
                             lon = -lon;
                         }
-                        valid = true;
                     }
                 } catch (Exception e) {
                     String message = "can't parse GPS data: " + gpsSentence;
@@ -2209,6 +2214,27 @@ private void handleCall() {
                     valid = false;
                     return;
                 }
+            }
+        }
+
+
+        private Double parseLat(String latStr) {
+            final Matcher matcher = COORD_PAT_LAT.matcher(latStr);
+            if (matcher.matches()) {
+                return Double.parseDouble(matcher.group(1)) + Double.parseDouble(matcher.group(2)) / 60d;
+            } else {
+                valid = false;
+                return null;
+            }
+        }
+
+        private Double parseLon(String latStr) {
+            final Matcher matcher = COORD_PAT_LON.matcher(latStr);
+            if (matcher.matches()) {
+                return Double.parseDouble(matcher.group(1)) + Double.parseDouble(matcher.group(2)) / 60d;
+            } else {
+                valid = false;
+                return null;
             }
         }
 
