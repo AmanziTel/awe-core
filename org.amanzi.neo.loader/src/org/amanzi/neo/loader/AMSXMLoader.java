@@ -80,6 +80,7 @@ public class AMSXMLoader extends AbstractCallLoader {
 
     /** String CALL_MP_KEY field */
     public static final String CALL_MP_KEY = "call";
+    public static final String PROBE_MP_KEY = "probe";
 
     /** TOC-TTC call. */
     private AMSCall tocttc;
@@ -304,6 +305,7 @@ public class AMSXMLoader extends AbstractCallLoader {
         try {
             addIndex(NodeTypes.MP.getId(), NeoUtils.getLocationIndexProperty(dataset));
             addMappedIndex(CALL_MP_KEY, NodeTypes.MP.getId(), NeoUtils.getLocationIndexProperty(DriveTypes.AMS_CALLS.getFullDatasetName(dataset)));
+            addMappedIndex(PROBE_MP_KEY, NodeTypes.MP.getId(), NeoUtils.getLocationIndexProperty(networkName));
             addIndex(NodeTypes.M.getId(), NeoUtils.getTimeIndexProperty(dataset));
             addIndex(NodeTypes.CALL.getId(), NeoUtils.getTimeIndexProperty(DriveTypes.AMS_CALLS.getFullDatasetName(dataset)));
         } catch (IOException e) {
@@ -547,12 +549,12 @@ public class AMSXMLoader extends AbstractCallLoader {
         }
 
         basename = networkName;
-        Node networkGis = findOrCreateGISNode(basename, GisTypes.NETWORK.getHeader(), NetworkTypes.PROBE);
+        Node networkGis = findOrCreateGISNode(basename, GisTypes.DRIVE.getHeader(), NetworkTypes.PROBE);
         networkNode = findOrCreateNetworkNode(networkGis);
         // driveType=DriveTypes.PROBE;
         // networkNode = findOrCreateDatasetNode(neo.getReferenceNode(), networkName);
         // networkGis=findOrCreateGISNode(networkNode, GisTypes.DRIVE.getHeader());
-        // getGisProperties(networkName).setCrs(CRS.fromCRS("geographic","EPSG:4326"));
+        getGisProperties(networkName).setCrs(CRS.fromCRS("geographic", "EPSG:4326"));
         this.networkName = basename;
         basename = oldBasename;
         fillProbeMap(networkNode);
@@ -1876,33 +1878,32 @@ private void handleCall() {
                 } catch (ParseException e) {
                     LOGGER.error(String.format("Can't parse time: %s ", stringData), e);
                 }
-                // Transaction tx = neo.beginTx();
-                // try {
-                // Node mp = neo.createNode();
-                // probe.createRelationshipTo(mp, GeoNeoRelationshipTypes.LOCATION);
-                //
-                // gps.store(mp);
-                // String time=getPropertyMap().get("deliveryTime");
-                // String name="mp";
-                // NeoUtils.setNodeName(mp, name, neo);
-                // if (StringUtils.isNotEmpty(time)){
-                // try {
-                // Long timestamp = getTime(time);
-                // mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
-                // } catch (ParseException e) {
-                // LOGGER.error("wrong data: "+time, e);
-                // }
-                //                        
-                // }
-                // GisProperties gis = getGisProperties(networkName);
-                // gis.updateBBox(gps.lat, gps.lon);
-                // gis.checkCRS(((Double)gps.lat).floatValue(),
-                // ((Double)gps.lon).floatValue(),null);
-                // index(mp);
-                // tx.success();
-                // } finally {
-                // tx.finish();
-                // }
+                Transaction tx = neo.beginTx();
+                try {
+                    Node mp = neo.createNode();
+                    probe.createRelationshipTo(mp, GeoNeoRelationshipTypes.LOCATION);
+
+                    gps.store(mp);
+                    String time = getPropertyMap().get("deliveryTime");
+                    String name = "mp";
+                    NeoUtils.setNodeName(mp, name, neo);
+                    if (StringUtils.isNotEmpty(time)) {
+                        try {
+                            Long timestamp = getTime(time);
+                            mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+                        } catch (ParseException e) {
+                            LOGGER.error("wrong data: " + time, e);
+                        }
+
+                    }
+                    GisProperties gis = getGisProperties(networkName);
+                    gis.updateBBox(gps.lat, gps.lon);
+                    gis.checkCRS(((Double)gps.lat).floatValue(), ((Double)gps.lon).floatValue(), null);
+                    index(PROBE_MP_KEY, mp);
+                    tx.success();
+                } finally {
+                    tx.finish();
+                }
             }
         }
     }
