@@ -53,7 +53,6 @@ import org.amanzi.neo.core.enums.ColoredFlags;
 import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.DriveEvents;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -1126,7 +1125,8 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     private Color getNodeColor(Node node, Color defColor) {
         Transaction tx = NeoUtils.beginTransaction();
         try {
-            System.out.println("Get color for node with type "+NodeTypes.getNodeType(node, null).getId());
+            // System.out.println("Get color for node with type "+NodeTypes.getNodeType(node,
+            // null).getId());
             if (aggNode != null) {               
                 Node chartNode = NeoUtils.getChartNode(node, aggNode);
                 if (chartNode != null) {
