@@ -123,43 +123,20 @@ public abstract class MessageDataGenerator extends AmsDataGenerator{
         int hours = getHours();
         int callsCount = getCalls();
         int callVariance = getCallVariance();
+        int messagesCount = getMessagesCount();
+        Integer callPriority = getCallPriority();
+        Long[] durationBorders = getDurationBorders();
+        Long[] acknowledgeBorders = getAcknowledgeBorders();
+        String[] messages = getAllMessages();
         for(int i = 0; i<hours; i++){
             int currCallCount = callsCount + RandomValueGenerator.getGenerator().getIntegerValue(-callVariance, callVariance);
-            for(int j = 0; j<currCallCount; j++){                
-                CallData call = buildCallCommands(group, i, createMessages(i));
+            Long startOfHour = getStartOfHour(i);
+            for(int j = 0; j<currCallCount; j++){
+                CallData call = buildCallCommands(group, i, CallGeneratorUtils.createMessages(startOfHour,messagesCount, callPriority, durationBorders,acknowledgeBorders,messages));
                 calls.add(call);
             }
         }
         return calls;
-    }
-    
-    /**
-     * Create messages for one call. 
-     *
-     * @param hour int
-     * @return Call[]
-     */
-    private Call[] createMessages(int hour){
-        Long[] borders = getDurationBorders();
-        Long[] acknBorders = getAcknowledgeBorders();
-        int messCount = getMessagesCount();
-        RandomValueGenerator generator = RandomValueGenerator.getGenerator();
-        String[] messages = getAllMessages();
-        Call[] result = new Call[messCount];
-        Long start = getStartOfHour(hour);
-        for(int i=0; i<messCount; i++){
-            Long duration = generator.getLongValue(borders[0], borders[1]);
-            start = generator.getLongValue(start, start+duration/2);
-            Call call = CallGeneratorUtils.getEmptyCall(start,getCallPriority());
-            call.addParameter(CallParameterNames.DURATION_TIME, duration);
-            call.addParameter(CallParameterNames.MESSAGE, messages[i]);
-            Long maxAckn = duration<acknBorders[1]?duration:acknBorders[1];
-            Long acknTime = generator.getLongValue(acknBorders[0], maxAckn);
-            call.addParameter(CallParameterNames.ACKNOWLEDGE_TIME, acknTime);
-            start = start+duration;
-            result[i] = call;
-        }
-        return result;
     }
 
     @Override

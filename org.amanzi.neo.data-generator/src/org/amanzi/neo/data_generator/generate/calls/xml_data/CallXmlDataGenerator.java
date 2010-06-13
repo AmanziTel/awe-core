@@ -37,7 +37,6 @@ public abstract class CallXmlDataGenerator extends AmsXmlDataGenerator{
     private static final String TOC_TAG_NAME = "toc";
     private static final String TTC_TAG_NAME = "ttc";
     
-    private static final String TAG_PR_CALLED_NUMBER = "calledNumber";
     private static final String TAG_PR_HOOK = "hook";
     private static final String TAG_PR_SIMPLEX = "simplex"; 
     private static final String TAG_PR_PRIORITY = "priority"; 
@@ -48,7 +47,6 @@ public abstract class CallXmlDataGenerator extends AmsXmlDataGenerator{
     private static final String TAG_PR_RELEASE_TIME = "releaseTime"; 
     private static final String TAG_PR_TERMINATION_CAUSE = "causeForTermination";    
     
-    private static final String TAG_PR_CALLING_NUMBER = "callingNumber";
     private static final String TAG_PR_INDICATION_TIME = "indicationTime"; 
     private static final String TAG_PR_ANSWER_TIME = "answerTime"; 
     

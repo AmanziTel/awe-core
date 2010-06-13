@@ -35,5 +35,14 @@ public class CallConstants {
     public static final float GR_CALL_DURATION_TIME = 20;
     
     public static final Long[] ITSI_DURATION_BORDERS = new Long[]{10L,CallGeneratorUtils.MILLISECONDS*50L};
+    
+    public static final Long[] SDS_DURATION_BORDERS = new Long[]{1L,CallGeneratorUtils.MILLISECONDS*30L};
+    public static final Long[] SDS_ACKNOWLEDGE_BORDERS = new Long[]{1L,CallGeneratorUtils.MILLISECONDS*5L};
+    public static final int SDS_AI_SERVICE = 12;
+    
+    public static final int TSM_AI_SERVICE = 13;
+    public static final String TSM_MESSAGE = "8000";
+    public static final Long[] TSM_DURATION_BORDERS = new Long[]{1L,CallGeneratorUtils.MILLISECONDS*20L};
+    public static final Long[] TSM_ACKNOWLEDGE_BORDERS = new Long[]{1L,CallGeneratorUtils.MILLISECONDS*6L};
 
 }

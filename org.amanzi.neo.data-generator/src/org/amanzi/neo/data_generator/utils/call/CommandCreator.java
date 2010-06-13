@@ -550,7 +550,7 @@ public class CommandCreator {
         row.setTime(getDate(time));
         row.setPrefix(DEFAULT_COMMAND_PREFIX_WRITE);
         row.getParams().add(number);
-        String hex = convertAsciiToHex(message);
+        String hex = CallGeneratorUtils.convertAsciiToHex(message);
         row.getParams().add(hex.length()*4);
         row.getAdditional().add(hex);
         return row;
@@ -589,7 +589,7 @@ public class CommandCreator {
         row.getParams().add(1);
         row.getParams().add(receiver);
         row.getParams().add(1);
-        String hex = convertAsciiToHex(message);
+        String hex = CallGeneratorUtils.convertAsciiToHex(message);
         row.getParams().add(hex.length()*4);
         row.getAdditional().add(hex);
         return row;
@@ -702,22 +702,6 @@ public class CommandCreator {
             return null;
         }
         return new Date(time);
-    }
-    
-    /**
-     * Convert ASCII string to hex string.
-     *
-     * @param ascii
-     * @return
-     */
-    private static String convertAsciiToHex(String ascii){
-        StringBuilder hex = new StringBuilder();
-        
-        for (int i=0; i < ascii.length(); i++) {
-            hex.append(Integer.toHexString(ascii.charAt(i)));
-        }
-        
-        return hex.toString();
     }
 
 }

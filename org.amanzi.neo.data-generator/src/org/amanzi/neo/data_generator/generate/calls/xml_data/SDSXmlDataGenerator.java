@@ -11,24 +11,21 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.data_generator.generate.calls.log_data;
+package org.amanzi.neo.data_generator.generate.calls.xml_data;
 
 import org.amanzi.neo.data_generator.utils.call.CallConstants;
 
-
 /**
  * <p>
- * Generate data for SDS messages.
+ * Generate XML data for SDS messages.
  * </p>
  * @author Shcharbatsevich_A
  * @since 1.0.0
  */
-public class SDSDataGenerator extends MessageDataGenerator{
+public class SDSXmlDataGenerator extends MessageXmlDataGenerator{
     
-    private static final String PAIR_DIRECTORY_POSTFIX = "SDS";
-    private static final String[] MESSAGES = new String[]{"Hello","Hello World! This is a SDS","Hello World! This is a full SDS-4 message containing 120 characters of user data. ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789"};
-    
-    
+    private static final String MESSAGE = "Hello World! This is a full SDS-4 message containing 120 characters of user data. ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789";
+
     /**
      * @param aDirectory
      * @param aHours
@@ -37,24 +34,14 @@ public class SDSDataGenerator extends MessageDataGenerator{
      * @param aCallPerHourVariance
      * @param aProbes
      */
-    public SDSDataGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour,
+    public SDSXmlDataGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour,
             Integer aCallPerHourVariance, Integer aProbes) {
         super(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
     }
 
     @Override
-    protected String getTypeKey() {
-        return PAIR_DIRECTORY_POSTFIX;
-    }
-
-    @Override
     protected Long[] getDurationBorders() {
         return CallConstants.SDS_DURATION_BORDERS;
-    }
-
-    @Override
-    protected int getMessagesCount() {
-        return getRandomGenerator().getIntegerValue(1, 3);
     }
 
     @Override
@@ -68,8 +55,14 @@ public class SDSDataGenerator extends MessageDataGenerator{
     }
 
     @Override
-    protected String[] getAllMessages() {
-        return MESSAGES;
+    protected String getMessage() {
+        return MESSAGE;
     }
 
+    @Override
+    protected String getTypeKey() {
+        return "SDS";
+    }
+
+    
 }

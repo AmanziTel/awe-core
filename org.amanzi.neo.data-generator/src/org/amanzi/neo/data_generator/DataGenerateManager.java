@@ -38,6 +38,8 @@ import org.amanzi.neo.data_generator.generate.calls.xml_data.EmergencyXMLDataGen
 import org.amanzi.neo.data_generator.generate.calls.xml_data.GroupCallXmlDataGenerator;
 import org.amanzi.neo.data_generator.generate.calls.xml_data.IndividualCallXmlDataGenerator;
 import org.amanzi.neo.data_generator.generate.calls.xml_data.ItsiAttachXmlDataGenerator;
+import org.amanzi.neo.data_generator.generate.calls.xml_data.SDSXmlDataGenerator;
+import org.amanzi.neo.data_generator.generate.calls.xml_data.TSMXmlDataGenerator;
 import org.amanzi.neo.data_generator.generate.nemo.NemoDataGenerator;
 import org.amanzi.neo.data_generator.generate.nokia.NokiaTopologyGenerator;
 import org.amanzi.neo.data_generator.utils.NeoDataUtils;
@@ -160,6 +162,22 @@ public class DataGenerateManager {
     }
     
     /**
+     * Returns AMS data generator for SDS messages (xml).
+     * 
+     * @param aDirectory String (path to save data)
+     * @param aHours Integer (count of hours)
+     * @param aHourDrift Integer (drift of start time)
+     * @param aCallsPerHour Integer (call count in hour)
+     * @param aCallPerHourVariance Integer (call variance in hour)
+     * @param aProbes Integer (probes count)
+     * @return AmsDataGenerator.
+     */
+    public static IDataGenerator getXmlSDSMessagesGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour,
+            Integer aCallPerHourVariance, Integer aProbes) {
+        return new SDSXmlDataGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
+    }
+    
+    /**
      * Returns AMS data generator for TSM messages.
      * 
      * @param aDirectory String (path to save data)
@@ -173,6 +191,22 @@ public class DataGenerateManager {
     public static IDataGenerator getTSMMessagesGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour,
             Integer aCallPerHourVariance, Integer aProbes) {
         return new TSMDataGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
+    }
+    
+    /**
+     * Returns AMS data generator for TSM messages (xml).
+     * 
+     * @param aDirectory String (path to save data)
+     * @param aHours Integer (count of hours)
+     * @param aHourDrift Integer (drift of start time)
+     * @param aCallsPerHour Integer (call count in hour)
+     * @param aCallPerHourVariance Integer (call variance in hour)
+     * @param aProbes Integer (probes count)
+     * @return AmsDataGenerator.
+     */
+    public static IDataGenerator getXmlTSMMessagesGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour,
+            Integer aCallPerHourVariance, Integer aProbes) {
+        return new TSMXmlDataGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
     }
     
     /**

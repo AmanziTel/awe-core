@@ -47,6 +47,8 @@ public abstract class AmsXmlDataGenerator extends AmsDataGenerator{
     private static final String GPS_DATA_TAG_NAME = "gpsData";
     
     protected static final String TAG_PR_PROBE_ID = "probeID";
+    protected static final String TAG_PR_CALLED_NUMBER = "calledNumber";
+    protected static final String TAG_PR_CALLING_NUMBER = "callingNumber";
     
     private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss,SSS");
 

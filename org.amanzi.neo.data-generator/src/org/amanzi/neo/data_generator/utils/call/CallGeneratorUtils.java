@@ -205,6 +205,36 @@ public class CallGeneratorUtils {
     }
     
     /**
+     * Create messages for one call. 
+     *
+     * @param startAll
+     * @param messCount
+     * @param priority
+     * @param borders
+     * @param acknBorders
+     * @param messages
+     * @return Call[]
+     */
+     public static Call[] createMessages(Long startAll, int messCount, int priority, Long[] borders,Long[] acknBorders, String... messages){
+        RandomValueGenerator generator = RandomValueGenerator.getGenerator();
+        Call[] result = new Call[messCount];
+        Long start = startAll;
+        for(int i=0; i<messCount; i++){
+            Long duration = generator.getLongValue(borders[0], borders[1]);
+            start = generator.getLongValue(start, start+duration/2);
+            Call call = CallGeneratorUtils.getEmptyCall(start,priority);
+            call.addParameter(CallParameterNames.DURATION_TIME, duration);
+            call.addParameter(CallParameterNames.MESSAGE, messages[i]);
+            Long maxAckn = duration<acknBorders[1]?duration:acknBorders[1];
+            Long acknTime = generator.getLongValue(acknBorders[0], maxAckn);
+            call.addParameter(CallParameterNames.ACKNOWLEDGE_TIME, acknTime);
+            start = start+duration;
+            result[i] = call;
+        }
+        return result;
+    }
+    
+    /**
      * Returns random time in interval.
      *
      * @param start Long
@@ -222,4 +252,19 @@ public class CallGeneratorUtils {
         return time;
     }
     
+    /**
+     * Convert ASCII string to hex string.
+     *
+     * @param ascii
+     * @return
+     */
+    public static String convertAsciiToHex(String ascii){
+        StringBuilder hex = new StringBuilder();
+        
+        for (int i=0; i < ascii.length(); i++) {
+            hex.append(Integer.toHexString(ascii.charAt(i)));
+        }
+        
+        return hex.toString();
+    }
 }

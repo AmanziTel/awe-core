@@ -13,7 +13,7 @@
 
 package org.amanzi.neo.data_generator.generate.calls.log_data;
 
-import org.amanzi.neo.data_generator.utils.call.CallGeneratorUtils;
+import org.amanzi.neo.data_generator.utils.call.CallConstants;
 
 
 /**
@@ -28,10 +28,7 @@ public class TSMDataGenerator extends MessageDataGenerator{
     private static final String PAIR_DIRECTORY_POSTFIX = "TSM";
     public static Float TSM_SEND_TIME_LIMIT = 15f;
     public static Float TSM_REPLY_TIME_LIMIT = 5f;
-    private static final int AI_SERVICE = 13;
-    private static final String[] MESSAGES = new String[]{"8000"};
-    private static final Long[] DURATION_BORDERS = new Long[]{1L,CallGeneratorUtils.MILLISECONDS*20L};
-    private static final Long[] ACKNOWLEDGE_BORDERS = new Long[]{1L,CallGeneratorUtils.MILLISECONDS*6L};
+    private static final String[] MESSAGES = new String[]{CallConstants.TSM_MESSAGE};
     
     /**
      * @param aDirectory
@@ -53,7 +50,7 @@ public class TSMDataGenerator extends MessageDataGenerator{
 
     @Override
     protected Long[] getDurationBorders() {
-        return DURATION_BORDERS;
+        return CallConstants.TSM_DURATION_BORDERS;
     }
 
     @Override
@@ -63,12 +60,12 @@ public class TSMDataGenerator extends MessageDataGenerator{
 
     @Override
     protected Long[] getAcknowledgeBorders() {
-        return ACKNOWLEDGE_BORDERS;
+        return CallConstants.TSM_ACKNOWLEDGE_BORDERS;
     }
 
     @Override
     protected Integer getAiService() {
-        return AI_SERVICE;
+        return CallConstants.TSM_AI_SERVICE;
     }
 
     @Override
