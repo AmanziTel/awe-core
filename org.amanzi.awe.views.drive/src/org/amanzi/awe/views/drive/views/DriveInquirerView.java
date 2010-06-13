@@ -45,6 +45,7 @@ import org.amanzi.awe.catalog.neo.GeoConstant;
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
@@ -130,6 +131,7 @@ import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 import org.rubypeople.rdt.core.IRubyProject;
 import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
@@ -526,23 +528,54 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
      */
     private void formPropertyList() {
         propertyLists.clear();
-        propertyListsConstantValue = getPreferenceStore().getString(DataLoadPreferences.PROPERY_LISTS);
-        String[] lists = propertyListsConstantValue.split(DataLoadPreferences.CRS_DELIMETERS);
-        if (lists.length > 1 && lists.length % 2 != 0) {
-            displayErrorMessage(Messages.DriveInquirerView_16);
-        }
-        if (lists.length == 1 && lists[0] == "")
+        Object[] savedProperties = null;
+        if (getGisDriveNode() == null)
             return;
-        for (int i = 0; i < lists.length; i += 2) {
-            List<String> allPr = Arrays.asList(lists[i + 1].split(",")); //$NON-NLS-1$
-            List<String> prsToAdd = new ArrayList<String>(allPr.size());
-            for (String pr : allPr) {
-                if (!pr.trim().isEmpty()) {
-                    prsToAdd.add(pr.trim());
+        Transaction tx = NeoUtils.beginTransaction();
+        try {
+            Traverser tr = getGisDriveNode().traverse(Order.BREADTH_FIRST, NeoUtils.getStopEvaluator(2), new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    Relationship rel = currentPos.lastRelationshipTraversed();
+                    return rel != null && rel.isType(GeoNeoRelationshipTypes.PROPERTIES);
                 }
-            }
-            propertyLists.put(lists[i], prsToAdd);
+            }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
+
+            savedProperties = (Object[])tr.iterator().next().getProperty(INeoConstants.PROPERTY_NAME_SELECTED_PROPERTIES, null);
+            tx.success();
+        } catch (Exception ex) {
+            tx.failure();
+            NeoCorePlugin.error(null, ex);
+        } finally {
+            NeoUtils.finishTx(tx);
         }
+        if (savedProperties != null)
+            for (Object savedProperty : savedProperties) {
+                propertyLists.put(savedProperty.toString(), Arrays.asList(savedProperty.toString().split(", ")));
+            }
+        cPropertyList.setItems(propertyLists.keySet().toArray(new String[0]));
+        // }
+
+        // propertyLists.clear();
+        // propertyListsConstantValue =
+        // getPreferenceStore().getString(DataLoadPreferences.PROPERY_LISTS);
+        // String[] lists = propertyListsConstantValue.split(DataLoadPreferences.CRS_DELIMETERS);
+        // if (lists.length > 1 && lists.length % 2 != 0) {
+        // displayErrorMessage(Messages.DriveInquirerView_16);
+        // }
+        // if (lists.length == 1 && lists[0] == "")
+        // return;
+        // for (int i = 0; i < lists.length; i += 2) {
+        //            List<String> allPr = Arrays.asList(lists[i + 1].split(",")); //$NON-NLS-1$
+        // List<String> prsToAdd = new ArrayList<String>(allPr.size());
+        // for (String pr : allPr) {
+        // if (!pr.trim().isEmpty()) {
+        // prsToAdd.add(pr.trim());
+        // }
+        // }
+        // propertyLists.put(lists[i], prsToAdd);
+        // }
     }
 
     /**
@@ -803,9 +836,11 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
                 Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
                 DriveInquirerPropertyConfig pdialog = new DriveInquirerPropertyConfig(shell, getGisDriveNode());;
                 if (pdialog.open() == SWT.OK) {
-                    // page.performOk();
-                    // TODO implement refresh
-                    // result = page.getCRS();
+                    formPropertyList();
+                    String[] result = propertyLists.keySet().toArray(new String[0]);
+                    Arrays.sort(result);
+                    cPropertyList.setItems(result);
+                    updatePropertyList();
                 }
             }
 
@@ -1416,6 +1451,7 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
      *forms all property depends of gis
      */
     private void formPropertyLists() {
+        formPropertyList();
         Transaction tx = NeoUtils.beginTransaction();
         try {
             Node gis = getGisDriveNode();

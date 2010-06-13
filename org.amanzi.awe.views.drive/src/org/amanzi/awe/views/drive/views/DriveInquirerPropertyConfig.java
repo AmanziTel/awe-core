@@ -16,10 +16,13 @@ package org.amanzi.awe.views.drive.views;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.AbstractDialog;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -29,6 +32,7 @@ import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
@@ -39,6 +43,9 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -67,8 +74,15 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
     private Shell shell;
     private CheckboxTableViewer propertyListTable;
     private CheckboxTableViewer propertySlipTable;
+    private Button bAddComposite;
+    private Button bAddSingle;
+    private Button bDel;
+    private Button bOk;
+    private Button bCancel;
+    private Button bClear;
+
     private List<String> propertyList = new ArrayList<String>();
-    private final List<String> propertySlip = new ArrayList<String>();
+    private final Set<String> propertySlip = new TreeSet<String>();
 
     private final GraphDatabaseService service;
 
@@ -77,7 +91,7 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
      * @param title
      */
     public DriveInquirerPropertyConfig(Shell parent, Node dataset) {
-        super(parent, "Dataset properties configuration (under construction)", SWT.RESIZE | SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.CENTER);
+        super(parent, "Dataset properties configura\tion", SWT.RESIZE | SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.CENTER);
         this.dataset = dataset;
         status = SWT.CANCEL;
         service = NeoServiceProvider.getProvider().getService();
@@ -86,7 +100,9 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
     @Override
     protected void createContents(final Shell shell) {
         this.shell = shell;
-        shell.setLayout(new GridLayout(4, false));
+        shell.setImage(NodeTypes.DATASET.getImage());
+        // shell.setImage(IconManager.getIconManager().
+        shell.setLayout(new GridLayout(2, false));
         // Label label = new Label(shell, SWT.NONE);
         // label.setText("Network:");
         // cNetwork = new Combo(shell, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -96,65 +112,114 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
         // cNetwork.setLayoutData(layoutData);
         propertyListTable = CheckboxTableViewer.newCheckList(shell, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.CHECK);
         GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
-        data.horizontalSpan = 2;
-        data.heightHint = 200;
+        // data.horizontalSpan = 2;
+        // data.verticalSpan = 1;
+        data.heightHint = 300;
         data.widthHint = 200;
-        createTable(propertyListTable);
+        createTable(propertyListTable, "Avaliable properties");
         propertyListTable.getControl().setLayoutData(data);
         propertyListTable.setContentProvider(new PropertyListContentProvider());
-
         propertyListTable.setLabelProvider(new PropertyListLabelProvider());
 
-//        propertySlipTable = CheckboxTableViewer.newCheckList(shell, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+        // GridData greedButtonData = new GridData();
+        // greedButtonData.horizontalAlignment = GridData.END;
+        // greedButtonData.widthHint = 80;
+
+        // propertySlipTable = CheckboxTableViewer.newCheckList(shell, SWT.MULTI | SWT.H_SCROLL |
+        // SWT.V_SCROLL | SWT.BORDER);
+
+
+
         Table table = new Table(shell, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
         propertySlipTable = new CheckboxTableViewer(table);
-        data = new GridData(SWT.FILL, SWT.FILL, true, true);
-        data.horizontalSpan = 2;
-        data.heightHint = 200;
+        data = new GridData(SWT.NO, SWT.FILL, true, true);
+        // data.horizontalSpan = 2;
+        // data.verticalSpan = 2;
+        data.heightHint = 300;
         data.widthHint = 200;
-        createTable(propertySlipTable);
+        createTable(propertySlipTable, "Active properties");
         propertySlipTable.getControl().setLayoutData(data);
         propertySlipTable.setContentProvider(new PropertySlipContentProvider());
 
         propertySlipTable.setLabelProvider(new PropertyListLabelProvider());
 
-        Button btnOk = new Button(shell, SWT.PUSH);
-        btnOk.setText("OK");
-        GridData gdBtnCancel = new GridData();
-        gdBtnCancel.horizontalAlignment = GridData.END;
-        gdBtnCancel.widthHint = 80;
-        btnOk.setLayoutData(gdBtnCancel);
-        btnOk.addSelectionListener(new SelectionAdapter() {
+        Group gr1 = new Group(shell, SWT.NULL);
+        gr1.setText("Add checked properties to \"active\" list");
+        gr1.setLayout(new GridLayout(2, false));
+        gr1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                status = SWT.OK;
-                perfomSave();
-                shell.close();
-            }
+        Group gr2 = new Group(shell, SWT.NULL);
+        gr2.setText("Delete properies from \"active\" list");
+        gr2.setLayout(new GridLayout(2, false));
+        gr2.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        new Label(shell, SWT.NULL);
+        Composite gr3 = new Composite(shell, SWT.NULL);
+        // gr3.setText("Saving options");
+        gr3.setLayout(new GridLayout(2, false));
+        gr3.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-        });
+        bAddComposite = createButton(gr1, "As composite");
+        bAddSingle = createButton(gr1, "All by one");
 
-        Button btnCancel = new Button(shell, SWT.PUSH);
-        btnCancel.setText("Cancel");
-        // GridData gdBtnCancel = new GridData();
-        // gdBtnCancel.horizontalAlignment = GridData.END;
-        // gdBtnCancel.widthHint = 80;
-        btnCancel.setLayoutData(gdBtnCancel);
-        btnCancel.addSelectionListener(new SelectionAdapter() {
+        bDel = createButton(gr2, "Delete selected");
+        bClear = createButton(gr2, "Clear list");
 
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                status = SWT.CANCEL;
-                shell.close();
-            }
-
-        });
+        bOk = createButton(gr3, "OK");
+        bCancel = createButton(gr3, "Cancel");
 
         addListeners();
         init();
         propertyListTable.setInput("");
+        propertySlipTable.setInput("");
         loadSavedData();
+    }
+
+    /**
+     * @param gr1
+     */
+    private Button createButton(Composite parent, String name) {
+        Button button = new Button(parent, SWT.PUSH);
+        button.setText(name);
+        button.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false));
+        return button;
+    }
+
+    /**
+     *
+     */
+    protected void deleteProperty() {
+        IStructuredSelection selection = (IStructuredSelection)propertySlipTable.getSelection();
+        propertySlip.removeAll(selection.toList());
+        propertySlipTable.refresh();
+    }
+
+    /**
+     *
+     */
+    protected void addSingle() {
+        Object[] checkedElements = propertyListTable.getCheckedElements();
+        if (checkedElements.length > 0) {
+            for (Object checked : checkedElements) {
+                propertySlip.add(checked.toString());
+            }
+            propertySlipTable.refresh();
+        }
+    }
+
+    /**
+     *
+     */
+    protected void addComposite() {
+        Object[] checkedElements = propertyListTable.getCheckedElements();
+        if (checkedElements.length > 0) {
+            StringBuilder newComposit = new StringBuilder("");
+            for (Object checked : checkedElements) {
+                newComposit.append(checked).append(", ");
+            }
+            String result = newComposit.substring(0, newComposit.length() - 2);
+            propertySlip.add(result);
+            propertySlipTable.refresh();
+        }
     }
 
     /**
@@ -183,14 +248,9 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
         }
         if (savedProperties != null)
             for (Object savedProperty : savedProperties) {
-                for (String existProperty : propertyList) {
-                    if (existProperty.compareTo((String)savedProperty) == 0) {
-                        propertyListTable.setChecked(existProperty, true);
-                        break;
-                    }
-                }
+                propertySlip.add(savedProperty.toString());
             }
-        updatePropertySlip();
+        propertySlipTable.refresh();
     }
 
     /**
@@ -207,17 +267,8 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
                     return rel != null && rel.isType(GeoNeoRelationshipTypes.PROPERTIES);
                 }
             }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
-            // Relationship relation =
-            // dataset.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES,
-            // Direction.OUTGOING);
-            Object[] selected = propertyListTable.getCheckedElements();
-            List<String> selectedList = new ArrayList<String>(selected.length);
-            for (Object singleSelection : selected) {
-                selectedList.add((String)singleSelection);
-                propertyListTable.refresh();
-            }
 
-            tr.iterator().next().setProperty(INeoConstants.PROPERTY_NAME_SELECTED_PROPERTIES, selectedList.toArray(new String[0]));
+            tr.iterator().next().setProperty(INeoConstants.PROPERTY_NAME_SELECTED_PROPERTIES, propertySlip.toArray(new String[0]));
 
             tx.success();
         } catch (Exception e) {
@@ -231,6 +282,8 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
     private void init() {
         propertyList.clear();
         propertyList = Arrays.asList(new PropertyHeader(dataset).getNumericFields());
+
+        // Collections.
     }
 
     private void addListeners() {
@@ -238,41 +291,83 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
 
             @Override
             public void checkStateChanged(CheckStateChangedEvent event) {
-                updatePropertySlip();
+                // updatePropertySlip();
             }
+        });
+
+        bAddComposite.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                addComposite();
+            }
+
+        });
+
+        bAddSingle.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                addSingle();
+            }
+
+        });
+
+        bDel.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                deleteProperty();
+            }
+
+        });
+
+        bClear.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                clearList();
+            }
+
+        });
+
+        bOk.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                status = SWT.OK;
+                perfomSave();
+                shell.close();
+            }
+
+        });
+        bCancel.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                status = SWT.CANCEL;
+                shell.close();
+            }
+
         });
     }
 
     /**
-     * @param element
+     *
      */
-    protected void updatePropertySlip() {
-        propertySlipTable.getControl().setVisible(false);
-        Object[] selectedPropertes = propertyListTable.getCheckedElements();
-        ArrayList<String> newSlipPropertyList = new ArrayList<String>();
+    protected void clearList() {
         propertySlip.clear();
-        for (Object newSlipProperty : selectedPropertes) {
-            for (String property : propertySlip) {
-                newSlipPropertyList.add(property + ", " + newSlipProperty);
-            }
-            newSlipPropertyList.add(newSlipProperty.toString());
-            propertySlip.addAll(newSlipPropertyList);
-            newSlipPropertyList.clear();
-        }
-        LOGGER.debug(selectedPropertes.length);
-        LOGGER.debug(propertySlip.size());
-        propertySlipTable.setInput("");
-        propertySlipTable.getControl().setVisible(true);
+        propertySlipTable.refresh();
     }
 
     /**
      * @param tableView2
      */
-    private void createTable(TableViewer tableView) {
+    private void createTable(TableViewer tableView, String clumnName) {
         Table table = tableView.getTable();
         TableColumn column = new TableColumn(table, SWT.NONE);
-        column.setWidth(170);
-        column.setText("Avaliable properties");
+        column.setWidth(200);
+        column.setText(clumnName);
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
     }
