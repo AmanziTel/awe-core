@@ -91,7 +91,7 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
      * @param title
      */
     public DriveInquirerPropertyConfig(Shell parent, Node dataset) {
-        super(parent, "Dataset properties configura\tion", SWT.RESIZE | SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.CENTER);
+        super(parent, "Dataset properties configura\tion", SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.CENTER);
         this.dataset = dataset;
         status = SWT.CANCEL;
         service = NeoServiceProvider.getProvider().getService();
