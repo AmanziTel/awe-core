@@ -113,6 +113,7 @@ public abstract class AbstractLoader {
     @SuppressWarnings("unchecked")
     public static final Class[] KNOWN_PROPERTY_TYPES = new Class[] {Integer.class, Long.class, Float.class, Double.class, String.class};
     private boolean indexesInitialized = false;
+    private boolean taskSetted;
 
     protected CSVParser parser;
 
@@ -978,8 +979,9 @@ public abstract class AbstractLoader {
      * @throws IOException
      */
     public void run(IProgressMonitor monitor) throws IOException {
-        if (monitor != null)
+        if (monitor != null && !taskSetted){
             monitor.beginTask(basename, 100);
+        }
         CountingFileInputStream is = new CountingFileInputStream(new File(filename));
         String characterSet = NeoLoaderPlugin.getDefault().getCharacterSet();
         BufferedReader reader = new BufferedReader(new InputStreamReader(is, characterSet));
@@ -1728,8 +1730,8 @@ public abstract class AbstractLoader {
 
         public StoringProperty(Node storingNode) {
             // this.storingNode = storingNode;
-            if(storingNode != null)
-             dataCounter = (Long)storingNode.getProperty(INeoConstants.COUNT_TYPE_NAME, 0L);
+            if (storingNode != null)
+                dataCounter = (Long)storingNode.getProperty(INeoConstants.COUNT_TYPE_NAME, 0L);
         }
 
         /**
@@ -1910,7 +1912,7 @@ public abstract class AbstractLoader {
          */
         public void saveCRS() {
             if (getCrs() != null) {
-                if (crs.getWkt()!=null){
+                if (crs.getWkt() != null) {
                     gis.setProperty(INeoConstants.PROPERTY_WKT_CRS, crs.getWkt());
                 }
                 gis.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());// TODO remove?
@@ -2042,4 +2044,12 @@ public abstract class AbstractLoader {
         return result;
 
     }
+
+    /**
+     * @param taskSetted The taskSetted to set.
+     */
+    public void setTaskSetted(boolean taskSetted) {
+        this.taskSetted = taskSetted;
+    }
+    
 }
