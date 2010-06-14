@@ -461,10 +461,10 @@ public class CallAnalyserView extends ViewPart {
         @Override
         public Color getForeground(Object element, int columnIndex) {
             if(!(element instanceof PeriodWrapper)||columnHeaders.size()<=columnIndex){
-                return null;
-            }
-            return columnHeaders.get(columnIndex).getForegroundColor((PeriodWrapper)element);
+            return null;
         }
+            return columnHeaders.get(columnIndex).getForegroundColor((PeriodWrapper)element);
+    }
     }
     
     private int simpleCompare(PeriodWrapper o1, PeriodWrapper o2, int column){        
@@ -522,7 +522,8 @@ public class CallAnalyserView extends ViewPart {
         formLayout.marginWidth = 0;
         formLayout.spacing = 0;
         frame.setLayout(formLayout);
-        // create row composite
+
+        // create row composite, this is the composite that represents the entire form
         Composite rowComposite = new Composite(frame, SWT.FILL);
         FormData fData = new FormData();
         fData.left = new FormAttachment(0, 0);
@@ -532,244 +533,51 @@ public class CallAnalyserView extends ViewPart {
         layout.marginHeight = 2;
         layout.marginWidth = 3;
         rowComposite.setLayout(layout);  
-     // ------ fill row
-        Composite column1 = new Composite(rowComposite, SWT.FILL);
-        fData = new FormData();
-        fData.left = new FormAttachment(0, 0);
-        fData.width = MIN_COLUMN_WIDTH;
-        column1.setLayoutData(fData);
-        layout = new FormLayout();
-        layout.marginHeight = 2;
-        layout.marginWidth = 3;
-        column1.setLayout(layout);
+
+        // The first column for dataset and statistics choices
+        Composite column1 = addColumn(rowComposite, null, MIN_COLUMN_WIDTH);
+        Composite cell1 = createCellComposite(column1, null, MIN_COLUMN_WIDTH);
+        Composite cell2 = createCellComposite(column1, cell1, MIN_COLUMN_WIDTH);
+        cDrive = addSelection(cell1, LBL_DRIVE, MIN_FIELD_WIDTH);
+        cCallType = addSelection(cell2, LBL_CALL_TYPE, MIN_FIELD_WIDTH);
         
-        Composite cell1 = new Composite(column1, SWT.FILL);
-        fData = new FormData();
-        fData.left = new FormAttachment(0, 0);
-        fData.width = MIN_COLUMN_WIDTH;
-        cell1.setLayoutData(fData);
-        layout = new FormLayout();
-        layout.marginHeight = 2;
-        layout.marginWidth = 3;
-        cell1.setLayout(layout);
-        
-        Label label = new Label(cell1, SWT.FLAT);
-        label.setText(LBL_DRIVE);
-        fData = new FormData();
-        fData.left = new FormAttachment(0, 0);
-        fData.bottom = new FormAttachment(100,-4);
-        label.setLayoutData(fData);
-        cDrive = new Combo(cell1, SWT.DROP_DOWN | SWT.READ_ONLY);
-        fData = new FormData();
-        fData.right = new FormAttachment(100, -2);
-        fData.width = MIN_FIELD_WIDTH;               
-        cDrive.setLayoutData(fData);
-        
-        Composite cell2 = new Composite(column1, SWT.FILL);
-        fData = new FormData();
-        fData.left = new FormAttachment(0, 0);
-        fData.top = new FormAttachment(cell1,2);
-        fData.width = MIN_COLUMN_WIDTH;
-        cell2.setLayoutData(fData);
-        layout = new FormLayout();
-        layout.marginHeight = 2;
-        layout.marginWidth = 3;
-        cell2.setLayout(layout);
-        
-        label = new Label(cell2, SWT.FLAT);
-        label.setText(LBL_PERIOD);
-        fData = new FormData();
-        fData.left = new FormAttachment(0, 0);
-        fData.bottom = new FormAttachment(100,-4);
-        label.setLayoutData(fData);
-        cPeriod = new Combo(cell2, SWT.DROP_DOWN | SWT.READ_ONLY);
-        fData = new FormData();
-        fData.right = new FormAttachment(100, -2);
-        fData.width = MIN_FIELD_WIDTH;
-        cPeriod.setLayoutData(fData); 
-        
-        Composite column2 = new Composite(rowComposite, SWT.FILL);
-        fData = new FormData();
-        fData.left = new FormAttachment(column1, 2);
-        fData.width = MIN_COLUMN_WIDTH+10;
-        column2.setLayoutData(fData);
-        layout = new FormLayout();
-        layout.marginHeight = 2;
-        layout.marginWidth = 3;
-        column2.setLayout(layout);
-        
-        cell1 = new Composite(column2, SWT.FILL);
-        fData = new FormData();
-        fData.left = new FormAttachment(0, 0);
-        fData.width = MIN_COLUMN_WIDTH+10;
-        cell1.setLayoutData(fData);
-        layout = new FormLayout();
-        layout.marginHeight = 2;
-        layout.marginWidth = 3;
-        cell1.setLayout(layout);
-        
-        label = new Label(cell1, SWT.FLAT);
-        label.setText(LBL_CALL_TYPE);
-        fData = new FormData();
-        fData.left = new FormAttachment(0, 0);
-        fData.bottom = new FormAttachment(100,-4);
-        label.setLayoutData(fData);
-        cCallType = new Combo(cell1, SWT.DROP_DOWN | SWT.READ_ONLY);
-        fData = new FormData();
-        fData.right = new FormAttachment(100, -2);
-        fData.width = MIN_FIELD_WIDTH;
-        cCallType.setLayoutData(fData);
-        
-        cell2 = new Composite(column2, SWT.FILL);
-        fData = new FormData();
-        fData.left = new FormAttachment(0, 0);
-        fData.top = new FormAttachment(cell1,2);
-        fData.width = MIN_COLUMN_WIDTH+10;
-        cell2.setLayoutData(fData);
-        layout = new FormLayout();
-        layout.marginHeight = 2;
-        layout.marginWidth = 3;
-        cell2.setLayout(layout);
-        
-        label = new Label(cell2, SWT.FLAT);
-        label.setText(LBL_START_TIME);
-        fData = new FormData();
-        fData.left = new FormAttachment(0, 0);
-        fData.bottom = new FormAttachment(100,-4);
-        label.setLayoutData(fData);
-        dateStart = new DateTime(cell2, SWT.FILL | SWT.BORDER | SWT.DATE | SWT.MEDIUM);
-        fData = new FormData();
-        fData.right = new FormAttachment(95, -MIN_FIELD_WIDTH/3);
-        fData.width = 2*MIN_FIELD_WIDTH/3;
-        dateStart.setLayoutData(fData);
-        timeStart = new DateTime(cell2, SWT.FILL | SWT.BORDER | SWT.TIME | SWT.SHORT);
-        fData = new FormData();
-        fData.left = new FormAttachment(dateStart, 2);
-        fData.right = new FormAttachment(100, -2);
-        fData.width = MIN_FIELD_WIDTH/3;
-        timeStart.setLayoutData(fData);
-        
-        Composite column3 = new Composite(rowComposite, SWT.FILL);
-        fData = new FormData();
-        fData.left = new FormAttachment(column2, 2);
-        fData.width = MIN_COLUMN_WIDTH;
-        column3.setLayoutData(fData);
-        layout = new FormLayout();
-        layout.marginHeight = 2;
-        layout.marginWidth = 3;
-        column3.setLayout(layout);
-        
-        cell1 = new Composite(column3, SWT.FILL);
-        fData = new FormData();
-        fData.left = new FormAttachment(0, 0);
-        fData.width = MIN_COLUMN_WIDTH;
-        cell1.setLayoutData(fData);
-        layout = new FormLayout();
-        layout.marginHeight = 2;
-        layout.marginWidth = 3;
-        cell1.setLayout(layout);
-        
-        label = new Label(cell1, SWT.FLAT);
-        label.setText(LBL_PROBE);
-        fData = new FormData();
-        fData.left = new FormAttachment(0, 0);
-        fData.bottom = new FormAttachment(100,-4);
-        label.setLayoutData(fData);
-        cProbe = new Combo(cell1, SWT.DROP_DOWN | SWT.READ_ONLY);
-        fData = new FormData();
-        fData.right = new FormAttachment(100, -2 - 32 - 10);
-        fData.width = MIN_FIELD_WIDTH - 32 - 10;
-        cProbe.setLayoutData(fData);
-        bUpdate = new Button(cell1, SWT.PUSH);
-        fData = new FormData();
-        fData.right = new FormAttachment(100, -2);
-        fData.width = 32;
-        bUpdate.setLayoutData(fData);
+        // The second column for probe and period filtering
+        int width = 3*MIN_COLUMN_WIDTH/4-20;
+        int field_width = 3*MIN_FIELD_WIDTH/4-20;
+        Composite column2 = addColumn(rowComposite, column1, width);
+        cell1 = createCellComposite(column2, null, width);
+        cell2 = createCellComposite(column2, cell1, width);
+        cProbe = addSelection(cell1, LBL_PROBE, field_width);
+        cPeriod = addSelection(cell2, LBL_PERIOD, field_width);
+
+        // The third column for time range filtering
+        width = 6*MIN_COLUMN_WIDTH/5;
+        Composite column3 = addColumn(rowComposite, column2, width);
+        cell1 = createCellComposite(column3, null, width);
+        cell2 = createCellComposite(column3, cell1, width);
+        DateTime[] fields = addDateTimeSelection(cell1, LBL_START_TIME, width);
+        dateStart = fields[0];
+        timeStart = fields[1];
+        fields = addDateTimeSelection(cell2, LBL_END_TIME, width);
+        dateEnd = fields[0];
+        timeEnd = fields[1];
+
+        // The fourth column for additional options, and buttons
+        Composite column4 = addColumn(rowComposite, column3, -1);
+        cell1 = createCellComposite(column4, null, MIN_COLUMN_WIDTH);
+        //((FormData)cell1.getLayoutData()).right = new FormAttachment(100, 0);
+        cell2 = createCellComposite(column4, cell1, MIN_COLUMN_WIDTH);
+        //((FormData)cell2.getLayoutData()).left = null;
+        //((FormData)cell2.getLayoutData()).right = new FormAttachment(100, 0);
+
+        bInclInconclusive = addButton(cell1, null, LB_INCONCLUSIVE, SWT.CHECK, MIN_FIELD_WIDTH);
+        bUpdate = addButton(cell2, null, null, SWT.PUSH, 32);
         bUpdate.setImage(CallAnalyserPlugin.getImageDescriptor("/icons/refresh.gif").createImage());
         bUpdate.setToolTipText("Refresh table");
-        
-        cell2 = new Composite(column3, SWT.FILL);
-        fData = new FormData();
-        fData.left = new FormAttachment(0, 0);
-        fData.top = new FormAttachment(cell1,2);
-        fData.width = MIN_COLUMN_WIDTH;
-        cell2.setLayoutData(fData);
-        layout = new FormLayout();
-        layout.marginHeight = 2;
-        layout.marginWidth = 3;
-        cell2.setLayout(layout);
-        
-        label = new Label(cell2, SWT.FLAT);
-        label.setText(LBL_END_TIME);
-        fData = new FormData();
-        fData.left = new FormAttachment(0, 0);
-        fData.bottom = new FormAttachment(100,-4);
-        label.setLayoutData(fData);
-        dateEnd = new DateTime(cell2, SWT.FILL | SWT.BORDER | SWT.DATE | SWT.MEDIUM);
-        fData = new FormData();
-        fData.right = new FormAttachment(95, -MIN_FIELD_WIDTH/3);
-        fData.width = 2*MIN_FIELD_WIDTH/3;
-        dateEnd.setLayoutData(fData);
-        timeEnd = new DateTime(cell2, SWT.FILL | SWT.BORDER | SWT.TIME | SWT.SHORT);
-        fData = new FormData();
-        fData.left = new FormAttachment(dateEnd, 2);
-        fData.right = new FormAttachment(100, -2);
-        fData.width = MIN_FIELD_WIDTH/3;
-        timeEnd.setLayoutData(fData);
-        
-        Composite column4 = new Composite(rowComposite, SWT.FILL);
-        fData = new FormData();
-        fData.left = new FormAttachment(column3, 2);
-        fData.right = new FormAttachment(100, 0);
-        column4.setLayoutData(fData);
-        layout = new FormLayout();
-        layout.marginHeight = 2;
-        layout.marginWidth = 3;
-        column4.setLayout(layout);
-        
-        cell1 = new Composite(column4, SWT.FILL);
-        fData = new FormData();
-        fData.left = new FormAttachment(0, 0);
-        fData.right = new FormAttachment(100, 0);
-        cell1.setLayoutData(fData);
-        layout = new FormLayout();
-        layout.marginHeight = 2;
-        layout.marginWidth = 3;
-        cell1.setLayout(layout);
-        
-        bExport = new Button(cell1, SWT.PUSH);
-        bExport.setText(LB_EXPORT);
-        fData = new FormData();
-        fData.right = new FormAttachment(100, 0);
-        bExport.setLayoutData(fData);
-        
-        cell2 = new Composite(column4, SWT.FILL);
-        fData = new FormData();
-        fData.left = new FormAttachment(0, 0);
-        fData.top = new FormAttachment(cell1,2);
-        fData.width = MIN_COLUMN_WIDTH;
-        cell2.setLayoutData(fData);
-        layout = new FormLayout();
-        layout.marginHeight = 2;
-        layout.marginWidth = 3;
-        cell2.setLayout(layout);
-        
-        bInclInconclusive = new Button(cell2, SWT.CHECK);
-        bInclInconclusive.setText(LB_INCONCLUSIVE);
-        fData = new FormData();
-        fData.left = new FormAttachment(dateEnd, 2);
-        fData.width = MIN_FIELD_WIDTH;
-        bInclInconclusive.setLayoutData(fData);
-        
-        bReport = new Button(cell2,SWT.PUSH);
-        bReport.setText(LB_REPORT);
-        fData = new FormData();
-        fData.left = new FormAttachment(bInclInconclusive, 2);
-        fData.right = new FormAttachment(100, 0);
-//        fData.width = MIN_FIELD_WIDTH;
-        bReport.setLayoutData(fData);
+        bReport = addButton(cell2, bUpdate, LB_REPORT, SWT.PUSH, -1);
         bReport.setEnabled(false);
-        
+        bExport = addButton(cell2, bReport, LB_EXPORT, SWT.PUSH, -1);
+
         // ------- table
         tableViewer = new TableViewer(frame, SWT.BORDER | SWT.FULL_SELECTION);
         fData = new FormData();
@@ -784,6 +592,83 @@ public class CallAnalyserView extends ViewPart {
         addListeners();
         initialize();
         setDefaultTime();
+    }
+
+    private Button addButton(Composite cell, Button previous, String text, int buttonType, int width) {
+        Button button = new Button(cell, buttonType);
+        if(text!=null) button.setText(text);
+        FormData fData = new FormData();
+        FormAttachment formAttachment = new FormAttachment(0, 2);
+        if(previous!=null) formAttachment = new FormAttachment(previous, 2);
+        fData.left = formAttachment;
+        if(width>0) fData.width = width;
+        button.setLayoutData(fData);
+        return button;
+    }
+
+    private Composite addColumn(Composite row, Composite previous_column, int width) {
+        Composite column = new Composite(row, SWT.FILL);
+        FormData fData = new FormData();
+        if(previous_column!=null) fData.left = new FormAttachment(previous_column, 2);
+        else fData.left = new FormAttachment(0, 0);
+        if(width>0) fData.width = width;
+        column.setLayoutData(fData);
+        FormLayout layout = new FormLayout();
+        layout.marginHeight = 2;
+        layout.marginWidth = 3;
+        column.setLayout(layout);
+        return column;
+    }
+
+    private DateTime[] addDateTimeSelection(Composite cell, String text, int width) {
+        Label label = new Label(cell, SWT.FLAT);
+        label.setText(text);
+        FormData fData = new FormData();
+        fData.left = new FormAttachment(0, 0);
+        fData.bottom = new FormAttachment(100,-8);
+        label.setLayoutData(fData);
+        DateTime date = new DateTime(cell, SWT.FILL | SWT.BORDER | SWT.DATE | SWT.MEDIUM);
+        fData = new FormData();
+        fData.right = new FormAttachment(95, -width/4-10);
+        fData.width = width/3+10;
+        date.setLayoutData(fData);
+        DateTime time = new DateTime(cell, SWT.FILL | SWT.BORDER | SWT.TIME | SWT.SHORT);
+        fData = new FormData();
+        fData.left = new FormAttachment(date, 2);
+        fData.right = new FormAttachment(100, -2);
+        fData.width = width/4;
+        time.setLayoutData(fData);
+        return new DateTime[]{date,time};
+    }
+
+    private Combo addSelection(Composite cell, String text, int width) {
+        Label label = new Label(cell, SWT.FLAT);
+        label.setText(text);
+        FormData fData = new FormData();
+        fData.left = new FormAttachment(0, 0);
+        fData.bottom = new FormAttachment(100,-8);
+        label.setLayoutData(fData);
+        Combo selection = new Combo(cell, SWT.DROP_DOWN | SWT.READ_ONLY);
+        fData = new FormData();
+        fData.right = new FormAttachment(100, -2);
+        fData.width = width;               
+        selection.setLayoutData(fData);
+        return selection;
+    }
+
+    private Composite createCellComposite(Composite column, Composite cell_above, int width) {
+        Composite cell = new Composite(column, SWT.FILL);
+        FormData fData = new FormData();
+        fData.left = new FormAttachment(0, 0);
+        fData.height = 32;
+        if(cell_above!=null) fData.top = new FormAttachment(cell_above,2);
+        if(width>0) fData.width = width;
+        cell.setLayoutData(fData);
+        FormLayout layout = new FormLayout();
+        layout.marginHeight = 2;
+        layout.marginWidth = 3;
+        cell.setLayout(layout);
+        return cell;
     }
     
     private void setTime(DateTime dateFild,DateTime timeFild, Long time){
@@ -1080,18 +965,6 @@ public class CallAnalyserView extends ViewPart {
              public void keyPressed(KeyEvent e) {
              }
          });
-        bUpdate.addSelectionListener(new SelectionListener() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                changeDate();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                widgetSelected(e);
-            }
-        });
          timeStart.addFocusListener(new FocusListener() {             
              @Override
              public void focusLost(FocusEvent e) {
@@ -1175,6 +1048,26 @@ public class CallAnalyserView extends ViewPart {
             }
              
          });
+         bUpdate.addSelectionListener(new SelectionAdapter(){
+
+             @Override
+             public void widgetSelected(SelectionEvent e) {
+                 updateTable(false);
+             }
+              
+          });
+//        bUpdate.addSelectionListener(new SelectionListener() {
+//
+//            @Override
+//            public void widgetSelected(SelectionEvent e) {
+//                changeDate();
+//            }
+//
+//            @Override
+//            public void widgetDefaultSelected(SelectionEvent e) {
+//                widgetSelected(e);
+//            }
+//        });
     }
 
     private void generateReport() {
