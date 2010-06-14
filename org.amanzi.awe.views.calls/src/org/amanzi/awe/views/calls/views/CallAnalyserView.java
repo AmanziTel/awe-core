@@ -3,7 +3,6 @@ package org.amanzi.awe.views.calls.views;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
@@ -57,7 +56,6 @@ import org.amanzi.neo.core.utils.Pair;
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
@@ -83,9 +81,9 @@ import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
@@ -100,7 +98,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
 import org.neo4j.graphdb.Direction;
@@ -184,6 +181,7 @@ public class CallAnalyserView extends ViewPart {
     private Button bInclInconclusive;
     private Button btReport;
     private Button bReport;
+    private Button bUpdate;
 
     
     private enum SortOrder{
@@ -676,9 +674,16 @@ public class CallAnalyserView extends ViewPart {
         label.setLayoutData(fData);
         cProbe = new Combo(cell1, SWT.DROP_DOWN | SWT.READ_ONLY);
         fData = new FormData();
-        fData.right = new FormAttachment(100, -2);
-        fData.width = MIN_FIELD_WIDTH;
+        fData.right = new FormAttachment(100, -2 - 32 - 10);
+        fData.width = MIN_FIELD_WIDTH - 32 - 10;
         cProbe.setLayoutData(fData);
+        bUpdate = new Button(cell1, SWT.PUSH);
+        fData = new FormData();
+        fData.right = new FormAttachment(100, -2);
+        fData.width = 32;
+        bUpdate.setLayoutData(fData);
+        bUpdate.setImage(CallAnalyserPlugin.getImageDescriptor("/icons/refresh.gif").createImage());
+        bUpdate.setToolTipText("Refresh table");
         
         cell2 = new Composite(column3, SWT.FILL);
         fData = new FormData();
@@ -1053,7 +1058,7 @@ public class CallAnalyserView extends ViewPart {
          dateStart.addFocusListener(new FocusListener() {        
              @Override
              public void focusLost(FocusEvent e) {
-                 changeDate();
+                // changeDate();
              }
             
              @Override
@@ -1072,6 +1077,18 @@ public class CallAnalyserView extends ViewPart {
              public void keyPressed(KeyEvent e) {
              }
          });
+        bUpdate.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                changeDate();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
          timeStart.addFocusListener(new FocusListener() {             
              @Override
              public void focusLost(FocusEvent e) {
