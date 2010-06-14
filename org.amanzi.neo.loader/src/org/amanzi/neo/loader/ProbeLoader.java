@@ -65,7 +65,7 @@ public class ProbeLoader extends AbstractLoader {
     private void addNetworkIndexes() {
         // TODO check - use same index like sectors or new?
         try {
-            addIndex(NodeTypes.MP.getId(), NeoUtils.getLocationIndexProperty(basename));
+            addIndex(NodeTypes.PROBE.getId(), NeoUtils.getLocationIndexProperty(basename));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
@@ -133,25 +133,17 @@ public class ProbeLoader extends AbstractLoader {
             NeoLoaderPlugin.error("Probe not stored:\t" + lineData);
             return;
         }
-        Node mp = null;
+
         Transaction transaction = neo.beginTx();
         try {
             Node probeNode = findOrCreateProbe(network, probeName);
             for (Map.Entry<String, Object> entry : lineData.entrySet()) {
                 if (INeoConstants.PROPERTY_LAT_NAME.equals(entry.getKey()) || INeoConstants.PROPERTY_LON_NAME.equals(entry.getKey())) {
-                    if (mp == null) {
-                        mp = neo.createNode();
-                        NodeTypes.MP.setNodeType(mp, neo);
-                        probeNode.createRelationshipTo(mp, GeoNeoRelationshipTypes.LOCATION);
-                    }
-                    mp.setProperty(entry.getKey(), ((Number)entry.getValue()).doubleValue());
+                    probeNode.setProperty(entry.getKey(), ((Number)entry.getValue()).doubleValue());
                 } else {
-                    probeNode.setProperty(entry.getKey(), entry.getValue());
+                probeNode.setProperty(entry.getKey(), entry.getValue());
                 }
 
-            }
-            if (mp != null) {
-                index(mp);
             }
             index(probeNode);
             Double currentLatitude = (Double)probeNode.getProperty(INeoConstants.PROPERTY_LAT_NAME, null);
