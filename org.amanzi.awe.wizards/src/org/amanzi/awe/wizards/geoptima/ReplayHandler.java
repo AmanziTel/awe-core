@@ -32,7 +32,7 @@ public class ReplayHandler extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
-        new ProcessDialog(window.getShell(), "Replay Subscriber Locations", "Start").open();
+        new ReplayDialog(window.getShell()).open();
         return null;
     }
 

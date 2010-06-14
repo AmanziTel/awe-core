@@ -56,12 +56,12 @@ import org.neo4j.graphdb.Traverser;
  */
 public class ProcessDialog extends Dialog implements IPropertyChangeListener {
 
-    private String btnLabel;
-    private int status;
-    private String title;
-    private Shell shell;
-    private Combo cData;
-    private Combo cCorrelate;
+    protected String btnLabel;
+    protected int status;
+    protected String title;
+    protected Shell shell;
+    protected Combo cData;
+    protected Combo cCorrelate;
     protected String property;
     protected GraphDatabaseService service;
     protected Map<String, Node> datamap = new TreeMap<String, Node>();
@@ -158,7 +158,7 @@ public class ProcessDialog extends Dialog implements IPropertyChangeListener {
         }
     }
 
-    private void createContents(final Shell shell) {
+    protected void createContents(final Shell shell) {
         this.shell = shell;
         shell.setLayout(new GridLayout(2, false));
         Label label = new Label(shell, SWT.NONE);
