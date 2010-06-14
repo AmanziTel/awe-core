@@ -64,6 +64,7 @@ public class INeoConstants {
     public static final String PROPERTY_FLAGGED_NAME = "flagged";
     // dataset property
     public static final String DRIVE_TYPE = "drive_type";
+    public static final String PROPERTY_NAME_SELECTED_PROPERTIES = "selected_propertis";
     /*
      * Type Splash
      */
@@ -169,5 +170,4 @@ public class INeoConstants {
     public static final String M_PROBE_ID = "probe_id";
     public static final String PRIMARY_TYPE_ID = "primary_type";
     public static final String PROPERTY_IS_INCONCLUSIVE = "is_inconclusive";
-    public static final String PROPERTY_NAME_SELECTED_PROPERTIES = "selected properties";
 }
