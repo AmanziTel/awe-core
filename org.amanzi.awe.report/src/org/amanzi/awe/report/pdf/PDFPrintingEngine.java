@@ -50,8 +50,8 @@ import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfWriter;
 
 /**
- * TODO Purpose of
  * <p>
+ * Engine that prints Amanzi report to a PDF file
  * </p>
  * 
  * @author Pechko_E
@@ -62,6 +62,11 @@ public class PDFPrintingEngine {
     private int top;
     private int left;
     private final String REPORT_DIRECTORY="Amanzi report";
+    /**
+     * Prints report. Uses the filename specified or generates the file name
+     *
+     * @param report report to be printed
+     */
     public void printReport(Report report) {
         top=0;
         final Rectangle paperSize = PageSize.A4;
@@ -76,7 +81,14 @@ public class PDFPrintingEngine {
         if (reportFileName == null || reportFileName.length() == 0) {
             fileName += File.separator + "report" + System.currentTimeMillis() + ".pdf";
         } else {
-            fileName += File.separator + reportFileName;
+            if (reportFileName.matches("[\\w|\\d|_]*.pdf")){
+                //the report file name doesn't contain the directory name
+                //save it to default directory ('user.home'/Amanzi reports)
+                fileName += File.separator + reportFileName;
+            }else{
+                //the report file name contain the directory name
+                fileName=reportFileName;
+            }
         }
         LOGGER.debug("filename "+fileName);
         File outputPdfFile = new File(fileName);
@@ -86,8 +98,6 @@ public class PDFPrintingEngine {
             writer = PdfWriter.getInstance(document, new FileOutputStream(outputPdfFile));
             writer.setPageEvent(new AWEPageEvent());
             document.open();
-            PdfContentByte cb = writer.getDirectContent();
-            Graphics2D graphics = cb.createGraphics(paperRectangle.getWidth(), paperRectangle.getHeight());
             final Paragraph title = new Paragraph(report.getName());
             title.setIndentationLeft(30);
             title.setIndentationRight(30);
@@ -98,7 +108,6 @@ public class PDFPrintingEngine {
             for (IReportPart part : parts) {
                 if (part instanceof ReportMap) {
                     IMap map = ((ReportMap)part).getMap();
-//                    BufferedImage bI = new BufferedImage((int)width, (int)height, BufferedImage.TYPE_INT_ARGB);
                     BufferedImage bI = new BufferedImage(part.getWidth(), part.getHeight(), BufferedImage.TYPE_INT_ARGB);
                     Graphics graphics2 = bI.getGraphics();
 
@@ -140,7 +149,6 @@ public class PDFPrintingEngine {
                     document.add(paragraph);
                 }
             }
-            graphics.dispose();
             document.newPage();
         } catch (Exception e) {
             LOGGER.error(e);
@@ -149,7 +157,15 @@ public class PDFPrintingEngine {
         writer.close();
         }
     }
-    public void draw( Graphics2D graphics, IMap map, int width, int height) {
+    /**
+     * Draws a map
+     *
+     * @param graphics instance of Graphics2D
+     * @param map uDig map
+     * @param width width of the map
+     * @param height height of the map
+     */
+    private void draw( Graphics2D graphics, IMap map, int width, int height) {
         try {
             Dimension size = new Dimension(width, height);
             //reduce set a 1 pixel clip bound around outside to prevent 

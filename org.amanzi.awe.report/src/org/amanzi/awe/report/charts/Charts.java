@@ -24,14 +24,11 @@ import org.amanzi.awe.report.model.Chart;
 import org.amanzi.neo.core.database.nodes.CellNode;
 import org.amanzi.neo.core.database.nodes.ChartItemNode;
 import org.amanzi.neo.core.database.nodes.ChartNode;
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IElementFactory;
-import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
@@ -51,17 +48,15 @@ import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.category.BarRenderer;
-import org.jfree.chart.renderer.category.StandardBarPainter;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
-import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.Dataset;
 import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.data.xy.IntervalXYDataset;
 import org.jfree.data.xy.XYBarDataset;
-import org.jfree.data.xy.XYDataset;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -396,13 +391,91 @@ public class Charts {
                     rangeAxis = new NumberAxis("Axis Name");
                 rangeAxis.setVisible(true);
                 xyplot.setRangeAxis(dsNum, rangeAxis);
+//                xyplot.setDomainAxis(new DateAxis());
                 xydataset.setBarWidth(0.0);
-//                xyplot.setRangeAxis(rangeAxis);
             }
         }else if (plot instanceof CategoryPlot){
          // get a reference to the plot for further customisation...
             CategoryPlot categoryPlot = (CategoryPlot)plot;
 
+            // set the range axis to display integers only...
+            NumberAxis rangeAxis = new NumberAxis();
+            rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+            categoryPlot.setRangeAxis(rangeAxis);
+            
+            // disable bar outlines...
+            BarRenderer renderer = new BarRenderer();
+            renderer.setDrawBarOutline(false);
+            
+            // set up gradient paints for series...
+            GradientPaint gp0 = new GradientPaint(0.0f, 0.0f, Color.blue, 0.0f, 0.0f, new Color(0, 0, 64));
+            renderer.setSeriesPaint(0, gp0);
+            categoryPlot.setRenderer(renderer);
+            
+            CategoryAxis domainAxis = new CategoryAxis();
+            domainAxis.setCategoryLabelPositions(CategoryLabelPositions.createUpRotationLabelPositions(Math.PI / 6.0));
+            categoryPlot.setDomainAxis(domainAxis);
+        }
+    }
+    public static void applyDefaultSettingsToDataset(Plot plot, Dataset dataset, int dsNum) {
+        if (plot instanceof XYPlot) {
+            XYPlot xyplot = (XYPlot)plot;
+            if (dataset instanceof TimeSeriesCollection) {
+
+                xyplot.setDataset(dsNum, (TimeSeriesCollection)dataset);
+
+                StandardXYItemRenderer standardxyitemrenderer = new StandardXYItemRenderer();
+                standardxyitemrenderer.setBaseShapesFilled(true);
+                xyplot.setRenderer(dsNum, standardxyitemrenderer);
+
+                ValueAxis rangeAxis = xyplot.getRangeAxis();
+                if (rangeAxis == null){
+                    NumberAxis numberaxis=new NumberAxis("Value");
+                    numberaxis.setAutoRangeIncludesZero(false);
+                    rangeAxis=numberaxis;
+                }
+                xyplot.setRangeAxis(dsNum, rangeAxis);
+                xyplot.setRangeAxisLocation(dsNum, AxisLocation.BOTTOM_OR_LEFT);
+                xyplot.mapDatasetToRangeAxis(dsNum, dsNum);
+            } else if (dataset instanceof EventDataset) {
+                EventDataset eventDataset = (EventDataset)dataset;
+                xyplot.setDataset(dsNum, eventDataset);
+               
+                XYBarRenderer eventRenderer = new EventRenderer(eventDataset);
+                xyplot.setRenderer(dsNum, eventRenderer);
+               
+                NumberAxis rangeAxis = new NumberAxis("Events");
+                rangeAxis.setVisible(false);
+                xyplot.setRangeAxis(dsNum, rangeAxis);
+            }else if (dataset instanceof XYBarDataset) {
+                XYBarDataset xydataset = (XYBarDataset)dataset;
+                xyplot.setDataset(dsNum, xydataset);
+               
+                XYBarRenderer xyRenderer = new XYBarRenderer();
+                xyRenderer.setBarPainter(new StandardXYBarPainter());
+                xyplot.setRenderer(dsNum, xyRenderer);
+               
+                ValueAxis rangeAxis = xyplot.getRangeAxis();
+                if (rangeAxis == null)
+                    rangeAxis = new NumberAxis("Value");
+                rangeAxis.setVisible(true);
+                xyplot.setRangeAxis(dsNum, rangeAxis);
+            }
+        }
+    }
+    public static void applyDefaultSettingsToPlot(Plot plot) {
+        if (plot instanceof XYPlot) {
+            XYPlot xyplot = (XYPlot)plot;
+            xyplot.setDomainAxis(new DateAxis("Time"));
+            xyplot.setDomainCrosshairVisible(true);
+            xyplot.setDomainCrosshairLockedOnData(false);
+            xyplot.setRangeCrosshairVisible(false);
+            xyplot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
+            
+        }else if (plot instanceof CategoryPlot){
+            // get a reference to the plot for further customisation...
+            CategoryPlot categoryPlot = (CategoryPlot)plot;
+            
             // set the range axis to display integers only...
             NumberAxis rangeAxis = new NumberAxis();
             rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
@@ -434,10 +507,11 @@ public class Charts {
             XYPlot xyPlot = (XYPlot)plot;
             if (rangeAxisLablel != null)
                 xyPlot.getRangeAxis().setLabel(rangeAxisLablel);
-            if (domainAxisLabel != null)
-                if (domainAxisLabel != null)
-
-                    xyPlot.getDomainAxis().setLabel(domainAxisLabel);
+            ValueAxis domainAxis = xyPlot.getDomainAxis();
+            if (domainAxisLabel != null){
+                System.out.println(domainAxis);//TODO delete
+                domainAxis.setLabel(domainAxisLabel);
+                }
             xyPlot.setOrientation(orientation);
         }
     }
@@ -451,7 +525,7 @@ public class Charts {
         case LINE:
             return Charts.createLineChart(chart);
         case TIME:
-            default:
+        default:
             return new JFreeChart(chart.getPlot());
         }
     }

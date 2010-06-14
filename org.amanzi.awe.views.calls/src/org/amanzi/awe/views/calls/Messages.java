@@ -85,6 +85,7 @@ public class Messages extends NLS {
     public static String R_CSD_TITLE;
     public static String R_INH_HO_CC_TITLE;
     public static String R_INH_HO_TITLE;
+    public static String R_THRESHOLD;
 
     
     private Messages() {

@@ -292,16 +292,7 @@ public class ReportGUIEditor extends EditorPart  {
         data.heightHint=chart.getHeight();
         data.widthHint=chart.getWidth();
         currComposite.setLayoutData(data);
-//        DefaultCategoryDataset chartDataset = null;
-//        final AbstractDataset dataset = chart.getDataset();
-//        if (dataset != null) {
-//            if (dataset instanceof DefaultCategoryDataset) {
-//                chartDataset = (DefaultCategoryDataset)dataset;
-//            }
-//        } else {
-//            chartDataset = reportModel.getChartDataset(chart);
-//        }
-//        final JFreeChart jFreeChart = Charts.createBarChart(chart);
+
         final JFreeChart jFreeChart = Charts.createChart(chart);
         jFreeChart.setTitle(chart.getTitle());
         ChartUtilities.applyCurrentTheme(jFreeChart);

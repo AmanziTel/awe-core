@@ -26,8 +26,13 @@ include_class org.amanzi.awe.report.charts.Charts
 include_class org.amanzi.awe.report.util.ReportUtils
 include_class org.amanzi.awe.report.pdf.PDFPrintingEngine
 
+include_class "java.text.SimpleDateFormat"
 include_class org.jfree.data.category.DefaultCategoryDataset;
-include_class org.jfree.data.xy.XYBarDataset;
+include_class org.jfree.data.xy.XYSeries
+include_class org.jfree.data.xy.XYSeriesCollection
+include_class org.jfree.data.xy.XYBarDataset
+include_class org.jfree.chart.axis.DateAxis
+include_class org.jfree.chart.axis.DateTickUnit
 include_class org.jfree.chart.plot.PlotOrientation
 include_class org.jfree.chart.plot.Plot
 include_class org.jfree.data.time.Millisecond
@@ -477,7 +482,7 @@ class Chart
   attr_writer:property, :distribute, :select
   attr_writer :drive, :event, :property1, :property2, :start_time, :length
   attr_accessor :dataset, :properties, :aggregation
-  attr_writer :data, :time, :threshold
+  attr_writer :data, :time, :threshold, :threshold_label
   def initialize(title)
     @datasets=[]
     self.title = title
@@ -595,31 +600,25 @@ class Chart
         ds=DefaultCategoryDataset.new()
         @datasets<<update_chart_dataset(ds,@kpi,"value")
       elsif !@data.nil?
-        #            ds=DefaultCategoryDataset.new()
         ds=TimeSeriesCollection.new()
         ds_series=TimeSeries.new("Values")
         if !@threshold.nil?
           ds_time=TimeSeriesCollection.new()
-          ds_time_series=TimeSeries.new("Threshold")
+          ds_time_series=TimeSeries.new(!@threshold_label.nil? ? @threshold_label : "Threshold")
         end
+
         @data.each do |row|
-          puts row
           if !row[@time].nil?
             time=java.util.Date.new(row[@time])
             if @aggregation==:hourly
-              puts "@aggregation==:hourly"
               date=Hour.new(time)
             elsif @aggregation==:daily
-              puts "@aggregation==:daily"
               date=Day.new(time)
             elsif @aggregation==:weekly
-              puts "@aggregation==:weekly"
               date=Week.new(time)
             elsif @aggregation==:monthly
-              puts "@aggregation==:monthly"
               date=Month.new(time)
             end
-            puts "date: #{date} "
           end
           ds_series.add(date, java.lang.Double.parseDouble(row[@values].to_s)) if !row[@time].nil? and !row[@values].nil?
           ds_time_series.add(date, @threshold) if !@threshold.nil? and !row[@time].nil? 
@@ -629,11 +628,21 @@ class Chart
           ds_time.addSeries(ds_time_series)
           @datasets<<ds_time
         end
-        @datasets<<XYBarDataset.new(ds,0.1)
+        if @aggregation==:hourly
+          width=1000*60*60*0.5
+        elsif @aggregation==:daily
+          width=1000*60*60*24*0.5
+        elsif @aggregation==:weekly
+          width=1000*60*60*24*7*0.5
+        elsif @aggregation==:monthly
+          width=1000*60*60*24*7*4*0.5
+        else
+          width=0.5
+        end
+        xybardataset=XYBarDataset.new(ds,width)
+        @datasets<<XYBarDataset.new(ds,width)
       end
 
-
-        puts "@type=#{@type}"
       if @type==:time
         plot=Java::org.jfree.chart.plot.XYPlot.new
         for i in 0..@datasets.size-1
@@ -642,13 +651,24 @@ class Chart
         end
         Charts.applyMainVisualSettings(plot, getRangeAxisLabel(),getDomainAxisLabel(),getOrientation())
       elsif @type==:bar
-        puts "@type==:bar"
         plot=Java::org.jfree.chart.plot.CategoryPlot.new
         plot.setDataset(@datasets[0])
       elsif @type==:combined
         plot=Java::org.jfree.chart.plot.XYPlot.new
+        date_axis=DateAxis.new("Date")
+        if @aggregation==:hourly
+          date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::HOUR,24,SimpleDateFormat.new("HH, dd")))
+        elsif @aggregation==:daily
+          date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::DAY,1,SimpleDateFormat.new("MM.dd")))
+        elsif @aggregation==:weekly
+          date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::DAY,7,SimpleDateFormat.new("w, yyyy")))
+        elsif @aggregation==:monthly
+          date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::MONTH,1,SimpleDateFormat.new("MMMMM")))
+        end
+        plot.setDomainAxis(date_axis)
+#        Charts.applyDefaultSettingsToPlot(plot)
         for i in 0..@datasets.size-1
-          Charts.applyDefaultSettings(plot,@datasets[i],i)
+          Charts.applyDefaultSettingsToDataset(plot,@datasets[i],i)
         end
         Charts.applyMainVisualSettings(plot, getRangeAxisLabel(),getDomainAxisLabel(),getOrientation())
       end

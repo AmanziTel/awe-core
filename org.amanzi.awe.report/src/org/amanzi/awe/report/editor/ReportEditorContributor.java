@@ -13,12 +13,18 @@
 
 package org.amanzi.awe.report.editor;
 
+import java.io.File;
+
 import org.amanzi.awe.report.ReportPlugin;
+import org.amanzi.awe.report.model.Report;
 import org.amanzi.awe.report.model.ReportModel;
 import org.amanzi.awe.report.pdf.PDFPrintingEngine;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -204,7 +210,18 @@ public class ReportEditorContributor extends MultiPageEditorActionBarContributor
         public void run() {
             final ReportModel reportModel = editor.getReportModel();
             final PDFPrintingEngine engine = new PDFPrintingEngine();
-            engine.printReport(reportModel.getReport());
+            Report report = reportModel.getReport();
+            if (report.getFile() == null) {
+                Shell shell = editor.getSite().getShell();
+                FileDialog dialog = new FileDialog(shell, SWT.SAVE);
+                dialog.setText("Specify PDF file");
+                dialog.setFilterExtensions(new String[] {"*.pdf"});
+                dialog.setFilterNames(new String[] {"PDF file (*.pdf)"});
+                if (dialog.open() != null) {
+                    report.setFile(dialog.getFilterPath() + File.separator + dialog.getFileName());
+                }
+            }
+            engine.printReport(report);
         }
 
     }

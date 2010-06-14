@@ -1170,7 +1170,7 @@ public class CallAnalyserView extends ViewPart {
             Float threshold;
             sb.append("  chart \"").append(header.getTitle()).append("\n").append(header.getComment());
             if ((threshold = header.getThreshold()) != null)
-                sb.append("; threshold: ").append(threshold);//$NON-NLS-1$
+                sb.append(";\n").append(Messages.R_THRESHOLD).append(": ").append(threshold);//$NON-NLS-1$
             sb.append("\" do |chart|\n");//$NON-NLS-1$
             sb.append("    chart.data=select_properties [\"name\",\"time\"]  do\n");//$NON-NLS-1$
             sb.append("      from do\n");//$NON-NLS-1$
@@ -1194,8 +1194,10 @@ public class CallAnalyserView extends ViewPart {
             sb.append("    chart.time=\"time\"\n");//$NON-NLS-1$
             sb.append("    chart.categories=\"name\"\n");//$NON-NLS-1$
             sb.append("    chart.values=\"value\"\n");//$NON-NLS-1$
-            if (threshold != null)
+            if (threshold != null){
                 sb.append("    chart.threshold=").append(threshold).append("\n");//$NON-NLS-1$
+                sb.append("    chart.threshold_label='").append(Messages.R_THRESHOLD).append("'\n");//$NON-NLS-1$
+                }
             sb.append("  end\n");//$NON-NLS-1$
         }
         sb.append("end");

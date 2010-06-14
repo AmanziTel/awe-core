@@ -39,14 +39,14 @@ class SearchQuery
     configure_traverser
     @traverser.each do |node|
       result=Hash.new
-      puts @properties.class
+#      puts @properties.class
       if @properties.is_a? Hash
         key_property=@properties[:key]
         value_property=@properties[:value]
         result[node[key_property]]=node[value_property]
       else
         @properties.each do |prop|
-          puts "prop: #{prop}"
+#          puts "prop: #{prop}"
           result[prop]=(node.property? prop) ? node.get_property(prop): nil
         end
       end
@@ -71,8 +71,8 @@ class SearchQuery
   end
 
   def select_properties(properties,&block)
-    puts self
-    puts "Search.select(#{properties},&block)"
+#    puts self
+#    puts "Search.select(#{properties},&block)"
     search=SearchQuery.new(properties)
     search.setup &block
     @child=search
@@ -83,9 +83,7 @@ class SearchQuery
   end
 
   def  from(subtree_name=nil,&block)
-    puts "from begin"
     self.instance_eval &block
-    puts "from end"
   end
 
   #  def method_missing(meth_name,*args)
@@ -132,7 +130,6 @@ module NodeUtils
   end
 
   def select_properties(properties,&block)
-    puts "NodeUtils.select(#{properties},&block)"
     search=SearchQuery.new(properties)
     search.setup &block
     search
