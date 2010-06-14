@@ -132,7 +132,7 @@ public enum NetworkTypes {
     public boolean checkType(Node node, GraphDatabaseService service) {
         Transaction tx = NeoUtils.beginTx(service);
         try {
-            return getId().equals(node.getProperty(PROPERTY_NAME, ""));
+            return node==null?false:getId().equals(node.getProperty(PROPERTY_NAME, ""));
         } finally {
             NeoUtils.finishTx(tx);
         }

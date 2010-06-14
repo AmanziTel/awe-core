@@ -41,6 +41,7 @@ import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.OssType;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
@@ -2174,7 +2175,11 @@ public class NeoUtils {
             if (relation != null) {
                 return relation.getOtherNode(gisNode);
             }
+            NetworkTypes type = NetworkTypes.getNodeType(gisNode, neo);
             network = neo.createNode();
+            if (type!=null){
+               type.setTypeToNode(network, neo);
+            }
             network.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.NETWORK.getId());
             network.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
             network.setProperty(INeoConstants.PROPERTY_FILENAME_NAME, filename);
@@ -2674,6 +2679,17 @@ public class NeoUtils {
                 finishTx(tx);
             }
         return crs;
+    }
+
+
+    public static Node getMainNodeFromGis(Node gisNode, GraphDatabaseService service) {
+        Transaction tx = beginTx(service);
+        try{
+            Relationship rel = gisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            return rel==null?null:rel.getOtherNode(gisNode);
+        }finally{
+            tx.finish();
+        }
     }
 
 }

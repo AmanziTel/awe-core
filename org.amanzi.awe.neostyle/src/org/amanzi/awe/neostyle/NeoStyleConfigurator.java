@@ -25,12 +25,13 @@ import net.refractions.udig.style.IStyleConfigurator;
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.catalog.neo.NeoGeoResource;
 import org.amanzi.neo.core.enums.GisTypes;
+import org.amanzi.neo.core.enums.NetworkTypes;
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.PropertyHeader;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
@@ -43,6 +44,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
+import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * Style editor for org.amanzi.awe.render.network
@@ -100,6 +102,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
     private Group grScale;
 
     private boolean isNetwork;
+    private boolean isProbe;
 
     private Combo cFontSize;
 
@@ -119,6 +122,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
 
     private Label lSecondaryProperty;
 
+    @Override
     public void createControl(Composite parent) {
         //Lagutko, 15.03.2010, adding a Scroll
         GridLayout mainLayout = new GridLayout(1, false);
@@ -458,11 +462,24 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
             if(isNetwork){
                 lIconOffset.setVisible(false);
                 sIconOffset.setVisible(false);
+                if (isProbe){
+                    changeToProbeNetworkStyle();
+                }
             } else {
                 changeToDriveStyle();
             }
         } finally {
         }
+    }
+
+    /**
+     *
+     */
+    private void changeToProbeNetworkStyle() {
+        lMainProperty.setText("Probe property");
+        lFontSize.setText("Probe font size");
+        lFillSite.setText("Probe fill");
+        
     }
 
     /**
@@ -499,11 +516,21 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
     @Override
     public void focus(Layer layer1) {
         try {
-            isNetwork = layer1.findGeoResource(NeoGeoResource.class).resolve(GeoNeo.class, null).getGisType() == GisTypes.NETWORK;
+            GeoNeo geoNeo = layer1.findGeoResource(NeoGeoResource.class).resolve(GeoNeo.class, null);
+            isNetwork = geoNeo.getGisType() == GisTypes.NETWORK;
+            if (isNetwork) {
+                GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+                //TODO now we store network type in gis node.
+//                Node mainNode = NeoUtils.getMainNodeFromGis(geoNeo.getMainGisNode(), service);
+                isProbe = NetworkTypes.PROBE.checkType(geoNeo.getMainGisNode(), service);
+            } else {
+                isProbe = false;
+            }
         } catch (IOException e) {
             // TODO Handle IOException
             e.printStackTrace();
             isNetwork = true;
+            isProbe = false;
         }
         super.focus(layer1);
     }
