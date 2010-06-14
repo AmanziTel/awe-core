@@ -443,6 +443,17 @@ public class NemoLoader extends DriveLoader {
             }
             driveEvents = (DriveEvents)parParam.remove(NemoEvents.DRIVE_EVENTS);
             subNodes = (List<Map<String, Object>>)parParam.remove(NemoEvents.SUB_NODES);
+            //TODO check documentation
+            if (subNodes!=null){
+                //store in parameters like prop1,prop2...
+                int i=0;
+                for (Map<String, Object> oneSet:subNodes){
+                    for (Map.Entry<String, Object> entry:oneSet.entrySet()){
+                        parParam.put(new StringBuilder(entry.getKey()).append(++i).toString(), entry.getValue()); 
+                    }
+                }
+                subNodes.clear();
+            }
             // add context field
             if (parParam.containsKey(NemoEvents.FIRST_CONTEXT_NAME)) {
                 List<String> contextName = (List<String>)parParam.get(NemoEvents.FIRST_CONTEXT_NAME);
