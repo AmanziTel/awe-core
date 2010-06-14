@@ -743,7 +743,8 @@ public class DriveDialog {
                     driveLoader = new OldNemoVersionLoader(time, filePath, display, datasetName);
                 } else {
 			        NeoLoaderPlugin.error("Unsupported file extension: "+extension);
-			    }			    
+			    }			
+                driveLoader.setTaskSetted(true);
 				driveLoader.run(monitor);
 				driveLoader.printStats(false);	// stats for this load
 		        long memAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
