@@ -158,8 +158,8 @@ public class ReportGUIEditor extends EditorPart  {
             parts.clear();
             // create all composites
             parts = new ArrayList<Composite>(reportParts.size());
-            reportTitle = new Text(frame, SWT.SINGLE);
-            reportTitle.setFont(new Font(frame.getDisplay(), "Arial", 16, SWT.BOLD));
+            reportTitle = new Text(frame, SWT.MULTI);
+            reportTitle.setFont(new Font(frame.getDisplay(), "Arial", 20, SWT.BOLD));
             reportTitle.setText(report.getName());
             // add errors if report has errors
             if (report.hasErrors()){

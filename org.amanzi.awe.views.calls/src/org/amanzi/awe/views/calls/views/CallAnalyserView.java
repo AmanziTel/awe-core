@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1072,8 +1073,8 @@ public class CallAnalyserView extends ViewPart {
 
     private void generateReport() {
         String aggregation = cPeriod.getText();
-        StringBuffer sb = new StringBuffer("report '").append(cDrive.getText()).append("; aggregation: ").append(aggregation).append("' do\n  author '").append(System.getProperty("user.name")).append( //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                        "'\n  date '").append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\n");
+        StringBuffer sb = new StringBuffer("report \"Overview of ").append(aggregation).append(" KPI's\n").append(cDrive.getText()).append("\" do\n  author '")
+        .append(System.getProperty("user.name")).append("'\n  date '").append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\n");
         Node dsNode = callDataset.get(cDrive.getText());
         sb.append("  ds=dataset('").append(dsNode.getProperty("name")).append("')\n");
         sb
@@ -1081,37 +1082,41 @@ public class CallAnalyserView extends ViewPart {
         sb.append("  ").append(aggregation).append("=find_first(ca_root,{'name'=>'").append(aggregation).append("'},:CHILD)\n");//$NON-NLS-1$
         for (AggregationStatisticsHeaders header : AggregationStatisticsHeaders.values()) {
             Float threshold;
-            sb.append("  chart \"").append(header.getTitle()).append("\n").append(header.getComment());
-            if ((threshold = header.getThreshold()) != null)
-                sb.append(";\n").append(Messages.R_THRESHOLD).append(": ").append(threshold);//$NON-NLS-1$
-            sb.append("\" do |chart|\n");//$NON-NLS-1$
-            sb.append("    chart.data=select_properties [\"name\",\"time\"]  do\n");//$NON-NLS-1$
-            sb.append("      from do\n");//$NON-NLS-1$
-            sb.append("        root ").append(aggregation).append("\n");//$NON-NLS-1$
-            sb.append("        traverse :CHILD, :NEXT\n");//$NON-NLS-1$
-            sb.append("        depth :all\n");//$NON-NLS-1$
-            sb.append("        where {get_property(\"type\")==\"s_row\"}\n");//$NON-NLS-1$
-            sb.append("        select_properties \"value\" do\n");//$NON-NLS-1$
-            sb.append("          from do\n");//$NON-NLS-1$
-            sb.append("            traverse :CHILD, :NEXT\n");//$NON-NLS-1$
-            sb.append("            depth :all\n");//$NON-NLS-1$
-            sb.append("            stop_on {get_property(\"type\")==\"s_row\"}\n");//$NON-NLS-1$
-            sb
-                    .append("            where {get_property(\"type\")==\"s_cell\" and get_property(\"name\")==\"").append(header.getTitle()).append("\"}\n");//$NON-NLS-1$
-            sb.append("          end\n");//$NON-NLS-1$
-            sb.append("        end\n");//$NON-NLS-1$
-            sb.append("      end\n");//$NON-NLS-1$
-            sb.append("    end\n");//$NON-NLS-1$
-            sb.append("    chart.type=:combined\n");//$NON-NLS-1$
-            sb.append("    chart.aggregation=:").append(aggregation).append("\n");//$NON-NLS-1$
-            sb.append("    chart.time=\"time\"\n");//$NON-NLS-1$
-            sb.append("    chart.categories=\"name\"\n");//$NON-NLS-1$
-            sb.append("    chart.values=\"value\"\n");//$NON-NLS-1$
-            if (threshold != null){
+            if ((threshold = header.getThreshold()) != null) {
+                sb.append("  chart \"").append(header.getTitle()).append("\n").append(header.getChartTitle());
+                String subtitle = MessageFormat.format(header.getThresholdTitle(), 
+                        new Object[]{
+                    header.getCondition().getInverseCondition().getText(),
+                    header.getThreshold(),
+                    header.getUnit().getText()});
+                sb.append(";\n").append(subtitle);//$NON-NLS-1$
+                sb.append("\" do |chart|\n");//$NON-NLS-1$
+                sb.append("    chart.data=select_properties [\"name\",\"time\"]  do\n");//$NON-NLS-1$
+                sb.append("      from do\n");//$NON-NLS-1$
+                sb.append("        root ").append(aggregation).append("\n");//$NON-NLS-1$
+                sb.append("        traverse :CHILD, :NEXT\n");//$NON-NLS-1$
+                sb.append("        depth :all\n");//$NON-NLS-1$
+                sb.append("        where {get_property(\"type\")==\"s_row\"}\n");//$NON-NLS-1$
+                sb.append("        select_properties \"value\" do\n");//$NON-NLS-1$
+                sb.append("          from do\n");//$NON-NLS-1$
+                sb.append("            traverse :CHILD, :NEXT\n");//$NON-NLS-1$
+                sb.append("            depth :all\n");//$NON-NLS-1$
+                sb.append("            stop_on {get_property(\"type\")==\"s_row\"}\n");//$NON-NLS-1$
+                sb.append("            where {get_property(\"type\")==\"s_cell\" and get_property(\"name\")==\"").append(header.getTitle()).append("\"}\n");//$NON-NLS-1$
+                sb.append("          end\n");//$NON-NLS-1$
+                sb.append("        end\n");//$NON-NLS-1$
+                sb.append("      end\n");//$NON-NLS-1$
+                sb.append("    end\n");//$NON-NLS-1$
+                sb.append("    chart.type=:combined\n");//$NON-NLS-1$
+                sb.append("    chart.aggregation=:").append(aggregation).append("\n");//$NON-NLS-1$
+                sb.append("    chart.time=\"time\"\n");//$NON-NLS-1$
+                sb.append("    chart.categories=\"name\"\n");//$NON-NLS-1$
+                sb.append("    chart.values=\"value\"\n");//$NON-NLS-1$
                 sb.append("    chart.threshold=").append(threshold).append("\n");//$NON-NLS-1$
                 sb.append("    chart.threshold_label='").append(Messages.R_THRESHOLD).append("'\n");//$NON-NLS-1$
-                }
-            sb.append("  end\n");//$NON-NLS-1$
+                sb.append("    chart.range_axis_label='").append(header.getUnit().getText()).append("'\n");//$NON-NLS-1$
+                sb.append("  end\n");//$NON-NLS-1$
+            }
         }
         sb.append("end");
         String aweProjectName = AWEProjectManager.getActiveProjectName();

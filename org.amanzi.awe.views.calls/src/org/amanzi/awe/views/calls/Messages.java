@@ -86,6 +86,51 @@ public class Messages extends NLS {
     public static String R_INH_HO_CC_TITLE;
     public static String R_INH_HO_TITLE;
     public static String R_THRESHOLD;
+    public static String R_SC1_THRESHOLD_TITLE;
+
+    public static String R_SC2_ZW2_AVG_THRESHOLD_TITLE;
+
+    public static String R_SC2_ZW2_MAX_THRESHOLD_TITLE;
+
+    public static String R_SC3_THRESHOLD_TITLE;
+
+    public static String R_SC4_THRESHOLD_TITLE;
+
+    public static String R_SC4_ZW2_AVG_THRESHOLD_TITLE;
+
+    public static String R_SC5_ZW1_AVG_THRESHOLD_TITLE;
+
+    public static String R_GC1_THRESHOLD_TITLE;
+
+    public static String R_GC2_ZW2_AVG_THRESHOLD_TITLE;
+
+    public static String R_GC2_ZW2_MAX_THRESHOLD_TITLE;
+
+    public static String R_GC3_THRESHOLD_TITLE;
+
+    public static String R_GC4_THRESHOLD_TITLE;
+
+    public static String R_GC4_ZW2_AVG_THRESHOLD_TITLE;
+
+    public static String R_GC5_ZW1_AVG_THRESHOLD_TITLE;
+
+    public static String R_INH_HO_CC_THRESHOLD_TITLE;
+
+    public static String R_INH_HO_THRESHOLD_TITLE;
+
+    public static String R_INH_CC_THRESHOLD_TITLE;
+
+    public static String R_TSM_THRESHOLD_TITLE;
+
+    public static String R_SDS_THRESHOLD_TITLE;
+
+    public static String R_INH_AT_THRESHOLD_TITLE;
+
+    public static String R_EC1_THRESHOLD_TITLE;
+
+    public static String PERCENT;
+
+    public static String SECOND;
 
     
     private Messages() {

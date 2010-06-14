@@ -1,7 +1,7 @@
 module KPI
-  def sum_new(data)
+  def sum(data)
     if data.respond_to? 'sum_internal'
-          data.count_internal
+          data.sum_internal
         elsif data.respond_to? 'each'
       s=0.0
       data.each do |element|
@@ -26,7 +26,7 @@ module KPI
   def average(data)
     #begin time
     start=Time.now.usec
-    a=data.sum/data.count
+    a=sum(data).quo(count(data))
     #end time
     puts "[average]Time: #{Time.now.usec-start}"
     a
@@ -39,6 +39,7 @@ module KPI
       n=0
       s=0.0
       data.each do |element|
+        puts "element: #{element}"
         s+=element
         n+=1
       end

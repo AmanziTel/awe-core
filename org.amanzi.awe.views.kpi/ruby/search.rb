@@ -154,14 +154,14 @@ class PropertySet
 
   def each
     @node_set.each do |node|
-      yield node.props[@property]
+      yield node.props[@property] if(!node.props[@property].nil?)
     end
   end
 
   def count_internal
     num=0
     @node_set.each {|n|  
-      puts n.props
+#      puts n.props
       num += 1  if(!n.props[@property].nil?)
     }
     num
@@ -170,8 +170,9 @@ class PropertySet
   def sum_internal
     num=0.0
     @node_set.each{|n|
-      if !n.props[@property].nil?
-        num+= n.props[@property]
+      prop=n.props[@property]
+      if !prop.nil?
+        num+= prop
       end
     }
     num
