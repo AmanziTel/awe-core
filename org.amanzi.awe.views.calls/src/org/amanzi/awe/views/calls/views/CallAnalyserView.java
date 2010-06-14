@@ -1058,7 +1058,7 @@ public class CallAnalyserView extends ViewPart {
          dateStart.addFocusListener(new FocusListener() {        
              @Override
              public void focusLost(FocusEvent e) {
-                // changeDate();
+                changeDate();
              }
             
              @Override
