@@ -86,8 +86,11 @@
     <module>org.amanzi.awe.gps</module>
     <module>org.amanzi.awe.report.o2</module>
     <module>org.amanzi.neo.data-generator</module>
+	<module>org.amanzi.testing</module>
     <module>org.amanzi.neo.loader.testing</module>
     <module>org.amanzi.awe.views.calls.testing</module>
+	<module>org.amanzi.awe.views.reuse.testing</module>
+	<module>org.amanzi.splash.testing</module>
   </modules>
   <build>
     <plugins>	  
