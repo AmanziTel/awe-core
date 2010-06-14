@@ -38,8 +38,6 @@ public class ItsiAttachXmlDataGenerator extends AmsXmlDataGenerator{
     private static final String ATTACH_TAG_NAME = "itsiAttach";
     private static final String TAG_PR_REQ_TIME = "itsiAtt_Req";
     private static final String TAG_PR_ACC_TIME = "itsiAtt_Accept";
-    private static final String TAG_PR_LA_BEFORE = "locationAreaBefore";
-    private static final String TAG_PR_LA_AFTER = "locationAreaAfter";
 
     /**
      * @param aDirectory
@@ -71,8 +69,7 @@ public class ItsiAttachXmlDataGenerator extends AmsXmlDataGenerator{
         SavedTag eventsTag = getEventsTag();
         eventsTag.addInnerTag(getAttachTag(sourceProbe,start,end));        
         rootTag.addInnerTag(eventsTag);
-        SavedTag gpsDataTag = getGpsDataTag();
-        //gps
+        SavedTag gpsDataTag = getGpsDataTag(start,end,sourceProbe);
         rootTag.addInnerTag(gpsDataTag);
         result.setRoot(rootTag);
         result.addCall(call);

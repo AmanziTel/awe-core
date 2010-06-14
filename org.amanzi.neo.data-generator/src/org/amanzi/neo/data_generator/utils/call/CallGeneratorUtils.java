@@ -131,6 +131,26 @@ public class CallGeneratorUtils {
         return call;
     }
     
+    public static Call createCallWithHoCc(Long startOfHour, Long setupDuration, Integer priority,CallGroup group,float[] audioQualityBorders, int[] audioDelayBorders, Long minCallDuration){
+        Call call = createCall(startOfHour, setupDuration, priority, group, audioQualityBorders, audioDelayBorders, minCallDuration);
+        Long start = call.getStartTime();
+        Long callDuration = (Long)call.getParameter(CallParameterNames.DURATION_TIME);
+        boolean needHo = getRandomGenerator().getBooleanValue();
+        if(needHo){
+            call.addParameter(CallParameterNames.HO_TIME, getRamdomTime(0L, callDuration-setupDuration));
+        }
+        boolean needCc = getRandomGenerator().getBooleanValue();
+        if(needCc){
+            Long endOfHour = startOfHour+HOUR;
+            Long end = callDuration+start;
+            if(endOfHour<end){
+                endOfHour+=HOUR;
+            }
+            call.addParameter(CallParameterNames.CC_TIME, getRamdomTime(0L, endOfHour-end));
+        }
+        return call;
+    }
+    
     /**
      * Create new empty call
      *

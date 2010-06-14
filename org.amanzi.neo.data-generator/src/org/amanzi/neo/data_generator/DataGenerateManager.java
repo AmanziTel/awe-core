@@ -36,6 +36,7 @@ import org.amanzi.neo.data_generator.generate.calls.log_data.SDSDataGenerator;
 import org.amanzi.neo.data_generator.generate.calls.log_data.TSMDataGenerator;
 import org.amanzi.neo.data_generator.generate.calls.xml_data.EmergencyXMLDataGenerator;
 import org.amanzi.neo.data_generator.generate.calls.xml_data.GroupCallXmlDataGenerator;
+import org.amanzi.neo.data_generator.generate.calls.xml_data.HoCcXmlDataGenerator;
 import org.amanzi.neo.data_generator.generate.calls.xml_data.IndividualCallXmlDataGenerator;
 import org.amanzi.neo.data_generator.generate.calls.xml_data.ItsiAttachXmlDataGenerator;
 import org.amanzi.neo.data_generator.generate.calls.xml_data.SDSXmlDataGenerator;
@@ -92,6 +93,22 @@ public class DataGenerateManager {
     public static IDataGenerator getXmlIndividualAmsGenerator(String aDirectory, Integer aHours, Integer aHourDrift,
             Integer aCallsPerHour, Integer aCallPerHourVariance, Integer aProbes) {
         return new IndividualCallXmlDataGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
+    }
+    
+    /**
+     * Returns AMS data generator for Handover/Cell change calls (xml).
+     * 
+     * @param aDirectory String (path to save data)
+     * @param aHours Integer (count of hours)
+     * @param aHourDrift Integer (drift of start time)
+     * @param aCallsPerHour Integer (call count in hour)
+     * @param aCallPerHourVariance Integer (call variance in hour)
+     * @param aProbes Integer (probes count)
+     * @return AmsDataGenerator.
+     */
+    public static IDataGenerator getXmlHoCcAmsGenerator(String aDirectory, Integer aHours, Integer aHourDrift,
+            Integer aCallsPerHour, Integer aCallPerHourVariance, Integer aProbes) {
+        return new HoCcXmlDataGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
     }
 
     /**

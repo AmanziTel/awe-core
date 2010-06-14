@@ -92,8 +92,7 @@ public abstract class MessageXmlDataGenerator extends AmsXmlDataGenerator{
             result.addCall(call);
         }
         
-        SavedTag gpsDataTag = getGpsDataTag();
-        //gps
+        SavedTag gpsDataTag = getGpsDataTag(getStartOfHour(hour),getStartOfHour(hour+1),sourceProbe,receiverProbe);
         rootTag.addInnerTag(gpsDataTag);
         result.setRoot(rootTag);        
         return result;

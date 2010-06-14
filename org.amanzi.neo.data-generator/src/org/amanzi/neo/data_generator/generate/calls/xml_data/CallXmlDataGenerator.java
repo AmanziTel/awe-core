@@ -74,12 +74,17 @@ public abstract class CallXmlDataGenerator extends AmsXmlDataGenerator{
         HashMap<Integer, List<Long>> hourMap = CallGeneratorUtils.buildHourMap(getHours(), getCalls(), getCallVariance(), getCallDurationBorders());
         for(Integer hour : hourMap.keySet()){
             for(Long setupDuration : hourMap.get(hour)){
-                Call call = CallGeneratorUtils.createCall(getStartOfHour(hour), setupDuration,getCallPriority(),group,getAudioQualityBorders(),getAudioDelayBorders(),getMinCallDuration());
+                Call call = createCall(group, hour, setupDuration);
                 CallData callData = buildCallCommands(group, hour, call);
                 calls.add(callData);
             }
         }
         return calls;
+    }
+
+    protected Call createCall(CallGroup group, Integer hour, Long setupDuration) {
+        Call call = CallGeneratorUtils.createCall(getStartOfHour(hour), setupDuration,getCallPriority(),group,getAudioQualityBorders(),getAudioDelayBorders(),getMinCallDuration());
+        return call;
     }
     
     protected SavedTag getTocTag(Probe source, String number, Call call, int hook, int simplex, int termCause, Long... times){

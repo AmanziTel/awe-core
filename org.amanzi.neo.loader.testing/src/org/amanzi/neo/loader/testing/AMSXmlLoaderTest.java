@@ -107,6 +107,15 @@ public class AMSXmlLoaderTest extends AMSLoaderTest{
     }
     
     /**
+     * Tests load correct data base.
+     */
+    @Test
+    public void testCorrectHoCcLoading()throws IOException{
+        AMSXMLoader loader = initDataBase("ho_cc_"+BUNDLE_KEY_CORRECT);
+        assertLoader(loader);
+    }
+    
+    /**
      * Initialize loader.
      * @param aTestKey String (key for test)
      * @throws IOException (loading problem)
@@ -150,6 +159,9 @@ public class AMSXmlLoaderTest extends AMSLoaderTest{
             break;
         case EMERGENCY:
             generator = DataGenerateManager.getXmlEmergencyAmsGenerator(dataDirectory, params.get(1),params.get(2), params.get(3), params.get(4), params.get(5),params.get(6));
+            break;
+        case HO_CC:
+            generator = DataGenerateManager.getXmlHoCcAmsGenerator(dataDirectory, params.get(1),params.get(2), params.get(3), params.get(4), params.get(5));
             break;
         default:
             throw new IllegalArgumentException("Unknoun AMS data type "+amsType+".");

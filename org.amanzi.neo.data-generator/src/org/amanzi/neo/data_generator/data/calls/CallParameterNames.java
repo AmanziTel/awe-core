@@ -28,4 +28,6 @@ public class CallParameterNames {
     public static final String AUDIO_QUALITY = "audio quality";
     public static final String AUDIO_DELAY = "audio delay";
     public static final String MESSAGE = "message";
+    public static final String HO_TIME = "ho time";
+    public static final String CC_TIME = "cc time";
 }

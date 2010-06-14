@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.amanzi.awe.views.calls.enums.AggregationCallTypes;
 import org.amanzi.awe.views.calls.enums.AggregationStatisticsHeaders;
 import org.amanzi.awe.views.calls.enums.IAggrStatisticsHeaders;
 import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
@@ -166,6 +167,13 @@ public class GroupCallsStatTest extends CallStatisticsTest{
      */
     public void setMaxGroupSize(int maxGroupSize) {
         this.maxGroupSize = maxGroupSize;
+    }
+    
+    @Override
+    protected List<AggregationCallTypes> getAggregationTypes() {
+        List<AggregationCallTypes> result = new ArrayList<AggregationCallTypes>();
+        result.add(AggregationCallTypes.GROUP);
+        return result;
     }
 
 }

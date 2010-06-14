@@ -27,7 +27,6 @@ import org.amanzi.neo.data_generator.data.calls.csv.CsvHeaders;
 import org.amanzi.neo.data_generator.data.calls.csv.FileData;
 import org.amanzi.neo.data_generator.utils.RandomValueGenerator;
 import org.amanzi.neo.data_generator.utils.call.CallFileBuilder;
-import org.apache.log4j.Logger;
 
 /**
  * <p>
@@ -57,8 +56,6 @@ public class CsvDataGenerator extends CallStatisticsDataGenerator{
     
     private static final float[] CS_PS_RATE1_BORDERS = new float[]{1.3f,1.7f,1.8f,1.9f,2,2.1f,2.2f,2.3f,5};
     private static final float[] CS_PS_RATE2_BORDERS = new float[]{0,0.6f,0.7f,0.9f,1,1.1f,1.2f,1.3f,1.7f};
-    
-    private static final Logger LOGGER = Logger.getLogger(CsvDataGenerator.class);
     
     private static final String PROBE_PREFIX = "PROBE";
     private static final String FILE_NAME_PREFIX = "PM.AMS.part";
@@ -190,7 +187,7 @@ public class CsvDataGenerator extends CallStatisticsDataGenerator{
             addSecondPartHeaders(lineNumber, file);
             break;
         default:
-            LOGGER.warn("Unknown part <"+part+">.");
+            //do nothing
         }
         file.addCellValue(lineNumber, CsvHeaders.VERSION_NUMBER, VERSION_NUMBER);
         file.addCellValue(lineNumber, CsvHeaders.CONFIG_VERSION, CONFIG_VERSION);

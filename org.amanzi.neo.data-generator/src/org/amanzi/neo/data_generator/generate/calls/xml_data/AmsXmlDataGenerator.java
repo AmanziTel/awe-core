@@ -14,12 +14,15 @@
 package org.amanzi.neo.data_generator.generate.calls.xml_data;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
 import org.amanzi.neo.data_generator.data.calls.CallGroup;
 import org.amanzi.neo.data_generator.data.calls.Probe;
 import org.amanzi.neo.data_generator.generate.calls.log_data.AmsDataGenerator;
+import org.amanzi.neo.data_generator.utils.call.CallGeneratorUtils;
 import org.amanzi.neo.data_generator.utils.call.CallXmlFileBuilder;
 import org.amanzi.neo.data_generator.utils.xml_data.SavedTag;
 
@@ -45,10 +48,17 @@ public abstract class AmsXmlDataGenerator extends AmsDataGenerator{
     
     private static final String EVENTS_TAG_NAME = "events";
     private static final String GPS_DATA_TAG_NAME = "gpsData";
+    private static final String GPS_DATA_LIST_TAG_NAME = "completeGpsDataList";
+    private static final String GPS_DATA_ONE_TAG_NAME = "completeGpsData";
+    
+    private static final String TAG_PR_DELIVERY_TIME = "deliveryTime";
+    private static final String TAG_PR_GPS_SENTENCE = "gpsSentence";
     
     protected static final String TAG_PR_PROBE_ID = "probeID";
     protected static final String TAG_PR_CALLED_NUMBER = "calledNumber";
     protected static final String TAG_PR_CALLING_NUMBER = "callingNumber";
+    protected static final String TAG_PR_LA_BEFORE = "locationAreaBefore";
+    protected static final String TAG_PR_LA_AFTER = "locationAreaAfter";
     
     private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss,SSS");
 
@@ -97,7 +107,7 @@ public abstract class AmsXmlDataGenerator extends AmsDataGenerator{
    
     protected SavedTag getProbeTag(Probe probe){
         SavedTag result = new SavedTag(PROBE_TAG_NAME, false);
-        result.addInnerTag(getPropertyTag("probeID", "PROBE0"+probe.getName()));
+        result.addInnerTag(getPropertyTag(TAG_PR_PROBE_ID, "PROBE0"+probe.getName()));
         result.addInnerTag(getPropertyTag("phoneNumber", probe.getPhoneNumber()));
         result.addInnerTag(getPropertyTag("locationArea", probe.getLocalAria())); 
         result.addInnerTag(getPropertyTag("frequency", probe.getFrequency()));
@@ -119,9 +129,39 @@ public abstract class AmsXmlDataGenerator extends AmsDataGenerator{
         return new SavedTag(tagName, true);
     }
     
-    protected SavedTag getGpsDataTag(){
+    protected SavedTag getGpsDataTag(Long start, Long end, Probe... probes){
         SavedTag result = new SavedTag(GPS_DATA_TAG_NAME, false);
+        SavedTag listTag = new SavedTag(GPS_DATA_LIST_TAG_NAME, false);
+        for(Probe probe : probes){
+            Long time = CallGeneratorUtils.getRamdomTime(start, end);            
+            listTag.addInnerTag(getOneGpsDataTag(probe, time));
+            time = CallGeneratorUtils.getRamdomTime(time, end);            
+            listTag.addInnerTag(getOneGpsDataTag(probe, time));
+        }
+        result.addInnerTag(listTag);
         return result;
+    }
+    
+    private SavedTag getOneGpsDataTag(Probe probe,Long time){
+        SavedTag data = new SavedTag(GPS_DATA_ONE_TAG_NAME, false);
+        data.addInnerTag(getPropertyTag(TAG_PR_PROBE_ID, "PROBE0"+probe.getName()));
+        data.addInnerTag(getPropertyTag(TAG_PR_DELIVERY_TIME, getTimeString(time)));
+        data.addInnerTag(getPropertyTag(TAG_PR_GPS_SENTENCE, getGpsSentense()));
+        return data;
+    }
+    
+    private String getGpsSentense(){
+        StringBuilder result = new StringBuilder("$GPGLL,")
+                                    .append(getCoord(1000.0,9999.0)).append(",N,")
+                                    .append(getCoord(10000.0,99999.0)).append(",E,")
+                                    .append(getRandomGenerator().getLongValue(1000L, 999999L)).append(",A");
+        return result.toString();
+    }
+    
+    private String getCoord(double min, double max){
+        BigDecimal coord = new BigDecimal(getRandomGenerator().getDoubleValue(min, max));
+        coord = coord.setScale(4,RoundingMode.HALF_DOWN);
+        return coord.toString();
     }
     
     protected String getTimeString(Long time){

@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.views.calls.enums.AggregationCallTypes;
 import org.amanzi.awe.views.calls.enums.IAggrStatisticsHeaders;
 import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
@@ -73,9 +74,10 @@ public class StatisticsTest extends AmsStatisticsTest {
 
     /**
      * Prepare operations before execute test.
+     * @throws IOException 
      */
     @Before
-    public void prepareTests() {
+    public void prepareTests() throws IOException {
         prepareMainDirectory();
         initProjectService();
         handleRow = new HashSet<Node>();
@@ -84,10 +86,24 @@ public class StatisticsTest extends AmsStatisticsTest {
         logNotExist = new BufferedWriter(new NullWriter());
         logComparingWarning = new BufferedWriter(new NullWriter());
         ignoreNotExistElement = "true".equalsIgnoreCase((Messages.getString("ignoreNotExist")));
+        initLog();
     }
 
     @Test
     public void testCompareStatistics() throws IOException, ParseException {
+        try{
+        stat1TimeCorrelator = Long.parseLong(Messages.getString("StatisticsTest.set1_correlation")); //$NON-NLS-1$
+        CallStatistics stat1 = createStatistics(loadXMLData());
+        CallStatistics stat2 = createStatistics(loadCSVData(Messages.getString("CSV_XML_ROOT")));
+        compareStatistics(stat1, stat2);
+        }finally{
+            logNotExist.close();
+            logComparingWarning.close();
+        }
+
+    }
+
+    private void initLog() throws IOException {
         if (haveLog) {
             File logFile = new File(Messages.getString("LOGGERS_DIR"));
             long time = System.currentTimeMillis();
@@ -98,23 +114,12 @@ public class StatisticsTest extends AmsStatisticsTest {
             fileLog = new File(logFile, name);
             logComparingWarning = new BufferedWriter(new FileWriter(fileLog));
         }
-        try{
-        stat1TimeCorrelator = Long.parseLong(Messages.getString("StatisticsTest.set1_correlation")); //$NON-NLS-1$
-        CallStatistics stat1 = createStatistics(loadXMLData());
-        CallStatistics stat2 = createStatistics(loadCSVData());
-        compareStatistics(stat1, stat2);
-        }finally{
-            logNotExist.close();
-            logComparingWarning.close();
-        }
-
     }
 
-    @Ignore
     @Test
     public void testCompareLogStatistics() throws IOException, ParseException {
         CallStatistics stat1 = createStatistics(loadLogData());
-        CallStatistics stat2 = createStatistics(loadCSVData());
+        CallStatistics stat2 = createStatistics(loadCSVData(Messages.getString("CSV_LOG_ROOT")));
         compareStatistics(stat1, stat2);
 
     }
@@ -395,8 +400,7 @@ public class StatisticsTest extends AmsStatisticsTest {
      * @return the call dataset node
      * @throws IOException Signals that an I/O exception has occurred.
      */
-    private Node loadCSVData() throws IOException {
-        String dataDir = Messages.getString("CSV_ROOT"); //$NON-NLS-1$
+    private Node loadCSVData(String dataDir) throws IOException {
         StatisticsDataLoader loader = new StatisticsDataLoader(dataDir, "test", "test network", getNeo(), true); //$NON-NLS-1$ //$NON-NLS-2$
         loader.run(new NullProgressMonitor());
         return loader.getVirtualDataset();
@@ -475,5 +479,10 @@ public class StatisticsTest extends AmsStatisticsTest {
         public void write(char[] cbuf, int off, int len) throws IOException {
         }
 
+    }
+
+    @Override
+    protected List<AggregationCallTypes> getAggregationTypes() {
+        return null;
     }
 }

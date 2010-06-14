@@ -44,6 +44,7 @@ public class AMSLoaderTest extends AbstractLoaderTest {
     protected static final int SDS = 3;
     protected static final int ATTACH = 4;
     protected static final int EMERGENCY = 5;
+    protected static final int HO_CC = 6;
     
     private String dataDirectory;
     

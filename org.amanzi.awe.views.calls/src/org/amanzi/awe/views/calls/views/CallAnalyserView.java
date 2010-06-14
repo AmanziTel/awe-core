@@ -455,12 +455,15 @@ public class CallAnalyserView extends ViewPart {
             if(!(element instanceof PeriodWrapper)||columnHeaders.size()<=columnIndex){
                 return null;
             }
-            return columnHeaders.get(columnIndex).getColor((PeriodWrapper)element);
+            return columnHeaders.get(columnIndex).getBackgroundColor((PeriodWrapper)element);
         }
 
         @Override
         public Color getForeground(Object element, int columnIndex) {
-            return null;
+            if(!(element instanceof PeriodWrapper)||columnHeaders.size()<=columnIndex){
+                return null;
+            }
+            return columnHeaders.get(columnIndex).getForegroundColor((PeriodWrapper)element);
         }
     }
     
@@ -1588,8 +1591,19 @@ public class CallAnalyserView extends ViewPart {
          * @param index
          * @return statistic value
          */
-        public Color getColor(PeriodWrapper wr) {
-            return wr.getColor(header);
+        public Color getBackgroundColor(PeriodWrapper wr) {
+            return wr.getBackgroundColor(header);
+        }        
+        
+        /**
+         * get value depends PeriodWrapper
+         * 
+         * @param wr - PeriodWrapper
+         * @param index
+         * @return statistic value
+         */
+        public Color getForegroundColor(PeriodWrapper wr) {
+            return wr.getForegroundColor(header);
         }
 
         /**
@@ -1720,13 +1734,20 @@ public class CallAnalyserView extends ViewPart {
         /**
          * @return
          */
-        public Color getColor(IStatisticsHeader header) {
+        public Color getBackgroundColor(IStatisticsHeader header) {
+            return color;
+        }
+        
+        /**
+         * @return
+         */
+        public Color getForegroundColor(IStatisticsHeader header) {
             if(header==null){
-                return color;
+                return null;
             }
             ColoredFlags flagged = flaggedValue.get(header);
             if(flagged==null||flagged.equals(ColoredFlags.NONE)){
-                return color;
+                return null;
             }
             return flagged.getColor();
         }

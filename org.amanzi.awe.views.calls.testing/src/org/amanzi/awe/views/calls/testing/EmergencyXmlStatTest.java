@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.amanzi.awe.views.calls.enums.AggregationCallTypes;
 import org.amanzi.awe.views.calls.enums.AggregationStatisticsHeaders;
 import org.amanzi.awe.views.calls.enums.IAggrStatisticsHeaders;
 import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
@@ -141,6 +142,13 @@ public class EmergencyXmlStatTest extends GroupCallXmlStatTest{
         if(time<=AlarmConstants.EMG_CALL_CONN_TIME_LIMIT){
             result.put(StatisticsHeaders.EC1_SUCCESS, 1L);
         }
+        return result;
+    }
+    
+    @Override
+    protected List<AggregationCallTypes> getAggregationTypes() {
+        List<AggregationCallTypes> result = new ArrayList<AggregationCallTypes>();
+        result.add(AggregationCallTypes.EMERGENCY);
         return result;
     }
 }

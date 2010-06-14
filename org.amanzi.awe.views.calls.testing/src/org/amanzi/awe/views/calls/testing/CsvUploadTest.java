@@ -487,4 +487,9 @@ private enum HeaderTypes{
         }
     }
 
+    @Override
+    protected List<AggregationCallTypes> getAggregationTypes() {
+        return null;
+    }
+
 }

@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.views.calls.enums.AggregationCallTypes;
 import org.amanzi.awe.views.calls.enums.IAggrStatisticsHeaders;
 import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
@@ -95,6 +96,7 @@ public abstract class AmsStatisticsTest {
     private static GraphDatabaseService neo;
     
     private Long startTime = null;
+    private CallTimePeriods highPeriod;
     
     /**
      * Initialize project service.
@@ -261,7 +263,7 @@ public abstract class AmsStatisticsTest {
             Integer aProbes, String dataDir) throws IOException, ParseException {
         IDataGenerator generator = getDataGenerator(aHours, aDrift, aCallsPerHour, aCallPerHourVariance, aProbes, dataDir);
         List<CallGroup> generated = ((GeneratedCallsData)generator.generate()).getData();
-        return buildStatisticsByGenerated(generated, aHours, aDrift);
+        return buildStatisticsByGenerated(generated, aHours, aDrift, true);
     }
     
     /**
@@ -355,6 +357,13 @@ public abstract class AmsStatisticsTest {
     }
     
     /**
+     * @return Returns the highPeriod.
+     */
+    protected CallTimePeriods getHighPeriod() {
+        return highPeriod;
+    }
+    
+    /**
      * @return Returns the startTime.
      */
     public Long getStartTime() {
@@ -374,6 +383,8 @@ public abstract class AmsStatisticsTest {
     protected abstract boolean hasSecondLevelStatistics();
     
     protected abstract List<IAggrStatisticsHeaders> getAggregationHeaders();
+    
+    protected abstract List<AggregationCallTypes> getAggregationTypes();
     
     /**
      * Build maps for second level statistics (real and source)
@@ -421,7 +432,7 @@ public abstract class AmsStatisticsTest {
         IAggrStatisticsHeaders realHeader = (IAggrStatisticsHeaders)header;        
         HashMap<IStatisticsHeader, Number> sourceValues = new HashMap<IStatisticsHeader, Number>();
         for(Node cell : getAllSourceCells(parentCell)){
-            IStatisticsHeader real = getCellHeader(cell, getCallType());
+            IStatisticsHeader real = getCellHeaderForAggrSourceCell(cell);
             Number value = getCellValue(cell, real);
             Number curr = sourceValues.get(real);
             sourceValues.put(real, updateValueByHeader(curr, value, real));
@@ -436,6 +447,25 @@ public abstract class AmsStatisticsTest {
             }
         }
         return getAggrStatValue(utilValues, realHeader);
+    }
+    
+    private IStatisticsHeader getCellHeaderForAggrSourceCell(Node cell){
+        List<AggregationCallTypes> aggrTypes = getAggregationTypes();
+        for(AggregationCallTypes aggrType : aggrTypes){
+            StatisticsCallType callType = aggrType.getRealType();
+            IStatisticsHeader header = getCellHeader(cell, callType);
+            if(header!=null){
+                return header;
+            }
+            callType = aggrType.getAdditionalType();
+            if (callType!=null) {
+                header = getCellHeader(cell, callType);
+                if (header != null) {
+                    return header;
+                }
+            }
+        }
+        return null;
     }
     
     /**
@@ -706,17 +736,21 @@ public abstract class AmsStatisticsTest {
      *
      * @param generated List of CallGroups
      * @param hours int (count of hours)
+     * @param needAggregation boolean
      * @return HashMapHashMap<Integer, ProbeStat>
      * @throws ParseException (problem in gets parameters)
      */
-    private HashMap<Integer, ProbeStat> buildStatisticsByGenerated(List<CallGroup> generated, int hours, int drift)throws ParseException{
+    protected HashMap<Integer, ProbeStat> buildStatisticsByGenerated(List<CallGroup> generated, int hours, int drift, boolean needAggregation)throws ParseException{
         if(hours+drift> DAY){
-            return buildStatistcsByPeriod(generated, CallTimePeriods.MONTHLY);
+            highPeriod = CallTimePeriods.MONTHLY;
+            return buildStatistcsByPeriod(generated, highPeriod, needAggregation);
         }
         if(hours>1){
-            return buildStatistcsByPeriod(generated, CallTimePeriods.DAILY);
+            highPeriod = CallTimePeriods.DAILY;
+            return buildStatistcsByPeriod(generated, highPeriod, needAggregation);
         }
-        return buildStatistcsByPeriod(generated, CallTimePeriods.HOURLY);
+        highPeriod = CallTimePeriods.HOURLY;
+        return buildStatistcsByPeriod(generated, highPeriod, needAggregation);
     }
     
     /**
@@ -724,14 +758,15 @@ public abstract class AmsStatisticsTest {
      *
      * @param generated List of CallGroups
      * @param period CallTimePeriods
+     * @param needAggregation boolean
      * @return HashMap<Integer, ProbeStat>
      */
-    private HashMap<Integer, ProbeStat> buildStatistcsByPeriod(List<CallGroup> generated, CallTimePeriods period) throws ParseException{
+    protected HashMap<Integer, ProbeStat> buildStatistcsByPeriod(List<CallGroup> generated, CallTimePeriods period, boolean needAggregation) throws ParseException{
         if(period.equals(CallTimePeriods.HOURLY)){
-            return buildHourlyStatistics(generated);
+            return buildHourlyStatistics(generated, needAggregation);
         }
         CallTimePeriods undPeriod = period.getUnderlyingPeriod();
-        HashMap<Integer, ProbeStat> statistics = buildStatistcsByPeriod(generated, undPeriod);        
+        HashMap<Integer, ProbeStat> statistics = buildStatistcsByPeriod(generated, undPeriod, needAggregation);        
         for(Integer probe : statistics.keySet()){
             if(probe.equals(SECOND_LEVEL_STAT_ID)){
                 continue;
@@ -739,7 +774,11 @@ public abstract class AmsStatisticsTest {
             ProbeStat curr = statistics.get(probe);
             curr.addStatistcs(getCallType(),collectStatisticsByUnderling(curr.getStatisticsByPeriod(getCallType(),undPeriod), period));
         }
-        return buildAggregationStatistics(statistics, period);
+        if (needAggregation) {
+            return buildAggregationStatistics(statistics, period);
+        }else{
+            return statistics;
+        }
     }
     
     protected HashMap<Integer, ProbeStat> buildAggregationStatistics(HashMap<Integer, ProbeStat> statistics, CallTimePeriods period){
@@ -752,6 +791,8 @@ public abstract class AmsStatisticsTest {
             statistics.put(SECOND_LEVEL_STAT_ID, aggrStat);
         }
         List<IAggrStatisticsHeaders> aggrHeaders = getAggregationHeaders();
+        new HashSet<IStatisticsHeader>();
+        List<AggregationCallTypes> aggrTypes = getAggregationTypes();        
         Set<IStatisticsHeader> allUtilHeaders = new HashSet<IStatisticsHeader>();
         for(IAggrStatisticsHeaders aggr : aggrHeaders){
             allUtilHeaders.addAll(aggr.getDependendHeaders());
@@ -762,23 +803,47 @@ public abstract class AmsStatisticsTest {
         for(Integer probe : statistics.keySet()){
             if(probe.equals(SECOND_LEVEL_STAT_ID)){
                 continue;
-            }
-            PeriodStat currStat = statistics.get(probe).getStatisticsByPeriod(getCallType(),period);
-            for(Long time : currStat.getAllTimesSorted()){
-                HashMap<IStatisticsHeader, Number> row = currStat.getRowValues(time);
-                HashMap<IStatisticsHeader, Number> utilRow = utilValues.get(time);
-                if(utilRow==null){
-                    utilRow = new HashMap<IStatisticsHeader, Number>(utilCount);
-                    utilValues.put(time, utilRow);
+            }            
+            for (AggregationCallTypes aggrType : aggrTypes) {
+                StatisticsCallType callType = aggrType.getRealType();
+                StatisticsCallType addType = aggrType.getAdditionalType();
+                PeriodStat currStat = statistics.get(probe).getStatisticsByPeriod(callType, period);
+                for (Long time : currStat.getAllTimesSorted()) {
+                    HashMap<IStatisticsHeader, Number> row = currStat.getRowValues(time);
+                    HashMap<IStatisticsHeader, Number> utilRow = utilValues.get(time);
+                    if (utilRow == null) {
+                        utilRow = new HashMap<IStatisticsHeader, Number>(utilCount);
+                        utilValues.put(time, utilRow);
+                    }
+                    for (IStatisticsHeader util : allUtilHeaders) {
+                        for (IStatisticsHeader real : ((IAggrStatisticsHeaders)util).getDependendHeaders()) {
+                            Number value = row.get(real);
+                            Number curr = utilRow.get(util);
+                            utilRow.put(util, updateValueByHeader(curr, value, util));
+                        }
+                    }
+                    periodStat.incSourceCount(time);
                 }
-                for(IStatisticsHeader util : allUtilHeaders){
-                    for(IStatisticsHeader real : ((IAggrStatisticsHeaders)util).getDependendHeaders()){
-                        Number value = row.get(real);
-                        Number curr = utilRow.get(util);
-                        utilRow.put(util, updateValueByHeader(curr, value, util));
+                
+                if (addType != null) {
+                    currStat = statistics.get(probe).getStatisticsByPeriod(addType, period);
+                    for (Long time : currStat.getAllTimesSorted()) {
+                        HashMap<IStatisticsHeader, Number> row = currStat.getRowValues(time);
+                        HashMap<IStatisticsHeader, Number> utilRow = utilValues.get(time);
+                        if (utilRow == null) {
+                            utilRow = new HashMap<IStatisticsHeader, Number>(utilCount);
+                            utilValues.put(time, utilRow);
+                        }
+                        for (IStatisticsHeader util : allUtilHeaders) {
+                            for (IStatisticsHeader real : ((IAggrStatisticsHeaders)util).getDependendHeaders()) {
+                                Number value = row.get(real);
+                                Number curr = utilRow.get(util);
+                                utilRow.put(util, updateValueByHeader(curr, value, util));
+                            }
+                        }
+                        periodStat.incSourceCount(time);
                     }
                 }
-                periodStat.incSourceCount(time);
             }
         }
         for (Long time : utilValues.keySet()) {
@@ -862,9 +927,10 @@ public abstract class AmsStatisticsTest {
      * Build Hourly statistics from generated data
      *
      * @param generated List of CallGroups
+     * @param needAggregation boolean
      * @return HashMap<Integer, ProbeStat>
      */
-    private HashMap<Integer, ProbeStat> buildHourlyStatistics(List<CallGroup> generated) throws ParseException{
+    private HashMap<Integer, ProbeStat> buildHourlyStatistics(List<CallGroup> generated, boolean needAggregation) throws ParseException{
         HashMap<Integer, ProbeStat> result = new HashMap<Integer, ProbeStat>();
         for(CallGroup group : generated){
             Integer probe = group.getSourceProbe();
@@ -894,7 +960,11 @@ public abstract class AmsStatisticsTest {
                 }
             }
         }
-        return buildAggregationStatistics(result, CallTimePeriods.HOURLY);
+        if (needAggregation) {
+            return buildAggregationStatistics(result, CallTimePeriods.HOURLY);
+        }else{
+            return result;
+        }
     }
     
     /**
@@ -976,6 +1046,10 @@ public abstract class AmsStatisticsTest {
         public PeriodStat getStatisticsByPeriod(StatisticsCallType callType,CallTimePeriods period){
             HashMap<CallTimePeriods, PeriodStat> allPeriods = data.get(callType);
             return allPeriods!=null?allPeriods.get(period):null;
+        }
+        
+        public HashMap<CallTimePeriods, PeriodStat> getStatisticsByCallType(StatisticsCallType callType){
+            return data.get(callType);
         }
         
         public void addStatistcs(StatisticsCallType callType,PeriodStat statistics){

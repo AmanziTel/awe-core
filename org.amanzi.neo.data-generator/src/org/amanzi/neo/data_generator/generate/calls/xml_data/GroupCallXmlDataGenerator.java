@@ -113,8 +113,7 @@ public class GroupCallXmlDataGenerator extends CallXmlDataGenerator{
             setEnd = true;
         }
         rootTag.addInnerTag(eventsTag);
-        SavedTag gpsDataTag = getGpsDataTag();
-        //gps
+        SavedTag gpsDataTag = getGpsDataTag(start,end,allProbes);
         rootTag.addInnerTag(gpsDataTag);
         result.setRoot(rootTag);
         result.addCall(call);
