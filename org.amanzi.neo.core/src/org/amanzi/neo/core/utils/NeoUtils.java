@@ -139,6 +139,7 @@ public class NeoUtils {
      * 
      * @param node node
      * @return node name or empty string
+     * @deprecated
      */
     public static String getNodeName(Node node) {
         // String type = node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").toString();

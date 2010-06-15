@@ -217,11 +217,7 @@ public class NetworkLoader extends AbstractLoader {
      */
     private void initializeKnownHeaders() {
         needParceHeader = true;
-        // addHeaderFilters(new String[] {"time.*", "events", ".*latitude.*", ".*longitude.*",
-        // ".*server_report.*",
-        // ".*state_machine.*", ".*layer_3_message.*", ".*handover_analyzer.*"});
-
-        // Known headers that are not sector data properties
+       
         addMainHeader("city", getPossibleHeaders(DataLoadPreferences.NH_CITY));
         addMainHeader("msc", getPossibleHeaders(DataLoadPreferences.NH_MSC));
         addMainHeader("bsc", getPossibleHeaders(DataLoadPreferences.NH_BSC));
@@ -292,7 +288,7 @@ public class NetworkLoader extends AbstractLoader {
                 networkHeader.saveStatistic(network);
             }
             network.setProperty("site_count", siteNumber);
-            network.setProperty("sector_count", sectorNumber);
+            network.setProperty(INeoConstants.SECTOR_COUNT, sectorNumber);
             network.setProperty("bsc_count", bsc_s.size());
             network.setProperty("city_count", city_s.size());
             transaction.success();

@@ -448,8 +448,9 @@ public class NemoLoader extends DriveLoader {
                 //store in parameters like prop1,prop2...
                 int i=0;
                 for (Map<String, Object> oneSet:subNodes){
+                    i++;
                     for (Map.Entry<String, Object> entry:oneSet.entrySet()){
-                        parParam.put(new StringBuilder(entry.getKey()).append(++i).toString(), entry.getValue()); 
+                        parParam.put(new StringBuilder(entry.getKey()).append(i).toString(), entry.getValue()); 
                     }
                 }
                 subNodes.clear();
