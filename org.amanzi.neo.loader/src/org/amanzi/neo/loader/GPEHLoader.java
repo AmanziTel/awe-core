@@ -47,6 +47,7 @@ import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.enums.SectorIdentificationType;
 import org.amanzi.neo.core.enums.gpeh.Events;
 import org.amanzi.neo.core.enums.gpeh.Parameters;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -578,6 +579,8 @@ public void printStats(boolean verbose) {
     }
     @Override
     protected void finishUp() {
+        getStoringNode(1).setProperty(INeoConstants.SECTOR_ID_TYPE, SectorIdentificationType.CI.toString());
+        
         super.finishUp();
 
 //        super.cleanupGisNode();//(datasetNode == null ? file : datasetNode);

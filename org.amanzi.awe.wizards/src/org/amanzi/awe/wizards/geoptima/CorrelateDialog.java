@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
+import org.amanzi.awe.gps.GPSCorrelator;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
@@ -79,7 +80,6 @@ public class CorrelateDialog extends Dialog implements IPropertyChangeListener {
     private final GraphDatabaseService service;
     private Button bCorrelate;
     private NeoTableContentProvider contentProvider;
-    private Display display;
     private final Map<String, Node> networks = new TreeMap<String, Node>();
     private final Set<Node> addCorrelate = new HashSet<Node>();
     private final Set<Node> removeCorrelate = new HashSet<Node>();
@@ -157,7 +157,6 @@ public class CorrelateDialog extends Dialog implements IPropertyChangeListener {
 
     private void createContents(final Shell shell) {
         this.shell = shell;
-        display = shell.getDisplay();
         shell.setLayout(new GridLayout(2, false));
         Label label = new Label(shell, SWT.NONE);
         label.setText("Network:");
@@ -285,9 +284,8 @@ public class CorrelateDialog extends Dialog implements IPropertyChangeListener {
 
     protected void correlate() {
         final Node network = networks.get(cNetwork.getText());
-        final Node[] addCorr = addCorrelate.toArray(new Node[0]);
         final Node[] removeCorr = removeCorrelate.toArray(new Node[0]);
-        if (network == null || (addCorr.length == 0 && removeCorr.length == 0)) {
+        if (network == null || (addCorrelate.size() == 0 && removeCorr.length == 0)) {
             return;
         }
         shell.setEnabled(false);
@@ -297,7 +295,7 @@ public class CorrelateDialog extends Dialog implements IPropertyChangeListener {
             protected IStatus run(IProgressMonitor monitor) {
                 try {
                     removeCorrelation(network, removeCorr);
-                    addCorrelation(network, addCorr);
+                    addCorrelation(network, addCorrelate, monitor);
                     return Status.OK_STATUS;
                 } finally {
                     ActionUtil.getInstance().runTask(new Runnable() {
@@ -316,8 +314,9 @@ public class CorrelateDialog extends Dialog implements IPropertyChangeListener {
         correlate.schedule();
     }
 
-    protected void addCorrelation(Node network, Node[] addCorr) {
-        // TODO implement
+    protected void addCorrelation(Node network, Set<Node> addCorr, IProgressMonitor monitor) {
+        GPSCorrelator correlator = new GPSCorrelator(network, monitor);
+        correlator.correlate(addCorr);
     }
 
     protected void removeCorrelation(Node network, Node[] removeCorr) {

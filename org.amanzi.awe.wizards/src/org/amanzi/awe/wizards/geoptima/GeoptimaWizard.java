@@ -50,7 +50,6 @@ public class GeoptimaWizard extends Wizard implements INewWizard, IWizard {
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     GPSCorrelator correlator = new GPSCorrelator(network, monitor);
 
-                    correlator.correlate(new ArrayList<Node>());
                     ActionUtil.getInstance().runTask(new Runnable() {
 
                         @Override

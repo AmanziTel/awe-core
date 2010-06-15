@@ -2692,5 +2692,13 @@ public class NeoUtils {
             tx.finish();
         }
     }
+    
+    public static Node getGisNodeByDataset(Node dataset) {
+        return dataset.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).getStartNode();
+    }
+    
+    public static Node getDatasetNodeByGis(Node gis) {
+        return gis.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode();
+    }
 
 }

@@ -19,7 +19,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +26,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.enums.SectorIdentificationType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.swt.widgets.Display;
@@ -42,7 +42,6 @@ import org.neo4j.index.lucene.LuceneIndexService;
  */
 public class GPSLoader extends DriveLoader {
     private static boolean needParceHeader = true;
-    private final LinkedHashMap<String, Header> headers;
     private String time = null;
     private Float currentLatitude = null;
     private Float currentLongitude = null;
@@ -63,7 +62,7 @@ public class GPSLoader extends DriveLoader {
     public GPSLoader(String directory, String datasetName, Display display) {
         initialize("GPS", null, directory, display);
         basename = datasetName;
-        headers = getHeaderMap(1).headers;
+        getHeaderMap(1);
         needParceHeader = true;
         
         initializeLucene();
@@ -80,7 +79,7 @@ public class GPSLoader extends DriveLoader {
         driveType = DriveTypes.GPS;
         initialize("GSM", null, filename, display, dataset);
         basename = dataset;
-        headers = getHeaderMap(1).headers;
+        getHeaderMap(1);
         needParceHeader = true;
         initializeKnownHeaders();
         
@@ -251,5 +250,11 @@ public class GPSLoader extends DriveLoader {
         // TODO check name of node
         Object timeNode = dataLine.get("timestamp");
         return timeNode == null ? "ms node" : timeNode.toString();
+    }
+    
+    @Override
+    protected void finishUp() {
+        getStoringNode(1).setProperty(INeoConstants.SECTOR_ID_TYPE, SectorIdentificationType.CI.toString());
+        super.finishUp();
     }
 }

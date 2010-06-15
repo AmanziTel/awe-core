@@ -20,6 +20,7 @@ import java.util.Map;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.OssType;
+import org.amanzi.neo.core.enums.SectorIdentificationType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
@@ -131,5 +132,11 @@ public class IdenLoader extends AbstractLoader {
     @Override
     public Node[] getRootNodes() {
         return new Node[]{ossRoot};
+    }
+    
+    @Override
+    public void finishUp() {
+        getStoringNode(1).setProperty(INeoConstants.SECTOR_ID_TYPE, SectorIdentificationType.NAME.toString());
+        super.finishUp();
     }
 }

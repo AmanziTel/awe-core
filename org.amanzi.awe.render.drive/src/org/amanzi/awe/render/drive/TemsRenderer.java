@@ -283,11 +283,11 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             }
             
             //Lagutko, 15.05.2010, another way of correlation
-            relations = geoNeo.getMainGisNode().getRelationships(CorrelationRelationshipTypes.CORRELATED, Direction.OUTGOING);
+            relations = NeoUtils.getDatasetNodeByGis(geoNeo.getMainGisNode()).getRelationships(CorrelationRelationshipTypes.CORRELATED, Direction.OUTGOING);
             for (Relationship relation : relations) {
             	Node correlationNode = relation.getEndNode();
             	
-            	IGeoResource network = getNetwork(correlationNode.getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.INCOMING).getStartNode());
+            	IGeoResource network = getNetwork(NeoUtils.getGisNodeByDataset(correlationNode.getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.INCOMING).getStartNode()));
                 if (network != null) {
                     networkGeoNeo.add(network);
                 }

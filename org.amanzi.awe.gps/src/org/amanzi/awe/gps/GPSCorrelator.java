@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
@@ -130,7 +131,7 @@ public class GPSCorrelator {
 		}
 	}
 	
-	public void correlate(List<Node> nodesForCorrelation) {
+	public void correlate(Set<Node> nodesForCorrelation) {
 	    Node rootCorrelationNode = getRootCorrelationNode();
 	    searchRequests = new ArrayList<SearchRequest>();
 	    
@@ -144,8 +145,7 @@ public class GPSCorrelator {
         int counter = 0;
         
         try {
-            Node network = networkNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode();
-            long sectorCount = (Long)network.getProperty(INeoConstants.SECTOR_COUNT);
+            long sectorCount = (Long)networkNode.getProperty(INeoConstants.SECTOR_COUNT);
             
             monitor.beginTask("Correlation", (int)sectorCount);
             
@@ -157,7 +157,7 @@ public class GPSCorrelator {
                 for (SearchRequest request : searchRequests) {
                     String sectorId = searchValues.get(request.getSearchType());
                     if (sectorId == null) {
-                        sectorId = (String)sector.getProperty(request.getSearchType().getProperty());
+                        sectorId = sector.getProperty(request.getSearchType().getProperty()).toString();
                         searchValues.put(request.getSearchType(), sectorId);
                     }
                     
