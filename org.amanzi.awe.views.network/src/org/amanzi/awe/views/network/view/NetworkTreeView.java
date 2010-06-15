@@ -50,6 +50,7 @@ import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.service.listener.NeoServiceProviderEventAdapter;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -538,18 +539,31 @@ public class NetworkTreeView extends ViewPart {
     private Node getFileNode(NeoNode neoNode){
         Node node = neoNode.getNode();
         NodeTypes nodeType = NodeTypes.getNodeType(node, null);
+        if(node==null||nodeType==null){
+            return null;
+        }
         if(nodeType.equals(NodeTypes.FILE)){
             return node;
         }
-        if(nodeType.equals(NodeTypes.M)){
-            while(!nodeType.equals(NodeTypes.FILE)&&node!=null){
-                node = NeoUtils.getParent(null, node);
-                nodeType = NodeTypes.getNodeType(node, null);
-            }
-            return node;
+        if(nodeType.equals(NodeTypes.CALL)){
+            Iterator<Node> events = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {                
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    return NeoUtils.isDriveMNode(currentPos.currentNode());
+                }
+            }, ProbeCallRelationshipType.CALL_M,Direction.OUTGOING).iterator();
+            return events.hasNext()?getFileNodeForSubNode(events.next(), NodeTypes.M):null;
         }
         //TODO Support this for any node with a file node in the parent tree (depth max 3).
-        return null;
+        return getFileNodeForSubNode(node, nodeType);
+    }
+
+    private Node getFileNodeForSubNode(Node node, NodeTypes nodeType) {
+        while(node!=null&&nodeType!=null&&!nodeType.equals(NodeTypes.FILE)){
+            node = NeoUtils.getParent(null, node);
+            nodeType = NodeTypes.getNodeType(node, null);
+        }
+        return node;
     }
     
     protected void showCanNotOpenMessage(){

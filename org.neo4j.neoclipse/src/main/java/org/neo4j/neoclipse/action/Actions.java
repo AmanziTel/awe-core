@@ -26,6 +26,8 @@ public enum Actions
             Icons.PREFERENCES_DISABLED ),
     PROPERTIES( "Properties view", Icons.PROPERTIES_ENABLED,
             Icons.PROPERTIES_DISABLED ),
+    TEXT_EDITOR("Open in text editor", Icons.OPEN_FILE_ENABLED,
+            Icons.OPEN_FILE_DISABLED),
     GRAPH_VIEW( "Graph view", Icons.GRAPH_ENABLED, Icons.GRAPH_DISABLED ),
     RELTYPES_VIEW( "Relationship types view", Icons.TYPES_ENABLED,
             Icons.TYPES_DISABLED ),
