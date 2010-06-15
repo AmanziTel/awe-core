@@ -73,8 +73,9 @@ public abstract class AbstractCallLoader extends DriveLoader {
     /**
      * Creates a Call node and sets properties
      */
-    protected  void saveCall(Call call) {        
+    protected Node saveCall(Call call) {        
         if ((call != null) && (call.getCallType() != null)) {
+            boolean failure = false;
             CallType callType = call.getCallType();
             Transaction tx = neo.beginTx();
             try {
@@ -83,38 +84,39 @@ public abstract class AbstractCallLoader extends DriveLoader {
                 case GROUP:
                 case EMERGENCY:
                 case HELP:
-                    storeRealCall(call);
-                    break;
+                    return storeRealCall(call);
                 case SDS:
                 case TSM:
                 case ALARM:
-                    storeMessageCall(call);
-                    break;
+                    return storeMessageCall(call);
                 case ITSI_ATTACH:
-                    storeITSICall(call);
-                    break;
+                    return storeITSICall(call);
                 case ITSI_CC:
-                    storeITSICCCall(call);
-                    break;
+                    return storeITSICCCall(call);
                 case ITSI_HO:
-                    storeITSIHOCall(call);
-                    break;
+                    return storeITSIHOCall(call);
                 default:
                     NeoCorePlugin.error("Unknown call type "+callType+".", null);
-                }
-                tx.success();
+                    return null;
+                }                
             }
             catch (Exception e) {
                 tx.failure();
+                failure=true;
                 NeoCorePlugin.error(null, e);
+                return null;
             }
             finally {
+                if (!failure) {
+                    tx.success();
+                }
                 tx.finish();
             }
         }
+        return null;
     }
 
-    private void storeRealCall(Call call) {
+    private Node storeRealCall(Call call) {
         Node probeCallNode = call.getCallerProbe();
         Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
         call.setNode(callNode);
@@ -152,9 +154,10 @@ public abstract class AbstractCallLoader extends DriveLoader {
         }
         
         probeCallNode.setProperty(call.getCallType().getProperty(), true);
+        return callNode;
     }
     
-    private void storeMessageCall(Call call) {
+    private Node storeMessageCall(Call call) {
         Node probeCallNode = call.getCallerProbe();
         Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
         call.setNode(callNode);
@@ -202,9 +205,10 @@ public abstract class AbstractCallLoader extends DriveLoader {
         }
         
         probeCallNode.setProperty(call.getCallType().getProperty(), true);
+        return callNode;
     }
     
-    private void storeITSICall(Call call) {
+    private Node storeITSICall(Call call) {
         Node probeCallNode = call.getCallerProbe();
         Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
         call.setNode(callNode);
@@ -227,8 +231,10 @@ public abstract class AbstractCallLoader extends DriveLoader {
         }
         
         probeCallNode.setProperty(call.getCallType().getProperty(), true);
+        return callNode;
     }
-    private void storeITSIHOCall(Call call) {
+    
+    private Node storeITSIHOCall(Call call) {
         Node probeCallNode = call.getCallerProbe();
         Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
         call.setNode(callNode);
@@ -251,8 +257,10 @@ public abstract class AbstractCallLoader extends DriveLoader {
         }
         
         probeCallNode.setProperty(call.getCallType().getProperty(), true);
+        return callNode;
     }
-    private void storeITSICCCall(Call call) {
+    
+    private Node storeITSICCCall(Call call) {
         Node probeCallNode = call.getCallerProbe();
         Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
         callNode.setProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE, call.isInclusive());
@@ -274,6 +282,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
         }
         
         probeCallNode.setProperty(call.getCallType().getProperty(), true);
+        return callNode;
     }
 
     /**

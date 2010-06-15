@@ -22,6 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -39,6 +40,7 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.enums.CallProperties.CallResult;
 import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -142,6 +144,9 @@ public class AMSXMLoader extends AbstractCallLoader {
 
     /** The phone number cache. */
     private final Map<String, String> phoneNumberCache = new HashMap<String, String>();
+    
+    /** The ntpq cache. */
+    private final Map<String, List<Node>> ntpqCache = new HashMap<String, List<Node>>();
 
     /** The group call. */
     private final Map<String, Set<String>> groupCall = new HashMap<String, Set<String>>();
@@ -223,6 +228,35 @@ public class AMSXMLoader extends AbstractCallLoader {
     @Override
     protected void parseLine(String line) {
         // do nothing
+    }
+    
+    /**
+     * Gets the parced value.
+     * 
+     * @param key the key
+     * @param value the value
+     * @param castMap the cast map
+     * @return the parced value
+     * @throws ParseException the parse exception
+     */
+    protected Pair<Object, Class< ? extends Object>> getParcedValue(String key, String value, Map<String, Class< ? extends Object>> castMap)
+            throws ParseException {
+
+        Class< ? extends Object> klass = castMap.get(key);
+        if (klass == null) {
+            klass = String.class;
+        }
+        Object parsedValue = null;
+        if (klass == String.class) {
+            parsedValue = value;
+        } else if (klass == Double.class) {
+            parsedValue = Double.parseDouble(value);
+        } else if (klass == Integer.class) {
+            parsedValue = Integer.parseInt(value);
+        } else if (klass == Timestamp.class) {
+            parsedValue = getTime(value);
+        }
+        return new Pair<Object, Class< ? extends Object>>(parsedValue, klass);
     }
 
     /**
@@ -413,6 +447,8 @@ public class AMSXMLoader extends AbstractCallLoader {
 
         handleLocations();
         sortedCall.clear();
+        System.out.println("Clear cache");//TODO delete
+        ntpqCache.clear();
     }
 
     /**
@@ -445,6 +481,33 @@ public class AMSXMLoader extends AbstractCallLoader {
             tx.success();
         } finally {
             tx.finish();
+        }
+    }
+    
+    @Override
+    protected Node saveCall(Call call) {
+        Node callNode = super.saveCall(call);
+        Transaction tx = neo.beginTx();
+        try {
+            addNtpqsToCall(callNode, call.getCallerProbe());
+            for(Node probe : call.getCalleeProbes()){
+                addNtpqsToCall(callNode, probe);
+            }
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+        return callNode;
+    }
+    
+    private void addNtpqsToCall(Node call, Node probeCalls){
+        Object id = NeoUtils.getNodeName(probeCalls, neo).split(" ")[0];
+        System.out.println("Save into call for "+id);//TODO delete
+        List<Node> ntpqs = ntpqCache.get(id);
+        if(ntpqs!=null){
+            for (Node ntpq : ntpqs) {
+                call.createRelationshipTo(ntpq, ProbeCallRelationshipType.CALL_M);
+            }                
         }
     }
 
@@ -738,7 +801,6 @@ public class AMSXMLoader extends AbstractCallLoader {
                     }
                     setIndexProperty(header, node, entry.getKey(), parsedValue);
                 }
-                createAttachmentNode(isInclus);
             }
             if (timestamp != null) {
                 node.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
@@ -759,35 +821,6 @@ public class AMSXMLoader extends AbstractCallLoader {
         }
 
         /**
-         * Gets the parced value.
-         * 
-         * @param key the key
-         * @param value the value
-         * @param castMap the cast map
-         * @return the parced value
-         * @throws ParseException the parse exception
-         */
-        protected Pair<Object, Class< ? extends Object>> getParcedValue(String key, String value, Map<String, Class< ? extends Object>> castMap)
-                throws ParseException {
-
-            Class< ? extends Object> klass = castMap.get(key);
-            if (klass == null) {
-                klass = String.class;
-            }
-            Object parsedValue = null;
-            if (klass == String.class) {
-                parsedValue = value;
-            } else if (klass == Double.class) {
-                parsedValue = Double.parseDouble(value);
-            } else if (klass == Integer.class) {
-                parsedValue = Integer.parseInt(value);
-            } else if (klass == Timestamp.class) {
-                parsedValue = getTime(value);
-            }
-            return new Pair<Object, Class< ? extends Object>>(parsedValue, klass);
-        }
-
-        /**
          * create new event node.
          */
         protected void createEventChild() {
@@ -796,30 +829,6 @@ public class AMSXMLoader extends AbstractCallLoader {
             NeoUtils.addChild(datasetFileNode, node, lastDatasetNode, neo);
             lastDatasetNode = node;
             setNewIndexProperty(header, node, INeoConstants.PROPERTY_NAME_NAME, getClass().getSimpleName());
-        }
-
-        /**
-         * Creates the attachment node.
-         * 
-         * @param collector the collector
-         * @throws ParseException the parse exception
-         */
-        private void createAttachmentNode(PropertyCollector collector) throws ParseException {
-            Node mm = neo.createNode();
-            NeoUtils.addChild(node, mm, lastMM, neo);
-            NodeTypes.MM.setNodeType(mm, neo);
-            mm.setProperty(INeoConstants.PROPERTY_NAME_NAME, "ntp");
-            lastMM = mm;
-            Map<String, String> map = collector.getPropertyMap();
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                Object parsedValue = getParcedValue(entry.getKey(), entry.getValue(), definedValues).getLeft();
-                if (entry.getKey().equals("errCode")) {
-                    parsedValue = Integer.parseInt(entry.getValue());
-                } else {
-                    parsedValue = entry.getValue();
-                }
-                setIndexProperty(header, mm, entry.getKey(), parsedValue);
-            }
         }
 
     }
@@ -2058,6 +2067,72 @@ private void handleCall() {
         }
 
     }
+    
+    public class NtpqTag extends PropertyCollector{
+        
+        /** The Constant TAG_NAME. */
+        public static final String TAG_NAME = "ntpq";
+        
+        protected final Map<String, Class< ? extends Object>> parseMap;
+
+        /**
+         * Constructor.
+         * @param tagName
+         * @param parent
+         */
+        public NtpqTag(String tagName, IXmlTag parent) {
+            super(tagName, parent, false);
+            parseMap = new HashMap<String, Class< ? extends Object>>();
+            parseMap.put("ntpqTime", Timestamp.class);
+            parseMap.put("offset", Double.class);
+            parseMap.put("jitter", Double.class);
+        }
+        
+        @Override
+        public IXmlTag endElement(String localName, StringBuilder chars) {
+            Transaction tx = neo.beginTx();            
+            if (openTag == null) {
+                try {
+                    handleCollector();
+                    return parent;
+                } catch (Exception e) {
+                    NeoLoaderPlugin.exception(e);
+                    LOGGER.error("event parsed with exception:", e);
+                } finally {
+                    tx.finish();
+                }
+            }
+            propertyMap.put(localName, chars.toString());
+            openTag = null;
+            return this;
+        }
+
+        /**
+         * Handle collector.
+         * @throws ParseException problem with parse values
+         */
+        private void handleCollector() throws ParseException {
+            Map<String, String> map = getPropertyMap();
+            String id = map.get("probeID");
+            List<Node> ntpqs = ntpqCache.get(id);
+            if (ntpqs == null) {
+                ntpqs = new ArrayList<Node>();
+                ntpqCache.put(id, ntpqs);
+                System.out.println("Put into cache for "+id);//TODO delete
+            }
+            Node ntpq = neo.createNode();
+            NeoUtils.addChild(datasetFileNode, ntpq, lastDatasetNode, neo);
+            lastDatasetNode = ntpq;
+            NodeTypes.M.setNodeType(ntpq, neo);
+            ntpq.setProperty(INeoConstants.PROPERTY_NAME_NAME, TAG_NAME);
+            for (String key : map.keySet()) {
+                Object parseValue = getParcedValue(key , map.get(key), parseMap).getLeft();
+                setProperty(ntpq, key, parseValue);
+            }            
+            ntpqs.add(ntpq);
+        }
+        
+    }
 
     /**
      * <p>
@@ -2081,6 +2156,8 @@ private void handleCall() {
         public IXmlTag createInstance(String tagName, Attributes attributes) {
             if (ProbeIDNumberMap.TAG_NAME.equals(tagName)) {
                 return new ProbeIDNumberMap(tagName, null);
+            } else if (NtpqTag.TAG_NAME.equals(tagName)) {
+                return new NtpqTag(tagName, null);
             } else if (EventTag.TAG_NAME.equals(tagName)) {
                 return new EventTag(tagName, null);
             } else if (CompleteGpsData.TAG_NAME.equals(tagName)) {
@@ -2104,7 +2181,7 @@ private void handleCall() {
 
         /** The called phone number. */
         protected String calledPhoneNumber;
-
+        
         /**
          * Gets the called phone number.
          * 
@@ -2122,7 +2199,7 @@ private void handleCall() {
         public void setCalledPhoneNumber(String callerPhoneNumber) {
             this.calledPhoneNumber = callerPhoneNumber;
         }
-
+        
     }
 
     /**
@@ -2216,7 +2293,6 @@ private void handleCall() {
                 }
             }
         }
-
 
         private Double parseLat(String latStr) {
             final Matcher matcher = COORD_PAT_LAT.matcher(latStr);
