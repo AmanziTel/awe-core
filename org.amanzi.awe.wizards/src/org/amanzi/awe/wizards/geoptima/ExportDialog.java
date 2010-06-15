@@ -257,8 +257,6 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
             }
 
             public void dragFinished(DragSourceEvent event) {
-                if (event.detail == DND.DROP_MOVE)
-                    dragSourceItem[0].dispose();
                 dragSourceItem[0] = null;
             }
         };
@@ -283,6 +281,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
                 }
                 TreeElem elem = (TreeElem)event.data;
                 TreeItem item = (TreeItem)event.item;
+                TreeElem itemData = (TreeElem)item.getData();
                 Point pt = display.map(null, tree, event.x, event.y);
                 Rectangle bounds = item.getBounds();
                 TreeItem parent = item.getParentItem();
@@ -303,15 +302,10 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
                         break;
                     }
                 }
-                if (pt.y < bounds.y + bounds.height / 2) {
-                    TreeItem newItem = new TreeItem(parent, SWT.NONE, index);
-                    newItem.setData(elem);
-                    viewer.refresh();
-                } else {
-                    TreeItem newItem = new TreeItem(parent, SWT.NONE, index + 1);
-                    newItem.setData(elem);
-                    viewer.refresh();
-                }
+                boolean before = pt.y < bounds.y + bounds.height / 2;
+
+                ((TreeElem)parent.getData()).moveElem(elem, itemData, before);
+                viewer.refresh();
 
             }
 
@@ -428,7 +422,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
         private final ElemType elemType;
 
         /** The childs. */
-        ArrayList<TreeElem> childs = null;
+        NeoTreeElement[] childs = null;
 
         /**
          * Instantiates a new tree elem.
@@ -462,12 +456,50 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
         }
 
         /**
+         * @param elem
+         * @param itemData
+         * @param before
+         */
+        public void moveElem(TreeElem elem, TreeElem itemData, boolean before) {
+            if (childs == null || elem.equals(itemData)) {
+                return;
+            }
+            NeoTreeElement[] childsNew = new NeoTreeElement[childs.length];
+            int j = 0;
+            for (int i = 0; i < childsNew.length; i++) {
+
+                if (childs[i].equals(elem)) {
+                    continue;
+                }
+                if (childs[i].equals(itemData)) {
+                    if (before){
+                        childsNew[j++] = elem;
+                        childsNew[j++] = itemData;
+                    } else {
+                        childsNew[j++] = itemData;
+                        childsNew[j++] = elem;
+                    }
+                }else{
+                    childsNew[j++] = childs[i];
+                }
+            }
+            childs=childsNew;
+        }
+
+        /**
          * Gets the children.
          * 
          * @return the children
          */
         @Override
         public NeoTreeElement[] getChildren() {
+            if (childs == null) {
+                childs = getNeoChildren();
+            }
+            return childs;
+        }
+
+        public NeoTreeElement[] getNeoChildren() {
             // TODO handle correlate
             Transaction tx;
             switch (elemType) {
@@ -618,6 +650,9 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
                     return false;
             } else if (!node.equals(other.node))
                 return false;
+            if (elemType == ElemType.PROPERTY && !getText().equals(other.getText())) {
+                return false;
+            }
             return true;
         }
 
