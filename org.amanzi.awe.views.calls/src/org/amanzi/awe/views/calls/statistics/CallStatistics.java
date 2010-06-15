@@ -161,7 +161,7 @@ public class CallStatistics {
      * @throws IOException
      */
     protected void initialyzeStatistics(Node drive, GraphDatabaseService service, IProgressMonitor aMonitor) throws IOException {
-        initFilds(drive, service, aMonitor);
+        initFields(drive, service, aMonitor);
         
         statisticNode = createStatistics();
         
@@ -182,7 +182,7 @@ public class CallStatistics {
         highPeriod = getHighestPeriod(minTime, maxTime);
     }
 
-    protected void initFilds(Node drive, GraphDatabaseService service, IProgressMonitor aMonitor) {
+    protected void initFields(Node drive, GraphDatabaseService service, IProgressMonitor aMonitor) {
         datasetNode = drive;
         neoService = service;
         this.monitor = aMonitor;
@@ -250,6 +250,7 @@ public class CallStatistics {
      * @param maxTime Long
      */
     protected void buildSecondLevelStatistics(long minTime, long maxTime, boolean isInconclusive) {
+        monitor.subTask("Build second level statistics");
         Node secondLevel = statisticNode.get(StatisticsCallType.AGGREGATION_STATISTICS);
         if(secondLevel==null){
             AggregationCallStatisticsBuilder aggrStatisticsBuilder = new AggregationCallStatisticsBuilder(datasetNode, neoService, isInconclusive);
@@ -271,7 +272,7 @@ public class CallStatistics {
         startTransaction(false);
         Node parentNode = null;
         HashMap<StatisticsCallType, Node> result = new HashMap<StatisticsCallType, Node>();
-        
+        monitor.subTask("Search statistics in data base");
         try {
             if (datasetNode == null) {
                 datasetNode = NeoUtils.getAllDatasetNodes(neoService).get(amsDatasetName);
@@ -312,7 +313,7 @@ public class CallStatistics {
             IProgressMonitor subMonitor = SubMonitor.convert(monitor, callTypes.size());
             subMonitor.beginTask("Create AMS statistics", callTypes.size());
             for (StatisticsCallType callType : callTypes) {
-                
+                subMonitor.subTask("Build "+callType.getViewName()+" statistics.");
                 Collection<Node> probesByCallType = NeoUtils.getAllProbesOfDataset(datasetNode, callType.getId());
                 if (probesByCallType.isEmpty()) {
                     subMonitor.worked(1);
@@ -326,6 +327,7 @@ public class CallStatistics {
                         break;
                     }
                     String probeName = (String)probe.getProperty(INeoConstants.PROPERTY_NAME_NAME);
+                    subMonitor.subTask("Build "+callType.getViewName()+" statistics for probe "+probeName+".");
                     Node probeCallsNode = NeoUtils.getCallsNode(datasetNode, probeName, probe, neoService);
                     String callProbeName = (String)probeCallsNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
                 
