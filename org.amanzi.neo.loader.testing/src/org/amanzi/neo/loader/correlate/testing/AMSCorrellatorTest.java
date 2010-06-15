@@ -207,6 +207,16 @@ public class AMSCorrellatorTest {
      * @return String (property)
      */
     protected String getProperty(String aKey){
+    	/* Feature #1485: Removing hard coded path for test files
+    	 * first try to read the property from System properties else
+    	 * read the property from the bundle properties.
+    	 */
+    	String propertyValue = System.getProperty(aKey);
+    	if(propertyValue != null) {
+    		if(propertyValue.length() > 0) {
+    			return propertyValue;
+    		}
+    	}
         return ResourceBundle.getBundle(getDefaultBungleName()).getString(aKey);
     }
     
