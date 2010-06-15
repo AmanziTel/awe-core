@@ -1,15 +1,32 @@
+/* AWE - Amanzi Wireless Explorer
+ * http://awe.amanzi.org
+ * (C) 2008-2009, AmanziTel AB
+ *
+ * This library is provided under the terms of the Eclipse Public License
+ * as described at http://www.eclipse.org/legal/epl-v10.html. Any use,
+ * reproduction or distribution of the library constitutes recipient's
+ * acceptance of this agreement.
+ *
+ * This library is distributed WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ */
+
 package org.amanzi.awe.gps;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.enums.SectorIdentificationType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.neo4j.graphdb.Direction;
@@ -23,6 +40,12 @@ import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.index.lucene.LuceneIndexService;
 
+/**
+ * Enum that contains types of Identification of Sector
+ * 
+ * @author Lagutko_N
+ * @since 1.0.0
+ */
 public class GPSCorrelator {
     
     private class SearchRequest {
@@ -31,10 +54,26 @@ public class GPSCorrelator {
         
         private String luceneIndexName;
         
-        public SearchRequest(String datasetName) {
-            this.datasetName = datasetName;
-            
-            this.luceneIndexName = NeoUtils.getLuceneIndexKeyByProperty(datasetName, INeoConstants.SECTOR_ID_PROPERTIES, NodeTypes.M);
+        private SectorIdentificationType searchType;
+        
+        public SearchRequest(Node dataNode) {
+            Transaction tx = neoService.beginTx();
+            try {
+                this.datasetName = NeoUtils.getNodeName(dataNode, neoService);
+                this.searchType = SectorIdentificationType.valueOf((String)dataNode.getProperty(INeoConstants.SECTOR_ID_TYPE));
+                this.luceneIndexName = NeoUtils.getLuceneIndexKeyByProperty(datasetName, INeoConstants.SECTOR_ID_PROPERTIES, NodeTypes.M);
+            }
+            catch (Exception e) {
+                LOGGER.error(e);
+            }
+            finally {
+                tx.success();
+                tx.finish();
+            }
+        }
+        
+        public SectorIdentificationType getSearchType() {
+            return searchType;
         }
         
         public String getDatasetName() {
@@ -45,6 +84,8 @@ public class GPSCorrelator {
             return luceneIndexName;
         }
     }
+    
+    private static final Logger LOGGER = Logger.getLogger(GPSCorrelator.class); 
     
     /*
 	 * Neo Service
@@ -89,88 +130,68 @@ public class GPSCorrelator {
 		}
 	}
 	
-	public void correlate(Node gsmLocationNode, Node ossCountersNode, Node gpehDataNode) {
-	    String gsmLocationsName = gsmLocationNode != null ? NeoUtils.getNodeName(gsmLocationNode, neoService) : null;
-	    String ossCounertsName = ossCountersNode != null ? NeoUtils.getNodeName(ossCountersNode, neoService) : null;
-	    String gpehDataName = gpehDataNode != null ? NeoUtils.getNodeName(gpehDataNode, neoService) : null;
-	    
+	public void correlate(List<Node> nodesForCorrelation) {
 	    Node rootCorrelationNode = getRootCorrelationNode();
-	    
 	    searchRequests = new ArrayList<SearchRequest>();
-	    if (gsmLocationNode != null) {
-	        searchRequests.add(new SearchRequest(gsmLocationsName));
-	        updateCorrelation(rootCorrelationNode, gsmLocationNode);	        
-	    }
-	    if (ossCountersNode != null) {
-            searchRequests.add(new SearchRequest(ossCounertsName));
-            updateCorrelation(rootCorrelationNode, ossCountersNode);
-        }
-	    if (gpehDataNode != null) {
-            searchRequests.add(new SearchRequest(gpehDataName));
-            updateCorrelation(rootCorrelationNode, gpehDataNode);
-        }
 	    
-	    if (searchRequests.isEmpty()) {
-	        return;
+	    for (Node dataNode : nodesForCorrelation) {
+	        searchRequests.add(new SearchRequest(dataNode));
+	        updateCorrelation(rootCorrelationNode, dataNode);
 	    }
 	    
 	    Transaction tx = neoService.beginTx(); 
-	    
-	    System.out.println("Begin correlation");
-	    
-	    int counter = 0;
-	    
-	    try {
-	        Node network = networkNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode();
-	        long sectorCount = (Long)network.getProperty("sector_count");
-	        
-	        monitor.beginTask("Correlation", (int)sectorCount);
-	        
-	        for (Node sector : getNetworkIterator()) {
-	        	String sectorId = null;
-	        	if (sector.hasProperty(INeoConstants.PROPERTY_SECTOR_CI)) {
-	        		Integer iSectorId = (Integer)sector.getProperty(INeoConstants.PROPERTY_SECTOR_CI);
-	        		sectorId = iSectorId.toString();
-	        	}
-	        	else {
-	        		sectorId = (String)sector.getProperty(INeoConstants.PROPERTY_NAME_NAME);
-	        	}
-	            
-	            Node correlationNode = null;
-	            
-	            for (SearchRequest request : searchRequests) {
-	                Iterator<Node> nodes = findNodesToCorrelate(request, sectorId);
-	                
-	                if (nodes.hasNext() && (correlationNode == null)) {
-	                    correlationNode = getCorrelationNode(rootCorrelationNode, sectorId); 
-	                }
-	                
-	                while (nodes.hasNext()) {
-	                    correlateNodes(sector, correlationNode, nodes.next(), request.getDatasetName());
-	                }
-	            }
-	            
-	            counter++;
-	            if (counter % 5000 == 0) {
-	                tx.success();
-	                tx.finish();
-	            
-	                tx = neoService.beginTx();
-	                counter = 0;
-	            }
-	            
-	            monitor.worked(1);
-	        }
-	    }
-	    catch (Exception e) {
-	        e.printStackTrace();
-	    }
-	    finally {
-	        tx.success();
-	        tx.finish();
-	    }
-	    
-	    System.out.println("Finish correlation");
+        
+        int counter = 0;
+        
+        try {
+            Node network = networkNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode();
+            long sectorCount = (Long)network.getProperty(INeoConstants.SECTOR_COUNT);
+            
+            monitor.beginTask("Correlation", (int)sectorCount);
+            
+            for (Node sector : getNetworkIterator()) {
+                Node correlationNode = null;
+                
+                HashMap<SectorIdentificationType, String> searchValues = new HashMap<SectorIdentificationType, String>();
+                
+                for (SearchRequest request : searchRequests) {
+                    String sectorId = searchValues.get(request.getSearchType());
+                    if (sectorId == null) {
+                        sectorId = (String)sector.getProperty(request.getSearchType().getProperty());
+                        searchValues.put(request.getSearchType(), sectorId);
+                    }
+                    
+                    Iterator<Node> nodes = findNodesToCorrelate(request, sectorId);
+                    
+                    if (nodes.hasNext() && (correlationNode == null)) {
+                        correlationNode = getCorrelationNode(rootCorrelationNode, sectorId); 
+                    }
+                    
+                    while (nodes.hasNext()) {
+                        correlateNodes(sector, correlationNode, nodes.next(), request.getDatasetName());
+                    }
+                }
+                
+                counter++;
+                if (counter % 5000 == 0) {
+                    tx.success();
+                    tx.finish();
+                
+                    tx = neoService.beginTx();
+                    counter = 0;
+                }
+                
+                monitor.worked(1);
+            }
+            
+        }   
+        catch (Exception e) {
+            LOGGER.error(e);
+        }
+        finally {
+            tx.success();
+            tx.finish();
+        }
 	}
 	
 	private Node getCorrelationNode(Node rootCorrelationNode, String sectorId) {
