@@ -1417,346 +1417,309 @@ public enum NemoEvents {
                 parsedParameters.put(key, system.getName());
                 Integer groupCount;
                 switch (system) {
-                case GSM: {
+                case GSM:
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
                     groupCount = getIntegerValue(parameters);
-                    getIntegerValue(parameters);// not need cell group length
-                    List<Map<String, Object>> subNodes = new LinkedList<Map<String, Object>>();
-                    parsedParameters.put(SUB_NODES, subNodes);
+                    getIntegerValue(parameters);//not need cell group length
                     for (int i = 0; i < groupCount; i++) {
                         if (!parameters.hasNext()) {
                             break;
                         };
-                        Map<String, Object> parsedSbParameters = new HashMap<String, Object>();
-                        subNodes.add(parsedSbParameters);
-                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
-                        parsedSbParameters.put("Cell type", cellType);
-                        parsedSbParameters.put("Band", getIntegerValue(parameters));
-                        parsedSbParameters.put("ARFCN", getIntegerValue(parameters));
-                        parsedSbParameters.put("BSIC", getIntegerValue(parameters));
-                        parsedSbParameters.put("RxLev full", getFloatValue(parameters));
-                        parsedSbParameters.put("RxLev sub", getFloatValue(parameters));
-                        parsedSbParameters.put("C1", getFloatValue(parameters));
-                        parsedSbParameters.put("C2", getFloatValue(parameters));
-                        parsedSbParameters.put("C31", getFloatValue(parameters));
-                        parsedSbParameters.put("C32", getFloatValue(parameters));
-                        parsedSbParameters.put("HCS priority", getIntegerValue(parameters));
-                        parsedSbParameters.put("HCS thr.", getFloatValue(parameters));
-                        parsedSbParameters.put("Cell ID", getIntegerValue(parameters));
-                        parsedSbParameters.put("LAC", getIntegerValue(parameters));
-                        parsedSbParameters.put("RAC", getIntegerValue(parameters));
-                        parsedSbParameters.put("Srxlev", getFloatValue(parameters));
+                        String cellType = getParamTypeOrSet(getIntegerValue(parameters),true);
+                        String postfix = " (Cell "+(i+1)+")";
+                        parsedParameters.put("Cell type"+postfix, cellType);
+                        postfix = " (Cell "+(i+1)+" - "+cellType+")";
+                        parsedParameters.put("Band"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("ARFCN"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("BSIC"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("RxLev full"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("RxLev sub"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("C1"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("C2"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("C31"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("C32"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("HCS priority"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("HCS thr."+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Cell ID"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("LAC"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("RAC"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Srxlev"+postfix, getFloatValue(parameters));
                     }
-                }
                     break;
-                case TETRA: {
+                case TETRA: 
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
                     groupCount = getIntegerValue(parameters);
-                    getIntegerValue(parameters);// not need cell group length
-                    List<Map<String, Object>> subNodes = new LinkedList<Map<String, Object>>();
-                    parsedParameters.put(SUB_NODES, subNodes);
+                    getIntegerValue(parameters);//not need cell group length
                     for (int i = 0; i < groupCount; i++) {
                         if (!parameters.hasNext()) {
                             break;
                         };
-                        Map<String, Object> parsedSbParameters = new HashMap<String, Object>();
-                        subNodes.add(parsedSbParameters);
-                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
-                        parsedSbParameters.put("Cell type", cellType);
-                        parsedSbParameters.put("Band", getIntegerValue(parameters));
-                        parsedSbParameters.put("ARFCN", getIntegerValue(parameters));
-                        parsedSbParameters.put("LAC", getIntegerValue(parameters));
-                        parsedSbParameters.put("RSSI", getFloatValue(parameters));
-                        parsedSbParameters.put("C1", getFloatValue(parameters));
-                        parsedSbParameters.put("C2", getFloatValue(parameters));
-                        parsedSbParameters.put("CC", getFloatValue(parameters));
+                        String cellType = getParamTypeOrSet(getIntegerValue(parameters),true);
+                        String postfix = " (Cell "+(i+1)+")";
+                        parsedParameters.put("Cell type"+postfix, cellType);
+                        postfix = " (Cell "+(i+1)+" - "+cellType+")";
+                        parsedParameters.put("Band"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("ARFCN"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("LAC"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("RSSI"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("C1"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("C2"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("CC"+postfix, getFloatValue(parameters));
                     }
-                }
                     break;
-                case UMTS_FDD: {
+                case UMTS_FDD:
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
-                    groupCount = getIntegerValue(parameters);
-                    getIntegerValue(parameters);// not need group length
-                    List<Map<String, Object>> subNodes = new LinkedList<Map<String, Object>>();
-                    parsedParameters.put(SUB_NODES, subNodes);
+                    groupCount = getIntegerValue(parameters);                    
+                    getIntegerValue(parameters);//not need group length
                     for (int i = 0; i < groupCount; i++) {
                         if (!parameters.hasNext()) {
                             break;
                         };
-                        Map<String, Object> parsedSbParameters = new HashMap<String, Object>();
-                        subNodes.add(parsedSbParameters);
                         Integer ch = getIntegerValue(parameters);
-                        parsedSbParameters.put("Ch", ch);
-                        parsedSbParameters.put("RSSI", getFloatValue(parameters));
+                        String postfix = " (Channel "+ch+")";
+                        parsedParameters.put("Ch"+postfix, ch);
+                        parsedParameters.put("RSSI"+postfix, getFloatValue(parameters));
                     }
                     groupCount = getIntegerValue(parameters);
-                    getIntegerValue(parameters);// not need cell group length
+                    getIntegerValue(parameters);//not need cell group length
                     for (int i = 0; i < groupCount; i++) {
                         if (!parameters.hasNext()) {
                             break;
                         };
-                        Map<String, Object> parsedSbParameters = new HashMap<String, Object>();
-                        subNodes.add(parsedSbParameters);
-                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
-                        parsedSbParameters.put("Cell type", cellType);
-                        parsedSbParameters.put("Band", getIntegerValue(parameters));
-                        parsedSbParameters.put("Ch", getIntegerValue(parameters));
-                        parsedSbParameters.put("Scr.", getIntegerValue(parameters));
-                        parsedSbParameters.put("Ec/N0", getFloatValue(parameters));
-                        parsedSbParameters.put("STTD", getIntegerValue(parameters));
-                        parsedSbParameters.put("RSCP", getFloatValue(parameters));
-                        parsedSbParameters.put("Secondary scr.", getIntegerValue(parameters));
-                        parsedSbParameters.put("Squal", getFloatValue(parameters));
-                        parsedSbParameters.put("Srxlev", getFloatValue(parameters));
-                        parsedSbParameters.put("Hqual", getFloatValue(parameters));
-                        parsedSbParameters.put("Hrxlev", getFloatValue(parameters));
-                        parsedSbParameters.put("Rqual", getFloatValue(parameters));
-                        parsedSbParameters.put("Rrxlev", getFloatValue(parameters));
-                        parsedSbParameters.put("OFF", getIntegerValue(parameters));
-                        parsedSbParameters.put("Tm", getFloatValue(parameters));
-                        parsedSbParameters.put("Pathloss", getFloatValue(parameters));
+                        String cellType = getParamTypeOrSet(getIntegerValue(parameters),true);
+                        String postfix = " (Cell "+(i+1)+")";
+                        parsedParameters.put("Cell type"+postfix, cellType);
+                        postfix = " (Cell "+(i+1)+" - "+cellType+")";
+                        parsedParameters.put("Band"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Ch"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Scr."+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Ec/N0"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("STTD"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("RSCP"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Secondary scr."+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Squal"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Srxlev"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Hqual"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Hrxlev"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Rqual"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Rrxlev"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("OFF"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Tm"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Pathloss"+postfix, getFloatValue(parameters));
                     }
-                }
                     break;
-                case UMTS_TD_SCDMA: {
+                case UMTS_TD_SCDMA: 
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
-                    groupCount = getIntegerValue(parameters);
-                    getIntegerValue(parameters);// not need group length
-                    List<Map<String, Object>> subNodes = new LinkedList<Map<String, Object>>();
-                    parsedParameters.put(SUB_NODES, subNodes);
+                    groupCount = getIntegerValue(parameters);                    
+                    getIntegerValue(parameters);//not need group length
                     for (int i = 0; i < groupCount; i++) {
                         if (!parameters.hasNext()) {
                             break;
                         };
-                        Map<String, Object> parsedSbParameters = new HashMap<String, Object>();
-                        subNodes.add(parsedSbParameters);
                         Integer band = getIntegerValue(parameters);
                         Integer ch = getIntegerValue(parameters);
-                        parsedSbParameters.put("Band", band);
-                        parsedSbParameters.put("Ch", ch);
-                        parsedSbParameters.put("RSSI", getFloatValue(parameters));
+                        String postfix = " (Channel "+ch+")";
+                        parsedParameters.put("Band"+postfix, band);
+                        parsedParameters.put("Ch"+postfix, ch);
+                        parsedParameters.put("RSSI"+postfix, getFloatValue(parameters));
                     }
                     groupCount = getIntegerValue(parameters);
-                    getIntegerValue(parameters);// not need cell group length
+                    getIntegerValue(parameters);//not need cell group length
                     for (int i = 0; i < groupCount; i++) {
                         if (!parameters.hasNext()) {
                             break;
                         };
-                        Map<String, Object> parsedSbParameters = new HashMap<String, Object>();
-                        subNodes.add(parsedSbParameters);
-                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
-                        parsedSbParameters.put("Cell type", cellType);
-                        parsedSbParameters.put("Band", getIntegerValue(parameters));
-                        parsedSbParameters.put("Ch", getIntegerValue(parameters));
-                        parsedSbParameters.put("Cell params ID", getIntegerValue(parameters));
-                        parsedSbParameters.put("RSCP", getFloatValue(parameters));
-                        parsedSbParameters.put("Srxlev", getFloatValue(parameters));
-                        parsedSbParameters.put("Hrxlev", getFloatValue(parameters));
-                        parsedSbParameters.put("Rrxlev", getFloatValue(parameters));
-                        parsedSbParameters.put("Pathloss", getFloatValue(parameters));
+                        String cellType = getParamTypeOrSet(getIntegerValue(parameters),true);
+                        String postfix = " (Cell "+(i+1)+")";
+                        parsedParameters.put("Cell type"+postfix, cellType);
+                        postfix = " (Cell "+(i+1)+" - "+cellType+")";
+                        parsedParameters.put("Band"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Ch"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Cell params ID"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("RSCP"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Srxlev"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Hrxlev"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Rrxlev"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Pathloss"+postfix, getFloatValue(parameters));
                     }
-                }
                     break;
                 case CDMA_ONE:
-                case CDMA_ONE_X: {
+                case CDMA_ONE_X:
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
-                    groupCount = getIntegerValue(parameters);
-                    getIntegerValue(parameters);// not need group length
-                    List<Map<String, Object>> subNodes = new LinkedList<Map<String, Object>>();
-                    parsedParameters.put(SUB_NODES, subNodes);
+                    groupCount = getIntegerValue(parameters);                    
+                    getIntegerValue(parameters);//not need group length
                     for (int i = 0; i < groupCount; i++) {
                         if (!parameters.hasNext()) {
                             break;
                         };
-                        Map<String, Object> parsedSbParameters = new HashMap<String, Object>();
-                        subNodes.add(parsedSbParameters);
                         Integer band = getIntegerValue(parameters);
                         Integer ch = getIntegerValue(parameters);
-                        parsedSbParameters.put("Band", band);
-                        parsedSbParameters.put("Ch", ch);
-                        parsedSbParameters.put("RX power", getFloatValue(parameters));
-                        parsedSbParameters.put("RX0 power", getFloatValue(parameters));
-                        parsedSbParameters.put("RX1 power", getFloatValue(parameters));
+                        String postfix = " (Channel "+ch+")";
+                        parsedParameters.put("Band"+postfix, band);
+                        parsedParameters.put("Ch"+postfix, ch);
+                        parsedParameters.put("RX power"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("RX0 power"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("RX1 power"+postfix, getFloatValue(parameters));
                     }
                     groupCount = getIntegerValue(parameters);
-                    getIntegerValue(parameters);// not need cell group length
+                    getIntegerValue(parameters);//not need cell group length
                     for (int i = 0; i < groupCount; i++) {
                         if (!parameters.hasNext()) {
                             break;
                         };
-                        Map<String, Object> parsedSbParameters = new HashMap<String, Object>();
-                        subNodes.add(parsedSbParameters);
-                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), false);
-                        parsedSbParameters.put("Set", cellType);
-                        parsedSbParameters.put("Band", getIntegerValue(parameters));
-                        parsedSbParameters.put("Ch", getIntegerValue(parameters));
-                        parsedSbParameters.put("PN", getIntegerValue(parameters));
-                        parsedSbParameters.put("Ec/I0", getFloatValue(parameters));
-                        parsedSbParameters.put("Walsh", getIntegerValue(parameters));
-                        parsedSbParameters.put("RSCP", getFloatValue(parameters));
+                        String cellType = getParamTypeOrSet(getIntegerValue(parameters),false);
+                        String postfix = " (Cell "+(i+1)+")";
+                        parsedParameters.put("Set"+postfix, cellType);
+                        postfix = " (Cell "+(i+1)+" - "+cellType+")";
+                        parsedParameters.put("Band"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Ch"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("PN"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Ec/I0"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Walsh"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("RSCP"+postfix, getFloatValue(parameters));
                     }
-                }
                     break;
-                case EVDO: {
+                case EVDO: 
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
-                    groupCount = getIntegerValue(parameters);
-                    getIntegerValue(parameters);// not need group length
-                    List<Map<String, Object>> subNodes = new LinkedList<Map<String, Object>>();
-                    parsedParameters.put(SUB_NODES, subNodes);
+                    groupCount = getIntegerValue(parameters);                    
+                    getIntegerValue(parameters);//not need group length
                     for (int i = 0; i < groupCount; i++) {
                         if (!parameters.hasNext()) {
                             break;
                         };
-                        Map<String, Object> parsedSbParameters = new HashMap<String, Object>();
-                        subNodes.add(parsedSbParameters);
                         Integer band = getIntegerValue(parameters);
                         Integer ch = getIntegerValue(parameters);
-                        parsedSbParameters.put("Band", band);
-                        parsedSbParameters.put("Ch", ch);
-                        parsedSbParameters.put("RX power", getFloatValue(parameters));
-                        parsedSbParameters.put("RX0 power", getFloatValue(parameters));
-                        parsedSbParameters.put("RX1 power", getFloatValue(parameters));
+                        String postfix = " (Channel "+ch+")";
+                        parsedParameters.put("Band"+postfix, band);
+                        parsedParameters.put("Ch"+postfix, ch);
+                        parsedParameters.put("RX power"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("RX0 power"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("RX1 power"+postfix, getFloatValue(parameters));
                     }
-                    groupCount = getIntegerValue(parameters);
-                    getIntegerValue(parameters);// not need group length
+                    groupCount = getIntegerValue(parameters);                    
+                    getIntegerValue(parameters);//not need group length
                     for (int i = 0; i < groupCount; i++) {
                         if (!parameters.hasNext()) {
                             break;
                         };
-                        Map<String, Object> parsedSbParameters = new HashMap<String, Object>();
-                        subNodes.add(parsedSbParameters);
                         String set = getParamTypeOrSet(getIntegerValue(parameters), false);
                         Integer band = getIntegerValue(parameters);
                         Integer ch = getIntegerValue(parameters);
-                        parsedSbParameters.put("Set", set);
-                        parsedSbParameters.put("Band", band);
-                        parsedSbParameters.put("Ch", ch);
-                        parsedSbParameters.put("PN", getIntegerValue(parameters));
-                        parsedSbParameters.put("Ec/I0", getFloatValue(parameters));
-                        parsedSbParameters.put("RSCP", getFloatValue(parameters));
+                        String postfix = " (Channel "+ch+")";
+                        parsedParameters.put("Set"+postfix, set);
+                        postfix = " (Channel "+ch+" - "+set+")";
+                        parsedParameters.put("Band"+postfix, band);
+                        parsedParameters.put("Ch"+postfix, ch);
+                        parsedParameters.put("PN"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Ec/I0"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("RSCP"+postfix, getFloatValue(parameters));
                     }
-                }
                     break;
-                case WLAN: {
+                case WLAN: 
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
                     groupCount = getIntegerValue(parameters);
-                    getIntegerValue(parameters);// not need cell group length
-                    List<Map<String, Object>> subNodes = new LinkedList<Map<String, Object>>();
-                    parsedParameters.put(SUB_NODES, subNodes);
+                    getIntegerValue(parameters);//not need cell group length
                     for (int i = 0; i < groupCount; i++) {
                         if (!parameters.hasNext()) {
                             break;
                         };
-                        Map<String, Object> parsedSbParameters = new HashMap<String, Object>();
-                        subNodes.add(parsedSbParameters);
-                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
-                        parsedSbParameters.put("Cell type", cellType);
-                        parsedSbParameters.put("Band", getIntegerValue(parameters));
-                        parsedSbParameters.put("Quality", getFloatValue(parameters));
-                        parsedSbParameters.put("Channel", getIntegerValue(parameters));
-                        parsedSbParameters.put("RSSI", getFloatValue(parameters));
-                        parsedSbParameters.put("SSID", getStringValue(parameters));
-                        parsedSbParameters.put("MAC addr.", getStringValue(parameters));
-                        parsedSbParameters.put("Security", getIntegerValue(parameters));
-                        parsedSbParameters.put("Max transfer rate", getIntegerValue(parameters));
+                        String cellType = getParamTypeOrSet(getIntegerValue(parameters),true);
+                        String postfix = " (Cell "+(i+1)+")";
+                        parsedParameters.put("Cell type"+postfix, cellType);
+                        postfix = " (Cell "+(i+1)+" - "+cellType+")";
+                        parsedParameters.put("Band"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Quality"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Channel"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("RSSI"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("SSID"+postfix, getStringValue(parameters));
+                        parsedParameters.put("MAC addr."+postfix, getStringValue(parameters));
+                        parsedParameters.put("Security"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Max transfer rate"+postfix, getIntegerValue(parameters));
                     }
-                }
                     break;
-                case GAN_WLAN: {
+                case GAN_WLAN: 
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
                     groupCount = getIntegerValue(parameters);
-                    getIntegerValue(parameters);// not need cell group length
-                    List<Map<String, Object>> subNodes = new LinkedList<Map<String, Object>>();
-                    parsedParameters.put(SUB_NODES, subNodes);
+                    getIntegerValue(parameters);//not need cell group length
                     for (int i = 0; i < groupCount; i++) {
                         if (!parameters.hasNext()) {
                             break;
                         };
-                        Map<String, Object> parsedSbParameters = new HashMap<String, Object>();
-                        subNodes.add(parsedSbParameters);
-                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
-                        parsedSbParameters.put("Cell type", cellType);
-                        parsedSbParameters.put("Band", getIntegerValue(parameters));
-                        parsedSbParameters.put("Quality", getFloatValue(parameters));
-                        parsedSbParameters.put("Channel", getIntegerValue(parameters));
-                        parsedSbParameters.put("RSSI", getFloatValue(parameters));
-                        parsedSbParameters.put("SSID", getStringValue(parameters));
-                        parsedSbParameters.put("MAC addr.", getStringValue(parameters));
+                        String cellType = getParamTypeOrSet(getIntegerValue(parameters),true);
+                        String postfix = " (Cell "+(i+1)+")";
+                        parsedParameters.put("Cell type"+postfix, cellType);
+                        postfix = " (Cell "+(i+1)+" - "+cellType+")";
+                        parsedParameters.put("Band"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Quality"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Channel"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("RSSI"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("SSID"+postfix, getStringValue(parameters));
+                        parsedParameters.put("MAC addr."+postfix, getStringValue(parameters));
                     }
-                }
                     break;
-                case WIMAX: {
+                case WIMAX:
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
                     groupCount = getIntegerValue(parameters);
-                    getIntegerValue(parameters);// not need cell group length
-                    List<Map<String, Object>> subNodes = new LinkedList<Map<String, Object>>();
-                    parsedParameters.put(SUB_NODES, subNodes);
+                    getIntegerValue(parameters);//not need cell group length
                     for (int i = 0; i < groupCount; i++) {
                         if (!parameters.hasNext()) {
                             break;
                         };
-                        Map<String, Object> parsedSbParameters = new HashMap<String, Object>();
-                        subNodes.add(parsedSbParameters);
-                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
-                        parsedSbParameters.put("Cell type", cellType);
-                        parsedSbParameters.put("Band", getIntegerValue(parameters));
-                        parsedSbParameters.put("Frequency", getFloatValue(parameters));
-                        parsedSbParameters.put("Preamble index", getIntegerValue(parameters));
-                        parsedSbParameters.put("BS ID", getStringValue(parameters));
-                        parsedSbParameters.put("RSSI", getFloatValue(parameters));
-                        parsedSbParameters.put("RSSI dev", getFloatValue(parameters));
-                        parsedSbParameters.put("CINR dev", getFloatValue(parameters));
+                        String cellType = getParamTypeOrSet(getIntegerValue(parameters),true);
+                        String postfix = " (Cell "+(i+1)+")";
+                        parsedParameters.put("Cell type"+postfix, cellType);
+                        postfix = " (Cell "+(i+1)+" - "+cellType+")";
+                        parsedParameters.put("Band"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Frequency"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("Preamble index"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("BS ID"+postfix, getStringValue(parameters));
+                        parsedParameters.put("RSSI"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("RSSI dev"+postfix, getFloatValue(parameters));
+                        parsedParameters.put("CINR dev"+postfix, getFloatValue(parameters));
                     }
-                }
                     break;
-                case AMPS:
-                case NAMPS: {
+                case AMPS: 
+                case NAMPS:
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
                     groupCount = getIntegerValue(parameters);
-                    getIntegerValue(parameters);// not need cell group length
-                    List<Map<String, Object>> subNodes = new LinkedList<Map<String, Object>>();
-                    parsedParameters.put(SUB_NODES, subNodes);
+                    getIntegerValue(parameters);//not need cell group length
                     for (int i = 0; i < groupCount; i++) {
                         if (!parameters.hasNext()) {
                             break;
                         };
-                        Map<String, Object> parsedSbParameters = new HashMap<String, Object>();
-                        subNodes.add(parsedSbParameters);
-                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
-                        parsedSbParameters.put("Cell type", cellType);
-                        parsedSbParameters.put("Band", getIntegerValue(parameters));
-                        parsedSbParameters.put("Ch", getIntegerValue(parameters));
-                        parsedSbParameters.put("SAT", getIntegerValue(parameters));
-                        parsedSbParameters.put("RxLev", getFloatValue(parameters));
+                        String cellType = getParamTypeOrSet(getIntegerValue(parameters),true);
+                        String postfix = " (Cell "+(i+1)+")";
+                        parsedParameters.put("Cell type"+postfix, cellType);
+                        postfix = " (Cell "+(i+1)+" - "+cellType+")";
+                        parsedParameters.put("Band"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Ch"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("SAT"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("RxLev"+postfix, getFloatValue(parameters));
                     }
-                }
                     break;
-                case DAMPS: {
+                case DAMPS:
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
                     groupCount = getIntegerValue(parameters);
-                    getIntegerValue(parameters);// not need cell group length
-                    List<Map<String, Object>> subNodes = new LinkedList<Map<String, Object>>();
-                    parsedParameters.put(SUB_NODES, subNodes);
+                    getIntegerValue(parameters);//not need cell group length
                     for (int i = 0; i < groupCount; i++) {
                         if (!parameters.hasNext()) {
                             break;
                         };
-                        Map<String, Object> parsedSbParameters = new HashMap<String, Object>();
-                        subNodes.add(parsedSbParameters);
-                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
-                        parsedSbParameters.put("Cell type", cellType);
-                        parsedSbParameters.put("Band", getIntegerValue(parameters));
-                        parsedSbParameters.put("Ch", getIntegerValue(parameters));
-                        parsedSbParameters.put("SAT", getIntegerValue(parameters));
-                        parsedSbParameters.put("RxLev", getFloatValue(parameters));
+                        String cellType = getParamTypeOrSet(getIntegerValue(parameters),true);
+                        String postfix = " (Cell "+(i+1)+")";
+                        parsedParameters.put("Cell type"+postfix, cellType);
+                        postfix = " (Cell "+(i+1)+" - "+cellType+")";
+                        parsedParameters.put("Band"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("Ch"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("SAT"+postfix, getIntegerValue(parameters));
+                        parsedParameters.put("RxLev"+postfix, getFloatValue(parameters));
                     }
-                }
                     break;
                 default:
-                    throw new IllegalArgumentException("Unknown system <" + system + ">.");
+                    throw new IllegalArgumentException("Unknown system <"+system+">.");
                 }
             }
-            return parsedParameters;
+            return parsedParameters;          
         }
     },
     ADJMEAS("ADJMEAS") {
