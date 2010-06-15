@@ -536,15 +536,17 @@ public class CallAnalyserView extends ViewPart {
         rowComposite.setLayout(layout);  
 
         // The first column for dataset and statistics choices
-        Composite column1 = addColumn(rowComposite, null, MIN_COLUMN_WIDTH);
-        Composite cell1 = createCellComposite(column1, null, MIN_COLUMN_WIDTH);
-        Composite cell2 = createCellComposite(column1, cell1, MIN_COLUMN_WIDTH);
-        cDrive = addSelection(cell1, LBL_DRIVE, MIN_FIELD_WIDTH);
-        cCallType = addSelection(cell2, LBL_CALL_TYPE, MIN_FIELD_WIDTH);
+        int width = 3*MIN_COLUMN_WIDTH/4;
+        int field_width = 3*MIN_FIELD_WIDTH/4;
+        Composite column1 = addColumn(rowComposite, null, width);
+        Composite cell1 = createCellComposite(column1, null, width);
+        Composite cell2 = createCellComposite(column1, cell1, width);
+        cDrive = addSelection(cell1, LBL_DRIVE, field_width);
+        cCallType = addSelection(cell2, LBL_CALL_TYPE, field_width);
         
         // The second column for probe and period filtering
-        int width = 3*MIN_COLUMN_WIDTH/4-20;
-        int field_width = 3*MIN_FIELD_WIDTH/4-20;
+        width = 3*MIN_COLUMN_WIDTH/4-20;
+        field_width = 3*MIN_FIELD_WIDTH/4-20;
         Composite column2 = addColumn(rowComposite, column1, width);
         cell1 = createCellComposite(column2, null, width);
         cell2 = createCellComposite(column2, cell1, width);
@@ -651,8 +653,9 @@ public class CallAnalyserView extends ViewPart {
         label.setLayoutData(fData);
         Combo selection = new Combo(cell, SWT.DROP_DOWN | SWT.READ_ONLY);
         fData = new FormData();
+        fData.left = new FormAttachment(label, 2);
         fData.right = new FormAttachment(100, -2);
-        fData.width = width;               
+        //fData.width = width;               
         selection.setLayoutData(fData);
         return selection;
     }

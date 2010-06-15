@@ -447,7 +447,6 @@ public class AMSXMLoader extends AbstractCallLoader {
 
         handleLocations();
         sortedCall.clear();
-        System.out.println("Clear cache");//TODO delete
         ntpqCache.clear();
     }
 
@@ -502,7 +501,6 @@ public class AMSXMLoader extends AbstractCallLoader {
     
     private void addNtpqsToCall(Node call, Node probeCalls){
         Object id = NeoUtils.getNodeName(probeCalls, neo).split(" ")[0];
-        System.out.println("Save into call for "+id);//TODO delete
         List<Node> ntpqs = ntpqCache.get(id);
         if(ntpqs!=null){
             for (Node ntpq : ntpqs) {
@@ -2118,7 +2116,6 @@ private void handleCall() {
             if (ntpqs == null) {
                 ntpqs = new ArrayList<Node>();
                 ntpqCache.put(id, ntpqs);
-                System.out.println("Put into cache for "+id);//TODO delete
             }
             Node ntpq = neo.createNode();
             NeoUtils.addChild(datasetFileNode, ntpq, lastDatasetNode, neo);
