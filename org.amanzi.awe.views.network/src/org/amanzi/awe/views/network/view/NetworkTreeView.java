@@ -14,6 +14,7 @@ package org.amanzi.awe.views.network.view;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,6 +32,10 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.refractions.udig.catalog.IGeoResource;
+import net.refractions.udig.project.internal.Layer;
+import net.refractions.udig.project.internal.commands.DeleteLayerCommand;
+import net.refractions.udig.project.internal.impl.MapImpl;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.awe.views.view.provider.NetworkTreeContentProvider;
@@ -1216,6 +1221,25 @@ public class NetworkTreeView extends ViewPart {
                     if (gisNode != null && networkNode != null) {
                         // TODO: Remove this code once we trust the delete function more fully
                         fixOrphanedNodes(gisNode, networkNode, monitor);
+                        
+                        MapImpl map = (MapImpl)ApplicationGIS.getActiveMap();
+                        List<Layer> layers = map.getLayersInternal();
+                        Layer targetLayer = null;
+                        try {
+                            for (Layer layer : layers) {
+                                IGeoResource resource = layer.findGeoResource(Node.class);
+                                if (resource != null && resource.resolve(Node.class, null).equals(gisNode)) {
+                                    targetLayer = layer;
+                                }
+                            }
+                        } catch (IOException e) {
+                            // Not found
+                            e.printStackTrace();
+                        }
+                        if(targetLayer != null){
+                            map.sendCommandASync(new DeleteLayerCommand(targetLayer));
+                        }
+                        
                     } else if (gisNode != null && containseDatasetNode) {
                         Transaction transaction = getService().beginTx();
                         try {
