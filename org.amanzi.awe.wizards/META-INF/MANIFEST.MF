@@ -19,5 +19,6 @@ Require-Bundle: org.eclipse.ui,
  org.amanzi.awe.gps;bundle-version="1.0.0",
  org.amanzi.neo.loader;bundle-version="1.0.0",
  net.refractions.udig.mapgraphic;bundle-version="1.1.1",
- net.refractions.udig.project.ui;bundle-version="1.1.1"
+ net.refractions.udig.project.ui;bundle-version="1.1.1",
+ org.amanzi.awe.catalog.neo;bundle-version="1.0.0"
 Eclipse-LazyStart: true

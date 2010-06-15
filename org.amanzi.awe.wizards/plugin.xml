@@ -32,6 +32,8 @@
       </command>
       <command id="org.amanzi.awe.wizards.geoptima.visualise"
       		 name="Visualise">
+          <commandParameter id="nodeId" name="node id" optional="true">
+        </commandParameter>
       </command>
       <command
             id="org.amanzi.awe.wizards.NetViewCommand"
@@ -151,10 +153,12 @@
        		commandId="org.amanzi.awe.wizards.geoptima.reports"
       		 icon="icons/16/reports.png">
       </command>
-      <command
-       		commandId="org.amanzi.awe.wizards.geoptima.visualise"
-      		 icon="icons/16/visualise.png">
-      </command>
+<menu id="org.amanzi.awe.wizards.geoptima.visualiseMenu"
+    label="Visualise"
+    mnemonic="Visualise menu">
+  <dynamic class="org.amanzi.awe.wizards.geoptima.VisualiseMenuHandler"
+      id="org.amanzi.awe.wizards.geoptima.VisualiseMenuHandler"/>
+</menu>
      </menuContribution>
      <menuContribution locationURI="menu:org.amanzi.awe.wizards.geoptima.load2">
              <command
