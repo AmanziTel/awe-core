@@ -199,7 +199,7 @@ public class CorrelateDialog extends Dialog implements IPropertyChangeListener {
             }
         });
         Button btnOk = new Button(shell, SWT.PUSH);
-        btnOk.setText("OK");
+        btnOk.setText("Exit");
         GridData gdBtnCancel = new GridData();
         gdBtnCancel.horizontalAlignment = GridData.END;
         gdBtnCancel.widthHint = 80;
