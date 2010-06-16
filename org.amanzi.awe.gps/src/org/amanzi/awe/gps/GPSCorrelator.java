@@ -42,7 +42,7 @@ import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.index.lucene.LuceneIndexService;
 
 /**
- * Enum that contains types of Identification of Sector
+ * Class that creates correlation between Network Sectors and other data
  * 
  * @author Lagutko_N
  * @since 1.0.0
@@ -201,6 +201,7 @@ public class GPSCorrelator {
 	        node = neoService.createNode();
 	        
 	        node.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, sectorId);
+	        node.setProperty(INeoConstants.PROPERTY_NAME_NAME, networkName);
 	        luceneService.index(node, luceneIndexKey, sectorId);
 	        rootCorrelationNode.createRelationshipTo(node, GeoNeoRelationshipTypes.CHILD);
 	    }
