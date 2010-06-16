@@ -1592,7 +1592,11 @@ public abstract class AbstractLoader {
      * @param gis node
      */
     public void addLayersToMap() {
-        LoaderUtils.addGisNodeToMap(basename, getGisNodes().toArray(new Node[0]));
+        LoaderUtils.addGisNodeToMap(getDataName(), getGisNodes().toArray(new Node[0]));
+    }
+    
+    protected String getDataName(){
+        return filename;
     }
 
     /**

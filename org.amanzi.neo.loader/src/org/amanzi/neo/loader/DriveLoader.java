@@ -83,6 +83,11 @@ public abstract class DriveLoader extends AbstractLoader {
         	gisType = GisTypes.DRIVE;
         }
     }
+    
+    @Override
+    protected String getDataName() {
+        return dataset;
+    }
 
     /**
      * Search the database for the 'gis' node for this dataset. If none found it created an
