@@ -488,7 +488,6 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
                         }
                         cSelect.setEnabled(isAggregated || isAggrProp);
                     }
-                    updateSelection();
                     findOrCreateAggregateNodeInNewThread(gisNode, propertyName);
                     // chartUpdate(aggrNode);
                 }
@@ -751,28 +750,6 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
         // LOGGER.debug("GIS '" + geoNeo + "' is not drive: " + geoNeo.getGisType());
         // }
         return isAggregated;
-    }
-
-    /**
-     *
-     */
-    protected void updateSelection() {
-        // TODO its bad way -may be change StarRenderer
-        // IProgressMonitor monitor = new NullProgressMonitor();
-        // try {
-        // for (ILayer sLayer : ApplicationGIS.getActiveMap().getMapLayers()) {
-        // if (sLayer.getGeoResource().canResolve(NeoGeoResource.class)) {
-        // NeoGeoResource neoGeo = sLayer.getGeoResource().resolve(NeoGeoResource.class, monitor);
-        // if (neoGeo.getGeoNeo(monitor).getGisType() == GisTypes.STAR) {
-        // sLayer.refresh(null);
-        // return;
-        // }
-        // }
-        // }
-        // } catch (IOException e) {
-        // // TODO Handle IOException
-        // throw (RuntimeException)new RuntimeException().initCause(e);
-        // }
     }
 
     /**
@@ -1154,7 +1131,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
             }
         }
     }
-
+    
     /**
      * Select column
      * 
@@ -1162,25 +1139,36 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
      */
     private void setSelection(ChartNode columnKey) {
 
-        Node gisNode = NeoUtils.findGisNodeByChild(members.get(gisCombo.getText()));
+        Node realGis = NeoUtils.findGisNodeByChild(members.get(gisCombo.getText()));
+        List<Node> correlated = new ArrayList<Node>();
+        if (realGis == null) {
+            correlated = NeoUtils.getCorrelationNetworks(members.get(gisCombo.getText()), NeoServiceProvider.getProvider().getService());
+        }
+        else {
+            correlated.add(realGis);
+        }
+        
         Node aggrNode = dataset.getAggrNode();
-        if (selectedColumn != null) {
-            selectedColumn = columnKey;
-            changeBarColor();
-            if (selectedGisNode.equals(gisNode)) {
-                fireLayerDrawEvent(gisNode, aggrNode, selectedColumn);
+        
+        for (Node gisNode : correlated) {
+            if (selectedColumn != null) {
+                selectedColumn = columnKey;
+                changeBarColor();
+                if (selectedGisNode.equals(gisNode)) {
+                    fireLayerDrawEvent(gisNode, aggrNode, selectedColumn);
+                } else {
+                    // drop old selection
+                    selectedGisNode.removeProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION);
+                    fireLayerDrawEvent(selectedGisNode, null, null);
+                    selectedGisNode = gisNode;
+                    fireLayerDrawEvent(selectedGisNode, aggrNode, selectedColumn);
+                }
             } else {
-                // drop old selection
-                selectedGisNode.removeProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION);
-                fireLayerDrawEvent(selectedGisNode, null, null);
+                selectedColumn = columnKey;
                 selectedGisNode = gisNode;
-                fireLayerDrawEvent(selectedGisNode, aggrNode, selectedColumn);
+                changeBarColor();
+                fireLayerDrawEvent(gisNode, aggrNode, selectedColumn);
             }
-        } else {
-            selectedColumn = columnKey;
-            selectedGisNode = gisNode;
-            changeBarColor();
-            fireLayerDrawEvent(gisNode, aggrNode, selectedColumn);
         }
         setSelectionName(columnKey);
 

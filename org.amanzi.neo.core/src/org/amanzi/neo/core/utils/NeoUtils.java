@@ -2717,6 +2717,34 @@ public class NeoUtils {
         return gis.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode();
     }
 
+    /**
+     * Returns list of Networks correlated with Dataset
+     *
+     * @param dataset Dataset to search from
+     * @param service NeoService
+     * @return correlated Networks
+     */
+    public static List<Node> getCorrelationNetworks(Node dataset, GraphDatabaseService service) {
+        Transaction tx = service.beginTx();
+        ArrayList<Node> result = new ArrayList<Node>();
+        
+        try {
+            for (Relationship correlationRel : dataset.getRelationships(CorrelationRelationshipTypes.CORRELATED, Direction.OUTGOING)) {
+                Node network = correlationRel.getEndNode().getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.INCOMING).getStartNode();
+                
+                result.add(NeoUtils.getGisNodeByDataset(network));
+            }
+        }
+        catch (Exception e) {
+            LOGGER.error(e);
+        }
+        finally {
+            tx.success();
+            tx.finish();
+        }
+        
+        return result;
+    }
 
     /**
      * Gets the primary elem traverser.

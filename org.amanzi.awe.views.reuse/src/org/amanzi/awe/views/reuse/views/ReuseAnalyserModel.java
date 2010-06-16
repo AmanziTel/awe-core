@@ -162,8 +162,9 @@ public class ReuseAnalyserModel {
                     while (links.hasNext()) {
                         Relationship link = links.next();
                         Node network = link.getEndNode().getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.INCOMING).getStartNode();
-                        network.createRelationshipTo(result, NetworkRelationshipTypes.AGGREGATION);
-                        network.setProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION, propertyName);
+                        Node gis = NeoUtils.getGisNodeByDataset(network);
+                        gis.createRelationshipTo(result, NetworkRelationshipTypes.AGGREGATION);
+                        gis.setProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION, propertyName);
                         correlationUpdate.add(new Pair<Node, Node>(network, result));
                     }
                     computeStatistics(gisNode, result, propertyName,isStringProperty, distributeColumn, Select.findSelectByValue(select), monitor);
