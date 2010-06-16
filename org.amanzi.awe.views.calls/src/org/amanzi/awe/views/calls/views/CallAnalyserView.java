@@ -474,23 +474,36 @@ public class CallAnalyserView extends ViewPart {
         if (header == null) {
             return 0;
         }
-        String value1 = header.getValue(o1, column);
-        if (value1 == null) {
-            value1 = "";
-        }
-        String value2 = header.getValue(o2, column);
-        if (value2 == null) {
-            value2 = "";
-        }
+        Object value1 = header.getValueForSort(o1, column);
+        Object value2 = header.getValueForSort(o2, column);
         switch (order) {
         case DESC:
-            return value2.compareTo(value1);
+            return compareObjects(value2, value1);
         case ASC:
-            return value1.compareTo(value2);
+            return compareObjects(value1, value2);
         default:
             return 0;
         }
         
+    }
+    
+    private int compareObjects(Object value1,Object value2){
+        if(value1==null&&value2==null){
+            return 0;
+        }
+        if(value1==null){
+            if(value2 instanceof String){
+                value1 = "";
+            }
+            if(value2 instanceof Number){
+                value1 = 0;
+            }
+        }
+        if(value1 instanceof Number){
+            Double num1 = ((Number)value1).doubleValue();
+            return num1.compareTo(value2==null?0.0:((Number)value2).doubleValue());
+        }
+        return value1.toString().compareTo(value2==null?"":value2.toString());
     }
 
 
@@ -1492,6 +1505,29 @@ public class CallAnalyserView extends ViewPart {
          * @param index
          * @return statistic value
          */
+        public Object getValueForSort(PeriodWrapper wr, int index) {
+            if (header == null) {
+                if (index==0){
+                return NeoUtils.getNodeName(wr.sRow);
+                }else if (index==1){
+                    return wr.getHost();
+                } else if (index == 2) {
+                    return wr.getRealLA();
+                } else {
+                    return wr.getRealF();
+                }
+            } else {
+                return wr.getValueForSort(header);
+            }
+        }
+        
+        /**
+         * get value depends PeriodWrapper
+         * 
+         * @param wr - PeriodWrapper
+         * @param index
+         * @return statistic value
+         */
         public Color getBackgroundColor(PeriodWrapper wr) {
             return wr.getBackgroundColor(header);
         }        
@@ -1556,10 +1592,13 @@ public class CallAnalyserView extends ViewPart {
     public static class PeriodWrapper {
         private final Node sRow;
         private Map<IStatisticsHeader, String> mappedValue = new HashMap<IStatisticsHeader, String>();
+        private Map<IStatisticsHeader, Object> sortedValue = new HashMap<IStatisticsHeader, Object>();
         private Map<IStatisticsHeader, ColoredFlags> flaggedValue = new HashMap<IStatisticsHeader, ColoredFlags>();
         private String host;
         private String probeF = "";
         private String probeLA = "";
+        private Number realF = null;
+        private Number realLA = null;
         private Node probeNode;
         private Color color;
         
@@ -1579,6 +1618,7 @@ public class CallAnalyserView extends ViewPart {
                 IStatisticsHeader header = callType.getHeaderByTitle(name);
                 if (header != null) {                   
                     Object value = node.getProperty(INeoConstants.PROPERTY_VALUE_NAME, null);
+                    sortedValue.put(header, value);
                     mappedValue.put(header, getFormattedValue(value, header));
                     ColoredFlags flag = ColoredFlags.getFlagById((String)node.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, ColoredFlags.NONE.getId()));
                     flaggedValue.put(header, flag);
@@ -1605,10 +1645,10 @@ public class CallAnalyserView extends ViewPart {
                     probeNode =  source.next();
                 }
                 host = NeoUtils.getNodeName(probeNode).split(" ")[0];
-                Number f = (Number)probeNode.getProperty(INeoConstants.PROBE_F, null);
-                Number la = (Number)probeNode.getProperty(INeoConstants.PROBE_LA, null);
-                probeF = f == null ? "" : f.toString();
-                probeLA = la == null ? "" : la.toString();
+                realF = (Number)probeNode.getProperty(INeoConstants.PROBE_F, null);
+                realLA = (Number)probeNode.getProperty(INeoConstants.PROBE_LA, null);
+                probeF = realF == null ? "" : realF.toString();
+                probeLA = realLA == null ? "" : realLA.toString();
             }
         }
         
@@ -1661,6 +1701,14 @@ public class CallAnalyserView extends ViewPart {
             String string = mappedValue.get(header);
             return string == null ? ERROR_VALUE : string;
         }
+        
+        /**
+         * @param header
+         * @return
+         */
+        public Object getValueForSort(IStatisticsHeader header) {
+            return sortedValue.get(header);
+        }
 
         /**
          * @return Returns the host.
@@ -1675,12 +1723,26 @@ public class CallAnalyserView extends ViewPart {
         public String getProbeF() {
             return probeF;
         }
+        
+        /**
+         * @return Returns the realF.
+         */
+        public Number getRealF() {
+            return realF;
+        }
 
         /**
          * @return Returns the probeLA.
          */
         public String getProbeLA() {
             return probeLA;
+        }
+        
+        /**
+         * @return Returns the realLA.
+         */
+        public Number getRealLA() {
+            return realLA;
         }
 
         /**
