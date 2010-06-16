@@ -70,9 +70,6 @@ public class NeoNode {
     public NeoNode(Node node,int number) {
         this.node = node;
         this.name = NeoUtils.getFormatedNodeName(node, "");
-        if(NeoUtils.isCallNode(node)){
-            this.name = this.name + " ("+node.getProperty("call_type", "")+")";
-        }
         this.number = number;
     }
     
