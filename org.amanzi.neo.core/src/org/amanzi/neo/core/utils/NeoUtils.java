@@ -74,7 +74,6 @@ import org.neo4j.index.lucene.LuceneIndexService;
 import org.neo4j.neoclipse.preference.DecoratorPreferences;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-// TODO: Auto-generated Javadoc
 /**
  * <p>
  * Utility class that provides common methods for work with neo nodes
@@ -141,6 +140,7 @@ public class NeoUtils {
      * @return node name or empty string
      * @deprecated
      */
+    @Deprecated
     public static String getNodeName(Node node) {
         // String type = node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").toString();
         // if (type.equals(INeoConstants.MP_TYPE_NAME)) {
@@ -235,7 +235,7 @@ public class NeoUtils {
     public static boolean isDatasetNode(Node node) {
         return node != null && NodeTypes.DATASET.getId().equals(getNodeType(node, ""));
     }
-    
+
     /**
      * check node by type.
      * 
@@ -357,7 +357,7 @@ public class NeoUtils {
 
     /**
      * finds root.
-     *
+     * 
      * @param nodeName name of gis node
      * @param service the service
      * @return gis node or null
@@ -398,9 +398,8 @@ public class NeoUtils {
 
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
-                if (!(NodeTypes.NETWORK.checkNode(currentPos.currentNode()) ||
-                      NeoUtils.isDatasetNode(currentPos.currentNode()) ||
-                      NeoUtils.isOssNode(currentPos.currentNode()))) {
+                if (!(NodeTypes.NETWORK.checkNode(currentPos.currentNode()) || NeoUtils.isDatasetNode(currentPos.currentNode()) || NeoUtils.isOssNode(currentPos
+                        .currentNode()))) {
                     return false;
                 }
                 return additionalReturnableEvaluator == null || additionalReturnableEvaluator.isReturnableNode(currentPos);
@@ -469,7 +468,7 @@ public class NeoUtils {
      * @return gis node or null
      */
     public static Node findGisNodeByChild(Node childNode) {
-        return findGisNodeByChild(childNode,NeoServiceProvider.getProvider().getService());
+        return findGisNodeByChild(childNode, NeoServiceProvider.getProvider().getService());
 
     }
 
@@ -740,14 +739,13 @@ public class NeoUtils {
 
     }
 
-
     /**
      * delete node and all relation from/to it.
-     *
+     * 
      * @param node - node to delete
      * @param service the service
      */
-    public static void deleteSingleNode(Node node,GraphDatabaseService service) {
+    public static void deleteSingleNode(Node node, GraphDatabaseService service) {
         Transaction tx = beginTx(service);
         try {
             for (Relationship relation : node.getRelationships()) {
@@ -805,7 +803,7 @@ public class NeoUtils {
         if (time == null) {
             return null;
         }
-        if (time instanceof Long){
+        if (time instanceof Long) {
             return (Long)time;
         }
         SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");
@@ -1699,8 +1697,9 @@ public class NeoUtils {
         try {
             return node.hasRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING) ? node.getSingleRelationship(GeoNeoRelationshipTypes.LOCATION,
                     Direction.OUTGOING).getOtherNode(node) : null;
-        }catch (Exception e) {
-            // TODO: FAST FAKE - because some nodes can few location - exception is possible. fix after difinition mobile probe.
+        } catch (Exception e) {
+            // TODO: FAST FAKE - because some nodes can few location - exception is possible. fix
+            // after difinition mobile probe.
             return null;
         } finally {
             finishTx(tx);
@@ -1822,10 +1821,10 @@ public class NeoUtils {
         }
         return sb.toString();
     }
-    
+
     /**
      * get format date string.
-     *
+     * 
      * @param startTime - begin timestamp
      * @param endTime end timestamp
      * @param dayFormat the day format
@@ -1836,27 +1835,27 @@ public class NeoUtils {
         if (startTime == null || endTime == null) {
             return "No time";
         }
-        if (periodId.equals("hourly")){
+        if (periodId.equals("hourly")) {
             return getNameForHourlySRow(startTime, endTime, dayFormat);
         }
-        if (periodId.equals("daily")){
+        if (periodId.equals("daily")) {
             return getNameForDailySRow(startTime);
         }
-        if (periodId.equals("weekly")){
+        if (periodId.equals("weekly")) {
             return getNameForWeeklySRow(startTime, endTime);
         }
         return getNameForMonthlySRow(startTime, endTime);
     }
-    
+
     /**
      * Gets the name for hourly s row.
-     *
+     * 
      * @param startTime the start time
      * @param endTime the end time
      * @param dayFormat the day format
      * @return the name for hourly s row
      */
-    public static String getNameForHourlySRow(Long startTime, Long endTime, String dayFormat){
+    public static String getNameForHourlySRow(Long startTime, Long endTime, String dayFormat) {
         Calendar endTimeCal = Calendar.getInstance();
         endTimeCal.setTimeInMillis(endTime);
 
@@ -1878,44 +1877,44 @@ public class NeoUtils {
         }
         return sb.toString();
     }
-    
+
     /**
      * Gets the name for daily s row.
-     *
+     * 
      * @param startTime the start time
      * @return the name for daily s row
      */
-    public static String getNameForDailySRow(Long startTime){
+    public static String getNameForDailySRow(Long startTime) {
         String pattern = "yyyy-MM-dd";
         SimpleDateFormat sf = new SimpleDateFormat(pattern);
         return sf.format(new Date(startTime));
     }
-    
+
     /**
      * Gets the name for weekly s row.
-     *
+     * 
      * @param startTime the start time
      * @param endTime the end time
      * @return the name for weekly s row
      */
-    public static String getNameForWeeklySRow(Long startTime, Long endTime){
+    public static String getNameForWeeklySRow(Long startTime, Long endTime) {
         Calendar startTimeCal = Calendar.getInstance();
         startTimeCal.setTimeInMillis(startTime);
-        String result = "Week "+startTimeCal.get(Calendar.WEEK_OF_YEAR);
-        if(isNeedAddYear(startTime, endTime)){
-            result = result + ", "+startTimeCal.get(Calendar.YEAR);
+        String result = "Week " + startTimeCal.get(Calendar.WEEK_OF_YEAR);
+        if (isNeedAddYear(startTime, endTime)) {
+            result = result + ", " + startTimeCal.get(Calendar.YEAR);
         }
         return result;
     }
 
     /**
      * Gets the name for monthly s row.
-     *
+     * 
      * @param startTime the start time
      * @param endTime the end time
      * @return the name for monthly s row
      */
-    public static String getNameForMonthlySRow(Long startTime, Long endTime){
+    public static String getNameForMonthlySRow(Long startTime, Long endTime) {
         Calendar startTimeCal = Calendar.getInstance();
         startTimeCal.setTimeInMillis(startTime);
         int month = startTimeCal.get(Calendar.MONTH);
@@ -1923,60 +1922,60 @@ public class NeoUtils {
         int year = startTimeCal.get(Calendar.YEAR);
         switch (month) {
         case Calendar.JANUARY:
-            return "January"+(needYear?(" "+year):"");
+            return "January" + (needYear ? (" " + year) : "");
         case Calendar.FEBRUARY:
-            return "February"+(needYear?(" "+year):"");
+            return "February" + (needYear ? (" " + year) : "");
         case Calendar.MARCH:
-            return "March"+(needYear?(" "+year):"");
+            return "March" + (needYear ? (" " + year) : "");
         case Calendar.APRIL:
-            return "April"+(needYear?(" "+year):"");
+            return "April" + (needYear ? (" " + year) : "");
         case Calendar.MAY:
-            return "May"+(needYear?(" "+year):"");
+            return "May" + (needYear ? (" " + year) : "");
         case Calendar.JUNE:
-            return "June"+(needYear?(" "+year):"");
+            return "June" + (needYear ? (" " + year) : "");
         case Calendar.JULY:
-            return "July"+(needYear?(" "+year):"");
+            return "July" + (needYear ? (" " + year) : "");
         case Calendar.AUGUST:
-            return "August"+(needYear?(" "+year):"");
+            return "August" + (needYear ? (" " + year) : "");
         case Calendar.SEPTEMBER:
-            return "September"+(needYear?(" "+year):"");
+            return "September" + (needYear ? (" " + year) : "");
         case Calendar.OCTOBER:
-            return "October"+(needYear?(" "+year):"");
+            return "October" + (needYear ? (" " + year) : "");
         case Calendar.NOVEMBER:
-            return "November"+(needYear?(" "+year):"");
+            return "November" + (needYear ? (" " + year) : "");
         case Calendar.DECEMBER:
-            return "December"+(needYear?(" "+year):"");
+            return "December" + (needYear ? (" " + year) : "");
         default:
-            return "Month "+month+(needYear?(" "+year):"");
+            return "Month " + month + (needYear ? (" " + year) : "");
         }
     }
 
     /**
      * Checks if is need add year.
-     *
+     * 
      * @param start the start
      * @param end the end
      * @return true, if is need add year
      */
-    private static boolean isNeedAddYear(Long start, Long end){
+    private static boolean isNeedAddYear(Long start, Long end) {
         Calendar currTimeCal = Calendar.getInstance();
         currTimeCal.setTimeInMillis(System.currentTimeMillis());
         int currYear = currTimeCal.get(Calendar.YEAR);
 
         Calendar startTimeCal = Calendar.getInstance();
         startTimeCal.setTimeInMillis(start);
-        
+
         int startYear = startTimeCal.get(Calendar.YEAR);
-        if(startYear!=currYear){
+        if (startYear != currYear) {
             return true;
         }
-        
+
         Calendar endTimeCal = Calendar.getInstance();
         endTimeCal.setTimeInMillis(end);
         int endYear = endTimeCal.get(Calendar.YEAR);
-        return startYear!=endYear;
+        return startYear != endYear;
     }
-    
+
     /**
      * gets formated node name.
      * 
@@ -2178,8 +2177,8 @@ public class NeoUtils {
             }
             NetworkTypes type = NetworkTypes.getNodeType(gisNode, neo);
             network = neo.createNode();
-            if (type!=null){
-               type.setTypeToNode(network, neo);
+            if (type != null) {
+                type.setTypeToNode(network, neo);
             }
             network.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.NETWORK.getId());
             network.setProperty(INeoConstants.PROPERTY_NAME_NAME, basename);
@@ -2509,7 +2508,7 @@ public class NeoUtils {
 
     /**
      * Find root node.
-     *
+     * 
      * @param node the node - node from datast/network
      * @param service the service
      * @return the node
@@ -2554,7 +2553,7 @@ public class NeoUtils {
 
     /**
      * Gets the primary type of dataset node.
-     *
+     * 
      * @param dataNode the root node
      * @param service the service
      * @return the primary type or null
@@ -2603,13 +2602,13 @@ public class NeoUtils {
 
     /**
      * Gets the traverser of all datasets by network node.
-     *
+     * 
      * @param networkNode network node
      * @param service the service
      * @return Traverser
      */
     public static Traverser getAllCorrelatedDatasets(Node networkNode, GraphDatabaseService service) {
-       // Transaction tx = beginTx(service);
+        // Transaction tx = beginTx(service);
         try {
             return networkNode.traverse(Order.DEPTH_FIRST, NeoUtils.getStopEvaluator(2), new ReturnableEvaluator() {
 
@@ -2620,85 +2619,124 @@ public class NeoUtils {
                 }
             }, CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING, CorrelationRelationshipTypes.CORRELATED, Direction.INCOMING);
         } finally {
-         //   finishTx(tx);
+            // finishTx(tx);
         }
 
     }
 
-
     /**
      * Sets the crs.
-     *
+     * 
      * @param mainGisNode the main gis node
      * @param crs the crs
      * @param service the service
      */
     public static void setCRS(Node mainGisNode, CoordinateReferenceSystem crs, GraphDatabaseService service) {
         Transaction tx = beginTx(service);
-        try{
+        try {
             String type = "geographic";
             String epsg = crs.getIdentifiers().iterator().next().toString();
             mainGisNode.setProperty(INeoConstants.PROPERTY_WKT_CRS, crs.toWKT());
             mainGisNode.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, type);
             mainGisNode.setProperty(INeoConstants.PROPERTY_CRS_NAME, epsg);
             successTx(tx);
-        }finally{
-           finishTx(tx);
+        } finally {
+            finishTx(tx);
         }
     }
-    
+
     /**
      * Gets the cRS.
-     *
+     * 
      * @param gisNode the gis node
      * @param service the service
      * @param defaultCRS the default crs
      * @return the cRS
      */
-    public static CoordinateReferenceSystem getCRS(Node gisNode,GraphDatabaseService service, CoordinateReferenceSystem defaultCRS) {
-            CoordinateReferenceSystem crs = defaultCRS; // default if crs cannot be found below
-            Transaction tx = beginTx(service);
-            try {
-                if (gisNode.hasProperty(INeoConstants.PROPERTY_WKT_CRS)){
-                    crs = CRS.parseWKT((String)gisNode.getProperty(INeoConstants.PROPERTY_WKT_CRS));
-                }else if (gisNode.hasProperty(INeoConstants.PROPERTY_CRS_NAME)) {
-                    // The simple approach is to name the CRS, eg. EPSG:4326 (GeoNeo spec prefers a
-                    // new naming standard, but I'm not sure geotools knows it)
-                    crs = CRS.decode(gisNode.getProperty(INeoConstants.PROPERTY_CRS_NAME).toString());
-                } else if (gisNode.hasProperty(INeoConstants.PROPERTY_CRS_HREF_NAME)) {
-                    // TODO: This type is specified in GeoNeo spec, but what the HREF means is not,
-                    // so we assume it is a live URL that will feed a CRS specification directly
-                    // TODO: Lagutko: gisNode.hasProperty() has 'crs_href' as parameter, but
-                    // gisNode.getProperty() has only 'href'. What is right?
-                    URL crsURL = new URL(gisNode.getProperty(INeoConstants.PROPERTY_CRS_HREF_NAME).toString());
-                    crs = CRS.decode(crsURL.getContent().toString());
-                }
-            } catch (Exception crs_e) {
-                System.err.println("Failed to interpret CRS: " + crs_e.getMessage());
-                crs_e.printStackTrace(System.err);
-            }finally{
-                finishTx(tx);
+    public static CoordinateReferenceSystem getCRS(Node gisNode, GraphDatabaseService service, CoordinateReferenceSystem defaultCRS) {
+        CoordinateReferenceSystem crs = defaultCRS; // default if crs cannot be found below
+        Transaction tx = beginTx(service);
+        try {
+            if (gisNode.hasProperty(INeoConstants.PROPERTY_WKT_CRS)) {
+                crs = CRS.parseWKT((String)gisNode.getProperty(INeoConstants.PROPERTY_WKT_CRS));
+            } else if (gisNode.hasProperty(INeoConstants.PROPERTY_CRS_NAME)) {
+                // The simple approach is to name the CRS, eg. EPSG:4326 (GeoNeo spec prefers a
+                // new naming standard, but I'm not sure geotools knows it)
+                crs = CRS.decode(gisNode.getProperty(INeoConstants.PROPERTY_CRS_NAME).toString());
+            } else if (gisNode.hasProperty(INeoConstants.PROPERTY_CRS_HREF_NAME)) {
+                // TODO: This type is specified in GeoNeo spec, but what the HREF means is not,
+                // so we assume it is a live URL that will feed a CRS specification directly
+                // TODO: Lagutko: gisNode.hasProperty() has 'crs_href' as parameter, but
+                // gisNode.getProperty() has only 'href'. What is right?
+                URL crsURL = new URL(gisNode.getProperty(INeoConstants.PROPERTY_CRS_HREF_NAME).toString());
+                crs = CRS.decode(crsURL.getContent().toString());
             }
+        } catch (Exception crs_e) {
+            System.err.println("Failed to interpret CRS: " + crs_e.getMessage());
+            crs_e.printStackTrace(System.err);
+        } finally {
+            finishTx(tx);
+        }
         return crs;
     }
 
-
+    /**
+     * Gets the main node from gis.
+     *
+     * @param gisNode the gis node
+     * @param service the service
+     * @return the main node from gis
+     */
     public static Node getMainNodeFromGis(Node gisNode, GraphDatabaseService service) {
         Transaction tx = beginTx(service);
-        try{
+        try {
             Relationship rel = gisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
-            return rel==null?null:rel.getOtherNode(gisNode);
-        }finally{
+            return rel == null ? null : rel.getOtherNode(gisNode);
+        } finally {
             tx.finish();
         }
     }
-    
+
+    /**
+     * Gets the gis node by dataset.
+     *
+     * @param dataset the dataset
+     * @return the gis node by dataset
+     */
     public static Node getGisNodeByDataset(Node dataset) {
         return dataset.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).getStartNode();
     }
-    
+
+    /**
+     * Gets the dataset node by gis.
+     *
+     * @param gis the gis
+     * @return the dataset node by gis
+     */
     public static Node getDatasetNodeByGis(Node gis) {
         return gis.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode();
+    }
+
+
+    /**
+     * Gets the primary elem traverser.
+     *
+     * @param node the node
+     * @param service the service
+     * @return the primary elem traverser
+     */
+    public static Traverser getPrimaryElemTraverser(Node node, GraphDatabaseService service) {
+        final String type = NeoUtils.getPrimaryType(node, service);
+        ReturnableEvaluator re = new ReturnableEvaluator() {
+
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(type);
+            }
+        };
+        return node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, re, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.CHILD,
+                Direction.OUTGOING);
+        
     }
 
 }

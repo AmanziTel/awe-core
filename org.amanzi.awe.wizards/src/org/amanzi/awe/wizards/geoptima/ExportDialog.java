@@ -14,9 +14,13 @@
 package org.amanzi.awe.wizards.geoptima;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.StringTokenizer;
 
+import org.amanzi.awe.wizards.geoptima.export.NeoExportModelImpl;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -827,5 +831,54 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
         }
         display.dispose();
     }
+/**
+ * 
+ * <p>
+ *Dataset importer class
+ * </p>
+ * @author tsinkel_a
+ * @since 1.0.0
+ */
+    public  class DatasetExport{
+    private boolean valid;
+    private NeoExportModelImpl model;
+    private Iterator<Node> mainNodeIterator;
 
+    public DatasetExport(TreeItem root) {
+        
+        valid=false;
+        if (!root.getChecked()){
+            return;
+        }
+        
+        TreeItem[] items = root.getItems();
+        List<String>results=new LinkedList<String>();
+        
+        if (items==null){
+            return;
+        }
+        for (TreeItem treeItem : items) {
+            if (treeItem.getChecked()){
+                results.add(((TreeElem)treeItem.getData()).getText());
+            }
+        }
+        if (results.isEmpty()){
+            return;
+        }
+         model=new NeoExportModelImpl(service, 1);
+         model.addPropertyList(0, results);
+         mainNodeIterator=NeoUtils.getPrimaryElemTraverser(((TreeElem)root.getData()).getNode(),service).iterator();
+         valid=true;
+    }
+    public boolean hasNextLine(){
+        return valid&&mainNodeIterator.hasNext();
+    }
+    public List<String> getHeaders(){
+        
+        return valid?model.getHeaders():null;
+    }
+//    public List<Object> getNextLine(){
+//        return valid?
+//    }
+}
 }
