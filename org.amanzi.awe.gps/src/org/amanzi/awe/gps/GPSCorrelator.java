@@ -16,7 +16,6 @@ package org.amanzi.awe.gps;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
@@ -131,8 +130,50 @@ public class GPSCorrelator {
 		}
 	}
 	
+	public void clearCorrelation(Set<Node> nodesToClear) {
+	    Node rootCorrelatNode = getRootCorrelationNode(false);
+	    
+	    //if no Root Correlation Node than there is nothing to clear
+	    if (rootCorrelatNode == null) {
+	        return;	        
+	    }
+	    
+	    Transaction tx = neoService.beginTx();
+	    
+	    try {
+	        ArrayList<String> datasetNames = new ArrayList<String>();
+	        for (Node datasetNode : nodesToClear) {
+	            datasetNames.add(NeoUtils.getNodeName(datasetNode, neoService));
+	        }
+	        
+	        for (Node correlationNode : NeoUtils.getChildTraverser(rootCorrelatNode)) {
+	            for (Relationship correlationRel : correlationNode.getRelationships(CorrelationRelationshipTypes.CORRELATED, Direction.OUTGOING)) {
+	                String datasetName = (String)correlationRel.getProperty(INeoConstants.NETWORK_GIS_NAME);
+	                if (datasetNames.contains(datasetName)) {
+	                    correlationRel.delete();
+	                }
+	            }
+	            
+	            if (!correlationNode.getRelationships(CorrelationRelationshipTypes.CORRELATED, Direction.OUTGOING).iterator().hasNext()) {
+	                correlationNode.getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.INCOMING).delete();
+	                correlationNode.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).delete();
+	                correlationNode.delete();
+	            }
+	        }
+	    }
+	    catch (Exception e) {
+	        LOGGER.error(e);
+	    }
+	    finally {
+	        tx.success();
+	        tx.finish();
+	    }
+	}
+	
+	
+	
 	public void correlate(Set<Node> nodesForCorrelation) {
-	    Node rootCorrelationNode = getRootCorrelationNode();
+	    Node rootCorrelationNode = getRootCorrelationNode(true);
 	    searchRequests = new ArrayList<SearchRequest>();
 	    
 	    for (Node dataNode : nodesForCorrelation) {
@@ -249,7 +290,7 @@ public class GPSCorrelator {
                                     GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
 	}
 	
-	private Node getRootCorrelationNode() {
+	private Node getRootCorrelationNode(boolean toCreate) {
 	    Transaction tx = neoService.beginTx();
 	    
 	    try {	    
@@ -259,10 +300,14 @@ public class GPSCorrelator {
 	            return link.getEndNode(); 
 	        }
 	    
-	        Node result = neoService.createNode();
-	        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.ROOT_SECTOR_DRIVE.getId());
+	        Node result = null;
+	        
+	        if (toCreate) {
+	            result = neoService.createNode();	        
+	            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.ROOT_SECTOR_DRIVE.getId());
 	    
-	        networkNode.createRelationshipTo(result, CorrelationRelationshipTypes.CORRELATION);
+	            networkNode.createRelationshipTo(result, CorrelationRelationshipTypes.CORRELATION);
+	        }
 	    
 	        return result;
 	    }
