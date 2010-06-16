@@ -322,6 +322,9 @@ public class LoaderUtils {
                 oss.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.OSS.getId());
                 oss.setProperty(INeoConstants.PROPERTY_NAME_NAME, ossName);
                 ossType.setOssType(oss, neo);
+                //TODO remove this relation!
+                String aweProjectName = LoaderUtils.getAweProjectName();
+                NeoCorePlugin.getDefault().getProjectService().addDataNodeToProject(aweProjectName, oss);
                 neo.getReferenceNode().createRelationshipTo(oss, GeoNeoRelationshipTypes.CHILD);
             }
             assert NodeTypes.OSS.checkNode(oss);
