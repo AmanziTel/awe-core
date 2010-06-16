@@ -138,7 +138,6 @@ public class CallStatistics {
         assert drive != null;
         isTest=testing;
         initialyzeStatistics(drive, service, new NullProgressMonitor());
-        
     }
     
     /**
@@ -165,17 +164,39 @@ public class CallStatistics {
         
         statisticNode = createStatistics();
         
+        finishInitialyze();       
+    }
+
+    protected void finishInitialyze() {
         Pair<Long, Long> minMax = getTimeBounds(datasetNode);
         long minTime = minMax.getLeft();
         long maxTime = minMax.getRight();
-        setHighPeriod(minTime, maxTime); 
-        if (!monitor.isCanceled()) {
-            buildSecondLevelStatistics(minTime, maxTime, false);
-            if (!isTest) {
-                NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
-                        new UpdateDatabaseEvent(UpdateViewEventType.STATISTICS));
-            }
-        }        
+        setHighPeriod(minTime, maxTime);
+        if(monitor.isCanceled()){
+            setCanceled();
+            return;
+        }
+        buildSecondLevelStatistics(minTime, maxTime, false);
+        if (!isTest) {
+            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
+                    new UpdateDatabaseEvent(UpdateViewEventType.STATISTICS));
+        }
+    }
+    
+    protected void setCanceled(){
+        if(statisticNode==null){
+            return;
+        }
+        Transaction tx = neoService.beginTx();
+        try{
+            for(StatisticsCallType type : statisticNode.keySet()){
+                statisticNode.get(type).setProperty(INeoConstants.PROPERTY_CANCELED_NAME, true);
+            }  
+            tx.success();
+        }finally{
+            tx.finish();
+        }
+        
     }
 
     protected void setHighPeriod(long minTime, long maxTime) {
@@ -294,13 +315,18 @@ public class CallStatistics {
                         }
                     }, ProbeCallRelationshipType.CALL_ANALYSIS, Direction.OUTGOING).iterator();
             
+            int canceledCount = 0;
             while (analyzisNodes.hasNext()) {
                 Node analyzisNode = analyzisNodes.next();
                 StatisticsCallType type = StatisticsCallType.getTypeById((String)analyzisNode.getProperty(CallProperties.CALL_TYPE.getId()));
                 result.put(type, analyzisNode);
+                boolean canceled = (Boolean)analyzisNode.getProperty(INeoConstants.PROPERTY_CANCELED_NAME,false);
+                if(canceled){
+                    canceledCount++;
+                }
             }
             
-            if (!result.isEmpty()) {
+            if (!result.isEmpty()&&canceledCount==0) {
                 return result;
             }
             
@@ -319,9 +345,13 @@ public class CallStatistics {
                     subMonitor.worked(1);
                     continue;
                 }
-                
-                parentNode = createRootStatisticsNode(datasetNode, callType,null,false);
-                result.put(callType, parentNode);
+                parentNode = result.get(callType);
+                if (parentNode==null) {
+                    parentNode = createRootStatisticsNode(datasetNode, callType, null, false);
+                    result.put(callType, parentNode);
+                }else{                
+                    parentNode.removeProperty(INeoConstants.PROPERTY_CANCELED_NAME);
+                }
                 for (Node probe : probesByCallType) {
                     if(monitor.isCanceled()){
                         break;
@@ -502,7 +532,7 @@ public class CallStatistics {
             if(monitor.isCanceled()){
                 break;
             }
-            Node sRow = createSRowNode(statisticsNode, period.getFirstTime(currentStartDate), probeNode, highLevelSRow, period);
+            Node sRow = findOrCreateSRowNode(statisticsNode, period.getFirstTime(currentStartDate), probeNode, highLevelSRow, period);
             
             Statistics periodStatitics = new Statistics();
             if (period == CallTimePeriods.HOURLY) {
@@ -514,9 +544,8 @@ public class CallStatistics {
                     periodStatitics = createStatistics(parentNode, statisticsNode, sRow, probeNode, timeIndex, period.getUnderlyingPeriod(), callType, currentStartDate, nextStartDate);
                 }
             }
-            
             for (IStatisticsHeader header : callType.getHeaders()) {                
-                createSCellNode(sRow, periodStatitics, header, period);
+                saveSCellNode(sRow, periodStatitics, header, period);
             }           
             previousSCellNodes.put(period, null);
             
@@ -573,6 +602,37 @@ public class CallStatistics {
         return null;
     }
     
+    protected Node findOrCreateSRowNode(Node parent,final Long startDate,final Node probeNode, Node highLevelSRow, CallTimePeriods period){
+        Iterator<Node> rows = NeoUtils.getChildTraverser(parent, new ReturnableEvaluator() {            
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                Node node = currentPos.currentNode();
+                if(NeoUtils.isSRowNode(node)){
+                    Iterator<Node> source = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, 
+                            new ReturnableEvaluator() {                                
+                                @Override
+                                public boolean isReturnableNode(TraversalPosition currentPos) {
+                                    return probeNode.equals(currentPos.currentNode());
+                                }
+                            }, GeoNeoRelationshipTypes.SOURCE,Direction.OUTGOING).iterator();
+                    if (source.hasNext()) {
+                        Long rowTime = (Long)node.getProperty(INeoConstants.PROPERTY_TIME_NAME, 0L);
+                        return rowTime.equals(startDate);
+                    }
+                }                
+                return false;
+            }
+        }).iterator();
+        Node row;
+        if(rows.hasNext()){
+            row = rows.next();
+            previousSRowNodes.put(period, row);
+        }else{
+            row = createSRowNode(parent, startDate, probeNode, highLevelSRow, period);
+        }
+        return row;
+    }
+    
     protected Node createSRowNode(Node parent, Long startDate, Node probeNode, Node highLevelSRow, CallTimePeriods period) {
         Node result = neoService.createNode();
         String name = NeoUtils.getFormatDateStringForSrow(startDate, period.addPeriod(startDate), "HH:mm", period.getId());
@@ -598,22 +658,42 @@ public class CallStatistics {
         return result;
     }
     
-    protected Node createSCellNode(Node parent, Statistics statistics, IStatisticsHeader header, CallTimePeriods period) {
-        Node result = neoService.createNode();
-        
-        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.S_CELL.getId());
-        result.setProperty(INeoConstants.PROPERTY_NAME_NAME, header.getTitle());
+    protected Node saveSCellNode(Node parent, Statistics statistics,final IStatisticsHeader header, CallTimePeriods period){
+        Iterator<Node> cells = NeoUtils.getChildTraverser(parent, new ReturnableEvaluator() {            
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                Node node = currentPos.currentNode();
+                if(NeoUtils.isScellNode(node)){
+                    return NeoUtils.getNodeName(node, neoService).equals(header.getTitle());
+                }                
+                return false;
+            }
+        }).iterator();
+        Node cell;
+        if(cells.hasNext()){
+            cell = cells.next();
+            previousSCellNodes.put(period, cell);            
+        }else{
+            cell = createSCellNode(parent, header, period);
+        }
         Object value = statistics.get(header);
         if (value != null)  {        
             for (Node callNode : statistics.getAllAffectedCalls(header)) {
-                result.createRelationshipTo(callNode, GeoNeoRelationshipTypes.SOURCE);            
+                if (!cell.equals(callNode)) {//care differents between update canceled and build inconclusive statistics
+                    cell.createRelationshipTo(callNode, GeoNeoRelationshipTypes.SOURCE);
+                }            
             }
             statistics.getAllAffectedCalls(header).clear();
-            result.setProperty(INeoConstants.PROPERTY_VALUE_NAME, value);
-        }
-        
-        statistics.updateSourceNodes(header, result);
-        
+            cell.setProperty(INeoConstants.PROPERTY_VALUE_NAME, value);
+        }        
+        statistics.updateSourceNodes(header, cell);
+        return cell;
+    }
+    
+    protected Node createSCellNode(Node parent, IStatisticsHeader header, CallTimePeriods period) {
+        Node result = neoService.createNode();        
+        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.S_CELL.getId());
+        result.setProperty(INeoConstants.PROPERTY_NAME_NAME, header.getTitle());
         Node previousNode = previousSCellNodes.get(period);
         if (previousNode == null) {
             parent.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);

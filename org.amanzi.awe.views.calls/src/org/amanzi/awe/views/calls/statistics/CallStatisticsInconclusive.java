@@ -24,8 +24,6 @@ import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
-import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
@@ -83,17 +81,7 @@ public class CallStatisticsInconclusive extends CallStatistics {
         initFields(drive, service, aMonitor);
         setStatisticNode(createStatisticInconclusive());
         
-        Pair<Long, Long> minMax = getTimeBounds(getDatasetNode());
-        long minTime = minMax.getLeft();
-        long maxTime = minMax.getRight();
-        setHighPeriod(minTime, maxTime); 
-        if (!getMonitor().isCanceled()) {
-            buildSecondLevelStatistics(minTime, maxTime, true);
-            if (!isTest()) {
-                NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
-                        new UpdateDatabaseEvent(UpdateViewEventType.STATISTICS));
-            }
-        }
+        finishInitialyze();
     }
 
     private HashMap<StatisticsCallType, Node> createStatisticInconclusive() throws IOException {
@@ -120,13 +108,18 @@ public class CallStatisticsInconclusive extends CallStatistics {
                         }
                     }, ProbeCallRelationshipType.CALL_ANALYSIS, Direction.OUTGOING).iterator();
             
+            int canceledCount = 0;
             while (analyzisNodes.hasNext()) {
                 Node analyzisNode = analyzisNodes.next();
                 StatisticsCallType type = StatisticsCallType.getTypeById((String)analyzisNode.getProperty(CallProperties.CALL_TYPE.getId()));
                 result.put(type, analyzisNode);
+                boolean canceled = (Boolean)analyzisNode.getProperty(INeoConstants.PROPERTY_CANCELED_NAME,false);
+                if(canceled){
+                    canceledCount++;
+                }
             }
             
-            if (!result.isEmpty()) {
+            if (!result.isEmpty()&&canceledCount==0) {
                 return result;
             }
             
@@ -203,7 +196,7 @@ public class CallStatisticsInconclusive extends CallStatistics {
                 break;
             }
             Node sourceRow = sourceRows.get(period.getFirstTime(currentStartDate));
-            Node row = createSRowNode(statisticsNode, period.getFirstTime(currentStartDate), sourceRow==null?probeNode:sourceRow, highLevelSRow, period);
+            Node row = findOrCreateSRowNode(statisticsNode, period.getFirstTime(currentStartDate), sourceRow==null?probeNode:sourceRow, highLevelSRow, period);
             
             Statistics periodStatitics = new Statistics();
             if (period == CallTimePeriods.HOURLY) {
@@ -217,7 +210,7 @@ public class CallStatisticsInconclusive extends CallStatistics {
             }
             
             for (IStatisticsHeader header : callType.getHeaders()) {                
-                createSCellNode(row, periodStatitics, header, period);
+                saveSCellNode(row, periodStatitics, header, period);
             }
             getPreviousSCellNodes().put(period, null);
             currentStartDate = nextStartDate;

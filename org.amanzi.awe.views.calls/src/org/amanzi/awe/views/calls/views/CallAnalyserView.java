@@ -1313,6 +1313,9 @@ public class CallAnalyserView extends ViewPart {
                     }else{
                         statistics = new CallStatistics(drive, service, monitor);
                     }
+                    if(monitor.isCanceled()){
+                        return Status.OK_STATUS;
+                    }
                     final Pair<Long, Long> times = NeoUtils.getMinMaxTimeOfDataset(drive, service);
                     ActionUtil.getInstance().runTask(new Runnable() {
                         @Override
