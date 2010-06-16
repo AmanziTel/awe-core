@@ -13,14 +13,22 @@
 
 package org.amanzi.awe.wizards.geoptima;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.Map.Entry;
 
+import org.amanzi.awe.wizards.WizardsPlugin;
+import org.amanzi.awe.wizards.geoptima.export.AbstractExporter;
 import org.amanzi.awe.wizards.geoptima.export.NeoExportModelImpl;
+import org.amanzi.awe.wizards.geoptima.export.NeoExportParameter;
+import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -31,8 +39,12 @@ import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.preferences.DataLoadPreferences;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
 import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
@@ -59,6 +71,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Tree;
@@ -67,7 +80,14 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
+
+import au.com.bytecode.opencsv.CSVWriter;
 
 /**
  * <p>
@@ -249,7 +269,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
                 TreeItem[] selection = viewer.getTree().getSelection();
                 if (selection.length > 0 && selection[0].getItemCount() == 0) {
                     dragSourceItem[0] = selection[0];
-                    event.doit= ((TreeElem)dragSourceItem[0].getData()).elemType==ElemType.PROPERTY;
+                    event.doit = ((TreeElem)dragSourceItem[0].getData()).elemType == ElemType.PROPERTY;
                 } else {
                     event.doit = false;
                 }
@@ -335,14 +355,14 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
         };
         viewer.addDropSupport(ops, transfers, dropListener);
         viewer.addCheckStateListener(new ICheckStateListener() {
-            
+
             @Override
             public void checkStateChanged(CheckStateChangedEvent event) {
-                if (event.getChecked()){
-                   NeoTreeElement parent = ((TreeElem)event.getElement()).getParent();
-                   if (parent!=null){
-                       viewer.setChecked(parent, true);
-                   }
+                if (event.getChecked()) {
+                    NeoTreeElement parent = ((TreeElem)event.getElement()).getParent();
+                    if (parent != null) {
+                        viewer.setChecked(parent, true);
+                    }
                 }
             }
         });
@@ -352,11 +372,89 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
      * Export.
      */
     protected void export() {
+        final List<AbstractExporter> exports = new ArrayList<AbstractExporter>();
         Object[] elements = viewer.getCheckedElements();
-        if (elements.length==0){
+        if (elements.length == 0) {
             return;
         }
-        
+        Transaction tx = service.beginTx();
+        try {
+            for (TreeItem rootItem : viewer.getTree().getItems()) {
+                if (rootItem.getChecked()) {
+                    if (NodeTypes.NETWORK.checkNode(((TreeElem)rootItem.getData()).getNode())) {
+                        NetworkExport network = new NetworkExport(rootItem);
+                        if (network.isValid()) {
+                            exports.add(network);
+                        }
+                    } else {
+                        DatasetExport dataset = new DatasetExport(rootItem);
+                        if (dataset.isValid()) {
+                            exports.add(dataset);
+                        }
+                    }
+                }
+            }
+            if (exports.isEmpty()) {
+                return;
+            }
+
+            FileDialog outFile = new FileDialog(shell);
+            final String file = outFile.open();
+            if (file != null) {
+                Job job = new Job("export to CSV") {
+
+                    @Override
+                    protected IStatus run(IProgressMonitor monitor) {
+                        Transaction tx = service.beginTx();
+                        try {
+                            CSVWriter writer = new CSVWriter(new FileWriter(file));
+                            monitor.beginTask("export to CSV", exports.size());
+                            for (AbstractExporter exporter : exports) {
+                                if (monitor.isCanceled()) {
+                                    break;
+                                }
+                                String[] line = new String[] {exporter.getDataName()};
+                                writer.writeNext(line);
+                                line = formatList(exporter.getHeaders());
+                                writer.writeNext(line);
+                                while (exporter.hasNextLine() && !monitor.isCanceled()) {
+                                    line = formatList(exporter.getNextLine());
+                                    writer.writeNext(line);
+                                }
+                                monitor.done();
+                            }
+                            writer.close();
+                            return Status.OK_STATUS;
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            return new Status(Status.ERROR, WizardsPlugin.PLUGIN_ID, e.getLocalizedMessage(), e);
+                        } finally {
+                            tx.finish();
+                        }
+                    }
+
+                };
+                job.schedule();
+            }
+        } finally {
+            tx.finish();
+        }
+
+    }
+
+    /**
+     * Format string array depend on list.
+     * 
+     * @param list the list
+     * @return the string[]
+     */
+    private String[] formatList(List list) {
+        String[] result = new String[list.size()];
+        for (int i = 0; i < result.length; i++) {
+            Object obj = list.get(i);
+            result[i] = null == obj ? "" : String.valueOf(obj);
+        }
+        return result;
     }
 
     /**
@@ -405,8 +503,8 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
                         String nodeId = st.nextToken();
                         Node node = service.getNodeById(Long.parseLong(nodeId));
                         elements.add(new TreeElem(ElemType.ROOT, null, node, null, service));
-                        if (!NodeTypes.NETWORK.checkNode(node)&&node.hasRelationship(GeoNeoRelationshipTypes.VIRTUAL_DATASET,Direction.OUTGOING)){
-                            for (Relationship rel:node.getRelationships(GeoNeoRelationshipTypes.VIRTUAL_DATASET,Direction.OUTGOING)){
+                        if (!NodeTypes.NETWORK.checkNode(node) && node.hasRelationship(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING)) {
+                            for (Relationship rel : node.getRelationships(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING)) {
                                 elements.add(new TreeElem(ElemType.ROOT, null, rel.getOtherNode(node), null, service));
                             }
                         }
@@ -486,18 +584,18 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
                     continue;
                 }
                 if (childs[i].equals(itemData)) {
-                    if (before){
+                    if (before) {
                         childsNew[j++] = elem;
                         childsNew[j++] = itemData;
                     } else {
                         childsNew[j++] = itemData;
                         childsNew[j++] = elem;
                     }
-                }else{
+                } else {
                     childsNew[j++] = childs[i];
                 }
             }
-            childs=childsNew;
+            childs = childsNew;
         }
 
         /**
@@ -831,54 +929,269 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
         }
         display.dispose();
     }
-/**
- * 
- * <p>
- *Dataset importer class
- * </p>
- * @author tsinkel_a
- * @since 1.0.0
- */
-    public  class DatasetExport{
-    private boolean valid;
-    private NeoExportModelImpl model;
-    private Iterator<Node> mainNodeIterator;
 
-    public DatasetExport(TreeItem root) {
-        
-        valid=false;
-        if (!root.getChecked()){
-            return;
+    /**
+     * <p>
+     * Dataset importer class
+     * </p>
+     * 
+     * @author tsinkel_a
+     * @since 1.0.0
+     */
+    public class DatasetExport extends AbstractExporter {
+        private boolean valid;
+        private NeoExportModelImpl model;
+        private Iterator<Node> mainNodeIterator;
+        private String dataname;
+
+        public DatasetExport(TreeItem root) {
+
+            valid = false;
+            if (!root.getChecked()) {
+                return;
+            }
+
+            TreeItem[] items = root.getItems();
+            List<String> results = new LinkedList<String>();
+
+            if (items == null) {
+                return;
+            }
+            for (TreeItem treeItem : items) {
+                if (treeItem.getChecked()) {
+                    results.add(((TreeElem)treeItem.getData()).getText());
+                }
+            }
+            if (results.isEmpty()) {
+                return;
+            }
+            model = new NeoExportModelImpl(service, 1);
+            model.addPropertyList(0, results);
+            final Node node = ((TreeElem)root.getData()).getNode();
+            dataname = NeoUtils.getNodeName(node, service);
+            mainNodeIterator = NeoUtils.getPrimaryElemTraverser(node, service).iterator();
+            valid = true;
         }
-        
-        TreeItem[] items = root.getItems();
-        List<String>results=new LinkedList<String>();
-        
-        if (items==null){
-            return;
+
+        public boolean hasNextLine() {
+            return valid && mainNodeIterator.hasNext();
         }
-        for (TreeItem treeItem : items) {
-            if (treeItem.getChecked()){
-                results.add(((TreeElem)treeItem.getData()).getText());
+
+        public List<String> getHeaders() {
+
+            return valid ? model.getHeaders() : null;
+        }
+
+        @Override
+        public List<Object> getNextLine() {
+            if (!isValid() || !hasNextLine()) {
+                return null;
+            }
+            NeoExportParameter parameter = new NeoExportParameter();
+            parameter.addToList(mainNodeIterator.next());
+            return model.getResults(parameter);
+        }
+
+        @Override
+        public boolean isValid() {
+            return valid;
+        }
+
+        @Override
+        public String getDataName() {
+            return dataname;
+        }
+    }
+
+    /**
+     * <p>
+     * NetworkExport export networks
+     * </p>
+     * 
+     * @author TsAr
+     * @since 1.0.0
+     */
+    public class NetworkExport extends AbstractExporter {
+
+        private boolean valid;
+        private boolean haveSector;
+        private boolean haveSite;
+        private boolean haveCorrelate;
+        private NeoExportModelImpl model;
+        private LinkedList<String> siteProp;
+        private LinkedList<String> sector;
+        private LinkedHashMap<Node, List<String>> datasetProp;
+        private Iterator<Entry<Node, List<String>>> iterCor;
+        private Entry<Node, List<String>> corEntry;
+        private Traverser traverser;
+        private Traverser traverser2 = null;
+        private Node mainNode;
+
+        public NetworkExport(TreeItem root) {
+
+            valid = false;
+            if (!root.getChecked()) {
+                return;
+            }
+
+            TreeItem[] items = root.getItems();
+
+            if (items == null) {
+                return;
+            }
+            siteProp = new LinkedList<String>();
+            sector = new LinkedList<String>();
+            datasetProp = new LinkedHashMap<Node, List<String>>();
+            for (TreeItem treeItem : items) {
+                if (treeItem.getChecked()) {
+                    TreeElem data = (TreeElem)treeItem.getData();
+                    if (data.elemType == ElemType.SITE) {
+                        TreeItem[] childs = treeItem.getItems();
+                        for (TreeItem elem : childs) {
+                            if (elem.getChecked()) {
+                                siteProp.add(((TreeElem)elem.getData()).getText());
+                            }
+                        }
+                        haveSite = !siteProp.isEmpty();
+                    } else if (data.elemType == ElemType.SECTOR) {
+                        TreeItem[] childs = treeItem.getItems();
+                        for (TreeItem elem : childs) {
+                            if (elem.getChecked()) {
+                                sector.add(((TreeElem)elem.getData()).getText());
+                            }
+                        }
+                        haveSector = !sector.isEmpty();
+                    } else if (data.elemType == ElemType.CORRELATE) {
+                        haveCorrelate = true;
+                        boolean empty = true;
+                        TreeItem[] dataset = treeItem.getItems();
+                        for (TreeItem set : dataset) {
+                            if (set.getChecked()) {
+                                TreeItem[] childs = set.getItems();
+                                for (TreeItem setProp : childs) {
+                                    Node node = ((TreeElem)setProp.getData()).getNode();
+                                    LinkedList<String> list = new LinkedList<String>();
+                                    if (setProp.getChecked()) {
+                                        list.add(((TreeElem)setProp.getData()).getText());
+                                    }
+                                    if (!list.isEmpty()) {
+                                        datasetProp.put(node, list);
+                                    }
+                                }
+                            }
+                        }
+                        if (datasetProp.isEmpty()) {
+                            valid = false;
+                            return;
+                        }
+                    }
+                }
+            }
+            int gr = 0;
+            if (haveSite) {
+                gr++;
+            }
+            if (haveSector) {
+                gr++;
+            }
+            if (haveCorrelate) {
+                gr++;
+            }
+            if (gr == 0) {
+                return;
+            }
+            model = new NeoExportModelImpl(service, gr);
+            int ind = 0;
+            if (haveSite) {
+                model.addPropertyList(ind++, siteProp);
+            }
+            if (haveSector) {
+                model.addPropertyList(ind++, sector);
+            }
+            mainNode = ((TreeElem)root.getData()).getNode();
+            if (haveCorrelate) {
+                iterCor = datasetProp.entrySet().iterator();
+                corEntry = iterCor.next();
+                model.setPropertyList(model.getGroupCount() - 1, corEntry.getValue());
+                setCorrelatetraverser();
+            } else {
+                traverser = mainNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,new ReturnableEvaluator() {
+                    
+                    @Override
+                    public boolean isReturnableNode(TraversalPosition currentPos) {
+                        return NodeTypes.SECTOR.checkNode(currentPos.currentNode());
+                    }
+                }, GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING,GeoNeoRelationshipTypes.NEXT,Direction.OUTGOING);
+            }
+            valid = true;
+        }
+
+        /**
+         *
+         */
+        private void setCorrelatetraverser() {
+            traverser = mainNode.traverse(Order.BREADTH_FIRST, new StopEvaluator() {
+
+                @Override
+                public boolean isStopNode(TraversalPosition currentPos) {
+                    Relationship rel = currentPos.lastRelationshipTraversed();
+                    return rel != null && rel.isType(CorrelationRelationshipTypes.CORRELATED);
+                }
+            }, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    Relationship rel = currentPos.lastRelationshipTraversed();
+                    return rel != null && rel.isType(CorrelationRelationshipTypes.CORRELATED);
+                }
+            }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING,
+                    CorrelationRelationshipTypes.CORRELATED, Direction.OUTGOING, CorrelationRelationshipTypes.CORRELATION, Direction.INCOMING);
+        }
+
+        @Override
+        public List<Object> getNextLine() {
+            return null;
+        }
+
+        @Override
+        public boolean hasNextLine() {
+            if (haveCorrelate){
+                if (traverser.iterator().hasNext()){
+                    return true;
+                }
+                return traverser2 == null || traverser2.iterator().hasNext();
+            }else{
+                if (traverser.iterator().hasNext()) {
+                    return true;
+                }
+                while (iterCor.hasNext()) {
+                    corEntry = iterCor.next();
+                    model.setPropertyList(model.getGroupCount() - 1, corEntry.getValue());
+                    setCorrelatetraverser();
+                    if (traverser.iterator().hasNext()) {
+                        return true;
+                    }
+                }
+                return false;
+
             }
         }
-        if (results.isEmpty()){
-            return;
+
+        @Override
+        public boolean isValid() {
+            return valid;
         }
-         model=new NeoExportModelImpl(service, 1);
-         model.addPropertyList(0, results);
-         mainNodeIterator=NeoUtils.getPrimaryElemTraverser(((TreeElem)root.getData()).getNode(),service).iterator();
-         valid=true;
+
+        @Override
+        public String getDataName() {
+            // TODO implement
+            return "";
+        }
+
+        @Override
+        public List<String> getHeaders() {
+            return model.getHeaders();
+        }
+
     }
-    public boolean hasNextLine(){
-        return valid&&mainNodeIterator.hasNext();
-    }
-    public List<String> getHeaders(){
-        
-        return valid?model.getHeaders():null;
-    }
-//    public List<Object> getNextLine(){
-//        return valid?
-//    }
-}
 }

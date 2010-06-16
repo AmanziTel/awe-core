@@ -23,3 +23,5 @@ Require-Bundle: org.eclipse.ui,
  org.amanzi.awe.catalog.neo;bundle-version="1.0.0",
  org.eclipse.gef;bundle-version="3.2.102"
 Eclipse-LazyStart: true
+Bundle-ClassPath: lib/opencsv-2.1.jar,
+ .

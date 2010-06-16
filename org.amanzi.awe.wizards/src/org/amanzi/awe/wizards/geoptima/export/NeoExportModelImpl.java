@@ -51,6 +51,14 @@ public class NeoExportModelImpl extends AbstractNeoExportModel {
     }
 
     /**
+     * Gets the group count.
+     * 
+     * @return the group count
+     */
+    public int getGroupCount() {
+        return propertyMap.length;
+    }
+    /**
      * Adds the property list.
      * 
      * @param key the key
@@ -58,6 +66,17 @@ public class NeoExportModelImpl extends AbstractNeoExportModel {
      */
     public void addPropertyList(Integer id, Collection<String> properties) {
         propertyMap[id].addAll(properties);
+    }
+
+    /**
+     * Sets the property list.
+     * 
+     * @param id the id
+     * @param properties the properties
+     */
+    public void setPropertyList(Integer id, Collection<String> properties) {
+        propertyMap[id].clear();
+        addPropertyList(id, properties);
     }
 
     /**
