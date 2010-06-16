@@ -59,6 +59,10 @@ public class ShowViewListener implements IUpdateViewListener {
             .findView(spvEvent.getUpdatedView());
             NeoCorePlugin.getDefault().getUpdateViewManager().fireShowPreparedView(spvEvent);
             break;
+        case IMPORT_STATISTICS:
+            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+            .findView("org.amanzi.awe.views.calls.views.CallAnalyserView");
+            NeoCorePlugin.getDefault().getUpdateViewManager().fireShowPreparedView((ShowViewEvent)event);
         default:
         }
     }

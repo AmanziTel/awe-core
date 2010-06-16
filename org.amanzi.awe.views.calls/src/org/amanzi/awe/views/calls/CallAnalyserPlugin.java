@@ -1,15 +1,23 @@
 package org.amanzi.awe.views.calls;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 
+import org.amanzi.awe.views.calls.upload.StatisticsDataLoader;
 import org.amanzi.awe.views.calls.views.CallAnalyserView;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.listener.IUpdateViewListener;
+import org.amanzi.neo.core.database.services.events.ImportCsvStatisticsEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.utils.ActionUtil;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PlatformUI;
@@ -24,6 +32,7 @@ public class CallAnalyserPlugin extends AbstractUIPlugin implements IUpdateViewL
     static {
         Collection<UpdateViewEventType> spr = new HashSet<UpdateViewEventType>();
         spr.add(UpdateViewEventType.GIS);
+        spr.add(UpdateViewEventType.IMPORT_STATISTICS);
         handedTypes = Collections.unmodifiableCollection(spr);
     }
 	// The plug-in ID
@@ -93,11 +102,36 @@ public class CallAnalyserPlugin extends AbstractUIPlugin implements IUpdateViewL
             }
         }, true);
     }
+    
+    private void runImportStatistics(ImportCsvStatisticsEvent event){
+        final String fileName = event.getDirectory();
+        final String dataset = event.getDataset();
+        final String network = event.getNetwork();
+        Job job = new Job("Import AMS statistics '" + (new File(fileName)).getName() + "'") {
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {                
+                StatisticsDataLoader loader = new StatisticsDataLoader(fileName, dataset, network, null);                
+                try {
+                    loader.run(monitor);
+                } catch (IOException e) {
+                    return new Status(Status.ERROR, "org.amanzi.awe.views.calls", e.getMessage());
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        job.schedule();
+    }
 
 
     @Override
     public void updateView(UpdateViewEvent event) {
-        updateView();
+        switch (event.getType()) {
+        case IMPORT_STATISTICS:
+            runImportStatistics((ImportCsvStatisticsEvent)event);
+            break;
+        default:
+            updateView();
+        }        
     }
 
     @Override

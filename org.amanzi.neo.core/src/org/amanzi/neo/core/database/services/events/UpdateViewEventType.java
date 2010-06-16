@@ -29,6 +29,7 @@ public enum UpdateViewEventType {
     OSS,
     DRILL_DOWN,
     SHOW_VIEW,
- NEW_CORRELATION,
-    SHOW_PREPARED_VIEW;
+    NEW_CORRELATION,
+    SHOW_PREPARED_VIEW,
+    IMPORT_STATISTICS;
 }

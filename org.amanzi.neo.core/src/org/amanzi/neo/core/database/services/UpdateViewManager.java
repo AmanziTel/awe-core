@@ -14,7 +14,6 @@ package org.amanzi.neo.core.database.services;
 
 import org.amanzi.neo.core.database.listener.IUpdateViewListener;
 import org.amanzi.neo.core.database.listener.ShowViewListener;
-import org.amanzi.neo.core.database.services.events.ShowPreparedViewEvent;
 import org.amanzi.neo.core.database.services.events.ShowViewEvent;
 import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEvent;
@@ -144,7 +143,7 @@ public class UpdateViewManager {
      * 
      * @param event ShowPreparedViewEvent
      */
-    public void fireShowPreparedView(final ShowPreparedViewEvent event) {
+    public void fireShowPreparedView(final ShowViewEvent event) {
         Object[] allListeners = getListeners().getListeners();
         for (Object listener : allListeners) {
             final IUpdateViewListener singleListener = (IUpdateViewListener) listener;
