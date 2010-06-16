@@ -136,7 +136,17 @@
       <plugin>        
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <configuration/>
+        <configuration>
+            <skip>false</skip>
+
+            <systemPropertyVariables>
+                <correlate-test>
+				<ams_path>/home/hudson/awe/data/IF-May26-May31</ams_path>
+                <nemo_path>/home/hudson/awe/data/Nemo-May31-Jun01</nemo_path>
+                </correlate-test>
+            </systemPropertyVariables>
+
+        </configuration>
       </plugin>          
       
     </plugins>
