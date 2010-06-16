@@ -25,8 +25,8 @@ import java.util.Date;
 import java.util.Random;
 
 /**
- * TODO Purpose of
  * <p>
+ * GSMFileGenerator
  * </p>
  * 
  * @author Saelenchits_N

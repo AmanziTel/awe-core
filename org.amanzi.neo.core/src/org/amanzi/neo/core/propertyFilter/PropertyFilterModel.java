@@ -14,6 +14,7 @@
 package org.amanzi.neo.core.propertyFilter;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -38,9 +39,9 @@ public class PropertyFilterModel {
 
     }
 
-    public List<String> filerProperties(String dataset, List<String> properties) {
+    public List<String> filerProperties(String dataset, Collection<String> properties) {
         loadData();
-        List<String> result = properties;
+        List<String> result = new ArrayList<String>(properties);
         List<String> filtered = new ArrayList<String>();
         if (!dataset.isEmpty()) {
             List<Filter> filteredFilters = new ArrayList<Filter>();

@@ -50,13 +50,13 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.propertyFilter.PropertyFilterModel;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.PropertyHeader;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
-import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -422,7 +422,7 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
      * Init start data
      */
     private void init() {
-        NeoLoaderPlugin.getDefault().getPluginPreferences().addPropertyChangeListener(this);
+        NeoCorePlugin.getDefault().getPluginPreferences().addPropertyChangeListener(this);
         addListeners();
         cDrive.setItems(getDriveItems());
 
@@ -437,7 +437,7 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
 
     @Override
     public void dispose() {
-        NeoLoaderPlugin.getDefault().getPluginPreferences().removePropertyChangeListener(this);
+        NeoCorePlugin.getDefault().getPluginPreferences().removePropertyChangeListener(this);
         super.dispose();
     }
 
@@ -550,10 +550,17 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
         } finally {
             NeoUtils.finishTx(tx);
         }
-        if (savedProperties != null)
+        if (savedProperties != null) {
+            List<String> savedList = new ArrayList<String>(savedProperties.length);
             for (Object savedProperty : savedProperties) {
+                savedList.add(savedProperty.toString());
+            }
+            List<String> filteredList = new PropertyFilterModel().filerProperties(cDrive.getText(), savedList);
+            for (Object savedProperty : filteredList) {
                 propertyLists.put(savedProperty.toString(), Arrays.asList(savedProperty.toString().split(", ")));
             }
+        }
+
         cPropertyList.setItems(propertyLists.keySet().toArray(new String[0]));
         // }
 
@@ -2299,13 +2306,14 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
 
     @Override
     public void propertyChange(PropertyChangeEvent event) {
-        if (propertyListsConstantValue != getPreferenceStore().getString(DataLoadPreferences.PROPERY_LISTS)) {
-            formPropertyList();
-            String[] result = propertyLists.keySet().toArray(new String[0]);
-            Arrays.sort(result);
-            cPropertyList.setItems(result);
-            updatePropertyList();
-        }
+        // if (propertyListsConstantValue !=
+        // getPreferenceStore().getString(DataLoadPreferences.PROPERY_LISTS)) {
+        formPropertyList();
+        String[] result = propertyLists.keySet().toArray(new String[0]);
+        Arrays.sort(result);
+        cPropertyList.setItems(result);
+        updatePropertyList();
+        // }
     }
 
     /**
@@ -2324,7 +2332,6 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
                 }
             }
         }
-
     }
 
     /**

@@ -21,6 +21,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.propertyFilter.PropertyFilterModel;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.AbstractDialog;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -77,7 +78,7 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
     private Button bCancel;
     private Button bClear;
 
-    private final Set<String> propertyList = new TreeSet<String>();
+    private final Set<String> propertySet = new TreeSet<String>();
     private final Set<String> propertySlip = new TreeSet<String>();
 
     private final GraphDatabaseService service;
@@ -264,8 +265,16 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
      * Init startup data
      */
     private void init() {
-        propertyList.clear();
-        propertyList.addAll(Arrays.asList(new PropertyHeader(dataset).getNumericFields()));
+        propertySet.clear();
+
+        Transaction tx = NeoUtils.beginTransaction();
+        String nodeName = "";
+        try {
+            nodeName = NeoUtils.getSimpleNodeName(dataset, "");
+        } finally {
+            NeoUtils.finishTx(tx);
+        }
+        propertySet.addAll(new PropertyFilterModel().filerProperties(nodeName, Arrays.asList(new PropertyHeader(dataset).getNumericFields())));
     }
 
     /**
@@ -348,7 +357,7 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
 
         @Override
         public Object[] getElements(Object inputElement) {
-            return propertyList.toArray(new String[0]);
+            return propertySet.toArray(new String[0]);
         }
 
         @Override
