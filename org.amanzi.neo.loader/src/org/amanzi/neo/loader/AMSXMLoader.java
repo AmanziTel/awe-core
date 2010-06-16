@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,10 +60,15 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.swt.widgets.Display;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
@@ -144,6 +150,9 @@ public class AMSXMLoader extends AbstractCallLoader {
 
     /** The phone number cache. */
     private final Map<String, String> phoneNumberCache = new HashMap<String, String>();
+    
+    /** The probe call cache. */
+    private final Map<String, Node> probeNtpqsCache = new HashMap<String, Node>();
     
     /** The ntpq cache. */
     private final Map<String, List<Node>> ntpqCache = new HashMap<String, List<Node>>();
@@ -2117,6 +2126,11 @@ private void handleCall() {
                 ntpqs = new ArrayList<Node>();
                 ntpqCache.put(id, ntpqs);
             }
+            Node probeNtpqs = probeNtpqsCache.get(id);
+            if(probeNtpqs==null){
+                probeNtpqs = findOrCreateNtpqsForProbe(id);
+                probeNtpqsCache.put(id, probeNtpqs);
+            }
             Node ntpq = neo.createNode();
             NeoUtils.addChild(datasetFileNode, ntpq, lastDatasetNode, neo);
             lastDatasetNode = ntpq;
@@ -2125,10 +2139,33 @@ private void handleCall() {
             for (String key : map.keySet()) {
                 Object parseValue = getParcedValue(key , map.get(key), parseMap).getLeft();
                 setProperty(ntpq, key, parseValue);
-            }            
+            }       
+            probeNtpqs.createRelationshipTo(ntpq, ProbeCallRelationshipType.NTPQ_M);
             ntpqs.add(ntpq);
         }
         
+    }
+    
+    private Node findOrCreateNtpqsForProbe(String probeId){
+        Node probe = probeCache.get(probeId);
+        Iterator<Node> savedNtpqs = probe.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, 
+                new ReturnableEvaluator() {            
+                    @Override
+                    public boolean isReturnableNode(TraversalPosition currentPos) {
+                        NodeTypes type = NodeTypes.getNodeType(currentPos.currentNode(), neo);
+                        return type!=null&&type.equals(NodeTypes.NTPQS);
+                    }
+                }, ProbeCallRelationshipType.NTPQS,Direction.OUTGOING).iterator();
+        if(savedNtpqs.hasNext()){
+            return savedNtpqs.next();
+        }
+        Node ntpqs = neo.createNode();
+        NodeTypes.NTPQS.setNodeType(ntpqs, neo);
+        ntpqs.setProperty(INeoConstants.PROPERTY_NAME_NAME, probeId + " - " + dataset);
+        ntpqs.setProperty(NodeTypes.DATASET.getId(), dataset);
+
+        probe.createRelationshipTo(ntpqs, ProbeCallRelationshipType.NTPQS);
+        return ntpqs;
     }
 
     /**

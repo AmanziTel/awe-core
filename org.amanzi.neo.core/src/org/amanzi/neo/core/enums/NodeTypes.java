@@ -212,6 +212,7 @@ public enum NodeTypes {
             return null;
         }
     },
+    NTPQS("ntpqs"),
     ROOT_SECTOR_DRIVE("root_sector_site"),
     PROBE("probe"),
     SPREADSHEET("spreadsheet"),
