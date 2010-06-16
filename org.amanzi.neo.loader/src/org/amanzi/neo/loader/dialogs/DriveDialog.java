@@ -27,6 +27,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,6 +44,7 @@ import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.loader.AbstractLoader;
 import org.amanzi.neo.loader.DriveLoader;
 import org.amanzi.neo.loader.GPSLoader;
+import org.amanzi.neo.loader.LoaderUtils;
 import org.amanzi.neo.loader.NemoLoader;
 import org.amanzi.neo.loader.OldNemoVersionLoader;
 import org.amanzi.neo.loader.RomesLoader;
@@ -201,6 +203,7 @@ public class DriveDialog {
     private final LinkedHashMap<String, Node> dataset = new LinkedHashMap<String, Node>();
 
     private Label ldataset;
+    private boolean addToSelect=false;
 
     // private String extension = null;
 
@@ -757,7 +760,7 @@ public class DriveDialog {
 				NeoLoaderPlugin.exception(e);
 			}
 		}
-        
+        handleSelect(monitor, driveLoader.getRootNodes());
         if (driveLoader != null) {
         	try {
         		DriveLoader.finishUpGis();
@@ -786,7 +789,22 @@ public class DriveDialog {
 
         monitor.done();
     }
-
+    /**
+     * Handle select.
+     *
+     * @param monitor the monitor
+     * @param rootNodes the root nodes
+     */
+    protected void handleSelect(IProgressMonitor monitor, Node[] rootNodes) {
+        if (!addToSelect||monitor.isCanceled()){
+            return;
+        }
+        LinkedHashSet<Node> sets = LoaderUtils.getSelectedNodes(NeoServiceProvider.getProvider().getService());
+        for (Node node : rootNodes) {
+            sets.add(node);
+        }
+        LoaderUtils.storeSelectedNodes(sets);
+    }
     /**
      * Gets Data of TEMS file
      * 
@@ -1130,4 +1148,13 @@ public class DriveDialog {
 
 				
 	}
+
+    /**
+     *
+     * @param addToSelect
+     */
+    public void setAddToSelect(boolean addToSelect) {
+        this.addToSelect = addToSelect;
+        
+    }
 }

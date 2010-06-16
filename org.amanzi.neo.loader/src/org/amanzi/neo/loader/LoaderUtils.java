@@ -20,8 +20,11 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 import net.refractions.udig.catalog.CatalogPlugin;
 import net.refractions.udig.catalog.IGeoResource;
@@ -46,11 +49,13 @@ import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.amanzi.neo.preferences.DataLoadPreferences;
+import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.PlatformUI;
+import org.hsqldb.lib.StringUtil;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -391,4 +396,51 @@ public class LoaderUtils {
           }
         }
     }
+    
+    /**
+     * Gets the selected nodes.
+     *
+     * @param service the service
+     * @return the selected nodes
+     */
+    public static LinkedHashSet<Node>getSelectedNodes(GraphDatabaseService service){
+        LinkedHashSet<Node> selectedNode = new LinkedHashSet<Node>();
+        String storedId = NeoLoaderPlugin.getDefault().getPreferenceStore().getString(DataLoadPreferences.SELECTED_DATA);
+        if (!StringUtil.isEmpty(storedId)) {
+            Transaction tx = service.beginTx();
+            try {
+                StringTokenizer st = new StringTokenizer(storedId, DataLoadPreferences.CRS_DELIMETERS);
+                while (st.hasMoreTokens()) {
+                    String nodeId = st.nextToken();
+                    try {
+                        Node node = service.getNodeById(Long.parseLong(nodeId));
+                        if (NeoUtils.isRoootNode(node)) {
+                            selectedNode.add(node);
+                        }
+                    } catch (Exception e) {
+                        Logger.getLogger(LoaderUtils.class).error("not loaded id " + nodeId, e);
+                    }
+                    
+                }
+            } finally {
+                tx.finish();
+            }
+        }
+        return selectedNode;
+    }
+    
+    /**
+     * Store selected nodes.
+     *
+     * @param selectedNodes the selected nodes
+     */
+    public static void storeSelectedNodes(Set<Node>selectedNodes){
+        StringBuilder st = new StringBuilder();
+        for (Node selNode : selectedNodes) {
+            st.append(DataLoadPreferences.CRS_DELIMETERS).append(selNode.getId());
+        }
+        String value = st.length() < 1 ? "" : st.substring(DataLoadPreferences.CRS_DELIMETERS.length());
+        NeoLoaderPlugin.getDefault().getPreferenceStore().setValue(DataLoadPreferences.SELECTED_DATA, value);
+    }
+    
 }

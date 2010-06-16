@@ -68,7 +68,7 @@ public class SelectDataPreferencePage extends PreferencePage implements IWorkben
     private TreeContentProvider provider;
     private NeoTreeLabelProvider labelProvider;
     private GraphDatabaseService service;
-    private Set<Node> selectedNode = new LinkedHashSet<Node>();
+    private final Set<Node> selectedNode = new LinkedHashSet<Node>();
     @Override
     protected Control createContents(Composite parent) {
         mainFrame = new Composite(parent, SWT.FILL);
@@ -78,6 +78,7 @@ public class SelectDataPreferencePage extends PreferencePage implements IWorkben
         viewer.setLabelProvider(labelProvider);
         GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         viewer.getControl().setLayoutData(layoutData);
+        viewer.setAutoExpandLevel(2);
         viewer.addCheckStateListener(new ICheckStateListener() {
             public void checkStateChanged(CheckStateChangedEvent event) {
                 if (event.getElement() instanceof TreeElement) {
@@ -212,8 +213,8 @@ public class SelectDataPreferencePage extends PreferencePage implements IWorkben
 
     private static class TreeElement extends NeoTreeElement {
 
-        private boolean isRoot;
-        private boolean haveChild;
+        private final boolean isRoot;
+        private final boolean haveChild;
 
         /**
          * @param node

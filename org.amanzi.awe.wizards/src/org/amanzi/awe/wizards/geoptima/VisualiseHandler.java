@@ -39,7 +39,7 @@ import org.neo4j.graphdb.Transaction;
 
 /**
  * <p>
- *Visualise handler
+ *Visualize handler
  * </p>
  * @author TsAr
  * @since 1.0.0
@@ -67,7 +67,12 @@ public class VisualiseHandler extends AbstractHandler {
         }
         return null;
     }
-    //TODO move to utility class
+    /**
+     * Launch layer.
+     *
+     * @param gisNode the gis node
+     * @return the i layer
+     */
     private ILayer launchLayer(Node gisNode) {
         try {
             String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();

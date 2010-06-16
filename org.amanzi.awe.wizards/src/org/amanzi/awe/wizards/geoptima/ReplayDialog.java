@@ -92,7 +92,7 @@ public class ReplayDialog extends ProcessDialog {
      * @param parent the parent
      */
     public ReplayDialog(Shell parent) {
-        super(parent, "Replay Subscriber Locations", "Start");
+        super(parent, "Replay Subscriber Locations", "Start", SWT.DIALOG_TRIM  | SWT.CENTER);
     }
 
     /**
@@ -160,6 +160,7 @@ public class ReplayDialog extends ProcessDialog {
         // layoutData.horizontalSpan=2;
         sTimeWindow.setLayoutData(layoutData);
         sTimeWindow.setMinimum(5);
+        sTimeWindow.setMaximum(Integer.MAX_VALUE);
         sTimeWindow.setDigits(1);
         sTimeWindow.setIncrement(10);
         sTimeWindow.setSelection(5);

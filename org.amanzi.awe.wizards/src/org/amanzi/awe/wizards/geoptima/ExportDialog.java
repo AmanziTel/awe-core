@@ -65,7 +65,6 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 
-// TODO: Auto-generated Javadoc
 /**
  * <p>
  * GeOptima export dialog
@@ -134,7 +133,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
     }
 
     /**
-     * Returs preference store.
+     * Returns preference store.
      * 
      * @return IPreferenceStore
      */
@@ -245,8 +244,8 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
                 TreeViewerTransfer.getInstance().setViewer(viewer);
                 TreeItem[] selection = viewer.getTree().getSelection();
                 if (selection.length > 0 && selection[0].getItemCount() == 0) {
-                    event.doit = true;
                     dragSourceItem[0] = selection[0];
+                    event.doit= ((TreeElem)dragSourceItem[0].getData()).elemType==ElemType.PROPERTY;
                 } else {
                     event.doit = false;
                 }
@@ -293,15 +292,6 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
                     event.detail = DND.DROP_NONE;
                     return;
                 }
-
-                TreeItem[] items = parent.getItems();
-                int index = 0;
-                for (int i = 0; i < items.length; i++) {
-                    if (items[i] == item) {
-                        index = i;
-                        break;
-                    }
-                }
                 boolean before = pt.y < bounds.y + bounds.height / 2;
 
                 ((TreeElem)parent.getData()).moveElem(elem, itemData, before);
@@ -340,14 +330,29 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
             }
         };
         viewer.addDropSupport(ops, transfers, dropListener);
-
+        viewer.addCheckStateListener(new ICheckStateListener() {
+            
+            @Override
+            public void checkStateChanged(CheckStateChangedEvent event) {
+                if (event.getChecked()){
+                   NeoTreeElement parent = ((TreeElem)event.getElement()).getParent();
+                   if (parent!=null){
+                       viewer.setChecked(parent, true);
+                   }
+                }
+            }
+        });
     }
 
     /**
      * Export.
      */
     protected void export() {
-        // TODO implement
+        Object[] elements = viewer.getCheckedElements();
+        if (elements.length==0){
+            return;
+        }
+        
     }
 
     /**
@@ -396,6 +401,11 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
                         String nodeId = st.nextToken();
                         Node node = service.getNodeById(Long.parseLong(nodeId));
                         elements.add(new TreeElem(ElemType.ROOT, null, node, null, service));
+                        if (!NodeTypes.NETWORK.checkNode(node)&&node.hasRelationship(GeoNeoRelationshipTypes.VIRTUAL_DATASET,Direction.OUTGOING)){
+                            for (Relationship rel:node.getRelationships(GeoNeoRelationshipTypes.VIRTUAL_DATASET,Direction.OUTGOING)){
+                                elements.add(new TreeElem(ElemType.ROOT, null, rel.getOtherNode(node), null, service));
+                            }
+                        }
                     }
                 } finally {
                     tx.finish();
@@ -732,6 +742,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
         DropTarget target = new DropTarget(tree, operations);
         target.setTransfer(types);
         target.addDropListener(new DropTargetAdapter() {
+            @Override
             public void dragOver(DropTargetEvent event) {
                 event.feedback = DND.FEEDBACK_EXPAND | DND.FEEDBACK_SCROLL;
                 if (event.item != null) {
@@ -748,6 +759,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
                 }
             }
 
+            @Override
             public void drop(DropTargetEvent event) {
                 if (event.data == null) {
                     event.detail = DND.DROP_NONE;

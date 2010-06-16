@@ -15,11 +15,13 @@ package org.amanzi.neo.wizards;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedHashSet;
 
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.NetworkFileType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.loader.LoaderUtils;
 import org.amanzi.neo.loader.NeighbourLoader;
 import org.amanzi.neo.loader.NetworkLoader;
 import org.amanzi.neo.loader.NetworkSiteLoader;
@@ -38,23 +40,38 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.neo4j.graphdb.Node;
 
 /**
  * <p>
  * Network import wizard
- * </p>
- * 
- * @author TsAr
+ * </p>.
+ *
+ * @author tsinkel_a
  * @since 1.0.0
  */
 public class NetworkSiteImportWizard extends Wizard implements IImportWizard {
 
+    /** The Constant PAGE_TITLE. */
     private static final String PAGE_TITLE = NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_TITLE;
+    
+    /** The Constant PAGE_DESCR. */
     private static final String PAGE_DESCR = NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_DESCR;
+    
+    /** The main page. */
     private NetworkSiteImportWizardPage mainPage;
+    
+    /** The display. */
     private Display display;
+    
+    /** The add to select. */
     private boolean addToSelect;
 
+    /**
+     * Perform finish.
+     *
+     * @return true, if successful
+     */
     @Override
     public boolean performFinish() {
         Job job = new Job("Load Network Site'" + (new File(mainPage.getFileName())).getName() + "'") {
@@ -67,6 +84,7 @@ public class NetworkSiteImportWizard extends Wizard implements IImportWizard {
                         NetworkSiteLoader networkSiteLoader = new NetworkSiteLoader(mainPage.getNetworkName(), mainPage.getFileName(), display);
                         networkSiteLoader.run(monitor);
                         networkSiteLoader.printStats(false);
+                        handleSelect(monitor,networkSiteLoader.getRootNodes());
                         NetworkSiteLoader.sendUpdateEvent(UpdateViewEventType.GIS);
                         break;
                     case RADIO_SECTOR:
@@ -77,12 +95,14 @@ public class NetworkSiteImportWizard extends Wizard implements IImportWizard {
                         networkLoader.printStats(false);
                         NetworkLoader.addDataToCatalog();
                         networkLoader.addLayersToMap();
+                        handleSelect(monitor,networkLoader.getRootNodes());
                         break;
                     case PROBE:
                         ProbeLoader loader = new ProbeLoader(mainPage.getNetworkName(), mainPage.getFileName(), display);
                         loader.run(monitor);
                         NetworkLoader.addDataToCatalog();
-                        loader.addLayersToMap();                        
+                        loader.addLayersToMap();      
+                        handleSelect(monitor,loader.getRootNodes());
                         break;
                     case NEIGHBOUR:
                         NeighbourLoader neighbourLoader;
@@ -102,6 +122,7 @@ public class NetworkSiteImportWizard extends Wizard implements IImportWizard {
                         utranLoader.run(monitor);
                         NeoServiceProvider.getProvider().commit(); 
                         utranLoader.addLayersToMap();
+                        handleSelect(monitor,utranLoader.getRootNodes());
                         break;
                     case NOKIA_TOPOLOGY:
                         NokiaTopologyLoader nokiaTopologyLoader;
@@ -109,6 +130,7 @@ public class NetworkSiteImportWizard extends Wizard implements IImportWizard {
                         nokiaTopologyLoader.run(monitor);
                         NeoServiceProvider.getProvider().commit(); 
                         nokiaTopologyLoader.addLayersToMap();
+                        handleSelect(monitor,nokiaTopologyLoader.getRootNodes());
                         break;
                     default:
                         break;
@@ -125,6 +147,30 @@ public class NetworkSiteImportWizard extends Wizard implements IImportWizard {
         return true;
     }
 
+
+    /**
+     * Handle select.
+     *
+     * @param monitor the monitor
+     * @param rootNodes the root nodes
+     */
+    protected void handleSelect(IProgressMonitor monitor, Node[] rootNodes) {
+        if (!addToSelect||monitor.isCanceled()){
+            return;
+        }
+        LinkedHashSet<Node> sets = LoaderUtils.getSelectedNodes(NeoServiceProvider.getProvider().getService());
+        for (Node node : rootNodes) {
+            sets.add(node);
+        }
+        LoaderUtils.storeSelectedNodes(sets);
+    }
+
+    /**
+     * Inits.
+     *
+     * @param workbench the workbench
+     * @param selection the selection
+     */
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         mainPage = new NetworkSiteImportWizardPage(PAGE_TITLE, PAGE_DESCR);
@@ -132,6 +178,9 @@ public class NetworkSiteImportWizard extends Wizard implements IImportWizard {
         display = workbench.getDisplay();
     }
 
+    /**
+     * Adds the pages.
+     */
     @Override
     public void addPages() {
         super.addPages();
@@ -139,7 +188,9 @@ public class NetworkSiteImportWizard extends Wizard implements IImportWizard {
     }
 
     /**
-     * @param addToSelect
+     * Adds the to select param.
+     *
+     * @param addToSelect the add to select
      */
     public void addToSelectParam(String addToSelect) {
         this.addToSelect = addToSelect != null && "true".equalsIgnoreCase(addToSelect);

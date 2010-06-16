@@ -37,6 +37,7 @@ public class TemsImportWizard extends Wizard implements IImportWizard {
 
     @Override
     public boolean performFinish() {
+        mainPage.getDialog().setAddToSelect(addToSelect);
         mainPage.getDialog().runLoadingJob();
         return true;
     }

@@ -47,34 +47,75 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.Traverser;
 
 /**
- * TODO Purpose of 
  * <p>
+ * Process Dialog
+ * </p>.
  *
- * </p>
- * @author TsAr
+ * @author tsinkel_a
  * @since 1.0.0
  */
 public class ProcessDialog extends Dialog implements IPropertyChangeListener {
 
+    /** The btn label. */
     protected String btnLabel;
+    
+    /** The status. */
     protected int status;
+    
+    /** The title. */
     protected String title;
+    
+    /** The shell. */
     protected Shell shell;
+    
+    /** The c data. */
     protected Combo cData;
+    
+    /** The c correlate. */
     protected Combo cCorrelate;
+    
+    /** The property. */
     protected String property;
+    
+    /** The service. */
     protected GraphDatabaseService service;
+    
+    /** The datamap. */
     protected Map<String, Node> datamap = new TreeMap<String, Node>();
+    
+    /** The cor data. */
     protected Map<String, Node> corData = new TreeMap<String, Node>();
+
     /**
-     * @param parent
+     * Instantiates a new process dialog.
+     *
+     * @param parent the parent
+     * @param title the title
+     * @param processBtnLabel the process btn label
      */
     public ProcessDialog(Shell parent, String title, String processBtnLabel) {
-        super(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.CENTER);
+        this(parent,title,processBtnLabel, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.CENTER);
+    }
+    
+    /**
+     * Instantiates a new process dialog.
+     *
+     * @param parent the parent
+     * @param title the title
+     * @param processBtnLabel the process btn label
+     * @param style the style
+     */
+    public ProcessDialog(Shell parent, String title, String processBtnLabel,int style) {
+        super(parent, style);
         this.title = title;
         btnLabel = processBtnLabel;
     }
 
+    /**
+     * Property change.
+     *
+     * @param event the event
+     */
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         if (property != getPreferenceStore().getString(DataLoadPreferences.SELECTED_DATA)) {
@@ -82,6 +123,11 @@ public class ProcessDialog extends Dialog implements IPropertyChangeListener {
         }
     }
 
+    /**
+     * Open.
+     *
+     * @return the int
+     */
     public int open() {
         Shell parentShell = getParent();
         Shell shell = new Shell(parentShell, getStyle());
@@ -110,17 +156,25 @@ public class ProcessDialog extends Dialog implements IPropertyChangeListener {
     }
 
     /**
-     * @return
+     * Gets the title.
+     *
+     * @return the title
      */
     private String getTitle() {
         return title;
     }
 
+    /**
+     * Before open.
+     */
     private void beforeOpen() {
         service = NeoServiceProvider.getProvider().getService();
         formData();
     }
 
+    /**
+     * Form data.
+     */
     protected void formData() {
         property = getPreferenceStore().getString(DataLoadPreferences.SELECTED_DATA);
         Set<Node> storedData = new LinkedHashSet<Node>();
@@ -141,7 +195,9 @@ public class ProcessDialog extends Dialog implements IPropertyChangeListener {
     }
 
     /**
-     * @param storedData
+     * Form data list.
+     *
+     * @param storedData the stored data
      */
     protected void formDataList(Set<Node> storedData) {
         formdataMap(storedData);
@@ -149,7 +205,9 @@ public class ProcessDialog extends Dialog implements IPropertyChangeListener {
     }
 
     /**
-     * @param storedData
+     * Formdata map.
+     *
+     * @param storedData the stored data
      */
     protected void formdataMap(Set<Node> storedData) {
         datamap.clear();
@@ -158,6 +216,11 @@ public class ProcessDialog extends Dialog implements IPropertyChangeListener {
         }
     }
 
+    /**
+     * Creates the contents.
+     *
+     * @param shell the shell
+     */
     protected void createContents(final Shell shell) {
         this.shell = shell;
         shell.setLayout(new GridLayout(2, false));
@@ -218,7 +281,7 @@ public class ProcessDialog extends Dialog implements IPropertyChangeListener {
     }
 
     /**
-     *
+     * Form correlate data.
      */
     protected void formCorrelateData() {
         final Node dataNode = datamap.get(cData.getText());
@@ -233,7 +296,9 @@ public class ProcessDialog extends Dialog implements IPropertyChangeListener {
     }
 
     /**
-     * @param dataNode
+     * Form correlate map.
+     *
+     * @param dataNode the data node
      */
     protected void formCorrelateMap(Node dataNode) {
         corData.clear();
@@ -252,29 +317,43 @@ public class ProcessDialog extends Dialog implements IPropertyChangeListener {
     }
 
     /**
-     *
+     * Process btn.
      */
     protected void processBtn() {
     }
 
     /**
-     * @return
+     * Gets the process button label.
+     *
+     * @return the process button label
      */
     public String getProcessButtonLabel() {
         return btnLabel;
     }
 
+    /**
+     * Sets the process button label.
+     *
+     * @param label the new process button label
+     */
     public void setProcessButtonLabel(String label) {
         btnLabel = label;
     }
 
     /**
+     * Sets the title.
+     *
      * @param title The title to set.
      */
     public void setTitle(String title) {
         this.title = title;
     }
 
+    /**
+     * Gets the preference store.
+     *
+     * @return the preference store
+     */
     public IPreferenceStore getPreferenceStore() {
         return NeoLoaderPlugin.getDefault().getPreferenceStore();
     }

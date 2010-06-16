@@ -75,7 +75,7 @@ public class VisualiseLayer implements MapGraphic, MapInterceptor {
 
     // TODO synchronyze!
     public static ILayer datasetLayer = null;
-    public static VisualiseParam datasetParam=null;
+    public static VisualiseParam datasetParam = null;
 
     /** The Constant LOGGER. */
     public static final Logger LOGGER = Logger.getLogger(VisualiseLayer.class);
@@ -100,7 +100,7 @@ public class VisualiseLayer implements MapGraphic, MapInterceptor {
     @Override
     public void draw(MapGraphicContext context) {
         ILayer datasetLayer = findDatasetLayer(context);
-        
+
         if (datasetLayer == null) {
             return;
         }
@@ -123,16 +123,15 @@ public class VisualiseLayer implements MapGraphic, MapInterceptor {
     }
 
     /**
-     *
      * @param layer
      */
     private void updateParam(ILayer layer) {
         Object param = layer.getBlackboard().get(DATASET_PARAM);
-        if (param!=null){
+        if (param != null) {
             return;
         }
         layer.getBlackboard().put(DATASET_PARAM, datasetParam);
-        datasetParam=null;
+        datasetParam = null;
         return;
     }
 
@@ -161,9 +160,9 @@ public class VisualiseLayer implements MapGraphic, MapInterceptor {
                     Node nodeGis = layer.getGeoResource().resolve(Node.class, null);
                     Node node = NeoUtils.findRoot(nodeGis, service);
                     if (NeoUtils.isDatasetNode(node) || NodeTypes.OSS.checkNode(node)) {
-                        if (datasetParam==null){
+                        if (datasetParam == null) {
                             Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(node, service);
-                            datasetParam=new VisualiseParam(minMax.getLeft(), minMax.getRight(), true,1000);
+                            datasetParam = new VisualiseParam(minMax.getLeft(), minMax.getRight(), true, 1000);
                         }
                         result = layer;
                         break;
@@ -204,7 +203,6 @@ public class VisualiseLayer implements MapGraphic, MapInterceptor {
         /** The root node. */
         private Node rootNode;
 
-
         /** The timestamp index. */
         private MultiPropertyIndex<Long> timestampIndex;
 
@@ -219,7 +217,7 @@ public class VisualiseLayer implements MapGraphic, MapInterceptor {
 
         /** The c rs dataset. */
         private CoordinateReferenceSystem cRSDataset;
-        private VisualiseParam  param;
+        private VisualiseParam param;
 
         /**
          * Instantiates a new visualise command.
@@ -250,7 +248,7 @@ public class VisualiseLayer implements MapGraphic, MapInterceptor {
                 String datasetName = NeoUtils.getNodeName(node, service);
                 timestampIndex = NeoUtils.getTimeIndexProperty(datasetName);
                 timestampIndex.initialize(NeoServiceProvider.getProvider().getService(), null);
-                param=(VisualiseParam)layer.getBlackboard().get(DATASET_PARAM);
+                param = (VisualiseParam)layer.getBlackboard().get(DATASET_PARAM);
                 currentTime = param.getBeginTime();
             } catch (Exception e) {
                 throw new IllegalArgumentException("incorrect init parameters", e);
@@ -274,16 +272,23 @@ public class VisualiseLayer implements MapGraphic, MapInterceptor {
          * @return true, if successful
          */
         public boolean hasNext() {
-            List<ILayer> layers = context.getMapLayers();
-            boolean result = layers.contains(layer) && layers.contains(datasetLayer);
-            if (result){
-                param=(VisualiseParam)layer.getBlackboard().get(DATASET_PARAM);
-                result=param!=null&&(param.isRepeat()||param.getEndTime()>=currentTime);
+            try {
+                List<ILayer> layers = context.getMapLayers();
+                boolean result = layers.contains(layer) && layers.contains(datasetLayer);
+                if (result) {
+                    param = (VisualiseParam)layer.getBlackboard().get(DATASET_PARAM);
+                    result = param != null && (param.isRepeat() || param.getEndTime() >= currentTime);
+                }
+                if (!result) {
+                    animation.remove(this);
+                    layer.getMap().sendCommandASync(new DeleteLayerCommand((Layer)layer));
+                }
+                return result;
+            } catch (Exception e) {
+                e.printStackTrace();
+                animation.remove(this);
+                return false;
             }
-            if(!result){
-                layer.getMap().sendCommandASync(new DeleteLayerCommand((Layer)layer));
-            }
-            return result;
         }
 
         /**
@@ -495,7 +500,7 @@ public class VisualiseLayer implements MapGraphic, MapInterceptor {
 
         /** The end time. */
         long endTime;
-        
+
         /** The time window. */
         long timeWindow;
 
@@ -518,7 +523,7 @@ public class VisualiseLayer implements MapGraphic, MapInterceptor {
             super();
         }
 
-        public VisualiseParam(long beginTime, long endTime, boolean isRepeat,long timewindow) {
+        public VisualiseParam(long beginTime, long endTime, boolean isRepeat, long timewindow) {
             this();
             this.beginTime = beginTime;
             this.endTime = endTime;
@@ -573,7 +578,7 @@ public class VisualiseLayer implements MapGraphic, MapInterceptor {
 
         /**
          * Gets the time window.
-         *
+         * 
          * @return the time window
          */
         public long getTimeWindow() {
@@ -582,7 +587,7 @@ public class VisualiseLayer implements MapGraphic, MapInterceptor {
 
         /**
          * Sets the time window.
-         *
+         * 
          * @param timeWindow the new time window
          */
         public void setTimeWindow(long timeWindow) {
