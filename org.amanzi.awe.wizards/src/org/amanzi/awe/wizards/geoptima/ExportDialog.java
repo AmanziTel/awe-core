@@ -1155,6 +1155,9 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
 
         @Override
         public boolean hasNextLine() {
+            // TODO implement
+            if (true)
+                return false;
             if (haveCorrelate){
                 if (traverser.iterator().hasNext()){
                     return true;
