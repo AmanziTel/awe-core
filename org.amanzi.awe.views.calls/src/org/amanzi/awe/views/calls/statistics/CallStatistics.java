@@ -57,17 +57,7 @@ import org.neo4j.graphdb.Traverser.Order;
  * @author Lagutko_N
  * @since 1.0.0
  */
-public class CallStatistics {
-    
-    /*
-     * a Hour period
-     */
-    private static final long HOUR = 1000 * 60 * 60;
-    
-    /*
-     * a Day period
-     */
-    private static final long DAY = 24 * HOUR;    
+public class CallStatistics {   
     
     /*
      * Name of AMS dataset
@@ -200,7 +190,7 @@ public class CallStatistics {
     }
 
     protected void setHighPeriod(long minTime, long maxTime) {
-        highPeriod = getHighestPeriod(minTime, maxTime);
+        highPeriod = CallStatisticsUtills.getHighestPeriod(minTime, maxTime);
     }
 
     protected void initFields(Node drive, GraphDatabaseService service, IProgressMonitor aMonitor) {
@@ -334,7 +324,7 @@ public class CallStatistics {
             long minTime = minMax.getLeft();
             long maxTime = minMax.getRight();
         
-            CallTimePeriods period = getHighestPeriod(minTime, maxTime);            
+            CallTimePeriods period = CallStatisticsUtills.getHighestPeriod(minTime, maxTime);            
             List<StatisticsCallType> callTypes = StatisticsCallType.getTypesByLevel(StatisticsCallType.FIRST_LEVEL);
             IProgressMonitor subMonitor = SubMonitor.convert(monitor, callTypes.size());
             subMonitor.beginTask("Create AMS statistics", callTypes.size());
@@ -427,19 +417,6 @@ public class CallStatistics {
         return result;
     }
     
-    protected CallTimePeriods getHighestPeriod(long minTime, long maxTime) {
-        long delta = CallTimePeriods.DAILY.getFirstTime(maxTime) - CallTimePeriods.DAILY.getFirstTime(minTime);
-        if (delta >= DAY) {
-            return CallTimePeriods.MONTHLY;
-        }
-        delta = CallTimePeriods.HOURLY.getFirstTime(maxTime) - CallTimePeriods.HOURLY.getFirstTime(minTime);
-        if (delta >= HOUR) {
-            return CallTimePeriods.DAILY;
-        }
-        
-        return CallTimePeriods.HOURLY;
-    }
-    
     protected Pair<Long, Long> getTimeBounds(Node dataset) {
         Transaction transaction = neoService.beginTx();
         try {
@@ -518,7 +495,7 @@ public class CallStatistics {
         Statistics statistics = new Statistics();
         
         long currentStartDate = period.getFirstTime(startDate);
-        long nextStartDate = getNextStartDate(period, endDate, currentStartDate);
+        long nextStartDate = CallStatisticsUtills.getNextStartDate(period, endDate, currentStartDate);
         
         if (startDate > currentStartDate) {
             currentStartDate = startDate;
@@ -553,20 +530,14 @@ public class CallStatistics {
             updateStatistics(statistics, periodStatitics);            
             
             currentStartDate = nextStartDate;
-            nextStartDate = getNextStartDate(period, endDate, currentStartDate);
+            nextStartDate = CallStatisticsUtills.getNextStartDate(period, endDate, currentStartDate);
             commit();
         }
         while (currentStartDate < endDate);
         return statistics;
     }
 
-    protected long getNextStartDate(CallTimePeriods period, long endDate, long currentStartDate) {
-        long nextStartDate = period.addPeriod(currentStartDate);
-        if(!period.equals(CallTimePeriods.HOURLY)&&(nextStartDate > endDate)){
-            nextStartDate = endDate;
-        }
-        return nextStartDate;
-    }
+    
     
     protected Node getStatisticsNode(Node parent,Node source, final CallTimePeriods period) {
         Node node = getStatisticsNodeFromDB(parent, period);        

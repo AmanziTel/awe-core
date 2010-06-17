@@ -16,6 +16,7 @@ package org.amanzi.awe.views.calls.statistics;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.awe.statistic.CallTimePeriods;
 import org.amanzi.awe.views.calls.statistics.constants.ICallStatisticsConstants;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.CallProperties;
@@ -30,6 +31,16 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class CallStatisticsUtills {
+    
+    /*
+     * a Hour period
+     */
+    public static final long HOUR = 1000 * 60 * 60;
+    
+    /*
+     * a Day period
+     */
+    public static final long DAY = 24 * HOUR; 
     
     protected static final float MAX_DURATION_FOR_DELAY = 10.0f;
     
@@ -284,6 +295,27 @@ public class CallStatisticsUtills {
      */
     public static boolean isValueInBorders(Float value, Float start, Float end, boolean inclStart, boolean inclEnd){
         return value!=null&&((inclStart&&start.equals(value))||start<value) && (value<end||(inclEnd&&end.equals(value)));
+    }
+    
+    public static CallTimePeriods getHighestPeriod(long minTime, long maxTime) {
+        long delta = CallTimePeriods.DAILY.getFirstTime(maxTime) - CallTimePeriods.DAILY.getFirstTime(minTime);
+        if (delta >= DAY) {
+            return CallTimePeriods.MONTHLY;
+        }
+        delta = CallTimePeriods.HOURLY.getFirstTime(maxTime) - CallTimePeriods.HOURLY.getFirstTime(minTime);
+        if (delta >= HOUR) {
+            return CallTimePeriods.DAILY;
+        }
+        
+        return CallTimePeriods.HOURLY;
+    }
+    
+    public static long getNextStartDate(CallTimePeriods period, long endDate, long currentStartDate) {
+        long nextStartDate = period.addPeriod(currentStartDate);
+        if(!period.equals(CallTimePeriods.HOURLY)&&(nextStartDate > endDate)){
+            nextStartDate = endDate;
+        }
+        return nextStartDate;
     }
 
 }

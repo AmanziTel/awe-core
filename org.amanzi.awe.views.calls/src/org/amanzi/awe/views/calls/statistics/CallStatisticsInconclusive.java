@@ -128,7 +128,7 @@ public class CallStatisticsInconclusive extends CallStatistics {
             Pair<Long, Long> minMax = getTimeBounds(datasetNode);
             long minTime = minMax.getLeft();
             long maxTime = minMax.getRight();
-            CallTimePeriods period = getHighestPeriod(minTime, maxTime);            
+            CallTimePeriods period = CallStatisticsUtills.getHighestPeriod(minTime, maxTime);            
             List<StatisticsCallType> callTypes = StatisticsCallType.getTypesByLevel(StatisticsCallType.FIRST_LEVEL);
             IProgressMonitor subMonitor = SubMonitor.convert(getMonitor(), callTypes.size());
             subMonitor.beginTask("Create AMS statistics include inconclusive events", callTypes.size());
@@ -179,7 +179,7 @@ public class CallStatisticsInconclusive extends CallStatistics {
     private Statistics createStatisticsInconclusive(Node parentNode, Node sourseRootNode, Node highStatisticsNode, Node highLevelSRow, Node probeNode, MultiPropertyIndex<Long> timeIndex, CallTimePeriods period, StatisticsCallType callType, long startDate, long endDate) {
         Statistics statistics = new Statistics();
         long currentStartDate = period.getFirstTime(startDate);
-        long nextStartDate = getNextStartDate(period, endDate, currentStartDate);
+        long nextStartDate = CallStatisticsUtills.getNextStartDate(period, endDate, currentStartDate);
         
         if (startDate > currentStartDate) {
             currentStartDate = startDate;
@@ -214,7 +214,7 @@ public class CallStatisticsInconclusive extends CallStatistics {
             }
             getPreviousSCellNodes().put(period, null);
             currentStartDate = nextStartDate;
-            nextStartDate = getNextStartDate(period, endDate, currentStartDate);
+            nextStartDate = CallStatisticsUtills.getNextStartDate(period, endDate, currentStartDate);
             commit();
         }
         while (currentStartDate < endDate);

@@ -26,7 +26,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import net.refractions.udig.catalog.CatalogPlugin;
 import net.refractions.udig.catalog.ICatalog;
@@ -37,6 +40,8 @@ import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
 import org.amanzi.awe.views.calls.enums.StatisticsHeaders;
 import org.amanzi.awe.views.calls.enums.StatisticsType;
+import org.amanzi.awe.views.calls.statistics.CallStatisticsUtills;
+import org.amanzi.awe.views.calls.statistics.Statistics;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
@@ -58,7 +63,9 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 
 /**
@@ -70,45 +77,45 @@ import org.neo4j.graphdb.Traverser;
  */
 public class StatisticsDataLoader {
     
-    private static final long HOUR = 1000 * 60 * 60;
-    private static final long DAY = 24 * HOUR;
-    
-    private static final int START_COLUMN = 0;
-    private static final int END_COLUMN = 1;
-    private static final int PROBE_COLUMN = 2;
-    private static final int LA_COLUMN = 3;
-    private static final int FREQUENCY_COLUMN = 4;
-    private static final int MIN_COLUMN_COUNT = 6;
-
     private static final Logger LOGGER = Logger.getLogger(StatisticsDataLoader.class);
     
     private static final String CSV_FILE_EXTENSION = ".csv";
     private static final String COLUMN_SEPARATOR = ",";
+    
     private static final String TIME_SEPARATOR = "_";
     private static final String DAY_PATTERN = "yyyyMMdd";
     private static final String TIME_PATTERN = "HHmm";
+    
+    private static final String START_COLUMN_NAME = "STARTTIME";
+    private static final String END_COLUMN_NAME = "ENDTIME";
+    private static final String PROBE_COLUMN_NAME = "HOST";
+    private static final String LA_COLUMN_NAME = "LA";
+    private static final String FREQUENCY_COLUMN_NAME = "FREQUENCY";
+    private static final int MIN_COLUMN_COUNT = 6;
     
     private String directoryName;
     private String networkName;
     private String datasetName;
     
+    private Long minTime;
+    private Long maxTime;
+    
+    private boolean isTest=false;
+    
+    private GraphDatabaseService service;
     private Transaction transaction;
     
     private Node network;
     private Node virtualDataset;
     private HashMap<String, Node> gisNodes = new HashMap<String, Node>();
     private HashMap<String, Node> probes = new HashMap<String, Node>();
-    private HeaderMap headers;
+    
+    private HashMap<StatisticsCallType,HashMap<CallTimePeriods, Node>> previousRowsAll = new HashMap<StatisticsCallType,HashMap<CallTimePeriods, Node>>();
+    private HashMap<StatisticsCallType,HashMap<CallTimePeriods, Node>> previousCellsAll = new HashMap<StatisticsCallType,HashMap<CallTimePeriods, Node>>();
     
     private HashMap<StatisticsCallType, StatInfo> statRoots = new HashMap<StatisticsCallType, StatInfo>();
-    private HashMap<StatisticsCallType, Node> previousCells = new HashMap<StatisticsCallType, Node>();
-    private HashMap<StatisticsCallType, Node> previousRows = new HashMap<StatisticsCallType, Node>();
-    private Long minTime;
-    private Long maxTime;
     
-    private boolean isTest;
-    
-    private GraphDatabaseService service;
+    private HeaderMap headerMap;
     
     /**
      * Constructor.
@@ -136,15 +143,8 @@ public class StatisticsDataLoader {
      * @param neo GraphDatabaseService
      */
     public StatisticsDataLoader(String directory, String dataset, String network, GraphDatabaseService neo, boolean testing){
-        directoryName = directory;
-        networkName = network;
-        datasetName = dataset;
-        service = neo;
-        if(service == null){
-            service = NeoServiceProvider.getProvider().getService();
-        }
+        this(directory, dataset, network, neo);
         isTest = testing;
-        initHeaders();
     }
     
     /**
@@ -169,17 +169,22 @@ public class StatisticsDataLoader {
         ArrayList<File> allFiles = getAllFiles(directoryName);
         int filesCount = allFiles.size();
         IProgressMonitor subMonitor = SubMonitor.convert(monitor, filesCount);
-        subMonitor.beginTask("Loading AMS statistics data", filesCount);
         transaction = service.beginTx();
         try{
+            subMonitor.beginTask("Loading AMS statistics data", filesCount);
             network = findOrCreateNetworkNode(); 
             virtualDataset = findVirtualDataset();
             for (File file : allFiles) {
+                if(monitor.isCanceled()){
+                    break;
+                }
                 subMonitor.subTask("Loading file " + file.getAbsolutePath());
+                System.out.println("Load file "+file.getName());//TODO delete
                 loadFile(file);
                 subMonitor.worked(1);                   
             }
-            buildHighperiodStatistics(monitor);
+            subMonitor.done();
+            buildHighPeriodStatistics(monitor);
             finish();
         }catch(Throwable e){
             LOGGER.error("Problem in loader.",e);
@@ -188,6 +193,39 @@ public class StatisticsDataLoader {
         finally{
             commit(false);
         }
+    }
+    
+    /**
+     * Initialize headers.
+     */
+    private void initHeaders(){
+        headerMap = new HeaderMap();
+        headerMap.addDataHeader(new Header(START_COLUMN_NAME, null,null, ValueType.TIME));
+        headerMap.addDataHeader(new Header(END_COLUMN_NAME, null, null, ValueType.TIME));
+        headerMap.addDataHeader(new Header(PROBE_COLUMN_NAME, null, null, ValueType.STRING));
+        headerMap.addDataHeader(new Header(LA_COLUMN_NAME, null, null, ValueType.INTEGER));
+        headerMap.addDataHeader(new Header(FREQUENCY_COLUMN_NAME, null, null, ValueType.FLOAT));
+    }
+    
+    /**
+     * Get all files from directory
+     *
+     * @param directoryName String
+     * @return List of File.
+     */
+    private ArrayList<File> getAllFiles(String directoryName) {
+        File directory = new File(directoryName);
+        ArrayList<File> result = new ArrayList<File>();        
+        for (File childFile : directory.listFiles()) {
+            if (childFile.isDirectory()) {
+                result.addAll(getAllFiles(childFile.getPath()));
+            }
+            else if (childFile.isFile() && childFile.getName().endsWith(CSV_FILE_EXTENSION)) {
+                result.add(childFile);
+            }
+        }
+        return result;
+        
     }
     
     /**
@@ -248,314 +286,6 @@ public class StatisticsDataLoader {
             }
             neoProvider.commit();
         }
-    }
-    
-    /**
-     * Initialize headers.
-     */
-    private void initHeaders(){
-        headers = new HeaderMap();
-        headers.addDataHeader(new Header(START_COLUMN, "STARTTIME", ValueType.TIME, null));
-        headers.addDataHeader(new Header(END_COLUMN, "ENDTIME", ValueType.TIME, null));
-        headers.addDataHeader(new Header(PROBE_COLUMN, "HOST", ValueType.STRING, null));
-        headers.addDataHeader(new Header(LA_COLUMN, "LA", ValueType.INTEGER, null));
-        headers.addDataHeader(new Header(FREQUENCY_COLUMN, "FREQUENCY", ValueType.FLOAT, null));
-    }
-    
-    /**
-     * Load data from file.
-     *
-     * @param file File
-     * @throws IOException
-     * @throws ParseException 
-     */
-    private void loadFile(File file)throws IOException, ParseException{
-        FileInputStream is = new FileInputStream(file);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        String line;
-        boolean hasHeaders = false;
-        while ((line = reader.readLine()) != null) {
-            if(!hasHeaders){
-                hasHeaders = parseHeaders(line);
-                if(!headers.hasStatisticsHeaders()){
-                    break;
-                }
-            }else{
-                parseLine(line);
-            }
-        }
-        commit(true);
-    }
-    
-    /**
-     * Parse headers for file.
-     *
-     * @param line String
-     * @return boolean
-     */
-    private boolean parseHeaders(String line){
-        String[] cells = line.split(COLUMN_SEPARATOR);
-        int callCount = cells.length;
-        if(callCount<2){
-            return false;
-        }
-        headers.clear();
-        for(int i=0; i<callCount;i++){
-            headers.addHeader(i, cells[i]);
-        }
-        return true;
-    }
-    
-    /**
-     * Parse line.
-     *
-     * @param line
-     * @throws ParseException 
-     */
-    private void parseLine(String line) throws IOException, ParseException{
-        String[] cells = line.split(COLUMN_SEPARATOR);
-        int callCount = cells.length;
-        if(callCount<MIN_COLUMN_COUNT){
-            return;
-        }
-        Long start = (Long)headers.getHeader(START_COLUMN).parseValue(cells[START_COLUMN]);
-        Long end = (Long)headers.getHeader(END_COLUMN).parseValue(cells[END_COLUMN]);
-        String probeName = headers.getHeader(PROBE_COLUMN).parseValue(cells[PROBE_COLUMN]).toString();
-        Integer la = (Integer)headers.getHeader(LA_COLUMN).parseValue(cells[LA_COLUMN]);
-        Float frequency = (Float)headers.getHeader(FREQUENCY_COLUMN).parseValue(cells[FREQUENCY_COLUMN]);
-        if(start==null||end==null||probeName==null||probeName.length()==0||la==null||frequency==null){
-            return;
-        }
-        probeName = NeoUtils.buildProbeName(probeName, la, frequency);
-        for(int i=FREQUENCY_COLUMN+1; i<callCount;i++){
-            Header header = headers.getHeader(i);
-            if(!headers.isUnknownHeader(header)){
-                StatisticsCallType callType = headers.getCallTypeByHeader(header);
-                if(callType!=null){
-                    Node row = getRowNode(callType, start, end, probeName, la, frequency);
-                    Object value = header.parseValue(cells[i]); //TODO value must be null if calls count is zero.
-                    if (value!=null) {
-                        IStatisticsHeader real = header.getRealHeader();
-                        createSCellNode(row, null, value, real, callType);
-                    }
-                }
-            }
-        }
-        previousCells.clear();
-    }
-    
-    /**
-     * Create root of statistics
-     *
-     * @param callType StatisticsCallType
-     * @return Node
-     */
-    private Node createRootStatisticsNode(StatisticsCallType callType) {
-        Node result = service.createNode();
-        
-        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALL_ANALYSIS_ROOT.getId());
-        result.setProperty(INeoConstants.PROPERTY_NAME_NAME, INeoConstants.CALL_ANALYZIS_ROOT);
-        result.setProperty(INeoConstants.PROPERTY_VALUE_NAME, NeoUtils.getNodeName(virtualDataset,service));
-        result.setProperty(CallProperties.CALL_TYPE.getId(), callType.toString());
-        
-        virtualDataset.createRelationshipTo(result, ProbeCallRelationshipType.CALL_ANALYSIS);
-        
-        return result;
-    }
-    
-    /**
-     * Find or create row node.
-     *
-     * @param callType StatisticsCallType
-     * @param start Long
-     * @param end Long
-     * @param probeName String
-     * @param la Integer
-     * @param frequency Float
-     * @return Node
-     * @throws IOException
-     */
-    private Node getRowNode(StatisticsCallType callType, Long start, Long end, String probeName,Integer la, Float frequency)throws IOException{
-        ProbeInfo probeInfo = getProbeInfo(callType, probeName);
-        Node row = probeInfo.getRow(start);
-        if(row == null){
-            Node probe = getProbeNode(probeName, la, frequency,callType);
-            row = createRowNode(start, end, probe,null, statRoots.get(callType).getPeriodNode(),callType, CallTimePeriods.HOURLY);
-            probeInfo.addRow(start, row);
-            if(minTime==null||start<minTime){
-                minTime=start;
-            }
-            if(maxTime==null||end>maxTime){
-                maxTime=end;
-            }
-        }
-        return row;
-    }
-    
-    /**
-     * Get probe data.
-     *
-     * @param callType StatisticsCallType
-     * @param probeName String
-     * @return ProbeInfo
-     */
-    private ProbeInfo getProbeInfo(StatisticsCallType callType, String probeName){
-        StatInfo statInfo = statRoots.get(callType);
-        if(statInfo== null){
-            Node root = createRootStatisticsNode(callType);
-            statInfo = new StatInfo(root,createPeriodNode(root, CallTimePeriods.HOURLY, null));
-            statRoots.put(callType, statInfo);
-        }
-        ProbeInfo probeInfo = statInfo.getProbeInfo(probeName);
-        if(probeInfo==null){
-            probeInfo = new ProbeInfo(probeName);
-            statInfo.addProbeInfo(probeInfo);
-        }
-        return probeInfo;
-    }
-    
-    /**
-     * Create node for statistics period.
-     *
-     * @param parent Node (statistics root)
-     * @param period CallTimePeriods
-     * @param undPeriodNode (underling period node)
-     * @return Node
-     */
-    private Node createPeriodNode(Node parent, CallTimePeriods period, Node undPeriodNode) {
-        Node result = service.createNode();
-        
-        result.setProperty(INeoConstants.PROPERTY_NAME_NAME, period.getId());
-        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALL_ANALYSIS.getId());
-        parent.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
-        
-        if (undPeriodNode!=null) {
-            result.createRelationshipTo(undPeriodNode, GeoNeoRelationshipTypes.SOURCE);
-        }
-        return result;
-    }
-    
-    /**
-     * Create new row node.
-     *
-     * @param start Long
-     * @param end Long
-     * @param probe Node
-     * @param sourceRows List of Nodes
-     * @param parent Node
-     * @param callType StatisticsCallType
-     * @param period CallTimePeriods
-     * @return Node
-     */
-    private Node createRowNode(Long start, Long end, Node probe, List<Node> sourceRows, Node parent, StatisticsCallType callType, CallTimePeriods period){
-        Node result = service.createNode();
-        String name = NeoUtils.getFormatDateStringForSrow(start, period.addPeriod(start), "HH:mm", period.getId());
-        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.S_ROW.getId());
-        result.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
-        result.setProperty(INeoConstants.PROPERTY_TIME_NAME, start);
-        
-        result.createRelationshipTo(probe, GeoNeoRelationshipTypes.SOURCE);
-        
-        Node previous = previousRows.get(callType);
-        if (previous == null) {
-            parent.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
-        }
-        else {
-            previous.createRelationshipTo(result, GeoNeoRelationshipTypes.NEXT);
-        }
-        previousRows.put(callType, result);
-        
-        if (sourceRows != null) {
-            for(Node sourceRow : sourceRows){
-                result.createRelationshipTo(sourceRow, GeoNeoRelationshipTypes.SOURCE);
-            }
-        }
-        
-        return result;
-    }
-    
-    /**
-     * Create cell node
-     *
-     * @param row Node
-     * @param sourceCells List of Nodes
-     * @param value Object
-     * @param header StatisticsHeaders
-     * @param callType StatisticsCallType
-     */
-    private void createSCellNode(Node row, List<Node> sourceCells, Object value, IStatisticsHeader header, StatisticsCallType callType){
-        Node result = service.createNode();
-        
-        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.S_CELL.getId());
-        result.setProperty(INeoConstants.PROPERTY_NAME_NAME, header.getTitle());
-        if (value != null) {
-            result.setProperty(INeoConstants.PROPERTY_VALUE_NAME, value);                       
-        }
-        Node previousNode = previousCells.get(callType);
-        if (previousNode == null) {
-            row.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
-        }
-        else {
-            previousNode.createRelationshipTo(result, GeoNeoRelationshipTypes.NEXT);
-        }
-        previousCells.put(callType, result);
-        
-        if (sourceCells != null) {
-            for(Node sourceCell : sourceCells){
-                result.createRelationshipTo(sourceCell, GeoNeoRelationshipTypes.SOURCE);
-            }
-        }
-        
-    }
-    
-    /**
-     * Find or create probe node with probe calls node.
-     *
-     * @param probeName String
-     * @param la Integer
-     * @param frequency Float
-     * @param callType StatisticsCallType
-     * @return Node
-     * @throws IOException
-     */
-    private Node getProbeNode(String probeName, Integer la, Float frequency, StatisticsCallType callType)throws IOException{
-        Node probe = probes.get(probeName);
-        if(probe==null){            
-            probe = NeoUtils.findOrCreateProbeNode(network, probeName, service);
-            probe.setProperty(INeoConstants.PROBE_LA, la); 
-            probe.setProperty(INeoConstants.PROBE_F, frequency);
-
-            probes.put(probeName, probe);
-        }
-        Node calls = getProbeCalls(probe, probeName);
-        calls.setProperty(callType.getId().getProperty(), true);
-        if(!calls.hasRelationship(ProbeCallRelationshipType.PROBE_DATASET, Direction.INCOMING)){
-            virtualDataset.createRelationshipTo(calls, ProbeCallRelationshipType.PROBE_DATASET);
-        }
-        return probe;
-    }
-    
-    /**
-     * Find or create probe calls
-     *
-     * @param probe Node
-     * @param probeName String
-     * @return Node
-     * @throws IOException
-     */
-    private Node getProbeCalls(Node probe, String probeName)throws IOException{
-        Relationship link = probe.getSingleRelationship(ProbeCallRelationshipType.CALLS, Direction.OUTGOING);
-        String callProbeName = probeName + " - " + datasetName;
-        if(link == null){
-            Node calls = service.createNode();
-            calls.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALLS.getId());
-            calls.setProperty(INeoConstants.PROPERTY_NAME_NAME, callProbeName);
-            calls.setProperty(NodeTypes.DATASET.getId(), datasetName);
-
-            probe.createRelationshipTo(calls, ProbeCallRelationshipType.CALLS);
-            return calls;
-        }
-        return link.getEndNode();
     }
     
     /**
@@ -658,243 +388,415 @@ public class StatisticsDataLoader {
     }
     
     /**
-     * Build statistics for higher periods.
+     * Load data from file.
+     *
+     * @param file File
+     * @throws IOException (problem in reading file)
+     * @throws ParseException (problem in parse data)
      */
-    private void buildHighperiodStatistics(IProgressMonitor monitor){
-        int statSize = statRoots.size();
-        HashMap<StatisticsCallType, Node> roots = new HashMap<StatisticsCallType, Node>(statSize);
-        monitor = SubMonitor.convert(monitor, statSize);
-        monitor.beginTask("Build statistics for higher periods", statSize);
-        for(StatisticsCallType type : statRoots.keySet()){
-            CallTimePeriods highestPeriod = getHighestPeriod(minTime,maxTime);            
-            if (highestPeriod!=null) {
-                StatInfo newInfo = buildStatisticsFromUnderling(highestPeriod, type);
-                statRoots.put(type, newInfo);
-                roots.put(type, newInfo.getRoot());
+    private void loadFile(File file) throws IOException, ParseException{
+        FileInputStream is = new FileInputStream(file);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        String line;
+        boolean hasHeaders = false;
+        while ((line = reader.readLine()) != null) {
+            System.out.println("1: "+line);//TODO delete
+            if(!hasHeaders){
+                hasHeaders = parseHeaders(line);
+                if(!headerMap.hasStatisticsHeaders()){
+                    break;
+                }
+            }else{
+                parseLine(line);
             }
-            monitor.worked(1);
+        }
+        commit(true);
+    }
+    
+    /**
+     * Parse headers for file.
+     *
+     * @param line String
+     * @return boolean
+     */
+    private boolean parseHeaders(String line){
+        String[] cells = line.split(COLUMN_SEPARATOR);
+        int callCount = cells.length;
+        if(callCount<2){
+            return false;
+        }
+        headerMap.clear();
+        for(int i=0; i<callCount;i++){
+            headerMap.addHeader(i, cells[i]);
+        }
+        return true;
+    }
+    
+    /**
+     * Parse line
+     *
+     * @param line String
+     * @throws ParseException (problem in parse)
+     */
+    private void parseLine(String line) throws ParseException{
+        System.out.println("2: "+line);//TODO delete
+        LineWrapper lw = headerMap.buildLineWrapper(line);
+        if(lw == null||!lw.hasAnyStatistics()){
+            return;
+        }
+        String probeName = lw.getProbeName();
+        Integer la = lw.getLa();
+        Float freq = lw.getFreq();
+        Long start = lw.getStart();
+        Long end = lw.getEnd();
+        updateMinMax(start, end);
+        List<StatisticsCallType> allTypes = StatisticsCallType.getTypesByLevel(StatisticsCallType.FIRST_LEVEL);
+        for(StatisticsCallType callType : allTypes){
+            if(!lw.hasStatistics(callType)){
+                continue;
+            }            
+            Node periodNode = getPeriodNode(callType, CallTimePeriods.HOURLY,null);
+            Node probe = getProbe(callType, probeName, la, freq);
+            statRoots.get(callType).addProbe(probe);
+            Node row = createRow(callType,CallTimePeriods.HOURLY,start, periodNode, probe, null);
+            Statistics statistics = lw.getStatistics(callType);
+            for(IStatisticsHeader header : callType.getHeaders()){
+                createCell(callType,CallTimePeriods.HOURLY,row,header,statistics);
+            }
+            previousCellsAll.get(callType).put(CallTimePeriods.HOURLY, null);
+            commit(true);
         }
     }
     
     /**
-     * Build statistics by underling.
+     * Update min/max times.
      *
-     * @param period CallTimePeriods
-     * @param callType StatisticsCallType
-     * @return StatInfo
+     * @param start Long
+     * @param end Long
      */
-    private StatInfo buildStatisticsFromUnderling(CallTimePeriods period, StatisticsCallType callType){
-        if(period.equals(CallTimePeriods.HOURLY)){
-            return statRoots.get(callType);
+    private void updateMinMax(Long start, Long end){
+        if(minTime==null||start<minTime){
+            minTime=start;
         }
-        StatInfo sourceStat = buildStatisticsFromUnderling(period.getUnderlyingPeriod(),callType);
-        Node statRoot = sourceStat.getRoot();
-        Node periodNode = createPeriodNode(statRoot, period, sourceStat.getPeriodNode());
-        StatInfo result = new StatInfo(statRoot, periodNode);
-        Long start = period.getFirstTime(minTime);
-        Long end = maxTime;
-        Long nextStart = getNextStartTime(start, end, period);
-        previousRows.clear();
-        do{
-            HashMap<String, ProbeInfo> allProbes = sourceStat.getProbes();
-            int commCount = 0;
-            for(String probeName : allProbes.keySet()){
-                Node probe = probes.get(probeName);
-                List<Node> sourceRows = allProbes.get(probeName).getRowsInTime(period.getUnderlyingPeriod().getFirstTime(start), nextStart);
-                Node row = createRowNode(start, end, probe, sourceRows, periodNode, callType, period);
-                HashMap<IStatisticsHeader, List<Node>> cellsMap = getCellsMap(sourceRows, callType);
-                previousCells.clear();
-                for(IStatisticsHeader header : cellsMap.keySet()){
-                    List<Node> sourceCells = cellsMap.get(header);
-                    Object cellValue = getCellValue(header, sourceCells);
-                    createSCellNode(row, sourceCells, cellValue, header, callType);
-                }
-                ProbeInfo info = result.getProbeInfo(probeName);
-                if(info==null){
-                    info = new ProbeInfo(probeName);
-                    result.addProbeInfo(info);
-                }
-                info.addRow(start, row);                
-                commCount++;
-                if (commCount>10) {
-                    commit(true);
-                }
-            }
-            start = nextStart;            
-            nextStart = getNextStartTime(start, end, period);            
-        }while(start<end);    
+        if(maxTime==null||end>maxTime){
+            maxTime=end;
+        }
+    }
+    
+    /**
+     * Get period node.
+     *
+     * @param callType StatisticsCallType
+     * @param period CallTimePeriods
+     * @return Node
+     */
+    private Node getPeriodNode(StatisticsCallType callType, CallTimePeriods period, Node parentStat){
+        StatInfo statInfo = statRoots.get(callType);
+        if(statInfo==null){
+            Node root = createRootStatisticsNode(callType);
+            statInfo = new StatInfo(root);
+            statRoots.put(callType, statInfo);
+        }
+        Node result = statInfo.getPeriodNode(period);
+        if(result == null){
+            result = createPeriodNode(statInfo.getRoot(), period, statInfo.getPeriodNode(period.getUnderlyingPeriod()), parentStat);
+            statInfo.addPeriodNode(period, result);
+        }
+        return result;
+    }
+    
+    /**
+     * Create root of statistics
+     *
+     * @param callType StatisticsCallType
+     * @return Node
+     */
+    private Node createRootStatisticsNode(StatisticsCallType callType) {
+        Node result = service.createNode();
+        
+        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALL_ANALYSIS_ROOT.getId());
+        result.setProperty(INeoConstants.PROPERTY_NAME_NAME, INeoConstants.CALL_ANALYZIS_ROOT);
+        result.setProperty(INeoConstants.PROPERTY_VALUE_NAME, NeoUtils.getNodeName(virtualDataset,service));
+        result.setProperty(CallProperties.CALL_TYPE.getId(), callType.toString());
+        
+        virtualDataset.createRelationshipTo(result, ProbeCallRelationshipType.CALL_ANALYSIS);
         
         return result;
     }
     
     /**
-     * Get cells from rows by headers.
+     * Create node for statistics period.
      *
-     * @param rows List of Nodes.
-     * @param callType StatisticsCallType
-     * @return HashMap<StatisticsHeaders, List<Node>>
+     * @param parent Node (statistics root)
+     * @param period CallTimePeriods
+     * @param undPeriodNode (underling period node)
+     * @return Node
      */
-    private HashMap<IStatisticsHeader, List<Node>> getCellsMap(List<Node> rows, StatisticsCallType callType){
-        HashMap<IStatisticsHeader, List<Node>> result = new HashMap<IStatisticsHeader, List<Node>>();
-        for(Node row : rows){
-            for(Node cell : NeoUtils.getChildTraverser(row)){
-                IStatisticsHeader header = callType.getHeaderByTitle(NeoUtils.getNodeName(cell,service));
-                List<Node> cells = result.get(header);
-                if(cells==null){
-                    cells = new ArrayList<Node>();
-                    result.put(header, cells);
+    private Node createPeriodNode(Node parent, CallTimePeriods period, Node undPeriodNode,Node parentPeriodNode) {
+        Node result = service.createNode();
+        
+        result.setProperty(INeoConstants.PROPERTY_NAME_NAME, period.getId());
+        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALL_ANALYSIS.getId());
+        parent.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
+        
+        if (undPeriodNode!=null) {
+            result.createRelationshipTo(undPeriodNode, GeoNeoRelationshipTypes.SOURCE);
+        }
+        if (parentPeriodNode!=null) {
+            parentPeriodNode.createRelationshipTo(result, GeoNeoRelationshipTypes.SOURCE);
+        }
+        return result;
+    }
+    
+    /**
+     * Get probe.
+     *
+     * @param callType StatisticsCallType
+     * @param probeName String
+     * @param la Integer
+     * @param frequency Float
+     * @return Node
+     */
+    private Node getProbe(StatisticsCallType callType, String probeName, Integer la, Float frequency){
+        Node probe = probes.get(probeName);
+        if(probe==null){            
+            probe = NeoUtils.findOrCreateProbeNode(network, probeName, service);
+            probe.setProperty(INeoConstants.PROBE_LA, la); 
+            probe.setProperty(INeoConstants.PROBE_F, frequency);
+
+            probes.put(probeName, probe);
+        }
+        Node calls = getProbeCalls(probe, probeName);
+        calls.setProperty(callType.getId().getProperty(), true);
+        if(!calls.hasRelationship(ProbeCallRelationshipType.PROBE_DATASET, Direction.INCOMING)){
+            virtualDataset.createRelationshipTo(calls, ProbeCallRelationshipType.PROBE_DATASET);
+        }
+        return probe;
+    }
+    
+    /**
+     * Find or create probe calls
+     *
+     * @param probe Node
+     * @param probeName String
+     * @return Node
+     * @throws IOException
+     */
+    private Node getProbeCalls(Node probe, String probeName){
+        Relationship link = probe.getSingleRelationship(ProbeCallRelationshipType.CALLS, Direction.OUTGOING);
+        String callProbeName = probeName + " - " + datasetName;
+        if(link == null){
+            Node calls = service.createNode();
+            calls.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALLS.getId());
+            calls.setProperty(INeoConstants.PROPERTY_NAME_NAME, callProbeName);
+            calls.setProperty(NodeTypes.DATASET.getId(), datasetName);
+
+            probe.createRelationshipTo(calls, ProbeCallRelationshipType.CALLS);
+            return calls;
+        }
+        return link.getEndNode();
+    }
+    
+    /**
+     * Create row.
+     *
+     * @param callType StatisticsCallType
+     * @param period CallTimePeriods
+     * @param start Long
+     * @param parent Node
+     * @param probe Node
+     * @param sourceRows List of Nodes
+     * @return Node
+     */
+    private Node createRow(StatisticsCallType callType, CallTimePeriods period, Long start, Node parent, Node probe, Node highLevelRow){
+        Node result = service.createNode();
+        String name = NeoUtils.getFormatDateStringForSrow(start, period.addPeriod(start), "HH:mm", period.getId());
+        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.S_ROW.getId());
+        result.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
+        result.setProperty(INeoConstants.PROPERTY_TIME_NAME, start);
+        
+        result.createRelationshipTo(probe, GeoNeoRelationshipTypes.SOURCE);
+        
+        HashMap<CallTimePeriods, Node> previousRows = previousRowsAll.get(callType);
+        if(previousRows==null){
+            previousRows = new HashMap<CallTimePeriods, Node>();
+            previousRowsAll.put(callType, previousRows);
+        }
+        Node previous = previousRows.get(period);
+        NeoUtils.addChild(parent, result, previous, service);
+        previousRows.put(period, result);
+        
+        if (highLevelRow != null) {
+            highLevelRow.createRelationshipTo(result, GeoNeoRelationshipTypes.SOURCE);
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Create cell node.
+     *
+     * @param callType StatisticsCallType
+     * @param period CallTimePeriods
+     * @param row Node
+     * @param header IStatisticsHeader
+     * @param statistics Statistics
+     * @return Node
+     */
+    private Node createCell(StatisticsCallType callType, CallTimePeriods period, Node row, IStatisticsHeader header, Statistics statistics){
+        Node result = service.createNode();
+        
+        result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.S_CELL.getId());
+        result.setProperty(INeoConstants.PROPERTY_NAME_NAME, header.getTitle());
+        Object value = statistics.get(header);
+        if (value != null) {
+            result.setProperty(INeoConstants.PROPERTY_VALUE_NAME, value);                       
+        }
+        HashMap<CallTimePeriods, Node> previousCells = previousCellsAll.get(callType);
+        if(previousCells==null){
+            previousCells = new HashMap<CallTimePeriods, Node>();
+            previousCellsAll.put(callType, previousCells);
+        }
+        Node previous = previousCells.get(period);
+        NeoUtils.addChild(row, result, previous, service);
+        previousCells.put(period, result);
+        
+        ArrayList<Node> sourceCells = statistics.getAllAffectedCalls(header);
+        if (sourceCells != null) {
+            for(Node sourceCell : sourceCells){
+                result.createRelationshipTo(sourceCell, GeoNeoRelationshipTypes.SOURCE);
+            }
+            statistics.getAllAffectedCalls(header).clear();
+        }
+        statistics.updateSourceNodes(header, result);
+        return result;
+    }
+    
+    /**
+     * Build statistics for higher periods.
+     *
+     * @param monitor
+     */
+    private void buildHighPeriodStatistics(IProgressMonitor monitor){
+        CallTimePeriods highestPeriod = CallStatisticsUtills.getHighestPeriod(minTime, maxTime-CallStatisticsUtills.HOUR);
+        monitor.subTask("Build higher periods statistics");
+        for(StatisticsCallType callType : statRoots.keySet()){  
+            monitor.subTask("Build statistics for "+callType.getViewName()+" calls.");
+            StatInfo statInfo = statRoots.get(callType);
+            for(Node probe : statInfo.getLinkedProbes()){
+                if(monitor.isCanceled()){
+                    break;
                 }
-                cells.add(cell);
+                buildHighStatistics(callType,highestPeriod,null,null,probe,minTime,maxTime);
+            }
+            commit(true);
+        }
+    }
+    
+    /**
+     * Build statistics for higher periods.
+     *
+     * @param callType StatisticsCallType
+     * @param period  CallTimePeriods
+     * @param parentStat Node
+     * @param highLevelRow Node
+     * @param probe Node
+     * @param startAll Node
+     * @param endAll Node
+     * @return Statistics
+     */
+    private Statistics buildHighStatistics(StatisticsCallType callType, CallTimePeriods period,Node parentStat, Node highLevelRow, Node probe, Long startAll, Long endAll){
+        if(period.equals(CallTimePeriods.HOURLY)){
+            return getHourlyStatistics(callType, probe, startAll, endAll);
+        }
+        Statistics result = new Statistics();
+        Node periodNode = getPeriodNode(callType, period,parentStat);
+        Long start = period.getFirstTime(startAll);
+        Long end = CallStatisticsUtills.getNextStartDate(period, endAll, start);
+        if(start<startAll){
+            start = startAll;
+        }
+        do{
+            Node row = createRow(callType, period, start, periodNode, probe, highLevelRow);
+            Statistics currStatistics = buildHighStatistics(callType, period.getUnderlyingPeriod(), periodNode,row, probe, start, end);
+            for(IStatisticsHeader header : callType.getHeaders()){
+                createCell(callType,CallTimePeriods.HOURLY,row,header,currStatistics);
+            }
+            previousCellsAll.get(callType).put(CallTimePeriods.HOURLY, null);
+            
+            updateStatistics(result, currStatistics);
+            
+            start = end;
+            end = CallStatisticsUtills.getNextStartDate(period, endAll, start);
+        }while(start<endAll);
+        return result;
+    }
+    
+    /**
+     * Get hourly statistics for database.
+     *
+     * @param callType StatisticsCallType
+     * @param probe Node
+     * @param start Node
+     * @param end Node
+     * @return Statistics
+     */
+    private Statistics getHourlyStatistics(StatisticsCallType callType, final Node probe,final Long start,final Long end){
+        Node periodNode = getPeriodNode(callType, CallTimePeriods.HOURLY, null);
+        Traverser rows = NeoUtils.getChildTraverser(periodNode, new ReturnableEvaluator() {            
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                Node node = currentPos.currentNode();
+                if(!NeoUtils.isSRowNode(node)){
+                    return false;
+                }
+                Long rowTime = (Long)node.getProperty(INeoConstants.PROPERTY_TIME_NAME, 0L);
+                if(rowTime<start||rowTime>=end){
+                    return false;
+                }
+                Relationship relation = node.getSingleRelationship(GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING);
+                return relation!=null&&relation.getEndNode().equals(probe);
+            }
+        });
+        Statistics result = new Statistics();
+        for(Node row : rows){
+            Traverser cells = NeoUtils.getChildTraverser(row);
+            for (Node cell : cells) {
+                IStatisticsHeader header = callType.getHeaderByTitle((String)cell.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+                Number value = getCellValue(cell, header);
+                result.updateHeaderWithCall(header, value, cell);
             }
         }
         return result;
     }
     
     /**
-     * Get value for cell from sources.
+     * Gets value from cell by cell type.
      *
+     * @param cell Node
      * @param header StatisticsHeaders
-     * @param sourceCells List of Nodes
-     * @return Object
-     */
-    private Object getCellValue(IStatisticsHeader header, List<Node> sourceCells){
-        Object value = null;
-        StatisticsType type = header.getType();
-        for(Node cell : sourceCells){
-            Object source = cell.getProperty(INeoConstants.PROPERTY_VALUE_NAME, null);
-            if(source==null){
-                continue;
-            }
-            if(value==null){
-                value = source;
-                continue;
-            }
-            switch (type) {
-            case COUNT:
-                value = ((Integer)value)+((Integer)source);
-                break;
-            case SUM:
-                value = ((Float)value)+((Float)source);
-                break;
-            case MIN:
-                if(((Float)value)>((Float)source)){
-                    value = source;
-                }
-                break;
-            case MAX:
-                if(((Float)value)<((Float)source)){
-                    value = source;
-                }
-                break;
-            default:
-                //do nothing
-            }
-        }
-        return value;
-    }
-    
-    /**
-     * Get last period border.
-     *
-     * @param start Long
-     * @param end Long
-     * @param period CallTimePeriods
      * @return Long
      */
-    private Long getNextStartTime(Long start, Long end, CallTimePeriods period){
-        Long nextStart = period.addPeriod(start);
-        if(nextStart>end){
-            nextStart = end;
+    protected Number getCellValue(Node cell, IStatisticsHeader header){
+        if(header.getType().equals(StatisticsType.COUNT)){
+            Integer value = (Integer)cell.getProperty(INeoConstants.PROPERTY_VALUE_NAME,0);
+            return value;
         }
-        return nextStart;
+        return (Float)cell.getProperty(INeoConstants.PROPERTY_VALUE_NAME,0f);
     }
     
     /**
-     * Get highest period.
+     * Update statistics.
      *
-     * @param start Long
-     * @param end Long
-     * @return CallTimePeriods
+     * @param original Statistics
+     * @param newValues Statistics
      */
-    private CallTimePeriods getHighestPeriod(Long start, Long end){
-        long delta = CallTimePeriods.DAILY.getFirstTime(maxTime) - CallTimePeriods.DAILY.getFirstTime(minTime);
-        if (delta >= DAY) {
-            return CallTimePeriods.MONTHLY;
-        }
-        delta = CallTimePeriods.HOURLY.getFirstTime(maxTime) - CallTimePeriods.HOURLY.getFirstTime(minTime);
-        if (delta >= HOUR) {
-            return CallTimePeriods.DAILY;
-        }
-        
-        return CallTimePeriods.HOURLY;
-    }
-    
-    /**
-     * Get all files from directory
-     *
-     * @param directoryName String
-     * @return List of File.
-     */
-    private ArrayList<File> getAllFiles(String directoryName) {
-        File directory = new File(directoryName);
-        ArrayList<File> result = new ArrayList<File>();        
-        for (File childFile : directory.listFiles()) {
-            if (childFile.isDirectory()) {
-                result.addAll(getAllFiles(childFile.getPath()));
-            }
-            else if (childFile.isFile() && childFile.getName().endsWith(CSV_FILE_EXTENSION)) {
-                result.add(childFile);
-            }
-        }
-        return result;
-        
-    }
-    
-    /**
-     * <p>
-     * Types of headers.
-     * </p>
-     * @author Shcharbatsevich_A
-     * @since 1.0.0
-     */
-    private enum HeaderTypes{
-        
-        INDIVIDUAL(StatisticsCallType.INDIVIDUAL, "SL-SRV-SC"),
-        GROUP(StatisticsCallType.GROUP, "SL-SRV-GC"),
-        ITSI_ATTACH(StatisticsCallType.ITSI_ATTACH,"SL-INH-ATT"),
-        ITSI_CC(StatisticsCallType.ITSI_CC,"SL-INH-CC_RES"),
-        ITSI_HO(StatisticsCallType.ITSI_HO,"SL-INH-CC_HO"),
-        TSM(StatisticsCallType.TSM,"SL-SRV-TSM"),
-        SDS(StatisticsCallType.SDS,"SL-SRV-SDS"),
-        EMERGENCY(StatisticsCallType.EMERGENCY,"SL-SRV-EC-1"),
-        HELP(StatisticsCallType.HELP,"SL-SRV-EC-2"),
-        ALARM(StatisticsCallType.ALARM,"SL-SRV-ALM"),
-        CS_DATA(StatisticsCallType.CS_DATA,"SL-SRV-CSD"),
-        PS_DATA(StatisticsCallType.PS_DATA,"SL-SRV-IP");        
-        
-        private StatisticsCallType realType;
-        private String prefix;
-        
-        private HeaderTypes(StatisticsCallType type, String headerPrefix) {
-            realType = type;
-            prefix = headerPrefix;
-        }
-        
-        /**
-         * @return Returns the realType.
-         */
-        public StatisticsCallType getRealType() {
-            return realType;
-        }
-        
-        public static HeaderTypes getTypeByHeader(String header){
-            for(HeaderTypes type : values()){
-                if(header.startsWith(type.prefix)){
-                    return type;
-                }
-            }
-            return null;
-        }
+    private void updateStatistics(Statistics original, Statistics newValues) { 
+        for (Entry<IStatisticsHeader, Object> entry : newValues.entrySet()) {
+            IStatisticsHeader header = entry.getKey();
+            original.updateHeader(header, entry.getValue());
+            original.copyAllSourceNodes(header, newValues.getAllAffectedCalls(header));
+        }            
     }
     
     /**
@@ -918,24 +820,32 @@ public class StatisticsDataLoader {
      * @author Shcharbatsevich_A
      * @since 1.0.0
      */
-    private class Header {
+    private class Header{
         
-        private int number;
+        private String name;
         private ValueType parsedType;
-        
+        private StatisticsCallType callType;
         private IStatisticsHeader realHeader;
         
-        public Header(int aNumber, String aName, ValueType aType, IStatisticsHeader aReal) {
-            number = aNumber;
-            realHeader = aReal;
-            parsedType = aType;
+        public Header(String columnName, StatisticsCallType statType, IStatisticsHeader real, ValueType type) {
+            name = columnName;
+            parsedType = type;
+            realHeader = real;
+            callType = statType;
         }
         
         /**
-         * @return Returns the number.
+         * @return Returns the name.
          */
-        public int getNumber() {
-            return number;
+        public String getName() {
+            return name;
+        }
+        
+        /**
+         * @return Returns the callType.
+         */
+        public StatisticsCallType getCallType() {
+            return callType;
         }
         
         /**
@@ -945,6 +855,13 @@ public class StatisticsDataLoader {
             return realHeader;
         }
         
+        /**
+         * Parse value
+         *
+         * @param value String
+         * @return Object
+         * @throws ParseException (problem in parse)
+         */
         public Object parseValue(String value) throws ParseException{
             switch (parsedType) {
             case TIME:
@@ -971,7 +888,7 @@ public class StatisticsDataLoader {
          *
          * @param value String.
          * @return Long
-         * @throws ParseException
+         * @throws ParseException (problem in parse)
          */
         private Long getTimeFromString(String value) throws ParseException{
             if(value==null||value.length()==0){
@@ -1000,24 +917,30 @@ public class StatisticsDataLoader {
      * @author Shcharbatsevich_A
      * @since 1.0.0
      */
-    private class HeaderMap {
+    private class HeaderMap{
         
         private HashMap<Integer, Header> allHeaders = new HashMap<Integer, Header>();
         
-        private HashMap<Header, StatisticsCallType> statisticsHeaders = new HashMap<Header, StatisticsCallType>();
         private List<Header> unknownHeaders = new ArrayList<Header>();
-        private List<Header> dataHeaders = new ArrayList<Header>();
+        private HashMap<String, Header> dataHeaders = new HashMap<String, Header>();
+        
+        private boolean hasStatisticsHeaders = false;
         
         /**
          * Add header to map.
          *
          * @param number int
          * @param name String
-         * @return
+         * @return Header.
          */
         public Header addHeader(int number, String name){
-            Header header = getHeader(number);
+            Header header = allHeaders.get(number);
             if(header!=null){
+                return header;
+            }
+            header = dataHeaders.get(name);
+            if(header!=null){
+                allHeaders.put(number, header);
                 return header;
             }
             HeaderTypes headerType = HeaderTypes.getTypeByHeader(name);
@@ -1026,46 +949,16 @@ public class StatisticsDataLoader {
                 IStatisticsHeader statHeader = getStatisticsHeader(statType, name);
                 if (statHeader!=null) {
                     ValueType type = statHeader.getType().equals(StatisticsType.COUNT) ? ValueType.INTEGER : ValueType.FLOAT;
-                    header = new Header(number, name, type, statHeader);
-                    statisticsHeaders.put(header, statType);
+                    header = new Header(name, statType, statHeader, type);
+                    hasStatisticsHeaders = true;
                 }
             }
             if(header==null){
-                header = new Header(number, name, ValueType.STRING, null);
+                header = new Header(name, null, null, ValueType.STRING);
                 unknownHeaders.add(header);
             }
             allHeaders.put(number, header);
             return header;
-        }
-        
-        /**
-         * Get header.
-         *
-         * @param number int
-         * @return Header
-         */
-        public Header getHeader(int number){
-            return allHeaders.get(number);
-        }
-        
-        /**
-         * Is header unknown.
-         *
-         * @param header
-         * @return boolean
-         */
-        public boolean isUnknownHeader(Header header){
-            return unknownHeaders.contains(header);
-        }
-        
-        /**
-         * Returns call type for header.
-         *
-         * @param header
-         * @return StatisticsCallType
-         */
-        public StatisticsCallType getCallTypeByHeader(Header header){
-            return statisticsHeaders.get(header);
         }
         
         /**
@@ -1079,66 +972,303 @@ public class StatisticsDataLoader {
             if(callType==null){
                 return null;
             }
+            if(callType.equals(StatisticsCallType.GROUP)&&name.equals("SL-SRV-GC-1_ATTEMPT")){
+                return StatisticsHeaders.CALL_ATTEMPT_COUNT;
+            }
             for(IStatisticsHeader header : callType.getHeaders()){
                 if(name.endsWith(header.getTitle())){
                     return header;
                 }
-            }
-            if(callType.equals(StatisticsCallType.GROUP)&&name.equals("SL-SRV-GC-1_ATTEMPT")){
-                return StatisticsHeaders.CALL_ATTEMPT_COUNT;
-            }
+            }            
             return null; 
         }
         
         /**
-         * Add data header.
+         * @return has statistics headers.
+         */
+        public boolean hasStatisticsHeaders(){
+            return hasStatisticsHeaders;
+        }
+        
+        /**
+         * Add header with additional data
          *
          * @param header
          */
         public void addDataHeader(Header header){
-            dataHeaders.add(header);
-            allHeaders.put(header.getNumber(), header);
+            dataHeaders.put(header.getName(), header);
         }
         
         /**
          * Clear header map.
          */
         public void clear(){
-            statisticsHeaders.clear();
             unknownHeaders.clear();
             allHeaders.clear();
-            for(Header header : dataHeaders){
-                allHeaders.put(header.getNumber(), header);
-            }
         }
         
-        public boolean hasStatisticsHeaders(){
-            return !statisticsHeaders.isEmpty();
+        /**
+         * Build line wrapper.
+         *
+         * @param line String 
+         * @return LineWrapper
+         * @throws ParseException
+         */
+        public LineWrapper buildLineWrapper(String line) throws ParseException{
+            if(line==null||line.length()==0){
+                return null;
+            }
+            String[] splitted = line.split(COLUMN_SEPARATOR);
+            int count = splitted.length;
+            if(count<MIN_COLUMN_COUNT){
+                return null;
+            }
+            LineWrapper result = new LineWrapper();
+            for(int i=0; i<count;i++){
+                Header header = allHeaders.get(i);
+                if(header==null||unknownHeaders.contains(header)){
+                    continue;
+                }
+                Object value = header.parseValue(splitted[i]);
+                if(value==null){
+                    continue;
+                }
+                if(header.getName().equals(START_COLUMN_NAME)){
+                    result.setStart((Long)value);
+                    continue;
+                }
+                if(header.getName().equals(END_COLUMN_NAME)){
+                    result.setEnd((Long)value);
+                    continue;
+                }
+                if(header.getName().equals(PROBE_COLUMN_NAME)){
+                    result.setProbeName((String)value);
+                    continue;
+                }
+                if(header.getName().equals(LA_COLUMN_NAME)){
+                    result.setLa((Integer)value);
+                    continue;
+                }
+                if(header.getName().equals(FREQUENCY_COLUMN_NAME)){
+                    result.setFreq((Float)value);
+                    continue;
+                }
+                System.out.println("Call type "+header.getCallType()+" header "+ header.getRealHeader()+" value "+value);//TODO delete
+                result.updateStatistics(header.getCallType(), header.getRealHeader(), value);
+            }
+            return result;
+        }
+        
+    }
+    
+    /**
+     * <p>
+     * Types of headers.
+     * </p>
+     * @author Shcharbatsevich_A
+     * @since 1.0.0
+     */
+    private enum HeaderTypes{
+        
+        INDIVIDUAL(StatisticsCallType.INDIVIDUAL, "SL-SRV-SC"),
+        GROUP(StatisticsCallType.GROUP, "SL-SRV-GC"),
+        ITSI_ATTACH(StatisticsCallType.ITSI_ATTACH,"SL-INH-ATT"),
+        ITSI_CC(StatisticsCallType.ITSI_CC,"SL-INH-CC_RES"),
+        ITSI_HO(StatisticsCallType.ITSI_HO,"SL-INH-CC_HO"),
+        TSM(StatisticsCallType.TSM,"SL-SRV-TSM"),
+        SDS(StatisticsCallType.SDS,"SL-SRV-SDS"),
+        EMERGENCY(StatisticsCallType.EMERGENCY,"SL-SRV-EC-1"),
+        HELP(StatisticsCallType.HELP,"SL-SRV-EC-2"),
+        ALARM(StatisticsCallType.ALARM,"SL-SRV-ALM"),
+        CS_DATA(StatisticsCallType.CS_DATA,"SL-SRV-CSD"),
+        PS_DATA(StatisticsCallType.PS_DATA,"SL-SRV-IP");        
+        
+        private StatisticsCallType realType;
+        private String prefix;
+        
+        /**
+         * Constructor.
+         * @param type
+         * @param headerPrefix
+         */
+        private HeaderTypes(StatisticsCallType type, String headerPrefix) {
+            realType = type;
+            prefix = headerPrefix;
+        }
+        
+        /**
+         * @return Returns the realType.
+         */
+        public StatisticsCallType getRealType() {
+            return realType;
+        }
+        
+        /**
+         * Get type by header.
+         *
+         * @param header String
+         * @return HeaderTypes
+         */
+        public static HeaderTypes getTypeByHeader(String header){
+            for(HeaderTypes type : values()){
+                if(header.startsWith(type.prefix)){
+                    return type;
+                }
+            }
+            return null;
         }
     }
     
     /**
      * <p>
-     * Statistics data.
+     * Line wrapper.
+     * </p>
+     * @author Shcharbatsevich_A
+     * @since 1.0.0
+     */
+    private class LineWrapper{
+        
+        private Long start;
+        private Long end;
+        private String probeName;
+        private Integer la;
+        private Float freq;
+        private HashMap<StatisticsCallType, Statistics> allStatistics = new HashMap<StatisticsCallType, Statistics>();
+        private Set<StatisticsCallType> havingStatistics = new HashSet<StatisticsCallType>();
+        
+        /**
+         * @return Returns the start.
+         */
+        public Long getStart() {
+            return start;
+        }
+        
+        /**
+         * @param start The start to set.
+         */
+        public void setStart(Long start) {
+            this.start = start;
+        }
+        
+        /**
+         * @return Returns the end.
+         */
+        public Long getEnd() {
+            return end;
+        }
+        
+        /**
+         * @param end The end to set.
+         */
+        public void setEnd(Long end) {
+            this.end = end;
+        }
+        
+        /**
+         * @return Returns the probeName.
+         */
+        public String getProbeName() {
+            return probeName;
+        }
+        
+        /**
+         * @param probeName The probeName to set.
+         */
+        public void setProbeName(String probeName) {
+            this.probeName = probeName;
+        }
+        
+        /**
+         * @return Returns the la.
+         */
+        public Integer getLa() {
+            return la;
+        }
+        
+        /**
+         * @param la The la to set.
+         */
+        public void setLa(Integer la) {
+            this.la = la;
+        }
+        
+        /**
+         * @return Returns the freq.
+         */
+        public Float getFreq() {
+            return freq;
+        }
+        
+        /**
+         * @param freq The freq to set.
+         */
+        public void setFreq(Float freq) {
+            this.freq = freq;
+        }
+        
+        /**
+         * Has satistics for callType.
+         *
+         * @param callType
+         * @return boolean
+         */
+        public boolean hasStatistics(StatisticsCallType callType){
+            return havingStatistics.contains(callType);
+        }
+        
+        /**
+         * Has statistics for any call type.
+         *
+         * @return boolean
+         */
+        public boolean hasAnyStatistics(){
+            return !havingStatistics.isEmpty();
+        }
+        
+        /**
+         * @return Returns the statistics.
+         */
+        public Statistics getStatistics(StatisticsCallType callType) {
+            return allStatistics.get(callType);
+        }
+        
+        /**
+         * Update statistics.
+         *
+         * @param header IStatisticsHeader
+         * @param value Object
+         */
+        public void updateStatistics(StatisticsCallType callType, IStatisticsHeader header, Object value){
+            if(value==null){
+                return;
+            }
+            Statistics statistics = allStatistics.get(callType);
+            if(statistics==null){
+                statistics = new Statistics();
+                allStatistics.put(callType, statistics);
+            }
+            if(header.getType().equals(StatisticsType.COUNT)&&!(((Number)value).doubleValue() == 0.0)){
+                havingStatistics.add(callType);
+            }
+            statistics.updateHeader(header, value);
+        }
+        
+    }
+    
+    /**
+     * <p>
+     * Statistics information.
      * </p>
      * @author Shcharbatsevich_A
      * @since 1.0.0
      */
     private class StatInfo{
-        
         private Node root;
-        private Node periodNode;
-        private HashMap<String, ProbeInfo> probes;
+        private HashMap<CallTimePeriods, Node> periodNodes = new HashMap<CallTimePeriods, Node>();
+        private Set<Node> linkedProbes = new HashSet<Node>();
         
-        /**
-         * Constructor.
-         * @param rootNode Node (statistics root)
-         * @param period Node (period node)
-         */
-        public StatInfo(Node rootNode, Node period) {
+        public StatInfo(Node rootNode) {
             root = rootNode;
-            periodNode = period;
-            probes = new HashMap<String, ProbeInfo>();
         }
         
         /**
@@ -1149,94 +1279,38 @@ public class StatisticsDataLoader {
         }
         
         /**
-         * @return Returns the hourly.
+         * Returns the periodNode for call type.
+         * @param period CallTimePeriods
+         * @return Node
          */
-        public Node getPeriodNode() {
-            return periodNode;
+        public Node getPeriodNode(CallTimePeriods period) {
+            return periodNodes.get(period);
         }
         
         /**
-         * Get probe data by probe name.
+         * Add period node
+         * @param period CallTimePeriods
+         * @param node Node
+         */
+        public void addPeriodNode(CallTimePeriods period, Node node) {
+            periodNodes.put(period,node);
+        }
+        
+        /**
+         * @return Returns the linkedProbes.
+         */
+        public Set<Node> getLinkedProbes() {
+            return linkedProbes;
+        }
+        
+        /**
+         * Add probe.
          *
-         * @param probe String
-         * @return ProbeInfo
+         * @param probe Node
          */
-        public ProbeInfo getProbeInfo(String probe){
-            return probes.get(probe);
-        }
-        
-        /**
-         * Add probe data.
-         *
-         * @param info ProbeInfo
-         */
-        public void addProbeInfo(ProbeInfo info){
-            probes.put(info.getProbeName(), info);
-        }
-        
-        /**
-         * @return Returns the probes.
-         */
-        public HashMap<String, ProbeInfo> getProbes() {
-            return probes;
+        public void addProbe(Node probe){
+            linkedProbes.add(probe);
         }
     }
     
-    /**
-     * <p>
-     * Probe data.
-     * </p>
-     * @author Shcharbatsevich_A
-     * @since 1.0.0
-     */
-    private class ProbeInfo{        
-        private String probe;
-        private HashMap<Long, Node> rows;
-        
-        public ProbeInfo(String probeName) {
-            probe = probeName;
-            rows = new HashMap<Long,Node>();
-        }
-        
-        /**
-         * @return Returns the probe.
-         */
-        public String getProbeName() {
-            return probe;
-        }
-        
-        /**
-         * @return Returns the row.
-         */
-        public Node getRow(Long time) {
-            return rows.get(time);
-        }
-        
-        /**
-         * Add row.
-         *
-         * @param time
-         * @param row
-         */
-        public void addRow(Long time, Node row) {
-            rows.put(time, row);
-        }
-        
-        /**
-         * Get all rows in time borders.
-         *
-         * @param start Long
-         * @param end Long
-         * @return List of Nodes.
-         */
-        public List<Node> getRowsInTime(Long start, Long end){
-            List<Node> result = new ArrayList<Node>();
-            for(Long time : rows.keySet()){
-                if(start<=time&&time<end){
-                    result.add(rows.get(time));
-                }
-            }
-            return result;
-        }
-    }
 }

@@ -105,7 +105,7 @@ public class Statistics extends HashMap<IStatisticsHeader, Object> {
         }
     }
     
-    void updateSourceNodes(IStatisticsHeader header, Node source) {
+    public void updateSourceNodes(IStatisticsHeader header, Node source) {
         ArrayList<Node> nodes = sourceNodes.get(header);
         if (nodes == null) {
             nodes = new ArrayList<Node>();
