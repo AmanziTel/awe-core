@@ -33,6 +33,7 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
@@ -128,10 +129,10 @@ public class GPSCorrelator {
 		else {
 		    this.monitor = monitor;
 		}
-	}
+	}  
 	
 	/**
-	 * Cleares correlation for list of Datasets
+	 * Clears correlation for list of Datasets
 	 *
 	 * @param nodesToClear list of Dataset/OSS nodes to clear correlation
 	 */
@@ -139,7 +140,7 @@ public class GPSCorrelator {
 	    Node rootCorrelatNode = getRootCorrelationNode(false);
 	    
 	    //if no Root Correlation Node than there is nothing to clear
-	    if (rootCorrelatNode == null) {
+	    if (nodesToClear.isEmpty() || (rootCorrelatNode == null)) {
 	        return;	        
 	    }
 	    
@@ -151,32 +152,43 @@ public class GPSCorrelator {
 	            datasetNames.add(NeoUtils.getNodeName(datasetNode, neoService));
 	        }
 	        
+	        RelationshipType[] types = new RelationshipType[] {CorrelationRelationshipTypes.CORRELATED, CorrelationRelationshipTypes.CORRELATED_LOCATION, NetworkRelationshipTypes.DRIVE};
+	        
 	        //clear correlation between sectors and M nodes
-	        for (Node correlationNode : NeoUtils.getChildTraverser(rootCorrelatNode)) {
-	            for (Relationship correlationRel : correlationNode.getRelationships(CorrelationRelationshipTypes.CORRELATED, Direction.OUTGOING)) {
-	                String datasetName = (String)correlationRel.getProperty(INeoConstants.NETWORK_GIS_NAME);
-	                if (datasetNames.contains(datasetName)) {
-	                    correlationRel.delete();
+	        for (Node correlationNode : rootCorrelatNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
+	                                                              GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {	            
+	            for (RelationshipType typeToCheck : types) {
+	                for (Relationship correlationRel : correlationNode.getRelationships(typeToCheck, Direction.OUTGOING)) {
+	                    String datasetName = (String)correlationRel.getProperty(INeoConstants.NETWORK_GIS_NAME);
+	                    if (datasetNames.contains(datasetName)) {
+	                        correlationRel.delete();
+	                    }
 	                }
 	            }
 	            
-	            if (!correlationNode.getRelationships(CorrelationRelationshipTypes.CORRELATED, Direction.OUTGOING).iterator().hasNext()) {
-	                correlationNode.getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.INCOMING).delete();
+	            boolean delete = true;
+	            for (RelationshipType typeToCheck : types) {
+	                delete = delete && !correlationNode.getRelationships(typeToCheck, Direction.OUTGOING).iterator().hasNext();
+	            }
+	            
+	            if (delete) {	                
+	                correlationNode.getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING).delete();
+	                correlationNode.getSingleRelationship(NetworkRelationshipTypes.SECTOR, Direction.OUTGOING).delete();
 	                correlationNode.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).delete();
 	                correlationNode.delete();
 	            }
 	        }
 	        
 	        //clear correlation between Dataset and Network
-	        for (Relationship datasetLink : rootCorrelatNode.getRelationships(CorrelationRelationshipTypes.CORRELATED, Direction.OUTGOING)) {
-	            if (nodesToClear.contains(datasetLink.getEndNode())) {
+	        for (Relationship datasetLink : rootCorrelatNode.getRelationships(CorrelationRelationshipTypes.CORRELATED, Direction.INCOMING)) {
+	            if (nodesToClear.contains(datasetLink.getStartNode())) {
 	                datasetLink.delete();
 	            }
 	        }
 	        
 	        //if there are no correlation for this Network we should clear Root Correlation Node
-	        if (!rootCorrelatNode.getRelationships(CorrelationRelationshipTypes.CORRELATED, Direction.OUTGOING).iterator().hasNext()) {
-	            rootCorrelatNode.getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING).delete();
+	        if (!rootCorrelatNode.getRelationships(CorrelationRelationshipTypes.CORRELATED, Direction.INCOMING).iterator().hasNext()) {
+	            rootCorrelatNode.getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.INCOMING).delete();
 	            rootCorrelatNode.delete();
 	        }
 	    }
@@ -192,6 +204,10 @@ public class GPSCorrelator {
 	
 	
 	public void correlate(Set<Node> nodesForCorrelation) {
+	    if (nodesForCorrelation.isEmpty()) {
+	        return;
+	    }
+	    
 	    Node rootCorrelationNode = getRootCorrelationNode(true);
 	    searchRequests = new ArrayList<SearchRequest>();
 	    
@@ -290,12 +306,12 @@ public class GPSCorrelator {
 	    	
 	    	link = correlationNode.createRelationshipTo(locationNode, CorrelationRelationshipTypes.CORRELATED_LOCATION);
 	        link.setProperty(INeoConstants.NETWORK_GIS_NAME, correlationType);
+	        
+	        link = correlationNode.createRelationshipTo(locationNode, NetworkRelationshipTypes.DRIVE);
+	        link.setProperty(INeoConstants.NETWORK_GIS_NAME, correlationType);
 	    }
 	    
 	    link = correlationNode.createRelationshipTo(correlatedNode, CorrelationRelationshipTypes.CORRELATED);
-	    link.setProperty(INeoConstants.NETWORK_GIS_NAME, correlationType);
-	    
-	    link = correlationNode.createRelationshipTo(correlatedNode, NetworkRelationshipTypes.DRIVE);
 	    link.setProperty(INeoConstants.NETWORK_GIS_NAME, correlationType);
 	}
 	

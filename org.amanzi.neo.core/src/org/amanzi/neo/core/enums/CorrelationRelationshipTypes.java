@@ -15,7 +15,6 @@ package org.amanzi.neo.core.enums;
 
 import org.amanzi.neo.core.database.nodes.DeletableRelationshipType;
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.RelationshipType;
 
 /**
  * TODO Purpose of 

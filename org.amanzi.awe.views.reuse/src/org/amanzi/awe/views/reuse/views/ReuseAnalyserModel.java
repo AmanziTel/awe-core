@@ -1103,7 +1103,6 @@ public class ReuseAnalyserModel {
                 result.add(locationNode==null?node:locationNode);
             }
             
-            
             //Lagutko, 15.05.2010, search for Correlated Locations
             Relationship correlationLink = node.getSingleRelationship(CorrelationRelationshipTypes.CORRELATED, Direction.INCOMING);
             if (correlationLink != null) {

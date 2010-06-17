@@ -288,8 +288,7 @@ public class CorrelateDialog extends Dialog implements IPropertyChangeListener {
 
     protected void correlate() {
         final Node network = networks.get(cNetwork.getText());
-        final Node[] removeCorr = removeCorrelate.toArray(new Node[0]);
-        if (network == null || (addCorrelate.size() == 0 && removeCorr.length == 0)) {
+        if (network == null || (addCorrelate.size() == 0 && removeCorrelate.size() == 0)) {
             return;
         }
         shell.setEnabled(false);
@@ -298,8 +297,9 @@ public class CorrelateDialog extends Dialog implements IPropertyChangeListener {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-                    removeCorrelation(network, removeCorr);
-                    addCorrelation(network, addCorrelate, monitor);
+                    GPSCorrelator correlator = new GPSCorrelator(network, monitor);
+                    removeCorrelation(correlator, removeCorrelate);
+                    addCorrelation(correlator, addCorrelate);
                     return Status.OK_STATUS;
                 } finally {
                     ActionUtil.getInstance().runTask(new Runnable() {
@@ -318,13 +318,12 @@ public class CorrelateDialog extends Dialog implements IPropertyChangeListener {
         correlate.schedule();
     }
 
-    protected void addCorrelation(Node network, Set<Node> addCorr, IProgressMonitor monitor) {
-        GPSCorrelator correlator = new GPSCorrelator(network, monitor);
+    protected void addCorrelation(GPSCorrelator correlator, Set<Node> addCorr) {
         correlator.correlate(addCorr);
     }
 
-    protected void removeCorrelation(Node network, Node[] removeCorr) {
-        // TODO implement
+    protected void removeCorrelation(GPSCorrelator correlator, Set<Node> removeCorr) {
+        correlator.clearCorrelation(removeCorr);
     }
 
     private void updateCorrelation() {
