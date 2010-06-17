@@ -180,7 +180,7 @@ public class GeoNeo {
         	}
             
             //Lagutko, 15.05.2010, get coordinates from correlated node
-            Relationship correlationLink = next.getSingleRelationship(CorrelationRelationshipTypes.CORRELATED, Direction.INCOMING);
+            Relationship correlationLink = next.getSingleRelationship(CorrelationRelationshipTypes.CORRELATED_LOCATION, Direction.INCOMING);
             if (correlationLink == null) {
             	return null;
             }

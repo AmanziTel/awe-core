@@ -29,7 +29,8 @@ public enum CorrelationRelationshipTypes implements DeletableRelationshipType {
     
     LINKED_NETWORK_DRIVE,
     CORRELATION,
-    CORRELATED;
+    CORRELATED,
+    CORRELATED_LOCATION;
 
     @Override
     public RelationDeletableTypes getDeletableType(Direction aDirection) {
