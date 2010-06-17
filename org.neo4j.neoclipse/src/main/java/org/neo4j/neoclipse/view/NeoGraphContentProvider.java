@@ -32,6 +32,7 @@ import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.neoclipse.Activator;
+import org.neo4j.neoclipse.preference.Preferences;
 import org.neo4j.neoclipse.reltype.RelationshipTypesProvider;
 import org.neo4j.neoclipse.reltype.RelationshipTypesProviderWrapper;
 
@@ -46,7 +47,6 @@ public class NeoGraphContentProvider implements
     /**
      * Limit the number of nodes returned.
      */
-    private static final int MAXIMUM_NODES_RETURNED = 500;
     private final RelationshipTypesProvider relTypesProvider = RelationshipTypesProviderWrapper.getInstance();
     /**
      * The view.
@@ -102,6 +102,10 @@ public class NeoGraphContentProvider implements
      */
     public Object[] getElements( final Object inputElement )
     {
+        int maximumNode=Activator.getDefault().getPreferenceStore().getInt(Preferences.MAXIMUM_NODES_RETURNED);
+        if (maximumNode<1){
+            maximumNode=500;
+        }
         Node node = (Node) inputElement;
         final GraphDatabaseService neoService = Activator.getDefault().getGraphDbServiceSafely();
         if ( neoService == null )
@@ -156,7 +160,7 @@ public class NeoGraphContentProvider implements
                     }, ReturnableEvaluator.ALL, relDirListArray );
             for ( Node currentNode : trav )
             {
-                if ( nodes.size() >= MAXIMUM_NODES_RETURNED )
+                if ( nodes.size() >= maximumNode )
                 {
                     break;
                 }

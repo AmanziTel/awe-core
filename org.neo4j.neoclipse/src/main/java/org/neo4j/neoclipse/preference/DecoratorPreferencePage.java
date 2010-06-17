@@ -14,6 +14,7 @@
 package org.neo4j.neoclipse.preference;
 
 import org.eclipse.jface.preference.DirectoryFieldEditor;
+import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
 
 /**
@@ -39,6 +40,7 @@ public class DecoratorPreferencePage extends AbstractPreferencePage
     /**
      * Initializes the several input fields.
      */
+    @Override
     protected void createFieldEditors()
     {
         // node label properties
@@ -65,9 +67,14 @@ public class DecoratorPreferencePage extends AbstractPreferencePage
 
         // node icon filename properties
         StringFieldEditor iconPropertyNameField = new StringFieldEditor(
-            DecoratorPreferences.NODE_ICON_PROPERTY_NAMES,
-            NODE_ICON_FILENAME_PROPERTIES_LABEL, getFieldEditorParent() );
+                DecoratorPreferences.NODE_ICON_PROPERTY_NAMES,
+                NODE_ICON_FILENAME_PROPERTIES_LABEL, getFieldEditorParent() );
         iconPropertyNameField.setEmptyStringAllowed( true );
         addField( iconPropertyNameField, ICON_PROPERTY_NAMES_NOTE );
+        
+        IntegerFieldEditor maxNode = new IntegerFieldEditor(Preferences.MAXIMUM_NODES_RETURNED, "Maximum nodes returned",
+                getFieldEditorParent());
+        maxNode.setValidRange(1, Integer.MAX_VALUE);
+        addField( maxNode);
     }
 }
