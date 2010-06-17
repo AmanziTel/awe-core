@@ -1243,7 +1243,25 @@ public class NetworkTreeView extends ViewPart {
                         }
                         
                         NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDatabaseEvent(UpdateViewEventType.GIS));
-
+                        
+//                        NeoServiceProvider neoProvider = NeoServiceProvider.getProvider();
+//                        if (neoProvider != null) {
+//                            String databaseLocation = neoProvider.getDefaultDatabaseLocation();
+//
+//                            ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
+//                            URL url;
+//                            try {
+//                                url = new URL("file://" + databaseLocation);
+//                            } catch (MalformedURLException e) {
+//                                // TODO Handle MalformedURLException
+//                                throw (RuntimeException) new RuntimeException( ).initCause( e );
+//                            }
+//                            List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(url);
+//                            for (IService service : services) {
+//                                    catalog.add(service);
+//                            }
+//                            neoProvider.commit();
+//                        }
                     } else if (gisNode != null && containseDatasetNode) {
                         Transaction transaction = getService().beginTx();
                         try {
