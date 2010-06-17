@@ -226,6 +226,20 @@ public class CallStatisticsUtills {
     }
     
     /**
+     * Check call for attempt.
+     *
+     * @param callNode Node (call)
+     * @return boolean
+     */
+    public static boolean isCallAttempt(Node callNode, boolean inclInconclusive){
+        if(inclInconclusive){
+            return true;
+        }
+        boolean inconclusive = (Boolean)callNode.getProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE,false);        
+        return !inconclusive;
+    }
+    
+    /**
      * Check call for success and time limit.
      *
      * @param callNode  Node (call)

@@ -37,6 +37,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CALL_ATTEMPT_COUNT("CALL_ATTEMPT_COUNT", StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+            if(!CallStatisticsUtills.isCallAttempt(callNode, inclInconclusive)){
+                return null;
+            }
             return 1;
         }        
     },
@@ -1218,12 +1221,18 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     TSM_MESSAGE_ATTEMPT("MESSAGE_ATTEMPT",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+            if(!CallStatisticsUtills.isCallAttempt(callNode, inclInconclusive)){
+                return null;
+            }
             return 1;
         }
     },
     SDS_MESSAGE_ATTEMPT("MESSAGE_ATTEMPT",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+            if(!CallStatisticsUtills.isCallAttempt(callNode, inclInconclusive)){
+                return null;
+            }
             return 1;
         }
     },
@@ -1259,6 +1268,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ALM_ATTEMPT("ATTEMPT",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+            if(!CallStatisticsUtills.isCallAttempt(callNode, inclInconclusive)){
+                return null;
+            }
             return 1;
         }
     },
@@ -1848,12 +1860,18 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     EC1_ATTEMPT("ATTEMPT",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+            if(!CallStatisticsUtills.isCallAttempt(callNode, inclInconclusive)){
+                return null;
+            }
             return 1;
         }
     },
     EC2_ATTEMPT("ATTEMPT",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+            if(!CallStatisticsUtills.isCallAttempt(callNode, inclInconclusive)){
+                return null;
+            }
             return 1;
         }
     },
@@ -1886,6 +1904,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     ATT_ATTEMPTS("ATTEMPTS",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+            if(!CallStatisticsUtills.isCallAttempt(callNode, inclInconclusive)){
+                return null;
+            }
             return 1;
         }
     },
@@ -1988,6 +2009,9 @@ public enum StatisticsHeaders implements IStatisticsHeader{
     CC_RES_ATTEMPTS("RES_ATTEMPTS",StatisticsType.COUNT) {
         @Override
         public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+            if(!CallStatisticsUtills.isCallAttempt(callNode, inclInconclusive)){
+                return null;
+            }
             return 1;
         }
     },
