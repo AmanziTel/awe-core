@@ -10,5 +10,5 @@
   <groupId>AWE_build</groupId>
   <artifactId>org.amanzi.splash.testing</artifactId>
   <version>1.0.0.qualifier</version>
-  <packaging>eclipse-plugin</packaging>
+  <packaging>eclipse-test-plugin</packaging>
 </project>
