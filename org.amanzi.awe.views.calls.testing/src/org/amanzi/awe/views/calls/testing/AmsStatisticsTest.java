@@ -70,7 +70,7 @@ public abstract class AmsStatisticsTest {
     
     protected static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss,SSS";
     protected static final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat(TIMESTAMP_FORMAT);
-    private static final String PATH_SEPERATOR = "\\";
+    private static final String PATH_SEPERATOR = System.getProperty("file.separator");
     
     private static final String DATABASE_NAME = "neo_test";
     private static final String DATA_SAVER_DIR = "neo_call";
