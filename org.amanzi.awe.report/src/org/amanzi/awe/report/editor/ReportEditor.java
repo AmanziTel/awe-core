@@ -189,7 +189,6 @@ public class ReportEditor extends MultiPageEditorPart implements IReportModelLis
             generateScriptFromParts(parts, sb);
             break;
         }
-        LOGGER.debug("===> New script: " + sb.toString());
         setText(sb.toString());
     }
 
@@ -248,7 +247,7 @@ public class ReportEditor extends MultiPageEditorPart implements IReportModelLis
         ArrayList<Integer> positions = new ArrayList<Integer>();
         String[] lines = before_parts.split("\n");
         int ind = 0;
-        String PATTERN = new StringBuffer("\\s*(").append(ReportPartType.getTypesAsRegex()).append(")(.*)").toString();
+        String PATTERN = new StringBuffer("\\s*(").append(ReportPartType.getTypesAsRegex()).append(")\\s+(.*)").toString();
         // LOGGER.debug(" PATTERN: "+PATTERN);
         while (ind < lines.length) {
             if (lines[ind].matches(PATTERN)) {

@@ -174,11 +174,16 @@ public class ReportGUIEditor extends EditorPart  {
                 error.setForeground(new Color(frame.getDisplay(),255,0,0));
                 error.setText(sb.toString()); 
             }
-            for (int i = 0; i < reportParts.size(); i++) {
-                IReportPart part = reportParts.get(i);
-                createCompositeForPart(part);
+            try {
+                for (int i = 0; i < reportParts.size(); i++) {
+                    IReportPart part = reportParts.get(i);
+                    createCompositeForPart(part);
+                }
+                forceRepaint();
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+                throw (RuntimeException) new RuntimeException( ).initCause( e );
             }
-            forceRepaint();
         }
     }
 
@@ -287,7 +292,7 @@ public class ReportGUIEditor extends EditorPart  {
      * @param chart chart to be added
      */
     private void addChartPart(final Chart chart) {
-        final Composite currComposite = createContainer(chart);
+        Composite currComposite = createContainer(chart);
         GridData data = new GridData(GridData.CENTER);
         data.heightHint=chart.getHeight();
         data.widthHint=chart.getWidth();
@@ -296,6 +301,7 @@ public class ReportGUIEditor extends EditorPart  {
         final JFreeChart jFreeChart = Charts.createChart(chart);
         jFreeChart.setTitle(chart.getTitle());
         ChartUtilities.applyCurrentTheme(jFreeChart);
+        
         
         jFreeChart.addChangeListener(new ChartChangeListener() {
 
@@ -346,7 +352,7 @@ public class ReportGUIEditor extends EditorPart  {
         data1.widthHint = 600;
         data1.heightHint = 300;
         chartComposite.setLayoutData(data1);
-       
+        
         Composite buttonsPanel = new Composite(currComposite, SWT.NONE);
         buttonsPanel.setLayout(new GridLayout());
         buttonsPanel.setBackground(new Color(frame.getDisplay(), new RGB(255, 255, 255)));
@@ -603,26 +609,43 @@ public class ReportGUIEditor extends EditorPart  {
     }
 
     /**
-     *
-     * @param part
+     * Moves given part up
+     * 
+     * @param part part to be moved up
      */
     private void movePartUp(final IReportPart part) {
         int index = part.getIndex();
-        if (index>0){
+        if (index > 0) {
+            // fire event
             reportModel.getReport().movePartUp(part);
-            repaint();
+            // update list
+            Composite current = parts.get(index);
+            Composite previous = parts.get(index - 1);
+            parts.set(index - 1, current);
+            parts.set(index, previous);
+            // move widgets
+            current.moveAbove(previous);
+            forceRepaint();
         }
     }
 
     /**
-     *
-     * @param part
+     * Moves given part down
+     * @param part part to be moved down
      */
     private void movePartDown(final IReportPart part) {
         int index = part.getIndex();
         if (index < parts.size() - 1) {
+            //fire event
             reportModel.getReport().movePartDown(part);
-            repaint();
+            //update list
+            Composite current = parts.get(index);
+            Composite next = parts.get(index+1);
+            parts.set(index+1,current);
+            parts.set(index,next);
+            //move widgets
+            current.moveBelow(next);
+            forceRepaint();
         }
     }
 
