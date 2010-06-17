@@ -186,6 +186,10 @@ public class CorrelateDialog extends Dialog implements IPropertyChangeListener {
             }
 
         });
+        GridData gdBtnCancel = new GridData();
+        gdBtnCancel.horizontalAlignment = GridData.BEGINNING;
+        gdBtnCancel.widthHint = 80;
+        bCorrelate.setLayoutData(gdBtnCancel);
         cNetwork.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -200,7 +204,7 @@ public class CorrelateDialog extends Dialog implements IPropertyChangeListener {
         });
         Button btnOk = new Button(shell, SWT.PUSH);
         btnOk.setText("Exit");
-        GridData gdBtnCancel = new GridData();
+        gdBtnCancel = new GridData();
         gdBtnCancel.horizontalAlignment = GridData.END;
         gdBtnCancel.widthHint = 80;
         btnOk.setLayoutData(gdBtnCancel);

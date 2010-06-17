@@ -108,7 +108,7 @@ public class DriveDialog {
      * Extensions of supported files for Drive data
      */
     public static final String[] Drive_FILE_EXTENSIONS = {
-        "*.FMT;*.fmt;*.ASC;*.asc;*.dt1;*.DT1;*.NMF;*.nmf",
+        "*.FMT;*.fmt;*.ASC;*.asc;*.dt1;*.DT1;*.NMF;*.nmf;*.GSM;*.gsm",
         "*.FMT;*.fmt",
         "*.ASC;*.asc",
         "*.GSM;*.gsm",
@@ -674,7 +674,7 @@ public class DriveDialog {
         if (datasetNode == null) {
             String[] fileExtensions = DriveTypes.getFileExtensions(DriveTypes.TEMS, DriveTypes.ROMES,DriveTypes.GPS, DriveTypes.NEMO1, DriveTypes.NEMO2);
             ArrayList<String> fel = new ArrayList<String>(fileExtensions.length + 1);
-            fel.add(Drive_FILE_EXTENSIONS[0]);
+            fel.add(Drive_FILE_EXTENSIONS[6]);
             fel.addAll(Arrays.asList(fileExtensions));
             String[] result = fel.toArray(new String[0]);
             return result;

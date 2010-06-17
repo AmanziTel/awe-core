@@ -89,6 +89,7 @@ import org.neo4j.graphdb.Traverser.Order;
 
 import au.com.bytecode.opencsv.CSVWriter;
 
+// TODO: Auto-generated Javadoc
 /**
  * <p>
  * GeOptima export dialog
@@ -115,6 +116,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
     /** The service. */
     private GraphDatabaseService service;
 
+    /** The display. */
     private Display display;
 
     /**
@@ -237,7 +239,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
         });
 
         Button btnOk = new Button(shell, SWT.PUSH);
-        btnOk.setText("OK");
+        btnOk.setText("Exit");
         GridData gdBtnOk = new GridData();
         gdBtnOk.horizontalAlignment = GridData.END;
         gdBtnOk.widthHint = 70;
@@ -413,11 +415,21 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
                                 if (monitor.isCanceled()) {
                                     break;
                                 }
-                                String[] line = new String[] {exporter.getDataName()};
+                                String dataName = exporter.getDataName();
+                                String[] line = new String[] {dataName};
                                 writer.writeNext(line);
                                 line = formatList(exporter.getHeaders());
                                 writer.writeNext(line);
                                 while (exporter.hasNextLine() && !monitor.isCanceled()) {
+                                    if (exporter instanceof NetworkExport){
+                                        if (!dataName.equals(exporter.getDataName())){
+                                            dataName = exporter.getDataName();
+                                            line = new String[] {dataName};
+                                            writer.writeNext(line);
+                                            line = formatList(exporter.getHeaders());
+                                            writer.writeNext(line);                                           
+                                        }
+                                    }
                                     line = formatList(exporter.getNextLine());
                                     writer.writeNext(line);
                                 }
@@ -520,8 +532,8 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
     /**
      * <p>
      * Wrapper of element data
-     * </p>
-     * 
+     * </p>.
+     *
      * @author TsAr
      * @since 1.0.0
      */
@@ -568,9 +580,11 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
         }
 
         /**
-         * @param elem
-         * @param itemData
-         * @param before
+         * Move elem.
+         *
+         * @param elem the elem
+         * @param itemData the item data
+         * @param before the before
          */
         public void moveElem(TreeElem elem, TreeElem itemData, boolean before) {
             if (childs == null || elem.equals(itemData)) {
@@ -611,6 +625,11 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
             return childs;
         }
 
+        /**
+         * Gets the neo children.
+         *
+         * @return the neo children
+         */
         public NeoTreeElement[] getNeoChildren() {
             // TODO handle correlate
             Transaction tx;
@@ -933,17 +952,30 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
     /**
      * <p>
      * Dataset importer class
-     * </p>
-     * 
+     * </p>.
+     *
      * @author tsinkel_a
      * @since 1.0.0
      */
     public class DatasetExport extends AbstractExporter {
+        
+        /** The valid. */
         private boolean valid;
+        
+        /** The model. */
         private NeoExportModelImpl model;
+        
+        /** The main node iterator. */
         private Iterator<Node> mainNodeIterator;
+        
+        /** The dataname. */
         private String dataname;
 
+        /**
+         * Instantiates a new dataset export.
+         *
+         * @param root the root
+         */
         public DatasetExport(TreeItem root) {
 
             valid = false;
@@ -973,15 +1005,32 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
             valid = true;
         }
 
+        /**
+         * Checks for next line.
+         *
+         * @return true, if successful
+         */
+        @Override
         public boolean hasNextLine() {
             return valid && mainNodeIterator.hasNext();
         }
 
+        /**
+         * Gets the headers.
+         *
+         * @return the headers
+         */
+        @Override
         public List<String> getHeaders() {
 
             return valid ? model.getHeaders() : null;
         }
 
+        /**
+         * Gets the next line.
+         *
+         * @return the next line
+         */
         @Override
         public List<Object> getNextLine() {
             if (!isValid() || !hasNextLine()) {
@@ -992,11 +1041,21 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
             return model.getResults(parameter);
         }
 
+        /**
+         * Checks if is valid.
+         *
+         * @return true, if is valid
+         */
         @Override
         public boolean isValid() {
             return valid;
         }
 
+        /**
+         * Gets the data name.
+         *
+         * @return the data name
+         */
         @Override
         public String getDataName() {
             return dataname;
@@ -1006,27 +1065,57 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
     /**
      * <p>
      * NetworkExport export networks
-     * </p>
-     * 
+     * </p>.
+     *
      * @author TsAr
      * @since 1.0.0
      */
     public class NetworkExport extends AbstractExporter {
 
+        /** The valid. */
         private boolean valid;
+        
+        /** The have sector. */
         private boolean haveSector;
+        
+        /** The have site. */
         private boolean haveSite;
+        
+        /** The have correlate. */
         private boolean haveCorrelate;
+        
+        /** The model. */
         private NeoExportModelImpl model;
+        
+        /** The site prop. */
         private LinkedList<String> siteProp;
+        
+        /** The sector. */
         private LinkedList<String> sector;
+        
+        /** The dataset prop. */
         private LinkedHashMap<Node, List<String>> datasetProp;
+        
+        /** The iter cor. */
         private Iterator<Entry<Node, List<String>>> iterCor;
-        private Entry<Node, List<String>> corEntry;
+        
+        /** The cor entry. */
+        private Entry<Node, List<String>> corEntry=null;
+        
+        /** The traverser. */
         private Traverser traverser;
-        private Traverser traverser2 = null;
+        
+        /** The main node. */
         private Node mainNode;
+        
+        /** The name. */
+        private String name;
 
+        /**
+         * Instantiates a new network export.
+         *
+         * @param root the root
+         */
         public NetworkExport(TreeItem root) {
 
             valid = false;
@@ -1067,16 +1156,16 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
                         TreeItem[] dataset = treeItem.getItems();
                         for (TreeItem set : dataset) {
                             if (set.getChecked()) {
+                                Node node = ((TreeElem)set.getData()).getNode();
                                 TreeItem[] childs = set.getItems();
+                                LinkedList<String> list = new LinkedList<String>();
                                 for (TreeItem setProp : childs) {
-                                    Node node = ((TreeElem)setProp.getData()).getNode();
-                                    LinkedList<String> list = new LinkedList<String>();
                                     if (setProp.getChecked()) {
                                         list.add(((TreeElem)setProp.getData()).getText());
                                     }
-                                    if (!list.isEmpty()) {
-                                        datasetProp.put(node, list);
-                                    }
+                                }
+                                if (!list.isEmpty()) {
+                                    datasetProp.put(node, list);
                                 }
                             }
                         }
@@ -1114,20 +1203,37 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
                 corEntry = iterCor.next();
                 model.setPropertyList(model.getGroupCount() - 1, corEntry.getValue());
                 setCorrelatetraverser();
+                name=formCorName();
             } else {
-                traverser = mainNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,new ReturnableEvaluator() {
-                    
-                    @Override
-                    public boolean isReturnableNode(TraversalPosition currentPos) {
-                        return NodeTypes.SECTOR.checkNode(currentPos.currentNode());
-                    }
-                }, GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING,GeoNeoRelationshipTypes.NEXT,Direction.OUTGOING);
+                name=NeoUtils.getNodeName(mainNode, service);
+                if (haveSector){
+                    traverser = mainNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,new ReturnableEvaluator() {
+                        
+                        @Override
+                        public boolean isReturnableNode(TraversalPosition currentPos) {
+                            return NodeTypes.SECTOR.checkNode(currentPos.currentNode());
+                        }
+                    }, GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING,GeoNeoRelationshipTypes.NEXT,Direction.OUTGOING);
+                }else if (haveSite){
+                    traverser = mainNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,new ReturnableEvaluator() {
+                        
+                        @Override
+                        public boolean isReturnableNode(TraversalPosition currentPos) {
+                            return NodeTypes.SITE.checkNode(currentPos.currentNode());
+                        }
+                    }, GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING,GeoNeoRelationshipTypes.NEXT,Direction.OUTGOING);
+                   
+                }else{
+                    return;
+                }
+               
             }
             valid = true;
         }
 
+
         /**
-         *
+         * Sets the correlate traverser.
          */
         private void setCorrelatetraverser() {
             traverser = mainNode.traverse(Order.BREADTH_FIRST, new StopEvaluator() {
@@ -1148,27 +1254,63 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
                     CorrelationRelationshipTypes.CORRELATED, Direction.OUTGOING, CorrelationRelationshipTypes.CORRELATION, Direction.INCOMING);
         }
 
+        /**
+         * Gets the next line.
+         *
+         * @return the next line
+         */
         @Override
         public List<Object> getNextLine() {
-            return null;
+            if (!isValid()){
+                return null;
+            }
+            Node node = traverser.iterator().next();
+            NeoExportParameter parameter=new NeoExportParameter();
+            if (haveCorrelate){
+                Node dataNode = node;
+                Node sector=traverser.currentPosition().lastRelationshipTraversed().getOtherNode(node).getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING).getEndNode();
+                Node site=sector.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(sector);
+               if (haveSite){
+                   parameter.addToList(site);
+               }
+               if (haveSector){
+                   parameter.addToList(sector);
+               }
+               parameter.addToList(dataNode);
+            }else if (haveSector){
+                Node sector=node;
+                Node site=sector.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(sector);
+                if (haveSite){
+                    parameter.addToList(site);
+                }
+                if (haveSector){
+                    parameter.addToList(sector);
+                }
+            }else{
+                parameter.addToList(node); 
+            }
+            return model.getResults(parameter);
         }
 
+        /**
+         * Checks for next line.
+         *
+         * @return true, if successful
+         */
         @Override
         public boolean hasNextLine() {
-            // TODO implement
-            if (true)
+            if (!isValid()){
                 return false;
-            if (haveCorrelate){
-                if (traverser.iterator().hasNext()){
-                    return true;
-                }
-                return traverser2 == null || traverser2.iterator().hasNext();
+            }
+            if (!haveCorrelate){
+                return traverser.iterator().hasNext();
             }else{
                 if (traverser.iterator().hasNext()) {
                     return true;
                 }
                 while (iterCor.hasNext()) {
                     corEntry = iterCor.next();
+                    name=formCorName();
                     model.setPropertyList(model.getGroupCount() - 1, corEntry.getValue());
                     setCorrelatetraverser();
                     if (traverser.iterator().hasNext()) {
@@ -1176,23 +1318,48 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
                     }
                 }
                 return false;
-
             }
         }
 
+        /**
+         * Form cor name.
+         *
+         * @return the string
+         */
+        private String formCorName() {
+            return String.format("Network: %s, dataset %s", NeoUtils.getNodeName(mainNode, service), NeoUtils.getNodeName(corEntry.getKey(), service));
+        }
+
+        /**
+         * Checks if is valid.
+         *
+         * @return true, if is valid
+         */
         @Override
         public boolean isValid() {
             return valid;
         }
 
+        /**
+         * Gets the data name.
+         *
+         * @return the data name
+         */
         @Override
         public String getDataName() {
-            // TODO implement
-            return "";
+            return name;
         }
 
+        /**
+         * Gets the headers.
+         *
+         * @return the headers
+         */
         @Override
         public List<String> getHeaders() {
+            if (!isValid()){
+                return null;
+            }
             return model.getHeaders();
         }
 

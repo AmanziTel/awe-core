@@ -23,6 +23,7 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -544,7 +545,8 @@ public class AMSXMLoader extends AbstractCallLoader {
                         Long timestamp = (Long)event.getAdapter(Long.class);
                         if (node != null && timestamp != null) {
                             Node mp = neo.createNode();
-                            NeoUtils.setNodeName(mp, "mp", neo);
+                            String name = getGPSName(timestamp);
+                            NeoUtils.setNodeName(mp, name, neo);
                             double lat = aLat * timestamp + bLat;
                             double lon = aLon * timestamp + bLon;
                             mp.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat);
@@ -569,9 +571,18 @@ public class AMSXMLoader extends AbstractCallLoader {
         }
     }
 
+    private String getGPSName(Long timestamp) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(timestamp);
+        String name =new  SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(calendar.getTime());
+        return name;
+    }
+
     private void createOneMP(GPSData gpsData, Set< ? extends IAdaptable> evSet, String dataset) {
         Node mp = neo.createNode();
-        NeoUtils.setNodeName(mp, "mp", neo);
+        String name = getGPSName(gpsData.getTimestamp());
+        mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, gpsData.getTimestamp());
+        NeoUtils.setNodeName(mp, name, neo);
         gpsData.store(mp);
         GisProperties gisProperties = getGisProperties(dataset);
         gisProperties.updateBBox(gpsData.lat, gpsData.lon);
