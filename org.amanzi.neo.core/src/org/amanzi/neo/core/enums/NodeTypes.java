@@ -124,6 +124,9 @@ public enum NodeTypes {
                ||linkType.equals(ProbeCallRelationshipType.CALLEE)){
                 return NodeDeletableTypes.UNLINK;
             }
+            if(linkType.equals(GeoNeoRelationshipTypes.SOURCE)){
+                return NodeDeletableTypes.UNLINK;
+            }
             throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
         }
         @Override
@@ -214,7 +217,36 @@ public enum NodeTypes {
     },
     NTPQS("ntpqs"),
     ROOT_SECTOR_DRIVE("root_sector_site"),
-    PROBE("probe"),
+    PROBE("probe"){
+        @Override
+        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
+            DeletableRelationshipType linkType = getLinkType(cameFrom);
+            if(linkType.equals(GeoNeoRelationshipTypes.CHILD)){
+                return NodeDeletableTypes.DELETE;
+            }
+            if(linkType.equals(GeoNeoRelationshipTypes.LOCATION)){
+                return NodeDeletableTypes.UNLINK;
+            }
+            if(linkType.equals(GeoNeoRelationshipTypes.SOURCE)){
+                return NodeDeletableTypes.UNLINK;
+            }
+            if(linkType.equals(ProbeCallRelationshipType.CALLS)){
+                return NodeDeletableTypes.UNLINK;
+            }
+            if(linkType.equals(ProbeCallRelationshipType.NTPQS)){
+                return NodeDeletableTypes.UNLINK;
+            }
+            throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
+        }
+        @Override
+        protected boolean isGoodLink(Node aNode, Relationship cameFrom, Relationship link){
+            return false;
+        }
+        @Override
+        protected List<NodeTypes> getParentTypes() {
+            return null;
+        }
+    },
     SPREADSHEET("spreadsheet"),
     SPLASH_FORMAT("splash_format"),
     SCRIPT("ruby_script"),
@@ -317,15 +349,10 @@ public enum NodeTypes {
                     return NodeDeletableTypes.DELETE;
                 }
             }
-            if(linkType.equals(GeoNeoRelationshipTypes.VIRTUAL_DATASET)){
-                if(isLinkOut(aNode, cameFrom)){
-                    return NodeDeletableTypes.UNLINK;
-                }
-                else{
-                    return NodeDeletableTypes.DELETE;
-                }
-            }
             if(linkType.equals(GeoNeoRelationshipTypes.CHILD)){
+                return NodeDeletableTypes.UNLINK;
+            }
+            if(linkType.equals(ProbeCallRelationshipType.CALL_ANALYSIS)){
                 return NodeDeletableTypes.UNLINK;
             }
             throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
@@ -371,8 +398,57 @@ public enum NodeTypes {
     HEADER_MS("ms"),
     AGGREGATION("aggregation"),
     COUNT("count"),
-    CALL_ANALYSIS("call analysis"),
-    S_ROW("s_row"),
+    CALL_ANALYSIS("call analysis"){
+        @Override
+        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
+            DeletableRelationshipType linkType = getLinkType(cameFrom);
+            if(linkType.equals(GeoNeoRelationshipTypes.CHILD)){
+                if(isLinkOut(aNode, cameFrom)){
+                    return NodeDeletableTypes.UNLINK;
+                }
+                else{
+                    return NodeDeletableTypes.DELETE;
+                }
+            }
+            if(linkType.equals(GeoNeoRelationshipTypes.SOURCE)){
+                return NodeDeletableTypes.UNLINK;
+            }
+            throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
+        }
+        @Override
+        protected List<NodeTypes> getParentTypes() {
+            ArrayList<NodeTypes> res = new ArrayList<NodeTypes>();
+            res.add(CALL_ANALYSIS_ROOT);
+            return res;
+        }
+    },
+    S_ROW("s_row"){
+        @Override
+        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
+            DeletableRelationshipType linkType = getLinkType(cameFrom);
+            if(linkType.equals(GeoNeoRelationshipTypes.CHILD)){
+                if(isLinkOut(aNode, cameFrom)){
+                    return NodeDeletableTypes.RELINK;
+                }
+                else {
+                    return NodeDeletableTypes.DELETE_LINE;
+                }
+            }
+            if(linkType.equals(GeoNeoRelationshipTypes.NEXT)){
+                return NodeDeletableTypes.RELINK;
+            }
+            if(linkType.equals(GeoNeoRelationshipTypes.SOURCE)){
+                return NodeDeletableTypes.UNLINK;
+            }
+            throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
+        }
+        @Override
+        protected List<NodeTypes> getParentTypes() {
+            ArrayList<NodeTypes> res = new ArrayList<NodeTypes>();
+            res.add(CALL_ANALYSIS);
+            return res;
+        }
+    },
     GIS("gis",INeoConstants.PROPERTY_NAME_NAME){
         @Override
         protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
@@ -394,8 +470,54 @@ public enum NodeTypes {
             return null;
         }
     },
-    CALL_ANALYSIS_ROOT("call analysis root"),
-    S_CELL("s_cell"),
+    CALL_ANALYSIS_ROOT("call analysis root"){
+        @Override
+        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
+            DeletableRelationshipType linkType = getLinkType(cameFrom);
+            if(linkType.equals(ProbeCallRelationshipType.CALL_ANALYSIS)){
+                return NodeDeletableTypes.DELETE;
+            }
+            if(linkType.equals(GeoNeoRelationshipTypes.CHILD)){
+                return NodeDeletableTypes.UNLINK;
+            }
+            throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
+        }
+        @Override
+        protected boolean isGoodLink(Node aNode, Relationship cameFrom, Relationship link){
+            return false;
+        }
+        @Override
+        protected List<NodeTypes> getParentTypes() {
+            return null;
+        }
+    },
+    S_CELL("s_cell"){
+        @Override
+        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
+            DeletableRelationshipType linkType = getLinkType(cameFrom);
+            if(linkType.equals(GeoNeoRelationshipTypes.CHILD)){
+                if(isLinkOut(aNode, cameFrom)){
+                    return NodeDeletableTypes.RELINK;
+                }
+                else {
+                    return NodeDeletableTypes.DELETE_LINE;
+                }
+            }
+            if(linkType.equals(GeoNeoRelationshipTypes.NEXT)){
+                return NodeDeletableTypes.RELINK;
+            }
+            if(linkType.equals(GeoNeoRelationshipTypes.SOURCE)){
+                return NodeDeletableTypes.UNLINK;
+            }
+            throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
+        }
+        @Override
+        protected List<NodeTypes> getParentTypes() {
+            ArrayList<NodeTypes> res = new ArrayList<NodeTypes>();
+            res.add(S_ROW);
+            return res;
+        }
+    },
     BSC("bsc"),
     DELTA_NETWORK("delta_network"),
     DELTA_SITE("delta_site"), 

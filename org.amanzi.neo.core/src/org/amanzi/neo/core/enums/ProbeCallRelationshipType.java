@@ -26,15 +26,15 @@ import org.neo4j.graphdb.Direction;
  */
 public enum ProbeCallRelationshipType implements DeletableRelationshipType {
 
-    CALL_M(null,null),
-    NTPQ_M(null,null),
+    CALL_M(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_WITH_LINKED),
+    NTPQ_M(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_WITH_LINKED),
     CALLEE(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_ONLY_LINK),
     CALLER(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_ONLY_LINK),
 	PROBE_DATASET(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_WITH_LINKED),
-	DRIVE_CALL(null,null),
-	PROBE_CALL(null,null),
+	DRIVE_CALL(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_ONLY_LINK),
+	PROBE_CALL(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_ONLY_LINK),
 	CALLS(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_WITH_LINKED), 
-	CALL_ANALYSIS(null,null),
+	CALL_ANALYSIS(RelationDeletableTypes.DELETE_WITH_LINKED,RelationDeletableTypes.DELETE_ONLY_LINK),
 	NTPQS(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_WITH_LINKED);
 
     private RelationDeletableTypes deletableOut;

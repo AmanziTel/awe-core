@@ -81,7 +81,7 @@ public class CallStatisticsInconclusive extends CallStatistics {
         initFields(drive, service, aMonitor);
         setStatisticNode(createStatisticInconclusive());
         
-        finishInitialyze();
+        finishInitialize();
     }
 
     private HashMap<StatisticsCallType, Node> createStatisticInconclusive() throws IOException {
@@ -121,6 +121,10 @@ public class CallStatisticsInconclusive extends CallStatistics {
             
             if (!result.isEmpty()&&canceledCount==0) {
                 return result;
+            }
+            
+            if(canceledCount>0){
+                deleteCanceledStatistics(result);
             }
             
             HashMap<StatisticsCallType, Node> sourseStatistics = createStatistics();
@@ -196,7 +200,7 @@ public class CallStatisticsInconclusive extends CallStatistics {
                 break;
             }
             Node sourceRow = sourceRows.get(period.getFirstTime(currentStartDate));
-            Node row = findOrCreateSRowNode(statisticsNode, period.getFirstTime(currentStartDate), sourceRow==null?probeNode:sourceRow, highLevelSRow, period);
+            Node row = createSRowNode(statisticsNode, period.getFirstTime(currentStartDate), sourceRow==null?probeNode:sourceRow, highLevelSRow, period);
             
             Statistics periodStatitics = new Statistics();
             if (period == CallTimePeriods.HOURLY) {
@@ -210,7 +214,7 @@ public class CallStatisticsInconclusive extends CallStatistics {
             }
             
             for (IStatisticsHeader header : callType.getHeaders()) {                
-                saveSCellNode(row, periodStatitics, header, period);
+                createSCellNode(row, periodStatitics, header, period);
             }
             getPreviousSCellNodes().put(period, null);
             currentStartDate = nextStartDate;

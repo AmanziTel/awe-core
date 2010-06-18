@@ -91,6 +91,7 @@ public class NodeDeletingManager {
                 throw new IllegalArgumentException("Unknown node deleting state <"+deletable+">!");
             }
 	    }
+	    aNode.delete();
 	}
 	
 	/**
@@ -184,7 +185,7 @@ public class NodeDeletingManager {
      */
 	private NodeDeletableTypes getNodeDelState(Node aNode, Relationship cameFrom){
 	    if(hasType(aNode)){
-            return NodeTypes.getNodeDeletableType(aNode, cameFrom, neo);
+	        return NodeTypes.getNodeDeletableType(aNode, cameFrom, neo);
 	    }
 	    if(aNode.equals(neo.getReferenceNode())){
 	        return NodeDeletableTypes.UNLINK;
