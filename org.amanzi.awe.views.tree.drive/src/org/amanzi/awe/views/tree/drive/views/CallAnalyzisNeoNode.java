@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
 import org.amanzi.awe.views.network.proxy.NeoNode;
@@ -260,5 +261,19 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
             }
         }
         return super.getImageKey();
+    }
+    
+    @Override
+    public Set<Node> getNodesForMap() {
+        if (type.equals(NodeTypes.PROBE.getId())) {
+            return NeoUtils.getCallsForProbeNode(node, null);
+        }
+        if (type.equals(NodeTypes.S_ROW.getId())) {
+            return NeoUtils.getCallsForSRowNode(node, null);
+        }
+        if (type.equals(NodeTypes.S_CELL.getId())) {
+            return NeoUtils.getCallsForSCellNode(node, null);
+        }
+        return super.getNodesForMap();
     }
 }

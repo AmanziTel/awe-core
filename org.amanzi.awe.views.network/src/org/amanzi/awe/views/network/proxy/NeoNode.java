@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
@@ -163,6 +164,16 @@ public class NeoNode {
     
     public Node getNode() {
         return node;
+    }
+    
+    /**
+     * Returns the Node
+     *
+     * @return node
+     */
+    
+    public Set<Node> getNodesForMap() {
+        return Collections.singleton(node);
     }
     
     /**

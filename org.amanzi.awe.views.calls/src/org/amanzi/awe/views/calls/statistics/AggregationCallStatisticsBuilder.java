@@ -290,7 +290,7 @@ public class AggregationCallStatisticsBuilder {
         Iterator<Node> cells = NeoUtils.getChildTraverser(row).iterator();
         while (cells.hasNext()) {
             Node cell = cells.next();
-            IStatisticsHeader header = callType.getHeaderByTitle(NeoUtils.getNodeName(cell));
+            IStatisticsHeader header = callType.getHeaderByTitle(NeoUtils.getNodeName(cell,null));
             result.put(header, cell);
         }
         return result;
@@ -386,6 +386,7 @@ public class AggregationCallStatisticsBuilder {
                     beforeFlag = ColoredFlags.getFlagById((String)call.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, ColoredFlags.NONE.getId()));
                     if (beforeFlag==null||beforeFlag.getOrder()<callFlag.getOrder()){
                         call.setProperty(INeoConstants.PROPERTY_FLAGGED_NAME, flag.getId());
+                        call.setProperty(INeoConstants.AGGREGATION_COLOR, flag.getRgb());
                         Traverser events = call.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, 
                                 new ReturnableEvaluator() {                            
                                     @Override

@@ -2776,5 +2776,78 @@ public class NeoUtils {
                 Direction.OUTGOING);
         
     }
+    
+    /**
+     * Get calls for probe.
+     *
+     * @param node Node
+     * @param service GraphDatabaseService
+     * @return Set<Node>
+     */
+    public static Set<Node> getCallsForProbeNode(Node node,GraphDatabaseService service){
+        Transaction tx = service==null?null:service.beginTx();
+        try {
+            Relationship relationship = node.getSingleRelationship(ProbeCallRelationshipType.CALLS, Direction.OUTGOING);
+            if(relationship==null){
+                return new HashSet<Node>();
+            }
+            Node probeCalls = relationship.getEndNode();
+            Traverser calls = probeCalls.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE,
+                    ProbeCallRelationshipType.CALLER, Direction.INCOMING);
+            return new HashSet<Node>(calls.getAllNodes());
+        }finally{
+            if (tx!=null) {
+                tx.finish();
+            }
+        }
+    }
+    
+    /**
+     * Get calls for row.
+     *
+     * @param node Node
+     * @param service GraphDatabaseService
+     * @return Set<Node>
+     */
+    public static Set<Node> getCallsForSRowNode(Node node,GraphDatabaseService service){
+        Transaction tx = service==null?null:service.beginTx();
+        try {
+            Set<Node> nodes = new HashSet<Node>();
+            Traverser cells = NeoUtils.getChildTraverser(node);
+            for(Node cell : cells){
+                nodes.addAll(getCallsForSCellNode(cell,service));
+            }
+            return nodes;
+        }finally{
+            if (tx!=null) {
+                tx.finish();
+            }
+        }
+    }
+
+    /**
+     * Get calls for cell.
+     *
+     * @param node Node
+     * @param service GraphDatabaseService
+     * @return Set<Node>
+     */
+    public static Set<Node> getCallsForSCellNode(Node node,GraphDatabaseService service){
+        Transaction tx = service==null?null:service.beginTx();
+        try {
+            Traverser calls = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+                
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    return NeoUtils.isCallNode(currentPos.currentNode());
+                }
+            }, GeoNeoRelationshipTypes.SOURCE,Direction.OUTGOING);
+            return new HashSet<Node>(calls.getAllNodes());
+        }finally{
+            if (tx!=null) {
+                tx.finish();
+            }
+        }
+    }
 
 }

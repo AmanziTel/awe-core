@@ -49,7 +49,6 @@ import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
 import org.amanzi.awe.neostyle.ShapeType;
 import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.ColoredFlags;
 import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
@@ -510,349 +509,110 @@ public class TemsRenderer extends RendererImpl implements Renderer {
 
             }
             else{
-            java.awt.Point prev_p = null;
-            java.awt.Point prev_l_p = null;
-            java.awt.Point cached_l_p = null;
-            GeoNode cached_node = null; // for label positioning
-            long startTime = System.currentTimeMillis();
-
-            // First we find all selected points to draw with a highlight behind the main points
-            ArrayList<Node> selectedPoints = new ArrayList<Node>();
-            final Set<Node> selectedNodes = new HashSet<Node>(geoNeo.getSelectedNodes());
-
-            // TODO refactor selection point (for example: in draws mp node add method
-            // isSelected(node))
-            Long beginTime = null;
-            Long endTime = null;
-            BrewerPalette palette = null;
-            if (selectionMap != null) {
-                String paletteName = (String)selectionMap.get(GeoConstant.Drive.SELECT_PALETTE);
-                try {
-                    palette = PlatformGIS.getColorBrewer().getPalette(paletteName);
-                } catch (Exception e) {
-                    palette = null;
-                }
-                beginTime = (Long)selectionMap.get(GeoConstant.Drive.BEGIN_TIME);
-                endTime = (Long)selectionMap.get(GeoConstant.Drive.END_TIME);
-                if (beginTime != null && endTime != null && beginTime <= endTime) {
-                    MultiPropertyIndex<Long> timestampIndex = NeoUtils.getTimeIndexProperty(geoNeo.getName());
-                    timestampIndex.initialize(NeoServiceProvider.getProvider().getService(), null);
-                    for (Node node : timestampIndex.searchTraverser(new Long[] {beginTime}, new Long[] {endTime})) {
-                        if (!node.hasRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING)) {
-                            continue;
+                java.awt.Point prev_p = null;
+                java.awt.Point prev_l_p = null;
+                java.awt.Point cached_l_p = null;
+                GeoNode cached_node = null; // for label positioning
+                long startTime = System.currentTimeMillis();
+    
+                // First we find all selected points to draw with a highlight behind the main points
+                ArrayList<Node> selectedPoints = new ArrayList<Node>();
+                final Set<Node> selectedNodes = new HashSet<Node>(geoNeo.getSelectedNodes());
+                // TODO refactor selection point (for example: in draws mp node add method
+                // isSelected(node))
+                Long beginTime = null;
+                Long endTime = null;
+                BrewerPalette palette = null;
+                if (selectionMap != null) {
+                    String paletteName = (String)selectionMap.get(GeoConstant.Drive.SELECT_PALETTE);
+                    try {
+                        palette = PlatformGIS.getColorBrewer().getPalette(paletteName);
+                    } catch (Exception e) {
+                        palette = null;
+                    }
+                    beginTime = (Long)selectionMap.get(GeoConstant.Drive.BEGIN_TIME);
+                    endTime = (Long)selectionMap.get(GeoConstant.Drive.END_TIME);
+                    if (beginTime != null && endTime != null && beginTime <= endTime) {
+                        MultiPropertyIndex<Long> timestampIndex = NeoUtils.getTimeIndexProperty(geoNeo.getName());
+                        timestampIndex.initialize(NeoServiceProvider.getProvider().getService(), null);
+                        for (Node node : timestampIndex.searchTraverser(new Long[] {beginTime}, new Long[] {endTime})) {
+                            if (!node.hasRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING)) {
+                                continue;
+                            }
+                            Node mpNode = node.getSingleRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING).getOtherNode(
+                                    node);
+                            selectedNodes.add(mpNode);
                         }
-                        Node mpNode = node.getSingleRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING).getOtherNode(
-                                node);
-                        selectedNodes.add(mpNode);
                     }
                 }
-            }
-            boolean needDrawLines = !networkGeoNeo.isEmpty() & beginTime != null && endTime != null && beginTime <= endTime;
-            boolean haveSelectedEvents = needDrawLines && palette != null && selected_events != null;
-            boolean allEvents = haveSelectedEvents && selected_events.equals(GeoConstant.ALL_EVENTS);
-            Color eventColor = null;
-            if (haveSelectedEvents && !allEvents) {
-                int i = eventList.indexOf(selected_events);
-                if (i < 0) {
-                    i = 0;
-                }
-                Color[] colors = palette.getColors(palette.getMaxColors());
-                int index = i % colors.length;
-                eventColor = colors[index];
-            }
-            // TODO is it really necessary draw selection before drawing all mp node instead drawing
-            // in one traverse?
-            for (Node node : selectedNodes) {
-                if (NeoUtils.isFileNode(node)) {
-                    // Select all 'mp' nodes in that file
-                    for (Node rnode : node.traverse(Order.BREADTH_FIRST, new StopEvaluator() {
-                        @Override
-                        public boolean isStopNode(TraversalPosition currentPos) {
-                            return !currentPos.isStartNode() && !NeoUtils.isDriveMNode(currentPos.currentNode());
-                        }
-                    }, new ReturnableEvaluator() {
-
-                        @Override
-                        public boolean isReturnableNode(TraversalPosition currentPos) {
-                            return NeoUtils.isDrivePointNode(currentPos.currentNode());
-                        }
-                    }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.CHILD, Direction.INCOMING)) {
-                        selectedPoints.add(rnode);
+                boolean needDrawLines = !networkGeoNeo.isEmpty() & beginTime != null && endTime != null && beginTime <= endTime;
+                boolean haveSelectedEvents = needDrawLines && palette != null && selected_events != null;
+                boolean allEvents = haveSelectedEvents && selected_events.equals(GeoConstant.ALL_EVENTS);
+                Color eventColor = null;
+                if (haveSelectedEvents && !allEvents) {
+                    int i = eventList.indexOf(selected_events);
+                    if (i < 0) {
+                        i = 0;
                     }
-                } else {
-                    // Traverse backwards on CHILD relations to closest 'mp' Point
-                    for (Node rnode : node.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
-                        @Override
-                        public boolean isStopNode(TraversalPosition currentPos) {
-                            return NeoUtils.isDrivePointNode(currentPos.currentNode());
+                    Color[] colors = palette.getColors(palette.getMaxColors());
+                    int index = i % colors.length;
+                    eventColor = colors[index];
+                }
+                // TODO is it really necessary draw selection before drawing all mp node instead drawing
+                // in one traverse?
+                for (Node node : selectedNodes) {
+                    if (NeoUtils.isFileNode(node)) {
+                        // Select all 'mp' nodes in that file
+                        for (Node rnode : node.traverse(Order.BREADTH_FIRST, new StopEvaluator() {
+                            @Override
+                            public boolean isStopNode(TraversalPosition currentPos) {
+                                return !currentPos.isStartNode() && !NeoUtils.isDriveMNode(currentPos.currentNode());
+                            }
+                        }, new ReturnableEvaluator() {
+    
+                            @Override
+                            public boolean isReturnableNode(TraversalPosition currentPos) {
+                                return NeoUtils.isDrivePointNode(currentPos.currentNode());
+                            }
+                        }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.CHILD, Direction.INCOMING)) {
+                            selectedPoints.add(rnode);
                         }
-                    }, new ReturnableEvaluator() {
-
-                        @Override
-                        public boolean isReturnableNode(TraversalPosition currentPos) {
-                            return NeoUtils.isDrivePointNode(currentPos.currentNode());
-                        }
-                    }, GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING)) {
-                        selectedPoints.add(rnode);
-                        break;
-                    }
-                }
-            }
-            // Now draw the selected points highlights
-            for (Node rnode : selectedPoints) {
-                GeoNode node = new GeoNode(rnode);
-                Coordinate location = node.getCoordinate();
-                if (bounds_transformed != null && !bounds_transformed.contains(location)) {
-                    continue; // Don't draw points outside viewport
-                }
-                if (filterMp != null) {
-                    if (!filterMp.filterNodesByTraverser(node.getNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.LOCATION,Direction.INCOMING)).isValid()) {
-                        continue;
-                    }
-                }
-                try {
-                    JTS.transform(location, world_location, transform_d2w);
-                } catch (Exception e) {
-                    continue;
-                }
-                java.awt.Point p = getContext().worldToPixel(world_location);
-                if (geoFilter!=null && !insidePolygon(p)){
-                    continue;
-                }
-                if (prev_p != null && prev_p.x == p.x && prev_p.y == p.y) {
-                    prev_p = p;
-                    continue;
-                } else {
-                    prev_p = p;
-                }
-                renderSelectedPoint(g, p, drawSize, drawFull, drawLite);
-            }
-            Node indexNode = null;
-            HashMap<String, Integer> colorErrors = new HashMap<String, Integer>();
-            prev_p = null;// else we do not show selected node
-            // Now draw the actual points
-            for (GeoNode node : geoNeo.getGeoNodes(bounds_transformed)) {
-                if (filterMp != null) {
-                    if (!filterMp.filterNodesByTraverser(node.getNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.LOCATION,Direction.INCOMING)).isValid()) {
-                        continue;
-                    }
-                }
-                if (enableIndexRendering && indexNode == null) {
-                    indexNode = getIndexNode(node);
-                }
-                Coordinate location = node.getCoordinate();
-                
-                if (bounds_transformed != null && !bounds_transformed.contains(location)) {
-                    continue; // Don't draw points outside viewport
-                }
-                try {
-                    JTS.transform(location, world_location, transform_d2w);
-                } catch (Exception e) {
-                    // JTS.transform(location, world_location, transform_w2d.inverse());
-                }
-
-                java.awt.Point p = getContext().worldToPixel(world_location);
-                if (geoFilter!=null && !insidePolygon(p)){
-                    continue;
-                }
-                if (prev_p != null && prev_p.x == p.x && prev_p.y == p.y) {
-                    prev_p = p;
-                    continue;
-                } else {
-                    prev_p = p;
-                }
-
-                Color nodeColor = fillColor;
-                try {
-                    nodeColor = getNodeColor(node.getNode(), fillColor);
-                    // nodeColor = getColorOfMpNode(select, node.getNode(), fillColor,
-                    // selectedProp, redMinValue, redMaxValue,
-                    // lesMinValue, moreMaxValue);
-                } catch (RuntimeException e) {
-                    String errName = e.toString();
-                    if (colorErrors.containsKey(errName)) {
-                        colorErrors.put(errName, colorErrors.get(errName) + 1);
                     } else {
-                        colorErrors.put(errName, 1);
-                    }
-                }
-                Color borderColor = g.getColor();
-                if (selectedNodes.size() > 0) {
-                    if (selectedNodes.contains(node.getNode())) {
-                        borderColor = COLOR_HIGHLIGHTED;
-                    }
-                }
-                long id = node.getNode().getId();
-                if ((crossHairId1 != null && id == crossHairId1) || (crossHairId2 != null && crossHairId2 == id)) {
-                    borderColor = COLOR_HIGHLIGHTED_SELECTED;
-                }
-
-                renderPoint(g, p, borderColor, nodeColor, drawSize, drawWidth, drawFull, drawLite);
-                if (drawLabels) {
-                    double theta = 0.0;
-                    double dx = 0.0;
-                    double dy = 0.0;
-                    if (prev_l_p == null) {
-                        prev_l_p = p;
-                        cached_l_p = p; // so we can draw first point using second point settings
-                        cached_node = node;
-                    } else {
-                        try {
-                            dx = p.x - prev_l_p.x;
-                            dy = p.y - prev_l_p.y;
-                            if (Math.abs(dx) < Math.abs(dy) / 2) {
-                                // drive goes north-south
-                                theta = 0;
-                            } else if (Math.abs(dy) < Math.abs(dx) / 2) {
-                                // drive goes east-west
-                                theta = Math.PI / 2;
-                            } else if (dx * dy < 0) {
-                                // drive has negative slope
-                                theta = -Math.PI / 4;
-                            } else {
-                                theta = Math.PI / 4;
+                        // Traverse backwards on CHILD relations to closest 'mp' Point
+                        for (Node rnode : node.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
+                            @Override
+                            public boolean isStopNode(TraversalPosition currentPos) {
+                                return NeoUtils.isDrivePointNode(currentPos.currentNode());
                             }
-                        } catch (Exception e) {
-                        }
-                    }
-                    if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
-                        // if (drawLabels) {
-                        renderLabel(g, count, node, p, theta);
-                        // }
-                        // if (drawEvents) {
-                        // renderEvents(g, node, p, theta);
-                        // }
-                        if (cached_node != null) {
-                            // if (drawLabels) {
-                            renderLabel(g, 0, cached_node, cached_l_p, theta);
-                            // }
-                            // if (drawEvents) {
-                            // renderEvents(g, cached_node, cached_l_p, theta);
-                            // }
-                            cached_node = null;
-                            cached_l_p = null;
-                        }
-                        prev_l_p = p;
-                    }
-                }
-                if (base_transform != null) {
-                    // recover the normal transform
-                    g.setTransform(base_transform);
-                    g.setColor(drawColor);
-                    // base_transform = null;
-                }
-                monitor.worked(1);
-                count++;
-                if (monitor.isCanceled())
-                    break;
-                // TODO refactor
-                final Node mpNode = node.getNode();
-                if (needDrawLines) {
-                    Long time = NeoUtils.getNodeTime(mpNode);
-                    // if (true) {
-                    if (time != null && time >= beginTime && time <= endTime) {
-                        Color lineColor;
-                        if (haveSelectedEvents) {
-                            Set<String> events = NeoUtils.getEventsList(mpNode, null);
-                            if (!events.isEmpty() && (allEvents || events.contains(selected_events))) {
-                                if (allEvents) {
-                                    int i = eventList.indexOf(events.iterator().next());
-                                    if (i < 0) {
-                                        i = 0;
-                                    }
-                                    Color[] colors = palette.getColors(palette.getMaxColors());
-                                    int index = i % colors.length;
-                                    eventColor = colors[index];
-                                }
-                                lineColor = eventColor;
-                            } else {
-                                lineColor = FADE_LINE;
+                        }, new ReturnableEvaluator() {
+    
+                            @Override
+                            public boolean isReturnableNode(TraversalPosition currentPos) {
+                                return NeoUtils.isDrivePointNode(currentPos.currentNode());
                             }
-                        } else {
-                            lineColor = FADE_LINE;
-                        }
-                        Iterator<Relationship> links = mpNode.getRelationships(NetworkRelationshipTypes.DRIVE, Direction.INCOMING).iterator();
-                        
-                        Relationship relation = null;
-                        while (links.hasNext()) {
-                        	Relationship link = links.next();
-                        	
-                        	if (!links.hasNext() && (!link.hasProperty(INeoConstants.NETWORK_GIS_NAME))) {
-                        		relation = link;                        		
-                        	}
-                        	else if (geoNeo.getName().equals(link.getProperty(INeoConstants.NETWORK_GIS_NAME))) {
-                        		relation = link;                        		
-                        	}
-                        }
-                        
-                        
-                        if (relation != null) {
-                            Node sectorDrive = relation.getOtherNode(mpNode);
-
-                            for (Relationship relationSector : sectorDrive.getRelationships(NetworkRelationshipTypes.SECTOR,
-                                    Direction.OUTGOING)) {
-                                Node sector = null;
-                                Object networkGisName = relationSector.getProperty(INeoConstants.NETWORK_GIS_NAME);
-                                IGeoResource networkGisNode = null;
-                                for (IGeoResource networkResource : networkGeoNeo) {
-                                    GeoNeo networkGis = networkResource.resolve(GeoNeo.class, null);
-                                    if (networkGisName.equals(NeoUtils.getSimpleNodeName(networkGis.getMainGisNode(), ""))) {
-                                        sector = relationSector.getOtherNode(sectorDrive);
-                                        networkGisNode = networkResource;
-                                        break;
-                                    }
-                                }
-                                if (sector != null) {
-                                    Pair<MathTransform, MathTransform> driveTransform = setCrsTransforms(networkGisNode.getInfo(
-                                            monitor).getCRS());// TODO
-                                    Node site = sector.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING)
-                                            .getOtherNode(sector);
-                                    GeoNode siteGn = new GeoNode(site);
-                                    location = siteGn.getCoordinate();
-                                    try {
-                                        JTS.transform(location, world_location, transform_d2w);
-                                    } catch (Exception e) {
-                                        // JTS.transform(location, world_location,
-                                        // transform_w2d.inverse());
-                                    }
-                                    java.awt.Point pSite = getContext().worldToPixel(world_location);
-                                    if (drawFull) {
-                                        pSite = getSectorCenter(g, sector, pSite);
-                                    }
-                                    Color oldColor = g.getColor();
-                                    g.setColor(lineColor);
-                                    g.drawLine(p.x, p.y, pSite.x, pSite.y);
-                                    g.setColor(oldColor);
-                                    // restore old transform;
-                                    setCrsTransforms(driveTransform);
-                                }
-                            }
+                        }, GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING)) {
+                            selectedPoints.add(rnode);
+                            break;
                         }
                     }
                 }
-            }
-            if (cached_node != null && drawLabels) {
-                renderLabel(g, 0, cached_node, cached_l_p, 0);
-            }
-            prev_p = null;
-            prev_l_p = null;
-            cached_node = null;
-            if (eventIconSize > 0) {
-                for (Node node1 : index.getNodes(INeoConstants.EVENTS_LUCENE_INDEX_NAME, gisName)) {
-                    if (monitor.isCanceled())
-                        break;
-                    GeoNode node = new GeoNode(node1);
+                // Now draw the selected points highlights
+                for (Node rnode : selectedPoints) {
+                    GeoNode node = new GeoNode(rnode);
                     Coordinate location = node.getCoordinate();
-
                     if (bounds_transformed != null && !bounds_transformed.contains(location)) {
                         continue; // Don't draw points outside viewport
+                    }
+                    if (filterMp != null) {
+                        if (!filterMp.filterNodesByTraverser(node.getNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.LOCATION,Direction.INCOMING)).isValid()) {
+                            continue;
+                        }
                     }
                     try {
                         JTS.transform(location, world_location, transform_d2w);
                     } catch (Exception e) {
-                        // JTS.transform(location, world_location, transform_w2d.inverse());
+                        continue;
                     }
-
                     java.awt.Point p = getContext().worldToPixel(world_location);
                     if (geoFilter!=null && !insidePolygon(p)){
                         continue;
@@ -863,57 +623,295 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     } else {
                         prev_p = p;
                     }
-                    double theta = 0.0;
-                    double dx = 0.0;
-                    double dy = 0.0;
-                    if (prev_l_p == null) {
-                        prev_l_p = p;
-                        cached_l_p = p; // so we can draw first point using second point settings
-                        cached_node = node;
+                    renderSelectedPoint(g, p, drawSize, drawFull, drawLite);
+                }
+                Node indexNode = null;
+                HashMap<String, Integer> colorErrors = new HashMap<String, Integer>();
+                prev_p = null;// else we do not show selected node
+                // Now draw the actual points
+                for (GeoNode node : geoNeo.getGeoNodes(bounds_transformed)) {
+                    if (filterMp != null) {
+                        if (!filterMp.filterNodesByTraverser(node.getNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.LOCATION,Direction.INCOMING)).isValid()) {
+                            continue;
+                        }
+                    }
+                    if (enableIndexRendering && indexNode == null) {
+                        indexNode = getIndexNode(node);
+                    }
+                    Coordinate location = node.getCoordinate();
+                    
+                    if (bounds_transformed != null && !bounds_transformed.contains(location)) {
+                        continue; // Don't draw points outside viewport
+                    }
+                    try {
+                        JTS.transform(location, world_location, transform_d2w);
+                    } catch (Exception e) {
+                        // JTS.transform(location, world_location, transform_w2d.inverse());
+                    }
+    
+                    java.awt.Point p = getContext().worldToPixel(world_location);
+                    if (geoFilter!=null && !insidePolygon(p)){
+                        continue;
+                    }
+                    if (prev_p != null && prev_p.x == p.x && prev_p.y == p.y) {
+                        prev_p = p;
+                        continue;
                     } else {
-                        try {
-                            dx = p.x - prev_l_p.x;
-                            dy = p.y - prev_l_p.y;
-                            if (Math.abs(dx) < Math.abs(dy) / 2) {
-                                // drive goes north-south
-                                theta = 0;
-                            } else if (Math.abs(dy) < Math.abs(dx) / 2) {
-                                // drive goes east-west
-                                theta = Math.PI / 2;
-                            } else if (dx * dy < 0) {
-                                // drive has negative slope
-                                theta = -Math.PI / 4;
-                            } else {
-                                theta = Math.PI / 4;
+                        prev_p = p;
+                    }
+    
+                    Color nodeColor = fillColor;
+                    try {
+                        nodeColor = getNodeColor(node.getNode(), fillColor);
+                        // nodeColor = getColorOfMpNode(select, node.getNode(), fillColor,
+                        // selectedProp, redMinValue, redMaxValue,
+                        // lesMinValue, moreMaxValue);
+                    } catch (RuntimeException e) {
+                        String errName = e.toString();
+                        if (colorErrors.containsKey(errName)) {
+                            colorErrors.put(errName, colorErrors.get(errName) + 1);
+                        } else {
+                            colorErrors.put(errName, 1);
+                        }
+                    }
+                    Color borderColor = g.getColor();
+                    if (selectedNodes.size() > 0) {
+                        if (selectedNodes.contains(node.getNode())) {
+                            borderColor = COLOR_HIGHLIGHTED;
+                        }
+                    }
+                    long id = node.getNode().getId();
+                    if ((crossHairId1 != null && id == crossHairId1) || (crossHairId2 != null && crossHairId2 == id)) {
+                        borderColor = COLOR_HIGHLIGHTED_SELECTED;
+                    }
+    
+                    renderPoint(g, p, borderColor, nodeColor, drawSize, drawWidth, drawFull, drawLite);
+                    if (drawLabels) {
+                        double theta = 0.0;
+                        double dx = 0.0;
+                        double dy = 0.0;
+                        if (prev_l_p == null) {
+                            prev_l_p = p;
+                            cached_l_p = p; // so we can draw first point using second point settings
+                            cached_node = node;
+                        } else {
+                            try {
+                                dx = p.x - prev_l_p.x;
+                                dy = p.y - prev_l_p.y;
+                                if (Math.abs(dx) < Math.abs(dy) / 2) {
+                                    // drive goes north-south
+                                    theta = 0;
+                                } else if (Math.abs(dy) < Math.abs(dx) / 2) {
+                                    // drive goes east-west
+                                    theta = Math.PI / 2;
+                                } else if (dx * dy < 0) {
+                                    // drive has negative slope
+                                    theta = -Math.PI / 4;
+                                } else {
+                                    theta = Math.PI / 4;
+                                }
+                            } catch (Exception e) {
                             }
+                        }
+                        if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
+                            // if (drawLabels) {
+                            renderLabel(g, count, node, p, theta);
+                            // }
+                            // if (drawEvents) {
+                            // renderEvents(g, node, p, theta);
+                            // }
+                            if (cached_node != null) {
+                                // if (drawLabels) {
+                                renderLabel(g, 0, cached_node, cached_l_p, theta);
+                                // }
+                                // if (drawEvents) {
+                                // renderEvents(g, cached_node, cached_l_p, theta);
+                                // }
+                                cached_node = null;
+                                cached_l_p = null;
+                            }
+                            prev_l_p = p;
+                        }
+                    }
+                    if (base_transform != null) {
+                        // recover the normal transform
+                        g.setTransform(base_transform);
+                        g.setColor(drawColor);
+                        // base_transform = null;
+                    }
+                    monitor.worked(1);
+                    count++;
+                    if (monitor.isCanceled())
+                        break;
+                    // TODO refactor
+                    final Node mpNode = node.getNode();
+                    if (needDrawLines) {
+                        Long time = NeoUtils.getNodeTime(mpNode);
+                        // if (true) {
+                        if (time != null && time >= beginTime && time <= endTime) {
+                            Color lineColor;
+                            if (haveSelectedEvents) {
+                                Set<String> events = NeoUtils.getEventsList(mpNode, null);
+                                if (!events.isEmpty() && (allEvents || events.contains(selected_events))) {
+                                    if (allEvents) {
+                                        int i = eventList.indexOf(events.iterator().next());
+                                        if (i < 0) {
+                                            i = 0;
+                                        }
+                                        Color[] colors = palette.getColors(palette.getMaxColors());
+                                        int index = i % colors.length;
+                                        eventColor = colors[index];
+                                    }
+                                    lineColor = eventColor;
+                                } else {
+                                    lineColor = FADE_LINE;
+                                }
+                            } else {
+                                lineColor = FADE_LINE;
+                            }
+                            Iterator<Relationship> links = mpNode.getRelationships(NetworkRelationshipTypes.DRIVE, Direction.INCOMING).iterator();
+                            
+                            Relationship relation = null;
+                            while (links.hasNext()) {
+                            	Relationship link = links.next();
+                            	
+                            	if (!links.hasNext() && (!link.hasProperty(INeoConstants.NETWORK_GIS_NAME))) {
+                            		relation = link;                        		
+                            	}
+                            	else if (geoNeo.getName().equals(link.getProperty(INeoConstants.NETWORK_GIS_NAME))) {
+                            		relation = link;                        		
+                            	}
+                            }
+                            
+                            
+                            if (relation != null) {
+                                Node sectorDrive = relation.getOtherNode(mpNode);
+    
+                                for (Relationship relationSector : sectorDrive.getRelationships(NetworkRelationshipTypes.SECTOR,
+                                        Direction.OUTGOING)) {
+                                    Node sector = null;
+                                    Object networkGisName = relationSector.getProperty(INeoConstants.NETWORK_GIS_NAME);
+                                    IGeoResource networkGisNode = null;
+                                    for (IGeoResource networkResource : networkGeoNeo) {
+                                        GeoNeo networkGis = networkResource.resolve(GeoNeo.class, null);
+                                        if (networkGisName.equals(NeoUtils.getSimpleNodeName(networkGis.getMainGisNode(), ""))) {
+                                            sector = relationSector.getOtherNode(sectorDrive);
+                                            networkGisNode = networkResource;
+                                            break;
+                                        }
+                                    }
+                                    if (sector != null) {
+                                        Pair<MathTransform, MathTransform> driveTransform = setCrsTransforms(networkGisNode.getInfo(
+                                                monitor).getCRS());// TODO
+                                        Node site = sector.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING)
+                                                .getOtherNode(sector);
+                                        GeoNode siteGn = new GeoNode(site);
+                                        location = siteGn.getCoordinate();
+                                        try {
+                                            JTS.transform(location, world_location, transform_d2w);
+                                        } catch (Exception e) {
+                                            // JTS.transform(location, world_location,
+                                            // transform_w2d.inverse());
+                                        }
+                                        java.awt.Point pSite = getContext().worldToPixel(world_location);
+                                        if (drawFull) {
+                                            pSite = getSectorCenter(g, sector, pSite);
+                                        }
+                                        Color oldColor = g.getColor();
+                                        g.setColor(lineColor);
+                                        g.drawLine(p.x, p.y, pSite.x, pSite.y);
+                                        g.setColor(oldColor);
+                                        // restore old transform;
+                                        setCrsTransforms(driveTransform);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (cached_node != null && drawLabels) {
+                    renderLabel(g, 0, cached_node, cached_l_p, 0);
+                }
+                prev_p = null;
+                prev_l_p = null;
+                cached_node = null;
+                if (eventIconSize > 0) {
+                    for (Node node1 : index.getNodes(INeoConstants.EVENTS_LUCENE_INDEX_NAME, gisName)) {
+                        if (monitor.isCanceled())
+                            break;
+                        GeoNode node = new GeoNode(node1);
+                        Coordinate location = node.getCoordinate();
+    
+                        if (bounds_transformed != null && !bounds_transformed.contains(location)) {
+                            continue; // Don't draw points outside viewport
+                        }
+                        try {
+                            JTS.transform(location, world_location, transform_d2w);
                         } catch (Exception e) {
+                            // JTS.transform(location, world_location, transform_w2d.inverse());
                         }
-                    }
-                    if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
-                        renderEvents(g, node, p, theta);
-                        if (cached_node != null) {
-                            renderEvents(g, cached_node, cached_l_p, theta);
-                            cached_node = null;
-                            cached_l_p = null;
+    
+                        java.awt.Point p = getContext().worldToPixel(world_location);
+                        if (geoFilter!=null && !insidePolygon(p)){
+                            continue;
                         }
-                        prev_l_p = p;
+                        if (prev_p != null && prev_p.x == p.x && prev_p.y == p.y) {
+                            prev_p = p;
+                            continue;
+                        } else {
+                            prev_p = p;
+                        }
+                        double theta = 0.0;
+                        double dx = 0.0;
+                        double dy = 0.0;
+                        if (prev_l_p == null) {
+                            prev_l_p = p;
+                            cached_l_p = p; // so we can draw first point using second point settings
+                            cached_node = node;
+                        } else {
+                            try {
+                                dx = p.x - prev_l_p.x;
+                                dy = p.y - prev_l_p.y;
+                                if (Math.abs(dx) < Math.abs(dy) / 2) {
+                                    // drive goes north-south
+                                    theta = 0;
+                                } else if (Math.abs(dy) < Math.abs(dx) / 2) {
+                                    // drive goes east-west
+                                    theta = Math.PI / 2;
+                                } else if (dx * dy < 0) {
+                                    // drive has negative slope
+                                    theta = -Math.PI / 4;
+                                } else {
+                                    theta = Math.PI / 4;
+                                }
+                            } catch (Exception e) {
+                            }
+                        }
+                        if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
+                            renderEvents(g, node, p, theta);
+                            if (cached_node != null) {
+                                renderEvents(g, cached_node, cached_l_p, theta);
+                                cached_node = null;
+                                cached_l_p = null;
+                            }
+                            prev_l_p = p;
+                        }
+    
                     }
-
+                    if (cached_node != null) {
+                        renderEvents(g, cached_node, cached_l_p, 0);
+                    }
                 }
-                if (cached_node != null) {
-                    renderEvents(g, cached_node, cached_l_p, 0);
+                for (String errName : colorErrors.keySet()) {
+                    int errCount = colorErrors.get(errName);
+                    System.err.println("Error determining color of " + errCount + " nodes: " + errName);
                 }
-            }
-            for (String errName : colorErrors.keySet()) {
-                int errCount = colorErrors.get(errName);
-                System.err.println("Error determining color of " + errCount + " nodes: " + errName);
-            }
-            if (indexNode != null) {
-                renderIndex(g, bounds_transformed, indexNode);
-            }
-            LOGGER.debug("Drive renderer took " + ((System.currentTimeMillis() - startTime) / 1000.0) + "s to draw " + count
-                    + " points");
-            tx.success();
+                if (indexNode != null) {
+                    renderIndex(g, bounds_transformed, indexNode);
+                }
+                LOGGER.debug("Drive renderer took " + ((System.currentTimeMillis() - startTime) / 1000.0) + "s to draw " + count
+                        + " points");
+                tx.success();
             }//end if
             } catch (TransformException e) {
             throw new RenderException(e);
@@ -1138,22 +1136,11 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             }
             Node coloredNode = null;
             if(NeoUtils.isDrivePointNode(node)){
-                Traverser events = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-                    
-                    @Override
-                    public boolean isReturnableNode(TraversalPosition currentPos) {
-                        return NeoUtils.isDriveMNode(currentPos.currentNode());
-                    }
-                }, GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING);
-                ColoredFlags flag = ColoredFlags.NONE;
-                for(Node m : events){
-                    ColoredFlags currFlag = ColoredFlags.getFlagById((String)m.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, ColoredFlags.NONE.getId()));
-                    if(flag.getOrder()<currFlag.getOrder()){
-                        flag = currFlag;
-                        coloredNode = m;
-                    }
+                Relationship locLink = node .getSingleRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING);
+                if(!(locLink==null)){
+                    coloredNode = locLink.getStartNode();
                 }
-            } else if(NeoUtils.isDriveMNode(node)){
+            } else if(NeoUtils.isDriveMNode(node)||NeoUtils.isCallNode(node)){
                 coloredNode = node;
             }
             if (coloredNode!=null) {

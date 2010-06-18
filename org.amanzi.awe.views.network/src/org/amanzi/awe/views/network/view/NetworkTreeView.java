@@ -599,7 +599,7 @@ public class NetworkTreeView extends ViewPart {
         }
         event.setAutoZoom(autoZoom);
         event.setCoords(getCoords(node.getNode()));
-        event.setSelection(Collections.singleton(node.getNode()));
+        event.setSelection(node.getNodesForMap());
         NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(event);
         if (autoZoom) {
             autoZoom = false; // only zoom first time, then rely on user to control zoom level
@@ -740,7 +740,7 @@ public class NetworkTreeView extends ViewPart {
             while (iterator.hasNext()) {
                 NeoNode selectedNode = (NeoNode)iterator.next();
                 if (needAddNodeToSelect(selectedNode)) {
-                    selection.add(selectedNode.getNode());
+                    selection.addAll(selectedNode.getNodesForMap());
                 }
             }
             NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(new ChangeSelectionEvent(null, selection));
@@ -762,7 +762,8 @@ public class NetworkTreeView extends ViewPart {
                     || NodeTypes.MISSING_SECTORS.getId().equals(nodeType) || NodeTypes.MISSING_SITE.getId().equals(nodeType)
                     || NodeTypes.MISSING_SECTOR.getId().equals(nodeType) || NodeTypes.M.getId().equalsIgnoreCase(nodeType)
                     || NodeTypes.PROBE.getId().equalsIgnoreCase(nodeType) || NodeTypes.MP.getId().equalsIgnoreCase(nodeType)
-                    || NodeTypes.FILE.getId().equalsIgnoreCase(nodeType) || NodeTypes.DATASET.getId().equalsIgnoreCase(nodeType);
+                    || NodeTypes.FILE.getId().equalsIgnoreCase(nodeType) || NodeTypes.DATASET.getId().equalsIgnoreCase(nodeType)
+                    ||NodeTypes.CALL.getId().equals(nodeType)||NodeTypes.S_CELL.getId().equals(nodeType)||NodeTypes.S_ROW.getId().equals(nodeType);
         }
 
     }

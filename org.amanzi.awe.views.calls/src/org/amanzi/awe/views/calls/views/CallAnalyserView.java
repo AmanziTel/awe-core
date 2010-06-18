@@ -16,6 +16,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -48,7 +49,6 @@ import org.amanzi.neo.core.enums.CallProperties;
 import org.amanzi.neo.core.enums.ColoredFlags;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
@@ -69,7 +69,6 @@ import org.eclipse.jface.viewers.ITableColorProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
@@ -711,7 +710,7 @@ public class CallAnalyserView extends ViewPart {
     /**
      * @param sRow
      */
-    protected void select(final Node node) {
+    protected void select(Node node) {
         //TODO refactor
         InputWrapper wr = (InputWrapper)tableViewer.getInput();
         List<Node> nodes = new ArrayList<Node>(2);
@@ -719,54 +718,7 @@ public class CallAnalyserView extends ViewPart {
         nodes.add(wr.periodNode);
         NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent(DRIVE_ID, nodes));
         NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDrillDownEvent(nodes,CallAnalyserView.ID));
-        final Node drive = callDataset.get(cDrive.getText());
-        Job job = new Job("SelectOnMap") {
-
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
-                try {
-                    Traverser traverse = node.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
-
-                        @Override
-                        public boolean isStopNode(TraversalPosition currentPos) {
-                            if (currentPos.isStartNode()) {
-                                return false;
-                            }
-                            Node node = currentPos.currentNode();
-                            String type = NeoUtils.getNodeType(node, "");
-                            if (type.equals(NodeTypes.CALL.getId())) {
-                                return true;
-                            }
-                            Relationship relation = currentPos.lastRelationshipTraversed();
-                            if (relation.isType(GeoNeoRelationshipTypes.NEXT)) {
-                                return !type.equals(NodeTypes.S_CELL.getId());
-                            }
-                            return false;
-                        }
-                    }, new ReturnableEvaluator() {
-
-                        @Override
-                        public boolean isReturnableNode(TraversalPosition currentPos) {
-                            Node node = currentPos.currentNode();
-                            return NeoUtils.isCallNode(node) && node.hasRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING);
-                        }
-                    }, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.SOURCE,
-                            Direction.OUTGOING);
-                    Collection<Node> nodes = traverse.getAllNodes();
-                    if (!nodes.isEmpty()) {
-                        selectNodesOnMap(drive, nodes);
-                    }
-                    return Status.OK_STATUS;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return Status.OK_STATUS;
-                } finally {
-                    tx.finish();
-                }
-            }
-        };
-        job.schedule();
+        selectNodesOnMap(node);
     }
 
     /**
@@ -776,18 +728,27 @@ public class CallAnalyserView extends ViewPart {
      * @param nodes nodes to select
      */
     // TODO use selection mechanism!
-    private void selectNodesOnMap(Node drive, Collection<Node> nodes) {
-
+    private void selectNodesOnMap(Node node) {
+        Node drive = callDataset.get(cDrive.getText());
         if (drive == null) {
             return;
         }
+        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+        Set<Node> nodes = new HashSet<Node>();
+        if(NeoUtils.isProbeNode(node)){
+            nodes = NeoUtils.getCallsForProbeNode(node, service);
+        }else if(NeoUtils.isSRowNode(node)){
+            nodes = NeoUtils.getCallsForSRowNode(node, service);
+        }else{
+            nodes = NeoUtils.getCallsForSCellNode(node, service);
+        }                
         Node gis = NeoUtils.findGisNodeByChild(drive);
         IMap activeMap = ApplicationGIS.getActiveMap();
         if (activeMap != ApplicationGIS.NO_MAP) {
             NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(new ChangeSelectionEvent(gis, nodes));
         }
     }
-
+    
     /**
      * initialize startup parameters
      */
@@ -885,7 +846,7 @@ public class CallAnalyserView extends ViewPart {
 
                                 @Override
                                 public boolean isReturnableNode(TraversalPosition currentPos) {
-                                    return NeoUtils.getNodeName(currentPos.currentNode()).equals(nodeName);
+                                    return NeoUtils.getNodeName(currentPos.currentNode(),null).equals(nodeName);
                                 }
                             }).iterator();
                             cellNode = iterator.hasNext() ? iterator.next() : null;
@@ -1377,7 +1338,7 @@ public class CallAnalyserView extends ViewPart {
             try {
                 Collection<Node> allProbesOfDataset = NeoUtils.getAllProbesOfDataset(drive, callType.getId());
                 for (Node probe : allProbesOfDataset) {
-                    probeCallDataset.put(NeoUtils.getNodeName(probe), probe);
+                    probeCallDataset.put(NeoUtils.getNodeName(probe,service), probe);
                 }
             } finally {
                 tx.finish();
@@ -1483,7 +1444,7 @@ public class CallAnalyserView extends ViewPart {
         public String getValue(PeriodWrapper wr, int index) {
             if (header == null) {
                 if (index==0){
-                return NeoUtils.getNodeName(wr.sRow);
+                return NeoUtils.getNodeName(wr.sRow,null);
                 }else if (index==1){
                     return wr.getHost();
                 } else if (index == 2) {
@@ -1506,7 +1467,7 @@ public class CallAnalyserView extends ViewPart {
         public Object getValueForSort(PeriodWrapper wr, int index) {
             if (header == null) {
                 if (index==0){
-                return NeoUtils.getNodeName(wr.sRow);
+                return NeoUtils.getNodeName(wr.sRow,null);
                 }else if (index==1){
                     return wr.getHost();
                 } else if (index == 2) {
@@ -1612,7 +1573,7 @@ public class CallAnalyserView extends ViewPart {
             this.sRow = sRow;
             mappedValue.clear();
             for (Node node : NeoUtils.getChildTraverser(sRow)) {
-                String name = NeoUtils.getNodeName(node);
+                String name = NeoUtils.getNodeName(node,null);
                 IStatisticsHeader header = callType.getHeaderByTitle(name);
                 if (header != null) {                   
                     Object value = node.getProperty(INeoConstants.PROPERTY_VALUE_NAME, null);
@@ -1642,7 +1603,7 @@ public class CallAnalyserView extends ViewPart {
                     }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING).iterator();
                     probeNode =  source.next();
                 }
-                host = NeoUtils.getNodeName(probeNode).split(" ")[0];
+                host = NeoUtils.getNodeName(probeNode,null).split(" ")[0];
                 realF = (Number)probeNode.getProperty(INeoConstants.PROBE_F, null);
                 realLA = (Number)probeNode.getProperty(INeoConstants.PROBE_LA, null);
                 probeF = realF == null ? "" : realF.toString();
@@ -1845,7 +1806,7 @@ public class CallAnalyserView extends ViewPart {
          * @return
          */
         public String getIndexName() {
-            return NeoUtils.getNodeName(probe != null ? probe : drive);
+            return NeoUtils.getNodeName(probe != null ? probe : drive,null);
         }
 
         /**

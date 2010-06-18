@@ -67,7 +67,7 @@ public class UpdateLayerListener {
     public void updateLayerOnEvent(UpdateLayerEvent event){
         try {
             switch(event.getType()){
-                case REFRESH:
+                case REFRESH:                    
                     if(isEventForThisLayer(event.getGisNode())){
                         layer.refresh(null);
                     }
@@ -195,9 +195,9 @@ public class UpdateLayerListener {
                 }
                 if (event.isAutoZoom()) {
                     // TODO: Check that this works with all CRS
-                    map.sendCommandASync(new net.refractions.udig.project.internal.command.navigation.SetViewportWidth(30000));                
+                    map.sendCommandSync(new net.refractions.udig.project.internal.command.navigation.SetViewportWidth(30000));                
                 }
-                map.sendCommandASync(new SetViewportCenterCommand(new Coordinate(c[0], c[1]), crs));
+                map.sendCommandSync(new SetViewportCenterCommand(new Coordinate(c[0], c[1]), crs));
             } else {
                 layer.refresh(null);
             }
