@@ -47,6 +47,7 @@ import org.amanzi.neo.core.enums.CallProperties.CallResult;
 import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.loader.AbstractLoader.StoringProperty;
 import org.amanzi.neo.loader.NetworkLoader.CRS;
 import org.amanzi.neo.loader.ams.parameters.AMSCommandParameters;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
@@ -847,7 +848,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             NeoUtils.addChild(datasetFileNode, node, lastDatasetNode, neo);
             lastDatasetNode = node;
             setNewIndexProperty(header, node, INeoConstants.PROPERTY_NAME_NAME, getClass().getSimpleName());
-            storingProperties.get(REAL_DATASET_HEADER_INDEX).incSaved();
+            incSavedCount();
         }
 
     }
@@ -2130,7 +2131,7 @@ private void handleCall() {
          * Handle collector.
          * @throws ParseException problem with parse values
          */
-        private void handleCollector() throws ParseException {
+        private void handleCollector() throws ParseException {            
             Map<String, String> map = getPropertyMap();
             String id = map.get("probeID");
             List<Node> ntpqs = ntpqCache.get(id);
@@ -2154,7 +2155,7 @@ private void handleCall() {
             }       
             probeNtpqs.createRelationshipTo(ntpq, ProbeCallRelationshipType.NTPQ_M);
             ntpqs.add(ntpq);
-            storingProperties.get(REAL_DATASET_HEADER_INDEX).incSaved();
+            incSavedCount();
         }
         
     }
@@ -2179,6 +2180,15 @@ private void handleCall() {
 
         probe.createRelationshipTo(ntpqs, ProbeCallRelationshipType.NTPQS);
         return ntpqs;
+    }
+
+    private void incSavedCount() {
+        StoringProperty storingProperty = storingProperties.get(REAL_DATASET_HEADER_INDEX);
+        if(storingProperty==null){
+            storingProperty = new StoringProperty(getStoringNode(REAL_DATASET_HEADER_INDEX));
+            storingProperties.put(REAL_DATASET_HEADER_INDEX, storingProperty);
+        }
+        storingProperty.incSaved();
     }
 
     /**
