@@ -16,6 +16,7 @@ package org.amanzi.awe.report.editor;
 import java.io.File;
 
 import org.amanzi.awe.report.ReportPlugin;
+import org.amanzi.awe.report.actions.PrintAction;
 import org.amanzi.awe.report.model.Report;
 import org.amanzi.awe.report.model.ReportModel;
 import org.amanzi.awe.report.pdf.PDFPrintingEngine;
@@ -24,6 +25,7 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
@@ -51,7 +53,7 @@ public class ReportEditorContributor extends MultiPageEditorActionBarContributor
             addTextAction.setEditor(part);
             addImageAction.setEditor(part);
             addChartAction.setEditor(part);
-            printAction.setEditor(part);
+            printAction.setActiveEditor(null,part);
         }
     }
 
@@ -176,52 +178,6 @@ public class ReportEditorContributor extends MultiPageEditorActionBarContributor
             StringBuffer sb = new StringBuffer("  chart 'chart0' do\n").append("    self.sheet='sheet1'\n").append("    self.categories=a1..a3\n")
             .append("  self.values=b1..b3\n  end\n");
             editor.addNewChart(sb.toString());
-        }
-
-    }
-    /**
-     * Class for an action that adds image to a report
-     * 
-     * @author Pechko_E
-     * @since 1.0.0
-     */
-    public class PrintAction extends Action {
-        private ReportGUIEditor editor;
-
-        /**
-         * Constructor
-         * 
-         */
-        public PrintAction() {
-            super("Print report", AbstractUIPlugin.imageDescriptorFromPlugin(ReportPlugin.PLUGIN_ID, "icons/pdf.png"));
-        }
-
-        /**
-         * Setter for editor field
-         * 
-         * @param editor
-         */
-        public void setEditor(ReportGUIEditor editor) {
-            this.editor = editor;
-
-        }
-
-        @Override
-        public void run() {
-            final ReportModel reportModel = editor.getReportModel();
-            final PDFPrintingEngine engine = new PDFPrintingEngine();
-            Report report = reportModel.getReport();
-            if (report.getFile() == null) {
-                Shell shell = editor.getSite().getShell();
-                FileDialog dialog = new FileDialog(shell, SWT.SAVE);
-                dialog.setText("Specify PDF file");
-                dialog.setFilterExtensions(new String[] {"*.pdf"});
-                dialog.setFilterNames(new String[] {"PDF file (*.pdf)"});
-                if (dialog.open() != null) {
-                    report.setFile(dialog.getFilterPath() + File.separator + dialog.getFileName());
-                }
-            }
-            engine.printReport(report);
         }
 
     }

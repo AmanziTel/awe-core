@@ -48,7 +48,7 @@ public class ReportEditor extends MultiPageEditorPart implements IReportModelLis
         IEditorInput fei = getEditorInput();
         setPartName(fei.getName());
         String rubyProjectName = ((FileEditorInput)fei).getFile().getParent().getProject().getName();
-        LOGGER.debug("Ruby project name for '"+((FileEditorInput)fei).getFile().getName()+"': "+rubyProjectName);
+        LOGGER.debug("Ruby project name for '" + ((FileEditorInput)fei).getFile().getName() + "': " + rubyProjectName);
         reportModel = new ReportModel(rubyProjectName);
         reportModel.addReportListener(this);
         createGUIPage();
@@ -165,14 +165,14 @@ public class ReportEditor extends MultiPageEditorPart implements IReportModelLis
             String hash = "\\s*(" + ReportPartType.getTypesAsRegex() + ")\\s*'\\w*',(\\s*\\w*\\=\\>['|:]?\\w*'?,?)*";
             if (pair.l().equals(Report.FIRST_ARGUMENT)) {
                 ReportPartType type = source.getType();
-                LOGGER.debug("Part: " + part+"\n New value: "+pair.r());
-                switch (type){
+                LOGGER.debug("Part: " + part + "\n New value: " + pair.r());
+                switch (type) {
                 case TEXT:
                 case IMAGE:
                     parts.set(index, type.getText() + " '" + pair.r() + "'\n");
                     break;
-                    default:
-                        parts.set(index, part.replaceAll(type.getText() + "\\s*'[\\w|\\s]*'", type.getText() + " '" + pair.r() + "'"));
+                default:
+                    parts.set(index, part.replaceAll(type.getText() + "\\s*'[\\w|\\s]*'", type.getText() + " '" + pair.r() + "'"));
                 }
             } else if (part.matches(closure)) {
                 LOGGER.debug("Part matches closure syntax: " + part);
@@ -261,14 +261,14 @@ public class ReportEditor extends MultiPageEditorPart implements IReportModelLis
             }
         }
         ArrayList<String> parts = new ArrayList<String>(positions.size() + 2);
-        if (positions.size()!=0){//report contains parts
-        addLines(positions, lines, parts, 0, positions.get(0));
-        for (int i = 0; i < positions.size() - 1; i++) {
-            addLines(positions, lines, parts, positions.get(i), positions.get(i + 1));
-        }
-        addLines(positions, lines, parts, positions.get(positions.size() - 1), lines.length);
-        parts.add(after_parts);
-        }else{
+        if (positions.size() != 0) {// report contains parts
+            addLines(positions, lines, parts, 0, positions.get(0));
+            for (int i = 0; i < positions.size() - 1; i++) {
+                addLines(positions, lines, parts, positions.get(i), positions.get(i + 1));
+            }
+            addLines(positions, lines, parts, positions.get(positions.size() - 1), lines.length);
+            parts.add(after_parts);
+        } else {
             parts.add(0, before_parts);
             parts.add(1, after_parts);
         }
@@ -290,6 +290,15 @@ public class ReportEditor extends MultiPageEditorPart implements IReportModelLis
             buffer.append(lines[j]).append("\n");
         }
         parts.add(buffer.toString());
+    }
+
+    /**
+     * Gets report
+     * 
+     * @return report
+     */
+    public Report getReport() {
+        return guiEditor.getReportModel().getReport();
     }
 
 }

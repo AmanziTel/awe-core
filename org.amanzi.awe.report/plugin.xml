@@ -22,5 +22,20 @@
             label="New Amanzi Report">
       </action>
    </extension>
+   <extension
+         point="org.eclipse.ui.editorActions">
+      <editorContribution
+            id="org.amanzi.awe.report.reportEditorContribution"
+            targetID="org.amanzi.awe.report.editor.ReportEditor">
+         <action
+               class="org.amanzi.awe.report.actions.PrintAction"
+               icon="icons/pdf.png"
+               id="org.amanzi.awe.report.printAction"
+               label="Print"
+               menubarPath="file/print.ext"
+               style="push">
+         </action>
+      </editorContribution>
+   </extension>
 
 </plugin>

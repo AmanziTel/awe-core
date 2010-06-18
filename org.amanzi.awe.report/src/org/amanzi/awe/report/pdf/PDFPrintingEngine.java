@@ -80,6 +80,7 @@ public class PDFPrintingEngine {
         String reportFileName = report.getFile();
         if (reportFileName == null || reportFileName.length() == 0) {
             fileName += File.separator + "report" + System.currentTimeMillis() + ".pdf";
+            report.setFile(fileName);
         } else {
             if (reportFileName.matches("[\\w|\\d|_]*.pdf")){
                 //the report file name doesn't contain the directory name
