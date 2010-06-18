@@ -14,6 +14,8 @@
 package org.amanzi.awe.views.tree.drive.views;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
@@ -47,6 +49,8 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
     private final String type;
     
     private Node statisticsNode;
+    
+    private String timeStr;
 
     /**
      * @param node
@@ -61,14 +65,15 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
             name = "Call Analysis"+(inconclusive?"*":"")+": " + node.getProperty(INeoConstants.PROPERTY_VALUE_NAME) + " (" + node.getProperty(CallProperties.CALL_TYPE.getId()) + ")";
         }        
         else if (type.equals(NodeTypes.S_CELL.getId())) {
-            name = node.getProperty(INeoConstants.PROPERTY_NAME_NAME) + ": " + node.getProperty(INeoConstants.PROPERTY_VALUE_NAME,"0")+" ("+getSCellTime(node)+")";
+            timeStr = getSCellTime(node);
+            name = node.getProperty(INeoConstants.PROPERTY_NAME_NAME) + ": " + node.getProperty(INeoConstants.PROPERTY_VALUE_NAME,"0")+" ("+timeStr+")";            
         }        
         hasChildren();
     }
     
     private String getSCellTime(Node cell){
         Node row = NeoUtils.getParent(null, cell);
-        return NeoUtils.getNodeName(row);
+        return NeoUtils.getNodeName(row,null);
     }
     
     protected CallAnalyzisNeoNode(Node probeNode, Node statisticsNode, int number) {
@@ -152,7 +157,22 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
             // children.add(new AggregatesNode(child));
             // break;
             // }
-        }        
+        }      
+        Collections.sort(children, new Comparator<NeoNode>() {
+
+            @Override
+            public int compare(NeoNode o1, NeoNode o2) {
+                if(!((o1 instanceof CallAnalyzisNeoNode)&&(o2 instanceof CallAnalyzisNeoNode)) ){
+                    return 0;
+                }
+                CallAnalyzisNeoNode analyzisNode1 = (CallAnalyzisNeoNode)o1;
+                CallAnalyzisNeoNode analyzisNode2 = (CallAnalyzisNeoNode)o2;
+                if(!(analyzisNode1.type.equals(NodeTypes.S_CELL.getId())&&analyzisNode2.type.equals(NodeTypes.S_CELL.getId()))){
+                    return 0;
+                }
+                return analyzisNode1.timeStr.compareTo(analyzisNode2.timeStr);
+            }
+        });
         return children.toArray(NO_NODES);
     }
     

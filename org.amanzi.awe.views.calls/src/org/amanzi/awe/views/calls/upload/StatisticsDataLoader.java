@@ -179,7 +179,6 @@ public class StatisticsDataLoader {
                     break;
                 }
                 subMonitor.subTask("Loading file " + file.getAbsolutePath());
-                System.out.println("Load file "+file.getName());//TODO delete
                 loadFile(file);
                 subMonitor.worked(1);                   
             }
@@ -400,7 +399,6 @@ public class StatisticsDataLoader {
         String line;
         boolean hasHeaders = false;
         while ((line = reader.readLine()) != null) {
-            System.out.println("1: "+line);//TODO delete
             if(!hasHeaders){
                 hasHeaders = parseHeaders(line);
                 if(!headerMap.hasStatisticsHeaders()){
@@ -439,7 +437,6 @@ public class StatisticsDataLoader {
      * @throws ParseException (problem in parse)
      */
     private void parseLine(String line) throws ParseException{
-        System.out.println("2: "+line);//TODO delete
         LineWrapper lw = headerMap.buildLineWrapper(line);
         if(lw == null||!lw.hasAnyStatistics()){
             return;
@@ -707,7 +704,7 @@ public class StatisticsDataLoader {
      */
     private Statistics buildHighStatistics(StatisticsCallType callType, CallTimePeriods period,Node parentStat, Node highLevelRow, Node probe, Long startAll, Long endAll){
         if(period.equals(CallTimePeriods.HOURLY)){
-            return getHourlyStatistics(callType, probe, startAll, endAll);
+            return getHourlyStatistics(callType, highLevelRow, probe, startAll, endAll);
         }
         Statistics result = new Statistics();
         Node periodNode = getPeriodNode(callType, period,parentStat);
@@ -717,7 +714,7 @@ public class StatisticsDataLoader {
             start = startAll;
         }
         do{
-            Node row = createRow(callType, period, start, periodNode, probe, highLevelRow);
+            Node row = createRow(callType, period, period.getFirstTime(start), periodNode, probe, highLevelRow);
             Statistics currStatistics = buildHighStatistics(callType, period.getUnderlyingPeriod(), periodNode,row, probe, start, end);
             for(IStatisticsHeader header : callType.getHeaders()){
                 createCell(callType,CallTimePeriods.HOURLY,row,header,currStatistics);
@@ -741,7 +738,7 @@ public class StatisticsDataLoader {
      * @param end Node
      * @return Statistics
      */
-    private Statistics getHourlyStatistics(StatisticsCallType callType, final Node probe,final Long start,final Long end){
+    private Statistics getHourlyStatistics(StatisticsCallType callType, Node highLevelRow, final Node probe,final Long start,final Long end){
         Node periodNode = getPeriodNode(callType, CallTimePeriods.HOURLY, null);
         Traverser rows = NeoUtils.getChildTraverser(periodNode, new ReturnableEvaluator() {            
             @Override
@@ -765,6 +762,9 @@ public class StatisticsDataLoader {
                 IStatisticsHeader header = callType.getHeaderByTitle((String)cell.getProperty(INeoConstants.PROPERTY_NAME_NAME));
                 Number value = getCellValue(cell, header);
                 result.updateHeaderWithCall(header, value, cell);
+            }
+            if (highLevelRow!=null) {
+                highLevelRow.createRelationshipTo(row, GeoNeoRelationshipTypes.SOURCE);
             }
         }
         return result;
@@ -1053,7 +1053,6 @@ public class StatisticsDataLoader {
                     result.setFreq((Float)value);
                     continue;
                 }
-                System.out.println("Call type "+header.getCallType()+" header "+ header.getRealHeader()+" value "+value);//TODO delete
                 result.updateStatistics(header.getCallType(), header.getRealHeader(), value);
             }
             return result;
