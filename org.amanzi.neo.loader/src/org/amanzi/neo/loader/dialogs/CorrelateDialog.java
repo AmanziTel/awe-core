@@ -200,7 +200,7 @@ public class CorrelateDialog {
 	}
 	
 	private void runCorrelation(final String firstDataset, final String secondDataset) {
-		Job correlateJob = new Job("Correlation Job") {
+		Job correlateJob = new Job("Correlating AMS dataset '"+firstDataset+"' to drive dataset '"+secondDataset+"'") {
 			
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {

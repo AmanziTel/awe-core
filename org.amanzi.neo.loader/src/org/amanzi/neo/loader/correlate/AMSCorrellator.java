@@ -14,6 +14,8 @@
 package org.amanzi.neo.loader.correlate;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Iterator;
 
 import org.amanzi.neo.core.INeoConstants;
@@ -29,6 +31,7 @@ import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.loader.AbstractLoader.GisProperties;
+import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.neo4j.graphdb.Direction;
@@ -108,8 +111,8 @@ public class AMSCorrellator {
             Node gisTo = !isTest ? NeoUtils.findGisNode(firstDataset) : NeoUtils.findGisNode(firstDataset, neoService);
             
             Node datasetFrom = gisFrom.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode();
-            int count = ((Long)datasetFrom.getProperty(INeoConstants.COUNT_TYPE_NAME, 0L)).intValue();
-            monitor.beginTask("correlate", count);
+            int countFrom = ((Long)datasetFrom.getProperty(INeoConstants.COUNT_TYPE_NAME, 0L)).intValue();            
+            monitor.beginTask("Execute correlating", countFrom);
             gisProperFrom = new GisProperties(gisFrom);
             gisProperTo = new GisProperties(gisTo);
             gisProperFrom.initCRS();
@@ -118,6 +121,7 @@ public class AMSCorrellator {
             
 			Node realDatasetNode = getDatasetNode(firstDataset);
 			String callDatasetName = getCallDatasetName(realDatasetNode, firstDataset);
+			int countTo = ((Long)realDatasetNode.getProperty(INeoConstants.COUNT_TYPE_NAME, 0L)).intValue();
             if (monitor.isCanceled()){
                 throw new InterruptedException("correlation was interrupted"); //$NON-NLS-1$
             }
@@ -131,27 +135,34 @@ public class AMSCorrellator {
             if (monitor.isCanceled()){
                 throw new InterruptedException("correlation was interrupted"); //$NON-NLS-1$
             }
-			while (mIterator.hasNext()) {
+            int correlatedCount = 0;
+            while (mIterator.hasNext()) {
 			    if (monitor.isCanceled()){
 			        throw new InterruptedException("correlation was interrupted"); //$NON-NLS-1$
 			    }
+			    monitor.subTask("Success correlated "+correlatedCount+" ("+getPercents(correlatedCount, countTo)+"%) from "+countTo+" events.");
 				Node firstM = mIterator.next();
 				
 				Node callNode = determineCallNode(firstM);
 				
 				Long nodeTime = (Long)firstM.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME);
 				
-                Node mpNode = determineNode(nodeTime);
-								
-				correlateNodes(firstM, callNode, mpNode);
+                Node mpNode = determineNode(nodeTime);								
+				
+				if(correlateNodes(firstM, callNode, mpNode)){
+				    correlatedCount++;
+				}
 				monitor.worked(1);
 			}
             gisProperTo.saveBBox();
             gisProperToCall.saveBBox();
 			realDatasetLocationIndex.finishUp();
 			callDatasetLocationIndex.finishUp();
-			
-			tx.success();
+			if (countTo!=0) {
+                NeoLoaderPlugin.info("Correlating AMS dataset '" + firstDataset + "' to drive dataset '" + secondDataset + "'. "
+                        +correlatedCount+" ("+ getPercents(correlatedCount, countTo) + "%) from " + countTo + " success correlated.");
+            }
+            tx.success();
 		}catch (InterruptedException ie){
 		    tx.failure();
 		}catch (Exception e) {
@@ -167,21 +178,27 @@ public class AMSCorrellator {
 		}
 	}
 	
+	private String getPercents(int part, int all){
+	    BigDecimal percents = new BigDecimal(100.0*((double)part/all));
+	    percents = percents.setScale(2, RoundingMode.HALF_DOWN);
+	    return percents.toString();
+	}
+	
 	/**
 	 * Correlates two nodes
 	 *
 	 * @param first first node to correlate
 	 * @param second second node to correlate
 	 */
-	private void correlateNodes(Node mNode, Node callNode, Node orignalMNode) {
+	private boolean correlateNodes(Node mNode, Node callNode, Node orignalMNode) {
 	    if (orignalMNode == null) {
-	        return;
+	        return false;
 	    }
 	    try {
 	        //add a real child to m node
 	        Node originalMpNode = getMpNode(orignalMNode);
             if (originalMpNode == null) {
-                return;
+                return false;
             }
 	        Node newMpNode = copyMPNode(originalMpNode);
             Pair<Double, Double> locationPair = NeoUtils.getLocationPair(newMpNode, null);
@@ -200,6 +217,7 @@ public class AMSCorrellator {
 	    catch (IOException e) {
 	        NeoCorePlugin.error(null, e);	        
 	    }
+	    return true;
 	}
 	
 	private Node copyMPNode(Node originalMPNode) {

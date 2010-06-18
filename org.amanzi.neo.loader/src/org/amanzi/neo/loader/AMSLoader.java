@@ -772,7 +772,7 @@ public class AMSLoader extends AbstractCallLoader {
 			previousMNode.createRelationshipTo(mNode, GeoNeoRelationshipTypes.NEXT);
 		}
 		previousMNode = mNode;
-		
+		storingProperties.get(REAL_DATASET_HEADER_INDEX).incSaved();
 		return mNode;
 	}
 	

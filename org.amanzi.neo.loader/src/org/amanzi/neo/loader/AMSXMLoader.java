@@ -847,6 +847,7 @@ public class AMSXMLoader extends AbstractCallLoader {
             NeoUtils.addChild(datasetFileNode, node, lastDatasetNode, neo);
             lastDatasetNode = node;
             setNewIndexProperty(header, node, INeoConstants.PROPERTY_NAME_NAME, getClass().getSimpleName());
+            storingProperties.get(REAL_DATASET_HEADER_INDEX).incSaved();
         }
 
     }
@@ -2153,6 +2154,7 @@ private void handleCall() {
             }       
             probeNtpqs.createRelationshipTo(ntpq, ProbeCallRelationshipType.NTPQ_M);
             ntpqs.add(ntpq);
+            storingProperties.get(REAL_DATASET_HEADER_INDEX).incSaved();
         }
         
     }
