@@ -74,6 +74,7 @@ import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CBanner;
 import org.eclipse.swt.custom.TableCursor;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
@@ -1074,7 +1075,8 @@ public class CallAnalyserView extends ViewPart {
                 sb.append("        root ").append(aggregation).append("\n");//$NON-NLS-1$
                 sb.append("        traverse :CHILD, :NEXT\n");//$NON-NLS-1$
                 sb.append("        depth :all\n");//$NON-NLS-1$
-                sb.append("        where {get_property(\"type\")==\"s_row\"}\n");//$NON-NLS-1$
+                sb.append("        where {get_property(\"type\")==\"s_row\" and get_property(\"time\")>=");
+                sb.append(getTime(dateStart, timeStart)).append(" and get_property(\"time\")<=").append(getTime(dateEnd, timeEnd)).append("}\n");//$NON-NLS-1$
                 sb.append("        select_properties \"value\" do\n");//$NON-NLS-1$
                 sb.append("          from do\n");//$NON-NLS-1$
                 sb.append("            traverse :CHILD, :NEXT\n");//$NON-NLS-1$
