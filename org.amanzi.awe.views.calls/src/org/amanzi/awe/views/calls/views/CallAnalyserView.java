@@ -69,6 +69,7 @@ import org.eclipse.jface.viewers.ITableColorProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
@@ -1212,13 +1213,7 @@ public class CallAnalyserView extends ViewPart {
      */
     protected void changePeriod() {
         Node drive = callDataset.get(cDrive.getText());
-        if(drive!=null){
-            CallTimePeriods period = getTimePeriod();
-            GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
-            Pair<Long, Long> times = NeoUtils.getMinMaxTimeOfDataset(drive, service);
-            setTime(dateStart, timeStart, period.getFirstTime(times.getLeft())); 
-            setTime(dateEnd, timeEnd, times.getRight());
-        }else{
+        if(drive==null){
             setDefaultTime();
         }
         updateTable(false);
@@ -1271,7 +1266,7 @@ public class CallAnalyserView extends ViewPart {
      */
     private void updateTable(boolean showEmpty) {
         InputWrapper wrapper = createInputWrapper(showEmpty);
-        if (wrapper.isCorrectInput()) {
+        if (wrapper.isCorrectInput()) {            
             tableViewer.setInput(wrapper);
         }
     }
