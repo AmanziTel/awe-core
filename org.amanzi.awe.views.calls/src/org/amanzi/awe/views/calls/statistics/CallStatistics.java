@@ -574,33 +574,33 @@ public class CallStatistics {
     }
     
     protected Node findOrCreateSRowNode(Node parent,final Long startDate,final Node probeNode, Node highLevelSRow, CallTimePeriods period){
-        Iterator<Node> rows = NeoUtils.getChildTraverser(parent, new ReturnableEvaluator() {            
-            @Override
-            public boolean isReturnableNode(TraversalPosition currentPos) {
-                Node node = currentPos.currentNode();
-                if(NeoUtils.isSRowNode(node)){
-                    Iterator<Node> source = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, 
-                            new ReturnableEvaluator() {                                
-                                @Override
-                                public boolean isReturnableNode(TraversalPosition currentPos) {
-                                    return probeNode.equals(currentPos.currentNode());
-                                }
-                            }, GeoNeoRelationshipTypes.SOURCE,Direction.OUTGOING).iterator();
-                    if (source.hasNext()) {
-                        Long rowTime = (Long)node.getProperty(INeoConstants.PROPERTY_TIME_NAME, 0L);
-                        return rowTime.equals(startDate);
-                    }
-                }                
-                return false;
-            }
-        }).iterator();
+//        Iterator<Node> rows = NeoUtils.getChildTraverser(parent, new ReturnableEvaluator() {            
+//            @Override
+//            public boolean isReturnableNode(TraversalPosition currentPos) {
+//                Node node = currentPos.currentNode();
+//                if(NeoUtils.isSRowNode(node)){
+//                    Iterator<Node> source = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, 
+//                            new ReturnableEvaluator() {                                
+//                                @Override
+//                                public boolean isReturnableNode(TraversalPosition currentPos) {
+//                                    return probeNode.equals(currentPos.currentNode());
+//                                }
+//                            }, GeoNeoRelationshipTypes.SOURCE,Direction.OUTGOING).iterator();
+//                    if (source.hasNext()) {
+//                        Long rowTime = (Long)node.getProperty(INeoConstants.PROPERTY_TIME_NAME, 0L);
+//                        return rowTime.equals(startDate);
+//                    }
+//                }                
+//                return false;
+//            }
+//        }).iterator();
         Node row;
-        if(rows.hasNext()){
-            row = rows.next();
-            previousSRowNodes.put(period, row);
-        }else{
+//        if(rows.hasNext()){
+//            row = rows.next();
+//            previousSRowNodes.put(period, row);
+//        }else{
             row = createSRowNode(parent, startDate, probeNode, highLevelSRow, period);
-        }
+//        }
         return row;
     }
     
@@ -630,23 +630,23 @@ public class CallStatistics {
     }
     
     protected Node saveSCellNode(Node parent, Statistics statistics,final IStatisticsHeader header, CallTimePeriods period){
-        Iterator<Node> cells = NeoUtils.getChildTraverser(parent, new ReturnableEvaluator() {            
-            @Override
-            public boolean isReturnableNode(TraversalPosition currentPos) {
-                Node node = currentPos.currentNode();
-                if(NeoUtils.isScellNode(node)){
-                    return NeoUtils.getNodeName(node, neoService).equals(header.getTitle());
-                }                
-                return false;
-            }
-        }).iterator();
+//        Iterator<Node> cells = NeoUtils.getChildTraverser(parent, new ReturnableEvaluator() {            
+//            @Override
+//            public boolean isReturnableNode(TraversalPosition currentPos) {
+//                Node node = currentPos.currentNode();
+//                if(NeoUtils.isScellNode(node)){
+//                    return NeoUtils.getNodeName(node, neoService).equals(header.getTitle());
+//                }                
+//                return false;
+//            }
+//        }).iterator();
         Node cell;
-        if(cells.hasNext()){
-            cell = cells.next();
-            previousSCellNodes.put(period, cell);            
-        }else{
+//        if(cells.hasNext()){
+//            cell = cells.next();
+//            previousSCellNodes.put(period, cell);            
+//        }else{
             cell = createSCellNode(parent, header, period);
-        }
+//        }
         Object value = statistics.get(header);
         if (value != null)  {        
             for (Node callNode : statistics.getAllAffectedCalls(header)) {
