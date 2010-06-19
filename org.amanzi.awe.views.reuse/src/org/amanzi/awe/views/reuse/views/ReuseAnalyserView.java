@@ -478,7 +478,9 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
                     propertyName = propertyCombo.getText();
                     if (isStringProperty(propertyName)) {
                         cDistribute.setEnabled(false);
+                        cDistribute.select(0);
                         cSelect.setEnabled(false);
+                        cSelect.select(0);
                     } else {
                         cDistribute.setEnabled(true);
                         boolean isAggregated = isAggregatedDataset(gisNode);
