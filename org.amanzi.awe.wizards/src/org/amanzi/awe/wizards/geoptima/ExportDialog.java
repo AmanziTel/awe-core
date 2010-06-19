@@ -50,6 +50,7 @@ import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DragSource;
@@ -63,6 +64,7 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
@@ -71,11 +73,20 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -89,7 +100,6 @@ import org.neo4j.graphdb.Traverser.Order;
 
 import au.com.bytecode.opencsv.CSVWriter;
 
-// TODO: Auto-generated Javadoc
 /**
  * <p>
  * GeOptima export dialog
@@ -227,16 +237,60 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
         layoutData.widthHint = 300;
         layoutData.heightHint = 400;
         viewer.getControl().setLayoutData(layoutData);
-        Button bCorrelate = new Button(shell, SWT.PUSH);
-        bCorrelate.setText("Export");
-        bCorrelate.addSelectionListener(new SelectionAdapter() {
-
+        final Menu menu = new Menu(shell, SWT.POP_UP);
+        MenuItem item = new MenuItem(menu, SWT.PUSH);
+        item.setText("Export to CSV");
+        item.addSelectionListener(new SelectionListener() {
+            
             @Override
             public void widgetSelected(SelectionEvent e) {
                 export();
             }
-
+            
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
         });
+          MenuItem item2 = new MenuItem(menu, SWT.PUSH);
+          item2.setText("Export to Spreadsheet");
+          item2.addSelectionListener(new SelectionListener() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                exportSpreadsheet();
+            }
+            
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+        final ToolBar bar=new ToolBar(shell, SWT.NONE);
+        final ToolItem export=new ToolItem(bar, SWT.DROP_DOWN);
+        export.setText("export to");
+        export.addListener(SWT.Selection, new Listener() {
+            public void handleEvent(Event event) {
+              if (event.detail == SWT.ARROW) {
+                Rectangle rect = export.getBounds();
+                Point pt = new Point(rect.x, rect.y + rect.height);
+                pt = bar.toDisplay(pt);
+                menu.setLocation(pt.x, pt.y);
+                menu.setVisible(true);
+              }
+            }
+
+          });
+//        Button bCorrelate = new Button(shell, SWT.PUSH);
+//        bCorrelate.setText("Export");
+//        bCorrelate.addSelectionListener(new SelectionAdapter() {
+//
+//            @Override
+//            public void widgetSelected(SelectionEvent e) {
+//                export();
+//            }
+//
+//        });
 
         Button btnOk = new Button(shell, SWT.PUSH);
         btnOk.setText("Exit");
@@ -368,6 +422,48 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
                 }
             }
         });
+    }
+
+    /**
+     *
+     */
+    protected void exportSpreadsheet() {
+        final List<AbstractExporter> exports = new ArrayList<AbstractExporter>();
+        Object[] elements = viewer.getCheckedElements();
+        if (elements.length == 0) {
+            return;
+        }
+        Transaction tx = service.beginTx();
+        try {
+            for (TreeItem rootItem : viewer.getTree().getItems()) {
+                if (rootItem.getChecked()) {
+                    if (NodeTypes.NETWORK.checkNode(((TreeElem)rootItem.getData()).getNode())) {
+                        NetworkExport network = new NetworkExport(rootItem);
+                        if (network.isValid()) {
+                            exports.add(network);
+                        }
+                    } else {
+                        DatasetExport dataset = new DatasetExport(rootItem);
+                        if (dataset.isValid()) {
+                            exports.add(dataset);
+                        }
+                    }
+                }
+            }
+            if (exports.isEmpty()) {
+                return;
+            }
+            IWorkbench wb = PlatformUI.getWorkbench();
+            final IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
+                ExportToSpreadsheetWizard wizard = new ExportToSpreadsheetWizard(exports);
+                wizard.init(window.getWorkbench(), null);
+                Shell parent = window.getShell();
+                WizardDialog dialog = new WizardDialog(parent, wizard);
+                dialog.create();
+                dialog.open();
+        } finally {
+            tx.finish();
+        }
     }
 
     /**
@@ -963,13 +1059,13 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
         private boolean valid;
         
         /** The model. */
-        private NeoExportModelImpl model;
+        private  NeoExportModelImpl model;
         
         /** The main node iterator. */
-        private Iterator<Node> mainNodeIterator;
+        private  Iterator<Node> mainNodeIterator;
         
         /** The dataname. */
-        private String dataname;
+        private  String dataname;
 
         /**
          * Instantiates a new dataset export.
@@ -1085,16 +1181,16 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
         private boolean haveCorrelate;
         
         /** The model. */
-        private NeoExportModelImpl model;
+        private  NeoExportModelImpl model;
         
         /** The site prop. */
-        private LinkedList<String> siteProp;
+        private  LinkedList<String> siteProp;
         
         /** The sector. */
-        private LinkedList<String> sector;
+        private  LinkedList<String> sector;
         
         /** The dataset prop. */
-        private LinkedHashMap<Node, List<String>> datasetProp;
+        private  LinkedHashMap<Node, List<String>> datasetProp;
         
         /** The iter cor. */
         private Iterator<Entry<Node, List<String>>> iterCor;
@@ -1106,7 +1202,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
         private Traverser traverser;
         
         /** The main node. */
-        private Node mainNode;
+        private  Node mainNode;
         
         /** The name. */
         private String name;
