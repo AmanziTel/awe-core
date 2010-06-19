@@ -18,6 +18,12 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Iterator;
 
+import net.refractions.udig.project.ILayer;
+import net.refractions.udig.project.IMap;
+import net.refractions.udig.project.internal.Layer;
+import net.refractions.udig.project.internal.commands.DeleteLayerCommand;
+import net.refractions.udig.project.ui.ApplicationGIS;
+
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.DriveTypes;
@@ -103,6 +109,7 @@ public class AMSCorrellator {
 	    Transaction tx = neoService.beginTx();
         NeoUtils.addTransactionLog(tx, Thread.currentThread(), "correlate");
 		try {
+		    NeoLoaderPlugin.getDefault().info("Start correlated ");
 			initializeIndex(secondDataset);
             if (monitor.isCanceled()){
                 throw new InterruptedException("correlation was interrupted"); //$NON-NLS-1$
@@ -115,10 +122,12 @@ public class AMSCorrellator {
             monitor.beginTask("Execute correlating", countFrom);
             gisProperFrom = new GisProperties(gisFrom);
             gisProperTo = new GisProperties(gisTo);
+            removeLayer(gisTo);
+            
             gisProperFrom.initCRS();
             gisProperTo.setCrs(gisProperFrom.getCrs());
             gisProperTo.saveCRS();
-            
+            gisProperTo.setBbox(null);
 			Node realDatasetNode = getDatasetNode(firstDataset);
 			String callDatasetName = getCallDatasetName(realDatasetNode, firstDataset);
 			int countTo = ((Long)realDatasetNode.getProperty(INeoConstants.COUNT_TYPE_NAME, 0L)).intValue();
@@ -178,7 +187,32 @@ public class AMSCorrellator {
 		}
 	}
 	
-	private String getPercents(int part, int all){
+	/**
+     *
+     * @param gisTo
+     */
+    private void removeLayer(Node gisTo) {
+        try {
+            for (IMap map : ApplicationGIS.getOpenMaps()) {
+                for (ILayer layer : map.getMapLayers()) {
+                    if (layer.getGeoResource().canResolve(Node.class)) {
+                        Node gisNode = layer.getGeoResource().resolve(Node.class, null);
+                        if (gisNode.equals(gisTo)) {
+                            map.sendCommandSync(new DeleteLayerCommand((Layer)layer));
+                        }
+
+                    }
+                }
+            }
+        } catch (IOException e) {
+            NeoLoaderPlugin.exception(e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+    }
+
+    private String getPercents(int part, int all){
+
+        
 	    BigDecimal percents = new BigDecimal(100.0*((double)part/all));
 	    percents = percents.setScale(2, RoundingMode.HALF_DOWN);
 	    return percents.toString();

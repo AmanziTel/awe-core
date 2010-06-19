@@ -1918,17 +1918,18 @@ private void handleCall() {
 
                     gps.store(mp);
                     String time = getPropertyMap().get("deliveryTime");
-                    String name = "mp";
-                    NeoUtils.setNodeName(mp, name, neo);
+                    String name = time;
+                   
                     if (StringUtils.isNotEmpty(time)) {
                         try {
                             Long timestamp = getTime(time);
+                            name=getGPSName(timestamp);
                             mp.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
                         } catch (ParseException e) {
                             LOGGER.error("wrong data: " + time, e);
                         }
-
                     }
+                    NeoUtils.setNodeName(mp, name, neo);
                     GisProperties gis = getGisProperties(networkName);
                     gis.updateBBox(gps.lat, gps.lon);
                     gis.checkCRS(((Double)gps.lat).floatValue(), ((Double)gps.lon).floatValue(), null);

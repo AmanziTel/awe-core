@@ -1934,6 +1934,13 @@ public abstract class AbstractLoader {
         public void setCrs(CoordinateReferenceSystem crs) {
             setCrs(CRS.fromCRS(crs));
         }
+
+        /**
+         * @param bbox The bbox to set.
+         */
+        public void setBbox(double[] bbox) {
+            this.bbox = bbox;
+        }
     }
 
     /**
