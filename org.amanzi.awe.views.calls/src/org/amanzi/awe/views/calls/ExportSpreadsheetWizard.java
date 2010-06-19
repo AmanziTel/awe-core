@@ -40,8 +40,8 @@ import org.neo4j.graphdb.Transaction;
 import org.rubypeople.rdt.core.RubyModelException;
 
 /**
- * TODO Purpose of
  * <p>
+ * ExportSpreadsheetWizard - provide work with export data to spreadsheet
  * </p>
  * 
  * @author Cinkel_A
@@ -63,6 +63,9 @@ public class ExportSpreadsheetWizard extends SplashNewSpreadsheetWizard {
         Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
         final IResource resource;
         try {
+            if (monitor.isCanceled()){
+                return;
+            }
             monitor.beginTask("Creating " + fileName, 2);
             IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
             resource = root.findMember(new Path(containerName));
@@ -76,9 +79,15 @@ public class ExportSpreadsheetWizard extends SplashNewSpreadsheetWizard {
             for (int column = 0; column < columnHeaders.size(); column++) {
                 Cell cellToadd = new Cell(0, column, "", columnHeaders.get(column).getName(), null);
                 spreadsheetCreator.saveCell(cellToadd);
+                if (monitor.isCanceled()){
+                    return;
+                }
             }
             for (int column = 0; column < columnHeaders.size(); column++) {
                 for (int row = 0; row < elements.size(); row++) {
+                    if (monitor.isCanceled()){
+                        return;
+                    }
                     Object value = columnHeaders.get(column).getValue(elements.get(row), column);
                     Cell cellToadd = new Cell(row + 1, column, "", value, null);
                     spreadsheetCreator.saveCell(cellToadd);
