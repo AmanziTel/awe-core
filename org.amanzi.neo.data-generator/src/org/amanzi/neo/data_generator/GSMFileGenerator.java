@@ -36,10 +36,11 @@ public class GSMFileGenerator {
     private static final String[] targetHeaders = new String[] {"S.No.", "TimeStamp", "Mobile Number", "IMEI", "IMSI", "HandSet", "Model", "CurrentPLMN", "Manufacturer",
             "BatteryPercentage", "SignalStrength", "CellId", "Lac", "Mcc", "Mnc", "RxQuality", "Latitude", "Longitude", "lastCallStatus", "lastCallStartTime",
             "lastCallEndTime", "RadioLinkAvailability"};
-    private static final String[] mobileManufacturer = new  String[]{"Samsung", "Nokia", "HTC", "Sony Ericsson", "Motorola", "etc"};
-    private static final String[] mobNum = new String[]{"19258756123","24687531223","12355231020","17886986210","15442100030"};
-    private static final String[] IMEI = new String[]{"354731020630622","123679800364498","703144571103630","787435178954234","741000322256030"};
-    private static final String[] IMSI = new String[]{"310410291513807","456546870646566","879809456549680","406346434547840","121320136846879"};
+    private static final String[] mobileManufacturer = new String[] {"Samsung", "Nokia", "HTC", "Sony Ericsson", "Motorola", "etc"};
+    private static final String[] mobNum = new String[] {"19258756123", "24687531223", "12355231020", "17886986210", "15442100030"};
+    private static final String[] IMEI = new String[] {"354731020630622", "123679800364498", "703144571103630", "787435178954234", "741000322256030"};
+    private static final String[] IMSI = new String[] {"310410291513807", "456546870646566", "879809456549680", "406346434547840", "121320136846879"};
+
     /**
      * @param args
      */
@@ -80,21 +81,21 @@ public class GSMFileGenerator {
                 str2Write.append(header).append("\t");
             }
             int rowNum = 0;
-            
+
             String pattern = "dd.MM.yyyy hh:mm:ss";
             SimpleDateFormat sf = new SimpleDateFormat(pattern);
             Date testDate = new Date();
-            
+
             long timestampDelta = 0;
-            
+
             while ((line = reader.readLine()) != null) {
                 str2Write.append("\n");
                 String[] data = line.split("\t");
                 // S.No.
                 str2Write.append(++rowNum).append("\t");
                 // TimeStamp
-                str2Write.append(sf.format(new Date(testDate.getTime()+ timestampDelta))).append("\t");
-                timestampDelta+=1000;
+                str2Write.append(sf.format(new Date(testDate.getTime() + timestampDelta))).append("\t");
+                timestampDelta += 1000;
                 // Mobile Number
                 int n = generator.nextInt(5);
                 str2Write.append(mobNum[n]).append("\t");
@@ -126,9 +127,9 @@ public class GSMFileGenerator {
                 // RxQuality
                 str2Write.append("14[raw data]").append("\t");
                 // Longitude
-                str2Write.append(new BigDecimal(data[lonNum]).add(new BigDecimal(generator.nextInt(6)-2).divide(BigDecimal.valueOf(200)))).append("\t");
+                str2Write.append(new BigDecimal(data[lonNum]).add(new BigDecimal(generator.nextInt(6) - 2).divide(BigDecimal.valueOf(200)))).append("\t");
                 // Latitude
-                str2Write.append(new BigDecimal(data[latNum]).add(new BigDecimal(generator.nextInt(6)-2).divide(BigDecimal.valueOf(200)))).append("\t");                
+                str2Write.append(new BigDecimal(data[latNum]).add(new BigDecimal(generator.nextInt(6) - 2).divide(BigDecimal.valueOf(200)))).append("\t");
                 // lastCallStatus
                 str2Write.append("Idle").append("\t");
                 // lastCallStartTime
