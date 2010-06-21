@@ -47,7 +47,6 @@ import org.amanzi.neo.core.enums.CallProperties.CallResult;
 import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
-import org.amanzi.neo.loader.AbstractLoader.StoringProperty;
 import org.amanzi.neo.loader.NetworkLoader.CRS;
 import org.amanzi.neo.loader.ams.parameters.AMSCommandParameters;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
@@ -78,7 +77,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
-// TODO: Auto-generated Javadoc
 /**
  * <p>
  * AMS XML Loader
@@ -1086,7 +1084,8 @@ private void handleCall() {
      * @since 1.0.0
      */
     public class Ttc extends AbstractEvent {
-
+        double lq=0;
+        int lqCount=0;
         /** The pesq cast map. */
         protected final Map<String, Class< ? extends Object>> pesqCastMap;
 
@@ -1161,6 +1160,8 @@ private void handleCall() {
             handleCall();
             delay = 0;
             delayCount = 0;
+            lq=0;
+            lqCount=0;
             for (PropertyCollector collector : collectorList) {
                 if (collector.getName().equals("pesqResult")) {
                     createAttachmentNode(collector);
@@ -1174,6 +1175,11 @@ private void handleCall() {
                 if (tocttcGroup != null) {
                     tocttcGroup.addDelay(delay / 1000f);
                 }
+                setIndexProperty(header, node, "TTC Audio Delay",delay / 1000f); 
+            }
+            if (lqCount>0){
+                lq=lq/lqCount;
+                setIndexProperty(header, node, "TTC Listening Quality",lq); 
             }
             if (tocttc != null && hook != null && simplex != null && hook == 0 && simplex == 0) {
                 saveCall(tocttc);
@@ -1262,6 +1268,8 @@ private void handleCall() {
                     delayCount++;
                 }
                 if (entry.getKey().equals("pesq")) {
+                    lqCount++;
+                    lq+=((Number)parseValue).doubleValue();
                     if (tocttc != null) {
                         tocttc.addLq(((Number)parseValue).floatValue());
                     }
@@ -1284,7 +1292,9 @@ private void handleCall() {
      * @since 1.0.0
      */
     public class Toc extends AbstractEvent {
-
+        double lq=0;
+        int lqCount=0;
+        double averareDelay=0;
         /** The pesq cast map. */
         protected final Map<String, Class< ? extends Object>> pesqCastMap;
 
@@ -1363,6 +1373,8 @@ private void handleCall() {
             handleCall();
             delay = 0;
             delayCount = 0;
+             lq=0;
+             lqCount=0;
             for (PropertyCollector collector : collectorList) {
                 if (collector.getName().equals("pesqResult")) {
                     createAttachmentNode(collector);
@@ -1376,6 +1388,11 @@ private void handleCall() {
                 if (tocttcGroup != null) {
                     tocttcGroup.addDelay(delay / 1000f);
                 }
+                setIndexProperty(header, node, "TOC Audio Delay", delay / 1000f);
+            }
+            if (lqCount>0){
+                lq=lq/lqCount;
+                setIndexProperty(header, node, "TOC Listening Quality",lq); 
             }
 
         }
@@ -1486,6 +1503,8 @@ private void handleCall() {
                     delayCount++;
                 }
                 if (entry.getKey().equals("pesq")) {
+                    lqCount++;
+                    lq+=((Number)parseValue).doubleValue();
                     if (tocttc != null) {
                         tocttc.addLq(((Number)parseValue).floatValue());
                     }
