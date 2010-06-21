@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.views.calls.CallAnalyserPlugin;
 import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
 import org.amanzi.awe.views.calls.statistics.constants.GroupCallConstants;
@@ -266,6 +267,7 @@ public class CallStatistics {
      */
     protected void buildSecondLevelStatistics(long minTime, long maxTime, boolean isInconclusive) {
         monitor.subTask("Build second level statistics");
+        CallAnalyserPlugin.info("Build second level statistics");
         Node secondLevel = statisticNode.get(StatisticsCallType.AGGREGATION_STATISTICS);
         if(secondLevel==null){
             AggregationCallStatisticsBuilder aggrStatisticsBuilder = new AggregationCallStatisticsBuilder(datasetNode, neoService, isInconclusive);
@@ -352,6 +354,7 @@ public class CallStatistics {
                     }
                     String probeName = (String)probe.getProperty(INeoConstants.PROPERTY_NAME_NAME);
                     subMonitor.subTask("Build "+callType.getViewName()+" statistics for probe "+probeName+".");
+                    CallAnalyserPlugin.info("Build "+callType.getViewName()+" statistics for probe "+probeName+".");
                     Node probeCallsNode = NeoUtils.getCallsNode(datasetNode, probeName, probe, neoService);
                     String callProbeName = (String)probeCallsNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
                 

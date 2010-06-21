@@ -14,6 +14,7 @@ import org.amanzi.neo.core.database.services.events.ImportCsvStatisticsEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.utils.ActionUtil;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -21,6 +22,10 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.console.ConsolePlugin;
+import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.MessageConsole;
+import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -28,6 +33,7 @@ import org.osgi.framework.BundleContext;
  * The activator class controls the plug-in life cycle
  */
 public class CallAnalyserPlugin extends AbstractUIPlugin implements IUpdateViewListener {
+    private static final Logger LOGGER = Logger.getLogger(CallAnalyserPlugin.class);
     private static final Collection<UpdateViewEventType> handedTypes;
     static {
         Collection<UpdateViewEventType> spr = new HashSet<UpdateViewEventType>();
@@ -37,9 +43,19 @@ public class CallAnalyserPlugin extends AbstractUIPlugin implements IUpdateViewL
     }
 	// The plug-in ID
 	public static final String PLUGIN_ID = "org.amanzi.awe.views.calls";
+	
+	private static String CONSOLE_NAME = "CallAnalyser Console";
 
 	// The shared instance
 	private static CallAnalyserPlugin plugin;
+	
+	public static boolean debug = false;
+    private static boolean verbose = true;  
+	
+	private static boolean loggingPossible = false;
+    private static boolean isVisible = false;
+    private MessageConsole pluginConsole;    
+    private MessageConsoleStream consoleStream;
 	
 	/**
 	 * The constructor
@@ -55,6 +71,7 @@ public class CallAnalyserPlugin extends AbstractUIPlugin implements IUpdateViewL
 		super.start(context);
 		plugin = this;
         NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
+        initializeConsole();
 	}
 
 	/*
@@ -137,5 +154,46 @@ public class CallAnalyserPlugin extends AbstractUIPlugin implements IUpdateViewL
     @Override
     public Collection<UpdateViewEventType> getType() {
         return handedTypes;
+    }
+    
+    /**
+     * Initialize console for output from NeoLoaderPlugin
+     */
+    
+    private void initializeConsole() {
+        pluginConsole = new MessageConsole(CONSOLE_NAME, null, true);
+        pluginConsole.initialize();
+        
+        consoleStream = pluginConsole.newMessageStream();       
+        
+        ConsolePlugin.getDefault().getConsoleManager().addConsoles(new IConsole[] {pluginConsole});
+        
+        loggingPossible = (plugin != null) && (pluginConsole != null);
+    }
+    
+    /**
+     * Print info message
+     * 
+     * @param line
+     */
+    
+    public static void info(String line) {
+        if (loggingPossible) {
+            if (verbose || debug) {
+                getDefault().printToStream(line);
+            }
+        } else {
+            LOGGER.debug(line);
+        }
+    }
+    
+    /** Print a message to Console */
+    private void printToStream(final String line) {
+        if (!isVisible) {           
+            pluginConsole.activate();           
+            ConsolePlugin.getDefault().getConsoleManager().showConsoleView(pluginConsole);
+            isVisible = true;
+        }       
+        consoleStream.println(line);
     }
 }

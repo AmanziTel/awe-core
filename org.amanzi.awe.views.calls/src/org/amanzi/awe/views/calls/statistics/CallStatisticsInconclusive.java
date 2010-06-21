@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.views.calls.CallAnalyserPlugin;
 import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
 import org.amanzi.neo.core.INeoConstants;
@@ -152,6 +153,7 @@ public class CallStatisticsInconclusive extends CallStatistics {
                     }
                     String probeName = (String)probe.getProperty(INeoConstants.PROPERTY_NAME_NAME);
                     subMonitor.subTask("Build "+callType.getViewName()+" statistics for probe "+probeName+".");
+                    CallAnalyserPlugin.info("Build "+callType.getViewName()+" statistics for probe "+probeName+".");
                     Node probeCallsNode = NeoUtils.getCallsNode(datasetNode, probeName, probe, neoService);
                     String callProbeName = (String)probeCallsNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
                     if (NeoUtils.findMultiPropertyIndex(NeoUtils.getTimeIndexName(callProbeName), neoService) != null) {                
