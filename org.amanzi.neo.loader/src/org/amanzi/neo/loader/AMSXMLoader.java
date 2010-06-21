@@ -417,6 +417,11 @@ public class AMSXMLoader extends AbstractCallLoader {
             tx.finish();
         }
     }
+    
+    @Override
+    public void addLayersToMap() {
+        LoaderUtils.addAmsGisNodesToMap(getDataName(), gisNodes.get(networkName).getGis(), datasetGis, gisNodes.get(calldatasetName).getGis());
+    }
 
     /**
      * Handle file.

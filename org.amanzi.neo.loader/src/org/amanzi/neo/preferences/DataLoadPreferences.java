@@ -25,6 +25,10 @@ public class DataLoadPreferences {
     public static final String REMOVE_SITE_NAME = "REMOVE_SITE_NAME";
     public static final String NETWORK_COMBINED_CALCULATION = "USE_COMBINED_CALCULATION";
     public static final String ZOOM_TO_LAYER = "ZOOM_TO_LAYER";
+    
+    public static final String ADD_AMS_PROBES_TO_MAP = "ADD_AMS_PROBES_TO_MAP";
+    public static final String ADD_AMS_EVENTS_TO_MAP = "ADD_AMS_EVENTS_TO_MAP";
+    public static final String ADD_AMS_CALLS_TO_MAP = "ADD_AMS_CALLS_TO_MAP";
 
     // network loader headers
     public static final String NH_CITY = "NH_CITY";
