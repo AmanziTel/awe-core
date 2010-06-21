@@ -79,26 +79,34 @@ public abstract class AbstractCallLoader extends DriveLoader {
             CallType callType = call.getCallType();
             Transaction tx = neo.beginTx();
             try {
+                Node callNode = null;
                 switch (callType) {
                 case INDIVIDUAL:
                 case GROUP:
                 case EMERGENCY:
                 case HELP:
-                    return storeRealCall(call);
+                    callNode = storeRealCall(call);
+                    break;
                 case SDS:
                 case TSM:
                 case ALARM:
-                    return storeMessageCall(call);
+                    callNode = storeMessageCall(call);
+                    break;
                 case ITSI_ATTACH:
-                    return storeITSICall(call);
+                    callNode = storeITSICall(call);
+                    break;
                 case ITSI_CC:
-                    return storeITSICCCall(call);
+                    callNode = storeITSICCCall(call);
+                    break;
                 case ITSI_HO:
-                    return storeITSIHOCall(call);
+                    callNode = storeITSIHOCall(call);
+                    break;
                 default:
                     NeoCorePlugin.error("Unknown call type "+callType+".", null);
                     return null;
-                }                
+                }       
+                call.setNode(callNode);
+                return callNode;
             }
             catch (Exception e) {
                 tx.failure();
