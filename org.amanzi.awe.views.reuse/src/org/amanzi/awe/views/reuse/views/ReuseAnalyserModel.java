@@ -47,11 +47,9 @@ import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 
-// TODO: Auto-generated Javadoc
 /**
- * TODO Purpose of
  * <p>
- * 
+ * Reuse Analyse model
  * </p>.
  *
  * @author tsinkel_a
