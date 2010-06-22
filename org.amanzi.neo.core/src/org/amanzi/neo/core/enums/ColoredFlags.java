@@ -25,9 +25,9 @@ import org.eclipse.swt.widgets.Display;
  */
 public enum ColoredFlags {
     
-    RED("red",5, new Color(Display.getCurrent(), 255, 0, 0), java.awt.Color.red.getRGB()),
-    YELLOW("yellow",0, new Color(Display.getCurrent(), 255, 255, 0), java.awt.Color.yellow.getRGB()),
-    NONE("none",-1, null,-1);
+    RED("red",5, 255, 0, 0, java.awt.Color.red.getRGB()),
+    YELLOW("yellow",0, 255, 255, 0, java.awt.Color.yellow.getRGB()),
+    NONE("none",-1, -1,0,0,-1);
     private String id;
     private Color color;
     private int order;
@@ -38,9 +38,14 @@ public enum ColoredFlags {
      * @param id
      * @param color
      */
-    private ColoredFlags(String id, int order, Color color, int rgb) {
+    private ColoredFlags(String id, int order, int red, int green, int blue, int rgb) {
         this.id = id;
-        this.color = color;
+        Display display = Display.getCurrent();
+        if(display!=null&&red>=0){
+            this.color = new Color(display, red,green,blue);
+        }else{
+            this.color = null;
+        }
         this.order = order;
         this.rgb = rgb;
     }
