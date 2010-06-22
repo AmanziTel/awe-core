@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.views.calls.enums.InclInconclusiveStates;
 import org.amanzi.awe.views.calls.statistics.constants.ICallStatisticsConstants;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.CallProperties;
@@ -221,7 +222,7 @@ public class CallStatisticsUtills {
      * @param callNode Node (call)
      * @return boolean
      */
-    public static boolean isCallSuccess(Node callNode, boolean inclInconclusive){
+    public static boolean isCallSuccess(Node callNode, InclInconclusiveStates inclState){
         CallResult callResult = CallResult.valueOf((String)callNode.getProperty(CallProperties.CALL_RESULT.getId(),null));
         if(callResult==null){
             return false;
@@ -229,7 +230,7 @@ public class CallStatisticsUtills {
         if(callResult.equals(CallResult.SUCCESS)){
             return true;
         }
-        if(inclInconclusive){
+        if(inclState.equals(InclInconclusiveStates.INCLUDE_ALL)||inclState.equals(InclInconclusiveStates.INCLUDE_NTP)){
             boolean inconclusive = (Boolean)callNode.getProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE,false);
             return callResult.equals(CallResult.FAILURE)&&inconclusive;
         }
@@ -242,8 +243,8 @@ public class CallStatisticsUtills {
      * @param callNode Node (call)
      * @return boolean
      */
-    public static boolean isCallAttempt(Node callNode, boolean inclInconclusive){
-        if(inclInconclusive){
+    public static boolean isCallAttempt(Node callNode, InclInconclusiveStates inclState) {
+        if(!inclState.equals(InclInconclusiveStates.EXCLUDE)){
             return true;
         }
         boolean inconclusive = (Boolean)callNode.getProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE,false);        
@@ -257,8 +258,8 @@ public class CallStatisticsUtills {
      * @param constants IStatisticsConstants
      * @return boolean
      */
-    public static boolean isCallInTimeLimit(Node callNode, ICallStatisticsConstants constants, boolean inclInconclusive){
-        if(!isCallSuccess(callNode,inclInconclusive)){
+    public static boolean isCallInTimeLimit(Node callNode, ICallStatisticsConstants constants, InclInconclusiveStates inclState) {
+        if(!isCallSuccess(callNode,inclState)){
             return false;
         }
         Float connectionTime = getCallConnectionTime(callNode);
@@ -272,8 +273,8 @@ public class CallStatisticsUtills {
      * @param constants IStatisticsConstants
      * @return boolean
      */
-    public static boolean isCallDuratiomGood(Node callNode, ICallStatisticsConstants constants, boolean inclInconclusive){
-        if(!isCallInTimeLimit(callNode, constants,inclInconclusive)){
+    public static boolean isCallDuratiomGood(Node callNode, ICallStatisticsConstants constants, InclInconclusiveStates inclState) {
+        if(!isCallInTimeLimit(callNode, constants,inclState)){
             return false;
         }
         Float duration = getCallDurationTime(callNode);

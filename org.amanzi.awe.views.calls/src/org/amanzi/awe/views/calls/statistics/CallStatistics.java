@@ -23,6 +23,7 @@ import java.util.Map.Entry;
 import org.amanzi.awe.statistic.CallTimePeriods;
 import org.amanzi.awe.views.calls.CallAnalyserPlugin;
 import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
+import org.amanzi.awe.views.calls.enums.InclInconclusiveStates;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
 import org.amanzi.awe.views.calls.statistics.constants.GroupCallConstants;
 import org.amanzi.awe.views.calls.statistics.constants.ICallStatisticsConstants;
@@ -156,13 +157,13 @@ public class CallStatistics {
         
         statisticNode = createStatistics();
         
-        finishInitialize();       
+        finishInitialize(InclInconclusiveStates.EXCLUDE);       
     }
 
     /**
      * Finish initialize statistics
      */
-    protected void finishInitialize() {
+    protected void finishInitialize(InclInconclusiveStates incState) {
         Pair<Long, Long> minMax = getTimeBounds(datasetNode);
         long minTime = minMax.getLeft();
         long maxTime = minMax.getRight();
@@ -171,7 +172,7 @@ public class CallStatistics {
             setCanceled();
             return;
         }
-        buildSecondLevelStatistics(minTime, maxTime, false);
+        buildSecondLevelStatistics(minTime, maxTime, incState);
         if (!isTest) {
             NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
                     new UpdateDatabaseEvent(UpdateViewEventType.STATISTICS));
@@ -265,11 +266,11 @@ public class CallStatistics {
      * @param minTime Long
      * @param maxTime Long
      */
-    protected void buildSecondLevelStatistics(long minTime, long maxTime, boolean isInconclusive) {
+    protected void buildSecondLevelStatistics(long minTime, long maxTime, InclInconclusiveStates isInconclusive) {
         monitor.subTask("Build second level statistics");
-        CallAnalyserPlugin.info("Build second level statistics");
         Node secondLevel = statisticNode.get(StatisticsCallType.AGGREGATION_STATISTICS);
         if(secondLevel==null){
+            CallAnalyserPlugin.info("Build second level statistics");
             AggregationCallStatisticsBuilder aggrStatisticsBuilder = new AggregationCallStatisticsBuilder(datasetNode, neoService, isInconclusive);
             secondLevel = aggrStatisticsBuilder.createAggregationStatistics(highPeriod, statisticNode,minTime,maxTime);
             if (secondLevel!=null) {
@@ -346,7 +347,7 @@ public class CallStatistics {
                     continue;
                 }
                 
-                parentNode = createRootStatisticsNode(datasetNode, callType,null,false);
+                parentNode = createRootStatisticsNode(datasetNode, callType,null,InclInconclusiveStates.EXCLUDE);
                 result.put(callType, parentNode);
                 for (Node probe : probesByCallType) {
                     if(monitor.isCanceled()){
@@ -406,13 +407,14 @@ public class CallStatistics {
         }
     }
     
-    protected Node createRootStatisticsNode(Node datasetNode, StatisticsCallType callType, Node sourceRoot, boolean isInconclusive) {
+    protected Node createRootStatisticsNode(Node datasetNode, StatisticsCallType callType, Node sourceRoot, InclInconclusiveStates state) {
         Node result = neoService.createNode();
         
         result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALL_ANALYSIS_ROOT.getId());
         result.setProperty(INeoConstants.PROPERTY_NAME_NAME, INeoConstants.CALL_ANALYZIS_ROOT);
         result.setProperty(INeoConstants.PROPERTY_VALUE_NAME, NeoUtils.getNodeName(datasetNode,neoService));
-        result.setProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE, isInconclusive);
+        result.setProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE, !state.equals(InclInconclusiveStates.EXCLUDE));
+        result.setProperty(INeoConstants.PROPERTY_INCONCLUSIVE_STATE, state.getId());
         result.setProperty(CallProperties.CALL_TYPE.getId(), callType.toString());
         
         datasetNode.createRelationshipTo(result, ProbeCallRelationshipType.CALL_ANALYSIS);
@@ -520,7 +522,7 @@ public class CallStatistics {
             
             Statistics periodStatitics = new Statistics();
             if (period == CallTimePeriods.HOURLY) {
-                periodStatitics = getStatisticsByHour(null, timeIndex, callType, currentStartDate, nextStartDate);
+                periodStatitics = getStatisticsByHour(null, timeIndex, callType, currentStartDate, nextStartDate, InclInconclusiveStates.EXCLUDE);
             }
             else {
                 periodStatitics = getStatisticsFromDatabase(statisticsNode, callType, currentStartDate, nextStartDate, probeNode, false);
@@ -632,7 +634,7 @@ public class CallStatistics {
         return result;
     }
     
-    private void updateStatistics(Statistics original, Statistics newValues) { 
+    protected void updateStatistics(Statistics original, Statistics newValues) { 
         for (Entry<IStatisticsHeader, Object> entry : newValues.entrySet()) {
             IStatisticsHeader header = entry.getKey();
             original.updateHeader(header, entry.getValue());
@@ -641,14 +643,14 @@ public class CallStatistics {
             
     }
     
-    protected Statistics getStatisticsByHour(Node sourceRow, MultiPropertyIndex<Long> timeIndex, StatisticsCallType callType, long startTime, long endTime) throws IllegalArgumentException {
+    protected Statistics getStatisticsByHour(Node sourceRow, MultiPropertyIndex<Long> timeIndex, StatisticsCallType callType, long startTime, long endTime,InclInconclusiveStates inclState) throws IllegalArgumentException {
         Statistics statistics = new Statistics();
         
         Collection<Node> callNodes = timeIndex.find(new Long[] {startTime}, new Long[] {endTime});
         for (Node singleNode : callNodes) {
             if (singleNode.getProperty(CallProperties.CALL_TYPE.getId()).equals(callType.toString())) {
                 HashMap<IStatisticsHeader, Node> sourceCells = getRowAsMapForCall(sourceRow,singleNode, callType);
-                updateCallStatistics(singleNode,sourceCells, statistics, callType);
+                updateCallStatistics(singleNode,sourceCells, statistics, callType,inclState);
             }
         }
         
@@ -684,12 +686,12 @@ public class CallStatistics {
         return result;
     }
     
-    private void updateCallStatistics(Node callNode, HashMap<IStatisticsHeader, Node> sourceCells, Statistics statistics, StatisticsCallType callType) {
+    private void updateCallStatistics(Node callNode, HashMap<IStatisticsHeader, Node> sourceCells, Statistics statistics, StatisticsCallType callType,InclInconclusiveStates inclState) {
         ICallStatisticsConstants constants = statisticsConstants.get(callType);
         for(IStatisticsHeader header : callType.getHeaders()){
             Node sourceCell = sourceCells.get(header);
             if(sourceCell==null){
-                statistics.updateHeaderWithCall(header, header.getStatisticsData(callNode, constants, false), callNode);
+                statistics.updateHeaderWithCall(header, header.getStatisticsData(callNode, constants, inclState), callNode);
             }else{
                 statistics.updateHeaderWithCall(header, sourceCell.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null), sourceCell);
             }

@@ -171,6 +171,7 @@ public class INeoConstants {
     public static final String M_PROBE_ID = "probe_id";
     public static final String PRIMARY_TYPE_ID = "primary_type";
     public static final String PROPERTY_IS_INCONCLUSIVE = "is_inconclusive";
+    public static final String PROPERTY_INCONCLUSIVE_STATE = "inconclusive_state";
     
     public static final String SECTOR_ID_TYPE = "sector_id_type";
     

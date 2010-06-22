@@ -22,6 +22,7 @@ import java.util.List;
 import org.amanzi.awe.statistic.CallTimePeriods;
 import org.amanzi.awe.views.calls.CallAnalyserPlugin;
 import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
+import org.amanzi.awe.views.calls.enums.InclInconclusiveStates;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -53,6 +54,8 @@ import org.neo4j.graphdb.Traverser.Order;
  * @since 1.0.0
  */
 public class CallStatisticsInconclusive extends CallStatistics {
+    
+    private InclInconclusiveStates inclState;
 
     /**
      * Constructor.
@@ -61,9 +64,10 @@ public class CallStatisticsInconclusive extends CallStatistics {
      * @param monitor
      * @throws IOException 
      */
-    public CallStatisticsInconclusive(Node drive, GraphDatabaseService service, IProgressMonitor monitor) throws IOException {
+    public CallStatisticsInconclusive(Node drive, GraphDatabaseService service, IProgressMonitor monitor, InclInconclusiveStates state) throws IOException {
         super();
-        initialyzeStatistics(drive, service, monitor);
+        inclState = state;
+        initialyzeStatistics(drive, service, monitor);        
     }
 
     /**
@@ -72,9 +76,10 @@ public class CallStatisticsInconclusive extends CallStatistics {
      * @param service
      * @throws IOException 
      */
-    public CallStatisticsInconclusive(Node drive, GraphDatabaseService service) throws IOException {
+    public CallStatisticsInconclusive(Node drive, GraphDatabaseService service, InclInconclusiveStates state) throws IOException {
         super();
-        initialyzeStatistics(drive, service, new NullProgressMonitor());
+        inclState = state;
+        initialyzeStatistics(drive, service, new NullProgressMonitor());        
     }
     
     @Override
@@ -82,9 +87,15 @@ public class CallStatisticsInconclusive extends CallStatistics {
         initFields(drive, service, aMonitor);
         setStatisticNode(createStatisticInconclusive());
         
-        finishInitialize();
+        finishInitialize(inclState);
     }
 
+    /**
+     * Create statistics with inconclusive calls.
+     *
+     * @return HashMap<StatisticsCallType, Node>
+     * @throws IOException
+     */
     private HashMap<StatisticsCallType, Node> createStatisticInconclusive() throws IOException {
         startTransaction(false);
         Node parentNode = null;
@@ -104,8 +115,8 @@ public class CallStatisticsInconclusive extends CallStatistics {
                             if(!NodeTypes.getNodeType(node, neoService).equals(NodeTypes.CALL_ANALYSIS_ROOT)){
                                 return false;
                             }
-                            boolean inconclusive = (Boolean)node.getProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE, false);
-                            return inconclusive;
+                            InclInconclusiveStates inconclusive = InclInconclusiveStates.getStateById(node.getProperty(INeoConstants.PROPERTY_INCONCLUSIVE_STATE, "").toString());
+                            return inconclusive!=null&&inconclusive.equals(inclState);
                         }
                     }, ProbeCallRelationshipType.CALL_ANALYSIS, Direction.OUTGOING).iterator();
             
@@ -145,7 +156,7 @@ public class CallStatisticsInconclusive extends CallStatistics {
                     continue;
                 }
                 Node sourceRoot = sourseStatistics.get(callType);
-                parentNode = createRootStatisticsNode(datasetNode, callType,sourceRoot,true);
+                parentNode = createRootStatisticsNode(datasetNode, callType,sourceRoot,inclState);
                 result.put(callType, parentNode);
                 for (Node probe : probesByCallType) {
                     if(getMonitor().isCanceled()){
@@ -182,6 +193,21 @@ public class CallStatisticsInconclusive extends CallStatistics {
         return result;
     }
     
+    /**
+     * Create statistics with inconclusive calls.
+     *
+     * @param parentNode
+     * @param sourseRootNode
+     * @param highStatisticsNode
+     * @param highLevelSRow
+     * @param probeNode
+     * @param timeIndex
+     * @param period
+     * @param callType
+     * @param startDate
+     * @param endDate
+     * @return Statistics
+     */
     private Statistics createStatisticsInconclusive(Node parentNode, Node sourseRootNode, Node highStatisticsNode, Node highLevelSRow, Node probeNode, MultiPropertyIndex<Long> timeIndex, CallTimePeriods period, StatisticsCallType callType, long startDate, long endDate) {
         Statistics statistics = new Statistics();
         long currentStartDate = period.getFirstTime(startDate);
@@ -206,7 +232,7 @@ public class CallStatisticsInconclusive extends CallStatistics {
             
             Statistics periodStatitics = new Statistics();
             if (period == CallTimePeriods.HOURLY) {
-                periodStatitics = getStatisticsByHour(sourceRow, timeIndex, callType, currentStartDate, nextStartDate);
+                periodStatitics = getStatisticsByHour(sourceRow, timeIndex, callType, currentStartDate, nextStartDate,inclState);
             }
             else {
                 periodStatitics = getStatisticsFromDatabase(statisticsNode, callType, currentStartDate, nextStartDate, sourceRow==null?probeNode:sourceRow, true);
@@ -218,6 +244,9 @@ public class CallStatisticsInconclusive extends CallStatistics {
             for (IStatisticsHeader header : callType.getHeaders()) {                
                 createSCellNode(row, periodStatitics, header, period);
             }
+            
+            updateStatistics(statistics, periodStatitics);       
+            
             getPreviousSCellNodes().put(period, null);
             currentStartDate = nextStartDate;
             nextStartDate = CallStatisticsUtills.getNextStartDate(period, endDate, currentStartDate);
@@ -227,6 +256,13 @@ public class CallStatisticsInconclusive extends CallStatistics {
         return statistics;
     }
     
+    /**
+     * Get source statistics rows.
+     *
+     * @param sourceRoot
+     * @param probeNode
+     * @return HashMap<Long, Node>
+     */
     private HashMap<Long, Node> getSourceRows(Node sourceRoot,Node probeNode){
         HashMap<Long, Node> result = new HashMap<Long, Node>();
         if(sourceRoot == null){

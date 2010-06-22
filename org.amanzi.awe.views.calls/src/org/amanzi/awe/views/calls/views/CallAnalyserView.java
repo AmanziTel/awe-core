@@ -36,10 +36,10 @@ import org.amanzi.awe.views.calls.Messages;
 import org.amanzi.awe.views.calls.enums.AggregationCallTypes;
 import org.amanzi.awe.views.calls.enums.AggregationStatisticsHeaders;
 import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
+import org.amanzi.awe.views.calls.enums.InclInconclusiveStates;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
 import org.amanzi.awe.views.calls.enums.StatisticsType;
 import org.amanzi.awe.views.calls.statistics.CallStatistics;
-import org.amanzi.awe.views.calls.statistics.CallStatisticsInconclusive;
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -74,7 +74,6 @@ import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CBanner;
 import org.eclipse.swt.custom.TableCursor;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
@@ -160,14 +159,14 @@ public class CallAnalyserView extends ViewPart {
     private LinkedHashMap<String, Node> callDataset = new LinkedHashMap<String, Node>();
     private LinkedHashMap<String, Node> probeCallDataset = new LinkedHashMap<String, Node>();
 
-    private Combo cDrive;
-
-    private TableViewer tableViewer;
-    private Combo cProbe;    
+    private TableViewer tableViewer;        
     private ViewContentProvider provider;
     private ViewLabelProvider labelProvider;
+    private Combo cDrive;
     private Combo cPeriod;
     private Combo cCallType;
+    private Combo cProbe;
+    private Combo cInclInconculsiveState;
     private TableCursor cursor;
     private Button bExport;
     private Color color1;
@@ -180,8 +179,7 @@ public class CallAnalyserView extends ViewPart {
     private DateTime timeStart;
     private DateTime dateEnd;
     private DateTime timeEnd;
-    private Button bInclInconclusive;
-    private Button btReport;
+    //private Button bInclInconclusive;
     private Button bReport;
     private Button bUpdate;
 
@@ -224,7 +222,7 @@ public class CallAnalyserView extends ViewPart {
                 return;
             }
             GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
-            boolean inclInconclusive = getInclInconclusive();
+            InclInconclusiveStates inclInconclusive = getInclInconclusive();
             Traverser sRowTraverser = inputWr.getSrowTraverser(service,inclInconclusive);
             Transaction tx = service.beginTx();
             try {                
@@ -232,7 +230,7 @@ public class CallAnalyserView extends ViewPart {
                     StatisticsCallType callType = getCallType();
                     for (Node sRow : sRowTraverser) {
                         if (isRowInTime(sRow)) {
-                            elements.add(new PeriodWrapper(sRow, callType,inclInconclusive));
+                            elements.add(new PeriodWrapper(sRow, callType,!inclInconclusive.equals(InclInconclusiveStates.EXCLUDE)));
                         }
                     }
                 }
@@ -587,7 +585,9 @@ public class CallAnalyserView extends ViewPart {
         //((FormData)cell2.getLayoutData()).left = null;
         //((FormData)cell2.getLayoutData()).right = new FormAttachment(100, 0);
 
-        bInclInconclusive = addButton(cell1, null, LB_INCONCLUSIVE, SWT.CHECK, MIN_FIELD_WIDTH);
+        cInclInconculsiveState = addSelection(cell1, LB_INCONCLUSIVE, MIN_FIELD_WIDTH);
+        cInclInconculsiveState.setItems(InclInconclusiveStates.getAllStatesForSelect());
+        cInclInconculsiveState.select(0);
         bUpdate = addButton(cell2, null, null, SWT.PUSH, 32);
         bUpdate.setImage(CallAnalyserPlugin.getImageDescriptor("/icons/refresh.gif").createImage());
         bUpdate.setToolTipText("Refresh table");
@@ -1008,7 +1008,7 @@ public class CallAnalyserView extends ViewPart {
              public void keyPressed(KeyEvent e) {
              }
          });
-         bInclInconclusive.addSelectionListener(new SelectionListener() {
+         cInclInconculsiveState.addSelectionListener(new SelectionListener() {
 
              @Override
              public void widgetSelected(SelectionEvent e) {
@@ -1257,7 +1257,7 @@ public class CallAnalyserView extends ViewPart {
             setDefaultTime();
             return;
         }
-        final boolean inclInconclusive = getInclInconclusive();
+        final InclInconclusiveStates inclInconclusive = getInclInconclusive();
         parent.setCursor(new Cursor(parent.getDisplay(), SWT.CURSOR_WAIT));
         frame.setEnabled(false);        
         Job statGetter = new Job("Get statistics") {            
@@ -1265,12 +1265,7 @@ public class CallAnalyserView extends ViewPart {
             protected IStatus run(IProgressMonitor monitor) {
                 try {
                     GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
-                    final CallStatistics statistics;
-                    if (inclInconclusive) {
-                        statistics = new CallStatisticsInconclusive(drive, service, monitor);
-                    }else{
-                        statistics = new CallStatistics(drive, service, monitor);
-                    }
+                    final CallStatistics statistics = inclInconclusive.getStatistics(drive, service, monitor);
                     if(monitor.isCanceled()){
                         return Status.OK_STATUS;
                     }
@@ -1322,8 +1317,11 @@ public class CallAnalyserView extends ViewPart {
     }
 
 
-    private boolean getInclInconclusive() {
-        return bInclInconclusive.getSelection();
+    private InclInconclusiveStates getInclInconclusive() {
+        if(cInclInconculsiveState.getSelectionIndex()<0){
+            return InclInconclusiveStates.EXCLUDE;
+        }
+        return InclInconclusiveStates.getStateById(cInclInconculsiveState.getText());
     }
 
     /**
@@ -1763,14 +1761,9 @@ public class CallAnalyserView extends ViewPart {
         /**
          * @return
          */
-        public Traverser getSrowTraverser(final GraphDatabaseService service,final boolean inclInconclusive) {
+        public Traverser getSrowTraverser(final GraphDatabaseService service,final InclInconclusiveStates inclInconclusive) {
             try {
-                CallStatistics statistic;
-                if (inclInconclusive) {
-                    statistic = new CallStatisticsInconclusive(drive, service);
-                }else{
-                    statistic = new CallStatistics(drive, service);
-                }
+                CallStatistics statistic = inclInconclusive.getStatistics(drive, service, null);
                 periodNode = statistic.getPeriodNode(periods, callType);
                 
                 if (showEmpty) {
@@ -1787,7 +1780,7 @@ public class CallAnalyserView extends ViewPart {
 
                     @Override
                     public boolean isReturnableNode(TraversalPosition currentPos) {
-                        return (probe == null || currentPos.currentNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+                        return (probe == null || currentPos.currentNode().traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
 
                                     @Override
                                     public boolean isReturnableNode(TraversalPosition currentPos) {

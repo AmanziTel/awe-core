@@ -31,37 +31,37 @@ public enum UtilAggregationHeaders implements IAggrStatisticsHeaders {
     
     SC_SUCC_SETUP_COUNT("SC_SUCC_SETUP_COUNT",StatisticsType.COUNT,StatisticsHeaders.SUCC_SETUP_COUNT) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     SC_ATTEMPT_COUNT("SC_ATTEMPT_COUNT",StatisticsType.COUNT,StatisticsHeaders.CALL_ATTEMPT_COUNT) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     SC_SETUP_TIME_MAX("SC_SETUP_TIME_MAX",StatisticsType.MAX,StatisticsHeaders.SETUP_TIME_MAX) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     SC_SETUP_TIME_MIN("SC_SETUP_TIME_MIN",StatisticsType.MIN,StatisticsHeaders.SETUP_TIME_MIN) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     SC_SETUP_TIME_TOTAL("SC_SETUP_TIME_TOTAL",StatisticsType.SUM,StatisticsHeaders.SETUP_TOTAL_DUR) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     SC_CALL_DISC_TIME("SC_CALL_DISC_TIME",StatisticsType.COUNT,StatisticsHeaders.CALL_DISC_TIME) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
@@ -74,31 +74,31 @@ public enum UtilAggregationHeaders implements IAggrStatisticsHeaders {
                                                                     StatisticsHeaders.AUDIO_QUAL_L3,
                                                                     StatisticsHeaders.AUDIO_QUAL_L4) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     SC_AUDIO_QUAL_SUCC("SC_AUDIO_QUAL_SUCC",StatisticsType.COUNT,StatisticsHeaders.AUDIO_QUAL_SUCC) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     SC_AUDIO_QUAL_MAX("SC_AUDIO_QUAL_MAX",StatisticsType.MAX,StatisticsHeaders.AUDIO_QUAL_MAX) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     SC_AUDIO_QUAL_MIN("SC_AUDIO_QUAL_MIN",StatisticsType.MIN,StatisticsHeaders.AUDIO_QUAL_MIN) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     SC_AUDIO_QUAL_TOTAL("SC_AUDIO_QUAL_TOTAL",StatisticsType.SUM,StatisticsHeaders.AUDIO_QUAL_TOTAL) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
@@ -111,61 +111,61 @@ public enum UtilAggregationHeaders implements IAggrStatisticsHeaders {
                                                         StatisticsHeaders.IND_DELAY_COUNT_L3,
                                                         StatisticsHeaders.IND_DELAY_COUNT_L4) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     SC_DELAY_MAX("SC_DELAY_MAX",StatisticsType.MAX,StatisticsHeaders.IND_DELAY_MAX) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     SC_DELAY_MIN("SC_DELAY_MIN",StatisticsType.MIN,StatisticsHeaders.IND_DELAY_MIN) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     SC_DELAY_TOTAL("SC_DELAY_TOTAL",StatisticsType.SUM,StatisticsHeaders.IND_DELAY_TOTAL) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     GC_SUCC_SETUP_COUNT("GC_SUCC_SETUP_COUNT",StatisticsType.COUNT,StatisticsHeaders.SUCC_SETUP_COUNT) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     GC_ATTEMPT_COUNT("GC_ATTEMPT_COUNT",StatisticsType.COUNT,StatisticsHeaders.CALL_ATTEMPT_COUNT) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     GC_SETUP_TIME_MAX("GC_SETUP_TIME_MAX",StatisticsType.MAX,StatisticsHeaders.SETUP_TIME_MAX) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     GC_SETUP_TIME_MIN("GC_SETUP_TIME_MIN",StatisticsType.MIN,StatisticsHeaders.SETUP_TIME_MIN) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     GC_SETUP_TIME_TOTAL("GC_SETUP_TIME_TOTAL",StatisticsType.SUM,StatisticsHeaders.SETUP_TOTAL_DUR) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     GC_CALL_DISC_TIME("GC_CALL_DISC_TIME",StatisticsType.COUNT,StatisticsHeaders.CALL_DISC_TIME) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
@@ -178,31 +178,31 @@ public enum UtilAggregationHeaders implements IAggrStatisticsHeaders {
                                                                     StatisticsHeaders.AUDIO_QUAL_L3,
                                                                     StatisticsHeaders.AUDIO_QUAL_L4) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     GC_AUDIO_QUAL_SUCC("GC_AUDIO_QUAL_SUCC",StatisticsType.COUNT,StatisticsHeaders.AUDIO_QUAL_SUCC) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     GC_AUDIO_QUAL_MAX("GC_AUDIO_QUAL_MAX",StatisticsType.MAX,StatisticsHeaders.AUDIO_QUAL_MAX) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     GC_AUDIO_QUAL_MIN("GC_AUDIO_QUAL_MIN",StatisticsType.MIN,StatisticsHeaders.AUDIO_QUAL_MIN) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     GC_AUDIO_QUAL_TOTAL("GC_AUDIO_QUAL_TOTAL",StatisticsType.SUM,StatisticsHeaders.AUDIO_QUAL_TOTAL) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
@@ -215,147 +215,147 @@ public enum UtilAggregationHeaders implements IAggrStatisticsHeaders {
                                                         StatisticsHeaders.GR_DELAY_COUNT_L3,
                                                         StatisticsHeaders.GR_DELAY_COUNT_L4) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     GC_DELAY_MAX("GC_DELAY_MAX",StatisticsType.MAX,StatisticsHeaders.GR_DELAY_MAX) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     GC_DELAY_MIN("GC_DELAY_MIN",StatisticsType.MIN,StatisticsHeaders.GR_DELAY_MIN) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     GC_DELAY_TOTAL("GC_DELAY_TOTAL",StatisticsType.SUM,StatisticsHeaders.GR_DELAY_TOTAL) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Float)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     INH_HO_CC_SUCCESS("INH_HO_CC_SUCCESS",StatisticsType.COUNT,StatisticsHeaders.CC_HO_SUCCESS,
             StatisticsHeaders.CC_RES_SUCCESS) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     INH_HO_CC_ATTEMPT("INH_HO_CC_ATTEMPT",StatisticsType.COUNT,StatisticsHeaders.CC_HO_ATTEMPTS,
             StatisticsHeaders.CC_RES_ATTEMPTS) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     INH_HO_SUCCESS("INH_HO_SUCCESS",StatisticsType.COUNT,StatisticsHeaders.CC_HO_SUCCESS) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     INH_HO_ATTEMPT("INH_HO_ATTEMPT",StatisticsType.COUNT,StatisticsHeaders.CC_HO_ATTEMPTS) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     INH_CC_SUCCESS("INH_CC_SUCCESS",StatisticsType.COUNT,StatisticsHeaders.CC_RES_SUCCESS) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     INH_CC_ATTEMPT("INH_CC_ATTEMPT",StatisticsType.COUNT,StatisticsHeaders.CC_RES_ATTEMPTS) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     TSM_SUCCESS("TSM_SUCCESS",StatisticsType.COUNT,StatisticsHeaders.TSM_MESSAGE_SUCC) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     TSM_ATTEMPT("TSM_ATTEMPT",StatisticsType.COUNT,StatisticsHeaders.TSM_MESSAGE_ATTEMPT) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     SDS_SUCCESS("SDS_SUCCESS",StatisticsType.COUNT,StatisticsHeaders.SDS_MESSAGE_SUCC) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     SDS_ATTEMPT("SDS_ATTEMPT",StatisticsType.COUNT,StatisticsHeaders.SDS_MESSAGE_ATTEMPT) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     INH_ATT_SUCCESS("INH_ATT_SUCCESS",StatisticsType.COUNT,StatisticsHeaders.ATT_SUCCESS) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     INH_ATT_ATTEMPT("INH_ATT_ATTEMPT",StatisticsType.COUNT,StatisticsHeaders.ATT_ATTEMPTS) {
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     EC1_ATTEMPT("EC1_ATTEMPT",StatisticsType.COUNT,StatisticsHeaders.EC1_ATTEMPT){
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     EC1_SUCCESS("EC1_SUCCESS",StatisticsType.COUNT,StatisticsHeaders.EC1_SUCCESS){
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     }/*, TODO uncomment after support statistics
     EC2_ATTEMPT("EC2_ATTEMPT",StatisticsType.COUNT,StatisticsHeaders.EC2_ATTEMPT){
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     EC2_SUCCESS("EC2_SUCCESS",StatisticsType.COUNT,StatisticsHeaders.EC2_SUCCESS){
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     IP_ATTEMPT("IP_ATTEMPT",StatisticsType.COUNT,StatisticsHeaders.IP_ATTEMPTS){
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     IP_SUCCESS("IP_SUCCESS",StatisticsType.COUNT,StatisticsHeaders.IP_SUCCESS){
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     CSD_ATTEMPT("CSD_ATTEMPT",StatisticsType.COUNT,StatisticsHeaders.CSD_ATTEMPTS){
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     },
     CSD_SUCCESS("CSD_SUCCESS",StatisticsType.COUNT,StatisticsHeaders.CSD_SUCCESS){
         @Override
-        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, boolean inclInconclusive) {
+        public Number getStatisticsData(Node callNode, IStatisticsConstants constants, InclInconclusiveStates inclState) {
             return (Integer)callNode.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
         }
     }*/;

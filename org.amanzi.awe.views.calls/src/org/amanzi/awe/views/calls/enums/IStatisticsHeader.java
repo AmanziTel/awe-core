@@ -43,6 +43,6 @@ public interface IStatisticsHeader {
      * @param inclInconclusive boolean (is include inconclusive calls)
      * @return Number
      */
-    public Number getStatisticsData(Node dataNode, IStatisticsConstants constants, boolean inclInconclusive);
+    public Number getStatisticsData(Node dataNode, IStatisticsConstants constants, InclInconclusiveStates inclState);
 
 }
