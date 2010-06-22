@@ -1229,8 +1229,10 @@ public class CallAnalyserView extends ViewPart {
      */
     private void updateTable(boolean showEmpty) {
         InputWrapper wrapper = createInputWrapper(showEmpty);
-        if (wrapper.isCorrectInput()) {            
+        if (wrapper.isCorrectInput()) {  
             tableViewer.setInput(wrapper);
+            cursor.dispose();
+            cursor = new TableCursor(tableViewer.getTable(), SWT.DefaultSelection);
         }
     }
 
