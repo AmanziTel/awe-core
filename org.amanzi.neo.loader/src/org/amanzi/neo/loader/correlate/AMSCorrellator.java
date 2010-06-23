@@ -150,11 +150,11 @@ public class AMSCorrellator {
 			        throw new InterruptedException("correlation was interrupted"); //$NON-NLS-1$
 			    }
 			    monitor.subTask("Success correlated "+correlatedCount+" ("+getPercents(correlatedCount, countTo)+"%) from "+countTo+" events.");
-				Node firstM = mIterator.next();
+				Node firstM = mIterator.next();				
 				
 				Node callNode = determineCallNode(firstM);
 				
-				Long nodeTime = (Long)firstM.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME);
+				Long nodeTime = (Long)firstM.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, null);
 				
                 Node mpNode = determineNode(nodeTime);								
 				
@@ -273,7 +273,11 @@ public class AMSCorrellator {
 	 * @param timestamp timestamp to search
 	 * @return node by this timestamp
 	 */
-	private Node determineNode(long timestamp) {
+	private Node determineNode(Long timestamp) {
+	    if (timestamp == null) {
+	        return null;
+	    }
+	    
 		long max = timestamp + 180000;
 		long min = timestamp - 180000;
 		
