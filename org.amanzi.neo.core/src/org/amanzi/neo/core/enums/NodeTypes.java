@@ -366,6 +366,7 @@ public enum NodeTypes {
             return null;
         }
     },
+    M_AGGR("m_aggr"),
     M("m"){
         @Override
         protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
