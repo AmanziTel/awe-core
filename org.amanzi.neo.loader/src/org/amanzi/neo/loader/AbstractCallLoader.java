@@ -105,6 +105,10 @@ public abstract class AbstractCallLoader extends DriveLoader {
                     NeoCorePlugin.error("Unknown call type "+callType+".", null);
                     return null;
                 }       
+                callNode.setProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE, call.isInclusive());
+                if(call.isInclusive()){
+                    callNode.setProperty(INeoConstants.PROPERTY_INCONCLUSIVE_CODE, call.getErrCode());
+                }
                 call.setNode(callNode);
                 return callNode;
             }
@@ -127,8 +131,6 @@ public abstract class AbstractCallLoader extends DriveLoader {
     private Node storeRealCall(Call call) {
         Node probeCallNode = call.getCallerProbe();
         Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
-        call.setNode(callNode);
-        callNode.setProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE, call.isInclusive());
         long setupDuration = call.getCallSetupEnd() - call.getCallSetupBegin();
         long terminationDuration = call.getCallTerminationEnd() - call.getCallTerminationBegin();
         long callDuration = call.getCallTerminationEnd() - call.getCallSetupBegin();
@@ -168,8 +170,6 @@ public abstract class AbstractCallLoader extends DriveLoader {
     private Node storeMessageCall(Call call) {
         Node probeCallNode = call.getCallerProbe();
         Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
-        call.setNode(callNode);
-        callNode.setProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE, call.isInclusive());
         //TODO remove fake mechanism after investigation
         long callSetupEnd = call.getCallSetupEnd();
         long callTerminationEnd = call.getCallTerminationEnd();
@@ -219,8 +219,6 @@ public abstract class AbstractCallLoader extends DriveLoader {
     private Node storeITSICall(Call call) {
         Node probeCallNode = call.getCallerProbe();
         Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
-        call.setNode(callNode);
-        callNode.setProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE, call.isInclusive());
         long updateTime = call.getCallTerminationEnd() - call.getCallSetupBegin();
         
         LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
@@ -244,9 +242,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
     
     private Node storeITSIHOCall(Call call) {
         Node probeCallNode = call.getCallerProbe();
-        Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
-        call.setNode(callNode);
-        callNode.setProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE, call.isInclusive());
+        Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);        
         
         LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
         
@@ -271,7 +267,6 @@ public abstract class AbstractCallLoader extends DriveLoader {
     private Node storeITSICCCall(Call call) {
         Node probeCallNode = call.getCallerProbe();
         Node callNode = createCallNode(call.getTimestamp(), call.getRelatedNodes(), probeCallNode);
-        callNode.setProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE, call.isInclusive());
         
         LinkedHashMap<String, Header> headers = getHeaderMap(CALL_DATASET_HEADER_INDEX).headers;
 
@@ -378,6 +373,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
     public static class Call implements IAdaptable {
         private Node node = null;
         private boolean isInclusive=false;
+        private Integer errCode=null;
         private Long acknowlegeTime;
         private Long resivedTime;
         private Long timestamp = null;
@@ -723,6 +719,20 @@ public abstract class AbstractCallLoader extends DriveLoader {
 
         public void setInclusive(boolean isInclusive) {
             this.isInclusive = isInclusive;
+        }
+        
+        /**
+         * @return Returns the errCode.
+         */
+        public Integer getErrCode() {
+            return errCode;
+        }
+        
+        /**
+         * @param errCode The errCode to set.
+         */
+        public void setErrCode(Integer errCode) {
+            this.errCode = errCode;
         }
 
         /**

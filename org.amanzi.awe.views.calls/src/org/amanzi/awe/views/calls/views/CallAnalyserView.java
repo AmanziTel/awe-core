@@ -578,14 +578,16 @@ public class CallAnalyserView extends ViewPart {
         timeEnd = fields[1];
 
         // The fourth column for additional options, and buttons
+        width = 3*MIN_COLUMN_WIDTH/4;
         Composite column4 = addColumn(rowComposite, column3, -1);
-        cell1 = createCellComposite(column4, null, MIN_COLUMN_WIDTH);
+        cell1 = createCellComposite(column4, null, width);
         //((FormData)cell1.getLayoutData()).right = new FormAttachment(100, 0);
-        cell2 = createCellComposite(column4, cell1, MIN_COLUMN_WIDTH);
+        cell2 = createCellComposite(column4, cell1, width);
         //((FormData)cell2.getLayoutData()).left = null;
         //((FormData)cell2.getLayoutData()).right = new FormAttachment(100, 0);
 
-        cInclInconculsiveState = addSelection(cell1, LB_INCONCLUSIVE, MIN_FIELD_WIDTH);
+        field_width = 3*MIN_FIELD_WIDTH/4-20;
+        cInclInconculsiveState = addSelection(cell1, LB_INCONCLUSIVE, field_width);
         cInclInconculsiveState.setItems(InclInconclusiveStates.getAllStatesForSelect());
         cInclInconculsiveState.select(0);
         bUpdate = addButton(cell2, null, null, SWT.PUSH, 32);

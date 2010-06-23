@@ -751,6 +751,9 @@ public class AMSXMLoader extends AbstractCallLoader {
             if (!call.isInclusive()) {
                 PropertyCollector isInclus = getSubCollectorByName("isInconclusive");
                 call.setInclusive(isInclus != null);
+                if(isInclus!=null){
+                    call.setErrCode(Integer.parseInt(isInclus.getPropertyMap().get("errCode")));
+                }
             }
         }
 

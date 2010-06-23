@@ -33,6 +33,9 @@ import org.neo4j.graphdb.Node;
  */
 public class CallStatisticsUtills {
     
+    /** int NTPQ_INCONCLUSIVE_CODE field */
+    private static final int NTPQ_INCONCLUSIVE_CODE = 21;
+
     /*
      * a Hour period
      */
@@ -230,11 +233,16 @@ public class CallStatisticsUtills {
         if(callResult.equals(CallResult.SUCCESS)){
             return true;
         }
-        if(inclState.equals(InclInconclusiveStates.INCLUDE_ALL)||inclState.equals(InclInconclusiveStates.INCLUDE_NTP)){
-            boolean inconclusive = (Boolean)callNode.getProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE,false);
-            return callResult.equals(CallResult.FAILURE)&&inconclusive;
+        boolean inconclusive = callResult.equals(CallResult.FAILURE)&&(Boolean)callNode.getProperty(INeoConstants.PROPERTY_IS_INCONCLUSIVE,false);
+        switch (inclState) {
+        case INCLUDE_ALL:
+            return inconclusive;
+        case INCLUDE_NTP:
+            int code = (Integer)callNode.getProperty(INeoConstants.PROPERTY_INCONCLUSIVE_CODE, 0);
+            return inconclusive&&(code==NTPQ_INCONCLUSIVE_CODE);
+        default:
+            return false;
         }
-        return false;
     }
     
     /**
