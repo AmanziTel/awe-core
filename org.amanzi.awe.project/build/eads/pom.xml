@@ -32,6 +32,7 @@
     <module>org.amanzi.awe</module>
     <module>org.amanzi.awe-feature</module>
     <module>org.amanzi.awe.catalog.neo</module>
+    <module>org.amanzi.awe.console</module>
     <module>org.amanzi.awe.filters</module>
     <module>org.amanzi.awe.l3messages</module>
     <module>org.amanzi.awe.neostyle</module>
