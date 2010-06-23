@@ -44,7 +44,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
@@ -56,8 +55,16 @@ import org.neo4j.graphdb.Traverser.Order;
 
 /**
  * <p>
- * Load and compare 2 statistics in file message.properties: CSV_ROOT - path to csv dir XML_ROOT=
- * path to xml dir LOG_ROOT= path to AMS LOG dir
+ * Load and compare 2 statistics in file system properties (use -Dpropertyname=value in command-line)
+ * Parameters:
+ * logOn - create additional logs?  Default: false
+ * logOutDir - output directory for logs Default ""
+ * ignoreNotExist - ignore not exist elements   Default: false
+ * xmlTimeCorrelation - time correlation between XML and CSV data
+ * xmlDir - XML directory: Default ""
+ * csvDir - CSV directory: Default ""
+ * logDir - AMS log directory: Default ""
+ * csvLogDir - CSV directory for comparing with AMS log: Default ""
  * </p>
  * 
  * @author tsinkel_a
@@ -82,19 +89,19 @@ public class StatisticsTest extends AmsStatisticsTest {
         initProjectService();
         handleRow = new HashSet<Node>();
         stat1TimeCorrelator = 0;
-        haveLog = "true".equalsIgnoreCase((Messages.getString("LOG_ON")));
+        haveLog = "true".equalsIgnoreCase(System.getProperty("logOn","false"));
         logNotExist = new BufferedWriter(new NullWriter());
         logComparingWarning = new BufferedWriter(new NullWriter());
-        ignoreNotExistElement = "true".equalsIgnoreCase((Messages.getString("ignoreNotExist")));
+        ignoreNotExistElement = "true".equalsIgnoreCase(System.getProperty("ignoreNotExist","false"));
         initLog();
     }
 
     @Test
     public void testCompareStatistics() throws IOException, ParseException {
         try{
-        stat1TimeCorrelator = Long.parseLong(Messages.getString("StatisticsTest.set1_correlation")); //$NON-NLS-1$
-        CallStatistics stat1 = createStatistics(loadXMLData());
-        CallStatistics stat2 = createStatistics(loadCSVData(Messages.getString("CSV_XML_ROOT")));
+        stat1TimeCorrelator = Long.parseLong(System.getProperty("xmlTimeCorrelation","0")); //$NON-NLS-1$
+        CallStatistics stat1 = createStatistics(loadXMLData(System.getProperty("xmlDir", "")));
+        CallStatistics stat2 = createStatistics(loadCSVData(System.getProperty("csvDir", "")));
         compareStatistics(stat1, stat2);
         }finally{
             logNotExist.close();
@@ -105,7 +112,7 @@ public class StatisticsTest extends AmsStatisticsTest {
 
     private void initLog() throws IOException {
         if (haveLog) {
-            File logFile = new File(Messages.getString("LOGGERS_DIR"));
+            File logFile = new File(System.getProperty("logOutDir", ""));
             long time = System.currentTimeMillis();
             String name = "CSV_XMLlogNotExist" + time;
             File fileLog = new File(logFile, name);
@@ -118,8 +125,8 @@ public class StatisticsTest extends AmsStatisticsTest {
 
     @Test
     public void testCompareLogStatistics() throws IOException, ParseException {
-        CallStatistics stat1 = createStatistics(loadLogData());
-        CallStatistics stat2 = createStatistics(loadCSVData(Messages.getString("CSV_LOG_ROOT")));
+        CallStatistics stat1 = createStatistics(loadLogData(System.getProperty("logDir", "")));
+        CallStatistics stat2 = createStatistics(loadCSVData(System.getProperty("csvLogDir","")));
         compareStatistics(stat1, stat2);
 
     }
@@ -278,49 +285,7 @@ public class StatisticsTest extends AmsStatisticsTest {
             return null;
         }
     }
-//    private static ArrayList<ArrayList<StatisticsHeaders>> header=new ArrayList<ArrayList<StatisticsHeaders>>();
-//    static{
-//        ArrayList<StatisticsHeaders>set=new ArrayList<StatisticsHeaders>();
-//        set.add(StatisticsHeaders.ATT_DELAY_L1);
-//        set.add(StatisticsHeaders.ATT_DELAY_L2);
-//        set.add(StatisticsHeaders.ATT_DELAY_L3);
-//        set.add(StatisticsHeaders.ATT_DELAY_L4);
-//        set.add(StatisticsHeaders.ATT_DELAY_P1);
-//        set.add(StatisticsHeaders.ATT_DELAY_P2);
-//        set.add(StatisticsHeaders.ATT_DELAY_P3);
-//        set.add(StatisticsHeaders.ATT_DELAY_P4);
-//        header.add(set);
-//        set=new ArrayList<StatisticsHeaders>();
-//        set.add(StatisticsHeaders.IND_DELAY_COUNT_L1);
-//        set.add(StatisticsHeaders.IND_DELAY_COUNT_L2);
-//        set.add(StatisticsHeaders.IND_DELAY_COUNT_L3);
-//        set.add(StatisticsHeaders.IND_DELAY_COUNT_L4);
-//        set.add(StatisticsHeaders.IND_DELAY_COUNT_P1);
-//        set.add(StatisticsHeaders.IND_DELAY_COUNT_P2);
-//        set.add(StatisticsHeaders.IND_DELAY_COUNT_P3);
-//        set.add(StatisticsHeaders.IND_DELAY_COUNT_P4);
-//        header.add(set);
-//        set=new ArrayList<StatisticsHeaders>();
-//        set.add(StatisticsHeaders.GR_DELAY_COUNT_L1);
-//        set.add(StatisticsHeaders.GR_DELAY_COUNT_L2);
-//        set.add(StatisticsHeaders.GR_DELAY_COUNT_L3);
-//        set.add(StatisticsHeaders.GR_DELAY_COUNT_L4);
-//        set.add(StatisticsHeaders.GR_DELAY_COUNT_P1);
-//        set.add(StatisticsHeaders.GR_DELAY_COUNT_P2);
-//        set.add(StatisticsHeaders.GR_DELAY_COUNT_P3);
-//        set.add(StatisticsHeaders.GR_DELAY_COUNT_P4);
-//        header.add(set);
-//        set=new ArrayList<StatisticsHeaders>();
-//        set.add(StatisticsHeaders.GR_DELAY_COUNT_L1);
-//        set.add(StatisticsHeaders.GR_DELAY_COUNT_L2);
-//        set.add(StatisticsHeaders.GR_DELAY_COUNT_L3);
-//        set.add(StatisticsHeaders.GR_DELAY_COUNT_L4);
-//        set.add(StatisticsHeaders.GR_DELAY_COUNT_P1);
-//        set.add(StatisticsHeaders.GR_DELAY_COUNT_P2);
-//        set.add(StatisticsHeaders.GR_DELAY_COUNT_P3);
-//        set.add(StatisticsHeaders.GR_DELAY_COUNT_P4);
-//        header.add(set);
-//    }
+
     /**
      * Compare s row.
      * 
@@ -412,8 +377,8 @@ public class StatisticsTest extends AmsStatisticsTest {
      * @return the call dataset node
      * @throws IOException Signals that an I/O exception has occurred.
      */
-    private Node loadXMLData() throws IOException {
-        String dataDir = Messages.getString("XML_ROOT"); //$NON-NLS-1$
+    private Node loadXMLData(String dataDir) throws IOException {
+        
         AMSXMLoader loader = new AMSXMLoader(dataDir, null, "testXML", "testXMLNetwork", getNeo(), true); //$NON-NLS-1$ //$NON-NLS-2$
         loader.run(new NullProgressMonitor());
         return loader.getVirtualDataset();
@@ -425,8 +390,7 @@ public class StatisticsTest extends AmsStatisticsTest {
      * @return the call dataset node
      * @throws IOException Signals that an I/O exception has occurred.
      */
-    private Node loadLogData() throws IOException {
-        String dataDir = Messages.getString("LOG_ROOT"); //$NON-NLS-1$
+    private Node loadLogData(String dataDir) throws IOException {
         AMSLoader loader = new AMSLoader(dataDir, "testLOG", "testLOGNetwork", getNeo()); //$NON-NLS-1$ //$NON-NLS-2$
         loader.run(new NullProgressMonitor());
         return loader.getVirtualDataset();
