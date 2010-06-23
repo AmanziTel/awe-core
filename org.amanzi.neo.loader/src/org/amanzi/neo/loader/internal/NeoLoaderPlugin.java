@@ -13,19 +13,14 @@
 package org.amanzi.neo.loader.internal;
 
 import java.io.IOException;
-import java.io.PrintStream;
 
-import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.ui.console.ConsolePlugin;
-import org.eclipse.ui.console.IConsole;
-import org.eclipse.ui.console.MessageConsole;
-import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.osgi.framework.BundleContext;
 
@@ -39,11 +34,6 @@ public class NeoLoaderPlugin extends Plugin {
     private static final Logger LOGGER = Logger.getLogger(NeoLoaderPlugin.class);
     /** String DEFAULT_CHARSET field */
     public static final String DEFAULT_CHARSET = "UTF-8";
-    /*
-	 * Name of console
-	 */
-	
-	private static String CONSOLE_NAME = "NeoLoader Console";
 	
 	/*
 	 * Plugin variable
@@ -51,29 +41,6 @@ public class NeoLoaderPlugin extends Plugin {
 
 	static private NeoLoaderPlugin plugin;
 	
-	/*
-	 * Is logging possible
-	 */
-	
-	private static boolean loggingPossible = false;
-	
-	/*
-	 * Is console visible
-	 */
-	
-	private static boolean isVisible = false;
-	
-	/*
-	 * Console for NeoLoaderPlugin
-	 */
-	
-	private MessageConsole pluginConsole;
-	
-	/*
-	 * Console's output
-	 */
-	
-	private MessageConsoleStream consoleStream;
 
     private IPreferenceStore preferenceStore = null;
 	
@@ -95,8 +62,6 @@ public class NeoLoaderPlugin extends Plugin {
     public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-		
-		initializeConsole();
 	}
 
 	/*
@@ -110,8 +75,6 @@ public class NeoLoaderPlugin extends Plugin {
         } catch (IOException e) {
             exception(e);
         }
-		removeConsole();
-		
 		plugin = null;
 		super.stop(context);
 	}
@@ -124,51 +87,13 @@ public class NeoLoaderPlugin extends Plugin {
 	}
 	
 	/**
-	 * Initialize console for output from NeoLoaderPlugin
-	 */
-	
-	private void initializeConsole() {
-		pluginConsole = new MessageConsole(CONSOLE_NAME, null, true);
-		pluginConsole.initialize();
-		
-		consoleStream = pluginConsole.newMessageStream();		
-		
-		ConsolePlugin.getDefault().getConsoleManager().addConsoles(new IConsole[] {pluginConsole});
-		
-		loggingPossible = (plugin != null) && (pluginConsole != null);
-	}
-	
-	/**
-	 * Destroys console for output
-	 */
-	
-	private void removeConsole() {
-		ConsolePlugin.getDefault().getConsoleManager().removeConsoles(new IConsole[] {pluginConsole});
-		
-		try {
-			consoleStream.close();
-		}
-		catch (IOException e) {
-			NeoCorePlugin.error(NeoLoaderPluginMessages.Console_ErrorOnClose, e);
-		}
-		
-		pluginConsole.destroy();
-	}
-	
-	/**
 	 * Print debug message
 	 * 
 	 * @param line
 	 */
 	
 	public static void debug(String line) {
-		if (loggingPossible) {
-			if (debug) {
-				getDefault().printToStream(line);
-			}
-		} else if(debug) {
-		    LOGGER.debug(line);
-		}
+        AweConsolePlugin.debug(line);
 	}
 	
 	/**
@@ -178,13 +103,7 @@ public class NeoLoaderPlugin extends Plugin {
 	 */
 	
 	public static void info(String line) {
-		if (loggingPossible) {
-			if (verbose || debug) {
-				getDefault().printToStream(line);
-			}
-        } else {
-            LOGGER.debug(line);
-		}
+        AweConsolePlugin.info(line);
 	}
 	
 	/**
@@ -194,11 +113,7 @@ public class NeoLoaderPlugin extends Plugin {
 	 */
 	
 	public static void notify(String line) {
-		if (loggingPossible) {
-			getDefault().printToStream(line);
-        } else {
-            LOGGER.debug(line);
-		}
+        AweConsolePlugin.notify(line);
 	}
 	
 	/**
@@ -208,11 +123,7 @@ public class NeoLoaderPlugin extends Plugin {
 	 */
 	
 	public static void error(String line) {
-		if (loggingPossible) {
-			getDefault().printToStream(line);
-        } else {
-            System.err.println(line);
-		}
+        AweConsolePlugin.error(line);
 	}
 	
 	/**
@@ -222,34 +133,9 @@ public class NeoLoaderPlugin extends Plugin {
 	 */
 	
 	public static void exception(Exception e) {
-		if (loggingPossible) {
-			getDefault().printException(e);
-        } else {
-            e.printStackTrace(System.out);
-		}
+        AweConsolePlugin.exception(e);
 	}
 	
-	/** Print a message to Console */
-	private void printToStream(final String line) {
-		if (!isVisible) {			
-			pluginConsole.activate();			
-			ConsolePlugin.getDefault().getConsoleManager().showConsoleView(pluginConsole);
-			isVisible = true;
-		}		
-		consoleStream.println(line);
-	}
-	
-	/** Print a exception to Console */	
-	private void printException(Exception e) {
-		if (!isVisible) {			
-			pluginConsole.activate();			
-			ConsolePlugin.getDefault().getConsoleManager().showConsoleView(pluginConsole);
-			isVisible = true;
-		}
-				
-		PrintStream stream = new PrintStream(consoleStream);		
-		e.printStackTrace(stream);		
-    }
 
     /**
      * Returns the preference store for this plugin

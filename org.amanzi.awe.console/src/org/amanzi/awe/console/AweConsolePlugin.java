@@ -74,6 +74,7 @@ public class AweConsolePlugin extends AbstractUIPlugin {
     public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
+
 		initializeConsole();
 	}
 
@@ -204,25 +205,31 @@ public class AweConsolePlugin extends AbstractUIPlugin {
     }
     
     /** Print a message to Console */
-    private void printToStream(final String line) {
-        if (!isVisible) {           
-            pluginConsole.activate();           
-            ConsolePlugin.getDefault().getConsoleManager().showConsoleView(pluginConsole);
-            isVisible = true;
-        }       
-        consoleStream.println(line);
+    private boolean printToStream(final String line) {
+        if (loggingPossible) {
+            if (!isVisible) {
+                pluginConsole.activate();
+                ConsolePlugin.getDefault().getConsoleManager().showConsoleView(pluginConsole);
+                isVisible = true;
+            }
+            consoleStream.println(line);
+        }
+        return loggingPossible;
     }
     
     /** Print a exception to Console */ 
-    private void printException(Exception e) {
-        if (!isVisible) {           
-            pluginConsole.activate();           
-            ConsolePlugin.getDefault().getConsoleManager().showConsoleView(pluginConsole);
-            isVisible = true;
+    private boolean printException(Exception e) {
+        if (loggingPossible) {
+            if (!isVisible) {
+                pluginConsole.activate();
+                ConsolePlugin.getDefault().getConsoleManager().showConsoleView(pluginConsole);
+                isVisible = true;
+            }
+
+            PrintStream stream = new PrintStream(consoleStream);
+            e.printStackTrace(stream);
         }
-                
-        PrintStream stream = new PrintStream(consoleStream);        
-        e.printStackTrace(stream);      
+        return loggingPossible;
     }
 
 

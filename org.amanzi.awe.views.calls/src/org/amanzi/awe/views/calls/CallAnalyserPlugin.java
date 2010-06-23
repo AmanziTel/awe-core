@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.awe.views.calls.upload.StatisticsDataLoader;
 import org.amanzi.awe.views.calls.views.CallAnalyserView;
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -22,10 +23,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.console.ConsolePlugin;
-import org.eclipse.ui.console.IConsole;
-import org.eclipse.ui.console.MessageConsole;
-import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -52,10 +49,6 @@ public class CallAnalyserPlugin extends AbstractUIPlugin implements IUpdateViewL
 	public static boolean debug = false;
     private static boolean verbose = true;  
 	
-	private static boolean loggingPossible = false;
-    private static boolean isVisible = false;
-    private MessageConsole pluginConsole;    
-    private MessageConsoleStream consoleStream;
 	
 	/**
 	 * The constructor
@@ -71,7 +64,6 @@ public class CallAnalyserPlugin extends AbstractUIPlugin implements IUpdateViewL
 		super.start(context);
 		plugin = this;
         NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
-        initializeConsole();
 	}
 
 	/*
@@ -156,20 +148,6 @@ public class CallAnalyserPlugin extends AbstractUIPlugin implements IUpdateViewL
         return handedTypes;
     }
     
-    /**
-     * Initialize console for output from NeoLoaderPlugin
-     */
-    
-    private void initializeConsole() {
-        pluginConsole = new MessageConsole(CONSOLE_NAME, null, true);
-        pluginConsole.initialize();
-        
-        consoleStream = pluginConsole.newMessageStream();       
-        
-        ConsolePlugin.getDefault().getConsoleManager().addConsoles(new IConsole[] {pluginConsole});
-        
-        loggingPossible = (plugin != null) && (pluginConsole != null);
-    }
     
     /**
      * Print info message
@@ -178,22 +156,8 @@ public class CallAnalyserPlugin extends AbstractUIPlugin implements IUpdateViewL
      */
     
     public static void info(String line) {
-        if (loggingPossible) {
-            if (verbose || debug) {
-                getDefault().printToStream(line);
-            }
-        } else {
-            LOGGER.debug(line);
-        }
+        AweConsolePlugin.info(line);
     }
     
-    /** Print a message to Console */
-    private void printToStream(final String line) {
-        if (!isVisible) {           
-            pluginConsole.activate();           
-            ConsolePlugin.getDefault().getConsoleManager().showConsoleView(pluginConsole);
-            isVisible = true;
-        }       
-        consoleStream.println(line);
-    }
+
 }

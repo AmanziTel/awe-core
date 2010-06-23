@@ -18,7 +18,8 @@ Require-Bundle: org.eclipse.ui,
  org.amanzi.awe.statistic;bundle-version="1.0.0",
  org.amanzi.integrator.awe,
  org.eclipse.ui.ide,
- org.apache.log4j
+ org.apache.log4j,
+ org.amanzi.awe.console;bundle-version="1.0.0"
 Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Import-Package: org.eclipse.ui.console,
