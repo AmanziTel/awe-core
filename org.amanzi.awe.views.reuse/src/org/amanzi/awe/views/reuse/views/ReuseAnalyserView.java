@@ -300,7 +300,9 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
         lPalette = new Label(parent, SWT.NONE);
         lPalette.setText(PALETTE_LABEL);
         cPalette = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
-        cPalette.setItems(PlatformGIS.getColorBrewer().getPaletteNames());
+        String[] paletteNames = PlatformGIS.getColorBrewer().getPaletteNames();
+        Arrays.sort(paletteNames);
+        cPalette.setItems(paletteNames);
         cPalette.select(0);
         lPalette.setVisible(false);
         cPalette.setVisible(false);

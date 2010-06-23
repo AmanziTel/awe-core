@@ -15,6 +15,7 @@ package org.amanzi.awe.wizards.pages;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.amanzi.awe.wizards.AnalysisWizard;
@@ -73,7 +74,9 @@ public class SelectPropertyPage extends WizardPage {
                 if (i == 0) {
                     formData.top = new FormAttachment(0, 2);
                     label.setLayoutData(formData);
-                    combo.setItems(availableProperties.toArray(new String[] {}));
+                    String[] array = availableProperties.toArray(new String[] {});
+                    Arrays.sort(array);
+                    combo.setItems(array);
                 } else {
                     formData.top = new FormAttachment(combos[i - 1], 2);
                     label.setLayoutData(formData);
@@ -142,6 +145,7 @@ public class SelectPropertyPage extends WizardPage {
     private void fillCombosWithDefaultValues() {
         for (int i = 0; i < combos.length; i++) {
             ArrayList<String> values = new ArrayList<String>(availableProperties);
+            Collections.sort(values);
             combos[i].setItems(values.toArray(new String[] {}));
         }
         previousSelection = new String[combos.length];

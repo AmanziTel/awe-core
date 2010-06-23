@@ -268,12 +268,14 @@ public class SelectKPIPage extends WizardPage {
 
     protected void updateGroups() {
         String[] availableModules = ScriptUtils.getAvailableModules(ruby, getFullVendorModuleName());
+        Arrays.sort(availableModules);
         cmbSelectGroup.setItems(availableModules);
         cmbSelectKPI.removeAll();
     }
 
     private void updateVendors() {
         String[] availableModules = ScriptUtils.getAvailableModules(ruby, KPIPlugin.DEFAULT_KPI_RUBY_MODULE);
+        Arrays.sort(availableModules);
         cmbSelectVendor.setItems(availableModules);
         cmbSelectGroup.removeAll();
         cmbSelectKPI.removeAll();

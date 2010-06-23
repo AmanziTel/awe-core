@@ -16,6 +16,7 @@ import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import net.refractions.udig.project.internal.Layer;
@@ -505,10 +506,12 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
             if (allFields != null) {
                 result.addAll(Arrays.asList(allFields));
             }
+            Collections.sort(result);
             return result.toArray(new String[0]);
         } catch (IOException e) {
             // TODO Handle IOException
             e.printStackTrace();
+            Collections.sort(result);
             return result.toArray(new String[0]);
         }
     }

@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.wizards.geoptima;
 
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -201,7 +202,9 @@ public class ProcessDialog extends Dialog implements IPropertyChangeListener {
      */
     protected void formDataList(Set<Node> storedData) {
         formdataMap(storedData);
-        cData.setItems(datamap.keySet().toArray(new String[0]));
+        String[] array = datamap.keySet().toArray(new String[0]);
+        Arrays.sort(array);
+        cData.setItems(array);
     }
 
     /**
@@ -291,6 +294,7 @@ public class ProcessDialog extends Dialog implements IPropertyChangeListener {
             formCorrelateMap(dataNode);
         }
         final String[] array = corData.keySet().toArray(new String[0]);
+        Arrays.sort(array);
         cCorrelate.setItems(array);
         cCorrelate.setEnabled(array.length > 0);
     }

@@ -331,7 +331,9 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
         lPalette = new Label(buttonLine, SWT.NONE);
         lPalette.setText(PALETTE_LABEL);
         cPalette = new Combo(buttonLine, SWT.DROP_DOWN | SWT.READ_ONLY);
-        cPalette.setItems(PlatformGIS.getColorBrewer().getPaletteNames());
+        String[] paletteNames = PlatformGIS.getColorBrewer().getPaletteNames();
+        Arrays.sort(paletteNames);
+        cPalette.setItems(paletteNames);
         cPalette.select(0);
 
         FormData dCombo = new FormData();
@@ -561,7 +563,9 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
             }
         }
 
-        cPropertyList.setItems(propertyLists.keySet().toArray(new String[0]));
+        String[] array = propertyLists.keySet().toArray(new String[0]);
+        Arrays.sort(array);
+        cPropertyList.setItems(array);
         // }
 
         // propertyLists.clear();

@@ -106,7 +106,7 @@ public class PropertyListPreferences extends PreferencePage implements IWorkbenc
             layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
             cAvaliableProperties.setLayoutData(layoutData);
             String[] items = avaliableProperties.toArray(new String[0]);
-            Arrays.asList(items);
+            Arrays.sort(items);
             cAvaliableProperties.setItems(items);
 
             bAddProperty = new Button(mainFrame, SWT.PUSH);

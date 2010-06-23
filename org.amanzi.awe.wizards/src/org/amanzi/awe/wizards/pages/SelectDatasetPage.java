@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.wizards.pages;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 import org.amanzi.awe.wizards.AnalysisWizard;
@@ -183,6 +184,7 @@ public class SelectDatasetPage extends WizardPage {
         if (selectedDataset != null && selectedDataset.length() != 0) {
             Node dataset = datasets.get(selectedDataset);
             String[] sitesFound = DBUtils.getAllSites(dataset).toArray(new String[] {});
+            Arrays.sort(sitesFound);
             cmbSite.setItems(sitesFound);
             if (sitesFound.length != 0) {
                 cmbSite.add(ALL_SITES, 0);
@@ -206,7 +208,9 @@ public class SelectDatasetPage extends WizardPage {
             datasets = DBUtils.getAllCounters();
         }
 
-        cmbDataset.setItems(datasets.keySet().toArray(new String[] {}));
+        String[] array = datasets.keySet().toArray(new String[] {});
+        Arrays.sort(array);
+        cmbDataset.setItems(array);
         cmbSite.removeAll();
 
     }

@@ -14,6 +14,7 @@
 package org.amanzi.awe.wizards.geoptima;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -150,7 +151,9 @@ public class CorrelateDialog extends Dialog implements IPropertyChangeListener {
                 }
             }
         }
-        cNetwork.setItems(networks.keySet().toArray(new String[0]));
+        String[] array = networks.keySet().toArray(new String[0]);
+        Arrays.sort(array);
+        cNetwork.setItems(array);
         validateCorrelateButton();
     }
 

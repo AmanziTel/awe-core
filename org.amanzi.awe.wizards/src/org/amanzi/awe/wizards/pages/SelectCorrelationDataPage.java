@@ -1,5 +1,6 @@
 package org.amanzi.awe.wizards.pages;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -161,10 +162,18 @@ public class SelectCorrelationDataPage extends WizardPage {
 			tx.finish();
 		}
 		
-		cmbNetwork.setItems(networks.keySet().toArray(new String[0]));
-		cmbGps.setItems(gps.keySet().toArray(new String[0]));
-		cmbOss.setItems(oss.keySet().toArray(new String[0]));
-		cmbGpeh.setItems(gpeh.keySet().toArray(new String[0]));
+		String[] networksArray = networks.keySet().toArray(new String[0]);
+		Arrays.sort(networksArray);
+        cmbNetwork.setItems(networksArray);
+		String[] gpsArray = gps.keySet().toArray(new String[0]);
+		Arrays.sort(gpsArray);
+        cmbGps.setItems(gpsArray);
+		String[] ossArray = oss.keySet().toArray(new String[0]);
+		Arrays.sort(ossArray);
+        cmbOss.setItems(ossArray);
+        Arrays.sort(gpsArray);
+		String[] gpehArray = gpeh.keySet().toArray(new String[0]);
+        cmbGpeh.setItems(gpehArray);
 		
 		SelectionListener listener = new SelectionListener() {
 			
