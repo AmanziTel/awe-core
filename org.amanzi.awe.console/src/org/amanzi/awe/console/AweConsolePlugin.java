@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 import org.apache.log4j.Logger;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.MessageConsole;
@@ -107,7 +109,7 @@ public class AweConsolePlugin extends AbstractUIPlugin {
         
         ConsolePlugin.getDefault().getConsoleManager().addConsoles(new IConsole[] {pluginConsole});
         
-        loggingPossible = (plugin != null) && (pluginConsole != null);
+        loggingPossible = (plugin != null) && (pluginConsole != null) && (PlatformUI.getWorkbench() != null) && Display.getDefault() != null;
     }
     
     /**
