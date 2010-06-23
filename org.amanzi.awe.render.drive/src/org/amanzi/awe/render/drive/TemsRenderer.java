@@ -49,6 +49,7 @@ import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
 import org.amanzi.awe.neostyle.ShapeType;
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.ColoredFlags;
 import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
@@ -1136,9 +1137,20 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             }
             Node coloredNode = null;
             if(NeoUtils.isDrivePointNode(node)){
-                Relationship locLink = node .getSingleRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING);
-                if(!(locLink==null)){
-                    coloredNode = locLink.getStartNode();
+                Traverser nodes = node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {                    
+                    @Override
+                    public boolean isReturnableNode(TraversalPosition currentPos) {
+                       Node curr = currentPos.currentNode();
+                        return NeoUtils.isCallNode(curr)||NeoUtils.isDriveMNode(curr);
+                    }
+                }, GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING);
+                ColoredFlags flag = ColoredFlags.NONE;
+                for(Node curr : nodes){
+                    ColoredFlags currFlag = ColoredFlags.getFlagById((String)curr.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, ColoredFlags.NONE.getId()));
+                    if(currFlag.getOrder()>flag.getOrder()){
+                        flag = currFlag;
+                        coloredNode = curr;
+                    }
                 }
             } else if(NeoUtils.isDriveMNode(node)||NeoUtils.isCallNode(node)){
                 coloredNode = node;
