@@ -57,8 +57,8 @@ public class HoCcXmlDataGenerator extends IndividualCallXmlDataGenerator{
     }
     
     @Override
-    protected Call createCall(CallGroup group, Integer hour, Long setupDuration) {
-        Call call = CallGeneratorUtils.createCallWithHoCc(getStartOfHour(hour), setupDuration,getCallPriority(),group,getAudioQualityBorders(),getAudioDelayBorders(),getMinCallDuration());
+    protected Call createCall(CallGroup group,Long start,Long end, Long setupDuration) {
+        Call call = CallGeneratorUtils.createCallWithHoCc(start,end, setupDuration,getCallPriority(),group,getAudioQualityBorders(),getAudioDelayBorders(),getMinCallDuration());
         return call;
     }
     

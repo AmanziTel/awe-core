@@ -83,7 +83,7 @@ public class CallGeneratorUtils {
         return new Long[]{start,end};
     }
     
-    public static Call createCall(Long startOfHour, Long setupDuration, Integer priority,CallGroup group,float[] audioQualityBorders, int[] audioDelayBorders, Long minCallDuration){
+    public static Call createCall(Long startAll,Long endAll, Long setupDuration, Integer priority,CallGroup group,float[] audioQualityBorders, int[] audioDelayBorders, Long minCallDuration){
         RandomValueGenerator generator = getRandomGenerator();
         boolean inDistTime = generator.getBooleanValue();
         long callDuration;
@@ -95,7 +95,11 @@ public class CallGeneratorUtils {
         }else{
             callDuration = generator.getLongValue(setupDuration, minDuration);
         }
-        Long start = startOfHour+generator.getLongValue(1L, CallGeneratorUtils.HOUR-callDuration);
+        if(endAll<=startAll){
+            startAll = startAll-HOUR;
+        }
+        long startBorder = endAll-startAll;
+        Long start = startAll+generator.getLongValue(1L, startBorder);
         Call call = getEmptyCall(start,priority);
         call.addParameter(CallParameterNames.SETUP_TIME, setupDuration);
         call.addParameter(CallParameterNames.DURATION_TIME, callDuration);
@@ -131,8 +135,8 @@ public class CallGeneratorUtils {
         return call;
     }
     
-    public static Call createCallWithHoCc(Long startOfHour, Long setupDuration, Integer priority,CallGroup group,float[] audioQualityBorders, int[] audioDelayBorders, Long minCallDuration){
-        Call call = createCall(startOfHour, setupDuration, priority, group, audioQualityBorders, audioDelayBorders, minCallDuration);
+    public static Call createCallWithHoCc(Long startAll,Long endAll, Long setupDuration, Integer priority,CallGroup group,float[] audioQualityBorders, int[] audioDelayBorders, Long minCallDuration){
+        Call call = createCall(startAll,endAll, setupDuration, priority, group, audioQualityBorders, audioDelayBorders, minCallDuration);
         Long start = call.getStartTime();
         Long callDuration = (Long)call.getParameter(CallParameterNames.DURATION_TIME);
         boolean needHo = getRandomGenerator().getBooleanValue();
@@ -141,7 +145,7 @@ public class CallGeneratorUtils {
         }
         boolean needCc = getRandomGenerator().getBooleanValue();
         if(needCc){
-            Long endOfHour = startOfHour+HOUR;
+            Long endOfHour = startAll+HOUR;
             Long end = callDuration+start;
             if(endOfHour<end){
                 endOfHour+=HOUR;

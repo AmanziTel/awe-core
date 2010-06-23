@@ -148,9 +148,10 @@ public abstract class MessageXmlDataGenerator extends AmsXmlDataGenerator{
         String message = getMessage();
         for(int i = 0; i<hours; i++){
             int currCallCount = callsCount + RandomValueGenerator.getGenerator().getIntegerValue(-callVariance, callVariance);
-            Long startOfHour = getStartOfHour(i);
+            Long start = getStartOfHour(i);
             for(int j = 0; j<currCallCount; j++){
-                CallData call = buildCallCommands(group, i, CallGeneratorUtils.createMessages(startOfHour,1, callPriority, durationBorders,acknowledgeBorders,message));
+                CallData call = buildCallCommands(group, i, CallGeneratorUtils.createMessages(start,1, callPriority, durationBorders,acknowledgeBorders,message));
+                start = call.getStartTime()+1;
                 calls.add(call);
             }
         }

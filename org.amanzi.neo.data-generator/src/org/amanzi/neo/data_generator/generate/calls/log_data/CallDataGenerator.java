@@ -49,7 +49,7 @@ public abstract class CallDataGenerator extends AmsDataGenerator {
         HashMap<Integer, List<Long>> hourMap = CallGeneratorUtils.buildHourMap(getHours(), getCalls(), getCallVariance(), getCallDurationBorders());
         for(Integer hour : hourMap.keySet()){
             for(Long setupDuration : hourMap.get(hour)){
-                CallData call = buildCallCommands(group, hour, CallGeneratorUtils.createCall(getStartOfHour(hour), setupDuration,getCallPriority(),group,getAudioQualityBorders(),null, getMinCallDuration()));
+                CallData call = buildCallCommands(group, hour, CallGeneratorUtils.createCall(getStartOfHour(hour),getStartOfHour(hour+1), setupDuration,getCallPriority(),group,getAudioQualityBorders(),null, getMinCallDuration()));
                 calls.add(call);
             }
         }

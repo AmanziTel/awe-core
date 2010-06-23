@@ -63,6 +63,9 @@ public class IndividualCallXmlDataGenerator extends CallXmlDataGenerator{
         
         Long rConTime = start+setupDuration;
         Long end = start+callDuration;
+        while(end>=endHour){            
+            endHour+=CallGeneratorUtils.HOUR;
+        }
         
         Long setupTime = CallGeneratorUtils.getRamdomTime(start, rConTime);
         Long indicTime = CallGeneratorUtils.getRamdomTime(setupTime, rConTime);

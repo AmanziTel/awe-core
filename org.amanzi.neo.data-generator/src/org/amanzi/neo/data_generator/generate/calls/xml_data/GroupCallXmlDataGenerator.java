@@ -81,6 +81,9 @@ public class GroupCallXmlDataGenerator extends CallXmlDataGenerator{
         
         Long sConTime = start+setupDuration;
         Long end = start+callDuration;
+        while(end>endHour){
+            endHour+=CallGeneratorUtils.HOUR;
+        }
         
         Long setupTime = CallGeneratorUtils.getRamdomTime(start, sConTime);
         Long discTime = CallGeneratorUtils.getRamdomTime(sConTime, end);
