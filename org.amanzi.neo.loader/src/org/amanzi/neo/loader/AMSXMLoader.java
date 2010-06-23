@@ -22,7 +22,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -155,7 +154,7 @@ public class AMSXMLoader extends AbstractCallLoader {
     private final Map<String, Node> probeNtpqsCache = new HashMap<String, Node>();
     
     /** The ntpq cache. */
-    private final Map<String, List<Node>> ntpqCache = new HashMap<String, List<Node>>();
+    private final Map<String, Node> ntpqCache = new HashMap<String, Node>();
 
     /** The group call. */
     private final Map<String, Set<String>> groupCall = new HashMap<String, Set<String>>();
@@ -515,11 +514,9 @@ public class AMSXMLoader extends AbstractCallLoader {
     
     private void addNtpqsToCall(Node call, Node probeCalls){
         Object id = NeoUtils.getNodeName(probeCalls, neo).split(" ")[0];
-        List<Node> ntpqs = ntpqCache.get(id);
+        Node ntpqs = ntpqCache.get(id);
         if(ntpqs!=null){
-            for (Node ntpq : ntpqs) {
-                call.createRelationshipTo(ntpq, ProbeCallRelationshipType.CALL_M);
-            }                
+            call.createRelationshipTo(ntpqs, ProbeCallRelationshipType.CALL_M);
         }
     }
 
@@ -2159,9 +2156,13 @@ private void handleCall() {
         private void handleCollector() throws ParseException {            
             Map<String, String> map = getPropertyMap();
             String id = map.get("probeID");
-            List<Node> ntpqs = ntpqCache.get(id);
+            Node ntpqs = ntpqCache.get(id);
             if (ntpqs == null) {
-                ntpqs = new ArrayList<Node>();
+                ntpqs = neo.createNode();
+                NeoUtils.setNodeName(ntpqs, "NTP " + id, neo);
+                NodeTypes.M_AGGR.setNodeType(ntpqs, neo);
+                NeoUtils.addChild(datasetFileNode, ntpqs, lastDatasetNode, neo);
+                lastDatasetNode = ntpqs;
                 ntpqCache.put(id, ntpqs);
             }
             Node probeNtpqs = probeNtpqsCache.get(id);
@@ -2169,9 +2170,13 @@ private void handleCall() {
                 probeNtpqs = findOrCreateNtpqsForProbe(id);
                 probeNtpqsCache.put(id, probeNtpqs);
             }
+            // Set<Node> ntpqset = ntpqAggrCache.get(id);
+            // if (null == ntpqset) {
+            // ntpqset = new HashSet<Node>();
+            // ntpqAggrCache.put(id, ntpqset);
+            // }
             Node ntpq = neo.createNode();
-            NeoUtils.addChild(datasetFileNode, ntpq, lastDatasetNode, neo);
-            lastDatasetNode = ntpq;
+            NeoUtils.addChild(ntpqs, ntpq, null, neo);
             NodeTypes.M.setNodeType(ntpq, neo);
             ntpq.setProperty(INeoConstants.PROPERTY_NAME_NAME, TAG_NAME);
             for (String key : map.keySet()) {
@@ -2179,7 +2184,7 @@ private void handleCall() {
                 setProperty(ntpq, key, parseValue);
             }       
             probeNtpqs.createRelationshipTo(ntpq, ProbeCallRelationshipType.NTPQ_M);
-            ntpqs.add(ntpq);
+            // ntpqset.add(ntpq);
             incSavedCount();
         }
         
