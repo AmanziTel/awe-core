@@ -23,6 +23,8 @@ import org.amanzi.awe.wizards.AnalysisWizard;
 import org.amanzi.awe.wizards.kpi.report.KPIReportWizard;
 import org.amanzi.awe.wizards.utils.ScriptUtils;
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -159,6 +161,7 @@ public class SelectKPIPage extends WizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 try {
+//                    FileLocator.toFileURL(Platform.getBundle(ReportPlugin.PLUGIN_ID).getEntry("icons/amanzi_tel_logo.png"));
                     String pluginRoot = org.amanzi.scripting.jruby.ScriptUtils.getPluginRoot(KPIPlugin.PLUGIN_ID);
                     String file = pluginRoot + "\\\\" + KPIPlugin.RUBY_FOLDER + "\\\\" + cmbSelectVendor.getText().toLowerCase()
                             + ".rb";

@@ -133,7 +133,7 @@ public class DBUtils {
         try {
             Node propertiesNode = null;
             Object nodeType = dataset.getProperty(INeoConstants.PROPERTY_TYPE_NAME);
-            if (nodeType.equals(NodeTypes.NETWORK.getId()) ||nodeType.equals(NodeTypes.DATASET.getDeclaringClass())) {
+            if (nodeType.equals(NodeTypes.NETWORK.getId()) ||nodeType.equals(NodeTypes.DATASET.getId())||nodeType.equals(NodeTypes.OSS.getId())) {
                 propertiesNode = dataset.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING).getEndNode();
             } else if (nodeType.equals(NodeTypes.GIS.getId())) {
                 Node dsNode = dataset.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode();
