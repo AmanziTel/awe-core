@@ -54,7 +54,7 @@ public class SecondLevelConstants {
     
     public static float MIN_GC4 = 97f;
     public static float MIN_QUALITY_GC4 = 2f;
-    public static float MIN_GC4_AVERAGE = 2f;
+    public static float MIN_GC4_AVERAGE = 2.5f;
     public static float MIN_QUALITY_GC4_AVG = 2.5f;
     
     public static float MAX_GC5_AVERAGE = 0.36f;
