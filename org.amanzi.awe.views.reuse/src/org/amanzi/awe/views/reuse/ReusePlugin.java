@@ -41,8 +41,8 @@ public class ReusePlugin extends AbstractUIPlugin implements IUpdateViewListener
         handedTypes = Collections.unmodifiableCollection(spr);
     }
     /** String VIEW_ID field */
-    private static final String REUSE_VIEW_ID = "org.amanzi.awe.views.reuse.views.ReuseAnalyserView";
-    private static final String MESS_TABLE_VIEW_ID = "org.amanzi.awe.views.reuse.views.MessageAndEventTableView";
+    public static final String REUSE_VIEW_ID = "org.amanzi.awe.views.reuse.views.ReuseAnalyserView";
+    public static final String MESS_TABLE_VIEW_ID = "org.amanzi.awe.views.reuse.views.MessageAndEventTableView";
 
     // The plug-in ID
     public static final String PLUGIN_ID = "org.amanzi.awe.views.reuse";

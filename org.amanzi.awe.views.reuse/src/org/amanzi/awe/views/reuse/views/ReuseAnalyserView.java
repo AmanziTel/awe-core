@@ -42,6 +42,7 @@ import org.amanzi.awe.views.reuse.Select;
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.services.events.ShowPreparedViewEvent;
 import org.amanzi.neo.core.enums.ColoredFlags;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
@@ -114,10 +115,8 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
-import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
-import org.neo4j.graphdb.Traverser.Order;
 import org.rubypeople.rdt.core.IRubyProject;
 import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
@@ -130,7 +129,10 @@ import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
  * @since 1.0.0
  */
 public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListener {
+   
     private static final Logger LOGGER = Logger.getLogger(ReuseAnalyserView.class);
+    
+    private static final String DRIVE_ID = "org.amanzi.awe.views.tree.drive.views.DriveTreeView";
 
     /** String TOOL_TIP_LOG field */
     private static final String TOOL_TIP_LOG = Messages.ReuseAnalayserView_TOOL_TIP_LOG;
@@ -423,10 +425,11 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
             @SuppressWarnings("unchecked")
             @Override
             public void chartMouseClicked(ChartMouseEvent chartmouseevent) {
+                Comparable columnKey = null;
                 if (!isColorThema()) {
                     if (chartmouseevent.getEntity() instanceof CategoryItemEntity) {
                         CategoryItemEntity entity = (CategoryItemEntity)chartmouseevent.getEntity();
-                        Comparable columnKey = entity.getColumnKey();
+                        columnKey = entity.getColumnKey();
                         ChartNode chartColumn = (ChartNode)columnKey;
                         if (selectedColumn == null || !selectedColumn.equals(chartColumn)) {
                             setSelection(chartColumn);
@@ -439,10 +442,14 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
                 } else {
                     if (threeBlend.getSelection() && chartmouseevent.getEntity() instanceof CategoryItemEntity) {
                         CategoryItemEntity entity = (CategoryItemEntity)chartmouseevent.getEntity();
-                        Comparable columnKey = entity.getColumnKey();
+                        columnKey = entity.getColumnKey();
                         middleColumn = (ChartNode)columnKey;
                         setMiddleSelectionName(middleColumn);
                         chartUpdate();
+                    }else if(chartmouseevent.getEntity() instanceof CategoryItemEntity){
+                        CategoryItemEntity entity = (CategoryItemEntity)chartmouseevent.getEntity();
+                        columnKey = entity.getColumnKey();
+                        showInTreeView((ChartNode)columnKey);
                     }
                 }
             }
@@ -1061,6 +1068,18 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
         }
     }
 
+    /**
+     * Show selected aggregation in tree view.
+     *
+     * @param aggrNode
+     */
+    private void showInTreeView(ChartNode columnKey) {
+        if (columnKey!=null) {
+            Node columnNode = columnKey.getNode();
+            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent(DRIVE_ID, columnNode));
+        }
+    }
+
     protected void changeBarColor() {
         ChartNode selColumn = getSelectedColumn();
         int columnIndex = selColumn == null ? -1 : dataset.getColumnIndex(selColumn);
@@ -1188,6 +1207,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
         } else {
             tSelectedInformation.setText(columnKey.toString());
         }
+        showInTreeView(columnKey);
     }
 
     /**
@@ -1199,6 +1219,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
         } else {
             ttblendInformation.setText(columnKey.toString());
         }
+        showInTreeView(columnKey);
     }
 
     /**
@@ -1708,8 +1729,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
                     Transaction tx = NeoUtils.beginTransaction();
                     NeoUtils.addTransactionLog(tx, Thread.currentThread(), "setAggrNode");
                     try {
-                        Iterator<Node> iteratorChild = aggrNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE,
-                                NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
+                        Iterator<Node> iteratorChild = NeoUtils.getChildTraverser(aggrNode).iterator();
                         nodeList.clear();
                         while (iteratorChild.hasNext()) {
                             Node node = iteratorChild.next();

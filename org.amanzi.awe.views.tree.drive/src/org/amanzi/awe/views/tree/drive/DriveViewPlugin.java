@@ -21,6 +21,7 @@ import org.amanzi.awe.views.network.view.NetworkTreeView;
 import org.amanzi.awe.views.tree.drive.views.DriveTreeView;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.listener.IUpdateViewListener;
+import org.amanzi.neo.core.database.nodes.DistributionSelectionNode;
 import org.amanzi.neo.core.database.nodes.StatisticSelectionNode;
 import org.amanzi.neo.core.database.services.events.ShowPreparedViewEvent;
 import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;
@@ -158,9 +159,15 @@ public class DriveViewPlugin extends AbstractUIPlugin implements IUpdateViewList
     
     private void showPreparedView(ShowPreparedViewEvent event){
         if (event.isViewNeedUpdate(DriveTreeView.ID)) {
-            Node node = event.getNodes().get(0);
-            Node periodNode = event.getNodes().get(1);
-            StructuredSelection selection = new StructuredSelection(new Object[] {new StatisticSelectionNode(node, periodNode)});
+            List<Node> nodes = event.getNodes();
+            Node node = nodes.get(0);
+            StructuredSelection selection;
+            if (nodes.size()>1) {
+                Node periodNode = nodes.get(1);
+                selection = new StructuredSelection(new Object[] {new StatisticSelectionNode(node, periodNode)});
+            }else{
+                selection = new StructuredSelection(new Object[] {new DistributionSelectionNode(node)});
+            }
             IViewPart viewNetwork = showTreeView();
             if (viewNetwork != null) {
                 Viewer networkView = (Viewer)viewNetwork.getSite().getSelectionProvider();

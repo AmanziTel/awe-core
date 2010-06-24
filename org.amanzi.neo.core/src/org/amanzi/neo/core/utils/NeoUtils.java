@@ -305,6 +305,26 @@ public class NeoUtils {
     public static boolean isSRowNode(Node node) {
         return node != null && NodeTypes.S_ROW.getId().equals(getNodeType(node, ""));
     }
+    
+    /**
+     * Is this node a Aggregation node.
+     * 
+     * @param node node to check
+     * @return is this node a Call node
+     */
+    public static boolean isAggregationNode(Node node) {
+        return node != null && NodeTypes.AGGREGATION.getId().equals(getNodeType(node, ""));
+    }
+    
+    /**
+     * Is this node a Count node.
+     * 
+     * @param node node to check
+     * @return is this node a Call node
+     */
+    public static boolean isCountNode(Node node) {
+        return node != null && NodeTypes.COUNT.getId().equals(getNodeType(node, ""));
+    }
 
     /**
      * gets stop evaluator with necessary depth.

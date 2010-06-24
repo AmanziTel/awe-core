@@ -55,15 +55,22 @@ public class DriveNeoNode extends NeoNode {
     public NeoNode[] getChildren() {
         ArrayList<NeoNode> children = new ArrayList<NeoNode>();
         Traverser traverse;
+        int i = 0;
+        int nextNum = number+1;
+        if(NeoUtils.isDatasetNode(node)){
+            traverse = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, 
+                                     NetworkRelationshipTypes.AGGREGATION, Direction.OUTGOING);
+            for (Node node : traverse) {
+                children.add(new DistributeNeoNode(node,nextNum++));
+            }
+        }
         if (NeoUtils.isCallNode(node)) {
             traverse = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, 
                                      ProbeCallRelationshipType.CALL_M, Direction.OUTGOING);
         }
         else {
             traverse = NeoUtils.getChildTraverser(node);
-        }
-        int i = 0;
-        int nextNum = number+1;
+        }        
         for (Node node : traverse) {
             if (++i <= TRUNCATE_NODE) {
                 children.add(new DriveNeoNode(node,nextNum++));

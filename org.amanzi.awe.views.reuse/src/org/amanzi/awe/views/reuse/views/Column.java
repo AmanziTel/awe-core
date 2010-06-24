@@ -74,14 +74,21 @@ public class Column implements Comparable<Column> {
         range += prevCol.range;
         node.setProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, minValue);
         node.setProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE, minValue + range);
-        for (Relationship relation : prevCol.getNode().getRelationships(NetworkRelationshipTypes.AGGREGATE, Direction.OUTGOING)) {
+        Node prevNode = prevCol.getNode();
+        for (Relationship relation : prevNode.getRelationships(NetworkRelationshipTypes.AGGREGATE, Direction.OUTGOING)) {
             node.createRelationshipTo(relation.getOtherNode(node), NetworkRelationshipTypes.AGGREGATE);
         }
-        Node parentMain = prevCol.getNode().getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(prevCol.getNode());
-        NeoUtils.deleteSingleNode(prevCol.getNode(),service);
+        GeoNeoRelationshipTypes linkType = GeoNeoRelationshipTypes.CHILD;
+        Relationship parentLink = prevNode.getSingleRelationship(linkType, Direction.INCOMING);
+        if(parentLink==null){
+            linkType = GeoNeoRelationshipTypes.NEXT;
+            parentLink = prevNode.getSingleRelationship(linkType, Direction.INCOMING);
+        }
+        Node parentMain = parentLink.getOtherNode(prevNode);
+        NeoUtils.deleteSingleNode(prevNode,service);
         node.setProperty(INeoConstants.PROPERTY_NAME_NAME, getColumnName());
         prevCol.setNode(null);
-        parentMain.createRelationshipTo(node, GeoNeoRelationshipTypes.CHILD);
+        parentMain.createRelationshipTo(node, linkType);
         setSpacer(true);
     }
 
@@ -118,13 +125,13 @@ public class Column implements Comparable<Column> {
      * Instantiates a new column.
      *
      * @param aggrNode the aggr node
-     * @param parentNode the parent node
+     * @param lastNode the last column node
      * @param curValue the cur value
      * @param range the range
      * @param distribute the distribute
      * @param propertyValue the property value
      */
-    public Column(Node aggrNode, Node parentNode, double curValue, double range, Distribute distribute, Object propertyValue,GraphDatabaseService service) {
+    public Column(Node aggrNode, Node lastNode, double curValue, double range, Distribute distribute, Object propertyValue,GraphDatabaseService service) {
         this(curValue, range);
         this.distribute = distribute;
         this.propertyValue = propertyValue;
@@ -135,7 +142,7 @@ public class Column implements Comparable<Column> {
         node.setProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE, minValue + range);
         node.setProperty(INeoConstants.PROPERTY_VALUE_NAME, 0);
         node.setProperty(INeoConstants.PROPERTY_AGGR_PARENT_ID, aggrNode.getId());
-        parentNode.createRelationshipTo(node, NetworkRelationshipTypes.CHILD);
+        NeoUtils.addChild(aggrNode, node, aggrNode.equals(lastNode)?null:lastNode, service);
 
     }
 

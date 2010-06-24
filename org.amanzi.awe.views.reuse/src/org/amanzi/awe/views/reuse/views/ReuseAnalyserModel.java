@@ -432,7 +432,6 @@ public class ReuseAnalyserModel {
                 travers = rootNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, propertyReturnableEvalvator, NetworkRelationshipTypes.CHILD,
                         Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
                 monitor.subTask("Building results from database");
-                long nodesWithoutProperty=0; 
                 for (Node node : travers) {
                     if (node.hasProperty(propertyName)) {
                         double value = ((Number)node.getProperty(propertyName)).doubleValue();
@@ -450,15 +449,12 @@ public class ReuseAnalyserModel {
                             }
                         }
                     } else {
-                        nodesWithoutProperty++;
-                     }
+                        LOGGER.debug("No such property '" + propertyName + "' for node "
+                                + (node.hasProperty("name") ? node.getProperty("name").toString() : node.toString()));
+                    }
                     monitor.worked(1);
                     if (monitor.isCanceled())
                         break;
-                }
-                if (nodesWithoutProperty>0){
-                    LOGGER.debug("Property '" + propertyName + "' not found for " + nodesWithoutProperty + " nodes");
-
                 }
             } else {
                 monitor.subTask("Building results from memory cache of " + mpMap.size() + " data");

@@ -15,6 +15,8 @@ package org.amanzi.awe.views.tree.drive.views;
 import org.amanzi.awe.awe.views.view.provider.NetworkTreeContentProvider;
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
+import org.amanzi.neo.core.database.nodes.DistributionSelectionNode;
+import org.amanzi.neo.core.database.nodes.StatisticSelectionNode;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
@@ -48,11 +50,17 @@ public class DriveTreeContentProvider extends NetworkTreeContentProvider {
                 element = new DriveNeoNode((Node)element, 0);
             }
             if (element instanceof IAdaptable) {
-                IAdaptable adapter = (IAdaptable)element;
-                Pair< ? , ? > pair = (Pair< ? , ? >)adapter.getAdapter(Pair.class);
-                if (pair.getLeft() instanceof Node && pair.getRight() instanceof Node) {
-                    CallAnalyzisNeoNode elem = new CallAnalyzisNeoNode((Node)pair.getLeft(), (Node)pair.getRight(),0);
-                    return elem.getParent();
+                if (element instanceof StatisticSelectionNode) {
+                    IAdaptable adapter = (IAdaptable)element;
+                    Pair< ? , ? > pair = (Pair< ? , ? >)adapter.getAdapter(Pair.class);
+                    if (pair.getLeft() instanceof Node && pair.getRight() instanceof Node) {
+                        CallAnalyzisNeoNode elem = new CallAnalyzisNeoNode((Node)pair.getLeft(), (Node)pair.getRight(), 0);
+                        return elem.getParent();
+                    }
+                } else if(element instanceof DistributionSelectionNode){
+                    Node selected = ((DistributionSelectionNode)element).getSelected();
+                    DistributeNeoNode neoNode = new DistributeNeoNode(selected, 0);
+                    return neoNode.getParent();
                 }
             }
 
@@ -71,7 +79,10 @@ public class DriveTreeContentProvider extends NetworkTreeContentProvider {
                 if (element instanceof CallAnalyzisNeoNode) {
                     return ((CallAnalyzisNeoNode)element).getParent();
                 }
-                    return findParent(new DriveNeoNode(NeoUtils.getParent(null, node),curNum+1), node);
+                if (element instanceof DistributeNeoNode) {
+                    return ((DistributeNeoNode)element).getParent();
+                }
+                return findParent(new DriveNeoNode(NeoUtils.getParent(null, node),curNum+1), node);
             } else {
                 return super.getParent(element);
             }
