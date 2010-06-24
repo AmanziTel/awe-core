@@ -177,4 +177,5 @@ public class INeoConstants {
     public static final String SECTOR_ID_TYPE = "sector_id_type";
     
     public static final String SECTOR_COUNT = "sector_count";
+    public static final String PROPERTY_COUNT_NAME = "count";
 }

@@ -217,7 +217,7 @@ public class ReuseAnalyserModel {
             gisNode = NeoUtils.findGisNodeByChild(gisNode,service);
             if (gisNode==null/*||NeoUtils.getNodeType(gisNode, "").equals(NodeTypes.OSS.getId())*/){
                 select = Select.EXISTS;
-                totalWork = 1000;  
+                totalWork = (Integer)rootNode.getProperty(INeoConstants.PROPERTY_COUNT_NAME);  
                 typeOfGis = GisTypes.NETWORK;
                 
             } else {

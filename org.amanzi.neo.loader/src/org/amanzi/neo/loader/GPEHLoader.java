@@ -364,10 +364,6 @@ public void printStats(boolean verbose) {
         try {
             Node eventNode = neo.createNode();
             
-            if (storingProperties.get(1) != null) {
-                storingProperties.get(1).incSaved();
-            }
-            
             NodeTypes.M.setNodeType(eventNode, neo);
             String name = event.getType().name();
             setIndexProperty(headers, eventNode, INeoConstants.PROPERTY_NAME_NAME, name);
@@ -402,7 +398,8 @@ public void printStats(boolean verbose) {
             tx.success();
             index(eventNode);
             eventLastNode = eventNode;
-            storingProperties.values().iterator().next().incSaved();
+            storingProperties.get(KEY_EVENT).incSaved();
+            getGisProperties(dataset).incSaved();            
         } finally {
             tx.finish();
         }
