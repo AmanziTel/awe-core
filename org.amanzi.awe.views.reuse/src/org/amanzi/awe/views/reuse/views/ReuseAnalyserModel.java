@@ -34,6 +34,7 @@ import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.PropertyHeader;
+import org.amanzi.neo.core.utils.PropertyHeader.PropertyStatistics;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.neo4j.graphdb.Direction;
@@ -213,11 +214,18 @@ public class ReuseAnalyserModel {
             Map<Node, Number> mpMap = new HashMap<Node, Number>();
             // List<Number> aggregatedValues = new ArrayList<Number>();
             final GisTypes typeOfGis;
-            int totalWork;
+            PropertyStatistics stat = new PropertyHeader(rootNode).getPropertyStatistic(propertyName);
+            Integer totalWork=null;
+            if (stat!=null){
+                totalWork=stat.getCount();
+            }
+            if (totalWork==null){
+             LOGGER.warn(String.format("For property '%s' not found counts. Take default value=1000",propertyName));
+             totalWork=1000;
+            }
             gisNode = NeoUtils.findGisNodeByChild(gisNode,service);
             if (gisNode==null/*||NeoUtils.getNodeType(gisNode, "").equals(NodeTypes.OSS.getId())*/){
                 select = Select.EXISTS;
-                totalWork = (Integer)rootNode.getProperty(INeoConstants.PROPERTY_COUNT_NAME);  
                 typeOfGis = GisTypes.NETWORK;
                 
             } else {
@@ -226,10 +234,9 @@ public class ReuseAnalyserModel {
                 if (typeOfGis == GisTypes.NETWORK){
                     select = Select.EXISTS;
                 }
-                totalWork = (int)geoNode.getCount() * 2;
             }
             LOGGER.debug("Starting to compute statistics for " + propertyName + " with estimated work size of " + totalWork);
-            monitor.beginTask("Calculating statistics for " + propertyName, totalWork);
+           
             TreeMap<Column, Integer> result = new TreeMap<Column, Integer>();
             Node startTraverse=rootNode.hasRelationship(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING)||gisNode==null?rootNode:gisNode;
             Traverser travers = startTraverse.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, propertyReturnableEvalvator, NetworkRelationshipTypes.CHILD,
@@ -254,7 +261,9 @@ public class ReuseAnalyserModel {
             monitor.subTask("Searching database");
             // Collection<Node> trav = travers.getAllNodes();
             if (min == null || max == null) {
+                monitor.beginTask("Calculating statistics for " + propertyName, totalWork*2);
                 for (Node node : travers) {
+                    monitor.worked(1);
                     if (isAggregatedProperty) {
                         Double minValue = getNodeValue(node, propertyName, select, false);
                         Double maxValue = select == Select.EXISTS ? getNodeValue(node, propertyName, select, true) : minValue;
@@ -287,7 +296,7 @@ public class ReuseAnalyserModel {
                                     valueNum = calculateAverageValueOfMpNode(mpNode, propertyName);
                                 }
                                 mpMap.put(mpNode, valueNum);
-                                monitor.worked(1);
+
                             } else {
                                 switch (select) {
                                 case MAX:
@@ -321,6 +330,8 @@ public class ReuseAnalyserModel {
                         // node.toString()));
                     }
                 }
+            }else{
+                monitor.beginTask("Calculating statistics for " + propertyName, totalWork);
             }
 
             if (missingPropertyCount > 0) {
@@ -501,6 +512,17 @@ public class ReuseAnalyserModel {
         private boolean createStringChart(Node gisNode, Node aggrNode, String propertyName, Distribute distribute, Select select, IProgressMonitor monitor) {
             Transaction tx = service.beginTx();
             try {
+                PropertyStatistics stat = new PropertyHeader(gisNode).getPropertyStatistic(propertyName);
+                Integer totalWork=null;
+                if (stat!=null){
+                    totalWork=stat.getCount();
+                }
+                if (totalWork==null){
+                 LOGGER.warn(String.format("For property '%s' not found counts. Take default value=1000",propertyName));
+                 totalWork=1000;
+                }
+                monitor.beginTask("Calculating statistics for " + propertyName, totalWork);
+
                 GisTypes gisTypes = NeoUtils.getGisType(gisNode, null);
                 Node propertyNode = new PropertyHeader(gisNode).getPropertyNode(propertyName);
                 if (propertyNode == null) {
@@ -523,6 +545,7 @@ public class ReuseAnalyserModel {
                 Traverser travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, propertyReturnableEvalvator, NetworkRelationshipTypes.CHILD,
                         Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
                 for (Node node : travers) {
+                    monitor.worked(1);
                     if (node.hasProperty(propertyName)) {
                         String propertyVal = node.getProperty(propertyName).toString();
                         List<Node> nodesToLink = getNodeToLink(node, gisTypes);

@@ -425,7 +425,15 @@ public class PropertyHeader {
             this.typeNode = typeNode;
             this.valueNode = valueNode;
         }
-
+        
+        /**
+         * Gets the count of property
+         *
+         * @return the count
+         */
+        public Integer getCount(){
+            return statisticsRelation!=null?(Integer)statisticsRelation.getProperty("count",null):null;
+        }
         /**
          * @return Returns the statisticsRelation.
          */
