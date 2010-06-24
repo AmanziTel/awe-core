@@ -10,5 +10,6 @@
   <groupId>AWE_build</groupId>
   <artifactId>org.jtestr</artifactId>
   <version>1.0.0</version>
-  <packaging>eclipse-plugin</packaging>
+  <packaging>eclipse-test-plugin</packaging>
+  
 </project>
