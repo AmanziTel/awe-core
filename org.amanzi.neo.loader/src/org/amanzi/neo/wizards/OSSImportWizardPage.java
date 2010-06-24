@@ -296,4 +296,23 @@ public class OSSImportWizardPage extends WizardPage {
         return directory;
     }
 
+    @Override
+    public boolean canFlipToNextPage() {
+        try {
+            if (StringUtils.isEmpty(directory) || StringUtils.isEmpty(datasetName) || ossDirType.left() == null) {
+                return false;
+            }
+            File file = new File(directory);
+            if (!(file.isAbsolute() && file.exists())) {
+                return false;
+            }
+            // GPEH & RNC handle only directories
+            if (ossDirType.left() == OssType.GPEH && !file.isFile()) {
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

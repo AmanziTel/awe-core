@@ -16,6 +16,7 @@ package org.amanzi.neo.wizards;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
@@ -50,6 +51,7 @@ import org.neo4j.graphdb.Node;
 public class GPEHImportWizard extends Wizard implements IImportWizard {
 
     private OSSImportWizardPage mainPage;
+    private GPEHImportWizardPage2 gpehOptionalLoadPage;
     private Display display;
     private boolean addToSelect;
 
@@ -61,24 +63,25 @@ public class GPEHImportWizard extends Wizard implements IImportWizard {
                 try {
                     switch (mainPage.ossDirType.getLeft()) {
                     case GPEH:
-                        GPEHLoader loader = new GPEHLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display);
+                        Set<Integer> selectedEvents = gpehOptionalLoadPage.getSelectedEvents();
+                        GPEHLoader loader = new GPEHLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display, selectedEvents);
                         loader.run(monitor);
-                        handleSelect(monitor,loader.getRootNodes());
+                        handleSelect(monitor, loader.getRootNodes());
                         break;
                     case COUNTER:
                         OSSCounterLoader loaderOss = new OSSCounterLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display);
                         loaderOss.run(monitor);
-                        handleSelect(monitor,loaderOss.getRootNodes());
+                        handleSelect(monitor, loaderOss.getRootNodes());
                         break;
                     case APD:
                         APDLoader apdLoader = new APDLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display);
                         apdLoader.run(monitor);
-                        handleSelect(monitor,apdLoader.getRootNodes());
+                        handleSelect(monitor, apdLoader.getRootNodes());
                         break;
                     case iDEN:
                         IdenLoader idenLoader = new IdenLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display);
                         idenLoader.run(monitor);
-                        handleSelect(monitor,idenLoader.getRootNodes());
+                        handleSelect(monitor, idenLoader.getRootNodes());
                         break;
                     default:
                         break;
@@ -99,11 +102,13 @@ public class GPEHImportWizard extends Wizard implements IImportWizard {
     public void addPages() {
         super.addPages();
         addPage(mainPage);
+        addPage(gpehOptionalLoadPage);
     }
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         mainPage = new OSSImportWizardPage("ossPage1");
+        gpehOptionalLoadPage = new GPEHImportWizardPage2("ossPage2");
         setWindowTitle(NeoLoaderPluginMessages.GpehWindowTitle);
         display = workbench.getDisplay();
     }
@@ -111,14 +116,15 @@ public class GPEHImportWizard extends Wizard implements IImportWizard {
     public void addToSelectParam(String addToSelect) {
         this.addToSelect = addToSelect != null && "true".equalsIgnoreCase(addToSelect);
     }
+
     /**
      * Handle select.
-     *
+     * 
      * @param monitor the monitor
      * @param rootNodes the root nodes
      */
     protected void handleSelect(IProgressMonitor monitor, Node[] rootNodes) {
-        if (!addToSelect||monitor.isCanceled()){
+        if (!addToSelect || monitor.isCanceled()) {
             return;
         }
         LinkedHashSet<Node> sets = LoaderUtils.getSelectedNodes(NeoServiceProvider.getProvider().getService());
@@ -127,4 +133,5 @@ public class GPEHImportWizard extends Wizard implements IImportWizard {
         }
         LoaderUtils.storeSelectedNodes(sets);
     }
+
 }

@@ -334,13 +334,13 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
      * Create table
      * 
      * @param tableView table
-     * @param clumnName name of column
+     * @param columnName name of column
      */
-    private void createTable(TableViewer tableView, String clumnName) {
+    private void createTable(TableViewer tableView, String columnName) {
         Table table = tableView.getTable();
         TableColumn column = new TableColumn(table, SWT.NONE);
         column.setWidth(200);
-        column.setText(clumnName);
+        column.setText(columnName);
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
     }

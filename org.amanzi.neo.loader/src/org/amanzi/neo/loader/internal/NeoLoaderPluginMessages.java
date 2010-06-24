@@ -105,6 +105,8 @@ public class NeoLoaderPluginMessages extends NLS {
     public static String GpehDescr;
     public static String GpehLbOSS;
     public static String GpehImportDirEditorTitle;
+    public static String GpehOptionsTitle;
+    public static String GpehOptionsDescr;
 
     public static String NetworkSiteImportWizard_PAGE_TITLE;
     public static String NetworkSiteImportWizard_PAGE_DESCR;
