@@ -29,7 +29,9 @@ public enum ColoredFlags {
     YELLOW("yellow",0, 255, 255, 0, java.awt.Color.yellow.getRGB()),
     NONE("none",-1, -1,0,0,-1);
     private String id;
-    private Color color;
+    private int red;
+    private int green;
+    private int blue;
     private int order;
     private int rgb;
     
@@ -39,22 +41,22 @@ public enum ColoredFlags {
      * @param color
      */
     private ColoredFlags(String id, int order, int red, int green, int blue, int rgb) {
-        this.id = id;
-        Display display = Display.getCurrent();
-        if(display!=null&&red>=0){
-            this.color = new Color(display, red,green,blue);
-        }else{
-            this.color = null;
-        }
+        this.id = id;        
         this.order = order;
+        this.red = red;
+        this.green = green;
+        this.blue = blue;
         this.rgb = rgb;
     }
     
     /**
      * @return Returns the color.
      */
-    public Color getColor() {
-        return color;
+    public Color getColor(Display display) {
+        if(display!=null&&red>=0){
+            return new Color(display, red,green,blue);
+        }
+        return null;
     }
     
     /**

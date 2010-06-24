@@ -1664,7 +1664,7 @@ public class CallAnalyserView extends ViewPart {
             if(flagged==null||flagged.equals(ColoredFlags.NONE)){
                 return null;
             }
-            return flagged.getColor();
+            return flagged.getColor(Display.getCurrent());
         }
 
         /**
