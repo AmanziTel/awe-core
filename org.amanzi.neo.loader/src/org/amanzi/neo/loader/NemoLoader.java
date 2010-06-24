@@ -192,7 +192,7 @@ public class NemoLoader extends DriveLoader {
             pointNode = mp;
             curLat = lat;
             curLon = lon;
-            
+
             getGisProperties(dataset).incSaved();
         } catch (Exception e) {
             NeoLoaderPlugin.error(e.getLocalizedMessage());
@@ -224,12 +224,12 @@ public class NemoLoader extends DriveLoader {
             Node ms = neo.createNode();
 
             StoringProperty sProp = storingProperties.get(1);
-            if(sProp == null){
+            if (sProp == null) {
                 sProp = new StoringProperty(getStoringNode(1));
                 storingProperties.put(1, sProp);
             }
             sProp.incSaved();
-            
+
             findOrCreateFileNode(ms);
             event.store(ms, headers);
             ms.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
@@ -251,7 +251,7 @@ public class NemoLoader extends DriveLoader {
             ms.setProperty(INeoConstants.PROPERTY_NAME_NAME, id);
             index(ms);
             parentMnode = ms;
-            
+
             transaction.success();
         } catch (Exception e) {
             e.printStackTrace();
@@ -443,14 +443,14 @@ public class NemoLoader extends DriveLoader {
             }
             driveEvents = (DriveEvents)parParam.remove(NemoEvents.DRIVE_EVENTS);
             subNodes = (List<Map<String, Object>>)parParam.remove(NemoEvents.SUB_NODES);
-            //TODO check documentation
-            if (subNodes!=null){
-                //store in parameters like prop1,prop2...
-                int i=0;
-                for (Map<String, Object> oneSet:subNodes){
+            // TODO check documentation
+            if (subNodes != null) {
+                // store in parameters like prop1,prop2...
+                int i = 0;
+                for (Map<String, Object> oneSet : subNodes) {
                     i++;
-                    for (Map.Entry<String, Object> entry:oneSet.entrySet()){
-                        parParam.put(new StringBuilder(entry.getKey()).append(i).toString(), entry.getValue()); 
+                    for (Map.Entry<String, Object> entry : oneSet.entrySet()) {
+                        parParam.put(new StringBuilder(entry.getKey()).append(i).toString(), entry.getValue());
                     }
                 }
                 subNodes.clear();

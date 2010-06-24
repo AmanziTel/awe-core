@@ -118,11 +118,10 @@ public class OldNemoVersionLoader extends NemoLoader {
             }
 
             String latLon = event.latitude + "\t" + event.longitude;
+            createMNode(event);
             if (Double.parseDouble(event.latitude) == 0 && Double.parseDouble(event.longitude) == 0) {
-                NeoLoaderPlugin.error("Not parsed: " + line);
                 return;
             }
-            createMNode(event);
             if (latLong == null || !latLong.equals(latLon)) {
                 latLong = latLon;
                 createPointNode(event);
