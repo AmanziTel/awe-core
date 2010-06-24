@@ -110,7 +110,7 @@ public class AweConsolePlugin extends AbstractUIPlugin {
         
         ConsolePlugin.getDefault().getConsoleManager().addConsoles(new IConsole[] {pluginConsole});
         
-        loggingPossible = (plugin != null) && (pluginConsole != null) && (PlatformUI.getWorkbench() != null) && Display.getDefault() != null;
+        loggingPossible = (plugin != null) && (pluginConsole != null) && Display.getDefault() != null;
     }
     
     /**
