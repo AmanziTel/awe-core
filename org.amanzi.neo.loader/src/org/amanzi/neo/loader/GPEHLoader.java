@@ -364,6 +364,10 @@ public void printStats(boolean verbose) {
         try {
             Node eventNode = neo.createNode();
             
+            if (storingProperties.get(1) != null) {
+                storingProperties.get(1).incSaved();
+            }
+            
             NodeTypes.M.setNodeType(eventNode, neo);
             String name = event.getType().name();
             setIndexProperty(headers, eventNode, INeoConstants.PROPERTY_NAME_NAME, name);

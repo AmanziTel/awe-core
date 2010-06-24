@@ -266,7 +266,7 @@ public class ReuseAnalyserModel {
                     } else if (node.hasProperty(propertyName)) {
                         propertyValue = node.getProperty(propertyName);
                         Number valueNum = (Number)propertyValue;
-                        if (typeOfGis == GisTypes.DRIVE && select != Select.EXISTS) {
+                        if ((typeOfGis == GisTypes.DRIVE || typeOfGis == GisTypes.OSS) && select != Select.EXISTS) {
                             // Lagutko, 27.01.2010, m node can have no relationships to mp
                             Relationship relationshipToMp = node.getSingleRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING);
                             
@@ -328,7 +328,7 @@ public class ReuseAnalyserModel {
             }
             runGcIfBig(totalWork);
             monitor.subTask("Determining statistics type");
-            if (typeOfGis == GisTypes.DRIVE && select != Select.EXISTS) {
+            if ((typeOfGis == GisTypes.DRIVE || typeOfGis == GisTypes.OSS) && select != Select.EXISTS) {
                 // colCount = mpMap.size();
                 min = null;
                 max = null;
