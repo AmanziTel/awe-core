@@ -2070,45 +2070,36 @@ private void handleCall() {
         private void handleCollector() {
             Map<String, String> map = getPropertyMap();
             String id = map.get("probeID");
-            if (probeCache.get(id) != null) {
-                return;
-            }
-            Node probeNew = NeoUtils.findOrCreateProbeNode(networkNode, id, neo);
+            Node probeNode = probeCache.get(id);
+            if (probeNode == null) {
+                probeNode = NeoUtils.findOrCreateProbeNode(networkNode, id, neo);
+                probeCache.put(id, probeNode);
+                for (Map.Entry<String, String> entry : map.entrySet()) {
+                    Object valueToSave;
+                    String key = entry.getKey();
+                    if (key.equals("locationArea")) {
+                        key = INeoConstants.PROBE_LA;
+                        valueToSave = Integer.parseInt(entry.getValue());
+                    } else if (key.equals("frequency")) {
+                        key = INeoConstants.PROBE_F;
+                        valueToSave = Double.parseDouble(entry.getValue());
+                    } else {
+                        valueToSave = entry.getValue();
+                    }
+                    setIndexProperty(getHeaderMap(PROBE_NETWORK_HEADER_INDEX).headers, probeNode, key, valueToSave);
+                }
 
-            // Node probeNew;
-            // Transaction tx = neo.beginTx();
-            // try{
-            // probeNew=neo.createNode();
-            // NodeTypes.PROBE.setNodeType(probeNew, neo);
-            // probeNew.setProperty(INeoConstants.PROPERTY_NAME_NAME, id);
-            // NeoUtils.addChild(networkNode, probeNew, null, neo);
-            // tx.success();
-            // }finally{
-            // tx.finish();
-            // }
-            Node currentProbeCalls = NeoUtils.getCallsNode(callDataset, id, probeNew, neo);
-            probeCache.put(id, probeNew);
-            probeCallCache.put(id, currentProbeCalls);
+                index(probeNode);
+            }
+            Node currentProbeCalls = probeCallCache.get(id);
+            if (currentProbeCalls==null) {
+                currentProbeCalls = NeoUtils.getCallsNode(callDataset, id, probeNode, neo);
+                probeCallCache.put(id, currentProbeCalls);
+            }
             String phone = map.get("phoneNumber");
             if (!StringUtils.isEmpty(phone)) {
                 phoneNumberCache.put(phone, id);
-            }
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                Object valueToSave;
-                String key = entry.getKey();
-                if (key.equals("locationArea")) {
-                    key = INeoConstants.PROBE_LA;
-                    valueToSave = Integer.parseInt(entry.getValue());
-                } else if (key.equals("frequency")) {
-                    key = INeoConstants.PROBE_F;
-                    valueToSave = Double.parseDouble(entry.getValue());
-                } else {
-                    valueToSave = entry.getValue();
-                }
-                setIndexProperty(getHeaderMap(PROBE_NETWORK_HEADER_INDEX).headers, probeNew, key, valueToSave);
-            }
-
-            index(probeNew);
+            }            
         }
 
     }
