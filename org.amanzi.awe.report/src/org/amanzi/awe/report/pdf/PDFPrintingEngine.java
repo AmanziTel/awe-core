@@ -40,8 +40,10 @@ import org.amanzi.awe.report.model.ReportText;
 import org.apache.log4j.Logger;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.title.TextTitle;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.Font;
 import com.lowagie.text.Image;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
@@ -103,6 +105,8 @@ public class PDFPrintingEngine {
             title.setIndentationLeft(30);
             title.setIndentationRight(30);
             title.setAlignment(Paragraph.ALIGN_CENTER);
+            title.getFont().setStyle(Font.BOLD);
+            title.getFont().setSize(20);
             document.add(title);
             
             final List<IReportPart> parts = report.getParts();
@@ -128,6 +132,11 @@ public class PDFPrintingEngine {
                     Chart chart=(Chart)part;
                     final JFreeChart jFreeChart = Charts.createChart(chart);
                     jFreeChart.setTitle(chart.getTitle());
+                    for (String subtitle:chart.getSubtitles()){
+                        jFreeChart.addSubtitle(new TextTitle(subtitle));
+                    }
+                    if (!chart.isShowLegend())
+                        jFreeChart.removeLegend();
                     ChartUtilities.applyCurrentTheme(jFreeChart);
                     final BufferedImage bI = jFreeChart.createBufferedImage(chart.getWidth(), chart.getHeight());
                     Graphics graphics2 = bI.getGraphics();

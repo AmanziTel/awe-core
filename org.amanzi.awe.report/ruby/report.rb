@@ -32,6 +32,7 @@ include_class org.jfree.data.xy.XYSeries
 include_class org.jfree.data.xy.XYSeriesCollection
 include_class org.jfree.data.xy.XYBarDataset
 include_class org.jfree.chart.axis.DateAxis
+include_class org.jfree.chart.axis.TickUnits
 include_class org.jfree.chart.axis.DateTickUnit
 include_class org.jfree.chart.plot.PlotOrientation
 include_class org.jfree.chart.plot.Plot
@@ -477,11 +478,11 @@ end
 class Chart
   include NodeUtils
 
-  attr_accessor :title, :type, :orientation, :domain_axis, :range_axis,:kpi
+  attr_accessor :title, :type, :orientation, :domain_axis, :range_axis, :range_axis_ticks, :legend
   attr_writer :categories,:values, :nodes, :statistics
   attr_writer:property, :distribute, :select
   attr_writer :drive, :event, :property1, :property2, :start_time, :length
-  attr_accessor :dataset, :properties, :aggregation
+  attr_accessor :dataset, :properties, :aggregation, :kpi
   attr_writer :data, :time, :threshold, :threshold_label
   def initialize(title)
     @datasets=[]
@@ -490,6 +491,9 @@ class Chart
 
   def sheet=(sheet_name)
     @sheet=sheet_name
+  end
+  def subtitle=(subtitle)
+    addSubtitle(subtitle)
   end
 
   def select(name,params,&block)
@@ -535,6 +539,7 @@ class Chart
       end
       setDomainAxisLabel(@domain_axis) if !@domain_axis.nil?
       setRangeAxisLabel(@range_axis) if !@range_axis.nil?
+      setShowLegend(@legend) if !@legend.nil?
       @type=:bar if @type.nil?
       setChartType(ChartType.value_of(@type.to_s.upcase))
       #
@@ -655,17 +660,18 @@ class Chart
         plot.setDataset(@datasets[0])
       elsif @type==:combined
         plot=Java::org.jfree.chart.plot.XYPlot.new
-        date_axis=DateAxis.new("Date")
-        if @aggregation==:hourly
-          date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::HOUR,24,SimpleDateFormat.new("HH, dd")))
-        elsif @aggregation==:daily
-          date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::DAY,1,SimpleDateFormat.new("MM.dd")))
-        elsif @aggregation==:weekly
-          date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::DAY,7,SimpleDateFormat.new("w, yyyy")))
-        elsif @aggregation==:monthly
-          date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::MONTH,1,SimpleDateFormat.new("MMMMM")))
-        end
-        plot.setDomainAxis(date_axis)
+#        date_axis=DateAxis.new("Date")
+#        if @aggregation==:hourly
+#          date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::HOUR,24,SimpleDateFormat.new("HH, dd")))
+#        elsif @aggregation==:daily
+#          date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::DAY,1,SimpleDateFormat.new("MM.dd")))
+#        elsif @aggregation==:weekly
+#          date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::DAY,7,SimpleDateFormat.new("w, yyyy")))
+#        elsif @aggregation==:monthly
+#          date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::MONTH,1,SimpleDateFormat.new("MMMMM")))
+#        end
+#        plot.setDomainAxis(date_axis)
+        plot.setDomainAxis(createDateAxis(@range_axis_ticks,@aggregation))
 #        Charts.applyDefaultSettingsToPlot(plot)
         for i in 0..@datasets.size-1
           Charts.applyDefaultSettingsToDataset(plot,@datasets[i],i)
@@ -675,6 +681,44 @@ class Chart
       setPlot(plot)
     }
     self
+  end
+  
+  def createDateAxis(tick_units,aggregation)
+    date_axis=DateAxis.new("Date")
+    if !tick_units.nil? and aggregation==:hourly
+      tu=TickUnits.new()
+      tick_units.each do |name,config|
+        unit=config[0]
+        num=config[1]
+        format=config[2]
+        if unit==:hour
+          tu.add(DateTickUnit.new(DateTickUnit::HOUR,num,SimpleDateFormat.new(format)))
+        elsif unit==:day
+          tu.add(DateTickUnit.new(DateTickUnit::DAY,num,SimpleDateFormat.new(format)))
+        elsif unit==:month
+          tu.add(DateTickUnit.new(DateTickUnit::MONTH,num,SimpleDateFormat.new(format)))
+        elsif unit==:week #ignore number of ticks at this case
+          tu.add(DateTickUnit.new(DateTickUnit::HOUR,7,SimpleDateFormat.new(format)))
+        end
+      end
+      date_axis.setStandardTickUnits(tu)
+    else
+      if aggregation==:hourly
+#        date_axis.setDateFormatOverride(SimpleDateFormat.new("HH, dd"))
+        date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::HOUR,24,SimpleDateFormat.new("HH, dd")))
+      elsif aggregation==:daily
+#        date_axis.setDateFormatOverride(SimpleDateFormat.new("MM.dd"))
+        date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::DAY,1,SimpleDateFormat.new("MM.dd")))
+      elsif aggregation==:weekly
+#        date_axis.setDateFormatOverride(SimpleDateFormat.new("w, yyyy"))
+        date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::DAY,7,SimpleDateFormat.new("w, yyyy")))
+      elsif aggregation==:monthly
+#        date_axis.setDateFormatOverride(SimpleDateFormat.new("MMMMM"))
+        date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::MONTH,1,SimpleDateFormat.new("MMMMM")))
+      end
+    end
+    date_axis.setVerticalTickLabels(true);
+    date_axis
   end
 end
 

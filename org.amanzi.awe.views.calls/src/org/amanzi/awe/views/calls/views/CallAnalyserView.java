@@ -1061,6 +1061,13 @@ public class CallAnalyserView extends ViewPart {
         sb
                 .append("  ca_root=find_first(ds,{'type'=>'call analysis root','call_type'=>'AGGREGATION_STATISTICS'},:CALL_ANALYSIS,:VIRTUAL_DATASET)\n");//$NON-NLS-1$
         sb.append("  ").append(aggregation).append("=find_first(ca_root,{'name'=>'").append(aggregation).append("'},:CHILD)\n");//$NON-NLS-1$
+        sb.append("  ticks={:hourly=>[:hour,1,\"HH:00, dd\"],\n");//$NON-NLS-1$
+        sb.append("          :three_hourly=>[:hour,3,\"HH:00, dd\"],\n");//$NON-NLS-1$
+        sb.append("          :six_hourly=>[:hour,6,\"HH:00, dd\"],\n");//$NON-NLS-1$
+        sb.append("          :half_day=>[:hour,12,\"HH:00, dd\"],\n");//$NON-NLS-1$
+        sb.append("          :daily=>[:day,1,\"MM.dd\"],\n");//$NON-NLS-1$
+        sb.append("          :weekly=>[:day,7,\"w, yyyy\"],\n");//$NON-NLS-1$
+        sb.append("          :monthly=>[:month,1,\"MMMMM\"]}\n");//$NON-NLS-1$
         for (AggregationStatisticsHeaders header : AggregationStatisticsHeaders.values()) {
             Float threshold;
             if ((threshold = header.getThreshold()) != null) {
@@ -1070,8 +1077,9 @@ public class CallAnalyserView extends ViewPart {
                     header.getCondition().getInverseCondition().getText(),
                     header.getThreshold(),
                     header.getUnit().getText()});
-                sb.append(";\n").append(subtitle);//$NON-NLS-1$
+//                sb.append(";\n").append(subtitle);//$NON-NLS-1$
                 sb.append("\" do |chart|\n");//$NON-NLS-1$
+//                sb.append("\", \"").append(subtitle).append("\" do |chart|\n");//$NON-NLS-1$
                 sb.append("    chart.data=select_properties [\"name\",\"time\"]  do\n");//$NON-NLS-1$
                 sb.append("      from do\n");//$NON-NLS-1$
                 sb.append("        root ").append(aggregation).append("\n");//$NON-NLS-1$
@@ -1089,6 +1097,7 @@ public class CallAnalyserView extends ViewPart {
                 sb.append("        end\n");//$NON-NLS-1$
                 sb.append("      end\n");//$NON-NLS-1$
                 sb.append("    end\n");//$NON-NLS-1$
+                sb.append("    chart.subtitle=\"").append(subtitle).append("\"\n");//$NON-NLS-1$
                 sb.append("    chart.type=:combined\n");//$NON-NLS-1$
                 sb.append("    chart.aggregation=:").append(aggregation).append("\n");//$NON-NLS-1$
                 sb.append("    chart.time=\"time\"\n");//$NON-NLS-1$
@@ -1097,6 +1106,8 @@ public class CallAnalyserView extends ViewPart {
                 sb.append("    chart.threshold=").append(threshold).append("\n");//$NON-NLS-1$
                 sb.append("    chart.threshold_label='").append(Messages.R_THRESHOLD).append("'\n");//$NON-NLS-1$
                 sb.append("    chart.range_axis_label='").append(header.getUnit().getText()).append("'\n");//$NON-NLS-1$
+                sb.append("    chart.range_axis_ticks=ticks\n");//$NON-NLS-1$
+                sb.append("    chart.legend=false\n");//$NON-NLS-1$
                 sb.append("  end\n");//$NON-NLS-1$
             }
         }

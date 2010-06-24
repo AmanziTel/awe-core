@@ -47,9 +47,11 @@ public class Chart implements IReportPart {
     private AbstractDataset dataset;
     //JFReeChart settings
     private String title="";
+    private List<String> subtitles=new ArrayList<String>(0);
     private PlotOrientation orientation=PlotOrientation.VERTICAL;
     private String domainAxisLabel="";
     private String rangeAxisLabel="Value";
+    private boolean isShowLegend=true;
 //
     private int index;
     private int width=600;
@@ -267,6 +269,22 @@ public class Chart implements IReportPart {
     }
 
     /**
+     * @return Returns the subtitles.
+     */
+    public List<String> getSubtitles() {
+        return subtitles;
+    }
+    
+    /**
+     * Adds subtitle
+     *
+     * @param subtitle the subtitle to be added
+     */
+    public void addSubtitle(String subtitle){
+        subtitles.add(subtitle);
+    }
+
+    /**
      * @return Returns the orientation.
      */
     public PlotOrientation getOrientation() {
@@ -306,6 +324,20 @@ public class Chart implements IReportPart {
      */
     public void setRangeAxisLabel(String rangeAxisLabel) {
         this.rangeAxisLabel = rangeAxisLabel;
+    }
+
+    /**
+     * @return Returns the isShowLegend.
+     */
+    public boolean isShowLegend() {
+        return isShowLegend;
+    }
+
+    /**
+     * @param isShowLegend The isShowLegend to set.
+     */
+    public void setShowLegend(boolean isShowLegend) {
+        this.isShowLegend = isShowLegend;
     }
 
     @Override

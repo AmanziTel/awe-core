@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
-import javax.lang.model.type.ErrorType;
 
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
@@ -300,6 +299,12 @@ public class ReportGUIEditor extends EditorPart  {
 
         final JFreeChart jFreeChart = Charts.createChart(chart);
         jFreeChart.setTitle(chart.getTitle());
+        for (String subtitle:chart.getSubtitles()){
+            jFreeChart.addSubtitle(new TextTitle(subtitle));
+        }
+        //TODO Pechko_E don't apply visual setting here 
+        if (!chart.isShowLegend())
+            jFreeChart.removeLegend();
         ChartUtilities.applyCurrentTheme(jFreeChart);
         
         
