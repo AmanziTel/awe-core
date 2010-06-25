@@ -303,9 +303,9 @@ public class GpehReportCreator {
             // final String id = GpehReportUtil.getMatrixLuceneIndexName(model.getNetworkName(),
             // model.getGpehEventsName(), GpehReportUtil.MR_TYPE_INTRAF);
 
-            String eventIndName = NeoUtils.getLuceneIndexKeyByProperty(model.getGpehEventsName(), INeoConstants.PROPERTY_NAME_NAME,
+            String eventIndName = NeoUtils.getLuceneIndexKeyByProperty(model.getGpeh(), INeoConstants.PROPERTY_NAME_NAME,
                     NodeTypes.GPEH_EVENT);
-            String scrCodeIndName = NeoUtils.getLuceneIndexKeyByProperty(model.getNetworkName(), GpehReportUtil.PRIMARY_SCR_CODE,
+            String scrCodeIndName = NeoUtils.getLuceneIndexKeyByProperty(model.getNetwork(), GpehReportUtil.PRIMARY_SCR_CODE,
                     NodeTypes.SECTOR);
             long countEvent = 0;
             countRow = 0;
@@ -916,7 +916,7 @@ public class GpehReportCreator {
             if (ci == null || rnc == null) {
                 continue;
             }
-            Node asNode = NeoUtils.findSector(model.getNetworkName(), ci, String.valueOf(rnc), luceneService, service);
+            Node asNode = NeoUtils.findSector(model.getNetwork(), ci, String.valueOf(rnc), luceneService, service);
             if (asNode != null) {
                 result.add(asNode);
             }
