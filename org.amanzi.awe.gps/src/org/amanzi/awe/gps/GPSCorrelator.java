@@ -62,7 +62,7 @@ public class GPSCorrelator {
             try {
                 this.datasetName = NeoUtils.getNodeName(dataNode, neoService);
                 this.searchType = SectorIdentificationType.valueOf((String)dataNode.getProperty(INeoConstants.SECTOR_ID_TYPE));
-                this.luceneIndexName = NeoUtils.getLuceneIndexKeyByProperty(datasetName, INeoConstants.SECTOR_ID_PROPERTIES, NodeTypes.M);
+                this.luceneIndexName = NeoUtils.getLuceneIndexKeyByProperty(dataNode, INeoConstants.SECTOR_ID_PROPERTIES, NodeTypes.M);
             }
             catch (Exception e) {
                 LOGGER.error(e);
