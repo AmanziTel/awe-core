@@ -2766,7 +2766,7 @@ public class NeoUtils {
             }
         }
         catch (Exception e) {
-            LOGGER.error(e);
+            LOGGER.error(e.getLocalizedMessage(), e);
         }
         finally {
             tx.success();
