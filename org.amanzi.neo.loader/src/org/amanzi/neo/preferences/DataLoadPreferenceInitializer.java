@@ -42,6 +42,9 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.REMOVE_SITE_NAME, true);
         pref.setDefault(DataLoadPreferences.NETWORK_COMBINED_CALCULATION, true);
         pref.setDefault(DataLoadPreferences.ZOOM_TO_LAYER, true);
+        pref.setDefault(DataLoadPreferences.ADD_AMS_PROBES_TO_MAP, true);
+        pref.setDefault(DataLoadPreferences.ADD_AMS_CALLS_TO_MAP, true);
+        pref.setDefault(DataLoadPreferences.ADD_AMS_EVENTS_TO_MAP, true);
 
         pref.setDefault(DataLoadPreferences.NH_CITY, "City, Town, Ort, SIT_City");
         pref.setDefault(DataLoadPreferences.NH_MSC, "MSC, MSC_NAME, MSC Name");
