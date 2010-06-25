@@ -132,7 +132,7 @@ public class DriveDialog {
 
     private static final int MAX_NEMO_LINE_READ = 50;
 
-    private static final int FILE_GROUP_WIDTH = 410;
+    private static final int FILE_GROUP_WIDTH = 450;
 	
 	/*
 	 * Shell of this Dialog
@@ -413,7 +413,7 @@ public class DriveDialog {
 		Composite panel = new Composite(parent, SWT.NONE);
 		panel.setLayout(new FormLayout());
 		FormData data = new FormData(); 
-        data.left = new FormAttachment(0, 2);
+        data.left = new FormAttachment(0, 5);
         data.top = new FormAttachment(0, 2);
         data.bottom = new FormAttachment(100,-2);
         data.width = 2*FILE_GROUP_WIDTH/5;
@@ -427,8 +427,7 @@ public class DriveDialog {
 	 * Creates Buttons for manipulations
 	 * 
 	 * @param parent
-	 */
-	
+	 */	
 	private Composite createManipulationComposite(Composite parent, Composite prev) {
 		Composite panel = new Composite(parent, SWT.NONE);
 		panel.setLayout(new FormLayout());
@@ -453,13 +452,13 @@ public class DriveDialog {
         data.left = new FormAttachment(0, 2);
         data.top = new FormAttachment(choosePanel, 20);
         data.right = new FormAttachment(100,-2);
-        data.bottom = new FormAttachment(100,-2);
+        data.bottom = new FormAttachment(100,-20);
 		actionPanel.setLayoutData(data);
 		
-		addFilesToLoaded = createChooseButton(actionPanel,null, NeoLoaderPluginMessages.DriveDialog_AddButtonText, SWT.CENTER);
-        addAllFilesToLoaded = createChooseButton(actionPanel,addFilesToLoaded, NeoLoaderPluginMessages.DriveDialog_AddAllButtonText, SWT.CENTER);
-		removeFilesFromLoaded = createChooseButton(actionPanel,addAllFilesToLoaded, NeoLoaderPluginMessages.DriveDialog_RemoveButtonText, SWT.CENTER);
-        removeAllFilesFromLoaded = createChooseButton(actionPanel,removeAllFilesFromLoaded, NeoLoaderPluginMessages.DriveDialog_RemoveAllButtonText, SWT.CENTER);
+		removeAllFilesFromLoaded = createChooseButton(actionPanel,null, NeoLoaderPluginMessages.DriveDialog_RemoveAllButtonText, SWT.CENTER);
+		removeFilesFromLoaded = createChooseButton(actionPanel,removeAllFilesFromLoaded, NeoLoaderPluginMessages.DriveDialog_RemoveButtonText, SWT.CENTER);
+        addAllFilesToLoaded = createChooseButton(actionPanel,removeFilesFromLoaded, NeoLoaderPluginMessages.DriveDialog_AddAllButtonText, SWT.CENTER);
+        addFilesToLoaded = createChooseButton(actionPanel,addAllFilesToLoaded, NeoLoaderPluginMessages.DriveDialog_AddButtonText, SWT.CENTER);
         return panel;
 	}
 	
@@ -532,10 +531,11 @@ public class DriveDialog {
         data.left = new FormAttachment(0, 2);
         data.right = new FormAttachment(100, -2);
         if (prev==null) {
-            data.top = new FormAttachment(0, 2);
+            data.bottom = new FormAttachment(100, -2);
         }else{
-            data.top = new FormAttachment(prev, 2);
+            data.bottom = new FormAttachment(prev, -2);
         }
+        
         button.setLayoutData(data);
 		
 		return button;
