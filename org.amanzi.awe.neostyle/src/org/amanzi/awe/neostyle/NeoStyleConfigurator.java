@@ -56,10 +56,10 @@ import org.neo4j.graphdb.GraphDatabaseService;
 public class NeoStyleConfigurator extends IStyleConfigurator {
 
     /** NeoStyleConfigurator ID field */
-    public static final String ID = "org.amanzi.awe.neostyle.style";
+    public static final String ID = "org.amanzi.awe.neostyle.style"; //$NON-NLS-1$
 
-    private static final String[] FONT_SIZE_ARRAY = new String[] {"8", "9", "10", "11", "12", "14", "16", "18", "20", "24"};
-    private static final String[] ICON_SIZES = new String[] {"6", "8", "12", "16", "32", "48", "64"};
+    private static final String[] FONT_SIZE_ARRAY = new String[] {"8", "9", "10", "11", "12", "14", "16", "18", "20", "24"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$
+    private static final String[] ICON_SIZES = new String[] {"6", "8", "12", "16", "32", "48", "64"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
 
     public NeoStyleConfigurator() {
         super();
@@ -123,6 +123,8 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
 
     private Label lSecondaryProperty;
 
+    private Button bTransp;
+
     @Override
     public void createControl(Composite parent) {
         //Lagutko, 15.03.2010, adding a Scroll
@@ -146,7 +148,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         parent.setLayout(layout);
         // color block
         Group xGroup = new Group(parent, SWT.NONE);
-        xGroup.setText("Colors");
+        xGroup.setText("Colors"); //$NON-NLS-1$
         FormData formData = new FormData();
         formData.top = new FormAttachment(0, 5);
         formData.left = new FormAttachment(0, 5);
@@ -202,7 +204,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         cEdLabel.getButton().setLayoutData(formData);
 
         labelsGroup = new Group(parent, SWT.NONE);
-        labelsGroup.setText("Labels");
+        labelsGroup.setText("Labels"); //$NON-NLS-1$
         formData = new FormData();
         formData.top = new FormAttachment(xGroup, 5);
         formData.left = new FormAttachment(0, 5);
@@ -346,6 +348,13 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData.right = new FormAttachment(100, -5);
         tTransparency.setLayoutData(formData);
 
+        bTransp = new Button(grScale, SWT.CHECK);
+        bTransp.setText(Messages.Ignore_transsparency0);
+        formData = new FormData();
+        formData.left = new FormAttachment(2);
+        formData.top = new FormAttachment(tTransparency, 5);
+        bTransp.setLayoutData(formData);
+
         lMaxSymSize = new Label(grScale, SWT.NONE);
         sMaxSymSize = new Spinner(grScale, SWT.BORDER);
         lMaxSymSize.setText(Messages.Symbol_Max_Size);
@@ -357,7 +366,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
 
         formData = new FormData();
         formData.left = new FormAttachment(70, 10);
-        formData.top = new FormAttachment(tTransparency, 5);
+        formData.top = new FormAttachment(bTransp, 5);
         formData.right = new FormAttachment(100, -5);
         sMaxSymSize.setLayoutData(formData);
         
@@ -450,6 +459,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
 
             tSymbolSize.setSelection(curStyle.getSymbolSize());
             tTransparency.setSelection(curStyle.getSymbolTransparency());
+            bTransp.setSelection(curStyle.isChangeTransparency());
             sMaxSymSize.setSelection(curStyle.getMaximumSymbolSize());
             sDefBeamwidth.setSelection(curStyle.getDefaultBeamwidth());
             cFontSize.setText(String.valueOf(curStyle.getFontSize()));
@@ -477,9 +487,9 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
      *
      */
     private void changeToProbeNetworkStyle() {
-        lMainProperty.setText("Probe property");
-        lFontSize.setText("Probe font size");
-        lFillSite.setText("Probe fill");
+        lMainProperty.setText("Probe property"); //$NON-NLS-1$
+        lFontSize.setText("Probe font size"); //$NON-NLS-1$
+        lFillSite.setText("Probe fill"); //$NON-NLS-1$
         
     }
 
@@ -489,7 +499,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
      * @return String[]
      */
     private String[] getMainPropertyChoices() {
-        return new String[] {NeoStyleContent.DEF_NONE, NeoStyleContent.DEF_MAIN_PROPERTY, "lat", "lon"};
+        return new String[] {NeoStyleContent.DEF_NONE, NeoStyleContent.DEF_MAIN_PROPERTY, "lat", "lon"}; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     /**
@@ -584,6 +594,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         curStyle.setIconOffset(sIconOffset.getSelection());
         curStyle.setMainProperty(cMainProperty.getText());
         curStyle.setSecondaryProperty(cSecondaryProperty.getText());
+        curStyle.setChangeTransparency(bTransp.getSelection());
         getStyleBlackboard().put(ID, curStyle);
     }
 

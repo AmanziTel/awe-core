@@ -123,6 +123,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     private boolean notMpLabel;
     private int[] xPoints;
     private int[] yPoints;
+    private boolean changeTransp;
 
     private static int getIconSize(int size) {
         int lower = eventIconSizes[0];
@@ -219,6 +220,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         int maxSitesLite = 1000;
         // int maxSymbolSize = 40;
         int alpha = (int)(0.6 * 255.0);
+         changeTransp = true;
         int drawSize = 3;
         Font font = g.getFont();
         int fontSize = font.getSize();
@@ -240,6 +242,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 drawColor = neostyle.getLine();
                 labelColor = neostyle.getLabel();
                 alpha = 255 - (int)((double)neostyle.getSymbolTransparency() / 100.0 * 255.0);
+                changeTransp=neostyle.isChangeTransparency();
                 drawSize = 3;
                 maxSitesLabel = neostyle.getLabeling() / 4;
                 maxSitesFull = neostyle.getSmallSymb();
@@ -1131,7 +1134,12 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 if (chartNode != null) {
                     Integer rgb = (Integer)chartNode.getProperty(INeoConstants.AGGREGATION_COLOR, null);
                     if (rgb!=null) {
-                        return new Color(rgb);
+                        if (changeTransp) {
+                            return new Color(rgb);
+                        } else {
+                            return new Color((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, (rgb >> 0) & 0xFF, defColor.getAlpha());
+                        }
+
                     }
                 }
             }
@@ -1158,7 +1166,11 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             if (coloredNode!=null) {
                 Integer rgb = (Integer)coloredNode.getProperty(INeoConstants.AGGREGATION_COLOR, null);
                 if (rgb != null) {
-                    return new Color(rgb);
+                    if (changeTransp) {
+                        return new Color(rgb);
+                    } else {
+                        return new Color((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, (rgb >> 0) & 0xFF, defColor.getAlpha());
+                    }
                 }
             }
             return defColor;

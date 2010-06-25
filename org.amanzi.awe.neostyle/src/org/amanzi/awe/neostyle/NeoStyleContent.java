@@ -41,6 +41,7 @@ public class NeoStyleContent extends StyleContent {
     public static final int DEF_TRANSPARENCY = 40;
     public static final int DEF_SYMB_SIZE = 15;
     public static final boolean DEF_FIX_SYMB_SIZE = false;
+    public static final boolean CHANGE_TRANSPARENCY = true;
     public static final int DEF_LABELING = 50;
     public static final int DEF_SMALL_SYMB = 100;
     public static final int DEF_SMALLEST_SYMB = 1000;
@@ -104,6 +105,7 @@ public class NeoStyleContent extends StyleContent {
                 result.setSectorFontSize(DEF_FONT_SIZE_SECTOR);
                 result.setMainProperty(DEF_MAIN_PROPERTY);
                 result.setSecondaryProperty(DEF_SECONDARY_PROPERTY);
+                result.setChangeTransparency(CHANGE_TRANSPARENCY);
                 // result.setNetwork(true);
                 return result;
             } else {
@@ -122,6 +124,7 @@ public class NeoStyleContent extends StyleContent {
                 result.setSectorFontSize(DEF_FONT_SIZE_SECTOR);
                 result.setMainProperty(DEF_MAIN_PROPERTY);
                 result.setSecondaryProperty(DEF_SECONDARY_PROPERTY);
+                result.setChangeTransparency(CHANGE_TRANSPARENCY);
                 return result;
             }
         }

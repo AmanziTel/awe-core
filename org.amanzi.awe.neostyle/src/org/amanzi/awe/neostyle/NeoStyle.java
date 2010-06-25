@@ -15,7 +15,6 @@ package org.amanzi.awe.neostyle;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.amanzi.awe.filters.experimental.GroupFilter;
@@ -38,6 +37,7 @@ public class NeoStyle {
     private Integer smallSymb;
     private Integer labeling;
     private boolean fixSymbolSize = NeoStyleContent.DEF_FIX_SYMB_SIZE;
+    private boolean changeTransparency = NeoStyleContent.CHANGE_TRANSPARENCY;
     private Integer symbolSize;
     private Integer symbolTransparency;
     private Integer maximumSymbolSize;
@@ -340,5 +340,23 @@ public void addFilter(GroupFilter filter){
 public GroupFilter getFilter() {
     return filter;
 }
+
+    /**
+     * Checks if is change transparency.
+     * 
+     * @return true, if is change transparency
+     */
+    public boolean isChangeTransparency() {
+        return changeTransparency;
+    }
+
+    /**
+     * Sets the change transparency.
+     * 
+     * @param changeTransparency the new change transparency
+     */
+    public void setChangeTransparency(boolean changeTransparency) {
+        this.changeTransparency = changeTransparency;
+    }
 
 }

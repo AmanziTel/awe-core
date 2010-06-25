@@ -105,6 +105,8 @@ public class NetworkRenderer extends RendererImpl {
     private boolean noSiteName;
     private AbstractFilter filterSectors;
     private AbstractFilter filterSites;
+    private int alpha;
+    private boolean changeTransp;
     private void setCrsTransforms(CoordinateReferenceSystem dataCrs) throws FactoryException{
         boolean lenient = true; // needs to be lenient to work on uDIG 1.1 (otherwise we get error: bursa wolf parameters required
         CoordinateReferenceSystem worldCrs = context.getCRS();
@@ -157,7 +159,8 @@ public class NetworkRenderer extends RendererImpl {
 
         // Setup default drawing parameters and thresholds (to be modified by style if found)
         int drawSize=15;
-        int alpha = (int)(0.6*255.0);
+        alpha = (int)(0.6 * 255.0);
+        changeTransp = true;
         int maxSitesLabel = 30;
         int maxSitesFull = 100;
         int maxSitesLite = 1000;
@@ -188,6 +191,7 @@ public class NetworkRenderer extends RendererImpl {
                 }
                 drawSize = neostyle.getSymbolSize();
                 alpha = 255 - (int)((double)neostyle.getSymbolTransparency() / 100.0 * 255.0);
+                changeTransp = neostyle.isChangeTransparency();
                 maxSitesLabel = neostyle.getLabeling();
                 maxSitesFull = neostyle.getSmallSymb();
                 maxSitesLite = neostyle.getSmallestSymb();
@@ -772,7 +776,13 @@ public class NetworkRenderer extends RendererImpl {
             if (chartNode == null) {
                 return defColor;
             }
-            return new Color((Integer)chartNode.getProperty(INeoConstants.AGGREGATION_COLOR, defColor.getRGB()));
+            final Integer rgb = (Integer)chartNode.getProperty(INeoConstants.AGGREGATION_COLOR, defColor.getRGB());
+            if (changeTransp) {
+                return new Color(rgb);
+            } else {
+                return new Color((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, (rgb >> 0) & 0xFF, alpha);
+
+            }
         } finally {
             tx.finish();
         }
