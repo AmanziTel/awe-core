@@ -2066,8 +2066,8 @@ public class NeoUtils {
      * @param type - node type
      * @return luciene key
      */
-    public static String getLuceneIndexKeyByProperty(String basename, String propertyName, NodeTypes type) {
-        return new StringBuilder(basename).append("@").append(type.getId()).append("@").append(propertyName).toString();
+    public static String getLuceneIndexKeyByProperty(Node basename, String propertyName, NodeTypes type) {
+        return new StringBuilder("Id").append(basename.getId()).append("@").append(type.getId()).append("@").append(propertyName).toString();
     }
 
     /**
@@ -2430,7 +2430,7 @@ public class NeoUtils {
      * @param service the service
      * @return the node
      */
-    public static Node findSector(String baseName, Integer ci, Integer lac, String name, boolean returnFirsElement, LuceneIndexService index, GraphDatabaseService service) {
+    public static Node findSector(Node baseName, Integer ci, Integer lac, String name, boolean returnFirsElement, LuceneIndexService index, GraphDatabaseService service) {
         assert baseName != null && (ci != null || name != null) && index != null;
         Transaction tx = beginTx(service);
         try {
@@ -2502,7 +2502,7 @@ public class NeoUtils {
      * @param service the service
      * @return the node
      */
-    public static Node findSector(String baseName, Integer ci, String rnc, LuceneIndexService luceneService, GraphDatabaseService service) {
+    public static Node findSector(Node baseName, Integer ci, String rnc, LuceneIndexService luceneService, GraphDatabaseService service) {
         assert baseName != null && ci != null && rnc != null && luceneService != null;
         Transaction tx = beginTx(service);
         try {

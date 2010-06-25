@@ -498,7 +498,7 @@ public class NetworkLoader extends AbstractLoader {
                 cityName = cityField;
                 city = city_s.get(cityField);
                 if (city == null) {
-                    city = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.CITY), cityName);
+                    city = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(getNetworkNode(), INeoConstants.PROPERTY_NAME_NAME, NodeTypes.CITY), cityName);
                     if (city == null) {
                         debug("New City: " + cityName);
                         city = addChild(network, NodeTypes.CITY, cityName);
@@ -510,7 +510,7 @@ public class NetworkLoader extends AbstractLoader {
                 bscName = bscField;
                 bsc = bsc_s.get(bscField);
                 if (bsc == null) {
-                    bsc = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.BSC), bscName);
+                    bsc = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(getNetworkNode(), INeoConstants.PROPERTY_NAME_NAME, NodeTypes.BSC), bscName);
                     if (bsc == null) {
                         debug("New BSC: " + bscName);
                         bsc = addChild(city == null ? network : city, NodeTypes.BSC, bscName);
@@ -524,7 +524,7 @@ public class NetworkLoader extends AbstractLoader {
                 siteName = siteField;
                 debug("New site: " + siteName);
                 Node siteRoot = bsc == null ? (city == null ? network : city) : bsc;
-                Node newSite = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteName);
+                Node newSite = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(getNetworkNode(), INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteName);
                 if (newSite != null) {
                     Relationship relation = newSite.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING);
                     Node oldRoot = relation.getOtherNode(newSite);
@@ -570,18 +570,18 @@ public class NetworkLoader extends AbstractLoader {
             Integer lac = networkHeader.getInteger(INeoConstants.PROPERTY_SECTOR_LAC);
             // Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename,
             // INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorIndexName);
-            Node sector = NeoUtils.findSector(basename, ci, lac, sectorIndexName, true, luceneInd, neo);
+            Node sector = NeoUtils.findSector(getNetworkNode(), ci, lac, sectorIndexName, true, luceneInd, neo);
             if (sector != null) {
                 // TODO check
             } else {
                 sector = addChild(site, NodeTypes.SECTOR, sectorField, sectorIndexName);
                 if (ci != null) {
                     sector.setProperty(INeoConstants.PROPERTY_SECTOR_CI, ci);
-                    luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR), ci);
+                    luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(getNetworkNode(), INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR), ci);
                 }
                 if (lac != null) {
                     sector.setProperty(INeoConstants.PROPERTY_SECTOR_LAC, lac);
-                    luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_SECTOR_LAC, NodeTypes.SECTOR), lac);
+                    luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(getNetworkNode(), INeoConstants.PROPERTY_SECTOR_LAC, NodeTypes.SECTOR), lac);
                 }
             }
             // TODO: deprecated sectorNumber in favour of saved data
@@ -629,7 +629,7 @@ public class NetworkLoader extends AbstractLoader {
         child.setProperty(INeoConstants.PROPERTY_TYPE_NAME, type.getId());
         child.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
         child.setProperty(INeoConstants.PROPERTY_SECTOR_NAME, indexName);
-        luceneInd.index(child, NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, type), indexName);
+        luceneInd.index(child, NeoUtils.getLuceneIndexKeyByProperty(getNetworkNode(), INeoConstants.PROPERTY_NAME_NAME, type), indexName);
         if (parent != null) {
             parent.createRelationshipTo(child, NetworkRelationshipTypes.CHILD);
             debug("Added '" + name + "' as child of '" + parent.getProperty(INeoConstants.PROPERTY_NAME_NAME));

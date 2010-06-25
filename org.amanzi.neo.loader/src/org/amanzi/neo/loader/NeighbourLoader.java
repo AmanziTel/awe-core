@@ -224,7 +224,7 @@ public class NeighbourLoader {
      * @author Cinkel_A
      * @since 1.0.0
      */
-    public static class Header {
+    public  class Header {
         /** String STRING field */
         private static final String STRING = "STRING";
         /** String DOUBLE field */
@@ -397,12 +397,12 @@ public class NeighbourLoader {
             Node result = null;
             String idByName = nodeName.getId2();
             if (idByName != null) {
-                result = index.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(gisName, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), idByName);
+                result = index.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(network, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), idByName);
             }
             if (result == null) {
                 Pair<String, String> idByCiLac = nodeName.getId1();
                 if (idByCiLac != null) {
-                    Iterable<Node> serverNodeIter = index.getNodes(NeoUtils.getLuceneIndexKeyByProperty(gisName, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR),
+                    Iterable<Node> serverNodeIter = index.getNodes(NeoUtils.getLuceneIndexKeyByProperty(network, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR),
                             idByCiLac.getLeft());
                     for (Node sector : serverNodeIter) {
                         if (sector.getProperty(INeoConstants.PROPERTY_SECTOR_LAC, "").toString().equals(idByCiLac.getRight())) {

@@ -179,7 +179,7 @@ public class UTRANLoader extends AbstractLoader {
         utranNeighbourNode = null;
         headers = getHeaderMap(KEY_EVENT).headers;
         handler = new ReadContentHandler(new Factory());
-        scrCodeIndName=NeoUtils.getLuceneIndexKeyByProperty(basename, GpehReportUtil.PRIMARY_SCR_CODE, NodeTypes.SECTOR);
+        scrCodeIndName=null;
         index = NeoServiceProvider.getProvider().getIndexService();
         try {
             addIndex(NodeTypes.SITE.getId(), NeoUtils.getLocationIndexProperty(basename));
@@ -228,6 +228,7 @@ public class UTRANLoader extends AbstractLoader {
         gis = findOrCreateGISNode(basename, GisTypes.NETWORK.getHeader(), NetworkTypes.RADIO);
         updateTx();
         network = findOrCreateNetworkNode(gis);
+        scrCodeIndName=NeoUtils.getLuceneIndexKeyByProperty(network, GpehReportUtil.PRIMARY_SCR_CODE, NodeTypes.SECTOR);
         updateTx();
         perc = 0;
         idMap.clear();
@@ -1307,7 +1308,7 @@ public class UTRANLoader extends AbstractLoader {
             collector = null;
             site = null;
                 Integer[] cilac = idMap.get(cellName);
-                sector=NeoUtils.findSector(basename,cilac[0] ,cilac[1],cellName, true,index,neo);
+                sector=NeoUtils.findSector(network,cilac[0] ,cilac[1],cellName, true,index,neo);
         }
 
         /**
@@ -2304,7 +2305,7 @@ public class UTRANLoader extends AbstractLoader {
     public Node findOrCreateSector(String cellName, Integer ci, Integer lac) {
         Transaction tx = neo.beginTx();
         try {
-            Node sector = NeoUtils.findSector(basename, ci, lac, cellName, true, index, neo);
+            Node sector = NeoUtils.findSector(network, ci, lac, cellName, true, index, neo);
             if (sector == null) {
                 sector = neo.createNode();
                 sector.setProperty(INeoConstants.SECTOR_TYPE, UTRAN_SEC_TYPE);
@@ -2312,15 +2313,15 @@ public class UTRANLoader extends AbstractLoader {
                 NodeTypes.SECTOR.setNodeType(sector, neo);
                 NeoUtils.setNodeName(sector, cellName, neo);
                 String indexName;
-                indexName=NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR);
+                indexName=NeoUtils.getLuceneIndexKeyByProperty(network, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR);
                 index.index(sector, indexName, cellName);
                 if (ci!=null){
-                    indexName=NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR);
+                    indexName=NeoUtils.getLuceneIndexKeyByProperty(network, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR);
                     setIndexProperty(headers, sector, INeoConstants.PROPERTY_SECTOR_CI, ci);
                     index.index(sector, indexName, ci);
                 }
                 if (lac!=null){
-                    indexName=NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_SECTOR_LAC, NodeTypes.SECTOR);
+                    indexName=NeoUtils.getLuceneIndexKeyByProperty(network, INeoConstants.PROPERTY_SECTOR_LAC, NodeTypes.SECTOR);
                     setIndexProperty(headers, sector, INeoConstants.PROPERTY_SECTOR_LAC, lac);
                     index.index(sector, indexName, lac);
                 }
@@ -2382,7 +2383,7 @@ public class UTRANLoader extends AbstractLoader {
     public Node findOrCreateExternalGSMSector(String cellName, Integer ci, Integer lac) {
         Transaction tx = neo.beginTx();
         try {
-            Node sector = NeoUtils.findSector(basename, ci, lac, cellName, true, index, neo);
+            Node sector = NeoUtils.findSector(network, ci, lac, cellName, true, index, neo);
             if (sector == null) {
                 sector = neo.createNode();
                 int count=1;
@@ -2397,15 +2398,15 @@ public class UTRANLoader extends AbstractLoader {
                 }
                 rncExtGsmSite.createRelationshipTo(sector,GeoNeoRelationshipTypes.CHILD);
                 String indexName;
-                indexName=NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR);
+                indexName=NeoUtils.getLuceneIndexKeyByProperty(network, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR);
                 index.index(sector, indexName, cellName);
                 if (ci!=null){
-                    indexName=NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR);
+                    indexName=NeoUtils.getLuceneIndexKeyByProperty(network, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR);
                     setIndexProperty(headers, sector, INeoConstants.PROPERTY_SECTOR_CI, ci);
                     index.index(sector, indexName, ci);
                 }
                 if (lac!=null){
-                    indexName=NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_SECTOR_LAC, NodeTypes.SECTOR);
+                    indexName=NeoUtils.getLuceneIndexKeyByProperty(network, INeoConstants.PROPERTY_SECTOR_LAC, NodeTypes.SECTOR);
                     setIndexProperty(headers, sector, INeoConstants.PROPERTY_SECTOR_LAC, lac);
                     index.index(sector, indexName, lac);
                 }
@@ -2466,7 +2467,7 @@ public class UTRANLoader extends AbstractLoader {
     public Node findOrCreateRNC(String id, PropertyCollector collector) {
         Transaction tx = neo.beginTx();
         try {
-            String indexName = NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR);
+            String indexName = NeoUtils.getLuceneIndexKeyByProperty(network, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR);
             String rncName = collector.getPropertyMap().get("userLabel");
             Node rnc = index.getSingleNode(indexName, rncName);
             if (rnc == null) {
@@ -2512,7 +2513,7 @@ public class UTRANLoader extends AbstractLoader {
             System.err.println("err");
         }
         String id = matcher.group(2);
-        String indName = NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE);
+        String indName = NeoUtils.getLuceneIndexKeyByProperty(network, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE);
         Node node = index.getSingleNode(indName, id);
         if (node == null) {
             node = neo.createNode();

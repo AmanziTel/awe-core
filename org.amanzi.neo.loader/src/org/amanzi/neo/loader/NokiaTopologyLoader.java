@@ -291,7 +291,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
         child = neo.createNode();
         child.setProperty(INeoConstants.PROPERTY_TYPE_NAME, type.getId());
         child.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
-        luceneInd.index(child, NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, type), name);
+        luceneInd.index(child, NeoUtils.getLuceneIndexKeyByProperty(networkNode, INeoConstants.PROPERTY_NAME_NAME, type), name);
         if (parent != null) {
             parent.createRelationshipTo(child, NetworkRelationshipTypes.CHILD);
             debug("Added '" + name + "' as child of '" + parent.getProperty(INeoConstants.PROPERTY_NAME_NAME));
@@ -669,7 +669,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
             String bscKey = getKeyFromDistName(1);
             Node bsc = bscMap.get(bscKey);
             if(bsc == null){                
-                bsc = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.BSC), bscName);
+                bsc = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(networkNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.BSC), bscName);
                 if(bsc==null){
                     bsc = addChild(networkNode, NodeTypes.BSC, bscName);
                 }
@@ -687,7 +687,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
             String bcfKey = getKeyFromDistName(1)+(isGsm?("_"+getKeyFromDistName(2)):"");
             Node site = isGsm?siteMap.get(bcfKey):umtsSiteMap.get(bcfKey);            
             if(site == null){
-                site = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteName);
+                site = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(networkNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteName);
                 if(site == null){
                     Node parent = isGsm?getBSCNode(getKeyFromDistName(1)):(lastUmtsSite==null?networkNode:lastUmtsSite);
                     site = addChild(parent, NodeTypes.SITE, siteName);
@@ -717,7 +717,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
             String btsKey = getKeyFromDistName(1)+"_"+getKeyFromDistName(2)+(isGsm?("_"+getKeyFromDistName(3)):"");
             Node sector = isGsm?sectorMap.get(btsKey):umtsSectorMap.get(btsKey);
             if(sector == null){
-                sector=NeoUtils.findSector(basename, ci, lac, sectorName, false, luceneInd, neo);
+                sector=NeoUtils.findSector(networkNode, ci, lac, sectorName, false, luceneInd, neo);
 //                sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
                 if(sector == null){
                     Node parent = getSiteNode(getKeyFromDistName(2),isGsm);
@@ -898,11 +898,11 @@ public class NokiaTopologyLoader extends AbstractLoader {
                 if(old == null){
                     if (INeoConstants.PROPERTY_SECTOR_CI.equals(key)){
                         setIndexProperty(headers, sector, key, ci);
-                        luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(basename, key, NodeTypes.SECTOR), ci);
+                        luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(networkNode, key, NodeTypes.SECTOR), ci);
                         continue;
                     }else if (INeoConstants.PROPERTY_SECTOR_LAC.equals(key)){
                         setIndexProperty(headers, sector, key, lac);
-                        luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(basename, key, NodeTypes.SECTOR), lac);
+                        luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(networkNode, key, NodeTypes.SECTOR), lac);
                         continue;
                     }
                     setIndexPropertyNotParcedValue(headers, sector, key, newValue.toString());
@@ -1123,11 +1123,11 @@ public class NokiaTopologyLoader extends AbstractLoader {
                 if(old == null ){
                     if (INeoConstants.PROPERTY_SECTOR_CI.equals(key)){
                         setIndexProperty(headers, sector, key, ci);
-                        luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(basename, key, NodeTypes.SECTOR), ci);
+                        luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(networkNode, key, NodeTypes.SECTOR), ci);
                         continue;
                     }else if (INeoConstants.PROPERTY_SECTOR_LAC.equals(key)){
                         setIndexProperty(headers, sector, key, lac);
-                        luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(basename, key, NodeTypes.SECTOR), lac);
+                        luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(networkNode, key, NodeTypes.SECTOR), lac);
                         continue;
                     }
                     sector.setProperty(key, newValue);

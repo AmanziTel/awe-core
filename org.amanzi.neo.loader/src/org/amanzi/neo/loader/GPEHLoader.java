@@ -113,8 +113,8 @@ public class GPEHLoader extends DriveLoader {
     private int rscpIndex;
 
     private final LuceneIndexService luceneInd;
-    private final String luceneIndexName;
-    private final String eventIndName;
+    private  String luceneIndexName;
+    private  String eventIndName;
 
     private final Set<Integer> avaliableEvents;
 
@@ -131,9 +131,7 @@ public class GPEHLoader extends DriveLoader {
         basename = datasetName;
         headers = getHeaderMap(KEY_EVENT).headers;
         luceneInd = NeoServiceProvider.getProvider().getIndexService();
-        eventIndName = NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.GPEH_EVENT);
-        luceneIndexName = NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.SECTOR_ID_PROPERTIES, NodeTypes.M);
-        gisType = GisTypes.OSS;
+         gisType = GisTypes.OSS;
         this.avaliableEvents = avaliableEvents;
     }
 
@@ -158,9 +156,12 @@ public class GPEHLoader extends DriveLoader {
         mainTx = neo.beginTx();
         NeoUtils.addTransactionLog(mainTx, Thread.currentThread(), "GPEHLoader");
         try {
-            initializeIndexes();
 
             datasetNode = findOrCreateDatasetNode(neo.getReferenceNode(), basename);
+            eventIndName = NeoUtils.getLuceneIndexKeyByProperty(datasetNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.GPEH_EVENT);
+            luceneIndexName = NeoUtils.getLuceneIndexKeyByProperty(datasetNode, INeoConstants.SECTOR_ID_PROPERTIES, NodeTypes.M);
+            initializeIndexes();
+
             eventsCount = 0;
             int count = 0;
             monitor.beginTask("Load GPEH data", fileList.size());

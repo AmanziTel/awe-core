@@ -82,6 +82,7 @@ public class GPSLoader extends DriveLoader {
         getHeaderMap(1);
         needParceHeader = true;
         initializeKnownHeaders();
+        luceneIndexName=null;
         
         try {
             addIndex(NodeTypes.MP.getId(), NeoUtils.getLocationIndexProperty(dataset));
@@ -97,7 +98,6 @@ public class GPSLoader extends DriveLoader {
     
     private void initializeLucene() {
         luceneService = NeoServiceProvider.getProvider().getIndexService();
-        luceneIndexName = NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.SECTOR_ID_PROPERTIES, NodeTypes.M);
     }
 
     /**
@@ -190,6 +190,9 @@ public class GPSLoader extends DriveLoader {
                 for (Map<String, Object> dataLine : data) {
                     Node m = neo.createNode();
                     findOrCreateFileNode(m);
+                    if (luceneIndexName==null){
+                        luceneIndexName = NeoUtils.getLuceneIndexKeyByProperty(datasetNode, INeoConstants.SECTOR_ID_PROPERTIES, NodeTypes.M);
+                    }
                     m.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
                     for (Map.Entry<String, Object> entry : dataLine.entrySet()) {
                         if (entry.getKey().equals(INeoConstants.SECTOR_ID_PROPERTIES)) {

@@ -120,7 +120,7 @@ public class NetworkSiteLoader extends AbstractLoader {
                 }
                 siteNode.setProperty(key, entry.getValue());
                 if (key.equals(INeoConstants.PROPERTY_SITE_NO)){
-                    luceneInd.index(siteNode, NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_SITE_NO, NodeTypes.SITE), entry.getValue().toString());
+                    luceneInd.index(siteNode, NeoUtils.getLuceneIndexKeyByProperty( getStoringNode(1), INeoConstants.PROPERTY_SITE_NO, NodeTypes.SITE), entry.getValue().toString());
                 }
             }
             transaction.success();
@@ -147,7 +147,7 @@ public class NetworkSiteLoader extends AbstractLoader {
      * @return site node.
      */
     private Node findOrCreateSiteNode(final String siteField) {
-        Node site = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteField);
+        Node site = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(getStoringNode(1), INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteField);
         if (site == null) {
             //create and link as child of networkNode
             Transaction tx = neo.beginTx();
@@ -155,7 +155,7 @@ public class NetworkSiteLoader extends AbstractLoader {
                 site = neo.createNode();
                 site.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.SITE.getId());
                 site.setProperty(INeoConstants.PROPERTY_NAME_NAME, siteField);
-                luceneInd.index(site, NeoUtils.getLuceneIndexKeyByProperty(basename, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteField);
+                luceneInd.index(site, NeoUtils.getLuceneIndexKeyByProperty(getStoringNode(1), INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteField);
                 networkNode.createRelationshipTo(site, NetworkRelationshipTypes.CHILD);
                 storingProperties.values().iterator().next().incSaved();
                 gisNodes.values().iterator().next().incSaved();

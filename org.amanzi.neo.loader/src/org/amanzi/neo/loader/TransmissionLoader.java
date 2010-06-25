@@ -407,12 +407,12 @@ public class TransmissionLoader {
             Node result = null;
             String idByName = nodeName.getId1();
             if (idByName != null) {
-                result = index.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(gisName, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), idByName);
+                result = index.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(network, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), idByName);
             }
             if (result == null) {
                 String siteNo = nodeName.getId2();
                 if (siteNo != null) {
-                    result= index.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(gisName, INeoConstants.PROPERTY_SITE_NO, NodeTypes.SITE),siteNo);
+                    result= index.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(network, INeoConstants.PROPERTY_SITE_NO, NodeTypes.SITE),siteNo);
                 }
             }
             return result;
@@ -438,12 +438,12 @@ public class TransmissionLoader {
                 String id1 = nodeName.getId1();
                 if (id1 != null) {
                     result.setProperty(INeoConstants.PROPERTY_NAME_NAME, id1);
-                    index.index(result, NeoUtils.getLuceneIndexKeyByProperty(gisName, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), id1);
+                    index.index(result, NeoUtils.getLuceneIndexKeyByProperty(network, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), id1);
                 }
                 String id2 = nodeName.getId2();
                 if (id2 != null) {
                     result.setProperty(INeoConstants.PROPERTY_SITE_NO, id2);
-                    index.index(result, NeoUtils.getLuceneIndexKeyByProperty(gisName, INeoConstants.PROPERTY_SITE_NO, NodeTypes.SITE), id2);
+                    index.index(result, NeoUtils.getLuceneIndexKeyByProperty(network, INeoConstants.PROPERTY_SITE_NO, NodeTypes.SITE), id2);
                 }
                 tx.success();
                 network.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
