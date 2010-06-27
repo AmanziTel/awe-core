@@ -113,8 +113,8 @@ public class GPEHLoader extends DriveLoader {
     private int rscpIndex;
 
     private final LuceneIndexService luceneInd;
-    private  String luceneIndexName;
-    private  String eventIndName;
+    private String luceneIndexName;
+    private String eventIndName;
 
     private final Set<Integer> avaliableEvents;
 
@@ -131,7 +131,7 @@ public class GPEHLoader extends DriveLoader {
         basename = datasetName;
         headers = getHeaderMap(KEY_EVENT).headers;
         luceneInd = NeoServiceProvider.getProvider().getIndexService();
-         gisType = GisTypes.OSS;
+        gisType = GisTypes.OSS;
         this.avaliableEvents = avaliableEvents;
     }
 
@@ -265,22 +265,19 @@ public class GPEHLoader extends DriveLoader {
      */
     private void saveEvent(GPEHEvent eventFile) {
         for (Event event : eventFile.getEvents()) {
-            // TODO: Lagutko: fake - save only RRC Measurement Reports!!!
-            LOGGER.debug(avaliableEvents);
-            if (avaliableEvents.contains(event.getId()))
-                if (event.getId() == 429) {
-                    saveSingleEvent(event);
-                    if (event.getId() == Events.INTERNAL_UE_POSITIONING_QOS.getId()) {
-                        saveLocation(event);
-                    }
-
-                    if (event.getFullTime(timestampOfDay) < previousGoodTimestamp) {
-                        createMPRelation(eventLastNode);
-                    } else {
-                        previousGoodTimestamp = 0;
-                        mpNode = null;
-                    }
+            if (avaliableEvents.contains(event.getId())) {
+                saveSingleEvent(event);
+                if (event.getId() == Events.INTERNAL_UE_POSITIONING_QOS.getId()) {
+                    saveLocation(event);
                 }
+
+                if (event.getFullTime(timestampOfDay) < previousGoodTimestamp) {
+                    createMPRelation(eventLastNode);
+                } else {
+                    previousGoodTimestamp = 0;
+                    mpNode = null;
+                }
+            }
         }
     }
 

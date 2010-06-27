@@ -77,6 +77,7 @@ public class DataLoadPreferences {
     public static final String PROPERY_LISTS = "PROPERY_LISTS";
     // public static final String FILTER_RULES = "FILTER_RULES";
     public static final String SELECTED_DATA = "SELECTED_DATA";
+    public static final String REMOTE_SERVER_URL = "REMOTE_SERVER_URL";
 
 
     private DataLoadPreferences() {

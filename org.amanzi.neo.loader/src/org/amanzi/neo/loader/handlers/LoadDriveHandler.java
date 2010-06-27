@@ -12,6 +12,7 @@
  */
 package org.amanzi.neo.loader.handlers;
 
+import org.amanzi.neo.wizards.DatasetImportUrlWizard;
 import org.amanzi.neo.wizards.TemsImportWizard;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -30,11 +31,21 @@ import org.eclipse.ui.handlers.HandlerUtil;
  * @since 1.0.0
  */
 public class LoadDriveHandler extends AbstractHandler {
-
+    private static String LOAD_FROM_URL = "org.amanzi.neo.loader.commands.loadfromurl";
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         String addToSelect = event.getParameter(LoadNetworkSiteHandler.PARAM_ADD_TO_SELECT);
+        String loadFromUrl = event.getParameter(LOAD_FROM_URL);
         IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindowChecked(event);
+        if (loadFromUrl != null && "true".equalsIgnoreCase(loadFromUrl)) {
+            DatasetImportUrlWizard wizard = new DatasetImportUrlWizard();
+            wizard.init(workbenchWindow.getWorkbench(), null);
+            Shell parent = workbenchWindow.getShell();
+            WizardDialog dialog = new WizardDialog(parent, wizard);
+            dialog.create();
+            dialog.open();
+            return null;
+        }
         TemsImportWizard wizard = new TemsImportWizard();
         wizard.addToSelectParam(addToSelect);
         wizard.init(workbenchWindow.getWorkbench(), null);

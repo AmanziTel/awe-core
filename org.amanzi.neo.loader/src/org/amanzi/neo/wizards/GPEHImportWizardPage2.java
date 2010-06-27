@@ -37,8 +37,8 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 
 /**
- * TODO Purpose of
  * <p>
+ * GPEH loader second page
  * </p>
  * 
  * @author NiCK
@@ -104,6 +104,7 @@ public class GPEHImportWizardPage2 extends WizardPage {
 
         optionsViewer.setInput("");
         eventsViewer.setInput("");
+
         setControl(main);
         setDefaults();
         // validateFinish();

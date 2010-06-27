@@ -80,4 +80,14 @@
       </page>
 
    </extension>
+   
+      <extension   point="org.eclipse.ui.preferencePages">
+       <page
+            class="org.amanzi.awe.views.drive.preferences.RemoteServerUrlPage"
+            id="org.amanzi.awe.views.drive.preferences.RemoteServerUrlPage"
+            name="Remote server URL"
+            category="org.amanzi.neo.preferences.DataLoadPreferencePage">
+      </page>
+
+   </extension>
 </plugin>

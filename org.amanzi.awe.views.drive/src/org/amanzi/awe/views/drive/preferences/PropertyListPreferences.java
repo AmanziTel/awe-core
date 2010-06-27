@@ -53,8 +53,8 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 /**
- * TODO Purpose of
  * <p>
+ * PropertyListPreferences
  * </p>
  * 
  * @author Saelenchits_N

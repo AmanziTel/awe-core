@@ -32,6 +32,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
  */
 public class LoadNetworkSiteHandler extends AbstractHandler {
     public static String PARAM_ADD_TO_SELECT = "org.amanzi.neo.loader.commands.addtoselect";
+
     @Override
     public Object execute(ExecutionEvent arg0) throws ExecutionException {
         String addToSelect = arg0.getParameter(PARAM_ADD_TO_SELECT);

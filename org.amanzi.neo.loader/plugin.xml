@@ -26,6 +26,8 @@
              name="Load Drive Data">
                        <commandParameter id="org.amanzi.neo.loader.commands.addtoselect" name="add to select" optional="true">
         </commandParameter>
+        <commandParameter id="org.amanzi.neo.loader.commands.loadfromurl" name="load from url" optional="true">
+        </commandParameter>
        </command>
        <command
              categoryId="org.amanzi.neo.loader.commands.category"
@@ -114,6 +116,13 @@
             icon="icons/16/drive.png"
             id="org.amanzi.neo.loader.LoadDrive"
                    tooltip="Load Drive Data">
+             </command>
+             <command
+                   commandId="org.amanzi.neo.loader.commands.LoadDrive"
+            icon="icons/16/drive.png"
+            id="org.amanzi.neo.loader.LoadDrive"
+                   tooltip="Load Drive Data from URL">
+                   <parameter name="org.amanzi.neo.loader.commands.loadfromurl" value="true"></parameter>
              </command>
           </toolbar>
        </menuContribution>

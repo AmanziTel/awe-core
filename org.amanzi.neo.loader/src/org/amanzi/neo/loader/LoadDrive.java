@@ -12,11 +12,13 @@
  */
 package org.amanzi.neo.loader;
 
+import net.refractions.udig.project.ui.tool.AbstractActionTool;
+
 import org.amanzi.neo.loader.dialogs.DriveDialog;
 import org.eclipse.swt.widgets.Display;
 
-import net.refractions.udig.project.ui.tool.AbstractActionTool;
-
+@Deprecated
+// TODO remove candidate
 public class LoadDrive extends AbstractActionTool {
 
 	public LoadDrive() {
