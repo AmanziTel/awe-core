@@ -76,10 +76,9 @@ import org.neo4j.index.lucene.LuceneIndexService;
 
 import au.com.bytecode.opencsv.CSVWriter;
 
-// TODO: Auto-generated Javadoc
 /**
- * TODO Purpose of
  * <p>
+ * Create different gpeh reports
  * </p>
  * .
  * 
@@ -442,10 +441,11 @@ public class GpehReportCreator {
             statisticStructure = creator.createStructure();
         }
         Integer uepwr = bestCell.getMeasurement().getUeTxPower();
+        // TODO testing!
         if (uepwr != null) {
             node = statisticStructure.getStatisticNode(time);
             neoArray = new NeoArray(node.getNode(), CellUeTxPowerAnalisis.ARRAY_NAME, 1, service);
-            arrNode = neoArray.findOrCreateNode(uepwr, ecNoValue);
+            arrNode = neoArray.findOrCreateNode(uepwr);
             count = (Integer)neoArray.getValueFromNode(arrNode);
             count = count == null ? 1 : count + 1;
             neoArray.setValueToNode(arrNode, count);
@@ -1492,6 +1492,79 @@ public class GpehReportCreator {
         }
         return null;
     }
+
+    public SpreadsheetNode createUeTxPowerCellSpreadSheet(String string, CallTimePeriods period) {
+        IPath path = ResourcesPlugin.getWorkspace().getRoot().getFullPath().append(
+                new Path(new StringBuilder("UeTxPower_REPORT_").append(period.getId()).append(".csv").toString()));
+
+        File file = path.toFile();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+        Transaction tx = service.beginTx();
+        try {
+            CSVWriter out = new CSVWriter(new FileWriter(file));
+            CellUeTxPowerAnalisis analyse = getReportModel().getCellUeTxPowerAnalisis(period);
+            analyse.getMainNode();
+            Node sourceMainNode = analyse.getMainNode();
+            Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(gpeh, service);
+            // add header
+            Calendar calendar = Calendar.getInstance();
+            List<String> outRes = new LinkedList<String>();
+            outRes.add("Cell Name");
+            outRes.add("Date");
+            outRes.add("Time");
+            outRes.add("Resolution");
+            for (int i = 21; i <= 104; i++) {
+                outRes.add(new StringBuilder("UeTxPower=").append(i).append(" (3GPP)").toString());
+            }
+            out.writeNext(outRes.toArray(new String[0]));
+            outRes.clear();
+            for (Relationship rel : sourceMainNode.getRelationships(Direction.OUTGOING)) {
+
+                String bestCellId = StatisticNeoService.getBestCellId(rel.getType().name());
+                if (bestCellId != null) {
+                    outRes.clear();
+                    Node sector = service.getNodeById(Long.parseLong(bestCellId));
+                    String name = (String)sector.getProperty("userLabel", "");
+                    if (StringUtil.isEmpty(name)) {
+                        name = NeoUtils.getNodeName(sector, service);
+                    }
+
+                    StatisticByPeriodStructure structure = analyse.getStatisticStructure(bestCellId);
+                    for (IStatisticElementNode statNode : structure.getStatNedes(minMax.getLeft(), minMax.getRight())) {
+                        outRes.add(name);
+                        calendar.setTimeInMillis(statNode.getStartTime());
+                        outRes.add(dateFormat.format(calendar.getTime()));
+                        outRes.add(String.valueOf(calendar.get(Calendar.HOUR_OF_DAY)));
+                        outRes.add(period.getId());
+                        if (NeoArray.hasArray(CellEcNoAnalisis.ARRAY_NAME, statNode.getNode(), service)) {
+                            NeoArray array = new NeoArray(statNode.getNode(), CellEcNoAnalisis.ARRAY_NAME, service);
+                            for (int i = 21; i <= 104; i++) {
+                                Object value = array.getValue(i);
+                                if (value == null) {
+                                    value = 0;
+                                }
+                                outRes.add(String.valueOf(value));
+                            }
+                        } else {
+                            for (int i = 0; i <= 49; i++) {
+                                outRes.add("0");
+                            }
+                        }
+                        out.writeNext(outRes.toArray(new String[0]));
+                        outRes.clear();
+                    }
+
+                }
+            }
+            out.close();
+        } catch (IOException e) {
+            // TODO Handle IOException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } finally {
+            tx.finish();
+        }
+        return null;
+    }
     public SpreadsheetNode createEcNoCellSpreadSheet(String string, CallTimePeriods period) {
         IPath path = ResourcesPlugin.getWorkspace().getRoot().getFullPath().append(
                 new Path(new StringBuilder("ECNO_REPORT_").append(period.getId()).append(".csv").toString()));
@@ -1723,6 +1796,42 @@ public class GpehReportCreator {
         }
     }
 
+    public class GPEHUeTxPowerStorer implements IStatisticStore {
+
+        @Override
+        public void storeStatisticElement(IStatisticElement statElem, Node node) {
+            StatisticSetElement source = (StatisticSetElement)statElem;
+            NeoArray array = new NeoArray(node, CellRscpAnalisis.ARRAY_NAME, 1, service);
+
+            Set<NeoArray> arraySet = new HashSet<NeoArray>(0);
+            for (IStatisticElementNode singlElement : source.getSources()) {
+                if (NeoArray.hasArray(CellRscpEcNoAnalisis.ARRAY_NAME, singlElement.getNode(), service)) {
+                    arraySet.add(new NeoArray(singlElement.getNode(), CellUeTxPowerAnalisis.ARRAY_NAME, 1, service));
+                }
+            }
+            for (int txPow = 21; txPow <= 104; txPow++) {
+                Node arrayNode = null;
+                int count = 0;
+                    for (NeoArray sArray : arraySet) {
+                    Node sourceNode = sArray.getNode(txPow);
+                        if (sourceNode != null) {
+                            Object value = sArray.getValueFromNode(sourceNode);
+                            if (value != null) {
+                                count += (Integer)value;
+                                if (arrayNode == null && count >= 0) {
+                                arrayNode = array.findOrCreateNode(txPow);
+                                    arrayNode.createRelationshipTo(sourceNode, ReportsRelations.SOURCE);
+                                }
+                            }
+                        }
+                }
+                if (arrayNode != null) {
+                    array.setValueToNode(arrayNode, count);
+                }
+            }
+        }
+    }
+
     public class GPEHEcNoStorer implements IStatisticStore {
 
         @Override
@@ -1798,5 +1907,39 @@ public class GpehReportCreator {
 
             }
         }
+    }
+
+
+    public void createUeTxPowerCellReport(CallTimePeriods periods) {
+        if (model.getCellUeTxPowerAnalisis(periods) != null) {
+            return;
+        }
+        assert !"main".equals(Thread.currentThread().getName());
+        Transaction tx = service.beginTx();
+        try {
+            createMatrix();
+            Node parentNode = service.createNode();
+            parentNode.setProperty(CellReportsProperties.PERIOD_ID, periods.getId());
+            model.getRoot().createRelationshipTo(parentNode, periods.getPeriodRelation(CellUeTxPowerAnalisis.PRFIX));
+            CellRscpEcNoAnalisis sourceModel = model.getCellRscpEcNoAnalisis(CallTimePeriods.HOURLY);
+            Node sourceMainNode = sourceModel.getMainNode();
+            Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(gpeh, service);
+            for (Relationship rel : sourceMainNode.getRelationships(Direction.OUTGOING)) {
+                String bestCellId = StatisticNeoService.getBestCellId(rel.getType().name());
+                if (bestCellId != null) {
+                    StatisticByPeriodStructure sourceStruc = new StatisticByPeriodStructure(rel.getOtherNode(sourceMainNode), service);
+                    GPEHStatisticHandler handler = new GPEHStatisticHandler(sourceStruc);
+                    GPEHUeTxPowerStorer store = new GPEHUeTxPowerStorer();
+                    TimePeriodStructureCreator creator = new TimePeriodStructureCreator(parentNode, bestCellId, minMax.getLeft(), minMax.getRight(),
+                            periods, handler, store, service);
+                    creator.createStructure();
+                }
+            }
+            model.findCellUeTxPowerAnalisis(periods);
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+
     }
 }

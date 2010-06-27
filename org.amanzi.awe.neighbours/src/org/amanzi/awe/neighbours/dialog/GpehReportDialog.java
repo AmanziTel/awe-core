@@ -261,6 +261,10 @@ public class GpehReportDialog extends Dialog {
 
         final SpreadsheetNode spreadsheet;
         switch (repType) {
+        case UE_TX_POWER_ANALYSIS:
+            creator.createUeTxPowerCellReport(period);
+            spreadsheet = creator.createUeTxPowerCellSpreadSheet("UxTxPower", period);
+            return;
         case IDCM_INTRA:
             spreadsheet = creator.createIntraIDCMSpreadSheet("IntraMatrix");
             break;
