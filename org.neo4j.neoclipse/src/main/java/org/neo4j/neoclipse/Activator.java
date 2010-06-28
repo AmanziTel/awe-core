@@ -119,28 +119,21 @@ public class Activator extends AbstractUIPlugin
         try
         {
             ns = sm.getGraphDbService();
-        }catch (TransactionFailureException e) {
-            e.printStackTrace();
-            Throwable cause = e.getCause();
-            String problemMessage = "Unknown problem with the database. ";
-            if (cause instanceof InvocationTargetException) {                
+        }
+        catch (Exception rte) {
+            rte.printStackTrace();
+            Throwable cause = rte.getCause();
+            String problemMessage = "Problem accessing the database: " + rte.getMessage();
+            if (rte instanceof TransactionFailureException && cause instanceof InvocationTargetException) {
                 if (((InvocationTargetException)cause).getTargetException() instanceof IllegalStateException) {
-                    problemMessage = "Database by requested location '"
-                        +getPreferenceStore().getString( Preferences.DATABASE_LOCATION )+"' already uses by other program. ";
+                    problemMessage = "Database at '" + getPreferenceStore().getString(Preferences.DATABASE_LOCATION)
+                            + "' already in use. Try close other application.";
                 }
             }
             showProblemMessage(problemMessage);
-        }
-        catch ( Exception rte )
-        {
-            rte.printStackTrace();
-            showProblemMessage("Unknown problem with the database. ");
-            try
-            {
+            try {
                 ns = sm.getGraphDbService();
-            }
-            catch ( Exception rte2 )
-            {
+            } catch (Exception rte2) {
                 // just continue
                 rte2.printStackTrace();
             }
