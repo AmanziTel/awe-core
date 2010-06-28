@@ -826,6 +826,7 @@ public class CallAnalyserView extends ViewPart {
 
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
+                cursor.setVisible(true);
                 if (event.getSelection() instanceof IStructuredSelection) {
                     IStructuredSelection selections = (IStructuredSelection)event.getSelection();
                     Object selRow = selections.getFirstElement();
@@ -1244,8 +1245,8 @@ public class CallAnalyserView extends ViewPart {
         InputWrapper wrapper = createInputWrapper(showEmpty);
         if (wrapper.isCorrectInput()) {  
             tableViewer.setInput(wrapper);
-            cursor.dispose();
-            cursor = new TableCursor(tableViewer.getTable(), SWT.DefaultSelection);
+            cursor.setVisible(false);
+            //cursor = new TableCursor(tableViewer.getTable(), SWT.DefaultSelection);
         }
     }
 
