@@ -16,10 +16,10 @@ package org.amanzi.neo.core.utils;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * Content provider implementation of neoTreeElement
  * </p>
+ * 
  * @author TsAr
  * @since 1.0.0
  */

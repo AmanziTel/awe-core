@@ -77,7 +77,7 @@ public class OSSImportWizardPage extends WizardPage {
 
     @Override
     public void createControl(Composite parent) {
-        manualDatasetEdit=false;
+        manualDatasetEdit = false;
         final Composite main = new Composite(parent, SWT.NULL);
         main.setLayout(new GridLayout(3, false));
         Label label = new Label(main, SWT.LEFT);
@@ -90,11 +90,11 @@ public class OSSImportWizardPage extends WizardPage {
 
             @Override
             public void modifyText(ModifyEvent e) {
-                if (!dataset.isEnabled()){
+                if (!dataset.isEnabled()) {
                     return;
                 }
                 datasetName = dataset.getText();
-                manualDatasetEdit=!StringUtils.isEmpty(datasetName);
+                manualDatasetEdit = !StringUtils.isEmpty(datasetName);
                 validateFinish();
             }
         });
@@ -102,11 +102,11 @@ public class OSSImportWizardPage extends WizardPage {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (!dataset.isEnabled()){
+                if (!dataset.isEnabled()) {
                     return;
                 }
                 datasetName = dataset.getText();
-                manualDatasetEdit=true;
+                manualDatasetEdit = true;
                 validateFinish();
             }
 
@@ -225,7 +225,7 @@ public class OSSImportWizardPage extends WizardPage {
         // TODO implement!
         if (true) {
             return;
-        }        
+        }
     }
 
     /**
@@ -253,7 +253,7 @@ public class OSSImportWizardPage extends WizardPage {
             if (file.isFile() && (ossDirType.left() == OssType.GPEH || ossDirType.left() == OssType.COUNTER)) {
                 return false;
             }
-            if (!file.isFile() && (ossDirType.left() == OssType.APD|| ossDirType.left() == OssType.iDEN)) {
+            if (!file.isFile() && (ossDirType.left() == OssType.APD || ossDirType.left() == OssType.iDEN)) {
                 return false;
             }
             Node ossNode = ossMap.get(datasetName);
@@ -312,6 +312,7 @@ public class OSSImportWizardPage extends WizardPage {
             }
             return false;
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
     }

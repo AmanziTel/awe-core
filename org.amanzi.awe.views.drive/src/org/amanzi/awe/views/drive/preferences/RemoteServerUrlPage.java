@@ -13,17 +13,23 @@
 
 package org.amanzi.awe.views.drive.preferences;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.amanzi.neo.preferences.DataLoadPreferences;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -36,7 +42,6 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
  * @since 1.0.0
  */
 public class RemoteServerUrlPage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
-
 
     @Override
     protected void createFieldEditors() {
@@ -56,10 +61,12 @@ public class RemoteServerUrlPage extends FieldEditorPreferencePage implements IW
         int width = 52;
         // addField(new StringFieldEditor(DataLoadPreferences.REMOTE_SERVER_URL,
         // NeoLoaderPluginMessages.RemoteServerUrlPage_0, width, marginPanel));
-        StringFieldEditor field = new StringFieldEditor(DataLoadPreferences.REMOTE_SERVER_URL, NeoLoaderPluginMessages.RemoteServerUrlPage_0, width, 0, marginPanel);
-        field.setEmptyStringAllowed(false);
+        StringFieldEditor field = new UrlFieldEditor(DataLoadPreferences.REMOTE_SERVER_URL, NeoLoaderPluginMessages.RemoteServerUrlPage_0, width, 0, marginPanel);
+        // field.setEmptyStringAllowed(false);
+        // field
         // field.
         addField(field);
+        // setMessage("BUGOGA", IStatus.WARNING);
     }
 
     @Override
@@ -69,6 +76,60 @@ public class RemoteServerUrlPage extends FieldEditorPreferencePage implements IW
     @Override
     public IPreferenceStore getPreferenceStore() {
         return NeoLoaderPlugin.getDefault().getPreferenceStore();
+    }
+
+    private class UrlFieldEditor extends StringFieldEditor {
+
+        public UrlFieldEditor(String name, String labelText, int width, int strategy, Composite parent) {
+            super(name, labelText, width, strategy, parent);
+        }
+
+        @Override
+        protected boolean checkState() {
+            boolean result = false;
+
+            Text textField = getTextControl();
+
+            String txt = textField.getText();
+
+            if (txt.trim().isEmpty()) {
+                acceptance("URL is empty!", textField);
+                return true;
+            }
+            try {
+                URL url = new URL(txt);
+            } catch (MalformedURLException e) {
+                // e.printStackTrace();
+                error("URL is not valid!", textField);
+                return false;
+            }
+            clearErrorMessage();
+            valid(textField);
+
+            return true;
+        }
+
+        private void error(String message, Text field) {
+            setErrorMessage(message);
+            showErrorMessage();
+            field.setForeground(new Color(null, 255, 0, 0));
+            field.setToolTipText(message);
+        }
+
+        private void acceptance(String message, Text field) {
+            clearErrorMessage();
+            setMessage(message, IStatus.WARNING);
+            field.setForeground(new Color(null, 0, 0, 0));
+            field.setToolTipText(message);
+        }
+
+        private void valid(Text field) {
+            clearErrorMessage();
+            setMessage(getTitle(), IStatus.OK);
+            field.setForeground(new Color(null, 0, 0, 0));
+            field.setToolTipText(null);
+        }
+
     }
 
 }

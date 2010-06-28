@@ -17,10 +17,10 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * Lable provider implemenation of neoTree elements
  * </p>
+ * 
  * @author TsAr
  * @since 1.0.0
  */
