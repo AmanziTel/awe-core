@@ -98,6 +98,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
@@ -461,10 +462,10 @@ public class CallAnalyserView extends ViewPart {
         @Override
         public Color getForeground(Object element, int columnIndex) {
             if(!(element instanceof PeriodWrapper)||columnHeaders.size()<=columnIndex){
-            return null;
-        }
+                return null;
+            }
             return columnHeaders.get(columnIndex).getForegroundColor((PeriodWrapper)element);
-    }
+        }
     }
     
     private int simpleCompare(PeriodWrapper o1, PeriodWrapper o2, int column){        
@@ -829,9 +830,11 @@ public class CallAnalyserView extends ViewPart {
                 cursor.setVisible(true);
                 if (event.getSelection() instanceof IStructuredSelection) {
                     IStructuredSelection selections = (IStructuredSelection)event.getSelection();
+                    
                     Object selRow = selections.getFirstElement();
                     if (selRow != null && selRow instanceof PeriodWrapper) {
                         PeriodWrapper wr = (PeriodWrapper)selRow;
+                        setColorsToSelection(wr);
                         int columnId = cursor.getColumn();
                         if (columnId == 0) {
                             select(wr.sRow);
@@ -1052,6 +1055,26 @@ public class CallAnalyserView extends ViewPart {
 //            }
 //        });
     }
+    
+    /**
+     * Set foreground colors to selected row.
+     */
+    private void setColorsToSelection(PeriodWrapper wr){
+        /*TableItem row = cursor.getRow();
+        if (row!=null) {
+            for (int i = 0; i < columnHeaders.size(); i++) {
+                row.setForeground(i, columnHeaders.get(i).getForegroundColor(wr));
+            }
+        }else{
+            for(TableItem selRow : tableViewer.getTable().getSelection()){
+                for (int i = 0; i < columnHeaders.size(); i++) {
+                    selRow.setForeground(i, columnHeaders.get(i).getForegroundColor(wr));
+                }
+            }
+        }*/
+        int columnId = cursor.getColumn();
+        cursor.setForeground(columnHeaders.get(columnId).getForegroundColor(wr));
+    }
 
     private void generateReport() {
         String aggregation = cPeriod.getText();
@@ -1246,7 +1269,6 @@ public class CallAnalyserView extends ViewPart {
         if (wrapper.isCorrectInput()) {  
             tableViewer.setInput(wrapper);
             cursor.setVisible(false);
-            //cursor = new TableCursor(tableViewer.getTable(), SWT.DefaultSelection);
         }
     }
 
