@@ -51,9 +51,9 @@ public class GPEHImportWizardPage2 extends WizardPage {
     private TableViewer eventsViewer;
     // TODO hardcoding!!!
     private final String[] loadOptions = new String[] {"Locations", "Measurement Reports"};
-    private List<String> events = new ArrayList<String>();
+    private final List<String> events = new ArrayList<String>();
 
-    private HashSet<Integer> selectedEvents = new HashSet<Integer>();
+    private final HashSet<Integer> selectedEvents = new HashSet<Integer>();
 
     /**
      * @param pageName
@@ -115,10 +115,12 @@ public class GPEHImportWizardPage2 extends WizardPage {
      */
     protected void eventChanged() {
         StructuredSelection sel = (StructuredSelection)eventsViewer.getSelection();
-        Events e = Events.valueOf((String)sel.getFirstElement());
-        selectedEvents.clear();
-        selectedEvents.add(e.getId());
-        validateFinish();
+        if (!sel.isEmpty()) {
+            Events e = Events.valueOf((String)sel.getFirstElement());
+            selectedEvents.clear();
+            selectedEvents.add(e.getId());
+            validateFinish();
+        }
     }
 
     /**
