@@ -706,6 +706,7 @@ public class MultiPropertyIndex<E extends Object> {
 
     public Collection<Node> find(E[] min, E[] max) {
         ArrayList<Node> results = new ArrayList<Node>();
+        //TODO why not use  -   return searchTraverser(min, max).getAllNodes();???
         for (Node node : searchTraverser(min, max)) {
             results.add(node);
         }
