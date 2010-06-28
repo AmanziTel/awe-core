@@ -16,6 +16,7 @@ package org.amanzi.neo.loader.correlate;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import net.refractions.udig.project.ILayer;
@@ -24,6 +25,7 @@ import net.refractions.udig.project.internal.Layer;
 import net.refractions.udig.project.internal.commands.DeleteLayerCommand;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.DriveTypes;
@@ -96,6 +98,7 @@ public class AMSCorrellator {
     private GisProperties gisProperTo;
 
     private GisProperties gisProperToCall;
+    private StringBuffer statistic;
 	
 	/**
 	 * Starts correlating
@@ -106,8 +109,12 @@ public class AMSCorrellator {
 	 */
 	public void correlate(String firstDataset, String secondDataset, IProgressMonitor monitor) {
 		assert !Thread.currentThread().getName().equals("main");
-	    Transaction tx = neoService.beginTx();
+		statistic=new StringBuffer(String.format("%s was correlated to %s",firstDataset,secondDataset));
+	    statistic.append('\n');
+		Transaction tx = neoService.beginTx();
         NeoUtils.addTransactionLog(tx, Thread.currentThread(), "correlate");
+        double[] oldBbox=null;
+        double[] oldCallBbox=null;
 		try {
 		    NeoLoaderPlugin.getDefault().info("Start correlated ");
 			initializeIndex(secondDataset);
@@ -122,6 +129,7 @@ public class AMSCorrellator {
             monitor.beginTask("Execute correlating", countFrom);
             gisProperFrom = new GisProperties(gisFrom);
             gisProperTo = new GisProperties(gisTo);
+            oldBbox = gisProperTo.getBbox();
             removeLayer(gisTo);
             
             gisProperFrom.initCRS();
@@ -136,6 +144,7 @@ public class AMSCorrellator {
             }
             Node gisToCall = !isTest ? NeoUtils.findGisNode(callDatasetName) : NeoUtils.findGisNode(callDatasetName, neoService);
             gisProperToCall = new GisProperties(gisToCall);
+            oldCallBbox=gisProperToCall.getBbox();
             gisProperToCall.setCrs(gisProperFrom.getCrs());
             gisProperToCall.saveCRS();
 			createNewIndexes(firstDataset, callDatasetName);
@@ -168,8 +177,19 @@ public class AMSCorrellator {
 			realDatasetLocationIndex.finishUp();
 			callDatasetLocationIndex.finishUp();
 			if (countTo!=0) {
-                NeoLoaderPlugin.info("Correlating AMS dataset '" + firstDataset + "' to drive dataset '" + secondDataset + "'. "
-                        +correlatedCount+" ("+ getPercents(correlatedCount, countTo) + "%) from " + countTo + " success correlated.");
+                String line = "Correlating AMS dataset '" + firstDataset + "' to drive dataset '" + secondDataset + "'. "
+                        +correlatedCount+" ("+ getPercents(correlatedCount, countTo) + "%) from " + countTo + " success correlated.";
+               statistic.append('\t').append(line);
+               statistic.append('\n');
+               if (oldBbox!=null){
+                   statistic.append('\t').append(String.format("dataset bbox was changed from %s to %s", Arrays.toString(oldBbox),Arrays.toString(gisProperTo.getBbox())));  
+                   statistic.append('\n');  
+               }
+               if (oldCallBbox!=null){
+                   statistic.append('\t').append(String.format("call dataset bbox was changed from %s to %s", Arrays.toString(oldCallBbox),Arrays.toString(gisProperToCall.getBbox())));  
+                   statistic.append('\n');  
+               }
+                NeoLoaderPlugin.info(line);
             }
             tx.success();
 		}catch (InterruptedException ie){
@@ -179,7 +199,8 @@ public class AMSCorrellator {
 			NeoCorePlugin.error(null, e);
 		}
 		finally {
-			tx.finish();
+		    tx.finish();
+		    AweConsolePlugin.info(statistic.toString());
 //			if(!isTest)
 //			{
 //			    NeoServiceProvider.getProvider().commit();
