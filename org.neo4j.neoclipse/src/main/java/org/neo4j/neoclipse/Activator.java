@@ -126,8 +126,8 @@ public class Activator extends AbstractUIPlugin
             String problemMessage = "Problem accessing the database: " + rte.getMessage();
             if (rte instanceof TransactionFailureException && cause instanceof InvocationTargetException) {
                 if (((InvocationTargetException)cause).getTargetException() instanceof IllegalStateException) {
-                    problemMessage = "Database at '" + getPreferenceStore().getString(Preferences.DATABASE_LOCATION)
-                            + "' already in use. Try close other application.";
+                    problemMessage = "The database at '" + getPreferenceStore().getString(Preferences.DATABASE_LOCATION)
+                            + "' is already in use.\nIf another instance of AWE is running, please close it first.";
                 }
             }
             showProblemMessage(problemMessage);
