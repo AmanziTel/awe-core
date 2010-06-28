@@ -13,6 +13,8 @@
  */
 package org.neo4j.neoclipse;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.swt.widgets.Display;
@@ -23,8 +25,10 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.kernel.impl.transaction.TransactionFailureException;
 import org.neo4j.neoclipse.graphdb.GraphDbServiceManager;
 import org.neo4j.neoclipse.preference.NeoPreferenceHelper;
+import org.neo4j.neoclipse.preference.Preferences;
 import org.neo4j.neoclipse.view.NeoGraphViewPart;
 import org.osgi.framework.BundleContext;
 
@@ -115,12 +119,22 @@ public class Activator extends AbstractUIPlugin
         try
         {
             ns = sm.getGraphDbService();
+        }catch (TransactionFailureException e) {
+            e.printStackTrace();
+            Throwable cause = e.getCause();
+            String problemMessage = "Unknown problem with the database. ";
+            if (cause instanceof InvocationTargetException) {                
+                if (((InvocationTargetException)cause).getTargetException() instanceof IllegalStateException) {
+                    problemMessage = "Database by requested location '"
+                        +getPreferenceStore().getString( Preferences.DATABASE_LOCATION )+"' already uses by other program. ";
+                }
+            }
+            showProblemMessage(problemMessage);
         }
         catch ( Exception rte )
         {
             rte.printStackTrace();
-            MessageDialog.openInformation( null, "Database problem",
-                    "Unknown problem with the database. " );
+            showProblemMessage("Unknown problem with the database. ");
             try
             {
                 ns = sm.getGraphDbService();
@@ -132,6 +146,11 @@ public class Activator extends AbstractUIPlugin
             }
         }
         return ns;
+    }
+
+    private void showProblemMessage(String message) {
+        MessageDialog.openInformation( null, "Database problem",
+                message );
     }
 
     /**
