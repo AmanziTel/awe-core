@@ -79,6 +79,8 @@ import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -86,6 +88,9 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.Region;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
@@ -94,7 +99,9 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DateTime;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -163,12 +170,14 @@ public class CallAnalyserView extends ViewPart {
     private TableViewer tableViewer;        
     private ViewContentProvider provider;
     private ViewLabelProvider labelProvider;
+    private int selectedColumn = -1;
     private Combo cDrive;
     private Combo cPeriod;
     private Combo cCallType;
     private Combo cProbe;
     private Combo cInclInconculsiveState;
-    private TableCursor cursor;
+    //private TableCursor cursor;
+    //private boolean hasSelection = false;
     private Button bExport;
     private Color color1;
     private Color color2;
@@ -606,7 +615,7 @@ public class CallAnalyserView extends ViewPart {
         fData.top = new FormAttachment(rowComposite, 2);
         fData.bottom = new FormAttachment(100, -2);
         tableViewer.getControl().setLayoutData(fData);
-        cursor = new TableCursor(tableViewer.getTable(), SWT.DefaultSelection);
+        //cursor = new TableCursor(tableViewer.getTable(), SWT.DefaultSelection);
 
         hookContextMenu();
         addListeners();
@@ -823,48 +832,89 @@ public class CallAnalyserView extends ViewPart {
      *add listeners
      */
     private void addListeners() {
-        tableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+        tableViewer.getControl().addMouseListener(new MouseListener() {
+            
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+                mouseUp(e);
+            }
 
             @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                cursor.setVisible(true);
-                if (event.getSelection() instanceof IStructuredSelection) {
-                    IStructuredSelection selections = (IStructuredSelection)event.getSelection();
-                    
-                    Object selRow = selections.getFirstElement();
-                    if (selRow != null && selRow instanceof PeriodWrapper) {
-                        PeriodWrapper wr = (PeriodWrapper)selRow;
-                        setColorsToSelection(wr);
-                        int columnId = cursor.getColumn();
-                        if (columnId == 0) {
-                            select(wr.sRow);
-                            return;
-                        }
-                        if ((columnId == 1 || columnId == 2 || columnId == 3)&&!getCallType().equals(StatisticsCallType.AGGREGATION_STATISTICS)) {
-                            select(wr.getProbeNode());
-                            return;
-                        }
-                        ColumnHeaders header = columnHeaders.get(columnId);
-                        final String nodeName = header.header.getTitle();
-                        Node cellNode = null;
-                        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
-                        try {
-                            Iterator<Node> iterator = NeoUtils.getChildTraverser(wr.sRow, new ReturnableEvaluator() {
+            public void mouseDown(MouseEvent e) {                
+            }
 
-                                @Override
-                                public boolean isReturnableNode(TraversalPosition currentPos) {
-                                    return NeoUtils.getNodeName(currentPos.currentNode(),null).equals(nodeName);
-                                }
-                            }).iterator();
-                            cellNode = iterator.hasNext() ? iterator.next() : null;
-                        } finally {
-                            tx.finish();
-                        }
-                        if (cellNode != null) {
-                            select(cellNode);
-                        }
+            @Override
+            public void mouseUp(MouseEvent e) {
+                Point point = new Point(e.x,e.y);
+                TableItem item = tableViewer.getTable().getItem(point);
+                if(item==null){
+                    return;
+                }
+                selectedColumn = -1;
+                for(int i=0; i<columnHeaders.size();i++){
+                    if(item.getBounds(i).contains(point)){
+                        selectedColumn = i;
                     }
                 }
+                if(selectedColumn<0){
+                    return;
+                }
+                PeriodWrapper wr = (PeriodWrapper)item.getData();
+                if (selectedColumn == 0) {
+                    select(wr.sRow);
+                    return;
+                }
+                if ((selectedColumn == 1 || selectedColumn == 2 || selectedColumn == 3)&&!getCallType().equals(StatisticsCallType.AGGREGATION_STATISTICS)) {
+                    select(wr.getProbeNode());
+                    return;
+                }
+                ColumnHeaders header = columnHeaders.get(selectedColumn);
+                final String nodeName = header.header.getTitle();
+                Node cellNode = null;
+                Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+                try {
+                    Iterator<Node> iterator = NeoUtils.getChildTraverser(wr.sRow, new ReturnableEvaluator() {
+
+                        @Override
+                        public boolean isReturnableNode(TraversalPosition currentPos) {
+                            return NeoUtils.getNodeName(currentPos.currentNode(),null).equals(nodeName);
+                        }
+                    }).iterator();
+                    cellNode = iterator.hasNext() ? iterator.next() : null;
+                } finally {
+                    tx.finish();
+                }
+                if (cellNode != null) {
+                    select(cellNode);
+                }
+            }
+        });
+        
+        tableViewer.getTable().addListener(SWT.PaintItem, new Listener() {
+            
+            @Override
+            public void handleEvent(Event event) {
+                event.detail &= ~SWT.HOT;   
+                if((event.detail & SWT.SELECTED) != 0) {
+                    GC gc = event.gc;
+                    int columnCount = columnHeaders.size();
+                    if(selectedColumn>=0&&selectedColumn<columnCount&&event.index==selectedColumn){
+                        PeriodWrapper wr = (PeriodWrapper)((TableItem)event.item).getData();
+                        Color background = gc.getBackground();
+                        Color foreground = gc.getForeground();
+                        Display display = Display.getCurrent();
+                        gc.setBackground(display.getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT));
+                        ColumnHeaders header = columnHeaders.get(selectedColumn);
+                        Color currForeground = header.getForegroundColor(wr);
+                        gc.setForeground(currForeground==null?display.getSystemColor(SWT.COLOR_LIST_SELECTION):currForeground);
+                        Rectangle rect = new Rectangle(event.x, event.y, header.getColumn().getWidth(), event.height);                        
+                        gc.fillRectangle(rect);
+                        gc.drawString(header.getValue(wr, selectedColumn), event.x+2, event.y);
+                        gc.setBackground(background);
+                        gc.setForeground(foreground);
+                    }
+                    event.detail &= ~SWT.SELECTED;                  
+                }       
             }
         });
 
@@ -1072,8 +1122,8 @@ public class CallAnalyserView extends ViewPart {
                 }
             }
         }*/
-        int columnId = cursor.getColumn();
-        cursor.setForeground(columnHeaders.get(columnId).getForegroundColor(wr));
+        //int columnId = cursor.getColumn();
+        //cursor.setForeground(columnHeaders.get(columnId).getForegroundColor(wr));
     }
 
     private void generateReport() {
@@ -1267,8 +1317,9 @@ public class CallAnalyserView extends ViewPart {
     private void updateTable(boolean showEmpty) {
         InputWrapper wrapper = createInputWrapper(showEmpty);
         if (wrapper.isCorrectInput()) {  
-            tableViewer.setInput(wrapper);
-            cursor.setVisible(false);
+            tableViewer.getTable().deselectAll();
+            selectedColumn = -1;
+            tableViewer.setInput(wrapper);            
         }
     }
 
