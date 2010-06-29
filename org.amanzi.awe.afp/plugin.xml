@@ -12,8 +12,24 @@
     <extension
           point="org.eclipse.ui.handlers">
         <handler
-             class="org.amanzi.neo.loader.handlers.LoadNetworkHandler"
-             commandId="org.amanzi.neo.loader.commands.LoadNetwork">
+             class="org.amanzi.awe.afp.providers.OpenWizardHandler"
+             commandId="org.amanzi.awe.afp.loadControlFile">
        </handler>         
-     </extension>     
+     </extension>
+    <extension
+          point="org.eclipse.ui.menus">
+       <menuContribution
+             locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+          <toolbar
+                id="org.amanzi.neo.loader.toolbar">
+             <command
+                   commandId="org.amanzi.awe.afp.loadControlFile"
+                   icon="icons/afp.png"
+                   mnemonic="Load AFP data"
+                   style="push"
+                   tooltip="Load AFP data">
+             </command>
+          </toolbar>
+       </menuContribution>
+    </extension>     
 </plugin>

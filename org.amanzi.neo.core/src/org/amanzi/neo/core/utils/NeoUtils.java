@@ -35,7 +35,9 @@ import net.refractions.udig.catalog.IService;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.nodes.AweProjectNode;
 import org.amanzi.neo.core.database.nodes.DeletableRelationshipType;
+import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -46,12 +48,12 @@ import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.OssType;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
-import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.index.MultiPropertyIndex;
-import org.amanzi.neo.index.PropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
+import org.amanzi.neo.index.PropertyIndex;
 import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -428,8 +430,9 @@ public class NeoUtils {
 
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
-                if (!(NodeTypes.NETWORK.checkNode(currentPos.currentNode()) || NeoUtils.isDatasetNode(currentPos.currentNode()) || NeoUtils.isOssNode(currentPos
-                        .currentNode()))) {
+                Node node = currentPos.currentNode();
+                // TODO optimize - get all childs of project like root node!
+                if (!(NodeTypes.NETWORK.checkNode(node) || NodeTypes.AFP.checkNode(node) || NeoUtils.isDatasetNode(node) || NeoUtils.isOssNode(node))) {
                     return false;
                 }
                 return additionalReturnableEvaluator == null || additionalReturnableEvaluator.isReturnableNode(currentPos);
@@ -2867,6 +2870,102 @@ public class NeoUtils {
             if (tx!=null) {
                 tx.finish();
             }
+        }
+    }
+
+    /**
+     * Gets the full name.
+     * 
+     * @param root the root
+     * @param service the servise
+     * @return the full name
+     */
+    public static String getFullName(Node root, GraphDatabaseService service) {
+        Transaction tx = beginTx(service);
+        try {
+            Relationship parentNodeRel = root.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING);
+            Node parent = parentNodeRel == null ? null : parentNodeRel.getOtherNode(root);
+            return getFullName(parent, root, service);
+        } finally {
+            finishTx(tx);
+        }
+    }
+
+    /**
+     * Gets the full name.
+     * 
+     * @param parent the parent
+     * @param root the root
+     * @param service the service
+     * @return the full name
+     */
+    private static String getFullName(Node parent, Node root, GraphDatabaseService service) {
+        Transaction tx = beginTx(service);
+        try {
+            StringBuilder result = new StringBuilder();
+            if (parent != null) {
+                result.append("(").append(NeoUtils.getNodeName(parent, service)).append(")");
+            }
+            if (root != null) {
+                result.append(NeoUtils.getNodeName(root, service));
+            }
+            return result.toString();
+        } finally {
+            finishTx(tx);
+        }
+    }
+
+    /**
+     * @param rootName
+     * @param creater
+     * @param service
+     */
+    public static Node findorCreateRootInActiveProject(String projectName,String rootName, RunnableWithResult<Node> creater, GraphDatabaseService service) {
+        Node result = findRootNodeByName(projectName,rootName, service);
+        if (result == null) {
+            Transaction tx = beginTx(service);
+            try {
+                creater.run();
+                result = creater.getValue();
+                NeoCorePlugin.getDefault().getProjectService().addDataNodeToProject(projectName, result);
+            } finally {
+                tx.finish();
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Find root node by name.
+     * 
+     * @param projectName the project name
+     * @param rootName the root name
+     * @param service the service
+     * @return the node
+     */
+    public static Node findRootNodeByName(final String projectName, final String rootName, final GraphDatabaseService service) {
+        AweProjectNode project = NeoCorePlugin.getDefault().getProjectService().findAweProject(projectName);
+        if (project == null) {
+            return null;
+        }
+        Transaction tx = beginTx(service);
+        try {
+            Iterator<Node> it = project.getUnderlyingNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    if (currentPos.isStartNode()) {
+                        return false;
+                    }
+                    return rootName.equals(getNodeName(currentPos.currentNode(), service));
+                }
+            }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
+            if (it.hasNext()) {
+                return it.next();
+            }
+            return null;
+        } finally {
+            tx.finish();
         }
     }
 

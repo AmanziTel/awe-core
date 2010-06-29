@@ -558,6 +558,8 @@ public enum NodeTypes {
             return null;
         }
     },
+    AFP("afp"),
+ AFP_CELL("afp_cell"),
     OSS("oss"), 
     GPEH_EVENT("gpeh_event"), 
     OSS_MAIN("oss_main"),

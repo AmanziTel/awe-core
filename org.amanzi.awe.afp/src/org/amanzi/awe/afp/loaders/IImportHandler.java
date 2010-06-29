@@ -11,22 +11,32 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package wizards;
-
-import org.eclipse.jface.wizard.Wizard;
+package org.amanzi.awe.afp.loaders;
 
 /**
  * <p>
- *
+ * Import handler interface
  * </p>
- * @author tsinkel_a
+ * 
+ * @author TsAr
  * @since 1.0.0
  */
-public class AfpImportWizard extends Wizard{
+public interface IImportHandler {
 
-    @Override
-    public boolean performFinish() {
-        return false;
-    }
+    /**
+     * Inits
+     */
+    void init();
 
+    /**
+     * Handle data.
+     * 
+     * @param parameter the parameter
+     */
+    void handleData(IImportParameter parameter);
+
+    /**
+     * Finish.
+     */
+    void finish();
 }

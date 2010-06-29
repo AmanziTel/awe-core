@@ -11,8 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package providers;
+package org.amanzi.awe.afp.providers;
 
+import org.amanzi.awe.afp.wizards.AfpImportWizard;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -34,7 +35,7 @@ public class OpenWizardHandler extends AbstractHandler{
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         IWorkbenchWindow workbenchWindow= HandlerUtil.getActiveWorkbenchWindowChecked(event);
-        IImportWizard wizard = null;
+        IImportWizard wizard = new AfpImportWizard();
         wizard.init(workbenchWindow.getWorkbench(), null);
         Shell parent = workbenchWindow.getShell();
         WizardDialog dialog = new WizardDialog(parent, wizard);

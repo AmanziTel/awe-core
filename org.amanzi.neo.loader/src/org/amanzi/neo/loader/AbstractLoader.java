@@ -29,8 +29,8 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
 import java.util.Map.Entry;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import net.refractions.udig.catalog.CatalogPlugin;
@@ -47,9 +47,9 @@ import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.core.utils.CSVParser;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.loader.NetworkLoader.CRS;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
@@ -117,7 +117,7 @@ public abstract class AbstractLoader {
 
     protected CSVParser parser;
 
-    protected class Header {
+    public class Header {
         private static final int MAX_PROPERTY_VALUE_COUNT = 100; // discard
         // calculate spread after this number of data points
         int index;
@@ -1656,12 +1656,12 @@ public abstract class AbstractLoader {
         return gisNodes.get(name);
     }
 
-    protected class HeaderMaps {
+    public class HeaderMaps {
         protected HashMap<Class< ? extends Object>, List<String>> typedProperties = null;
         protected ArrayList<Pattern> headerFilters = new ArrayList<Pattern>();
         protected LinkedHashMap<String, List<String>> knownHeaders = new LinkedHashMap<String, List<String>>();
         protected LinkedHashMap<String, MappedHeaderRule> mappedHeaders = new LinkedHashMap<String, MappedHeaderRule>();
-        protected LinkedHashMap<String, Header> headers = new LinkedHashMap<String, Header>();
+        public LinkedHashMap<String, Header> headers = new LinkedHashMap<String, Header>();
         protected TreeSet<String> dropStatsHeaders = new TreeSet<String>();
         protected TreeSet<String> nonDataHeaders = new TreeSet<String>();
 
