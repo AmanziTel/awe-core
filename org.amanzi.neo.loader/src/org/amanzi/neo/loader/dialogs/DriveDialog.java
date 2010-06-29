@@ -69,6 +69,7 @@ import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -124,15 +125,20 @@ public class DriveDialog {
      * Minimum width of Shell
      */
     private static final int MINIMUM_WIDTH = 600;
+    
+    /*
+     * Dataset field width
+     */
+    private static final int DATASET_WIDTH = 150;
 
     /*
      * Layout for One column and Fixed Width
      */
-    //private final static GridLayout layoutOneColumnNotFixedWidth = new GridLayout(1, false);
+    private final static GridLayout layoutOneColumnNotFixedWidth = new GridLayout(1, false);
 
     private static final int MAX_NEMO_LINE_READ = 50;
 
-    private static final int FILE_GROUP_WIDTH = 450;
+
 	
 	/*
 	 * Shell of this Dialog
@@ -279,7 +285,8 @@ public class DriveDialog {
 	 */
 	
 	private void createControl(Composite parent) {
-		parent.setLayout(new FormLayout());
+		GridLayout layout = layoutOneColumnNotFixedWidth;
+		parent.setLayout(layout);
 		parent.setLayoutData(new GridData(SWT.FILL));
 		
 		createSelectFileGroup(parent);
@@ -293,7 +300,8 @@ public class DriveDialog {
      */
 
     public void createControlForDialog(Composite parent) {
-        parent.setLayout(new FormLayout());
+        GridLayout layout = layoutOneColumnNotFixedWidth;
+        parent.setLayout(layout);
         parent.setLayoutData(new GridData(SWT.FILL));
         loadButton = new Button(parent, SWT.NONE);
         cancelButton = loadButton;
@@ -309,30 +317,22 @@ public class DriveDialog {
 	 */
 	
 	private void createSelectFileGroup(Composite parent) {
-		Composite prev = createDatasetRow(parent);
+		createDatasetRow(parent);
 		Group group = new Group(parent, SWT.NONE);		
-		group.setLayout(new FormLayout());
-		FormData data = new FormData(); 
-        data.left = new FormAttachment(0, 2);
-        data.top = new FormAttachment(prev, 2);
-        data.width = FILE_GROUP_WIDTH;
-        data.bottom = new FormAttachment(100,-2);
-		group.setLayoutData(data);
-		prev = createFolderSelectionComposite(group);
-		prev = createManipulationComposite(group,prev);
-		createFileToLoadComposite(group,prev);
+		group.setLayout(new GridLayout(3, false));
+		group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		createFolderSelectionComposite(group);
+		createManipulationComposite(group);
+		createFileToLoadComposite(group);
 	}
 /**
  * Creates group for selecting
  * @param parent
  */
-	private Composite createDatasetRow(Composite parent) {
+	private void createDatasetRow(Composite parent) {
 		Composite panel = new Composite(parent, SWT.NONE);
 		panel.setLayout(new FormLayout());
-		FormData data = new FormData(); 
-        data.left = new FormAttachment(0, 2);
-        data.top = new FormAttachment(0, 2);
-        data.right = new FormAttachment(100,-2);
+		GridData data = new GridData(SWT.FILL, SWT.BOTTOM, true, false);
 		panel.setLayoutData(data);
 
         ldataset = new Label(panel, SWT.NONE);
@@ -346,7 +346,7 @@ public class DriveDialog {
         FormData dCombo = new FormData(); 
         dCombo.left = new FormAttachment(ldataset, 5);
         dCombo.top = new FormAttachment(0, 2);
-        dCombo.right = new FormAttachment(40,3);
+        dCombo.width = DATASET_WIDTH;
         cDataset.setLayoutData(dCombo);
         
         //TODO: Check if the following line is needed
@@ -378,7 +378,6 @@ public class DriveDialog {
                 widgetSelected(e);
             }
         });
-        return panel;
 	}
 
     /**
@@ -409,57 +408,38 @@ public class DriveDialog {
      * @param parent
      */
 	
-	private Composite createFolderSelectionComposite(Composite parent) {
+	private void createFolderSelectionComposite(Composite parent) {
 		Composite panel = new Composite(parent, SWT.NONE);
-		panel.setLayout(new FormLayout());
-		FormData data = new FormData(); 
-        data.left = new FormAttachment(0, 5);
-        data.top = new FormAttachment(0, 2);
-        data.bottom = new FormAttachment(100,-2);
-        data.width = 2*FILE_GROUP_WIDTH/5;
-        panel.setLayoutData(data);
+		panel.setLayout(layoutOneColumnNotFixedWidth);		
+		panel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
 		folderFilesList = createSelectionList(panel, NeoLoaderPluginMessages.DriveDialog_FilesToChooseListLabel);
-		return panel;
 	}
 	
 	/**
 	 * Creates Buttons for manipulations
 	 * 
 	 * @param parent
-	 */	
-	private Composite createManipulationComposite(Composite parent, Composite prev) {
+	 */
+	
+	private void createManipulationComposite(Composite parent) {
 		Composite panel = new Composite(parent, SWT.NONE);
-		panel.setLayout(new FormLayout());
-		FormData data = new FormData(); 
-        data.left = new FormAttachment(prev, 2);
-        data.top = new FormAttachment(0, 2);
-        data.bottom = new FormAttachment(100,-2);
-		panel.setLayoutData(data);
+		panel.setLayout(layoutOneColumnNotFixedWidth);
+		panel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true));
 		
 		Composite choosePanel = new Composite(panel, SWT.NONE);
-		choosePanel.setLayout(new FormLayout());
-		data = new FormData(); 
-        data.left = new FormAttachment(0, 2);
-        data.top = new FormAttachment(0, 2);
-        data.right = new FormAttachment(100,-2);
-        choosePanel.setLayoutData(data);		
-		browseDialogButton = createChooseButton(choosePanel,null, NeoLoaderPluginMessages.DriveDialog_BrowseButtonText, SWT.TOP);
+		choosePanel.setLayout(layoutOneColumnNotFixedWidth);
+		choosePanel.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));		
+		browseDialogButton = createChooseButton(choosePanel, NeoLoaderPluginMessages.DriveDialog_BrowseButtonText, SWT.TOP);
 		
 		Composite actionPanel = new Composite(panel, SWT.NONE);
-		actionPanel.setLayout(new FormLayout());
-		data = new FormData(); 
-        data.left = new FormAttachment(0, 2);
-        data.top = new FormAttachment(choosePanel, 20);
-        data.right = new FormAttachment(100,-2);
-        data.bottom = new FormAttachment(100,-20);
-		actionPanel.setLayoutData(data);
+		actionPanel.setLayout(layoutOneColumnNotFixedWidth);
+		actionPanel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
 		
-		removeAllFilesFromLoaded = createChooseButton(actionPanel,null, NeoLoaderPluginMessages.DriveDialog_RemoveAllButtonText, SWT.CENTER);
-		removeFilesFromLoaded = createChooseButton(actionPanel,removeAllFilesFromLoaded, NeoLoaderPluginMessages.DriveDialog_RemoveButtonText, SWT.CENTER);
-        addAllFilesToLoaded = createChooseButton(actionPanel,removeFilesFromLoaded, NeoLoaderPluginMessages.DriveDialog_AddAllButtonText, SWT.CENTER);
-        addFilesToLoaded = createChooseButton(actionPanel,addAllFilesToLoaded, NeoLoaderPluginMessages.DriveDialog_AddButtonText, SWT.CENTER);
-        return panel;
+		addFilesToLoaded = createChooseButton(actionPanel, NeoLoaderPluginMessages.DriveDialog_AddButtonText, SWT.CENTER);
+        addAllFilesToLoaded = createChooseButton(actionPanel, NeoLoaderPluginMessages.DriveDialog_AddAllButtonText, SWT.CENTER);
+		removeFilesFromLoaded = createChooseButton(actionPanel, NeoLoaderPluginMessages.DriveDialog_RemoveButtonText, SWT.CENTER);
+        removeAllFilesFromLoaded = createChooseButton(actionPanel, NeoLoaderPluginMessages.DriveDialog_RemoveAllButtonText, SWT.CENTER);
 	}
 	
 	/**
@@ -468,15 +448,10 @@ public class DriveDialog {
 	 * @param parent
 	 */
 	
-	private void createFileToLoadComposite(Composite parent, Composite prev) {
+	private void createFileToLoadComposite(Composite parent) {
 		Composite panel = new Composite(parent, SWT.NONE);
-		panel.setLayout(new FormLayout());
-		FormData data = new FormData(); 
-        data.left = new FormAttachment(prev, 2);
-        data.top = new FormAttachment(0, 2);
-        data.bottom = new FormAttachment(100,-2);
-        data.width = 2*FILE_GROUP_WIDTH/5;
-		panel.setLayoutData(data);
+		panel.setLayout(layoutOneColumnNotFixedWidth);		
+		panel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
 		filesToLoadList = createSelectionList(panel, NeoLoaderPluginMessages.DriveDialog_FilesToLoadListLabel);
 	}
@@ -490,9 +465,7 @@ public class DriveDialog {
 	private void createFinishButtons(Composite parent) {
 		Composite panel = new Composite(parent, SWT.NONE);
 		panel.setLayout(new FormLayout());
-		FormData data = new FormData();
-        data.right = new FormAttachment(100, -2);
-        data.bottom = new FormAttachment(100, -2);	
+		GridData data = new GridData(SWT.FILL, SWT.BOTTOM, true, false);	
 		panel.setLayoutData(data);
 		
 		cancelButton = new Button(panel, SWT.CENTER);
@@ -524,19 +497,10 @@ public class DriveDialog {
 	 * @return created Button
 	 */
 	
-	private Button createChooseButton(Composite parent,Button prev, String label, int position) {
+	private Button createChooseButton(Composite parent, String label, int position) {
 		Button button = new Button(parent, SWT.NONE);
 		button.setText(label);
-		FormData data = new FormData();
-        data.left = new FormAttachment(0, 2);
-        data.right = new FormAttachment(100, -2);
-        if (prev==null) {
-            data.bottom = new FormAttachment(100, -2);
-        }else{
-            data.bottom = new FormAttachment(prev, -2);
-        }
-        
-        button.setLayoutData(data);
+		button.setLayoutData(new GridData(SWT.FILL, position, true, true));
 		
 		return button;
 	}
@@ -552,18 +516,12 @@ public class DriveDialog {
 	private List createSelectionList(Composite parent, String label) {
 		Label listLabel = new Label(parent, SWT.NONE);
 		listLabel.setText(label);
-		FormData data = new FormData(); 
-        data.left = new FormAttachment(0, 2);
-        data.top = new FormAttachment(0, 2);
-        listLabel.setLayoutData(data);
+		listLabel.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false));
 		
 		List list = new List(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
-		data = new FormData(); 
-        data.left = new FormAttachment(0, 2);
-        data.top = new FormAttachment(listLabel, 2);
-        data.right = new FormAttachment(100,-2);
-        data.bottom = new FormAttachment(100,-2);
-		list.setLayoutData(data);		
+		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
+		gridData.minimumWidth = 150;
+		list.setLayoutData(gridData);		
 		
 		return list;
 	}
