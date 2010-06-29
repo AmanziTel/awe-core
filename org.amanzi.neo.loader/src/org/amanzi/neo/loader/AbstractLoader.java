@@ -88,20 +88,20 @@ public abstract class AbstractLoader {
     // protected HashMap<Integer, Pair<Long, Long>> timeStamp = new HashMap<Integer, Pair<Long,
     // Long>>();
     protected HashMap<Integer, StoringProperty> storingProperties = new HashMap<Integer, StoringProperty>();
-    private String typeName = "CSV";
+    protected String typeName = "CSV";
     protected GraphDatabaseService neo;
     private NeoServiceProvider neoProvider;
     protected HashMap<String, GisProperties> gisNodes = new HashMap<String, GisProperties>();
     protected String filename = null;
     protected String basename = null;
-    private Display display;
+    protected Display display;
     private String fieldSepRegex;
     protected String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
     protected int lineNumber = 0;
     private int limit = 0;
     private long savedData = 0;
     private long started = System.currentTimeMillis();
-    private boolean headerWasParced;
+    protected boolean headerWasParced;
 
     // private ArrayList<MultiPropertyIndex<?>> indexes = new
     // ArrayList<MultiPropertyIndex<?>>();
@@ -518,7 +518,7 @@ public abstract class AbstractLoader {
      * @param fileName name of file to load
      * @param display Display to use for scheduling plugin lookups and message boxes, or null
      */
-    protected final void initialize(String typeString, GraphDatabaseService neoService, String filenameString, Display display) {
+    protected void initialize(String typeString, GraphDatabaseService neoService, String filenameString, Display display) {
         if (typeString != null && !typeString.isEmpty()) {
             this.typeName = typeString;
         }
@@ -528,7 +528,7 @@ public abstract class AbstractLoader {
         this.basename = (new File(filename)).getName();
     }
 
-    private void initializeNeo(GraphDatabaseService neoService, Display display) {
+    protected void initializeNeo(GraphDatabaseService neoService, Display display) {
         if (neoService == null) {
             // if Display is given than start Neo using syncExec
             if (display != null) {

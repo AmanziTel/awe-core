@@ -37,7 +37,7 @@ import org.neo4j.graphdb.Traverser;
 import org.neo4j.index.lucene.LuceneIndexService;
 
 public abstract class DriveLoader extends AbstractLoader {
-	
+
     protected DriveTypes driveType;
     protected String dataset = null;
     protected Node file = null;
@@ -50,20 +50,20 @@ public abstract class DriveLoader extends AbstractLoader {
     private int countValidChanged = 0;
     protected Integer hours = null;
     protected Calendar _workDate = null;
-    private boolean needParceHeader = true;
-    
+    protected boolean needParceHeader = true;
+
     protected GisTypes gisType;
-    
+
     /** How many units of work for the progress monitor for each file */
     public static final int WORKED_PER_FILE = 100;
-    
-    //TODO: Lagutko, 17.12.2009, maybe create this indexes on rendering but not on importing? 
+
+    // TODO: Lagutko, 17.12.2009, maybe create this indexes on rendering but not on importing?
     protected static LuceneIndexService index;
-    
+
     protected final HashMap<String, Node> virtualDatasets = new HashMap<String, Node>();
 
     /**
-     * Initialize Loader with a specified set of parameters 
+     * Initialize Loader with a specified set of parameters
      * 
      * @param type defaults to 'Drive' if empty
      * @param neoService defaults to looking up from Neoclipse if null
@@ -78,12 +78,12 @@ public abstract class DriveLoader extends AbstractLoader {
         } else {
             this.dataset = datasetName.trim();
         }
-        
+
         if (gisType == null) {
-        	gisType = GisTypes.DRIVE;
+            gisType = GisTypes.DRIVE;
         }
     }
-    
+
     @Override
     protected String getDataName() {
         return dataset;
@@ -131,35 +131,39 @@ public abstract class DriveLoader extends AbstractLoader {
         }
         return gisProperties.getGis();
     }
+
     @Override
     public void clearCaches() {
         super.clearCaches();
         this.stats.clear();
     }
-    
+
     protected void initializeLuceneIndex() {
-    	index = NeoServiceProvider.getProvider().getIndexService();
+        index = NeoServiceProvider.getProvider().getIndexService();
     }
-    
+
     protected final void addStats(int pn_code, int ec_io) {
-        if(!stats.containsKey(pn_code)) this.stats.put(pn_code,new int[2]);
-        stats.get(pn_code)[0]+=1;
-        stats.get(pn_code)[1]+=ec_io;
+        if (!stats.containsKey(pn_code))
+            this.stats.put(pn_code, new int[2]);
+        stats.get(pn_code)[0] += 1;
+        stats.get(pn_code)[1] += ec_io;
     }
 
     /**
-     * Finds or create necessary file node, including finding or creating related dataset and gis nodes.
+     * Finds or create necessary file node, including finding or creating related dataset and gis
+     * nodes.
      * 
      * @param measurement point to add as first point to file node if created
      */
     protected void findOrCreateVirtualFileNode(Node firstChildNode) {
-        findOrCreateVirtualFileNode(firstChildNode,DriveTypes.MS);
+        findOrCreateVirtualFileNode(firstChildNode, DriveTypes.MS);
     }
-    protected void findOrCreateVirtualFileNode(Node firstChildNode,DriveTypes type) {
+
+    protected void findOrCreateVirtualFileNode(Node firstChildNode, DriveTypes type) {
         if (virtualFile == null) {
             Transaction tx = neo.beginTx();
             try {
-                Node virtualDatasetNode = getVirtualDataset(type,false);
+                Node virtualDatasetNode = getVirtualDataset(type, false);
                 Pair<Boolean, Node> pair = NeoUtils.findOrCreateFileNode(neo, virtualDatasetNode, basename, filename);
                 virtualFile = pair.getRight();
                 virtualFile.createRelationshipTo(firstChildNode, GeoNeoRelationshipTypes.CHILD);
@@ -190,8 +194,8 @@ public abstract class DriveLoader extends AbstractLoader {
             try {
                 Node reference = neo.getReferenceNode();
                 datasetNode = findOrCreateDatasetNode(reference, dataset);
-                Pair<Boolean, Node> pair = NeoUtils.findOrCreateFileNode(neo, datasetNode,basename,filename);
-                file=pair.getRight();
+                Pair<Boolean, Node> pair = NeoUtils.findOrCreateFileNode(neo, datasetNode, basename, filename);
+                file = pair.getRight();
 
                 Node mainFileNode = datasetNode == null ? file : datasetNode;
                 file.createRelationshipTo(firstChild, GeoNeoRelationshipTypes.CHILD);
@@ -199,20 +203,18 @@ public abstract class DriveLoader extends AbstractLoader {
 
                 Object time = null;
                 if (firstChild.hasProperty(INeoConstants.PROPERTY_TIME_NAME)) {
-                	time = firstChild.getProperty(INeoConstants.PROPERTY_TIME_NAME);
+                    time = firstChild.getProperty(INeoConstants.PROPERTY_TIME_NAME);
+                } else if (firstChild.hasProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME)) {
+                    time = firstChild.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME);
                 }
-                else if (firstChild.hasProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME)) {
-                	time = firstChild.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME);
-                }
-                debug("Added '" + time + "' as first measurement of '"
-                        + file.getProperty(INeoConstants.PROPERTY_FILENAME_NAME));
+                debug("Added '" + time + "' as first measurement of '" + file.getProperty(INeoConstants.PROPERTY_FILENAME_NAME));
                 tx.success();
             } finally {
                 tx.finish();
             }
         }
     }
-    
+
     protected Transaction commit(Transaction tx) {
         if (tx != null) {
             flushIndexes();
@@ -231,7 +233,7 @@ public abstract class DriveLoader extends AbstractLoader {
      * @return dataset node
      */
     protected final Node findOrCreateDatasetNode(Node root, final String datasetName) {
-    	
+
         if (datasetName == null || datasetName.isEmpty()) {
             return null;
         }
@@ -248,12 +250,13 @@ public abstract class DriveLoader extends AbstractLoader {
         return result;
     }
 
-    protected final static String propertiesString(Node node){
+    protected final static String propertiesString(Node node) {
         StringBuffer properties = new StringBuffer();
-        for(String property:node.getPropertyKeys()) {
-            if(properties.length()>0) properties.append(", ");
+        for (String property : node.getPropertyKeys()) {
+            if (properties.length() > 0)
+                properties.append(", ");
             properties.append(property).append(" => ").append(node.getProperty(property));
-            if(properties.length()>80) {
+            if (properties.length() > 80) {
                 properties.append("...");
                 break;
             }
@@ -275,34 +278,36 @@ public abstract class DriveLoader extends AbstractLoader {
             notify("\t" + pn_code + " measured " + pn_counts[0] + " times (average Ec/Io = " + pn_counts[1] / pn_counts[0] + ")");
         }
         if (file != null) {
-        	if (verbose) {
-        		printMeasurements(file);
-        	}
+            if (verbose) {
+                printMeasurements(file);
+            }
         } else {
             error("No measurement file node found");
         }
     }
 
-    private void printMeasurement(Node measurement){
-        info("Found measurement: "+propertiesString(measurement)+" --- "+childrenString(measurement));
+    private void printMeasurement(Node measurement) {
+        info("Found measurement: " + propertiesString(measurement) + " --- " + childrenString(measurement));
     }
 
-    private String childrenString(Node node){
+    private String childrenString(Node node) {
         StringBuffer sb = new StringBuffer();
-        for(Relationship relationship:node.getRelationships(MeasurementRelationshipTypes.CHILD,Direction.OUTGOING)){
-            if(sb.length()>0) sb.append(", ");
+        for (Relationship relationship : node.getRelationships(MeasurementRelationshipTypes.CHILD, Direction.OUTGOING)) {
+            if (sb.length() > 0)
+                sb.append(", ");
             Node ms = relationship.getEndNode();
-            if(ms.hasProperty(INeoConstants.PRPOPERTY_CHANNEL_NAME)){
+            if (ms.hasProperty(INeoConstants.PRPOPERTY_CHANNEL_NAME)) {
                 sb.append(ms.getProperty(INeoConstants.PRPOPERTY_CHANNEL_NAME)).append(":");
                 sb.append(ms.getProperty(INeoConstants.PROPERTY_CODE_NAME)).append("=");
-                sb.append((ms.getProperty(INeoConstants.PROPERTY_DBM_NAME).toString()+"000000").substring(0,6));
-            }else{
+                sb.append((ms.getProperty(INeoConstants.PROPERTY_DBM_NAME).toString() + "000000").substring(0, 6));
+            } else {
                 sb.append(propertiesString(ms));
             }
         }
-        return sb.toString();       
+        return sb.toString();
     }
-    private void printMeasurements(Node file){
+
+    private void printMeasurements(Node file) {
         if (file == null)
             return;
         Transaction transaction = neo.beginTx();
@@ -311,16 +316,14 @@ public abstract class DriveLoader extends AbstractLoader {
             MEASUREMENTS: for (Relationship relationship : file.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
                 Node measurement = relationship.getEndNode();
                 printMeasurement(measurement);
-                Iterator<Relationship> relationships = measurement.getRelationships(GeoNeoRelationshipTypes.NEXT,
-                        Direction.OUTGOING).iterator();
+                Iterator<Relationship> relationships = measurement.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
                 while (relationships.hasNext()) {
                     relationship = relationships.next();
                     measurement = relationship.getEndNode();
                     printMeasurement(measurement);
-                    relationships = measurement.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)
-                            .iterator();
+                    relationships = measurement.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
                     count++;
-                    if(count>20) {
+                    if (count > 20) {
                         notify("Exiting statistics after 100 measurement points");
                         break MEASUREMENTS;
                     }
@@ -348,8 +351,7 @@ public abstract class DriveLoader extends AbstractLoader {
 
     public static void printTimesStats() {
         if (times != null && times[0] != 0) {
-        System.err.println("Finished " + times[0] + " loads in " + times[1] / 60000.0 + " minutes (average "
-                + (times[1] / times[0]) / 1000.0 + " seconds per load)");
+            System.err.println("Finished " + times[0] + " loads in " + times[1] / 60000.0 + " minutes (average " + (times[1] / times[0]) / 1000.0 + " seconds per load)");
         }
     }
 
@@ -373,7 +375,7 @@ public abstract class DriveLoader extends AbstractLoader {
     @Override
     protected void finishUp() {
         super.finishUp();
-        super.cleanupGisNode();//(datasetNode == null ? file : datasetNode);
+        super.cleanupGisNode();// (datasetNode == null ? file : datasetNode);
     }
 
     /**
@@ -384,10 +386,12 @@ public abstract class DriveLoader extends AbstractLoader {
     protected Node getRootNode() {
         return datasetNode != null ? datasetNode : file;
     }
-@Override
-public Node[] getRootNodes() {
-    return new Node[]{datasetNode};
-}
+
+    @Override
+    public Node[] getRootNodes() {
+        return new Node[] {datasetNode};
+    }
+
     /**
      * get Timestamp of nodeDate
      * 
@@ -413,36 +417,36 @@ public Node[] getRootNodes() {
         updateTimestampMinMax(key, timestamp);
         return timestamp;
     }
-	
-	public Node getDatasetNode() {
+
+    public Node getDatasetNode() {
         return datasetNode;
     }
-	
-	/**
-	 * Returns a Virtual Dataset by it's name
-	 *
-	 * @param name name of Dataset
-	 * @param datasetType type of Dataset
-	 * @return dataset node
-	 */
-    protected Node getVirtualDataset(DriveTypes datasetType,boolean haveGis) {
+
+    /**
+     * Returns a Virtual Dataset by it's name
+     * 
+     * @param name name of Dataset
+     * @param datasetType type of Dataset
+     * @return dataset node
+     */
+    protected Node getVirtualDataset(DriveTypes datasetType, boolean haveGis) {
         final String name = datasetType.getFullDatasetName(dataset);
-		Node virtualDataset = virtualDatasets.get(name);
-		if (virtualDataset != null) {
-			return virtualDataset;
-		}
-		virtualDataset = NeoUtils.findOrCreateVirtualDatasetNode(datasetNode, datasetType, neo);
-		//also we should create a GIS node for this dataset
-		if (haveGis){
-		    findOrCreateGISNode(virtualDataset, GisTypes.DRIVE.getHeader());
-		}
-		
-		if (virtualDataset != null) {
-		    virtualDatasets.put(name, virtualDataset);
-		}
-		
-		return virtualDataset;
-	}
+        Node virtualDataset = virtualDatasets.get(name);
+        if (virtualDataset != null) {
+            return virtualDataset;
+        }
+        virtualDataset = NeoUtils.findOrCreateVirtualDatasetNode(datasetNode, datasetType, neo);
+        // also we should create a GIS node for this dataset
+        if (haveGis) {
+            findOrCreateGISNode(virtualDataset, GisTypes.DRIVE.getHeader());
+        }
+
+        if (virtualDataset != null) {
+            virtualDatasets.put(name, virtualDataset);
+        }
+
+        return virtualDataset;
+    }
 
     @Override
     protected boolean needParceHeaders() {

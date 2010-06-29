@@ -203,7 +203,7 @@ public class GPEHLoader extends DriveLoader {
                             int recordLen = input.readRawUInt(16) - 3;
                             int recordType = input.readRawUInt(8);
                             if (recordType == 4) {
-                                GPEHParser.parseEvent(input, result, recordLen);
+                                GPEHParser.parseEvent(input, result, recordLen, avaliableEvents);
                                 eventsCount++;
                                 cn++;
                             } else if (recordType == 7) {

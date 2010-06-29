@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.wizards;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 
@@ -24,9 +26,9 @@ import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
@@ -34,9 +36,10 @@ import org.eclipse.swt.widgets.Text;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Traverser;
 
+
 /**
  * <p>
- * Import drive data from url wizard
+ * Wizard page for import dataset from url
  * </p>
  * 
  * @author NiCK
@@ -44,16 +47,24 @@ import org.neo4j.graphdb.Traverser;
  */
 public class DatasetImportUrlWizardPage extends WizardPage {
 
-    private Button bLoad;
+    /** The c dataset. */
     private Combo cDataset;
+
+    /** The url. */
     private Text fUrl;
+
+    /** The url. */
     private String url;
 
+    /** The l url. */
+    private Label lUrl;
+
+
     /**
-     * Constructor
+     * Instantiates a new dataset import url wizard page.
      * 
-     * @param pageTitle
-     * @param pageDescr
+     * @param pageTitle the page title
+     * @param pageDescr the page descr
      */
     public DatasetImportUrlWizardPage(String pageTitle, String pageDescr) {
         super(pageTitle);
@@ -61,12 +72,17 @@ public class DatasetImportUrlWizardPage extends WizardPage {
         setDescription(pageDescr);
     }
 
+    /**
+     * Creates the control.
+     * 
+     * @param parent the parent
+     */
     @Override
     public void createControl(Composite parent) {
         Composite main = new Composite(parent, SWT.FILL);
         main.setLayout(new GridLayout(2, false));
 
-        Label lUrl = new Label(main, SWT.NONE);
+        lUrl = new Label(main, SWT.NONE);
         lUrl.setText("URL:");
         lUrl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 
@@ -100,51 +116,58 @@ public class DatasetImportUrlWizardPage extends WizardPage {
         Arrays.sort(items);
         cDataset.setItems(items);
 
-        // bLoad = createButton(main, "Load");
-
         setControl(main);
         validateFinish();
     }
 
+    /**
+     * Load url.
+     */
     private void loadUrl() {
         url = NeoLoaderPlugin.getDefault().getPreferenceStore().getString(DataLoadPreferences.REMOTE_SERVER_URL);
     }
 
     /**
-     * Create button
-     * 
-     * @param parent parent composite
-     * @param name visible name
-     * @return Button
-     */
-    private Button createButton(Composite parent, String name) {
-        Button button = new Button(parent, SWT.PUSH);
-        button.setText(name);
-        button.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false));
-        return button;
-    }
-
-    /**
-     *check correct input
+     * Validate finish.
      */
     private void validateFinish() {
         setPageComplete(isValidPage());
     }
 
     /**
-     * @return
+     * Checks if is valid page.
+     * 
+     * @return true, if is valid page
      */
     private boolean isValidPage() {
-        // return true;
-        return url != null && !url.isEmpty();
+        if (url != null && !url.isEmpty()) {
+            try {
+                new URL(url);
+            } catch (MalformedURLException e) {
+                lUrl.setForeground(new Color(null, 255, 0, 0));
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
 
     /**
-     * @return Returns the url.
+     * Gets the url.
+     * 
+     * @return the url
      */
     public String getUrl() {
         return url;
     }
 
+    /**
+     * Gets the dataset.
+     * 
+     * @return the dataset
+     */
+    public String getDataset() {
+        return cDataset.getText();
+    }
 
 }

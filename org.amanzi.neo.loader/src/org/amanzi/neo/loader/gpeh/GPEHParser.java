@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.rmi.UnexpectedException;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
@@ -39,7 +40,7 @@ import org.kc7bfi.jflac.io.BitInputStream;
  */
 public class GPEHParser {
     private static final Logger LOGGER = Logger.getLogger(GPEHParser.class);
-    
+
     public static GPEHMainFile parseMainFile(File mainFile) throws IOException {
         GPEHMainFile result = new GPEHMainFile(mainFile);
         InputStream in = new FileInputStream(mainFile);
@@ -161,8 +162,8 @@ public class GPEHParser {
         record.filterType = input.readRawUInt(8);
         if (recordLen > 4) {
             byte[] buffer = new byte[recordLen - 4];
-            for (int i=0;i<buffer.length;i++) {
-                buffer[i]=(byte)input.readRawUInt(8);
+            for (int i = 0; i < buffer.length; i++) {
+                buffer[i] = (byte)input.readRawUInt(8);
             }
             record.saveFilters(buffer);
         }
@@ -215,7 +216,9 @@ public class GPEHParser {
     public static void main(String[] args) throws IOException {
         // parseMainFile(new
         // File("d://AWE/GPEH/Avea_Niste01_30min_GPEH_trace/A20090706.1700+0300-1715+0300_SubNetwork=NISTE01,MeContext=NISTE01_rnc_gpehfile_Mp0.bin.gz"));
-        parseEventFile(new File("d://AWE/GPEH/Avea_Niste01_30min_GPEH_trace/A20090706.1700+0300-1715+0300_SubNetwork=NISTE01,MeContext=NISTE01_rnc_gpehfile_Mp1.bin.gz"));
+
+        // parseEventFile(new
+        // File("d://AWE/GPEH/Avea_Niste01_30min_GPEH_trace/A20090706.1700+0300-1715+0300_SubNetwork=NISTE01,MeContext=NISTE01_rnc_gpehfile_Mp1.bin.gz"));
     }
 
     /**
@@ -223,7 +226,7 @@ public class GPEHParser {
      * @throws IOException
      * @throws
      */
-    public static GPEHEvent parseEventFile(File file) throws IOException {
+    public static GPEHEvent parseEventFile(File file, Set<Integer> possibleIds) throws IOException {
         GPEHEvent result = new GPEHEvent();
         InputStream in = new FileInputStream(file);
         if (Pattern.matches("^.+\\.gz$", file.getName())) {
@@ -232,7 +235,7 @@ public class GPEHParser {
         BitInputStream input = new BitInputStream(in);
         try {
             while (true) {
-                parseSubFile(input, result);
+                parseSubFile(input, result, possibleIds);
             }
         } catch (EOFException e) {
             // normal behavior
@@ -248,11 +251,11 @@ public class GPEHParser {
      * @param input input stream
      * @param result GPEHEvent
      */
-    public static void parseSubFile(BitInputStream input, GPEHEvent result) throws IOException {
+    public static void parseSubFile(BitInputStream input, GPEHEvent result, Set<Integer> possibleIds) throws IOException {
         int recordLen = input.readRawUInt(16) - 3;
         int recordType = input.readRawUInt(8);
         if (recordType == 4) {
-            parseEvent(input, result, recordLen);
+            parseEvent(input, result, recordLen, possibleIds);
         } else if (recordType == 7) {
             pareseFooter(input, result);
         } else if (recordType == 6) {
@@ -271,18 +274,26 @@ public class GPEHParser {
      * @param recordLen length of event
      * @throws IOException
      */
-    public static void parseEvent(BitInputStream input, GPEHEvent result, int recordLen) throws IOException {
+    public static void parseEvent(BitInputStream input, GPEHEvent result, int recordLen, Set<Integer> possibleIds) throws IOException {
         GPEHEvent.Event event = new GPEHEvent.Event();
 
         event.scannerId = (Integer)readParameter(input, Parameters.EVENT_PARAM_SCANNER_ID).getLeft();
         event.hour = (Integer)readParameter(input, Parameters.EVENT_PARAM_TIMESTAMP_HOUR).getLeft();
         event.minute = (Integer)readParameter(input, Parameters.EVENT_PARAM_TIMESTAMP_MINUTE).getLeft();
         event.second = (Integer)readParameter(input, Parameters.EVENT_PARAM_TIMESTAMP_SECOND).getLeft();
-        event.millisecond =(Integer)readParameter(input, Parameters.EVENT_PARAM_TIMESTAMP_MILLISEC).getLeft();
+        event.millisecond = (Integer)readParameter(input, Parameters.EVENT_PARAM_TIMESTAMP_MILLISEC).getLeft();
         event.id = (Integer)readParameter(input, Parameters.EVENT_PARAM_EVENT_ID).getLeft();
-        int len = 24 + 5 + 6 + 6 + 11 + 11;
-        Events events = Events.findById(event.id);
+
         final int recLen = recordLen * 8;
+        int len = 24 + 5 + 6 + 6 + 11 + 11;
+
+        if (!possibleIds.contains(event.id)) {
+            // LOGGER.debug("EventID = " + event.id + " skipped");
+            input.skipBitsNoCRC(recLen - len);
+            return;
+        }
+        // LOGGER.debug("EventID = " + event.id + " passed");
+        Events events = Events.findById(event.id);
         boolean parseOk = false;
         if (events != null) {
             parseOk = true;
@@ -290,14 +301,14 @@ public class GPEHParser {
             // TODO debug
             List<Parameters> allParameters = events.getAllParameters();
             for (Parameters parameter : allParameters) {
-                int maxBitLen = recLen-len;
-                if (parameter==Parameters.EVENT_PARAM_MESSAGE_CONTENTS){
-                     Integer lenMsg=(Integer)event.getProperties().get(Parameters.EVENT_PARAM_MESSAGE_LENGTH);
-                     if (lenMsg!=null){
-                         maxBitLen=Math.min(lenMsg*8, maxBitLen);
-                     }
+                int maxBitLen = recLen - len;
+                if (parameter == Parameters.EVENT_PARAM_MESSAGE_CONTENTS) {
+                    Integer lenMsg = (Integer)event.getProperties().get(Parameters.EVENT_PARAM_MESSAGE_LENGTH);
+                    if (lenMsg != null) {
+                        maxBitLen = Math.min(lenMsg * 8, maxBitLen);
+                    }
                 }
-                final Pair<Object, Integer> readParameter = readParameter(input, parameter,maxBitLen);
+                final Pair<Object, Integer> readParameter = readParameter(input, parameter, maxBitLen);
                 event.addProperty(parameter, readParameter.getLeft());
                 int bitsLen = readParameter.getRight();
                 len += bitsLen;
@@ -313,7 +324,7 @@ public class GPEHParser {
             if (parseOk && len + 32 < recLen) {
                 LOGGER.debug("Wrong parsing !\t" + event.id);
             }
-        }else if (len>recLen){
+        } else if (len > recLen) {
             throw new UnexpectedException("to large");
         }
         // LOGGER.debug(event.id);
@@ -352,11 +363,12 @@ public class GPEHParser {
      * @param input - BitInputStream
      * @param parameter - parameter
      * @return readed value
-     * @throws IOException 
+     * @throws IOException
      */
-    private static Pair<Object,Integer> readParameter(BitInputStream input, Parameters parameter) throws IOException {
-        return readParameter( input,  parameter,parameter.getBitsLen());
+    private static Pair<Object, Integer> readParameter(BitInputStream input, Parameters parameter) throws IOException {
+        return readParameter(input, parameter, parameter.getBitsLen());
     }
+
     /**
      *Read value
      * 
@@ -364,53 +376,52 @@ public class GPEHParser {
      * @param parameter - parameter
      * @param maxBitLen- maximum of readed bits
      * @return readed value
-     * @throws IOException 
+     * @throws IOException
      */
-    private static Pair<Object,Integer> readParameter(BitInputStream input, Parameters parameter,int maxBitLen) throws IOException {
-        
-        int bitsLen = Math.min(parameter.getBitsLen(),maxBitLen);
+    private static Pair<Object, Integer> readParameter(BitInputStream input, Parameters parameter, int maxBitLen) throws IOException {
+
+        int bitsLen = Math.min(parameter.getBitsLen(), maxBitLen);
         int bitsLenToRead = bitsLen;
-        if (parameter.firstBitIsError()){
+        if (parameter.firstBitIsError()) {
             int bit = input.readRawUInt(1);
-            if (bit!=0){
-                input.readRawULong(bitsLen-1);
-                return new Pair<Object,Integer>(null,bitsLen);
-            } 
-            bitsLenToRead=bitsLenToRead-1;
+            if (bit != 0) {
+                input.readRawULong(bitsLen - 1);
+                return new Pair<Object, Integer>(null, bitsLen);
+            }
+            bitsLenToRead = bitsLenToRead - 1;
         }
         switch (parameter.getRule()) {
         case INTEGER:
-            return new Pair<Object,Integer>(input.readRawUInt(bitsLenToRead),bitsLen);
+            return new Pair<Object, Integer>(input.readRawUInt(bitsLenToRead), bitsLen);
         case LONG:
-            return new Pair<Object,Integer>(input.readRawULong(bitsLenToRead),bitsLen);
+            return new Pair<Object, Integer>(input.readRawULong(bitsLenToRead), bitsLen);
         case STRING:
-            Pair<String, Integer> result=readString(input, bitsLen);
-            return new Pair<Object,Integer>(result.left(),result.right());
+            Pair<String, Integer> result = readString(input, bitsLen);
+            return new Pair<Object, Integer>(result.left(), result.right());
         case BITARRAY:
-            return new Pair<Object,Integer>(readBitArray(input,bitsLen),bitsLen);
+            return new Pair<Object, Integer>(readBitArray(input, bitsLen), bitsLen);
         default:
             break;
         }
         return null;
     }
 
-
     /**
      * Read bit array.
-     *
+     * 
      * @param input the input
      * @param bitsLen the bits len
      * @return the byte[]
      * @throws IOException Signals that an I/O exception has occurred.
      */
     private static byte[] readBitArray(BitInputStream input, int bitsLen) throws IOException {
-        byte[] result=new byte[(int)Math.ceil((double)bitsLen/8)];
+        byte[] result = new byte[(int)Math.ceil((double)bitsLen / 8)];
         int count = 0;
-        int i=0;
-        while (count  < bitsLen) {
-            int readbit = Math.min(8, bitsLen-count);
+        int i = 0;
+        while (count < bitsLen) {
+            int readbit = Math.min(8, bitsLen - count);
             int byteSymb = input.readRawInt(readbit);
-            result[i]=(byte)byteSymb;
+            result[i] = (byte)byteSymb;
             count += readbit;
             i++;
         }
@@ -425,7 +436,7 @@ public class GPEHParser {
      * @throws IOException
      * @throws NumberFormatException
      */
-    private static Pair<String, Integer> readString( BitInputStream input, int len) throws NumberFormatException, IOException {
+    private static Pair<String, Integer> readString(BitInputStream input, int len) throws NumberFormatException, IOException {
         int count = 0;
         StringBuilder result = new StringBuilder();
         while (count + 8 <= len) {
@@ -438,6 +449,7 @@ public class GPEHParser {
         }
         return new Pair<String, Integer>(result.toString(), count);
     }
+
     /**
      * @param bits
      * @param input
@@ -446,7 +458,7 @@ public class GPEHParser {
      * @throws IOException
      * @throws NumberFormatException
      */
-    private static String readAllString( BitInputStream input, int len) throws NumberFormatException, IOException {
+    private static String readAllString(BitInputStream input, int len) throws NumberFormatException, IOException {
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < len; i++) {
             int byteSymb = input.readRawInt(8);
@@ -457,6 +469,5 @@ public class GPEHParser {
         }
         return result.toString();
     }
-
 
 }
