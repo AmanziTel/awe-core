@@ -190,6 +190,8 @@ public class PropertyHeader {
                         floats.addAll(Arrays.asList(properties));
                     } else if (propType.equals("long")) {
                         longs.addAll(Arrays.asList(properties));
+                    } else if (propType.equals("double")) {
+                        longs.addAll(Arrays.asList(properties));
                     }
                 }
             }
