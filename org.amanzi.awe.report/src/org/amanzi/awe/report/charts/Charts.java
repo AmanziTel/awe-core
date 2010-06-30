@@ -525,8 +525,9 @@ public class Charts {
         case LINE:
             return Charts.createLineChart(chart);
         case TIME:
+        case COMBINED:
         default:
-            return new JFreeChart(chart.getPlot());
+            return new JFreeChart(chart.getTitle(),null/*use default font*/,chart.getPlot(),chart.isShowLegend());
         }
     }
 

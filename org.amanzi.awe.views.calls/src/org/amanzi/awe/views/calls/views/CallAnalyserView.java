@@ -1128,12 +1128,19 @@ public class CallAnalyserView extends ViewPart {
 
     private void generateReport() {
         String aggregation = cPeriod.getText();
-        StringBuffer sb = new StringBuffer("report \"Overview of ").append(aggregation).append(" KPI's\n").append(cDrive.getText()).append("\" do\n  author '")
-        .append(System.getProperty("user.name")).append("'\n  date '").append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\n");
+        StringBuffer sb = new StringBuffer("report \"Overview of ").append(aggregation).append(" KPI's\n").append(cDrive.getText());
+        InclInconclusiveStates inclInconclusive = getInclInconclusive();
+        if (!inclInconclusive.equals(InclInconclusiveStates.EXCLUDE)){
+            sb.append("\n").append(inclInconclusive.getId());
+        }
+        sb.append("\" do\n  author '")
+        .append(System.getProperty("user.name")).append("'\n  date '").append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\n");//$NON-NLS-1$
         Node dsNode = callDataset.get(cDrive.getText());
-        sb.append("  ds=dataset('").append(dsNode.getProperty("name")).append("')\n");
-        sb
-                .append("  ca_root=find_first(ds,{'type'=>'call analysis root','call_type'=>'AGGREGATION_STATISTICS'},:CALL_ANALYSIS,:VIRTUAL_DATASET)\n");//$NON-NLS-1$
+        sb.append("  ds=dataset('").append(dsNode.getProperty("name")).append("')\n");//$NON-NLS-1$
+        sb.append("  ca_root=find_first(ds,{'type'=>'call analysis root','call_type'=>'AGGREGATION_STATISTICS'");//$NON-NLS-1$
+        sb.append(",\n  ").append("'is_inconclusive'=>").append(!inclInconclusive.equals(InclInconclusiveStates.EXCLUDE));//$NON-NLS-1$
+        sb.append(",\n  ").append("'inconclusive_state'=>'").append(inclInconclusive.getId()).append("'");//$NON-NLS-1$
+        sb.append("},:CALL_ANALYSIS,:VIRTUAL_DATASET)\n");//$NON-NLS-1$
         sb.append("  ").append(aggregation).append("=find_first(ca_root,{'name'=>'").append(aggregation).append("'},:CHILD)\n");//$NON-NLS-1$
         sb.append("  ticks={:hourly=>[:hour,1,\"HH:00, dd\"],\n");//$NON-NLS-1$
         sb.append("          :three_hourly=>[:hour,3,\"HH:00, dd\"],\n");//$NON-NLS-1$
