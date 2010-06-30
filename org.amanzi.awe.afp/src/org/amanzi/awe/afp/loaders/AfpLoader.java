@@ -21,7 +21,10 @@ import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.afp.files.ControlFile;
 import org.amanzi.awe.console.AweConsolePlugin;
+import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.AbstractLoader;
@@ -30,26 +33,40 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.index.lucene.LuceneIndexService;
 
 /**
  * <p>
  * AFP files loader
  * </p>
+ * .
  * 
  * @author TsAr
  * @since 1.0.0
  */
 public class AfpLoader extends AbstractLoader {
 
+    /** The Constant CELL_IND. */
     public static final Integer CELL_IND = 1;
+
+    /** The file. */
     private final ControlFile file;
+
+    /** The root name. */
     private final String rootName;
+
+    /** The afp root. */
     private Node afpRoot;
+
+    /** The afp cell. */
     private Node afpCell;
+
+    private LuceneIndexService luceneInd;
 
     /**
      * Instantiates a new afp loader.
      * 
+     * @param rootName the root name
      * @param file the file
      * @param service the service
      */
@@ -57,6 +74,7 @@ public class AfpLoader extends AbstractLoader {
         this.rootName = rootName;
         this.file = file;
         this.neo = service;
+        luceneInd = NeoServiceProvider.getProvider().getIndexService();
 
     }
 
@@ -75,7 +93,7 @@ public class AfpLoader extends AbstractLoader {
                 Transaction tx = neo.beginTx();
                 try {
                     node = neo.createNode();
-                    NodeTypes.AFP.setNodeType(node, neo);
+                    NodeTypes.NETWORK.setNodeType(node, neo);
                     NeoUtils.setNodeName(node, rootName, neo);
                     for (Map.Entry<String, String> entry : file.getPropertyMap().entrySet()) {
                         node.setProperty(entry.getKey(), entry.getValue());
@@ -96,6 +114,12 @@ public class AfpLoader extends AbstractLoader {
         afpRoot = NeoUtils.findorCreateRootInActiveProject(projectName, rootName, creater, neo);
     }
 
+    /**
+     * Run.
+     * 
+     * @param monitor the monitor
+     * @throws IOException Signals that an I/O exception has occurred.
+     */
     @Override
     public void run(IProgressMonitor monitor) throws IOException {
         mainTx = neo.beginTx();
@@ -116,12 +140,34 @@ public class AfpLoader extends AbstractLoader {
 
     }
 
+
     /**
-     * @param forbiddenFile
-     * @param monitor
+     * Load forbidden file.
+     * 
+     * @param forbiddenFile the forbidden file
+     * @param monitor the monitor
      */
     private void loadForbiddenFile(File forbiddenFile, IProgressMonitor monitor) {
+        Node afpForb = findRoot(forbiddenFile.getName());
+
     }
+
+    /**
+     * Find root.
+     * 
+     * @param name the name
+     * @return the node
+     */
+    private Node findRoot(String name) {
+        Transaction tx = neo.beginTx();
+        try {
+            // afpRoot
+            return null;
+        } finally {
+
+        }
+    }
+
 
     /**
      * Load cell file.
@@ -139,15 +185,31 @@ public class AfpLoader extends AbstractLoader {
 
 
 
+    /**
+     * Need parce headers.
+     * 
+     * @return true, if successful
+     */
     @Override
     protected boolean needParceHeaders() {
         return false;
     }
 
+    /**
+     * Parses the line.
+     * 
+     * @param line the line
+     */
     @Override
     protected void parseLine(String line) {
     }
 
+    /**
+     * Gets the prymary type.
+     * 
+     * @param key the key
+     * @return the prymary type
+     */
     @Override
     protected String getPrymaryType(Integer key) {
         if (key.equals(CELL_IND)) {
@@ -156,6 +218,12 @@ public class AfpLoader extends AbstractLoader {
         return null;
     }
 
+    /**
+     * Gets the storing node.
+     * 
+     * @param key the key
+     * @return the storing node
+     */
     @Override
     protected Node getStoringNode(Integer key) {
         if (key.equals(CELL_IND)) {
@@ -164,18 +232,40 @@ public class AfpLoader extends AbstractLoader {
         return null;
     }
 
+    /**
+     * Flush indexes.
+     */
     @Override
     protected void flushIndexes() {
     }
+
+    /**
+     * Gets the root nodes.
+     * 
+     * @return the root nodes
+     */
     @Override
     public Node[] getRootNodes() {
         return new Node[] {afpRoot};
     }
 
+    private Node addChild(Node parent, NodeTypes type, String name, String indexName) {
+        Node child = null;
+        child = neo.createNode();
+        child.setProperty(INeoConstants.PROPERTY_TYPE_NAME, type.getId());
+        child.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
+        luceneInd.index(child, NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, type), indexName);
+        if (parent != null) {
+            parent.createRelationshipTo(child, NetworkRelationshipTypes.CHILD);
+            debug("Added '" + name + "' as child of '" + parent.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+        }
+        return child;
+    }
     /**
      * <p>
      * CellFileHandler handle import of Cell File
      * </p>
+     * .
      * 
      * @author TsAr
      * @since 1.0.0
@@ -183,6 +273,7 @@ public class AfpLoader extends AbstractLoader {
     public class CellFileHandler extends AbstractTxFileHandler {
 
 
+        /** The header. */
         private LinkedHashMap<String, Header> header;
 
         /**
@@ -196,6 +287,11 @@ public class AfpLoader extends AbstractLoader {
             header = getHeaderMap(CELL_IND).headers;
         }
 
+        /**
+         * Store line.
+         * 
+         * @param line the line
+         */
         @Override
         protected void storeLine(String line) {
             try {
@@ -212,17 +308,19 @@ public class AfpLoader extends AbstractLoader {
                 }
                 Transaction tx = service.beginTx();
                 try {
-                    Node node = service.createNode();
-                    NodeTypes.M.setNodeType(node, service);
-                    NeoUtils.setNodeName(node, siteName, service);
-                    setIndexProperty(header, node, "site_name", siteName);
-                    setIndexProperty(header, node, "sectorNo", sectorNo);
-                    setIndexProperty(header, node, "nonrelevant", nonrelevant);
-                    setIndexProperty(header, node, "numberoffreqenciesrequired", numberoffreqenciesrequired);
-                    setIndexProperty(header, node, "numberoffrequenciesgiven", numberoffrequenciesgiven);
-                    node.setProperty("frq", frq);
-                    NeoUtils.addChild(rootNode, node, null, service);
-//                    index(CELL_KEY, node);
+                    Node site = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteName);
+                    if (site==null){
+                        site = addChild(afpCell, NodeTypes.SITE, siteName,siteName);
+                    }
+                    String sectorName = siteName + field[1];
+                    Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
+                    if (sector == null) {
+                        sector = addChild(site, NodeTypes.SECTOR, sectorName, siteName);
+                    }
+                    setIndexProperty(header, sector, "nonrelevant", nonrelevant);
+                    setIndexProperty(header, sector, "numberoffreqenciesrequired", numberoffreqenciesrequired);
+                    setIndexProperty(header, sector, "numberoffrequenciesgiven", numberoffrequenciesgiven);
+                    sector.setProperty("frq", frq);
                     tx.success();
                 } finally {
                     tx.finish();
@@ -235,4 +333,5 @@ public class AfpLoader extends AbstractLoader {
         }
 
     }
+
 }
