@@ -106,6 +106,9 @@ public class AfpLoader extends AbstractLoader {
                 loadCellFile(file.getCellFile(), monitor);
             }
             commit(true);
+            if (file.getForbiddenFile() != null) {
+                loadForbiddenFile(file.getForbiddenFile(),monitor);
+            }            
             saveProperties();
         } finally {
             commit(false);
@@ -113,6 +116,12 @@ public class AfpLoader extends AbstractLoader {
 
     }
 
+    /**
+     * @param forbiddenFile
+     * @param monitor
+     */
+    private void loadForbiddenFile(File forbiddenFile, IProgressMonitor monitor) {
+    }
 
     /**
      * Load cell file.
