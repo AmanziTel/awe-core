@@ -14,11 +14,14 @@ package org.amanzi.awe.afp.loaders;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import net.refractions.udig.project.ui.ApplicationGIS;
 
+import org.amanzi.awe.afp.AfpNeighbourSubType;
 import org.amanzi.awe.afp.files.ControlFile;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.core.INeoConstants;
@@ -32,9 +35,11 @@ import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.index.lucene.LuceneIndexService;
 
+// TODO: Auto-generated Javadoc
 /**
  * <p>
  * AFP files loader
@@ -61,6 +66,7 @@ public class AfpLoader extends AbstractLoader {
     /** The afp cell. */
     private Node afpCell;
 
+    /** The lucene ind. */
     private LuceneIndexService luceneInd;
 
     /**
@@ -77,7 +83,6 @@ public class AfpLoader extends AbstractLoader {
         luceneInd = NeoServiceProvider.getProvider().getIndexService();
 
     }
-
 
     /**
      * Define root.
@@ -122,6 +127,11 @@ public class AfpLoader extends AbstractLoader {
      */
     @Override
     public void run(IProgressMonitor monitor) throws IOException {
+        monitor.setTaskName("Load AFP data,6");
+        if (file.getCellFile() == null) {
+            error("Not found Cite file");
+            return;
+        }
         mainTx = neo.beginTx();
         NeoUtils.addTransactionLog(mainTx, Thread.currentThread(), "AfpLoader");
         try {
@@ -130,9 +140,28 @@ public class AfpLoader extends AbstractLoader {
                 loadCellFile(file.getCellFile(), monitor);
             }
             commit(true);
+            monitor.worked(1);
             if (file.getForbiddenFile() != null) {
-                loadForbiddenFile(file.getForbiddenFile(),monitor);
-            }            
+                loadForbiddenFile(file.getForbiddenFile(), monitor);
+            }
+
+            commit(true);
+            monitor.worked(1);
+            if (file.getNeighbourFile() != null) {
+                loadNeighbourFile(file.getNeighbourFile(), monitor);
+            }
+            commit(true);
+            monitor.worked(1);
+            if (file.getNeighbourFile() != null) {
+                loadNeighbourFile(file.getNeighbourFile(), monitor);
+            }
+            commit(true);
+            monitor.worked(1);
+            if (file.getExceptionFile() != null) {
+                loadExceptionFile(file.getExceptionFile(), monitor);
+            }
+            commit(true);
+            monitor.worked(1);
             saveProperties();
         } finally {
             commit(false);
@@ -140,6 +169,52 @@ public class AfpLoader extends AbstractLoader {
 
     }
 
+    /**
+     * @param exceptionFile
+     * @param monitor
+     */
+    private void loadExceptionFile(File exceptionFile, IProgressMonitor monitor) {
+        Node afpException = NeoUtils.findNeighbour(afpCell, exceptionFile.getName(), neo);
+        if (afpException == null) {
+            Transaction tx = neo.beginTx();
+            try {
+                afpException = neo.createNode();
+                afpException.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.NEIGHBOUR.getId());
+                AfpNeighbourSubType.EXCEPTION.setTypeToNode(afpException, neo);
+                afpException.setProperty(INeoConstants.PROPERTY_NAME_NAME, exceptionFile.getName());
+                afpCell.createRelationshipTo(afpException, NetworkRelationshipTypes.NEIGHBOUR_DATA);
+                tx.success();
+            } finally {
+                tx.finish();
+            }
+        }
+        CommonImporter importer = new CommonImporter(new ExceptionFileHandler(afpException, neo), new TxtFileImporter(exceptionFile));
+        importer.process();
+    }
+
+    /**
+     * Load neighbour file.
+     * 
+     * @param neighbourFile the neighbour file
+     * @param monitor the monitor
+     */
+    private void loadNeighbourFile(File neighbourFile, IProgressMonitor monitor) {
+        Node afpNeigh = NeoUtils.findNeighbour(afpCell, neighbourFile.getName(), neo);
+        if (afpNeigh == null) {
+            Transaction tx = neo.beginTx();
+            try {
+                afpNeigh = neo.createNode();
+                afpNeigh.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.NEIGHBOUR.getId());
+                afpNeigh.setProperty(INeoConstants.PROPERTY_NAME_NAME, neighbourFile.getName());
+                afpCell.createRelationshipTo(afpNeigh, NetworkRelationshipTypes.NEIGHBOUR_DATA);
+                tx.success();
+            } finally {
+                tx.finish();
+            }
+        }
+        CommonImporter importer = new CommonImporter(new NeighbourFileHandler(afpNeigh, neo), new TxtFileImporter(neighbourFile));
+        importer.process();
+    }
 
     /**
      * Load forbidden file.
@@ -148,8 +223,9 @@ public class AfpLoader extends AbstractLoader {
      * @param monitor the monitor
      */
     private void loadForbiddenFile(File forbiddenFile, IProgressMonitor monitor) {
-        Node afpForb = findRoot(forbiddenFile.getName());
 
+        CommonImporter importer = new CommonImporter(new ForbiddenFileHandler(afpCell, neo), new TxtFileImporter(forbiddenFile));
+        importer.process();
     }
 
     /**
@@ -168,7 +244,6 @@ public class AfpLoader extends AbstractLoader {
         }
     }
 
-
     /**
      * Load cell file.
      * 
@@ -182,8 +257,6 @@ public class AfpLoader extends AbstractLoader {
         CommonImporter importer = new CommonImporter(new CellFileHandler(afpCell, neo), new TxtFileImporter(cellFile));
         importer.process();
     }
-
-
 
     /**
      * Need parce headers.
@@ -246,9 +319,18 @@ public class AfpLoader extends AbstractLoader {
      */
     @Override
     public Node[] getRootNodes() {
-        return new Node[] {afpRoot};
+        return new Node[] {afpCell};
     }
 
+    /**
+     * Adds the child.
+     * 
+     * @param parent the parent
+     * @param type the type
+     * @param name the name
+     * @param indexName the index name
+     * @return the node
+     */
     private Node addChild(Node parent, NodeTypes type, String name, String indexName) {
         Node child = null;
         child = neo.createNode();
@@ -261,6 +343,7 @@ public class AfpLoader extends AbstractLoader {
         }
         return child;
     }
+
     /**
      * <p>
      * CellFileHandler handle import of Cell File
@@ -271,7 +354,6 @@ public class AfpLoader extends AbstractLoader {
      * @since 1.0.0
      */
     public class CellFileHandler extends AbstractTxFileHandler {
-
 
         /** The header. */
         private LinkedHashMap<String, Header> header;
@@ -309,8 +391,8 @@ public class AfpLoader extends AbstractLoader {
                 Transaction tx = service.beginTx();
                 try {
                     Node site = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteName);
-                    if (site==null){
-                        site = addChild(afpCell, NodeTypes.SITE, siteName,siteName);
+                    if (site == null) {
+                        site = addChild(afpCell, NodeTypes.SITE, siteName, siteName);
                     }
                     String sectorName = siteName + field[1];
                     Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
@@ -330,6 +412,298 @@ public class AfpLoader extends AbstractLoader {
                 AweConsolePlugin.error(errStr);
                 Logger.getLogger(this.getClass()).error(errStr, e);
             }
+        }
+
+    }
+
+    /**
+     * <p>
+     * ForbiddenFileHandler handle import of Forbidden File
+     * </p>
+     * .
+     * 
+     * @author TsAr
+     * @since 1.0.0
+     */
+    public class ForbiddenFileHandler extends AbstractTxFileHandler {
+
+        /** The header. */
+        private LinkedHashMap<String, Header> header;
+
+        /**
+         * Instantiates a new cell file handler.
+         * 
+         * @param rootNode the root node
+         * @param service the service
+         */
+        public ForbiddenFileHandler(Node rootNode, GraphDatabaseService service) {
+            super(rootNode, service);
+            header = getHeaderMap(CELL_IND).headers;
+        }
+
+        /**
+         * Store line.
+         * 
+         * @param line the line
+         */
+        @Override
+        protected void storeLine(String line) {
+            try {
+                // TODO debug - in example do not have necessary file
+                String[] field = line.split("\\s");
+                int i = 0;
+                String siteName = field[i++];
+                Integer sectorNo = Integer.valueOf(field[i++]);
+                Integer numberofforbidden = Integer.valueOf(field[i++]);
+                Integer[] forbList = new Integer[numberofforbidden];
+                for (int j = 0; j < forbList.length; j++) {
+                    forbList[j] = Integer.valueOf(field[i++]);
+                }
+                String sectorName = siteName + field[1];
+                Transaction tx = service.beginTx();
+                try {
+                    Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
+                    if (sector == null) {
+                        error("Forbidden Frquencies File. Not found in network sector " + sectorName);
+                        return;
+                    }
+                    setIndexProperty(header, sector, "numberofforbidden", numberofforbidden);
+                    sector.setProperty("forb_fr_list", forbList);
+                    tx.success();
+                } finally {
+                    tx.finish();
+                }
+            } catch (Exception e) {
+                String errStr = String.format("Can't parse line: %s", line);
+                AweConsolePlugin.error(errStr);
+                Logger.getLogger(this.getClass()).error(errStr, e);
+            }
+        }
+
+    }
+
+    /**
+     * <p>
+     * NeighbourFileHandler handle import of Forbidden File
+     * </p>
+     * .
+     * 
+     * @author TsAr
+     * @since 1.0.0
+     */
+    public class NeighbourFileHandler extends AbstractTxFileHandler {
+
+        /** The serve. */
+        private Node serve;
+        private Set<String> numericProp;
+        private Set<String> allProp;
+        private String neighName;
+
+        /**
+         * Instantiates a new cell file handler.
+         * 
+         * @param rootNode the root node
+         * @param service the service
+         */
+        public NeighbourFileHandler(Node rootNode, GraphDatabaseService service) {
+            super(rootNode, service);
+            neighName = NeoUtils.getNodeName(rootNode, service);
+        }
+
+        /**
+         * Inits the.
+         */
+        @Override
+        public void init() {
+            super.init();
+            serve = null;
+            numericProp = new HashSet<String>();
+            allProp = new HashSet<String>();
+        }
+
+        @Override
+        public void finish() {
+            super.finish();
+            rootNode.setProperty(INeoConstants.LIST_NUMERIC_PROPERTIES, numericProp.toArray(new String[0]));
+            rootNode.setProperty(INeoConstants.LIST_NUMERIC_PROPERTIES, allProp.toArray(new String[0]));
+        }
+
+        /**
+         * Store line.
+         * 
+         * @param line the line
+         */
+        @Override
+        protected void storeLine(String line) {
+            try {
+                String[] field = line.split("\\s");
+                int i = 0;
+                String name = field[i++].trim();
+                String siteName = field[i++];
+                Integer sectorNo = Integer.valueOf(field[i++]);
+                if (name.equals("CELL")) {
+                    serve = defineServe(siteName, field[1]);
+                } else {
+                    if (serve == null) {
+                        error("Not found serve cell for neighbours: " + line);
+                        return;
+                    } else {
+                        defineNeigh(siteName, field[1]);
+                    }
+                }
+            } catch (Exception e) {
+                String errStr = String.format("Can't parse line: %s", line);
+                AweConsolePlugin.error(errStr);
+                Logger.getLogger(this.getClass()).error(errStr, e);
+            }
+        }
+
+        /**
+         * Define neigh.
+         * 
+         * @param siteName the site name
+         * @param field the field
+         */
+        private void defineNeigh(String siteName, String field) {
+            String sectorName = siteName + field;
+            Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
+            if (sector == null) {
+                error(". Neighbours File. Not found sector " + sectorName);
+                return;
+            }
+            Relationship relation = serve.createRelationshipTo(sector, NetworkRelationshipTypes.NEIGHBOUR);
+            relation.setProperty(INeoConstants.NEIGHBOUR_NAME, neighName);
+        }
+
+        /**
+         * Define serve.
+         * 
+         * @param siteName the site name
+         * @param field the field
+         * @return the node
+         */
+        private Node defineServe(String siteName, String field) {
+            String sectorName = siteName + field;
+            Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
+            if (sector == null) {
+                error(". Neighbours File. Not found sector " + sectorName);
+                return null;
+            }
+            return sector;
+        }
+
+    }
+
+    /**
+     * <p>
+     * NeighbourFileHandler handle import of Forbidden File
+     * </p>
+     * .
+     * 
+     * @author TsAr
+     * @since 1.0.0
+     */
+    public class ExceptionFileHandler extends AbstractTxFileHandler {
+
+        /** The serve. */
+        private Node serve;
+        private Set<String> numericProp;
+        private Set<String> allProp;
+        private String neighName;
+
+        /**
+         * Instantiates a new cell file handler.
+         * 
+         * @param rootNode the root node
+         * @param service the service
+         */
+        public ExceptionFileHandler(Node rootNode, GraphDatabaseService service) {
+            super(rootNode, service);
+            neighName = NeoUtils.getNodeName(rootNode, service);
+        }
+
+        /**
+         * Inits the.
+         */
+        @Override
+        public void init() {
+            super.init();
+            serve = null;
+            numericProp = new HashSet<String>();
+            allProp = new HashSet<String>();
+        }
+
+        @Override
+        public void finish() {
+            super.finish();
+            rootNode.setProperty(INeoConstants.LIST_NUMERIC_PROPERTIES, numericProp.toArray(new String[0]));
+            rootNode.setProperty(INeoConstants.LIST_NUMERIC_PROPERTIES, allProp.toArray(new String[0]));
+        }
+
+        /**
+         * Store line.
+         * 
+         * @param line the line
+         */
+        @Override
+        protected void storeLine(String line) {
+            try {
+                String[] field = line.split("\\s");
+                int i = 0;
+                String name = field[i++].trim();
+                String siteName = field[i++];
+                Integer sectorNo = Integer.valueOf(field[i++]);
+                if (name.equals("CELL")) {
+                    serve = defineServe(siteName,field[1]);
+                } else {
+                    if (serve == null) {
+                        error("Not found serve cell for neighbours: " + line);
+                        return;
+                    } else {
+                        defineNeigh(siteName,field[1]);
+                    }
+                }
+            } catch (Exception e) {
+                String errStr = String.format("Can't parse line: %s", line);
+                AweConsolePlugin.error(errStr);
+                Logger.getLogger(this.getClass()).error(errStr, e);
+            }
+        }
+
+
+        /**
+         * Define neigh.
+         * 
+         * @param siteName the site name
+         * @param field the field
+         */
+        private void defineNeigh(String siteName, String field) {
+            String sectorName = siteName + field;
+            Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
+            if (sector == null) {
+                error(". Neighbours File. Not found sector " + sectorName);
+                return;
+            }
+            Relationship relation = serve.createRelationshipTo(sector, NetworkRelationshipTypes.NEIGHBOUR);
+            relation.setProperty(INeoConstants.NEIGHBOUR_NAME, neighName);
+        }
+
+
+        /**
+         * Define serve.
+         * 
+         * @param siteName the site name
+         * @param field the field
+         * @return the node
+         */
+        private Node defineServe(String siteName, String field) {
+            String sectorName = siteName + field;
+            Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
+            if (sector == null) {
+                error(". Neighbours File. Not found sector " + sectorName);
+                return null;
+            }
+            return sector;
         }
 
     }

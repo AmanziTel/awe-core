@@ -627,6 +627,7 @@ public class NetworkLoader extends AbstractLoader {
         Node child = null;
         child = neo.createNode();
         child.setProperty(INeoConstants.PROPERTY_TYPE_NAME, type.getId());
+        // TODO refactor 2 property with same name!
         child.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
         child.setProperty(INeoConstants.PROPERTY_SECTOR_NAME, indexName);
         luceneInd.index(child, NeoUtils.getLuceneIndexKeyByProperty(getNetworkNode(), INeoConstants.PROPERTY_NAME_NAME, type), indexName);
