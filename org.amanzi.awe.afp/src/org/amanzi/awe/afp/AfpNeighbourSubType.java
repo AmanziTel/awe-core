@@ -28,7 +28,7 @@ import org.neo4j.graphdb.Transaction;
  * @since 1.0.0
  */
 public enum AfpNeighbourSubType {
-    EXCEPTION("excep");
+    EXCEPTION("exception"), INTERFERENCE("interference");
     public static final String PROPERTY_NAME = "afp_type";
     private final String id;
 
