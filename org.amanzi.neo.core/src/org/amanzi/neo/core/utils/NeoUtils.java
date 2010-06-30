@@ -37,7 +37,6 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.nodes.AweProjectNode;
 import org.amanzi.neo.core.database.nodes.DeletableRelationshipType;
-import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -45,15 +44,15 @@ import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.enums.OssType;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
+import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.index.MultiPropertyIndex;
+import org.amanzi.neo.index.PropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
-import org.amanzi.neo.index.PropertyIndex;
 import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -2103,14 +2102,26 @@ public class NeoUtils {
     public static Collection<Node> getAllGpeh(GraphDatabaseService service) {
         Transaction tx = beginTx(service);
         try {
-            return getAllReferenceChild(service, new ReturnableEvaluator() {
+            return getAllRootTraverser(service, new ReturnableEvaluator() {
 
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
-                    Node node = currentPos.currentNode();
-                    return NodeTypes.OSS.checkNode(node) && OssType.GPEH.checkNode(node);
+                    return NeoUtils.isDatasetNode(currentPos.currentNode())
+                            && DriveTypes.OSS.getId().equals(currentPos.currentNode().getProperty(INeoConstants.DRIVE_TYPE, null));
                 }
             }).getAllNodes();
+
+            // return getAllReferenceChild(service, new ReturnableEvaluator() {
+            //
+            // @Override
+            // public boolean isReturnableNode(TraversalPosition currentPos) {
+            // Node node = currentPos.currentNode();
+            // boolean res1 = NodeTypes.DATASET.checkNode(node);
+            // boolean res2 = OssType.GPEH.checkNode(node);
+            // boolean result = NodeTypes.DATASET.checkNode(node) && OssType.GPEH.checkNode(node);
+            // return res1 && res2;
+            // }
+            // }).getAllNodes();
         } finally {
             finishTx(tx);
         }

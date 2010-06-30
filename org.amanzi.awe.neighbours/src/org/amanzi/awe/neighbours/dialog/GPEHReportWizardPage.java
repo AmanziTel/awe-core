@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.wizards.gpehreport;
+package org.amanzi.awe.neighbours.dialog;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -166,6 +166,20 @@ public class GPEHReportWizardPage extends WizardPage {
         formNetwork();
         
         validateFinish();
+    }
+
+    /**
+     * @return
+     */
+    public Node getGpehNode() {
+        return gpeh.get(cGpeh.getText());
+    }
+
+    /**
+     * @return
+     */
+    public Node getNetworkNode() {
+        return network.get(cNetwork.getText());
     }
 
 }

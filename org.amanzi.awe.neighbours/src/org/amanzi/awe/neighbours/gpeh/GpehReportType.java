@@ -21,8 +21,6 @@ package org.amanzi.awe.neighbours.gpeh;
  * @author tsinkel_a
  * @since 1.0.0
  */
-//TODO remove candidat: moved to org.amanzi.awe.wizards.gpehreport.GpehReportType
-@Deprecated
 public enum GpehReportType {
     IDCM_INTRA("INTRA-FREQUENCY ICDM"),
     IDCM_INTER("INTER-FREQUENCY ICDM"),

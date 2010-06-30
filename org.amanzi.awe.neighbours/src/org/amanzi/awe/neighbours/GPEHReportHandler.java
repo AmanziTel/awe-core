@@ -11,8 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.wizards.gpehreport;
+package org.amanzi.awe.neighbours;
 
+import org.amanzi.awe.neighbours.dialog.GPEHReportWizard;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;

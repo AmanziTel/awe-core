@@ -4,10 +4,6 @@
    <extension
          point="org.eclipse.ui.commands">
       <command
-            id="org.amanzi.awe.wizards.gpehreport.GPEHReportCommand"
-            name="KPI Report">
-      </command>
-      <command
             id="org.amanzi.awe.wizards.KPIReportCommand"
             name="KPI Report">
       </command>
@@ -45,10 +41,6 @@
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
-         <handler
-            class="org.amanzi.awe.wizards.gpehreport.GPEHReportHandler"
-            commandId="org.amanzi.awe.wizards.gpehreport.GPEHReportCommand">
-      </handler>
       <handler
             class="org.amanzi.awe.wizards.kpi.report.KPIReportHandler"
             commandId="org.amanzi.awe.wizards.KPIReportCommand">
@@ -91,20 +83,7 @@
       </handler>
       		
    </extension>
-   <extension
-         point="org.eclipse.ui.menus">
-      <menuContribution
-            locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
-         <toolbar
-               id="org.amanzi.awe.report.toolbar1">
-            <command
-                  commandId="org.amanzi.awe.wizards.gpehreport.GPEHReportCommand"
-                  id="org.amanzi.awe.wizards.gpehreport.GPEHReportCommand"
-                  label="GPEH report wiz">
-            </command>
-         </toolbar>
-      </menuContribution>
-   </extension>
+   
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution

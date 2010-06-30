@@ -11,10 +11,12 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.wizards.gpehreport;
+package org.amanzi.awe.neighbours.dialog;
 
 import java.util.LinkedHashMap;
 
+import org.amanzi.awe.neighbours.gpeh.GpehReportType;
+import org.amanzi.awe.statistic.CallTimePeriods;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
@@ -39,7 +41,7 @@ public class GPEHReportWizardPage2 extends WizardPage {
     
     /** The period. */
 //  private LinkedHashMap<String, CallTimePeriods> period;
-  private LinkedHashMap<String, String> period;
+    private LinkedHashMap<String, CallTimePeriods> period;
 
 
     /**
@@ -123,11 +125,25 @@ public class GPEHReportWizardPage2 extends WizardPage {
      */
     private void formPeriods() {
         // period = new LinkedHashMap<String, CallTimePeriods>();
-        period = new LinkedHashMap<String, String>();
-        period.put("Hourly", "Hourly");
-        period.put("Daily", "Daily");
-        period.put("Total", "Total");
+        period = new LinkedHashMap<String, CallTimePeriods>();
+        period.put("Hourly", CallTimePeriods.HOURLY);
+        period.put("Daily", CallTimePeriods.DAILY);
+        period.put("Total", CallTimePeriods.ALL);
         cPeriods.setItems(period.keySet().toArray(new String[0]));
+    }
+
+    /**
+     * @return
+     */
+    public CallTimePeriods getPeriod() {
+        return period.get(cPeriods.getText());
+    }
+
+    /**
+     * @return
+     */
+    public GpehReportType getReportType() {
+        return GpehReportType.getEnumById(cReportType.getText());
     }
 
 }
