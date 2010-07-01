@@ -80,12 +80,14 @@ public class ExportSpreadsheetWizard extends SplashNewSpreadsheetWizard {
                 Cell cellToadd = new Cell(0, column, "", columnHeaders.get(column).getName(), null);
                 spreadsheetCreator.saveCell(cellToadd);
                 if (monitor.isCanceled()){
+                    tx.success();
                     return;
                 }
             }
             for (int column = 0; column < columnHeaders.size(); column++) {
                 for (int row = 0; row < elements.size(); row++) {
                     if (monitor.isCanceled()){
+                        tx.success();
                         return;
                     }
                     Object value = columnHeaders.get(column).getValue(elements.get(row), column);
