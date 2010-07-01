@@ -96,7 +96,7 @@ public class SplashNewSpreadsheetWizard extends NewRubyElementCreationWizard imp
 			}
 		};
 		try {
-			getContainer().run(true, false, op);
+            getContainer().run(true, true, op);
 		} catch (InterruptedException e) {
 			return false;
 		} catch (InvocationTargetException e) {
