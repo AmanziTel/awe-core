@@ -22,11 +22,31 @@ package org.amanzi.awe.neighbours.gpeh;
  * @since 1.0.0
  */
 public enum GpehReport {
-    RF_PERFORMANCE_ANALYSIS("RF Performance Analysis"), INTERFERENCE_ANALYSIS("Interference Analysis");
-    private final String string;
+    RF_PERFORMANCE_ANALYSIS("RF Performance Analysis", GpehReportType.CELL_RSCP_ANALYSIS, GpehReportType.CELL_ECNO_ANALYSIS, GpehReportType.UE_TX_POWER_ANALYSIS),
+    INTERFERENCE_ANALYSIS("Interference Analysis", GpehReportType.IDCM_INTER, GpehReportType.IDCM_INTRA);
 
-    private GpehReport(String string) {
+    private final String string;
+    private final GpehReportType[] reportTypes;
+
+    private GpehReport(String string, GpehReportType... gpehReportTypes) {
         this.string = string;
+        this.reportTypes = gpehReportTypes;
+    }
+
+    public GpehReportType[] getReportypes() {
+        return reportTypes;
+    }
+
+    public static GpehReport getEnumById(String enumId) {
+        if (enumId == null) {
+            return null;
+        }
+        for (GpehReport report : GpehReport.values()) {
+            if (report.toString().equals(enumId)) {
+                return report;
+            }
+        }
+        return null;
     }
 
 }

@@ -56,5 +56,10 @@ public enum GpehReportType {
         }
         return null;
     }
+    
+    @Override
+    public String toString(){
+        return id;
+    }
 
 }

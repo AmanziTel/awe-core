@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.neighbours.dialog;
 
+import java.util.Set;
+
 import org.amanzi.awe.neighbours.gpeh.GpehReportCreator;
 import org.amanzi.awe.neighbours.gpeh.GpehReportType;
 import org.amanzi.awe.statistic.CallTimePeriods;
@@ -62,13 +64,15 @@ public class GPEHReportWizard extends Wizard implements INewWizard {
     public boolean performFinish() {
         final Node gpehNode = firstPage.getGpehNode();
         final Node netNode = firstPage.getNetworkNode();
-        final GpehReportType repType = secondPage.getReportType();
+        final Set<GpehReportType> repTypes = secondPage.getReportType();
         final CallTimePeriods period = secondPage.getPeriod();
         Job job = new Job("generate Report") {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                createReport(gpehNode, netNode, repType, period, monitor);
+                for (GpehReportType type : repTypes) {
+                    createReport(gpehNode, netNode, type, period, monitor);
+                }
                 return Status.OK_STATUS;
             }
         };
@@ -87,8 +91,7 @@ public class GPEHReportWizard extends Wizard implements INewWizard {
      * @param monitor the monitor
      */
     protected void createReport(Node gpehNode, Node netNode, GpehReportType repType, CallTimePeriods period, IProgressMonitor monitor) {
-        GpehReportCreator creator = new GpehReportCreator(netNode, gpehNode, NeoServiceProvider.getProvider().getService(), NeoServiceProvider.getProvider()
-                .getIndexService());
+        GpehReportCreator creator = new GpehReportCreator(netNode, gpehNode, NeoServiceProvider.getProvider().getService(), NeoServiceProvider.getProvider().getIndexService());
         creator.setMonitor(monitor);
         creator.createMatrix();
 
