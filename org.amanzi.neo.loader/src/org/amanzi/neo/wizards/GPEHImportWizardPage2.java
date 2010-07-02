@@ -101,7 +101,7 @@ public class GPEHImportWizardPage2 extends WizardPage {
         mReportGroup.addChield(new TreeElem(ElemType.EVENT, Events.RRC_MEASUREMENT_REPORT.name(), Events.RRC_MEASUREMENT_REPORT.getId()));
         mReportGroup
 .addChield(new TreeElem(ElemType.EVENT, Events.NBAP_DEDICATED_MEASUREMENT_REPORT.name(), Events.NBAP_DEDICATED_MEASUREMENT_REPORT.getId()));
-        mReportGroup.addChield(new TreeElem(ElemType.EVENT, Events.NBAP_COMMON_MEASUREMENT_REPORT.name(), Events.NBAP_COMMON_MEASUREMENT_REPORT.getId()));
+        mReportGroup.addChield(new TreeElem(ElemType.EVENT, Events.INTERNAL_RADIO_QUALITY_MEASUREMENTS_RNH.name(), Events.INTERNAL_RADIO_QUALITY_MEASUREMENTS_RNH.getId()));
         mReportGroup.addChield(new TreeElem(ElemType.EVENT, Events.RANAP_LOCATION_REPORT.name(), Events.RANAP_LOCATION_REPORT.getId()));
         mReportGroup.addChield(new TreeElem(ElemType.EVENT, Events.RNSAP_DEDICATED_MEASUREMENT_REPORT.name(), Events.RNSAP_DEDICATED_MEASUREMENT_REPORT
                 .getId()));

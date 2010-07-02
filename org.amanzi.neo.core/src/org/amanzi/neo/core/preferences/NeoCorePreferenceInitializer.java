@@ -13,18 +13,24 @@
 
 package org.amanzi.neo.core.preferences;
 
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
+import org.eclipse.jface.preference.IPreferenceStore;
+
 /**
  * <p>
- * Preference constant
+ * Initializer of NeoCore plugin preferences
  * </p>
  * 
- * @author NiCK
+ * @author tsinkel_a
  * @since 1.0.0
  */
-public class NeoCorePreferencesConstants {
-    public static final String CRS_DELIMETERS = "--DELIMETER--";
+public class NeoCorePreferenceInitializer extends AbstractPreferenceInitializer {
 
-    public static final String FILTER_RULES = "FILTER_RULES";
-    public static final String MAX_SECTOR_DISTANSE = "MAX_SECTOR_DISTANSION";
+    @Override
+    public void initializeDefaultPreferences() {
+        IPreferenceStore store = NeoCorePlugin.getDefault().getPreferenceStore();
+        store.setDefault(NeoCorePreferencesConstants.MAX_SECTOR_DISTANSE, 3000);
+    }
 
 }
