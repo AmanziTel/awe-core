@@ -99,12 +99,7 @@ public class GPEHImportWizardPage2 extends WizardPage {
         // mReportGroup.setImage(NodeTypes.CALL_ANALYSIS.getImage());
 
         mReportGroup.addChield(new TreeElem(ElemType.EVENT, Events.RRC_MEASUREMENT_REPORT.name(), Events.RRC_MEASUREMENT_REPORT.getId()));
-        mReportGroup
-.addChield(new TreeElem(ElemType.EVENT, Events.NBAP_DEDICATED_MEASUREMENT_REPORT.name(), Events.NBAP_DEDICATED_MEASUREMENT_REPORT.getId()));
         mReportGroup.addChield(new TreeElem(ElemType.EVENT, Events.INTERNAL_RADIO_QUALITY_MEASUREMENTS_RNH.name(), Events.INTERNAL_RADIO_QUALITY_MEASUREMENTS_RNH.getId()));
-        mReportGroup.addChield(new TreeElem(ElemType.EVENT, Events.RANAP_LOCATION_REPORT.name(), Events.RANAP_LOCATION_REPORT.getId()));
-        mReportGroup.addChield(new TreeElem(ElemType.EVENT, Events.RNSAP_DEDICATED_MEASUREMENT_REPORT.name(), Events.RNSAP_DEDICATED_MEASUREMENT_REPORT
-                .getId()));
 
         set.add(mReportGroup);
         // set.addAll(mReportGroup.getChildrens());
@@ -156,7 +151,7 @@ public class GPEHImportWizardPage2 extends WizardPage {
 
     private class TreeContentProvider extends NeoTreeContentProvider {
 
-        private LinkedHashSet<TreeElem> elements = new LinkedHashSet<TreeElem>();
+        private final LinkedHashSet<TreeElem> elements = new LinkedHashSet<TreeElem>();
 
         @Override
         public Object[] getElements(Object inputElement) {
@@ -183,7 +178,7 @@ public class GPEHImportWizardPage2 extends WizardPage {
     private static class TreeElem extends NeoTreeElement {
         private final ElemType type;
         private final String name;
-        private Set<TreeElem> childrens = new LinkedHashSet<TreeElem>();
+        private final Set<TreeElem> childrens = new LinkedHashSet<TreeElem>();
         private TreeElem parent;
         private Integer eventId;
         /**
@@ -235,14 +230,17 @@ public class GPEHImportWizardPage2 extends WizardPage {
             childrens.add(chield);
         }
 
+        @Override
         public String getText() {
             return name;
         }
 
+        @Override
         public Image getImage() {
             return image;
         }
 
+        @Override
         public void setImage(Image image) {
             this.image = image;
         }
