@@ -39,16 +39,20 @@ import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 
 /**
- * TODO Purpose of
  * <p>
+ * GPEHReportWizardPage
  * </p>
+ * .
  * 
  * @author NiCK
  * @since 1.0.0
  */
 public class GPEHReportWizardPage extends WizardPage {
 
+    /** The c network. */
     private Combo cNetwork;
+
+    /** The c gpeh. */
     private Combo cGpeh;
 
     /** The gpeh. */
@@ -57,12 +61,17 @@ public class GPEHReportWizardPage extends WizardPage {
     private LinkedHashMap<String, Node> network;
     /** The neo. */
     private final GraphDatabaseService neo = NeoServiceProvider.getProvider().getService();
-    
+
     /**
-     * @param pageName
+     * Instantiates a new gPEH report wizard page.
+     * 
+     * @param pageName the page name
+     * @param pageDescription the page description
      */
-    protected GPEHReportWizardPage(String pageName) {
+    protected GPEHReportWizardPage(String pageName, String pageDescription) {
         super(pageName);
+        setTitle(pageName);
+        setDescription(pageDescription);
     }
 
     @Override
@@ -109,10 +118,18 @@ public class GPEHReportWizardPage extends WizardPage {
         init();
     }
 
+    /**
+     * Validate finish.
+     */
     private void validateFinish() {
         setPageComplete(isValidPage());
     }
 
+    /**
+     * Checks if is valid page.
+     * 
+     * @return true, if is valid page
+     */
     protected boolean isValidPage() {
         return gpeh.get(cGpeh.getText()) != null && network.get(cNetwork.getText()) != null;
     }
@@ -131,7 +148,7 @@ public class GPEHReportWizardPage extends WizardPage {
     }
 
     /**
-     * forms Networks list.
+     * Form network.
      */
     private void formNetwork() {
         network = new LinkedHashMap<String, Node>();
@@ -157,9 +174,8 @@ public class GPEHReportWizardPage extends WizardPage {
         cNetwork.setItems(result);
     }
 
-
     /**
-     * initialize.
+     * Inits the.
      */
     private void init() {
         formGPEH();
@@ -169,14 +185,18 @@ public class GPEHReportWizardPage extends WizardPage {
     }
 
     /**
-     * @return
+     * Gets the gpeh node.
+     * 
+     * @return the gpeh node
      */
     public Node getGpehNode() {
         return gpeh.get(cGpeh.getText());
     }
 
     /**
-     * @return
+     * Gets the network node.
+     * 
+     * @return the network node
      */
     public Node getNetworkNode() {
         return network.get(cNetwork.getText());

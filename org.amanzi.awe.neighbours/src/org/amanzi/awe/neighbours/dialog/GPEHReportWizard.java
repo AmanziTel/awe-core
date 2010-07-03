@@ -18,10 +18,7 @@ import java.util.Set;
 import org.amanzi.awe.neighbours.gpeh.GpehReportCreator;
 import org.amanzi.awe.neighbours.gpeh.GpehReportType;
 import org.amanzi.awe.statistic.CallTimePeriods;
-import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -33,8 +30,8 @@ import org.eclipse.ui.IWorkbench;
 import org.neo4j.graphdb.Node;
 
 /**
- * TODO Purpose of
  * <p>
+ * Wizard for generation GPEHreports
  * </p>
  * 
  * @author NiCK
@@ -54,8 +51,8 @@ public class GPEHReportWizard extends Wizard implements INewWizard {
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
-        firstPage = new GPEHReportWizardPage("ossPage1");
-        secondPage = new GPEHReportWizardPage2("ossPage2");
+        firstPage = new GPEHReportWizardPage("GPEH Report Wizard", "Select GPEH and Network");
+        secondPage = new GPEHReportWizardPage2("GPEH Report Wizard", "Select report type and target directory");
         // setWindowTitle(NeoLoaderPluginMessages.GpehWindowTitle);
         // display = workbench.getDisplay();
     }
@@ -66,12 +63,13 @@ public class GPEHReportWizard extends Wizard implements INewWizard {
         final Node netNode = firstPage.getNetworkNode();
         final Set<GpehReportType> repTypes = secondPage.getReportType();
         final CallTimePeriods period = secondPage.getPeriod();
+        final String targetDir = secondPage.getTargetDir();
         Job job = new Job("generate Report") {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 for (GpehReportType type : repTypes) {
-                    createReport(gpehNode, netNode, type, period, monitor);
+                    createReport(gpehNode, netNode, type, period, targetDir, monitor);
                 }
                 return Status.OK_STATUS;
             }
@@ -88,47 +86,13 @@ public class GPEHReportWizard extends Wizard implements INewWizard {
      * @param netNode the net node
      * @param repType report type
      * @param period
+     * @param targetDir
      * @param monitor the monitor
      */
-    protected void createReport(Node gpehNode, Node netNode, GpehReportType repType, CallTimePeriods period, IProgressMonitor monitor) {
-        GpehReportCreator creator = new GpehReportCreator(netNode, gpehNode, NeoServiceProvider.getProvider().getService(), NeoServiceProvider.getProvider().getIndexService());
+    protected void createReport(Node gpehNode, Node netNode, GpehReportType repType, CallTimePeriods period, String targetDir, IProgressMonitor monitor) {
+        GpehReportCreator creator = new GpehReportCreator(netNode, gpehNode, NeoServiceProvider.getProvider().getService(), NeoServiceProvider.getProvider()
+                .getIndexService());
         creator.setMonitor(monitor);
-        creator.createMatrix();
-
-        final SpreadsheetNode spreadsheet;
-        switch (repType) {
-        case UE_TX_POWER_ANALYSIS:
-            creator.createUeTxPowerCellReport(period);
-            spreadsheet = creator.createUeTxPowerCellSpreadSheet("UxTxPower", period);
-            return;
-        case IDCM_INTRA:
-            spreadsheet = creator.createIntraIDCMSpreadSheet("IntraMatrix");
-            break;
-        case IDCM_INTER:
-            spreadsheet = creator.createInterIDCMSpreadSheet("InterMatrix");
-            break;
-        case CELL_RSCP_ANALYSIS:
-            // TODO remove after implementing and testing
-            // if (true)return;
-            creator.createRSCPCellReport(period);
-            spreadsheet = creator.createRSCPCellSpreadSheet("RSCPCell", period);
-            return;
-        case CELL_ECNO_ANALYSIS:
-            // TODO remove after implementing and testing
-            // if (true)return;
-            creator.createEcNoCellReport(period);
-            spreadsheet = creator.createEcNoCellSpreadSheet("RSCPCell", period);
-            return;
-        default:
-            return;
-            // break;
-        }
-        ActionUtil.getInstance().runTask(new Runnable() {
-
-            @Override
-            public void run() {
-                NeoSplashUtil.openSpreadsheet(spreadsheet);
-            }
-        }, true);
+        // TODO implementation
     }
 }

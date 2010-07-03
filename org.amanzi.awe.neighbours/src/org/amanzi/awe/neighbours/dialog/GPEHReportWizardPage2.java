@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.neighbours.dialog;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -22,6 +23,8 @@ import java.util.Set;
 import org.amanzi.awe.neighbours.gpeh.GpehReport;
 import org.amanzi.awe.neighbours.gpeh.GpehReportType;
 import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
+import org.amanzi.neo.wizards.DirectoryEditor;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
@@ -31,6 +34,8 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
@@ -43,39 +48,57 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 
 /**
- * TODO Purpose of
  * <p>
+ * GPEHReportWizardPage2
  * </p>
+ * .
  * 
  * @author Saelenchits_N
  * @since 1.0.0
  */
 public class GPEHReportWizardPage2 extends WizardPage {
+
+    /** The c periods. */
     private Combo cPeriods;
+
+    /** The c report. */
     private Combo cReport;
+
+    /** The ct report type. */
     private CheckboxTableViewer ctReportType;
 
+    /** The editor dir. */
+    private DirectoryEditor editorDir;
+
     /** The period. */
-    // private LinkedHashMap<String, CallTimePeriods> period;
     private LinkedHashMap<String, CallTimePeriods> period;
 
     /**
-     * @param pageName
+     * Instantiates a new gPEH report wizard page2.
+     * 
+     * @param pageName the page name
+     * @param pageDescription the page description
      */
-    protected GPEHReportWizardPage2(String pageName) {
+    protected GPEHReportWizardPage2(String pageName, String pageDescription) {
         super(pageName);
+        setTitle(pageName);
+        setDescription(pageDescription);
     }
 
+    /**
+     * Creates the control.
+     * 
+     * @param parent the parent
+     */
     @Override
     public void createControl(Composite parent) {
         final Composite main = new Composite(parent, SWT.FILL);
-        main.setLayout(new GridLayout(2, false));
+        main.setLayout(new GridLayout(3, false));
 
         Label label = new Label(main, SWT.NONE);
         label.setText("Report");
         cReport = new Combo(main, SWT.DROP_DOWN | SWT.READ_ONLY);
-        GridData layoutData = new GridData();
-        layoutData.grabExcessHorizontalSpace = true;
+        GridData layoutData = new GridData(SWT.LEFT, SWT.FILL, false, false, 2, 1);
         layoutData.minimumWidth = 200;
         cReport.setLayoutData(layoutData);
 
@@ -83,9 +106,9 @@ public class GPEHReportWizardPage2 extends WizardPage {
         label.setText("Report type");
 
         ctReportType = CheckboxTableViewer.newCheckList(main, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.CHECK);
-        GridData data = new GridData(SWT.LEFT, SWT.FILL, false, false, 1, 1);
+        GridData data = new GridData(SWT.LEFT, SWT.FILL, false, false, 2, 1);
         data.heightHint = 100;
-        data.widthHint= 207;
+        data.widthHint = 207;
         createTable(ctReportType, "Avaliable report types");
         ctReportType.getControl().setLayoutData(data);
         ctReportType.setContentProvider(new GpehReportTypeTableContentProvider());
@@ -94,8 +117,7 @@ public class GPEHReportWizardPage2 extends WizardPage {
         label = new Label(main, SWT.NONE);
         label.setText("Report period");
         cPeriods = new Combo(main, SWT.DROP_DOWN | SWT.READ_ONLY);
-        layoutData = new GridData();
-        layoutData.grabExcessHorizontalSpace = true;
+        layoutData = new GridData(SWT.LEFT, SWT.FILL, false, false, 2, 1);
         layoutData.minimumWidth = 200;
         cPeriods.setLayoutData(layoutData);
 
@@ -124,16 +146,26 @@ public class GPEHReportWizardPage2 extends WizardPage {
             }
         });
 
+        editorDir = new DirectoryEditor("editor", NeoLoaderPluginMessages.AMSImport_directory, main);
+        editorDir.getTextControl(main).addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e) {
+                if (!editorDir.getTextControl(main).isEnabled()) {
+                    return;
+                }
+                validateFinish();
+            }
+        });
+
         setControl(main);
 
         init();
     }
 
     /**
-     * Create table
+     * Creates the table.
      * 
-     * @param tableView table
-     * @param columnName name of column
+     * @param tableView the table view
+     * @param columnName the column name
      */
     private void createTable(TableViewer tableView, String columnName) {
         Table table = tableView.getTable();
@@ -144,14 +176,36 @@ public class GPEHReportWizardPage2 extends WizardPage {
         table.setLinesVisible(true);
     }
 
+    /**
+     * Validate finish.
+     */
     private void validateFinish() {
         setPageComplete(isValidPage());
     }
 
+    /**
+     * Checks if is valid page.
+     * 
+     * @return true, if is valid page
+     */
     protected boolean isValidPage() {
-        return ctReportType.getCheckedElements().length > 0;
+        try {
+            String dir = editorDir.getStringValue();
+            File file = new File(dir);
+            if (!(file.isAbsolute() && file.exists() && !file.isFile())) {
+                return false;
+            }
+            return ctReportType.getCheckedElements().length > 0;
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.printStackTrace();
+            return false;
+        }
     }
 
+    /**
+     * Inits the.
+     */
     private void init() {
         formReports();
         formPeriods();
@@ -160,7 +214,7 @@ public class GPEHReportWizardPage2 extends WizardPage {
     }
 
     /**
-     * Form report type.
+     * Form reports.
      */
     private void formReports() {
         String[] gpeh = new String[GpehReport.values().length];
@@ -175,7 +229,6 @@ public class GPEHReportWizardPage2 extends WizardPage {
      * Form periods.
      */
     private void formPeriods() {
-        // period = new LinkedHashMap<String, CallTimePeriods>();
         period = new LinkedHashMap<String, CallTimePeriods>();
         period.put("Hourly", CallTimePeriods.HOURLY);
         period.put("Daily", CallTimePeriods.DAILY);
@@ -184,14 +237,18 @@ public class GPEHReportWizardPage2 extends WizardPage {
     }
 
     /**
-     * @return
+     * Gets the period.
+     * 
+     * @return the period
      */
     public CallTimePeriods getPeriod() {
         return period.get(cPeriods.getText());
     }
 
     /**
-     * @return
+     * Gets the report type.
+     * 
+     * @return the report type
      */
     public Set<GpehReportType> getReportType() {
         HashSet<GpehReportType> result = new HashSet<GpehReportType>();
@@ -199,15 +256,34 @@ public class GPEHReportWizardPage2 extends WizardPage {
         Object[] checked = ctReportType.getCheckedElements();
         for (int i = 0; i < checked.length; i++) {
             GpehReportType type = ((GpehReportType)checked[i]);
-            if (type != null){
+            if (type != null) {
                 result.add(type);
             }
         }
         return result;
     }
 
+    /**
+     * Gets the target dir.
+     * 
+     * @return the target dir
+     */
+    public String getTargetDir() {
+        return editorDir.getStringValue();
+    }
+
+    /**
+     * <p>
+     * GpehReportTypeTableContentProvider
+     * </p>
+     * .
+     * 
+     * @author NiCK
+     * @since 1.0.0
+     */
     private class GpehReportTypeTableContentProvider implements IStructuredContentProvider {
 
+        /** The elements. */
         private final LinkedHashSet<GpehReportType> elements = new LinkedHashSet<GpehReportType>();
 
         @Override
@@ -236,11 +312,13 @@ public class GPEHReportWizardPage2 extends WizardPage {
      * <p>
      * GpehReportTypeTableLabelProvider
      * </p>
+     * .
      * 
      * @author Saelenchits_N
      * @since 1.0.0
      */
     public class GpehReportTypeTableLabelProvider extends LabelProvider {
+
         @Override
         public Image getImage(Object element) {
             return null;
