@@ -13,8 +13,10 @@
 
 package org.amanzi.awe.neighbours.dialog;
 
+import java.io.File;
 import java.util.Set;
 
+import org.amanzi.awe.neighbours.dialog.GPEHReportWizardPage2.FileType;
 import org.amanzi.awe.neighbours.gpeh.GpehReportCreator;
 import org.amanzi.awe.neighbours.gpeh.GpehReportType;
 import org.amanzi.awe.statistic.CallTimePeriods;
@@ -64,12 +66,17 @@ public class GPEHReportWizard extends Wizard implements INewWizard {
         final Set<GpehReportType> repTypes = secondPage.getReportType();
         final CallTimePeriods period = secondPage.getPeriod();
         final String targetDir = secondPage.getTargetDir();
+        final FileType fileType = secondPage.getFileType();
         Job job = new Job("generate Report") {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                for (GpehReportType type : repTypes) {
-                    createReport(gpehNode, netNode, type, period, targetDir, monitor);
+
+                if (fileType == FileType.CSV) {
+                    for (GpehReportType type : repTypes) {
+                        final File targetFile = new File(targetDir + "\\" + type.toString() + "." + fileType.toString());
+                        createReport(gpehNode, netNode, type, period, targetFile, monitor);
+                    }
                 }
                 return Status.OK_STATUS;
             }
@@ -89,7 +96,7 @@ public class GPEHReportWizard extends Wizard implements INewWizard {
      * @param targetDir
      * @param monitor the monitor
      */
-    protected void createReport(Node gpehNode, Node netNode, GpehReportType repType, CallTimePeriods period, String targetDir, IProgressMonitor monitor) {
+    protected void createReport(Node gpehNode, Node netNode, GpehReportType repType, CallTimePeriods period, File targetDir, IProgressMonitor monitor) {
         GpehReportCreator creator = new GpehReportCreator(netNode, gpehNode, NeoServiceProvider.getProvider().getService(), NeoServiceProvider.getProvider()
                 .getIndexService());
         creator.setMonitor(monitor);

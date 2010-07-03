@@ -73,6 +73,9 @@ public class GPEHReportWizardPage2 extends WizardPage {
     /** The period. */
     private LinkedHashMap<String, CallTimePeriods> period;
 
+    /** The c file type. */
+    private Combo cFileType;
+
     /**
      * Instantiates a new gPEH report wizard page2.
      * 
@@ -156,6 +159,13 @@ public class GPEHReportWizardPage2 extends WizardPage {
             }
         });
 
+        label = new Label(main, SWT.NONE);
+        label.setText("File type");
+        cFileType = new Combo(main, SWT.DROP_DOWN | SWT.READ_ONLY);
+        layoutData = new GridData(SWT.LEFT, SWT.FILL, false, false, 2, 1);
+        layoutData.minimumWidth = 200;
+        cFileType.setLayoutData(layoutData);
+
         setControl(main);
 
         init();
@@ -209,8 +219,15 @@ public class GPEHReportWizardPage2 extends WizardPage {
     private void init() {
         formReports();
         formPeriods();
+        formFileTypes();
         validateFinish();
+    }
 
+    private void formFileTypes() {
+        for (FileType fileType : FileType.values())
+            cFileType.add(fileType.toString());
+        cFileType.select(0);
+        cFileType.setEnabled(false);
     }
 
     /**
@@ -243,6 +260,10 @@ public class GPEHReportWizardPage2 extends WizardPage {
      */
     public CallTimePeriods getPeriod() {
         return period.get(cPeriods.getText());
+    }
+    
+    public FileType getFileType() {
+        return FileType.findByString(cFileType.getText());
     }
 
     /**
@@ -328,6 +349,26 @@ public class GPEHReportWizardPage2 extends WizardPage {
         public String getText(Object element) {
             return element.toString();
         }
+    }
+
+    public enum FileType {
+        CSV, PDF, XLS;
+        public String toString() {
+            return this.name().toLowerCase();
+        }
+        
+        public static FileType findByString(String string) {
+            if (string == null) {
+                return null;
+            }
+            for (FileType type : FileType.values()) {
+                if (type.toString().equals(string.toLowerCase())) {
+                    return type;
+                }
+            }
+            return null;
+        }
+
     }
 
 }
