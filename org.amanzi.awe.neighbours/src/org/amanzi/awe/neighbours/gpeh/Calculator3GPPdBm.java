@@ -23,16 +23,47 @@ package org.amanzi.awe.neighbours.gpeh;
  */
 public class Calculator3GPPdBm {
 
-    private static final int minRSCP = -115;
-    private static final int maxRSCP = 25;
-    private static final int stepRSCP = 1;
+    public enum ValueType {
+        RSCP(-115D, 25D, 1D, "RSCP"),
+        ECNO(-24D, 0D, 0.5D, "EcNo"),
+        UETXPOWER(-50D, 33D, 1D, "UeTxPower"),
+        RTWP(-112D, -50D, 0.1D, "RTWP");
+        private final double minValue;
+        private final double maxValue;
+        private final double step;
+        private final String stringVal;
 
-    public String getRSCP(int val3GPP) {
-        int curVal = val3GPP * stepRSCP + minRSCP;
-        return null;
+        /**
+         * @param minValue
+         * @param maxValue
+         * @param step
+         */
+        private ValueType(double minValue, double maxValue, double step, String stringVal) {
+            this.minValue = minValue;
+            this.maxValue = maxValue;
+            this.step = step;
+            this.stringVal = stringVal;
+        }
+
+        public String getValue(int val3GPP) {
+            double curVal = val3GPP * step + minValue;
+            if (getLeft(curVal) == null)
+                return stringVal + " < " + minValue;
+            else if (getRight(curVal) == null)
+                return maxValue + " <= " + stringVal;
+            return getLeft(curVal) + " <= " + stringVal + " < " + getRight(curVal);
+        }
+
+        public Double getLeft(double curVal) {
+            if (curVal >= minValue)
+                return curVal;
+            return null;
+        }
+
+        public Double getRight(double curVal) {
+            if (curVal < maxValue)
+                return curVal - step;
+            return null;
+        }
     }
-
-    // public Integer getLeftRSCP(){
-    //        
-    // }
 }
