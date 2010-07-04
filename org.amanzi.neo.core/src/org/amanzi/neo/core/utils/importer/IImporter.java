@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.afp.loaders;
+package org.amanzi.neo.core.utils.importer;
 
 /**
  * <p>

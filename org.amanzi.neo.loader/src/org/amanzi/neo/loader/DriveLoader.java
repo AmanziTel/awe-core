@@ -193,7 +193,10 @@ public abstract class DriveLoader extends AbstractLoader {
             Transaction tx = neo.beginTx();
             try {
                 Node reference = neo.getReferenceNode();
-                datasetNode = findOrCreateDatasetNode(reference, dataset);
+                // TODO test on correct creation!
+                if (datasetNode == null) {
+                    datasetNode = findOrCreateDatasetNode(reference, dataset);
+                }
                 Pair<Boolean, Node> pair = NeoUtils.findOrCreateFileNode(neo, datasetNode, basename, filename);
                 file = pair.getRight();
 
@@ -233,7 +236,7 @@ public abstract class DriveLoader extends AbstractLoader {
      * @return dataset node
      */
     protected final Node findOrCreateDatasetNode(Node root, final String datasetName) {
-
+        // TODO now work not fully correct - need testing!
         if (datasetName == null || datasetName.isEmpty()) {
             return null;
         }

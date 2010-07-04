@@ -11,16 +11,37 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.afp.loaders;
+package org.amanzi.neo.core.utils.export;
+
+import java.util.List;
+
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * Export handler mechanism
  * </p>
+ * 
  * @author TsAr
  * @since 1.0.0
  */
-public interface IImportParameter {
+public interface IExportHandler {
 
+    /**
+     * Inits
+     */
+    void init();
+
+    /**
+     * Handle data.
+     * 
+     * @param parameter the parameter
+     */
+    void handleHeaders(IExportProvider provider);
+
+    void handleData(List<Object> data);
+
+    /**
+     * Finish.
+     */
+    void finish();
 }

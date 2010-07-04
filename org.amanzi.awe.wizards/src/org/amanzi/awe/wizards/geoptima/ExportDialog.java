@@ -21,11 +21,10 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.Map.Entry;
+import java.util.StringTokenizer;
 
 import org.amanzi.awe.wizards.WizardsPlugin;
-import org.amanzi.awe.wizards.geoptima.export.AbstractExporter;
 import org.amanzi.awe.wizards.geoptima.export.NeoExportModelImpl;
 import org.amanzi.awe.wizards.geoptima.export.NeoExportParameter;
 import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
@@ -37,13 +36,14 @@ import org.amanzi.neo.core.utils.NeoTreeElement;
 import org.amanzi.neo.core.utils.NeoTreeLabelProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
+import org.amanzi.neo.core.utils.export.IExportProvider;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
 import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
@@ -428,7 +428,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
      *
      */
     protected void exportSpreadsheet() {
-        final List<AbstractExporter> exports = new ArrayList<AbstractExporter>();
+        final List<IExportProvider> exports = new ArrayList<IExportProvider>();
         Object[] elements = viewer.getCheckedElements();
         if (elements.length == 0) {
             return;
@@ -470,7 +470,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
      * Export.
      */
     protected void export() {
-        final List<AbstractExporter> exports = new ArrayList<AbstractExporter>();
+        final List<IExportProvider> exports = new ArrayList<IExportProvider>();
         Object[] elements = viewer.getCheckedElements();
         if (elements.length == 0) {
             return;
@@ -507,7 +507,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
                         try {
                             CSVWriter writer = new CSVWriter(new FileWriter(file));
                             monitor.beginTask("export to CSV", exports.size());
-                            for (AbstractExporter exporter : exports) {
+                            for (IExportProvider exporter : exports) {
                                 if (monitor.isCanceled()) {
                                     break;
                                 }
@@ -1053,7 +1053,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
      * @author tsinkel_a
      * @since 1.0.0
      */
-    public class DatasetExport extends AbstractExporter {
+    public class DatasetExport implements IExportProvider {
         
         /** The valid. */
         private boolean valid;
@@ -1166,7 +1166,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
      * @author TsAr
      * @since 1.0.0
      */
-    public class NetworkExport extends AbstractExporter {
+    public class NetworkExport implements IExportProvider {
 
         /** The valid. */
         private boolean valid;

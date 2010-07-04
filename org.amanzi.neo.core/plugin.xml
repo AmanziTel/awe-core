@@ -7,11 +7,5 @@
             class="org.amanzi.neo.core.preferences.NeoCorePreferenceInitializer">
       </initializer>
    </extension>
-   <extension
-         point="org.eclipse.core.runtime.preferences">
-      <initializer
-            class="org.amanzi.neo.core.AbstractPreferenceInitializer1">
-      </initializer>
-   </extension>
 
 </plugin>

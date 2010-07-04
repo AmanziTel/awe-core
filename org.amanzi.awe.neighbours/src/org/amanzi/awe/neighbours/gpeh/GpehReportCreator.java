@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -56,6 +57,9 @@ import org.amanzi.neo.core.utils.GpehReportUtil.ReportsRelations;
 import org.amanzi.neo.core.utils.NeoArray;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.core.utils.export.CommonExporter;
+import org.amanzi.neo.core.utils.export.IExportHandler;
+import org.amanzi.neo.core.utils.export.IExportProvider;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.amanzi.splash.utilities.SpreadsheetCreator;
@@ -137,6 +141,156 @@ public class GpehReportCreator {
         if (maxRange == 0) {
             maxRange = 3000;
         }
+    }
+
+    public void exportToCSV(File output, GpehReportType report, CallTimePeriods period, IProgressMonitor monitor) {
+        IExportHandler handler = new CommonCSVHandler(output, monitor);
+        IExportProvider provider = defineProvider(report, period);
+        Transaction tx = service.beginTx();
+        try {
+        if (provider.isValid()) {
+            CommonExporter export = new CommonExporter(handler, provider);
+            export.process(monitor);
+        }
+        } finally {
+            tx.finish();
+        }
+    }
+
+    /**
+     * @param report
+     * @param period
+     * @return
+     */
+    private IExportProvider defineProvider(GpehReportType report, CallTimePeriods period) {
+        IExportProvider result = null;
+        switch (report) {
+        case UE_TX_POWER_ANALYSIS:
+            createMatrix();
+            createUeTxPowerCellReport(period);
+            result = getUeTxPowerCellProvider(period);
+            return result;
+        case IDCM_INTRA:
+            createIntraIDCMSpreadSheet("IntraMatrix");
+            return result;
+        case IDCM_INTER:
+            createInterIDCMSpreadSheet("InterMatrix");
+            return result;
+        case CELL_RSCP_ANALYSIS:
+            // TODO remove after implementing and testing
+            // if (true)return;
+            createRSCPCellReport(period);
+            createRSCPCellSpreadSheet("RSCPCell", period);
+            return null;
+        case CELL_ECNO_ANALYSIS:
+            // TODO remove after implementing and testing
+            // if (true)return;
+            createEcNoCellReport(period);
+            createEcNoCellSpreadSheet("RSCPCell", period);
+            return null;
+        default:
+            return null;
+            // break;
+        }
+    }
+
+    /**
+     * @param period
+     * @return
+     */
+    private IExportProvider getUeTxPowerCellProvider(final CallTimePeriods period) {
+        final CellUeTxPowerAnalisis analyse = getReportModel().getCellUeTxPowerAnalisis(period);
+
+        final Node sourceMainNode = analyse.getMainNode();
+        final Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(gpeh, service);
+        final List<String> headers = new LinkedList<String>();
+        headers.add("Cell Name");
+        headers.add("Date");
+        headers.add("Time");
+        headers.add("Resolution");
+        for (int i = 21; i <= 104; i++) {
+            headers.add(new StringBuilder("UeTxPower=").append(i).append(" (3GPP)").toString());
+        }
+        // TODO create public class
+        return new IExportProvider() {
+            Iterator<Relationship> bestCellIteranor = null;
+            Iterator<IStatisticElementNode> iter = null;
+            final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+            String name = "";
+            Calendar calendar = Calendar.getInstance();
+            @Override
+            public boolean isValid() {
+                return true;
+            }
+
+            @Override
+            public boolean hasNextLine() {
+                if (bestCellIteranor == null) {
+                    bestCellIteranor = sourceMainNode.getRelationships(Direction.OUTGOING).iterator();
+
+                }
+                if (iter == null || !iter.hasNext()) {
+                    defineStructIterator();
+                }
+                return iter != null && iter.hasNext();
+            }
+
+            @Override
+            public List<Object> getNextLine() {
+                IStatisticElementNode statNode = iter.next();
+                List<Object> result = new ArrayList<Object>();
+                result.add(name);
+                calendar.setTimeInMillis(statNode.getStartTime());
+                result.add(dateFormat.format(calendar.getTime()));
+                result.add(String.valueOf(calendar.get(Calendar.HOUR_OF_DAY)));
+                result.add(period.getId());
+                if (NeoArray.hasArray(CellUeTxPowerAnalisis.ARRAY_NAME, statNode.getNode(), service)) {
+                    NeoArray array = new NeoArray(statNode.getNode(), CellEcNoAnalisis.ARRAY_NAME, service);
+                    for (int i = 21; i <= 104; i++) {
+                        Object value = array.getValue(i);
+                        if (value == null) {
+                            value = 0;
+                        }
+                        result.add(String.valueOf(value));
+                    }
+                } else {
+                    for (int i = 21; i <= 104; i++) {
+                        result.add("0");
+                    }
+                }
+
+                return result;
+            }
+
+            private void defineStructIterator() {
+                while (bestCellIteranor.hasNext()) {
+                    Relationship rel = bestCellIteranor.next();
+                    String bestCellId = StatisticNeoService.getBestCellId(rel.getType().name());
+                    if (bestCellId != null) {
+                        Node sector = service.getNodeById(Long.parseLong(bestCellId));
+                        name = (String)sector.getProperty("userLabel", "");
+                        if (StringUtil.isEmpty(name)) {
+                            name = NeoUtils.getNodeName(sector, service);
+                        }
+                        StatisticByPeriodStructure structure = analyse.getStatisticStructure(bestCellId);
+                        iter = structure.getStatNedes(minMax.getLeft(), minMax.getRight()).iterator();
+                        if (iter.hasNext()) {
+                            return;
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public List<String> getHeaders() {
+                return headers;
+            }
+
+            @Override
+            public String getDataName() {
+                return "Ue tx power analysis";
+            }
+        };
     }
 
     /**
@@ -319,16 +473,16 @@ public class GpehReportCreator {
                 // Set<Node> activeSet = getActiveSet(eventNode);
                 Node bestSector = getBestSector(eventNode);
                 if (bestSector == null) {
-                    LOGGER.debug(String.format("Event node: %s, not found best cell", eventNode));
+                    LOGGER.warn(String.format("Event node: %s, not found best cell", eventNode));
                     continue;
                 }
                 MeasurementCell bestCell = new MeasurementCell(bestSector);
-                if (!setupLocation(bestCell)) {
-                    LOGGER.debug(String.format("Event node: %s, not found location for best cell %s", eventNode, bestCell));
+                String type = (String)eventNode.getProperty(GpehReportUtil.MR_TYPE, "");
+                if (!setupLocation(bestCell) && !GpehReportUtil.MR_TYPE_UE_INTERNAL.equals(type)) {
+                    LOGGER.error(String.format("Event node: %s, not found location for best cell %s", eventNode, bestCell));
                     continue;
                 }
                 Set<RrcMeasurement> measSet = getRncMeasurementSet(eventNode, bestCell);
-                String type = (String)eventNode.getProperty(GpehReportUtil.MR_TYPE, "");
                 // if (bestCell == null) {
                 // LOGGER.debug(String.format("Event node: %s, not found best cell", eventNode));
                 // continue;
@@ -342,6 +496,12 @@ public class GpehReportCreator {
                     tableRoot = iRATMatrix;
                     // TODO remove after
                     LOGGER.debug("Event node " + eventNode + " with type " + type + " was passed");
+                    continue;
+                } else if (type.equals(GpehReportUtil.MR_TYPE_UE_INTERNAL)) {
+                    tableRoot = ueTxPAnalyse.getMainNode();
+                    Node tableNode = findOrCreateTableNode(bestCell, tableRoot, type);
+                    tableNode.createRelationshipTo(eventNode, ReportsRelations.SOURCE_MATRIX_EVENT);
+                    analyseBestCelltxPower(tableNode, bestCell, eventNode);
                     continue;
                 } else {
                     LOGGER.debug("Event node " + eventNode + " with type " + type + " was passed");
@@ -379,6 +539,35 @@ public class GpehReportCreator {
             }
             tx.success();
             model.findMatrixNodes();
+        } finally {
+            tx.finish();
+        }
+
+    }
+
+    /**
+     * @param bestCell
+     * @param tableRoot
+     * @param type
+     * @return
+     */
+    private Node findOrCreateTableNode(MeasurementCell bestCell, Node tableRoot, String type) {
+        String id = String.valueOf(bestCell.getCell().getId());
+        String indexName = GpehReportUtil.getMatrixLuceneIndexName(model.getNetworkName(), model.getGpehEventsName(), type);
+        Transaction tx = service.beginTx();
+        try {
+            Node result = luceneService.getSingleNode(indexName, id);
+            if (result == null) {
+                assert !"main".equals(Thread.currentThread().getName());
+                result = service.createNode();
+                tableRoot.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
+                Relationship rel = result.createRelationshipTo(bestCell.getCell(), ReportsRelations.BEST_CELL);
+                rel.setProperty(GpehReportUtil.REPORTS_ID, indexName);
+                luceneService.index(result, indexName, id);
+                countRow++;
+                tx.success();
+            }
+            return result;
         } finally {
             tx.finish();
         }
@@ -427,6 +616,37 @@ public class GpehReportCreator {
 
     }
 
+    private void analyseBestCelltxPower(Node tableNode, MeasurementCell bestCell, Node eventNode) {
+        if (bestCell.getMeasurement() == null) {
+            LOGGER.error(String.format("tableNode node: %s, not found measurment for best cell %s", tableNode, bestCell));
+            return;
+        }
+        long logTime = System.currentTimeMillis();
+        String bestCellName = String.valueOf(bestCell.getCell().getId());
+        StatisticByPeriodStructure statisticStructure = ueTxPAnalyse.getStatisticStructure(bestCellName);
+        if (statisticStructure == null) {
+            GPEHFakeStatHandler handler = new GPEHFakeStatHandler();
+            TimePeriodStructureCreator creator = new TimePeriodStructureCreator(ueTxPAnalyse.getMainNode(), bestCellName, minMax.getLeft(), minMax.getRight(),
+                    CallTimePeriods.HOURLY, handler, handler, service);
+            statisticStructure = creator.createStructure();
+        }
+        Integer uepwr = bestCell.getMeasurement().getUeTxPower();
+        Long time = NeoUtils.getNodeTime(eventNode);
+        // TODO testing!
+        if (uepwr != null) {
+            IStatisticElementNode node = statisticStructure.getStatisticNode(time);
+            NeoArray neoArray = new NeoArray(node.getNode(), CellUeTxPowerAnalisis.ARRAY_NAME, 1, service);
+            Node arrNode = neoArray.findOrCreateNode(uepwr);
+            Integer count = (Integer)neoArray.getValueFromNode(arrNode);
+            count = count == null ? 1 : count + 1;
+            neoArray.setValueToNode(arrNode, count);
+            arrNode.createRelationshipTo(eventNode, ReportsRelations.SOURCE_UE_TX_POWER_EVENT);
+        } else {
+            LOGGER.info("uePwr NotFound " + bestCellName);
+        }
+
+    }
+
     /**
      * Analyse best cell.
      * 
@@ -437,8 +657,18 @@ public class GpehReportCreator {
      */
     private void analyseBestCell(Node tableNode, MeasurementCell bestCell, MeasurementCell sector, Node eventNode) {
 
+        if (bestCell.getMeasurement() == null) {
+            LOGGER.error(String.format("tableNode node: %s, not found measurment for best cell %s", tableNode, bestCell));
+            return;
+        }
+        if (bestCell.getMeasurement().getEcNo() == null || bestCell.getMeasurement().getRscp() == null) {
+            LOGGER.error(String.format("tableNode node: %s, best cell %s: not found all necessary measurments: ecno=%s, rscp=%s", tableNode, bestCell, bestCell.getMeasurement()
+                    .getEcNo(), bestCell.getMeasurement().getRscp()));
+            return;
+        }
         long logTime = System.currentTimeMillis();
         String bestCellName = String.valueOf(bestCell.getCell().getId());
+        Long time = NeoUtils.getNodeTime(eventNode);
         StatisticByPeriodStructure statisticStructure = rspEcNoAnalyse.getStatisticStructure(bestCellName);
         if (statisticStructure == null) {
             GPEHFakeStatHandler handler = new GPEHFakeStatHandler();
@@ -446,7 +676,6 @@ public class GpehReportCreator {
                     CallTimePeriods.HOURLY, handler, handler, service);
             statisticStructure = creator.createStructure();
         }
-        Long time = NeoUtils.getNodeTime(eventNode);
         IStatisticElementNode node = statisticStructure.getStatisticNode(time);
         Integer rscpValue = bestCell.getMeasurement().getRscp();
         // for others reports we should store store information about all events;
@@ -463,27 +692,7 @@ public class GpehReportCreator {
         count = count == null ? 1 : count + 1;
         neoArray.setValueToNode(arrNode, count);
         arrNode.createRelationshipTo(eventNode, ReportsRelations.SOURCE_RSCP_ECNO_EVENT);
-        statisticStructure = ueTxPAnalyse.getStatisticStructure(bestCellName);
-        if (statisticStructure == null) {
-            GPEHFakeStatHandler handler = new GPEHFakeStatHandler();
-            TimePeriodStructureCreator creator = new TimePeriodStructureCreator(ueTxPAnalyse.getMainNode(), bestCellName, minMax.getLeft(), minMax.getRight(),
-                    CallTimePeriods.HOURLY, handler, handler, service);
-            statisticStructure = creator.createStructure();
-        }
-        Integer uepwr = bestCell.getMeasurement().getUeTxPower();
-        // TODO testing!
-        if (uepwr != null) {
-            node = statisticStructure.getStatisticNode(time);
-            neoArray = new NeoArray(node.getNode(), CellUeTxPowerAnalisis.ARRAY_NAME, 1, service);
-            arrNode = neoArray.findOrCreateNode(uepwr);
-            count = (Integer)neoArray.getValueFromNode(arrNode);
-            count = count == null ? 1 : count + 1;
-            neoArray.setValueToNode(arrNode, count);
-            arrNode.createRelationshipTo(eventNode, ReportsRelations.SOURCE_UE_TX_POWER_EVENT);
 
-        } else {
-            LOGGER.info("uePwr NotFound " + bestCellName);
-        }
         logTime = System.currentTimeMillis() - logTime;
         if (logTime > 5) {
             LOGGER.info("STAT CREATE TIME " + logTime);
@@ -624,6 +833,7 @@ public class GpehReportCreator {
                 boolean def = !relations.isEmpty();
                 tableNode.setProperty(MatrixProperties.DEFINED_NBR, def);
             }
+
             // Tier Distance - not created
 
             // # of MR for best cell
@@ -631,25 +841,33 @@ public class GpehReportCreator {
 
             // # of MR for Interfering cell
             // can find - calculate count of relation
-
-            double deltaDbm = (double)Math.abs(bestCell.getMeasurement().getEcNo() - sector.getMeasurement().getEcNo()) / 2;
-            if (deltaDbm <= 3) {
-                updateCounter(tableNode, MatrixProperties.EC_NO_DELTA_PREFIX + 1);
+            if (bestCell.getMeasurement() == null) {
+                LOGGER.warn(String.format("tableNode node: %s, not found measurment for best cell %s", tableNode, bestCell));
+                return;
             }
-            if (deltaDbm <= 6) {
-                updateCounter(tableNode, MatrixProperties.EC_NO_DELTA_PREFIX + 2);
+            double deltaDbm = -1;
+            if (bestCell.getMeasurement().getEcNo() != null && sector.getMeasurement().getEcNo() != null) {
+                deltaDbm = (double)Math.abs(bestCell.getMeasurement().getEcNo() - sector.getMeasurement().getEcNo()) / 2;
+                if (deltaDbm <= 3) {
+                    updateCounter(tableNode, MatrixProperties.EC_NO_DELTA_PREFIX + 1);
+                }
+                if (deltaDbm <= 6) {
+                    updateCounter(tableNode, MatrixProperties.EC_NO_DELTA_PREFIX + 2);
 
-            }
-            if (deltaDbm <= 9) {
-                updateCounter(tableNode, MatrixProperties.EC_NO_DELTA_PREFIX + 3);
+                }
+                if (deltaDbm <= 9) {
+                    updateCounter(tableNode, MatrixProperties.EC_NO_DELTA_PREFIX + 3);
 
-            }
-            if (deltaDbm <= 12) {
-                updateCounter(tableNode, MatrixProperties.EC_NO_DELTA_PREFIX + 4);
+                }
+                if (deltaDbm <= 12) {
+                    updateCounter(tableNode, MatrixProperties.EC_NO_DELTA_PREFIX + 4);
 
-            }
-            if (deltaDbm <= 15) {
-                updateCounter(tableNode, MatrixProperties.EC_NO_DELTA_PREFIX + 5);
+                }
+                if (deltaDbm <= 15) {
+                    updateCounter(tableNode, MatrixProperties.EC_NO_DELTA_PREFIX + 5);
+                }
+            } else {
+                LOGGER.warn("No found ecno" + bestCell + "\t" + sector);
             }
             if (bestCell.getMeasurement().getRscp() != null && sector.getMeasurement().getRscp() != null) {
                 double deltaRscp = (double)Math.abs(bestCell.getMeasurement().getRscp() - sector.getMeasurement().getRscp()) / 1;
@@ -671,40 +889,42 @@ public class GpehReportCreator {
             } else {
                 LOGGER.warn("No found rscp" + bestCell + "\t" + sector);
             }
-            int deltaPosition = sector.getMeasurement().getPosition() - bestCell.getMeasurement().getPosition();
-            if (deltaPosition < 0) {
-                LOGGER.warn("wrong best cell position: " + bestCell.getMeasurement().getPosition());
-                deltaPosition = -deltaPosition;
-            }
-            if (sector.getMeasurement().getPosition() == 1) {
-                if (deltaDbm <= 6) {
-                    updateCounter(tableNode, MatrixProperties.POSITION_PREFIX + 1);
-                } else {
-                    LOGGER.info("found sector with position 2 but wrong delta" + deltaDbm);
+            if (deltaDbm >= 0) {
+                int deltaPosition = sector.getMeasurement().getPosition() - bestCell.getMeasurement().getPosition();
+                if (deltaPosition < 0) {
+                    LOGGER.warn("wrong best cell position: " + bestCell.getMeasurement().getPosition());
+                    deltaPosition = -deltaPosition;
                 }
-            } else if (sector.getMeasurement().getPosition() == 2) {
-                if (deltaDbm <= 6) {
-                    updateCounter(tableNode, MatrixProperties.POSITION_PREFIX + 2);
-                } else {
-                    LOGGER.info("found sector with position 3 but wrong delta" + deltaDbm);
-                }
-            } else if (sector.getMeasurement().getPosition() == 3) {
-                if (deltaDbm <= 8) {
-                    updateCounter(tableNode, MatrixProperties.POSITION_PREFIX + 3);
-                } else {
-                    LOGGER.info("found sector with position 3 but wrong delta" + deltaDbm);
-                }
-            } else if (sector.getMeasurement().getPosition() == 4) {
-                if (deltaDbm <= 8) {
-                    updateCounter(tableNode, MatrixProperties.POSITION_PREFIX + 4);
-                } else {
-                    LOGGER.info("found sector with position 3 but wrong delta" + deltaDbm);
-                }
-            } else if (sector.getMeasurement().getPosition() == 5) {
-                if (deltaDbm <= 8) {
-                    updateCounter(tableNode, MatrixProperties.POSITION_PREFIX + 5);
-                } else {
-                    LOGGER.info("found sector with position 3 but wrong delta" + deltaDbm);
+                if (sector.getMeasurement().getPosition() == 1) {
+                    if (deltaDbm <= 6) {
+                        updateCounter(tableNode, MatrixProperties.POSITION_PREFIX + 1);
+                    } else {
+                        LOGGER.info("found sector with position 2 but wrong delta" + deltaDbm);
+                    }
+                } else if (sector.getMeasurement().getPosition() == 2) {
+                    if (deltaDbm <= 6) {
+                        updateCounter(tableNode, MatrixProperties.POSITION_PREFIX + 2);
+                    } else {
+                        LOGGER.info("found sector with position 3 but wrong delta" + deltaDbm);
+                    }
+                } else if (sector.getMeasurement().getPosition() == 3) {
+                    if (deltaDbm <= 8) {
+                        updateCounter(tableNode, MatrixProperties.POSITION_PREFIX + 3);
+                    } else {
+                        LOGGER.info("found sector with position 3 but wrong delta" + deltaDbm);
+                    }
+                } else if (sector.getMeasurement().getPosition() == 4) {
+                    if (deltaDbm <= 8) {
+                        updateCounter(tableNode, MatrixProperties.POSITION_PREFIX + 4);
+                    } else {
+                        LOGGER.info("found sector with position 3 but wrong delta" + deltaDbm);
+                    }
+                } else if (sector.getMeasurement().getPosition() == 5) {
+                    if (deltaDbm <= 8) {
+                        updateCounter(tableNode, MatrixProperties.POSITION_PREFIX + 5);
+                    } else {
+                        LOGGER.info("found sector with position 3 but wrong delta" + deltaDbm);
+                    }
                 }
             }
             tx.success();
@@ -1959,7 +2179,7 @@ public class GpehReportCreator {
             Node parentNode = service.createNode();
             parentNode.setProperty(CellReportsProperties.PERIOD_ID, periods.getId());
             model.getRoot().createRelationshipTo(parentNode, periods.getPeriodRelation(CellUeTxPowerAnalisis.PRFIX));
-            CellRscpEcNoAnalisis sourceModel = model.getCellRscpEcNoAnalisis(CallTimePeriods.HOURLY);
+            CellUeTxPowerAnalisis sourceModel = model.getCellUeTxPowerAnalisis(CallTimePeriods.HOURLY);
             Node sourceMainNode = sourceModel.getMainNode();
             Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(gpeh, service);
             for (Relationship rel : sourceMainNode.getRelationships(Direction.OUTGOING)) {

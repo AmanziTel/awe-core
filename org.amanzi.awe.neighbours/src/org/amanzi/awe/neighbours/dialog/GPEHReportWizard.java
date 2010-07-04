@@ -71,11 +71,13 @@ public class GPEHReportWizard extends Wizard implements INewWizard {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-
+                GpehReportCreator creator = new GpehReportCreator(netNode, gpehNode, NeoServiceProvider.getProvider().getService(), NeoServiceProvider.getProvider()
+                        .getIndexService());
+                creator.setMonitor(monitor);
                 if (fileType == FileType.CSV) {
                     for (GpehReportType type : repTypes) {
                         final File targetFile = new File(targetDir + "\\" + type.toString() + "." + fileType.toString());
-                        createReport(gpehNode, netNode, type, period, targetFile, monitor);
+                        creator.exportToCSV(targetFile, type, period, monitor);
                     }
                 }
                 return Status.OK_STATUS;

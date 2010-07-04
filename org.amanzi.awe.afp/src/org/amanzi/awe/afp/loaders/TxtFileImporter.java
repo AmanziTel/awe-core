@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import org.amanzi.awe.console.AweConsolePlugin;
+import org.amanzi.neo.core.utils.importer.IImportParameter;
+import org.amanzi.neo.core.utils.importer.IImporter;
 import org.amanzi.neo.loader.CountingFileInputStream;
 
 /**

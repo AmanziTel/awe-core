@@ -11,16 +11,16 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.wizards.geoptima.export;
+package org.amanzi.neo.core.utils.importer;
 
 /**
+ * TODO Purpose of 
  * <p>
- * Export parameter interface
+ *
  * </p>
- * 
- * @author tsinkel_a
+ * @author TsAr
  * @since 1.0.0
  */
-public interface IExportParameter {
+public interface IImportParameter {
 
 }

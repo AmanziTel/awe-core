@@ -16,6 +16,7 @@ package org.amanzi.awe.wizards.geoptima.export;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.amanzi.neo.core.utils.export.IExportParameter;
 import org.neo4j.graphdb.Node;
 
 /**

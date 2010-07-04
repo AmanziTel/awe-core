@@ -11,9 +11,12 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.afp.loaders;
+package org.amanzi.awe.afp.providers;
 
+import org.amanzi.awe.afp.loaders.TxtFileImporter;
 import org.amanzi.awe.afp.loaders.TxtFileImporter.TxtLineParameter;
+import org.amanzi.neo.core.utils.importer.IImportHandler;
+import org.amanzi.neo.core.utils.importer.IImportParameter;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 

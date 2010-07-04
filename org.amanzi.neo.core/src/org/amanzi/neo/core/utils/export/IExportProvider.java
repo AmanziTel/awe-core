@@ -11,32 +11,48 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.afp.loaders;
+package org.amanzi.neo.core.utils.export;
+
+import java.util.List;
 
 /**
  * <p>
- * Import handler interface
+ * IExportProvider
  * </p>
  * 
  * @author TsAr
  * @since 1.0.0
  */
-public interface IImportHandler {
+public interface IExportProvider {
 
     /**
-     * Inits
-     */
-    void init();
-
-    /**
-     * Handle data.
+     * Checks if is valid.
      * 
-     * @param parameter the parameter
+     * @return true, if is valid
      */
-    void handleData(IImportParameter parameter);
+    boolean isValid();
 
     /**
-     * Finish.
+     * Checks for next line.
+     * 
+     * @return true, if successful
      */
-    void finish();
+    boolean hasNextLine();
+
+      String getDataName();
+
+    /**
+     * Gets the next line.
+     * 
+     * @return the next line or null if no line exist
+     */
+    List<Object> getNextLine();
+
+    /**
+     * Gets the headers.
+     * 
+     * @return the headers
+     */
+    List<String> getHeaders();
+
 }

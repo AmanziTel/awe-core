@@ -15,6 +15,8 @@ package org.amanzi.awe.wizards.geoptima.export;
 
 import java.util.List;
 
+import org.amanzi.neo.core.utils.export.IExportParameter;
+
 /**
  * <p>
  * Abstract Export model

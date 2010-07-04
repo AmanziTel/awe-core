@@ -4,8 +4,8 @@ import java.net.URL;
 import java.util.List;
 
 import org.amanzi.awe.wizards.geoptima.ExportDialog.NetworkExport;
-import org.amanzi.awe.wizards.geoptima.export.AbstractExporter;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.export.IExportProvider;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.ui.SplashPlugin;
 import org.amanzi.splash.ui.wizards.CreateSpreadsheetOperation;
@@ -46,12 +46,12 @@ import org.rubypeople.rdt.core.RubyModelException;
  * @since 1.0.0
  */
 public class ExportToSpreadsheetWizard extends SplashNewSpreadsheetWizard{
-    private final List<AbstractExporter> exports;
+    private final List<IExportProvider> exports;
 
     /**
      * @param exports
      */
-    public ExportToSpreadsheetWizard(List<AbstractExporter> exports) {
+    public ExportToSpreadsheetWizard(List<IExportProvider> exports) {
         this.exports = exports;
     }
 
@@ -75,7 +75,7 @@ public class ExportToSpreadsheetWizard extends SplashNewSpreadsheetWizard{
             monitor.setTaskName("Create and import data...");
             SpreadsheetCreator spreadsheetCreator = new SpreadsheetCreator(new Path(containerName), fileName);
             int row=0;
-            for (AbstractExporter exporter : exports) {
+            for (IExportProvider exporter : exports) {
                 if (monitor.isCanceled()) {
                     break;
                 }
