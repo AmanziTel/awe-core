@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Version: 1.1.1
+Bundle-Version: 1.1.1.awe
 Export-Package: 
  com.lowagie.text,
  com.lowagie.text.exceptions,
