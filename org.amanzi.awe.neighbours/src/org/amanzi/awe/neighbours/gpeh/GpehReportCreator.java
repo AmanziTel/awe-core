@@ -170,24 +170,30 @@ public class GpehReportCreator {
             createUeTxPowerCellReport(period);
             result = getUeTxPowerCellProvider(period);
             return result;
+        case CELL_RF_CORRELATION:
+            createMatrix();
+            createRscpEcNoCellReport(period);
+            result = getCellCorrelationProvider(period);
+            return result;
         case IDCM_INTRA:
-            createIntraIDCMSpreadSheet("IntraMatrix");
+            createMatrix();
+            result = getIntraMatrixProvider();
             return result;
         case IDCM_INTER:
-            createInterIDCMSpreadSheet("InterMatrix");
-            return result;
+            createMatrix();
+            return getInterMatrixProvider();
         case CELL_RSCP_ANALYSIS:
+            createMatrix();
             // TODO remove after implementing and testing
             // if (true)return;
             createRSCPCellReport(period);
-            createRSCPCellSpreadSheet("RSCPCell", period);
-            return null;
+            return getCellRSCPProvider(period);
         case CELL_ECNO_ANALYSIS:
+            createMatrix();
             // TODO remove after implementing and testing
             // if (true)return;
             createEcNoCellReport(period);
-            createEcNoCellSpreadSheet("RSCPCell", period);
-            return null;
+            return getCellEcnoProvider(period);
         default:
             return null;
             // break;
@@ -195,8 +201,543 @@ public class GpehReportCreator {
     }
 
     /**
+     *
      * @param period
      * @return
+     */
+    private IExportProvider getCellCorrelationProvider(final CallTimePeriods period) {
+        final CellRscpEcNoAnalisis analyse = getReportModel().getCellRscpEcNoAnalisis(period);
+
+        final Node sourceMainNode = analyse.getMainNode();
+        final Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(gpeh, service);
+        final List<String> headers = new LinkedList<String>();
+        headers.add("Cell Name");
+        headers.add("Date");
+        headers.add("Time");
+        headers.add("Resolution");
+        final int ecnoRange=6;
+        final List<String> ecnoRangeNames=new ArrayList<String>();
+        ecnoRangeNames.add("ECNO-18");
+        ecnoRangeNames.add("ECNO-15");
+        ecnoRangeNames.add("ECNO-12");
+        ecnoRangeNames.add("ECNO-9");
+        ecnoRangeNames.add("ECNO-6");
+        ecnoRangeNames.add("ECNO-0");
+        final int rscpRange=7;
+        final List<String> rscpRangeNames=new ArrayList<String>();
+        rscpRangeNames.add("RSCP-105");
+        rscpRangeNames.add("RSCP-100");
+        rscpRangeNames.add("RSCP-95");
+        rscpRangeNames.add("RSCP-90");
+        rscpRangeNames.add("RSCP-80");
+        rscpRangeNames.add("RSCP-70");
+        rscpRangeNames.add("RSCP-25");
+        for (String rscpName:rscpRangeNames) {
+            for(String ecnoName:ecnoRangeNames){
+                headers.add(new StringBuilder(ecnoName).append("_").append(ecnoName).toString());
+            }
+        }
+        // TODO create public class
+        return new IExportProvider() {
+            Iterator<Relationship> bestCellIteranor = null;
+            Iterator<IStatisticElementNode> iter = null;
+            final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+            String name = "";
+            Calendar calendar = Calendar.getInstance();
+            @Override
+            public boolean isValid() {
+                return true;
+            }
+
+            @Override
+            public boolean hasNextLine() {
+                if (bestCellIteranor == null) {
+                    bestCellIteranor = sourceMainNode.getRelationships(Direction.OUTGOING).iterator();
+
+                }
+                if (iter == null || !iter.hasNext()) {
+                    defineStructIterator();
+                }
+                return iter != null && iter.hasNext();
+            }
+
+            @Override
+            public List<Object> getNextLine() {
+                //TODO implement
+                IStatisticElementNode statNode = iter.next();
+                List<Object> result = new ArrayList<Object>();
+                result.add(name);
+                calendar.setTimeInMillis(statNode.getStartTime());
+                result.add(dateFormat.format(calendar.getTime()));
+                result.add(String.valueOf(calendar.get(Calendar.HOUR_OF_DAY)));
+                result.add(period.getId());
+                if (NeoArray.hasArray(CellRscpEcNoAnalisis.ARRAY_NAME, statNode.getNode(), service)) {
+                    NeoArray array = new NeoArray(statNode.getNode(), CellRscpEcNoAnalisis.ARRAY_NAME, service);
+                    for (int ecNo = 0; ecNo <= 49; ecNo++) {
+                        int count = 0;
+                        for (int rscp = 0; rscp <= 91; rscp++) {
+                            
+                        }
+                    }
+                    for (int i = 21; i <= 104; i++) {
+                        Object value = array.getValue(i);
+                        if (value == null) {
+                            value = 0;
+                        }
+                        result.add(value);
+                    }
+                } else {
+                    for (int rscp=0;rscp<ecnoRange;rscp++) {
+                        for(int ecno=0;ecno<ecnoRange;ecno++){
+                            result.add(0);
+                        }
+                    }    
+                }
+
+                return result;
+            }
+
+            private void defineStructIterator() {
+                while (bestCellIteranor.hasNext()) {
+                    Relationship rel = bestCellIteranor.next();
+                    String bestCellId = StatisticNeoService.getBestCellId(rel.getType().name());
+                    if (bestCellId != null) {
+                        Node sector = service.getNodeById(Long.parseLong(bestCellId));
+                        name = (String)sector.getProperty("userLabel", "");
+                        if (StringUtil.isEmpty(name)) {
+                            name = NeoUtils.getNodeName(sector, service);
+                        }
+                        StatisticByPeriodStructure structure = analyse.getStatisticStructure(bestCellId);
+                        iter = structure.getStatNedes(minMax.getLeft(), minMax.getRight()).iterator();
+                        if (iter.hasNext()) {
+                            return;
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public List<String> getHeaders() {
+                return headers;
+            }
+
+            @Override
+            public String getDataName() {
+                return "CELL RF CORRELATION ANALYSIS";
+            }
+        };
+
+    }
+
+    /**
+     * @return
+     */
+    private IExportProvider getInterMatrixProvider() {
+        GpehReportModel mdl = getReportModel();
+        final InterFrequencyICDM matrix = mdl.getInterFrequencyICDM();
+        final List<String> headers = new LinkedList<String>();
+        headers.add("Serving cell name");
+        headers.add("Serving PSC");
+        headers.add("Serving cell UARFCN");
+        headers.add("Overlapping cell name");
+        headers.add("Interfering PSC");
+        headers.add("Overlapping cell UARCFN");
+        headers.add("Defined NBR");
+        headers.add("Distance");
+        headers.add("Tier Distance");
+        headers.add("# of MR for best cell");
+        headers.add("# of MR for Interfering cell");
+        headers.add("EcNo 1");
+        headers.add("EcNo 2");
+        headers.add("EcNo 3");
+        headers.add("EcNo 4");
+        headers.add("EcNo 5");
+        headers.add("RSCP1_14");
+        headers.add("RSCP2_14");
+        headers.add("RSCP3_14");
+        headers.add("RSCP4_14");
+        headers.add("RSCP5_14");
+        headers.add("RSCP1_10");
+        headers.add("RSCP2_10");
+        headers.add("RSCP3_10");
+        headers.add("RSCP4_10");
+        headers.add("RSCP5_10");
+        final Iterator<Node> rowIterator = matrix.getRowTraverser().iterator();
+        // TODO create public class
+        return new IExportProvider() {
+            @Override
+            public boolean isValid() {
+                return true;
+            }
+
+            @Override
+            public boolean hasNextLine() {
+                return rowIterator.hasNext();
+            }
+
+            @Override
+            public List<Object> getNextLine() {
+                List<Object> result = new ArrayList<Object>();
+                Node tblRow = rowIterator.next();
+                // Serving cell name
+                String bestCellName = matrix.getBestCellName(tblRow);
+                result.add(bestCellName);
+                // psc
+                String value = matrix.getBestCellPSC(tblRow);
+                result.add(bestCellName);
+                // UARFCN
+                result.add(matrix.getBestCellUARFCN(tblRow));
+                // Interfering cell name
+                value = matrix.getInterferingCellName(tblRow);
+                result.add(bestCellName);
+                // Interfering PSC
+                value = matrix.getInterferingCellPSC(tblRow);
+                result.add(value);
+                // UARFCN
+                result.add(matrix.getInterferingCellUARFCN(tblRow));
+                // Defined NBR
+                result.add(matrix.isDefinedNbr(tblRow));
+                // Distance
+                result.add(matrix.getDistance(tblRow));
+                // Tier Distance
+                value = String.valueOf("N/A");
+                result.add(value);
+                // # of MR for best cell
+                result.add(matrix.getNumMRForBestCell(tblRow));
+                // # of MR for Interfering cell
+                result.add(matrix.getNumMRForInterferingCell(tblRow));
+                // EcNo 1-5
+                for (int i = 1; i <= 5; i++) {
+                    result.add(matrix.getEcNo(i, tblRow));
+                }
+                for (int i = 1; i <= 5; i++) {
+                    result.add(matrix.getRSCP(i, 14, tblRow));
+                }
+                for (int i = 1; i <= 5; i++) {
+                    result.add(matrix.getRSCP(i, 10, tblRow));
+                }
+                return result;
+            }
+
+            @Override
+            public List<String> getHeaders() {
+                return headers;
+            }
+
+            @Override
+            public String getDataName() {
+                return "INTRA_ICDM";
+            }
+        };
+
+    }
+
+    /**
+     * Gets the cell ecno provider.
+     * 
+     * @param period the period
+     * @return the cell ecno provider
+     */
+    private IExportProvider getCellEcnoProvider(final CallTimePeriods period) {
+        final CellEcNoAnalisis analyse = getReportModel().getCellEcNoAnalisis(period);
+        final Node sourceMainNode = analyse.getMainNode();
+        final Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(gpeh, service);
+        // add header
+        final List<String> headers = new LinkedList<String>();
+        headers.add("Cell Name");
+        headers.add("Date");
+        headers.add("Time");
+        headers.add("Resolution");
+        for (int i = 0; i <= 49; i++) {
+            headers.add(new StringBuilder("EcNo=").append(i).append(" (3GPP)").toString());
+        }
+        return new IExportProvider() {
+            Iterator<Relationship> bestCellIteranor = null;
+            Iterator<IStatisticElementNode> iter = null;
+            final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+            String name = "";
+            Calendar calendar = Calendar.getInstance();
+
+            @Override
+            public boolean isValid() {
+                return true;
+            }
+
+            @Override
+            public boolean hasNextLine() {
+                if (bestCellIteranor == null) {
+                    bestCellIteranor = sourceMainNode.getRelationships(Direction.OUTGOING).iterator();
+
+                }
+                if (iter == null || !iter.hasNext()) {
+                    defineStructIterator();
+                }
+                return iter != null && iter.hasNext();
+            }
+
+            @Override
+            public List<Object> getNextLine() {
+                IStatisticElementNode statNode = iter.next();
+                List<Object> result = new ArrayList<Object>();
+                result.add(name);
+                calendar.setTimeInMillis(statNode.getStartTime());
+
+                result.add(dateFormat.format(calendar.getTime()));
+                result.add(String.valueOf(calendar.get(Calendar.HOUR_OF_DAY)));
+                result.add(period.getId());
+                if (NeoArray.hasArray(CellEcNoAnalisis.ARRAY_NAME, statNode.getNode(), service)) {
+                    NeoArray array = new NeoArray(statNode.getNode(), CellEcNoAnalisis.ARRAY_NAME, service);
+                    for (int i = 0; i <= 49; i++) {
+                        Object value = array.getValue(i);
+                        if (value == null) {
+                            value = 0;
+                        }
+                        result.add(value);
+                    }
+                } else {
+                    for (int i = 0; i <= 49; i++) {
+                        result.add(0);
+                    }
+                }
+
+                return result;
+            }
+
+            private void defineStructIterator() {
+                while (bestCellIteranor.hasNext()) {
+                    Relationship rel = bestCellIteranor.next();
+                    String bestCellId = StatisticNeoService.getBestCellId(rel.getType().name());
+                    if (bestCellId != null) {
+                        Node sector = service.getNodeById(Long.parseLong(bestCellId));
+                        name = (String)sector.getProperty("userLabel", "");
+                        if (StringUtil.isEmpty(name)) {
+                            name = NeoUtils.getNodeName(sector, service);
+                        }
+                        StatisticByPeriodStructure structure = analyse.getStatisticStructure(bestCellId);
+                        iter = structure.getStatNedes(minMax.getLeft(), minMax.getRight()).iterator();
+                        if (iter.hasNext()) {
+                            return;
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public List<String> getHeaders() {
+                return headers;
+            }
+
+            @Override
+            public String getDataName() {
+                return "CELL ECNO ANALYSIS";
+            }
+        };
+
+    }
+
+    /**
+     * Gets the cell rscp provider.
+     * 
+     * @param period the period
+     * @return the cell rscp provider
+     */
+    private IExportProvider getCellRSCPProvider(final CallTimePeriods period) {
+        final CellRscpAnalisis analyse = getReportModel().getCellRscpAnalisis(period);
+        final Node sourceMainNode = analyse.getMainNode();
+        final Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(gpeh, service);
+        // add header
+        final List<String> headers = new LinkedList<String>();
+        headers.add("Cell Name");
+        headers.add("Date");
+        headers.add("Time");
+        headers.add("Resolution");
+        for (int i = 0; i <= 91; i++) {
+            headers.add(new StringBuilder("RSCP=").append(i).append(" (3GPP)").toString());
+        }
+        return new IExportProvider() {
+            Iterator<Relationship> bestCellIteranor = null;
+            Iterator<IStatisticElementNode> iter = null;
+            final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+            String name = "";
+            Calendar calendar = Calendar.getInstance();
+
+            @Override
+            public boolean isValid() {
+                return true;
+            }
+
+            @Override
+            public boolean hasNextLine() {
+                if (bestCellIteranor == null) {
+                    bestCellIteranor = sourceMainNode.getRelationships(Direction.OUTGOING).iterator();
+
+                }
+                if (iter == null || !iter.hasNext()) {
+                    defineStructIterator();
+                }
+                return iter != null && iter.hasNext();
+            }
+
+            @Override
+            public List<Object> getNextLine() {
+                IStatisticElementNode statNode = iter.next();
+                List<Object> result = new ArrayList<Object>();
+                result.add(name);
+                calendar.setTimeInMillis(statNode.getStartTime());
+
+                result.add(dateFormat.format(calendar.getTime()));
+                result.add(String.valueOf(calendar.get(Calendar.HOUR_OF_DAY)));
+                result.add(period.getId());
+                if (NeoArray.hasArray(CellRscpAnalisis.ARRAY_NAME, statNode.getNode(), service)) {
+                    NeoArray array = new NeoArray(statNode.getNode(), CellRscpAnalisis.ARRAY_NAME, service);
+                    for (int i = 0; i <= 91; i++) {
+                        Object value = array.getValue(i);
+                        if (value == null) {
+                            value = 0;
+                        }
+                        result.add(value);
+                    }
+                } else {
+                    for (int i = 0; i <= 91; i++) {
+                        result.add(0);
+                    }
+                }
+
+                return result;
+            }
+
+            private void defineStructIterator() {
+                while (bestCellIteranor.hasNext()) {
+                    Relationship rel = bestCellIteranor.next();
+                    String bestCellId = StatisticNeoService.getBestCellId(rel.getType().name());
+                    if (bestCellId != null) {
+                        Node sector = service.getNodeById(Long.parseLong(bestCellId));
+                        name = (String)sector.getProperty("userLabel", "");
+                        if (StringUtil.isEmpty(name)) {
+                            name = NeoUtils.getNodeName(sector, service);
+                        }
+                        StatisticByPeriodStructure structure = analyse.getStatisticStructure(bestCellId);
+                        iter = structure.getStatNedes(minMax.getLeft(), minMax.getRight()).iterator();
+                        if (iter.hasNext()) {
+                            return;
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public List<String> getHeaders() {
+                return headers;
+            }
+
+            @Override
+            public String getDataName() {
+                return "CELL RSCP ANALYSIS";
+            }
+        };
+
+    }
+
+    private IExportProvider getIntraMatrixProvider() {
+        GpehReportModel mdl = getReportModel();
+        final IntraFrequencyICDM matrix = mdl.getIntraFrequencyICDM();
+        final List<String> headers = new LinkedList<String>();
+        headers.add("Serving cell name");
+        headers.add("Serving PSC");
+        headers.add("Interfering cell name");
+        headers.add("Interfering PSC");
+        headers.add("Defined NBR");
+        headers.add("Distance");
+        headers.add("Tier Distance");
+        headers.add("# of MR for best cell");
+        headers.add("# of MR for Interfering cell");
+        headers.add("EcNo Delta1");
+        headers.add("EcNo Delta2");
+        headers.add("EcNo Delta3");
+        headers.add("EcNo Delta4");
+        headers.add("EcNo Delta5");
+        headers.add("RSCP Delta1");
+        headers.add("RSCP Delta2");
+        headers.add("RSCP Delta3");
+        headers.add("RSCP Delta4");
+        headers.add("RSCP Delta5");
+        headers.add("Position1");
+        headers.add("Position2");
+        headers.add("Position3");
+        headers.add("Position4");
+        headers.add("Position5");
+        final Iterator<Node> rowIterator = matrix.getRowTraverser().iterator();
+        // TODO create public class
+        return new IExportProvider() {
+            @Override
+            public boolean isValid() {
+                return true;
+            }
+
+            @Override
+            public boolean hasNextLine() {
+                return rowIterator.hasNext();
+            }
+
+            @Override
+            public List<Object> getNextLine() {
+                List<Object> result = new ArrayList<Object>();
+                Node tblRow = rowIterator.next();
+                // Serving cell name
+                String bestCellName = matrix.getBestCellName(tblRow);
+                result.add(bestCellName);
+                // psc
+                String value = matrix.getBestCellPSC(tblRow);
+                result.add(bestCellName);
+                // Interfering cell name
+                value = matrix.getInterferingCellName(tblRow);
+                result.add(bestCellName);
+                // Interfering PSC
+                value = matrix.getInterferingCellPSC(tblRow);
+                result.add(value);
+                // Defined NBR
+                result.add(matrix.isDefinedNbr(tblRow));
+                // Distance
+                result.add(matrix.getDistance(tblRow));
+                // Tier Distance
+                value = String.valueOf("N/A");
+                result.add(value);
+                // # of MR for best cell
+                result.add(matrix.getNumMRForBestCell(tblRow));
+                // # of MR for Interfering cell
+                result.add(matrix.getNumMRForInterferingCell(tblRow));
+                // Delta EcNo 1-5
+                for (int i = 1; i <= 5; i++) {
+                    result.add(matrix.getDeltaEcNo(i, tblRow));
+                }
+                for (int i = 1; i <= 5; i++) {
+                    result.add(matrix.getDeltaRSCP(i, tblRow));
+                }
+                for (int i = 1; i <= 5; i++) {
+                    result.add(matrix.getPosition(i, tblRow));
+                }
+                return result;
+            }
+
+            @Override
+            public List<String> getHeaders() {
+                return headers;
+            }
+
+            @Override
+            public String getDataName() {
+                return "INTRA_ICDM";
+            }
+        };
+
+    }
+
+
+    /**
+     * Gets the ue tx power cell provider.
+     * 
+     * @param period the period
+     * @return the ue tx power cell provider
      */
     private IExportProvider getUeTxPowerCellProvider(final CallTimePeriods period) {
         final CellUeTxPowerAnalisis analyse = getReportModel().getCellUeTxPowerAnalisis(period);
@@ -245,17 +786,17 @@ public class GpehReportCreator {
                 result.add(String.valueOf(calendar.get(Calendar.HOUR_OF_DAY)));
                 result.add(period.getId());
                 if (NeoArray.hasArray(CellUeTxPowerAnalisis.ARRAY_NAME, statNode.getNode(), service)) {
-                    NeoArray array = new NeoArray(statNode.getNode(), CellEcNoAnalisis.ARRAY_NAME, service);
+                    NeoArray array = new NeoArray(statNode.getNode(), CellUeTxPowerAnalisis.ARRAY_NAME, service);
                     for (int i = 21; i <= 104; i++) {
                         Object value = array.getValue(i);
                         if (value == null) {
                             value = 0;
                         }
-                        result.add(String.valueOf(value));
+                        result.add(value);
                     }
                 } else {
                     for (int i = 21; i <= 104; i++) {
-                        result.add("0");
+                        result.add(0);
                     }
                 }
 
@@ -1687,6 +2228,7 @@ public class GpehReportCreator {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
         Transaction tx = service.beginTx();
         try {
+            //TODO implement
             CSVWriter out = new CSVWriter(new FileWriter(file));
             CellRscpEcNoAnalisis analyse = getReportModel().getCellRscpEcNoAnalisis(period);
             analyse.getMainNode();
@@ -1699,8 +2241,25 @@ public class GpehReportCreator {
             outRes.add("Date");
             outRes.add("Time");
             outRes.add("Resolution");
-            for (int i = 0; i <= 49; i++) {
-                outRes.add(new StringBuilder("EcNo=").append(i).append(" (3GPP)").toString());
+            final int ecnoRange=6;
+            final List<String> ecnoRangeNames=new ArrayList<String>();
+            ecnoRangeNames.add("ECNO-18");
+            ecnoRangeNames.add("ECNO-15");
+            ecnoRangeNames.add("ECNO-12");
+            ecnoRangeNames.add("ECNO-9");
+            ecnoRangeNames.add("ECNO-6");
+            ecnoRangeNames.add("ECNO-0");
+            final int rscpRange=7;
+            final List<String> rscpRangeNames=new ArrayList<String>();
+            rscpRangeNames.add("RSCP-105");
+            rscpRangeNames.add("RSCP-100");
+            rscpRangeNames.add("RSCP-95");
+            rscpRangeNames.add("RSCP-90");
+            rscpRangeNames.add("RSCP-80");
+            rscpRangeNames.add("RSCP-70");
+            rscpRangeNames.add("RSCP-25");
+            for (String rscpName:rscpRangeNames) {
+                outRes.add(new StringBuilder("EcNo=").append("_").append(" (3GPP)").toString());
             }
             out.writeNext(outRes.toArray(new String[0]));
             outRes.clear();
