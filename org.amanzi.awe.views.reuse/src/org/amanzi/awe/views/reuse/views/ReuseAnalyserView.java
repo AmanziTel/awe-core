@@ -1334,7 +1334,9 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
             Transaction tx = NeoUtils.beginTransaction();
             NeoUtils.addTransactionLog(tx, Thread.currentThread(), "ComputeStatisticsJob");
             try {
+            	model.setCurrenTransaction(tx);
                 node = model.findOrCreateAggregateNode(gisNode, propertyName, isStringProperty(propertyName), distribute, select, monitor);
+                tx = model.getCurrenTransaction();
                 Boolean haveError = (Boolean)node.getProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME, false);
                 if (haveError) {
                     final String errDescr = String.valueOf(node.getProperty(INeoConstants.PROPERTY_CHART_ERROR_DESCRIPTION, ""));

@@ -9,8 +9,8 @@
  *
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- */
-
+ */ 
+ 
 package org.amanzi.awe.views.reuse.views;
 
 import java.util.ArrayList;
@@ -84,6 +84,23 @@ public class ReuseAnalyserModel {
         /** The property returnable evalvator. */
         private final  ReturnableEvaluator propertyReturnableEvalvator;
         private final  Map<String, String[]> aggregatedProperties ;
+        
+        private Transaction currentTransaction;
+        
+        public void setCurrenTransaction(Transaction transaction) {
+        	this.currentTransaction = transaction;
+        }
+        
+        private void commit() {
+        	currentTransaction.success();
+        	currentTransaction.finish();
+        	
+        	currentTransaction = service.beginTx();
+        }
+        
+        public Transaction getCurrenTransaction() {
+        	return currentTransaction;
+        }
 
 
         /**
@@ -216,6 +233,8 @@ public class ReuseAnalyserModel {
             final GisTypes typeOfGis;
             PropertyStatistics stat = new PropertyHeader(rootNode).getPropertyStatistic(propertyName);
             Integer totalWork=null;
+            int relCount = 0;
+            
             if (stat!=null){
                 totalWork=stat.getCount();
             }
@@ -416,6 +435,13 @@ public class ReuseAnalyserModel {
                         value = value == null || select == Select.EXISTS ? getNodeValue(node, propertyName, select, column.getMinValue(), column.getRange()) : value;
                         if (value != null && column.containsValue(value)) {
                             column.getNode().createRelationshipTo(node, NetworkRelationshipTypes.AGGREGATE);
+                            relCount++;
+                            
+                            if (relCount > 5000) {
+                            	commit();
+                            	relCount = 0;
+                            }
+                            
                             Integer count = result.get(column);
                             int countNode = 1 + (count == null ? 0 : count);
                             result.put(column, countNode);
@@ -442,6 +468,12 @@ public class ReuseAnalyserModel {
                                 for (Node nodeToLink : nodesToLink) {
                                     if (nodeToLink != null) {
                                         column.getNode().createRelationshipTo(nodeToLink, NetworkRelationshipTypes.AGGREGATE);
+                                        relCount++;
+                                        
+                                        if (relCount > 5000) {
+                                        	commit();
+                                        	relCount = 0;
+                                        }
                                     }
                                 }
                                 result.put(column, 1 + (count == null ? 0 : count));
@@ -464,7 +496,7 @@ public class ReuseAnalyserModel {
                     for (Column column : keySet) {
                         if (column.containsValue(value)) {
                             Integer count = result.get(column);
-                            column.getNode().createRelationshipTo(node, NetworkRelationshipTypes.AGGREGATE);
+                            column.getNode().createRelationshipTo(node, NetworkRelationshipTypes.AGGREGATE);                            
                             result.put(column, 1 + (count == null ? 0 : count));
                             break;
                         }
