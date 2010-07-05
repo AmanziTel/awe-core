@@ -90,7 +90,7 @@ public class IdenLoader extends AbstractLoader {
     protected void parseLine(String line) {
         if (fileNode == null) {
             ossRoot = LoaderUtils.findOrCreateOSSNode(OssType.iDEN, basename, neo);
-            NeoUtils.getLuceneIndexKeyByProperty(ossRoot, INeoConstants.SECTOR_ID_PROPERTIES, NodeTypes.M);
+            luceneIndexName = NeoUtils.getLuceneIndexKeyByProperty(ossRoot, INeoConstants.SECTOR_ID_PROPERTIES, NodeTypes.M);
             Pair<Boolean, Node> fileNodePair = NeoUtils.findOrCreateFileNode(neo, ossRoot,new File(basename).getName(), new File(basename).getName());
             fileNode = fileNodePair.getRight();
             lastChild = null;
