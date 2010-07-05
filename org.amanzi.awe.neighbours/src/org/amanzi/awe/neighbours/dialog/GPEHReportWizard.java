@@ -76,7 +76,7 @@ public class GPEHReportWizard extends Wizard implements INewWizard {
                 creator.setMonitor(monitor);
                 if (fileType == FileType.CSV) {
                     for (GpehReportType type : repTypes) {
-                        final File targetFile = new File(targetDir + "\\" + type.toString() + "." + fileType.toString());
+                        final File targetFile = new File(targetDir + "\\" + type.toString() + "_" + period + "." + fileType.toString());
                         creator.exportToCSV(targetFile, type, period, monitor);
                     }
                 }
