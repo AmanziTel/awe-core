@@ -14,6 +14,7 @@
 package org.amanzi.neo.loader;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +46,13 @@ public class IdenLoader extends AbstractLoader {
     private LuceneIndexService luceneService;
     
     private String luceneIndexName;
+    
+    private static final ArrayList<String> possibleCellNames = new ArrayList<String>();
+    
+    static {
+        possibleCellNames.add("cell name");
+        possibleCellNames.add("cell");
+    }
 
     /**
      * Constructor
@@ -59,13 +67,11 @@ public class IdenLoader extends AbstractLoader {
         needParceHeader = true;
         
         getHeaderMap(1);
-        
-        initializeLucene();
     }
     
-    private void initializeLucene() {
+    private void initializeLucene(Node baseNode) {
         luceneService = NeoServiceProvider.getProvider().getIndexService();
-        luceneIndexName = null;
+        luceneIndexName = NeoUtils.getLuceneIndexKeyByProperty(baseNode, INeoConstants.SECTOR_ID_PROPERTIES, NodeTypes.M);
     }
 
     @Override
@@ -94,6 +100,8 @@ public class IdenLoader extends AbstractLoader {
             Pair<Boolean, Node> fileNodePair = NeoUtils.findOrCreateFileNode(neo, ossRoot,new File(basename).getName(), new File(basename).getName());
             fileNode = fileNodePair.getRight();
             lastChild = null;
+            
+            initializeLucene(ossRoot);
         }
         List<String> fields = splitLine(line);
         if (fields.size() < 2)
@@ -115,7 +123,7 @@ public class IdenLoader extends AbstractLoader {
             for (Map.Entry<String, Object> entry : lineData.entrySet()) {
                 node.setProperty(entry.getKey(), entry.getValue());
                 
-                if (entry.getKey().equals("cell_name")) {
+                if (possibleCellNames.contains(entry.getKey())) {
                     luceneService.index(node, luceneIndexName, entry.getValue());
                 }
             }
