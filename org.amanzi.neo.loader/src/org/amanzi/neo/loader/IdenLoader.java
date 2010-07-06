@@ -50,7 +50,7 @@ public class IdenLoader extends AbstractLoader {
     private static final ArrayList<String> possibleCellNames = new ArrayList<String>();
     
     static {
-        possibleCellNames.add("cell name");
+        possibleCellNames.add("cell_name");
         possibleCellNames.add("cell");
     }
 
