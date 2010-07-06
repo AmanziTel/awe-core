@@ -215,26 +215,26 @@ public class GpehReportCreator {
         headers.add("Date");
         headers.add("Time");
         headers.add("Resolution");
-        final int ecnoRange=6;
-        final List<String> ecnoRangeNames=new ArrayList<String>();
-        ecnoRangeNames.add("ECNO-18");
-        ecnoRangeNames.add("ECNO-15");
-        ecnoRangeNames.add("ECNO-12");
-        ecnoRangeNames.add("ECNO-9");
-        ecnoRangeNames.add("ECNO-6");
-        ecnoRangeNames.add("ECNO-0");
-        final int rscpRange=7;
-        final List<String> rscpRangeNames=new ArrayList<String>();
-        rscpRangeNames.add("RSCP-105");
-        rscpRangeNames.add("RSCP-100");
-        rscpRangeNames.add("RSCP-95");
-        rscpRangeNames.add("RSCP-90");
-        rscpRangeNames.add("RSCP-80");
-        rscpRangeNames.add("RSCP-70");
-        rscpRangeNames.add("RSCP-25");
-        for (String rscpName:rscpRangeNames) {
-            for(String ecnoName:ecnoRangeNames){
-                headers.add(new StringBuilder(ecnoName).append("_").append(ecnoName).toString());
+        final List<IntRange> ecnoRangeNames = new ArrayList<IntRange>();
+        ecnoRangeNames.add(new IntRange("ECNO-18",0,12));
+        ecnoRangeNames.add(new IntRange("ECNO-15",13,18));
+        ecnoRangeNames.add(new IntRange("ECNO-12", 19, 24));
+        ecnoRangeNames.add(new IntRange("ECNO-9",25,30));
+        ecnoRangeNames.add(new IntRange("ECNO-6",31,36));
+        ecnoRangeNames.add(new IntRange("ECNO-0",37,48));//TODO check for 49?
+        final int ecnoRange=ecnoRangeNames.size();
+        final List<IntRange> rscpRangeNames=new ArrayList<IntRange>();
+        rscpRangeNames.add(new IntRange("RSCP-105",0,10));
+        rscpRangeNames.add(new IntRange("RSCP-100",11,15));
+        rscpRangeNames.add(new IntRange("RSCP-95",16,20));
+        rscpRangeNames.add(new IntRange("RSCP-90",21,25));
+        rscpRangeNames.add(new IntRange("RSCP-80",26,35));
+        rscpRangeNames.add(new IntRange("RSCP-70",36,45));
+        rscpRangeNames.add(new IntRange("RSCP-25",46,90));//TODO check 91
+        final int rscpRange=rscpRangeNames.size();
+        for (IntRange rscpName:rscpRangeNames) {
+            for(IntRange ecnoName:ecnoRangeNames){
+                headers.add(new StringBuilder(ecnoName.getName()).append("_").append(rscpName.getName()).toString());
             }
         }
         // TODO create public class
@@ -273,18 +273,20 @@ public class GpehReportCreator {
                 result.add(period.getId());
                 if (NeoArray.hasArray(CellRscpEcNoAnalisis.ARRAY_NAME, statNode.getNode(), service)) {
                     NeoArray array = new NeoArray(statNode.getNode(), CellRscpEcNoAnalisis.ARRAY_NAME, service);
-                    for (int ecNo = 0; ecNo <= 49; ecNo++) {
-                        int count = 0;
-                        for (int rscp = 0; rscp <= 91; rscp++) {
-                            
+                    for (IntRange rscpName : rscpRangeNames) {
+                        for (IntRange ecnoName : ecnoRangeNames) {
+                            int count = 0;
+                            for (int rscp = rscpName.getMin(); rscp <= rscpName.getMax(); rscp++) {
+                                for (int ecno = ecnoName.getMin(); ecno <= ecnoName.getMax(); ecno++) {
+                                    Number value = (Number)array.getValue(rscp, ecno);
+                                    if (value == null) {
+                                        value = 0;
+                                    }
+                                    count += value.intValue();
+                                }
+                            }
+                            result.add(count);
                         }
-                    }
-                    for (int i = 21; i <= 104; i++) {
-                        Object value = array.getValue(i);
-                        if (value == null) {
-                            value = 0;
-                        }
-                        result.add(value);
                     }
                 } else {
                     for (int rscp=0;rscp<ecnoRange;rscp++) {
@@ -362,9 +364,10 @@ public class GpehReportCreator {
         headers.add("RSCP3_10");
         headers.add("RSCP4_10");
         headers.add("RSCP5_10");
-        final Iterator<Node> rowIterator = matrix.getRowTraverser().iterator();
+
         // TODO create public class
         return new IExportProvider() {
+            Iterator<Node> rowIterator = null;
             @Override
             public boolean isValid() {
                 return true;
@@ -372,6 +375,9 @@ public class GpehReportCreator {
 
             @Override
             public boolean hasNextLine() {
+                if (rowIterator == null) {
+                    rowIterator = matrix.getRowTraverser().iterator();
+                }
                 return rowIterator.hasNext();
             }
 
@@ -666,9 +672,10 @@ public class GpehReportCreator {
         headers.add("Position3");
         headers.add("Position4");
         headers.add("Position5");
-        final Iterator<Node> rowIterator = matrix.getRowTraverser().iterator();
+      
         // TODO create public class
         return new IExportProvider() {
+            Iterator<Node> rowIterator = null;
             @Override
             public boolean isValid() {
                 return true;
@@ -676,6 +683,9 @@ public class GpehReportCreator {
 
             @Override
             public boolean hasNextLine() {
+                if (rowIterator==null){
+                    rowIterator = matrix.getRowTraverser().iterator();
+                }
                 return rowIterator.hasNext();
             }
 
@@ -2756,6 +2766,87 @@ public class GpehReportCreator {
             tx.success();
         } finally {
             tx.finish();
+        }
+
+    }
+
+    /**
+     * <p>
+     * Contains information about 3GPP range
+     * </p>
+     * 
+     * @author TsAr
+     * @since 1.0.0
+     */
+    private static class IntRange {
+        private String name;
+        private int min;
+        private int max;
+
+        /**
+         * @param name
+         * @param min
+         * @param max
+         */
+        public IntRange(String name, int min, int max) {
+            super();
+            this.name = name;
+            this.min = min;
+            this.max = max;
+        }
+
+        /**
+         * Gets the name.
+         * 
+         * @return the name
+         */
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * Sets the name.
+         * 
+         * @param name the new name
+         */
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        /**
+         * Gets the min.
+         * 
+         * @return the min
+         */
+        public int getMin() {
+            return min;
+        }
+
+        /**
+         * Sets the min.
+         * 
+         * @param min the new min
+         */
+        public void setMin(int min) {
+            this.min = min;
+        }
+
+        /**
+         * Gets the max.
+         * 
+         * @return the max
+         */
+        public int getMax() {
+            return max;
+        }
+
+        /**
+         * Sets the max.
+         * 
+         * @param max the new max
+         */
+        public void setMax(int max) {
+            this.max = max;
         }
 
     }

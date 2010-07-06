@@ -66,8 +66,7 @@ public class CommonCSVHandler implements IExportHandler {
         }
         String[] out = new String[] {provider.getDataName()};
         writer.writeNext(out);
-
-
+        writer.writeNext(provider.getHeaders().toArray(new String[0]));
     }
 
     @Override
