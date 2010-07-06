@@ -21,12 +21,12 @@ import java.util.Set;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
+import org.amanzi.neo.core.enums.OssType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.loader.APDLoader;
 import org.amanzi.neo.loader.GPEHLoader;
-import org.amanzi.neo.loader.IdenLoader;
 import org.amanzi.neo.loader.LoaderUtils;
 import org.amanzi.neo.loader.OSSCounterLoader;
+import org.amanzi.neo.loader.PerformanceCountersLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -73,15 +73,10 @@ public class GPEHImportWizard extends Wizard implements IImportWizard {
                         loaderOss.run(monitor);
                         handleSelect(monitor, loaderOss.getRootNodes());
                         break;
-                    case APD:
-                        APDLoader apdLoader = new APDLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display);
-                        apdLoader.run(monitor);
-                        handleSelect(monitor, apdLoader.getRootNodes());
-                        break;
-                    case iDEN:
-                        IdenLoader idenLoader = new IdenLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display);
-                        idenLoader.run(monitor);
-                        handleSelect(monitor, idenLoader.getRootNodes());
+                    case PERFORMANCE_COUNTER:
+                        PerformanceCountersLoader performanceCountersLoader = new PerformanceCountersLoader(OssType.PERFORMANCE_COUNTER,mainPage.getDirectory(), mainPage.getDatasetName(), display);
+                        performanceCountersLoader.run(monitor);
+                        handleSelect(monitor, performanceCountersLoader.getRootNodes());
                         break;
                     default:
                         break;
