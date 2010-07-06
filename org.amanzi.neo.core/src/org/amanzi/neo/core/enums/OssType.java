@@ -27,9 +27,8 @@ import org.neo4j.graphdb.Transaction;
  * @since 1.0.0
  */
 public enum OssType {
-    GPEH(EnumsMessages.OssType_GPEH), 
- COUNTER(EnumsMessages.OssType_COUNTER), APD("APD"), iDEN("iDEN Performance Counters");
-    
+    GPEH(EnumsMessages.OssType_GPEH), COUNTER(EnumsMessages.OssType_COUNTER), PERFORMANCE_COUNTER("Performance counter");
+
     public static final String PROPERTY_NAME = "oss_type";
     private final String id;
 
@@ -82,6 +81,7 @@ public enum OssType {
             }
         }
     }
+
     /**
      * Check node by type
      * 
@@ -91,6 +91,7 @@ public enum OssType {
     public boolean checkNode(Node currentNode) {
         return getId().equals(currentNode.getProperty(PROPERTY_NAME, null));
     }
+
     /**
      * returns type of node
      * 
@@ -106,5 +107,5 @@ public enum OssType {
         } finally {
             NeoUtils.finishTx(tx);
         }
-    }    
+    }
 }
