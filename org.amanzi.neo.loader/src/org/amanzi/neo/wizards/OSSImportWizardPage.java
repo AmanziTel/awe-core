@@ -253,7 +253,7 @@ public class OSSImportWizardPage extends WizardPage {
             if (file.isFile() && (ossDirType.left() == OssType.GPEH || ossDirType.left() == OssType.COUNTER)) {
                 return false;
             }
-            if (!file.isFile() && (ossDirType.left() == OssType.APD || ossDirType.left() == OssType.iDEN)) {
+            if (!file.isFile() && (ossDirType.left() == OssType.PERFORMANCE_COUNTER)) {
                 return false;
             }
             Node ossNode = ossMap.get(datasetName);
