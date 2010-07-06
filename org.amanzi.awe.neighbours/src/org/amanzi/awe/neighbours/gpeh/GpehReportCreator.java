@@ -28,10 +28,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.amanzi.awe.neighbours.gpeh.GpehReportModel.CellDlTxCarrierPowerAnalisis;
 import org.amanzi.awe.neighbours.gpeh.GpehReportModel.CellEcNoAnalisis;
+import org.amanzi.awe.neighbours.gpeh.GpehReportModel.CellHsdsRequiredPowerAnalisis;
+import org.amanzi.awe.neighbours.gpeh.GpehReportModel.CellNonHsPowerAnalisis;
 import org.amanzi.awe.neighbours.gpeh.GpehReportModel.CellRscpAnalisis;
 import org.amanzi.awe.neighbours.gpeh.GpehReportModel.CellRscpEcNoAnalisis;
 import org.amanzi.awe.neighbours.gpeh.GpehReportModel.CellUeTxPowerAnalisis;
+import org.amanzi.awe.neighbours.gpeh.GpehReportModel.CellUlInterferenceAnalisis;
 import org.amanzi.awe.neighbours.gpeh.GpehReportModel.InterFrequencyICDM;
 import org.amanzi.awe.neighbours.gpeh.GpehReportModel.IntraFrequencyICDM;
 import org.amanzi.awe.statistic.CallTimePeriods;
@@ -49,6 +53,7 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.gpeh.Events;
+import org.amanzi.neo.core.enums.gpeh.Parameters;
 import org.amanzi.neo.core.preferences.NeoCorePreferencesConstants;
 import org.amanzi.neo.core.utils.GpehReportUtil;
 import org.amanzi.neo.core.utils.GpehReportUtil.CellReportsProperties;
@@ -194,6 +199,11 @@ public class GpehReportCreator {
             // if (true)return;
             createEcNoCellReport(period);
             return getCellEcnoProvider(period);
+        case NBAP_UL_INTERFERENCE:
+            createNBapBaseReports();
+            createUlInterferenceReport(period);
+            // createEcNoCellReport(period);
+            return geUlInterferenceCellProvider(period);
         default:
             return null;
             // break;
@@ -749,6 +759,108 @@ public class GpehReportCreator {
      * @param period the period
      * @return the ue tx power cell provider
      */
+    private IExportProvider geUlInterferenceCellProvider(final CallTimePeriods period) {
+        final CellUlInterferenceAnalisis analyse = getReportModel().getCellUlInterferenceAnalisis(period);
+
+        final Node sourceMainNode = analyse.getMainNode();
+        final Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(gpeh, service);
+        final List<String> headers = new LinkedList<String>();
+        headers.add("Cell Name");
+        headers.add("Date");
+        headers.add("Time");
+        headers.add("Resolution");
+        for (int i = 0; i <= 621; i++) {
+            headers.add(new StringBuilder("UlInterference=").append(i).append(" (3GPP)").toString());
+        }
+        // TODO create public class
+        return new IExportProvider() {
+            Iterator<Relationship> bestCellIteranor = null;
+            Iterator<IStatisticElementNode> iter = null;
+            final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+            String name = "";
+            Calendar calendar = Calendar.getInstance();
+
+            @Override
+            public boolean isValid() {
+                return true;
+            }
+
+            @Override
+            public boolean hasNextLine() {
+                if (bestCellIteranor == null) {
+                    bestCellIteranor = sourceMainNode.getRelationships(Direction.OUTGOING).iterator();
+
+                }
+                if (iter == null || !iter.hasNext()) {
+                    defineStructIterator();
+                }
+                return iter != null && iter.hasNext();
+            }
+
+            @Override
+            public List<Object> getNextLine() {
+                IStatisticElementNode statNode = iter.next();
+                List<Object> result = new ArrayList<Object>();
+                result.add(name);
+                calendar.setTimeInMillis(statNode.getStartTime());
+                result.add(dateFormat.format(calendar.getTime()));
+                result.add(String.valueOf(calendar.get(Calendar.HOUR_OF_DAY)));
+                result.add(period.getId());
+                if (NeoArray.hasArray(CellUlInterferenceAnalisis.ARRAY_NAME, statNode.getNode(), service)) {
+                    NeoArray array = new NeoArray(statNode.getNode(), CellUlInterferenceAnalisis.ARRAY_NAME, service);
+                    for (int i = 0; i <= 621; i++) {
+                        Object value = array.getValue(i);
+                        if (value == null) {
+                            value = 0;
+                        }
+                        result.add(value);
+                    }
+                } else {
+                    for (int i = 21; i <= 104; i++) {
+                        result.add(0);
+                    }
+                }
+
+                return result;
+            }
+
+            private void defineStructIterator() {
+                while (bestCellIteranor.hasNext()) {
+                    Relationship rel = bestCellIteranor.next();
+                    String bestCellId = StatisticNeoService.getBestCellId(rel.getType().name());
+                    if (bestCellId != null) {
+                        Node sector = service.getNodeById(Long.parseLong(bestCellId));
+                        name = (String)sector.getProperty("userLabel", "");
+                        if (StringUtil.isEmpty(name)) {
+                            name = NeoUtils.getNodeName(sector, service);
+                        }
+                        StatisticByPeriodStructure structure = analyse.getStatisticStructure(bestCellId);
+                        iter = structure.getStatNedes(minMax.getLeft(), minMax.getRight()).iterator();
+                        if (iter.hasNext()) {
+                            return;
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public List<String> getHeaders() {
+                return headers;
+            }
+
+            @Override
+            public String getDataName() {
+                return "Ue tx power analysis";
+            }
+        };
+    }
+
+    /**
+     * Gets the ue tx power cell provider.
+     * 
+     * @param period the period
+     * @return the ue tx power cell provider
+     */
     private IExportProvider getUeTxPowerCellProvider(final CallTimePeriods period) {
         final CellUeTxPowerAnalisis analyse = getReportModel().getCellUeTxPowerAnalisis(period);
 
@@ -977,6 +1089,180 @@ public class GpehReportCreator {
         }
     }
 
+    public void createNBapBaseReports() {
+        if (model.getCellUlInterferenceAnalisis(CallTimePeriods.HOURLY) != null) {
+            return;
+        }
+        Transaction tx = service.beginTx();
+        try {
+            createReportModel();
+            minMax = NeoUtils.getMinMaxTimeOfDataset(gpeh, service);
+            // CellUlInterferenceAnalisis hour node
+            Node parentNode = service.createNode();
+            parentNode.setProperty(CellReportsProperties.PERIOD_ID, CallTimePeriods.HOURLY.getId());
+            model.getRoot().createRelationshipTo(parentNode, CallTimePeriods.HOURLY.getPeriodRelation(CellUlInterferenceAnalisis.PRFIX));
+            // CellDlTxCarrierPowerAnalisis hour node
+            parentNode = service.createNode();
+            parentNode.setProperty(CellReportsProperties.PERIOD_ID, CallTimePeriods.HOURLY.getId());
+            model.getRoot().createRelationshipTo(parentNode, CallTimePeriods.HOURLY.getPeriodRelation(CellDlTxCarrierPowerAnalisis.PRFIX));
+            // CellNonHsPowerAnalisis hour node
+            parentNode = service.createNode();
+            parentNode.setProperty(CellReportsProperties.PERIOD_ID, CallTimePeriods.HOURLY.getId());
+            model.getRoot().createRelationshipTo(parentNode, CallTimePeriods.HOURLY.getPeriodRelation(CellNonHsPowerAnalisis.PRFIX));
+            // CellHsdsRequiredPowerAnalisis hour node
+            parentNode = service.createNode();
+            parentNode.setProperty(CellReportsProperties.PERIOD_ID, CallTimePeriods.HOURLY.getId());
+            model.getRoot().createRelationshipTo(parentNode, CallTimePeriods.HOURLY.getPeriodRelation(CellHsdsRequiredPowerAnalisis.PRFIX));
+
+            // CellDlTxCodePowerAnalisis dlTxCodePower =
+            // model.findCellDlTxCodePowerAnalisis(CallTimePeriods.HOURLY);
+            // dlTxCodePower.setUseCache(true);
+            CellUlInterferenceAnalisis ulInterference = model.findCellUlInterferenceAnalisis(CallTimePeriods.HOURLY);
+            CellDlTxCarrierPowerAnalisis dlTxCarrierPowerAnalisis = model.findCellDlTxCarrierPowerAnalisis(CallTimePeriods.HOURLY);
+            CellNonHsPowerAnalisis cellNonHsPowerAnalisis = model.findCellNonHsPowerAnalisis(CallTimePeriods.HOURLY);
+            CellHsdsRequiredPowerAnalisis cellHsdsRequiredPowerAnalisis = model.findCellHsdsRequiredPowerAnalisis(CallTimePeriods.HOURLY);
+
+            String eventIndName = NeoUtils.getLuceneIndexKeyByProperty(model.getGpeh(), INeoConstants.PROPERTY_NAME_NAME, NodeTypes.GPEH_EVENT);
+            long countEvent = 0;
+            countRow = 0;
+            long countTx = 0;
+            for (Node eventNode : luceneService.getNodes(eventIndName, Events.INTERNAL_RADIO_QUALITY_MEASUREMENTS_RNH.name())) {
+                countEvent++;
+                // Set<Node> activeSet = getActiveSet(eventNode);
+                Integer type = (Integer)eventNode.getProperty(Parameters.EVENT_PARAM_MEASURED_ENTITY.name(), null);
+                if (type == null || type < 2 || type > 5) {
+                    continue;
+                }
+                Integer value = (Integer)eventNode.getProperty(Parameters.EVENT_PARAM_MEASURED_VALUE.name(), null);
+                if (value == null) {
+                    continue;
+                }
+                Node bestSector = getBestSector(eventNode);
+                if (bestSector == null) {
+                    LOGGER.error(String.format("Event node: %s, not found best cell", eventNode));
+                    continue;
+                }
+                Node tableRoot;
+                // TODO optimize code for using methods
+                switch (type) {
+                case 2:
+                    if (value > 621) {
+                        LOGGER.error(String.format("Event node: %s, wrong vlue for UL_INTERFERENCE : %s", eventNode, value));
+                        continue;
+                    }
+                    tableRoot = ulInterference.getMainNode();
+                    Node tableNode = findOrCreateTableNode(bestSector, tableRoot, "2");
+                    tableNode.createRelationshipTo(eventNode, ReportsRelations.SOURCE_MATRIX_EVENT);
+                    String bestCellName = String.valueOf(bestSector.getId());
+                    StatisticByPeriodStructure statisticStructure = ulInterference.getStatisticStructure(bestCellName);
+                    if (statisticStructure == null) {
+                        GPEHFakeStatHandler handler = new GPEHFakeStatHandler();
+                        TimePeriodStructureCreator creator = new TimePeriodStructureCreator(tableRoot, bestCellName, minMax.getLeft(), minMax.getRight(), CallTimePeriods.HOURLY,
+                                handler, handler, service);
+                        statisticStructure = creator.createStructure();
+                    }
+                    Long timeNode = NeoUtils.getNodeTime(eventNode);
+                    IStatisticElementNode node = statisticStructure.getStatisticNode(timeNode);
+                    NeoArray neoArray = new NeoArray(node.getNode(), CellUlInterferenceAnalisis.ARRAY_NAME, 1, service);
+                    Node arrNode = neoArray.findOrCreateNode(value);
+                    Integer count = (Integer)neoArray.getValueFromNode(arrNode);
+                    count = count == null ? 1 : count + 1;
+                    neoArray.setValueToNode(arrNode, count);
+                    arrNode.createRelationshipTo(eventNode, ReportsRelations.SOURCE_UL_INTERFERENCE);
+                    break;
+                case 3:
+                    if (value > 1000) {
+                        LOGGER.error(String.format("Event node: %s, wrong vlue for UL_INTERFERENCE : %s", eventNode, value));
+                        continue;
+                    }
+                    tableRoot = dlTxCarrierPowerAnalisis.getMainNode();
+                    tableNode = findOrCreateTableNode(bestSector, tableRoot, "3");
+                    tableNode.createRelationshipTo(eventNode, ReportsRelations.SOURCE_MATRIX_EVENT);
+                    bestCellName = String.valueOf(bestSector.getId());
+                    statisticStructure = dlTxCarrierPowerAnalisis.getStatisticStructure(bestCellName);
+                    if (statisticStructure == null) {
+                        GPEHFakeStatHandler handler = new GPEHFakeStatHandler();
+                        TimePeriodStructureCreator creator = new TimePeriodStructureCreator(tableRoot, bestCellName, minMax.getLeft(), minMax.getRight(), CallTimePeriods.HOURLY,
+                                handler, handler, service);
+                        statisticStructure = creator.createStructure();
+                    }
+                    timeNode = NeoUtils.getNodeTime(eventNode);
+                    node = statisticStructure.getStatisticNode(timeNode);
+                    neoArray = new NeoArray(node.getNode(), CellDlTxCarrierPowerAnalisis.ARRAY_NAME, 1, service);
+                    arrNode = neoArray.findOrCreateNode(value);
+                    count = (Integer)neoArray.getValueFromNode(arrNode);
+                    count = count == null ? 1 : count + 1;
+                    neoArray.setValueToNode(arrNode, count);
+                    arrNode.createRelationshipTo(eventNode, ReportsRelations.SOURCE_DL_TX_CARRIER_POWER);
+                    break;
+                case 4:
+                    if (value > 1000) {
+                        LOGGER.error(String.format("Event node: %s, wrong vlue for UL_INTERFERENCE : %s", eventNode, value));
+                        continue;
+                    }
+                    tableRoot = cellNonHsPowerAnalisis.getMainNode();
+                    tableNode = findOrCreateTableNode(bestSector, tableRoot, "3");
+                    tableNode.createRelationshipTo(eventNode, ReportsRelations.SOURCE_MATRIX_EVENT);
+                    bestCellName = String.valueOf(bestSector.getId());
+                    statisticStructure = dlTxCarrierPowerAnalisis.getStatisticStructure(bestCellName);
+                    if (statisticStructure == null) {
+                        GPEHFakeStatHandler handler = new GPEHFakeStatHandler();
+                        TimePeriodStructureCreator creator = new TimePeriodStructureCreator(tableRoot, bestCellName, minMax.getLeft(), minMax.getRight(), CallTimePeriods.HOURLY,
+                                handler, handler, service);
+                        statisticStructure = creator.createStructure();
+                    }
+                    timeNode = NeoUtils.getNodeTime(eventNode);
+                    node = statisticStructure.getStatisticNode(timeNode);
+                    neoArray = new NeoArray(node.getNode(), CellNonHsPowerAnalisis.ARRAY_NAME, 1, service);
+                    arrNode = neoArray.findOrCreateNode(value);
+                    count = (Integer)neoArray.getValueFromNode(arrNode);
+                    count = count == null ? 1 : count + 1;
+                    neoArray.setValueToNode(arrNode, count);
+                    arrNode.createRelationshipTo(eventNode, ReportsRelations.SOURCE_NON_HS_POWER);
+                    break;
+                case 5:
+                    if (value > 1000) {
+                        LOGGER.error(String.format("Event node: %s, wrong vlue for UL_INTERFERENCE : %s", eventNode, value));
+                        continue;
+                    }
+                    tableRoot = cellHsdsRequiredPowerAnalisis.getMainNode();
+                    tableNode = findOrCreateTableNode(bestSector, tableRoot, "3");
+                    tableNode.createRelationshipTo(eventNode, ReportsRelations.SOURCE_MATRIX_EVENT);
+                    bestCellName = String.valueOf(bestSector.getId());
+                    statisticStructure = dlTxCarrierPowerAnalisis.getStatisticStructure(bestCellName);
+                    if (statisticStructure == null) {
+                        GPEHFakeStatHandler handler = new GPEHFakeStatHandler();
+                        TimePeriodStructureCreator creator = new TimePeriodStructureCreator(tableRoot, bestCellName, minMax.getLeft(), minMax.getRight(), CallTimePeriods.HOURLY,
+                                handler, handler, service);
+                        statisticStructure = creator.createStructure();
+                    }
+                    timeNode = NeoUtils.getNodeTime(eventNode);
+                    node = statisticStructure.getStatisticNode(timeNode);
+                    neoArray = new NeoArray(node.getNode(), CellHsdsRequiredPowerAnalisis.ARRAY_NAME, 1, service);
+                    arrNode = neoArray.findOrCreateNode(value);
+                    count = (Integer)neoArray.getValueFromNode(arrNode);
+                    count = count == null ? 1 : count + 1;
+                    neoArray.setValueToNode(arrNode, count);
+                    arrNode.createRelationshipTo(eventNode, ReportsRelations.SOURCE_HSDSCH_REQUIRED_POWER);
+                    break;
+                default:
+                    LOGGER.debug("Event node " + eventNode + " with type " + type + " was passed");
+                    continue;
+                }
+                if (++countTx > 2000) {
+                    countTx = 0;
+                    tx.success();
+                    tx.finish();
+                    tx = service.beginTx();
+                }
+            }
+            tx.success();
+            model.findMatrixNodes();
+        } finally {
+            tx.finish();
+        }
+
+    }
     /**
      * Creates the matrix.
      */
@@ -1050,7 +1336,7 @@ public class GpehReportCreator {
                     continue;
                 } else if (type.equals(GpehReportUtil.MR_TYPE_UE_INTERNAL)) {
                     tableRoot = ueTxPAnalyse.getMainNode();
-                    Node tableNode = findOrCreateTableNode(bestCell, tableRoot, type);
+                    Node tableNode = findOrCreateTableNode(bestCell.getCell(), tableRoot, type);
                     tableNode.createRelationshipTo(eventNode, ReportsRelations.SOURCE_MATRIX_EVENT);
                     analyseBestCelltxPower(tableNode, bestCell, eventNode);
                     continue;
@@ -1102,8 +1388,8 @@ public class GpehReportCreator {
      * @param type
      * @return
      */
-    private Node findOrCreateTableNode(MeasurementCell bestCell, Node tableRoot, String type) {
-        String id = String.valueOf(bestCell.getCell().getId());
+    private Node findOrCreateTableNode(Node bestCell, Node tableRoot, String type) {
+        String id = String.valueOf(bestCell.getId());
         String indexName = GpehReportUtil.getMatrixLuceneIndexName(model.getNetworkName(), model.getGpehEventsName(), type);
         Transaction tx = service.beginTx();
         try {
@@ -1112,7 +1398,7 @@ public class GpehReportCreator {
                 assert !"main".equals(Thread.currentThread().getName());
                 result = service.createNode();
                 tableRoot.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
-                Relationship rel = result.createRelationshipTo(bestCell.getCell(), ReportsRelations.BEST_CELL);
+                Relationship rel = result.createRelationshipTo(bestCell, ReportsRelations.BEST_CELL);
                 rel.setProperty(GpehReportUtil.REPORTS_ID, indexName);
                 luceneService.index(result, indexName, id);
                 countRow++;
@@ -2660,6 +2946,42 @@ public class GpehReportCreator {
         }
     }
 
+    public class GPEHUlInterferenceStorer implements IStatisticStore {
+
+        @Override
+        public void storeStatisticElement(IStatisticElement statElem, Node node) {
+            StatisticSetElement source = (StatisticSetElement)statElem;
+            NeoArray array = new NeoArray(node, CellUlInterferenceAnalisis.ARRAY_NAME, 1, service);
+
+            Set<NeoArray> arraySet = new HashSet<NeoArray>(0);
+            for (IStatisticElementNode singlElement : source.getSources()) {
+                if (NeoArray.hasArray(CellUlInterferenceAnalisis.ARRAY_NAME, singlElement.getNode(), service)) {
+                    arraySet.add(new NeoArray(singlElement.getNode(), CellUlInterferenceAnalisis.ARRAY_NAME, 1, service));
+                }
+            }
+            for (int ulInt = 0; ulInt <= 621; ulInt++) {
+                Node arrayNode = null;
+                int count = 0;
+                for (NeoArray sArray : arraySet) {
+                    Node sourceNode = sArray.getNode(ulInt);
+                    if (sourceNode != null) {
+                        Object value = sArray.getValueFromNode(sourceNode);
+                        if (value != null) {
+                            count += (Integer)value;
+                            if (arrayNode == null && count >= 0) {
+                                arrayNode = array.findOrCreateNode(ulInt);
+                                arrayNode.createRelationshipTo(sourceNode, ReportsRelations.SOURCE);
+                            }
+                        }
+                    }
+                }
+                if (arrayNode != null) {
+                    array.setValueToNode(arrayNode, count);
+                }
+            }
+        }
+    }
+
     public class GPEHEcNoStorer implements IStatisticStore {
 
         @Override
@@ -2737,6 +3059,38 @@ public class GpehReportCreator {
         }
     }
 
+    public void createUlInterferenceReport(CallTimePeriods periods) {
+        if (model.getCellUlInterferenceAnalisis(periods) != null) {
+            return;
+        }
+        assert !"main".equals(Thread.currentThread().getName());
+        Transaction tx = service.beginTx();
+        try {
+            createNBapBaseReports();
+            Node parentNode = service.createNode();
+            parentNode.setProperty(CellReportsProperties.PERIOD_ID, periods.getId());
+            model.getRoot().createRelationshipTo(parentNode, periods.getPeriodRelation(CellUlInterferenceAnalisis.PRFIX));
+            CellUlInterferenceAnalisis sourceModel = model.getCellUlInterferenceAnalisis(CallTimePeriods.HOURLY);
+            Node sourceMainNode = sourceModel.getMainNode();
+            Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(gpeh, service);
+            for (Relationship rel : sourceMainNode.getRelationships(Direction.OUTGOING)) {
+                String bestCellId = StatisticNeoService.getBestCellId(rel.getType().name());
+                if (bestCellId != null) {
+                    StatisticByPeriodStructure sourceStruc = new StatisticByPeriodStructure(rel.getOtherNode(sourceMainNode), service);
+                    GPEHStatisticHandler handler = new GPEHStatisticHandler(sourceStruc);
+                    GPEHUlInterferenceStorer store = new GPEHUlInterferenceStorer();
+                    TimePeriodStructureCreator creator = new TimePeriodStructureCreator(parentNode, bestCellId, minMax.getLeft(), minMax.getRight(), periods, handler, store,
+                            service);
+                    creator.createStructure();
+                }
+            }
+            model.findCellUeTxPowerAnalisis(periods);
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+
+    }
     public void createUeTxPowerCellReport(CallTimePeriods periods) {
         if (model.getCellUeTxPowerAnalisis(periods) != null) {
             return;

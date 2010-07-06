@@ -22,7 +22,8 @@ package org.amanzi.awe.neighbours.gpeh;
  * @since 1.0.0
  */
 public enum GpehReport {
-    RF_PERFORMANCE_ANALYSIS("RF Performance Analysis", GpehReportType.CELL_RSCP_ANALYSIS, GpehReportType.CELL_ECNO_ANALYSIS, GpehReportType.UE_TX_POWER_ANALYSIS,GpehReportType.CELL_RF_CORRELATION),
+    RF_PERFORMANCE_ANALYSIS("RF Performance Analysis", GpehReportType.CELL_RSCP_ANALYSIS, GpehReportType.CELL_ECNO_ANALYSIS, GpehReportType.UE_TX_POWER_ANALYSIS,
+            GpehReportType.CELL_RF_CORRELATION, GpehReportType.NBAP_UL_INTERFERENCE),
     INTERFERENCE_ANALYSIS("Interference Analysis", GpehReportType.IDCM_INTER, GpehReportType.IDCM_INTRA);
 
     private final String string;

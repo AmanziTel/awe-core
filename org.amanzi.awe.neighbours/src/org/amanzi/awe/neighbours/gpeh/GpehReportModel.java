@@ -21,10 +21,10 @@ import org.amanzi.awe.statistic.StatisticByPeriodStructure;
 import org.amanzi.awe.statistic.StatisticNeoService;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.utils.GpehReportUtil;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.GpehReportUtil.CellReportsProperties;
 import org.amanzi.neo.core.utils.GpehReportUtil.MatrixProperties;
 import org.amanzi.neo.core.utils.GpehReportUtil.ReportsRelations;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.hsqldb.lib.StringUtil;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -67,6 +67,11 @@ public class GpehReportModel {
     /** The cell rscp analisis. */
     private final Map<CallTimePeriods, CellRscpAnalisis> cellRscpAnalisis = new HashMap<CallTimePeriods, CellRscpAnalisis>();
     private final Map<CallTimePeriods, CellEcNoAnalisis> cellEcNoAnalisis = new HashMap<CallTimePeriods, CellEcNoAnalisis>();
+    private final Map<CallTimePeriods, CellDlTxCodePowerAnalisis> cellDlTxCodePowerAnalisis = new HashMap<CallTimePeriods, CellDlTxCodePowerAnalisis>();
+    private final Map<CallTimePeriods, CellUlInterferenceAnalisis> cellUlInterferenceAnalisis = new HashMap<CallTimePeriods, CellUlInterferenceAnalisis>();
+    private final Map<CallTimePeriods, CellDlTxCarrierPowerAnalisis> cellDlTxCarrierPowerAnalisis = new HashMap<CallTimePeriods, CellDlTxCarrierPowerAnalisis>();
+    private final Map<CallTimePeriods, CellNonHsPowerAnalisis> cellNonHsPowerAnalisis = new HashMap<CallTimePeriods, CellNonHsPowerAnalisis>();
+    private final Map<CallTimePeriods, CellHsdsRequiredPowerAnalisis> cellHsdsRequiredPowerAnalisis = new HashMap<CallTimePeriods, CellHsdsRequiredPowerAnalisis>();
     private final Map<CallTimePeriods, CellRscpEcNoAnalisis> cellRscpEcNoAnalisis = new HashMap<CallTimePeriods, CellRscpEcNoAnalisis>();
     private final Map<CallTimePeriods, CellUeTxPowerAnalisis> cellUeTxPowerAnalisis = new HashMap<CallTimePeriods, CellUeTxPowerAnalisis>();
 
@@ -125,6 +130,10 @@ public class GpehReportModel {
             findCellEcNoAnalisis(period);
             findCellRscpEcNoAnalisis(period);
             findCellUeTxPowerAnalisis(period);
+            // NBAP
+            // findCellDlTxCodePowerAnalisis(period);
+            findCellUlInterferenceAnalisis(period);
+            findCellDlTxCarrierPowerAnalisis(period);
         }
     }
 
@@ -245,6 +254,101 @@ public class GpehReportModel {
         }
         return null;
     }
+
+    public CellDlTxCodePowerAnalisis findCellDlTxCodePowerAnalisis(final CallTimePeriods periods) {
+        if (getRoot() == null) {
+            return null;
+        }
+        CellDlTxCodePowerAnalisis analys = cellDlTxCodePowerAnalisis.get(periods);
+        if (analys != null) {
+            return analys;
+        }
+
+        Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellDlTxCodePowerAnalisis.PRFIX), Direction.OUTGOING);
+        if (rel != null) {
+            Node mainNode = rel.getOtherNode(getRoot());
+            analys = new CellDlTxCodePowerAnalisis(mainNode, periods);
+            cellDlTxCodePowerAnalisis.put(periods, analys);
+            return analys;
+        }
+        return null;
+    }
+
+    public CellUlInterferenceAnalisis findCellUlInterferenceAnalisis(final CallTimePeriods periods) {
+        if (getRoot() == null) {
+            return null;
+        }
+        CellUlInterferenceAnalisis analys = cellUlInterferenceAnalisis.get(periods);
+        if (analys != null) {
+            return analys;
+        }
+
+        Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellUlInterferenceAnalisis.PRFIX), Direction.OUTGOING);
+        if (rel != null) {
+            Node mainNode = rel.getOtherNode(getRoot());
+            analys = new CellUlInterferenceAnalisis(mainNode, periods);
+            cellUlInterferenceAnalisis.put(periods, analys);
+            return analys;
+        }
+        return null;
+    }
+
+    public CellDlTxCarrierPowerAnalisis findCellDlTxCarrierPowerAnalisis(final CallTimePeriods periods) {
+        if (getRoot() == null) {
+            return null;
+        }
+        CellDlTxCarrierPowerAnalisis analys = cellDlTxCarrierPowerAnalisis.get(periods);
+        if (analys != null) {
+            return analys;
+        }
+
+        Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellDlTxCarrierPowerAnalisis.PRFIX), Direction.OUTGOING);
+        if (rel != null) {
+            Node mainNode = rel.getOtherNode(getRoot());
+            analys = new CellDlTxCarrierPowerAnalisis(mainNode, periods);
+            cellDlTxCarrierPowerAnalisis.put(periods, analys);
+            return analys;
+        }
+        return null;
+    }
+
+    public CellNonHsPowerAnalisis findCellNonHsPowerAnalisis(final CallTimePeriods periods) {
+        if (getRoot() == null) {
+            return null;
+        }
+        CellNonHsPowerAnalisis analys = cellNonHsPowerAnalisis.get(periods);
+        if (analys != null) {
+            return analys;
+        }
+
+        Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellNonHsPowerAnalisis.PRFIX), Direction.OUTGOING);
+        if (rel != null) {
+            Node mainNode = rel.getOtherNode(getRoot());
+            analys = new CellNonHsPowerAnalisis(mainNode, periods);
+            cellNonHsPowerAnalisis.put(periods, analys);
+            return analys;
+        }
+        return null;
+    }
+
+    public CellHsdsRequiredPowerAnalisis findCellHsdsRequiredPowerAnalisis(final CallTimePeriods periods) {
+        if (getRoot() == null) {
+            return null;
+        }
+        CellHsdsRequiredPowerAnalisis analys = cellHsdsRequiredPowerAnalisis.get(periods);
+        if (analys != null) {
+            return analys;
+        }
+
+        Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellHsdsRequiredPowerAnalisis.PRFIX), Direction.OUTGOING);
+        if (rel != null) {
+            Node mainNode = rel.getOtherNode(getRoot());
+            analys = new CellHsdsRequiredPowerAnalisis(mainNode, periods);
+            cellHsdsRequiredPowerAnalisis.put(periods, analys);
+            return analys;
+        }
+        return null;
+    }
     /**
      * Find cell rscp analisis.
      *
@@ -333,6 +437,14 @@ public class GpehReportModel {
 
     public CellEcNoAnalisis getCellEcNoAnalisis(CallTimePeriods periods) {
         return cellEcNoAnalisis.get(periods);
+    }
+
+    public CellDlTxCodePowerAnalisis getCelllDlTxCodePowerAnalisis(CallTimePeriods periods) {
+        return cellDlTxCodePowerAnalisis.get(periods);
+    }
+
+    public CellUlInterferenceAnalisis getCellUlInterferenceAnalisis(CallTimePeriods periods) {
+        return cellUlInterferenceAnalisis.get(periods);
     }
 
     /**
@@ -803,6 +915,62 @@ public class GpehReportModel {
 
         
     }
+
+    public class CellDlTxCodePowerAnalisis extends AnalysisByPeriods {
+
+        public static final String PRFIX = "DlTxCodePower";
+        public static final String ARRAY_NAME = "lDlTxCodePower_arr";
+
+        public CellDlTxCodePowerAnalisis(Node mainNode, CallTimePeriods period) {
+            super(mainNode, period, PRFIX);
+        }
+
+    }
+
+    public class CellUlInterferenceAnalisis extends AnalysisByPeriods {
+
+        public static final String PRFIX = "UlInterference";
+        public static final String ARRAY_NAME = "UlInterference_arr";
+
+        public CellUlInterferenceAnalisis(Node mainNode, CallTimePeriods period) {
+            super(mainNode, period, PRFIX);
+        }
+
+    }
+
+    public class CellDlTxCarrierPowerAnalisis extends AnalysisByPeriods {
+
+        public static final String PRFIX = "DlTxCarrierPower";
+        public static final String ARRAY_NAME = "DlTxCarrierPower_arr";
+
+        public CellDlTxCarrierPowerAnalisis(Node mainNode, CallTimePeriods period) {
+            super(mainNode, period, PRFIX);
+        }
+
+    }
+
+    public class CellNonHsPowerAnalisis extends AnalysisByPeriods {
+
+        public static final String PRFIX = "NonHsPower";
+        public static final String ARRAY_NAME = "NonHsPower_arr";
+
+        public CellNonHsPowerAnalisis(Node mainNode, CallTimePeriods period) {
+            super(mainNode, period, PRFIX);
+        }
+
+    }
+
+    public class CellHsdsRequiredPowerAnalisis extends AnalysisByPeriods {
+
+        public static final String PRFIX = "HsdsRequiredPower";
+        public static final String ARRAY_NAME = "HsdsRequiredPower_arr";
+
+        public CellHsdsRequiredPowerAnalisis(Node mainNode, CallTimePeriods period) {
+            super(mainNode, period, PRFIX);
+        }
+
+    }
+
     public class CellEcNoAnalisis extends AnalysisByPeriods {
 
         /** The Constant RSCP_PRFIX. */
@@ -819,16 +987,7 @@ public class GpehReportModel {
             super(mainNode, period,ECNO_PRFIX);
         }
 
-        /**
-         * Gets the rscp property.
-         * 
-         * @param node the node
-         * @return the rscp property
-         */
-        public int[] getEcNoProperty(Node node) {
-            int[] result = (int[])node.getProperty(CellReportsProperties.ECNO_ARRAY, null);
-            return result == null ? new int[50] : result;
-        }
+
 
     }
 

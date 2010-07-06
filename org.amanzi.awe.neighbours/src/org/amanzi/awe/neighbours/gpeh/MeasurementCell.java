@@ -17,7 +17,6 @@ import org.neo4j.graphdb.Node;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
-// TODO: Auto-generated Javadoc
 /**
  * <p>
  * Container for measurement cell
