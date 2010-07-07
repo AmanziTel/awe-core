@@ -23,9 +23,13 @@ package org.amanzi.awe.neighbours.gpeh;
  */
 public class Calculator3GPPdBm {
     
-//    public static void main(String[] args) {
-//        System.out.println(ValueType.UETXPOWER.getValue(21));
-//    }
+    public static void main(String[] args) {
+        System.out.println(ValueType.UETXPOWER.getValue(104));
+        System.out.println(ValueType.RSCP.getMax3GPP());
+        System.out.println(ValueType.ECNO.getMax3GPP());
+        System.out.println(ValueType.UETXPOWER.getMax3GPP());
+        System.out.println(ValueType.UL_INTERFERENCE.getMax3GPP());
+    }
 
     /**
      * The Enum ValueType.
@@ -33,16 +37,16 @@ public class Calculator3GPPdBm {
     public enum ValueType {
         
         /** The RSCP. */
-        RSCP(-115D, 25D, 1D, 0, "RSCP"),
+        RSCP(-115D, -25D, 1D, 0, "RSCP"),
         
         /** The ECNO. */
         ECNO(-24D, 0D, 0.5D, 0, "EcNo"),
         
         /** The UETXPOWER. */
         UETXPOWER(-49D, 33D, 1D, 21, "UeTxPower"),
+        UL_INTERFERENCE(-112D, -50D, 0.1D, 0, "UlInterference");
         
-        /** The RTWP. */
-        RTWP(-112D, -50D, 0.1D, 0, "RTWP");
+
         
         /** The min3 gpp. */
         private final int min3GPP;
@@ -92,6 +96,15 @@ public class Calculator3GPPdBm {
         }
 
         /**
+         * Gets the min3 gpp.
+         *
+         * @return the min3 gpp
+         */
+        public int getMin3GPP() {
+            return min3GPP;
+        }
+
+        /**
          * Gets the left.
          *
          * @param curVal the cur val
@@ -113,6 +126,9 @@ public class Calculator3GPPdBm {
             if (curVal < maxValue)
                 return curVal - step;
             return null;
+        }
+        public int getMax3GPP(){
+            return (int)((maxValue-minValue)/step+min3GPP+1);
         }
     }
 }

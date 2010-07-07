@@ -247,6 +247,7 @@ public class GPEHReportWizardPage2 extends WizardPage {
      */
     private void formPeriods() {
         period = new LinkedHashMap<String, CallTimePeriods>();
+        period.put("15min", CallTimePeriods.QUATER_HOUR);
         period.put("Hourly", CallTimePeriods.HOURLY);
         period.put("Daily", CallTimePeriods.DAILY);
         period.put("Total", CallTimePeriods.ALL);

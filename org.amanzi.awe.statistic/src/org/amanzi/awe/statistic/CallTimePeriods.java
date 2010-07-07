@@ -23,12 +23,38 @@ import org.neo4j.graphdb.RelationshipType;
  * <p>
  * enum of periods for call time
  * </p>
- * 
+ * ENUMS SHOULD BE SORTED BY PERIODS(from smallest to higher)!
  * @author Tsinkel_A
  * @since 1.0.0
  */
 public enum CallTimePeriods {
-    // 1 hour
+    // 15 min
+    QUATER_HOUR("hourly", null) {
+        @Override
+        public Long addPeriod(Long time) {
+           Calendar cl = Calendar.getInstance();
+            cl.setTimeInMillis(time);
+            cl.add(Calendar.MINUTE, 15);
+            return cl.getTimeInMillis();
+        }
+        
+        @Override
+        public Long getFirstTime(Long time) {
+            GregorianCalendar cl = new GregorianCalendar();
+            cl.setTimeInMillis(time);
+            cl.set(Calendar.SECOND, 0);
+            cl.set(Calendar.MILLISECOND, 0);
+            int min = cl.get(Calendar.MINUTE);
+            min=min-min%15;
+            cl.set(Calendar.MINUTE, min);
+            return cl.getTimeInMillis();
+        }
+        
+        @Override
+        public RelationshipType getPeriodRelation() {
+            return Relations.TP_15MIN;
+        }
+    },
     HOURLY("hourly", null) {
         @Override
         public Long addPeriod(Long time) {
@@ -235,6 +261,6 @@ public enum CallTimePeriods {
     }
 
     public static enum Relations implements RelationshipType {
-        TP_HOUR, TP_DAY, TP_WEEKLY, TP_MOUNTH,TP_ALL
+        TP_HOUR,TP_15MIN, TP_DAY, TP_WEEKLY, TP_MOUNTH,TP_ALL
     }
 }

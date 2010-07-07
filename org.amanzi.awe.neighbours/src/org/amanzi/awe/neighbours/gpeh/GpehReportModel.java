@@ -21,7 +21,6 @@ import org.amanzi.awe.statistic.StatisticByPeriodStructure;
 import org.amanzi.awe.statistic.StatisticNeoService;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.utils.GpehReportUtil;
-import org.amanzi.neo.core.utils.GpehReportUtil.CellReportsProperties;
 import org.amanzi.neo.core.utils.GpehReportUtil.MatrixProperties;
 import org.amanzi.neo.core.utils.GpehReportUtil.ReportsRelations;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -125,7 +124,7 @@ public class GpehReportModel {
      * Find cell analysis.
      */
     public void findCellAnalysis() {
-        for (CallTimePeriods period:new CallTimePeriods[]{CallTimePeriods.HOURLY,CallTimePeriods.DAILY,CallTimePeriods.ALL}){
+        for (CallTimePeriods period:new CallTimePeriods[]{CallTimePeriods.QUATER_HOUR,CallTimePeriods.HOURLY,CallTimePeriods.DAILY,CallTimePeriods.ALL}){
             findCellRscpAnalisis(period);
             findCellEcNoAnalisis(period);
             findCellRscpEcNoAnalisis(period);
@@ -134,6 +133,7 @@ public class GpehReportModel {
             // findCellDlTxCodePowerAnalisis(period);
             findCellUlInterferenceAnalisis(period);
             findCellDlTxCarrierPowerAnalisis(period);
+            findCellNonHsPowerAnalisis(period);
         }
     }
 
@@ -439,8 +439,11 @@ public class GpehReportModel {
         return cellEcNoAnalisis.get(periods);
     }
 
-    public CellDlTxCodePowerAnalisis getCelllDlTxCodePowerAnalisis(CallTimePeriods periods) {
+    public CellDlTxCodePowerAnalisis getCellDlTxCodePowerAnalisis(CallTimePeriods periods) {
         return cellDlTxCodePowerAnalisis.get(periods);
+    }
+    public CellDlTxCarrierPowerAnalisis getCellDlTxCarrierPowerAnalisis(CallTimePeriods periods) {
+        return cellDlTxCarrierPowerAnalisis.get(periods);
     }
 
     public CellUlInterferenceAnalisis getCellUlInterferenceAnalisis(CallTimePeriods periods) {
@@ -791,7 +794,7 @@ public class GpehReportModel {
     /**
      * The Class AnalysisByPeriods.
      */
-    private abstract class AnalysisByPeriods {
+    public static abstract class AnalysisByPeriods {
 
         /** The period. */
         protected final CallTimePeriods period;
@@ -811,6 +814,8 @@ public class GpehReportModel {
         /** The prefix. */
         protected final String prefix;
 
+        private final GraphDatabaseService service;
+
         /**
          * Instantiates a new analysis by periods.
          *
@@ -818,10 +823,11 @@ public class GpehReportModel {
          * @param period the period
          * @param prefix the prefix
          */
-        public AnalysisByPeriods(Node mainNode, CallTimePeriods period,String prefix) {
+        public AnalysisByPeriods(Node mainNode, CallTimePeriods period,String prefix,GraphDatabaseService service) {
             this.period = period;
             this.mainNode = mainNode;
             this.prefix = prefix;
+            this.service = service;
             useCache=false;
         }
         
@@ -908,7 +914,7 @@ public class GpehReportModel {
          * @param period the period
          */
         public CellRscpAnalisis(Node mainNode, CallTimePeriods period) {
-            super(mainNode, period,RSCP_PRFIX);
+            super(mainNode, period,RSCP_PRFIX,service);
         }
         
         
@@ -922,7 +928,7 @@ public class GpehReportModel {
         public static final String ARRAY_NAME = "lDlTxCodePower_arr";
 
         public CellDlTxCodePowerAnalisis(Node mainNode, CallTimePeriods period) {
-            super(mainNode, period, PRFIX);
+            super(mainNode, period, PRFIX,service);
         }
 
     }
@@ -933,7 +939,7 @@ public class GpehReportModel {
         public static final String ARRAY_NAME = "UlInterference_arr";
 
         public CellUlInterferenceAnalisis(Node mainNode, CallTimePeriods period) {
-            super(mainNode, period, PRFIX);
+            super(mainNode, period, PRFIX,service);
         }
 
     }
@@ -944,7 +950,7 @@ public class GpehReportModel {
         public static final String ARRAY_NAME = "DlTxCarrierPower_arr";
 
         public CellDlTxCarrierPowerAnalisis(Node mainNode, CallTimePeriods period) {
-            super(mainNode, period, PRFIX);
+            super(mainNode, period, PRFIX,service);
         }
 
     }
@@ -955,7 +961,7 @@ public class GpehReportModel {
         public static final String ARRAY_NAME = "NonHsPower_arr";
 
         public CellNonHsPowerAnalisis(Node mainNode, CallTimePeriods period) {
-            super(mainNode, period, PRFIX);
+            super(mainNode, period, PRFIX,service);
         }
 
     }
@@ -966,7 +972,7 @@ public class GpehReportModel {
         public static final String ARRAY_NAME = "HsdsRequiredPower_arr";
 
         public CellHsdsRequiredPowerAnalisis(Node mainNode, CallTimePeriods period) {
-            super(mainNode, period, PRFIX);
+            super(mainNode, period, PRFIX,service);
         }
 
     }
@@ -984,7 +990,7 @@ public class GpehReportModel {
          * @param period the period
          */
         public CellEcNoAnalisis(Node mainNode, CallTimePeriods period) {
-            super(mainNode, period,ECNO_PRFIX);
+            super(mainNode, period,ECNO_PRFIX,service);
         }
 
 
@@ -1004,7 +1010,7 @@ public class GpehReportModel {
          * @param period the period
          */
         public CellRscpEcNoAnalisis(Node mainNode, CallTimePeriods period) {
-            super(mainNode, period, PRFIX);
+            super(mainNode, period, PRFIX,service);
         }
 
 
@@ -1024,19 +1030,7 @@ public class GpehReportModel {
          * @param period the period
          */
         public CellUeTxPowerAnalisis(Node mainNode, CallTimePeriods period) {
-            super(mainNode, period, PRFIX);
-        }
-
-
-        /**
-         * Gets the rscp property.
-         *
-         * @param node the node
-         * @return the rscp property
-         */
-        public int[] getEcNoProperty(Node node) {
-            int[] result = (int[])node.getProperty(CellReportsProperties.ECNO_ARRAY,null);
-            return result==null?new int[50]:result;
+            super(mainNode, period, PRFIX,service);
         }
 
     }

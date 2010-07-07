@@ -16,18 +16,14 @@ package org.amanzi.awe.neighbours.dialog;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 
-import org.amanzi.awe.neighbours.gpeh.GpehReportCreator;
 import org.amanzi.awe.neighbours.gpeh.GpehReportType;
 import org.amanzi.awe.neighbours.views.Messages;
 import org.amanzi.awe.statistic.CallTimePeriods;
 import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -64,6 +60,7 @@ import org.neo4j.graphdb.Traverser;
  * @author tsinkel_a
  * @since 1.0.0
  */
+@Deprecated
 public class GpehReportDialog extends Dialog {
 
     /** The status. */
@@ -237,64 +234,13 @@ public class GpehReportDialog extends Dialog {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                createReport(gpehNode, netNode, repType,period, monitor);
+//                createReport(gpehNode, netNode, repType,period, monitor);
                 return Status.OK_STATUS;
             }
         };
         job.schedule();
     }
 
-    /**
-     * Creates the report.
-     * 
-     * @param gpehNode the gpeh node
-     * @param netNode the net node
-     * @param repType report type
-     * @param period 
-     * @param monitor the monitor
-     */
-    protected void createReport(Node gpehNode, Node netNode, GpehReportType repType, CallTimePeriods period, IProgressMonitor monitor) {
-        GpehReportCreator creator = new GpehReportCreator(netNode, gpehNode, NeoServiceProvider.getProvider().getService(),
-                NeoServiceProvider.getProvider().getIndexService());
-        creator.setMonitor(monitor);
-        creator.createMatrix();
-
-        final SpreadsheetNode spreadsheet;
-        switch (repType) {
-        case UE_TX_POWER_ANALYSIS:
-            creator.createUeTxPowerCellReport(period);
-            spreadsheet = creator.createUeTxPowerCellSpreadSheet("UxTxPower", period);
-            return;
-        case IDCM_INTRA:
-            spreadsheet = creator.createIntraIDCMSpreadSheet("IntraMatrix");
-            break;
-        case IDCM_INTER:
-            spreadsheet = creator.createInterIDCMSpreadSheet("InterMatrix");
-            break;
-        case CELL_RSCP_ANALYSIS:
-            // TODO remove after implementing and testing
-            // if (true)return;
-            creator.createRSCPCellReport(period);
-            spreadsheet = creator.createRSCPCellSpreadSheet("RSCPCell", period);
-            return;
-        case CELL_ECNO_ANALYSIS:
-                //TODO remove after implementing and testing
-//                if (true)return;
-            creator.createEcNoCellReport(period);
-            spreadsheet = creator.createEcNoCellSpreadSheet("RSCPCell", period);
-                return;
-        default:
-            return;
-            // break;
-        }
-        ActionUtil.getInstance().runTask(new Runnable() {
-
-            @Override
-            public void run() {
-                NeoSplashUtil.openSpreadsheet(spreadsheet);
-            }
-        }, true);
-    }
 
     /**
      * initialize.
