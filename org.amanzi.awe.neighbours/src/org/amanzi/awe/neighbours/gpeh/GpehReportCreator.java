@@ -139,6 +139,7 @@ public class GpehReportCreator {
         if (maxRange == 0) {
             maxRange = 3000;
         }
+        minMax = NeoUtils.getMinMaxTimeOfDataset(gpeh, service);
     }
 
     /**
@@ -743,7 +744,7 @@ public class GpehReportCreator {
         Transaction tx = service.beginTx();
         try {
             createReportModel();
-            minMax = NeoUtils.getMinMaxTimeOfDataset(gpeh, service);
+            // minMax = NeoUtils.getMinMaxTimeOfDataset(gpeh, service);
             // CellUlInterferenceAnalisis hour node
             Node parentNode = service.createNode();
             parentNode.setProperty(CellReportsProperties.PERIOD_ID, baseTime.getId());
@@ -928,7 +929,7 @@ public class GpehReportCreator {
             model.getRoot().createRelationshipTo(intraFMatrix, ReportsRelations.ICDM_INTRA_FR);
             model.getRoot().createRelationshipTo(interFMatrix, ReportsRelations.ICDM_INTER_FR);
             model.getRoot().createRelationshipTo(iRATMatrix, ReportsRelations.ICDM_IRAT);
-            minMax = NeoUtils.getMinMaxTimeOfDataset(gpeh, service);
+            // minMax = NeoUtils.getMinMaxTimeOfDataset(gpeh, service);
             // RSCP_ECNO hour node
             Node parentNode = service.createNode();
             parentNode.setProperty(CellReportsProperties.PERIOD_ID, baseTime.getId());
@@ -2262,12 +2263,12 @@ public class GpehReportCreator {
             CallTimePeriods previosPeriod = getPreviosPeriod(periods);
             CellUlInterferenceAnalisis sourceModel = model.getCellUlInterferenceAnalisis(previosPeriod);
             if (sourceModel==null){
-                createEcNoCellReport(previosPeriod);
+                createUlInterferenceReport(previosPeriod);
                 sourceModel = model.getCellUlInterferenceAnalisis(previosPeriod);
             }
             GPEHUlInterferenceStorer store = new GPEHUlInterferenceStorer();
             createPeriodBasedStructure(periods, parentNode, sourceModel, store);
-            model.findCellUeTxPowerAnalisis(periods);
+            model.findCellUlInterferenceAnalisis(periods);
             tx.success();
         } finally {
             tx.finish();
@@ -2292,7 +2293,7 @@ public class GpehReportCreator {
             }
             GPEHUlInterferenceStorer store = new GPEHUlInterferenceStorer();
             createPeriodBasedStructure(periods, parentNode, sourceModel, store);
-            model.findCellUeTxPowerAnalisis(periods);
+            model.findCellDlTxCarrierPowerAnalisis(periods);
             tx.success();
         } finally {
             tx.finish();
@@ -2312,7 +2313,7 @@ public class GpehReportCreator {
             CallTimePeriods previosPeriod = getPreviosPeriod(periods);
             CellUeTxPowerAnalisis sourceModel = model.getCellUeTxPowerAnalisis(previosPeriod);
             if (sourceModel==null){
-                createEcNoCellReport(previosPeriod);
+                createUeTxPowerCellReport(previosPeriod);
                 sourceModel = model.getCellUeTxPowerAnalisis(previosPeriod);
             }
             IStatisticStore store = new GPEHRscpEcNoStorer();
