@@ -72,7 +72,7 @@ public class TimePeriodStructureCreator {
                     node.setProperty(INeoConstants.MIN_TIMESTAMP, periodTime);
                     node.setProperty(INeoConstants.MAX_TIMESTAMP, periodEnd);
                     NeoUtils.addChild(rootNode, node, lastNode, service);
-                    statStore.storeStatisticElement(statElem,node);
+                    statStore.storeStatisticElement(statElem, node);
                     lastNode=node;
                     //TODo add recreate transaction
                 }
