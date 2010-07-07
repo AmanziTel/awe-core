@@ -29,6 +29,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -76,8 +77,9 @@ public class GPEHReportWizardPage extends WizardPage {
 
     @Override
     public void createControl(Composite parent) {
-        final Composite main = new Composite(parent, SWT.FILL);
+        final Group main = new Group(parent, SWT.FILL);
         main.setLayout(new GridLayout(3, false));
+        main.setText("Select data sources");
 
         Label label = new Label(main, SWT.NONE);
         label.setText("GPEH data");
