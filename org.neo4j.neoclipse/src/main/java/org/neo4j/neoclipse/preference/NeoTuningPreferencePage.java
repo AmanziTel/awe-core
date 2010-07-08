@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 
@@ -76,17 +77,23 @@ public class NeoTuningPreferencePage extends AbstractPreferencePage {
         super.performApply();
         
         Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-        Promt pdialog = new Promt(shell, "title");;
+        Promt pdialog = new Promt(shell, "Restart");;
         if (pdialog.open()) {
             PlatformUI.getWorkbench().restart();
         }
-        
-        
     }
 
     @Override
     public boolean performOk() {
-        return super.performOk();
+        super.performOk();
+        
+        Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+        Promt pdialog = new Promt(shell, "Restart");;
+        if (pdialog.open()) {
+            PlatformUI.getWorkbench().restart();
+        }
+        
+        return true;
     }
     // @Override
     // protected Control createContents(Composite parent) {
@@ -154,6 +161,10 @@ public class NeoTuningPreferencePage extends AbstractPreferencePage {
             this.shell = shell;
 //            shell.setImage(NodeTypes.DATASET.getImage());
             shell.setLayout(new GridLayout(2, false));
+            
+            Label label = new Label(shell, SWT.LEFT);
+            label.setText("To apply the changes need to restart the application.");
+            label.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false,2,1));
             
             bOk = createButton(shell, "Restart now");
             bOk.addSelectionListener(new SelectionAdapter() {
