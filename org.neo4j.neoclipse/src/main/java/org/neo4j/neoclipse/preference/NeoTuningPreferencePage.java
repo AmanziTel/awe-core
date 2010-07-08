@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
@@ -45,37 +46,74 @@ public class NeoTuningPreferencePage extends AbstractPreferencePage {
     private static final String LABEL_PROPERTIES_KEYS = "Properties Keys";
     private static final String LABEL_PROPERTIES_STRING = "String Properties";
     private static final String LABEL_PROPERTIES_ARRAY = "Array Properties";
-    private static final String PROPTERTY_NOTE = "stating that changes will only be effective after a restart";
+    private static final String PROPTERTY_NOTE = "changes will only come into effect after restarting the application";
 
     @Override
     protected void createFieldEditors() {
-        IntegerFieldEditor nodes = new IntegerFieldEditor(Preferences.NEOSTORE_NODES, LABEL_NODES, getFieldEditorParent());
+
+        // Composite attributePanel = getFieldEditorParent();
+        // attributePanel.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, true));
+        // attributePanel.setLayout(new GridLayout());
+
+        Group attributeGroup = new Group(getFieldEditorParent(), SWT.NULL);
+        // Group attributeGroup = new Group(getFieldEditorParent(), new GridData(SWT.FILL, SWT.TOP,
+        // true, true));
+        attributeGroup.setText("Memory mapped I/O cache sizes (MB)");
+        attributeGroup.setLayout(new GridLayout());
+        attributeGroup.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, true));
+        Composite marginPanel = new Composite(attributeGroup, attributeGroup.getStyle());
+        GridLayout layout = new GridLayout();
+        // layout.marginHeight = 15;
+        // layout.marginWidth = 15;
+        marginPanel.setLayout(layout);
+        marginPanel.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, true));
+
+        IntegerFieldEditor nodes = new IntegerFieldEditor(Preferences.NEOSTORE_NODES, LABEL_NODES, marginPanel);
         nodes.setValidRange(1, Integer.MAX_VALUE);
-        addField(nodes, PROPTERTY_NOTE);
-        IntegerFieldEditor relationships = new IntegerFieldEditor(Preferences.NEOSTORE_RELATIONSHIPS, LABEL_RELATIONSHIPS, getFieldEditorParent());
+        // addField(nodes, PROPTERTY_NOTE);
+        addField(nodes);
+        IntegerFieldEditor relationships = new IntegerFieldEditor(Preferences.NEOSTORE_RELATIONSHIPS, LABEL_RELATIONSHIPS, marginPanel);
         relationships.setValidRange(1, Integer.MAX_VALUE);
-        addField(relationships, PROPTERTY_NOTE);
-        IntegerFieldEditor properties = new IntegerFieldEditor(Preferences.NEOSTORE_PROPERTIES, LABEL_PROPERTIES, getFieldEditorParent());
+        // addField(relationships, PROPTERTY_NOTE);
+        addField(relationships);
+        IntegerFieldEditor properties = new IntegerFieldEditor(Preferences.NEOSTORE_PROPERTIES, LABEL_PROPERTIES, marginPanel);
         properties.setValidRange(1, Integer.MAX_VALUE);
-        addField(properties, PROPTERTY_NOTE);
-        IntegerFieldEditor properties_ind = new IntegerFieldEditor(Preferences.NEOSTORE_PROPERTIES_INDEX, LABEL_PROPERTIES_INDEX, getFieldEditorParent());
+        // addField(properties, PROPTERTY_NOTE);
+        addField(properties);
+        IntegerFieldEditor properties_ind = new IntegerFieldEditor(Preferences.NEOSTORE_PROPERTIES_INDEX, LABEL_PROPERTIES_INDEX, marginPanel);
         properties_ind.setValidRange(1, Integer.MAX_VALUE);
-        addField(properties_ind, PROPTERTY_NOTE);
-        IntegerFieldEditor properties_keys = new IntegerFieldEditor(Preferences.NEOSTORE_PROPERTIES_KEYS, LABEL_PROPERTIES_KEYS, getFieldEditorParent());
+        // addField(properties_ind, PROPTERTY_NOTE);
+        addField(properties_ind);
+        IntegerFieldEditor properties_keys = new IntegerFieldEditor(Preferences.NEOSTORE_PROPERTIES_KEYS, LABEL_PROPERTIES_KEYS, marginPanel);
         properties_keys.setValidRange(1, Integer.MAX_VALUE);
-        addField(properties_keys, PROPTERTY_NOTE);
-        IntegerFieldEditor properties_string = new IntegerFieldEditor(Preferences.NEOSTORE_PROPERTIES_STRING, LABEL_PROPERTIES_STRING, getFieldEditorParent());
+        // addField(properties_keys, PROPTERTY_NOTE);
+        addField(properties_keys);
+        IntegerFieldEditor properties_string = new IntegerFieldEditor(Preferences.NEOSTORE_PROPERTIES_STRING, LABEL_PROPERTIES_STRING, marginPanel);
         properties_string.setValidRange(1, Integer.MAX_VALUE);
-        addField(properties_string, PROPTERTY_NOTE);
-        IntegerFieldEditor properties_arrays = new IntegerFieldEditor(Preferences.NEOSTORE_PROPERTIES_ARRAYS, LABEL_PROPERTIES_ARRAY, getFieldEditorParent());
+        // addField(properties_string, PROPTERTY_NOTE);
+        addField(properties_string);
+        IntegerFieldEditor properties_arrays = new IntegerFieldEditor(Preferences.NEOSTORE_PROPERTIES_ARRAYS, LABEL_PROPERTIES_ARRAY, marginPanel);
         properties_arrays.setValidRange(1, Integer.MAX_VALUE);
-        addField(properties_arrays, PROPTERTY_NOTE);
+        addField(properties_arrays);
+
+        Composite note = createNoteComposite(getFieldEditorParent().getFont(), marginPanel, "Note:", PROPTERTY_NOTE);
+        GridData spacerData = new GridData(GridData.FILL_HORIZONTAL);
+        spacerData.horizontalSpan = 3;
+        note.setLayoutData(spacerData);
+
+        // addField(properties_arrays, PROPTERTY_NOTE);
+    }
+
+    @Override
+    public void addSeparator() {
+        // super.addSeparator();
+        // nothing to do
     }
 
     @Override
     protected void performApply() {
         super.performApply();
-        
+
         Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
         Promt pdialog = new Promt(shell, "Restart");;
         if (pdialog.open()) {
@@ -86,15 +124,16 @@ public class NeoTuningPreferencePage extends AbstractPreferencePage {
     @Override
     public boolean performOk() {
         super.performOk();
-        
+
         Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
         Promt pdialog = new Promt(shell, "Restart");;
         if (pdialog.open()) {
             PlatformUI.getWorkbench().restart();
         }
-        
+
         return true;
     }
+
     // @Override
     // protected Control createContents(Composite parent) {
     // Composite control = (Composite)super.createContents(parent);
@@ -104,7 +143,7 @@ public class NeoTuningPreferencePage extends AbstractPreferencePage {
     // b.setLayoutData(layoutData);
     // return control;
     // }
-    private class Promt extends Dialog{
+    private class Promt extends Dialog {
 
         private final String title;
         protected boolean status;
@@ -157,15 +196,15 @@ public class NeoTuningPreferencePage extends AbstractPreferencePage {
             return title;
         }
 
-        protected void createContents(final Shell shell){
+        protected void createContents(final Shell shell) {
             this.shell = shell;
-//            shell.setImage(NodeTypes.DATASET.getImage());
+            // shell.setImage(NodeTypes.DATASET.getImage());
             shell.setLayout(new GridLayout(2, false));
-            
+
             Label label = new Label(shell, SWT.LEFT);
             label.setText("To apply the changes need to restart the application.");
-            label.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false,2,1));
-            
+            label.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false, 2, 1));
+
             bOk = createButton(shell, "Restart now");
             bOk.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -174,7 +213,7 @@ public class NeoTuningPreferencePage extends AbstractPreferencePage {
                     shell.close();
                 }
             });
-            
+
             bCancel = createButton(shell, "Restart later");
             bCancel.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -183,9 +222,9 @@ public class NeoTuningPreferencePage extends AbstractPreferencePage {
                     shell.close();
                 }
             });
-            
+
         };
-        
+
         /**
          * Create button
          * 
@@ -199,6 +238,6 @@ public class NeoTuningPreferencePage extends AbstractPreferencePage {
             button.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false));
             return button;
         }
-        
-    } 
+
+    }
 }

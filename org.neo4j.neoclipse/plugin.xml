@@ -48,7 +48,7 @@
       <page
             class="org.neo4j.neoclipse.preference.NeoTuningPreferencePage"
             id="org.neo4j.neoclipse.preference.NeoTuningPreferencePage"
-            name="tuning"
+            name="Performance Tuning"
             category="org.neo4j.neoclipse.preference.PreferencePage">
       </page>
    </extension>
