@@ -111,17 +111,6 @@ public class NeoTuningPreferencePage extends AbstractPreferencePage {
     }
 
     @Override
-    protected void performApply() {
-        super.performApply();
-
-//        Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-//        Promt pdialog = new Promt(shell, "Restart");;
-//        if (pdialog.open()) {
-//            PlatformUI.getWorkbench().restart();
-//        }
-    }
-
-    @Override
     public boolean performOk() {
         super.performOk();
 
