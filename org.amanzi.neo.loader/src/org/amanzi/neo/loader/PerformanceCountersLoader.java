@@ -25,6 +25,7 @@ import org.amanzi.neo.core.enums.SectorIdentificationType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.loader.AbstractLoader.StringMapper;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -64,6 +65,10 @@ public class PerformanceCountersLoader extends AbstractLoader {
     private void init() {
         possibleCellNames.add("cell name");
         possibleCellNames.add("cell");
+        // force String types on some risky headers (sometimes these look like integers)
+        for (String cellName:possibleCellNames){
+            useMapper(1, cellName, new StringMapper());
+        }
     }
 
 
