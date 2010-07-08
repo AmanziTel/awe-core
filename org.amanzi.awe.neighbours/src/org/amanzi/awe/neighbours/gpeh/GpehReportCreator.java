@@ -203,15 +203,15 @@ public class GpehReportCreator {
         case NBAP_DL_TX_CARRIER_POWER:
             createNBapBaseReports();
             createCellDlTxCarrierPowerAnalisis(period);
-            return getCellDlTxCarrierPowerProvider(period);  
-            case NBAP_NON_HS_POWER:
-                createNBapBaseReports();
-                createCellDlTxCarrierPowerAnalisis(period);
-                return getCellDlTxCarrierPowerProvider(period); 
-            case NBAP_HSDS_REQUIRED_POWER:
-                createNBapBaseReports();
-                createCellHsdsRequiredPowerAnalisis(period);
-                return getCellHsdsRequiredPowerProvider(period);             
+            return getCellDlTxCarrierPowerProvider(period);
+        case NBAP_NON_HS_POWER:
+            createNBapBaseReports();
+            createCellDlTxCarrierPowerAnalisis(period);
+            return getCellDlTxCarrierPowerProvider(period);
+        case NBAP_HSDS_REQUIRED_POWER:
+            createNBapBaseReports();
+            createCellHsdsRequiredPowerAnalisis(period);
+            return getCellHsdsRequiredPowerProvider(period);          
         default:
             return null;
         }
