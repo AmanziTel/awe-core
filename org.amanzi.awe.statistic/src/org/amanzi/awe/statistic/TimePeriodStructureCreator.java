@@ -15,19 +15,21 @@ package org.amanzi.awe.statistic;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
 /**
- * TODO Purpose of
  * <p>
+ * Create time based structure
  * </p>
  * 
  * @author TsAr
  * @since 1.0.0
  */
 public class TimePeriodStructureCreator {
+    private static final Logger LOGGER=Logger.getLogger(TimePeriodStructureCreator.class);
     private Node rootNode;
     private final Long startTime;
     private final Long endTime;
@@ -62,6 +64,7 @@ public class TimePeriodStructureCreator {
             rootNode.setProperty(StatisticNeoService.STATISTIC_PERIOD, period.getId());
             rootNode.setProperty(INeoConstants.MIN_TIMESTAMP, startTime);
             rootNode.setProperty(INeoConstants.MAX_TIMESTAMP, endTime);
+            int createdNodes=0;
             Node lastNode = null;
             Long periodTime = startTime;
             do {
@@ -74,11 +77,14 @@ public class TimePeriodStructureCreator {
                     NeoUtils.addChild(rootNode, node, lastNode, service);
                     statStore.storeStatisticElement(statElem, node);
                     lastNode=node;
+                    createdNodes+=1+statStore.getStoredNodesCount();
                     //TODo add recreate transaction
                 }
             } while ((periodTime = period.addPeriod(periodTime)) < endTime);
             tx.success();
-            return new StatisticByPeriodStructure(rootNode, service);
+            StatisticByPeriodStructure statisticByPeriodStructure = new StatisticByPeriodStructure(rootNode, service);
+            statisticByPeriodStructure.setCreatedNodes(createdNodes);
+            return statisticByPeriodStructure;
         } finally {
             tx.finish();
         }

@@ -47,6 +47,7 @@ public class StatisticByPeriodStructure {
     
     /** The use cache. */
     private boolean useCache;
+    private int createdNodes=0;
     
     /** The cache. */
     private final HashMap<Long,StatisticElementNodeImpl> cache=new HashMap<Long,StatisticElementNodeImpl>();
@@ -59,6 +60,7 @@ public class StatisticByPeriodStructure {
      * @param service the service
      */
     public StatisticByPeriodStructure(Node root,GraphDatabaseService service){
+        createdNodes=0;
         this.root = root;
         this.service = service;
         minMax=NeoUtils.getMinMaxTimeOfDataset(root, service);
@@ -70,7 +72,28 @@ public class StatisticByPeriodStructure {
             tx.finish();
         }
     }
+
     
+    /**
+     * Gets the created nodes.
+     *
+     * @return the created nodes
+     */
+    public int getCreatedNodes() {
+        return createdNodes;
+    }
+
+
+    /**
+     * Sets the created nodes.
+     *
+     * @param createdNodes the new created nodes
+     */
+    public void setCreatedNodes(int createdNodes) {
+        this.createdNodes = createdNodes;
+    }
+
+
     /**
      * Gets the statistic node.
      *

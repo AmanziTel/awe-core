@@ -207,7 +207,11 @@ public class GpehReportCreator {
             case NBAP_NON_HS_POWER:
                 createNBapBaseReports();
                 createCellDlTxCarrierPowerAnalisis(period);
-                return getCellDlTxCarrierPowerProvider(period);            
+                return getCellDlTxCarrierPowerProvider(period); 
+            case NBAP_HSDS_REQUIRED_POWER:
+                createNBapBaseReports();
+                createCellHsdsRequiredPowerAnalisis(period);
+                return getCellHsdsRequiredPowerProvider(period);             
         default:
             return null;
         }
@@ -298,7 +302,7 @@ public class GpehReportCreator {
                         }
                     }
                 } else {
-                    for (int rscp=0;rscp<ecnoRange;rscp++) {
+                    for (int rscp=0;rscp<rscpRange;rscp++) {
                         for(int ecno=0;ecno<ecnoRange;ecno++){
                             result.add(0);
                         }
@@ -586,6 +590,11 @@ public class GpehReportCreator {
         return new TimePeriodStructureProvider("DL_TX_CARRIER_POWER analysis", element, service);
     }
 
+    private IExportProvider getCellHsdsRequiredPowerProvider(final CallTimePeriods period) {
+        TimePeriodElement element=new TimePeriodElement( getReportModel().getCellHsdsRequiredPowerAnalisis(period), CellHsdsRequiredPowerAnalisis.ARRAY_NAME, ValueType.HSDSCH_REQUIRED_POWER, period, minMax.getLeft(), minMax.getRight());
+        return new TimePeriodStructureProvider("DL_TX_CARRIER_POWER analysis", element, service);
+    }
+
     /**
      * Gets the ue tx power cell provider.
      * 
@@ -676,17 +685,29 @@ public class GpehReportCreator {
      */
     protected void createPeriodBasedStructure(CallTimePeriods periods, Node parentNode, AnalysisByPeriods sourceModel, IStatisticStore store) {
         Node sourceMainNode = sourceModel.getMainNode();
-        Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(gpeh, service);
-        for (Relationship rel : sourceMainNode.getRelationships(Direction.OUTGOING)) {
-            String bestCellId = StatisticNeoService.getBestCellId(rel.getType().name());
-            if (bestCellId != null) {
-                StatisticByPeriodStructure sourceStruc = new StatisticByPeriodStructure(rel.getOtherNode(sourceMainNode), service);
-                GPEHStatisticHandler handler = new GPEHStatisticHandler(sourceStruc);
-               
-                TimePeriodStructureCreator creator = new TimePeriodStructureCreator(parentNode, bestCellId, minMax.getLeft(), minMax.getRight(), periods, handler, store,
-                        service);
-                creator.createStructure();
+        Transaction tx = service.beginTx();
+        try {
+            int count = 0;
+            for (Relationship rel : sourceMainNode.getRelationships(Direction.OUTGOING)) {
+                String bestCellId = StatisticNeoService.getBestCellId(rel.getType().name());
+                if (bestCellId != null) {
+                    StatisticByPeriodStructure sourceStruc = new StatisticByPeriodStructure(rel.getOtherNode(sourceMainNode), service);
+                    GPEHStatisticHandler handler = new GPEHStatisticHandler(sourceStruc);
+
+                    TimePeriodStructureCreator creator = new TimePeriodStructureCreator(parentNode, bestCellId, minMax.getLeft(), minMax.getRight(), periods, handler, store,
+                            service);
+                    count += creator.createStructure().getCreatedNodes();
+                    if (count > 2000) {
+                        count = 0;
+                        tx.success();
+                        tx.finish();
+                        tx = service.beginTx();
+                    }
+                }
             }
+        tx.success();
+        }finally{
+            tx.finish();
         }
     }
 
@@ -700,18 +721,17 @@ public class GpehReportCreator {
         try {
             Node parentNode = service.createNode();
             parentNode.setProperty(CellReportsProperties.PERIOD_ID, periods.getId());
-            model.getRoot().createRelationshipTo(parentNode, periods.getPeriodRelation(CellEcNoAnalisis.ECNO_PRFIX));
+            model.getRoot().createRelationshipTo(parentNode, periods.getPeriodRelation(CellRscpEcNoAnalisis.PRFIX));
             CallTimePeriods previosPeriod = getPreviosPeriod(periods);
             CellRscpEcNoAnalisis sourceModel = model.getCellRscpEcNoAnalisis(previosPeriod);
+            tx.success();
+            tx.finish();
             if (sourceModel==null){
-                tx.success();
-                tx.finish();
                 createEcNoCellReport(previosPeriod);
-                tx=service.beginTx();
-                sourceModel = model.getCellRscpEcNoAnalisis(previosPeriod);
             }
             IStatisticStore store = new GPEHRscpEcNoStorer();
             createPeriodBasedStructure(periods, parentNode, sourceModel, store);
+            tx = service.beginTx();          
             model.findCellRscpEcNoAnalisis(periods);
             tx.success();
         } finally {
@@ -1728,6 +1748,11 @@ public class GpehReportCreator {
         public void storeStatisticElement(IStatisticElement statElem, Node node) {
         }
 
+        @Override
+        public int getStoredNodesCount() {
+            return 0;
+        }
+
     }
 
 
@@ -1853,8 +1878,11 @@ public class GpehReportCreator {
 
     public class GPEHRSCPStorer implements IStatisticStore {
 
+        private int createdNodes=0;
+
         @Override
         public void storeStatisticElement(IStatisticElement statElem, Node node) {
+            createdNodes=0;
             StatisticSetElement source = (StatisticSetElement)statElem;
             NeoArray array = new NeoArray(node, CellRscpAnalisis.ARRAY_NAME, 1, service);
 
@@ -1864,35 +1892,43 @@ public class GpehReportCreator {
                     arraySet.add(new NeoArray(singlElement.getNode(), CellRscpEcNoAnalisis.ARRAY_NAME, 2, service));
                 }
             }
-            for (int rscp = 0; rscp <= 91; rscp++) {
-                Node arrayNode = null;
-                int count = 0;
-                for (int ecNo = 0; ecNo <= 49; ecNo++) {
-                    for (NeoArray sArray : arraySet) {
-                        Node sourceNode = sArray.getNode(rscp, ecNo);
-                        if (sourceNode != null) {
-                            Object value = sArray.getValueFromNode(sourceNode);
-                            if (value != null) {
-                                count += (Integer)value;
-                                if (arrayNode == null && count >= 0) {
-                                    arrayNode = array.findOrCreateNode(rscp);
-                                    arrayNode.createRelationshipTo(sourceNode, ReportsRelations.SOURCE);
+            if (!arraySet.isEmpty()) {
+                for (int rscp = 0; rscp <= 91; rscp++) {
+                    Node arrayNode = null;
+                    int count = 0;
+                    for (int ecNo = 0; ecNo <= 49; ecNo++) {
+                        for (NeoArray sArray : arraySet) {
+                            Node sourceNode = sArray.getNode(rscp, ecNo);
+                            if (sourceNode != null) {
+                                Object value = sArray.getValueFromNode(sourceNode);
+                                if (value != null) {
+                                    count += (Integer)value;
+                                    if (arrayNode == null && count >= 0) {
+                                        arrayNode = array.findOrCreateNode(rscp);
+                                        arrayNode.createRelationshipTo(sourceNode, ReportsRelations.SOURCE);
+                                        createdNodes++;
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                if (arrayNode != null) {
-                    array.setValueToNode(arrayNode, count);
+                    if (arrayNode != null) {
+                        array.setValueToNode(arrayNode, count);
+                    }
                 }
             }
+        }
+
+        @Override
+        public int getStoredNodesCount() {
+            return createdNodes;
         }
     }
 
     public class TimeStructureStorer implements IStatisticStore {
         private final ValueType type;
         private final String arrayName;
-
+        private int createdNodes=0;
 
         public TimeStructureStorer(ValueType type,String arrayName) {
             this.type = type;
@@ -1901,6 +1937,7 @@ public class GpehReportCreator {
 
         @Override
         public void storeStatisticElement(IStatisticElement statElem, Node node) {
+            createdNodes=0;
             StatisticSetElement source = (StatisticSetElement)statElem;
             NeoArray array = new NeoArray(node, arrayName, 1, service);
 
@@ -1911,32 +1948,41 @@ public class GpehReportCreator {
                 }
             }
             int max = type.getMax3GPP();
-            for (int u3GGP = type.getMin3GPP(); u3GGP <= max; u3GGP++) {
-                Node arrayNode = null;
-                int count = 0;
-                for (NeoArray sArray : arraySet) {
-                    Node sourceNode = sArray.getNode(u3GGP);
-                    if (sourceNode != null) {
-                        Object value = sArray.getValueFromNode(sourceNode);
-                        if (value != null) {
-                            count += (Integer)value;
-                            if (arrayNode == null && count >= 0) {
-                                arrayNode = array.findOrCreateNode(u3GGP);
-                                arrayNode.createRelationshipTo(sourceNode, ReportsRelations.SOURCE);
+            if (!arraySet.isEmpty()) {
+                for (int u3GGP = type.getMin3GPP(); u3GGP <= max; u3GGP++) {
+                    Node arrayNode = null;
+                    int count = 0;
+                    for (NeoArray sArray : arraySet) {
+                        Node sourceNode = sArray.getNode(u3GGP);
+                        if (sourceNode != null) {
+                            Object value = sArray.getValueFromNode(sourceNode);
+                            if (value != null) {
+                                count += (Integer)value;
+                                if (arrayNode == null && count >= 0) {
+                                    arrayNode = array.findOrCreateNode(u3GGP);
+                                    arrayNode.createRelationshipTo(sourceNode, ReportsRelations.SOURCE);
+                                    createdNodes++;
+                                }
                             }
                         }
                     }
-                }
-                if (arrayNode != null) {
-                    array.setValueToNode(arrayNode, count);
+                    if (arrayNode != null) {
+                        array.setValueToNode(arrayNode, count);
+                    }
                 }
             }
         }
-    }
-    public class GPEHEcNoStorer implements IStatisticStore {
 
         @Override
+        public int getStoredNodesCount() {
+            return createdNodes;
+        }
+    }
+    public class GPEHEcNoStorer implements IStatisticStore {
+        private int createdNodes=0;
+        @Override
         public void storeStatisticElement(IStatisticElement statElem, Node node) {
+            createdNodes=0;
             StatisticSetElement source = (StatisticSetElement)statElem;
             NeoArray array = new NeoArray(node, CellEcNoAnalisis.ARRAY_NAME, 1, service);
 
@@ -1946,35 +1992,44 @@ public class GpehReportCreator {
                     arraySet.add(new NeoArray(singlElement.getNode(), CellRscpEcNoAnalisis.ARRAY_NAME, 2, service));
                 }
             }
-            for (int ecNo = 0; ecNo <= 49; ecNo++) {
-                Node arrayNode = null;
-                int count = 0;
-                for (int rscp = 0; rscp <= 91; rscp++) {
-                    for (NeoArray sArray : arraySet) {
-                        Node sourceNode = sArray.getNode(rscp, ecNo);
-                        if (sourceNode != null) {
-                            Object value = sArray.getValueFromNode(sourceNode);
-                            if (value != null) {
-                                count += (Integer)value;
-                                if (arrayNode == null && count >= 0) {
-                                    arrayNode = array.findOrCreateNode(ecNo);
-                                    arrayNode.createRelationshipTo(sourceNode, ReportsRelations.SOURCE);
+            if (!arraySet.isEmpty()) {
+                for (int ecNo = 0; ecNo <= 49; ecNo++) {
+                    Node arrayNode = null;
+                    int count = 0;
+                    for (int rscp = 0; rscp <= 91; rscp++) {
+                        for (NeoArray sArray : arraySet) {
+                            Node sourceNode = sArray.getNode(rscp, ecNo);
+                            if (sourceNode != null) {
+                                Object value = sArray.getValueFromNode(sourceNode);
+                                if (value != null) {
+                                    count += (Integer)value;
+                                    if (arrayNode == null && count >= 0) {
+                                        arrayNode = array.findOrCreateNode(ecNo);
+                                        arrayNode.createRelationshipTo(sourceNode, ReportsRelations.SOURCE);
+                                        createdNodes++;
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                if (arrayNode != null) {
-                    array.setValueToNode(arrayNode, count);
+                    if (arrayNode != null) {
+                        array.setValueToNode(arrayNode, count);
+                    }
                 }
             }
+        }
+        @Override
+        public int getStoredNodesCount() {
+            return createdNodes;
         }
     }
 
     public class GPEHRscpEcNoStorer implements IStatisticStore {
+        private int createdNodes=0;
 
         @Override
         public void storeStatisticElement(IStatisticElement statElem, Node node) {
+             createdNodes=0;
             StatisticSetElement source = (StatisticSetElement)statElem;
             NeoArray array = new NeoArray(node, CellRscpEcNoAnalisis.ARRAY_NAME, 2, service);
 
@@ -1984,29 +2039,37 @@ public class GpehReportCreator {
                     arraySet.add(new NeoArray(singlElement.getNode(), CellRscpEcNoAnalisis.ARRAY_NAME, 2, service));
                 }
             }
-            for (int ecNo = 0; ecNo <= 49; ecNo++) {
-                int count = 0;
-                for (int rscp = 0; rscp <= 91; rscp++) {
-                    Node arrayNode = null;
-                    for (NeoArray sArray : arraySet) {
-                        Node sourceNode = sArray.getNode(rscp, ecNo);
-                        if (sourceNode != null) {
-                            Object value = sArray.getValueFromNode(sourceNode);
-                            if (value != null) {
-                                count += (Integer)value;
-                                if (arrayNode == null && count >= 0) {
-                                    arrayNode = array.findOrCreateNode(rscp, ecNo);
-                                    arrayNode.createRelationshipTo(sourceNode, ReportsRelations.SOURCE);
+            if (!arraySet.isEmpty()) {
+                for (int ecNo = 0; ecNo <= 49; ecNo++) {
+                    int count = 0;
+                    for (int rscp = 0; rscp <= 91; rscp++) {
+                        Node arrayNode = null;
+                        for (NeoArray sArray : arraySet) {
+                            Node sourceNode = sArray.getNode(rscp, ecNo);
+                            if (sourceNode != null) {
+                                Object value = sArray.getValueFromNode(sourceNode);
+                                if (value != null) {
+                                    count += (Integer)value;
+                                    if (arrayNode == null && count >= 0) {
+                                        arrayNode = array.findOrCreateNode(rscp, ecNo);
+                                        arrayNode.createRelationshipTo(sourceNode, ReportsRelations.SOURCE);
+                                        createdNodes++;
+                                    }
                                 }
                             }
                         }
+                        if (arrayNode != null) {
+                            array.setValueToNode(arrayNode, count);
+                        }
                     }
-                    if (arrayNode != null) {
-                        array.setValueToNode(arrayNode, count);
-                    }
-                }
 
+                }
             }
+        }
+
+        @Override
+        public int getStoredNodesCount() {
+            return createdNodes;
         }
     }
 

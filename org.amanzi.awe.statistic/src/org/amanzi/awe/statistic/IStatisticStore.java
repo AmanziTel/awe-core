@@ -33,5 +33,12 @@ public interface IStatisticStore {
      * @param node the node
      */
     void storeStatisticElement(IStatisticElement statElem, Node node);
+    
+    /**
+     * Gets the stored nodes count.
+     *
+     * @return the stored nodes count
+     */
+    int getStoredNodesCount();
 
 }

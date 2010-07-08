@@ -24,11 +24,9 @@ package org.amanzi.awe.neighbours.gpeh;
 public class Calculator3GPPdBm {
     
     public static void main(String[] args) {
-        System.out.println(ValueType.UETXPOWER.getValue(104));
-        System.out.println(ValueType.RSCP.getMax3GPP());
-        System.out.println(ValueType.ECNO.getMax3GPP());
-        System.out.println(ValueType.UETXPOWER.getMax3GPP());
-        System.out.println(ValueType.UL_INTERFERENCE.getMax3GPP());
+        for (int i=21;i<=104;i++){
+            System.out.println(ValueType.UETXPOWER.getValue(i));
+        }
     }
 
     /**
@@ -114,8 +112,8 @@ public class Calculator3GPPdBm {
          * @return the left
          */
         public Double getLeft(double curVal) {
-            if (curVal >= minValue)
-                return curVal;
+            if (curVal > minValue)
+                return curVal-step;
             return null;
         }
 
@@ -126,8 +124,8 @@ public class Calculator3GPPdBm {
          * @return the right
          */
         public Double getRight(double curVal) {
-            if (curVal < maxValue)
-                return curVal - step;
+            if (curVal <= maxValue)
+                return curVal ;
             return null;
         }
         public int getMax3GPP(){
