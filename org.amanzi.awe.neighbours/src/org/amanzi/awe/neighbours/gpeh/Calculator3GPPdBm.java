@@ -44,7 +44,10 @@ public class Calculator3GPPdBm {
         
         /** The UETXPOWER. */
         UETXPOWER(-49D, 33D, 1D, 21, "UeTxPower"),
-        UL_INTERFERENCE(-112D, -50D, 0.1D, 0, "UlInterference");
+        UL_INTERFERENCE(-112D, -50D, 0.1D, 0, "UlInterference"),
+        DL_TX_CARRIER_POWER(0d,100d,0.1d,0,"DlTxCarrierPower"),
+        HSDSCH_REQUIRED_POWER(0d,100d,0.1d,0,"HSDSCH_REQUIRED_POWER"),
+        NON_HS_POWER(0d,100d,0.1d,0,"NON_HS_POWER");
         
 
         

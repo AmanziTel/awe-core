@@ -134,6 +134,7 @@ public class GpehReportModel {
             findCellUlInterferenceAnalisis(period);
             findCellDlTxCarrierPowerAnalisis(period);
             findCellNonHsPowerAnalisis(period);
+            findCellHsdsRequiredPowerAnalisis(period);
         }
     }
 
@@ -444,6 +445,12 @@ public class GpehReportModel {
     }
     public CellDlTxCarrierPowerAnalisis getCellDlTxCarrierPowerAnalisis(CallTimePeriods periods) {
         return cellDlTxCarrierPowerAnalisis.get(periods);
+    }
+    public CellNonHsPowerAnalisis getCellNonHsPowerAnalisis(CallTimePeriods periods) {
+        return cellNonHsPowerAnalisis.get(periods);
+    }
+    public CellHsdsRequiredPowerAnalisis getCellHsdsRequiredPowerAnalisis(CallTimePeriods periods) {
+        return cellHsdsRequiredPowerAnalisis.get(periods);
     }
 
     public CellUlInterferenceAnalisis getCellUlInterferenceAnalisis(CallTimePeriods periods) {

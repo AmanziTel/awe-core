@@ -49,7 +49,6 @@ import org.amanzi.awe.statistic.StatisticNeoService;
 import org.amanzi.awe.statistic.TimePeriodStructureCreator;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
@@ -66,9 +65,6 @@ import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.export.CommonExporter;
 import org.amanzi.neo.core.utils.export.IExportHandler;
 import org.amanzi.neo.core.utils.export.IExportProvider;
-import org.amanzi.splash.swing.Cell;
-import org.amanzi.splash.utilities.NeoSplashUtil;
-import org.amanzi.splash.utilities.SpreadsheetCreator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -203,11 +199,15 @@ public class GpehReportCreator {
         case NBAP_UL_INTERFERENCE:
             createNBapBaseReports();
             createUlInterferenceReport(period);
-            return geUlInterferenceCellProvider(period);
+            return getUlInterferenceCellProvider(period);
         case NBAP_DL_TX_CARRIER_POWER:
             createNBapBaseReports();
             createCellDlTxCarrierPowerAnalisis(period);
-            return geUlInterferenceCellProvider(period);          
+            return getCellDlTxCarrierPowerProvider(period);  
+            case NBAP_NON_HS_POWER:
+                createNBapBaseReports();
+                createCellDlTxCarrierPowerAnalisis(period);
+                return getCellDlTxCarrierPowerProvider(period);            
         default:
             return null;
         }
@@ -521,13 +521,11 @@ public class GpehReportCreator {
                 result.add(bestCellName);
                 // psc
                 String value = matrix.getBestCellPSC(tblRow);
-                result.add(bestCellName);
-                // Interfering cell name
-                value = matrix.getInterferingCellName(tblRow);
-                result.add(bestCellName);
-                // Interfering PSC
-                value = matrix.getInterferingCellPSC(tblRow);
                 result.add(value);
+                // Interfering cell name
+                result.add(matrix.getInterferingCellName(tblRow));
+                // Interfering PSC
+                result.add(matrix.getInterferingCellPSC(tblRow));
                 // Defined NBR
                 result.add(matrix.isDefinedNbr(tblRow));
                 // Distance
@@ -572,9 +570,20 @@ public class GpehReportCreator {
      * @param period the period
      * @return the ue tx power cell provider
      */
-    private IExportProvider geUlInterferenceCellProvider(final CallTimePeriods period) {
+    private IExportProvider getUlInterferenceCellProvider(final CallTimePeriods period) {
         TimePeriodElement element=new TimePeriodElement( getReportModel().getCellUlInterferenceAnalisis(period), CellUlInterferenceAnalisis.ARRAY_NAME, ValueType.UL_INTERFERENCE, period, minMax.getLeft(), minMax.getRight());
         return new TimePeriodStructureProvider("Ul interference analysis", element, service);
+    }
+
+    /**
+     * Gets the cell dl tx carrier power provider.
+     *
+     * @param period the period
+     * @return the cell dl tx carrier power provider
+     */
+    private IExportProvider getCellDlTxCarrierPowerProvider(final CallTimePeriods period) {
+        TimePeriodElement element=new TimePeriodElement( getReportModel().getCellDlTxCarrierPowerAnalisis(period), CellDlTxCarrierPowerAnalisis.ARRAY_NAME, ValueType.DL_TX_CARRIER_POWER, period, minMax.getLeft(), minMax.getRight());
+        return new TimePeriodStructureProvider("DL_TX_CARRIER_POWER analysis", element, service);
     }
 
     /**
@@ -686,16 +695,19 @@ public class GpehReportCreator {
             return;
         }
         assert !"main".equals(Thread.currentThread().getName());
+        createMatrix();
         Transaction tx = service.beginTx();
         try {
-            createMatrix();
             Node parentNode = service.createNode();
             parentNode.setProperty(CellReportsProperties.PERIOD_ID, periods.getId());
             model.getRoot().createRelationshipTo(parentNode, periods.getPeriodRelation(CellEcNoAnalisis.ECNO_PRFIX));
             CallTimePeriods previosPeriod = getPreviosPeriod(periods);
             CellRscpEcNoAnalisis sourceModel = model.getCellRscpEcNoAnalisis(previosPeriod);
             if (sourceModel==null){
+                tx.success();
+                tx.finish();
                 createEcNoCellReport(previosPeriod);
+                tx=service.beginTx();
                 sourceModel = model.getCellRscpEcNoAnalisis(previosPeriod);
             }
             IStatisticStore store = new GPEHRscpEcNoStorer();
@@ -717,9 +729,9 @@ public class GpehReportCreator {
             return;
         }
         assert !"main".equals(Thread.currentThread().getName());
+        createMatrix();
         Transaction tx = service.beginTx();
         try {
-            createMatrix();
             Node parentNode = service.createNode();
             parentNode.setProperty(CellReportsProperties.PERIOD_ID, periods.getId());
             model.getRoot().createRelationshipTo(parentNode, periods.getPeriodRelation(CellRscpAnalisis.RSCP_PRFIX));
@@ -744,7 +756,6 @@ public class GpehReportCreator {
         Transaction tx = service.beginTx();
         try {
             createReportModel();
-            // minMax = NeoUtils.getMinMaxTimeOfDataset(gpeh, service);
             // CellUlInterferenceAnalisis hour node
             Node parentNode = service.createNode();
             parentNode.setProperty(CellReportsProperties.PERIOD_ID, baseTime.getId());
@@ -1682,185 +1693,6 @@ public class GpehReportCreator {
         this.monitor = monitor;
     }
 
-    /**
-     * Creates the inta idcm spread sheet.
-     * 
-     * @param spreadsheetName the spreadsheet name
-     * @return the spreadsheet node
-     */
-    public SpreadsheetNode createIntraIDCMSpreadSheet(String spreadsheetName) {
-        createMatrix();
-        GpehReportModel mdl = getReportModel();
-        IntraFrequencyICDM matrix = mdl.getIntraFrequencyICDM();
-        Transaction tx = service.beginTx();
-        try {
-            SpreadsheetCreator creator = new SpreadsheetCreator(NeoSplashUtil.configureRubyPath(GpehReportUtil.RUBY_PROJECT_NAME), spreadsheetName);
-            int column = 0;
-            monitor.subTask("create header");
-            Cell cellToadd = new Cell(0, column, "", "Serving cell name", null);
-            creator.saveCell(cellToadd);
-            column++;
-            cellToadd = new Cell(0, column, "", "Serving PSC", null);
-            creator.saveCell(cellToadd);
-            column++;
-            cellToadd = new Cell(0, column, "", "Interfering cell name", null);
-            creator.saveCell(cellToadd);
-            column++;
-            cellToadd = new Cell(0, column, "", "Interfering PSC", null);
-            creator.saveCell(cellToadd);
-            column++;
-            cellToadd = new Cell(0, column, "", "Defined NBR", null);
-            creator.saveCell(cellToadd);
-            column++;
-            cellToadd = new Cell(0, column, "", "Distance", null);
-            creator.saveCell(cellToadd);
-            column++;
-            cellToadd = new Cell(0, column, "", "Tier Distance", null);
-            creator.saveCell(cellToadd);
-            column++;
-            cellToadd = new Cell(0, column, "", "# of MR for best cell", null);
-            creator.saveCell(cellToadd);
-            column++;
-            cellToadd = new Cell(0, column, "", "# of MR for Interfering cell", null);
-            creator.saveCell(cellToadd);
-            column++;
-            cellToadd = new Cell(0, column, "", "EcNo Delta1", null);
-            creator.saveCell(cellToadd);
-            column++;
-            cellToadd = new Cell(0, column, "", "EcNo Delta2", null);
-            creator.saveCell(cellToadd);
-            column++;
-            cellToadd = new Cell(0, column, "", "EcNo Delta3", null);
-            creator.saveCell(cellToadd);
-            column++;
-            cellToadd = new Cell(0, column, "", "EcNo Delta4", null);
-            creator.saveCell(cellToadd);
-            column++;
-            cellToadd = new Cell(0, column, "", "EcNo Delta 5", null);
-            creator.saveCell(cellToadd);
-            column++;
-            cellToadd = new Cell(0, column, "", "RSCP Delta1", null);
-            creator.saveCell(cellToadd);
-            column++;
-            cellToadd = new Cell(0, column, "", "RSCP Delta2", null);
-            creator.saveCell(cellToadd);
-            column++;
-            cellToadd = new Cell(0, column, "", "RSCP Delta3", null);
-            creator.saveCell(cellToadd);
-            column++;
-            cellToadd = new Cell(0, column, "", "RSCP Delta4", null);
-            creator.saveCell(cellToadd);
-            column++;
-            cellToadd = new Cell(0, column, "", "RSCP Delta5", null);
-            creator.saveCell(cellToadd);
-            column++;
-            cellToadd = new Cell(0, column, "", "Position1", null);
-            creator.saveCell(cellToadd);
-            column++;
-            cellToadd = new Cell(0, column, "", "Position2", null);
-            creator.saveCell(cellToadd);
-            column++;
-            cellToadd = new Cell(0, column, "", "Position3", null);
-            creator.saveCell(cellToadd);
-            column++;
-            cellToadd = new Cell(0, column, "", "Position4", null);
-            creator.saveCell(cellToadd);
-            column++;
-            cellToadd = new Cell(0, column, "", "Position5", null);
-            creator.saveCell(cellToadd);
-            column++;
-            int row = 1;
-            int saveCount = 0;
-            long time = System.currentTimeMillis();
-            for (Node tblRow : matrix.getRowTraverser()) {
-                monitor.subTask("create row " + row);
-                column = 0;
-                // Serving cell name
-                String bestCellName = matrix.getBestCellName(tblRow);
-                cellToadd = new Cell(row, column, "", bestCellName, null);
-                creator.saveCell(cellToadd);
-                column++;
-                // "Serving PSC"
-                String value = matrix.getBestCellPSC(tblRow);
-                cellToadd = new Cell(row, column, "", value, null);
-                creator.saveCell(cellToadd);
-                column++;
-                // Interfering cell name
-                value = matrix.getInterferingCellName(tblRow);
-                cellToadd = new Cell(row, column, "", value, null);
-                creator.saveCell(cellToadd);
-                column++;
-                // Interfering PSC
-                value = matrix.getInterferingCellPSC(tblRow);
-                cellToadd = new Cell(row, column, "", value, null);
-                creator.saveCell(cellToadd);
-                column++;
-                // Defined NBR
-                value = String.valueOf(matrix.isDefinedNbr(tblRow));
-                cellToadd = new Cell(row, column, "", value, null);
-                creator.saveCell(cellToadd);
-                column++;
-                // Distance
-                value = String.valueOf(matrix.getDistance(tblRow));
-                cellToadd = new Cell(row, column, "", value, null);
-                creator.saveCell(cellToadd);
-                column++;
-                // Tier Distance
-                value = String.valueOf("N/A");
-                cellToadd = new Cell(row, column, "", value, null);
-                creator.saveCell(cellToadd);
-                column++;
-                // # of MR for best cell
-                value = String.valueOf(matrix.getNumMRForBestCell(tblRow));
-                cellToadd = new Cell(row, column, "", value, null);
-                creator.saveCell(cellToadd);
-                column++;
-                // # of MR for Interfering cell
-                value = String.valueOf(matrix.getNumMRForInterferingCell(tblRow));
-                cellToadd = new Cell(row, column, "", value, null);
-                creator.saveCell(cellToadd);
-                column++;
-                // Delta EcNo 1-5
-                for (int i = 1; i <= 5; i++) {
-                    value = String.valueOf(matrix.getDeltaEcNo(i, tblRow));
-                    cellToadd = new Cell(row, column, "", value, null);
-                    creator.saveCell(cellToadd);
-                    column++;
-                }
-                for (int i = 1; i <= 5; i++) {
-                    value = String.valueOf(matrix.getDeltaRSCP(i, tblRow));
-                    cellToadd = new Cell(row, column, "", value, null);
-                    creator.saveCell(cellToadd);
-                    column++;
-                }
-                for (int i = 1; i <= 5; i++) {
-                    value = String.valueOf(matrix.getPosition(i, tblRow));
-                    cellToadd = new Cell(row, column, "", value, null);
-                    creator.saveCell(cellToadd);
-                    column++;
-                }
-                monitor.setTaskName(String.format("Rows created: %s", row));
-
-                saveCount++;
-                if (saveCount > 1000) {
-                    time = System.currentTimeMillis() - time;
-                    tx.success();
-                    tx.finish();
-                    saveCount = 0;
-                    System.out.println("time of storing 1000 rows: " + time);
-                    time = System.currentTimeMillis();
-                    tx = service.beginTx();
-                }
-                row++;
-            }
-            tx.success();
-            System.out.println(creator.getSpreadsheet().getUnderlyingNode().getId());
-            return creator.getSpreadsheet();
-        } finally {
-            tx.finish();
-        }
-    }
-
 /**
  * 
  * <p>
@@ -2057,83 +1889,12 @@ public class GpehReportCreator {
         }
     }
 
-    public class GPEHUeTxPowerStorer implements IStatisticStore {
-
-        @Override
-        public void storeStatisticElement(IStatisticElement statElem, Node node) {
-            StatisticSetElement source = (StatisticSetElement)statElem;
-            NeoArray array = new NeoArray(node, CellRscpAnalisis.ARRAY_NAME, 1, service);
-
-            Set<NeoArray> arraySet = new HashSet<NeoArray>(0);
-            for (IStatisticElementNode singlElement : source.getSources()) {
-                if (NeoArray.hasArray(CellRscpEcNoAnalisis.ARRAY_NAME, singlElement.getNode(), service)) {
-                    arraySet.add(new NeoArray(singlElement.getNode(), CellUeTxPowerAnalisis.ARRAY_NAME, 1, service));
-                }
-            }
-            for (int txPow = 21; txPow <= 104; txPow++) {
-                Node arrayNode = null;
-                int count = 0;
-                for (NeoArray sArray : arraySet) {
-                    Node sourceNode = sArray.getNode(txPow);
-                    if (sourceNode != null) {
-                        Object value = sArray.getValueFromNode(sourceNode);
-                        if (value != null) {
-                            count += (Integer)value;
-                            if (arrayNode == null && count >= 0) {
-                                arrayNode = array.findOrCreateNode(txPow);
-                                arrayNode.createRelationshipTo(sourceNode, ReportsRelations.SOURCE);
-                            }
-                        }
-                    }
-                }
-                if (arrayNode != null) {
-                    array.setValueToNode(arrayNode, count);
-                }
-            }
-        }
-    }
-
-    public class GPEHUlInterferenceStorer implements IStatisticStore {
-
-        @Override
-        public void storeStatisticElement(IStatisticElement statElem, Node node) {
-            StatisticSetElement source = (StatisticSetElement)statElem;
-            NeoArray array = new NeoArray(node, CellUlInterferenceAnalisis.ARRAY_NAME, 1, service);
-
-            Set<NeoArray> arraySet = new HashSet<NeoArray>(0);
-            for (IStatisticElementNode singlElement : source.getSources()) {
-                if (NeoArray.hasArray(CellUlInterferenceAnalisis.ARRAY_NAME, singlElement.getNode(), service)) {
-                    arraySet.add(new NeoArray(singlElement.getNode(), CellUlInterferenceAnalisis.ARRAY_NAME, 1, service));
-                }
-            }
-            for (int ulInt = 0; ulInt <= 621; ulInt++) {
-                Node arrayNode = null;
-                int count = 0;
-                for (NeoArray sArray : arraySet) {
-                    Node sourceNode = sArray.getNode(ulInt);
-                    if (sourceNode != null) {
-                        Object value = sArray.getValueFromNode(sourceNode);
-                        if (value != null) {
-                            count += (Integer)value;
-                            if (arrayNode == null && count >= 0) {
-                                arrayNode = array.findOrCreateNode(ulInt);
-                                arrayNode.createRelationshipTo(sourceNode, ReportsRelations.SOURCE);
-                            }
-                        }
-                    }
-                }
-                if (arrayNode != null) {
-                    array.setValueToNode(arrayNode, count);
-                }
-            }
-        }
-    }
-    public class TimaStructureStorer implements IStatisticStore {
+    public class TimeStructureStorer implements IStatisticStore {
         private final ValueType type;
         private final String arrayName;
 
 
-        public TimaStructureStorer(ValueType type,String arrayName) {
+        public TimeStructureStorer(ValueType type,String arrayName) {
             this.type = type;
             this.arrayName = arrayName;
         }
@@ -2266,7 +2027,7 @@ public class GpehReportCreator {
                 createUlInterferenceReport(previosPeriod);
                 sourceModel = model.getCellUlInterferenceAnalisis(previosPeriod);
             }
-            GPEHUlInterferenceStorer store = new GPEHUlInterferenceStorer();
+            IStatisticStore store = new TimeStructureStorer( ValueType.UL_INTERFERENCE,CellUlInterferenceAnalisis.ARRAY_NAME);
             createPeriodBasedStructure(periods, parentNode, sourceModel, store);
             model.findCellUlInterferenceAnalisis(periods);
             tx.success();
@@ -2279,21 +2040,71 @@ public class GpehReportCreator {
             return;
         }
         assert !"main".equals(Thread.currentThread().getName());
+        createNBapBaseReports();
         Transaction tx = service.beginTx();
         try {
-            createNBapBaseReports();
             Node parentNode = service.createNode();
             parentNode.setProperty(CellReportsProperties.PERIOD_ID, periods.getId());
             model.getRoot().createRelationshipTo(parentNode, periods.getPeriodRelation(CellDlTxCodePowerAnalisis.PRFIX));
             CallTimePeriods previosPeriod = getPreviosPeriod(periods);
             CellDlTxCarrierPowerAnalisis sourceModel = model.getCellDlTxCarrierPowerAnalisis(previosPeriod);
             if (sourceModel==null){
-                createEcNoCellReport(previosPeriod);
+                createCellDlTxCarrierPowerAnalisis(previosPeriod);
                 sourceModel = model.getCellDlTxCarrierPowerAnalisis(previosPeriod);
             }
-            GPEHUlInterferenceStorer store = new GPEHUlInterferenceStorer();
+            IStatisticStore store = new TimeStructureStorer( ValueType.DL_TX_CARRIER_POWER,CellDlTxCarrierPowerAnalisis.ARRAY_NAME);
             createPeriodBasedStructure(periods, parentNode, sourceModel, store);
             model.findCellDlTxCarrierPowerAnalisis(periods);
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+    }
+    public void createCellNonHsPowerAnalisis(CallTimePeriods periods) {
+        if (model.getCellNonHsPowerAnalisis(periods) != null) {
+            return;
+        }
+        assert !"main".equals(Thread.currentThread().getName());
+        createNBapBaseReports();
+        Transaction tx = service.beginTx();
+        try {
+            Node parentNode = service.createNode();
+            parentNode.setProperty(CellReportsProperties.PERIOD_ID, periods.getId());
+            model.getRoot().createRelationshipTo(parentNode, periods.getPeriodRelation(CellNonHsPowerAnalisis.PRFIX));
+            CallTimePeriods previosPeriod = getPreviosPeriod(periods);
+            CellNonHsPowerAnalisis sourceModel = model.getCellNonHsPowerAnalisis(previosPeriod);
+            if (sourceModel==null){
+                createCellDlTxCarrierPowerAnalisis(previosPeriod);
+                sourceModel = model.getCellNonHsPowerAnalisis(previosPeriod);
+            }
+            IStatisticStore store = new TimeStructureStorer( ValueType.NON_HS_POWER,CellNonHsPowerAnalisis.ARRAY_NAME);
+            createPeriodBasedStructure(periods, parentNode, sourceModel, store);
+            model.findCellNonHsPowerAnalisis(periods);
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+    }
+    public void createCellHsdsRequiredPowerAnalisis(CallTimePeriods periods) {
+        if (model.getCellHsdsRequiredPowerAnalisis(periods) != null) {
+            return;
+        }
+        assert !"main".equals(Thread.currentThread().getName());
+        createNBapBaseReports();
+        Transaction tx = service.beginTx();
+        try {
+            Node parentNode = service.createNode();
+            parentNode.setProperty(CellReportsProperties.PERIOD_ID, periods.getId());
+            model.getRoot().createRelationshipTo(parentNode, periods.getPeriodRelation(CellHsdsRequiredPowerAnalisis.PRFIX));
+            CallTimePeriods previosPeriod = getPreviosPeriod(periods);
+            CellHsdsRequiredPowerAnalisis sourceModel = model.getCellHsdsRequiredPowerAnalisis(previosPeriod);
+            if (sourceModel==null){
+                createCellHsdsRequiredPowerAnalisis(previosPeriod);
+                sourceModel = model.getCellHsdsRequiredPowerAnalisis(previosPeriod);
+            }
+            IStatisticStore store = new TimeStructureStorer( ValueType.HSDSCH_REQUIRED_POWER,CellHsdsRequiredPowerAnalisis.ARRAY_NAME);
+            createPeriodBasedStructure(periods, parentNode, sourceModel, store);
+            model.findCellHsdsRequiredPowerAnalisis(periods);
             tx.success();
         } finally {
             tx.finish();
@@ -2316,7 +2127,7 @@ public class GpehReportCreator {
                 createUeTxPowerCellReport(previosPeriod);
                 sourceModel = model.getCellUeTxPowerAnalisis(previosPeriod);
             }
-            IStatisticStore store = new GPEHRscpEcNoStorer();
+            IStatisticStore store = new TimeStructureStorer( ValueType.UETXPOWER,CellUeTxPowerAnalisis.ARRAY_NAME);
             createPeriodBasedStructure(periods, parentNode, sourceModel, store);
             model.findCellUeTxPowerAnalisis(periods);
             tx.success();
