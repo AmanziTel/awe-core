@@ -222,8 +222,8 @@ public class GPEHReportWizardPage2 extends WizardPage {
         Table table = tableView.getTable();
         TableColumn column = new TableColumn(table, SWT.NONE);
         column.setText(columnName);
-        column.setResizable(true);
-        table.setHeaderVisible(true);
+        // column.setResizable(true);
+        // table.setHeaderVisible(true);
         table.setLinesVisible(true);
     }
 
