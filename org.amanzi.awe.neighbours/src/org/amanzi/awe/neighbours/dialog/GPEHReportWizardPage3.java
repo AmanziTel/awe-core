@@ -148,8 +148,8 @@ public class GPEHReportWizardPage3 extends WizardPage {
      * 
      * @return the target dir
      */
-    public String getTargetDir() {
-        return editorDir.getStringValue();
+    public File getTargetDir() {
+        return new File(editorDir.getStringValue());
     }
 
 }

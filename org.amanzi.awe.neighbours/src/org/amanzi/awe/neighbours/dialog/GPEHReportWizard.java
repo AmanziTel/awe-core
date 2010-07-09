@@ -70,7 +70,7 @@ public class GPEHReportWizard extends Wizard implements INewWizard {
         final Node netNode = firstPage.getNetworkNode();
         final Set<GpehReportType> repTypes = secondPage.getReportType();
         final CallTimePeriods period = secondPage.getPeriod();
-        final String targetDir = thirdPage.getTargetDir();
+        final File targetDir = thirdPage.getTargetDir();
         final FileType fileType = thirdPage.getFileType();
         Job job = new Job("generate Report") {
 
@@ -81,8 +81,7 @@ public class GPEHReportWizard extends Wizard implements INewWizard {
                 creator.setMonitor(monitor);
                 if (fileType == FileType.CSV) {
                     for (GpehReportType type : repTypes) {
-                        final File targetFile = new File(targetDir + "\\" + type.toString() + "_" + period + "." + fileType.toString());
-                        creator.exportToCSV(targetFile, type, period, monitor);
+                        creator.exportToCSV(targetDir, type, period, monitor);
                     }
                 }
                 return Status.OK_STATUS;
