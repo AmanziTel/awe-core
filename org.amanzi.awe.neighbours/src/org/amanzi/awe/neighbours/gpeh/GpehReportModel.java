@@ -205,13 +205,17 @@ public class GpehReportModel {
         if (analys != null) {
             return analys;
         }
-
-        Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellEcNoAnalisis.ECNO_PRFIX), Direction.OUTGOING);
-        if (rel!=null){
-            Node mainNode=rel.getOtherNode(getRoot());
-            analys = new CellEcNoAnalisis(mainNode, periods);
-            cellEcNoAnalisis.put(periods, analys);
-            return analys;
+        Transaction tx = service.beginTx();
+        try{
+            Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellEcNoAnalisis.ECNO_PRFIX), Direction.OUTGOING);
+            if (rel != null) {
+                Node mainNode = rel.getOtherNode(getRoot());
+                analys = new CellEcNoAnalisis(mainNode, periods);
+                cellEcNoAnalisis.put(periods, analys);
+                return analys;
+            }
+        } finally {
+            tx.finish();
         }
         return null;   
     }
@@ -224,14 +228,17 @@ public class GpehReportModel {
         if (analys != null) {
             return analys;
         }
-
-        Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellRscpEcNoAnalisis.PRFIX),
-                Direction.OUTGOING);
-        if (rel != null) {
-            Node mainNode = rel.getOtherNode(getRoot());
-            analys = new CellRscpEcNoAnalisis(mainNode, periods);
-            cellRscpEcNoAnalisis.put(periods, analys);
-            return analys;
+        Transaction tx = service.beginTx();
+        try {
+            Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellRscpEcNoAnalisis.PRFIX), Direction.OUTGOING);
+            if (rel != null) {
+                Node mainNode = rel.getOtherNode(getRoot());
+                analys = new CellRscpEcNoAnalisis(mainNode, periods);
+                cellRscpEcNoAnalisis.put(periods, analys);
+                return analys;
+            }
+        } finally {
+            tx.finish();
         }
         return null;
     }
@@ -244,14 +251,17 @@ public class GpehReportModel {
         if (analys != null) {
             return analys;
         }
-
-        Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellUeTxPowerAnalisis.PRFIX),
-                Direction.OUTGOING);
-        if (rel != null) {
-            Node mainNode = rel.getOtherNode(getRoot());
-            analys = new CellUeTxPowerAnalisis(mainNode, periods);
-            cellUeTxPowerAnalisis.put(periods, analys);
-            return analys;
+        Transaction tx = service.beginTx();
+        try {
+            Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellUeTxPowerAnalisis.PRFIX), Direction.OUTGOING);
+            if (rel != null) {
+                Node mainNode = rel.getOtherNode(getRoot());
+                analys = new CellUeTxPowerAnalisis(mainNode, periods);
+                cellUeTxPowerAnalisis.put(periods, analys);
+                return analys;
+            }
+        } finally {
+            tx.finish();
         }
         return null;
     }
@@ -264,13 +274,17 @@ public class GpehReportModel {
         if (analys != null) {
             return analys;
         }
-
-        Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellDlTxCodePowerAnalisis.PRFIX), Direction.OUTGOING);
-        if (rel != null) {
-            Node mainNode = rel.getOtherNode(getRoot());
-            analys = new CellDlTxCodePowerAnalisis(mainNode, periods);
-            cellDlTxCodePowerAnalisis.put(periods, analys);
-            return analys;
+        Transaction tx = service.beginTx();
+        try {
+            Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellDlTxCodePowerAnalisis.PRFIX), Direction.OUTGOING);
+            if (rel != null) {
+                Node mainNode = rel.getOtherNode(getRoot());
+                analys = new CellDlTxCodePowerAnalisis(mainNode, periods);
+                cellDlTxCodePowerAnalisis.put(periods, analys);
+                return analys;
+            }
+        } finally {
+            tx.finish();
         }
         return null;
     }
@@ -283,13 +297,17 @@ public class GpehReportModel {
         if (analys != null) {
             return analys;
         }
-
-        Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellUlInterferenceAnalisis.PRFIX), Direction.OUTGOING);
-        if (rel != null) {
-            Node mainNode = rel.getOtherNode(getRoot());
-            analys = new CellUlInterferenceAnalisis(mainNode, periods);
-            cellUlInterferenceAnalisis.put(periods, analys);
-            return analys;
+        Transaction tx = service.beginTx();
+        try {
+            Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellUlInterferenceAnalisis.PRFIX), Direction.OUTGOING);
+            if (rel != null) {
+                Node mainNode = rel.getOtherNode(getRoot());
+                analys = new CellUlInterferenceAnalisis(mainNode, periods);
+                cellUlInterferenceAnalisis.put(periods, analys);
+                return analys;
+            }
+        } finally {
+            tx.finish();
         }
         return null;
     }
@@ -302,13 +320,17 @@ public class GpehReportModel {
         if (analys != null) {
             return analys;
         }
-
-        Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellDlTxCarrierPowerAnalisis.PRFIX), Direction.OUTGOING);
-        if (rel != null) {
-            Node mainNode = rel.getOtherNode(getRoot());
-            analys = new CellDlTxCarrierPowerAnalisis(mainNode, periods);
-            cellDlTxCarrierPowerAnalisis.put(periods, analys);
-            return analys;
+        Transaction tx = service.beginTx();
+        try {
+            Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellDlTxCarrierPowerAnalisis.PRFIX), Direction.OUTGOING);
+            if (rel != null) {
+                Node mainNode = rel.getOtherNode(getRoot());
+                analys = new CellDlTxCarrierPowerAnalisis(mainNode, periods);
+                cellDlTxCarrierPowerAnalisis.put(periods, analys);
+                return analys;
+            }
+        } finally {
+            tx.finish();
         }
         return null;
     }
@@ -321,13 +343,17 @@ public class GpehReportModel {
         if (analys != null) {
             return analys;
         }
-
-        Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellNonHsPowerAnalisis.PRFIX), Direction.OUTGOING);
-        if (rel != null) {
-            Node mainNode = rel.getOtherNode(getRoot());
-            analys = new CellNonHsPowerAnalisis(mainNode, periods);
-            cellNonHsPowerAnalisis.put(periods, analys);
-            return analys;
+        Transaction tx = service.beginTx();
+        try {
+            Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellNonHsPowerAnalisis.PRFIX), Direction.OUTGOING);
+            if (rel != null) {
+                Node mainNode = rel.getOtherNode(getRoot());
+                analys = new CellNonHsPowerAnalisis(mainNode, periods);
+                cellNonHsPowerAnalisis.put(periods, analys);
+                return analys;
+            }
+        } finally {
+            tx.finish();
         }
         return null;
     }
@@ -340,13 +366,17 @@ public class GpehReportModel {
         if (analys != null) {
             return analys;
         }
-
+        Transaction tx = service.beginTx();
+        try {
         Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellHsdsRequiredPowerAnalisis.PRFIX), Direction.OUTGOING);
         if (rel != null) {
             Node mainNode = rel.getOtherNode(getRoot());
             analys = new CellHsdsRequiredPowerAnalisis(mainNode, periods);
             cellHsdsRequiredPowerAnalisis.put(periods, analys);
             return analys;
+        }
+        } finally {
+            tx.finish();
         }
         return null;
     }
@@ -364,13 +394,17 @@ public class GpehReportModel {
         if (analys != null) {
             return analys;
         }
-
-        Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellRscpAnalisis.RSCP_PRFIX), Direction.OUTGOING);
-        if (rel!=null){
-            Node mainNode=rel.getOtherNode(getRoot());
-            analys = new CellRscpAnalisis(mainNode, periods);
-            cellRscpAnalisis.put(periods, analys);
-            return analys;
+        Transaction tx = service.beginTx();
+        try {
+            Relationship rel = getRoot().getSingleRelationship(periods.getPeriodRelation(CellRscpAnalisis.RSCP_PRFIX), Direction.OUTGOING);
+            if (rel != null) {
+                Node mainNode = rel.getOtherNode(getRoot());
+                analys = new CellRscpAnalisis(mainNode, periods);
+                cellRscpAnalisis.put(periods, analys);
+                return analys;
+            }
+        } finally {
+            tx.finish();
         }
         return null;
 //        Iterator<Node> iter = getRoot().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {

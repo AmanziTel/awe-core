@@ -29,7 +29,7 @@ import org.neo4j.graphdb.RelationshipType;
  */
 public enum CallTimePeriods {
     // 15 min
-    QUATER_HOUR("hourly", null) {
+    QUATER_HOUR("15min", null) {
         @Override
         public Long addPeriod(Long time) {
            Calendar cl = Calendar.getInstance();

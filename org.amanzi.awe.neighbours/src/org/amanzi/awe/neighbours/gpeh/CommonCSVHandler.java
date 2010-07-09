@@ -38,21 +38,24 @@ public class CommonCSVHandler implements IExportHandler {
     private final File output;
     private final IProgressMonitor monitor;
     private CSVWriter writer;
+    private final char delimeter;
 
     /**
      * @param output
      * @param monitor
+     * @param delimeter 
      */
-    public CommonCSVHandler(File output, IProgressMonitor monitor) {
+    public CommonCSVHandler(File output, IProgressMonitor monitor, char delimeter) {
         this.output = output;
         this.monitor = monitor;
+        this.delimeter = delimeter;
     }
 
     @Override
     public void init() {
 
         try {
-            writer = new CSVWriter(new FileWriter(output));
+            writer = new CSVWriter(new FileWriter(output),delimeter);
         } catch (IOException e) {
             writer = null;
             // TODO Handle IOException

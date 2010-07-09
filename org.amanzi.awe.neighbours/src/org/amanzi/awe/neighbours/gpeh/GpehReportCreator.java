@@ -147,7 +147,7 @@ public class GpehReportCreator {
      * @param monitor the monitor
      */
     public void exportToCSV(File output, GpehReportType report, CallTimePeriods period, IProgressMonitor monitor) {
-        IExportHandler handler = new CommonCSVHandler(output, monitor);
+        IExportHandler handler = new CommonCSVHandler(output, monitor,'\t');
         IExportProvider provider = defineProvider(report, period);
         Transaction tx = service.beginTx();
         try {
@@ -457,7 +457,7 @@ public class GpehReportCreator {
      */
     private IExportProvider getCellEcnoProvider(final CallTimePeriods period) {
         TimePeriodElement element=new TimePeriodElement( getReportModel().getCellEcNoAnalisis(period), CellEcNoAnalisis.ARRAY_NAME, ValueType.ECNO, period, minMax.getLeft(), minMax.getRight());
-        return new TimePeriodStructureProvider("CELL ECNO ANALYSIS", element, service);
+        return new TimePeriodStructureProvider("Cell EcNo Analysis", element, service);
     }
 
     /**
@@ -644,23 +644,25 @@ public class GpehReportCreator {
         }
         assert !"main".equals(Thread.currentThread().getName());
         Transaction tx = service.beginTx();
+        CellRscpEcNoAnalisis sourceModel;
+        Node parentNode;
         try {
             createMatrix();
-            Node parentNode = service.createNode();
+            parentNode = service.createNode();
             parentNode.setProperty(CellReportsProperties.PERIOD_ID, periods.getId());
             model.getRoot().createRelationshipTo(parentNode, periods.getPeriodRelation(CellEcNoAnalisis.ECNO_PRFIX));
-            CellRscpEcNoAnalisis sourceModel = model.getCellRscpEcNoAnalisis(periods);
-            if (sourceModel==null){
-                createRscpEcNoCellReport(periods);
-                sourceModel = model.getCellRscpEcNoAnalisis(periods);
-            }
-            IStatisticStore store = new GPEHEcNoStorer();
-            createPeriodBasedStructure(periods, parentNode, sourceModel, store);
-            model.findCellEcNoAnalisis(periods);
+            sourceModel = model.getCellRscpEcNoAnalisis(periods);
             tx.success();
         } finally {
             tx.finish();
         }
+        if (sourceModel == null) {
+            createRscpEcNoCellReport(periods);
+            sourceModel = model.getCellRscpEcNoAnalisis(periods);
+        }
+        IStatisticStore store = new GPEHEcNoStorer();
+        createPeriodBasedStructure(periods, parentNode, sourceModel, store);
+        model.findCellEcNoAnalisis(periods);
     }
 
 
@@ -718,25 +720,26 @@ public class GpehReportCreator {
         assert !"main".equals(Thread.currentThread().getName());
         createMatrix();
         Transaction tx = service.beginTx();
+        Node parentNode;
+
         try {
-            Node parentNode = service.createNode();
+            parentNode = service.createNode();
             parentNode.setProperty(CellReportsProperties.PERIOD_ID, periods.getId());
             model.getRoot().createRelationshipTo(parentNode, periods.getPeriodRelation(CellRscpEcNoAnalisis.PRFIX));
-            CallTimePeriods previosPeriod = getPreviosPeriod(periods);
-            CellRscpEcNoAnalisis sourceModel = model.getCellRscpEcNoAnalisis(previosPeriod);
-            tx.success();
-            tx.finish();
-            if (sourceModel==null){
-                createEcNoCellReport(previosPeriod);
-            }
-            IStatisticStore store = new GPEHRscpEcNoStorer();
-            createPeriodBasedStructure(periods, parentNode, sourceModel, store);
-            tx = service.beginTx();          
-            model.findCellRscpEcNoAnalisis(periods);
+
             tx.success();
         } finally {
             tx.finish();
         }
+        CallTimePeriods previosPeriod = getPreviosPeriod(periods);
+        CellRscpEcNoAnalisis sourceModel = model.getCellRscpEcNoAnalisis(previosPeriod);
+        if (sourceModel == null) {
+            createEcNoCellReport(previosPeriod);
+        }
+        IStatisticStore store = new GPEHRscpEcNoStorer();
+        createPeriodBasedStructure(periods, parentNode, sourceModel, store);
+        model.findCellRscpEcNoAnalisis(periods);
+
     }
 
     /**
@@ -751,22 +754,23 @@ public class GpehReportCreator {
         assert !"main".equals(Thread.currentThread().getName());
         createMatrix();
         Transaction tx = service.beginTx();
+        Node parentNode;
         try {
-            Node parentNode = service.createNode();
+            parentNode = service.createNode();
             parentNode.setProperty(CellReportsProperties.PERIOD_ID, periods.getId());
             model.getRoot().createRelationshipTo(parentNode, periods.getPeriodRelation(CellRscpAnalisis.RSCP_PRFIX));
-            CellRscpEcNoAnalisis sourceModel = model.getCellRscpEcNoAnalisis(periods);
-            if (sourceModel==null){
-                createRscpEcNoCellReport(periods);
-                sourceModel = model.getCellRscpEcNoAnalisis(periods);
-            }
-            IStatisticStore store = new GPEHRSCPStorer();
-            createPeriodBasedStructure(periods, parentNode, sourceModel, store);
-            model.findCellRscpAnalisis(periods);
-            tx.success();
+
         } finally {
             tx.finish();
         }
+        CellRscpEcNoAnalisis sourceModel = model.getCellRscpEcNoAnalisis(periods);
+        if (sourceModel == null) {
+            createRscpEcNoCellReport(periods);
+            sourceModel = model.getCellRscpEcNoAnalisis(periods);
+        }
+        IStatisticStore store = new GPEHRSCPStorer();
+        createPeriodBasedStructure(periods, parentNode, sourceModel, store);
+        model.findCellRscpAnalisis(periods);
     }
 
     public void createNBapBaseReports() {
@@ -2443,6 +2447,7 @@ public class GpehReportCreator {
         private Iterator<Relationship> bestCellIteranor = null;
         private Iterator<IStatisticElementNode> iter = null;
         final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+        final SimpleDateFormat dateFormat2 = new SimpleDateFormat("hhmm");
         private String name = "";
         private  Calendar calendar = Calendar.getInstance();
         private String reportName;
@@ -2482,7 +2487,8 @@ public class GpehReportCreator {
         protected void createArrayHeader() {
             ValueType type = element.getValueType();
             for (int i= type.getMin3GPP();i<=type.getMax3GPP();i++){
-                headers.add(type.getValue(i));
+                
+                headers.add(String.valueOf(type.getLeftBound(i)));
             }
         }
 
@@ -2511,7 +2517,7 @@ public class GpehReportCreator {
             result.add(name);
             calendar.setTimeInMillis(statNode.getStartTime());
             result.add(dateFormat.format(calendar.getTime()));
-            result.add(String.valueOf(calendar.get(Calendar.HOUR_OF_DAY)));
+            result.add(dateFormat2.format(calendar.getTime()));
             result.add(element.getReports().getPeriod().getId());
             if (NeoArray.hasArray(element.getArrayName(), statNode.getNode(), service)) {
                 NeoArray array = new NeoArray(statNode.getNode(), element.getArrayName(), service);

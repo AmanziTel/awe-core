@@ -23,6 +23,11 @@ package org.amanzi.awe.neighbours.gpeh;
  */
 public class Calculator3GPPdBm {
     
+    /**
+     * The main method.
+     *
+     * @param args the arguments
+     */
     public static void main(String[] args) {
         for (int i=21;i<=104;i++){
             System.out.println(ValueType.UETXPOWER.getValue(i));
@@ -42,9 +47,17 @@ public class Calculator3GPPdBm {
         
         /** The UETXPOWER. */
         UETXPOWER(-49D, 33D, 1D, 21, "UeTxPower"),
+        
+        /** The U l_ interference. */
         UL_INTERFERENCE(-112D, -50D, 0.1D, 0, "UlInterference"),
+        
+        /** The D l_ t x_ carrie r_ power. */
         DL_TX_CARRIER_POWER(0d,100d,0.1d,0,"DlTxCarrierPower"),
+        
+        /** The HSDSC h_ require d_ power. */
         HSDSCH_REQUIRED_POWER(0d,100d,0.1d,0,"HSDSCH_REQUIRED_POWER"),
+        
+        /** The NO n_ h s_ power. */
         NON_HS_POWER(0d,100d,0.1d,0,"NON_HS_POWER");
         
 
@@ -95,6 +108,49 @@ public class Calculator3GPPdBm {
                 return maxValue + " <= " + stringVal;
             return getLeft(curVal) + " <= " + stringVal + " < " + getRight(curVal);
         }
+        public double getLeftBound(int val3GPP){
+            double curVal = (val3GPP-min3GPP) * step + minValue;
+            Double left = getLeft(curVal);       
+            if (null==left){
+                left=getMinValue()-step;
+            }
+            return left;
+        }
+        /**
+         * Gets the min value.
+         *
+         * @return the min value
+         */
+        public double getMinValue() {
+            return minValue;
+        }
+
+        /**
+         * Gets the max value.
+         *
+         * @return the max value
+         */
+        public double getMaxValue() {
+            return maxValue;
+        }
+
+        /**
+         * Gets the step.
+         *
+         * @return the step
+         */
+        public double getStep() {
+            return step;
+        }
+
+        /**
+         * Gets the string val.
+         *
+         * @return the string val
+         */
+        public String getStringVal() {
+            return stringVal;
+        }
 
         /**
          * Gets the min3 gpp.
@@ -128,6 +184,12 @@ public class Calculator3GPPdBm {
                 return curVal ;
             return null;
         }
+        
+        /**
+         * Gets the max3 gpp.
+         *
+         * @return the max3 gpp
+         */
         public int getMax3GPP(){
             return (int)((maxValue-minValue)/step+min3GPP+1);
         }
