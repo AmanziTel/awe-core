@@ -140,6 +140,7 @@ public class NetworkLoader extends AbstractLoader {
     private Node city = null;
     private Node network = null;
     private final ArrayList<String> mainHeaders = new ArrayList<String>();
+    private final ArrayList<String> identityHeaders = new ArrayList<String>();
     public ArrayList<String> shortLines = new ArrayList<String>();
     public ArrayList<String> emptyFields = new ArrayList<String>();
     public ArrayList<String> badFields = new ArrayList<String>();
@@ -221,8 +222,8 @@ public class NetworkLoader extends AbstractLoader {
         addMainHeader("city", getPossibleHeaders(DataLoadPreferences.NH_CITY));
         addMainHeader("msc", getPossibleHeaders(DataLoadPreferences.NH_MSC));
         addMainHeader("bsc", getPossibleHeaders(DataLoadPreferences.NH_BSC));
-        addMainHeader("site", getPossibleHeaders(DataLoadPreferences.NH_SITE));
-        addMainHeader("sector", getPossibleHeaders(DataLoadPreferences.NH_SECTOR));
+        addMainIdentityHeader("site", getPossibleHeaders(DataLoadPreferences.NH_SITE));
+        addMainIdentityHeader("sector", getPossibleHeaders(DataLoadPreferences.NH_SECTOR));
         addMainHeader(INeoConstants.PROPERTY_SECTOR_CI, getPossibleHeaders(DataLoadPreferences.NH_SECTOR_CI));
         addMainHeader(INeoConstants.PROPERTY_SECTOR_LAC, getPossibleHeaders(DataLoadPreferences.NH_SECTOR_LAC));
         addMainHeader(INeoConstants.PROPERTY_LAT_NAME, getPossibleHeaders(DataLoadPreferences.NH_LATITUDE));
@@ -235,8 +236,8 @@ public class NetworkLoader extends AbstractLoader {
         useMapper(1, "sector", new StringMapper());
 
         // Known headers that are sector data properties
-        addKnownHeader(1, "beamwidth", getPossibleHeaders(DataLoadPreferences.NH_BEAMWIDTH));
-        addKnownHeader(1, "azimuth", getPossibleHeaders(DataLoadPreferences.NH_AZIMUTH));
+        addKnownHeader(1, "beamwidth", getPossibleHeaders(DataLoadPreferences.NH_BEAMWIDTH), false);
+        addKnownHeader(1, "azimuth", getPossibleHeaders(DataLoadPreferences.NH_AZIMUTH), false);
     }
 
     /**
@@ -247,7 +248,18 @@ public class NetworkLoader extends AbstractLoader {
      * @param regexes
      */
     private void addMainHeader(String key, String[] regexes) {
-        addKnownHeader(1, key, regexes);
+        addKnownHeader(1, key, regexes, false);
+        mainHeaders.add(key);
+    }
+    /**
+     * Add a known header entry as well as mark it as a main header and identity header. All other fields will be
+     * assumed to be sector properties.
+     * 
+     * @param key
+     * @param regexes
+     */
+    private void addMainIdentityHeader(String key, String[] regexes) {
+        addKnownHeader(1, key, regexes, true);
         mainHeaders.add(key);
     }
 

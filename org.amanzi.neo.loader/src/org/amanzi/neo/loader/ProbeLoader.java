@@ -102,10 +102,10 @@ public class ProbeLoader extends AbstractLoader {
      */
     private void initializeKnownHeaders() {
         needParceHeader = true;
-        addKnownHeader(1, INeoConstants.PROPERTY_LAT_NAME, getPossibleHeaders(DataLoadPreferences.PR_LATITUDE));
-        addKnownHeader(1, "name", getPossibleHeaders(DataLoadPreferences.PR_NAME));
-        addKnownHeader(1, INeoConstants.PROPERTY_LON_NAME, getPossibleHeaders(DataLoadPreferences.PR_LONGITUDE));
-        addKnownHeader(1, "probe_type", getPossibleHeaders(DataLoadPreferences.PR_TYPE));
+        addKnownHeader(1, INeoConstants.PROPERTY_LAT_NAME, getPossibleHeaders(DataLoadPreferences.PR_LATITUDE), false);
+        addKnownHeader(1, "name", getPossibleHeaders(DataLoadPreferences.PR_NAME), false);
+        addKnownHeader(1, INeoConstants.PROPERTY_LON_NAME, getPossibleHeaders(DataLoadPreferences.PR_LONGITUDE), false);
+        addKnownHeader(1, "probe_type", getPossibleHeaders(DataLoadPreferences.PR_TYPE), false);
     }
 
     @Override

@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.units.SI;
+
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.OssType;
@@ -26,6 +28,7 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.AbstractLoader.StringMapper;
+import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -63,12 +66,16 @@ public class PerformanceCountersLoader extends AbstractLoader {
     
 
     private void init() {
-        possibleCellNames.add("cell name");
-        possibleCellNames.add("cell");
-        // force String types on some risky headers (sometimes these look like integers)
-        for (String cellName:possibleCellNames){
-            useMapper(1, cellName, new StringMapper());
-        }
+        final String SITE = "site";
+        possibleCellNames.add(SITE);
+        addKnownHeader(1,SITE, getPossibleHeaders(DataLoadPreferences.NH_SITE),true);
+        useMapper(1, SITE, new StringMapper());
+
+        final String CELL = "sector";
+        possibleCellNames.add(CELL);
+        addKnownHeader(1,CELL, getPossibleHeaders(DataLoadPreferences.NH_SECTOR),true);
+        useMapper(1, CELL, new StringMapper());
+       
     }
 
 
@@ -111,7 +118,7 @@ public class PerformanceCountersLoader extends AbstractLoader {
 
                 indexData(entry, node);
             }
-            node.setProperty(INeoConstants.PROPERTY_NAME_NAME, "APD counter");
+            node.setProperty(INeoConstants.PROPERTY_NAME_NAME, "performance counter");
             index(node);
 
             NeoUtils.addChild(fileNode, node, lastChild, neo);
@@ -150,6 +157,7 @@ public class PerformanceCountersLoader extends AbstractLoader {
     
     @Override
     public void finishUp() {
+        //Pechko_E what does this property mean?
         getStoringNode(1).setProperty(INeoConstants.SECTOR_ID_TYPE, SectorIdentificationType.NAME.toString());
         super.finishUp();
     }

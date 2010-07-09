@@ -120,9 +120,9 @@ public class RomesLoader extends DriveLoader {
      * in the algorithms later.
      */
     private void initializeKnownHeaders() {
-        addKnownHeader(1, "time", "time.*");
-        addKnownHeader(1, "latitude", ".*latitude.*");
-        addKnownHeader(1, "longitude", ".*longitude.*");
+        addKnownHeader(1, "time", "time.*", false);
+        addKnownHeader(1, "latitude", ".*latitude.*", false);
+        addKnownHeader(1, "longitude", ".*longitude.*", false);
         addMappedHeader(1, "events", "Event Type", "event_type", new PropertyMapper() {
 
             @Override
@@ -131,9 +131,10 @@ public class RomesLoader extends DriveLoader {
             }
         });
         addMappedHeader(1, "time", "Timestamp", "timestamp", new DateMapper("HH:mm:ss"));
-        addKnownHeader(1, INeoConstants.SECTOR_ID_PROPERTIES, ".*Server.*Report.*CI.*");
+        addKnownHeader(1, INeoConstants.SECTOR_ID_PROPERTIES, ".*Server.*Report.*CI.*", true);
         addNonDataHeaders(1, Arrays.asList(new String[] {"timestamp"}));
-        dropHeaderStats(1, new String[] {"time", "timestamp", "latitude", "longitude", INeoConstants.SECTOR_ID_PROPERTIES});
+        dropHeaderStats(1, new String[] {"time", "timestamp", "latitude", "longitude"/*, INeoConstants.SECTOR_ID_PROPERTIES*/});
+        addIdentityHeaders(1, Arrays.asList(new String[]{INeoConstants.SECTOR_ID_PROPERTIES}));
     }
 
     private void addDriveIndexes() {

@@ -133,9 +133,9 @@ public class TEMSLoader extends DriveLoader {
      * in the algorithms later.
      */
     private void initializeKnownHeaders() {
-        addKnownHeader(1, "latitude", ".*latitude");
-        addKnownHeader(1, "longitude", ".*longitude");
-        addKnownHeader(1, "ms","MS");
+        addKnownHeader(1, "latitude", ".*latitude", false);
+        addKnownHeader(1, "longitude", ".*longitude", false);
+        addKnownHeader(1, "ms","MS", false);
         addMappedHeader(1, "ms","MS", "ms", new StringMapper());
         addMappedHeader(1, "message_type","Message Type", "message_type", new StringMapper());
         addMappedHeader(1, "event", "Event Type", "event_type", new PropertyMapper() {

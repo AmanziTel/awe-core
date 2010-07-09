@@ -105,10 +105,10 @@ public class GPSLoader extends DriveLoader {
      * in the algorithms later.
      */
     private void initializeKnownHeaders() {
-        addKnownHeader(1, "timestamp", ".*timestamp.*");
-        addKnownHeader(1, "latitude", ".*latitude.*");
-        addKnownHeader(1, "longitude", ".*longitude.*");
-        addKnownHeader(1, INeoConstants.SECTOR_ID_PROPERTIES, "cellid");
+        addKnownHeader(1, "timestamp", ".*timestamp.*", false);
+        addKnownHeader(1, "latitude", ".*latitude.*", false);
+        addKnownHeader(1, "longitude", ".*longitude.*", false);
+        addKnownHeader(1, INeoConstants.SECTOR_ID_PROPERTIES, "cellid", false);
         dropHeaderStats(1, new String[] {"timestamp", "latitude", "longitude"});
     }
 

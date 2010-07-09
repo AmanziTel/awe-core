@@ -24,6 +24,7 @@ import org.neo4j.graphdb.Direction;
 public enum GeoNeoRelationshipTypes implements DeletableRelationshipType {
     NEXT(RelationDeletableTypes.RELINK,RelationDeletableTypes.RELINK),
     PROPERTIES(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_WITH_LINKED),
+    IDENTITY_PROPERTIES(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_WITH_LINKED),
     CHILD(RelationDeletableTypes.RELINK,RelationDeletableTypes.DELETE_WITH_LINKED),
     VIRTUAL_DATASET(RelationDeletableTypes.DELETE_WITH_LINKED,RelationDeletableTypes.DELETE_ONLY_LINK),
     LOCATION(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DEETE_WITH_CHECK_LINKED),

@@ -127,6 +127,7 @@ public abstract class AbstractLoader {
         Double min = Double.POSITIVE_INFINITY;
         Double max = Double.NEGATIVE_INFINITY;
         HashMap<Object, Integer> values = new HashMap<Object, Integer>();
+        boolean isIdentityHeader=false;
         int parseCount = 0;
         int countALL = 0;
 
@@ -146,6 +147,7 @@ public abstract class AbstractLoader {
             this.min = old.min;
             this.max = old.max;
             this.countALL = old.countALL;
+            this.isIdentityHeader=old.isIdentityHeader;
         }
 
         protected boolean invalid(String field) {
@@ -219,7 +221,8 @@ public abstract class AbstractLoader {
                     // }
                     // }
                 }
-                if (discard) {
+                //do not drop statistics for identity properties
+                if (discard && !isIdentityHeader) {
                     // Detected too much variety in property values, stop
                     // counting
                     dropStats();
@@ -233,7 +236,8 @@ public abstract class AbstractLoader {
         boolean shouldConvert() {
             return parseCount > 10;
         }
-
+        
+       
         Class< ? extends Object> knownType() {
             Class< ? extends Object> best = String.class;
             int maxCount = 0;
@@ -593,12 +597,12 @@ public abstract class AbstractLoader {
      * <pre>
      * addKnownHeader(&quot;y&quot;, &quot;lat.*&quot;);
      * </pre>
-     * 
      * @param key the name to use for the property
      * @param regex a regular expression to use to find the property
+     * @param isIdentityHeader true if the property is an identity property
      */
-    protected void addKnownHeader(Integer headerId, String key, String regex) {
-        addKnownHeader(headerId, key, new String[] {regex});
+    protected void addKnownHeader(Integer headerId, String key, String regex, boolean isIdentityHeader) {
+        addKnownHeader(headerId, key, new String[] {regex}, isIdentityHeader);
     }
 
     /**
@@ -613,11 +617,11 @@ public abstract class AbstractLoader {
      * <pre>
      * addKnownHeader(&quot;y&quot;, new String[] {&quot;lat.*&quot;, &quot;y_wert.*&quot;}, true);
      * </pre>
-     * 
      * @param key the name to use for the property
+     * @param isIdentityHeader true if the property is an identity property
      * @param array of regular expressions to use to find the single property
      */
-    protected void addKnownHeader(Integer headerId, String key, String[] regexes) {
+    protected void addKnownHeader(Integer headerId, String key, String[] regexes, boolean isIdentityHeader) {
         HeaderMaps header = getHeaderMap(headerId);
         if (header.knownHeaders.containsKey(key)) {
             List<String> value = header.knownHeaders.get(key);
@@ -625,6 +629,9 @@ public abstract class AbstractLoader {
             header.knownHeaders.put(key, value);
         } else {
             header.knownHeaders.put(key, Arrays.asList(regexes));
+        }
+        if (isIdentityHeader) {
+            header.identityHeaders.add(key);
         }
     }
 
@@ -718,6 +725,12 @@ public abstract class AbstractLoader {
         headerMap.dropStatsHeaders.addAll(keys);
         headerMap.nonDataHeaders.addAll(keys);
     }
+    protected final void addIdentityHeaders(Integer headerMapId, Collection<String> keys) {
+        HeaderMaps headerMap = getHeaderMap(headerMapId);
+        headerMap.dropStatsHeaders.addAll(keys);
+        headerMap.nonDataHeaders.addAll(keys);
+        headerMap.identityHeaders.addAll(keys);
+    }
 
     /**
      * Parse possible header lines and build a set of header objects to be used to parse all data
@@ -751,7 +764,13 @@ public abstract class AbstractLoader {
                                 for (String testString : new String[] {header, headerName}) {
                                     if (testString.toLowerCase().matches(regex.toLowerCase())) {
                                         debug("Added known header[" + index + "] = " + key);
-                                        headerMap.headers.put(key, new Header(headerName, key, index));
+                                        if (!headerMap.identityHeaders.contains(key)){
+                                            headerMap.headers.put(key, new Header(headerName, key, index));
+                                        }else{
+                                            final Header identityHeader = new Header(headerName, key, index);
+                                            identityHeader.isIdentityHeader=true;
+                                            headerMap.headers.put(key, identityHeader);
+                                        }
                                         added = true;
                                         break KNOWN;
                                     }
@@ -760,7 +779,13 @@ public abstract class AbstractLoader {
                         }
                     }
                     if (!added/* !headers.containsKey(header) */) {
-                        headerMap.headers.put(header, new Header(headerName, header, index));
+                        if (!headerMap.identityHeaders.contains(header)){
+                            headerMap.headers.put(header, new Header(headerName, header, index));
+                        }else{
+                            final Header identityHeader = new Header(headerName, header, index);
+                            identityHeader.isIdentityHeader=true;
+                            headerMap.headers.put(header, identityHeader);
+                        }
                     }
                 }
                 headerWasParced = headerWasParced || !headerMap.headers.isEmpty();
@@ -791,7 +816,8 @@ public abstract class AbstractLoader {
             }
             for (String key : headerMap.dropStatsHeaders) {
                 Header header = headerMap.headers.get(key);
-                if (header != null) {
+                //do not drop stats for identity headers
+                if (header != null && !header.isIdentityHeader) {
                     header.dropStats();
                 }
             }
@@ -1389,7 +1415,8 @@ public abstract class AbstractLoader {
         HashMap<String, Node> valueNodes = new HashMap<String, Node>();
         ArrayList<String> noStatsProperties = new ArrayList<String>();
         ArrayList<String> dataProperties = new ArrayList<String>();
-        for (Relationship relation : propTypeNode.getRelationships(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING)) {
+        ArrayList<String> identityProperties= new ArrayList<String>();
+        for (Relationship relation : propTypeNode.getRelationships(GeoNeoRelationshipTypes.PROPERTIES,GeoNeoRelationshipTypes.IDENTITY_PROPERTIES)) {
             Node valueNode = relation.getEndNode();
             String property = relation.getProperty("property", "").toString();
             valueNodes.put(property, valueNode);
@@ -1400,6 +1427,8 @@ public abstract class AbstractLoader {
             }
             Node valueNode = valueNodes.get(property);
             Header header = headerMaps.headers.get(property);
+            GeoNeoRelationshipTypes relType = !header.isIdentityHeader ? GeoNeoRelationshipTypes.PROPERTIES
+                    : GeoNeoRelationshipTypes.IDENTITY_PROPERTIES;
             // if current headers do not contain information about property - we
             // do not handling
             // this property
@@ -1418,12 +1447,16 @@ public abstract class AbstractLoader {
                 }
                 noStatsProperties.add(property);
             } else {
+                if (header.isIdentityHeader){
+                    noStatsProperties.add(property);
+                    identityProperties.add(property);
+                }
                 if (valueNode == null) {
                     valueNode = neo.createNode();
-                    valueRelation = propTypeNode.createRelationshipTo(valueNode, GeoNeoRelationshipTypes.PROPERTIES);
+                    valueRelation = propTypeNode.createRelationshipTo(valueNode, relType);
                     valueRelation.setProperty("property", property);
                 } else {
-                    valueRelation = valueNode.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.INCOMING);
+                    valueRelation = valueNode.getSingleRelationship(relType, Direction.INCOMING);
                     for (Object key : valueNode.getPropertyKeys()) {
                         Integer oldCount = (Integer)valueNode.getProperty(key.toString(), null);
                         if (oldCount == null) {
@@ -1448,7 +1481,7 @@ public abstract class AbstractLoader {
 
             if (valueNode == null) {
                 valueNode = neo.createNode();
-                valueRelation = propTypeNode.createRelationshipTo(valueNode, GeoNeoRelationshipTypes.PROPERTIES);
+                valueRelation = propTypeNode.createRelationshipTo(valueNode, relType);
                 valueRelation.setProperty("property", property);
                 valueRelation.setProperty(INeoConstants.COUNT_TYPE_NAME, header.countALL);
             }
@@ -1465,6 +1498,7 @@ public abstract class AbstractLoader {
         propTypeNode.setProperty("data_properties", dataProperties.toArray(new String[0]));
         propTypeNode.setProperty("stats_properties", statsProperties.toArray(new String[0]));
         propTypeNode.setProperty("no_stats_properties", noStatsProperties.toArray(new String[0]));
+        propTypeNode.setProperty("identity_properties", identityProperties.toArray(new String[0]));
     }
 
     public static String makePropertyTypeName(Class< ? extends Object> klass) {
@@ -1664,6 +1698,7 @@ public abstract class AbstractLoader {
         public LinkedHashMap<String, Header> headers = new LinkedHashMap<String, Header>();
         protected TreeSet<String> dropStatsHeaders = new TreeSet<String>();
         protected TreeSet<String> nonDataHeaders = new TreeSet<String>();
+        protected TreeSet<String> identityHeaders = new TreeSet<String>();
 
         /**
          * @return true if we have parsed the header line and know the properties to load

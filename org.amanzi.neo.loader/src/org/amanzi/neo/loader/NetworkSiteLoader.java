@@ -177,7 +177,7 @@ public class NetworkSiteLoader extends AbstractLoader {
      * @param regexes the regexes
      */
     private void addMainHeader(String key, String[] regexes) {
-        addKnownHeader(1, key, regexes);
+        addKnownHeader(1, key, regexes, false);
         mainHeaders.add(key);
     }
 
@@ -197,8 +197,8 @@ public class NetworkSiteLoader extends AbstractLoader {
         useMapper(1, SITE_ID_KEY, new StringMapper());
 
         // Known headers that are sector data properties
-        addKnownHeader(1, "beamwidth", getPossibleHeaders(DataLoadPreferences.NH_BEAMWIDTH));
-        addKnownHeader(1, "azimuth", getPossibleHeaders(DataLoadPreferences.NH_AZIMUTH));
+        addKnownHeader(1, "beamwidth", getPossibleHeaders(DataLoadPreferences.NH_BEAMWIDTH), false);
+        addKnownHeader(1, "azimuth", getPossibleHeaders(DataLoadPreferences.NH_AZIMUTH), false);
     }
 
     /**
