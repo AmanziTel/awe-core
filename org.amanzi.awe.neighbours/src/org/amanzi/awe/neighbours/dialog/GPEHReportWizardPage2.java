@@ -31,6 +31,8 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -85,86 +87,126 @@ public class GPEHReportWizardPage2 extends WizardPage {
     @Override
     public void createControl(Composite parent) {
         final Group main = new Group(parent, SWT.FILL);
+        // parent.setLayout(new GridLayout());
         main.setLayout(new GridLayout(3, true));
         main.setText("Select analysis type");
+        main.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        // new GridLa
+        // main.setLayoutData(new GridL)
 
-        
         bIntAnalys = new Button(main, SWT.CHECK);
         bIntAnalys.setText("Interference Analysis");
-        bIntAnalys.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false,1,1));
-        
+        bIntAnalys.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false, 1, 1));
+
         bRFAnalys = new Button(main, SWT.CHECK);
         bRFAnalys.setText("RF Environment Analysis");
-        bRFAnalys.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false,2,1));
-        
+        bRFAnalys.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false, 2, 1));
+
         cIntAnalysisType = CheckboxTableViewer.newCheckList(main, SWT.MULTI | SWT.V_SCROLL | SWT.BORDER | SWT.CHECK);
         createTable(cIntAnalysisType, "int");
         cIntAnalysisType.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
         cIntAnalysisType.setContentProvider(new GpehReportTypeTableContentProvider());
         cIntAnalysisType.setLabelProvider(new GpehReportTypeTableLabelProvider());
-        
+
         cRFAnalysisType = CheckboxTableViewer.newCheckList(main, SWT.MULTI | SWT.V_SCROLL | SWT.BORDER | SWT.CHECK);
         createTable(cRFAnalysisType, "rf");
         cRFAnalysisType.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
         cRFAnalysisType.setContentProvider(new GpehReportTypeTableContentProvider());
         cRFAnalysisType.setLabelProvider(new GpehReportTypeTableLabelProvider());
-        
+
         Group grPeriod = new Group(main, SWT.FILL);
         grPeriod.setLayout(new GridLayout(1, true));
         grPeriod.setText("Reports Resolution");
-        
-        
+
         bPeriod = new Button[4];
 
         bPeriod[0] = new Button(grPeriod, SWT.RADIO);
         bPeriod[0].setText("Total");
         bPeriod[0].setSelection(true);
-        
+
         bPeriod[1] = new Button(grPeriod, SWT.RADIO);
         bPeriod[1].setText("Daily");
-        
+
         bPeriod[2] = new Button(grPeriod, SWT.RADIO);
         bPeriod[2].setText("Hourly");
-        
+
         bPeriod[3] = new Button(grPeriod, SWT.RADIO);
         bPeriod[3].setText("15min");
-        
-//        Label label = new Label(main, SWT.NONE);
-//        label.setText("Report");
-//        cReport = new Combo(main, SWT.DROP_DOWN | SWT.READ_ONLY);
-//        GridData layoutData = new GridData(SWT.LEFT, SWT.FILL, false, false, 2, 1);
-//        layoutData.minimumWidth = 200;
-//        cReport.setLayoutData(layoutData);
 
-//        label = new Label(main, SWT.NONE);
-//        label.setText("Report type");
+        // final Table comp = cIntAnalysisType.getTable();
 
-//        ctReportType = CheckboxTableViewer.newCheckList(main, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.CHECK);
+        ControlAdapter widthListener = new ControlAdapter() {
+            public void controlResized(ControlEvent e) {
+                Table table = (Table)e.getSource();
 
-//        SelectionListener listener = new SelectionListener() {
-//
-//            @Override
-//            public void widgetSelected(SelectionEvent e) {
-//                GpehReportType[] reportTypes = GpehReport.getEnumById(cReport.getText()).getReportypes();
-//                cIntAnalysisType.setInput(reportTypes);
-//                cIntAnalysisType.refresh();
-//                validateFinish();
-//            }
-//
-//            @Override
-//            public void widgetDefaultSelected(SelectionEvent e) {
-//                widgetSelected(e);
-//            }
-//        };
+                int width = table.getSize().x - table.getBorderWidth() - table.getVerticalBar().getSize().x;
+                table.getColumn(0).setWidth(width);
 
-        cIntAnalysisType.addCheckStateListener(new ICheckStateListener() {
+                // cIntAnalysisType.getTable().getColumn(0).setWidth(width);
+
+                // Point oldSize = cIntAnalysisType.getTable().getSize();
+                // if (oldSize.x > area.width) {
+                // // table is getting smaller so make the columns
+                // // smaller first and then resize the table to
+                // // match the client area width
+                // column1.setWidth(width/3);
+                // column2.setWidth(width - column1.getWidth());
+                // cIntAnalysisType.getTable().setSize(area.width, area.height);
+                // } else {
+                // // table is getting bigger so make the table
+                // // bigger first and then make the columns wider
+                // // to match the client area width
+                // cIntAnalysisType.getTable().setSize(area.width, area.height);
+                // column1.setWidth(width/3);
+                // column2.setWidth(width - column1.getWidth());
+                // }
+            }
+        };
+        cIntAnalysisType.getTable().addControlListener(widthListener);
+        cRFAnalysisType.getTable().addControlListener(widthListener);
+
+        // Label label = new Label(main, SWT.NONE);
+        // label.setText("Report");
+        // cReport = new Combo(main, SWT.DROP_DOWN | SWT.READ_ONLY);
+        // GridData layoutData = new GridData(SWT.LEFT, SWT.FILL, false, false, 2, 1);
+        // layoutData.minimumWidth = 200;
+        // cReport.setLayoutData(layoutData);
+
+        // label = new Label(main, SWT.NONE);
+        // label.setText("Report type");
+
+        // ctReportType = CheckboxTableViewer.newCheckList(main, SWT.MULTI | SWT.H_SCROLL |
+        // SWT.V_SCROLL | SWT.BORDER | SWT.CHECK);
+
+        // SelectionListener listener = new SelectionListener() {
+        //
+        // @Override
+        // public void widgetSelected(SelectionEvent e) {
+        // GpehReportType[] reportTypes = GpehReport.getEnumById(cReport.getText()).getReportypes();
+        // cIntAnalysisType.setInput(reportTypes);
+        // cIntAnalysisType.refresh();
+        // validateFinish();
+        // }
+        //
+        // @Override
+        // public void widgetDefaultSelected(SelectionEvent e) {
+        // widgetSelected(e);
+        // }
+        // };
+
+        ICheckStateListener checkStateListener = new ICheckStateListener() {
 
             @Override
             public void checkStateChanged(CheckStateChangedEvent event) {
                 validateFinish();
             }
-        });
+        };
 
+        cIntAnalysisType.addCheckStateListener(checkStateListener);
+        cRFAnalysisType.addCheckStateListener(checkStateListener);
+
+        // main.pack();
+        // main.setBackground(new Color(main.getDisplay(), 255, 0, 0));
         setControl(main);
 
         init();
@@ -179,10 +221,10 @@ public class GPEHReportWizardPage2 extends WizardPage {
     private void createTable(TableViewer tableView, String columnName) {
         Table table = tableView.getTable();
         TableColumn column = new TableColumn(table, SWT.NONE);
-        column.pack();
         column.setText(columnName);
-        table.setHeaderVisible(false);
-        table.setLinesVisible(false);
+        column.setResizable(true);
+        table.setHeaderVisible(true);
+        table.setLinesVisible(true);
     }
 
     /**
@@ -198,7 +240,7 @@ public class GPEHReportWizardPage2 extends WizardPage {
      * @return true, if is valid page
      */
     protected boolean isValidPage() {
-        return cIntAnalysisType.getCheckedElements().length > 0;
+        return cIntAnalysisType.getCheckedElements().length > 0 || cRFAnalysisType.getCheckedElements().length > 0;
     }
 
     /**
@@ -206,7 +248,7 @@ public class GPEHReportWizardPage2 extends WizardPage {
      */
     private void init() {
         formReports();
-        formPeriods();
+        // formPeriods();
         // formFileTypes();
         validateFinish();
     }
@@ -215,12 +257,9 @@ public class GPEHReportWizardPage2 extends WizardPage {
      * Form reports.
      */
     private void formReports() {
-        String[] gpeh = new String[GpehReport.values().length];
-        int i = 0;
-        for (GpehReport report : GpehReport.values()) {
-            gpeh[i++] = report.toString();
-        }
-//        cReport.setItems(gpeh);
+        cIntAnalysisType.setInput(GpehReport.INTERFERENCE_ANALYSIS.getReportypes());
+        cRFAnalysisType.setInput(GpehReport.RF_PERFORMANCE_ANALYSIS.getReportypes());
+        // cIntAnalysisType.setInput(GpehReportType.values());
     }
 
     /**
@@ -240,8 +279,22 @@ public class GPEHReportWizardPage2 extends WizardPage {
      * @return the period
      */
     public CallTimePeriods getPeriod() {
-        //TODO
-        return null;
+        // TODO
+        int i = 0;
+        for (; i < bPeriod.length; i++) {
+            if (bPeriod[i].getSelection())
+                break;
+        }
+        switch (i) {
+        case 0:
+            return CallTimePeriods.ALL;
+        case 1:
+            return CallTimePeriods.DAILY;
+        case 2:
+            return CallTimePeriods.HOURLY;
+        default:
+            return CallTimePeriods.QUATER_HOUR;
+        }
     }
 
     /**
@@ -259,16 +312,20 @@ public class GPEHReportWizardPage2 extends WizardPage {
                 result.add(type);
             }
         }
+        checked = cRFAnalysisType.getCheckedElements();
+        for (int i = 0; i < checked.length; i++) {
+            GpehReportType type = ((GpehReportType)checked[i]);
+            if (type != null) {
+                result.add(type);
+            }
+        }
         return result;
     }
-
-
 
     /**
      * <p>
      * GpehReportTypeTableContentProvider
      * </p>
-     * .
      * 
      * @author NiCK
      * @since 1.0.0
