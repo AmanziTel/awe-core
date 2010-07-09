@@ -18,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -114,6 +115,7 @@ public class GpehReportCreator {
     private CellUeTxPowerAnalisis ueTxPAnalyse;
     private Pair<Long, Long> minMax;
     private int maxRange;
+    private long notFullData;
 
     // private CellEcNoAnalisis ecNoAnalyse;
     /**
@@ -125,7 +127,7 @@ public class GpehReportCreator {
      * @param luceneService the lucene service
      */
     public GpehReportCreator(Node network, Node gpeh, GraphDatabaseService service, LuceneIndexService luceneService) {
-        baseTime=CallTimePeriods.QUATER_HOUR;
+        baseTime = CallTimePeriods.QUATER_HOUR;
         this.gpeh = gpeh;
         this.service = service;
         this.luceneService = luceneService;
@@ -140,14 +142,15 @@ public class GpehReportCreator {
 
     /**
      * Export to csv
-     *
-     * @param output the output file
+     * 
+     * @param output the output dirrectory
      * @param report the report type
      * @param period the time period
      * @param monitor the monitor
      */
-    public void exportToCSV(File output, GpehReportType report, CallTimePeriods period, IProgressMonitor monitor) {
-        IExportHandler handler = new CommonCSVHandler(output, monitor,'\t');
+    public void exportToCSV(File outputDir, GpehReportType report, CallTimePeriods period, IProgressMonitor monitor) {
+        File output = new File(outputDir, generateReportName(report, period));
+        IExportHandler handler = new CommonCSVHandler(output, monitor, '\t');
         IExportProvider provider = defineProvider(report, period);
         Transaction tx = service.beginTx();
         try {
@@ -160,10 +163,20 @@ public class GpehReportCreator {
         }
     }
 
+    /**
+     * Generate report name.
+     * 
+     * @param report the report
+     * @param period the period
+     * @return the string
+     */
+    private String generateReportName(GpehReportType report, CallTimePeriods period) {
+        return report.getId() + ".txt";
+    }
 
     /**
      * Define provider.
-     *
+     * 
      * @param report the report type
      * @param period the period
      * @return the i export provider
@@ -211,12 +224,11 @@ public class GpehReportCreator {
         case NBAP_HSDS_REQUIRED_POWER:
             createNBapBaseReports();
             createCellHsdsRequiredPowerAnalisis(period);
-            return getCellHsdsRequiredPowerProvider(period);          
+            return getCellHsdsRequiredPowerProvider(period);
         default:
             return null;
         }
     }
-
 
     private IExportProvider getCellCorrelationProvider(final CallTimePeriods period) {
         final CellRscpEcNoAnalisis analyse = getReportModel().getCellRscpEcNoAnalisis(period);
@@ -229,24 +241,24 @@ public class GpehReportCreator {
         headers.add("Time");
         headers.add("Resolution");
         final List<IntRange> ecnoRangeNames = new ArrayList<IntRange>();
-        ecnoRangeNames.add(new IntRange("ECNO-18",0,12));
-        ecnoRangeNames.add(new IntRange("ECNO-15",13,18));
+        ecnoRangeNames.add(new IntRange("ECNO-18", 0, 12));
+        ecnoRangeNames.add(new IntRange("ECNO-15", 13, 18));
         ecnoRangeNames.add(new IntRange("ECNO-12", 19, 24));
-        ecnoRangeNames.add(new IntRange("ECNO-9",25,30));
-        ecnoRangeNames.add(new IntRange("ECNO-6",31,36));
-        ecnoRangeNames.add(new IntRange("ECNO-0",37,48));//TODO check for 49?
-        final int ecnoRange=ecnoRangeNames.size();
-        final List<IntRange> rscpRangeNames=new ArrayList<IntRange>();
-        rscpRangeNames.add(new IntRange("RSCP-105",0,10));
-        rscpRangeNames.add(new IntRange("RSCP-100",11,15));
-        rscpRangeNames.add(new IntRange("RSCP-95",16,20));
-        rscpRangeNames.add(new IntRange("RSCP-90",21,25));
-        rscpRangeNames.add(new IntRange("RSCP-80",26,35));
-        rscpRangeNames.add(new IntRange("RSCP-70",36,45));
-        rscpRangeNames.add(new IntRange("RSCP-25",46,90));//TODO check 91
-        final int rscpRange=rscpRangeNames.size();
-        for (IntRange rscpName:rscpRangeNames) {
-            for(IntRange ecnoName:ecnoRangeNames){
+        ecnoRangeNames.add(new IntRange("ECNO-9", 25, 30));
+        ecnoRangeNames.add(new IntRange("ECNO-6", 31, 36));
+        ecnoRangeNames.add(new IntRange("ECNO-0", 37, 48));// TODO check for 49?
+        final int ecnoRange = ecnoRangeNames.size();
+        final List<IntRange> rscpRangeNames = new ArrayList<IntRange>();
+        rscpRangeNames.add(new IntRange("RSCP-105", 0, 10));
+        rscpRangeNames.add(new IntRange("RSCP-100", 11, 15));
+        rscpRangeNames.add(new IntRange("RSCP-95", 16, 20));
+        rscpRangeNames.add(new IntRange("RSCP-90", 21, 25));
+        rscpRangeNames.add(new IntRange("RSCP-80", 26, 35));
+        rscpRangeNames.add(new IntRange("RSCP-70", 36, 45));
+        rscpRangeNames.add(new IntRange("RSCP-25", 46, 90));// TODO check 91
+        final int rscpRange = rscpRangeNames.size();
+        for (IntRange rscpName : rscpRangeNames) {
+            for (IntRange ecnoName : ecnoRangeNames) {
                 headers.add(new StringBuilder(ecnoName.getName()).append("_").append(rscpName.getName()).toString());
             }
         }
@@ -257,6 +269,7 @@ public class GpehReportCreator {
             final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
             String name = "";
             Calendar calendar = Calendar.getInstance();
+
             @Override
             public boolean isValid() {
                 return true;
@@ -276,7 +289,7 @@ public class GpehReportCreator {
 
             @Override
             public List<Object> getNextLine() {
-                //TODO implement
+                // TODO implement
                 IStatisticElementNode statNode = iter.next();
                 List<Object> result = new ArrayList<Object>();
                 result.add(name);
@@ -302,11 +315,11 @@ public class GpehReportCreator {
                         }
                     }
                 } else {
-                    for (int rscp=0;rscp<rscpRange;rscp++) {
-                        for(int ecno=0;ecno<ecnoRange;ecno++){
+                    for (int rscp = 0; rscp < rscpRange; rscp++) {
+                        for (int ecno = 0; ecno < ecnoRange; ecno++) {
                             result.add(0);
                         }
-                    }    
+                    }
                 }
 
                 return result;
@@ -344,7 +357,6 @@ public class GpehReportCreator {
 
     }
 
-
     private IExportProvider getInterMatrixProvider() {
         GpehReportModel mdl = getReportModel();
         final InterFrequencyICDM matrix = mdl.getInterFrequencyICDM();
@@ -379,6 +391,7 @@ public class GpehReportCreator {
         // TODO create public class
         return new IExportProvider() {
             Iterator<Node> rowIterator = null;
+
             @Override
             public boolean isValid() {
                 return true;
@@ -456,7 +469,8 @@ public class GpehReportCreator {
      * @return the cell ecno provider
      */
     private IExportProvider getCellEcnoProvider(final CallTimePeriods period) {
-        TimePeriodElement element=new TimePeriodElement( getReportModel().getCellEcNoAnalisis(period), CellEcNoAnalisis.ARRAY_NAME, ValueType.ECNO, period, minMax.getLeft(), minMax.getRight());
+        TimePeriodElement element = new TimePeriodElement(getReportModel().getCellEcNoAnalisis(period), CellEcNoAnalisis.ARRAY_NAME, ValueType.ECNO, period, minMax.getLeft(),
+                minMax.getRight());
         return new TimePeriodStructureProvider("Cell EcNo Analysis", element, service);
     }
 
@@ -467,7 +481,8 @@ public class GpehReportCreator {
      * @return the cell rscp provider
      */
     private IExportProvider getCellRSCPProvider(final CallTimePeriods period) {
-        TimePeriodElement element=new TimePeriodElement( getReportModel().getCellRscpAnalisis(period), CellRscpAnalisis.ARRAY_NAME, ValueType.RSCP, period, minMax.getLeft(), minMax.getRight());
+        TimePeriodElement element = new TimePeriodElement(getReportModel().getCellRscpAnalisis(period), CellRscpAnalisis.ARRAY_NAME, ValueType.RSCP, period, minMax.getLeft(),
+                minMax.getRight());
         return new TimePeriodStructureProvider("CELL RSCP ANALYSIS", element, service);
     }
 
@@ -499,10 +514,11 @@ public class GpehReportCreator {
         headers.add("Position3");
         headers.add("Position4");
         headers.add("Position5");
-      
+
         // TODO create public class
         return new IExportProvider() {
             Iterator<Node> rowIterator = null;
+
             @Override
             public boolean isValid() {
                 return true;
@@ -510,7 +526,7 @@ public class GpehReportCreator {
 
             @Override
             public boolean hasNextLine() {
-                if (rowIterator==null){
+                if (rowIterator == null) {
                     rowIterator = matrix.getRowTraverser().iterator();
                 }
                 return rowIterator.hasNext();
@@ -567,7 +583,6 @@ public class GpehReportCreator {
 
     }
 
-
     /**
      * Gets the ue tx power cell provider.
      * 
@@ -575,23 +590,27 @@ public class GpehReportCreator {
      * @return the ue tx power cell provider
      */
     private IExportProvider getUlInterferenceCellProvider(final CallTimePeriods period) {
-        TimePeriodElement element=new TimePeriodElement( getReportModel().getCellUlInterferenceAnalisis(period), CellUlInterferenceAnalisis.ARRAY_NAME, ValueType.UL_INTERFERENCE, period, minMax.getLeft(), minMax.getRight());
-        return new TimePeriodStructureProvider("Ul interference analysis", element, service);
+        TimePeriodElement element = new TimePeriodElement(getReportModel().getCellUlInterferenceAnalisis(period), CellUlInterferenceAnalisis.ARRAY_NAME, ValueType.UL_INTERFERENCE,
+                period, minMax.getLeft(), minMax.getRight());
+        // return new TimePeriodStructureProvider("UL noise rise", element, service);
+        return new WrappedTimePeriodElement("UL noise rise", element, service, 5, false);
     }
 
     /**
      * Gets the cell dl tx carrier power provider.
-     *
+     * 
      * @param period the period
      * @return the cell dl tx carrier power provider
      */
     private IExportProvider getCellDlTxCarrierPowerProvider(final CallTimePeriods period) {
-        TimePeriodElement element=new TimePeriodElement( getReportModel().getCellDlTxCarrierPowerAnalisis(period), CellDlTxCarrierPowerAnalisis.ARRAY_NAME, ValueType.DL_TX_CARRIER_POWER, period, minMax.getLeft(), minMax.getRight());
+        TimePeriodElement element = new TimePeriodElement(getReportModel().getCellDlTxCarrierPowerAnalisis(period), CellDlTxCarrierPowerAnalisis.ARRAY_NAME,
+                ValueType.DL_TX_CARRIER_POWER, period, minMax.getLeft(), minMax.getRight());
         return new TimePeriodStructureProvider("DL_TX_CARRIER_POWER analysis", element, service);
     }
 
     private IExportProvider getCellHsdsRequiredPowerProvider(final CallTimePeriods period) {
-        TimePeriodElement element=new TimePeriodElement( getReportModel().getCellHsdsRequiredPowerAnalisis(period), CellHsdsRequiredPowerAnalisis.ARRAY_NAME, ValueType.HSDSCH_REQUIRED_POWER, period, minMax.getLeft(), minMax.getRight());
+        TimePeriodElement element = new TimePeriodElement(getReportModel().getCellHsdsRequiredPowerAnalisis(period), CellHsdsRequiredPowerAnalisis.ARRAY_NAME,
+                ValueType.HSDSCH_REQUIRED_POWER, period, minMax.getLeft(), minMax.getRight());
         return new TimePeriodStructureProvider("DL_TX_CARRIER_POWER analysis", element, service);
     }
 
@@ -602,7 +621,8 @@ public class GpehReportCreator {
      * @return the ue tx power cell provider
      */
     private IExportProvider getUeTxPowerCellProvider(final CallTimePeriods period) {
-        TimePeriodElement element=new TimePeriodElement( getReportModel().getCellUeTxPowerAnalisis(period), CellUeTxPowerAnalisis.ARRAY_NAME, ValueType.UETXPOWER, period, minMax.getLeft(), minMax.getRight());
+        TimePeriodElement element = new TimePeriodElement(getReportModel().getCellUeTxPowerAnalisis(period), CellUeTxPowerAnalisis.ARRAY_NAME, ValueType.UETXPOWER, period,
+                minMax.getLeft(), minMax.getRight());
         return new TimePeriodStructureProvider("Ue tx power analysis", element, service);
     }
 
@@ -665,21 +685,23 @@ public class GpehReportCreator {
         model.findCellEcNoAnalisis(periods);
     }
 
-
-
     /**
      * Gets the previos period.
-     *
+     * 
      * @param periods the periods
      * @return the previos period
      */
     private CallTimePeriods getPreviosPeriod(CallTimePeriods periods) {
-        return periods==CallTimePeriods.HOURLY?CallTimePeriods.QUATER_HOUR:CallTimePeriods.HOURLY;
+        return periods == CallTimePeriods.HOURLY ? CallTimePeriods.QUATER_HOUR : CallTimePeriods.HOURLY;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Date(1268553599024l));
     }
 
     /**
      * Creates the period based structure.
-     *
+     * 
      * @param periods the periods
      * @param parentNode the parent node
      * @param sourceModel the source model
@@ -707,8 +729,8 @@ public class GpehReportCreator {
                     }
                 }
             }
-        tx.success();
-        }finally{
+            tx.success();
+        } finally {
             tx.finish();
         }
     }
@@ -735,6 +757,7 @@ public class GpehReportCreator {
         CellRscpEcNoAnalisis sourceModel = model.getCellRscpEcNoAnalisis(previosPeriod);
         if (sourceModel == null) {
             createEcNoCellReport(previosPeriod);
+            sourceModel = model.getCellRscpEcNoAnalisis(previosPeriod);
         }
         IStatisticStore store = new GPEHRscpEcNoStorer();
         createPeriodBasedStructure(periods, parentNode, sourceModel, store);
@@ -759,7 +782,7 @@ public class GpehReportCreator {
             parentNode = service.createNode();
             parentNode.setProperty(CellReportsProperties.PERIOD_ID, periods.getId());
             model.getRoot().createRelationshipTo(parentNode, periods.getPeriodRelation(CellRscpAnalisis.RSCP_PRFIX));
-
+            tx.success();
         } finally {
             tx.finish();
         }
@@ -840,8 +863,8 @@ public class GpehReportCreator {
                     StatisticByPeriodStructure statisticStructure = ulInterference.getStatisticStructure(bestCellName);
                     if (statisticStructure == null) {
                         GPEHFakeStatHandler handler = new GPEHFakeStatHandler();
-                        TimePeriodStructureCreator creator = new TimePeriodStructureCreator(tableRoot, bestCellName, minMax.getLeft(), minMax.getRight(), baseTime,
-                                handler, handler, service);
+                        TimePeriodStructureCreator creator = new TimePeriodStructureCreator(tableRoot, bestCellName, minMax.getLeft(), minMax.getRight(), baseTime, handler,
+                                handler, service);
                         statisticStructure = creator.createStructure();
                     }
                     Long timeNode = NeoUtils.getNodeTime(eventNode);
@@ -865,8 +888,8 @@ public class GpehReportCreator {
                     statisticStructure = dlTxCarrierPowerAnalisis.getStatisticStructure(bestCellName);
                     if (statisticStructure == null) {
                         GPEHFakeStatHandler handler = new GPEHFakeStatHandler();
-                        TimePeriodStructureCreator creator = new TimePeriodStructureCreator(tableRoot, bestCellName, minMax.getLeft(), minMax.getRight(), baseTime,
-                                handler, handler, service);
+                        TimePeriodStructureCreator creator = new TimePeriodStructureCreator(tableRoot, bestCellName, minMax.getLeft(), minMax.getRight(), baseTime, handler,
+                                handler, service);
                         statisticStructure = creator.createStructure();
                     }
                     timeNode = NeoUtils.getNodeTime(eventNode);
@@ -890,8 +913,8 @@ public class GpehReportCreator {
                     statisticStructure = dlTxCarrierPowerAnalisis.getStatisticStructure(bestCellName);
                     if (statisticStructure == null) {
                         GPEHFakeStatHandler handler = new GPEHFakeStatHandler();
-                        TimePeriodStructureCreator creator = new TimePeriodStructureCreator(tableRoot, bestCellName, minMax.getLeft(), minMax.getRight(), baseTime,
-                                handler, handler, service);
+                        TimePeriodStructureCreator creator = new TimePeriodStructureCreator(tableRoot, bestCellName, minMax.getLeft(), minMax.getRight(), baseTime, handler,
+                                handler, service);
                         statisticStructure = creator.createStructure();
                     }
                     timeNode = NeoUtils.getNodeTime(eventNode);
@@ -915,8 +938,8 @@ public class GpehReportCreator {
                     statisticStructure = dlTxCarrierPowerAnalisis.getStatisticStructure(bestCellName);
                     if (statisticStructure == null) {
                         GPEHFakeStatHandler handler = new GPEHFakeStatHandler();
-                        TimePeriodStructureCreator creator = new TimePeriodStructureCreator(tableRoot, bestCellName, minMax.getLeft(), minMax.getRight(), baseTime,
-                                handler, handler, service);
+                        TimePeriodStructureCreator creator = new TimePeriodStructureCreator(tableRoot, bestCellName, minMax.getLeft(), minMax.getRight(), baseTime, handler,
+                                handler, service);
                         statisticStructure = creator.createStructure();
                     }
                     timeNode = NeoUtils.getNodeTime(eventNode);
@@ -946,6 +969,7 @@ public class GpehReportCreator {
         }
 
     }
+
     /**
      * Creates the matrix.
      */
@@ -953,6 +977,7 @@ public class GpehReportCreator {
         if (model.getIntraFrequencyICDM() != null) {
             return;
         }
+
         LOGGER.setLevel(Level.ERROR);
         assert !"main".equals(Thread.currentThread().getName());
         Transaction tx = service.beginTx();
@@ -984,6 +1009,10 @@ public class GpehReportCreator {
             String eventIndName = NeoUtils.getLuceneIndexKeyByProperty(model.getGpeh(), INeoConstants.PROPERTY_NAME_NAME, NodeTypes.GPEH_EVENT);
             String scrCodeIndName = NeoUtils.getLuceneIndexKeyByProperty(model.getNetwork(), GpehReportUtil.PRIMARY_SCR_CODE, NodeTypes.SECTOR);
             long countEvent = 0;
+            long notfoundBestCell = 0;
+            long notfoundlocation = 0;
+            notFullData = 0;
+            long skipped = 0;
             countRow = 0;
             long time = System.currentTimeMillis();
             long countTx = 0;
@@ -994,12 +1023,14 @@ public class GpehReportCreator {
                 Node bestSector = getBestSector(eventNode);
                 if (bestSector == null) {
                     LOGGER.warn(String.format("Event node: %s, not found best cell", eventNode));
+                    notfoundBestCell++;
                     continue;
                 }
                 MeasurementCell bestCell = new MeasurementCell(bestSector);
                 String type = (String)eventNode.getProperty(GpehReportUtil.MR_TYPE, "");
                 if (!setupLocation(bestCell) && !GpehReportUtil.MR_TYPE_UE_INTERNAL.equals(type)) {
-                    LOGGER.error(String.format("Event node: %s, not found location for best cell %s", eventNode, bestCell));
+                    LOGGER.warn(String.format("Event node: %s, not found location for best cell %s", eventNode, bestCell));
+                    notfoundlocation++;
                     continue;
                 }
                 Set<RrcMeasurement> measSet = getRncMeasurementSet(eventNode, bestCell);
@@ -1014,6 +1045,7 @@ public class GpehReportCreator {
                     tableRoot = intraFMatrix;
                 } else if (type.equals(GpehReportUtil.MR_TYPE_IRAT)) {
                     tableRoot = iRATMatrix;
+                    skipped++;
                     // TODO remove after
                     LOGGER.debug("Event node " + eventNode + " with type " + type + " was passed");
                     continue;
@@ -1024,7 +1056,8 @@ public class GpehReportCreator {
                     analyseBestCelltxPower(tableNode, bestCell, eventNode);
                     continue;
                 } else {
-                    LOGGER.debug("Event node " + eventNode + " with type " + type + " was passed");
+                    LOGGER.error("Event node " + eventNode + " with type " + type + " was passed");
+                    skipped++;
                     continue;
                 }
                 for (RrcMeasurement measurement : measSet) {
@@ -1035,16 +1068,22 @@ public class GpehReportCreator {
                                                             * .getMeasurement().getScrambling()))
                                                             */
                             || measurement.getEcNo() == null) {
+                        notFullData++;
                         continue;
                     }
                     MeasurementCell sector = findClosestSector(bestCell, measurement, scrCodeIndName);
                     if (sector == null || sector.getCell().equals(bestCell.getCell())) {
                         LOGGER.debug("Sector not found for PSC " + measurement.getScrambling());
+                        notFullData++;
                         continue;
                     }
                     Node tableNode = findOrCreateTableNode(bestCell, sector, tableRoot, type);
                     tableNode.createRelationshipTo(eventNode, ReportsRelations.SOURCE_MATRIX_EVENT);
+                    long nf = notFullData;
                     handleTableNode(tableNode, type, bestCell, sector, eventNode);
+                    if (nf != notFullData) {
+                        notFullData = nf + 1l;
+                    }
                     if (++countTx > 2000) {
                         countTx = 0;
                         tx.success();
@@ -1055,9 +1094,17 @@ public class GpehReportCreator {
                 timeEv = System.currentTimeMillis() - timeEv;
                 LOGGER.info("time\t" + timeEv);
                 long time2 = System.currentTimeMillis() - time;
-                monitor.setTaskName(String.format("Handle %s events, create table rows %s, ttotal time: %s, average time: %s", countEvent, countRow, time2, time2 / countEvent));
+                monitor.setTaskName(String
+                        .format("Handle %s events, passed %s (skipped: %s, no location %s, not found sest cell %s, no full data %s), create table rows %s, ttotal time: %s, average time: %s",
+                                countEvent, notfoundBestCell + notfoundBestCell + notfoundlocation + skipped, skipped, notfoundlocation, notfoundBestCell, notFullData, countRow,
+                                time2, time2 / countEvent));
             }
             tx.success();
+            long time2 = System.currentTimeMillis() - time;
+            LOGGER.error(String.format(
+                    "Handle %s events, passed %s (skipped: %s, no location %s, not found sest cell %s, no full data %s), create table rows %s, ttotal time: %s, average time: %s",
+                    countEvent, notfoundBestCell + notfoundBestCell + notfoundlocation + skipped, skipped, notfoundlocation, notfoundBestCell, notFullData, countRow, time2, time2
+                            / countEvent));
             model.findMatrixNodes();
         } finally {
             tx.finish();
@@ -1139,6 +1186,7 @@ public class GpehReportCreator {
     private void analyseBestCelltxPower(Node tableNode, MeasurementCell bestCell, Node eventNode) {
         if (bestCell.getMeasurement() == null) {
             LOGGER.error(String.format("tableNode node: %s, not found measurment for best cell %s", tableNode, bestCell));
+            notFullData++;
             return;
         }
         long logTime = System.currentTimeMillis();
@@ -1146,8 +1194,8 @@ public class GpehReportCreator {
         StatisticByPeriodStructure statisticStructure = ueTxPAnalyse.getStatisticStructure(bestCellName);
         if (statisticStructure == null) {
             GPEHFakeStatHandler handler = new GPEHFakeStatHandler();
-            TimePeriodStructureCreator creator = new TimePeriodStructureCreator(ueTxPAnalyse.getMainNode(), bestCellName, minMax.getLeft(), minMax.getRight(),
-                    baseTime, handler, handler, service);
+            TimePeriodStructureCreator creator = new TimePeriodStructureCreator(ueTxPAnalyse.getMainNode(), bestCellName, minMax.getLeft(), minMax.getRight(), baseTime, handler,
+                    handler, service);
             statisticStructure = creator.createStructure();
         }
         Integer uepwr = bestCell.getMeasurement().getUeTxPower();
@@ -1162,6 +1210,7 @@ public class GpehReportCreator {
             neoArray.setValueToNode(arrNode, count);
             arrNode.createRelationshipTo(eventNode, ReportsRelations.SOURCE_UE_TX_POWER_EVENT);
         } else {
+            notFullData++;
             LOGGER.info("uePwr NotFound " + bestCellName);
         }
 
@@ -1179,11 +1228,13 @@ public class GpehReportCreator {
 
         if (bestCell.getMeasurement() == null) {
             LOGGER.error(String.format("tableNode node: %s, not found measurment for best cell %s", tableNode, bestCell));
+            notFullData++;
             return;
         }
         if (bestCell.getMeasurement().getEcNo() == null || bestCell.getMeasurement().getRscp() == null) {
             LOGGER.error(String.format("tableNode node: %s, best cell %s: not found all necessary measurments: ecno=%s, rscp=%s", tableNode, bestCell, bestCell.getMeasurement()
                     .getEcNo(), bestCell.getMeasurement().getRscp()));
+            notFullData++;
             return;
         }
         long logTime = System.currentTimeMillis();
@@ -1192,8 +1243,8 @@ public class GpehReportCreator {
         StatisticByPeriodStructure statisticStructure = rspEcNoAnalyse.getStatisticStructure(bestCellName);
         if (statisticStructure == null) {
             GPEHFakeStatHandler handler = new GPEHFakeStatHandler();
-            TimePeriodStructureCreator creator = new TimePeriodStructureCreator(rspEcNoAnalyse.getMainNode(), bestCellName, minMax.getLeft(), minMax.getRight(),
-                    baseTime, handler, handler, service);
+            TimePeriodStructureCreator creator = new TimePeriodStructureCreator(rspEcNoAnalyse.getMainNode(), bestCellName, minMax.getLeft(), minMax.getRight(), baseTime, handler,
+                    handler, service);
             statisticStructure = creator.createStructure();
         }
         IStatisticElementNode node = statisticStructure.getStatisticNode(time);
@@ -1319,6 +1370,7 @@ public class GpehReportCreator {
                 }
             } else {
                 LOGGER.error("No found rscp" + bestCell + "\t" + sector);
+                notFullData++;
             }
             tx.success();
         } catch (Exception e) {
@@ -1363,6 +1415,7 @@ public class GpehReportCreator {
             // can find - calculate count of relation
             if (bestCell.getMeasurement() == null) {
                 LOGGER.warn(String.format("tableNode node: %s, not found measurment for best cell %s", tableNode, bestCell));
+                notFullData++;
                 return;
             }
             double deltaDbm = -1;
@@ -1717,14 +1770,14 @@ public class GpehReportCreator {
         this.monitor = monitor;
     }
 
-/**
- * 
- * <p>
- *fake 1H handler - do nothing
- * </p>
- * @author tsinkel_a
- * @since 1.0.0
- */
+    /**
+     * <p>
+     * fake 1H handler - do nothing
+     * </p>
+     * 
+     * @author tsinkel_a
+     * @since 1.0.0
+     */
     public class GPEHFakeStatHandler implements IStatisticHandler, IStatisticStore {
 
         @Override
@@ -1758,7 +1811,6 @@ public class GpehReportCreator {
         }
 
     }
-
 
     /**
      * The Class StructureCell.
@@ -1882,11 +1934,11 @@ public class GpehReportCreator {
 
     public class GPEHRSCPStorer implements IStatisticStore {
 
-        private int createdNodes=0;
+        private int createdNodes = 0;
 
         @Override
         public void storeStatisticElement(IStatisticElement statElem, Node node) {
-            createdNodes=0;
+            createdNodes = 0;
             StatisticSetElement source = (StatisticSetElement)statElem;
             NeoArray array = new NeoArray(node, CellRscpAnalisis.ARRAY_NAME, 1, service);
 
@@ -1932,16 +1984,16 @@ public class GpehReportCreator {
     public class TimeStructureStorer implements IStatisticStore {
         private final ValueType type;
         private final String arrayName;
-        private int createdNodes=0;
+        private int createdNodes = 0;
 
-        public TimeStructureStorer(ValueType type,String arrayName) {
+        public TimeStructureStorer(ValueType type, String arrayName) {
             this.type = type;
             this.arrayName = arrayName;
         }
 
         @Override
         public void storeStatisticElement(IStatisticElement statElem, Node node) {
-            createdNodes=0;
+            createdNodes = 0;
             StatisticSetElement source = (StatisticSetElement)statElem;
             NeoArray array = new NeoArray(node, arrayName, 1, service);
 
@@ -1982,11 +2034,13 @@ public class GpehReportCreator {
             return createdNodes;
         }
     }
+
     public class GPEHEcNoStorer implements IStatisticStore {
-        private int createdNodes=0;
+        private int createdNodes = 0;
+
         @Override
         public void storeStatisticElement(IStatisticElement statElem, Node node) {
-            createdNodes=0;
+            createdNodes = 0;
             StatisticSetElement source = (StatisticSetElement)statElem;
             NeoArray array = new NeoArray(node, CellEcNoAnalisis.ARRAY_NAME, 1, service);
 
@@ -2022,6 +2076,7 @@ public class GpehReportCreator {
                 }
             }
         }
+
         @Override
         public int getStoredNodesCount() {
             return createdNodes;
@@ -2029,11 +2084,11 @@ public class GpehReportCreator {
     }
 
     public class GPEHRscpEcNoStorer implements IStatisticStore {
-        private int createdNodes=0;
+        private int createdNodes = 0;
 
         @Override
         public void storeStatisticElement(IStatisticElement statElem, Node node) {
-             createdNodes=0;
+            createdNodes = 0;
             StatisticSetElement source = (StatisticSetElement)statElem;
             NeoArray array = new NeoArray(node, CellRscpEcNoAnalisis.ARRAY_NAME, 2, service);
 
@@ -2082,26 +2137,29 @@ public class GpehReportCreator {
             return;
         }
         assert !"main".equals(Thread.currentThread().getName());
+        createNBapBaseReports();
+        Node parentNode;
         Transaction tx = service.beginTx();
         try {
-            createNBapBaseReports();
-            Node parentNode = service.createNode();
+            parentNode = service.createNode();
             parentNode.setProperty(CellReportsProperties.PERIOD_ID, periods.getId());
             model.getRoot().createRelationshipTo(parentNode, periods.getPeriodRelation(CellUlInterferenceAnalisis.PRFIX));
-            CallTimePeriods previosPeriod = getPreviosPeriod(periods);
-            CellUlInterferenceAnalisis sourceModel = model.getCellUlInterferenceAnalisis(previosPeriod);
-            if (sourceModel==null){
-                createUlInterferenceReport(previosPeriod);
-                sourceModel = model.getCellUlInterferenceAnalisis(previosPeriod);
-            }
-            IStatisticStore store = new TimeStructureStorer( ValueType.UL_INTERFERENCE,CellUlInterferenceAnalisis.ARRAY_NAME);
-            createPeriodBasedStructure(periods, parentNode, sourceModel, store);
-            model.findCellUlInterferenceAnalisis(periods);
             tx.success();
         } finally {
             tx.finish();
         }
+        CallTimePeriods previosPeriod = getPreviosPeriod(periods);
+        CellUlInterferenceAnalisis sourceModel = model.getCellUlInterferenceAnalisis(previosPeriod);
+        if (sourceModel == null) {
+            createUlInterferenceReport(previosPeriod);
+            sourceModel = model.getCellUlInterferenceAnalisis(previosPeriod);
+        }
+        IStatisticStore store = new TimeStructureStorer(ValueType.UL_INTERFERENCE, CellUlInterferenceAnalisis.ARRAY_NAME);
+        createPeriodBasedStructure(periods, parentNode, sourceModel, store);
+        model.findCellUlInterferenceAnalisis(periods);
+
     }
+
     public void createCellDlTxCarrierPowerAnalisis(CallTimePeriods periods) {
         if (model.getCellDlTxCarrierPowerAnalisis(periods) != null) {
             return;
@@ -2109,24 +2167,26 @@ public class GpehReportCreator {
         assert !"main".equals(Thread.currentThread().getName());
         createNBapBaseReports();
         Transaction tx = service.beginTx();
+        Node parentNode;
         try {
-            Node parentNode = service.createNode();
+            parentNode = service.createNode();
             parentNode.setProperty(CellReportsProperties.PERIOD_ID, periods.getId());
             model.getRoot().createRelationshipTo(parentNode, periods.getPeriodRelation(CellDlTxCodePowerAnalisis.PRFIX));
-            CallTimePeriods previosPeriod = getPreviosPeriod(periods);
-            CellDlTxCarrierPowerAnalisis sourceModel = model.getCellDlTxCarrierPowerAnalisis(previosPeriod);
-            if (sourceModel==null){
-                createCellDlTxCarrierPowerAnalisis(previosPeriod);
-                sourceModel = model.getCellDlTxCarrierPowerAnalisis(previosPeriod);
-            }
-            IStatisticStore store = new TimeStructureStorer( ValueType.DL_TX_CARRIER_POWER,CellDlTxCarrierPowerAnalisis.ARRAY_NAME);
-            createPeriodBasedStructure(periods, parentNode, sourceModel, store);
-            model.findCellDlTxCarrierPowerAnalisis(periods);
             tx.success();
         } finally {
             tx.finish();
         }
+        CallTimePeriods previosPeriod = getPreviosPeriod(periods);
+        CellDlTxCarrierPowerAnalisis sourceModel = model.getCellDlTxCarrierPowerAnalisis(previosPeriod);
+        if (sourceModel == null) {
+            createCellDlTxCarrierPowerAnalisis(previosPeriod);
+            sourceModel = model.getCellDlTxCarrierPowerAnalisis(previosPeriod);
+        }
+        IStatisticStore store = new TimeStructureStorer(ValueType.DL_TX_CARRIER_POWER, CellDlTxCarrierPowerAnalisis.ARRAY_NAME);
+        createPeriodBasedStructure(periods, parentNode, sourceModel, store);
+        model.findCellDlTxCarrierPowerAnalisis(periods);
     }
+
     public void createCellNonHsPowerAnalisis(CallTimePeriods periods) {
         if (model.getCellNonHsPowerAnalisis(periods) != null) {
             return;
@@ -2134,24 +2194,26 @@ public class GpehReportCreator {
         assert !"main".equals(Thread.currentThread().getName());
         createNBapBaseReports();
         Transaction tx = service.beginTx();
+        Node parentNode;
         try {
-            Node parentNode = service.createNode();
+            parentNode = service.createNode();
             parentNode.setProperty(CellReportsProperties.PERIOD_ID, periods.getId());
             model.getRoot().createRelationshipTo(parentNode, periods.getPeriodRelation(CellNonHsPowerAnalisis.PRFIX));
-            CallTimePeriods previosPeriod = getPreviosPeriod(periods);
-            CellNonHsPowerAnalisis sourceModel = model.getCellNonHsPowerAnalisis(previosPeriod);
-            if (sourceModel==null){
-                createCellDlTxCarrierPowerAnalisis(previosPeriod);
-                sourceModel = model.getCellNonHsPowerAnalisis(previosPeriod);
-            }
-            IStatisticStore store = new TimeStructureStorer( ValueType.NON_HS_POWER,CellNonHsPowerAnalisis.ARRAY_NAME);
-            createPeriodBasedStructure(periods, parentNode, sourceModel, store);
-            model.findCellNonHsPowerAnalisis(periods);
             tx.success();
         } finally {
             tx.finish();
         }
+        CallTimePeriods previosPeriod = getPreviosPeriod(periods);
+        CellNonHsPowerAnalisis sourceModel = model.getCellNonHsPowerAnalisis(previosPeriod);
+        if (sourceModel == null) {
+            createCellDlTxCarrierPowerAnalisis(previosPeriod);
+            sourceModel = model.getCellNonHsPowerAnalisis(previosPeriod);
+        }
+        IStatisticStore store = new TimeStructureStorer(ValueType.NON_HS_POWER, CellNonHsPowerAnalisis.ARRAY_NAME);
+        createPeriodBasedStructure(periods, parentNode, sourceModel, store);
+        model.findCellNonHsPowerAnalisis(periods);
     }
+
     public void createCellHsdsRequiredPowerAnalisis(CallTimePeriods periods) {
         if (model.getCellHsdsRequiredPowerAnalisis(periods) != null) {
             return;
@@ -2159,48 +2221,51 @@ public class GpehReportCreator {
         assert !"main".equals(Thread.currentThread().getName());
         createNBapBaseReports();
         Transaction tx = service.beginTx();
+        Node parentNode;
         try {
-            Node parentNode = service.createNode();
+            parentNode = service.createNode();
             parentNode.setProperty(CellReportsProperties.PERIOD_ID, periods.getId());
             model.getRoot().createRelationshipTo(parentNode, periods.getPeriodRelation(CellHsdsRequiredPowerAnalisis.PRFIX));
-            CallTimePeriods previosPeriod = getPreviosPeriod(periods);
-            CellHsdsRequiredPowerAnalisis sourceModel = model.getCellHsdsRequiredPowerAnalisis(previosPeriod);
-            if (sourceModel==null){
-                createCellHsdsRequiredPowerAnalisis(previosPeriod);
-                sourceModel = model.getCellHsdsRequiredPowerAnalisis(previosPeriod);
-            }
-            IStatisticStore store = new TimeStructureStorer( ValueType.HSDSCH_REQUIRED_POWER,CellHsdsRequiredPowerAnalisis.ARRAY_NAME);
-            createPeriodBasedStructure(periods, parentNode, sourceModel, store);
-            model.findCellHsdsRequiredPowerAnalisis(periods);
             tx.success();
         } finally {
             tx.finish();
         }
+        CallTimePeriods previosPeriod = getPreviosPeriod(periods);
+        CellHsdsRequiredPowerAnalisis sourceModel = model.getCellHsdsRequiredPowerAnalisis(previosPeriod);
+        if (sourceModel == null) {
+            createCellHsdsRequiredPowerAnalisis(previosPeriod);
+            sourceModel = model.getCellHsdsRequiredPowerAnalisis(previosPeriod);
+        }
+        IStatisticStore store = new TimeStructureStorer(ValueType.HSDSCH_REQUIRED_POWER, CellHsdsRequiredPowerAnalisis.ARRAY_NAME);
+        createPeriodBasedStructure(periods, parentNode, sourceModel, store);
+        model.findCellHsdsRequiredPowerAnalisis(periods);
     }
+
     public void createUeTxPowerCellReport(CallTimePeriods periods) {
         if (model.getCellUeTxPowerAnalisis(periods) != null) {
             return;
         }
         assert !"main".equals(Thread.currentThread().getName());
+        createMatrix();
+        Node parentNode;
         Transaction tx = service.beginTx();
         try {
-            createMatrix();
-            Node parentNode = service.createNode();
+            parentNode = service.createNode();
             parentNode.setProperty(CellReportsProperties.PERIOD_ID, periods.getId());
             model.getRoot().createRelationshipTo(parentNode, periods.getPeriodRelation(CellUeTxPowerAnalisis.PRFIX));
-            CallTimePeriods previosPeriod = getPreviosPeriod(periods);
-            CellUeTxPowerAnalisis sourceModel = model.getCellUeTxPowerAnalisis(previosPeriod);
-            if (sourceModel==null){
-                createUeTxPowerCellReport(previosPeriod);
-                sourceModel = model.getCellUeTxPowerAnalisis(previosPeriod);
-            }
-            IStatisticStore store = new TimeStructureStorer( ValueType.UETXPOWER,CellUeTxPowerAnalisis.ARRAY_NAME);
-            createPeriodBasedStructure(periods, parentNode, sourceModel, store);
-            model.findCellUeTxPowerAnalisis(periods);
             tx.success();
         } finally {
             tx.finish();
         }
+        CallTimePeriods previosPeriod = getPreviosPeriod(periods);
+        CellUeTxPowerAnalisis sourceModel = model.getCellUeTxPowerAnalisis(previosPeriod);
+        if (sourceModel == null) {
+            createUeTxPowerCellReport(previosPeriod);
+            sourceModel = model.getCellUeTxPowerAnalisis(previosPeriod);
+        }
+        IStatisticStore store = new TimeStructureStorer(ValueType.UETXPOWER, CellUeTxPowerAnalisis.ARRAY_NAME);
+        createPeriodBasedStructure(periods, parentNode, sourceModel, store);
+        model.findCellUeTxPowerAnalisis(periods);
 
     }
 
@@ -2284,26 +2349,82 @@ public class GpehReportCreator {
         }
 
     }
+
+    public static class WrappedTimePeriodElement extends TimePeriodStructureProvider {
+
+        private final boolean downLevel;
+
+        /**
+         * Instantiates a new wrapped time period element.
+         * 
+         * @param reportName the report name
+         * @param element the element
+         * @param service the service
+         * @param cellLen the cell len - count of 3gpp value in one cell
+         */
+        public WrappedTimePeriodElement(String reportName, TimePeriodElement element, GraphDatabaseService service, int cellLen, boolean downLevel) {
+            super(reportName, element, service);
+            this.cellLen = cellLen;
+            this.downLevel = downLevel;
+        }
+
+        private final int cellLen;
+
+        @Override
+        protected void createArrayHeader() {
+            ValueType type = element.getValueType();
+            for (int i = type.getMin3GPP(); i <= type.getMax3GPP(); i += cellLen) {
+                headers.add(String.valueOf(downLevel ? type.getLeftBound(i) : type.getRightBound(i)));
+            }
+        }
+
+        @Override
+        protected void processArray(IStatisticElementNode statNode, List<Object> result) {
+            ValueType type = element.getValueType();
+            if (NeoArray.hasArray(element.getArrayName(), statNode.getNode(), service)) {
+                NeoArray array = new NeoArray(statNode.getNode(), element.getArrayName(), service);
+                for (int i = type.getMin3GPP(); i <= type.getMax3GPP(); i += cellLen) {
+                    int to = i + cellLen;
+                    if (to > type.getMax3GPP()) {
+                        to = type.getMax3GPP() + 1;
+                    }
+                    int count = 0;
+                    for (int j = i; j <= to; j++) {
+                        Integer value = (Integer)array.getValue(j);
+                        if (value != null) {
+                            count += value;
+                        }
+                    }
+                    result.add(count);
+                }
+            } else {
+                for (int i = type.getMin3GPP(); i <= type.getMax3GPP(); i += cellLen) {
+                    result.add(0);
+                }
+            }
+        }
+
+    }
+
     /**
-     * 
      * <p>
-     *  Wrapper for parameters for create structure provider
+     * Wrapper for parameters for create structure provider
      * </p>
+     * 
      * @author tsinkel_a
      * @since 1.0.0
      */
-    public static class TimePeriodElement{
+    public static class TimePeriodElement {
         private AnalysisByPeriods reports;
         private String arrayName;
         private ValueType valueType;
         private CallTimePeriods period;
         private long minTime;
         private long maxTime;
-  
 
         /**
          * Instantiates a new time period element.
-         *
+         * 
          * @param reports the reports
          * @param arrayName the array name
          * @param valueType the value type
@@ -2321,55 +2442,45 @@ public class GpehReportCreator {
             this.maxTime = maxTime;
         }
 
-
-        
         /**
          * Gets the min time.
-         *
+         * 
          * @return the min time
          */
         public long getMinTime() {
             return minTime;
         }
 
-
-
         /**
          * Sets the min time.
-         *
+         * 
          * @param minTime the new min time
          */
         public void setMinTime(long minTime) {
             this.minTime = minTime;
         }
 
-
-
         /**
          * Gets the max time.
-         *
+         * 
          * @return the max time
          */
         public long getMaxTime() {
             return maxTime;
         }
 
-
-
         /**
          * Sets the max time.
-         *
+         * 
          * @param maxTime the new max time
          */
         public void setMaxTime(long maxTime) {
             this.maxTime = maxTime;
         }
 
-
-
         /**
          * Gets the period.
-         *
+         * 
          * @return the period
          */
         public CallTimePeriods getPeriod() {
@@ -2378,7 +2489,7 @@ public class GpehReportCreator {
 
         /**
          * Sets the period.
-         *
+         * 
          * @param period the new period
          */
         public void setPeriod(CallTimePeriods period) {
@@ -2387,86 +2498,100 @@ public class GpehReportCreator {
 
         /**
          * Gets the reports.
-         *
+         * 
          * @return the reports
          */
         public AnalysisByPeriods getReports() {
             return reports;
         }
+
         public void setReports(AnalysisByPeriods reports) {
             this.reports = reports;
         }
-        
+
         /**
          * Gets the array name.
-         *
+         * 
          * @return the array name
          */
         public String getArrayName() {
             return arrayName;
         }
-        
+
         /**
          * Sets the array name.
-         *
+         * 
          * @param arrayName the new array name
          */
         public void setArrayName(String arrayName) {
             this.arrayName = arrayName;
         }
-        
+
         /**
          * Gets the value type.
-         *
+         * 
          * @return the value type
          */
         public ValueType getValueType() {
             return valueType;
         }
-        
+
         /**
          * Sets the value type.
-         *
+         * 
          * @param valueType the new value type
          */
         public void setValueType(ValueType valueType) {
             this.valueType = valueType;
         }
-        
+
     }
+
+    public static class NBAPWattProvider extends TimePeriodStructureProvider {
+
+        /**
+         * @param reportName
+         * @param element
+         * @param service
+         */
+        public NBAPWattProvider(String reportName, TimePeriodElement element, GraphDatabaseService service) {
+            super(reportName, element, service);
+        }
+
+    }
+
     /**
-     * 
      * <p>
-     *Time period structure provider
+     * Time period structure provider
      * </p>
+     * 
      * @author tsinkel_a
      * @since 1.0.0
      */
-    public static class TimePeriodStructureProvider implements IExportProvider{
+    public static class TimePeriodStructureProvider implements IExportProvider {
 
         private Iterator<Relationship> bestCellIteranor = null;
         private Iterator<IStatisticElementNode> iter = null;
         final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-        final SimpleDateFormat dateFormat2 = new SimpleDateFormat("hhmm");
+        final SimpleDateFormat dateFormat2 = new SimpleDateFormat("HHmm");
         private String name = "";
-        private  Calendar calendar = Calendar.getInstance();
+        private Calendar calendar = Calendar.getInstance();
         private String reportName;
-        private List<String> headers=new ArrayList<String>();
-        private TimePeriodElement element;
-        private final GraphDatabaseService service;
+        protected List<String> headers = null;// new ArrayList<String>();
+        protected TimePeriodElement element;
+        protected final GraphDatabaseService service;
+        protected Node sector;
 
         /**
          * Instantiates a new time period structure provider.
-         *
+         * 
          * @param element the element
          */
-        public TimePeriodStructureProvider(String reportName,TimePeriodElement element,GraphDatabaseService service) {
+        public TimePeriodStructureProvider(String reportName, TimePeriodElement element, GraphDatabaseService service) {
             this.reportName = reportName;
             this.element = element;
             this.service = service;
-            createHeader();
         }
-        
 
         /**
          * Creates the header.
@@ -2480,18 +2605,16 @@ public class GpehReportCreator {
             createArrayHeader();
         }
 
-
         /**
          * Creates the array header.
          */
         protected void createArrayHeader() {
             ValueType type = element.getValueType();
-            for (int i= type.getMin3GPP();i<=type.getMax3GPP();i++){
-                
+            for (int i = type.getMin3GPP(); i <= type.getMax3GPP(); i++) {
+
                 headers.add(String.valueOf(type.getLeftBound(i)));
             }
         }
-
 
         @Override
         public boolean isValid() {
@@ -2512,16 +2635,28 @@ public class GpehReportCreator {
         @Override
         public List<Object> getNextLine() {
             IStatisticElementNode statNode = iter.next();
-            ValueType type = element.getValueType();
+
             List<Object> result = new ArrayList<Object>();
             result.add(name);
             calendar.setTimeInMillis(statNode.getStartTime());
             result.add(dateFormat.format(calendar.getTime()));
             result.add(dateFormat2.format(calendar.getTime()));
             result.add(element.getReports().getPeriod().getId());
+            processArray(statNode, result);
+            return result;
+        }
+
+        /**
+         * Process array.
+         * 
+         * @param statNode the stat node
+         * @param result the result
+         */
+        protected void processArray(IStatisticElementNode statNode, List<Object> result) {
+            ValueType type = element.getValueType();
             if (NeoArray.hasArray(element.getArrayName(), statNode.getNode(), service)) {
                 NeoArray array = new NeoArray(statNode.getNode(), element.getArrayName(), service);
-                for (int i= type.getMin3GPP();i<=type.getMax3GPP();i++){
+                for (int i = type.getMin3GPP(); i <= type.getMax3GPP(); i++) {
                     Object value = array.getValue(i);
                     if (value == null) {
                         value = 0;
@@ -2529,11 +2664,10 @@ public class GpehReportCreator {
                     result.add(value);
                 }
             } else {
-                for (int i= type.getMin3GPP();i<=type.getMax3GPP();i++){
+                for (int i = type.getMin3GPP(); i <= type.getMax3GPP(); i++) {
                     result.add(0);
                 }
             }
-            return result;
         }
 
         /**
@@ -2544,7 +2678,7 @@ public class GpehReportCreator {
                 Relationship rel = bestCellIteranor.next();
                 String bestCellId = StatisticNeoService.getBestCellId(rel.getType().name());
                 if (bestCellId != null) {
-                    Node sector = service.getNodeById(Long.parseLong(bestCellId));
+                    sector = service.getNodeById(Long.parseLong(bestCellId));
                     name = (String)sector.getProperty("userLabel", "");
                     if (StringUtil.isEmpty(name)) {
                         name = NeoUtils.getNodeName(sector, service);
@@ -2560,6 +2694,10 @@ public class GpehReportCreator {
 
         @Override
         public List<String> getHeaders() {
+            if (headers == null) {
+                headers = new ArrayList<String>();
+                createHeader();
+            }
             return headers;
         }
 

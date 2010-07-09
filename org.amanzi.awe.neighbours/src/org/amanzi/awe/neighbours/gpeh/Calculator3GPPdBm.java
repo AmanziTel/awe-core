@@ -116,6 +116,14 @@ public class Calculator3GPPdBm {
             }
             return left;
         }
+        public double getRightBound(int val3GPP){
+            double curVal = (val3GPP-min3GPP) * step + minValue;
+            Double left = getRight(curVal);       
+            if (null==left){
+                left=getMaxValue()+step;
+            }
+            return left;
+        }
         /**
          * Gets the min value.
          *

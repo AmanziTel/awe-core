@@ -237,6 +237,7 @@ public class GpehReportModel {
                 cellRscpEcNoAnalisis.put(periods, analys);
                 return analys;
             }
+            tx.success();
         } finally {
             tx.finish();
         }
