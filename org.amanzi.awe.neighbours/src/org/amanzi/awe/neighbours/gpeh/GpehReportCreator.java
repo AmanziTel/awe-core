@@ -2607,7 +2607,7 @@ public class GpehReportCreator {
             if (NeoArray.hasArray(element.getArrayName(), statNode.getNode(), service)) {
                 NeoArray array = new NeoArray(statNode.getNode(), element.getArrayName(), service);
                 for (int i = type.getMin3GPP(); i <= type.getMax3GPP(); i++) {
-                    int txpower = (int)Math.ceil(maxTrPowWatt*i/1000*10);//(txpower=TxPower*10);
+                    int txpower = (int)Math.ceil(maxTrPowWatt*i/10000*10);//(txpower=TxPower*10 i - 0-1000 i/10/1000);
                     if (txpower<0||txpower>1000){
                         LOGGER.error(String.format("Cell %s. Wrong TxPower %s", name,txpower/10));
                         continue;
