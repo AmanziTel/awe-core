@@ -23,10 +23,8 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
 
 /**
  * <p>
@@ -38,17 +36,12 @@ import org.eclipse.swt.widgets.Label;
  */
 public class GPEHReportWizardPage3 extends WizardPage {
 
-    private Combo cFileType;
     private DirectoryEditor editorDir;
 
     protected GPEHReportWizardPage3(String pageName, String pageDescription) {
         super(pageName);
         setTitle(pageName);
         setDescription(pageDescription);
-    }
-
-    public FileType getFileType() {
-        return FileType.findByString(cFileType.getText());
     }
 
     /**
@@ -59,16 +52,14 @@ public class GPEHReportWizardPage3 extends WizardPage {
     @Override
     public void createControl(Composite parent) {
         final Group main = new Group(parent, SWT.FILL);
-        main.setLayout(new GridLayout(3, false));
+        main.setLayout(new GridLayout(1, false));
         main.setText("Select output location");
+        GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
+        main.setLayoutData(data);
 
-        Label label = new Label(main, SWT.NONE);
-        label.setText("File type");
-        cFileType = new Combo(main, SWT.DROP_DOWN | SWT.READ_ONLY);
-        GridData layoutData = new GridData(SWT.LEFT, SWT.FILL, false, false, 2, 1);
-        layoutData.minimumWidth = 200;
-        cFileType.setLayoutData(layoutData);
-        
+        // Group margin = new Group(main, SWT.FILL);
+        // main.setLayout(new GridLayout(1, false));
+        // main.setText("Select output location");
         editorDir = new DirectoryEditor("editor", NeoLoaderPluginMessages.AMSImport_directory, main);
         editorDir.setChangeButtonText("...");
         editorDir.getTextControl(main).addModifyListener(new ModifyListener() {
@@ -80,7 +71,6 @@ public class GPEHReportWizardPage3 extends WizardPage {
             }
         });
         
-
         setControl(main);
 
         init();
@@ -111,38 +101,9 @@ public class GPEHReportWizardPage3 extends WizardPage {
     }
 
     private void init() {
-        formFileTypes();
-        
         validateFinish();
     }
 
-    private void formFileTypes() {
-        for (FileType fileType : FileType.values())
-            cFileType.add(fileType.toString());
-        cFileType.select(0);
-        cFileType.setEnabled(false);
-    }
-
-    public enum FileType {
-        CSV, PDF, XLS;
-        @Override
-        public String toString() {
-            return this.name().toLowerCase();
-        }
-
-        public static FileType findByString(String string) {
-            if (string == null) {
-                return null;
-            }
-            for (FileType type : FileType.values()) {
-                if (type.toString().equals(string.toLowerCase())) {
-                    return type;
-                }
-            }
-            return null;
-        }
-
-    }
     /**
      * Gets the target dir.
      * 
