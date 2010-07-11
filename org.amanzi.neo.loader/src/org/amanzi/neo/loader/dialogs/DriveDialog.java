@@ -92,29 +92,6 @@ public class DriveDialog {
     /** String ASC_PAT_FILE field */
     private static final String ASC_PAT_FILE = ".*_(\\d{6})_.*";
     private static final String FMT_PAT_FILE = ".*(\\d{4}-\\d{2}-\\d{2}).*";
-    /*
-     * Names of supported files for Drive data
-     */
-    public static final String[] Drive_FILE_NAMES = {
-        "Drive Test Data (*.FMT; *.ASC; *.nmf; *.dt1)",
-        "TEMS Drive Test Export (*.FMT)",
-        "Romes drive test export (*.ASC)",
-        "GSM drive test export (*.GSM)",
-        "Nemo drive test export (*.nmf)",
-        "Nemo drive test export (*.dt1)",
-        "All Files (*.*)"};
-
-    /*
-     * Extensions of supported files for Drive data
-     */
-    public static final String[] Drive_FILE_EXTENSIONS = {
-        "*.FMT;*.fmt;*.ASC;*.asc;*.dt1;*.DT1;*.NMF;*.nmf;*.GSM;*.gsm",
-        "*.FMT;*.fmt",
-        "*.ASC;*.asc",
-        "*.GSM;*.gsm",
-        "*.NMF;*.nmf",
-        "*.dt1;*.DT1",
-        "*.*"};
 
     /*
      * Minimum height of Shell
@@ -138,8 +115,6 @@ public class DriveDialog {
 
     private static final int MAX_NEMO_LINE_READ = 50;
 
-
-	
 	/*
 	 * Shell of this Dialog
 	 */
@@ -679,7 +654,11 @@ public class DriveDialog {
         if (datasetNode == null) {
             String[] fileExtensions = DriveTypes.getFileExtensions(DriveTypes.TEMS, DriveTypes.ROMES,DriveTypes.GPS, DriveTypes.NEMO1, DriveTypes.NEMO2);
             ArrayList<String> fel = new ArrayList<String>(fileExtensions.length + 1);
-            fel.add(Drive_FILE_EXTENSIONS[6]);
+            StringBuilder allFiles = new StringBuilder("");
+            for (int i = 0; i < fileExtensions.length; i++) {
+                allFiles.append(fileExtensions[i]);
+            }
+            fel.add(allFiles.toString());
             fel.addAll(Arrays.asList(fileExtensions));
             String[] result = fel.toArray(new String[0]);
             return result;
@@ -698,7 +677,7 @@ public class DriveDialog {
         if (datasetNode == null) {
             String[] fileDescriptions = DriveTypes.getFileDescriptions(DriveTypes.TEMS, DriveTypes.ROMES, DriveTypes.GPS, DriveTypes.NEMO1, DriveTypes.NEMO2);
             ArrayList<String> fdl = new ArrayList<String>(fileDescriptions.length + 1);
-            fdl.add(Drive_FILE_NAMES[6]);
+            fdl.add("All Allowed(*.*)");
             fdl.addAll(Arrays.asList(fileDescriptions));
             String[] result = fdl.toArray(new String[0]);
             return result;
