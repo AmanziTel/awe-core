@@ -87,21 +87,4 @@ public class GPEHReportWizard extends Wizard implements INewWizard {
 
         return true;
     }
-
-    /**
-     * Creates the report.
-     * 
-     * @param gpehNode the gpeh node
-     * @param netNode the net node
-     * @param repType report type
-     * @param period
-     * @param targetDir
-     * @param monitor the monitor
-     */
-    protected void createReport(Node gpehNode, Node netNode, GpehReportType repType, CallTimePeriods period, File targetDir, IProgressMonitor monitor) {
-        GpehReportCreator creator = new GpehReportCreator(netNode, gpehNode, NeoServiceProvider.getProvider().getService(), NeoServiceProvider.getProvider()
-                .getIndexService());
-        creator.setMonitor(monitor);
-        // TODO implementation
-    }
 }

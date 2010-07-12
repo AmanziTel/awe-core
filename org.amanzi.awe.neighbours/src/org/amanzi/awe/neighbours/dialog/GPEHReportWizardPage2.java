@@ -33,6 +33,8 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -46,17 +48,14 @@ import org.eclipse.swt.widgets.TableColumn;
  * <p>
  * GPEHReportWizardPage2
  * </p>
- * .
  * 
  * @author Saelenchits_N
  * @since 1.0.0
  */
 public class GPEHReportWizardPage2 extends WizardPage {
 
-    /** The ct report type. */
     private CheckboxTableViewer cIntAnalysisType;
 
-    /** The period. */
     private LinkedHashMap<String, CallTimePeriods> period;
 
     private Button bIntAnalys;
@@ -87,24 +86,48 @@ public class GPEHReportWizardPage2 extends WizardPage {
     @Override
     public void createControl(Composite parent) {
         final Group main = new Group(parent, SWT.FILL | SWT.H_SCROLL);
-        // parent.setLayout(new RowLayout());
         GridLayout layout = new GridLayout(3, true);
-        // layout.
         main.setLayout(layout);
         main.setText("Select analysis type");
         GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
-        // data.heightHint = 100;
         main.setLayoutData(data);
-        // new GridLa
-        // main.setLayoutData(new GridL)
 
         bIntAnalys = new Button(main, SWT.CHECK);
         bIntAnalys.setText("Interference Analysis");
         bIntAnalys.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false, 1, 1));
+        bIntAnalys.setSelection(true);
+
+        bIntAnalys.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                cIntAnalysisType.getControl().setEnabled(bIntAnalys.getSelection());
+                validateFinish();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
 
         bRFAnalys = new Button(main, SWT.CHECK);
         bRFAnalys.setText("RF Environment Analysis");
         bRFAnalys.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false, 2, 1));
+        bRFAnalys.setSelection(true);
+        bRFAnalys.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                cRFAnalysisType.getControl().setEnabled(bRFAnalys.getSelection());
+                validateFinish();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
 
         cIntAnalysisType = CheckboxTableViewer.newCheckList(main, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.CHECK);
         createTable(cIntAnalysisType, "int");
@@ -143,6 +166,7 @@ public class GPEHReportWizardPage2 extends WizardPage {
         bPeriod[3].setText("15min");
 
         ControlAdapter widthListener = new ControlAdapter() {
+            @Override
             public void controlResized(ControlEvent e) {
                 Table table = (Table)e.getSource();
 
@@ -203,7 +227,7 @@ public class GPEHReportWizardPage2 extends WizardPage {
         column.setText(columnName);
         // column.setResizable(true);
         // table.setHeaderVisible(true);
-        table.setLinesVisible(true);
+        table.setLinesVisible(false);
     }
 
     /**
@@ -219,7 +243,7 @@ public class GPEHReportWizardPage2 extends WizardPage {
      * @return true, if is valid page
      */
     protected boolean isValidPage() {
-        return cIntAnalysisType.getCheckedElements().length > 0 || cRFAnalysisType.getCheckedElements().length > 0;
+        return (bIntAnalys.getSelection() && cIntAnalysisType.getCheckedElements().length > 0) || (bRFAnalys.getSelection() && cRFAnalysisType.getCheckedElements().length > 0);
     }
 
     /**
@@ -273,18 +297,22 @@ public class GPEHReportWizardPage2 extends WizardPage {
     public Set<GpehReportType> getReportType() {
         HashSet<GpehReportType> result = new HashSet<GpehReportType>();
 
-        Object[] checked = cIntAnalysisType.getCheckedElements();
-        for (int i = 0; i < checked.length; i++) {
-            GpehReportType type = ((GpehReportType)checked[i]);
-            if (type != null) {
-                result.add(type);
+        if (bIntAnalys.getSelection()) {
+            Object[] checked = cIntAnalysisType.getCheckedElements();
+            for (int i = 0; i < checked.length; i++) {
+                GpehReportType type = ((GpehReportType)checked[i]);
+                if (type != null) {
+                    result.add(type);
+                }
             }
         }
-        checked = cRFAnalysisType.getCheckedElements();
-        for (int i = 0; i < checked.length; i++) {
-            GpehReportType type = ((GpehReportType)checked[i]);
-            if (type != null) {
-                result.add(type);
+        if (bRFAnalys.getSelection()) {
+            Object[] checked = cRFAnalysisType.getCheckedElements();
+            for (int i = 0; i < checked.length; i++) {
+                GpehReportType type = ((GpehReportType)checked[i]);
+                if (type != null) {
+                    result.add(type);
+                }
             }
         }
         return result;
