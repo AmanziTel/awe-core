@@ -16,3 +16,4 @@ Require-Bundle: org.amanzi.neo.loader;bundle-version="1.0.0",
  org.amanzi.awe.console;bundle-version="1.0.0"
 Eclipse-LazyStart: true
 Bundle-Vendor: amanzi.org
+Export-Package: org.amanzi.awe.views.calls.testing
