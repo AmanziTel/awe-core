@@ -86,12 +86,13 @@
     <module>org.amanzi.awe.wizards</module>
     <module>org.amanzi.awe.gps</module>
     <module>org.amanzi.awe.report.o2</module>
-    <module>org.amanzi.neo.data-generator</module>
-	<module>org.amanzi.testing</module>
-    <module>org.amanzi.neo.loader.testing</module>
-    <module>org.amanzi.awe.views.calls.testing</module>
-	<module>org.amanzi.awe.views.reuse.testing</module>
 	<module>org.amanzi.splash.testing</module>
+	<module>org.amanzi.neo.data-generator</module>
+	<module>org.amanzi.neo.loader.testing</module>
+	<module>org.amanzi.testing.sanity</module>
+	<module>org.amanzi.testing</module>
+	<module>org.amanzi.awe.views.calls.testing</module>
+	<module>org.amanzi.awe.views.reuse.testing</module>
   </modules>
   <build>
     <plugins>	  
@@ -131,25 +132,10 @@
               <ws>carbon</ws>
               <arch>x86</arch>
             </environment>
-          </environments>                 
+          </environments>  
         </configuration>
       </plugin>
-      <plugin>        
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-            <skip>false</skip>
-
-            <systemPropertyVariables>
-                <correlate-test>
-				<ams_path>/home/hudson/awe/data/IF-May26-May31</ams_path>
-                <nemo_path>/home/hudson/awe/data/Nemo-May31-Jun01</nemo_path>
-                </correlate-test>
-            </systemPropertyVariables>
-
-        </configuration>
-      </plugin>          
-      
+	 
     </plugins>
     <resources>
       <resource>
