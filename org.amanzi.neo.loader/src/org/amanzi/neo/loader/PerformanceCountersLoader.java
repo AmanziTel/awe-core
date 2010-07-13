@@ -14,11 +14,11 @@
 package org.amanzi.neo.loader;
 
 import java.io.File;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import javax.units.SI;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NodeTypes;
@@ -27,7 +27,6 @@ import org.amanzi.neo.core.enums.SectorIdentificationType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
-import org.amanzi.neo.loader.AbstractLoader.StringMapper;
 import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Node;
@@ -75,7 +74,35 @@ public class PerformanceCountersLoader extends AbstractLoader {
         possibleCellNames.add(CELL);
         addKnownHeader(1,CELL, getPossibleHeaders(DataLoadPreferences.NH_SECTOR),true);
         useMapper(1, CELL, new StringMapper());
+        
+        final String TIMESTAMP = "timestamp";
+        addKnownHeader(1, TIMESTAMP, ".*date.*", false);
+        useMapper(1, TIMESTAMP, new LongDateMapper("dd.MM.yy"));
        
+    }
+    
+    protected class LongDateMapper implements PropertyMapper {
+        private SimpleDateFormat format;
+
+        protected LongDateMapper(String format) {
+            try {
+                this.format = new SimpleDateFormat(format);
+            } catch (Exception e) {
+                this.format = new SimpleDateFormat("HH:mm:ss");
+            }
+        }
+
+        @Override
+        public Object mapValue(String time) {
+            long timeStamp;
+            try {
+                timeStamp = format.parse(time).getTime();
+            } catch (ParseException e) {
+                error(e.getLocalizedMessage());
+                return 0L;
+            }
+            return timeStamp;
+        }
     }
 
 

@@ -106,10 +106,22 @@ public class GPSLoader extends DriveLoader {
      */
     private void initializeKnownHeaders() {
         addKnownHeader(1, "timestamp", ".*timestamp.*", false);
+        
         addKnownHeader(1, "latitude", ".*latitude.*", false);
         addKnownHeader(1, "longitude", ".*longitude.*", false);
         addKnownHeader(1, INeoConstants.SECTOR_ID_PROPERTIES, "cellid", false);
         dropHeaderStats(1, new String[] {"timestamp", "latitude", "longitude"});
+    }
+    
+    public Object testMapValue(String time) {
+        Date datetime;
+        try {
+            datetime = new SimpleDateFormat("dd.MM.yyyy hh:mm:ss").parse(time);
+        } catch (ParseException e) {
+            error(e.getLocalizedMessage());
+            return 0L;
+        }
+        return datetime;
     }
 
     @Override
