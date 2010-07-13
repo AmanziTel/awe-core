@@ -103,14 +103,20 @@ public class AweConsolePlugin extends AbstractUIPlugin {
      */
     
     private void initializeConsole() {
-        pluginConsole = new MessageConsole(CONSOLE_NAME, null, true);
-        pluginConsole.initialize();
-        
-        consoleStream = pluginConsole.newMessageStream();       
-        
-        ConsolePlugin.getDefault().getConsoleManager().addConsoles(new IConsole[] {pluginConsole});
-        
-        loggingPossible = (plugin != null) && (pluginConsole != null) && Display.getDefault() != null;
+    	// Adding a workaound to ensure that testing can continue o Hudson build
+    	// need to find a better solution to this try catch block.
+    	try {
+	        pluginConsole = new MessageConsole(CONSOLE_NAME, null, true);
+	        pluginConsole.initialize();
+	        
+	        consoleStream = pluginConsole.newMessageStream();       
+	        
+	        ConsolePlugin.getDefault().getConsoleManager().addConsoles(new IConsole[] {pluginConsole});
+	        
+	        loggingPossible = (plugin != null) && (pluginConsole != null) && Display.getDefault() != null;
+    	} catch (Exception e) {
+    		loggingPossible = false;
+    	}
     }
     
     /**
