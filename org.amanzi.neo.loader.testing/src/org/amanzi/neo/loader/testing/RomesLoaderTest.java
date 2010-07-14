@@ -22,6 +22,8 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import org.amanzi.testing.LongRunning;
+
 /**
  * <p>
  * Romes loader test
@@ -69,6 +71,7 @@ public class RomesLoaderTest extends AbstractLoaderTest{
      * Tests time of load correct data base.
      */
     @Test
+    @LongRunning
     public void testTimeLoading()throws IOException{
     	initDataBase(BUNDLE_KEY_TIME);
     	assertLoadTime(loadTime,BUNDLE_KEY_TIME);

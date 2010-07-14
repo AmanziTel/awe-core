@@ -22,6 +22,8 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import org.amanzi.testing.LongRunning;
+
 /**
  * <p>
  * Test TEMSLoader
@@ -58,6 +60,7 @@ public class TemsLoaderTest extends AbstractLoaderTest{
      * Tests load correct data base.
      */
     @Test
+    @LongRunning
     public void testCorrectLoading()throws IOException{
     	TEMSLoader loader = initDataBase(BUNDLE_KEY_CORRECT);
     	assertLoader(loader);
@@ -67,6 +70,7 @@ public class TemsLoaderTest extends AbstractLoaderTest{
      * Tests time of load.
      */
     @Test
+    @LongRunning
     public void testTimeLoading()throws IOException{
     	initDataBase(BUNDLE_KEY_TIME);
     	assertLoadTime(loadTime,BUNDLE_KEY_TIME);
@@ -77,6 +81,7 @@ public class TemsLoaderTest extends AbstractLoaderTest{
      */
     @Ignore("Unknown reaction, need to be rewrited.")
     @Test
+    @LongRunning
     public void testIncorrectLoading()throws IOException{
     	initDataBase(BUNDLE_KEY_WRONG);
     	assertLoadTime(loadTime,BUNDLE_KEY_WRONG);

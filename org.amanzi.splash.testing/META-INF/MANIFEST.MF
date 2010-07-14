@@ -6,12 +6,14 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.splash.testing.Activator
 Require-Bundle: org.eclipse.core.runtime,
  org.jtestr,
+ org.junit4;bundle-version="4.3.1",
  org.amanzi.splash;bundle-version="1.0.0",
  org.amanzi.neo.core;bundle-version="1.0.0",
- org.junit4;bundle-version="4.3.1",
- org.eclipse.ui;bundle-version="3.3.1"
+ org.eclipse.ui;bundle-version="3.3.1",
+ org.amanzi.testing
 Eclipse-LazyStart: true
 Eclipse-RegisterBuddy: org.jtestr
 Export-Package: org.amanzi.splash.testing
 Bundle-Vendor: amanzi.org
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ClassPath: .
