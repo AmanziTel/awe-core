@@ -14,6 +14,7 @@
 package org.amanzi.awe.filters;
 
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.service.listener.NeoServiceProviderListener;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -28,11 +29,10 @@ import org.neo4j.graphdb.Traverser;
  * @author Tsinkel_A
  * @since 1.0.0
  */
-public abstract class AbstractFilter {
+public abstract class AbstractFilter  extends NeoServiceProviderListener{
     protected final Node node;
     protected String name;
     protected NodeTypes type;
-    protected GraphDatabaseService service;
 
     public static AbstractFilter getInstance(Node node, GraphDatabaseService service) {
         Transaction tx = NeoUtils.beginTx(service);
@@ -61,7 +61,7 @@ public abstract class AbstractFilter {
      */
     protected AbstractFilter(Node node, GraphDatabaseService service) {
         this.node = node;
-        this.service = service;
+        this.graphDatabaseService = service;
         name = NeoUtils.getSimpleNodeName(node, "", service);
     }
 
@@ -69,7 +69,7 @@ public abstract class AbstractFilter {
      * @param service The service to set.
      */
     public void setService(GraphDatabaseService service) {
-        this.service = service;
+        this.graphDatabaseService = service;
     }
 
 //    /**

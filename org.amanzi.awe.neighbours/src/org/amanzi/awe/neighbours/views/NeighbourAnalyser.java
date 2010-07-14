@@ -25,6 +25,7 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.service.listener.INeoServiceProviderListener;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -58,7 +59,8 @@ import org.neo4j.graphdb.Traverser.Order;
 import au.com.bytecode.opencsv.CSVWriter;
 
 
-public class NeighbourAnalyser extends ViewPart {
+public class NeighbourAnalyser extends ViewPart  implements INeoServiceProviderListener {
+    //TODO ZNN need main solution for using class NeoServiceProviderListener instead of interface INeoServiceProviderListener  
 
 	/**
 	 * The ID of the view as specified by the extension.
@@ -74,7 +76,7 @@ public class NeighbourAnalyser extends ViewPart {
     private Combo cNeighbour;
     private Button bStart;
     private LinkedHashMap<String, Node> gpeh;
-    private final GraphDatabaseService neo=NeoServiceProvider.getProvider().getService();
+    private GraphDatabaseService graphDatabaseService=NeoServiceProvider.getProvider().getService();
     private LinkedHashMap<String, Node> neighbour;
 
 	/**
@@ -178,9 +180,9 @@ public class NeighbourAnalyser extends ViewPart {
      */
     private void formNeighbour() {
         neighbour=new LinkedHashMap<String,Node>();
-        Transaction tx = neo.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         try{
-            Traverser gisWithNeighbour = NeoUtils.getAllReferenceChild(neo, new ReturnableEvaluator() {
+            Traverser gisWithNeighbour = NeoUtils.getAllReferenceChild(graphDatabaseService, new ReturnableEvaluator() {
                 
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
@@ -206,7 +208,7 @@ public class NeighbourAnalyser extends ViewPart {
      */
     private void formGPEH() {
         gpeh=new LinkedHashMap<String,Node>();
-        for (Node node:NeoUtils.getAllGpeh(neo)){
+        for (Node node:NeoUtils.getAllGpeh(graphDatabaseService)){
             gpeh.put(NeoUtils.getSimpleNodeName(node, ""), node);
         }
         String[] result = gpeh.keySet().toArray(new String[0]);
@@ -287,7 +289,7 @@ public class NeighbourAnalyser extends ViewPart {
      * @return
      */
     protected void analyse(Node gpehNode, Node netNode, IProgressMonitor monitor) {
-        Transaction tx = neo.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         try {
             Node gisNode = NeoUtils.findGisNodeByChild(netNode);
             // Node otherNode=null;
@@ -378,5 +380,24 @@ public class NeighbourAnalyser extends ViewPart {
 	@Override
     public void setFocus() {
 	}
+	
+    @Override
+    public void onNeoStop(Object source) {
+        graphDatabaseService = null;
+    }
+
+    @Override
+    public void onNeoStart(Object source) {
+        graphDatabaseService = NeoServiceProvider.getProvider().getService();
+    }
+
+    @Override
+    public void onNeoCommit(Object source) {
+    }
+
+    @Override
+    public void onNeoRollback(Object source) {
+    }
+
 	
 }

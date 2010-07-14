@@ -59,7 +59,7 @@ public class FilterChain extends AbstractFilter {
      * @return
      */
     private ChainRule getRuleFromNode() {
-        Transaction tx = NeoUtils.beginTx(service);
+        Transaction tx = NeoUtils.beginTx(graphDatabaseService);
         try{
             return ChainRule.getEnumById((String)node.getProperty(FilterUtil.PROPERTY_ORDER,null));
         }finally{
@@ -72,7 +72,7 @@ public class FilterChain extends AbstractFilter {
         if (!isValid) {
             return falseResult;
         }
-        Transaction tx = NeoUtils.beginTx(service);
+        Transaction tx = NeoUtils.beginTx(graphDatabaseService);
         try {
             for (int i = 0; i < subfilters.size(); i++) {
                 final FilterResult result = subfilters.get(i).filterNode(node);

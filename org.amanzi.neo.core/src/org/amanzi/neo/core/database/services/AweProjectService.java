@@ -37,6 +37,7 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.service.listener.NeoServiceProviderListener;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
@@ -57,7 +58,7 @@ import org.neo4j.graphdb.Traverser.Order;
  * @author Tsinkel_A
  */
 
-public class AweProjectService {
+public class AweProjectService extends NeoServiceProviderListener {
     private static final Logger LOGGER = Logger.getLogger(AweProjectService.class);
 
 	/*
@@ -68,7 +69,7 @@ public class AweProjectService {
 	/*
 	 * NeoService
 	 */
-	protected GraphDatabaseService neoService;
+	protected GraphDatabaseService graphDatabaseService;
 
 	/**
 	 * Constructor of Service.
@@ -77,7 +78,7 @@ public class AweProjectService {
 	 */
 	public AweProjectService() {	    
 		provider = NeoServiceProvider.getProvider();
-		neoService = provider.getService();
+		graphDatabaseService = provider.getService();
 	}
 	
 	/**
@@ -87,7 +88,7 @@ public class AweProjectService {
 	 */
 	public AweProjectService(GraphDatabaseService aNeo) {	    
 		provider = NeoServiceProvider.getProvider();
-		neoService = aNeo;
+		graphDatabaseService = aNeo;
 	}
 
 	/**
@@ -96,10 +97,10 @@ public class AweProjectService {
 	 * @return root node
 	 */
 	public RootNode getRootNode() {
-		Transaction transaction = neoService.beginTx();
+		Transaction transaction = graphDatabaseService.beginTx();
 		try {
 
-			RootNode root = new RootNode(neoService.getReferenceNode());
+			RootNode root = new RootNode(graphDatabaseService.getReferenceNode());
 			transaction.success();
 			return root;
 		} finally {
@@ -116,7 +117,7 @@ public class AweProjectService {
 	 */
 	public RubyProjectNode findRubyProject(String rubyProjectName) {
 		RootNode root = getRootNode();
-		Transaction transaction = neoService.beginTx();
+		Transaction transaction = graphDatabaseService.beginTx();
 		try {
 			Iterator<AweProjectNode> iterator = root.getAllProjects();
 			while (iterator.hasNext()) {
@@ -173,7 +174,7 @@ public class AweProjectService {
     public SpreadsheetNode findSpreadsheet(RubyProjectNode root, String name) {
         SpreadsheetNode result = null;
 
-        Transaction transaction = neoService.beginTx();
+        Transaction transaction = graphDatabaseService.beginTx();
 
         try {
             Iterator<SpreadsheetNode> spreadsheetIterator = root
@@ -205,7 +206,7 @@ public class AweProjectService {
     public SpreadsheetNode findSpreadsheet(SpreadsheetNode parent, String name) {
         SpreadsheetNode result = null;
 
-        Transaction transaction = neoService.beginTx();
+        Transaction transaction = graphDatabaseService.beginTx();
 
         try {
             ArrayList<SpreadsheetNode> childSpreadsheets = parent.getAllChildSpreadsheets();
@@ -235,11 +236,11 @@ public class AweProjectService {
     public SpreadsheetNode findOrCreateSpreadSheet(RubyProjectNode rubyProject, String spreadsheetName) {
         SpreadsheetNode result = findSpreadsheet(rubyProject, spreadsheetName);;
 
-        Transaction transaction = neoService.beginTx();
+        Transaction transaction = graphDatabaseService.beginTx();
 
         try {
             if (result == null) {
-                result = new SpreadsheetNode(neoService.createNode(),spreadsheetName);
+                result = new SpreadsheetNode(graphDatabaseService.createNode(),spreadsheetName);
                 rubyProject.addSpreadsheet(result);
             }
             transaction.success();
@@ -264,7 +265,7 @@ public class AweProjectService {
         assert project != null;
         assert rubyProjectName != null;
         RubyProjectNode result = null;
-        Transaction transaction = neoService.beginTx();
+        Transaction transaction = graphDatabaseService.beginTx();
         try {
             Iterator<RubyProjectNode> rubyProjects = project.getAllProjects();
             while (rubyProjects.hasNext()) {
@@ -295,11 +296,11 @@ public class AweProjectService {
 		assert project != null;
 		assert rubyProjectName != null;
 		RubyProjectNode result = null;
-		Transaction transaction = neoService.beginTx();
+		Transaction transaction = graphDatabaseService.beginTx();
 		try {
 			result = findRubyProject(project, rubyProjectName);
 			if (result == null) {
-				result = new RubyProjectNode(neoService.createNode(),rubyProjectName);
+				result = new RubyProjectNode(graphDatabaseService.createNode(),rubyProjectName);
 				project.addRubyProject(result);
 			}
 			transaction.success();
@@ -319,7 +320,7 @@ public class AweProjectService {
 	public AweProjectNode findOrCreateAweProject(String aweProjectName) {
 		assert aweProjectName != null;
 		AweProjectNode result = null;
-		Transaction transaction = neoService.beginTx();
+		Transaction transaction = graphDatabaseService.beginTx();
 		try {
 		    //Lagutko, 13.08.2009, use findAweProject() method to find an AWEProjectNode
 		    result = findAweProject(aweProjectName);
@@ -343,9 +344,9 @@ public class AweProjectService {
 	    AweProjectNode result = null;
 	    RootNode root = getRootNode();
 	    
-	    Transaction transaction = neoService.beginTx();
+	    Transaction transaction = graphDatabaseService.beginTx();
 	    try {
-	        result = new AweProjectNode(neoService.createNode(), projectName);
+	        result = new AweProjectNode(graphDatabaseService.createNode(), projectName);
 	        root.addProject(result);
 	        transaction.success();
 	    }
@@ -366,9 +367,9 @@ public class AweProjectService {
 	public RubyProjectNode createEmptyRubyProject(String projectName) {
 	    RubyProjectNode result = null;
 	    
-	    Transaction transaction = neoService.beginTx();
+	    Transaction transaction = graphDatabaseService.beginTx();
 	    try {
-	        result = new RubyProjectNode(neoService.createNode(),projectName);
+	        result = new RubyProjectNode(graphDatabaseService.createNode(),projectName);
 	        
 	        transaction.success();
 	    }
@@ -390,7 +391,7 @@ public class AweProjectService {
 	    assert aweProjectName != null;
         AweProjectNode result = null;
         RootNode root = getRootNode();
-        Transaction transaction = neoService.beginTx();
+        Transaction transaction = graphDatabaseService.beginTx();
         try {
             Iterator<AweProjectNode> aweProjects = root.getAllProjects();
             while (aweProjects.hasNext()) {
@@ -424,7 +425,7 @@ public class AweProjectService {
 	 * @param node node to delete
 	 */
 	public void deleteNode(Node node) {
-	    Transaction transaction = neoService.beginTx();
+	    Transaction transaction = graphDatabaseService.beginTx();
 	    try {
 	        LinkedList<Node> nodeToDelete = new LinkedList<Node>();
 	        nodeToDelete.add(node);
@@ -458,7 +459,7 @@ public class AweProjectService {
      * TODO not used - use delete manager
      */@Deprecated 
     public void dirtyRemoveNodeFromStructure(Node node) {
-        Transaction transaction = neoService.beginTx();
+        Transaction transaction = graphDatabaseService.beginTx();
         try {
             Node relink1=null;
             Node relink2=null;
@@ -506,7 +507,7 @@ public class AweProjectService {
 	 */
 	public RubyScriptNode findScript(RubyProjectNode rubyProject,
 			String scriptName) {
-		Transaction transaction = neoService.beginTx();
+		Transaction transaction = graphDatabaseService.beginTx();
 		try {
 			Iterator<RubyScriptNode> scripts = rubyProject.getScripts();
 			while (scripts.hasNext()) {
@@ -545,9 +546,9 @@ public class AweProjectService {
 			NeoCorePlugin.error(message, new SplashDatabaseException(message));
 			return null;
 		}
-		Transaction transaction = neoService.beginTx();
+		Transaction transaction = graphDatabaseService.beginTx();
 		try {
-			result = new RubyScriptNode(neoService.createNode(),scriptName);
+			result = new RubyScriptNode(graphDatabaseService.createNode(),scriptName);
 			rubyProject.addScript(result);
 			result.addCell(cellNode);
 			transaction.success();
@@ -584,7 +585,7 @@ public class AweProjectService {
 	 * @return wrapper spreadsheet node
 	 */
 	public SpreadsheetNode getSpreadsheetByCell(CellNode cellNode) {
-		Transaction transaction = neoService.beginTx();
+		Transaction transaction = graphDatabaseService.beginTx();
 		try {
 			Node result = getSpreadSheet(cellNode);
 			transaction.success();
@@ -605,7 +606,7 @@ public class AweProjectService {
 	    Long spreadsheetId = cellNode.getSpreadsheetId();
 	    
 	    if (spreadsheetId != null) {
-	        return neoService.getNodeById(spreadsheetId);
+	        return graphDatabaseService.getNodeById(spreadsheetId);
 	    }
 	    return null;
 	}
@@ -618,7 +619,7 @@ public class AweProjectService {
 	 * @return CellNode or null
 	 */
 	public CellNode findCellByScriptReference(RubyScriptNode script) {
-		Transaction transaction = neoService.beginTx();
+		Transaction transaction = graphDatabaseService.beginTx();
 		try {
 			Iterator<Node> cellIterator = script.getUnderlyingNode().traverse(
 					Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
@@ -645,7 +646,7 @@ public class AweProjectService {
 	
 	public RubyProjectNode getSpreadsheetRoot(SpreadsheetNode spreadsheet) {
 	    RubyProjectNode result = null;
-	    Transaction transaction = neoService.beginTx();
+	    Transaction transaction = graphDatabaseService.beginTx();
 	    try {
 	        result = spreadsheet.getSpreadsheetRootProject();
 	        
@@ -666,7 +667,7 @@ public class AweProjectService {
 	 * @author Lagutko_N
 	 */
 	public void renameAweProject(String aweProjectName, String newName) {
-	    Transaction transaction = neoService.beginTx();
+	    Transaction transaction = graphDatabaseService.beginTx();
 	    
 	    try {
 	        AweProjectNode aweProject = findAweProject(aweProjectName);
@@ -691,7 +692,7 @@ public class AweProjectService {
 	 * @author Lagutko_N
 	 */
 	public void renameRubyProject(String aweProjectName, String oldName, String newName) {
-	    Transaction transacation = neoService.beginTx();
+	    Transaction transacation = graphDatabaseService.beginTx();
 	    
 	    try {
 	        AweProjectNode aweProject = findAweProject(aweProjectName);
@@ -715,7 +716,7 @@ public class AweProjectService {
 	 * @param newName new Name of Spreadsheet
 	 */
 	public void renameSpreadsheet(RubyProjectNode rubyProjectNode, String oldName, String newName) {
-	    Transaction transacation = neoService.beginTx();
+	    Transaction transacation = graphDatabaseService.beginTx();
         
         try {
             SpreadsheetNode spreadsheet = findSpreadsheet(rubyProjectNode, oldName);
@@ -744,7 +745,7 @@ public class AweProjectService {
             return;
         }
         
-        Transaction transacation = neoService.beginTx();
+        Transaction transacation = graphDatabaseService.beginTx();
 
         try {
             if (data.hasRelationship(GeoNeoRelationshipTypes.CHILD,Direction.INCOMING)){
@@ -791,7 +792,7 @@ public class AweProjectService {
     public ChartNode getChartByName(RubyProjectNode root, String name) {
         ChartNode result = null;
 
-        Transaction transaction = neoService.beginTx();
+        Transaction transaction = graphDatabaseService.beginTx();
 
         try {
             Iterator<ChartNode> chartIterator = root
@@ -821,14 +822,14 @@ public class AweProjectService {
      * @return chart node created
      */
     public ChartNode createChart(RubyProjectNode root, String id, String type) {
-        Transaction transaction = neoService.beginTx();
+        Transaction transaction = graphDatabaseService.beginTx();
         ChartNode chartNode=null;
 
         try {
              chartNode = getChartByName(root,id);
 
             if (chartNode == null) {
-                chartNode = new ChartNode(neoService.createNode());
+                chartNode = new ChartNode(graphDatabaseService.createNode());
                 chartNode.setChartIndex(id);
                 chartNode.setChartType(type);
                 root.addChart(chartNode);
@@ -855,13 +856,13 @@ public class AweProjectService {
      * @throws SplashDatabaseException
      */
     public ChartItemNode createChartItem(ChartNode chartNode, Integer id) throws SplashDatabaseException {
-        Transaction transaction = neoService.beginTx();
+        Transaction transaction = graphDatabaseService.beginTx();
 
         try {
             ChartItemNode ChartItemNode = chartNode.getChartItem(id);
 
             if (ChartItemNode == null) {
-                ChartItemNode = new ChartItemNode(neoService.createNode());
+                ChartItemNode = new ChartItemNode(graphDatabaseService.createNode());
                 ChartItemNode.setChartItemIndex(id);
                 chartNode.addChartItem(ChartItemNode);
             }
@@ -882,13 +883,13 @@ public class AweProjectService {
      * @throws SplashDatabaseException
      */
     public ChartItemNode createChartItem(ChartNode chartNode, CellNode catNode, CellNode valNode,Integer id) throws SplashDatabaseException {
-        Transaction transaction = neoService.beginTx();
+        Transaction transaction = graphDatabaseService.beginTx();
 
         try {
             ChartItemNode chartItemNode = chartNode.getChartItem(id);
 
             if (chartItemNode == null) {
-                chartItemNode = new ChartItemNode(neoService.createNode());
+                chartItemNode = new ChartItemNode(graphDatabaseService.createNode());
                 chartItemNode.setChartItemIndex(id);
                 chartItemNode.addCategoryNode(catNode);
                 chartItemNode.addValueNode(valNode);
@@ -913,7 +914,7 @@ public class AweProjectService {
     public int getNextChartNumber(RubyProjectNode root){
         int result = -1;
 
-        Transaction transaction = neoService.beginTx();
+        Transaction transaction = graphDatabaseService.beginTx();
 
         try {
             Iterator<ChartNode> chartIterator = root
@@ -948,7 +949,7 @@ public class AweProjectService {
     public int getNextReportNumber(RubyProjectNode root){
         int result = -1;
 
-        Transaction transaction = neoService.beginTx();
+        Transaction transaction = graphDatabaseService.beginTx();
 
         try {
             Iterator<ReportNode> iterator = root
@@ -982,14 +983,14 @@ public class AweProjectService {
      * @return report node created
      */
     public ReportNode createReport(RubyProjectNode root, String name) {
-        Transaction transaction = neoService.beginTx();
+        Transaction transaction = graphDatabaseService.beginTx();
         ReportNode reportNode=null;
 
         try {
             reportNode = findReport(root,name);
 
             if (reportNode == null) {
-                reportNode = new ReportNode(neoService.createNode());
+                reportNode = new ReportNode(graphDatabaseService.createNode());
                 reportNode.setReportName(name);
                 root.addReport(reportNode);
             }
@@ -1015,7 +1016,7 @@ public class AweProjectService {
     public ReportNode findReport(RubyProjectNode root, String name) {
         ReportNode result = null;
 
-        Transaction transaction = neoService.beginTx();
+        Transaction transaction = graphDatabaseService.beginTx();
 
         try {
             Iterator<ReportNode> iterator = root.getReports();
@@ -1047,12 +1048,12 @@ public class AweProjectService {
     public ReportNode findOrCreateReport(RubyProjectNode root,
             String name) {
         ReportNode result = null;
-        Transaction transaction = neoService.beginTx();
+        Transaction transaction = graphDatabaseService.beginTx();
         try {
             result = findReport(root, name);
             if (result == null) {
                 LOGGER.debug("Report '"+name+"' was not found");
-                result = new ReportNode(neoService.createNode());
+                result = new ReportNode(graphDatabaseService.createNode());
                 result.setReportName(name);
                 root.addReport(result);
             }
@@ -1067,7 +1068,7 @@ public class AweProjectService {
     }
 
     public ReportNode updateReportName(String reportName, String newName, RubyProjectNode root) {
-        Transaction transaction = neoService.beginTx();
+        Transaction transaction = graphDatabaseService.beginTx();
         ReportNode report;
         try {
             report = findReport(root, reportName);
@@ -1082,9 +1083,9 @@ public class AweProjectService {
     }
     
     public void deleteMultiPropertyIndex(final String indexName) {
-        Transaction transaction = neoService.beginTx();
+        Transaction transaction = graphDatabaseService.beginTx();
         try {
-            Node nodeToDelete = NeoUtils.findMultiPropertyIndex(indexName, neoService);
+            Node nodeToDelete = NeoUtils.findMultiPropertyIndex(indexName, graphDatabaseService);
             if (nodeToDelete != null) {                
                 deleteNode(nodeToDelete);
             }

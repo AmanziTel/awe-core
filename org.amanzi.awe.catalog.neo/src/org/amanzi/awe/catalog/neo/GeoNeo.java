@@ -24,6 +24,7 @@ import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.service.listener.NeoServiceProviderListener;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
@@ -56,7 +57,7 @@ import com.vividsolutions.jts.geom.Envelope;
  * 
  * @author craig
  */
-public class GeoNeo {
+public class GeoNeo extends NeoServiceProviderListener {
     private static final Logger LOGGER = Logger.getLogger(GeoNeo.class);
     /** String NEIGH_RELATION field */
     public static final String NEIGH_RELATION = "NEIGH_RELATION";
@@ -74,7 +75,7 @@ public class GeoNeo {
     private CoordinateReferenceSystem crs;
     private ReferencedEnvelope bounds;
     private final String name;
-    private final GraphDatabaseService neo;
+
     private final GisTypes types;
     private String propertyName;
     // private Integer propertyAdjacency;
@@ -199,7 +200,7 @@ public class GeoNeo {
      * @param gisNode
      */
     public GeoNeo(GraphDatabaseService neo, Node gisNode) {
-        this.neo = neo;
+        this.graphDatabaseService = neo;
         this.gisNode = gisNode;
         this.name = this.gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
         this.types = GisTypes.findGisTypeByHeader(this.gisNode.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME).toString());
@@ -266,7 +267,7 @@ public class GeoNeo {
 
     public Traverser makeGeoNeoTraverser(final Envelope searchBounds) {
         try {
-            MultiPropertyIndex<Double> index = new MultiPropertyIndex<Double>(neo, NeoUtils.getLocationIndexName(name),
+            MultiPropertyIndex<Double> index = new MultiPropertyIndex<Double>(graphDatabaseService, NeoUtils.getLocationIndexName(name),
                     new String[] {INeoConstants.PROPERTY_LAT_NAME, INeoConstants.PROPERTY_LON_NAME},
                     new MultiDoubleConverter(0.001));
              return index.searchTraverser(new Double[] {searchBounds.getMinY(),
@@ -364,7 +365,7 @@ public class GeoNeo {
             // Secondly, if bounds is still empty, try find all feature geometries and calculate
             // bounds
             if (this.bounds.isNull()) {
-                Transaction tx = this.neo.beginTx();
+                Transaction tx = this.graphDatabaseService.beginTx();
                 try {
                     LOGGER.debug("Re-determining bounding box for gis data: " + this.name);
                     // Try to create envelope from any data referenced by the gisNode

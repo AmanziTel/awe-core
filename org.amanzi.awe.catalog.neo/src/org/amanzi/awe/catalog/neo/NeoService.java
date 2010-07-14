@@ -24,6 +24,7 @@ import net.refractions.udig.catalog.IService;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.service.listener.INeoServiceProviderListener;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -48,13 +49,14 @@ import org.neo4j.graphdb.Transaction;
  * 
  * @author craig@amanzi.com
  */
-public class NeoService extends IService {
+public class NeoService extends IService  implements INeoServiceProviderListener {
+    //TODO ZNN need main solution for using class NeoServiceProviderListener instead of interface INeoServiceProviderListener  
 
-	private Map<String, Serializable> params;
-    private URL url;    // original URL created with
+	private final Map<String, Serializable> params;
+    private final URL url;    // original URL created with
     private Throwable msg;
     private NeoServiceInfo info;
-    private Class<Object> type;
+    private final Class<Object> type;
 
     @SuppressWarnings("unchecked")
     NeoService( Map<String, Serializable> params ){
@@ -63,10 +65,12 @@ public class NeoService extends IService {
         type = (Class<Object>) params.get(NeoServiceExtension.CLASS_KEY);
     }
 
+    @Override
     public <T> boolean canResolve( Class<T> adaptee ) {
         return (type!=null && adaptee.isAssignableFrom(type)) || super.canResolve(adaptee);
     }
 
+    @Override
     public <T> T resolve( Class<T> adaptee, IProgressMonitor monitor ) throws IOException {
         if (adaptee.isAssignableFrom(URL.class)) {
             return adaptee.cast(url);
@@ -92,7 +96,7 @@ public class NeoService extends IService {
     }
 
 	private List<NeoGeoResource> members;
-    private GraphDatabaseService neo;
+    private GraphDatabaseService graphDatabaseService;
     /**
      * This method returns a list containing all NeoGeoResource objects which contains the
      * actual data to be displayed. This method is called when the user expands the service
@@ -106,13 +110,13 @@ public class NeoService extends IService {
             synchronized (this) {
                 if (members == null) {
                     checkNeo(); // check we have a connection to the database
-                    Transaction transaction = neo.beginTx();
+                    Transaction transaction = graphDatabaseService.beginTx();
                     try {
                         members = new ArrayList<NeoGeoResource>();
-                        for(Relationship relationship:neo.getReferenceNode().getRelationships(Direction.OUTGOING)){
+                        for(Relationship relationship:graphDatabaseService.getReferenceNode().getRelationships(Direction.OUTGOING)){
                             Node node = relationship.getEndNode();
                             if(node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME) && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString().equalsIgnoreCase(NodeTypes.GIS.getId())){
-                                members.add(new NeoGeoResource(this,neo,node));
+                                members.add(new NeoGeoResource(this,graphDatabaseService,node));
                             }
                         }
                         transaction.success();
@@ -126,8 +130,8 @@ public class NeoService extends IService {
     }
 
     private void checkNeo() {
-        if(neo == null) {
-            neo = NeoServiceProvider.getProvider().getService();
+        if(graphDatabaseService == null) {
+            graphDatabaseService = NeoServiceProvider.getProvider().getService();
             //TODO: Support actual URL
             //neo = new EmbeddedNeo(url.getPath());
         }
@@ -157,5 +161,23 @@ public class NeoService extends IService {
 	public URL getURL(){
 	    return this.url;
 	}
+	
+	   @Override
+	    public void onNeoStop(Object source) {
+	        graphDatabaseService = null;
+	    }
+
+	    @Override
+	    public void onNeoStart(Object source) {
+	        graphDatabaseService = NeoServiceProvider.getProvider().getService();
+	    }
+
+	    @Override
+	    public void onNeoCommit(Object source) {
+	    }
+
+	    @Override
+	    public void onNeoRollback(Object source) {
+	    }
 
 }

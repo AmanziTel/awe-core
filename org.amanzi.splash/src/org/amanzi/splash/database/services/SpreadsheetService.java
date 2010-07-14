@@ -35,6 +35,7 @@ import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
 import org.amanzi.neo.core.database.services.AweProjectService;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.service.listener.NeoServiceProviderListener;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.ui.SplashPlugin;
 import org.amanzi.splash.utilities.NeoSplashUtil;
@@ -53,7 +54,7 @@ import com.eteks.openjeks.format.CellFormat;
  * @author Lagutko_N
  */
 
-public class SpreadsheetService {
+public class SpreadsheetService extends NeoServiceProviderListener {
 
 	/*
 	 * Default value of Cell Value
@@ -68,12 +69,8 @@ public class SpreadsheetService {
 	/*
 	 * NeoService Provider
 	 */
-	private NeoServiceProvider provider;
+	private final NeoServiceProvider provider;
 
-	/*
-	 * NeoService
-	 */
-	protected GraphDatabaseService neoService;
 
 	/*
 	 * Project Service
@@ -90,11 +87,11 @@ public class SpreadsheetService {
 	public SpreadsheetService() {
 
         provider = NeoServiceProvider.getProvider();
-        neoService = provider.getService();
-        Transaction tx = neoService.beginTx();
+        graphDatabaseService = provider.getService();
+        Transaction tx = graphDatabaseService.beginTx();
         try {
             projectService = NeoCorePlugin.getDefault().getProjectService();
-            defaultSFNode = new SplashFormatNode(neoService.createNode());
+            defaultSFNode = new SplashFormatNode(graphDatabaseService.createNode());
             setSplashFormat(defaultSFNode, new CellFormat());
         } finally {
             tx.finish();
@@ -110,11 +107,11 @@ public class SpreadsheetService {
     public SpreadsheetService(GraphDatabaseService neo){
 
         provider = NeoServiceProvider.getProvider();
-        neoService = neo;
-        Transaction tx = neoService.beginTx();
+        graphDatabaseService = neo;
+        Transaction tx = graphDatabaseService.beginTx();
         try {
             projectService = NeoCorePlugin.getDefault().getProjectService();
-            defaultSFNode = new SplashFormatNode(neoService.createNode());
+            defaultSFNode = new SplashFormatNode(graphDatabaseService.createNode());
             setSplashFormat(defaultSFNode, new CellFormat());
         } finally {
             tx.finish();
@@ -140,10 +137,10 @@ public class SpreadsheetService {
 					SplashDatabaseExceptionMessages.Duplicate_Spreadsheet, name);
 			throw new SplashDatabaseException(message);
 		} else {
-			Transaction transaction = neoService.beginTx();
+			Transaction transaction = graphDatabaseService.beginTx();
 
 			try {
-				SpreadsheetNode spreadsheet = new SpreadsheetNode(neoService.createNode(),name,neoService);
+				SpreadsheetNode spreadsheet = new SpreadsheetNode(graphDatabaseService.createNode(),name,graphDatabaseService);
 
 				root.addSpreadsheet(spreadsheet);
 
@@ -161,14 +158,15 @@ public class SpreadsheetService {
 	 * @deprecated
 	 * 
 	 */
-	public ChartNode createChart(SpreadsheetNode spreadsheet, String id) {
-		Transaction transaction = neoService.beginTx();
+	@Deprecated
+    public ChartNode createChart(SpreadsheetNode spreadsheet, String id) {
+		Transaction transaction = graphDatabaseService.beginTx();
 
 		try {
 			ChartNode chartNode = spreadsheet.getChart(id);
 
 			if (chartNode == null) {
-				chartNode = new ChartNode(neoService.createNode());
+				chartNode = new ChartNode(graphDatabaseService.createNode());
 				chartNode.setChartIndex(id);
 				spreadsheet.addChart(chartNode);
 			}
@@ -193,13 +191,13 @@ public class SpreadsheetService {
 	 * 
 	 */
 	public PieChartNode createPieChart(SpreadsheetNode spreadsheet, String id) {
-		Transaction transaction = neoService.beginTx();
+		Transaction transaction = graphDatabaseService.beginTx();
 
 		try {
 			PieChartNode chartNode = spreadsheet.getPieChart(id);
 
 			if (chartNode == null) {
-				chartNode = new PieChartNode(neoService.createNode());
+				chartNode = new PieChartNode(graphDatabaseService.createNode());
 				chartNode.setPieChartIndex(id);
 				spreadsheet.addPieChart(chartNode);
 			}
@@ -223,14 +221,15 @@ public class SpreadsheetService {
 	 * @deprecated
 	 * 
 	 */
-	public ChartItemNode createChartItem(ChartNode chartNode, Integer id) throws SplashDatabaseException {
-		Transaction transaction = neoService.beginTx();
+	@Deprecated
+    public ChartItemNode createChartItem(ChartNode chartNode, Integer id) throws SplashDatabaseException {
+		Transaction transaction = graphDatabaseService.beginTx();
 
 		try {
 			ChartItemNode ChartItemNode = chartNode.getChartItem(id);
 
 			if (ChartItemNode == null) {
-				ChartItemNode = new ChartItemNode(neoService.createNode());
+				ChartItemNode = new ChartItemNode(graphDatabaseService.createNode());
 				ChartItemNode.setChartItemIndex(id);
 				chartNode.addChartItem(ChartItemNode);
 			}
@@ -249,13 +248,13 @@ public class SpreadsheetService {
 	 * 
 	 */
 	public PieChartItemNode createPieChartItem(PieChartNode chartNode, String id) throws SplashDatabaseException {
-		Transaction transaction = neoService.beginTx();
+		Transaction transaction = graphDatabaseService.beginTx();
 
 		try {
 			PieChartItemNode ChartItemNode = chartNode.getPieChartItem(id);
 
 			if (ChartItemNode == null) {
-				ChartItemNode = new PieChartItemNode(neoService.createNode());
+				ChartItemNode = new PieChartItemNode(graphDatabaseService.createNode());
 				ChartItemNode.setPieChartItemIndex(id);
 				chartNode.addPieChartItem(ChartItemNode);
 			}
@@ -278,10 +277,10 @@ public class SpreadsheetService {
 	 * @return created Cell
 	 */
 	public CellNode createCell(SpreadsheetNode spreadsheet, int row, int column) {
-	    Transaction transaction = neoService.beginTx();
+	    Transaction transaction = graphDatabaseService.beginTx();
 
 		try {
-			CellNode cell = new CellNode(neoService.createNode());
+			CellNode cell = new CellNode(graphDatabaseService.createNode());
 			//SplashFormatNode sfNode = new SplashFormatNode(neoService.createNode());
 			
 			cell.setCellColumn(column + 1);
@@ -314,11 +313,11 @@ public class SpreadsheetService {
 			node = createCell(sheet, cell.getRow(), cell.getColumn());
 		}
 
-		Transaction transaction = neoService.beginTx();
+		Transaction transaction = graphDatabaseService.beginTx();
 
 		try {
 			node.setValue(cell.getValue());
-			node.setDefinition((String) cell.getDefinition());
+			node.setDefinition(cell.getDefinition());
 
 			if (cell.hasReference()) {
 				node.setScriptURI(cell.getScriptURI());
@@ -345,7 +344,7 @@ public class SpreadsheetService {
 			        if (!format.equals(new CellFormat())) {
 			            NeoSplashUtil.logn("Adding reference to new SplashFormatNode");
 
-			            SplashFormatNode newSFNode = new SplashFormatNode(neoService.createNode());
+			            SplashFormatNode newSFNode = new SplashFormatNode(graphDatabaseService.createNode());
 
 			            setSplashFormat(newSFNode, format);
 
@@ -561,7 +560,7 @@ public class SpreadsheetService {
 	    
 	    if (node != null) {
 	        //Lagutko, 6.10.2009, convertNodeToCell use access to database and should be wrapped in transaction
-	    	Transaction transaction = neoService.beginTx();
+	    	Transaction transaction = graphDatabaseService.beginTx();
 	    	try {
                 return convertNodeToCell(node, row, column);
 	    	}
@@ -584,7 +583,7 @@ public class SpreadsheetService {
 	 * @return CellNode by ID or null if Cell doesn't exists
 	 */
 	public CellNode getCellNode(SpreadsheetNode sheet, int row, int column) {
-	    Transaction transaction = neoService.beginTx();
+	    Transaction transaction = graphDatabaseService.beginTx();
 
 		try {
 			CellNode result = sheet.getCell(row, column);
@@ -632,7 +631,7 @@ public class SpreadsheetService {
 	public boolean deleteCell(SpreadsheetNode sheet, int row, int column) {
 		CellNode cell = getCellNode(sheet, row, column);
 		CellNode lastCell;
-		Transaction tx = neoService.beginTx();
+		Transaction tx = graphDatabaseService.beginTx();
         try {
     		if (cell != null) {
     			// check if there are cells that are dependent on this cell
@@ -711,7 +710,7 @@ public class SpreadsheetService {
 		}
 		updatedNode.setCyclic(false);
 
-		Transaction transaction = neoService.beginTx();
+		Transaction transaction = graphDatabaseService.beginTx();
 		try {
 			Iterator<CellNode> dependentCells = updatedNode.getReferencedNodes();
 
@@ -759,7 +758,7 @@ public class SpreadsheetService {
 	 * @return FullId
 	 */
 	public String getFullId(CellNode cell) {
-		Transaction transaction = neoService.beginTx();
+		Transaction transaction = graphDatabaseService.beginTx();
 		try {
 			CellID cellId = new CellID(cell.getCellRow(), cell.getCellColumn());
 			transaction.success();
@@ -776,7 +775,7 @@ public class SpreadsheetService {
 	 * @param rowIndex row index (begin index: 0)
 	 */
 	public void insertRow(SpreadsheetNode spreadsheet, int rowIndex) {
-        Transaction transaction = neoService.beginTx();
+        Transaction transaction = graphDatabaseService.beginTx();
         
         try {
             // update column index to use in HilbertIndexes
@@ -821,7 +820,7 @@ public class SpreadsheetService {
 	 * @return true if all ok.
 	 */
     public boolean deleteRow(SpreadsheetNode spreadsheet, int rowIndex) {
-        Transaction transaction = neoService.beginTx();
+        Transaction transaction = graphDatabaseService.beginTx();
 
         try {
             // update column index to use in HilbertIndexes
@@ -876,7 +875,7 @@ public class SpreadsheetService {
 	 * @param columnIndex row index (begin index: 0)
 	 */
     public void insertColumn(SpreadsheetNode spreadsheet, int columnIndex) {
-        Transaction transaction = neoService.beginTx();
+        Transaction transaction = graphDatabaseService.beginTx();
 
         try {
             // update column index to use in HilbertIndexes
@@ -921,7 +920,7 @@ public class SpreadsheetService {
 	 * @return true if all ok.
 	 */
 	public boolean deleteColumn(SpreadsheetNode spreadsheet, int columnIndex) {
-		Transaction transaction = neoService.beginTx();
+		Transaction transaction = graphDatabaseService.beginTx();
 		
 		try {
 			//update column index to use in HilbertIndexes
@@ -978,7 +977,7 @@ public class SpreadsheetService {
 	 * @param index2 row2 index
 	 */
 	public void swapRows(SpreadsheetNode spreadsheet, int index1, int index2) {
-		Transaction transaction = neoService.beginTx();
+		Transaction transaction = graphDatabaseService.beginTx();
 		try {
 			//update indexes to use in Hilbert Indexes
 			index1++;
@@ -1042,7 +1041,7 @@ public class SpreadsheetService {
 	 * @param index2 column2 index
 	 */
 	public void swapColumns(SpreadsheetNode spreadsheet, int index1, int index2) {
-		Transaction transaction = neoService.beginTx();
+		Transaction transaction = graphDatabaseService.beginTx();
 		try {
 			//update indexes to use in Hilbert Indexes
 			index1++;

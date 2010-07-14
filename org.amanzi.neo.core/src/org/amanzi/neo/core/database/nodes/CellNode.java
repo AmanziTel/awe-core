@@ -25,7 +25,6 @@ import org.amanzi.neo.core.database.exception.LoopInCellReferencesException;
 import org.amanzi.neo.core.enums.CellRelationTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
-import org.geotools.xml.xsi.XSISimpleTypes.Int;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -158,7 +157,7 @@ public class CellNode extends AbstractNode {
     public Object getValue() {
         Date date = getDateValue();
         if (date == null) {
-            return (Object)getParameter(CELL_VALUE);
+            return getParameter(CELL_VALUE);
         }
         else {
             return date;
@@ -224,7 +223,7 @@ public class CellNode extends AbstractNode {
      * @return
      */
     public boolean isCyclic() {
-        if (!(Boolean)node.hasProperty(CELL_CYCLIC)) {
+        if (!node.hasProperty(CELL_CYCLIC)) {
             return false;
         }
         return (Boolean)getParameter(CELL_CYCLIC);

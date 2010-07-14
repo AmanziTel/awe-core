@@ -70,7 +70,7 @@ public class Filter extends AbstractFilter {
         if (!isValid) {
             return falseResult;
         }
-        Transaction tx = NeoUtils.beginTx(service);
+        Transaction tx = NeoUtils.beginTx(graphDatabaseService);
         try {
             if (!node.hasProperty(property)) {
                 return falseResult;
@@ -88,7 +88,7 @@ public class Filter extends AbstractFilter {
 
     @Override
     public FilterResult filterNodesByTraverser(Traverser traverser) {
-        Transaction tx = NeoUtils.beginTx(service);
+        Transaction tx = NeoUtils.beginTx(graphDatabaseService);
         try {
             for (Node node : traverser) {
                 FilterResult result = filterNode(node);

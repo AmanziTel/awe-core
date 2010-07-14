@@ -44,7 +44,7 @@ public class GroupFilter extends AbstractFilter {
 
     @Override
     public FilterResult filterNode(Node node) {
-        Transaction tx = NeoUtils.beginTx(service);
+        Transaction tx = NeoUtils.beginTx(graphDatabaseService);
         try{
             for (int i=0;i<subfilters.size();i++){
                 final FilterResult result = subfilters.get(i).filterNode(node);
@@ -60,7 +60,7 @@ public class GroupFilter extends AbstractFilter {
 
     @Override
     public FilterResult filterNodesByTraverser(Traverser traverser) {
-        Transaction tx = NeoUtils.beginTx(service);
+        Transaction tx = NeoUtils.beginTx(graphDatabaseService);
         try{
             for (Node node:traverser){
                 FilterResult result = filterNode(node);

@@ -24,6 +24,7 @@ import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.icons.IconManager;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.service.listener.INeoServiceProviderListener;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -38,19 +39,20 @@ import org.neo4j.graphdb.Transaction;
  * @author craig
  * @since 1.0.0
  */
-public class NeoGeoResource extends IGeoResource {
+public class NeoGeoResource extends IGeoResource implements INeoServiceProviderListener {
+    //TODO ZNN need main solution for using class NeoServiceProviderListener instead of interface INeoServiceProviderListener  
     // private URL identifierUrl;
     private final String identifier;
 	private final NeoService service;
 	private final Node gisNode;
 	private GeoNeo geoNeo;
     private URL identifierFull;
-    private final GraphDatabaseService neo;
+    private GraphDatabaseService graphDatabaseService;
 
 	public NeoGeoResource(NeoService service,
 			GraphDatabaseService neo, Node gisNode) {
 		this.service = service;
-        this.neo = neo;
+        this.graphDatabaseService = neo;
 		this.gisNode = gisNode;
 		this.geoNeo = new GeoNeo(neo, this.gisNode);
 
@@ -60,9 +62,9 @@ public class NeoGeoResource extends IGeoResource {
         identifierFull = this.getIdentifier();
 	}
 	public void updateCRS(){
-	    Transaction tx = neo.beginTx();
+	    Transaction tx = graphDatabaseService.beginTx();
 	    try{
-	        geoNeo = new GeoNeo(neo, this.gisNode);
+	        geoNeo = new GeoNeo(graphDatabaseService, this.gisNode);
 	        info=null;
 	    }finally{
 	        tx.finish();
@@ -164,4 +166,21 @@ public class NeoGeoResource extends IGeoResource {
 	public Status getStatus() {
 		return service.getStatus();
 	}
+	@Override
+    public void onNeoStop(Object source) {
+        graphDatabaseService = null;
+    }
+
+    @Override
+    public void onNeoStart(Object source) {
+        graphDatabaseService = NeoServiceProvider.getProvider().getService();
+    }
+
+    @Override
+    public void onNeoCommit(Object source) {
+    }
+
+    @Override
+    public void onNeoRollback(Object source) {
+    }
 }

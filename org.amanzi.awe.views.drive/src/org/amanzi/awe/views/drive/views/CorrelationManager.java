@@ -35,6 +35,7 @@ import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.icons.IconManager;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.service.listener.INeoServiceProviderListener;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
@@ -94,7 +95,9 @@ import org.neo4j.graphdb.Traverser.Order;
  * @author Cinkel_A
  * @since 1.0.0
  */
-public class CorrelationManager extends ViewPart {
+public class CorrelationManager extends ViewPart implements INeoServiceProviderListener {
+    //TODO ZNN need main solution for using class NeoServiceProviderListener instead of interface INeoServiceProviderListener  
+
     /**
      * The ID of the view as specified by the extension.
      */
@@ -109,9 +112,9 @@ public class CorrelationManager extends ViewPart {
     private Combo cNetwork;
     private Button bCorrelate;
     private TableViewer table;
-    private GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
-    private LinkedHashMap<String, Node> gisDriveNodes = new LinkedHashMap<String, Node>();
-    private LinkedHashMap<String, Node> gisNetworkNodes = new LinkedHashMap<String, Node>();
+    private GraphDatabaseService graphDatabaseService = NeoServiceProvider.getProvider().getService();
+    private final LinkedHashMap<String, Node> gisDriveNodes = new LinkedHashMap<String, Node>();
+    private final LinkedHashMap<String, Node> gisNetworkNodes = new LinkedHashMap<String, Node>();
     private TableLabelProvider labelProvider;
     private TableContentProvider provider;
     protected Point point;
@@ -259,7 +262,7 @@ public class CorrelationManager extends ViewPart {
      * @param wrapper - correlation wrapper
      */
     protected void removeCorrelation(final RowWrapper wrapper) {
-        Transaction tx = service.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         try {
 
             Job removeCorrelationJob = new Job("Remove correlation") {
@@ -286,15 +289,15 @@ public class CorrelationManager extends ViewPart {
      * @return
      */
     protected void managerRemoveNetworkDriveCorrelation(IProgressMonitor monitor, RowWrapper wrapper) {
-        Transaction tx = service.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         NeoUtils.addTransactionLog(tx, Thread.currentThread(), "managerRemoveNetworkDriveCorrelation");
         try {
             wrapper.getRelation().delete();
             tx.success();
             tx.finish();
             updateInputFromDisplay();
-            tx = service.beginTx();
-            Node root = NeoUtils.findOrCreateSectorDriveRoot(wrapper.getDriveNode(), service, false);
+            tx = graphDatabaseService.beginTx();
+            Node root = NeoUtils.findOrCreateSectorDriveRoot(wrapper.getDriveNode(), graphDatabaseService, false);
             for (Relationship relation : root.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
                 Node node = relation.getOtherNode(root);
                 Iterable<Relationship> relationships = node.getRelationships(NetworkRelationshipTypes.SECTOR, Direction.OUTGOING);
@@ -344,7 +347,7 @@ public class CorrelationManager extends ViewPart {
      * @param networkGis - network gis node
      */
     protected void setNetworkDriveCorrelation(IProgressMonitor monitor, Node networkGis, Node driveGis) {
-        Transaction tx = service.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         Long startTime = null;
         Long endTime = null;
         int perc = 0;
@@ -370,11 +373,11 @@ public class CorrelationManager extends ViewPart {
                 }
                     }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.LOCATION,
                             Direction.OUTGOING);
-            Node sectorDriveRoot = NeoUtils.findOrCreateSectorDriveRoot(driveGis, service, false);
+            Node sectorDriveRoot = NeoUtils.findOrCreateSectorDriveRoot(driveGis, graphDatabaseService, false);
             int count = 0;
             for (Node node : traverse) {
                 Node sectorDrive = NeoUtils.findOrCreateSectorDrive(NeoUtils.getSimpleNodeName(driveGis, null), sectorDriveRoot,
-                        node, service, false);
+                        node, graphDatabaseService, false);
                 if (sectorDrive != null) {
                     NeoUtils.linkWithSector(networkGis, sectorDrive, null);
                 }
@@ -414,11 +417,11 @@ public class CorrelationManager extends ViewPart {
      * Forms list of drive and network
      */
     public void formGisLists() {
-        Node refNode = service.getReferenceNode();
+        Node refNode = graphDatabaseService.getReferenceNode();
         gisDriveNodes.clear();
         gisNetworkNodes.clear();
 
-        Transaction tx = service.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         try {
             for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
                 Node node = relationship.getEndNode();
@@ -496,8 +499,8 @@ public class CorrelationManager extends ViewPart {
      * @since 1.0.0
      */
     private class TableLabelProvider extends LabelProvider implements ITableLabelProvider {
-        private Image delete = IconManager.getIconManager().getNeoImage("DELETE_ENABLED");
-        private ArrayList<TableColumn> columns = new ArrayList<TableColumn>();
+        private final Image delete = IconManager.getIconManager().getNeoImage("DELETE_ENABLED");
+        private final ArrayList<TableColumn> columns = new ArrayList<TableColumn>();
 
 
         /**
@@ -606,7 +609,7 @@ public class CorrelationManager extends ViewPart {
             if (newInput == null) {
                 return;
             }
-            Traverser linkedNetworkTraverser = NeoUtils.getLinkedNetworkTraverser(service);
+            Traverser linkedNetworkTraverser = NeoUtils.getLinkedNetworkTraverser(graphDatabaseService);
             for (Node node : linkedNetworkTraverser) {
                 for (Relationship relation : node.getRelationships(CorrelationRelationshipTypes.LINKED_NETWORK_DRIVE,
                         Direction.OUTGOING)) {
@@ -648,7 +651,7 @@ public class CorrelationManager extends ViewPart {
         public RowWrapper(Node node, Relationship relation) {
             this.networkNode = node;
             this.relation = relation;
-            Transaction tx = service.beginTx();
+            Transaction tx = graphDatabaseService.beginTx();
             try {
                 networkName = NeoUtils.getSimpleNodeName(node, "");
                 driveNode = relation.getOtherNode(node);
@@ -757,5 +760,21 @@ public class CorrelationManager extends ViewPart {
             }
         }
     }
+    @Override
+    public void onNeoStop(Object source) {
+        graphDatabaseService = null;
+    }
 
+    @Override
+    public void onNeoStart(Object source) {
+        graphDatabaseService = NeoServiceProvider.getProvider().getService();
+    }
+
+    @Override
+    public void onNeoCommit(Object source) {
+    }
+
+    @Override
+    public void onNeoRollback(Object source) {
+    }
 }

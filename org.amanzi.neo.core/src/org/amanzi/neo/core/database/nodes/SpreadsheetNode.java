@@ -54,12 +54,7 @@ public class SpreadsheetNode extends AbstractNode {
 	/*
 	 * Index of Cells 
 	 */
-	private HilbertIndex index;
-	
-	/*
-	 * Neo Service
-	 */
-	private GraphDatabaseService neoService = NeoServiceProvider.getProvider().getService();
+	private final HilbertIndex index;
 	
 	/**
 	 * Constructor. Wraps a Node from database and sets type and name of Node
@@ -69,7 +64,7 @@ public class SpreadsheetNode extends AbstractNode {
 	 */
 	public SpreadsheetNode(Node node, String name) {
 		super(node);
-		neoService = NeoServiceProvider.getProvider().getService();
+		graphDatabaseService = NeoServiceProvider.getProvider().getService();
 		setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.SPREADSHEET.getId());
 		setParameter(INeoConstants.PROPERTY_NAME_NAME, name);
 		
@@ -86,16 +81,16 @@ public class SpreadsheetNode extends AbstractNode {
     public SpreadsheetNode(Node node, String name, GraphDatabaseService neo) {
         super(node);
         if(neo==null){
-            neoService = NeoServiceProvider.getProvider().getService();
+            graphDatabaseService = NeoServiceProvider.getProvider().getService();
         }
         else{
-            neoService = neo;
+            graphDatabaseService = neo;
         }
         setParameter(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.SPREADSHEET.getId());
         setParameter(INeoConstants.PROPERTY_NAME_NAME, name);
         
         index = new HilbertIndex(CELL_INDEX, 3, CellNode.CELL_COLUMN, CellNode.CELL_ROW);
-        index.initialize(node,neoService);
+        index.initialize(node,graphDatabaseService);
     }
 
 	/**
@@ -147,7 +142,8 @@ public class SpreadsheetNode extends AbstractNode {
 	 * @param chart
 	 * @deprecated
 	 */
-	public void addChart(ChartNode chart) {
+	@Deprecated
+    public void addChart(ChartNode chart) {
 		addRelationship(SplashRelationshipTypes.CHART, chart
 				.getUnderlyingNode());
 	}
@@ -425,7 +421,7 @@ public class SpreadsheetNode extends AbstractNode {
         
         ColumnHeaderNode columnHeader = getColumnHeader(column);
         if (columnHeader == null) {
-            columnHeader = new ColumnHeaderNode(neoService.createNode(), column);
+            columnHeader = new ColumnHeaderNode(graphDatabaseService.createNode(), column);
             index.addNode(columnHeader.getUnderlyingNode());
             index.finishUp();
             addToRow(columnHeader);
@@ -444,7 +440,7 @@ public class SpreadsheetNode extends AbstractNode {
         
         RowHeaderNode rowHeader = getRowHeader(row);
         if (rowHeader == null) {
-            rowHeader = new RowHeaderNode(neoService.createNode(), row);
+            rowHeader = new RowHeaderNode(graphDatabaseService.createNode(), row);
             index.addNode(rowHeader.getUnderlyingNode());
             index.finishUp();
             addToColumn(rowHeader);
@@ -616,7 +612,7 @@ public class SpreadsheetNode extends AbstractNode {
 	    if(oldColumnInd==newColumnInd){
 	        return;
 	    }
-	    CellNode newCell = new CellNode(neoService.createNode());
+	    CellNode newCell = new CellNode(graphDatabaseService.createNode());
 	    newCell.setCellColumn(newColumnInd);
 	    newCell.setCellRow(rowInd);
 	    newCell.setSpreadsheetId(node.getId());
@@ -632,7 +628,7 @@ public class SpreadsheetNode extends AbstractNode {
         if(oldRowInd==newRowInd){
             return;
         }
-        CellNode newCell = new CellNode(neoService.createNode());
+        CellNode newCell = new CellNode(graphDatabaseService.createNode());
         newCell.setCellColumn(columnInd);
         newCell.setCellRow(newRowInd);
         newCell.setSpreadsheetId(node.getId());
@@ -690,7 +686,7 @@ public class SpreadsheetNode extends AbstractNode {
 	    /*
 	     * Default StopEvaluator
 	     */
-	    private StopEvaluator allSpreadsheets = StopEvaluator.END_OF_GRAPH;
+	    private final StopEvaluator allSpreadsheets = StopEvaluator.END_OF_GRAPH;
 	    
 	    /*
 	     * Is current node returnable?
@@ -705,7 +701,7 @@ public class SpreadsheetNode extends AbstractNode {
 	    /*
 	     * StopEvaluator for searching spreadsheet by name
 	     */
-	    private StopEvaluator spreadsheetByName = new StopEvaluator() {
+	    private final StopEvaluator spreadsheetByName = new StopEvaluator() {
             
             @Override
             public boolean isStopNode(TraversalPosition currentPos) {

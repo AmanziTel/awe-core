@@ -37,7 +37,6 @@ public abstract class AbstractHeaderNode extends CellNode {
     /**
      * Neo Service
      */
-    private GraphDatabaseService neoService = NeoServiceProvider.getProvider().getService();
 
     /**
      * Creates a Header node from Neo Node
@@ -123,7 +122,7 @@ public abstract class AbstractHeaderNode extends CellNode {
         
         Long lastCellId = getLastCellId();
         if (lastCellId != null) {
-        	Node node = neoService.getNodeById(lastCellId);
+        	Node node = graphDatabaseService.getNodeById(lastCellId);
         	if ((Integer)node.getProperty(getIndexProperty()) < getCellIndex(newCellNode.getUnderlyingNode())) {
         		lastCellNode = node;
         	}

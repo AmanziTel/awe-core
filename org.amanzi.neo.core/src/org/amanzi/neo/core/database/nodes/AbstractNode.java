@@ -18,6 +18,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.service.listener.NeoServiceProviderListener;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -29,7 +30,7 @@ import org.neo4j.graphdb.RelationshipType;
  * @author Lagutko_N
  */
 
-public abstract class AbstractNode {
+public abstract class AbstractNode extends NeoServiceProviderListener {
 
 	/*
 	 * Wrapped Node
@@ -38,8 +39,6 @@ public abstract class AbstractNode {
     private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
     private final Lock r = rwl.readLock();
     private final Lock w = rwl.writeLock();
-
-	private GraphDatabaseService service;
 
 	/**
 	 * Constructor of abstract Wrapper
@@ -50,7 +49,7 @@ public abstract class AbstractNode {
 
 	protected AbstractNode(Node node) {
 		this.node = node;
-		service=null;
+		graphDatabaseService=null;
 	}
 
 	/**
@@ -182,10 +181,10 @@ public abstract class AbstractNode {
     protected  GraphDatabaseService getService(){
         r.lock();
         try{
-            if (service==null){
+            if (graphDatabaseService==null){
                 setService(NeoServiceProvider.getProvider().getService());
             }
-            return service;
+            return graphDatabaseService;
         }finally{
             r.unlock();
         }
@@ -198,7 +197,7 @@ public abstract class AbstractNode {
     public void setService(GraphDatabaseService service){
         w.lock();
         try{
-            this.service=service;
+            this.graphDatabaseService=service;
         }finally{
             w.unlock();
         }

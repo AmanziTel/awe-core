@@ -23,6 +23,7 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.service.listener.INeoServiceProviderListener;
 import org.amanzi.neo.core.utils.NeoTreeContentProvider;
 import org.amanzi.neo.core.utils.NeoTreeElement;
 import org.amanzi.neo.core.utils.NeoTreeLabelProvider;
@@ -61,13 +62,13 @@ import org.neo4j.graphdb.Traverser.Order;
  * @author TsAr
  * @since 1.0.0
  */
-public class SelectDataPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
+public class SelectDataPreferencePage extends PreferencePage implements IWorkbenchPreferencePage, INeoServiceProviderListener {
     private static final Logger LOGGER = Logger.getLogger(SelectDataPreferencePage.class);
     private Composite mainFrame;
     private CheckboxTreeViewer viewer;
     private TreeContentProvider provider;
     private NeoTreeLabelProvider labelProvider;
-    private GraphDatabaseService service;
+    private GraphDatabaseService graphDatabaseService;
     private final Set<Node> selectedNode = new LinkedHashSet<Node>();
     @Override
     protected Control createContents(Composite parent) {
@@ -149,7 +150,7 @@ public class SelectDataPreferencePage extends PreferencePage implements IWorkben
 
     @Override
     public void init(IWorkbench workbench) {
-        service = NeoServiceProvider.getProvider().getService();
+        graphDatabaseService = NeoServiceProvider.getProvider().getService();
         loadSelectedData();
         provider = new TreeContentProvider();
         labelProvider = new NeoTreeLabelProvider();
@@ -160,13 +161,13 @@ public class SelectDataPreferencePage extends PreferencePage implements IWorkben
         selectedNode.clear();
         String storedId = getPreferenceStore().getString(DataLoadPreferences.SELECTED_DATA);
         if (!StringUtil.isEmpty(storedId)) {
-            Transaction tx = service.beginTx();
+            Transaction tx = graphDatabaseService.beginTx();
             try {
                 StringTokenizer st = new StringTokenizer(storedId, DataLoadPreferences.CRS_DELIMETERS);
                 while (st.hasMoreTokens()) {
                     String nodeId = st.nextToken();
                     try {
-                        Node node = service.getNodeById(Long.parseLong(nodeId));
+                        Node node = graphDatabaseService.getNodeById(Long.parseLong(nodeId));
                         if (NeoUtils.isRoootNode(node)) {
                             selectedNode.add(node);
                         }
@@ -186,10 +187,10 @@ public class SelectDataPreferencePage extends PreferencePage implements IWorkben
      */
     private void formInput() {
 
-        Transaction tx = NeoUtils.beginTx(service);
+        Transaction tx = NeoUtils.beginTx(graphDatabaseService);
         Node[] projects;
         try {
-            Traverser tr = service.getReferenceNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
+            Traverser tr = graphDatabaseService.getReferenceNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
                     SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING);
             projects = tr.getAllNodes().toArray(new Node[0]);
         } finally {
@@ -206,7 +207,7 @@ public class SelectDataPreferencePage extends PreferencePage implements IWorkben
     private void setChecked() {
         List<TreeElement> selectedItems = new ArrayList<TreeElement>();
         for (Node node : selectedNode) {
-            selectedItems.add(new TreeElement(node, service));
+            selectedItems.add(new TreeElement(node, graphDatabaseService));
         }
         viewer.setCheckedElements(selectedItems.toArray(new TreeElement[0]));
     }
@@ -296,5 +297,23 @@ public class SelectDataPreferencePage extends PreferencePage implements IWorkben
             }
         }
 
+    }
+
+    @Override
+    public void onNeoStop(Object source) {
+        graphDatabaseService = null;
+    }
+
+    @Override
+    public void onNeoStart(Object source) {
+        graphDatabaseService = NeoServiceProvider.getProvider().getService();
+    }
+
+    @Override
+    public void onNeoCommit(Object source) {
+    }
+
+    @Override
+    public void onNeoRollback(Object source) {
     }
 }

@@ -35,6 +35,7 @@ import org.amanzi.neo.core.enums.NetworkSiteType;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.icons.IconManager;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.service.listener.INeoServiceProviderListener;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
 import org.eclipse.jface.action.Action;
@@ -92,10 +93,10 @@ import org.neo4j.graphdb.Traverser.Order;
  * @author Cinkel_A
  * @since 1.0.0
  */
-public class NeighboursView extends ViewPart {
+public class NeighboursView extends ViewPart implements INeoServiceProviderListener {
+    //TODO ZNN need main solution for using class NeoServiceProviderListener instead of interface INeoServiceProviderListener  
 
-
-
+    private GraphDatabaseService graphDatabaseService=NeoServiceProvider.getProvider().getService();
     /** String SHOW_NEIGHBOUR field */
     private static final String SHOW_NEIGHBOUR = "show neighbour relation '%s' > '%s' on map";
     private static final String SHOW_SERVE = "show all '%s' neighbours on map";
@@ -334,7 +335,7 @@ public class NeighboursView extends ViewPart {
         /** int DEF_SIZE field */
         protected static final int DEF_SIZE = 100;
         private final ArrayList<String> columns = new ArrayList<String>();
-        private final GraphDatabaseService service=NeoServiceProvider.getProvider().getService();
+        
 
         public String getColumnText(Object obj, int index) {
             // Transaction tx = NeoUtils.beginTransaction();
@@ -343,12 +344,12 @@ public class NeighboursView extends ViewPart {
             if (index == 0) {
                 return NeoUtils.getSimpleNodeName(relation.getServeNode(), "");
             } else if (index == 1) {
-                NetworkSiteType networkSiteType = NetworkSiteType.getNetworkSiteType(NeoUtils.getParent(service, relation.getServeNode()), service);
+                NetworkSiteType networkSiteType = NetworkSiteType.getNetworkSiteType(NeoUtils.getParent(graphDatabaseService, relation.getServeNode()), graphDatabaseService);
                 return networkSiteType==null?"":networkSiteType.getId();
             } else if (index == 2) {
                 return NeoUtils.getSimpleNodeName(relation.getNeighbourNode(), "");
             } else if (index == 3) {
-                NetworkSiteType networkSiteType = NetworkSiteType.getNetworkSiteType(NeoUtils.getParent(service, relation.getNeighbourNode()), service);
+                NetworkSiteType networkSiteType = NetworkSiteType.getNetworkSiteType(NeoUtils.getParent(graphDatabaseService, relation.getNeighbourNode()), graphDatabaseService);
                 return networkSiteType==null?"":networkSiteType.getId();
             }else {
                 return relation.getRelation().getProperty(columns.get(index), "").toString();
@@ -1045,4 +1046,22 @@ public class NeighboursView extends ViewPart {
             setInput(input);
         }
     }
+    @Override
+    public void onNeoStop(Object source) {
+        graphDatabaseService = null;
+    }
+
+    @Override
+    public void onNeoStart(Object source) {
+        graphDatabaseService = NeoServiceProvider.getProvider().getService();
+    }
+
+    @Override
+    public void onNeoCommit(Object source) {
+    }
+
+    @Override
+    public void onNeoRollback(Object source) {
+    }
+
 }

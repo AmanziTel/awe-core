@@ -36,6 +36,7 @@ import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.icons.IconManager;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.service.listener.INeoServiceProviderListener;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
@@ -109,7 +110,9 @@ import org.neo4j.graphdb.Traverser.Order;
  * @author Tsinkel_A
  * @since 1.0.0
  */
-public class FilterView extends ViewPart {
+public class FilterView extends ViewPart  implements INeoServiceProviderListener {
+    //TODO ZNN need main solution for using class NeoServiceProviderListener instead of interface INeoServiceProviderListener  
+
 
     /**
      * The ID of the view as specified by the extension.
@@ -122,7 +125,7 @@ public class FilterView extends ViewPart {
     private DrillDownAdapter drillDownAdapter;
     private AddGroupAction addGroupAction;
     private AddFilterAction addFilterAction;
-    private final GraphDatabaseService service;
+    private GraphDatabaseService graphDatabaseService;
 
     private Node rootFlterNode;
 
@@ -201,14 +204,14 @@ public class FilterView extends ViewPart {
         private TreeNeoNode rootNode;
 
         public void inputChanged(Viewer v, Object oldInput, Object newInput) {
-            Transaction tx = NeoUtils.beginTx(service);
+            Transaction tx = NeoUtils.beginTx(graphDatabaseService);
             try {
                 if (newInput instanceof TreeNeoNode) {
                     invisibleRoot = newInput;
                     rootNode = (TreeNeoNode)newInput;
                 } else if (newInput instanceof Node) {
                     rootNode = new TreeNeoNode(getFileRootNode());
-                    invisibleRoot = service.getReferenceNode();
+                    invisibleRoot = graphDatabaseService.getReferenceNode();
                 } else {
                     invisibleRoot = null;
                     rootNode = null;
@@ -233,21 +236,21 @@ public class FilterView extends ViewPart {
 
         public Object getParent(Object child) {
             if (child instanceof TreeNeoNode) {
-                return ((TreeNeoNode)child).getParent(service);
+                return ((TreeNeoNode)child).getParent(graphDatabaseService);
             }
             return null;
         }
 
         public Object[] getChildren(Object parent) {
             if (parent instanceof TreeNeoNode) {
-                return ((TreeNeoNode)parent).getChildren(service);
+                return ((TreeNeoNode)parent).getChildren(graphDatabaseService);
             }
             return new Object[0];
         }
 
         public boolean hasChildren(Object parent) {
             if (parent instanceof TreeNeoNode)
-                return ((TreeNeoNode)parent).hasChildren(service);
+                return ((TreeNeoNode)parent).hasChildren(graphDatabaseService);
             return false;
         }
 
@@ -276,7 +279,7 @@ public class FilterView extends ViewPart {
             }
             if (obj instanceof TreeNeoNode) {
                 TreeNeoNode element = (TreeNeoNode)obj;
-                element.formColorImage(service);
+                element.formColorImage(graphDatabaseService);
                 Image image = element.getImage();
                 if  (image!=null){
                     return image;
@@ -290,7 +293,7 @@ public class FilterView extends ViewPart {
      * The constructor.
      */
     public FilterView() {
-        service = NeoServiceProvider.getProvider().getService();
+        graphDatabaseService = NeoServiceProvider.getProvider().getService();
         dataMap = new LinkedHashMap<String, Node>();
     }
 
@@ -356,7 +359,7 @@ public class FilterView extends ViewPart {
         drillDownAdapter = new DrillDownAdapter(viewer);
         viewer.setContentProvider(new ViewContentProvider());
         viewer.setLabelProvider(new ViewLabelProvider());
-        viewer.setInput(service.getReferenceNode());
+        viewer.setInput(graphDatabaseService.getReferenceNode());
 
         // group frame
         label = new Label(groupFrame, SWT.NONE);
@@ -460,9 +463,9 @@ public class FilterView extends ViewPart {
      */
     public void updateGisItems() {
         dataMap.clear();
-        Transaction tx = NeoUtils.beginTx(service);
+        Transaction tx = NeoUtils.beginTx(graphDatabaseService);
         try {
-            Traverser traverse = service.getReferenceNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+            Traverser traverse = graphDatabaseService.getReferenceNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
@@ -676,7 +679,7 @@ public class FilterView extends ViewPart {
      * @param filterNode - changed filters
      */
     protected void fireFilterChangeEvent(Node filterNode) {
-        Transaction tx = NeoUtils.beginTx(service);
+        Transaction tx = NeoUtils.beginTx(graphDatabaseService);
         try {
             Traverser tr = FilterUtil.getDataNodesOfFilter(filterNode);
             for (Node node : tr) {
@@ -722,11 +725,11 @@ public class FilterView extends ViewPart {
      */
     protected void showFilterChain(TreeNeoNode element) {
         rootTree = element;
-        Transaction tx = NeoUtils.beginTx(service);
+        Transaction tx = NeoUtils.beginTx(graphDatabaseService);
         try {
             tFilterChainName.setText(NeoUtils.getSimpleNodeName(rootTree.getNode(), "")); //$NON-NLS-1$)
             cRule.setText((String)element.getNode().getProperty(FilterUtil.PROPERTY_ORDER, "")); //$NON-NLS-1$
-            final TreeNeoNode parent = element.getParent(service);
+            final TreeNeoNode parent = element.getParent(graphDatabaseService);
             if (parent != null && parent.getType() == NodeTypes.FILTER_GROUP) {
                 chainColorEditor.setColorValue(getColor(FilterUtil.PROPERTY_FILTER_COLOR, element.getNode(), DEFAULT_COLOR));
                 chainColorEditor.getButton().setVisible(true);
@@ -748,7 +751,7 @@ public class FilterView extends ViewPart {
         final String name = tFilterChainName.getText();
         final String rule = cRule.getText();
         final RGB color;
-        if (rootTree.getParent(service).getType() == NodeTypes.FILTER_GROUP) {
+        if (rootTree.getParent(graphDatabaseService).getType() == NodeTypes.FILTER_GROUP) {
             color = chainColorEditor.getColorValue();
         } else {
             color = null;
@@ -757,12 +760,12 @@ public class FilterView extends ViewPart {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                Transaction tx = NeoUtils.beginTx(service);
+                Transaction tx = NeoUtils.beginTx(graphDatabaseService);
                 final Node node;
                 try {
 
                     node = rootTree.getNode();
-                    NeoUtils.setNodeName(node, name, service);
+                    NeoUtils.setNodeName(node, name, graphDatabaseService);
                     node.setProperty(FilterUtil.PROPERTY_ORDER, rule);
                     saveColor(node, FilterUtil.PROPERTY_FILTER_COLOR, color);
                     NeoUtils.successTx(tx);
@@ -770,7 +773,7 @@ public class FilterView extends ViewPart {
                     NeoUtils.finishTx(tx);
                 }
                 fireFilterChangeEvent(node);
-                rootTree.refresh(service);
+                rootTree.refresh(graphDatabaseService);
                 ActionUtil.getInstance().runTask(new Runnable() {
 
                     @Override
@@ -799,7 +802,7 @@ public class FilterView extends ViewPart {
         final String second = cSecond.getText();
         final String secontxt = cSecondText.getText();
         final RGB color;
-        if (rootTree.getParent(service).getType() == NodeTypes.FILTER_GROUP) {
+        if (rootTree.getParent(graphDatabaseService).getType() == NodeTypes.FILTER_GROUP) {
             color = filterColorEditor.getColorValue();
         } else {
             color = null;
@@ -808,13 +811,13 @@ public class FilterView extends ViewPart {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                Transaction tx = NeoUtils.beginTx(service);
+                Transaction tx = NeoUtils.beginTx(graphDatabaseService);
                 final Node node;
                 try {
 
                     node = rootTree.getNode();
-                    NeoUtils.setNodeName(node, property, service);
-                    FilterUtil.setGroupProperty(node, property, service);
+                    NeoUtils.setNodeName(node, property, graphDatabaseService);
+                    FilterUtil.setGroupProperty(node, property, graphDatabaseService);
                     node.setProperty(FilterUtil.PROPERTY_FIRST, first);
                     node.setProperty(FilterUtil.PROPERTY_FIRST_TXT, firsttxt);
                     node.setProperty(FilterUtil.PROPERTY_SECOND_REL, secondrel);
@@ -826,7 +829,7 @@ public class FilterView extends ViewPart {
                     NeoUtils.finishTx(tx);
                 }
                 fireFilterChangeEvent(node);
-                rootTree.refresh(service);
+                rootTree.refresh(graphDatabaseService);
                 ActionUtil.getInstance().runTask(new Runnable() {
 
                     @Override
@@ -854,19 +857,19 @@ public class FilterView extends ViewPart {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                Transaction tx = NeoUtils.beginTx(service);
+                Transaction tx = NeoUtils.beginTx(graphDatabaseService);
                 final Node node;
                 try {
 
                      node = rootTree.getNode();
-                    NeoUtils.setNodeName(node, name, service);
-                    FilterUtil.setGroupProperty(node, property, service);
+                    NeoUtils.setNodeName(node, name, graphDatabaseService);
+                    FilterUtil.setGroupProperty(node, property, graphDatabaseService);
                     NeoUtils.successTx(tx);
                 } finally {
                     NeoUtils.finishTx(tx);
                 }
                 fireFilterChangeEvent(node);
-                rootTree.refresh(service);
+                rootTree.refresh(graphDatabaseService);
                 ActionUtil.getInstance().runTask(new Runnable() {
 
                     @Override
@@ -888,15 +891,15 @@ public class FilterView extends ViewPart {
      */
     protected void showFilter(TreeNeoNode element) {
         rootTree = element;
-        Transaction tx = NeoUtils.beginTx(service);
+        Transaction tx = NeoUtils.beginTx(graphDatabaseService);
         try {
-            cFilterProperty.setText(FilterUtil.getGroupProperty(element.getNode(), "", service)); //$NON-NLS-1$
+            cFilterProperty.setText(FilterUtil.getGroupProperty(element.getNode(), "", graphDatabaseService)); //$NON-NLS-1$
             cFirst.setText((String)element.getNode().getProperty(FilterUtil.PROPERTY_FIRST, "")); //$NON-NLS-1$
             cFirstText.setText((String)element.getNode().getProperty(FilterUtil.PROPERTY_FIRST_TXT, "")); //$NON-NLS-1$
             cSecRel.setText((String)element.getNode().getProperty(FilterUtil.PROPERTY_SECOND_REL, "")); //$NON-NLS-1$
             cSecond.setText((String)element.getNode().getProperty(FilterUtil.PROPERTY_SECOND, "")); //$NON-NLS-1$
             cSecondText.setText((String)element.getNode().getProperty(FilterUtil.PROPERTY_SECOND_TXT, "")); //$NON-NLS-1$
-            final TreeNeoNode parent = element.getParent(service);
+            final TreeNeoNode parent = element.getParent(graphDatabaseService);
             if (parent != null && parent.getType() == NodeTypes.FILTER_GROUP) {
                 filterColorEditor.setColorValue(getColor(FilterUtil.PROPERTY_FILTER_COLOR, element.getNode(), DEFAULT_COLOR));
                 filterColorEditor.getButton().setVisible(true);
@@ -916,10 +919,10 @@ public class FilterView extends ViewPart {
      */
     protected void showGroupFilter(TreeNeoNode element) {
         rootTree = element;
-        Transaction tx = NeoUtils.beginTx(service);
+        Transaction tx = NeoUtils.beginTx(graphDatabaseService);
         try {
             tGroupName.setText(NeoUtils.getSimpleNodeName(rootTree.getNode(), "")); //$NON-NLS-1$
-            cGroupProperty.setText(FilterUtil.getGroupProperty(rootTree.getNode(), "", service)); //$NON-NLS-1$
+            cGroupProperty.setText(FilterUtil.getGroupProperty(rootTree.getNode(), "", graphDatabaseService)); //$NON-NLS-1$
         } finally {
             NeoUtils.finishTx(tx);
         }
@@ -973,7 +976,7 @@ public class FilterView extends ViewPart {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                rootFlterNode = NeoUtils.findOrCreateFilterRootNode(service);
+                rootFlterNode = NeoUtils.findOrCreateFilterRootNode(graphDatabaseService);
                 return Status.OK_STATUS;
             }
         };
@@ -1083,13 +1086,13 @@ public class FilterView extends ViewPart {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                Transaction tx = NeoUtils.beginTx(service);
+                Transaction tx = NeoUtils.beginTx(graphDatabaseService);
                 final Node node;
                 try {
-                    node = service.createNode();
-                    NodeTypes.FILTER_GROUP.setNodeType(node, service);
-                    NeoUtils.setNodeName(node, Messages.FilterView_27, service);
-                    NeoUtils.addChild(nodeTree.getNode(), node, null, service);
+                    node = graphDatabaseService.createNode();
+                    NodeTypes.FILTER_GROUP.setNodeType(node, graphDatabaseService);
+                    NeoUtils.setNodeName(node, Messages.FilterView_27, graphDatabaseService);
+                    NeoUtils.addChild(nodeTree.getNode(), node, null, graphDatabaseService);
                     NeoUtils.successTx(tx);
                 } finally {
                     NeoUtils.finishTx(tx);
@@ -1296,7 +1299,7 @@ public class FilterView extends ViewPart {
             if (dataNode == null) {
                 return false;
             }
-            Transaction tx = NeoUtils.beginTx(service);
+            Transaction tx = NeoUtils.beginTx(graphDatabaseService);
             try {
                 return dataNode.hasRelationship(GeoNeoRelationshipTypes.USE_FILTER, Direction.OUTGOING);
             } finally {
@@ -1403,14 +1406,14 @@ public class FilterView extends ViewPart {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                Transaction tx = NeoUtils.beginTx(service);
+                Transaction tx = NeoUtils.beginTx(graphDatabaseService);
                 final Node node;
                 try {
-                    node = service.createNode();
-                    NodeTypes.FILTER.setNodeType(node, service);
-                    NeoUtils.setNodeName(node, FilterUtil.getGroupProperty(nodeTree.getNode(), "", service), service); //$NON-NLS-1$
-                    node.setProperty(FilterUtil.PROPERTY_FILTERED_NAME, FilterUtil.getGroupProperty(nodeTree.getNode(), "", service)); //$NON-NLS-1$
-                    NeoUtils.addChild(nodeTree.getNode(), node, null, service);
+                    node = graphDatabaseService.createNode();
+                    NodeTypes.FILTER.setNodeType(node, graphDatabaseService);
+                    NeoUtils.setNodeName(node, FilterUtil.getGroupProperty(nodeTree.getNode(), "", graphDatabaseService), graphDatabaseService); //$NON-NLS-1$
+                    node.setProperty(FilterUtil.PROPERTY_FILTERED_NAME, FilterUtil.getGroupProperty(nodeTree.getNode(), "", graphDatabaseService)); //$NON-NLS-1$
+                    NeoUtils.addChild(nodeTree.getNode(), node, null, graphDatabaseService);
                     NeoUtils.successTx(tx);
                 } finally {
                     NeoUtils.finishTx(tx);
@@ -1440,13 +1443,13 @@ public class FilterView extends ViewPart {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                Transaction tx = NeoUtils.beginTx(service);
+                Transaction tx = NeoUtils.beginTx(graphDatabaseService);
                 final Node node;
                 try {
-                    node = service.createNode();
-                    NodeTypes.FILTER_CHAIN.setNodeType(node, service);
-                    NeoUtils.setNodeName(node, Messages.FilterView_16, service);
-                    NeoUtils.addChild(nodeTree.getNode(), node, null, service);
+                    node = graphDatabaseService.createNode();
+                    NodeTypes.FILTER_CHAIN.setNodeType(node, graphDatabaseService);
+                    NeoUtils.setNodeName(node, Messages.FilterView_16, graphDatabaseService);
+                    NeoUtils.addChild(nodeTree.getNode(), node, null, graphDatabaseService);
                     NeoUtils.successTx(tx);
                 } finally {
                     NeoUtils.finishTx(tx);
@@ -1477,7 +1480,7 @@ public class FilterView extends ViewPart {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                Transaction tx = NeoUtils.beginTx(service);
+                Transaction tx = NeoUtils.beginTx(graphDatabaseService);
                 try {
                     for (Relationship relation : dataNode.getRelationships(GeoNeoRelationshipTypes.USE_FILTER, Direction.OUTGOING)) {
                         relation.delete();
@@ -1511,7 +1514,7 @@ public class FilterView extends ViewPart {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                Transaction tx = NeoUtils.beginTx(service);
+                Transaction tx = NeoUtils.beginTx(graphDatabaseService);
                 
                 try {
                     for (Relationship relation : dataNode.getRelationships(GeoNeoRelationshipTypes.USE_FILTER, Direction.OUTGOING)) {
@@ -1546,13 +1549,13 @@ public class FilterView extends ViewPart {
         if (data == null) {
             result = ""; //$NON-NLS-1$
         } else {
-            Transaction tx = NeoUtils.beginTx(service);
+            Transaction tx = NeoUtils.beginTx(graphDatabaseService);
             try {
                 Relationship relation = data.getSingleRelationship(GeoNeoRelationshipTypes.USE_FILTER, Direction.OUTGOING);
                 if (relation == null) {
                     result = ""; //$NON-NLS-1$
                 } else {
-                    result = AbstractFilter.getInstance(relation.getOtherNode(data), service).toString();
+                    result = AbstractFilter.getInstance(relation.getOtherNode(data), graphDatabaseService).toString();
                 }
             } finally {
                 tx.finish();
@@ -1596,13 +1599,13 @@ public class FilterView extends ViewPart {
     public void deleteNode(final TreeNeoNode node) {
         viewer.remove(node);
         viewer.getControl().setEnabled(false);
-        final TreeNeoNode parent = node.getParent(service);
+        final TreeNeoNode parent = node.getParent(graphDatabaseService);
         Job job = new Job(Messages.FilterView_46) {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-                    Transaction tx = NeoUtils.beginTx(service);
+                    Transaction tx = NeoUtils.beginTx(graphDatabaseService);
                     try {
                         NeoCorePlugin.getDefault().getProjectService().dirtyRemoveNodeFromStructure(node.getNode());
                         // TODO use manager
@@ -1633,5 +1636,23 @@ public class FilterView extends ViewPart {
         };
         job.schedule();
 
+    }
+    
+    @Override
+    public void onNeoStop(Object source) {
+        graphDatabaseService = null;
+    }
+
+    @Override
+    public void onNeoStart(Object source) {
+        graphDatabaseService = NeoServiceProvider.getProvider().getService();
+    }
+
+    @Override
+    public void onNeoCommit(Object source) {
+    }
+
+    @Override
+    public void onNeoRollback(Object source) {
     }
 }

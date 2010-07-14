@@ -25,6 +25,7 @@ import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.service.listener.INeoServiceProviderListener;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
@@ -69,7 +70,9 @@ import org.neo4j.graphdb.Traverser.Order;
  * @author Saelenchits_N
  * @since 1.0.0
  */
-public class CorrelationList extends ViewPart {
+public class CorrelationList extends ViewPart implements INeoServiceProviderListener {
+    //TODO ZNN need main solution for using class NeoServiceProviderListener instead of interface INeoServiceProviderListener  
+
     private static final Logger LOGGER = Logger.getLogger(CorrelationList.class);
     /**
      * The ID of the view as specified by the extension.
@@ -81,7 +84,7 @@ public class CorrelationList extends ViewPart {
     private Combo cDrive;
     private Combo cNetwork;
     private TableViewer table;
-    private final GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+    private GraphDatabaseService graphDatabaseService = NeoServiceProvider.getProvider().getService();
     private final LinkedHashMap<String, Node> gisDriveNodes = new LinkedHashMap<String, Node>();
     private final LinkedHashMap<String, Node> gisNetworkNodes = new LinkedHashMap<String, Node>();
     private TableLabelProvider labelProvider;
@@ -185,7 +188,7 @@ public class CorrelationList extends ViewPart {
         Node curNetworkNode = gisNetworkNodes.get(cNetwork.getText());
         String[] columns = new PropertyHeader(curDriveNode).getAllFields();
 
-        Transaction tx = service.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         try {
             Traverser correlationSectors = curNetworkNode.traverse(Order.DEPTH_FIRST, NeoUtils.getStopEvaluator(2), new ReturnableEvaluator() {
 
@@ -244,7 +247,7 @@ public class CorrelationList extends ViewPart {
         table.getControl().setVisible(false);
 
         Node curNetworkNode = gisNetworkNodes.get(cNetwork.getText());
-        Traverser datasetsTraverser = NeoUtils.getAllCorrelatedDatasets(curNetworkNode, service);
+        Traverser datasetsTraverser = NeoUtils.getAllCorrelatedDatasets(curNetworkNode, graphDatabaseService);
 
         for (Node dataset : datasetsTraverser) {
             Object type = dataset.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").toString();
@@ -264,11 +267,11 @@ public class CorrelationList extends ViewPart {
      * Forms list of drive and network
      */
     public void formGisLists() {
-        Node refNode = service.getReferenceNode();
+        Node refNode = graphDatabaseService.getReferenceNode();
         // gisDriveNodes.clear();
         gisNetworkNodes.clear();
 
-        Transaction tx = service.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         try {
             for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
                 Node node = relationship.getEndNode();
@@ -505,6 +508,25 @@ public class CorrelationList extends ViewPart {
             return siteCorrelationNode.getProperty(INeoConstants.SECTOR_ID_PROPERTIES, "").toString();
         }
     }
+    
+    @Override
+    public void onNeoStop(Object source) {
+        graphDatabaseService = null;
+    }
+
+    @Override
+    public void onNeoStart(Object source) {
+        graphDatabaseService = NeoServiceProvider.getProvider().getService();
+    }
+
+    @Override
+    public void onNeoCommit(Object source) {
+    }
+
+    @Override
+    public void onNeoRollback(Object source) {
+    }
+
     //
     // @Override
     // public Collection<UpdateViewEventType> getType() {
