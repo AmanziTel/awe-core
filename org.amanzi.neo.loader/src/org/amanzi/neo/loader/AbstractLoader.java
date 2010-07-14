@@ -1427,14 +1427,14 @@ public abstract class AbstractLoader {
             }
             Node valueNode = valueNodes.get(property);
             Header header = headerMaps.headers.get(property);
-            GeoNeoRelationshipTypes relType = !header.isIdentityHeader ? GeoNeoRelationshipTypes.PROPERTIES
-                    : GeoNeoRelationshipTypes.IDENTITY_PROPERTIES;
             // if current headers do not contain information about property - we
             // do not handling
             // this property
             if (header == null) {
                 continue;
             }
+            GeoNeoRelationshipTypes relType = !header.isIdentityHeader ? GeoNeoRelationshipTypes.PROPERTIES
+                    : GeoNeoRelationshipTypes.IDENTITY_PROPERTIES;
             HashMap<Object, Integer> values = header.values;
             Relationship valueRelation = null;
             if (values == null) {
