@@ -91,7 +91,7 @@ public class ReuseAnalyserTest {
      */
     private Node createStructure() throws IOException {
         //TODO use data generator for create file
-        NetworkLoader loader = new NetworkLoader(util.getNeo(), "files/network.csv", util.getIndex());
+        NetworkLoader loader = new NetworkLoader(util.getNeo(), "../org.amanzi.awe.views.reuse.testing/files/network.csv", util.getIndex());
         loader.setup();
         loader.run(new NullProgressMonitor());
         return loader.getNetworkNode();
