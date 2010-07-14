@@ -24,6 +24,8 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
+import org.amanzi.neo.loader.TechnologySystems;
+
 /**
  * <p>
  * NemoFileGeneratorLauncher
@@ -417,6 +419,21 @@ public class NemoFileGeneratorLauncher {
      * The Enum NemoCommand_2_01_00.
      */
     private enum NemoCommand_2_01_00 {
+        
+        CAA("CAA"){
+
+            @Override
+            public String genParams() {
+                Random r = new Random();
+                StringBuilder result = new StringBuilder("Call_context_ID").append(getValSep());
+                result.append(TechnologySystems.values()[r.nextInt(TechnologySystems.values().length)].getId()).append(getValSep());
+                result.append(r.nextInt(9)+1).append(getValSep());
+                result.append(r.nextInt(1)+1).append(getValSep());
+                result.append(r.nextInt(9999999));
+                return result.toString();
+            }
+            
+        },
 
         /** The PILOTSCAN. */
         PILOTSCAN("PILOTSCAN") {
