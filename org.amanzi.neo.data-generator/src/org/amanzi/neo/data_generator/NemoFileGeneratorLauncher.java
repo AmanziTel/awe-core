@@ -496,7 +496,7 @@ public class NemoFileGeneratorLauncher {
                 case UMTS_TD_SCDMA:
                 case GAN_WLAN:
                     param = r.nextInt(800);
-                    
+                    //TODO 
                     break;
 
                 default:
