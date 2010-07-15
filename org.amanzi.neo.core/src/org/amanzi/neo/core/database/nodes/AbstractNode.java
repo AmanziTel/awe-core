@@ -48,8 +48,7 @@ public abstract class AbstractNode extends NeoServiceProviderListener {
 	 */
 
 	protected AbstractNode(Node node) {
-		this.node = node;
-		graphDatabaseService=null;
+		this.node = node;		
 	}
 
 	/**
