@@ -419,20 +419,114 @@ public class NemoFileGeneratorLauncher {
      * The Enum NemoCommand_2_01_00.
      */
     private enum NemoCommand_2_01_00 {
-        
-        CAA("CAA"){
+
+        CAA("CAA") {
 
             @Override
             public String genParams() {
                 Random r = new Random();
                 StringBuilder result = new StringBuilder("Call_context_ID").append(getValSep());
                 result.append(TechnologySystems.values()[r.nextInt(TechnologySystems.values().length)].getId()).append(getValSep());
-                result.append(r.nextInt(9)+1).append(getValSep());
-                result.append(r.nextInt(1)+1).append(getValSep());
+                result.append(r.nextInt(9) + 1).append(getValSep());
+                result.append(r.nextInt(1) + 1).append(getValSep());
                 result.append(r.nextInt(9999999));
                 return result.toString();
             }
-            
+
+        },
+
+        CAC("CAC") {
+
+            @Override
+            public String genParams() {
+                Random r = new Random();
+                StringBuilder result = new StringBuilder("Call_context_ID").append(getValSep());
+                TechnologySystems ts = TechnologySystems.values()[r.nextInt(TechnologySystems.values().length)];
+                result.append(TechnologySystems.values()[r.nextInt(TechnologySystems.values().length)].getId()).append(getValSep());
+                result.append(r.nextInt(9) + 1).append(getValSep());
+                result.append(r.nextInt(4) + 1).append(getValSep());
+                int count = 0;
+                switch (ts) {
+                case GSM:
+                    count = r.nextInt(4) + 3; // TODO need clarify possible count of parameters
+                    result.append(count).append(getValSep());
+                    for (int i = 0; i < count; i++) {
+                        result.append(r.nextInt(8)).append(getValSep());
+                    }
+                    break;
+                case TETRA:
+                    count = r.nextInt(4) + 3; // TODO need clarify possible count of parameters
+                    result.append(count).append(getValSep());
+                    for (int i = 0; i < count; i++) {
+                        result.append(r.nextInt(4) + 1).append(getValSep());
+                    }
+                    break;
+                default:
+                    result.append(count).append(getValSep());
+                    break;
+                }
+                return result.toString();
+            }
+
+        },
+        CAF("CAF") {
+
+            @Override
+            public String genParams() {
+                Random r = new Random();
+                StringBuilder result = new StringBuilder("Call_context_ID").append(getValSep());
+                TechnologySystems ts = TechnologySystems.values()[r.nextInt(TechnologySystems.values().length)];
+                result.append(TechnologySystems.values()[r.nextInt(TechnologySystems.values().length)].getId()).append(getValSep());
+                result.append(r.nextInt(9) + 1).append(getValSep());
+                int param = r.nextInt(11);
+                switch (param) {
+                case 0:
+                    result.append(20).append(getValSep());
+                    break;
+                case 10:
+                    result.append(11).append(getValSep());
+                    break;
+                default:
+                    result.append(param).append(getValSep());
+                    break;
+                }
+                switch (ts) {
+                case GSM:
+                case UMTS_FDD:
+                case UMTS_TD_SCDMA:
+                case GAN_WLAN:
+                    param = r.nextInt(800);
+                    
+                    break;
+
+                default:
+                    break;
+                }
+                
+                result.append(r.nextInt(4) + 1).append(getValSep());
+                int count = 0;
+                switch (ts) {
+                case GSM:
+                    count = r.nextInt(4) + 3; // TODO need clarify possible count of parameters
+                    result.append(count).append(getValSep());
+                    for (int i = 0; i < count; i++) {
+                        result.append(r.nextInt(8)).append(getValSep());
+                    }
+                    break;
+                case TETRA:
+                    count = r.nextInt(4) + 3; // TODO need clarify possible count of parameters
+                    result.append(count).append(getValSep());
+                    for (int i = 0; i < count; i++) {
+                        result.append(r.nextInt(4) + 1).append(getValSep());
+                    }
+                    break;
+                default:
+                    result.append(count).append(getValSep());
+                    break;
+                }
+                return result.toString();
+            }
+
         },
 
         /** The PILOTSCAN. */
