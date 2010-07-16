@@ -11,12 +11,11 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader;
+package org.amanzi.neo.loader.nemo_enum;
 
 /**
- * Enumeration of systems for NemoEvents.
  * <p>
- *
+ * Enumeration of systems for NemoEvents.
  * </p>
  * @author Shcharbatsevich_A
  * @since 1.0.0

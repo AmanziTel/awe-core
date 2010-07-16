@@ -24,7 +24,9 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
-import org.amanzi.neo.loader.TechnologySystems;
+import org.amanzi.neo.loader.nemo_enum.ApplicationProtocol;
+import org.amanzi.neo.loader.nemo_enum.FTPcause;
+import org.amanzi.neo.loader.nemo_enum.TechnologySystems;
 
 /**
  * <p>
@@ -498,8 +500,8 @@ public class NemoFileGeneratorLauncher {
                 case UMTS_FDD:
                 case UMTS_TD_SCDMA:
                 case GAN_WLAN:
-                    Integer[] possibleValues = new Integer[] {1, 3, 6, 8, 16, 17, 18, 19, 21, 22, 25, 26, 27, 28, 29, 30, 31, 34, 38, 41, 42, 43, 44, 47, 49, 50, 55, 57,
-                            58, 63, 65, 68, 69, 70, 79, 81, 87, 88, 91, 95, 96, 97, 98, 99, 100, 101, 102, 111, 127};
+                    Integer[] possibleValues = new Integer[] {1, 3, 6, 8, 16, 17, 18, 19, 21, 22, 25, 26, 27, 28, 29, 30, 31, 34, 38, 41, 42, 43, 44, 47, 49, 50, 55, 57, 58, 63,
+                            65, 68, 69, 70, 79, 81, 87, 88, 91, 95, 96, 97, 98, 99, 100, 101, 102, 111, 127};
                     param = r.nextInt(200 + possibleValues.length);
                     result.append(param < 200 ? param + 600 : possibleValues[param - 200]).append(getValSep());
                     break;
@@ -545,8 +547,8 @@ public class NemoFileGeneratorLauncher {
                 case UMTS_FDD:
                 case UMTS_TD_SCDMA:
                 case GAN_WLAN:
-                    Integer[] possibleValues = new Integer[] {1, 3, 6, 8, 16, 17, 18, 19, 21, 22, 25, 26, 27, 28, 29, 30, 31, 34, 38, 41, 42, 43, 44, 47, 49, 50, 55, 57,
-                            58, 63, 65, 68, 69, 70, 79, 81, 87, 88, 91, 95, 96, 97, 98, 99, 100, 101, 102, 111, 127};
+                    Integer[] possibleValues = new Integer[] {1, 3, 6, 8, 16, 17, 18, 19, 21, 22, 25, 26, 27, 28, 29, 30, 31, 34, 38, 41, 42, 43, 44, 47, 49, 50, 55, 57, 58, 63,
+                            65, 68, 69, 70, 79, 81, 87, 88, 91, 95, 96, 97, 98, 99, 100, 101, 102, 111, 127};
                     param = r.nextInt(200 + possibleValues.length);
                     result.append(param < 200 ? param + 600 : possibleValues[param - 200]).append(getValSep());
                     break;
@@ -589,7 +591,7 @@ public class NemoFileGeneratorLauncher {
                 StringBuilder result = new StringBuilder("Data_connection_context_ID").append(getValSep());
                 result.append("Packet_session_context_ID").append(getValSep());
                 result.append("Call_context_ID").append(getValSep());
-                result.append(r.nextInt(15)).append(getValSep());
+                result.append(ApplicationProtocol.getRandomProtocol().getId()).append(getValSep());
                 result.append(r.nextInt(255) + 1).append(".").append(r.nextInt(255) + 1).append(".").append(r.nextInt(255) + 1).append(".").append(r.nextInt(255) + 1)
                         .append(getValSep());
                 result.append(r.nextInt(65535)).append(getValSep());
@@ -602,12 +604,44 @@ public class NemoFileGeneratorLauncher {
             public String genParams() {
                 Random r = new Random();
                 StringBuilder result = new StringBuilder("Data_connection_context_ID").append(getValSep());
-                result.append("Packet_session_context_ID").append(getValSep());
-                result.append("Call_context_ID").append(getValSep());
-                result.append(r.nextInt(15)).append(getValSep());
-                result.append(r.nextInt(255) + 1).append(".").append(r.nextInt(255) + 1).append(".").append(r.nextInt(255) + 1).append(".").append(r.nextInt(255) + 1)
-                        .append(getValSep());
-                result.append(r.nextInt(65535)).append(getValSep());
+                result.append(ApplicationProtocol.getRandomProtocol().getId()).append(getValSep());
+
+                return result.toString();
+            }
+
+        },
+        DAF("DAF") {
+            @Override
+            public String genParams() {
+                Random r = new Random();
+                StringBuilder result = new StringBuilder("Data_connection_context_ID").append(getValSep());
+                ApplicationProtocol protocol = ApplicationProtocol.getRandomProtocol();
+                result.append(protocol.getId()).append(getValSep());
+                int failStatus = r.nextInt(5) + 1;
+                result.append(failStatus).append(getValSep());
+                if (failStatus == 2) {
+                    Integer[] possibleValues = new Integer[] {10004, 10009, 10013, 10014, 10022, 10024, 10035, 10036, 10037, 10038, 10039, 10040, 10041, 10042, 10043, 10044,
+                            10045, 10046, 10047, 10048, 10049, 10050, 10051, 10052, 10053, 10054, 10055, 10056, 10057, 10058, 10059, 10060, 10061, 10062, 10063, 10064, 10065,
+                            10066, 10067, 10068, 10069, 10070, 10071, 10091, 10092, 10093, 10101, 10102, 10103, 10104, 10105, 10106, 10107, 10108, 10109, 10110, 10111, 10112,
+                            11001, 11002, 11003, 11004, 11005, 11006, 11007, 11008, 11009, 11010, 11011, 11012, 11013, 11014, 11015, 11016, 11017, 11018, 11019, 11020, 11021,
+                            11022, 11023, 11024, 11025, 11026, 11027, 11028, 11029, 11030, 11031};
+                    result.append(possibleValues[r.nextInt(possibleValues.length)]).append(getValSep());
+                } else {
+                    result.append("reservedField").append(getValSep());
+                }
+                switch (protocol) {
+                case NEMO_MODEM:
+                case NEMO_TCP:
+                case NEMO_UPD:
+                    result.append(1).append(getValSep());
+                    break;
+                case FTP:
+                    result.append(FTPcause.getRandomCause().getId()).append(getValSep());
+                    break;
+
+                default:
+                    break;
+                }
                 return result.toString();
             }
 
