@@ -487,6 +487,7 @@ public enum NemoEvents {
                 key = "CS fail. status";
                 Integer callStatus = getIntegerValue(parameters);
                 if (callStatus != null) {
+                    // TODO ZNN what this mean? in file_format.pdf we have more than 200 values here
                     if (callStatus == 6 || callStatus == 7) {
                         parsedParameters.put(DRIVE_EVENTS, DriveEvents.CALL_BLOCKED);
                     } else {

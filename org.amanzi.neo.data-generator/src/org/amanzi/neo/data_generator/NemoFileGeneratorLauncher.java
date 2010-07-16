@@ -116,6 +116,9 @@ public class NemoFileGeneratorLauncher {
         /** The Constant ver_2_01_00. */
         private static final String ver_2_01_00 = "2.01.00";
 
+        // **Really random string! I got it, striking twice my keyboard.*/
+        final String RANDOM_STRING = "angie35WerRahz4P893y";
+
         /** The avaliable versions. */
         private static Set<String> avaliableVersions = new HashSet<String>();
 
@@ -470,7 +473,7 @@ public class NemoFileGeneratorLauncher {
 
         },
         CAF("CAF") {
-
+            // TODO ZNN commands CAF and CAD are identical?
             @Override
             public String genParams() {
                 Random r = new Random();
@@ -495,35 +498,116 @@ public class NemoFileGeneratorLauncher {
                 case UMTS_FDD:
                 case UMTS_TD_SCDMA:
                 case GAN_WLAN:
-                    param = r.nextInt(800);
-                    //TODO 
-                    break;
-
-                default:
-                    break;
-                }
-                
-                result.append(r.nextInt(4) + 1).append(getValSep());
-                int count = 0;
-                switch (ts) {
-                case GSM:
-                    count = r.nextInt(4) + 3; // TODO need clarify possible count of parameters
-                    result.append(count).append(getValSep());
-                    for (int i = 0; i < count; i++) {
-                        result.append(r.nextInt(8)).append(getValSep());
-                    }
+                    Integer[] possibleValues = new Integer[] {1, 3, 6, 8, 16, 17, 18, 19, 21, 22, 25, 26, 27, 28, 29, 30, 31, 34, 38, 41, 42, 43, 44, 47, 49, 50, 55, 57,
+                            58, 63, 65, 68, 69, 70, 79, 81, 87, 88, 91, 95, 96, 97, 98, 99, 100, 101, 102, 111, 127};
+                    param = r.nextInt(200 + possibleValues.length);
+                    result.append(param < 200 ? param + 600 : possibleValues[param - 200]).append(getValSep());
                     break;
                 case TETRA:
-                    count = r.nextInt(4) + 3; // TODO need clarify possible count of parameters
-                    result.append(count).append(getValSep());
-                    for (int i = 0; i < count; i++) {
-                        result.append(r.nextInt(4) + 1).append(getValSep());
-                    }
-                    break;
+                    result.append(r.nextInt(16)).append(getValSep());
+                case CDMA_ONE:
+                case CDMA_ONE_X:
+                case EVDO:
+                    param = r.nextInt(29);
+                    result.append(param > 0 ? param + 2 : 0).append(getValSep());
                 default:
-                    result.append(count).append(getValSep());
                     break;
                 }
+
+                return result.toString();
+            }
+
+        },
+
+        CAD("CAD") {
+            // TODO ZNN commands CAF and CAD are identical?
+            @Override
+            public String genParams() {
+                Random r = new Random();
+                StringBuilder result = new StringBuilder("Call_context_ID").append(getValSep());
+                TechnologySystems ts = TechnologySystems.values()[r.nextInt(TechnologySystems.values().length)];
+                result.append(TechnologySystems.values()[r.nextInt(TechnologySystems.values().length)].getId()).append(getValSep());
+                result.append(r.nextInt(9) + 1).append(getValSep());
+                int param = r.nextInt(11);
+                switch (param) {
+                case 0:
+                    result.append(20).append(getValSep());
+                    break;
+                case 10:
+                    result.append(11).append(getValSep());
+                    break;
+                default:
+                    result.append(param).append(getValSep());
+                    break;
+                }
+                switch (ts) {
+                case GSM:
+                case UMTS_FDD:
+                case UMTS_TD_SCDMA:
+                case GAN_WLAN:
+                    Integer[] possibleValues = new Integer[] {1, 3, 6, 8, 16, 17, 18, 19, 21, 22, 25, 26, 27, 28, 29, 30, 31, 34, 38, 41, 42, 43, 44, 47, 49, 50, 55, 57,
+                            58, 63, 65, 68, 69, 70, 79, 81, 87, 88, 91, 95, 96, 97, 98, 99, 100, 101, 102, 111, 127};
+                    param = r.nextInt(200 + possibleValues.length);
+                    result.append(param < 200 ? param + 600 : possibleValues[param - 200]).append(getValSep());
+                    break;
+                case TETRA:
+                    result.append(r.nextInt(16)).append(getValSep());
+                case CDMA_ONE:
+                case CDMA_ONE_X:
+                case EVDO:
+                    param = r.nextInt(29);
+                    result.append(param > 0 ? param + 2 : 0).append(getValSep());
+                default:
+                    break;
+                }
+
+                return result.toString();
+            }
+
+        },
+        VCHI("VCHI") {
+            @Override
+            public String genParams() {
+                Random r = new Random();
+                StringBuilder result = new StringBuilder("Call_context_ID").append(getValSep());
+                TechnologySystems ts = TechnologySystems.values()[r.nextInt(TechnologySystems.values().length)];
+                result.append(TechnologySystems.values()[r.nextInt(TechnologySystems.values().length)].getId()).append(getValSep());
+                if (ts == TechnologySystems.TETRA) {
+                    result.append(r.nextInt(4) + 1).append(getValSep());
+                    result.append(r.nextInt(4)).append(getValSep());
+                    result.append(Long.toHexString(r.nextLong())).append(getValSep());
+                }
+                return result.toString();
+            }
+
+        },
+
+        DAA("DAA") {
+            @Override
+            public String genParams() {
+                Random r = new Random();
+                StringBuilder result = new StringBuilder("Data_connection_context_ID").append(getValSep());
+                result.append("Packet_session_context_ID").append(getValSep());
+                result.append("Call_context_ID").append(getValSep());
+                result.append(r.nextInt(15)).append(getValSep());
+                result.append(r.nextInt(255) + 1).append(".").append(r.nextInt(255) + 1).append(".").append(r.nextInt(255) + 1).append(".").append(r.nextInt(255) + 1)
+                        .append(getValSep());
+                result.append(r.nextInt(65535)).append(getValSep());
+                return result.toString();
+            }
+
+        },
+        DAC("DAC") {
+            @Override
+            public String genParams() {
+                Random r = new Random();
+                StringBuilder result = new StringBuilder("Data_connection_context_ID").append(getValSep());
+                result.append("Packet_session_context_ID").append(getValSep());
+                result.append("Call_context_ID").append(getValSep());
+                result.append(r.nextInt(15)).append(getValSep());
+                result.append(r.nextInt(255) + 1).append(".").append(r.nextInt(255) + 1).append(".").append(r.nextInt(255) + 1).append(".").append(r.nextInt(255) + 1)
+                        .append(getValSep());
+                result.append(r.nextInt(65535)).append(getValSep());
                 return result.toString();
             }
 
