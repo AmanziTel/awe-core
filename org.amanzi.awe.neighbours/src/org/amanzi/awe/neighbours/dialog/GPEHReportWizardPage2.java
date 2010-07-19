@@ -91,10 +91,28 @@ public class GPEHReportWizardPage2 extends WizardPage {
         main.setText("Select analysis type");
         GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
         main.setLayoutData(data);
+        
+        bRFAnalys = new Button(main, SWT.CHECK);
+        bRFAnalys.setText("RF Environment Analysis");
+        bRFAnalys.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false, 1, 1));
+        bRFAnalys.setSelection(true);
+        bRFAnalys.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                cRFAnalysisType.getControl().setEnabled(bRFAnalys.getSelection());
+                validateFinish();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
 
         bIntAnalys = new Button(main, SWT.CHECK);
         bIntAnalys.setText("Interference Analysis");
-        bIntAnalys.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false, 1, 1));
+        bIntAnalys.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false, 2, 1));
         bIntAnalys.setSelection(true);
 
         bIntAnalys.addSelectionListener(new SelectionListener() {
@@ -111,23 +129,13 @@ public class GPEHReportWizardPage2 extends WizardPage {
             }
         });
 
-        bRFAnalys = new Button(main, SWT.CHECK);
-        bRFAnalys.setText("RF Environment Analysis");
-        bRFAnalys.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false, 2, 1));
-        bRFAnalys.setSelection(true);
-        bRFAnalys.addSelectionListener(new SelectionListener() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                cRFAnalysisType.getControl().setEnabled(bRFAnalys.getSelection());
-                validateFinish();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                widgetSelected(e);
-            }
-        });
+        cRFAnalysisType = CheckboxTableViewer.newCheckList(main, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.CHECK);
+        createTable(cRFAnalysisType, "rf");
+        data = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+        data.heightHint = 100;
+        cRFAnalysisType.getControl().setLayoutData(data);
+        cRFAnalysisType.setContentProvider(new GpehReportTypeTableContentProvider());
+        cRFAnalysisType.setLabelProvider(new GpehReportTypeTableLabelProvider());
 
         cIntAnalysisType = CheckboxTableViewer.newCheckList(main, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.CHECK);
         createTable(cIntAnalysisType, "int");
@@ -136,14 +144,6 @@ public class GPEHReportWizardPage2 extends WizardPage {
         cIntAnalysisType.getControl().setLayoutData(data);
         cIntAnalysisType.setContentProvider(new GpehReportTypeTableContentProvider());
         cIntAnalysisType.setLabelProvider(new GpehReportTypeTableLabelProvider());
-
-        cRFAnalysisType = CheckboxTableViewer.newCheckList(main, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.CHECK);
-        createTable(cRFAnalysisType, "rf");
-        data = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-        data.heightHint = 100;
-        cRFAnalysisType.getControl().setLayoutData(data);
-        cRFAnalysisType.setContentProvider(new GpehReportTypeTableContentProvider());
-        cRFAnalysisType.setLabelProvider(new GpehReportTypeTableLabelProvider());
 
         Group grPeriod = new Group(main, SWT.FILL);
         grPeriod.setLayout(new GridLayout(1, true));
@@ -260,10 +260,6 @@ public class GPEHReportWizardPage2 extends WizardPage {
     private void formReports() {
         cIntAnalysisType.setInput(GpehReport.INTERFERENCE_ANALYSIS.getReportypes());
         cRFAnalysisType.setInput(GpehReport.RF_PERFORMANCE_ANALYSIS.getReportypes());
-        cRFAnalysisType.setInput(GpehReportType.values());
-        cRFAnalysisType.setInput(GpehReportType.values());
-        cRFAnalysisType.setInput(GpehReportType.values());
-        cRFAnalysisType.setInput(GpehReportType.values());
     }
 
     /**
