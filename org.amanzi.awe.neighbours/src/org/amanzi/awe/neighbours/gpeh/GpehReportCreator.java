@@ -112,7 +112,7 @@ public class GpehReportCreator {
     // private CellRscpAnalisis rspAnalyse;
     private CellRscpEcNoAnalisis rspEcNoAnalyse;
     private CellUeTxPowerAnalisis ueTxPAnalyse;
-    private Pair<Long, Long> minMax;
+    private final Pair<Long, Long> minMax;
     private int maxRange;
     private long notFullData;
 
@@ -170,7 +170,7 @@ public class GpehReportCreator {
      * @return the string
      */
     private String generateReportName(GpehReportType report, CallTimePeriods period) {
-        return report.getId() + ".txt";
+        return report.getId() + ".csv";
     }
 
     /**
@@ -2643,8 +2643,8 @@ public class GpehReportCreator {
         final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
         final SimpleDateFormat dateFormat2 = new SimpleDateFormat("HHmm");
         protected String name = "";
-        private Calendar calendar = Calendar.getInstance();
-        private String reportName;
+        private final Calendar calendar = Calendar.getInstance();
+        private final String reportName;
         protected List<String> headers = null;// new ArrayList<String>();
         protected TimePeriodElement element;
         protected final GraphDatabaseService service;
