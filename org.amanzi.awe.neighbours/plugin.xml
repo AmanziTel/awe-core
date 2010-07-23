@@ -51,20 +51,6 @@
          <toolbar
                id="org.amanzi.awe.report.toolbar1">
             <command
-                  commandId="org.amanzi.awe.neighbours.commands.gpeh_report"
-                  id="org.amanzi.awe.neighbours.commands.gpeh_report"
-                  label="GPEH Report">
-            </command>
-         </toolbar>
-      </menuContribution>
-   </extension>
-   <extension
-         point="org.eclipse.ui.menus">
-      <menuContribution
-            locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
-         <toolbar
-               id="org.amanzi.awe.report.toolbar1">
-            <command
                   commandId="org.amanzi.awe.neighbours.commands.gpeh_report_wizard"
                   id="org.amanzi.awe.neighbours.commands.gpeh_report_wizard"
                   label="GPEH Report wizard">
