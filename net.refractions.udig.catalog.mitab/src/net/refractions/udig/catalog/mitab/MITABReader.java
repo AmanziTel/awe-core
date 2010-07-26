@@ -83,7 +83,7 @@ public class MITABReader {
             throw new IOException("No ogr2ogr executable selected");
         }
 
-        String[] args = new String[]{executablePath, this.tempDir.toString(),
+        String[] args = new String[]{executablePath, "-skipfailures", this.tempDir.toString(),
                 this.source.toString()};
 
         int exitCode;
