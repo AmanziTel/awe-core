@@ -83,7 +83,7 @@ module NodeUtils
 
   def create_chart_dataset_aggr(aggr_node,type=:bar)
     ds=DefaultCategoryDataset.new()
-    aggr_node.outgoing(:CHILD).depth(:all).each do |node|
+    aggr_node.outgoing(:CHILD,:NEXT).depth(:all).each do |node|
       #      puts "count_node: #{node[:name]} -  #{node[:name]} - #{node[:value]}"
       ds.addValue(java.lang.Double.parseDouble(node[:value].to_s), "name", node[:name]);
     end
@@ -118,6 +118,13 @@ module NodeUtils
         val=row.last
         ds.addValue(java.lang.Double.parseDouble(val.to_s), p.to_s,row[3].to_s);
       end
+    end
+    ds
+  end
+  def update_chart_dataset(ds,aggregation,property,x_label)
+    aggregation.each do |row|
+        ds.addValue(java.lang.Double.parseDouble(row[property].to_s), property.to_s,row[x_label].to_s);
+#        ds.addValue(java.lang.Double.parseDouble(row[property].to_s), property.to_s,Hour.new(x_label).to_s);
     end
     ds
   end
@@ -563,50 +570,60 @@ class Chart
           @datasets<<create_chart_dataset_aggr(aggr_node)
         end
       elsif !@dataset.nil?
-        puts "chart setup #{Time.now}"
-        props=[]
-        @properties.each do |p|
-          props<<p
+        ds=DefaultCategoryDataset.new
+        @properties.each do |property|
+          @time||="time"
+          update_chart_dataset(ds,@dataset,property,@time)
         end
-        props<<"site_name"<<"cell_name"<<"time"<<"date"
-        props.flatten
-        puts "collecting data: #{Time.now}"
-        aggr=@dataset.collect(props).aggregate("site_name")
-        puts "collecting data finished: #{Time.now}"
-        result=[]
-        @properties.each do |p|
-          result<<Hash.new
-        end
-        puts "aggregating data: #{Time.now}"
-        aggr.each do |obj,rows|
-          rows.each do |row|
-            site=obj
-            cell=row['cell_name']
-            date=row['date']
-            time=row['time']
-            @properties.each_with_index do |p,i|
-              value=row[p]
-              aggregate_sites(result[i],site,cell,date,time,value)
-            end
-          end
-        end
-        puts "aggregating data finished: #{Time.now}"
-        averages=[]
-        ds=DefaultCategoryDataset.new()
-        time_label=get_time_label(aggregation)
-        puts "calculating averages: #{Time.now}"
-        @properties.each_with_index do |p,i|
-          average=calculate_average(result[i], @aggregation)
-          update_chart_dataset(ds,average,p)
-        end
-        puts "calculating averages finished: #{Time.now}"
+#        puts "chart setup #{Time.now}"
+#        props=[]
+#        @properties.each do |p|
+#          props<<p
+#        end
+#        props<<"site_name"<<"cell_name"<<"time"<<"date"
+#        props.flatten
+#        puts "collecting data: #{Time.now}"
+#        aggr=@dataset.collect(props).aggregate("site_name")
+#        puts "collecting data finished: #{Time.now}"
+#        result=[]
+#        @properties.each do |p|
+#          result<<Hash.new
+#        end
+#        puts "aggregating data: #{Time.now}"
+#        aggr.each do |obj,rows|
+#          rows.each do |row|
+#            site=obj
+#            cell=row['cell_name']
+#            date=row['date']
+#            time=row['time']
+#            @properties.each_with_index do |p,i|
+#              value=row[p]
+#              aggregate_sites(result[i],site,cell,date,time,value)
+#            end
+#          end
+#        end
+#        puts "aggregating data finished: #{Time.now}"
+#        averages=[]
+#        ds=DefaultCategoryDataset.new()
+#        time_label=get_time_label(aggregation)
+#        puts "calculating averages: #{Time.now}"
+#        @properties.each_with_index do |p,i|
+#          average=calculate_average(result[i], @aggregation)
+#          update_chart_dataset(ds,average,p)
+#        end
+#        puts "calculating averages finished: #{Time.now}"
         @datasets<<ds
       elsif !@kpi.nil?
         ds=DefaultCategoryDataset.new()
         @datasets<<update_chart_dataset(ds,@kpi,"value")
       elsif !@data.nil?
         ds=TimeSeriesCollection.new()
-        ds_series=TimeSeries.new("Values")
+        if @values.is_a? String
+          ds_series=TimeSeries.new(@values)
+        elsif @values.is_a? Array
+          ds_series=[]
+          @values.each {|val| ds_series<<TimeSeries.new(val)}
+        end
         if !@threshold.nil?
           ds_time=TimeSeriesCollection.new()
           ds_time_series=TimeSeries.new(!@threshold_label.nil? ? @threshold_label : "Threshold")
@@ -625,10 +642,24 @@ class Chart
               date=Month.new(time)
             end
           end
-          ds_series.add(date, java.lang.Double.parseDouble(row[@values].to_s)) if !row[@time].nil? and !row[@values].nil?
+          if @values.is_a? String
+            ds_series.add(date, java.lang.Double.parseDouble(row[@values].to_s)) if !row[@time].nil? and !row[@values].nil?
+          elsif @values.is_a? Array
+            @values.each_with_index do |val,i|
+              ds_series[i].add(date, java.lang.Double.parseDouble(row[val].to_s))
+            end
+          end
+#          ds_series.add(date, java.lang.Double.parseDouble(row[@values].to_s)) if !row[@time].nil? and !row[@values].nil?
           ds_time_series.add(date, @threshold) if !@threshold.nil? and !row[@time].nil? 
         end
-        ds.addSeries(ds_series)
+          if @values.is_a? String
+            ds.addSeries(ds_series)
+          elsif @values.is_a? Array
+            ds_series.each do |series|
+              ds.addSeries(series)
+            end
+          end
+#        ds.addSeries(ds_series)
         if !@threshold.nil?
           ds_time.addSeries(ds_time_series)
           @datasets<<ds_time
