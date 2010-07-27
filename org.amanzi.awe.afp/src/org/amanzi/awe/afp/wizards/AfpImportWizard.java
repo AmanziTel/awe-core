@@ -16,6 +16,7 @@ package org.amanzi.awe.afp.wizards;
 import java.io.IOException;
 
 import org.amanzi.awe.afp.Activator;
+import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.loaders.AfpLoader;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -44,22 +45,30 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
 
     @Override
     public boolean performFinish() {
-        Job job=new Job("load AFP data"){
+    	if (loadPage.getFileName() == null || loadPage.getFileName().trim().isEmpty()){
+    		Job job2 = new AfpProcessExecutor("Execute Afp Process", loadPage.datasetNode, servise);
+            job2.schedule();
+    	}
+    	
+    	else {
+    		Job job=new Job("load AFP data"){
 
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                AfpLoader loader = new AfpLoader(loadPage.datasetName, loadPage.controlFile, servise);
-                try {
-                    loader.run(monitor);
-                } catch (IOException e) {
-                    AweConsolePlugin.exception(e);
-                    return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getLocalizedMessage(), e);
-                }
-                return Status.OK_STATUS;
-            }
-            
-        };
-        job.schedule();
+	            @Override
+	            protected IStatus run(IProgressMonitor monitor) {
+	                AfpLoader loader = new AfpLoader(loadPage.datasetName, loadPage.controlFile, servise);
+	                try {
+	                    loader.run(monitor);
+	                } catch (IOException e) {
+	                    AweConsolePlugin.exception(e);
+	                    return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getLocalizedMessage(), e);
+	                }
+	                return Status.OK_STATUS;
+	            }
+	            
+	        };
+	        job.schedule();
+    	}
+   
         return true;
     }
 

@@ -22,6 +22,7 @@ import java.util.Set;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.afp.AfpNeighbourSubType;
+import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.files.ControlFile;
 import org.amanzi.awe.afp.providers.AbstractTxFileHandler;
 import org.amanzi.awe.console.AweConsolePlugin;
@@ -176,6 +177,9 @@ public class AfpLoader extends AbstractLoader {
         } finally {
             commit(false);
         }
+
+        Job job2 = new AfpProcessExecutor("Execute Afp Process", afpRoot, neo);
+        job2.schedule();
 
     }
 

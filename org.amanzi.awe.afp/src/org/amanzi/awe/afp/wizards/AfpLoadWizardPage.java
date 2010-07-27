@@ -17,6 +17,7 @@ import java.io.File;
 import java.util.HashMap;
 
 import org.amanzi.awe.afp.files.ControlFile;
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.NeighbourLoader;
@@ -130,12 +131,10 @@ public class AfpLoadWizardPage extends WizardPage {
      * @return true, if is valid page
      */
     protected boolean isValidPage() {
-        if (controlFile == null) {
+        if (controlFile == null && members.isEmpty()) {
             return false;
         }
-        // if (StringUtils.isEmpty(getFileName())) {
-        // return false;
-        // }
+        
         if (StringUtils.isEmpty(datasetName)) {
             return false;
         }
@@ -145,6 +144,14 @@ public class AfpLoadWizardPage extends WizardPage {
                 return false;
             }
         }
+        
+        if (datasetNode != null && getFileName() != null){
+        	AweConsolePlugin.error("This database has already been imported. You can select it from the drop down menu");
+        	
+        	return false;
+        }
+        	
+        
         return true;
     }
 
@@ -176,7 +183,8 @@ public class AfpLoadWizardPage extends WizardPage {
         Transaction tx = service.beginTx();
         try {
             for (Node root : NeoUtils.getAllRootTraverser(service, null)) {
-                if (NodeTypes.AFP.checkNode(root)) {
+            	
+                if (NodeTypes.NETWORK.checkNode(root)) {
                     members.put(NeoUtils.getNodeName(root, service), root);
                 }
             }
