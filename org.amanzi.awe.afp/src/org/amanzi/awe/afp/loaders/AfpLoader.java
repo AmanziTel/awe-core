@@ -35,6 +35,7 @@ import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.AbstractLoader;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -119,6 +120,7 @@ public class AfpLoader extends AbstractLoader {
         };
         String projectName = ApplicationGIS.getActiveProject().getName();
         afpRoot = NeoUtils.findorCreateRootInActiveProject(projectName, rootName, creater, neo);
+        
     }
 
     /**
@@ -170,6 +172,7 @@ public class AfpLoader extends AbstractLoader {
             commit(true);
             monitor.worked(1);
             saveProperties();
+//            AfpExporter afpE = new AfpExporter(afpRoot);
         } finally {
             commit(false);
         }
@@ -432,7 +435,7 @@ public class AfpLoader extends AbstractLoader {
                     String sectorName = siteName + field[1];
                     Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
                     if (sector == null) {
-                        sector = addChild(site, NodeTypes.SECTOR, sectorName, siteName);
+                        sector = addChild(site, NodeTypes.SECTOR, sectorName, sectorName);
                     }
                     setIndexProperty(header, sector, "nonrelevant", nonrelevant);
                     setIndexProperty(header, sector, "numberoffreqenciesrequired", numberoffreqenciesrequired);
@@ -577,13 +580,13 @@ public class AfpLoader extends AbstractLoader {
                 String siteName = field[i++];
                 Integer sectorNo = Integer.valueOf(field[i++]);
                 if (name.equals("CELL")) {
-                    serve = defineServe(siteName, field[1]);
+                    serve = defineServe(siteName, field[2]);
                 } else {
                     if (serve == null) {
                         error("Not found serve cell for neighbours: " + line);
                         return;
                     } else {
-                        defineNeigh(siteName, field[1]);
+                        defineNeigh(siteName, field[2]);
                     }
                 }
             } catch (Exception e) {
