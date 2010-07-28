@@ -86,6 +86,7 @@
     <module>org.amanzi.awe.wizards</module>
     <module>org.amanzi.awe.gps</module>
     <module>org.amanzi.awe.report.o2</module>
+    <module>org.amanzi.awe.afp.japa</module>
   </modules>
   <build>
     <plugins>	  
