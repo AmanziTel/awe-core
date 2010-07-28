@@ -35,9 +35,9 @@
           </source>
         </sources>
       <!-- for libs as so files -->
-      <!-- linkerStartOptions>
-          <linkerStartOption>-o</linkerStartOption>
-      </linkerStartOptions -->
+      <linkerStartOptions>
+          <linkerStartOption>-lm</linkerStartOption>
+      </linkerStartOptions>
       </configuration>
     </plugin>
     </plugins>
