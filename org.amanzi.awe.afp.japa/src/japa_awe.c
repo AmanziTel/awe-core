@@ -9,15 +9,15 @@ DATE:«  2010-07-25
 
 ========================================= */
 
-#include <STDLIB.H>
+#include <stdlib.h>
 
-#include <STDIO.H>
+#include <stdio.h>
 
 //#include <conio.h>
 
-#include <STRING.H>
+#include <string.h>
 
-#include <MATH.H>
+#include <math.h>
 
 ///?UNIX #include <syscalls.h>
 
