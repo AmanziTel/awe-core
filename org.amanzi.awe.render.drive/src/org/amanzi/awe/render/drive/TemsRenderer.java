@@ -110,7 +110,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     private boolean notMsLabel;
     private int eventIconSize;
     private int eventIconOffset;
-    private boolean scaleIcons = false;
+    private boolean scale = false;
     private int eventIconBaseSize = 12;
     private int eventIconMaxSize = 32;
     private static final int[] eventIconSizes = new int[] {6, 8, 12, 16, 32, 48, 64};
@@ -218,7 +218,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         int maxSitesLabel = 30;
         int maxSitesFull = 100;
         int maxSitesLite = 1000;
-        // int maxSymbolSize = 40;
+         int maxSymbolSize = 40;
         int alpha = (int)(0.6 * 255.0);
          changeTransp = true;
         int drawSize = 3;
@@ -243,14 +243,15 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 labelColor = neostyle.getLabel();
                 alpha = 255 - (int)((double)neostyle.getSymbolTransparency() / 100.0 * 255.0);
                 changeTransp=neostyle.isChangeTransparency();
-                drawSize = 3;
+                drawSize = (neostyle.getSymbolSize()-1)/2;
                 maxSitesLabel = neostyle.getLabeling() / 4;
                 maxSitesFull = neostyle.getSmallSymb();
                 maxSitesLite = neostyle.getSmallestSymb() * 10;
+                maxSymbolSize = neostyle.getMaximumSymbolSize();
                 fontSize = neostyle.getFontSize();
                 mpName = neostyle.getMainProperty();
                 msName = neostyle.getSecondaryProperty();
-                scaleIcons = !neostyle.isFixSymbolSize();
+                scale = !neostyle.isFixSymbolSize();
                 eventIconOffset = neostyle.getIconOffset();
                 eventIconBaseSize = getIconSize(neostyle.getSymbolSize());
                 eventIconMaxSize = getIconSize(neostyle.getMaximumSymbolSize());
@@ -331,7 +332,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 double countScaled = dataScaled * geoNeo.getCount();
                 drawLabels = countScaled < maxSitesLabel;
                 drawFull = countScaled < maxSitesFull;
-                if (scaleIcons && eventIconSize > 0) {
+                if (scale && eventIconSize > 0) {
                     if (countScaled < maxSitesFull) {
                         eventIconSize = calcIconSize(eventIconBaseSize, eventIconMaxSize, maxSitesLabel, maxSitesFull, countScaled);
                     } else if (countScaled < maxSitesLite) {
@@ -346,6 +347,12 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     // : countScaled * 2 <= maxSitesFull ? 8 : 6;
                 }
                 drawLite = countScaled < maxSitesLite;
+                if (drawFull && scale) {
+                    drawWidth *= Math.sqrt(maxSitesFull) / (3 * Math.sqrt(countScaled));
+                    drawWidth = Math.min(drawWidth, maxSymbolSize);
+                    drawWidth=drawWidth|1;
+                    drawSize=(drawWidth-1)/2;
+                }
             }
             int trans = alpha;
             if (haveSelectedNodes()) {

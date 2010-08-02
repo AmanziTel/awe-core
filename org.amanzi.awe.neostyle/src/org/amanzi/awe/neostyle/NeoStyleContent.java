@@ -40,6 +40,7 @@ public class NeoStyleContent extends StyleContent {
      */
     public static final int DEF_TRANSPARENCY = 40;
     public static final int DEF_SYMB_SIZE = 15;
+    public static final int DEF_SYMB_SIZE_DRIVE = 7;
     public static final boolean DEF_FIX_SYMB_SIZE = false;
     public static final boolean CHANGE_TRANSPARENCY = true;
     public static final int DEF_LABELING = 50;
@@ -114,7 +115,7 @@ public class NeoStyleContent extends StyleContent {
                 result.setSmallSymb(DEF_SMALL_SYMB);
                 result.setLabeling(DEF_LABELING);
                 result.setFixSymbolSize(DEF_FIX_SYMB_SIZE);
-                result.setSymbolSize(DEF_SYMB_SIZE);
+                result.setSymbolSize(DEF_SYMB_SIZE_DRIVE);
                 result.setSymbolTransparency(DEF_TRANSPARENCY);
                 result.setSiteFill(DEF_COLOR_SITE);
                 result.setMaximumSymbolSize(DEF_MAXIMUM_SYMBOL_SIZE);
