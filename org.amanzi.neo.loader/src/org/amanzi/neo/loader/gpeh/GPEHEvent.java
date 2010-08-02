@@ -31,11 +31,13 @@ import org.amanzi.neo.core.enums.gpeh.Parameters;
  */
 public class GPEHEvent implements IGPEHBlock {
     protected ArrayList<Event> events;
+    private boolean valid = true;
 
     /**
      * constructor
      */
     public GPEHEvent() {
+        valid = true;
         events = new ArrayList<Event>();
     }
 
@@ -53,6 +55,7 @@ public class GPEHEvent implements IGPEHBlock {
      * @param event
      */
     public void clearEvent() {
+        valid = true;
         events.clear();
     }
 
@@ -192,6 +195,24 @@ public class GPEHEvent implements IGPEHBlock {
      */
     public ArrayList<Event> getEvents() {
         return events;
+    }
+
+    /**
+     * Sets the valid.
+     * 
+     * @param b the new valid
+     */
+    public void setValid(boolean isValid) {
+        this.valid = isValid;
+    }
+
+    /**
+     * Checks if is valid.
+     * 
+     * @return true, if is valid
+     */
+    public boolean isValid() {
+        return valid;
     }
 
 }

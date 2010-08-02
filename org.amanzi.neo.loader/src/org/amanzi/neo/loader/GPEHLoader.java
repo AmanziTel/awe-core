@@ -25,11 +25,13 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import org.amanzi.awe.l3messages.MessageDecoder;
 import org.amanzi.awe.l3messages.rrc.CellMeasuredResults;
+import org.amanzi.awe.l3messages.rrc.CellMeasuredResults.ModeSpecificInfoChoiceType.FddSequenceType;
 import org.amanzi.awe.l3messages.rrc.GSM_MeasuredResults;
 import org.amanzi.awe.l3messages.rrc.InterFreqMeasuredResults;
 import org.amanzi.awe.l3messages.rrc.InterFreqMeasuredResultsList;
@@ -41,7 +43,6 @@ import org.amanzi.awe.l3messages.rrc.MeasurementReport;
 import org.amanzi.awe.l3messages.rrc.UE_InternalMeasuredResults;
 import org.amanzi.awe.l3messages.rrc.UL_DCCH_Message;
 import org.amanzi.awe.l3messages.rrc.UL_DCCH_MessageType;
-import org.amanzi.awe.l3messages.rrc.CellMeasuredResults.ModeSpecificInfoChoiceType.FddSequenceType;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.DriveTypes;
@@ -55,9 +56,9 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.GpehReportUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.gpeh.GPEHEvent;
+import org.amanzi.neo.loader.gpeh.GPEHEvent.Event;
 import org.amanzi.neo.loader.gpeh.GPEHMainFile;
 import org.amanzi.neo.loader.gpeh.GPEHParser;
-import org.amanzi.neo.loader.gpeh.GPEHEvent.Event;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -117,6 +118,8 @@ public class GPEHLoader extends DriveLoader {
     private String eventIndName;
 
     private final Set<Integer> avaliableEvents;
+
+    private TimePeriod timeWrapper;
 
     /**
      * Constructor
@@ -186,7 +189,10 @@ public class GPEHLoader extends DriveLoader {
                     long timeAll = System.currentTimeMillis();
                     long saveTime = 0;
                     long parseTime = 0;
-
+                    timeWrapper = new TimePeriod(gpehFile.getName());
+                    if (!timeWrapper.isValid()) {
+                        error(String.format("Can't parese file %s. incorrect name format", gpehFile.getName()));
+                    }
                     LOGGER.debug(gpehFile.getName());
 
                     GPEHEvent result = new GPEHEvent();
@@ -195,7 +201,6 @@ public class GPEHLoader extends DriveLoader {
                     if (Pattern.matches("^.+\\.gz$", gpehFile.getName())) {
                         in = new GZIPInputStream(in);
                     }
-
                     BitInputStream input = new BitInputStream(in);
                     try {
                         while (true) {
@@ -203,7 +208,13 @@ public class GPEHLoader extends DriveLoader {
                             int recordLen = input.readRawUInt(16) - 3;
                             int recordType = input.readRawUInt(8);
                             if (recordType == 4) {
-                                GPEHParser.parseEvent(input, result, recordLen, avaliableEvents);
+                                GPEHParser.parseEvent(input, result, recordLen, avaliableEvents, timeWrapper);
+                                if (!result.isValid()) {
+                                    result.clearEvent();
+                                    // TODO add more informative message
+                                    error(String.format("Event not parsed. Incorrect time"));
+                                    continue;
+                                }
                                 eventsCount++;
                                 cn++;
                             } else if (recordType == 7) {
@@ -590,4 +601,200 @@ public class GPEHLoader extends DriveLoader {
         }
     }
 
+    /**
+     * <p>
+     * Time period wrapper
+     * </p>
+     * 
+     * @author TsAr
+     * @since 1.0.0
+     */
+    public static class TimePeriod {
+
+        private int year;
+        private int month;
+        private int day;
+        private int hhStart;
+        private int mmStart;
+        private int hhEnd;
+        private int mmEnd;
+        private int zStart;
+        private int zEnd;
+        Pattern time = Pattern.compile("(^A)(\\d{4})(\\d{2})(\\d{2})(\\.)(\\d{2})(\\d{2})([+-]{1}\\d{2})(\\d{2})(-)(\\d{2})(\\d{2})([+-]{1}\\d{2})(\\d{2})(.*$)");
+        private int minEnd;
+        private int minStart;
+
+        /**
+         * Instantiates a new time period.
+         * 
+         * @param fileName the file name
+         */
+        public TimePeriod(String fileName) {
+            Matcher matcher = time.matcher(fileName);
+            if (matcher.matches()) {
+                year = Integer.valueOf(matcher.group(2));
+                month = Integer.valueOf(matcher.group(3));
+                day = Integer.valueOf(matcher.group(4));
+                hhStart = Integer.valueOf(matcher.group(6));
+                mmEnd = Integer.valueOf(matcher.group(7));
+                String zone = matcher.group(8);
+                if (zone.startsWith("+")) {
+                    zone = zone.substring(1);
+                }
+                zStart = Integer.valueOf(zone);
+
+                hhEnd = Integer.valueOf(matcher.group(11));
+                mmEnd = Integer.valueOf(matcher.group(12));
+                zone = matcher.group(13);
+                if (zone.startsWith("+")) {
+                    zone = zone.substring(1);
+                }
+                zEnd = Integer.valueOf(zone);
+                minStart = (hhStart - zStart) * 60 + mmStart;
+                minEnd = (hhEnd - zEnd) * 60 + mmEnd;
+            } else {
+                hhStart = -1;
+            }
+        }
+
+        public static void main(String[] args) {
+            Integer.valueOf("-02");
+            new TimePeriod("A20100214.1200-0200-1215+0200_SubNetwork=ERNOR2,MeContext=ERNOR2_rnc_gpehfile_Mp1.bin.gz");
+        }
+
+        /**
+         * Checks if is valid.
+         * 
+         * @return true, if is valid
+         */
+        public boolean isValid() {
+            return hhStart >= 0;
+        }
+
+        /**
+         * Gets the hh start.
+         * 
+         * @return the hh start
+         */
+        public int getHhStart() {
+            return hhStart;
+        }
+
+        /**
+         * Sets the hh start.
+         * 
+         * @param hhStart the new hh start
+         */
+        public void setHhStart(int hhStart) {
+            this.hhStart = hhStart;
+        }
+
+        /**
+         * Gets the mm start.
+         * 
+         * @return the mm start
+         */
+        public int getMmStart() {
+            return mmStart;
+        }
+
+        /**
+         * Sets the mm start.
+         * 
+         * @param mmStart the new mm start
+         */
+        public void setMmStart(int mmStart) {
+            this.mmStart = mmStart;
+        }
+
+        /**
+         * Gets the hh end.
+         * 
+         * @return the hh end
+         */
+        public int getHhEnd() {
+            return hhEnd;
+        }
+
+        /**
+         * Sets the hh end.
+         * 
+         * @param hhEnd the new hh end
+         */
+        public void setHhEnd(int hhEnd) {
+            this.hhEnd = hhEnd;
+        }
+
+        /**
+         * Gets the mm end.
+         * 
+         * @return the mm end
+         */
+        public int getMmEnd() {
+            return mmEnd;
+        }
+
+        /**
+         * Sets the mm end.
+         * 
+         * @param mmEnd the new mm end
+         */
+        public void setMmEnd(int mmEnd) {
+            this.mmEnd = mmEnd;
+        }
+
+        /**
+         * Gets the z start.
+         * 
+         * @return the z start
+         */
+        public int getzStart() {
+            return zStart;
+        }
+
+        /**
+         * Sets the z start.
+         * 
+         * @param zStart the new z start
+         */
+        public void setzStart(int zStart) {
+            this.zStart = zStart;
+        }
+
+        /**
+         * Gets the z end.
+         * 
+         * @return the z end
+         */
+        public int getzEnd() {
+            return zEnd;
+        }
+
+        /**
+         * Sets the z end.
+         * 
+         * @param zEnd the new z end
+         */
+        public void setzEnd(int zEnd) {
+            this.zEnd = zEnd;
+        }
+
+        /**
+         * Check date.
+         * 
+         * @param hour the hour
+         * @param minute the minute
+         * @param second the second
+         * @param millisecond the millisecond
+         * @return true, if successful
+         */
+        public boolean checkDate(int hour, int minute, int second, int millisecond) {
+            if (second > 0 || millisecond > 0) {
+                minute++;
+            }
+            int timeMin = hour * 60 + minute;
+            return (minStart <= timeMin) && (minEnd >= timeMin);
+        }
+
+    }
 }

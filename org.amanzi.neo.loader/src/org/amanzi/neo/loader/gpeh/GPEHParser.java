@@ -27,6 +27,7 @@ import java.util.zip.GZIPInputStream;
 import org.amanzi.neo.core.enums.gpeh.Events;
 import org.amanzi.neo.core.enums.gpeh.Parameters;
 import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.loader.GPEHLoader.TimePeriod;
 import org.apache.log4j.Logger;
 import org.kc7bfi.jflac.io.BitInputStream;
 
@@ -222,11 +223,12 @@ public class GPEHParser {
     }
 
     /**
+     * @param timewrapper
      * @param file
      * @throws IOException
      * @throws
      */
-    public static GPEHEvent parseEventFile(File file, Set<Integer> possibleIds) throws IOException {
+    public static GPEHEvent parseEventFile(File file, Set<Integer> possibleIds, TimePeriod timewrapper) throws IOException {
         GPEHEvent result = new GPEHEvent();
         InputStream in = new FileInputStream(file);
         if (Pattern.matches("^.+\\.gz$", file.getName())) {
@@ -235,7 +237,7 @@ public class GPEHParser {
         BitInputStream input = new BitInputStream(in);
         try {
             while (true) {
-                parseSubFile(input, result, possibleIds);
+                parseSubFile(input, result, possibleIds, timewrapper);
             }
         } catch (EOFException e) {
             // normal behavior
@@ -250,12 +252,13 @@ public class GPEHParser {
      * 
      * @param input input stream
      * @param result GPEHEvent
+     * @param timeWrapper
      */
-    public static void parseSubFile(BitInputStream input, GPEHEvent result, Set<Integer> possibleIds) throws IOException {
+    public static void parseSubFile(BitInputStream input, GPEHEvent result, Set<Integer> possibleIds, TimePeriod timeWrapper) throws IOException {
         int recordLen = input.readRawUInt(16) - 3;
         int recordType = input.readRawUInt(8);
         if (recordType == 4) {
-            parseEvent(input, result, recordLen, possibleIds);
+            parseEvent(input, result, recordLen, possibleIds, timeWrapper);
         } else if (recordType == 7) {
             pareseFooter(input, result);
         } else if (recordType == 6) {
@@ -267,14 +270,15 @@ public class GPEHParser {
     }
 
     /**
-     *Parse event
+     * Parse event
      * 
      * @param input input stream
      * @param result GPEHEvent
      * @param recordLen length of event
+     * @param timeWrapper
      * @throws IOException
      */
-    public static void parseEvent(BitInputStream input, GPEHEvent result, int recordLen, Set<Integer> possibleIds) throws IOException {
+    public static void parseEvent(BitInputStream input, GPEHEvent result, int recordLen, Set<Integer> possibleIds, TimePeriod timeWrapper) throws IOException {
         GPEHEvent.Event event = new GPEHEvent.Event();
 
         event.scannerId = (Integer)readParameter(input, Parameters.EVENT_PARAM_SCANNER_ID).getLeft();
@@ -289,6 +293,11 @@ public class GPEHParser {
 
         if (!possibleIds.contains(event.id)) {
             // LOGGER.debug("EventID = " + event.id + " skipped");
+            input.skipBitsNoCRC(recLen - len);
+            return;
+        }
+        if (!timeWrapper.checkDate(event.hour, event.minute, event.second, event.millisecond)) {
+            result.setValid(false);
             input.skipBitsNoCRC(recLen - len);
             return;
         }
