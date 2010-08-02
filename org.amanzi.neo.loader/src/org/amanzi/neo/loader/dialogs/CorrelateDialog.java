@@ -207,15 +207,17 @@ public class CorrelateDialog {
 				AMSCorrellator correlator = new AMSCorrellator();
 				correlator.correlate(firstDataset, secondDataset,monitor);
 				if (!monitor.isCanceled()){
-                ActionUtil.getInstance().runTask(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        LoaderUtils.addGisNodeToMap(firstDataset, NeoUtils.findGisNode(firstDataset));
-                    }
-                }, true);
+                    ActionUtil.getInstance().runTask(new Runnable() {
+    
+                        @Override
+                        public void run() {
+                            LoaderUtils.addGisNodeToMap(firstDataset, NeoUtils.findGisNode(firstDataset));
+                        }
+                    }, true);
+                    return Status.OK_STATUS;
+				}else{
+				    return Status.CANCEL_STATUS; 
 				}
-				return Status.OK_STATUS;
 			}
 		};
 		
