@@ -173,7 +173,6 @@ public class AfpLoader extends AbstractLoader {
             commit(true);
             monitor.worked(1);
             saveProperties();
-//            AfpExporter afpE = new AfpExporter(afpRoot);
         } finally {
             commit(false);
         }
@@ -189,25 +188,24 @@ public class AfpLoader extends AbstractLoader {
      */
     private void loadInterferenceFile(File interferenceFile, IProgressMonitor monitor) {
         // TODO implement
-        // Node afpInterference = NeoUtils.findNeighbour(afpCell, interferenceFile.getName(), neo);
-        // if (afpInterference == null) {
-        // Transaction tx = neo.beginTx();
-        // try {
-        // afpInterference = neo.createNode();
-        // afpInterference.setProperty(INeoConstants.PROPERTY_TYPE_NAME,
-        // NodeTypes.NEIGHBOUR.getId());
-        // AfpNeighbourSubType.INTERFERENCE.setTypeToNode(afpInterference, neo);
-        // afpInterference.setProperty(INeoConstants.PROPERTY_NAME_NAME,
-        // interferenceFile.getName());
-        // afpCell.createRelationshipTo(afpInterference, NetworkRelationshipTypes.NEIGHBOUR_DATA);
-        // tx.success();
-        // } finally {
-        // tx.finish();
-        // }
-        // }
-        // CommonImporter importer = new CommonImporter(new InterferenceFileHandler(afpInterference,
-        // neo), new TxtFileImporter(exceptionFile));
-        // importer.process();
+         Node afpInterference = NeoUtils.findNeighbour(afpCell, interferenceFile.getName(), neo);
+         if (afpInterference == null) {
+	         Transaction tx = neo.beginTx();
+	         try {
+		         afpInterference = neo.createNode();
+		         afpInterference.setProperty(INeoConstants.PROPERTY_TYPE_NAME,
+		         NodeTypes.NEIGHBOUR.getId());
+		         AfpNeighbourSubType.INTERFERENCE.setTypeToNode(afpInterference, neo);
+		         afpInterference.setProperty(INeoConstants.PROPERTY_NAME_NAME, interferenceFile.getName());
+		         afpCell.createRelationshipTo(afpInterference, NetworkRelationshipTypes.INTERFERENCE_DATA);
+		         tx.success();
+	         } finally {
+	        	 tx.finish();
+	         }
+         }
+         CommonImporter importer = new CommonImporter(new InterferenceFileHandler(afpInterference,
+         neo), new TxtFileImporter(interferenceFile));
+         importer.process();
     }
 
     /**
@@ -385,6 +383,44 @@ public class AfpLoader extends AbstractLoader {
         }
         return child;
     }
+    
+    
+    /**
+     * @param sector the sector whose proxy is to be created
+     * @param lastSector sector whose proxy was created last 
+     * @param rootNode the list(neighbours/interference/exception) node corresponding to this proxy
+     * @param type the relationship type for proxySector
+     * @return
+     */
+    private Node createProxySector(Node sector, Node lastSector, Node rootNode, NetworkRelationshipTypes type){
+    	
+        Node proxySector;
+    		
+            Transaction tx = neo.beginTx();
+            try {
+            	proxySector = neo.createNode();
+            	String sectorName = sector.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+            	String proxySectorName = NeoUtils.getNodeName(rootNode, neo) + "/" + sectorName;
+            	proxySector.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS.getId());                    	
+            	proxySector.setProperty(INeoConstants.PROPERTY_NAME_NAME, proxySectorName);
+            	
+            	//TODO: bad way. fix it to check lastSector.equals(rootNode)
+            	if (lastSector == null || lastSector.equals(rootNode))
+            		rootNode.createRelationshipTo(proxySector, NetworkRelationshipTypes.CHILD);
+            	else 
+            		lastSector.createRelationshipTo(proxySector, NetworkRelationshipTypes.NEXT);
+                
+            	sector.createRelationshipTo(proxySector, type);
+            	
+            	luceneInd.index(proxySector, NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS), proxySectorName);
+            	
+            	tx.success();
+            } finally {
+                tx.finish();
+            }
+        	
+        	return proxySector;
+    }
 
     /**
      * <p>
@@ -540,6 +576,7 @@ public class AfpLoader extends AbstractLoader {
         private Set<String> numericProp;
         private Set<String> allProp;
         private String neighName;
+        private Node lastSector;
 
         /**
          * Instantiates a new cell file handler.
@@ -561,6 +598,8 @@ public class AfpLoader extends AbstractLoader {
             serve = null;
             numericProp = new HashSet<String>();
             allProp = new HashSet<String>();
+            lastSector = rootNode;
+            
         }
 
         @Override
@@ -608,13 +647,20 @@ public class AfpLoader extends AbstractLoader {
          */
         private void defineNeigh(String siteName, String field) {
             String sectorName = siteName.trim() + field.trim();
-            Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
-            if (sector == null) {
-                error(". Neighbours File. Not found sector " + sectorName);
-                return;
-            }
-            Relationship relation = serve.createRelationshipTo(sector, NetworkRelationshipTypes.NEIGHBOUR);
-            relation.setProperty(INeoConstants.NEIGHBOUR_NAME, neighName);
+            String proxySectorName = neighName + "/" + sectorName;
+            
+            Node proxySector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS), proxySectorName);
+        	if (proxySector == null) {
+        		Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
+                if (sector == null) {
+                    error(". Neighbours File. Not found sector " + sectorName);
+                    return;
+                }
+                proxySector = createProxySector(sector, lastSector, rootNode, NetworkRelationshipTypes.NEIGHBOURS);
+                lastSector = proxySector;
+        	}
+            
+            serve.createRelationshipTo(proxySector, NetworkRelationshipTypes.NEIGHBOUR);
         }
 
         /**
@@ -626,131 +672,173 @@ public class AfpLoader extends AbstractLoader {
          */
         private Node defineServe(String siteName, String field) {
             String sectorName = siteName.trim() + field.trim();
-            Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
-            if (sector == null) {
-                error(". Neighbours File. Not found sector " + sectorName);
-                return null;
-            }
-            return sector;
+            String proxySectorName = neighName + "/" + sectorName;
+            
+            Node proxySector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS), proxySectorName);
+            	if (proxySector == null) {
+            		Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
+                    if (sector == null) {
+                        error(". Neighbours File. Not found sector " + sectorName);
+                        return null;
+                    }
+                    proxySector = createProxySector(sector, lastSector, rootNode, NetworkRelationshipTypes.NEIGHBOURS);
+                    lastSector = proxySector;
+            	}           
+          
+            return proxySector;
         }
 
     }
 
-    // /**
-    // * <p>
-    // * InterferenceFileHandler handle import of Interference File
-    // * </p>
-    // * .
-    // *
-    // * @author TsAr
-    // * @since 1.0.0
-    // */
-    // public class InterferenceFileHandler extends AbstractTxFileHandler {
-    //
-    // /** The serve. */
-    // private Node serve;
-    // private Set<String> numericProp;
-    // private Set<String> allProp;
-    // private String neighName;
-    //
-    // /**
-    // * Instantiates a new cell file handler.
-    // *
-    // * @param rootNode the root node
-    // * @param service the service
-    // */
-    // public InterferenceFileHandler(Node rootNode, GraphDatabaseService service) {
-    // super(rootNode, service);
-    // neighName = NeoUtils.getNodeName(rootNode, service);
-    // }
-    //
-    // /**
-    // * Inits the.
-    // */
-    // @Override
-    // public void init() {
-    // super.init();
-    // serve = null;
-    // numericProp = new HashSet<String>();
-    // allProp = new HashSet<String>();
-    // }
-    //
-    // @Override
-    // public void finish() {
-    // super.finish();
-    // rootNode.setProperty(INeoConstants.LIST_NUMERIC_PROPERTIES, numericProp.toArray(new
-    // String[0]));
-    // rootNode.setProperty(INeoConstants.LIST_NUMERIC_PROPERTIES, allProp.toArray(new String[0]));
-    // }
-    //
-    // /**
-    // * Store line.
-    // *
-    // * @param line the line
-    // */
-    // @Override
-    // protected void storeLine(String line) {
-    // try {
-    // String[] field = line.split("\\s");
-    // int i = 0;
-    // String name = field[i++].trim();
-    // if (name.equals("SUBCELL")) {
-    //
-    //
-    // serve = defineServe(siteName, field[1]);
-    // } else {
-    // if (serve == null) {
-    // error("Not found serve cell for neighbours: " + line);
-    // return;
-    // } else {
-    // defineNeigh(siteName, field[1]);
-    // }
-    // }
-    // } catch (Exception e) {
-    // String errStr = String.format("Can't parse line: %s", line);
-    // AweConsolePlugin.error(errStr);
-    // Logger.getLogger(this.getClass()).error(errStr, e);
-    // }
-    // }
-    //
-    // /**
-    // * Define neigh.
-    // *
-    // * @param siteName the site name
-    // * @param field the field
-    // */
-    // private void defineNeigh(String siteName, String field) {
-    // String sectorName = siteName + field;
-    // Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell,
-    // INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
-    // if (sector == null) {
-    // error(". Neighbours File. Not found sector " + sectorName);
-    // return;
-    // }
-    // Relationship relation = serve.createRelationshipTo(sector,
-    // NetworkRelationshipTypes.NEIGHBOUR);
-    // relation.setProperty(INeoConstants.NEIGHBOUR_NAME, neighName);
-    // }
-    //
-    // /**
-    // * Define serve.
-    // *
-    // * @param siteName the site name
-    // * @param field the field
-    // * @return the node
-    // */
-    // private Node defineServe(String siteName, String field) {
-    // String sectorName = siteName + field;
-    // Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell,
-    // INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
-    // if (sector == null) {
-    // error(". Neighbours File. Not found sector " + sectorName);
-    // return null;
-    // }
-    // return sector;
-    // }
-    //
-    // }
+     /**
+     * <p>
+     * InterferenceFileHandler handle import of Interference File
+     * </p>
+     * .
+     *
+     * @author TsAr
+     * @since 1.0.0
+     */
+     public class InterferenceFileHandler extends AbstractTxFileHandler {
+    
+     /** The serve. */
+     private Node serve;
+     private Set<String> numericProp;
+     private Set<String> allProp;
+     private String interferenceName;
+     private Node lastSector;
+    
+     /**
+     * Instantiates a new cell file handler.
+     *
+     * @param rootNode the root node
+     * @param service the service
+     */
+     public InterferenceFileHandler(Node rootNode, GraphDatabaseService service) {
+     super(rootNode, service);
+     interferenceName = NeoUtils.getNodeName(rootNode, service);
+     }
+    
+     /**
+     * Inits the.
+     */
+     @Override
+     public void init() {
+     super.init();
+     serve = null;
+     numericProp = new HashSet<String>();
+     allProp = new HashSet<String>();
+     }
+    
+     @Override
+     public void finish() {
+     super.finish();
+     rootNode.setProperty(INeoConstants.LIST_NUMERIC_PROPERTIES, numericProp.toArray(new
+     String[0]));
+     rootNode.setProperty(INeoConstants.LIST_NUMERIC_PROPERTIES, allProp.toArray(new String[0]));
+     }
+    
+     /**
+     * Store line.
+     *
+     * @param line the line
+     */
+     @Override
+     protected void storeLine(String line) {
+	     try {
+		     String[] field = line.split("\\s");
+		     int i = 0;
+		     String name = field[i++].trim();
+		     if (name.equals("SUBCELL")) {
+		    	 String sectorName = field[6];
+		    	 String sectorNo = sectorName.substring(sectorName.length() - 1); 
+		    	 if (!sectorNo.matches("\\d")){
+		    		 int diff = Character.getNumericValue(sectorName.charAt(sectorName.length() - 1)) - Character.getNumericValue('A') + 1;
+		    		 sectorName = sectorName.substring(0, sectorName.length() - 1) + diff;
+		    	 }		    		 
+		    	 serve = defineServe(sectorName);
+		    	 serve.setProperty("nonrelevant1", Integer.valueOf(field[i++]));
+		    	 serve.setProperty("nonrelevant2", Integer.valueOf(field[i++]));
+		    	 serve.setProperty("total-cell-area", Double.valueOf(field[i++]));
+		    	 serve.setProperty("total-cell-traffic", Double.valueOf(field[i++]));
+		    	 serve.setProperty("numberofinterferers", Integer.valueOf(field[i++]));
+		     } 
+		     else if (name.equals("INT")) {    	 
+			     if (serve == null) {
+				     error("Not found serve cell for neighbours: " + line);
+				     return;
+			     } 
+			     else {
+			    	 String sectorName = field[7];
+			    	 if (!sectorName.substring(sectorName.length() - 1).matches("\\d")){
+			    		 int sectorNo = Character.getNumericValue(sectorName.charAt(sectorName.length() - 1)) - Character.getNumericValue('A') + 1;
+			    		 sectorName = sectorName.substring(0, sectorName.length() - 1) + sectorNo;
+			    	 }
+			    	 Relationship relation = defineInterferer(sectorName);
+			    	 relation.setProperty("nonrelevant1", Integer.valueOf(field[i++]));
+			    	 relation.setProperty("nonrelevant2", Integer.valueOf(field[i++]));
+			    	 relation.setProperty("co-channel-interf-area", Double.valueOf(field[i++]));
+			    	 relation.setProperty("co-channel-interf-traffic", Double.valueOf(field[i++]));
+			    	 relation.setProperty("adj-channel-interf-area", Double.valueOf(field[i++]));
+			    	 relation.setProperty("adj-channel-interf-traffic", Double.valueOf(field[i++]));
+			     }
+		     }
+	     } catch (Exception e) {
+		     String errStr = String.format("Can't parse line: %s", line);
+		     AweConsolePlugin.error(errStr);
+		     Logger.getLogger(this.getClass()).error(errStr, e);
+	     }
+     }
+    
+     /**
+      * Define neigh.
+      * 
+      * @param siteName the site name
+      * @param field the field
+      */
+     private Relationship defineInterferer(String sectorName) {
+        String proxySectorName = interferenceName + "/" + sectorName;
+         
+        Node proxySector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS), proxySectorName);
+     	if (proxySector == null) {
+     		Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
+             if (sector == null) {
+                 error(". Interference File. Not found sector " + sectorName);
+                 return null;
+             }
+             proxySector = createProxySector(sector, lastSector, rootNode, NetworkRelationshipTypes.INTERFERENCE);
+             lastSector = proxySector;
+     	}
+         
+         Relationship relation = serve.createRelationshipTo(proxySector, NetworkRelationshipTypes.INTERFERS);
+         return relation;
+     }
+
+     /**
+      * Define serve.
+      * 
+      * @param siteName the site name
+      * @param field the field
+      * @return the node
+      */
+     private Node defineServe(String sectorName) {
+         String proxySectorName = interferenceName + "/" + sectorName;
+         
+         Node proxySector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS), proxySectorName);
+         	if (proxySector == null) {
+         		Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
+                 if (sector == null) {
+                     error(". Interference File. Not found sector " + sectorName);
+                     return null;
+                 }
+                 proxySector = createProxySector(sector, lastSector, rootNode, NetworkRelationshipTypes.INTERFERENCE);
+                 lastSector = proxySector;
+         	}           
+       
+         return proxySector;
+     }
+    
+     }
 
     /**
      * <p>

@@ -16,11 +16,13 @@ package org.amanzi.awe.afp.loaders;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.text.DecimalFormat;
 import java.util.ResourceBundle;
 
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.graphdb.ReturnableEvaluator;
@@ -28,6 +30,7 @@ import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.NeoUtils;
 
 
 /**
@@ -38,16 +41,15 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
  */
 
 /**
- * TODO file import for neighbors file giving errors, 
- * 		and code not implemented yet for import of interference and exceptions file.
- * 		So their export is also not implemented
+ * TODO code not implemented yet for import of exceptions file.
+ * 		So its export is also not implemented
  */
 
 public class AfpExporter {
 	
 	private GraphDatabaseService service;
 	private Node afpRoot;
-	private String siteName;
+//	private String siteName;
 	
 	//protected String tmpAfpFolder = System.getProperty("user.home") + File.separator + "AfpTemp" + File.separator;
 	public final String tmpAfpFolder = File.separator + "AfpTemp" + File.separator;
@@ -73,31 +75,19 @@ public class AfpExporter {
 	 * 
 	 */
 	public void createCarrierFile(){
-		boolean start = false;
-		String sectorName = null;
-		String sectorNo = null;
+		
 		File carrierFile = getFile(this.inputCellFileName);
 
-		service = NeoServiceProvider.getProvider().getService();
-		NeoServiceProvider.initProvider(service);
 		try{
 			 carrierFile.createNewFile();
-			 start = true;
 			 BufferedWriter writer  = new BufferedWriter(new FileWriter(carrierFile));
-			  
-			 for (Node site : afpRoot.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)){
-				 if (!site.getProperty("type").equals("site"))
-					 continue;
-				 siteName = site.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-				 if (!start)
-					 writer.newLine();
-				 start = false;
-				 writer.write(siteName);
-				 Node sector = site.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).getOtherNode(site);
-				 
-				 sectorName = sector.getProperty("name").toString();
-				 sectorNo = sectorName.substring(siteName.length());
-				 writer.write(" " + sectorNo);
+			 
+			 for (Node sector : afpRoot.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)){
+				 if (!sector.getProperty("type").equals("sector"))
+				 	 continue;
+				 String sectorValues[] = parseSectorName(sector);			
+				 writer.write(sectorValues[0]);
+				 writer.write(" " + sectorValues[1]);
 				 writer.write(" " + sector.getProperty("nonrelevant"));
 				 writer.write(" " + sector.getProperty("numberoffreqenciesrequired"));
 				 writer.write(" " + sector.getProperty("numberoffrequenciesgiven"));
@@ -119,6 +109,7 @@ public class AfpExporter {
 					 }
 					 
 				 }
+				 writer.newLine();
 			 }
 			 writer.close();
 		}catch (Exception e){
@@ -135,31 +126,7 @@ public class AfpExporter {
 		try {
 			controlFile.createNewFile();
 			BufferedWriter writer  = new BufferedWriter(new FileWriter(controlFile));
-//			for (String key :afpRoot.getPropertyKeys()){
-//				String keyTemp = null;
-//				if (key.equals("type") || key.equals("name") || key.equals("primary_type")){
-//						continue;
-//				}
-//				
-//				/**
-//				 * Write the destinations for the corresponding files as <key property>
-//				 */
-//				if (key.endsWith("File")){
-//					
-//					/** For, the interefernce and neighbours file, 
-//					 * Use the same file, which is given as input to write the database
-//					 * till the code for writing these files is not implemented
-//					 */
-//					if (key.equals("NeighboursFile") || key.endsWith("InterferenceFile")) {
-//						writer.write(key + " " + afpRoot.getProperty(key));
-//						writer.newLine();
-//					}
-//					continue;
-//				}
-//					
-//				writer.write(key + " " + afpRoot.getProperty(key));
-//				writer.newLine();
-//			 }
+			
 			
 			writer.write("SiteSpacing " + afpRoot.getProperty("SiteSpacing"));
 			writer.newLine();
@@ -250,14 +217,32 @@ public class AfpExporter {
 	 */
 	public void createNeighboursFile(){
 		File neighboursFile = getFile(this.inputNeighboursFileName);
-
+		Node startSector = null;
+		
 		try {
 			neighboursFile.createNewFile();
 			BufferedWriter writer  = new BufferedWriter(new FileWriter(neighboursFile));
 			
-			/**
-			 *TODO Write code here to write the file
-			 */
+			for (Node neighbour : afpRoot.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING)){
+				//TODO: put condition here to get the desired neighbour list in case of multiple neighbour list
+				startSector = neighbour.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).getEndNode();
+				break;				
+			}
+			
+			for (Node proxySector : startSector.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, NetworkRelationshipTypes.NEXT, Direction.OUTGOING)){
+				if (!proxySector.getProperty("type").equals("sector_sector_relations"))
+					 continue;
+				Node sector = proxySector.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOURS, Direction.INCOMING).getOtherNode(proxySector);
+				String sectorValues[] = parseSectorName(sector);			
+				writer.write("CELL " + sectorValues[0] + " " + sectorValues[1]);
+				writer.newLine();
+				for (Node neighbourProxySector: proxySector.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.NEIGHBOUR, Direction.OUTGOING)){
+					Node neighbourSector = neighbourProxySector.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOURS, Direction.INCOMING).getOtherNode(neighbourProxySector);
+					sectorValues = parseSectorName(neighbourSector);
+					writer.write("NBR " + sectorValues[0] + " " + sectorValues[1]);
+					writer.newLine();
+				}
+			}
 			
 			writer.close();
 		}catch (Exception e){
@@ -266,18 +251,61 @@ public class AfpExporter {
 	}
 	
 	/**
+	 * Gets the site name and sector no of the sector
+	 * @param sector the sector node
+	 * @return string array containg site name and sector no
+	 */
+	public String[] parseSectorName(Node sector){
+		Node site = sector.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(sector);
+		String siteName = site.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+		String sectorValues[] = new String[2];
+		sectorValues[0] = siteName;//sector.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+		sectorValues[1] = sector.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString().substring(siteName.length());
+		return sectorValues;
+	}
+	
+	/**
 	 * Creates the interference file for input to the C++ engine
 	 */
 	public void createInterferenceFile(){
 		File interferenceFile = getFile(this.inputInterferenceFileName);
+		Node startSector = null;
 
 		try {
 			interferenceFile.createNewFile();
 			BufferedWriter writer  = new BufferedWriter(new FileWriter(interferenceFile));
 			
-			/**
-			 *TODO Write code here to write the file
-			 */
+			for (Node interferer : afpRoot.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.INTERFERENCE_DATA, Direction.OUTGOING)){
+				//TODO: put condition here to get the desired interference list in case of multiple interference list
+				startSector = interferer.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).getEndNode();
+				break;				
+			}
+			
+			for (Node proxySector : startSector.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, NetworkRelationshipTypes.NEXT, Direction.OUTGOING)){
+				if (!proxySector.getProperty("type").equals("sector_sector_relations"))
+					 continue;
+				Node sector = proxySector.getSingleRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.INCOMING).getOtherNode(proxySector);		
+				writer.write("SUBCELL " + proxySector.getProperty("nonrelevant1") + " " +
+							 proxySector.getProperty("nonrelevant2") + " " +
+							 proxySector.getProperty("total-cell-area") + " " +
+							 proxySector.getProperty("total-cell-traffic") + " " +
+							 proxySector.getProperty("numberofinterferers") + " " +
+							 sector.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString());
+				writer.newLine();
+				for (Relationship relation : proxySector.getRelationships(NetworkRelationshipTypes.INTERFERS, Direction.OUTGOING)){
+					Node neighbourProxySector = relation.getEndNode();
+					Node neighbourSector = neighbourProxySector.getSingleRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.INCOMING).getOtherNode(neighbourProxySector);
+					DecimalFormat df = new DecimalFormat("0.0000000000");
+					writer.write("INT " + proxySector.getProperty("nonrelevant1") + "\t" +
+							relation.getProperty("nonrelevant2").toString() + "\t" +
+							df.format(relation.getProperty("co-channel-interf-area")).toString() + " " +
+							df.format(relation.getProperty("co-channel-interf-traffic")).toString() + " " +
+							df.format(relation.getProperty("adj-channel-interf-area")).toString() + " " +
+							df.format(relation.getProperty("adj-channel-interf-traffic")).toString() + " " +
+							neighbourSector.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString());
+					writer.newLine();
+				}
+			}
 			
 			writer.close();
 		}catch (Exception e){

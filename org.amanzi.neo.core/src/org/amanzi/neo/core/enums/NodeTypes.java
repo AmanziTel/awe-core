@@ -559,7 +559,8 @@ public enum NodeTypes {
         }
     },
     AFP("afp"),
- AFP_CELL("afp_cell"),
+    AFP_CELL("afp_cell"),
+    SECTOR_SECTOR_RELATIONS("sector_sector_relations"),
     OSS("oss"), 
     GPEH_EVENT("gpeh_event"), 
     OSS_MAIN("oss_main"),

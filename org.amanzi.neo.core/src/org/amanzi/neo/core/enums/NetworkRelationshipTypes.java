@@ -37,8 +37,11 @@ public enum NetworkRelationshipTypes implements DeletableRelationshipType {
     AGGREGATE(null,null),
     SECTOR_DRIVE(null,null),
     DRIVE(null,null), 
-    SECTOR(null,null);
-    
+    SECTOR(null,null),
+    NEXT(null, null),
+    NEIGHBOURS(null, null),
+    INTERFERENCE_DATA(null, null), 
+    INTERFERENCE(null, null);
     
     private RelationDeletableTypes deletableOut;
     private RelationDeletableTypes deletableIn;
