@@ -19,12 +19,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -176,6 +177,11 @@ public class GPEHLoader extends DriveLoader {
                     this.basename = this.filename;
                     this.file = null;
 
+                    timeWrapper = new TimePeriod(gpehFile.getName());
+                    if (!timeWrapper.isValid()) {
+                        error(String.format("Can't parese file %s. incorrect name format", gpehFile.getName()));
+                        continue;
+                    }
                     if (mainFilePattern.matcher(gpehFile.getName()).matches()) {
                         GPEHMainFile root = GPEHParser.parseMainFile(gpehFile);
                         saveRoot(root);
@@ -189,10 +195,7 @@ public class GPEHLoader extends DriveLoader {
                     long timeAll = System.currentTimeMillis();
                     long saveTime = 0;
                     long parseTime = 0;
-                    timeWrapper = new TimePeriod(gpehFile.getName());
-                    if (!timeWrapper.isValid()) {
-                        error(String.format("Can't parese file %s. incorrect name format", gpehFile.getName()));
-                    }
+
                     LOGGER.debug(gpehFile.getName());
 
                     GPEHEvent result = new GPEHEvent();
@@ -545,7 +548,11 @@ public class GPEHLoader extends DriveLoader {
      */
     private void saveRoot(GPEHMainFile root) {
         GPEHMainFile.Header header = root.getHeader();
-        GregorianCalendar cl = new GregorianCalendar(header.getYear(), header.getMonth(), header.getDay());
+        Calendar cl=Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+        cl.clear();
+        cl.set(Calendar.YEAR, header.getYear());
+        cl.set(Calendar.MONTH, header.getMonth());
+        cl.set(Calendar.DAY_OF_MONTH, header.getDay());
         timestampOfDay = cl.getTimeInMillis();
         Transaction tx = neo.beginTx();
         try {
@@ -789,9 +796,9 @@ public class GPEHLoader extends DriveLoader {
          * @return true, if successful
          */
         public boolean checkDate(int hour, int minute, int second, int millisecond) {
-            if (second > 0 || millisecond > 0) {
-                minute++;
-            }
+//            if (second > 0 || millisecond > 0) {
+//                minute++;
+//            }
             int timeMin = hour * 60 + minute;
             return (minStart <= timeMin) && (minEnd >= timeMin);
         }
