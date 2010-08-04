@@ -4,12 +4,10 @@ Bundle-Name: L3messages
 Bundle-SymbolicName: org.amanzi.awe.l3messages
 Bundle-Version: 1.0.0.qualifier
 Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
- org.amanzi.awe.parser;bundle-version="1.0.0"
+ org.eclipse.core.runtime
 Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Export-Package: org.amanzi.awe.l3.messages.streaming.schema.nodes,
- org.amanzi.awe.l3messages,
+Export-Package: org.amanzi.awe.l3messages,
  org.amanzi.awe.l3messages.rrc,
  org.bn.types
 Bundle-Activator: org.amanzi.awe.l3messages.L3MessagesPlugin
