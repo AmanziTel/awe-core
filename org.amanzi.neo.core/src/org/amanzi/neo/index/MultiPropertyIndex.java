@@ -670,12 +670,6 @@ public class MultiPropertyIndex<E extends Object> {
 
         @Override
         public boolean isReturnableNode(TraversalPosition currentPos) {
-            if (currentPos.currentNode().hasProperty("state")) {
-                if (currentPos.currentNode().getProperty("state").equals("disabled")) {
-                    return false;
-                }
-            }
-            
             if (currentPos.isStartNode()) {
                 return false;
             } else {
