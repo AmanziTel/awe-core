@@ -14,10 +14,14 @@
 package org.amanzi.awe.l3messages;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 
+import org.amanzi.awe.l3.messages.streaming.schema.SchemaGenerator;
+import org.amanzi.awe.l3.messages.streaming.schema.nodes.SchemaNode;
 import org.amanzi.awe.l3messages.rrc.UL_DCCH_Message;
 import org.bn.CoderFactory;
 import org.bn.IDecoder;
+import org.bn.utils.BitArrayInputStream;
 
 /**
  * Class for encoding NBAP and RRC Messages from Measurement Reports
@@ -37,6 +41,10 @@ public class MessageDecoder {
      */
     private static MessageDecoder instance = null;
     
+    private static SchemaNode message = null;
+    
+    private static ASNParser parser = new ASNParser();
+    
     /**
      * Returns instance of Message Decoder
      *
@@ -47,6 +55,17 @@ public class MessageDecoder {
             instance = new MessageDecoder();
             try {
                 unalignedDecoder = CoderFactory.getInstance().newDecoder("PER/U");
+                
+                String schemaDirectory = "D:/projects/awe/org.amanzi.awe.l3messages/schema";
+                SchemaGenerator generator = new SchemaGenerator(new File(schemaDirectory));
+                SchemaNode root = generator.parse();
+                
+                for (SchemaNode childNode : root.getChildren().values()) {
+                    if (childNode.getName().equals("UL-DCCH-Message")) {
+                        message = childNode;
+                        break;
+                    }
+                }
             }
             catch (Exception e) {
                 L3MessagesPlugin.getDefault().logError(e);
@@ -54,6 +73,19 @@ public class MessageDecoder {
         }
         
         return instance;
+    }
+    
+    public void parseRRCMeasurementReport(byte[] byteArray, IAsnParserListener eventListener) {
+        try {
+            parser.addListener(eventListener);
+            parser.decode(new BitArrayInputStream(new ByteArrayInputStream(byteArray)), message);    
+        }
+        catch (Exception e){ 
+            L3MessagesPlugin.getDefault().logError(e);
+        }
+        finally {
+            parser.removeListener(eventListener);            
+        }
     }
     
     /**
@@ -64,11 +96,12 @@ public class MessageDecoder {
      */
     public UL_DCCH_Message parseRRCMeasurementReport(byte[] byteArray) {
         try {
+            
             return (UL_DCCH_Message)unalignedDecoder.decode(new ByteArrayInputStream(byteArray), UL_DCCH_Message.class);
         }
         catch (Exception e) {
             L3MessagesPlugin.getDefault().logError(e);
             return null;
         }
-    }    
+    }
 }

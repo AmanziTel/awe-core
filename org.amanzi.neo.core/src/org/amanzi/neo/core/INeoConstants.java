@@ -143,8 +143,8 @@ public class INeoConstants {
 	public static final String SECTOR_ID_PROPERTIES = "sector_id";
     public static final String DRIVE_GIS_NAME = "drive gis name";
     public static final String NETWORK_GIS_NAME = "network gis name";
-    public static final String MIN_TIMESTAMP = "min timestamp";
-    public static final String MAX_TIMESTAMP = "max timestamp";
+    public static final String MIN_TIMESTAMP = "min_timestamp";
+    public static final String MAX_TIMESTAMP = "max_timestamp";
     public static final String MIN_VALUE = "min value";
     public static final String MAX_VALUE = "max value";
     

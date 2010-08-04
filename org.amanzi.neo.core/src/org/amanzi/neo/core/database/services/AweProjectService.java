@@ -66,11 +66,6 @@ public class AweProjectService extends NeoServiceProviderListener {
 	 */
 	private final NeoServiceProvider provider;
 
-	/*
-	 * NeoService
-	 */
-	protected GraphDatabaseService graphDatabaseService;
-
 	/**
 	 * Constructor of Service.
 	 * 
@@ -78,6 +73,7 @@ public class AweProjectService extends NeoServiceProviderListener {
 	 */
 	public AweProjectService() {	    
 		provider = NeoServiceProvider.getProvider();
+		provider.addServiceProviderListener(this);
 		graphDatabaseService = provider.getService();
 	}
 	
@@ -88,6 +84,7 @@ public class AweProjectService extends NeoServiceProviderListener {
 	 */
 	public AweProjectService(GraphDatabaseService aNeo) {	    
 		provider = NeoServiceProvider.getProvider();
+		provider.addServiceProviderListener(this);
 		graphDatabaseService = aNeo;
 	}
 
