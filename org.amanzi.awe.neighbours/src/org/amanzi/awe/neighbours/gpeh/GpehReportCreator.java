@@ -151,6 +151,7 @@ public class GpehReportCreator {
         File output = new File(outputDir, generateReportName(report, period));
         IExportHandler handler = new CommonCSVHandler(output, monitor, '\t');
         IExportProvider provider = defineProvider(report, period);
+        monitor.worked(1);
         Transaction tx = service.beginTx();
         try {
             if (provider.isValid()) {
@@ -159,6 +160,7 @@ public class GpehReportCreator {
             }
         } finally {
             tx.finish();
+            monitor.worked(1);
         }
     }
 
@@ -292,7 +294,13 @@ public class GpehReportCreator {
                 IStatisticElementNode statNode = iter.next();
                 List<Object> result = new ArrayList<Object>();
                 result.add(name);
+
                 calendar.setTimeInMillis(statNode.getStartTime());
+                
+//                System.out.println(statNode.getStartTime());
+//                System.out.println(calendar.toString());
+//                System.out.println(dateFormat.format(calendar.getTime()));
+                
                 result.add(dateFormat.format(calendar.getTime()));
                 result.add(String.valueOf(calendar.get(Calendar.HOUR_OF_DAY)));
                 result.add(period.getId());
