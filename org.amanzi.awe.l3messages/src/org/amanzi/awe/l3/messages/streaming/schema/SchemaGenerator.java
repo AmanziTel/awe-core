@@ -19,7 +19,6 @@ import java.io.PrintStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.amanzi.awe.l3.messages.streaming.schema.nodes.ChildInfo;

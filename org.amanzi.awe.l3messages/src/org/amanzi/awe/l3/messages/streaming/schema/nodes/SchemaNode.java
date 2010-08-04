@@ -32,7 +32,7 @@ public class SchemaNode {
     
     private LinkedHashMap<ChildInfo, SchemaNode> children = new LinkedHashMap<ChildInfo, SchemaNode>();
     
-    private Long size = 0l;
+    private Long size;
     
     private NodeType type;
     
@@ -138,6 +138,9 @@ public class SchemaNode {
             possibleValues = new LinkedList<String>();
         }
         possibleValues.add(value);
+        if (size == null) {
+        	size = 0l;
+        }
         size++;
     }
     
@@ -200,5 +203,19 @@ public class SchemaNode {
      */
     public LinkedList<String> getPossibleValues() {
         return possibleValues;
+    }
+    
+    public void setContstantValue(Integer contstantValue) {
+		this.contstantValue = contstantValue;
+	}
+    
+    public void removeChild(String childClassName) {
+    	for (ChildInfo child : getChildren().keySet()) {
+    		SchemaNode node = getChildren().get(child);
+    		if (node.getName().equals(childClassName)) {
+    			getChildren().remove(child);
+    			break;
+    		}
+    	}
     }
 }
