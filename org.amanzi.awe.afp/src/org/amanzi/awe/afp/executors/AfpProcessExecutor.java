@@ -22,6 +22,7 @@ import java.io.OutputStreamWriter;
 import java.util.ResourceBundle;
 
 import org.amanzi.awe.afp.Activator;
+import org.amanzi.awe.afp.AfpEngine;
 import org.amanzi.awe.afp.loaders.AfpExporter;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.core.utils.NeoUtils;
@@ -77,7 +78,10 @@ public class AfpProcessExecutor extends Job {
 		Runtime run = Runtime.getRuntime();
 		try {
 			AfpExporter afpe = new AfpExporter(null);
-			String command = "cmd /c \" " + ResourceBundle.getBundle(this.getClass().getName()).getString("executable") + " < " + afpe.paramFileName + " \"";
+			AfpEngine engine = AfpEngine.getAfpEngine();
+			
+			String path = engine.getAfpEngineExecutablePath();
+			String command = path + " < " + afpe.paramFileName + " \"";
 			AweConsolePlugin.info("Executing Cmd: " + command);
 			process = run.exec(command);
 			monitor.worked(20);

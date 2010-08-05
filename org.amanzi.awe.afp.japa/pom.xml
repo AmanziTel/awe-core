@@ -6,11 +6,7 @@
   <version>0.0.1-SNAPSHOT</version>
   <groupId>AWE_build</groupId>
   <packaging>exe</packaging>
-  
-  <prerequisites>
-    <maven>2.1</maven>
-  </prerequisites>
-  
+    
   <build>
     <plugins>	  
       <plugin>
@@ -19,8 +15,8 @@
       <extensions>true</extensions>
       <configuration>
         <compilerProvider>generic</compilerProvider>
-        <compilerExecutable>gcc</compilerExecutable>
-        <linkerExecutable>gcc</linkerExecutable>*
+        <compilerExecutable>gcc-3</compilerExecutable>
+        <linkerExecutable>gcc-3</linkerExecutable>*
         <sources>
           <source>
             <directory>src</directory>
