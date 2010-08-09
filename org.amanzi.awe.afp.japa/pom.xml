@@ -15,8 +15,8 @@
       <extensions>true</extensions>
       <configuration>
         <compilerProvider>generic</compilerProvider>
-        <compilerExecutable>gcc</compilerExecutable>
-        <linkerExecutable>gcc</linkerExecutable>
+        <compilerExecutable>i586-mingw32msvc-gcc</compilerExecutable>
+        <linkerExecutable>i586-mingw32msvc-gcc</linkerExecutable>
         <sources>
           <source>
             <directory>src</directory>
