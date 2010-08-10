@@ -15,6 +15,7 @@ package org.amanzi.awe.neighbours.gpeh;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -273,7 +274,15 @@ public class ExportProvider3GPP implements IExportProvider {
             name = NeoUtils.getNodeName(values.getLeft(), service);
         }
         result.add(name);
-        
+        Calendar calendar=Calendar.getInstance();
+        calendar.setTimeInMillis(computeTime);
+        result.add(dateFormat.format(calendar.getTime()));
+        result.add(dateFormat2.format(calendar.getTime()));
+        result.add(period.getId());
+        int[] array=values.getRight();
+        for (int i = 0; i < array.length; i++) {
+            result.add(array[i]);
+        }
         return result;
     }
 
