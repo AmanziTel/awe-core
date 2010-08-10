@@ -211,8 +211,8 @@ public class GpehReportCreator {
             createEcNoCellReport(period);
             return getCellEcnoProvider(period);
         case NBAP_UL_INTERFERENCE:
-            createNBapBaseReports();
-            createUlInterferenceReport(period);
+//            createNBapBaseReports();
+//            createUlInterferenceReport(period);
             return getUlInterferenceCellProvider(period);
         case NBAP_DL_TX_CARRIER_POWER:
             createNBapBaseReports();
@@ -597,10 +597,12 @@ public class GpehReportCreator {
      * @return the ue tx power cell provider
      */
     private IExportProvider getUlInterferenceCellProvider(final CallTimePeriods period) {
-        TimePeriodElement element = new TimePeriodElement(getReportModel().getCellUlInterferenceAnalisis(period), CellUlInterferenceAnalisis.ARRAY_NAME, ValueType.UL_INTERFERENCE,
-                period, minMax.getLeft(), minMax.getRight());
-        // return new TimePeriodStructureProvider("UL noise rise", element, service);
-        return new WrappedTimePeriodProvider("UL noise rise", element, service, 5, false);
+        return new ExportProvider3GPP(model.getGpeh(), model.getNetwork(), service, ValueType.UL_INTERFERENCE, GpehRelationshipType.Ul_RTWP, period, "Ue tx power analysis",luceneService);
+//
+//        TimePeriodElement element = new TimePeriodElement(getReportModel().getCellUlInterferenceAnalisis(period), CellUlInterferenceAnalisis.ARRAY_NAME, ValueType.UL_INTERFERENCE,
+//                period, minMax.getLeft(), minMax.getRight());
+//        // return new TimePeriodStructureProvider("UL noise rise", element, service);
+//        return new WrappedTimePeriodProvider("UL noise rise", element, service, 5, false);
     }
 
     /**

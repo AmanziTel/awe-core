@@ -13,18 +13,23 @@
 
 package org.amanzi.awe.neighbours.gpeh;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.amanzi.awe.neighbours.gpeh.Calculator3GPPdBm.ValueType;
 import org.amanzi.awe.statistic.CallTimePeriods;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.export.IExportProvider;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.hsqldb.lib.StringUtil;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -43,6 +48,8 @@ import org.neo4j.index.lucene.LuceneIndexService;
  * @since 1.0.0
  */
 public class ExportProvider3GPP implements IExportProvider {
+    final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+    final SimpleDateFormat dateFormat2 = new SimpleDateFormat("HHmm");
   public static final Logger LOGGER=Logger.getLogger(ExportProvider3GPP.class);  
     /** The dataset. */
     private final Node dataset;
@@ -190,13 +197,8 @@ public class ExportProvider3GPP implements IExportProvider {
         model.clear();
         Transaction tx = NeoUtils.beginTx(service);
         try {
-            for (Relationship relation : statRoot.getRelationships(Direction.OUTGOING)) {
-                Long time = Long.valueOf(relation.getType().name());
-                if (period.compareByPeriods(computeTime, time) == 0) {
-                    Node timeStatNode = relation.getOtherNode(statRoot);
-                    updateModel(timeStatNode, model);
-                }
-            }
+            
+            updateModel(statRoot,computeTime, model);
         } finally {
             tx.finish();
         }
@@ -208,18 +210,28 @@ public class ExportProvider3GPP implements IExportProvider {
     /**
      * Update model.
      *
-     * @param timeStatNode the time stat node
+     * @param statNode the time stat node
+     * @param computeTime 
      * @param model the model
      */
-    private void updateModel(Node timeStatNode, Model3GPPValue model) {
-        for (Relationship relation : timeStatNode.getRelationships(Direction.OUTGOING)) {
+    private void updateModel(Node statNode, Long computeTime, Model3GPPValue model) {
+        for (Relationship relation : statNode.getRelationships(Direction.OUTGOING)) {
             Pair<Integer,Integer>ciRnc=getCiRncPair(relation);
             Node bestCell=NeoUtils.findSector(network, ciRnc.getLeft(), String.valueOf(ciRnc.getRight()), luceneService, service);
             if (bestCell==null){
                 LOGGER.warn(String.format("Data not included in statistics! Not found sector with ci=%s, rnc=%s",ciRnc.getLeft(),ciRnc.getRight()));
                 continue;
             }
-            model.update(bestCell, (int[])bestCell.getProperty("values"));
+            Node bestCellNode=relation.getEndNode();
+            for (String propertyName:bestCellNode.getPropertyKeys()){
+                if (StringUtils.isNumeric(propertyName)){
+                   long time= Long.valueOf(propertyName);
+                   if (period.compareByPeriods(computeTime, time)==0){
+                       int[] values = (int[])bestCellNode.getProperty(propertyName,null);
+                       model.update(bestCell, values);
+                   }
+                }
+            }
         }       
     }
 
@@ -254,7 +266,15 @@ public class ExportProvider3GPP implements IExportProvider {
      */
     @Override
     public List<Object> getNextLine() {
-        return model.next();
+        Pair<Node, int[]> values = model.next();
+        List<Object> result=new LinkedList<Object>();
+        String name = (String)values.getLeft().getProperty("userLabel", "");
+        if (StringUtil.isEmpty(name)) {
+            name = NeoUtils.getNodeName(values.getLeft(), service);
+        }
+        result.add(name);
+        
+        return result;
     }
 
     /**
@@ -280,7 +300,7 @@ public class ExportProvider3GPP implements IExportProvider {
         private final Map<Node, int[]> maps = new LinkedHashMap<Node, int[]>();
         
         /** The iter. */
-        private Iterator<Node>iter=null;
+        private Iterator<Entry<Node, int[]>> iter=null;
         
         /**
          * Update.
@@ -309,9 +329,17 @@ public class ExportProvider3GPP implements IExportProvider {
          */
         public boolean hasNext() {
             if (iter==null){
-                iter=maps.keySet().iterator();
+                initIterator();
             }
             return iter.hasNext();
+        }
+
+
+        /**
+         *
+         */
+        private void initIterator() {
+            iter=maps.entrySet().iterator();
         }
 
         /**
@@ -319,8 +347,12 @@ public class ExportProvider3GPP implements IExportProvider {
          *
          * @return the list
          */
-        public List<Object> next() {
-            return null;
+        public Pair<Node,int[]> next() {
+            if (iter==null){
+                initIterator(); 
+            }
+            Entry<Node, int[]> entry = iter.next();
+            return new Pair<Node, int[]>(entry.getKey(), entry.getValue());
         }
 
         /**
@@ -329,14 +361,14 @@ public class ExportProvider3GPP implements IExportProvider {
          * @return true, if is empty
          */
         public boolean isEmpty() {
-            return maps.isEmpty();
+            return maps.values().isEmpty();
         }
 
         /**
          * Clear.
          */
         public void clear() {
-            maps.clear();
+            maps.values().clear();
         }
 
     }
