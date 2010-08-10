@@ -166,6 +166,10 @@ public enum CallTimePeriods {
         public RelationshipType getPeriodRelation() {
             return Relations.TP_ALL;
         }
+        @Override
+        public int compareByPeriods(long time1, long time2) {
+            return 0;
+        }
         
     };
     private final String id;
@@ -262,5 +266,18 @@ public enum CallTimePeriods {
 
     public static enum Relations implements RelationshipType {
         TP_HOUR,TP_15MIN, TP_DAY, TP_WEEKLY, TP_MOUNTH,TP_ALL
+    }
+
+
+
+    /**
+     * Compare by periods.
+     *
+     * @param time1 the time1
+     * @param time2 the time2
+     * @return the 0 - if period of time1==period of time2;1 if period of time1>period of time2
+     */
+    public int compareByPeriods(long time1, long time2) {
+        return getFirstTime(time1).compareTo(getFirstTime(time2));
     }
 }

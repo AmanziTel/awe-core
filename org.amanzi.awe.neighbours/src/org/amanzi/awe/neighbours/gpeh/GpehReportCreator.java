@@ -186,8 +186,8 @@ public class GpehReportCreator {
         IExportProvider result = null;
         switch (report) {
         case UE_TX_POWER_ANALYSIS:
-            createMatrix();
-            createUeTxPowerCellReport(period);
+//            createMatrix();
+//            createUeTxPowerCellReport(period);
             result = getUeTxPowerCellProvider(period);
             return result;
         case CELL_RF_CORRELATION:
@@ -633,9 +633,7 @@ public class GpehReportCreator {
      * @return the ue tx power cell provider
      */
     private IExportProvider getUeTxPowerCellProvider(final CallTimePeriods period) {
-        TimePeriodElement element = new TimePeriodElement(getReportModel().getCellUeTxPowerAnalisis(period), CellUeTxPowerAnalisis.ARRAY_NAME, ValueType.UETXPOWER, period,
-                minMax.getLeft(), minMax.getRight());
-        return new TimePeriodStructureProvider("Ue tx power analysis", element, service);
+        return new ExportProvider3GPP(model.getGpeh(), model.getNetwork(), service, ValueType.UETXPOWER, GpehRelationshipType.UE_TX_POWER, period, "Ue tx power analysis",luceneService);
     }
 
     /**
