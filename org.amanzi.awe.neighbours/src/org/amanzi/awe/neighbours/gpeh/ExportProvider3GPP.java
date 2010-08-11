@@ -49,32 +49,32 @@ import org.neo4j.index.lucene.LuceneIndexService;
  * @since 1.0.0
  */
 public class ExportProvider3GPP implements IExportProvider {
-    final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-    final SimpleDateFormat dateFormat2 = new SimpleDateFormat("HHmm");
+    protected final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+    protected final SimpleDateFormat dateFormat2 = new SimpleDateFormat("HHmm");
   public static final Logger LOGGER=Logger.getLogger(ExportProvider3GPP.class);  
     /** The dataset. */
-    private final Node dataset;
+    protected final Node dataset;
     
     /** The network. */
-    private final Node network;
+    protected final Node network;
     
     /** The stat root. */
-    private final Node statRoot;
+    protected final Node statRoot;
     
     /** The service. */
-    private final GraphDatabaseService service;
+    protected final GraphDatabaseService service;
     
     /** The value3gpp. */
-    private final ValueType value3gpp;
+    protected final ValueType value3gpp;
     
     /** The stat relation. */
-    private final RelationshipType statRelation;
+    protected final RelationshipType statRelation;
     
     /** The period. */
-    private final CallTimePeriods period;
+    protected final CallTimePeriods period;
     
     /** The dataname. */
-    private final String dataname;
+    protected final String dataname;
     
     /** The headers. */
     protected List<String> headers = null;
@@ -83,15 +83,15 @@ public class ExportProvider3GPP implements IExportProvider {
     Model3GPPValue model;
     
     /** The min max. */
-    private Pair<Long, Long> minMax;
+    protected Pair<Long, Long> minMax;
     
     /** The start time. */
-    private Long startTime;
+    protected Long startTime;
     
     /** The compute time. */
-    private Long computeTime;
+    protected Long computeTime;
 
-    private final LuceneIndexService luceneService;
+    protected final LuceneIndexService luceneService;
 
     /**
      * Instantiates a new export provider3 gpp.
@@ -280,10 +280,16 @@ public class ExportProvider3GPP implements IExportProvider {
         result.add(dateFormat2.format(calendar.getTime()));
         result.add(period.getId());
         int[] array=values.getRight();
+        processArray(result, array);
+        return result;
+    }
+
+
+
+    protected void processArray(List<Object> result, int[] array) {
         for (int i = 0; i < array.length; i++) {
             result.add(array[i]);
         }
-        return result;
     }
 
     /**

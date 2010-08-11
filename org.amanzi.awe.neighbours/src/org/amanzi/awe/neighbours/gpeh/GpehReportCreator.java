@@ -215,8 +215,8 @@ public class GpehReportCreator {
 //            createUlInterferenceReport(period);
             return getUlInterferenceCellProvider(period);
         case NBAP_DL_TX_CARRIER_POWER:
-            createNBapBaseReports();
-            createCellDlTxCarrierPowerAnalisis(period);
+//            createNBapBaseReports();
+//            createCellDlTxCarrierPowerAnalisis(period);
             return getCellDlTxCarrierPowerProvider(period);
         case NBAP_NON_HS_POWER:
             createNBapBaseReports();
@@ -597,7 +597,7 @@ public class GpehReportCreator {
      * @return the ue tx power cell provider
      */
     private IExportProvider getUlInterferenceCellProvider(final CallTimePeriods period) {
-        return new ExportProvider3GPP(model.getGpeh(), model.getNetwork(), service, ValueType.UL_INTERFERENCE, GpehRelationshipType.Ul_RTWP, period, "Ue tx power analysis",luceneService);
+        return new WrapperedExportProvider3GPP(model.getGpeh(), model.getNetwork(), service, ValueType.UL_INTERFERENCE, GpehRelationshipType.Ul_RTWP, period, "Ue tx power analysis",luceneService, 5, false);
 //
 //        TimePeriodElement element = new TimePeriodElement(getReportModel().getCellUlInterferenceAnalisis(period), CellUlInterferenceAnalisis.ARRAY_NAME, ValueType.UL_INTERFERENCE,
 //                period, minMax.getLeft(), minMax.getRight());
@@ -612,6 +612,7 @@ public class GpehReportCreator {
      * @return the cell dl tx carrier power provider
      */
     private IExportProvider getCellDlTxCarrierPowerProvider(final CallTimePeriods period) {
+        
         TimePeriodElement element = new TimePeriodElement(getReportModel().getCellDlTxCarrierPowerAnalisis(period), CellDlTxCarrierPowerAnalisis.ARRAY_NAME,
                 ValueType.DL_TX_CARRIER_POWER, period, minMax.getLeft(), minMax.getRight());
         return new NBAPWattProvider("DL_TX_CARRIER_POWER analysis", element, service);
