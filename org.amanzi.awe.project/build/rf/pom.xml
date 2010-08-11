@@ -60,7 +60,6 @@
     <module>org.amanzi.neo.core</module>
     <module>org.amanzi.neo.loader</module>
     <module>org.amanzi.rdt.launching</module>
-    <module>org.amanzi.rdt.testing</module>
     <module>org.amanzi.scripting.jirb</module>
     <module>org.amanzi.scripting.jirb.console</module>
     <module>org.amanzi.scripting.jruby</module>
@@ -71,7 +70,6 @@
     <module>org.epic.regexp</module>
     <module>org.jfree</module>
     <module>org.jruby</module>
-    <module>org.jtestr</module>
     <module>org.kxml2</module>
     <module>org.neo4j</module>
     <module>org.neo4j.neoclipse</module>
@@ -87,13 +85,7 @@
     <module>org.amanzi.awe.wizards</module>
     <module>org.amanzi.awe.gps</module>
     <module>org.amanzi.awe.report.o2</module>
-	<module>org.amanzi.splash.testing</module>
 	<module>org.amanzi.neo.data-generator</module>
-	<module>org.amanzi.neo.loader.testing</module>
-	<module>org.amanzi.testing.sanity</module>
-	<module>org.amanzi.testing</module>
-	<module>org.amanzi.awe.views.calls.testing</module>
-	<module>org.amanzi.awe.views.reuse.testing</module>
 	<module>org.amanzi.neo.db</module>
 	<module>org.amanzi.neo.loader.core</module>
 	<module>org.amanzi.neo.loader.ui</module>
