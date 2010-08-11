@@ -369,7 +369,7 @@ public class CorrelationManager extends ViewPart implements INeoServiceProviderL
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     Node node = currentPos.currentNode();
-                    return node.hasProperty(INeoConstants.SECTOR_ID_PROPERTIES)&&NeoUtils.isDrivePointNode(node);
+                    return node.hasProperty(INeoConstants.SECTOR_ID_PROPERTIES)/*&&NeoUtils.isDrivePointNode(node)*/;
                 }
                     }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.LOCATION,
                             Direction.OUTGOING);

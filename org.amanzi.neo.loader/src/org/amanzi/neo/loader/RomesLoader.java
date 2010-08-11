@@ -227,8 +227,7 @@ public class RomesLoader extends DriveLoader {
                     m.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
                     for (Map.Entry<String, Object> entry : dataLine.entrySet()) {
                         if (entry.getKey().equals(INeoConstants.SECTOR_ID_PROPERTIES)) {
-                            mp.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, entry.getValue());
-                            // ms.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, entry.getValue());
+                            m.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, entry.getValue());
                         } else if ("timestamp".equals(entry.getKey())) {
                             long timeStamp = getTimeStamp(1, ((Date)entry.getValue()));
                             if (timeStamp != 0) {

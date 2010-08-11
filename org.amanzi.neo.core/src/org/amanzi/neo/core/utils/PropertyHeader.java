@@ -32,6 +32,7 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 
 /**
@@ -147,6 +148,17 @@ public class PropertyHeader {
         return havePropertyNode ? getDefinedAllFields() : isGis ? getDataVault().getAllFields() : getNumericFields();// NeoUtils.getAllFields(node);
     }
 
+    public String[] getIdentityFields() {
+        List<String> result = new ArrayList<String>();
+        Relationship rel = node.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
+        if (rel != null) {
+            Node propertyNode = rel.getEndNode();
+             for (Node node:propertyNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING)){
+                result.addAll(Arrays.asList((String[]) node.getProperty("identity_properties")));
+             }
+        }
+        return result.toArray(new String[result.size()]);
+    }
     /**
      *Get all defined fields from drive gis node
      * 

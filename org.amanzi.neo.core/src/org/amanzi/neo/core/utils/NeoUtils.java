@@ -966,19 +966,21 @@ public class NeoUtils {
      * 
      * @param aDriveName the a drive name
      * @param sectorDriveRoot the sector drive root
-     * @param mpNode - mp node
+     * @param mNode - m node
      * @param service the service
      * @param isNewTransaction the is new transaction
      * @return sector-drive node
      */
-    public static Node findOrCreateSectorDrive(String aDriveName, Node sectorDriveRoot, Node mpNode, GraphDatabaseService service, boolean isNewTransaction) {
+    public static Node findOrCreateSectorDrive(String aDriveName, Node sectorDriveRoot, Node mNode, GraphDatabaseService service, boolean isNewTransaction) {
         GraphDatabaseService neo = isNewTransaction ? service : null;
         Transaction tx = beginTx(neo);
         try {
-            final Object idProperty = mpNode.getProperty(INeoConstants.SECTOR_ID_PROPERTIES, null);
+            final Object idProperty = mNode.getProperty(INeoConstants.SECTOR_ID_PROPERTIES, null);
             if (idProperty == null) {
                 return null;
             }
+            Relationship rel = mNode.getSingleRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING);
+            Node mpNode=rel.getEndNode();
             if (mpNode.hasRelationship(NetworkRelationshipTypes.DRIVE, Direction.INCOMING)) {
                 return mpNode.getSingleRelationship(NetworkRelationshipTypes.DRIVE, Direction.INCOMING).getOtherNode(mpNode);
             }
