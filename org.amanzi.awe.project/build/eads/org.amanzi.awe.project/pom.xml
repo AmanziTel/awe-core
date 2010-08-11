@@ -9,12 +9,12 @@
   <groupId>AWE_build</groupId>
   <artifactId>org.amanzi.awe.project</artifactId>
   <version>1.0.0.qualifier</version>
-  <packaging>eclipse-application</packaging>  
+  <packaging>eclipse-application</packaging>
   <properties>
   	<generatedBuildProperties>root.properties</generatedBuildProperties>
   </properties>
   <build>
-  	<finalName>${parent.artifactId}.rf-1.0.${BUILD_NUMBER}</finalName>
+  	<finalName>${parent.artifactId}.ams-1.0.${BUILD_NUMBER}</finalName>
   	<plugins>
       <plugin>
         <groupId>org.sonatype.tycho</groupId>

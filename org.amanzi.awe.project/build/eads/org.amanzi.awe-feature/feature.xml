@@ -17,24 +17,23 @@ Geotools, the Eclipse Foundation and others.
 All code is copyright their respective owners.
    </copyright>
 
-   <license url="http://awe.amanzi.org/license.html">
+   <license url="http://www.amanzi.org/awe/license">
       The Amanzi Wireless Explorer contains code written by Amanzi
 HB, AmanziTel AB, Refractions Research, Neotechnology, Geotools,
 the Eclipse Foundation and others.
+
 All code is copyright their respective owners. All code by
 Amanzi and AmanziTel is licensed using the Eclipse Public License
-as described at http://www.eclipse.org/legal/epl-v10.html. Any
-use,
+as described at http://www.eclipse.org/legal/epl-v10.html. Any use,
 reproduction or distribution of the library constitutes recipient&apos;s
 acceptance of this agreement.
+
 Each of the copyright owners has licensed their work using their
-prefered licenses, so please refer to each component for the
-specific
+prefered licenses, so please refer to each component for the specific
 license.
-This program is distributed WITHOUT ANY WARRANTY; without even
-the
-implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-PURPOSE.
+
+This program is distributed WITHOUT ANY WARRANTY; without even the
+implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
    </license>
 
    <requires>
@@ -140,6 +139,27 @@ PURPOSE.
          unpack="false"/>
 
    <plugin
+         id="net.refractions.udig.project"
+         download-size="0"
+         install-size="0"
+         version="1.1.1"
+         unpack="false"/>
+
+   <plugin
+         id="net.refractions.udig.project.edit"
+         download-size="0"
+         install-size="0"
+         version="1.1.1"
+         unpack="false"/>
+
+   <plugin
+         id="net.refractions.udig.project.ui"
+         download-size="0"
+         install-size="0"
+         version="1.1.1"
+         unpack="false"/>
+
+   <plugin
          id="org.amanzi.awe.views.network"
          download-size="0"
          install-size="0"
@@ -209,6 +229,20 @@ PURPOSE.
          unpack="false"/>
 
    <plugin
+         id="net.refractions.udig.style.sld"
+         download-size="0"
+         install-size="0"
+         version="1.1.1"
+         unpack="false"/>
+
+   <plugin
+         id="net.refractions.udig.ui"
+         download-size="0"
+         install-size="0"
+         version="1.1.1"
+         unpack="false"/>
+
+   <plugin
          id="org.amanzi.awe.views.neighbours"
          download-size="0"
          install-size="0"
@@ -244,6 +278,33 @@ PURPOSE.
          unpack="false"/>
 
    <plugin
+         id="com.lowagie.itext"
+         download-size="0"
+         install-size="0"
+         version="1.1.1"/>
+
+   <plugin
+         id="net.refractions.udig.printing.model"
+         download-size="0"
+         install-size="0"
+         version="1.1.0"
+         unpack="false"/>
+
+   <plugin
+         id="net.refractions.udig.printing.model.edit"
+         download-size="0"
+         install-size="0"
+         version="1.1.0"
+         unpack="false"/>
+
+   <plugin
+         id="net.refractions.udig.printing.ui"
+         download-size="0"
+         install-size="0"
+         version="1.1.0"
+         unpack="false"/>
+
+   <plugin
          id="org.amanzi.awe.filters"
          download-size="0"
          install-size="0"
@@ -259,13 +320,6 @@ PURPOSE.
 
    <plugin
          id="org.amanzi.awe.l3messages"
-         download-size="0"
-         install-size="0"
-         version="1.0.0.qualifier"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.awe.neighbours"
          download-size="0"
          install-size="0"
          version="1.0.0.qualifier"
@@ -300,63 +354,7 @@ PURPOSE.
          unpack="false"/>
 
    <plugin
-         id="org.amanzi.awe.wizards"
-         download-size="0"
-         install-size="0"
-         version="1.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.awe.gps"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.awe.report.o2"
-         download-size="0"
-         install-size="0"
-         version="1.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.amanzi.awe.console"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.neo.db"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.neo.loader.core"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.neo.loader.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.neo.services"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.awe.parser"
          download-size="0"
          install-size="0"
          version="0.0.0"
