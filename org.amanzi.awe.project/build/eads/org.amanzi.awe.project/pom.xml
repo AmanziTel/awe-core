@@ -9,7 +9,7 @@
   <groupId>AWE_build</groupId>
   <artifactId>org.amanzi.awe.project</artifactId>
   <version>1.0.0.qualifier</version>
-  <packaging>eclipse-application</packaging>
+  <packaging>eclipse-application</packaging>  
   <properties>
   	<generatedBuildProperties>root.properties</generatedBuildProperties>
   </properties>
