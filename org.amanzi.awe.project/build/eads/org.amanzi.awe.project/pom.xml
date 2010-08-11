@@ -19,7 +19,7 @@
       <plugin>
         <groupId>org.sonatype.tycho</groupId>
         <artifactId>maven-osgi-packaging-plugin</artifactId>
-        <version>0.9.0-SNAPSHOT</version>
+        <version>${tycho-version}</version>
         <configuration>
         	<directoryName>awe</directoryName>         
         </configuration>
