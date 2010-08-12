@@ -88,7 +88,8 @@ public class ExportProvider3GPP extends AbstractGpehExportProvider {
         this.value3gpp = value3gpp;
         this.dataname = dataname;
 
-        computeTime=startTime;
+        computeTime=minMax.getLeft();
+        startTime = computeTime;
         statRoot=defineStatRoot();
     }
 
