@@ -131,16 +131,18 @@ public class ExportProvider3GPP extends AbstractGpehExportProvider {
      */
     @Override
     public boolean hasNextLine() {
-        while (computeTime<minMax.getRight()||computeTime==startTime){
-            if (model==null){
-                computeModel();
-            }   
-            if (model.hasNext()){
-                return true;
+        if (minMax.getRight() != null) {
+            while (computeTime<minMax.getRight()||computeTime==startTime){
+                if (model==null){
+                    computeModel();
+                }   
+                if (model.hasNext()){
+                    return true;
+                }
+                computeTime=period.addPeriod(computeTime);
+                model.clear();
+                model=null;
             }
-            computeTime=period.addPeriod(computeTime);
-            model.clear();
-            model=null;
         }
         return false;
     }
