@@ -1116,7 +1116,7 @@ public class GpehReportCreator {
             long time2 = System.currentTimeMillis() - time;
             LOGGER.error(String.format(
                     "Handle %s events, passed %s (skipped: %s, no location %s, not found sest cell %s, no full data %s), create table rows %s, ttotal time: %s, average time: %s",
-                    countEvent, notfoundBestCell + notfoundBestCell + notfoundlocation + skipped, skipped, notfoundlocation, notfoundBestCell, notFullData, countRow, time2, time2
+                    countEvent, notfoundBestCell + notfoundBestCell + notfoundlocation + skipped, skipped, notfoundlocation, notfoundBestCell, notFullData, countRow, time2, countEvent == 0 ? 0 : time2
                             / countEvent));
             model.findMatrixNodes();
         } finally {
