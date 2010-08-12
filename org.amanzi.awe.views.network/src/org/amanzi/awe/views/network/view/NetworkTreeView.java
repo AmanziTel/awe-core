@@ -19,7 +19,6 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -778,6 +777,10 @@ public class NetworkTreeView extends ViewPart {
     private class NeoServiceEventListener extends NeoServiceProviderEventAdapter {
         
         private boolean neoStopped = false;
+        
+        public NeoServiceEventListener() {
+            neoServiceProvider.addServiceProviderListener(this);
+        }
 
         @Override
         public void onNeoStop(Object source) {
