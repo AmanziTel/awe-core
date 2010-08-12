@@ -776,10 +776,17 @@ public class NetworkTreeView extends ViewPart {
      */
 
     private class NeoServiceEventListener extends NeoServiceProviderEventAdapter {
+        
+        private boolean neoStopped = false;
 
         @Override
         public void onNeoStop(Object source) {
-            neoServiceProvider.shutdown();
+            neoStopped = true;
+        }
+        
+        @Override
+        public void onNeoStart(Object source) {
+            neoStopped = false;
         }
 
         /**
@@ -788,11 +795,13 @@ public class NetworkTreeView extends ViewPart {
         @Override
         public void onNeoCommit(Object source) {
             // TODO: Only modify part of tree specific to data modified
-            viewer.getControl().getDisplay().syncExec(new Runnable() {
-                public void run() {
-                    NetworkTreeView.this.viewer.refresh();
-                }
-            });
+            if (!neoStopped) {
+                viewer.getControl().getDisplay().syncExec(new Runnable() {
+                    public void run() {
+                        NetworkTreeView.this.viewer.refresh();
+                    }
+                });
+            }
         }
     }
 
