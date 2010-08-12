@@ -35,9 +35,9 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class IntraModelHandler extends RrcModelHandler {
-    private List<Object> data;
-    private final CallTimePeriods period;
-    private final GraphDatabaseService service;
+    protected List<Object> data;
+    protected final CallTimePeriods period;
+    protected final GraphDatabaseService service;
 
     public IntraModelHandler(CallTimePeriods period,GraphDatabaseService service){
         this.period = period;
@@ -62,8 +62,8 @@ public class IntraModelHandler extends RrcModelHandler {
     @Override
     public boolean setData(CellNodeInfo bestCell, InterfCellInfo interfCell) {
 //        Pattern pat=Pattern.compile("^(\\D)(\\d)$");
-        Pattern pat=Pattern.compile("^(numMrForBestCell)(\\d)$");
-        Set<Long> timestamps=defineTimestamps(bestCell.getCellSectorInfo(),pat);
+        Pattern pat=Pattern.compile("^(intraMr)(\\d+)$");
+        Set<Long> timestamps=defineTimestamps(interfCell.getCellSectorInfo(),pat);
         if (timestamps.isEmpty()){
             return false;
         }
@@ -82,18 +82,45 @@ public class IntraModelHandler extends RrcModelHandler {
         
         data.add(computeValue(bestCell.getCellSectorInfo(),"numMrForBestCell%s",timestamps));
         // # of MR for Interfering cell
-        data.add(0);
+        data.add(computeValue(interfCell.getCellSectorInfo(),"intraMr%s",timestamps));
+        int[]values=new int[5];
+        computeArrayValue(values,interfCell.getCellSectorInfo(),"intraEcnoD%s",timestamps);
         // Delta EcNo 1-5
-        for (int i = 1; i <= 5; i++) {
-            data.add(0);
+        for (int i = 0; i < 5; i++) {
+            data.add(values[i]);
         }
-        for (int i = 1; i <= 5; i++) {
-            data.add(0);
+        values=new int[5];
+        computeArrayValue(values,interfCell.getCellSectorInfo(),"intraRscpD%s",timestamps);
+        for (int i = 0; i < 5; i++) {
+            data.add(values[i]);
         }
-        for (int i = 1; i <= 5; i++) {
-            data.add(0);
+        values=new int[5];
+        computeArrayValue(values,interfCell.getCellSectorInfo(),"positions%s",timestamps);
+        for (int i = 0; i < 5; i++) {
+            data.add(values[i]);
         }
+
         return true;
+    }
+
+    /**
+     * Compute array value.
+     *
+     * @param result the result
+     * @param cellSectorInfo the cell sector info
+     * @param string the string
+     * @param timestamps the timestamps
+     */
+    protected void computeArrayValue(int result[],Node cellSectorInfo, String string, Set<Long> timestamps) {
+        for (Long time:timestamps){
+            int[] others = (int[])cellSectorInfo.getProperty(String.format(string, time), null);
+            if (others!=null){
+                for (int i = 0; i < result.length; i++) {
+                    result[i]+=others[i];
+                }
+            }
+        }
+        return;
     }
     /**
      *
@@ -102,8 +129,12 @@ public class IntraModelHandler extends RrcModelHandler {
      * @param timestamps
      * @return
      */
-    private int computeValue(Node cellSectorInfo, String string, Set<Long> timestamps) {
-        return 0;
+    protected int computeValue(Node cellSectorInfo, String string, Set<Long> timestamps) {
+        int result=0;
+        for (Long time:timestamps){
+            result+=(Integer)cellSectorInfo.getProperty(String.format(string, time), 0);
+        }
+        return result;
     }
     /**
      *
@@ -111,12 +142,15 @@ public class IntraModelHandler extends RrcModelHandler {
      * @param pat 
      * @return
      */
-    private Set<Long> defineTimestamps(Node node, Pattern pat) {
+    protected Set<Long> defineTimestamps(Node node, Pattern pat) {
         Set<Long> result=new HashSet<Long>();
         for (String propertyName:node.getPropertyKeys()){
              Matcher mat = pat.matcher(propertyName);
              if (mat.matches()){
-                 result.add(Long.valueOf(mat.group(2)));
+                 Long time = Long.valueOf(mat.group(2));
+                 if (period.compareByPeriods(time, computeTime)==0){
+                     result.add(time);
+                 }
              }
         }
         return result;

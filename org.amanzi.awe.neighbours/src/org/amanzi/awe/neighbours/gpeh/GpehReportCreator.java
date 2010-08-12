@@ -17,6 +17,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
@@ -37,8 +38,6 @@ import org.amanzi.awe.neighbours.gpeh.GpehReportModel.CellRscpAnalisis;
 import org.amanzi.awe.neighbours.gpeh.GpehReportModel.CellRscpEcNoAnalisis;
 import org.amanzi.awe.neighbours.gpeh.GpehReportModel.CellUeTxPowerAnalisis;
 import org.amanzi.awe.neighbours.gpeh.GpehReportModel.CellUlInterferenceAnalisis;
-import org.amanzi.awe.neighbours.gpeh.GpehReportModel.InterFrequencyICDM;
-import org.amanzi.awe.neighbours.gpeh.GpehReportModel.IntraFrequencyICDM;
 import org.amanzi.awe.statistic.CallTimePeriods;
 import org.amanzi.awe.statistic.IStatisticElement;
 import org.amanzi.awe.statistic.IStatisticElementNode;
@@ -183,49 +182,60 @@ public class GpehReportCreator {
      * @return the i export provider
      */
     private IExportProvider defineProvider(GpehReportType report, CallTimePeriods period) {
+        IExportProvider empty = new IExportProvider() {
+            
+            @Override
+            public boolean isValid() {
+                return false;
+            }
+            
+            @Override
+            public boolean hasNextLine() {
+                return false;
+            }
+            
+            @Override
+            public List<Object> getNextLine() {
+                return Collections.<Object>emptyList();
+            }
+            
+            @Override
+            public List<String> getHeaders() {
+                return Collections.<String>emptyList();
+            }
+            
+            @Override
+            public String getDataName() {
+                return "FAKE";
+            }
+        };
         IExportProvider result = null;
         switch (report) {
         case UE_TX_POWER_ANALYSIS:
-//            createMatrix();
-//            createUeTxPowerCellReport(period);
-            result = getUeTxPowerCellProvider(period);
-            return result;
+            return getUeTxPowerCellProvider(period);
         case CELL_RF_CORRELATION:
-            createMatrix();
-            createRscpEcNoCellReport(period);
-            result = getCellCorrelationProvider(period);
-            return result;
+//            result = getCellCorrelationProvider(period);
+            return empty;
         case IDCM_INTRA:
-            createMatrix();
-            result = getIntraMatrixProvider();
-            return result;
+            return getIntraMatrixProvider();
         case IDCM_INTER:
-            createMatrix();
             return getInterMatrixProvider();
         case CELL_RSCP_ANALYSIS:
-            createMatrix();
-            createRSCPCellReport(period);
-            return getCellRSCPProvider(period);
+            return empty;
         case CELL_ECNO_ANALYSIS:
-            createMatrix();
-            createEcNoCellReport(period);
-            return getCellEcnoProvider(period);
+            return empty;
         case NBAP_UL_INTERFERENCE:
-//            createNBapBaseReports();
-//            createUlInterferenceReport(period);
-            return getUlInterferenceCellProvider(period);
+//            return getUlInterferenceCellProvider(period);
+            return empty;
         case NBAP_DL_TX_CARRIER_POWER:
-//            createNBapBaseReports();
-//            createCellDlTxCarrierPowerAnalisis(period);
-            return getCellDlTxCarrierPowerProvider(period);
+//            return getCellDlTxCarrierPowerProvider(period);
+            return empty;
         case NBAP_NON_HS_POWER:
-            createNBapBaseReports();
-            createCellNonHsPowerAnalisis(period);
-            return getCellNonHsPowerPowerProvider(period);
+//            return getCellNonHsPowerPowerProvider(period);
+            return empty;
         case NBAP_HSDS_REQUIRED_POWER:
-            createNBapBaseReports();
-            createCellHsdsRequiredPowerAnalisis(period);
-            return getCellHsdsRequiredPowerProvider(period);
+//            return getCellHsdsRequiredPowerProvider(period);
+            return empty;
         default:
             return null;
         }
@@ -365,108 +375,7 @@ public class GpehReportCreator {
     }
 
     private IExportProvider getInterMatrixProvider() {
-        GpehReportModel mdl = getReportModel();
-        final InterFrequencyICDM matrix = mdl.getInterFrequencyICDM();
-        final List<String> headers = new LinkedList<String>();
-        headers.add("Serving cell name");
-        headers.add("Serving PSC");
-        headers.add("Serving cell UARFCN");
-        headers.add("Overlapping cell name");
-        headers.add("Interfering PSC");
-        headers.add("Overlapping cell UARCFN");
-        headers.add("Defined NBR");
-        headers.add("Distance");
-        headers.add("Tier Distance");
-        headers.add("# of MR for best cell");
-        headers.add("# of MR for Interfering cell");
-        headers.add("EcNo 1");
-        headers.add("EcNo 2");
-        headers.add("EcNo 3");
-        headers.add("EcNo 4");
-        headers.add("EcNo 5");
-        headers.add("RSCP1_14");
-        headers.add("RSCP2_14");
-        headers.add("RSCP3_14");
-        headers.add("RSCP4_14");
-        headers.add("RSCP5_14");
-        headers.add("RSCP1_10");
-        headers.add("RSCP2_10");
-        headers.add("RSCP3_10");
-        headers.add("RSCP4_10");
-        headers.add("RSCP5_10");
-
-        // TODO create public class
-        return new IExportProvider() {
-            Iterator<Node> rowIterator = null;
-
-            @Override
-            public boolean isValid() {
-                return true;
-            }
-
-            @Override
-            public boolean hasNextLine() {
-                if (rowIterator == null) {
-                    rowIterator = matrix.getRowTraverser().iterator();
-                }
-                return rowIterator.hasNext();
-            }
-
-            @Override
-            public List<Object> getNextLine() {
-                List<Object> result = new ArrayList<Object>();
-                Node tblRow = rowIterator.next();
-                // Serving cell name
-                String bestCellName = matrix.getBestCellName(tblRow);
-                result.add(bestCellName);
-                // psc
-                String value = matrix.getBestCellPSC(tblRow);
-                result.add(bestCellName);
-                // UARFCN
-                result.add(matrix.getBestCellUARFCN(tblRow));
-                // Interfering cell name
-                value = matrix.getInterferingCellName(tblRow);
-                result.add(bestCellName);
-                // Interfering PSC
-                value = matrix.getInterferingCellPSC(tblRow);
-                result.add(value);
-                // UARFCN
-                result.add(matrix.getInterferingCellUARFCN(tblRow));
-                // Defined NBR
-                result.add(matrix.isDefinedNbr(tblRow));
-                // Distance
-                result.add(matrix.getDistance(tblRow));
-                // Tier Distance
-                value = String.valueOf("N/A");
-                result.add(value);
-                // # of MR for best cell
-                result.add(matrix.getNumMRForBestCell(tblRow));
-                // # of MR for Interfering cell
-                result.add(matrix.getNumMRForInterferingCell(tblRow));
-                // EcNo 1-5
-                for (int i = 1; i <= 5; i++) {
-                    result.add(matrix.getEcNo(i, tblRow));
-                }
-                for (int i = 1; i <= 5; i++) {
-                    result.add(matrix.getRSCP(i, 14, tblRow));
-                }
-                for (int i = 1; i <= 5; i++) {
-                    result.add(matrix.getRSCP(i, 10, tblRow));
-                }
-                return result;
-            }
-
-            @Override
-            public List<String> getHeaders() {
-                return headers;
-            }
-
-            @Override
-            public String getDataName() {
-                return "INTRA_ICDM";
-            }
-        };
-
+        return new InterMatrixProvider(model.getGpeh(), model.getNetwork(), service, CallTimePeriods.ALL, luceneService);
     }
 
     /**
@@ -494,99 +403,101 @@ public class GpehReportCreator {
     }
 
     private IExportProvider getIntraMatrixProvider() {
-        GpehReportModel mdl = getReportModel();
-        final IntraFrequencyICDM matrix = mdl.getIntraFrequencyICDM();
-        final List<String> headers = new LinkedList<String>();
-        headers.add("Serving cell name");
-        headers.add("Serving PSC");
-        headers.add("Interfering cell name");
-        headers.add("Interfering PSC");
-        headers.add("Defined NBR");
-        headers.add("Distance");
-        headers.add("Tier Distance");
-        headers.add("# of MR for best cell");
-        headers.add("# of MR for Interfering cell");
-        headers.add("EcNo Delta1");
-        headers.add("EcNo Delta2");
-        headers.add("EcNo Delta3");
-        headers.add("EcNo Delta4");
-        headers.add("EcNo Delta5");
-        headers.add("RSCP Delta1");
-        headers.add("RSCP Delta2");
-        headers.add("RSCP Delta3");
-        headers.add("RSCP Delta4");
-        headers.add("RSCP Delta5");
-        headers.add("Position1");
-        headers.add("Position2");
-        headers.add("Position3");
-        headers.add("Position4");
-        headers.add("Position5");
-
-        // TODO create public class
-        return new IExportProvider() {
-            Iterator<Node> rowIterator = null;
-
-            @Override
-            public boolean isValid() {
-                return true;
-            }
-
-            @Override
-            public boolean hasNextLine() {
-                if (rowIterator == null) {
-                    rowIterator = matrix.getRowTraverser().iterator();
-                }
-                return rowIterator.hasNext();
-            }
-
-            @Override
-            public List<Object> getNextLine() {
-                List<Object> result = new ArrayList<Object>();
-                Node tblRow = rowIterator.next();
-                // Serving cell name
-                String bestCellName = matrix.getBestCellName(tblRow);
-                result.add(bestCellName);
-                // psc
-                String value = matrix.getBestCellPSC(tblRow);
-                result.add(value);
-                // Interfering cell name
-                result.add(matrix.getInterferingCellName(tblRow));
-                // Interfering PSC
-                result.add(matrix.getInterferingCellPSC(tblRow));
-                // Defined NBR
-                result.add(matrix.isDefinedNbr(tblRow));
-                // Distance
-                result.add(matrix.getDistance(tblRow));
-                // Tier Distance
-                value = String.valueOf("N/A");
-                result.add(value);
-                // # of MR for best cell
-                result.add(matrix.getNumMRForBestCell(tblRow));
-                // # of MR for Interfering cell
-                result.add(matrix.getNumMRForInterferingCell(tblRow));
-                // Delta EcNo 1-5
-                for (int i = 1; i <= 5; i++) {
-                    result.add(matrix.getDeltaEcNo(i, tblRow));
-                }
-                for (int i = 1; i <= 5; i++) {
-                    result.add(matrix.getDeltaRSCP(i, tblRow));
-                }
-                for (int i = 1; i <= 5; i++) {
-                    result.add(matrix.getPosition(i, tblRow));
-                }
-                return result;
-            }
-
-            @Override
-            public List<String> getHeaders() {
-                return headers;
-            }
-
-            @Override
-            public String getDataName() {
-                return "INTRA_ICDM";
-            }
-        };
+        return new IntraMatrixProvider(model.getGpeh(), model.getNetwork(), service, CallTimePeriods.ALL, luceneService);
+//        
+//        GpehReportModel mdl = getReportModel();
+//        final IntraFrequencyICDM matrix = mdl.getIntraFrequencyICDM();
+//        final List<String> headers = new LinkedList<String>();
+//        headers.add("Serving cell name");
+//        headers.add("Serving PSC");
+//        headers.add("Interfering cell name");
+//        headers.add("Interfering PSC");
+//        headers.add("Defined NBR");
+//        headers.add("Distance");
+//        headers.add("Tier Distance");
+//        headers.add("# of MR for best cell");
+//        headers.add("# of MR for Interfering cell");
+//        headers.add("EcNo Delta1");
+//        headers.add("EcNo Delta2");
+//        headers.add("EcNo Delta3");
+//        headers.add("EcNo Delta4");
+//        headers.add("EcNo Delta5");
+//        headers.add("RSCP Delta1");
+//        headers.add("RSCP Delta2");
+//        headers.add("RSCP Delta3");
+//        headers.add("RSCP Delta4");
+//        headers.add("RSCP Delta5");
+//        headers.add("Position1");
+//        headers.add("Position2");
+//        headers.add("Position3");
+//        headers.add("Position4");
+//        headers.add("Position5");
+//
+//        // TODO create public class
+//        return new IExportProvider() {
+//            Iterator<Node> rowIterator = null;
+//
+//            @Override
+//            public boolean isValid() {
+//                return true;
+//            }
+//
+//            @Override
+//            public boolean hasNextLine() {
+//                if (rowIterator == null) {
+//                    rowIterator = matrix.getRowTraverser().iterator();
+//                }
+//                return rowIterator.hasNext();
+//            }
+//
+//            @Override
+//            public List<Object> getNextLine() {
+//                List<Object> result = new ArrayList<Object>();
+//                Node tblRow = rowIterator.next();
+//                // Serving cell name
+//                String bestCellName = matrix.getBestCellName(tblRow);
+//                result.add(bestCellName);
+//                // psc
+//                String value = matrix.getBestCellPSC(tblRow);
+//                result.add(value);
+//                // Interfering cell name
+//                result.add(matrix.getInterferingCellName(tblRow));
+//                // Interfering PSC
+//                result.add(matrix.getInterferingCellPSC(tblRow));
+//                // Defined NBR
+//                result.add(matrix.isDefinedNbr(tblRow));
+//                // Distance
+//                result.add(matrix.getDistance(tblRow));
+//                // Tier Distance
+//                value = String.valueOf("N/A");
+//                result.add(value);
+//                // # of MR for best cell
+//                result.add(matrix.getNumMRForBestCell(tblRow));
+//                // # of MR for Interfering cell
+//                result.add(matrix.getNumMRForInterferingCell(tblRow));
+//                // Delta EcNo 1-5
+//                for (int i = 1; i <= 5; i++) {
+//                    result.add(matrix.getDeltaEcNo(i, tblRow));
+//                }
+//                for (int i = 1; i <= 5; i++) {
+//                    result.add(matrix.getDeltaRSCP(i, tblRow));
+//                }
+//                for (int i = 1; i <= 5; i++) {
+//                    result.add(matrix.getPosition(i, tblRow));
+//                }
+//                return result;
+//            }
+//
+//            @Override
+//            public List<String> getHeaders() {
+//                return headers;
+//            }
+//
+//            @Override
+//            public String getDataName() {
+//                return "INTRA_ICDM";
+//            }
+//        };
 
     }
 

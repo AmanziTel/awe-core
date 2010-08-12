@@ -56,7 +56,7 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
     public IntraMatrixProvider(Node dataset, Node network, GraphDatabaseService service, CallTimePeriods period, LuceneIndexService luceneService) {
         super(dataset, network, GpehRelationshipType.RRC, period, service, luceneService);
         computeTime = startTime;
-        maxRange = NeoCorePlugin.getDefault().getPreferenceStore().getInt(NeoCorePreferencesConstants.MAX_SECTOR_DISTANSE);
+
     }
 
     @Override
@@ -70,8 +70,14 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
      *
      */
     protected void loadModel() {
-        modelHandler = new IntraModelHandler(period,service);
+        defineHandler();
         model = new RrcModel<RrcModelHandler>(modelHandler);
+        model.load(network, rowIter, service, luceneService);
+    }
+
+
+    protected void defineHandler() {
+        modelHandler = new IntraModelHandler(period,service);
     }
 
     @Override
@@ -82,7 +88,7 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
     @Override
     public boolean hasNextLine() {
         while (computeTime < minMax.getRight() || computeTime == startTime) {
-            if (model.time != computeTime) {
+            if (modelHandler.getComputeTime() != computeTime) {
                 modelHandler.setTime(computeTime);
                 model.clearIter();
             }
@@ -177,7 +183,7 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
         }
 
         protected void defineIterator() {
-            while (!interferenceCellIterator.hasNext() || bestCellIterator.hasNext()) {
+            while (!interferenceCellIterator.hasNext() && bestCellIterator.hasNext()) {
                 bestCellRel = bestCellIterator.next();
                 interferenceCellIterator = bestCellRel.getEndNode().getRelationships(Direction.OUTGOING).iterator();
             }
@@ -277,7 +283,6 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
         private String scrCodeIndName;
 
         private Map<CellNodeInfo, Set<InterfCellInfo>> cache = new LinkedHashMap<CellNodeInfo, Set<InterfCellInfo>>();
-        public long time;
 
         private Iterator<CellNodeInfo> bestCellIterator;
 
@@ -373,7 +378,7 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
                         // TODO check correct distance! maybe use CRS for this
 
                         result.setDistance(calculateDistance(bestCell, result));
-                        if (bestCell.getDistance() > maxRange) {
+                        if (result.getDistance() > getMaxRange()) {
                             LOGGER.debug("sector " + result + " have too big distance: " + bestCell.getDistance());
                             result = null;
                         }
@@ -397,7 +402,7 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
         public boolean defineNextData() {
             modelHandler.clearData();
             while (interfCellIter.hasNext() || bestCellIterator.hasNext()) {
-                while (!interfCellIter.hasNext() || bestCellIterator.hasNext()) {
+                while (!interfCellIter.hasNext() && bestCellIterator.hasNext()) {
                     bestCellInfo = bestCellIterator.next();
                     interfCellIter = cache.get(bestCellInfo).iterator();
                 }
@@ -432,5 +437,16 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
             // TODO refactor use CRS of network
             return Math.sqrt(Math.pow(bestCell.getLat() - result.getLat(), 2) + Math.pow(bestCell.getLon() - result.getLon(), 2));
         }
+    }
+
+    /**
+     *
+     * @return
+     */
+    public double getMaxRange() {
+        if (maxRange==null){
+            maxRange = NeoCorePlugin.getDefault().getPreferenceStore().getInt(NeoCorePreferencesConstants.MAX_SECTOR_DISTANSE);
+        }
+        return maxRange;
     }
 }

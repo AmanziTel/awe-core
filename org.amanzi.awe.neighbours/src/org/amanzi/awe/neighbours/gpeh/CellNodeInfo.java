@@ -13,7 +13,11 @@
 
 package org.amanzi.awe.neighbours.gpeh;
 
+import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 
 /**
  * <p>
@@ -31,8 +35,8 @@ public class CellNodeInfo {
     private double distance;  
     /** The cell sector info. */
     private Node cellSectorInfo;
-    private Long lat;
-    private Long lon;
+    private Double lat;
+    private Double lon;
     /**
      * Instantiates a new cell node info.
      *
@@ -104,15 +108,28 @@ public class CellNodeInfo {
      * @return
      */
     public boolean setupLocation() {
+        if (lat != null && lon != null) {
+            return true;
+        }
+        // define location
+        Relationship rel = cellSector.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING);
+        if (rel != null) {
+            Node site = rel.getOtherNode(cellSector);
+            Double lat = (Double)site.getProperty(INeoConstants.PROPERTY_LAT_NAME, null);
+            Double lon = (Double)site.getProperty(INeoConstants.PROPERTY_LON_NAME, null);
+            this.lat = lat;
+            this.lon = lon;
+            return lat != null && lon != null;
+        }
         return false;
     }
 
-    public Long getLat() {
+    public Double getLat() {
         return lat;
     }
 
 
-    public Long getLon() {
+    public Double getLon() {
         return lon;
     }
     /**

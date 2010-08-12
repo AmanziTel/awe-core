@@ -45,8 +45,11 @@ public abstract class AbstractGpehExportProvider implements IExportProvider{
     protected Pair<Long, Long> minMax;
     protected Long startTime;
     protected List<String> headers = null;
+    private Transaction tx;
 
     public AbstractGpehExportProvider(Node dataset, Node network, RelationshipType statRelation, CallTimePeriods period,GraphDatabaseService service, LuceneIndexService luceneService) {
+        tx=NeoUtils.beginTx(service);
+        try{
         this.dataset = dataset;
         this.network = network;
         this.statRelation = statRelation;
@@ -55,6 +58,9 @@ public abstract class AbstractGpehExportProvider implements IExportProvider{
         this.luceneService = luceneService;
         minMax=NeoUtils.getMinMaxTimeOfDataset(dataset, service);
         init();
+        }finally{
+            NeoUtils.finishTx(tx);
+        }
     }
 
     protected void init() {

@@ -25,7 +25,7 @@ import java.util.List;
  */
 public abstract class RrcModelHandler {
 
-    protected Long computeTime;
+    protected long computeTime;
 
     public abstract boolean haveData();
 
@@ -34,11 +34,15 @@ public abstract class RrcModelHandler {
     public abstract void clearData();
 
 
-    public void setTime(Long computeTime) {
+    public void setTime(long computeTime) {
         this.computeTime = computeTime;
         clearData();
         
     }
     
+    public long getComputeTime() {
+        return computeTime;
+    }
+
     public abstract boolean setData(CellNodeInfo bestCell,InterfCellInfo interfCell);
 }
