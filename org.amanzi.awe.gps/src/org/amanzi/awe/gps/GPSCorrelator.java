@@ -233,7 +233,13 @@ public class GPSCorrelator {
                 for (SearchRequest request : searchRequests) {
                     String sectorId = searchValues.get(request.getSearchType());
                     if (sectorId == null) {
-                        sectorId = sector.getProperty(request.getSearchType().getProperty()).toString();
+                        String searchProp = request.getSearchType().getProperty();
+                        Object property = sector.getProperty(searchProp,null);
+                        if (property==null){
+                           LOGGER.error("sector ["+sector.getId()+","+sector.getProperty("name",null)+"] does not have the property "+searchProp);
+                           continue;
+                        }
+                        sectorId = property.toString();
                         searchValues.put(request.getSearchType(), sectorId);
                     }
                     
@@ -259,10 +265,9 @@ public class GPSCorrelator {
                 
                 monitor.worked(1);
             }
-            
         }   
         catch (Exception e) {
-            LOGGER.error(e);
+            LOGGER.error(e,e);
         }
         finally {
             tx.success();

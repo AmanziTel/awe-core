@@ -31,6 +31,7 @@ import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.enums.SectorIdentificationType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.swt.widgets.Display;
@@ -49,7 +50,7 @@ public class RomesLoader extends DriveLoader {
     private String time = null;
     // private long timestamp = 0L;
     private final ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
-
+    private String luceneIndexName;
     /**
      * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
      * 
@@ -194,6 +195,7 @@ public class RomesLoader extends DriveLoader {
      */
     @Override
     protected void finishUp() {
+        getStoringNode(1).setProperty(INeoConstants.SECTOR_ID_TYPE, SectorIdentificationType.CI.toString());
         saveData();
         super.finishUp();
         if (!isTest()) {
@@ -228,6 +230,8 @@ public class RomesLoader extends DriveLoader {
                     for (Map.Entry<String, Object> entry : dataLine.entrySet()) {
                         if (entry.getKey().equals(INeoConstants.SECTOR_ID_PROPERTIES)) {
                             m.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, entry.getValue());
+                            // Pechko_E: index sector_id property for correlation
+                            index.index(m, getSectorIDIndexName(), entry.getValue());
                         } else if ("timestamp".equals(entry.getKey())) {
                             long timeStamp = getTimeStamp(1, ((Date)entry.getValue()));
                             if (timeStamp != 0) {
@@ -262,6 +266,13 @@ public class RomesLoader extends DriveLoader {
             }
         }
         data.clear();
+    }
+
+    private String getSectorIDIndexName() {
+        if (luceneIndexName!=null){
+            return luceneIndexName;
+        }
+        return luceneIndexName = NeoUtils.getLuceneIndexKeyByProperty(datasetNode, INeoConstants.SECTOR_ID_PROPERTIES, NodeTypes.M);
     }
 
     /**
