@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.neighbours.gpeh;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -49,7 +50,8 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
     protected Long computeTime;
     protected RowIterator rowIter;
     protected RrcModel model;
-    private Integer maxRange;
+    protected Integer maxRange;
+    protected RrcModelHandler modelHandler;
 
     public IntraMatrixProvider(Node dataset, Node network, GraphDatabaseService service, CallTimePeriods period, LuceneIndexService luceneService) {
         super(dataset, network, GpehRelationshipType.RRC, period, service, luceneService);
@@ -61,7 +63,15 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
     protected void init() {
         super.init();
         rowIter = new RowIterator();
-        model.load(network, rowIter, service, luceneService);
+        loadModel();
+    }
+
+    /**
+     *
+     */
+    protected void loadModel() {
+        modelHandler = new IntraModelHandler(period,service);
+        model = new RrcModel<RrcModelHandler>(modelHandler);
     }
 
     @Override
@@ -73,9 +83,15 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
     public boolean hasNextLine() {
         while (computeTime < minMax.getRight() || computeTime == startTime) {
             if (model.time != computeTime) {
-                model.setTime(computeTime);
+                modelHandler.setTime(computeTime);
+                model.clearIter();
             }
-            if (model.hasNext()) {
+            while (!modelHandler.haveData()) {
+                if (!model.defineNextData()) {
+                    break;
+                }
+            }
+            if (modelHandler.haveData()) {
                 return true;
             }
             computeTime = period.addPeriod(computeTime);
@@ -89,9 +105,14 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
     }
 
     @Override
+    // hasNextLine() must be used before calling of this method!
     public List<Object> getNextLine() {
-        hasNextLine();
-        return null;
+        if (!modelHandler.haveData()) {
+            hasNextLine();
+        }
+        List<Object> result = modelHandler.formLine();
+        modelHandler.clearData();
+        return result;
     }
 
     @Override
@@ -249,17 +270,32 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
 
     }
 
-    public  class RrcModel {
+    public class RrcModel<M extends RrcModelHandler> {
+
+        private final M modelHandler;
+
         private String scrCodeIndName;
 
-        private Map<CellNodeInfo, Set<CellNodeInfo>> cache = new LinkedHashMap<CellNodeInfo,  Set<CellNodeInfo>>();
+        private Map<CellNodeInfo, Set<InterfCellInfo>> cache = new LinkedHashMap<CellNodeInfo, Set<InterfCellInfo>>();
         public long time;
 
+        private Iterator<CellNodeInfo> bestCellIterator;
+
+        private Iterator<InterfCellInfo> interfCellIter;
+
+        private CellNodeInfo bestCellInfo;
+
+        public RrcModel(M modelHandler) {
+            this.modelHandler = modelHandler;
+        }
+
         /**
-         * @param network
-         * @param rowIter
-         * @param service
-         * @param luceneService
+         * Load.
+         * 
+         * @param network the network
+         * @param rowIter the row iter
+         * @param service the service
+         * @param luceneService the lucene service
          */
         public void load(Node network, RowIterator rowIter, GraphDatabaseService service, LuceneIndexService luceneService) {
             scrCodeIndName = NeoUtils.getLuceneIndexKeyByProperty(network, GpehReportUtil.PRIMARY_SCR_CODE, NodeTypes.SECTOR);
@@ -272,16 +308,24 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
                         LOGGER.warn(String.format("Data not included in statistics! Not found sector with ci=%s, rnc=%s", cell.getCi(), cell.getRnc()));
                         continue;
                     }
-                    CellNodeInfo bci = findInCashe(bestCell);
+                    CellNodeInfo bci = findInCache(bestCell, cache.keySet());
                     if (bci == null) {
                         bci = new CellNodeInfo(bestCell, cell.getBestCellInfo());
                         if (!bci.setupLocation()) {
                             LOGGER.warn(String.format("Data not included in statistics! Not found location for best cell %s", bestCell));
                             continue;
                         }
-                        cache.put(bci, new LinkedHashSet<CellNodeInfo>());
+                        cache.put(bci, new LinkedHashSet<InterfCellInfo>());
                     }
-                    CellNodeInfo sector = findClosestSector(bci, cell, network, service, luceneService);
+                    Set<InterfCellInfo> cacheInt = cache.get(bci);
+                    InterfCellInfo sector = findInCache(bestCell, cacheInt);
+                    if (sector == null) {
+                        sector = findClosestSector(bci, cell, network, service, luceneService);
+                        if (sector == null) {
+                            continue;
+                        }
+                        cacheInt.add(sector);
+                    }
                 }
             } finally {
                 tx.finish();
@@ -289,11 +333,15 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
         }
 
         /**
-         * @param bestCell
-         * @return
+         * Find in cache.
+         * 
+         * @param <E> the element type
+         * @param bestCell the best cell
+         * @param cache the cache
+         * @return the e
          */
-        private CellNodeInfo findInCashe(Node bestCell) {
-            for (CellNodeInfo info : cache.keySet()) {
+        private <E extends CellNodeInfo> E findInCache(Node bestCell, Collection<E> cache) {
+            for (E info : cache) {
                 if (info.getCellSector().equals(bestCell)) {
                     return info;
                 }
@@ -302,28 +350,31 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
         }
 
         /**
-         * @param psc
-         * @param network
-         * @param service
-         * @param luceneService
-         * @return
+         * Find closest sector.
+         * 
+         * @param bestCell the best cell
+         * @param cell the cell
+         * @param network the network
+         * @param service the service
+         * @param luceneService the lucene service
+         * @return the interf cell info
          */
-        private CellNodeInfo findClosestSector(CellNodeInfo bestCell, CellInfo cell, Node network, GraphDatabaseService service, LuceneIndexService luceneService) {
+        private InterfCellInfo findClosestSector(CellNodeInfo bestCell, CellInfo cell, Node network, GraphDatabaseService service, LuceneIndexService luceneService) {
             if (bestCell.getLat() == null || bestCell.getLon() == null) {
                 LOGGER.debug("bestCell " + bestCell.getCellSector() + " do not have location");
                 return null;
             }
-            CellNodeInfo result = null;
+            InterfCellInfo result = null;
             IndexHits<Node> nodes = luceneService.getNodes(scrCodeIndName, String.valueOf(cell.getPsc()));
             for (Node sector : nodes) {
                 if (result == null) {
-                    result = new CellNodeInfo(sector, cell.getInterfCellInfo());
+                    result = new InterfCellInfo(sector, cell.getInterfCellInfo(), cell.getPsc());
                     if (result.setupLocation()) {
                         // TODO check correct distance! maybe use CRS for this
 
                         result.setDistance(calculateDistance(bestCell, result));
                         if (bestCell.getDistance() > maxRange) {
-                            LOGGER.debug("sector " + result+ " have too big distance: " + bestCell.getDistance());
+                            LOGGER.debug("sector " + result + " have too big distance: " + bestCell.getDistance());
                             result = null;
                         }
                     } else {
@@ -331,7 +382,7 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
                         result = null;
                     }
                 } else {
-                    CellNodeInfo candidate  = new CellNodeInfo(sector, cell.getInterfCellInfo());
+                    InterfCellInfo candidate = new InterfCellInfo(sector, cell.getInterfCellInfo(), cell.getPsc());
                     if (candidate.setupLocation()) {
                         candidate.setDistance(calculateDistance(bestCell, candidate));
                         if (candidate.getDistance() < result.getDistance()) {
@@ -343,17 +394,31 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
             return result;
         }
 
-        /**
-         * @return
-         */
-        public boolean hasNext() {
+        public boolean defineNextData() {
+            modelHandler.clearData();
+            while (interfCellIter.hasNext() || bestCellIterator.hasNext()) {
+                while (!interfCellIter.hasNext() || bestCellIterator.hasNext()) {
+                    bestCellInfo = bestCellIterator.next();
+                    interfCellIter = cache.get(bestCellInfo).iterator();
+                }
+                if (!interfCellIter.hasNext()) {
+                    return false;
+                }
+                if (modelHandler.setData(bestCellInfo, interfCellIter.next())) {
+                    return true;
+                }
+            }
             return false;
         }
 
         /**
          * @param computeTime
          */
-        public void setTime(Long computeTime) {
+        public void clearIter() {
+            modelHandler.clearData();
+            bestCellIterator = cache.keySet().iterator();
+            interfCellIter = Collections.<InterfCellInfo> emptySet().iterator();
+
         }
 
         /**
