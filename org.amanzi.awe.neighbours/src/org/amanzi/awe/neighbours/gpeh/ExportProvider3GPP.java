@@ -14,7 +14,6 @@
 package org.amanzi.awe.neighbours.gpeh;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -27,7 +26,6 @@ import org.amanzi.awe.neighbours.gpeh.Calculator3GPPdBm.ValueType;
 import org.amanzi.awe.statistic.CallTimePeriods;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
-import org.amanzi.neo.core.utils.export.IExportProvider;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.hsqldb.lib.StringUtil;
@@ -39,51 +37,33 @@ import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.index.lucene.LuceneIndexService;
 
-// TODO: Auto-generated Javadoc
 /**
- * TODO Purpose of
  * <p>
+ * Export provider for 3gpp values
  * </p>.
  *
  * @author tsinkel_a
  * @since 1.0.0
  */
-public class ExportProvider3GPP implements IExportProvider {
+public class ExportProvider3GPP extends AbstractGpehExportProvider {
     protected final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
     protected final SimpleDateFormat dateFormat2 = new SimpleDateFormat("HHmm");
   public static final Logger LOGGER=Logger.getLogger(ExportProvider3GPP.class);  
-    /** The dataset. */
-    protected final Node dataset;
     
-    /** The network. */
-    protected final Node network;
+
     
-    /** The stat root. */
-    protected final Node statRoot;
-    
-    /** The service. */
-    protected final GraphDatabaseService service;
     
     /** The value3gpp. */
     protected final ValueType value3gpp;
     
-    /** The stat relation. */
-    protected final RelationshipType statRelation;
-    
-    /** The period. */
-    protected final CallTimePeriods period;
-    
     /** The dataname. */
     protected final String dataname;
     
-    /** The headers. */
-    protected List<String> headers = null;
+
     
     /** The model. */
     Model3GPPValue model;
-    
-    /** The min max. */
-    protected Pair<Long, Long> minMax;
+
     
     /** The start time. */
     protected Long startTime;
@@ -91,7 +71,6 @@ public class ExportProvider3GPP implements IExportProvider {
     /** The compute time. */
     protected Long computeTime;
 
-    protected final LuceneIndexService luceneService;
 
     /**
      * Instantiates a new export provider3 gpp.
@@ -105,34 +84,12 @@ public class ExportProvider3GPP implements IExportProvider {
      * @param dataname the dataname
      */
     public ExportProvider3GPP(Node dataset, Node network, GraphDatabaseService service, ValueType value3gpp, RelationshipType statRelation, CallTimePeriods period, String dataname,LuceneIndexService luceneService) {
-        this.dataset = dataset;
-        this.network = network;
-        this.service = service;
+        super(dataset, network, statRelation, period, service, luceneService);
         this.value3gpp = value3gpp;
-        this.statRelation = statRelation;
-        this.period = period;
         this.dataname = dataname;
-        this.luceneService = luceneService;
-        minMax=NeoUtils.getMinMaxTimeOfDataset(dataset, service);
-        startTime=period.getFirstTime(minMax.getLeft());
+
         computeTime=startTime;
         statRoot=defineStatRoot();
-    }
-
-
-    /**
-     * Define statistic node.
-     *
-     * @return the node
-     */
-    private Node defineStatRoot() {//TODO check on existing statistics
-        Transaction tx = NeoUtils.beginTx(service);
-        try{
-           Node statMain= dataset.getSingleRelationship(GpehRelationshipType.GPEH_STATISTICS, Direction.OUTGOING).getOtherNode(dataset);
-           return statMain.getSingleRelationship(statRelation, Direction.OUTGOING).getOtherNode(statMain);
-        }finally{
-            tx.finish();
-        }
     }
 
 
@@ -292,19 +249,7 @@ public class ExportProvider3GPP implements IExportProvider {
         }
     }
 
-    /**
-     * Gets the headers.
-     *
-     * @return the headers
-     */
-    @Override
-    public List<String> getHeaders() {
-        if (headers == null) {
-            headers = new ArrayList<String>();
-            createHeader();
-        }
-        return headers;
-    }
+
 
     /**
      * The Class Model3GPPValue.
