@@ -221,7 +221,7 @@ public class GpehReportCreator {
         case CELL_RSCP_ANALYSIS:
             return getCellRSCPProvider(period);
         case CELL_ECNO_ANALYSIS:
-            return empty;
+            return getCellEcnoProvider(period);
         case NBAP_UL_INTERFERENCE:
 //            return getUlInterferenceCellProvider(period);
             return empty;
@@ -254,9 +254,8 @@ public class GpehReportCreator {
      * @return the cell ecno provider
      */
     private IExportProvider getCellEcnoProvider(final CallTimePeriods period) {
-        TimePeriodElement element = new TimePeriodElement(getReportModel().getCellEcNoAnalisis(period), CellEcNoAnalisis.ARRAY_NAME, ValueType.ECNO, period, minMax.getLeft(),
-                minMax.getRight());
-        return new TimePeriodStructureProvider("Cell EcNo Analysis", element, service);
+        return new CellEcNoProvider(model.getGpeh(), model.getNetwork(), service, period, luceneService);
+
     }
 
     /**
