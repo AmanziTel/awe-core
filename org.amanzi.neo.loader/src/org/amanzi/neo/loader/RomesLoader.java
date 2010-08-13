@@ -195,7 +195,10 @@ public class RomesLoader extends DriveLoader {
      */
     @Override
     protected void finishUp() {
-        getStoringNode(1).setProperty(INeoConstants.SECTOR_ID_TYPE, SectorIdentificationType.CI.toString());
+        Node storingNode = getStoringNode(1);
+        if (storingNode!=null){  
+            storingNode.setProperty(INeoConstants.SECTOR_ID_TYPE, SectorIdentificationType.CI.toString());
+        }
         saveData();
         super.finishUp();
         if (!isTest()) {
