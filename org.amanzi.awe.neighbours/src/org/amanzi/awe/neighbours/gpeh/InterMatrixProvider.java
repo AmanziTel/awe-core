@@ -46,10 +46,6 @@ public class InterMatrixProvider extends IntraMatrixProvider {
         modelHandler = new InterModelHandler(period, service);
     }
 
-    @Override
-    protected void loadModel() {
-        super.loadModel();
-    }
 
     @Override
     public String getDataName() {

@@ -63,7 +63,7 @@ public class IntraModelHandler extends RrcModelHandler {
     public boolean setData(CellNodeInfo bestCell, InterfCellInfo interfCell) {
 //        Pattern pat=Pattern.compile("^(\\D)(\\d)$");
         Pattern pat=Pattern.compile("^(intraMr)(\\d+)$");
-        Set<Long> timestamps=defineTimestamps(interfCell.getCellSectorInfo(),pat);
+        Set<Long> timestamps=defineTimestamps(interfCell.getCellSectorInfo(),pat, 2);
         if (timestamps.isEmpty()){
             return false;
         }
@@ -136,18 +136,13 @@ public class IntraModelHandler extends RrcModelHandler {
         }
         return result;
     }
-    /**
-     *
-     * @param node
-     * @param pat 
-     * @return
-     */
-    protected Set<Long> defineTimestamps(Node node, Pattern pat) {
+
+    protected Set<Long> defineTimestamps(Node node, Pattern pat, int groupNum) {
         Set<Long> result=new HashSet<Long>();
         for (String propertyName:node.getPropertyKeys()){
              Matcher mat = pat.matcher(propertyName);
              if (mat.matches()){
-                 Long time = Long.valueOf(mat.group(2));
+                 Long time = Long.valueOf(mat.group(groupNum));
                  if (period.compareByPeriods(time, computeTime)==0){
                      result.add(time);
                  }

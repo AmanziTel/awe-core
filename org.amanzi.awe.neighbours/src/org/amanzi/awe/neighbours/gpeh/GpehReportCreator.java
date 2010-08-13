@@ -214,8 +214,7 @@ public class GpehReportCreator {
         case UE_TX_POWER_ANALYSIS:
             return getUeTxPowerCellProvider(period);
         case CELL_RF_CORRELATION:
-//            result = getCellCorrelationProvider(period);
-            return empty;
+            return getCellCorrelationProvider(period);
         case IDCM_INTRA:
             return getIntraMatrixProvider();
         case IDCM_INTER:
@@ -242,6 +241,8 @@ public class GpehReportCreator {
     }
 
     private IExportProvider getCellCorrelationProvider(final CallTimePeriods period) {
+        if (true)return new CellCorrelationProvider(model.getGpeh(), model.getNetwork(), service, period, luceneService);
+
         final CellRscpEcNoAnalisis analyse = getReportModel().getCellRscpEcNoAnalisis(period);
 
         final Node sourceMainNode = analyse.getMainNode();

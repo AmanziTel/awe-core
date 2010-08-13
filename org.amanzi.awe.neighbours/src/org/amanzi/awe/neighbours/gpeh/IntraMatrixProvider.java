@@ -48,9 +48,9 @@ import org.neo4j.index.lucene.LuceneIndexService;
 public class IntraMatrixProvider extends AbstractGpehExportProvider {
     private static final Logger LOGGER = Logger.getLogger(IntraMatrixProvider.class);
     protected Long computeTime;
-    protected RowIterator rowIter;
+    protected Iterator<CellInfo> rowIter;
     protected RrcModel model;
-    protected Integer maxRange;
+
     protected RrcModelHandler modelHandler;
 
     public IntraMatrixProvider(Node dataset, Node network, GraphDatabaseService service, CallTimePeriods period, LuceneIndexService luceneService) {
@@ -58,21 +58,34 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
         computeTime = startTime;
 
     }
-
     @Override
     protected void init() {
         super.init();
-        rowIter = new RowIterator();
+        defineHandler();
+        defineMmodel();
+        defineRowIterator();
         loadModel();
     }
 
     /**
      *
      */
+    protected void defineRowIterator() {
+        rowIter = new RowIterator(statRoot);
+    }
+
+    /**
+     *
+     */
     protected void loadModel() {
-        defineHandler();
-        model = new RrcModel<RrcModelHandler>(modelHandler);
         model.load(network, rowIter, service, luceneService);
+    }
+
+    /**
+     *
+     */
+    protected void defineMmodel() {
+        model = new RrcModel<RrcModelHandler>(modelHandler);
     }
 
 
@@ -150,7 +163,7 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
         headers.add("Position5");
     }
 
-    public class RowIterator implements Iterator<CellInfo> {
+    public static class RowIterator implements Iterator<CellInfo> {
         protected Iterator<Relationship> bestCellIterator;
         protected Iterator<Relationship> interferenceCellIterator;
         protected Relationship bestCellRel;
@@ -158,7 +171,7 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
         private Integer ci;
         private Integer rnc;
 
-        public RowIterator() {
+        public RowIterator(Node statRoot) {
             bestCellIterator = statRoot.getRelationships(Direction.OUTGOING).iterator();
             interferenceCellIterator = getemptyIterator();
         }
@@ -276,19 +289,19 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
 
     }
 
-    public class RrcModel<M extends RrcModelHandler> {
+    public static class RrcModel<M extends RrcModelHandler> {
+        protected Integer maxRange;
+        protected final M modelHandler;
 
-        private final M modelHandler;
+        protected String scrCodeIndName;
 
-        private String scrCodeIndName;
+        protected Map<CellNodeInfo, Set<InterfCellInfo>> cache = new LinkedHashMap<CellNodeInfo, Set<InterfCellInfo>>();
 
-        private Map<CellNodeInfo, Set<InterfCellInfo>> cache = new LinkedHashMap<CellNodeInfo, Set<InterfCellInfo>>();
+        protected Iterator<CellNodeInfo> bestCellIterator;
 
-        private Iterator<CellNodeInfo> bestCellIterator;
+        protected Iterator<InterfCellInfo> interfCellIter;
 
-        private Iterator<InterfCellInfo> interfCellIter;
-
-        private CellNodeInfo bestCellInfo;
+        protected CellNodeInfo bestCellInfo;
 
         public RrcModel(M modelHandler) {
             this.modelHandler = modelHandler;
@@ -302,7 +315,7 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
          * @param service the service
          * @param luceneService the lucene service
          */
-        public void load(Node network, RowIterator rowIter, GraphDatabaseService service, LuceneIndexService luceneService) {
+        public void load(Node network, Iterator<CellInfo> rowIter, GraphDatabaseService service, LuceneIndexService luceneService) {
             scrCodeIndName = NeoUtils.getLuceneIndexKeyByProperty(network, GpehReportUtil.PRIMARY_SCR_CODE, NodeTypes.SECTOR);
             Transaction tx = NeoUtils.beginTx(service);
             try {
@@ -345,7 +358,7 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
          * @param cache the cache
          * @return the e
          */
-        private <E extends CellNodeInfo> E findInCache(Node bestCell, Collection<E> cache) {
+        protected <E extends CellNodeInfo> E findInCache(Node bestCell, Collection<E> cache) {
             for (E info : cache) {
                 if (info.getCellSector().equals(bestCell)) {
                     return info;
@@ -398,7 +411,16 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
             }
             return result;
         }
-
+        /**
+        *
+        * @return
+        */
+       public double getMaxRange() {
+           if (maxRange==null){
+               maxRange = NeoCorePlugin.getDefault().getPreferenceStore().getInt(NeoCorePreferencesConstants.MAX_SECTOR_DISTANSE);
+           }
+           return maxRange;
+       }
         public boolean defineNextData() {
             modelHandler.clearData();
             while (interfCellIter.hasNext() || bestCellIterator.hasNext()) {
@@ -439,14 +461,5 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
         }
     }
 
-    /**
-     *
-     * @return
-     */
-    public double getMaxRange() {
-        if (maxRange==null){
-            maxRange = NeoCorePlugin.getDefault().getPreferenceStore().getInt(NeoCorePreferencesConstants.MAX_SECTOR_DISTANSE);
-        }
-        return maxRange;
-    }
+
 }

@@ -42,7 +42,7 @@ public class InterModelHandler extends IntraModelHandler {
     public boolean setData(CellNodeInfo bestCell, InterfCellInfo interfCell) {
 //      Pattern pat=Pattern.compile("^(\\D)(\\d)$");
       Pattern pat=Pattern.compile("^(interMr)(\\d+)$");
-      Set<Long> timestamps=defineTimestamps(interfCell.getCellSectorInfo(),pat);
+      Set<Long> timestamps=defineTimestamps(interfCell.getCellSectorInfo(),pat, 2);
       if (timestamps.isEmpty()){
           return false;
       }
