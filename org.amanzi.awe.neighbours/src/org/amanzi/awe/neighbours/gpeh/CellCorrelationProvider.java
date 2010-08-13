@@ -89,7 +89,7 @@ protected void defineModel() {
 }
     @Override
     public String getDataName() {
-        return "Cell RF correlation analysis";
+        return "Cell RSCP analysis";
     }
 
     @Override
