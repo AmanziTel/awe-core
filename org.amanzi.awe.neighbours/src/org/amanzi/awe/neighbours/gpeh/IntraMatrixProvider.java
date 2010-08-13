@@ -62,7 +62,7 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
     protected void init() {
         super.init();
         defineHandler();
-        defineMmodel();
+        defineModel();
         defineRowIterator();
         loadModel();
     }
@@ -84,7 +84,7 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
     /**
      *
      */
-    protected void defineMmodel() {
+    protected void defineModel() {
         model = new RrcModel<RrcModelHandler>(modelHandler);
     }
 

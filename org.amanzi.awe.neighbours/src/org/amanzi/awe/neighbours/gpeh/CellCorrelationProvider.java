@@ -40,8 +40,8 @@ public class CellCorrelationProvider extends IntraMatrixProvider {
     private static final Logger LOGGER = Logger.getLogger(CellCorrelationProvider.class);
     private ArrayList<org.amanzi.awe.neighbours.gpeh.CellCorrelationProvider.IntRange> ecnoRangeNames;
     private ArrayList<org.amanzi.awe.neighbours.gpeh.CellCorrelationProvider.IntRange> rscpRangeNames;
-    private SimpleDateFormat dateFormat;
-    private SimpleDateFormat dateFormat2;
+    protected SimpleDateFormat dateFormat;
+    protected SimpleDateFormat dateFormat2;
     /**
      * @param dataset
      * @param network
@@ -84,7 +84,7 @@ protected void defineRowIterator() {
     rowIter = new BestCellIterator(statRoot);
 }
 @Override
-protected void defineMmodel() {
+protected void defineModel() {
     model = new CellCorrelationModel(modelHandler);
 }
     @Override

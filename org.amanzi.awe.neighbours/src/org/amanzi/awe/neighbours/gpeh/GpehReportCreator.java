@@ -23,7 +23,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -220,7 +219,7 @@ public class GpehReportCreator {
         case IDCM_INTER:
             return getInterMatrixProvider();
         case CELL_RSCP_ANALYSIS:
-            return empty;
+            return getCellRSCPProvider(period);
         case CELL_ECNO_ANALYSIS:
             return empty;
         case NBAP_UL_INTERFERENCE:
@@ -241,138 +240,7 @@ public class GpehReportCreator {
     }
 
     private IExportProvider getCellCorrelationProvider(final CallTimePeriods period) {
-        if (true)return new CellCorrelationProvider(model.getGpeh(), model.getNetwork(), service, period, luceneService);
-
-        final CellRscpEcNoAnalisis analyse = getReportModel().getCellRscpEcNoAnalisis(period);
-
-        final Node sourceMainNode = analyse.getMainNode();
-        final Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(gpeh, service);
-        final List<String> headers = new LinkedList<String>();
-        headers.add("Cell Name");
-        headers.add("Date");
-        headers.add("Time");
-        headers.add("Resolution");
-        final List<IntRange> ecnoRangeNames = new ArrayList<IntRange>();
-        ecnoRangeNames.add(new IntRange("ECNO-18", 0, 12));
-        ecnoRangeNames.add(new IntRange("ECNO-15", 13, 18));
-        ecnoRangeNames.add(new IntRange("ECNO-12", 19, 24));
-        ecnoRangeNames.add(new IntRange("ECNO-9", 25, 30));
-        ecnoRangeNames.add(new IntRange("ECNO-6", 31, 36));
-        ecnoRangeNames.add(new IntRange("ECNO-0", 37, 48));// TODO check for 49?
-        final int ecnoRange = ecnoRangeNames.size();
-        final List<IntRange> rscpRangeNames = new ArrayList<IntRange>();
-        rscpRangeNames.add(new IntRange("RSCP-105", 0, 10));
-        rscpRangeNames.add(new IntRange("RSCP-100", 11, 15));
-        rscpRangeNames.add(new IntRange("RSCP-95", 16, 20));
-        rscpRangeNames.add(new IntRange("RSCP-90", 21, 25));
-        rscpRangeNames.add(new IntRange("RSCP-80", 26, 35));
-        rscpRangeNames.add(new IntRange("RSCP-70", 36, 45));
-        rscpRangeNames.add(new IntRange("RSCP-25", 46, 90));// TODO check 91
-        final int rscpRange = rscpRangeNames.size();
-        for (IntRange rscpName : rscpRangeNames) {
-            for (IntRange ecnoName : ecnoRangeNames) {
-                headers.add(new StringBuilder(ecnoName.getName()).append("_").append(rscpName.getName()).toString());
-            }
-        }
-        // TODO create public class
-        return new IExportProvider() {
-            Iterator<Relationship> bestCellIteranor = null;
-            Iterator<IStatisticElementNode> iter = null;
-            final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-            String name = "";
-            Calendar calendar = Calendar.getInstance();
-
-            @Override
-            public boolean isValid() {
-                return true;
-            }
-
-            @Override
-            public boolean hasNextLine() {
-                if (bestCellIteranor == null) {
-                    bestCellIteranor = sourceMainNode.getRelationships(Direction.OUTGOING).iterator();
-
-                }
-                if (iter == null || !iter.hasNext()) {
-                    defineStructIterator();
-                }
-                return iter != null && iter.hasNext();
-            }
-
-            @Override
-            public List<Object> getNextLine() {
-                // TODO implement
-                IStatisticElementNode statNode = iter.next();
-                List<Object> result = new ArrayList<Object>();
-                result.add(name);
-
-                calendar.setTimeInMillis(statNode.getStartTime());
-                
-//                System.out.println(statNode.getStartTime());
-//                System.out.println(calendar.toString());
-//                System.out.println(dateFormat.format(calendar.getTime()));
-                
-                result.add(dateFormat.format(calendar.getTime()));
-                result.add(String.valueOf(calendar.get(Calendar.HOUR_OF_DAY)));
-                result.add(period.getId());
-                if (NeoArray.hasArray(CellRscpEcNoAnalisis.ARRAY_NAME, statNode.getNode(), service)) {
-                    NeoArray array = new NeoArray(statNode.getNode(), CellRscpEcNoAnalisis.ARRAY_NAME, service);
-                    for (IntRange rscpName : rscpRangeNames) {
-                        for (IntRange ecnoName : ecnoRangeNames) {
-                            int count = 0;
-                            for (int rscp = rscpName.getMin(); rscp <= rscpName.getMax(); rscp++) {
-                                for (int ecno = ecnoName.getMin(); ecno <= ecnoName.getMax(); ecno++) {
-                                    Number value = (Number)array.getValue(rscp, ecno);
-                                    if (value == null) {
-                                        value = 0;
-                                    }
-                                    count += value.intValue();
-                                }
-                            }
-                            result.add(count);
-                        }
-                    }
-                } else {
-                    for (int rscp = 0; rscp < rscpRange; rscp++) {
-                        for (int ecno = 0; ecno < ecnoRange; ecno++) {
-                            result.add(0);
-                        }
-                    }
-                }
-
-                return result;
-            }
-
-            private void defineStructIterator() {
-                while (bestCellIteranor.hasNext()) {
-                    Relationship rel = bestCellIteranor.next();
-                    String bestCellId = StatisticNeoService.getBestCellId(rel.getType().name());
-                    if (bestCellId != null) {
-                        Node sector = service.getNodeById(Long.parseLong(bestCellId));
-                        name = (String)sector.getProperty("userLabel", "");
-                        if (StringUtil.isEmpty(name)) {
-                            name = NeoUtils.getNodeName(sector, service);
-                        }
-                        StatisticByPeriodStructure structure = analyse.getStatisticStructure(bestCellId);
-                        iter = structure.getStatNedes(minMax.getLeft(), minMax.getRight()).iterator();
-                        if (iter.hasNext()) {
-                            return;
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public List<String> getHeaders() {
-                return headers;
-            }
-
-            @Override
-            public String getDataName() {
-                return "CELL RF CORRELATION ANALYSIS";
-            }
-        };
-
+        return new CellCorrelationProvider(model.getGpeh(), model.getNetwork(), service, period, luceneService);
     }
 
     private IExportProvider getInterMatrixProvider() {
@@ -398,108 +266,11 @@ public class GpehReportCreator {
      * @return the cell rscp provider
      */
     private IExportProvider getCellRSCPProvider(final CallTimePeriods period) {
-        TimePeriodElement element = new TimePeriodElement(getReportModel().getCellRscpAnalisis(period), CellRscpAnalisis.ARRAY_NAME, ValueType.RSCP, period, minMax.getLeft(),
-                minMax.getRight());
-        return new TimePeriodStructureProvider("CELL RSCP ANALYSIS", element, service);
+        return new CellRscpProvider(model.getGpeh(), model.getNetwork(), service, period, luceneService);
     }
 
     private IExportProvider getIntraMatrixProvider() {
         return new IntraMatrixProvider(model.getGpeh(), model.getNetwork(), service, CallTimePeriods.ALL, luceneService);
-//        
-//        GpehReportModel mdl = getReportModel();
-//        final IntraFrequencyICDM matrix = mdl.getIntraFrequencyICDM();
-//        final List<String> headers = new LinkedList<String>();
-//        headers.add("Serving cell name");
-//        headers.add("Serving PSC");
-//        headers.add("Interfering cell name");
-//        headers.add("Interfering PSC");
-//        headers.add("Defined NBR");
-//        headers.add("Distance");
-//        headers.add("Tier Distance");
-//        headers.add("# of MR for best cell");
-//        headers.add("# of MR for Interfering cell");
-//        headers.add("EcNo Delta1");
-//        headers.add("EcNo Delta2");
-//        headers.add("EcNo Delta3");
-//        headers.add("EcNo Delta4");
-//        headers.add("EcNo Delta5");
-//        headers.add("RSCP Delta1");
-//        headers.add("RSCP Delta2");
-//        headers.add("RSCP Delta3");
-//        headers.add("RSCP Delta4");
-//        headers.add("RSCP Delta5");
-//        headers.add("Position1");
-//        headers.add("Position2");
-//        headers.add("Position3");
-//        headers.add("Position4");
-//        headers.add("Position5");
-//
-//        // TODO create public class
-//        return new IExportProvider() {
-//            Iterator<Node> rowIterator = null;
-//
-//            @Override
-//            public boolean isValid() {
-//                return true;
-//            }
-//
-//            @Override
-//            public boolean hasNextLine() {
-//                if (rowIterator == null) {
-//                    rowIterator = matrix.getRowTraverser().iterator();
-//                }
-//                return rowIterator.hasNext();
-//            }
-//
-//            @Override
-//            public List<Object> getNextLine() {
-//                List<Object> result = new ArrayList<Object>();
-//                Node tblRow = rowIterator.next();
-//                // Serving cell name
-//                String bestCellName = matrix.getBestCellName(tblRow);
-//                result.add(bestCellName);
-//                // psc
-//                String value = matrix.getBestCellPSC(tblRow);
-//                result.add(value);
-//                // Interfering cell name
-//                result.add(matrix.getInterferingCellName(tblRow));
-//                // Interfering PSC
-//                result.add(matrix.getInterferingCellPSC(tblRow));
-//                // Defined NBR
-//                result.add(matrix.isDefinedNbr(tblRow));
-//                // Distance
-//                result.add(matrix.getDistance(tblRow));
-//                // Tier Distance
-//                value = String.valueOf("N/A");
-//                result.add(value);
-//                // # of MR for best cell
-//                result.add(matrix.getNumMRForBestCell(tblRow));
-//                // # of MR for Interfering cell
-//                result.add(matrix.getNumMRForInterferingCell(tblRow));
-//                // Delta EcNo 1-5
-//                for (int i = 1; i <= 5; i++) {
-//                    result.add(matrix.getDeltaEcNo(i, tblRow));
-//                }
-//                for (int i = 1; i <= 5; i++) {
-//                    result.add(matrix.getDeltaRSCP(i, tblRow));
-//                }
-//                for (int i = 1; i <= 5; i++) {
-//                    result.add(matrix.getPosition(i, tblRow));
-//                }
-//                return result;
-//            }
-//
-//            @Override
-//            public List<String> getHeaders() {
-//                return headers;
-//            }
-//
-//            @Override
-//            public String getDataName() {
-//                return "INTRA_ICDM";
-//            }
-//        };
-
     }
 
     /**

@@ -150,5 +150,11 @@ public class IntraModelHandler extends RrcModelHandler {
         }
         return result;
     }
-
+    protected int[][] getEcnoRscpArray(Node node, Set<Long> timestamps) {
+        int[][] result = new int[92][50];
+        for (int i = 0; i < 92; i++) {
+            computeArrayValue(result[i], node, new StringBuilder("%srscp").append(i).toString(), timestamps);
+        }
+        return result;
+    }
 }
