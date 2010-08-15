@@ -23,6 +23,7 @@ import org.amanzi.neo.core.utils.export.IExportProvider;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.index.lucene.LuceneIndexService;
@@ -77,7 +78,8 @@ public abstract class AbstractGpehExportProvider implements IExportProvider{
         Transaction tx = NeoUtils.beginTx(service);
         try{
            Node statMain= dataset.getSingleRelationship(GpehRelationshipType.GPEH_STATISTICS, Direction.OUTGOING).getOtherNode(dataset);
-           return statMain.getSingleRelationship(statRelation, Direction.OUTGOING).getOtherNode(statMain);
+           Relationship rel = statMain.getSingleRelationship(statRelation, Direction.OUTGOING);
+        return rel==null?null:rel.getOtherNode(statMain);
         }finally{
             tx.finish();
         }

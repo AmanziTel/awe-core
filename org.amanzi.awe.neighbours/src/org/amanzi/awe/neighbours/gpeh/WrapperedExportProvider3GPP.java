@@ -67,7 +67,7 @@ public class WrapperedExportProvider3GPP extends ExportProvider3GPP {
                 to = value3gpp.getMax3GPP() + 1;
             }
             int count = 0;
-            for (int j = i; j <= to; j++) {
+            for (int j = i; j < to; j++) {
                 Integer value = array[j];
                 if (value != null) {
                     count += value;

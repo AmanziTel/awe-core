@@ -1,4 +1,18 @@
+/* AWE - Amanzi Wireless Explorer
+ * http://awe.amanzi.org
+ * (C) 2008-2009, AmanziTel AB
+ *
+ * This library is provided under the terms of the Eclipse Public License
+ * as described at http://www.eclipse.org/legal/epl-v10.html. Any use,
+ * reproduction or distribution of the library constitutes recipient's
+ * acceptance of this agreement.
+ *
+ * This library is distributed WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ */
+
 package org.amanzi.awe.neighbours.gpeh;
+
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,29 +27,18 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.index.lucene.LuceneIndexService;
 
-/* AWE - Amanzi Wireless Explorer
- * http://awe.amanzi.org
- * (C) 2008-2009, AmanziTel AB
- *
- * This library is provided under the terms of the Eclipse Public License
- * as described at http://www.eclipse.org/legal/epl-v10.html. Any use,
- * reproduction or distribution of the library constitutes recipient's
- * acceptance of this agreement.
- *
- * This library is distributed WITHOUT ANY WARRANTY; without even the
- * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- */
-
 /**
  * TODO Purpose of 
  * <p>
  *
  * </p>
- * @author tsinkel_a
+ * @author TsAr
  * @since 1.0.0
  */
-public class NBAPWattExportProvider extends ExportProvider3GPP {
-    protected Integer power;
+public class NbapDbmExportProvider extends ExportProvider3GPP {
+
+    private Integer power;
+
     /**
      * @param dataset
      * @param network
@@ -46,26 +49,17 @@ public class NBAPWattExportProvider extends ExportProvider3GPP {
      * @param dataname
      * @param luceneService
      */
-    public NBAPWattExportProvider(Node dataset, Node network, GraphDatabaseService service, ValueType value3gpp, RelationshipType statRelation, CallTimePeriods period,
+    public NbapDbmExportProvider(Node dataset, Node network, GraphDatabaseService service, ValueType value3gpp, RelationshipType statRelation, CallTimePeriods period,
             String dataname, LuceneIndexService luceneService) {
         super(dataset, network, service, value3gpp, statRelation, period, dataname, luceneService);
     }
-
-    @Override
-    protected void createHeader() {
-        super.createHeader();
-        headers.add(1, "maximumTransmissionPower(W)");
-    }
-
     @Override
     protected void createArrayHeader() {
-        for (double i = 0.1; i <1; i += 0.1) {
-            headers.add(String.format("%1.1f",i));
-        }
-        for (int i = 1; i <= 100; i ++) {
+        for (int i = 50; i <=50; i ++) {
             headers.add(String.valueOf(i));
         }
     }
+
     @Override
     public List<Object> getNextLine() {
         Pair<Node, int[]> values = model.next();
@@ -76,7 +70,6 @@ public class NBAPWattExportProvider extends ExportProvider3GPP {
         }
         result.add(name);
         power = (Integer)values.getLeft().getProperty("maximumTransmissionPower", null);
-        result.add(power);
         Calendar calendar=Calendar.getInstance();
         calendar.setTimeInMillis(computeTime);
         result.add(dateFormat.format(calendar.getTime()));
@@ -86,7 +79,6 @@ public class NBAPWattExportProvider extends ExportProvider3GPP {
         processArray(result, array); 
         return result;
     }
-
     @Override
     protected void processArray(List<Object> result, int[] array) {
         int startElem = result.size();

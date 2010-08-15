@@ -122,7 +122,7 @@ public class ExportProvider3GPP extends AbstractGpehExportProvider {
      */
     @Override
     public boolean isValid() {
-        return true;
+        return statRoot!=null;
     }
 
     /**
@@ -132,6 +132,9 @@ public class ExportProvider3GPP extends AbstractGpehExportProvider {
      */
     @Override
     public boolean hasNextLine() {
+        if(statRoot==null){
+            return false;
+        }
         if (minMax.getRight() != null) {
             while (computeTime<minMax.getRight()||computeTime==startTime){
                 if (model==null){
