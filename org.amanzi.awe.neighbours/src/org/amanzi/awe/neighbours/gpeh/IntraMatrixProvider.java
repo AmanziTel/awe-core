@@ -30,6 +30,7 @@ import org.amanzi.neo.core.preferences.NeoCorePreferencesConstants;
 import org.amanzi.neo.core.utils.GpehReportUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.apache.log4j.Logger;
+import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -37,6 +38,9 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.index.IndexHits;
 import org.neo4j.index.lucene.LuceneIndexService;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import com.vividsolutions.jts.geom.Coordinate;
 
 /**
  * <p>
@@ -302,6 +306,7 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
         protected Iterator<InterfCellInfo> interfCellIter;
 
         protected CellNodeInfo bestCellInfo;
+        private CoordinateReferenceSystem crs;
 
         public RrcModel(M modelHandler) {
             this.modelHandler = modelHandler;
@@ -382,6 +387,15 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
                 LOGGER.debug("bestCell " + bestCell.getCellSector() + " do not have location");
                 return null;
             }
+            if (crs == null) {
+                Node gis = NeoUtils.findGisNodeByChild(network, service);
+                if (gis != null) {
+                    crs = NeoUtils.getCRS(gis, service, null);
+                } else {
+                    LOGGER.debug("Not fount CRS for network");
+                    return null;
+                }
+            }
             InterfCellInfo result = null;
             IndexHits<Node> nodes = luceneService.getNodes(scrCodeIndName, String.valueOf(cell.getPsc()));
             for (Node sector : nodes) {
@@ -392,7 +406,7 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
 
                         result.setDistance(calculateDistance(bestCell, result));
                         if (result.getDistance() > getMaxRange()) {
-                            LOGGER.debug("sector " + result + " have too big distance: " + bestCell.getDistance());
+                            LOGGER.debug("sector " + result + " have too big distance: " + result.getDistance());
                             result = null;
                         }
                     } else {
@@ -450,14 +464,20 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
 
         /**
          * Calculate distance.
-         * 
          * @param bestCell the best cell
          * @param result the candidate
          * @return the distance between sectors
          */
         private Double calculateDistance(CellNodeInfo bestCell, CellNodeInfo result) {
-            // TODO refactor use CRS of network
-            return Math.sqrt(Math.pow(bestCell.getLat() - result.getLat(), 2) + Math.pow(bestCell.getLon() - result.getLon(), 2));
+                Coordinate p1=new Coordinate(bestCell.getLat(),bestCell.getLon());
+                Coordinate p2=new Coordinate(result.getLat(),result.getLon());
+                try {
+                    //TODO use correct method instead deprecated!
+                    return CRS.distance(p1, p2, crs);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return Math.sqrt(Math.pow(bestCell.getLat() - result.getLat(), 2) + Math.pow(bestCell.getLon() - result.getLon(), 2));
+                }
         }
     }
 
