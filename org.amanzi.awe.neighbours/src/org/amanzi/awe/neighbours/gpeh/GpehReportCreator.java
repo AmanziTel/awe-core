@@ -350,17 +350,16 @@ public class GpehReportCreator {
         List<IExportProvider> result = new ArrayList<IExportProvider>();
         result.add(new NBAPWattExportProvider(model.getGpeh(), model.getNetwork(), service, ValueType.DL_TX_CARRIER_POWER, GpehRelationshipType.TOTAL_DL_TX_POWER, period,
                 "Ue tx power analysis", luceneService));
+        result.add(new NbapDbmExportProvider(model.getGpeh(), model.getNetwork(), service, ValueType.DL_TX_CARRIER_POWER, GpehRelationshipType.TOTAL_DL_TX_POWER, period,
+                "Ue tx power analysis", luceneService));
         return result;
-        // TimePeriodElement element = new
-        // TimePeriodElement(getReportModel().getCellDlTxCarrierPowerAnalisis(period),
-        // CellDlTxCarrierPowerAnalisis.ARRAY_NAME,
-        // ValueType.DL_TX_CARRIER_POWER, period, minMax.getLeft(), minMax.getRight());
-        // return new NBAPWattProvider("DL_TX_CARRIER_POWER analysis", element, service);
     }
 
     private List<IExportProvider> getCellHsdsRequiredPowerProvider(final CallTimePeriods period) {
         List<IExportProvider> result = new ArrayList<IExportProvider>();
         result.add(new NBAPWattExportProvider(model.getGpeh(), model.getNetwork(), service, ValueType.HSDSCH_REQUIRED_POWER, GpehRelationshipType.HS_DL_TX_RequiredPower, period,
+                "HSDSCH_REQUIRED_POWER analysis", luceneService));
+        result.add(new NbapDbmExportProvider(model.getGpeh(), model.getNetwork(), service, ValueType.HSDSCH_REQUIRED_POWER, GpehRelationshipType.HS_DL_TX_RequiredPower, period,
                 "HSDSCH_REQUIRED_POWER analysis", luceneService));
         return result;
         // TimePeriodElement element = new
@@ -374,12 +373,9 @@ public class GpehReportCreator {
         List<IExportProvider> result = new ArrayList<IExportProvider>();
         result.add(new NBAPWattExportProvider(model.getGpeh(), model.getNetwork(), service, ValueType.NON_HS_POWER, GpehRelationshipType.R99_DL_TX_POWER, period,
                 "NON_HS_POWER analysis", luceneService));
+        result.add(new NbapDbmExportProvider(model.getGpeh(), model.getNetwork(), service, ValueType.NON_HS_POWER, GpehRelationshipType.R99_DL_TX_POWER, period,
+                "NON_HS_POWER analysis", luceneService));
         return result;
-        // TimePeriodElement element = new
-        // TimePeriodElement(getReportModel().getCellNonHsPowerAnalisis(period),
-        // CellNonHsPowerAnalisis.ARRAY_NAME, ValueType.NON_HS_POWER, period,
-        // minMax.getLeft(), minMax.getRight());
-        // return new NBAPWattProvider("NON_HS_POWER analysis", element, service);
     }
 
     /**
@@ -740,6 +736,7 @@ public class GpehReportCreator {
     /**
      * Creates the matrix.
      */
+    @Deprecated
     public void createMatrix() {
         if (model.getIntraFrequencyICDM() != null) {
             return;

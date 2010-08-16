@@ -82,7 +82,7 @@ public class NbapDbmExportProvider extends ExportProvider3GPP {
     @Override
     protected void processArray(List<Object> result, int[] array) {
         int startElem = result.size();
-        for (int i = 0; i < 110; i++) {
+        for (int i = 20; i <= 50; i++) {
             result.add(0);
         }
         if (power == null) {
@@ -90,21 +90,18 @@ public class NbapDbmExportProvider extends ExportProvider3GPP {
         }
         double maxTrPowWatt = Math.pow(10, -3) * Math.pow(10, power / 100);
             for (int i = value3gpp.getMin3GPP(); i <= value3gpp.getMax3GPP(); i++) {
-                int txpower = (int)Math.ceil(maxTrPowWatt * i / 1000 * 10);// (txpower=TxPower*10
+                 double txpowerdbm = 10*Math.log10(Math.ceil(maxTrPowWatt * value3gpp.getRightBound(i) / 1000)/0.001);// (txpower=TxPower*10
                                                                            // i - 0-1000
                                                                            // i/1000);
-                if (txpower < 0 || txpower > 1000) {
-                    LOGGER.error(String.format("Cell %s. Wrong TxPower %s", "", txpower / 10));
+                if (txpowerdbm < 0 || txpowerdbm > 50) {
+                    LOGGER.error(String.format("Cell %s. Wrong TxPower %s", "", txpowerdbm));
                     continue;
                 }
                 int value =array[i];
                 if (value != 0) {
                     int ind = 0;
-                    if (txpower < 10) {
-                        ind = startElem + txpower;
-                    } else {
-                        ind = startElem + 8 + (int)Math.ceil(txpower / 10);
-                    }
+                    txpowerdbm=Math.ceil(txpowerdbm);
+                    ind = startElem + (int)txpowerdbm-20;
                     result.set(ind, (Integer)result.get(ind) + (Integer)value);
                 }
 

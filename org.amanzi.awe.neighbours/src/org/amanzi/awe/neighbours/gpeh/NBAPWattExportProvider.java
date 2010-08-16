@@ -98,8 +98,7 @@ public class NBAPWattExportProvider extends ExportProvider3GPP {
         }
         double maxTrPowWatt = Math.pow(10, -3) * Math.pow(10, power / 100);
             for (int i = value3gpp.getMin3GPP(); i <= value3gpp.getMax3GPP(); i++) {
-                int txpower = (int)Math.ceil(maxTrPowWatt * i / 1000 * 10);// (txpower=TxPower*10
-                                                                           // i - 0-1000
+                int txpower = (int)Math.ceil(maxTrPowWatt * value3gpp.getRightBound(i)/ 1000);// (txpower=TxPower                                                                           // i - 0-1000
                                                                            // i/1000);
                 if (txpower < 0 || txpower > 1000) {
                     LOGGER.error(String.format("Cell %s. Wrong TxPower %s", "", txpower / 10));
