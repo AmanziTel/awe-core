@@ -37,6 +37,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.nodes.AweProjectNode;
 import org.amanzi.neo.core.database.nodes.DeletableRelationshipType;
+import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -46,18 +47,18 @@ import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
-import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.index.MultiPropertyIndex;
-import org.amanzi.neo.index.PropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
+import org.amanzi.neo.index.PropertyIndex;
 import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.graphics.RGB;
 import org.geotools.referencing.CRS;
+import org.hsqldb.lib.StringUtil;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -2981,5 +2982,23 @@ public class NeoUtils {
             tx.finish();
         }
     }
-
+    /**
+     * Gets the gpeh cell name.
+     *
+     * @param bestCell the best cell
+     * @param service the service
+     * @return the gpeh cell name
+     */
+    public static String getGpehCellName(Node bestCell, GraphDatabaseService service) {
+        Transaction tx = beginTx(service);
+        try {
+            String result = (String)bestCell.getProperty("userLabel", "");
+            if (StringUtil.isEmpty(result)) {
+                result = NeoUtils.getNodeName(bestCell, service);
+            }
+            return result;
+        } finally {
+            finishTx(tx);
+        }
+    }
 }
