@@ -259,7 +259,7 @@ public class AfpExporter {
 		Node site = sector.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(sector);
 		String siteName = site.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
 		String sectorValues[] = new String[2];
-		sectorValues[0] = siteName;//sector.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+		sectorValues[0] = siteName;
 		sectorValues[1] = sector.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString().substring(siteName.length());
 		return sectorValues;
 	}
@@ -314,6 +314,41 @@ public class AfpExporter {
 	}
 	
 	/**
+	 * Creates the exception file for input to the C++ engine
+	 */
+	public void createExceptionFile(){
+		File exceptionFile = getFile(this.inputExceptionFileName);
+		Node startSector = null;
+		try {
+			exceptionFile.createNewFile();
+			BufferedWriter writer  = new BufferedWriter(new FileWriter(exceptionFile));
+			for (Node exception : afpRoot.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.EXCEPTION_DATA, Direction.OUTGOING)){
+				//TODO: put condition here to get the desired exception list in case of multiple interference list
+				startSector = exception.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).getEndNode();
+				break;				
+			}
+			
+			for (Node proxySector : startSector.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, NetworkRelationshipTypes.NEXT, Direction.OUTGOING)){
+				if (!proxySector.getProperty("type").equals("sector_sector_relations"))
+					 continue;
+				Node sector = proxySector.getSingleRelationship(NetworkRelationshipTypes.EXCEPTIONS, Direction.INCOMING).getOtherNode(proxySector);		
+				String sectorValues[] = parseSectorName(sector);
+				for (Relationship relation : proxySector.getRelationships(NetworkRelationshipTypes.EXCEPTION, Direction.OUTGOING)){
+					Node exceptionProxySector = relation.getEndNode();
+					Node exceptionSector = exceptionProxySector.getSingleRelationship(NetworkRelationshipTypes.EXCEPTIONS, Direction.INCOMING).getOtherNode(exceptionProxySector);
+					String exceptionSectorValues[] = parseSectorName(exceptionSector);
+					writer.write(sectorValues[0] + " " + sectorValues[1] + " " + exceptionSectorValues[0] + " " + exceptionSectorValues[1] + " " +
+								relation.getProperty("new_spacing"));
+					writer.newLine();
+				}
+			}
+			writer.close();
+		}catch (Exception e){
+			AweConsolePlugin.exception(e);
+		}
+	}
+	
+	/**
 	 * Creates the cliques file for input to the C++ engine
 	 */
 	public void createCliquesFile(){
@@ -352,24 +387,6 @@ public class AfpExporter {
 		}
 	}
 	
-	/**
-	 * Creates the exception file for input to the C++ engine
-	 */
-	public void createExceptionFile(){
-		File exceptionFile = getFile(this.inputExceptionFileName);
-		try {
-			exceptionFile.createNewFile();
-			BufferedWriter writer  = new BufferedWriter(new FileWriter(exceptionFile));
-			
-			/**
-			 *TODO Write code here to write the file
-			 */
-			
-			writer.close();
-		}catch (Exception e){
-			AweConsolePlugin.exception(e);
-		}
-	}
 	
 	public void createParamFile(){
 		File file = getFile(this.paramFileName);

@@ -155,11 +155,7 @@ public class AfpLoader extends AbstractLoader {
             if (file.getNeighbourFile() != null) {
                 loadNeighbourFile(file.getNeighbourFile(), monitor);
             }
-            commit(true);
-            monitor.worked(1);
-            if (file.getNeighbourFile() != null) {
-                loadNeighbourFile(file.getNeighbourFile(), monitor);
-            }
+            
             commit(true);
             monitor.worked(1);
             if (file.getExceptionFile() != null) {
@@ -172,6 +168,7 @@ public class AfpLoader extends AbstractLoader {
             }
             commit(true);
             monitor.worked(1);
+           
             saveProperties();
         } finally {
             commit(false);
@@ -179,6 +176,17 @@ public class AfpLoader extends AbstractLoader {
 
         Job job2 = new AfpProcessExecutor("Execute Afp Process", afpRoot, neo);
         job2.schedule();
+        
+        try{
+        	if (file.getOutputFile() != null) {
+                loadCellFile(file.getOutputFile(), monitor);
+            }
+            commit(true);
+        }finally {
+            commit(false);
+        }
+        
+        mainTx.finish();
 
     }
 
@@ -222,7 +230,7 @@ public class AfpLoader extends AbstractLoader {
                 afpException.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.NEIGHBOUR.getId());
                 AfpNeighbourSubType.EXCEPTION.setTypeToNode(afpException, neo);
                 afpException.setProperty(INeoConstants.PROPERTY_NAME_NAME, exceptionFile.getName());
-                afpCell.createRelationshipTo(afpException, NetworkRelationshipTypes.NEIGHBOUR_DATA);
+                afpCell.createRelationshipTo(afpException, NetworkRelationshipTypes.EXCEPTION_DATA);
                 tx.success();
             } finally {
                 tx.finish();
@@ -855,7 +863,9 @@ public class AfpLoader extends AbstractLoader {
         private Node serve;
         private Set<String> numericProp;
         private Set<String> allProp;
-        private String neighName;
+        private String exceptionName;
+        Node lastSector;
+        
 
         /**
          * Instantiates a new cell file handler.
@@ -865,7 +875,7 @@ public class AfpLoader extends AbstractLoader {
          */
         public ExceptionFileHandler(Node rootNode, GraphDatabaseService service) {
             super(rootNode, service);
-            neighName = NeoUtils.getNodeName(rootNode, service);
+            exceptionName = NeoUtils.getNodeName(rootNode, service);
         }
 
         /**
@@ -898,10 +908,13 @@ public class AfpLoader extends AbstractLoader {
                 int i = 0;
                 String siteName = field[i++];
                 Integer sectorNo = Integer.valueOf(field[i++]);
-                serve = defineServe(siteName, field[1]);
+                String sectorName = siteName +field[1];
+                serve = defineServe(sectorName);
                 siteName = field[i++];
                 sectorNo = Integer.valueOf(field[i++]);
-                defineNeigh(siteName, field[3], Integer.valueOf(field[i++]));
+                sectorName = siteName +field[3];
+                Relationship relation = defineException(sectorName);
+                relation.setProperty("new_spacing", field[i++]);
             } catch (Exception e) {
                 String errStr = String.format("Can't parse line: %s", line);
                 AweConsolePlugin.error(errStr);
@@ -911,29 +924,35 @@ public class AfpLoader extends AbstractLoader {
 
 
 
+        
         /**
-         * Define neigh.
+         * Define Exception.
          * 
          * @param siteName the site name
          * @param field the field
-         * @param newSpacing the new spacing
          */
-        private void defineNeigh(String siteName, String field, Integer newSpacing) {
-            String sectorName = siteName.trim() + field.trim();
-            Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
-            if (sector == null) {
-                error("Exception File. Not found sector " + sectorName);
-                return;
-            }
-            Relationship relation = serve.createRelationshipTo(sector, NetworkRelationshipTypes.NEIGHBOUR);
-            relation.setProperty(INeoConstants.NEIGHBOUR_NAME, neighName);
-            if (numericProp.isEmpty()) {
-                numericProp.add("new_spacing");
-                allProp.add("new_spacing");
-            }
-            relation.setProperty("new_spacing", newSpacing);
-
+        private Relationship defineException(String sectorName) {
+           String proxySectorName = exceptionName + "/" + sectorName;
+            
+           Node proxySector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS), proxySectorName);
+        	if (proxySector == null) {
+        		Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
+                if (sector == null) {
+                    error(". Exception File. Not found sector " + sectorName);
+                    return null;
+                }
+                proxySector = createProxySector(sector, lastSector, rootNode, NetworkRelationshipTypes.EXCEPTIONS);
+                lastSector = proxySector;
+        	}
+            
+            Relationship relation = serve.createRelationshipTo(proxySector, NetworkRelationshipTypes.EXCEPTION);
+//            if (numericProp.isEmpty()) {
+//                numericProp.add("new_spacing");
+//                allProp.add("new_spacing");
+//            }
+            return relation;
         }
+
 
 
         /**
@@ -943,14 +962,21 @@ public class AfpLoader extends AbstractLoader {
          * @param field the field
          * @return the node
          */
-        private Node defineServe(String siteName, String field) {
-            String sectorName = siteName.trim() + field.trim();
-            Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
-            if (sector == null) {
-                error(". Neighbours File. Not found sector " + sectorName);
-                return null;
-            }
-            return sector;
+        private Node defineServe(String sectorName) {
+            String proxySectorName = exceptionName + "/" + sectorName;
+            
+            Node proxySector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS), proxySectorName);
+            	if (proxySector == null) {
+            		Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
+                    if (sector == null) {
+                        error(". Exceptions File. Not found sector " + sectorName);
+                        return null;
+                    }
+                    proxySector = createProxySector(sector, lastSector, rootNode, NetworkRelationshipTypes.EXCEPTIONS);
+                    lastSector = proxySector;
+            	}           
+          
+            return proxySector;
         }
 
     }
