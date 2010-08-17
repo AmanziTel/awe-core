@@ -70,6 +70,9 @@ public class GpehReportCreator {
     
     /** The network. */
     private final Node network;
+    private char separator;
+    private char quote;
+    private String extension;
 
     // private CellEcNoAnalisis ecNoAnalyse;
     /**
@@ -85,12 +88,69 @@ public class GpehReportCreator {
         this.gpeh = gpeh;
         this.service = service;
         this.luceneService = luceneService;
+        this.separator = '\t';
+        this.quote = 0;//0- no quote see class au.com.bytecode.opencsv.CSVWriter
         monitor = new NullProgressMonitor();
         maxRange = NeoCorePlugin.getDefault().getPreferenceStore().getInt(NeoCorePreferencesConstants.MAX_SECTOR_DISTANSE);
         if (maxRange == 0) {
             maxRange = 30000;
         }
         minMax = NeoUtils.getMinMaxTimeOfDataset(gpeh, service);
+        extension=".txt";
+    }
+
+    /**
+     * Gets the extension.
+     *
+     * @return the extension
+     */
+    public String getExtension() {
+        return extension;
+    }
+
+    /**
+     * Sets the extension.
+     *
+     * @param extension the new extension
+     */
+    public void setExtension(String extension) {
+        this.extension = extension;
+    }
+
+    /**
+     * Gets the separator.
+     *
+     * @return the separator
+     */
+    public char getSeparator() {
+        return separator;
+    }
+
+    /**
+     * Sets the separator.
+     *
+     * @param separator the new separator
+     */
+    public void setSeparator(char separator) {
+        this.separator = separator;
+    }
+
+    /**
+     * Gets the quote.
+     *
+     * @return the quote
+     */
+    public char getQuote() {
+        return quote;
+    }
+
+    /**
+     * Sets the quote.
+     *
+     * @param quote the new quote
+     */
+    public void setQuote(char quote) {
+        this.quote = quote;
     }
 
     /**
@@ -106,7 +166,7 @@ public class GpehReportCreator {
             List<IExportProvider> providers = defineProviders(report, period);
             for (IExportProvider provider : providers) {
                 if (provider.isValid()) {
-                    IExportHandler handler = createCSVHandler(outputDir, provider, monitor, '\t', report, period);
+                    IExportHandler handler = createCSVHandler(outputDir, provider, monitor, separator, quote,report, period);
                     Transaction tx = service.beginTx();
                     try {
                         CommonExporter export = new CommonExporter(handler, provider);
@@ -119,7 +179,7 @@ public class GpehReportCreator {
             }
         } else {
             File output = new File(outputDir, generateReportName(report, period));
-            IExportHandler handler = new CommonCSVHandler(output, monitor, '\t');
+            IExportHandler handler = new CommonCSVHandler(output, monitor, separator, quote);
             IExportProvider provider = defineProvider(report, period);
             monitor.worked(1);
             Transaction tx = service.beginTx();
@@ -142,16 +202,17 @@ public class GpehReportCreator {
      * @param provider the provider
      * @param monitor the monitor
      * @param c the c
+     * @param quote2 
      * @param report the report
      * @param period the period
      * @return the i export handler
      */
-    private IExportHandler createCSVHandler(File outputDir, IExportProvider provider, IProgressMonitor monitor, char c, GpehReportType report, CallTimePeriods period) {
+    private IExportHandler createCSVHandler(File outputDir, IExportProvider provider, IProgressMonitor monitor, char separator, char quote, GpehReportType report, CallTimePeriods period) {
         String fileName = generateReportName(report, period);
         if (provider instanceof NBAPWattExportProvider) {
             fileName = "WATT_" + fileName;
         }
-        return new CommonCSVHandler(new File(outputDir, fileName), monitor, '\t');
+        return new CommonCSVHandler(new File(outputDir, fileName), monitor, separator,quote);
     }
 
     /**
@@ -193,7 +254,7 @@ public class GpehReportCreator {
      * @return the string
      */
     private String generateReportName(GpehReportType report, CallTimePeriods period) {
-        return report.getId() + ".txt";
+        return new StringBuilder(report.getId()).append(extension).toString();
     }
 
     /**

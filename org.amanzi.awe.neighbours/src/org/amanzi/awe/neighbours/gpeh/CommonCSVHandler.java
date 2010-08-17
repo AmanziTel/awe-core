@@ -39,23 +39,26 @@ public class CommonCSVHandler implements IExportHandler {
     private final IProgressMonitor monitor;
     private CSVWriter writer;
     private final char delimeter;
+    private final char quote;
 
     /**
      * @param output
      * @param monitor
      * @param delimeter 
+     * @param quote 
      */
-    public CommonCSVHandler(File output, IProgressMonitor monitor, char delimeter) {
+    public CommonCSVHandler(File output, IProgressMonitor monitor, char delimeter, char quote) {
         this.output = output;
         this.monitor = monitor;
         this.delimeter = delimeter;
+        this.quote = quote;
     }
 
     @Override
     public void init() {
 
         try {
-            writer = new CSVWriter(new FileWriter(output),delimeter,CSVWriter.NO_QUOTE_CHARACTER);
+            writer = new CSVWriter(new FileWriter(output),delimeter,quote);
         } catch (IOException e) {
             writer = null;
             // TODO Handle IOException
