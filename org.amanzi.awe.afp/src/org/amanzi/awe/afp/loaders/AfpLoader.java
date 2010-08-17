@@ -186,7 +186,6 @@ public class AfpLoader extends AbstractLoader {
             commit(false);
         }
         
-        mainTx.finish();
 
     }
 

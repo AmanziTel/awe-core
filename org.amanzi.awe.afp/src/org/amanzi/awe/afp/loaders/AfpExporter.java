@@ -349,6 +349,55 @@ public class AfpExporter {
 	}
 	
 	/**
+	 * Creates the forbidden file for input to the C++ engine
+	 */
+	public void createForbiddenFile(){
+		File forbiddenFile = getFile(this.inputForbiddenFileName);
+		try {
+			forbiddenFile.createNewFile();
+			BufferedWriter writer  = new BufferedWriter(new FileWriter(forbiddenFile));
+			
+			 for (Node sector : afpRoot.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)){
+				 if (!sector.getProperty("type").equals("sector"))
+				 	 continue;
+				 String sectorValues[] = parseSectorName(sector);			
+				 
+				 Object obj = sector.getProperty("numberofforbidden", null);
+				 if (!(obj == null)){
+					 String numForbidden = obj.toString();
+					 writer.write(sectorValues[0]);
+					 writer.write(" " + sectorValues[1]);
+					 writer.write(" " + numForbidden);
+					 obj = sector.getProperty("forb_fr_list");
+					 
+					 if (obj != null){
+						 Integer temp[]  = new Integer[2];
+						 if (obj.getClass() == temp.getClass()){
+							 Integer forbiddenFrequencies[] = (Integer[]) obj;
+							 for (Integer frequency : forbiddenFrequencies){
+								 writer.write(" " + frequency);
+							 }
+						 }
+						 else{
+							 int forbiddenFrequencies[] = (int[])obj;
+							 for (int frequency : forbiddenFrequencies){
+								 writer.write(" " + frequency);
+							 }
+						 }
+						 
+					 }
+					 writer.newLine();
+				 }
+			 }
+
+			
+			writer.close();
+		}catch (Exception e){
+			AweConsolePlugin.exception(e);
+		}
+	}
+	
+	/**
 	 * Creates the cliques file for input to the C++ engine
 	 */
 	public void createCliquesFile(){
@@ -359,7 +408,7 @@ public class AfpExporter {
 			BufferedWriter writer  = new BufferedWriter(new FileWriter(cliquesFile));
 			
 			/**
-			 *TODO Write code here to write the file
+			 *Write code here to write the file
 			 */
 			
 			writer.close();
@@ -368,24 +417,7 @@ public class AfpExporter {
 		}
 	}
 	
-	/**
-	 * Creates the forbidden file for input to the C++ engine
-	 */
-	public void createForbiddenFile(){
-		File forbiddenFile = getFile(this.inputForbiddenFileName);
-		try {
-			forbiddenFile.createNewFile();
-			BufferedWriter writer  = new BufferedWriter(new FileWriter(forbiddenFile));
-			
-			/**
-			 *TODO Write code here to write the file
-			 */
-			
-			writer.close();
-		}catch (Exception e){
-			AweConsolePlugin.exception(e);
-		}
-	}
+	
 	
 	
 	public void createParamFile(){
