@@ -28,10 +28,10 @@ import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.index.lucene.LuceneIndexService;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * Export provider for Nbap reports in Dbm
  * </p>
+ * 
  * @author TsAr
  * @since 1.0.0
  */
@@ -40,22 +40,25 @@ public class NbapDbmExportProvider extends ExportProvider3GPP {
     private Integer power;
 
     /**
-     * @param dataset
-     * @param network
-     * @param service
-     * @param value3gpp
-     * @param statRelation
-     * @param period
-     * @param dataname
-     * @param luceneService
+     * Instantiates a new nbap dbm export provider.
+     * 
+     * @param dataset the dataset
+     * @param network the network
+     * @param service the service
+     * @param value3gpp the value3gpp
+     * @param statRelation the stat relation
+     * @param period the period
+     * @param dataname the dataname
+     * @param luceneService the lucene service
      */
     public NbapDbmExportProvider(Node dataset, Node network, GraphDatabaseService service, ValueType value3gpp, RelationshipType statRelation, CallTimePeriods period,
             String dataname, LuceneIndexService luceneService) {
         super(dataset, network, service, value3gpp, statRelation, period, dataname, luceneService);
     }
+
     @Override
     protected void createArrayHeader() {
-        for (int i = 50; i <=50; i ++) {
+        for (int i = 50; i <= 50; i++) {
             headers.add(String.valueOf(i));
         }
     }
@@ -63,22 +66,23 @@ public class NbapDbmExportProvider extends ExportProvider3GPP {
     @Override
     public List<Object> getNextLine() {
         Pair<Node, int[]> values = model.next();
-        List<Object> result=new LinkedList<Object>();
+        List<Object> result = new LinkedList<Object>();
         String name = (String)values.getLeft().getProperty("userLabel", "");
         if (StringUtil.isEmpty(name)) {
             name = NeoUtils.getNodeName(values.getLeft(), service);
         }
         result.add(name);
         power = (Integer)values.getLeft().getProperty("maximumTransmissionPower", null);
-        Calendar calendar=Calendar.getInstance();
+        Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(computeTime);
         result.add(dateFormat.format(calendar.getTime()));
         result.add(dateFormat2.format(calendar.getTime()));
         result.add(period.getId());
-        int[] array=values.getRight();
-        processArray(result, array); 
+        int[] array = values.getRight();
+        processArray(result, array);
         return result;
     }
+
     @Override
     protected void processArray(List<Object> result, int[] array) {
         int startElem = result.size();
@@ -89,22 +93,22 @@ public class NbapDbmExportProvider extends ExportProvider3GPP {
             return;
         }
         double maxTrPowWatt = Math.pow(10, -3) * Math.pow(10, power / 100);
-            for (int i = value3gpp.getMin3GPP(); i <= value3gpp.getMax3GPP(); i++) {
-                 double txpowerdbm = 10*Math.log10(Math.ceil(maxTrPowWatt * value3gpp.getRightBound(i) / 1000)/0.001);// (txpower=TxPower*10
-                                                                           // i - 0-1000
-                                                                           // i/1000);
-                if (txpowerdbm < 0 || txpowerdbm > 50) {
-                    LOGGER.error(String.format("Cell %s. Wrong TxPower %s", "", txpowerdbm));
-                    continue;
-                }
-                int value =array[i];
-                if (value != 0) {
-                    int ind = 0;
-                    txpowerdbm=Math.ceil(txpowerdbm);
-                    ind = startElem + (int)txpowerdbm-20;
-                    result.set(ind, (Integer)result.get(ind) + (Integer)value);
-                }
-
+        for (int i = value3gpp.getMin3GPP(); i <= value3gpp.getMax3GPP(); i++) {
+            double txpowerdbm = 10 * Math.log10(Math.ceil(maxTrPowWatt * value3gpp.getRightBound(i) / 1000) / 0.001);// (txpower=TxPower*10
+            // i - 0-1000
+            // i/1000);
+            if (txpowerdbm < 0 || txpowerdbm > 50) {
+                LOGGER.error(String.format("Cell %s. Wrong TxPower %s", "", txpowerdbm));
+                continue;
             }
+            int value = array[i];
+            if (value != 0) {
+                int ind = 0;
+                txpowerdbm = Math.ceil(txpowerdbm);
+                ind = startElem + (int)txpowerdbm - 20;
+                result.set(ind, (Integer)result.get(ind) + (Integer)value);
+            }
+
+        }
     }
 }

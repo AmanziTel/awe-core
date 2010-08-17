@@ -22,9 +22,8 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ *Contains information about interference cell
  * </p>
  * @author tsinkel_a
  * @since 1.0.0
@@ -34,9 +33,13 @@ public class InterfCellInfo extends CellNodeInfo {
     private final String psc;
     private Boolean defNeigh;
 
+
     /**
-     * @param cellSector
-     * @param cellSectorInfo
+     * Instantiates a new interf cell info.
+     *
+     * @param cellSector the cell sector
+     * @param cellSectorInfo the cell sector info
+     * @param psc the psc
      */
     public InterfCellInfo(Node cellSector, Node cellSectorInfo,String psc) {
         super(cellSector, cellSectorInfo);

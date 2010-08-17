@@ -40,41 +40,35 @@ import org.neo4j.index.lucene.LuceneIndexService;
 /**
  * <p>
  * Export provider for 3gpp values
- * </p>.
- *
+ * </p>
+ * .
+ * 
  * @author tsinkel_a
  * @since 1.0.0
  */
 public class ExportProvider3GPP extends AbstractGpehExportProvider {
     protected final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
     protected final SimpleDateFormat dateFormat2 = new SimpleDateFormat("HHmm");
-  public static final Logger LOGGER=Logger.getLogger(ExportProvider3GPP.class);  
-    
+    public static final Logger LOGGER = Logger.getLogger(ExportProvider3GPP.class);
 
-    
-    
     /** The value3gpp. */
     protected final ValueType value3gpp;
-    
+
     /** The dataname. */
     protected final String dataname;
-    
 
-    
     /** The model. */
     Model3GPPValue model;
 
-    
     /** The start time. */
     protected Long startTime;
-    
+
     /** The compute time. */
     protected Long computeTime;
 
-
     /**
      * Instantiates a new export provider3 gpp.
-     *
+     * 
      * @param dataset the dataset
      * @param network the network
      * @param service the service
@@ -83,20 +77,18 @@ public class ExportProvider3GPP extends AbstractGpehExportProvider {
      * @param period the period
      * @param dataname the dataname
      */
-    public ExportProvider3GPP(Node dataset, Node network, GraphDatabaseService service, ValueType value3gpp, RelationshipType statRelation, CallTimePeriods period, String dataname,LuceneIndexService luceneService) {
+    public ExportProvider3GPP(Node dataset, Node network, GraphDatabaseService service, ValueType value3gpp, RelationshipType statRelation, CallTimePeriods period,
+            String dataname, LuceneIndexService luceneService) {
         super(dataset, network, statRelation, period, service, luceneService);
         this.value3gpp = value3gpp;
         this.dataname = dataname;
 
-        computeTime=minMax.getLeft();
+        computeTime = minMax.getLeft();
         startTime = computeTime;
-        statRoot=defineStatRoot();
+        statRoot = defineStatRoot();
     }
 
-
-    /**
-     * Creates the header.
-     */
+    @Override
     protected void createHeader() {
         headers.clear();
         headers.add("Cell Name");
@@ -115,37 +107,27 @@ public class ExportProvider3GPP extends AbstractGpehExportProvider {
         }
     }
 
-    /**
-     * Checks if is valid.
-     *
-     * @return true, if is valid
-     */
     @Override
     public boolean isValid() {
-        return statRoot!=null;
+        return statRoot != null;
     }
 
-    /**
-     * Checks for next line.
-     *
-     * @return true, if successful
-     */
     @Override
     public boolean hasNextLine() {
-        if(statRoot==null){
+        if (statRoot == null) {
             return false;
         }
         if (minMax.getRight() != null) {
-            while (computeTime<minMax.getRight()||computeTime==startTime){
-                if (model==null){
+            while (computeTime < minMax.getRight() || computeTime == startTime) {
+                if (model == null) {
                     computeModel();
-                }   
-                if (model.hasNext()){
+                }
+                if (model.hasNext()) {
                     return true;
                 }
-                computeTime=period.addPeriod(computeTime);
+                computeTime = period.addPeriod(computeTime);
                 model.clear();
-                model=null;
+                model = null;
             }
         }
         return false;
@@ -161,121 +143,110 @@ public class ExportProvider3GPP extends AbstractGpehExportProvider {
         model.clear();
         Transaction tx = NeoUtils.beginTx(service);
         try {
-            
-            updateModel(statRoot,computeTime, model);
+
+            updateModel(statRoot, computeTime, model);
         } finally {
             tx.finish();
         }
 
     }
 
-
-
     /**
      * Update model.
-     *
+     * 
      * @param statNode the time stat node
-     * @param computeTime 
+     * @param computeTime
      * @param model the model
      */
     private void updateModel(Node statNode, Long computeTime, Model3GPPValue model) {
         for (Relationship relation : statNode.getRelationships(Direction.OUTGOING)) {
-            Pair<Integer,Integer>ciRnc=getCiRncPair(relation);
-            Node bestCell=NeoUtils.findSector(network, ciRnc.getLeft(), String.valueOf(ciRnc.getRight()), luceneService, service);
-            if (bestCell==null){
-                LOGGER.warn(String.format("Data not included in statistics! Not found sector with ci=%s, rnc=%s",ciRnc.getLeft(),ciRnc.getRight()));
+            Pair<Integer, Integer> ciRnc = getCiRncPair(relation);
+            Node bestCell = NeoUtils.findSector(network, ciRnc.getLeft(), String.valueOf(ciRnc.getRight()), luceneService, service);
+            if (bestCell == null) {
+                LOGGER.warn(String.format("Data not included in statistics! Not found sector with ci=%s, rnc=%s", ciRnc.getLeft(), ciRnc.getRight()));
                 continue;
             }
-            Node bestCellNode=relation.getEndNode();
-            for (String propertyName:bestCellNode.getPropertyKeys()){
-                if (StringUtils.isNumeric(propertyName)){
-                   long time= Long.valueOf(propertyName);
-                   if (period.compareByPeriods(computeTime, time)==0){
-                       int[] values = (int[])bestCellNode.getProperty(propertyName,null);
-                       model.update(bestCell, values);
-                   }
+            Node bestCellNode = relation.getEndNode();
+            for (String propertyName : bestCellNode.getPropertyKeys()) {
+                if (StringUtils.isNumeric(propertyName)) {
+                    long time = Long.valueOf(propertyName);
+                    if (period.compareByPeriods(computeTime, time) == 0) {
+                        int[] values = (int[])bestCellNode.getProperty(propertyName, null);
+                        model.update(bestCell, values);
+                    }
                 }
             }
-        }       
+        }
     }
 
-
     /**
-     *
-     * @param relation
-     * @return
+     * Gets the pair of ci rnc from relation
+     * 
+     * @param relation the relation
+     * @return the ci rnc pair
      */
     private Pair<Integer, Integer> getCiRncPair(Relationship relation) {
         String[] ciRnc = relation.getType().name().split("_");
-        Integer ci=Integer.valueOf(ciRnc[0]);
-        Integer rnc=Integer.valueOf(ciRnc[1]);
-        return new Pair<Integer, Integer>(ci,rnc);
+        Integer ci = Integer.valueOf(ciRnc[0]);
+        Integer rnc = Integer.valueOf(ciRnc[1]);
+        return new Pair<Integer, Integer>(ci, rnc);
     }
 
-
-    /**
-     * Gets the data name.
-     *
-     * @return the data name
-     */
     @Override
     public String getDataName() {
         return dataname;
     }
 
-    /**
-     * Gets the next line.
-     *
-     * @return the next line
-     */
     @Override
     public List<Object> getNextLine() {
         Pair<Node, int[]> values = model.next();
-        List<Object> result=new LinkedList<Object>();
+        List<Object> result = new LinkedList<Object>();
         String name = (String)values.getLeft().getProperty("userLabel", "");
         if (StringUtil.isEmpty(name)) {
             name = NeoUtils.getNodeName(values.getLeft(), service);
         }
         result.add(name);
-        Calendar calendar=Calendar.getInstance();
+        Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(computeTime);
         result.add(dateFormat.format(calendar.getTime()));
         result.add(dateFormat2.format(calendar.getTime()));
         result.add(period.getId());
-        int[] array=values.getRight();
+        int[] array = values.getRight();
         processArray(result, array);
         return result;
     }
 
-
-
+    /**
+     * Process array.
+     * 
+     * @param result the result
+     * @param array the array
+     */
     protected void processArray(List<Object> result, int[] array) {
         for (int i = 0; i < array.length; i++) {
             result.add(array[i]);
         }
     }
 
-
-
     /**
      * The Class Model3GPPValue.
      */
     public static class Model3GPPValue {
-        
+
         /** The maps. */
         private final Map<Node, int[]> maps = new LinkedHashMap<Node, int[]>();
-        
+
         /** The iter. */
-        private Iterator<Entry<Node, int[]>> iter=null;
-        
+        private Iterator<Entry<Node, int[]>> iter = null;
+
         /**
          * Update.
-         *
+         * 
          * @param sector the sector
          * @param values the values
          */
         public void update(Node sector, int[] values) {
-            iter=null;
+            iter = null;
             int[] val = maps.get(sector);
             if (val == null) {
                 val = values;
@@ -287,35 +258,33 @@ public class ExportProvider3GPP extends AbstractGpehExportProvider {
             }
         }
 
-
         /**
          * Checks for next.
-         *
+         * 
          * @return true, if successful
          */
         public boolean hasNext() {
-            if (iter==null){
+            if (iter == null) {
                 initIterator();
             }
             return iter.hasNext();
         }
 
-
         /**
-         *
+         * Inits the iterator.
          */
         private void initIterator() {
-            iter=maps.entrySet().iterator();
+            iter = maps.entrySet().iterator();
         }
 
         /**
          * Next.
-         *
+         * 
          * @return the list
          */
-        public Pair<Node,int[]> next() {
-            if (iter==null){
-                initIterator(); 
+        public Pair<Node, int[]> next() {
+            if (iter == null) {
+                initIterator();
             }
             Entry<Node, int[]> entry = iter.next();
             return new Pair<Node, int[]>(entry.getKey(), entry.getValue());
@@ -323,7 +292,7 @@ public class ExportProvider3GPP extends AbstractGpehExportProvider {
 
         /**
          * Checks if is empty.
-         *
+         * 
          * @return true, if is empty
          */
         public boolean isEmpty() {

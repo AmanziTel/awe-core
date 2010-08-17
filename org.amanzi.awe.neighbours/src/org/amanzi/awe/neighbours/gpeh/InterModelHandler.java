@@ -23,24 +23,27 @@ import org.amanzi.neo.core.utils.NeoUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ *Handler of Inter ICDM report
  * </p>
  * @author TsAr
  * @since 1.0.0
  */
 public class InterModelHandler extends IntraModelHandler {
 
+
     /**
-     * @param period
-     * @param service
+     * Instantiates a new inter model handler.
+     *
+     * @param period the period
+     * @param service the service
      */
     public InterModelHandler(CallTimePeriods period, GraphDatabaseService service) {
         super(period, service);
     }
+    
+    @Override
     public boolean setData(CellNodeInfo bestCell, InterfCellInfo interfCell) {
-//      Pattern pat=Pattern.compile("^(\\D)(\\d)$");
       Pattern pat=Pattern.compile("^(interMr)(\\d+)$");
       Set<Long> timestamps=defineTimestamps(interfCell.getCellSectorInfo(),pat, 2);
       if (timestamps.isEmpty()){
@@ -81,7 +84,6 @@ public class InterModelHandler extends IntraModelHandler {
       for (int i = 0; i < 10; i++) {
           data.add(values[i]);
       }
-
       return true;
   }
 

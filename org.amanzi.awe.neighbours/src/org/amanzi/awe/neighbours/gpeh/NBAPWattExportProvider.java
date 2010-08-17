@@ -1,3 +1,15 @@
+/* AWE - Amanzi Wireless Explorer
+ * http://awe.amanzi.org
+ * (C) 2008-2009, AmanziTel AB
+ *
+ * This library is provided under the terms of the Eclipse Public License
+ * as described at http://www.eclipse.org/legal/epl-v10.html. Any use,
+ * reproduction or distribution of the library constitutes recipient's
+ * acceptance of this agreement.
+ *
+ * This library is distributed WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ */
 package org.amanzi.awe.neighbours.gpeh;
 import java.util.Calendar;
 import java.util.LinkedList;
@@ -13,38 +25,29 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.index.lucene.LuceneIndexService;
 
-/* AWE - Amanzi Wireless Explorer
- * http://awe.amanzi.org
- * (C) 2008-2009, AmanziTel AB
- *
- * This library is provided under the terms of the Eclipse Public License
- * as described at http://www.eclipse.org/legal/epl-v10.html. Any use,
- * reproduction or distribution of the library constitutes recipient's
- * acceptance of this agreement.
- *
- * This library is distributed WITHOUT ANY WARRANTY; without even the
- * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- */
+
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ *Export provider for Nbap reports in Watt
  * </p>
  * @author tsinkel_a
  * @since 1.0.0
  */
 public class NBAPWattExportProvider extends ExportProvider3GPP {
     protected Integer power;
+
     /**
-     * @param dataset
-     * @param network
-     * @param service
-     * @param value3gpp
-     * @param statRelation
-     * @param period
-     * @param dataname
-     * @param luceneService
+     * Instantiates a new nBAP watt export provider.
+     *
+     * @param dataset the dataset
+     * @param network the network
+     * @param service the service
+     * @param value3gpp the value3gpp
+     * @param statRelation the stat relation
+     * @param period the period
+     * @param dataname the dataname
+     * @param luceneService the lucene service
      */
     public NBAPWattExportProvider(Node dataset, Node network, GraphDatabaseService service, ValueType value3gpp, RelationshipType statRelation, CallTimePeriods period,
             String dataname, LuceneIndexService luceneService) {

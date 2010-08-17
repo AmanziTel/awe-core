@@ -27,9 +27,8 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ *Hondler for Intra ICDM reports
  * </p>
  * @author tsinkel_a
  * @since 1.0.0
@@ -39,6 +38,12 @@ public class IntraModelHandler extends RrcModelHandler {
     protected final CallTimePeriods period;
     protected final GraphDatabaseService service;
 
+    /**
+     * Instantiates a new intra model handler.
+     *
+     * @param period the period
+     * @param service the service
+     */
     public IntraModelHandler(CallTimePeriods period,GraphDatabaseService service){
         this.period = period;
         this.service = service;
@@ -106,9 +111,9 @@ public class IntraModelHandler extends RrcModelHandler {
     /**
      * Compute array value.
      *
-     * @param result the result
+     * @param result the result array
      * @param cellSectorInfo the cell sector info
-     * @param string the string
+     * @param string the formatted property name
      * @param timestamps the timestamps
      */
     protected void computeArrayValue(int result[],Node cellSectorInfo, String string, Set<Long> timestamps) {
@@ -122,12 +127,14 @@ public class IntraModelHandler extends RrcModelHandler {
         }
         return;
     }
+
     /**
+     * Compute value.
      *
-     * @param cellSectorInfo
-     * @param string
-     * @param timestamps
-     * @return
+     * @param cellSectorInfo the cell sector info
+     * @param string the formatted property name
+     * @param timestamps the timestamps
+     * @return the int
      */
     protected int computeValue(Node cellSectorInfo, String string, Set<Long> timestamps) {
         int result=0;
@@ -137,6 +144,14 @@ public class IntraModelHandler extends RrcModelHandler {
         return result;
     }
 
+    /**
+     * Define timestamps.
+     *
+     * @param node the node
+     * @param pat the pat
+     * @param groupNum the group num
+     * @return the set
+     */
     protected Set<Long> defineTimestamps(Node node, Pattern pat, int groupNum) {
         Set<Long> result=new HashSet<Long>();
         for (String propertyName:node.getPropertyKeys()){
@@ -150,6 +165,14 @@ public class IntraModelHandler extends RrcModelHandler {
         }
         return result;
     }
+    
+    /**
+     * Gets the ecno rscp array.
+     *
+     * @param node the node
+     * @param timestamps the timestamps
+     * @return the ecno rscp array
+     */
     protected int[][] getEcnoRscpArray(Node node, Set<Long> timestamps) {
         int[][] result = new int[92][50];
         for (int i = 0; i < 92; i++) {

@@ -41,13 +41,16 @@ public class CellCorrelationHandler extends IntraModelHandler {
     private final SimpleDateFormat dateFormat;
     private final SimpleDateFormat dateFormat2;
 
+
     /**
-     * @param period
-     * @param service
-     * @param rscpRangeNames
-     * @param ecnoRangeNames
-     * @param dateFormat2
-     * @param dateFormat
+     * Instantiates a new cell correlation handler.
+     *
+     * @param period the period
+     * @param service the service
+     * @param ecnoRangeNames the ecno range names
+     * @param rscpRangeNames the rscp range names
+     * @param dateFormat the date format
+     * @param dateFormat2 the date format2
      */
     public CellCorrelationHandler(CallTimePeriods period, GraphDatabaseService service, ArrayList<IntRange> ecnoRangeNames, ArrayList<IntRange> rscpRangeNames,
             SimpleDateFormat dateFormat, SimpleDateFormat dateFormat2) {
@@ -58,7 +61,7 @@ public class CellCorrelationHandler extends IntraModelHandler {
         this.dateFormat2 = dateFormat2;
         calendar = Calendar.getInstance();
     }
-
+    @Override
     public boolean setData(CellNodeInfo bestCell, InterfCellInfo interfCell) {
         // Pattern pat=Pattern.compile("^(\\D)(\\d)$");
         Pattern pat = Pattern.compile("^(\\d+)(rscp0)$");

@@ -15,6 +15,7 @@ package org.amanzi.awe.neighbours.gpeh;
 
 /**
  * <p>
+ * Gpeh Report type
  * </p>
  * 
  * @author tsinkel_a

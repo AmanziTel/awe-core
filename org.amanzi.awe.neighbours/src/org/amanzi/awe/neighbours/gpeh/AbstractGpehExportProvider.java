@@ -30,66 +30,67 @@ import org.neo4j.index.lucene.LuceneIndexService;
 
 /**
  * <p>
- *Abstract class for GPEH export providers
+ * Abstract class for GPEH export providers
  * </p>
+ * 
  * @author tsinkel_a
  * @since 1.0.0
  */
-public abstract class AbstractGpehExportProvider implements IExportProvider{
+public abstract class AbstractGpehExportProvider implements IExportProvider {
     protected final Node dataset;
     protected final Node network;
     protected final RelationshipType statRelation;
     protected final CallTimePeriods period;
     protected final GraphDatabaseService service;
-    protected  Node statRoot;
+    protected Node statRoot;
     protected final LuceneIndexService luceneService;
     protected Pair<Long, Long> minMax;
     protected Long startTime;
     protected List<String> headers = null;
     private Transaction tx;
 
-    public AbstractGpehExportProvider(Node dataset, Node network, RelationshipType statRelation, CallTimePeriods period,GraphDatabaseService service, LuceneIndexService luceneService) {
-        tx=NeoUtils.beginTx(service);
-        try{
-        this.dataset = dataset;
-        this.network = network;
-        this.statRelation = statRelation;
-        this.period = period;
-        this.service = service;
-        this.luceneService = luceneService;
-        minMax=NeoUtils.getMinMaxTimeOfDataset(dataset, service);
-        init();
-        }finally{
+    public AbstractGpehExportProvider(Node dataset, Node network, RelationshipType statRelation, CallTimePeriods period, GraphDatabaseService service,
+            LuceneIndexService luceneService) {
+        tx = NeoUtils.beginTx(service);
+        try {
+            this.dataset = dataset;
+            this.network = network;
+            this.statRelation = statRelation;
+            this.period = period;
+            this.service = service;
+            this.luceneService = luceneService;
+            minMax = NeoUtils.getMinMaxTimeOfDataset(dataset, service);
+            init();
+        } finally {
             NeoUtils.finishTx(tx);
         }
     }
 
+    /**
+     * Inits additional data
+     */
     protected void init() {
-        startTime=period.getFirstTime(minMax.getLeft());  
-        statRoot=defineStatRoot();
-        
+        startTime = period.getFirstTime(minMax.getLeft());
+        statRoot = defineStatRoot();
+
     }
+
     /**
      * Define statistic node.
-     *
+     * 
      * @return the node
      */
-    protected Node defineStatRoot() {//TODO check on existing statistics
+    protected Node defineStatRoot() {// TODO check on existing statistics
         Transaction tx = NeoUtils.beginTx(service);
-        try{
-           Node statMain= dataset.getSingleRelationship(GpehRelationshipType.GPEH_STATISTICS, Direction.OUTGOING).getOtherNode(dataset);
-           Relationship rel = statMain.getSingleRelationship(statRelation, Direction.OUTGOING);
-        return rel==null?null:rel.getOtherNode(statMain);
-        }finally{
+        try {
+            Node statMain = dataset.getSingleRelationship(GpehRelationshipType.GPEH_STATISTICS, Direction.OUTGOING).getOtherNode(dataset);
+            Relationship rel = statMain.getSingleRelationship(statRelation, Direction.OUTGOING);
+            return rel == null ? null : rel.getOtherNode(statMain);
+        } finally {
             tx.finish();
         }
     }
-    
-    /**
-     * Gets the headers.
-     *
-     * @return the headers
-     */
+
     @Override
     public List<String> getHeaders() {
         if (headers == null) {
@@ -99,6 +100,8 @@ public abstract class AbstractGpehExportProvider implements IExportProvider{
         return headers;
     }
 
-
+    /**
+     * Creates the header.
+     */
     protected abstract void createHeader();
 }

@@ -24,23 +24,25 @@ import org.amanzi.neo.core.utils.NeoUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * Handler for RRC EcNo reports
  * </p>
+ * 
  * @author TsAr
  * @since 1.0.0
  */
-public class CellEcNoHandler  extends IntraModelHandler {
+public class CellEcNoHandler extends IntraModelHandler {
     private final SimpleDateFormat dateFormat;
     private final SimpleDateFormat timeFormat;
     private Calendar calendar;
 
     /**
-     * @param period
-     * @param service
-     * @param timeFormat
-     * @param dateFormat
+     * Instantiates a new cell ec no handler.
+     * 
+     * @param period the period
+     * @param service the service
+     * @param dateFormat the date format
+     * @param timeFormat the time format
      */
     public CellEcNoHandler(CallTimePeriods period, GraphDatabaseService service, SimpleDateFormat dateFormat, SimpleDateFormat timeFormat) {
         super(period, service);
@@ -49,6 +51,7 @@ public class CellEcNoHandler  extends IntraModelHandler {
         calendar = Calendar.getInstance();
     }
 
+    @Override
     public boolean setData(CellNodeInfo bestCell, InterfCellInfo interfCell) {
         // Pattern pat=Pattern.compile("^(\\D)(\\d)$");
         Pattern pat = Pattern.compile("^(\\d+)(rscp0)$");
@@ -67,13 +70,12 @@ public class CellEcNoHandler  extends IntraModelHandler {
 
         for (int j = 0; j < 50; j++) {
             int value = 0;
-            for (int i = 0; i <92; i++) {
+            for (int i = 0; i < 92; i++) {
                 value += rscpEcNo[i][j];
             }
             data.add(value);
         }
         return true;
     }
-
 
 }

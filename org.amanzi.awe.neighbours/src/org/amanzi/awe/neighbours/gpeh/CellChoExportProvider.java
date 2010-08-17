@@ -14,7 +14,7 @@
 package org.amanzi.awe.neighbours.gpeh;
 
 /**
- * TODO Purpose of 
+ * TODO implement!
  * <p>
  *
  * </p>

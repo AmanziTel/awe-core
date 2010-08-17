@@ -21,8 +21,8 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.index.lucene.LuceneIndexService;
 
 /**
- * TODO Purpose of
  * <p>
+ * Provider for Inter ICDM reports
  * </p>
  * 
  * @author TsAr
@@ -30,12 +30,15 @@ import org.neo4j.index.lucene.LuceneIndexService;
  */
 public class InterMatrixProvider extends IntraMatrixProvider {
 
+
     /**
-     * @param dataset
-     * @param network
-     * @param service
-     * @param period
-     * @param luceneService
+     * Instantiates a new inter matrix provider.
+     *
+     * @param dataset the dataset
+     * @param network the network
+     * @param service the service
+     * @param period the period
+     * @param luceneService the lucene service
      */
     public InterMatrixProvider(Node dataset, Node network, GraphDatabaseService service, CallTimePeriods period, LuceneIndexService luceneService) {
         super(dataset, network, service, period, luceneService);
@@ -81,6 +84,5 @@ public class InterMatrixProvider extends IntraMatrixProvider {
         headers.add("RSCP3_10");
         headers.add("RSCP4_10");
         headers.add("RSCP5_10");
-
     }
 }

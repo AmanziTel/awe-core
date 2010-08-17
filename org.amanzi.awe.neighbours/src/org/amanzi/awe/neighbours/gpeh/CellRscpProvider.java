@@ -21,8 +21,8 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.index.lucene.LuceneIndexService;
 
 /**
- * TODO Purpose of
  * <p>
+ * Provider for RSCP report
  * </p>
  * 
  * @author TsAr
@@ -30,12 +30,15 @@ import org.neo4j.index.lucene.LuceneIndexService;
  */
 public class CellRscpProvider extends CellCorrelationProvider {
 
+
     /**
-     * @param dataset
-     * @param network
-     * @param service
-     * @param period
-     * @param luceneService
+     * Instantiates a new cell rscp provider.
+     *
+     * @param dataset the dataset
+     * @param network the network
+     * @param service the service
+     * @param period the period
+     * @param luceneService the lucene service
      */
     public CellRscpProvider(Node dataset, Node network, GraphDatabaseService service, CallTimePeriods period, LuceneIndexService luceneService) {
         super(dataset, network, service, period, luceneService);

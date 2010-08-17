@@ -22,6 +22,7 @@ package org.amanzi.awe.neighbours.gpeh;
  * @author tsinkel_a
  * @since 1.0.0
  */
+@Deprecated
 public class RrcMeasurement {
     
     /** The scrambling. */

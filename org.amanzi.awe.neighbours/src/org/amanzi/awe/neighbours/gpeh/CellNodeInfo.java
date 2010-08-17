@@ -49,11 +49,6 @@ public class CellNodeInfo {
         this.cellSectorInfo = cellSectorInfo;
     }
 
-    /**
-     * Hash code.
-     *
-     * @return the int
-     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -62,12 +57,6 @@ public class CellNodeInfo {
         return result;
     }
 
-    /**
-     * Equals.
-     *
-     * @param obj the obj
-     * @return true, if successful
-     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
@@ -103,9 +92,11 @@ public class CellNodeInfo {
         return cellSectorInfo;
     }
 
+
     /**
+     * Setup location.
      *
-     * @return
+     * @return true, if successful
      */
     public boolean setupLocation() {
         if (lat != null && lon != null) {
@@ -124,11 +115,21 @@ public class CellNodeInfo {
         return false;
     }
 
+    /**
+     * Gets the lat.
+     *
+     * @return the lat
+     */
     public Double getLat() {
         return lat;
     }
 
 
+    /**
+     * Gets the lon.
+     *
+     * @return the lon
+     */
     public Double getLon() {
         return lon;
     }

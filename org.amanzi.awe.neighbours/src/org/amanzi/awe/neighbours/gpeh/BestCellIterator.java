@@ -15,15 +15,13 @@ package org.amanzi.awe.neighbours.gpeh;
 
 import java.util.Iterator;
 
-import org.amanzi.awe.neighbours.gpeh.IntraMatrixProvider.CellInfo;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ *Best cell iterator provide iterator by best cell
  * </p>
  * @author TsAr
  * @since 1.0.0
@@ -32,8 +30,11 @@ public class BestCellIterator implements Iterator<CellInfo> {
 
     private Iterator<Relationship> bestCellIterator;
 
+
     /**
-     * @param statRoot
+     * Instantiates a new best cell iterator.
+     *
+     * @param statRoot the stat root
      */
     public BestCellIterator(Node statRoot) {
         bestCellIterator = statRoot.getRelationships(Direction.OUTGOING).iterator();

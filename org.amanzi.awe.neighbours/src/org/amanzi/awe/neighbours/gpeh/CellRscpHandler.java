@@ -24,8 +24,8 @@ import org.amanzi.neo.core.utils.NeoUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
- * TODO Purpose of
  * <p>
+ * Handler for RSCP report
  * </p>
  * 
  * @author TsAr
@@ -37,11 +37,14 @@ public class CellRscpHandler extends IntraModelHandler {
     private final SimpleDateFormat timeFormat;
     private Calendar calendar;
 
+
     /**
-     * @param period
-     * @param service
-     * @param timeFormat
-     * @param dateFormat
+     * Instantiates a new cell rscp handler.
+     *
+     * @param period the period
+     * @param service the service
+     * @param dateFormat the date format
+     * @param timeFormat the time format
      */
     public CellRscpHandler(CallTimePeriods period, GraphDatabaseService service, SimpleDateFormat dateFormat, SimpleDateFormat timeFormat) {
         super(period, service);
@@ -49,7 +52,8 @@ public class CellRscpHandler extends IntraModelHandler {
         this.timeFormat = timeFormat;
         calendar = Calendar.getInstance();
     }
-
+    
+    @Override
     public boolean setData(CellNodeInfo bestCell, InterfCellInfo interfCell) {
         // Pattern pat=Pattern.compile("^(\\D)(\\d)$");
         Pattern pat = Pattern.compile("^(\\d+)(rscp0)$");

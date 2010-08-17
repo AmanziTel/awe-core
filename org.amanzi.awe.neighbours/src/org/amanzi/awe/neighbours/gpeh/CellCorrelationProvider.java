@@ -15,53 +15,53 @@ package org.amanzi.awe.neighbours.gpeh;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedList;
 
 import org.amanzi.awe.statistic.CallTimePeriods;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.utils.GpehReportUtil;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
 import org.neo4j.index.lucene.LuceneIndexService;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * CellCorrelationProvider - provider for CellCorrelation report
  * </p>
+ * 
  * @author TsAr
  * @since 1.0.0
  */
 public class CellCorrelationProvider extends IntraMatrixProvider {
-    private static final Logger LOGGER = Logger.getLogger(CellCorrelationProvider.class);
+    static final Logger LOGGER = Logger.getLogger(CellCorrelationProvider.class);
     private ArrayList<org.amanzi.awe.neighbours.gpeh.CellCorrelationProvider.IntRange> ecnoRangeNames;
     private ArrayList<org.amanzi.awe.neighbours.gpeh.CellCorrelationProvider.IntRange> rscpRangeNames;
     protected SimpleDateFormat dateFormat;
     protected SimpleDateFormat dateFormat2;
+
     /**
-     * @param dataset
-     * @param network
-     * @param service
-     * @param period
-     * @param luceneService
+     * Instantiates a new cell correlation provider.
+     * 
+     * @param dataset the dataset
+     * @param network the network
+     * @param service the service
+     * @param period the period
+     * @param luceneService the lucene service
      */
     public CellCorrelationProvider(Node dataset, Node network, GraphDatabaseService service, CallTimePeriods period, LuceneIndexService luceneService) {
         super(dataset, network, service, period, luceneService);
     }
+
     @Override
     protected void init() {
         dateFormat = new SimpleDateFormat("yyyyMMdd");
         dateFormat2 = new SimpleDateFormat("HHmm");
         super.init();
     }
+
     @Override
     protected void defineHandler() {
-        
-       ecnoRangeNames = new ArrayList<IntRange>();
+
+        ecnoRangeNames = new ArrayList<IntRange>();
         ecnoRangeNames.add(new IntRange("ECNO-18", 0, 12));
         ecnoRangeNames.add(new IntRange("ECNO-15", 13, 18));
         ecnoRangeNames.add(new IntRange("ECNO-12", 19, 24));
@@ -77,16 +77,19 @@ public class CellCorrelationProvider extends IntraMatrixProvider {
         rscpRangeNames.add(new IntRange("RSCP-70", 36, 45));
         rscpRangeNames.add(new IntRange("RSCP-25", 46, 90));// TODO check 91
 
-        modelHandler = new CellCorrelationHandler(period, service,ecnoRangeNames,rscpRangeNames,dateFormat,dateFormat2);
+        modelHandler = new CellCorrelationHandler(period, service, ecnoRangeNames, rscpRangeNames, dateFormat, dateFormat2);
     }
-@Override
-protected void defineRowIterator() {
-    rowIter = new BestCellIterator(statRoot);
-}
-@Override
-protected void defineModel() {
-    model = new CellCorrelationModel(modelHandler);
-}
+
+    @Override
+    protected void defineRowIterator() {
+        rowIter = new BestCellIterator(statRoot);
+    }
+
+    @Override
+    protected void defineModel() {
+        model = new CellCorrelationModel(modelHandler);
+    }
+
     @Override
     public String getDataName() {
         return "Cell RSCP analysis";
@@ -105,6 +108,7 @@ protected void defineModel() {
             }
         }
     }
+
     /**
      * <p>
      * Contains information about 3GPP range
@@ -185,61 +189,5 @@ protected void defineModel() {
         }
 
     }
-public static class CellCorrelationModel extends RrcModel<RrcModelHandler>{
 
-    /**
-     * @param modelHandler
-     */
-    public CellCorrelationModel(RrcModelHandler modelHandler) {
-        super(modelHandler);
-    }
-    public void load(Node network, Iterator<CellInfo> rowIter, GraphDatabaseService service, LuceneIndexService luceneService) {
-        scrCodeIndName = NeoUtils.getLuceneIndexKeyByProperty(network, GpehReportUtil.PRIMARY_SCR_CODE, NodeTypes.SECTOR);
-        Transaction tx = NeoUtils.beginTx(service);
-        try {
-            while (rowIter.hasNext()) {
-                CellInfo cell = rowIter.next();
-                Node bestCell = NeoUtils.findSector(network, cell.getCi(), String.valueOf(cell.getRnc()), luceneService, service);
-                if (bestCell == null) {
-                    LOGGER.warn(String.format("Data not included in statistics! Not found sector with ci=%s, rnc=%s", cell.getCi(), cell.getRnc()));
-                    continue;
-                }
-                CellNodeInfo bci = findInCache(bestCell, cache.keySet());
-                if (bci == null) {
-                    bci = new CellNodeInfo(bestCell, cell.getBestCellInfo());
-                    cache.put(bci, null);
-                }
-            }
-        } finally {
-            tx.finish();
-        }
-    }
-
-
-
-
-    public boolean defineNextData() {
-        modelHandler.clearData();
-        while ( bestCellIterator.hasNext()) {
-            bestCellInfo = bestCellIterator.next();
-            if (modelHandler.setData(bestCellInfo, null)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * @param computeTime
-     */
-    public void clearIter() {
-        modelHandler.clearData();
-        bestCellIterator = cache.keySet().iterator();
-
-    }
-
-
-}
-
-   
 }

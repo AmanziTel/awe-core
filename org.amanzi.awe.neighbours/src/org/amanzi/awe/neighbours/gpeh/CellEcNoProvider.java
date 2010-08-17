@@ -21,21 +21,23 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.index.lucene.LuceneIndexService;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ *Provider for RRC EcNo reports
  * </p>
  * @author TsAr
  * @since 1.0.0
  */
 public class CellEcNoProvider extends CellCorrelationProvider {
 
+
     /**
-     * @param dataset
-     * @param network
-     * @param service
-     * @param period
-     * @param luceneService
+     * Instantiates a new cell ec no provider.
+     *
+     * @param dataset the dataset
+     * @param network the network
+     * @param service the service
+     * @param period the period
+     * @param luceneService the lucene service
      */
     public CellEcNoProvider(Node dataset, Node network, GraphDatabaseService service, CallTimePeriods period, LuceneIndexService luceneService) {
         super(dataset, network, service, period, luceneService);

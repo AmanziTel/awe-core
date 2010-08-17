@@ -25,6 +25,7 @@ import com.vividsolutions.jts.geom.Coordinate;
  * @author tsinkel_a
  * @since 1.0.0
  */
+@Deprecated
 public class MeasurementCell {
     
     /** The cell. */

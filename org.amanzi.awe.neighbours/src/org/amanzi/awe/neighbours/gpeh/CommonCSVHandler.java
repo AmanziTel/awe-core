@@ -55,7 +55,7 @@ public class CommonCSVHandler implements IExportHandler {
     public void init() {
 
         try {
-            writer = new CSVWriter(new FileWriter(output),delimeter);
+            writer = new CSVWriter(new FileWriter(output),delimeter,CSVWriter.NO_QUOTE_CHARACTER);
         } catch (IOException e) {
             writer = null;
             // TODO Handle IOException

@@ -16,9 +16,8 @@ package org.amanzi.awe.neighbours.gpeh;
 import java.util.List;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ *Abstract class for Rrc Model handler
  * </p>
  * @author tsinkel_a
  * @since 1.0.0
@@ -27,22 +26,52 @@ public abstract class RrcModelHandler {
 
     protected long computeTime;
 
+    /**
+     * check - model contains data or not
+     *
+     * @return true, if successful
+     */
     public abstract boolean haveData();
 
+    /**
+     * Form line of Object from data
+     *
+     * @return the list
+     */
     public abstract List<Object> formLine();
 
+    /**
+     * Clear data in model
+     */
     public abstract void clearData();
 
 
+    /**
+     * Sets the time of handling
+     *
+     * @param computeTime the new time
+     */
     public void setTime(long computeTime) {
         this.computeTime = computeTime;
         clearData();
         
     }
     
+    /**
+     * Gets the compute time
+     *
+     * @return the compute time
+     */
     public long getComputeTime() {
         return computeTime;
     }
 
+    /**
+     * Sets the data in model
+     *
+     * @param bestCell the best cell
+     * @param interfCell the interference cell
+     * @return true, if data sets successful
+     */
     public abstract boolean setData(CellNodeInfo bestCell,InterfCellInfo interfCell);
 }
