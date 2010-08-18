@@ -174,17 +174,6 @@ public class AfpLoader extends AbstractLoader {
             commit(false);
         }
 
-        Job job2 = new AfpProcessExecutor("Execute Afp Process", afpRoot, neo);
-        job2.schedule();
-        
-        try{
-        	if (file.getOutputFile() != null) {
-                loadCellFile(file.getOutputFile(), monitor);
-            }
-            commit(true);
-        }finally {
-            commit(false);
-        }
         
 
     }

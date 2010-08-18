@@ -50,24 +50,6 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
             job2.schedule();
     	}
     	
-    	else {
-    		Job job=new Job("load AFP data"){
-
-	            @Override
-	            protected IStatus run(IProgressMonitor monitor) {
-	                AfpLoader loader = new AfpLoader(loadPage.datasetName, loadPage.controlFile, servise);
-	                try {
-	                    loader.run(monitor);
-	                } catch (IOException e) {
-	                    AweConsolePlugin.exception(e);
-	                    return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getLocalizedMessage(), e);
-	                }
-	                return Status.OK_STATUS;
-	            }
-	            
-	        };
-	        job.schedule();
-    	}
    
         return true;
     }
