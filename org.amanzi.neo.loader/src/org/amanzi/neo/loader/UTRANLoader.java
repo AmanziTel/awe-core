@@ -238,6 +238,7 @@ public class UTRANLoader extends AbstractLoader {
         rdr.setContentHandler(handler);
         in = new CountingFileInputStream(file);
         rdr.parse(new InputSource(new BufferedInputStream(in, 64 * 1024)));
+        in.close();
     }
 
     /**
