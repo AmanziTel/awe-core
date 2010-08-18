@@ -334,7 +334,10 @@ public class UTRANLoader extends AbstractLoader {
      */
     private Relationship addUtranNeighour(Node server, Node neighbour) {
         getUtranNeighbourNode();
-        return addNeighbourLink(server, neighbour, UTRAN_NEIGHBOUR_NAME);
+        
+        updateTx();
+        
+        return addNeighbourLink(server, neighbour, UTRAN_NEIGHBOUR_NAME);        
     }
 
     /**
@@ -346,6 +349,7 @@ public class UTRANLoader extends AbstractLoader {
      */
     private Relationship addGsmNeighour(Node server, Node neighbour) {
         getGSMNeighbourNode();
+        updateTx();
         return addNeighbourLink(server, neighbour, GSM_NEIGHBOUR_NAME);
     }
 
@@ -479,13 +483,9 @@ public class UTRANLoader extends AbstractLoader {
      * Update tx.
      */
     protected void updateTx() {
-        counter++;
-        counterAll++;
-        if (counter > getCommitSize()) {
-            commit(true);
-            counter = 0;
-        }
+        updateTx(1);
     }
+    
     protected void updateTx(int count) {
         counter+=count;
         counterAll+=count;
@@ -1286,13 +1286,13 @@ public class UTRANLoader extends AbstractLoader {
         public static final String TAG_NAME = "UtranCell";
 
         /** The collector. */
-        PropertyCollector collector;
+        private PropertyCollector collector;
 
         /** The cell name. */
-        String cellName;
+        private String cellName;
 
         /** The sector. */
-        Node sector;
+        private Node sector;
 
         /** The site. */
         private Node site;
@@ -1310,6 +1310,10 @@ public class UTRANLoader extends AbstractLoader {
             site = null;
                 Integer[] cilac = idMap.get(cellName);
                 sector=NeoUtils.findSector(network,cilac[0] ,cilac[1],cellName, true,index,neo);
+        }
+        
+        public Node getSector() {
+            return sector;
         }
 
         /**
@@ -1473,7 +1477,7 @@ public class UTRANLoader extends AbstractLoader {
             Integer ci = cilac == null ? null : cilac[0];
             Integer lac = cilac == null ? null : cilac[1];
             adjSector = findOrCreateSector(adjUtranCellName, ci, lac);
-            relation = addUtranNeighour(parent.sector, adjSector);
+            relation = addUtranNeighour(parent.getSector(), adjSector);            
             collector = null;
         }
 
@@ -1568,7 +1572,7 @@ public class UTRANLoader extends AbstractLoader {
             super(TAG_NAME, parent);
             String adjUtranCellName = attributes.getValue("id");
             adjSector = findOrCreateExternalGSMSector(adjUtranCellName,null,null);
-            relation = addGsmNeighour(parent.sector, adjSector);
+            relation = addGsmNeighour(parent.getSector(), adjSector);
             collector = null;
         }
 
