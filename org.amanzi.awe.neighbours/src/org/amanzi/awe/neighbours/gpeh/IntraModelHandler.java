@@ -85,7 +85,7 @@ public class IntraModelHandler extends RrcModelHandler {
         data.add(value);
         // # of MR for best cell
         
-        data.add(computeValue(bestCell.getCellSectorInfo(),"numMrForBestCell%s",timestamps));
+        data.add(computeValue(bestCell.getCellSectorInfo(),"numMrForBestCellIntra%s",timestamps));
         // # of MR for Interfering cell
         data.add(computeValue(interfCell.getCellSectorInfo(),"intraMr%s",timestamps));
         int[]values=new int[5];

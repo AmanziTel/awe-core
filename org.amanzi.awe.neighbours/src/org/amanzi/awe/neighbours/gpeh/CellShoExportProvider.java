@@ -22,16 +22,16 @@ import org.neo4j.index.lucene.LuceneIndexService;
 
 /**
  * <p>
- *Provider for RRC EcNo reports
+ *Provider for Cell SHO reports
  * </p>
- * @author TsAr
+ * @author tsinkel_a
  * @since 1.0.0
  */
-public class CellEcNoProvider extends CellCorrelationProvider {
+public class CellShoExportProvider extends CellCorrelationProvider{
 
 
     /**
-     * Instantiates a new cell ec no provider.
+     * Instantiates a new cell sho export provider.
      *
      * @param dataset the dataset
      * @param network the network
@@ -39,28 +39,27 @@ public class CellEcNoProvider extends CellCorrelationProvider {
      * @param period the period
      * @param luceneService the lucene service
      */
-    public CellEcNoProvider(Node dataset, Node network, GraphDatabaseService service, CallTimePeriods period, LuceneIndexService luceneService) {
+    public CellShoExportProvider(Node dataset, Node network, GraphDatabaseService service, CallTimePeriods period, LuceneIndexService luceneService) {
         super(dataset, network, service, period, luceneService);
     }
-    @Override
-    protected void defineHandler() {
-        modelHandler = new CellEcNoHandler(period, service, dateFormat, dateFormat2);
+@Override
+protected void defineHandler() {
+    modelHandler= new CellShoHandler(service);
+}
+@Override
+public String getDataName() {
+    return "Cell SHO analysis";
+}
+@Override
+protected void createHeader() {
+    headers = new LinkedList<String>();
+    headers.add("Cell Name");
+    headers.add("Date");
+    headers.add("Time");
+    headers.add("Resolution");
+    for (double i=-24.5;i<=0;i+=0.5){
+        headers.add(String.valueOf(i));
     }
-
-    @Override
-    public String getDataName() {
-        return "Cell EcNo analysis";
-    }
-    @Override
-    protected void createHeader() {
-        headers = new LinkedList<String>();
-        headers.add("Cell Name");
-        headers.add("Date");
-        headers.add("Time");
-        headers.add("Resolution");
-        for (double i=-24.5;i<=0;i+=0.5){
-            headers.add(String.valueOf(i));
-        }
-    }
+}
 
 }
