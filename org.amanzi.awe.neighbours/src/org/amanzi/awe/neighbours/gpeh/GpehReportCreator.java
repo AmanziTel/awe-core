@@ -280,6 +280,8 @@ public class GpehReportCreator {
             return getCellEcnoProvider(period);
         case NBAP_UL_INTERFERENCE:
             return getUlInterferenceCellProvider(period);
+        case SHO_ANALYSIS:
+            return getCellShoExportProvider();
         default:
             return null;
         }
@@ -312,6 +314,16 @@ public class GpehReportCreator {
      */
     private IExportProvider getCellEcnoProvider(final CallTimePeriods period) {
         return new CellEcNoProvider(gpeh, network, service, period, luceneService);
+        
+    }
+    /**
+     * Gets the cell ecno provider.
+     * 
+     * @param period the period
+     * @return the cell ecno provider
+     */
+    private IExportProvider getCellShoExportProvider() {
+        return new CellShoExportProvider(gpeh, network, service,  luceneService);
 
     }
 

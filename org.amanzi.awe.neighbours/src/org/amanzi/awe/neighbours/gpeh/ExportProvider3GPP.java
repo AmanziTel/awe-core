@@ -49,7 +49,7 @@ import org.neo4j.index.lucene.LuceneIndexService;
 public class ExportProvider3GPP extends AbstractGpehExportProvider {
     protected final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
     protected final SimpleDateFormat dateFormat2 = new SimpleDateFormat("HHmm");
-    public static final Logger LOGGER = Logger.getLogger(ExportProvider3GPP.class);
+    private  static final Logger LOGGER = Logger.getLogger(ExportProvider3GPP.class);
 
     /** The value3gpp. */
     protected final ValueType value3gpp;

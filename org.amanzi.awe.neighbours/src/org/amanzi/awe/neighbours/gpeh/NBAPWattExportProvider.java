@@ -19,6 +19,7 @@ import org.amanzi.awe.neighbours.gpeh.Calculator3GPPdBm.ValueType;
 import org.amanzi.awe.statistic.CallTimePeriods;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
+import org.apache.log4j.Logger;
 import org.hsqldb.lib.StringUtil;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -35,6 +36,7 @@ import org.neo4j.index.lucene.LuceneIndexService;
  * @since 1.0.0
  */
 public class NBAPWattExportProvider extends ExportProvider3GPP {
+    private  static final Logger LOGGER = Logger.getLogger(NBAPWattExportProvider.class);
     protected Integer power;
 
     /**

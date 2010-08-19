@@ -22,24 +22,27 @@ import org.neo4j.graphdb.Relationship;
 /**
  * <p>
  * Best cell information wrapper
- * </p>.
- *
+ * </p>
+ * .
+ * 
  * @author tsinkel_a
  * @since 1.0.0
  */
 public class CellNodeInfo {
-    
+
     /** The best cell. */
     private Node cellSector;
     /** The distance. */
-    private double distance;  
+    private double distance;
     /** The cell sector info. */
     private Node cellSectorInfo;
+    private Integer uarfcnDl;
     private Double lat;
     private Double lon;
+
     /**
      * Instantiates a new cell node info.
-     *
+     * 
      * @param cellSector the cell sector
      * @param cellSectorInfo the cell sector info
      */
@@ -47,6 +50,24 @@ public class CellNodeInfo {
         super();
         this.cellSector = cellSector;
         this.cellSectorInfo = cellSectorInfo;
+    }
+
+    /**
+     * Gets the uarfcn dl.
+     * 
+     * @return the uarfcn dl
+     */
+    public Integer getUarfcnDl() {
+        return uarfcnDl;
+    }
+
+    /**
+     * Sets the uarfcn dl.
+     * 
+     * @param uarfcnDl the new uarfcn dl
+     */
+    public void setUarfcnDl(Integer uarfcnDl) {
+        this.uarfcnDl = uarfcnDl;
     }
 
     @Override
@@ -76,7 +97,7 @@ public class CellNodeInfo {
 
     /**
      * Gets the cell sector.
-     *
+     * 
      * @return the cell sector
      */
     public Node getCellSector() {
@@ -85,17 +106,16 @@ public class CellNodeInfo {
 
     /**
      * Gets the cell sector info.
-     *
+     * 
      * @return the cell sector info
      */
     public Node getCellSectorInfo() {
         return cellSectorInfo;
     }
 
-
     /**
      * Setup location.
-     *
+     * 
      * @return true, if successful
      */
     public boolean setupLocation() {
@@ -117,41 +137,50 @@ public class CellNodeInfo {
 
     /**
      * Gets the lat.
-     *
+     * 
      * @return the lat
      */
     public Double getLat() {
         return lat;
     }
 
-
     /**
      * Gets the lon.
-     *
+     * 
      * @return the lon
      */
     public Double getLon() {
         return lon;
     }
+
     /**
      * Gets the distance.
-     *
+     * 
      * @return the distance
      */
     public double getDistance() {
         return distance;
     }
-    
+
     /**
      * Sets the distance.
-     *
+     * 
      * @param distance the new distance
      */
     public void setDistance(double distance) {
         this.distance = distance;
     }
 
+    /**
+     * Define uarfcn dl.
+     * 
+     * @return the integer
+     */
+    public Integer defineUarfcnDl() {
+        if (uarfcnDl == null) {
+            uarfcnDl = (Integer)cellSector.getProperty("uarfcnDl", null);
+        }
+        return uarfcnDl;
+    }
 
-    
-    
 }

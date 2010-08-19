@@ -16,6 +16,7 @@ package org.amanzi.awe.neighbours.gpeh;
 import java.util.LinkedList;
 
 import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
@@ -40,11 +41,11 @@ public class CellShoHandler extends IntraModelHandler {
     @Override
     public boolean setData(CellNodeInfo bestCell, InterfCellInfo interfCell) {
         data = new LinkedList<Object>();
-        data.add(bestCell.getCellSectorInfo().getProperty("oneWay", 0));
-        data.add(bestCell.getCellSectorInfo().getProperty("twoWay", 0));
-        data.add(bestCell.getCellSectorInfo().getProperty("threeWay", 0));
+        data.add(NeoUtils.getGpehCellName(bestCell.getCellSector(), service));
+        data.add(bestCell.getCellSectorInfo().getProperty("oneWay", bestCell.getCellSectorInfo().getProperty("oneWay",0)));
+        data.add(bestCell.getCellSectorInfo().getProperty("twoWay", bestCell.getCellSectorInfo().getProperty("twoWay",0)));
+        data.add(bestCell.getCellSectorInfo().getProperty("threeWay", bestCell.getCellSectorInfo().getProperty("threeWay",0)));
         return true;
-
     }
 
 }

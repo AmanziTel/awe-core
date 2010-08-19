@@ -30,10 +30,9 @@ import org.neo4j.index.lucene.LuceneIndexService;
  */
 public class InterMatrixProvider extends IntraMatrixProvider {
 
-
     /**
      * Instantiates a new inter matrix provider.
-     *
+     * 
      * @param dataset the dataset
      * @param network the network
      * @param service the service
@@ -49,6 +48,10 @@ public class InterMatrixProvider extends IntraMatrixProvider {
         modelHandler = new InterModelHandler(period, service);
     }
 
+    @Override
+    protected void defineModel() {
+        model = new RrcModel<RrcModelHandler>(modelHandler, false);
+    }
 
     @Override
     public String getDataName() {

@@ -60,14 +60,17 @@ public class RrcModel<M extends RrcModelHandler> {
 
     protected CellNodeInfo bestCellInfo;
     private CoordinateReferenceSystem crs;
+    private final boolean checkRule;
 
     /**
      * Instantiates a new rrc model.
      *
      * @param modelHandler the model handler
+     * @param checkRule 
      */
-    public RrcModel(M modelHandler) {
+    public RrcModel(M modelHandler, boolean checkRule) {
         this.modelHandler = modelHandler;
+        this.checkRule = checkRule;
     }
 
     /**
@@ -154,9 +157,18 @@ public class RrcModel<M extends RrcModelHandler> {
                 return null;
             }
         }
+        Integer uarFcnDl = bestCell.defineUarfcnDl();
+        if (uarFcnDl==null){
+            IntraMatrixProvider.LOGGER.error("Not fount uarFcnDl properety in sector "+bestCell.getCellSector());
+            return null;           
+        }
         InterfCellInfo result = null;
         IndexHits<Node> nodes = luceneService.getNodes(scrCodeIndName, String.valueOf(cell.getPsc()));
         for (Node sector : nodes) {
+            Integer uarfcnDlCandidate = (Integer)sector.getProperty("uarfcnDl", null);
+            if (!checkNode(uarFcnDl,uarfcnDlCandidate)){
+                continue;
+            }
             if (result == null) {
                 result = new InterfCellInfo(sector, cell.getInterfCellInfo(), cell.getPsc());
                 if (result.setupLocation()) {
@@ -184,6 +196,18 @@ public class RrcModel<M extends RrcModelHandler> {
         return result;
     }
 
+
+
+    /**
+     * Check node.
+     *
+     * @param uarFcnDl the uar fcn dl
+     * @param uarfcnDlCandidate the uarfcn dl candidate
+     * @return true, if successful
+     */
+    protected boolean checkNode(Integer uarFcnDl, Integer uarfcnDlCandidate) {
+        return checkRule?uarFcnDl.equals(uarfcnDlCandidate):!uarFcnDl.equals(uarfcnDlCandidate);
+    }
 
     /**
      * Gets the max range.

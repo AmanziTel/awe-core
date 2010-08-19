@@ -21,6 +21,7 @@ import org.amanzi.awe.neighbours.gpeh.Calculator3GPPdBm.ValueType;
 import org.amanzi.awe.statistic.CallTimePeriods;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
+import org.apache.log4j.Logger;
 import org.hsqldb.lib.StringUtil;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -36,7 +37,7 @@ import org.neo4j.index.lucene.LuceneIndexService;
  * @since 1.0.0
  */
 public class NbapDbmExportProvider extends ExportProvider3GPP {
-
+    private  static final Logger LOGGER = Logger.getLogger(NbapDbmExportProvider.class);
     private Integer power;
 
     /**
@@ -58,7 +59,7 @@ public class NbapDbmExportProvider extends ExportProvider3GPP {
 
     @Override
     protected void createArrayHeader() {
-        for (int i = 50; i <= 50; i++) {
+        for (int i = 20; i <= 50; i++) {
             headers.add(String.valueOf(i));
         }
     }

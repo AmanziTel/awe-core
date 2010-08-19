@@ -22,44 +22,44 @@ import org.neo4j.index.lucene.LuceneIndexService;
 
 /**
  * <p>
- * Provider for Cell SHO reports
+ * Provider for PilotPolutions reports
  * </p>
  * 
  * @author tsinkel_a
  * @since 1.0.0
  */
-public class CellShoExportProvider extends CellCorrelationProvider {
+public class PilotPolutionsExportProvider extends IntraMatrixProvider {
 
     /**
-     * Instantiates a new cell sho export provider.
+     * Instantiates a new pilot polutions export provider.
      * 
      * @param dataset the dataset
      * @param network the network
      * @param service the service
-     * @param period the period
      * @param luceneService the lucene service
      */
-    public CellShoExportProvider(Node dataset, Node network, GraphDatabaseService service, LuceneIndexService luceneService) {
+    public PilotPolutionsExportProvider(Node dataset, Node network, GraphDatabaseService service, LuceneIndexService luceneService) {
         super(dataset, network, service, CallTimePeriods.ALL, luceneService);
     }
-
-    @Override
-    protected void defineHandler() {
-        modelHandler = new CellShoHandler(service);
-    }
-
-    @Override
-    public String getDataName() {
-        return "Cell SHO analysis";
-    }
-
     @Override
     protected void createHeader() {
         headers = new LinkedList<String>();
-        headers.add("Cell Name");
-        headers.add("One-way");
-        headers.add("Two-ways");
-        headers.add("Three-ways");
+        headers.add("Serving cell name");
+        headers.add("Serving PSC");
+        headers.add("Interfering cell name");
+        headers.add("Interfering PSC");
+        headers.add("Defined NBR");
+        headers.add("Distance");
+        headers.add("Tier Distance");
+        headers.add("PP_Impact");
+        headers.add("# of MR for best cell");
+        headers.add("# of MR for Interfering cell");
+        headers.add("Position3");
+        headers.add("Position4");
+        headers.add("Position5");
     }
-
+    @Override
+    protected void defineHandler() {
+        modelHandler = new PilotPolutionsHandler(period,service);
+    }
 }

@@ -39,7 +39,7 @@ public class CellCorrelationModel extends RrcModel<RrcModelHandler> {
      * @param modelHandler the model handler
      */
     public CellCorrelationModel(RrcModelHandler modelHandler) {
-        super(modelHandler);
+        super(modelHandler,true);
     }
 
     @Override
