@@ -282,6 +282,8 @@ public class GpehReportCreator {
             return getUlInterferenceCellProvider(period);
         case SHO_ANALYSIS:
             return getCellShoExportProvider();
+        case PILOT_POLUTION:
+            return getPilotPolutionsExportProvider();
         default:
             return null;
         }
@@ -324,6 +326,16 @@ public class GpehReportCreator {
      */
     private IExportProvider getCellShoExportProvider() {
         return new CellShoExportProvider(gpeh, network, service,  luceneService);
+        
+    }
+
+    /**
+     * Gets the pilot polutions export provider.
+     *
+     * @return the pilot polutions export provider
+     */
+    private IExportProvider getPilotPolutionsExportProvider() {
+        return new PilotPolutionsExportProvider(gpeh, network, service,  luceneService);
 
     }
 

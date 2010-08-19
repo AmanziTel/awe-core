@@ -61,25 +61,17 @@ public class PilotPolutionsHandler extends IntraModelHandler {
         // Tier Distance
         String value = String.valueOf("N/A");
         data.add(value);
+        int[]values = new int[5];
+        computeArrayValue(values, interfCell.getCellSectorInfo(), "positions%s", timestamps);
+        int numMr = computeValue(bestCell.getCellSectorInfo(), "numMrForBestCellIntra%s", timestamps);
+        int pol = 100*(values[2]+values[3]+values[4])/numMr;
+        //PP_Impact
+        data.add(pol);
         // # of MR for best cell
-
-        data.add(computeValue(bestCell.getCellSectorInfo(), "numMrForBestCellIntra%s", timestamps));
+        data.add(numMr);
         // # of MR for Interfering cell
         data.add(computeValue(interfCell.getCellSectorInfo(), "intraMr%s", timestamps));
-        int[] values = new int[5];
-        computeArrayValue(values, interfCell.getCellSectorInfo(), "intraEcnoD%s", timestamps);
-        // Delta EcNo 1-5
-        for (int i = 0; i < 5; i++) {
-            data.add(values[i]);
-        }
-        values = new int[5];
-        computeArrayValue(values, interfCell.getCellSectorInfo(), "intraRscpD%s", timestamps);
-        for (int i = 0; i < 5; i++) {
-            data.add(values[i]);
-        }
-        values = new int[5];
-        computeArrayValue(values, interfCell.getCellSectorInfo(), "positions%s", timestamps);
-        for (int i = 0; i < 5; i++) {
+        for (int i = 2; i < 5; i++) {
             data.add(values[i]);
         }
 
