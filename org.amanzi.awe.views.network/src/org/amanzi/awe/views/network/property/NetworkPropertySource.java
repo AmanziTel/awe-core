@@ -123,6 +123,7 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
             } finally {
                 tx.finish();
                 NeoServiceProvider.getProvider().commit();
+                updateLayer();
             }
         }
     }

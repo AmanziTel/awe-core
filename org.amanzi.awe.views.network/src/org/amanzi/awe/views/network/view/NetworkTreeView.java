@@ -41,6 +41,7 @@ import org.amanzi.awe.awe.views.view.provider.NetworkTreeContentProvider;
 import org.amanzi.awe.awe.views.view.provider.NetworkTreeLabelProvider;
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.ChangeSelectionEvent;
+import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesAndMapEvent;
 import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.awe.views.network.property.NetworkPropertySheetPage;
@@ -430,7 +431,7 @@ public class NetworkTreeView extends ViewPart {
 
     private void fillContextMenu(IMenuManager manager) {
         // TODO remove all disabled part of menu??
-        manager.add(new Action("Properties") {
+        manager.add(new Action("Show/edit properties") {
             @Override
             public void run() {
                 try {
@@ -580,7 +581,32 @@ public class NetworkTreeView extends ViewPart {
         return MessageDialog.openConfirm(viewer.getControl().getShell(), "File is quite large", 
                 "The file "+filemane+" is quite large, do you want to open it anyway?");
     }
-
+    
+    /**
+     * Sends event to refresh map
+     *
+     * @param node wrapper of node that occurs map refreshing
+     * @author Lagutko_N 
+     */
+    private void refreshMap(NeoNode node) {
+        refreshMap(node.getNode());
+    }
+    
+    /**
+     * Sends event to refresh map
+     *
+     * @param node node that occurs map refreshing
+     * @author Lagutko_N
+     */
+    private void refreshMap(Node node) {
+        Node gis = getGisNode(node);
+        if (gis == null) {
+            return;
+        }
+        UpdateLayerEvent event = new UpdateLayerEvent(gis);
+        NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(event);
+    }
+    
     /**
      * Shows selected node on map
      * 
@@ -799,11 +825,13 @@ public class NetworkTreeView extends ViewPart {
         public void onNeoCommit(Object source) {
             // TODO: Only modify part of tree specific to data modified
             if (!neoStopped) {
-                viewer.getControl().getDisplay().syncExec(new Runnable() {
-                    public void run() {
-                        NetworkTreeView.this.viewer.refresh();
-                    }
-                });
+                if (!viewer.getControl().isDisposed()) {
+                    viewer.getControl().getDisplay().syncExec(new Runnable() {
+                        public void run() {
+                            NetworkTreeView.this.viewer.refresh();
+                        }
+                    });
+                }
             }
         }
     }
@@ -891,6 +919,7 @@ public class NetworkTreeView extends ViewPart {
         @Override
         public void run() {
             neoNode.setName(getNewName(node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString()));
+            refreshMap(neoNode);
         }
     }
 
@@ -1025,10 +1054,11 @@ public class NetworkTreeView extends ViewPart {
                 node.setProperty(INeoConstants.PROPERTY_NAME_NAME, oldName);
                 node.setProperty(INeoConstants.PROPERTY_OLD_NAME, name);
                 tx.success();
-                NeoServiceProvider.getProvider().commit();// viewer will be refreshed after commit
+                NeoServiceProvider.getProvider().commit();// viewer will be refreshed after commit                
             } finally {
                 tx.finish();
             }
+            refreshMap(node);
 
         }
 
@@ -1256,25 +1286,6 @@ public class NetworkTreeView extends ViewPart {
                         }
                         
                         NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDatabaseEvent(UpdateViewEventType.GIS));
-                        
-//                        NeoServiceProvider neoProvider = NeoServiceProvider.getProvider();
-//                        if (neoProvider != null) {
-//                            String databaseLocation = neoProvider.getDefaultDatabaseLocation();
-//
-//                            ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
-//                            URL url;
-//                            try {
-//                                url = new URL("file://" + databaseLocation);
-//                            } catch (MalformedURLException e) {
-//                                // TODO Handle MalformedURLException
-//                                throw (RuntimeException) new RuntimeException( ).initCause( e );
-//                            }
-//                            List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(url);
-//                            for (IService service : services) {
-//                                    catalog.add(service);
-//                            }
-//                            neoProvider.commit();
-//                        }
                     } else if (gisNode != null && containseDatasetNode) {
                         Transaction transaction = getService().beginTx();
                         try {
