@@ -13,18 +13,11 @@
 
 package org.amanzi.awe.catalog.neo.upd_layers;
 
-import java.util.Collection;
 import java.util.HashMap;
 
 import net.refractions.udig.project.ILayer;
 
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEvent;
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.listener.IUpdateViewListener;
-import org.amanzi.neo.core.database.services.UpdateViewManager;
-import org.amanzi.neo.core.database.services.events.ShowViewEvent;
-import org.amanzi.neo.core.database.services.events.UpdateViewEvent;
-import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.eclipse.core.runtime.ISafeRunnable;
 import org.eclipse.core.runtime.SafeRunner;
 
@@ -38,7 +31,7 @@ import org.eclipse.core.runtime.SafeRunner;
  */
 public class LayerUpdateManager {
     
-private HashMap<ILayer, UpdateLayerListener> listeners = new HashMap<ILayer, UpdateLayerListener>();
+    private HashMap<ILayer, UpdateLayerListener> listeners = new HashMap<ILayer, UpdateLayerListener>();
     
     /**
      * Register listener.
