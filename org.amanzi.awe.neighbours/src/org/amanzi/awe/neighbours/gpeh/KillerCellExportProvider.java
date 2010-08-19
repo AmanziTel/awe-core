@@ -21,49 +21,41 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.index.lucene.LuceneIndexService;
 
 /**
- * <p>
- * Provider for PilotPolutions reports
- * </p>
  * 
- * @author tsinkel_a
+ * <p>
+ *Provider of  Killer cells analysis
+ * </p>
+ * @author TsAr
  * @since 1.0.0
  */
-public class PilotPolutionsExportProvider extends IntraMatrixProvider {
+public class KillerCellExportProvider extends CellCorrelationProvider {
+
 
     /**
-     * Instantiates a new pilot polutions export provider.
-     * 
+     * Instantiates a new killer cell export provider.
+     *
      * @param dataset the dataset
      * @param network the network
      * @param service the service
      * @param luceneService the lucene service
      */
-    public PilotPolutionsExportProvider(Node dataset, Node network, GraphDatabaseService service, LuceneIndexService luceneService) {
+    public KillerCellExportProvider(Node dataset, Node network, GraphDatabaseService service,  LuceneIndexService luceneService) {
         super(dataset, network, service, CallTimePeriods.ALL, luceneService);
     }
     @Override
     protected void createHeader() {
         headers = new LinkedList<String>();
-        headers.add("Serving cell name");
-        headers.add("Serving PSC");
-        headers.add("Interfering cell name");
-        headers.add("Interfering PSC");
-        headers.add("Defined NBR");
-        headers.add("Distance");
-        headers.add("Tier Distance");
-        headers.add("PP_Impact");
-        headers.add("# of MR for best cell");
-        headers.add("# of MR for Interfering cell");
-        headers.add("Position3");
-        headers.add("Position4");
-        headers.add("Position5");
+        headers.add("Cell name");
+        headers.add("Killer Cell Rank");
+        headers.add("Sum of Impacts");
+        headers.add("# of Impacts");
     }
     @Override
     protected void defineHandler() {
-        modelHandler = new PilotPolutionsHandler(period,service);
+        modelHandler = new KillerCellExportHandler(period,service);
     }
     @Override
     public String getDataName() {
-        return "Pilot pollution analysis";
+        return "Killer cell analysis";
     }
 }

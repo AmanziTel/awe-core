@@ -284,6 +284,8 @@ public class GpehReportCreator {
             return getCellShoExportProvider();
         case PILOT_POLUTION:
             return getPilotPolutionsExportProvider();
+        case KILLER_CELL:
+            return getKillerCellExportProvider();
         default:
             return null;
         }
@@ -356,6 +358,15 @@ public class GpehReportCreator {
      */
     private IExportProvider getIntraMatrixProvider() {
         return new IntraMatrixProvider(gpeh, network, service, CallTimePeriods.ALL, luceneService);
+    }
+
+    /**
+     * Gets the killer cell export provider.
+     *
+     * @return the killer cell export provider
+     */
+    private IExportProvider getKillerCellExportProvider() {
+        return new KillerCellExportProvider(gpeh, network, service, luceneService);
     }
 
     /**
