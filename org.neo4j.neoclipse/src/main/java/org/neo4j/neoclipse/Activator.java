@@ -15,6 +15,8 @@ package org.neo4j.neoclipse;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.swt.widgets.Display;
@@ -121,6 +123,7 @@ public class Activator extends AbstractUIPlugin
             ns = sm.getGraphDbService();
         }
         catch (Exception rte) {
+            Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, rte.getMessage(), rte));
             rte.printStackTrace();
             Throwable cause = rte.getCause();
             String problemMessage = "Problem accessing the database: " + rte.getMessage();
@@ -136,6 +139,7 @@ public class Activator extends AbstractUIPlugin
             } catch (Exception rte2) {
                 // just continue
                 rte2.printStackTrace();
+                Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, rte2.getMessage(), rte2));
             }
         }
         return ns;
