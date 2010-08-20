@@ -1134,6 +1134,7 @@ public class NetworkTreeView extends ViewPart {
 
         @Override
         public void run() {
+
             if (interactive) {
                 MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.YES | SWT.NO);
                 msg.setText("Delete node");
@@ -1226,10 +1227,14 @@ public class NetworkTreeView extends ViewPart {
                     size = size * 2;
                     monitor.beginTask(getText(), size);
                     // First we cut the tree out of the graph so only CHILD relations exist
+                    
+                    boolean containsNetwork = false;
+                    
                     for (NeoNode neoNode : nodesToDelete) {
                         if (monitor.isCanceled()) {
                             break;
                         }
+                        containsNetwork = neoNode.getNode().equals(networkNode);
                         monitor.subTask("Extracting " + neoNode.toString());
                         Node node = neoNode.getNode();
                         cleanTree(node, monitor); // Delete non-tree relations (and relink gis
@@ -1267,26 +1272,29 @@ public class NetworkTreeView extends ViewPart {
                         // TODO: Remove this code once we trust the delete function more fully
                         fixOrphanedNodes(gisNode, networkNode, monitor);
                         
-                        MapImpl map = (MapImpl)ApplicationGIS.getActiveMap();
-                        List<Layer> layers = map.getLayersInternal();
-                        Layer targetLayer = null;
-                        try {
-                            for (Layer layer : layers) {
-                                IGeoResource resource = layer.findGeoResource(Node.class);
-                                if (resource != null && resource.resolve(Node.class, null).equals(gisNode)) {
-                                    targetLayer = layer;
+                        if (containsNetwork) {
+                            MapImpl map = (MapImpl)ApplicationGIS.getActiveMap();
+                            List<Layer> layers = map.getLayersInternal();
+                            Layer targetLayer = null;
+                            try {
+                                for (Layer layer : layers) {
+                                    IGeoResource resource = layer.findGeoResource(Node.class);
+                                    if (resource != null && resource.resolve(Node.class, null).equals(gisNode)) {
+                                        targetLayer = layer;
+                                    }
                                 }
+                            } catch (IOException e) {
+                                // Not found
+                                e.printStackTrace();
                             }
-                        } catch (IOException e) {
-                            // Not found
-                            e.printStackTrace();
-                        }
-                        if(targetLayer != null){
-                            map.sendCommandASync(new DeleteLayerCommand(targetLayer));
+                            if(targetLayer != null){
+                                map.sendCommandSync(new DeleteLayerCommand(targetLayer));
+                            }
                         }
                         
                         NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDatabaseEvent(UpdateViewEventType.GIS));
-                    } else if (gisNode != null && containseDatasetNode) {
+                    } 
+                    if (gisNode != null && (containsNetwork || containseDatasetNode)) {
                         Transaction transaction = getService().beginTx();
                         try {
                             for (Relationship relation : gisNode.getRelationships()) {
@@ -1298,6 +1306,17 @@ public class NetworkTreeView extends ViewPart {
                             transaction.finish();
                         }
                     }
+                    else {
+                        Transaction tx = getService().beginTx();
+                        try {
+                            refreshMap(gisNode);
+                            tx.success();
+                        }
+                        finally {
+                            tx.finish();
+                        }
+                    }
+                    
 
                     monitor.done();
                     return Status.OK_STATUS;
@@ -1317,12 +1336,7 @@ public class NetworkTreeView extends ViewPart {
 
                                 @Override
                                 public boolean isReturnableNode(TraversalPosition currentPos) {
-                                    Node cn = currentPos.currentNode();
-                                    // if(orphans.size()<1){
-                                    // LOGGER.debug("Checking node:
-                                    // "+cn.getProperty("name",cn.toString()));
-                                    // LOGGER.debug("\tnode id = "+cn.getId());
-                                    // }
+                                    Node cn = currentPos.currentNode();                                    
                                     return cn.getId() == refId || cn.getId() == netId;
                                 }
                             }, NetworkRelationshipTypes.CHILD, Direction.INCOMING).iterator().hasNext()) {
@@ -1330,10 +1344,6 @@ public class NetworkTreeView extends ViewPart {
                                 orphanNames.add(node.getProperty("name", node.toString()).toString());
                             }
                         }
-                        for (Relationship relation : gisNode.getRelationships(NetworkRelationshipTypes.CHILD, Direction.INCOMING)) {
-                            relation.delete();
-                        }
-                        gisNode.delete();
 
                         transaction.success();
                     } finally {
@@ -1437,7 +1447,7 @@ public class NetworkTreeView extends ViewPart {
                 }
 
             };
-            job.schedule(50);
+            job.schedule();            
         }
 
         @Override
