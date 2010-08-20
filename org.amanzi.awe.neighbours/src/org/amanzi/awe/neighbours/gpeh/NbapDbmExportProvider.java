@@ -93,9 +93,9 @@ public class NbapDbmExportProvider extends ExportProvider3GPP {
         if (power == null) {
             return;
         }
-        double maxTrPowWatt = Math.pow(10, -3) * Math.pow(10, power / 100);
+        double maxTrPowWatt = Math.pow(10, -3) * Math.pow(10, (double)power / 100);
         for (int i = value3gpp.getMin3GPP(); i <= value3gpp.getMax3GPP(); i++) {
-            double txpowerdbm = 10 * Math.log10(Math.ceil(maxTrPowWatt * value3gpp.getRightBound(i) / 1000) / 0.001);// (txpower=TxPower*10
+            double txpowerdbm = 10.0 * Math.log10(Math.ceil(maxTrPowWatt * value3gpp.getRightBound(i) / 1000) / 0.001);// (txpower=TxPower*10
             // i - 0-1000
             // i/1000);
             if (txpowerdbm < 0 || txpowerdbm > 50) {
@@ -107,9 +107,16 @@ public class NbapDbmExportProvider extends ExportProvider3GPP {
                 int ind = 0;
                 txpowerdbm = Math.ceil(txpowerdbm);
                 ind = startElem + (int)txpowerdbm - 20;
-                result.set(ind, (Integer)result.get(ind) + (Integer)value);
+                result.set(ind, (Integer)result.get(ind) + value);
             }
 
         }
+    }
+    public static void main(String[] args) {
+        int power=430;
+        double maxTrPowWatt = Math.pow(10, -3) * Math.pow(10, (double)power / 100);
+        double txpowerdbm = 10 * Math.log10(Math.ceil(maxTrPowWatt * 50 / 1000) / 0.001);// (txpower=TxPower*10
+        System.out.println(maxTrPowWatt);
+       System.out.println(txpowerdbm);
     }
 }
