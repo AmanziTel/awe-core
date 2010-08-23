@@ -505,7 +505,7 @@ public class NetworkTreeView extends ViewPart {
         manager.add(new Separator());
         
         //add corresponding actions only if they should work
-        IAction elementAction = new NewElementAction((IStructuredSelection)viewer.getSelection(), true);
+        IAction elementAction = new NewElementAction((IStructuredSelection)viewer.getSelection());
         if (elementAction.isEnabled()) {
             manager.add(elementAction);
         }
