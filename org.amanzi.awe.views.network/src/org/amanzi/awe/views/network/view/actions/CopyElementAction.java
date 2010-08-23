@@ -47,22 +47,25 @@ public class CopyElementAction extends NewElementAction {
 
     @Override
     protected void createNewElement(Node parentElement, HashMap<String, Object> properties) {
+        Node parent = null;
+        
         Transaction tx = service.beginTx();
         try {
-            Node parent = NeoUtils.getParent(service, parentElement);
+            parent = NeoUtils.getParent(service, parentElement);
             
             for (String key : parentElement.getPropertyKeys()) {
                 if (!defaultProperties.containsKey(key)) {
                     defaultProperties.put(key, parentElement.getProperty(key));
                 }
             }
-            
-            super.createNewElement(parent, defaultProperties);
-            
             tx.success();
         }
         finally {
             tx.finish();
+        }
+            
+        if (parent != null) {
+            super.createNewElement(parent, defaultProperties);
         }
     }
 }
