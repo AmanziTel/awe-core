@@ -24,6 +24,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.amanzi.awe.console.AweConsolePlugin;
@@ -322,24 +323,28 @@ public class AfpExporter {
 		try {
 			exceptionFile.createNewFile();
 			BufferedWriter writer  = new BufferedWriter(new FileWriter(exceptionFile));
-			for (Node exception : afpRoot.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.EXCEPTION_DATA, Direction.OUTGOING)){
-				//TODO: put condition here to get the desired exception list in case of multiple interference list
-				startSector = exception.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).getEndNode();
-				break;				
-			}
+			Traverser exceptionList = afpRoot.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.EXCEPTION_DATA, Direction.OUTGOING);
 			
-			for (Node proxySector : startSector.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, NetworkRelationshipTypes.NEXT, Direction.OUTGOING)){
-				if (!proxySector.getProperty("type").equals("sector_sector_relations"))
-					 continue;
-				Node sector = proxySector.getSingleRelationship(NetworkRelationshipTypes.EXCEPTIONS, Direction.INCOMING).getOtherNode(proxySector);		
-				String sectorValues[] = parseSectorName(sector);
-				for (Relationship relation : proxySector.getRelationships(NetworkRelationshipTypes.EXCEPTION, Direction.OUTGOING)){
-					Node exceptionProxySector = relation.getEndNode();
-					Node exceptionSector = exceptionProxySector.getSingleRelationship(NetworkRelationshipTypes.EXCEPTIONS, Direction.INCOMING).getOtherNode(exceptionProxySector);
-					String exceptionSectorValues[] = parseSectorName(exceptionSector);
-					writer.write(sectorValues[0] + " " + sectorValues[1] + " " + exceptionSectorValues[0] + " " + exceptionSectorValues[1] + " " +
-								relation.getProperty("new_spacing"));
-					writer.newLine();
+//			if(exceptionList != null) {
+				for (Node exception : exceptionList){
+					//TODO: put condition here to get the desired exception list in case of multiple interference list
+					startSector = exception.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).getEndNode();
+					break;				
+				}
+			if (startSector != null){	
+				for (Node proxySector : startSector.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, NetworkRelationshipTypes.NEXT, Direction.OUTGOING)){
+					if (!proxySector.getProperty("type").equals("sector_sector_relations"))
+						 continue;
+					Node sector = proxySector.getSingleRelationship(NetworkRelationshipTypes.EXCEPTIONS, Direction.INCOMING).getOtherNode(proxySector);		
+					String sectorValues[] = parseSectorName(sector);
+					for (Relationship relation : proxySector.getRelationships(NetworkRelationshipTypes.EXCEPTION, Direction.OUTGOING)){
+						Node exceptionProxySector = relation.getEndNode();
+						Node exceptionSector = exceptionProxySector.getSingleRelationship(NetworkRelationshipTypes.EXCEPTIONS, Direction.INCOMING).getOtherNode(exceptionProxySector);
+						String exceptionSectorValues[] = parseSectorName(exceptionSector);
+						writer.write(sectorValues[0] + " " + sectorValues[1] + " " + exceptionSectorValues[0] + " " + exceptionSectorValues[1] + " " +
+									relation.getProperty("new_spacing"));
+						writer.newLine();
+					}
 				}
 			}
 			writer.close();
