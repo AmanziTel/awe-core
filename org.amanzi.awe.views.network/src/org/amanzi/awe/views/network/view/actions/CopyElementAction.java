@@ -37,7 +37,7 @@ public class CopyElementAction extends NewElementAction {
      * @param selection
      */
     public CopyElementAction(IStructuredSelection selection) {
-        super(selection, COPY_ACTION_SUPPORTED_TYPES, "Copy ");
+        super(selection, COPY_ACTION_SUPPORTED_TYPES, "Copy ", false);
     }
     
     @Override

@@ -50,7 +50,7 @@ import org.neo4j.index.lucene.LuceneIndexService;
  */
 public class NewElementAction extends Action {
     
-    protected static final NodeTypes[] CREATE_ACTION_SUPPORTED_TYPES = new NodeTypes[] {NodeTypes.BSC, NodeTypes.SITE, NodeTypes.CITY};
+    protected static final NodeTypes[] CREATE_ACTION_SUPPORTED_TYPES = new NodeTypes[] {NodeTypes.SECTOR};
     
     private Node selectedNode;
     
@@ -66,12 +66,17 @@ public class NewElementAction extends Action {
     
     private String defaultValue;
     
-    public NewElementAction(IStructuredSelection selection) {
-        this(selection, CREATE_ACTION_SUPPORTED_TYPES, "Create new ");
+    private boolean askType;
+    
+    private String newType;
+    
+    public NewElementAction(IStructuredSelection selection, boolean askType) {
+        this(selection, CREATE_ACTION_SUPPORTED_TYPES, "Create new ", askType);
     }
     
-    protected NewElementAction(IStructuredSelection selection, NodeTypes[] supportedTypes, String actionPrefix) {
+    protected NewElementAction(IStructuredSelection selection, NodeTypes[] unsupportedTypes, String actionPrefix, boolean askType) {
         service = NeoServiceProvider.getProvider().getService();
+        this.askType = askType;
         
         //check is action should be enabled
         //action should work on ONE element
@@ -83,14 +88,20 @@ public class NewElementAction extends Action {
             Object element = selection.getFirstElement();
             if (element instanceof NeoNode) {
                 selectedNode = ((NeoNode)element).getNode();
-                enabled = initialize(supportedTypes);
+                type = NodeTypes.getNodeType(selectedNode, service);
+                enabled = initialize(unsupportedTypes);
             }
             else {
                 enabled = false;
             }
             
             if (enabled) {
-                setActionText(actionPrefix);
+                if (askType) {
+                    setText("Create new network element");
+                }
+                else {
+                    setActionText(actionPrefix);
+                }
             }
         }
         
@@ -101,7 +112,12 @@ public class NewElementAction extends Action {
         networkNode = NeoUtils.getParentNode(selectedNode, NodeTypes.NETWORK.getId());
         luceneIndexName = NeoUtils.getLuceneIndexKeyByProperty(networkNode, INeoConstants.PROPERTY_NAME_NAME, type);
         
-        defaultValue = "New " + type.getId();
+        if (askType) {
+            defaultValue = "New element";
+        }
+        else {
+            defaultValue = "New " + type.getId();
+        }
         
         switch (type) {
         case SITE:
@@ -124,13 +140,12 @@ public class NewElementAction extends Action {
     }
     
     private boolean initialize(NodeTypes[] supportedTypes) {
-        boolean result = false;
+        boolean result = true;
         Transaction tx = service.beginTx();
         try {
             for (NodeTypes singleType : supportedTypes) {
                 if (singleType.checkNode(selectedNode)) {
-                    result = true;
-                    type = singleType;
+                    result = false;                    
                     break;
                 }
             }
@@ -163,6 +178,15 @@ public class NewElementAction extends Action {
     
     @Override
     public void run() {
+        if (askType) {
+            InputDialog dialog = new InputDialog(Display.getDefault().getActiveShell(), getText(), "Enter type of new element", "", null);
+            int result = dialog.open();
+            if (result != Dialog.CANCEL) {
+                newType = dialog.getValue();
+                type = NodeTypes.getEnumById(newType);                
+            }
+        }
+        
         InputDialog dialog = new InputDialog(Display.getDefault().getActiveShell(), getText(), "Enter name of new element", getNewElementName(defaultValue), null);
         int result = dialog.open();
         if (result != Dialog.CANCEL) {
@@ -176,14 +200,14 @@ public class NewElementAction extends Action {
     protected String getNewElementName(String pattern) {
         Integer counter = 2;
         
-        String oldPattern = new String(pattern);
+        String startValue = new String(pattern);
         
         Transaction tx = service.beginTx();
         try {
             LuceneIndexService indexService = NeoServiceProvider.getProvider().getIndexService();         
         
             while (indexService.getSingleNode(luceneIndexName, pattern) != null) {
-                pattern = oldPattern + " " + counter.toString();
+                pattern = startValue + " " + counter.toString();
                 counter++;                                
             }  
             tx.success();
@@ -195,11 +219,20 @@ public class NewElementAction extends Action {
         return pattern;
     }
     
+    private void setType(Node element) {
+        if (type != null) {
+            type.setNodeType(element, service);
+        }
+        else {
+            element.setProperty(INeoConstants.PROPERTY_TYPE_NAME, newType);
+        }
+    }
+    
     protected void createNewElement(Node parentElement, HashMap<String, Object> properties) {
         Transaction tx = service.beginTx();
         try {
             Node child = service.createNode();
-            type.setNodeType(child, service);
+            setType(child);
             for (String key : properties.keySet()) {
                 child.setProperty(key, properties.get(key));
             }
@@ -208,6 +241,7 @@ public class NewElementAction extends Action {
             }
             else {
                 NeoUtils.addChild(parentElement, child, null, service);
+                parentElement.createRelationshipTo(child, NetworkRelationshipTypes.CHILD);
             }
             
             postCreating(child);
@@ -227,19 +261,22 @@ public class NewElementAction extends Action {
      * 
      */
     protected void postCreating(Node newElement) {
-        switch (type) {
-        case BSC:
-            indexElement(newElement);
-            break;
-        case SITE:
-            indexElement(newElement);
-            multiPropertyIndex(newElement);
-            updateBounds(newElement);
-            break;
-        case SECTOR:
-            //TODO: sectors need to have more flexible indexing
-            indexElement(newElement);
-            break;
+        if (type != null) { 
+            switch (type) {
+            case BSC:
+            case CITY:
+                indexElement(newElement);
+                break;
+            case SITE:
+                indexElement(newElement);
+                multiPropertyIndex(newElement);
+                updateBounds(newElement);
+                break;
+            case SECTOR:
+                //TODO: sectors need to have more flexible indexing
+                indexElement(newElement);
+                break;
+            }
         }
     }
     
