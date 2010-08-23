@@ -49,9 +49,9 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.core.utils.CSVParser;
+import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.index.MultiPropertyIndex;
-import org.amanzi.neo.loader.NetworkLoader.CRS;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.preferences.CommonCRSPreferencePage;
 import org.apache.commons.lang.StringUtils;
@@ -992,10 +992,6 @@ public abstract class AbstractLoader {
         eventNode.setProperty(key, value);
     }
 
-    private void incSaved() {
-        savedData++;
-    }
-
     /**
      * This is the main method of the class. It opens the file, iterates over the contents and calls
      * parseLine(String) on each line. The subclass needs to implement parseLine(String) to
@@ -1592,7 +1588,7 @@ public abstract class AbstractLoader {
                 if (gisProperties.getBbox() != null) {
                     gis.setProperty(INeoConstants.PROPERTY_BBOX_NAME, gisProperties.getBbox());
                 }
-                gis.setProperty(INeoConstants.COUNT_TYPE_NAME, gisProperties.savedData);
+                gis.setProperty(INeoConstants.COUNT_TYPE_NAME, gisProperties.getSavedData());
                 HashSet<Node> nodeToDelete = new HashSet<Node>();
                 for (Relationship relation : gis.getRelationships(NetworkRelationshipTypes.AGGREGATION, Direction.OUTGOING)) {
                     nodeToDelete.add(relation.getEndNode());
@@ -1852,132 +1848,6 @@ public abstract class AbstractLoader {
 
     }
 
-    public static class GisProperties {
-        private final Node gis;
-        private CRS crs;
-        private double[] bbox;
-        private long savedData;
-
-        public GisProperties(Node gis) {
-            this.gis = gis;
-            bbox = (double[])gis.getProperty(INeoConstants.PROPERTY_BBOX_NAME, null);
-            savedData = (Long)gis.getProperty(INeoConstants.COUNT_TYPE_NAME, 0L);
-        }
-
-        /**
-         *inc saved;
-         */
-        public void incSaved() {
-            savedData++;
-        }
-
-        protected final void checkCRS(float lat, float lon, String hint) {
-            if (crs == null) {
-                // TODO move CRS class and update CRS in amanzi.neo.core
-                crs = CRS.fromLocation(lat, lon, hint);
-                saveCRS();
-            }
-        }
-
-        /**
-         * initCRS
-         */
-        public void initCRS() {
-            if (gis.hasProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME) && gis.hasProperty(INeoConstants.PROPERTY_CRS_NAME)) {
-                crs = CRS.fromCRS((String)gis.getProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME), (String)gis.getProperty(INeoConstants.PROPERTY_CRS_NAME));
-            }
-        }
-
-        /**
-         * ubdate bbox
-         * 
-         * @param lat - latitude
-         * @param lon - longitude
-         */
-        public final void updateBBox(double lat, double lon) {
-            if (bbox == null) {
-                bbox = new double[] {lon, lon, lat, lat};
-            } else {
-                if (bbox[0] > lon)
-                    bbox[0] = lon;
-                if (bbox[1] < lon)
-                    bbox[1] = lon;
-                if (bbox[2] > lat)
-                    bbox[2] = lat;
-                if (bbox[3] < lat)
-                    bbox[3] = lat;
-            }
-        }
-
-        /**
-         * @return Returns the gis.
-         */
-        public Node getGis() {
-            return gis;
-        }
-
-        /**
-         * @return Returns the bbox.
-         */
-        public double[] getBbox() {
-            return bbox;
-        }
-
-        /**
-         * @param crs The crs to set.
-         */
-        public void setCrs(CRS crs) {
-            this.crs = crs;
-        }
-
-        /**
-         * @return
-         */
-        public CRS getCrs() {
-            return crs;
-        }
-
-        /**
-         *save bbox to gis node
-         */
-        public void saveBBox() {
-            if (getBbox() != null) {
-                gis.setProperty(INeoConstants.PROPERTY_BBOX_NAME, getBbox());
-            }
-        }
-
-        /**
-         *save CRS to gis node
-         */
-        public void saveCRS() {
-            if (getCrs() != null) {
-                if (crs.getWkt() != null) {
-                    gis.setProperty(INeoConstants.PROPERTY_WKT_CRS, crs.getWkt());
-                }
-                gis.setProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME, crs.getType());// TODO remove?
-                // - not used
-                // in GeoNeo
-                gis.setProperty(INeoConstants.PROPERTY_CRS_NAME, crs.toString());
-            }
-        }
-
-        /**
-         *save CRS
-         * 
-         * @param crs -CoordinateReferenceSystem
-         */
-        public void setCrs(CoordinateReferenceSystem crs) {
-            setCrs(CRS.fromCRS(crs));
-        }
-
-        /**
-         * @param bbox The bbox to set.
-         */
-        public void setBbox(double[] bbox) {
-            this.bbox = bbox;
-        }
-    }
-
     /**
      * @param key -key of value from preference store
      * @return array of possible headers
@@ -2044,8 +1914,8 @@ public abstract class AbstractLoader {
                 result = null;
                 CommonCRSPreferencePage page = new CommonCRSPreferencePage();
                 try {
-                    LOGGER.debug(gisProperties.getCrs().epsg);
-                    page.setSelectedCRS(org.geotools.referencing.CRS.decode(gisProperties.getCrs().epsg));
+                    LOGGER.debug(gisProperties.getCrs().getEpsg());
+                    page.setSelectedCRS(org.geotools.referencing.CRS.decode(gisProperties.getCrs().getEpsg()));
                 } catch (NoSuchAuthorityCodeException e) {
                     NeoLoaderPlugin.exception(e);
                     result = null;

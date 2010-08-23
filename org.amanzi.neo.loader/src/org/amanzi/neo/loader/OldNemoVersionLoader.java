@@ -25,6 +25,7 @@ import java.util.Map;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.GraphDatabaseService;

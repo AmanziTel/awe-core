@@ -54,6 +54,7 @@ import org.amanzi.neo.core.enums.SectorIdentificationType;
 import org.amanzi.neo.core.enums.gpeh.Events;
 import org.amanzi.neo.core.enums.gpeh.Parameters;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.core.utils.GpehReportUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.gpeh.GPEHEvent;

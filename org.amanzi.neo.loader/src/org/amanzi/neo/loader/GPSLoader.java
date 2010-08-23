@@ -28,6 +28,7 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SectorIdentificationType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Node;

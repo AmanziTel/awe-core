@@ -35,6 +35,7 @@ public class DistributionSelectionNode  implements IAdaptable {
         this.selected = selected;
     }
     
+    @SuppressWarnings("unchecked")
     @Override
     public Object getAdapter(Class adapter) {
         if (adapter == Node.class) {

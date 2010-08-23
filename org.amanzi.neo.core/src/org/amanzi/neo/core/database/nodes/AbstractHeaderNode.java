@@ -15,9 +15,7 @@ package org.amanzi.neo.core.database.nodes;
 
 import java.util.ArrayList;
 
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;

@@ -17,7 +17,7 @@ import java.util.List;
 
 /**
  * <p>
- * IExportProvider
+ * IExportProvider - provide interface for export provider
  * </p>
  * 
  * @author TsAr
@@ -39,7 +39,12 @@ public interface IExportProvider {
      */
     boolean hasNextLine();
 
-      String getDataName();
+    /**
+     * Gets the data name.
+     * 
+     * @return the data name
+     */
+    String getDataName();
 
     /**
      * Gets the next line.

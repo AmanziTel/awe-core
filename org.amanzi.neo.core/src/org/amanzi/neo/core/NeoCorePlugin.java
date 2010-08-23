@@ -90,15 +90,11 @@ public class NeoCorePlugin extends AbstractUIPlugin implements IUpdateViewListen
         updateBDManager.addListener(this);
         //TODO need solution to use log4j libraries from separate plugin but not from udig libraries
         URL url = getBundle().getEntry("/logCinfig.properties");
-//        System.out.println(url);
-        URL rUrl = FileLocator.toFileURL(url);
-//        System.out.println(rUrl);
-//        System.out.println(rUrl.getPath());
-//        System.out.println(new File(rUrl.toURI()).getAbsolutePath());
+        if (url != null) {
+            URL rUrl = FileLocator.toFileURL(url);
         
-        PropertyConfigurator.configure(rUrl);
-
-//        Logger.getLogger(this.getClass()).debug("test");
+            PropertyConfigurator.configure(rUrl);
+        }
     }
 
     /*

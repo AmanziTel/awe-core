@@ -637,24 +637,6 @@ public class SpreadsheetNode extends AbstractNode {
         deleteCell(cell);
     }
 	
-	/**
-	 * Deletes a Cell and updates 
-	 * 
-	 * @param node
-	 * @param relationshipType
-	 */
-	private void deleteCell(Node node, RelationshipType relationshipType) {
-		Relationship previousRelationship = node.getSingleRelationship(relationshipType, Direction.INCOMING);
-		Node previousNode = previousRelationship.getStartNode();
-		previousRelationship.delete();
-		
-		Relationship nextRelationship = node.getSingleRelationship(relationshipType, Direction.OUTGOING);
-		Node nextNode = nextRelationship.getEndNode();
-		nextRelationship.delete();
-		
-		previousNode.createRelationshipTo(nextNode, relationshipType);
-	}
-	
 	private void swapHeaders(Node node1, Node node2, RelationshipType relationshipType) {
 		node1.getSingleRelationship(relationshipType, Direction.OUTGOING).delete();
 		

@@ -41,7 +41,7 @@ public class DataStatisticManager {
     public void parseAndIndex(String index,String key, String value){
         HeaderMaps map = getHeaderMap(index);
         if (map.headerAllowed(key)){
-            Header header=map.getHeader(key);
+            map.getHeader(key);
         }
         
     }
