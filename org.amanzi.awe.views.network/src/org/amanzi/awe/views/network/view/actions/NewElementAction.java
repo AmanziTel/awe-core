@@ -171,7 +171,7 @@ public class NewElementAction extends Action {
     }
     
     protected String getNewElementName(String pattern) {
-        Integer counter = 1;
+        Integer counter = 2;
         
         Transaction tx = service.beginTx();
         try {
@@ -204,6 +204,8 @@ public class NewElementAction extends Action {
             else {
                 NeoUtils.addChild(parentElement, child, null, service);
             }
+            
+            postCreating(child);
             
             tx.success();
         }
