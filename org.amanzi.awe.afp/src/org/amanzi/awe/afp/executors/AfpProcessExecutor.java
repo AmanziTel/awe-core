@@ -73,7 +73,7 @@ public class AfpProcessExecutor extends Job {
 	@Override
 	public IStatus run(IProgressMonitor monitor){
 		
-		monitor.beginTask("Execute Afp", 100);//IProgressMonitor.UNKNOWN);
+		monitor.beginTask("Execute Afp", 100);
 		createFiles(monitor);
 		Runtime run = Runtime.getRuntime();
 		try {
@@ -81,7 +81,7 @@ public class AfpProcessExecutor extends Job {
 			AfpEngine engine = AfpEngine.getAfpEngine();
 			
 			String path = engine.getAfpEngineExecutablePath();
-			String command = path + " < " + afpe.paramFileName + " \"";
+			String command = path + " " + afpe.controlFileName;
 			AweConsolePlugin.info("Executing Cmd: " + command);
 			process = run.exec(command);
 			monitor.worked(20);

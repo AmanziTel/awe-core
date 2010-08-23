@@ -23,19 +23,21 @@ int main(void) {
 
 int  japa_awe(char * pctrfile);
 
-int main(void)
+int main(int argc, char *argv[])
 
 {
+	char TrialName[80];
+	
+	//printf("\n\nFullPath-Name of the Trial Control File:\n\n");
 
-char TrialName[80];
-
-
-
-printf("\n\nFullPath-Name of the Trial Control File:\n\n");
-
-
-
-     scanf("%s",TrialName);
+	if (argc < 2) {
+		printf("\n Syntax Error :: %s <input control file name>", argv[0]);
+		return -1;
+	}
+	
+	strncpy(TrialName,argv[1], 79);
+	TrialName[79] =0;
+//     scanf("%s",TrialName);
 
 
 
@@ -44,12 +46,10 @@ printf("\n\nFullPath-Name of the Trial Control File:\n\n");
 	japa_awe(TrialName);
 
 
+    printf("\n\njapa_awe for %s finished\n\n", TrialName);
 
-
-
-printf("\n\njapa_awe for %s finished\n\n", TrialName);
-
-
+	fflush(stdin);
+	fflush(stdout);
 
 //    getch();
     return EXIT_SUCCESS;
