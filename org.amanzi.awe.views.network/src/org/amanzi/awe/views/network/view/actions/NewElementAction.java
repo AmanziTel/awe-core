@@ -176,12 +176,14 @@ public class NewElementAction extends Action {
     protected String getNewElementName(String pattern) {
         Integer counter = 2;
         
+        String oldPattern = new String(pattern);
+        
         Transaction tx = service.beginTx();
         try {
             LuceneIndexService indexService = NeoServiceProvider.getProvider().getIndexService();         
         
             while (indexService.getSingleNode(luceneIndexName, pattern) != null) {
-                pattern = pattern + " " + counter.toString();
+                pattern = oldPattern + " " + counter.toString();
                 counter++;                                
             }  
             tx.success();

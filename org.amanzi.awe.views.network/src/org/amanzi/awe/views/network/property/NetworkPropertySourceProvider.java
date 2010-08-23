@@ -25,15 +25,22 @@ import org.eclipse.ui.views.properties.IPropertySourceProvider;
 
 public class NetworkPropertySourceProvider implements IPropertySourceProvider {
     
+    private NeoNode lastRawObject;
+    
     /**
      * Return PropertySource for given element
      */
     
     public IPropertySource getPropertySource(Object element) {
         if (element instanceof NeoNode) {
+            lastRawObject = (NeoNode)element;
             return new NetworkPropertySource((NeoNode)element);            
         }
         return null;
+    }
+    
+    public NeoNode getLastRawObject() {
+        return lastRawObject;
     }
 
 }
