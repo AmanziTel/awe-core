@@ -16,8 +16,10 @@ package org.amanzi.awe.views.network.view.actions;
 import java.util.HashMap;
 
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * TODO Purpose of 
@@ -45,6 +47,22 @@ public class CopyElementAction extends NewElementAction {
 
     @Override
     protected void createNewElement(Node parentElement, HashMap<String, Object> properties) {
-        
+        Transaction tx = service.beginTx();
+        try {
+            Node parent = NeoUtils.getParent(service, parentElement);
+            
+            for (String key : parentElement.getPropertyKeys()) {
+                if (!defaultProperties.containsKey(key)) {
+                    defaultProperties.put(key, parentElement.getProperty(key));
+                }
+            }
+            
+            super.createNewElement(parent, defaultProperties);
+            
+            tx.success();
+        }
+        finally {
+            tx.finish();
+        }
     }
 }

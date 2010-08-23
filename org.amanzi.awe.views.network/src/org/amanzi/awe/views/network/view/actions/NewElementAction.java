@@ -50,15 +50,15 @@ import org.neo4j.index.lucene.LuceneIndexService;
  */
 public class NewElementAction extends Action {
     
-    protected static final NodeTypes[] CREATE_ACTION_SUPPORTED_TYPES = new NodeTypes[] {NodeTypes.BSC, NodeTypes.SITE};
+    protected static final NodeTypes[] CREATE_ACTION_SUPPORTED_TYPES = new NodeTypes[] {NodeTypes.BSC, NodeTypes.SITE, NodeTypes.CITY};
     
     private Node selectedNode;
     
-    private GraphDatabaseService service;
+    protected GraphDatabaseService service;
     
     private NodeTypes type;
     
-    private HashMap<String, Object> defaultProperties = new HashMap<String, Object>();
+    protected HashMap<String, Object> defaultProperties = new HashMap<String, Object>();
     
     private String luceneIndexName;
     
@@ -150,6 +150,7 @@ public class NewElementAction extends Action {
     protected void updateNewElementType() {
         switch (type) {
         case BSC:
+        case CITY:
             type = NodeTypes.SITE;
             break;
         case SITE:
