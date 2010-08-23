@@ -1,0 +1,50 @@
+/* AWE - Amanzi Wireless Explorer
+ * http://awe.amanzi.org
+ * (C) 2008-2009, AmanziTel AB
+ *
+ * This library is provided under the terms of the Eclipse Public License
+ * as described at http://www.eclipse.org/legal/epl-v10.html. Any use,
+ * reproduction or distribution of the library constitutes recipient's
+ * acceptance of this agreement.
+ *
+ * This library is distributed WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ */
+
+package org.amanzi.awe.views.network.view.actions;
+
+import java.util.HashMap;
+
+import org.amanzi.neo.core.enums.NodeTypes;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.neo4j.graphdb.Node;
+
+/**
+ * TODO Purpose of 
+ * <p>
+ *
+ * </p>
+ * @author Lagutko_N
+ * @since 1.0.0
+ */
+public class CopyElementAction extends NewElementAction {
+    
+    protected static final NodeTypes[] COPY_ACTION_SUPPORTED_TYPES = new NodeTypes[] {NodeTypes.SITE, NodeTypes.SECTOR};
+
+    /**
+     * @param selection
+     */
+    public CopyElementAction(IStructuredSelection selection) {
+        super(selection, COPY_ACTION_SUPPORTED_TYPES, "Copy ");
+    }
+    
+    @Override
+    protected void updateNewElementType() {
+        //do nothing since type of new element equals to current 
+    }
+
+    @Override
+    protected void createNewElement(Node parentElement, HashMap<String, Object> properties) {
+        
+    }
+}

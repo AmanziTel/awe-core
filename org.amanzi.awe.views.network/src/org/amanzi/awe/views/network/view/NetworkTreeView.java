@@ -47,6 +47,8 @@ import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.awe.views.network.property.NetworkPropertySheetPage;
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
+import org.amanzi.awe.views.network.view.actions.CopyElementAction;
+import org.amanzi.awe.views.network.view.actions.NewElementAction;
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -75,9 +77,11 @@ import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
 import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -497,6 +501,19 @@ public class NetworkTreeView extends ViewPart {
                 return selection.size() == 1;
             }
         });
+        
+        manager.add(new Separator());
+        
+        //add corresponding actions only if they should work
+        IAction elementAction = new NewElementAction((IStructuredSelection)viewer.getSelection());
+        if (elementAction.isEnabled()) {
+            manager.add(elementAction);
+        }
+
+        elementAction = new CopyElementAction((IStructuredSelection)viewer.getSelection());
+        if (elementAction.isEnabled()) {
+            manager.add(elementAction);
+        }
 
     }
     
@@ -629,23 +646,6 @@ public class NetworkTreeView extends ViewPart {
         if (autoZoom) {
             autoZoom = false; // only zoom first time, then rely on user to control zoom level
         }
-    }
-
-    /**
-     * Find a parent node of the specified type, following the NEXT relations back up the chain
-     * 
-     * @param node subnode
-     * @return parent node of specified type or null
-     */
-    private Node getParentNode(Node node, final String type) {
-        Traverser traverse = node.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
-
-            @Override
-            public boolean isReturnableNode(TraversalPosition currentPos) {
-                return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(type);
-            }
-        }, NetworkRelationshipTypes.CHILD, Direction.INCOMING);
-        return traverse.iterator().hasNext() ? traverse.iterator().next() : null;
     }
 
     /**
@@ -1154,9 +1154,9 @@ public class NetworkTreeView extends ViewPart {
             final boolean containseDatasetNode;
             final Node gisNode;
             try {
-                networkNode = getParentNode(nodesToDelete.get(0).getNode(), "network");
+                networkNode = NeoUtils.getParentNode(nodesToDelete.get(0).getNode(), "network");
                 if (networkNode == null) {
-                    datasetNode = getParentNode(nodesToDelete.get(0).getNode(), "dataset");
+                    datasetNode = NeoUtils.getParentNode(nodesToDelete.get(0).getNode(), "dataset");
                     boolean f = false;
                     if (datasetNode != null) {
                         for (NeoNode n : nodesToDelete) {
