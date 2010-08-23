@@ -99,9 +99,9 @@ public class NeoNode {
      */
     
     public NeoNode[] getChildren() {
-        if(number>MAX_CHILDREN_COUNT){
-            return NO_NODES;
-        }
+//        if(number>MAX_CHILDREN_COUNT){
+//            return NO_NODES;
+//        }
         if(children==null) {
             children = new ArrayList<NeoNode>();
             Iterator<Node> childrens = null;
