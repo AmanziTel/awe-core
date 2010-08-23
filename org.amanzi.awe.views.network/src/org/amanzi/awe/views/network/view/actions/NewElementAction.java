@@ -105,8 +105,8 @@ public class NewElementAction extends Action {
         
         switch (type) {
         case SITE:
-            defaultProperties.put(INeoConstants.PROPERTY_LAT_NAME, 0.0f);
-            defaultProperties.put(INeoConstants.PROPERTY_LON_NAME, 0.0f);
+            defaultProperties.put(INeoConstants.PROPERTY_LAT_NAME, 0.0d);
+            defaultProperties.put(INeoConstants.PROPERTY_LON_NAME, 0.0d);
             break;
         case SECTOR:
             defaultProperties.put("azimuth", 0.0d);
