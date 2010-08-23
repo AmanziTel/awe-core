@@ -135,8 +135,10 @@ public class NewElementAction extends Action {
                 }
             }
             
-            updateNewElementType();
-            initializeDefaultProperties();
+            if (result) {
+                updateNewElementType();
+                initializeDefaultProperties();
+            }
             
             tx.success();
         }
