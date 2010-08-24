@@ -230,19 +230,24 @@ public class AfpExporter {
 				break;				
 			}
 			
-			for (Node proxySector : startSector.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, NetworkRelationshipTypes.NEXT, Direction.OUTGOING)){
-				if (!proxySector.getProperty("type").equals("sector_sector_relations"))
-					 continue;
-				Node sector = proxySector.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOURS, Direction.INCOMING).getOtherNode(proxySector);
-				String sectorValues[] = parseSectorName(sector);			
-				writer.write("CELL " + sectorValues[0] + " " + sectorValues[1]);
-				writer.newLine();
-				for (Node neighbourProxySector: proxySector.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.NEIGHBOUR, Direction.OUTGOING)){
-					Node neighbourSector = neighbourProxySector.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOURS, Direction.INCOMING).getOtherNode(neighbourProxySector);
-					sectorValues = parseSectorName(neighbourSector);
-					writer.write("NBR " + sectorValues[0] + " " + sectorValues[1]);
+			if (startSector != null){			
+				for (Node proxySector : startSector.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, NetworkRelationshipTypes.NEXT, Direction.OUTGOING)){
+					if (!proxySector.getProperty("type").equals("sector_sector_relations"))
+						 continue;
+					Node sector = proxySector.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOURS, Direction.INCOMING).getOtherNode(proxySector);
+					String sectorValues[] = parseSectorName(sector);			
+					writer.write("CELL " + sectorValues[0] + " " + sectorValues[1]);
 					writer.newLine();
+					for (Node neighbourProxySector: proxySector.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.NEIGHBOUR, Direction.OUTGOING)){
+						Node neighbourSector = neighbourProxySector.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOURS, Direction.INCOMING).getOtherNode(neighbourProxySector);
+						sectorValues = parseSectorName(neighbourSector);
+						writer.write("NBR " + sectorValues[0] + " " + sectorValues[1]);
+						writer.newLine();
+					}
 				}
+			}
+			else {
+				AweConsolePlugin.info("No Neighbours data stored in the database");
 			}
 			
 			writer.close();
@@ -275,6 +280,8 @@ public class AfpExporter {
 		try {
 			interferenceFile.createNewFile();
 			BufferedWriter writer  = new BufferedWriter(new FileWriter(interferenceFile));
+			writer.write("ASSET like Site Interference Table");
+			writer.newLine();
 			
 			for (Node interferer : afpRoot.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.INTERFERENCE_DATA, Direction.OUTGOING)){
 				//TODO: put condition here to get the desired interference list in case of multiple interference list
@@ -282,32 +289,40 @@ public class AfpExporter {
 				break;				
 			}
 			
-			for (Node proxySector : startSector.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, NetworkRelationshipTypes.NEXT, Direction.OUTGOING)){
-				if (!proxySector.getProperty("type").equals("sector_sector_relations"))
-					 continue;
-				Node sector = proxySector.getSingleRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.INCOMING).getOtherNode(proxySector);		
-				writer.write("SUBCELL " + proxySector.getProperty("nonrelevant1") + " " +
-							 proxySector.getProperty("nonrelevant2") + " " +
-							 proxySector.getProperty("total-cell-area") + " " +
-							 proxySector.getProperty("total-cell-traffic") + " " +
-							 proxySector.getProperty("numberofinterferers") + " " +
-							 sector.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString());
-				writer.newLine();
-				for (Relationship relation : proxySector.getRelationships(NetworkRelationshipTypes.INTERFERS, Direction.OUTGOING)){
-					Node neighbourProxySector = relation.getEndNode();
-					Node neighbourSector = neighbourProxySector.getSingleRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.INCOMING).getOtherNode(neighbourProxySector);
-					DecimalFormat df = new DecimalFormat("0.0000000000");
-					writer.write("INT " + proxySector.getProperty("nonrelevant1") + "\t" +
-							relation.getProperty("nonrelevant2").toString() + "\t" +
-							df.format(relation.getProperty("co-channel-interf-area")).toString() + " " +
-							df.format(relation.getProperty("co-channel-interf-traffic")).toString() + " " +
-							df.format(relation.getProperty("adj-channel-interf-area")).toString() + " " +
-							df.format(relation.getProperty("adj-channel-interf-traffic")).toString() + " " +
-							neighbourSector.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString());
+			if (startSector != null){			
+				for (Node proxySector : startSector.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, NetworkRelationshipTypes.NEXT, Direction.OUTGOING)){
+					if (!proxySector.getProperty("type").equals("sector_sector_relations"))
+						 continue;
+					Node sector = proxySector.getSingleRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.INCOMING).getOtherNode(proxySector);		
+					String sectorName = sector.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+					char sectorNoChar = (char) (Integer.parseInt(sectorName.substring(sectorName.length() - 1)) + 65 - 1);
+					writer.write("SUBCELL " + proxySector.getProperty("nonrelevant1") + " " +
+								 proxySector.getProperty("nonrelevant2") + " " +
+								 proxySector.getProperty("total-cell-area") + " " +
+								 proxySector.getProperty("total-cell-traffic") + " " +
+								 proxySector.getProperty("numberofinterferers") + " " +
+								 sectorName.substring(0, sectorName.length() - 1) + sectorNoChar);
 					writer.newLine();
+					for (Relationship relation : proxySector.getRelationships(NetworkRelationshipTypes.INTERFERS, Direction.OUTGOING)){
+						Node interferenceProxySector = relation.getEndNode();
+						Node interferenceSector = interferenceProxySector.getSingleRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.INCOMING).getOtherNode(interferenceProxySector);
+						sectorName = interferenceSector.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+						sectorNoChar = (char) (Integer.parseInt(sectorName.substring(sectorName.length() - 1)) + 65 - 1);
+						DecimalFormat df = new DecimalFormat("0.0000000000");
+						writer.write("INT " + proxySector.getProperty("nonrelevant1") + "\t" +
+								relation.getProperty("nonrelevant2").toString() + "\t" +
+								df.format(relation.getProperty("co-channel-interf-area")).toString() + " " +
+								df.format(relation.getProperty("co-channel-interf-traffic")).toString() + " " +
+								df.format(relation.getProperty("adj-channel-interf-area")).toString() + " " +
+								df.format(relation.getProperty("adj-channel-interf-traffic")).toString() + " " +
+								sectorName.substring(0, sectorName.length() - 1) + sectorNoChar);
+						writer.newLine();
+					}
 				}
 			}
-			
+			else {
+				AweConsolePlugin.info("No Interference data stored");
+			}
 			writer.close();
 		}catch (Exception e){
 			AweConsolePlugin.exception(e);
@@ -325,12 +340,12 @@ public class AfpExporter {
 			BufferedWriter writer  = new BufferedWriter(new FileWriter(exceptionFile));
 			Traverser exceptionList = afpRoot.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.EXCEPTION_DATA, Direction.OUTGOING);
 			
-//			if(exceptionList != null) {
-				for (Node exception : exceptionList){
-					//TODO: put condition here to get the desired exception list in case of multiple interference list
-					startSector = exception.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).getEndNode();
-					break;				
-				}
+			for (Node exception : exceptionList){
+				//TODO: put condition here to get the desired exception list in case of multiple interference list
+				startSector = exception.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).getEndNode();
+				break;				
+			}
+			
 			if (startSector != null){	
 				for (Node proxySector : startSector.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, NetworkRelationshipTypes.NEXT, Direction.OUTGOING)){
 					if (!proxySector.getProperty("type").equals("sector_sector_relations"))
@@ -346,6 +361,9 @@ public class AfpExporter {
 						writer.newLine();
 					}
 				}
+			}
+			else {
+				AweConsolePlugin.info("No Exception data stored");
 			}
 			writer.close();
 		}catch (Exception e){
