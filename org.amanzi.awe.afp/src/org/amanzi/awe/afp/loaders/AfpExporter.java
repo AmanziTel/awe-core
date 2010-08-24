@@ -16,8 +16,8 @@ package org.amanzi.awe.afp.loaders;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.net.URISyntaxException;
 import java.text.DecimalFormat;
-import java.util.ResourceBundle;
 
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -32,6 +32,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.eclipse.core.runtime.Platform;
 
 
 /**
@@ -50,10 +51,8 @@ public class AfpExporter {
 	
 	private GraphDatabaseService service;
 	private Node afpRoot;
-//	private String siteName;
 	
-	//protected String tmpAfpFolder = System.getProperty("user.home") + File.separator + "AfpTemp" + File.separator;
-	public final String tmpAfpFolder = File.separator + "AfpTemp" + File.separator;
+	public final String tmpAfpFolder = getTmpFolderPath();
 	
 	/** The Control File*/
 	public final String controlFileName = tmpAfpFolder + "InputControlFile.awe";
@@ -468,6 +467,16 @@ public class AfpExporter {
 		
 		file = new File(name);
 		return file; 
+	}
+	
+	private String getTmpFolderPath(){
+		String folderPath = File.separator;
+		try {
+			folderPath = Platform.getInstanceLocation().getURL().toURI().getPath() + "AfpTemp" + File.separator;
+		} catch (URISyntaxException e) {
+			AweConsolePlugin.exception(e);
+		}
+		return folderPath;
 	}
 
 

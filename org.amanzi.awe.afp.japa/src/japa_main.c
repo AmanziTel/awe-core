@@ -19,29 +19,23 @@ int main(void) {
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MaxNameL 80;
+#define MAXNAMELENGTH 256
 
 int  japa_awe(char * pctrfile);
 
 int main(int argc, char *argv[])
 
 {
-	char TrialName[80];
-	
-	//printf("\n\nFullPath-Name of the Trial Control File:\n\n");
+	char TrialName[MAXNAMELENGTH];
 
 	if (argc < 2) {
 		printf("\n Syntax Error :: %s <input control file name>", argv[0]);
 		return -1;
 	}
 	
-	strncpy(TrialName,argv[1], 79);
-	TrialName[79] =0;
-//     scanf("%s",TrialName);
+	strncpy(TrialName,argv[1], MAXNAMELENGTH - 1);
+	TrialName[MAXNAMELENGTH - 1] =0;
 
-
-
-	 
 
 	japa_awe(TrialName);
 
@@ -51,7 +45,6 @@ int main(int argc, char *argv[])
 	fflush(stdin);
 	fflush(stdout);
 
-//    getch();
     return EXIT_SUCCESS;
 
 
