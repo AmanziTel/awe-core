@@ -27,7 +27,7 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.kernel.impl.transaction.TransactionFailureException;
+import org.neo4j.graphdb.TransactionFailureException;
 import org.neo4j.neoclipse.graphdb.GraphDbServiceManager;
 import org.neo4j.neoclipse.preference.NeoPreferenceHelper;
 import org.neo4j.neoclipse.preference.Preferences;

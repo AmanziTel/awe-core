@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="lib/geronimo-jta_1.1_spec-1.1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jline-0.9.94.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-core-2.9.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/neo4j-graph-algo-0.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/neo4j-index-1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/neo4j-kernel-1.1.jar" sourcepath="lib/neo4j-kernel-1.1-source.zip"/>
+	<classpathentry exported="true" kind="lib" path="lib/neo4j-online-backup-0.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/neo4j-remote-graphdb-0.7.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/neo4j-shell-1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/protobuf-java-2.3.0.jar"/>
 	<classpathentry exported="true" kind="lib" path=""/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry exported="true" kind="lib" path="lib/neo4j-apoc-examples-1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/neo4j-index-1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/geronimo-jta_1.1_spec-1.1.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-core-2.9.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/neo4j-kernel-1.0.jar" sourcepath="lib/neo4j-kernel-1.0-source.zip"/>
-	<classpathentry exported="true" kind="lib" path="lib/neo4j-commons-1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/neo4j-remote-graphdb-0.6.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/neo4j-shell-1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jline-0.9.94.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
