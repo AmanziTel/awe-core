@@ -215,7 +215,7 @@ libraries, licensed under the Eclipse Public License,
          id="org.neo4j"
          download-size="0"
          install-size="0"
-         version="1.0.0"
+         version="1.1.1"
          unpack="false"/>
 
    <plugin
