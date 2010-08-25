@@ -41,6 +41,16 @@ public class DataLoadPreferences {
     public static final String NH_LATITUDE = "NH_LATITUDE";
     public static final String NH_LONGITUDE = "NH_LONGITUDE";
     public static final String DEFAULT_CHARSET = "DEFAULT_CHARSET";
+    // drive loader headers
+    public static final String DR_LATITUDE = "DR_LATITUDE";
+    public static final String DR_LONGITUDE = "DR_LONGITUDE";
+    public static final String DR_BCCH = "DR_BCCH";
+    public static final String DR_TCH = "DR_TCH";
+    public static final String DR_SC = "DR_SC";
+    public static final String DR_PN = "DR_PN";
+    public static final String DR_EcIo = "DR_EcIo";
+    public static final String DR_RSSI = "DR_RSSI";
+    public static final String DR_CI = "DR_CI";
     
     // probe loader headers
     public static final String PR_NAME = "PR_NAME";

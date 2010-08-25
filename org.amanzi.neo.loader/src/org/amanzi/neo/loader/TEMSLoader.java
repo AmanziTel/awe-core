@@ -35,6 +35,7 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -130,10 +131,25 @@ public class TEMSLoader extends DriveLoader {
     }
 
     /**
+     * Add a known header entry as well as mark it as a main header. All other fields will be
+     * assumed to be sector properties.
+     * 
+     * @param key
+     * @param regexes
+     */
+    private void addMainHeader(String key, String[] regexes) {
+        addKnownHeader(1, key, regexes, false);
+        // mainHeaders.add(key);
+    }
+
+    /**
      * Build a map of internal header names to format specific names for types that need to be known
      * in the algorithms later.
      */
     private void initializeKnownHeaders() {
+        addMainHeader(INeoConstants.PROPERTY_LAT_NAME, getPossibleHeaders(DataLoadPreferences.DR_LATITUDE));
+        addMainHeader(INeoConstants.PROPERTY_LON_NAME, getPossibleHeaders(DataLoadPreferences.DR_LONGITUDE));
+
         addKnownHeader(1, "latitude", ".*latitude", false);
         addKnownHeader(1, "longitude", ".*longitude", false);
         addKnownHeader(1, "ms","MS", false);

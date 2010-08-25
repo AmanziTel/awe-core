@@ -217,6 +217,12 @@
             category="org.amanzi.neo.preferences.DataLoadPreferencePage">
       </page>
       <page
+            class="org.amanzi.neo.preferences.DriveLoaderPreferencePage"
+            id="org.amanzi.neo.preferences.DrivekLoaderPreferencePage"
+            name="Drive data"
+            category="org.amanzi.neo.preferences.DataLoadPreferencePage">
+      </page>
+      <page
             class="org.amanzi.neo.preferences.CommonCRSPreferencePage"
             id="org.amanzi.neo.preferences.CommonCRSPreferencePage"
             name="Common CRS"
