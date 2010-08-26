@@ -46,10 +46,10 @@ import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.OssType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.core.utils.CSVParser;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.amanzi.neo.preferences.DataLoadPreferences;
@@ -394,6 +394,16 @@ public class LoaderUtils {
      */
     public static List<File> getAllFiles(String directoryName, FileFilter filter) {
         File directory = new File(directoryName);
+        return getAllFiles(directory,filter);
+    }
+    /**
+     * Calculates list of files 
+     *
+     * @param directory -  directory to import
+     * @param filter - filter (if filter teturn true for directory this directory will be handled also  )
+     * @return list of files to import
+     */
+    public static List<File> getAllFiles(File directory, FileFilter filter) {
         LinkedList<File> result = new LinkedList<File>();
         for (File childFile : directory.listFiles(filter)) {
             if (childFile.isDirectory()) {
