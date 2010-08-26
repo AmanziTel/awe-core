@@ -56,6 +56,17 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.NH_LATITUDE, "lat.*, y_wert.*, SIT.*Y, northing, latitude");
         pref.setDefault(DataLoadPreferences.NH_LONGITUDE, "long.*, x_wert.*, SIT.*X, easting, longitude");
         
+        pref.setDefault(DataLoadPreferences.DR_LATITUDE, "*latitude");
+        pref.setDefault(DataLoadPreferences.DR_LONGITUDE, ".*longitude");
+        pref.setDefault(DataLoadPreferences.DR_BCCH, ".*bcch");
+        pref.setDefault(DataLoadPreferences.DR_CI, ".*ci");
+        pref.setDefault(DataLoadPreferences.DR_EcIo, ".*ecio");
+        pref.setDefault(DataLoadPreferences.DR_PN, ".*pn");
+        pref.setDefault(DataLoadPreferences.DR_RSSI, ".*rssi");
+        pref.setDefault(DataLoadPreferences.DR_SC, ".*sc");
+        pref.setDefault(DataLoadPreferences.DR_TCH, ".*tch");
+        
+        
         pref.setDefault(DataLoadPreferences.PR_NAME, "Probe");
         pref.setDefault(DataLoadPreferences.PR_TYPE, "Type");
         pref.setDefault(DataLoadPreferences.PR_LATITUDE, "lat.*, .*latitude.*");
