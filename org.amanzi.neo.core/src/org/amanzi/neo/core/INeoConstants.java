@@ -140,7 +140,7 @@ public class INeoConstants {
     
     public static final String EVENTS_LUCENE_INDEX_NAME = "events";
     
-	public static final String SECTOR_ID_PROPERTIES = "sector_id";
+    public static final String SECTOR_ID_PROPERTIES = "sector_id";
     public static final String DRIVE_GIS_NAME = "drive gis name";
     public static final String NETWORK_GIS_NAME = "network gis name";
     public static final String MIN_TIMESTAMP = "min_timestamp";
@@ -178,4 +178,13 @@ public class INeoConstants {
     
     public static final String SECTOR_COUNT = "sector_count";
     public static final String PROPERTY_COUNT_NAME = "count";
+    public static final String PROPERTY_BCCH_NAME = "BCCH";
+    public static final String PROPERTY_TCH_NAME = "TCH";
+    public static final String PROPERTY_SC_NAME = "SC";
+    public static final String PROPERTY_PN_NAME = "PN";
+    public static final String PROPERTY_EcIo_NAME = "ECIO";
+    public static final String PROPERTY_RSSI_NAME = "RSSI";
+    public static final String PROPERTY_CI_NAME = "CI";
+    public static final String PROPERTY_LATITUDE_NAME = "latitude";
+    public static final String PROPERTY_LONGITUDE_NAME = "longitude";
 }
