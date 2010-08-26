@@ -147,17 +147,21 @@ public class TEMSLoader extends DriveLoader {
      * in the algorithms later.
      */
     private void initializeKnownHeaders() {
-        addMainHeader(INeoConstants.PROPERTY_LAT_NAME, getPossibleHeaders(DataLoadPreferences.DR_LATITUDE));
-        addMainHeader(INeoConstants.PROPERTY_LON_NAME, getPossibleHeaders(DataLoadPreferences.DR_LONGITUDE));
-        addMainHeader(INeoConstants.PROPERTY_BCCH_NAME, getPossibleHeaders(DataLoadPreferences.DR_BCCH));
-        addMainHeader(INeoConstants.PROPERTY_TCH_NAME, getPossibleHeaders(DataLoadPreferences.DR_TCH));
-        addMainHeader(INeoConstants.PROPERTY_SC_NAME, getPossibleHeaders(DataLoadPreferences.DR_SC));
-        addMainHeader(INeoConstants.PROPERTY_PN_NAME, getPossibleHeaders(DataLoadPreferences.DR_PN));
-        addMainHeader(INeoConstants.PROPERTY_EcIo_NAME, getPossibleHeaders(DataLoadPreferences.DR_EcIo));
-        addMainHeader(INeoConstants.PROPERTY_RSSI_NAME, getPossibleHeaders(DataLoadPreferences.DR_RSSI));
-        addMainHeader(INeoConstants.PROPERTY_CI_NAME, getPossibleHeaders(DataLoadPreferences.DR_CI));
+//        addMainHeader(INeoConstants.PROPERTY_LATITUDE_NAME, getPossibleHeaders(DataLoadPreferences.DR_LATITUDE));
+//        addMainHeader(INeoConstants.PROPERTY_LONGITUDE_NAME, getPossibleHeaders(DataLoadPreferences.DR_LONGITUDE));
+//        addMainHeader(INeoConstants.PROPERTY_BCCH_NAME, getPossibleHeaders(DataLoadPreferences.DR_BCCH));
+//        addMainHeader(INeoConstants.PROPERTY_TCH_NAME, getPossibleHeaders(DataLoadPreferences.DR_TCH));
+//        addMainHeader(INeoConstants.PROPERTY_SC_NAME, getPossibleHeaders(DataLoadPreferences.DR_SC));
+//        addMainHeader(INeoConstants.PROPERTY_PN_NAME, getPossibleHeaders(DataLoadPreferences.DR_PN));
+//        addMainHeader(INeoConstants.PROPERTY_EcIo_NAME, getPossibleHeaders(DataLoadPreferences.DR_EcIo));
+//        addMainHeader(INeoConstants.PROPERTY_RSSI_NAME, getPossibleHeaders(DataLoadPreferences.DR_RSSI));
+//        addMainHeader(INeoConstants.PROPERTY_CI_NAME, getPossibleHeaders(DataLoadPreferences.DR_CI));
         
-//        addKnownHeader(1, "latitude", ".*latitude", false);
+        String[] latH = getPossibleHeaders(DataLoadPreferences.DR_LATITUDE);
+        addKnownHeader(1, INeoConstants.PROPERTY_LATITUDE_NAME, latH, false);
+        
+        addMainHeader(INeoConstants.PROPERTY_LONGITUDE_NAME, getPossibleHeaders(DataLoadPreferences.DR_LONGITUDE));
+        
 //        addKnownHeader(1, "longitude", ".*longitude", false);
         addKnownHeader(1, "ms","MS", false);
         addMappedHeader(1, "ms","MS", "ms", new StringMapper());
