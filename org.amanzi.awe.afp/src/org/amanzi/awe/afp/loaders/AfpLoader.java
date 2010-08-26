@@ -123,6 +123,16 @@ public class AfpLoader extends AbstractLoader {
         afpRoot = NeoUtils.findorCreateRootInActiveProject(projectName, rootName, creater, neo);
         
     }
+    
+    private boolean isMonitorCancelled(IProgressMonitor monitor){
+    	if (monitor.isCanceled()){
+    		mainTx.failure();
+    		commit(false);
+    		return true;
+    	}
+    	
+    	return false;
+    }
 
     /**
      * Run.
@@ -142,29 +152,39 @@ public class AfpLoader extends AbstractLoader {
         try {
             defineRoot();
             if (file.getCellFile() != null) {
-                loadCellFile(file.getCellFile(), monitor);
+            	if (isMonitorCancelled(monitor))
+            		return; 	
+                loadCellFile(file.getCellFile());
             }
             commit(true);
             monitor.worked(1);
             if (file.getForbiddenFile() != null) {
-                loadForbiddenFile(file.getForbiddenFile(), monitor);
+            	if (isMonitorCancelled(monitor))
+            		return;
+                loadForbiddenFile(file.getForbiddenFile());
             }
 
             commit(true);
             monitor.worked(1);
             if (file.getNeighbourFile() != null) {
-                loadNeighbourFile(file.getNeighbourFile(), monitor);
+            	if (isMonitorCancelled(monitor))
+            		return;
+                loadNeighbourFile(file.getNeighbourFile(), afpCell);
             }
             
             commit(true);
             monitor.worked(1);
             if (file.getExceptionFile() != null) {
-                loadExceptionFile(file.getExceptionFile(), monitor);
+            	if (isMonitorCancelled(monitor))
+            		return;
+                loadExceptionFile(file.getExceptionFile(), afpCell);
             }
             commit(true);
             monitor.worked(1);
             if (file.getInterferenceFile() != null) {
-                loadInterferenceFile(file.getInterferenceFile(), monitor);
+            	if (isMonitorCancelled(monitor))
+            		return;
+                loadInterferenceFile(file.getInterferenceFile(), afpCell);
             }
             commit(true);
             monitor.worked(1);
@@ -182,8 +202,8 @@ public class AfpLoader extends AbstractLoader {
      * @param interferenceFile
      * @param monitor
      */
-    private void loadInterferenceFile(File interferenceFile, IProgressMonitor monitor) {
-        // TODO implement
+    private void loadInterferenceFile(File interferenceFile, Node afpCell) {
+    	this.afpCell = afpCell;
          Node afpInterference = NeoUtils.findNeighbour(afpCell, interferenceFile.getName(), neo);
          if (afpInterference == null) {
 	         Transaction tx = neo.beginTx();
@@ -208,8 +228,8 @@ public class AfpLoader extends AbstractLoader {
      * @param exceptionFile
      * @param monitor
      */
-    private void loadExceptionFile(File exceptionFile, IProgressMonitor monitor) {
-
+    private void loadExceptionFile(File exceptionFile, Node afpCell) {
+    	this.afpCell = afpCell;
         Node afpException = NeoUtils.findNeighbour(afpCell, exceptionFile.getName(), neo);
         if (afpException == null) {
             Transaction tx = neo.beginTx();
@@ -234,18 +254,19 @@ public class AfpLoader extends AbstractLoader {
      * @param neighbourFile the neighbour file
      * @param monitor the monitor
      */
-    private void loadNeighbourFile(File neighbourFile, IProgressMonitor monitor) {
+    public void loadNeighbourFile(File neighbourFile, Node afpCell) {
+    	this.afpCell = afpCell;
         Node afpNeigh = NeoUtils.findNeighbour(afpCell, neighbourFile.getName(), neo);
         if (afpNeigh == null) {
-            Transaction tx = neo.beginTx();
+//            Transaction tx = neo.beginTx();
             try {
                 afpNeigh = neo.createNode();
                 afpNeigh.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.NEIGHBOUR.getId());
                 afpNeigh.setProperty(INeoConstants.PROPERTY_NAME_NAME, neighbourFile.getName());
                 afpCell.createRelationshipTo(afpNeigh, NetworkRelationshipTypes.NEIGHBOUR_DATA);
-                tx.success();
-            } finally {
-                tx.finish();
+                mainTx.success();
+            } catch (Exception e) {
+            	mainTx.failure();
             }
         }
         CommonImporter importer = new CommonImporter(new NeighbourFileHandler(afpNeigh, neo), new TxtFileImporter(neighbourFile));
@@ -258,7 +279,7 @@ public class AfpLoader extends AbstractLoader {
      * @param forbiddenFile the forbidden file
      * @param monitor the monitor
      */
-    private void loadForbiddenFile(File forbiddenFile, IProgressMonitor monitor) {
+    private void loadForbiddenFile(File forbiddenFile) {
 
         CommonImporter importer = new CommonImporter(new ForbiddenFileHandler(afpCell, neo), new TxtFileImporter(forbiddenFile));
         importer.process();
@@ -286,7 +307,7 @@ public class AfpLoader extends AbstractLoader {
      * @param cellFile the cell file
      * @param monitor the monitor
      */
-    private void loadCellFile(File cellFile, IProgressMonitor monitor) {
+    private void loadCellFile(File cellFile) {
         // TODO define root of cell file. If we create virtual dataset for it what we should store
         // in main part?
         afpCell = afpRoot;

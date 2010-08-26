@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.net.URISyntaxException;
 import java.text.DecimalFormat;
+import java.util.HashMap;
 
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -120,7 +121,7 @@ public class AfpExporter {
 	/**
 	 * Creates the Control file to be given as input to the C++ engine
 	 */
-	public void createControlFile(){
+	public void createControlFile(HashMap<String, String> parameters){
 		File controlFile = getFile(this.controlFileName);
 		
 		try {
@@ -128,58 +129,58 @@ public class AfpExporter {
 			BufferedWriter writer  = new BufferedWriter(new FileWriter(controlFile));
 			
 			
-			writer.write("SiteSpacing " + afpRoot.getProperty("SiteSpacing"));
+			writer.write("SiteSpacing " + parameters.get("SiteSpacing"));
 			writer.newLine();
 			
-			writer.write("CellSpacing " + afpRoot.getProperty("CellSpacing"));
+			writer.write("CellSpacing " + parameters.get("CellSpacing"));
 			writer.newLine();
 			
-			writer.write("RegNbrSpacing " + afpRoot.getProperty("RegNbrSpacing"));
+			writer.write("RegNbrSpacing " + parameters.get("RegNbrSpacing"));
 			writer.newLine();
 
-			writer.write("MinNbrSpacing " + afpRoot.getProperty("MinNbrSpacing"));
+			writer.write("MinNbrSpacing " + parameters.get("MinNbrSpacing"));
 			writer.newLine();
 
-			writer.write("SecondNbrSpacing " + afpRoot.getProperty("SecondNbrSpacing"));
+			writer.write("SecondNbrSpacing " + parameters.get("SecondNbrSpacing"));
 			writer.newLine();
 
-			writer.write("RecalculateAll " + afpRoot.getProperty("RecalculateAll"));
+			writer.write("RecalculateAll " + parameters.get("RecalculateAll"));
 			writer.newLine();
 
-			writer.write("UseTraffic " + afpRoot.getProperty("UseTraffic"));
+			writer.write("UseTraffic " + parameters.get("UseTraffic"));
 			writer.newLine();
 
-			writer.write("UseSONbrs " + afpRoot.getProperty("UseSONbrs"));
+			writer.write("UseSONbrs " + parameters.get("UseSONbrs"));
 			writer.newLine();
 
-			writer.write("Quality " + afpRoot.getProperty("Quality"));
+			writer.write("Quality " + parameters.get("Quality"));
 			writer.newLine();
 
-			writer.write("DecomposeInCliques " + afpRoot.getProperty("DecomposeInCliques"));
+			writer.write("DecomposeInCliques " + parameters.get("DecomposeInCliques"));
 			writer.newLine();
 
-			writer.write("ExistCliques " + afpRoot.getProperty("ExistCliques"));
+			writer.write("ExistCliques " + parameters.get("ExistCliques"));
 			writer.newLine();
 
-			writer.write("GMaxRTperCell " + afpRoot.getProperty("GMaxRTperCell"));
+			writer.write("GMaxRTperCell " + parameters.get("GMaxRTperCell"));
 			writer.newLine();
 
-			writer.write("GMaxRTperSite " + afpRoot.getProperty("GMaxRTperSite"));
+			writer.write("GMaxRTperSite " + parameters.get("GMaxRTperSite"));
 			writer.newLine();
 
-			writer.write("HoppingType " + afpRoot.getProperty("HoppingType"));
+			writer.write("HoppingType " + parameters.get("HoppingType"));
 			writer.newLine();
 			
-			writer.write("UseGrouping " + afpRoot.getProperty("UseGrouping"));
+			writer.write("UseGrouping " + parameters.get("UseGrouping"));
 			writer.newLine();
 
-			writer.write("NrOfGroups " + afpRoot.getProperty("NrOfGroups"));
+			writer.write("NrOfGroups " + parameters.get("NrOfGroups"));
 			writer.newLine();
 			
 			writer.write("LogFile " + "\"" + this.logFileName + "\"");
 			writer.newLine();
 
-			writer.write("CellCardinality " + afpRoot.getProperty("CellCardinality"));
+			writer.write("CellCardinality " + parameters.get("CellCardinality"));
 			writer.newLine();
 			
 			writer.write("CellFile " + "\"" + this.inputCellFileName + "\"");
@@ -203,7 +204,7 @@ public class AfpExporter {
 			writer.write("ExceptionFile " + "\"" + this.inputExceptionFileName + "\"");
 			writer.newLine();
 			
-			writer.write("Carriers " + afpRoot.getProperty("Carriers"));
+			writer.write("Carriers " + parameters.get("Carriers"));
 			writer.newLine();
 
 			writer.close();
@@ -473,6 +474,7 @@ public class AfpExporter {
 		String folderPath = File.separator;
 		try {
 			folderPath = Platform.getInstanceLocation().getURL().toURI().getPath() + "AfpTemp" + File.separator;
+			System.out.println(folderPath);
 		} catch (URISyntaxException e) {
 			AweConsolePlugin.exception(e);
 		}

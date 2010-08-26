@@ -15,6 +15,7 @@ package org.amanzi.awe.afp.wizards;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
 import org.amanzi.awe.afp.Activator;
@@ -24,15 +25,12 @@ import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.loader.NeighbourLoader;
-import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.amanzi.neo.wizards.FileFieldEditorExt;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -41,7 +39,6 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -78,6 +75,7 @@ public class AfpLoadWizardPage extends WizardPage {
     protected Node datasetNode;
     private FileFieldEditorExt editor;
     private String fileName;
+    private String file;
     private final GraphDatabaseService service;
     protected ControlFile controlFile = null;
     
@@ -87,24 +85,27 @@ public class AfpLoadWizardPage extends WizardPage {
     private HashMap<String, Node> interferenceLists;
     private HashMap<String, Node> selectedLists;
 
-	private Text siteSpacing;
-	private Text cellSpacing;
-	private Text regNbrSpacing;
-	private Text minNbrSpacing;
-	private Text secondNbrSpacing;
-	private Scale qualityScale;
-	private Text gMaxRTperCell;
-	private Text gMaxRTperSite;
-	private Text hoppingType;
-	private Text nrOfGroups;
-	private Text cellCardinality;
-	private Text carriers;
-	private Button useGrouping;
-	private Button existCliques;
-	private Button recalculateAll;
-	private Button useTraffic;
-	private Button useSONbrs;
-	private Button decomposeInCliques;
+	protected Text siteSpacing;
+	protected Text cellSpacing;
+	protected Text regNbrSpacing;
+	protected Text minNbrSpacing;
+	protected Text secondNbrSpacing;
+	protected Scale qualityScale;
+	protected Text gMaxRTperCell;
+	protected Text gMaxRTperSite;
+	protected Text hoppingType;
+	protected Text nrOfGroups;
+	protected Text cellCardinality;
+	protected Text carriers;
+	protected Button useGrouping;
+	protected Button existCliques;
+	protected Button recalculateAll;
+	protected Button useTraffic;
+	protected Button useSONbrs;
+	protected Button decomposeInCliques;
+	private Button neighbourButton;
+	private Button exceptionsButton;
+	private Button interferenceButton;
     private Combo neighbourData;
     private Combo exceptionsData;
     private Combo interferenceData;
@@ -112,6 +113,8 @@ public class AfpLoadWizardPage extends WizardPage {
     private FileFieldEditorExt neighbourEditor;
     private FileFieldEditorExt interferenceEditor;
     private FileFieldEditorExt exceptionEditor;
+    
+    private ModifyListener modlistener;
     
     private Composite parent1;
 
@@ -142,7 +145,7 @@ public class AfpLoadWizardPage extends WizardPage {
         dataset = new Combo(main, SWT.DROP_DOWN);
         dataset.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 2, 1));
         dataset.setItems(getAfpDatasets());
-        dataset.addModifyListener(new ModifyListener() {
+        modlistener = new ModifyListener() {
 
             @Override
             public void modifyText(ModifyEvent e) {
@@ -172,12 +175,16 @@ public class AfpLoadWizardPage extends WizardPage {
                 populateFileLists();
                 neighbourData.setItems(neighbourLists.keySet().toArray(new String[0]));
                 neighbourData.setText(neighbourData.getItem(0));
+                neighbourButton.setEnabled(true);
                 exceptionsData.setItems(exceptionLists.keySet().toArray(new String[0]));
                 exceptionsData.setText(exceptionsData.getItem(0));
+                exceptionsButton.setEnabled(true);
                 interferenceData.setItems(interferenceLists.keySet().toArray(new String[0]));
                 interferenceData.setText(interferenceData.getItem(0));
+                exceptionsButton.setEnabled(true);
             }
-        });
+        };
+        dataset.addModifyListener(modlistener);
         dataset.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -202,25 +209,34 @@ public class AfpLoadWizardPage extends WizardPage {
 				if (fileName != null) {
 					setFileName(fileName);
 					datasetName = new java.io.File(getFileName()).getName();					
+	
+			        
+			        ProgressMonitorDialog dialog = new ProgressMonitorDialog(parent1.getShell());
+			        try {
+			        	dialog.run(true, true, new IRunnableWithProgress(){
+						    public void run(IProgressMonitor monitor) {
+						    	AfpLoader loader = new AfpLoader(datasetName, controlFile, service);
+				                try {
+				                    loader.run(monitor);				                    
+				                    
+				                } catch (Exception e) {
+				                    AweConsolePlugin.exception(e);
+				                }
+						    }
+						});
+					} catch (InvocationTargetException e) {
+						AweConsolePlugin.exception(e);
+					} catch (InterruptedException e) {
+						AweConsolePlugin.exception(e);
+					}
 					
-					
-					new Job("load AFP data"){
-
-			            @Override
-			            protected IStatus run(IProgressMonitor monitor) {
-			            	AfpLoader loader = new AfpLoader(datasetName, controlFile, service);
-			                try {
-			                    loader.run(monitor);
-			                } catch (IOException e) {
-			                    AweConsolePlugin.exception(e);
-			                    return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getLocalizedMessage(), e);
-			                }
-			                return Status.OK_STATUS;
-			            }
-			            
-			        }.schedule();
-			        parent1.getShell().dispose();
-			        dataset.setItems(getAfpDatasets());
+					try {
+						dataset.removeModifyListener(modlistener);
+						dataset.setItems(getAfpDatasets());
+						dataset.addModifyListener(modlistener);
+					}catch (Exception e){
+						e.printStackTrace();
+					}
 			        datasetNode = members.get(datasetName);
 			        dataset.setText(datasetName);
 					
@@ -228,23 +244,6 @@ public class AfpLoadWizardPage extends WizardPage {
 				}
 			}
 		});
-//        editor = new FileFieldEditorExt("fileSelectNeighb", NeoLoaderPluginMessages.NetworkSiteImportWizard_FILE, main); // NON-NLS-1 //$NON-NLS-1$
-//        editor.setDefaulDirectory(NeighbourLoader.getDirectory());
-//
-//        editor.getTextControl(main).addModifyListener(new ModifyListener() {
-//            public void modifyText(ModifyEvent e) {
-//                setFileName(editor.getStringValue());
-//                if (StringUtils.isEmpty(datasetName)) {
-//                    datasetName = new java.io.File(getFileName()).getName();
-//                    dataset.setText(datasetName);
-//                    datasetNode = members.get(datasetName);
-//                    setPageComplete(isValidPage());
-//                }
-//            }
-//        });
-//        editor.setFileExtensions(new String[] {"*.*"});
-//        editor.setFileExtensionNames(new String[] {"All Fiels(*.*)"});
-//        editor.setFocus();
         
         item1.setControl(main);
         
@@ -252,24 +251,31 @@ public class AfpLoadWizardPage extends WizardPage {
         TabItem item2 =new TabItem(tabFolder,SWT.NONE);
 		item2.setText("Properties");
 		
+
+		
 		Group propertiesGroup = new Group(tabFolder, SWT.FILL);
         propertiesGroup.setLayout(new GridLayout(2, true));
         
         new Label(propertiesGroup, SWT.LEFT).setText("Site Spacing ");
         siteSpacing = new Text (propertiesGroup, SWT.BORDER | SWT.SINGLE);
+        siteSpacing.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
         
         new Label(propertiesGroup, SWT.LEFT).setText("Cell Spacing");
         cellSpacing = new Text (propertiesGroup, SWT.BORDER | SWT.SINGLE);
+        cellSpacing.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
         
         new Label(propertiesGroup, SWT.LEFT).setText("Reg Neighbour Spacing");
         regNbrSpacing = new Text (propertiesGroup, SWT.BORDER | SWT.SINGLE);
+        regNbrSpacing.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
         
         new Label(propertiesGroup, SWT.LEFT).setText("Min Neighbour Spacing");
         minNbrSpacing = new Text (propertiesGroup, SWT.BORDER | SWT.SINGLE);
+        minNbrSpacing.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
         
         new Label(propertiesGroup, SWT.LEFT).setText("Second Neighbour Spacing");
         secondNbrSpacing = new Text (propertiesGroup, SWT.BORDER | SWT.SINGLE);
-       
+        secondNbrSpacing.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+        
         
         new Label(propertiesGroup, SWT.LEFT).setText("Quality");
         qualityScale = new Scale (propertiesGroup, SWT.BORDER);
@@ -278,22 +284,28 @@ public class AfpLoadWizardPage extends WizardPage {
     	
         new Label(propertiesGroup, SWT.LEFT).setText("G Max RT per Cell");
         gMaxRTperCell = new Text (propertiesGroup, SWT.BORDER | SWT.SINGLE);
+        gMaxRTperCell.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
         
         new Label(propertiesGroup, SWT.LEFT).setText("G Max RT per Site");
         gMaxRTperSite = new Text (propertiesGroup, SWT.BORDER | SWT.SINGLE);
+        gMaxRTperSite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
         
         new Label(propertiesGroup, SWT.LEFT).setText("Hopping Type");
         hoppingType = new Text (propertiesGroup, SWT.BORDER | SWT.SINGLE);
+        hoppingType.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
         
         new Label(propertiesGroup, SWT.LEFT).setText("Number of Groups");
         nrOfGroups = new Text (propertiesGroup, SWT.BORDER | SWT.SINGLE);
+        nrOfGroups.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
         
         new Label(propertiesGroup, SWT.LEFT).setText("Cell Cardinality");
         cellCardinality = new Text (propertiesGroup, SWT.BORDER | SWT.SINGLE);
+        cellCardinality.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
         
         //TODO show carriers in some other format
         new Label(propertiesGroup, SWT.LEFT).setText("Carriers");
         carriers = new Text (propertiesGroup, SWT.BORDER | SWT.SINGLE);
+        carriers.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
         
         useGrouping = new Button(propertiesGroup, SWT.CHECK);
         useGrouping.setText("Use Grouping");
@@ -313,9 +325,12 @@ public class AfpLoadWizardPage extends WizardPage {
         decomposeInCliques = new Button(propertiesGroup, SWT.CHECK);
         decomposeInCliques.setText("Decompose In Cliques");
         
+        setDefaultValues();	
+        
         item2.setControl(propertiesGroup);
         
         
+        //Tab 3 : Selection of Files
         TabItem item3 =new TabItem(tabFolder,SWT.NONE);
 		item3.setText("Files");
 		
@@ -325,9 +340,7 @@ public class AfpLoadWizardPage extends WizardPage {
         new Label(filesGroup, SWT.LEFT).setText("Neighbours: ");
         
         neighbourData = new Combo(filesGroup, SWT.DROP_DOWN);
-        gridData = new GridData(GridData.FILL, SWT.CENTER, true, false);
-        gridData.horizontalSpan = 2;
-        neighbourData.setLayoutData(gridData);
+        neighbourData.setLayoutData(new GridData(GridData.FILL, SWT.BEGINNING, true, false));
         
         neighbourData.addSelectionListener(new SelectionListener() {
 
@@ -341,20 +354,26 @@ public class AfpLoadWizardPage extends WizardPage {
                 widgetSelected(e);
             }
         });
-
         
-        neighbourEditor = new FileFieldEditorExt("fileSelectNeighb", "Import File", filesGroup); 
-        neighbourEditor.setDefaulDirectory(NeighbourLoader.getDirectory());
-        neighbourEditor.setFileExtensions(new String[] {"*.*"});
-        neighbourEditor.setFileExtensionNames(new String[] {"All Fiels(*.*)"});
-        neighbourEditor.setEnabled(false, filesGroup);
-
+        neighbourButton = new Button(filesGroup, SWT.PUSH);
+        neighbourButton.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, false, false, 1, 1));
+        neighbourButton.setText("Import New");
+        if (datasetNode != null)
+        	neighbourButton.setEnabled(true);
+        neighbourButton.addSelectionListener( new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				showProgress();
+				populateFileLists();
+                neighbourData.setItems(neighbourLists.keySet().toArray(new String[0]));
+                neighbourData.setText(neighbourData.getItem(0));
+                
+			}
+		});
+        
 
         new Label(filesGroup, SWT.LEFT).setText("Exceptions: ");
         exceptionsData = new Combo(filesGroup, SWT.DROP_DOWN);
-        gridData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        gridData.horizontalSpan = 2;
-        exceptionsData.setLayoutData(gridData);
+        exceptionsData.setLayoutData(new GridData(GridData.FILL, SWT.BEGINNING, true, false));
         exceptionsData.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -368,19 +387,22 @@ public class AfpLoadWizardPage extends WizardPage {
             }
         });
         
-        
-        exceptionEditor = new FileFieldEditorExt("fileSelectException", "Import File", filesGroup);
-        exceptionEditor.setDefaulDirectory(NeighbourLoader.getDirectory());
-        exceptionEditor.setFileExtensions(new String[] {"*.*"});
-        exceptionEditor.setFileExtensionNames(new String[] {"All Fiels(*.*)"});
-        exceptionEditor.setEnabled(false, filesGroup);
+        exceptionsButton = new Button(filesGroup, SWT.PUSH);
+        exceptionsButton.setLayoutData(new GridData(SWT.RIGHT, SWT.BOTTOM, false, false, 1, 1));
+        exceptionsButton.setText("Import New");
+        if (datasetNode != null)
+        	exceptionsButton.setEnabled(true);
+        exceptionsButton.addSelectionListener( new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				showProgress();
+			}
+		});
+
         
         
         new Label(filesGroup, SWT.LEFT).setText("Interference: ");
         interferenceData = new Combo(filesGroup, SWT.DROP_DOWN);
-        gridData = new GridData(GridData.FILL, SWT.CENTER, true, false);
-        gridData.horizontalSpan = 2;
-        interferenceData.setLayoutData(gridData);
+        interferenceData.setLayoutData(new GridData(GridData.FILL, SWT.BEGINNING, true, false));
         interferenceData.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -394,18 +416,23 @@ public class AfpLoadWizardPage extends WizardPage {
             }
         });
         
-        
-        interferenceEditor = new FileFieldEditorExt("fileSelectInterf", "Import File", filesGroup); 
-        interferenceEditor.setDefaulDirectory(NeighbourLoader.getDirectory());
-        interferenceEditor.setFileExtensions(new String[] {"*.*"});
-        interferenceEditor.setFileExtensionNames(new String[] {"All Fiels(*.*)"});
-        interferenceEditor.setEnabled(false, filesGroup);
-        
+        interferenceButton = new Button(filesGroup, SWT.PUSH);
+        interferenceButton.setLayoutData(new GridData(SWT.RIGHT, SWT.BOTTOM, false, false, 1, 1));
+        interferenceButton.setText("Import New");
+        if (datasetNode != null)
+        	interferenceButton.setEnabled(true);
+        interferenceButton.addSelectionListener( new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				showProgress();
+			}
+		});
+
         
         item3.setControl(filesGroup);
 
 		
 		setControl(parent);
+		
     }
     
     public boolean canFlipToNextPage(){
@@ -491,6 +518,39 @@ public class AfpLoadWizardPage extends WizardPage {
         return fileName;
     }
     
+    private void showProgress(){
+    	file = new FileDialog(parent1.getShell()).open();
+		if (file != null) {
+			ProgressMonitorDialog dialog = new ProgressMonitorDialog(parent1.getShell());
+	        try {
+	        	dialog.run(true, true, new IRunnableWithProgress(){
+				    public void run(IProgressMonitor monitor) {
+				    	AfpLoader loader = new AfpLoader(datasetName, controlFile, service);
+				    	Transaction mainTx = service.beginTx();
+				        NeoUtils.addTransactionLog(mainTx, Thread.currentThread(), "AfpLoader");
+		                try {
+		                	loader.loadNeighbourFile(new File(file), datasetNode);
+			        		mainTx.success();				                    
+		                    
+		                } catch (Exception e) {
+		                	mainTx.failure();
+		                    AweConsolePlugin.exception(e);
+		                } finally{
+				        	if (mainTx != null) {
+				                mainTx.finish();
+				                mainTx = null;
+				        	}
+		                }
+				    }
+				});
+			} catch (InvocationTargetException e) {
+				AweConsolePlugin.exception(e);
+			} catch (InterruptedException e) {
+				AweConsolePlugin.exception(e);
+			}
+		}
+    }
+    
     private void populateFileLists(){
     	neighbourLists = new HashMap<String, Node>();
     	exceptionLists = new HashMap<String, Node>();
@@ -504,6 +564,27 @@ public class AfpLoadWizardPage extends WizardPage {
     	
     	for (Node interferer : datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.INTERFERENCE_DATA, Direction.OUTGOING))
     		interferenceLists.put(NeoUtils.getNodeName(interferer, service), interferer);
+    }
+    
+    private void setDefaultValues(){
+    	siteSpacing.setText("2");
+    	cellSpacing.setText("3");
+    	regNbrSpacing.setText("1");
+    	minNbrSpacing.setText("0");
+    	secondNbrSpacing.setText("1");
+    	qualityScale.setMaximum (100);
+    	gMaxRTperCell.setText("1");
+    	gMaxRTperSite.setText("1");
+    	hoppingType.setText("0");
+    	nrOfGroups.setText("6");
+    	cellCardinality.setText("61");
+    	carriers.setText("6 1 2 3 4 5 6");
+    	useGrouping.setSelection(true);
+    	existCliques.setSelection(false);
+    	recalculateAll.setSelection(true);
+    	useTraffic.setSelection(true);
+    	useSONbrs.setSelection(true);
+    	decomposeInCliques.setSelection(false);
     }
     
     /*private String[] getNeighbourLists(){

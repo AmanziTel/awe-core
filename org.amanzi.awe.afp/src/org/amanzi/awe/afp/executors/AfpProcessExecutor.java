@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.HashMap;
 import java.util.ResourceBundle;
 
 import org.amanzi.awe.afp.Activator;
@@ -57,13 +58,15 @@ public class AfpProcessExecutor extends Job {
 	private Node afpRoot;
 	protected GraphDatabaseService neo;
 	protected Transaction transaction;
+	private HashMap<String, String> parameters;
 	
 	
 	
-	public AfpProcessExecutor(String name, Node afpRoot, final GraphDatabaseService service) {
+	public AfpProcessExecutor(String name, Node afpRoot, final GraphDatabaseService service, HashMap<String, String> parameters) {
 		super(name);
 		this.afpRoot = afpRoot;
 		this.neo = service;
+		this.parameters = parameters;
 	}
 
 	
@@ -178,7 +181,7 @@ public class AfpProcessExecutor extends Job {
 		AfpExporter afpE = new AfpExporter(afpRoot);
 		
 		/** Create the control file */
-		afpE.createControlFile();
+		afpE.createControlFile(parameters);
 		
 		/** Create the carrier file */
 		afpE.createCarrierFile(); 
