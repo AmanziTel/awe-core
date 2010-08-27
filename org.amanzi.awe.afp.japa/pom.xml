@@ -13,7 +13,6 @@
 	 <os>
 	  <name>Windows XP</name>
 	  <family>Windows</family>
-	  <arch>x86</arch>
 	 </os>
     </activation>
     
@@ -63,7 +62,6 @@
 	 <os>
 	  <name>linux</name>
 	  <family>unix</family>
-	  <arch>x86</arch>
 	 </os>
     </activation>
     
@@ -110,14 +108,6 @@
 
 	<profile>
     <id>japa_src_linux_win32</id>
-    <activation>
-	 <os>
-	  <name>linux</name>
-	  <family>unix</family>
-	  <arch>x86</arch>
-	 </os>
-    </activation>
-    
   <build>
     <plugins>	  
       <plugin>
