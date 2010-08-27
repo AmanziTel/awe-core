@@ -17,7 +17,7 @@
     </activation>
     
   <build>
-    <plugins>	  
+    <plugins>
       <plugin>
       <groupId>org.codehaus.mojo</groupId>
       <artifactId>native-maven-plugin</artifactId>
@@ -26,6 +26,7 @@
         <compilerProvider>generic</compilerProvider>
         <compilerExecutable>gcc-3</compilerExecutable>
         <linkerExecutable>gcc-3</linkerExecutable>
+		<linkerOutputDirectory>${project.build.directory}/../win32</linkerOutputDirectory>
         <sources>
           <source>
             <directory>src</directory>
@@ -75,6 +76,7 @@
         <compilerProvider>generic</compilerProvider>
         <compilerExecutable>gcc</compilerExecutable>
         <linkerExecutable>gcc</linkerExecutable>
+		<linkerOutputDirectory>${project.build.directory}/../linux</linkerOutputDirectory>
         <sources>
           <source>
             <directory>src</directory>
@@ -118,6 +120,7 @@
         <compilerProvider>generic</compilerProvider>
         <compilerExecutable>i586-mingw32msvc-gcc</compilerExecutable>
         <linkerExecutable>i586-mingw32msvc-gcc</linkerExecutable>
+		<linkerOutputDirectory>${project.build.directory}/../win32</linkerOutputDirectory>
         <sources>
           <source>
             <directory>src</directory>
