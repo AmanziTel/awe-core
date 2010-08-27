@@ -25,8 +25,8 @@
       <extensions>true</extensions>
       <configuration>
         <compilerProvider>generic</compilerProvider>
-        <compilerExecutable>gcc</compilerExecutable>
-        <linkerExecutable>gcc</linkerExecutable>
+        <compilerExecutable>gcc-3</compilerExecutable>
+        <linkerExecutable>gcc-3</linkerExecutable>
         <sources>
           <source>
             <directory>src</directory>
@@ -61,7 +61,7 @@
     <id>japa_src_linux</id>
     <activation>
 	 <os>
-	  <name>Linux</name>
+	  <name>linux</name>
 	  <family>unix</family>
 	  <arch>x86</arch>
 	 </os>
@@ -112,7 +112,7 @@
     <id>japa_src_linux_win32</id>
     <activation>
 	 <os>
-	  <name>Linux</name>
+	  <name>linux</name>
 	  <family>unix</family>
 	  <arch>x86</arch>
 	 </os>
