@@ -25,8 +25,8 @@
       <extensions>true</extensions>
       <configuration>
         <compilerProvider>generic</compilerProvider>
-        <compilerExecutable>gcc-3</compilerExecutable>
-        <linkerExecutable>gcc-3</linkerExecutable>
+        <compilerExecutable>gcc</compilerExecutable>
+        <linkerExecutable>gcc</linkerExecutable>
         <sources>
           <source>
             <directory>src</directory>
@@ -107,8 +107,8 @@
     </resources>
   </build>
     </profile>
-    </profile>
-    <profile>
+
+	<profile>
     <id>japa_src_linux_win32</id>
     <activation>
 	 <os>
