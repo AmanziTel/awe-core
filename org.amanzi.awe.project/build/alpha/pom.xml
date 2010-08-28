@@ -157,6 +157,7 @@
       <module>org.amanzi.awe.afp-feature</module>
       <module>org.amanzi.awe.afp</module>
       <module>org.amanzi.awe.afp.win32</module>
+      <module>org.amanzi.awe.afp.linux</module>
     </modules>
     <build>
       <plugins>	  
@@ -290,6 +291,11 @@
 	  <module>org.amanzi.testing</module>
 	  <module>org.amanzi.awe.views.calls.testing</module>
 	  <module>org.amanzi.awe.views.reuse.testing</module>
+      <module>org.amanzi.awe.afp-site</module>
+      <module>org.amanzi.awe.afp-feature</module>
+      <module>org.amanzi.awe.afp</module>
+      <module>org.amanzi.awe.afp.win32</module>
+      <module>org.amanzi.awe.afp.linux</module>
     </modules>
     <build>
       <plugins>	  
