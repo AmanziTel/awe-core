@@ -31,7 +31,7 @@ import org.neo4j.graphdb.Transaction;
  */
 public class CopyElementAction extends NewElementAction {
     
-    protected static final NodeTypes[] COPY_ACTION_SUPPORTED_TYPES = new NodeTypes[] {NodeTypes.SITE, NodeTypes.SECTOR};
+    protected static final NodeTypes[] COPY_ACTION_SUPPORTED_TYPES = new NodeTypes[] {};
 
     /**
      * @param selection
