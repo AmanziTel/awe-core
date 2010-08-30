@@ -187,4 +187,6 @@ public class INeoConstants {
     public static final String PROPERTY_CI_NAME = "CI";
     public static final String PROPERTY_LATITUDE_NAME = "latitude";
     public static final String PROPERTY_LONGITUDE_NAME = "longitude";
+    
+    public static final String PROPERTY_STRUCTURE_NAME = "structure";
 }

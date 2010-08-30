@@ -71,6 +71,7 @@ public enum NodeTypes {
     GIS("gis","name"),
     CALL_ANALYSIS_ROOT("call analysis root"),
     S_CELL("s_cell"),
+    S_GROUP("s_group"),
     BSC("bsc"),
     DELTA_NETWORK("delta_network"),
     DELTA_SITE("delta_site"), 

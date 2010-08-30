@@ -14,8 +14,10 @@ package org.amanzi.neo.loader;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,6 +90,10 @@ public class NetworkLoader extends AbstractLoader {
     private boolean needParceHeader;
     private LuceneIndexService luceneInd;
     private NetworkSiteType sitesType;
+    private enum NetworkLevels{
+        NETWORK, CITY,BSC,SITE,SECTOR;
+    }
+    private Set<NetworkLevels> levels=EnumSet.of(NetworkLevels.NETWORK);
 
     /**
      * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
@@ -239,6 +245,7 @@ public class NetworkLoader extends AbstractLoader {
             network.setProperty(INeoConstants.SECTOR_COUNT, sectorNumber);
             network.setProperty("bsc_count", bsc_s.size());
             network.setProperty("city_count", city_s.size());
+            network.setProperty(INeoConstants.PROPERTY_STRUCTURE_NAME, getLevelsFound());
             transaction.success();
         } finally {
             transaction.finish();
@@ -249,6 +256,20 @@ public class NetworkLoader extends AbstractLoader {
         if (!isTest()) {
             showNetworkTree();
         }
+    }
+
+    /**
+     * Gets all found network levels
+     * @return levels found as an array of Strings
+     */
+    private String[] getLevelsFound() {
+        String[] levelsFound=new String[levels.size()];
+        Iterator<NetworkLevels> iterator = levels.iterator();
+        int i=0;
+        while (iterator.hasNext()){
+            levelsFound[i++]=iterator.next().name().toLowerCase();
+        }
+        return levelsFound;
     }
 
     private void printWarnings(ArrayList<String> warnings, String warning_type, int limit, long lineNumber) {
@@ -431,10 +452,16 @@ public class NetworkLoader extends AbstractLoader {
                 lineErrors.add("Missing sector name on line " + lineNumber);
                 return;
             }
+            if (!levels.contains(NetworkLevels.SECTOR)) {
+                levels.add(NetworkLevels.SECTOR);
+            }
             if (siteField == null) {
                 // lineErrors.add("Missing site name on line " + lineNumber);
                 // return;
                 siteField = sectorField.substring(0, sectorField.length() - 1);
+            }
+            if (!levels.contains(NetworkLevels.SITE)) {
+                levels.add(NetworkLevels.SITE);
             }
             // Lagutko, 24.02.2010, sector name can be repeatable (for example 'sector1') so we need
             // additional variable for Lucene Index
@@ -443,6 +470,9 @@ public class NetworkLoader extends AbstractLoader {
                 sectorField = sectorField.replaceAll(siteField + "[\\:\\-]?", "");
             }
             if (cityField != null && !cityField.equals(cityName)) {
+                if (!levels.contains(NetworkLevels.CITY)) {
+                    levels.add(NetworkLevels.CITY);
+                }
                 cityName = cityField;
                 city = city_s.get(cityField);
                 if (city == null) {
@@ -455,6 +485,9 @@ public class NetworkLoader extends AbstractLoader {
                 }
             }
             if (bscField != null && !bscField.equals(bscName)) {
+                if (!levels.contains(NetworkLevels.BSC)) {
+                    levels.add(NetworkLevels.BSC);
+                }
                 bscName = bscField;
                 bsc = bsc_s.get(bscField);
                 if (bsc == null) {

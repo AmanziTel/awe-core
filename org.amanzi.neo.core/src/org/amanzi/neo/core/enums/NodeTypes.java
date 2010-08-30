@@ -447,6 +447,7 @@ public enum NodeTypes {
         protected List<NodeTypes> getParentTypes() {
             ArrayList<NodeTypes> res = new ArrayList<NodeTypes>();
             res.add(CALL_ANALYSIS);
+            res.add(S_GROUP);
             return res;
         }
     },
@@ -517,6 +518,31 @@ public enum NodeTypes {
             ArrayList<NodeTypes> res = new ArrayList<NodeTypes>();
             res.add(S_ROW);
             return res;
+        }
+    },
+    S_GROUP("s_group"){
+        @Override
+        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
+            DeletableRelationshipType linkType = getLinkType(cameFrom);
+            if(linkType.equals(GeoNeoRelationshipTypes.CHILD)){
+                if(isLinkOut(aNode, cameFrom)){
+                    return NodeDeletableTypes.RELINK;
+                }
+                else {
+                    return NodeDeletableTypes.DELETE_LINE;
+                }
+            }
+            if(linkType.equals(GeoNeoRelationshipTypes.NEXT)){
+                return NodeDeletableTypes.RELINK;
+            }
+            if(linkType.equals(GeoNeoRelationshipTypes.SOURCE)){
+                return NodeDeletableTypes.UNLINK;
+            }
+            throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
+        }
+        @Override
+        protected List<NodeTypes> getParentTypes() {
+            return null;
         }
     },
     BSC("bsc"),
