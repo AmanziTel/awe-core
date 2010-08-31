@@ -99,7 +99,7 @@ public abstract class AbstractLoader {
     protected String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
     protected int lineNumber = 0;
     private int limit = 0;
-    private long savedData = 0;
+    private final long savedData = 0;
     private long started = System.currentTimeMillis();
     protected boolean headerWasParced;
 
@@ -480,7 +480,11 @@ public abstract class AbstractLoader {
             try {
                 this.format = new SimpleDateFormat(format);
             } catch (Exception e) {
-                this.format = new SimpleDateFormat("HH:mm:ss");
+                try {
+                    this.format = new SimpleDateFormat("HH:mm:ss");
+                } catch (Exception e2) {
+                    this.format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss.SSS");
+                }
             }
         }
 

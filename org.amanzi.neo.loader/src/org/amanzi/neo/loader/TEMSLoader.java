@@ -267,7 +267,8 @@ public class TEMSLoader extends DriveLoader {
         // debug(line);
 
         this.time = lineData.get("time").toString();
-        this.timestamp = getTimeStamp(1, (Date)lineData.get("timestamp"));
+        Object timest = lineData.get("timestamp");
+        this.timestamp = getTimeStamp(1, (Date)timest);
         String ms = (String)lineData.get("ms");
         event = (String)lineData.get("event"); // currently only getting this as a change
 

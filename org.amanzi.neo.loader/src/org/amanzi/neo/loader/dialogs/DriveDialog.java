@@ -37,10 +37,10 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.core.utils.CSVParser;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.loader.AbstractLoader;
 import org.amanzi.neo.loader.DriveLoader;
 import org.amanzi.neo.loader.GPSLoader;
@@ -654,11 +654,11 @@ public class DriveDialog {
         if (datasetNode == null) {
             String[] fileExtensions = DriveTypes.getFileExtensions(DriveTypes.TEMS, DriveTypes.ROMES,DriveTypes.GPS, DriveTypes.NEMO1, DriveTypes.NEMO2);
             ArrayList<String> fel = new ArrayList<String>(fileExtensions.length + 1);
-            StringBuilder allFiles = new StringBuilder("");
-            for (int i = 0; i < fileExtensions.length; i++) {
-                allFiles.append(fileExtensions[i]);
-            }
-            fel.add(allFiles.toString());
+//            StringBuilder allFiles = new StringBuilder("");
+//            for (int i = 0; i < fileExtensions.length; i++) {
+//                allFiles.append(fileExtensions[i]);
+//            }
+            fel.add("*.*");
             fel.addAll(Arrays.asList(fileExtensions));
             String[] result = fel.toArray(new String[0]);
             return result;
@@ -718,7 +718,7 @@ public class DriveDialog {
 			            continue;
 			        }
 			    }
-                if (extension.toLowerCase().equals("fmt")) {
+                if (extension.toLowerCase().equals("fmt") || extension.toLowerCase().equals("csv") || extension.toLowerCase().equals("txt")) {
                     driveLoader = new TEMSLoader(time, filePath, display, datasetName);
 			    } else if(extension.toLowerCase().equals("asc")) {
                     driveLoader = new RomesLoader(time, filePath, display, datasetName);
