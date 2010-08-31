@@ -407,7 +407,7 @@ public class LoaderUtils {
         LinkedList<File> result = new LinkedList<File>();
         for (File childFile : directory.listFiles(filter)) {
             if (childFile.isDirectory()) {
-                result.addAll(getAllFiles(childFile.getAbsolutePath(),filter));
+                result.addAll(getAllFiles(childFile,filter));
             }
             else  {
                 result.add(childFile);
