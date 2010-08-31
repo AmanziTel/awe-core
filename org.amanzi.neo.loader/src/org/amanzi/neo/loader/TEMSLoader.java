@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.amanzi.neo.core.INeoConstants;
@@ -49,7 +50,8 @@ import org.neo4j.index.lucene.LuceneIndexService;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 public class TEMSLoader extends DriveLoader {
-    Pattern signalProp=Pattern.compile("(all_((active)|(pilot))_set_channel.*)|(all_((active)|(pilot))_set_pn.*)|(all_((active)|(pilot))_set_ec_io.*)|(all_((active)|(pilot))_set_count)");
+    Pattern signalProp = Pattern
+            .compile("(all_((active)|(pilot))_set_channel.*)|(all_((active)|(pilot))_set_pn.*)|(all_((active)|(pilot))_set_ec_io.*)|(all_((active)|(pilot))_set_count)");
     private static final String TIMESTAMP_DATE_FORMAT = "HH:mm:ss.S";
     private static final String MS_KEY = "ms";
     // private Node point = null;
@@ -105,7 +107,7 @@ public class TEMSLoader extends DriveLoader {
         initializeKnownHeaders();
         addDriveIndexes();
     }
-    
+
     /**
      * Constructor for loading data in test mode, with no display and NeoService passed
      * 
@@ -120,13 +122,12 @@ public class TEMSLoader extends DriveLoader {
         _workDate = new GregorianCalendar();
         _workDate.setTimeInMillis(new File(filename).lastModified());
         initialize("TEMS", neo, filename, null, datasetName);
-        if (anIndex==null) {
-			initializeLuceneIndex();
-		}
-        else{
-        	index = anIndex;
+        if (anIndex == null) {
+            initializeLuceneIndex();
+        } else {
+            index = anIndex;
         }
-		initializeKnownHeaders();
+        initializeKnownHeaders();
         addDriveIndexes();
     }
 
@@ -147,8 +148,10 @@ public class TEMSLoader extends DriveLoader {
      * in the algorithms later.
      */
     private void initializeKnownHeaders() {
-//        addMainHeader(INeoConstants.PROPERTY_LATITUDE_NAME, getPossibleHeaders(DataLoadPreferences.DR_LATITUDE));
-//        addMainHeader(INeoConstants.PROPERTY_LONGITUDE_NAME, getPossibleHeaders(DataLoadPreferences.DR_LONGITUDE));
+        // addMainHeader(INeoConstants.PROPERTY_LATITUDE_NAME,
+        // getPossibleHeaders(DataLoadPreferences.DR_LATITUDE));
+        // addMainHeader(INeoConstants.PROPERTY_LONGITUDE_NAME,
+        // getPossibleHeaders(DataLoadPreferences.DR_LONGITUDE));
         addMainHeader(INeoConstants.PROPERTY_BCCH_NAME, getPossibleHeaders(DataLoadPreferences.DR_BCCH));
         addMainHeader(INeoConstants.PROPERTY_TCH_NAME, getPossibleHeaders(DataLoadPreferences.DR_TCH));
         addMainHeader(INeoConstants.PROPERTY_SC_NAME, getPossibleHeaders(DataLoadPreferences.DR_SC));
@@ -156,16 +159,52 @@ public class TEMSLoader extends DriveLoader {
         addMainHeader(INeoConstants.PROPERTY_EcIo_NAME, getPossibleHeaders(DataLoadPreferences.DR_EcIo));
         addMainHeader(INeoConstants.PROPERTY_RSSI_NAME, getPossibleHeaders(DataLoadPreferences.DR_RSSI));
         addMainHeader(INeoConstants.PROPERTY_CI_NAME, getPossibleHeaders(DataLoadPreferences.DR_CI));
-        
-        String[] latH = getPossibleHeaders(DataLoadPreferences.DR_LATITUDE);
-        addKnownHeader(1, INeoConstants.PROPERTY_LATITUDE_NAME, latH, false);
-        
-        addMainHeader(INeoConstants.PROPERTY_LONGITUDE_NAME, getPossibleHeaders(DataLoadPreferences.DR_LONGITUDE));
-        
-//        addKnownHeader(1, "longitude", ".*longitude", false);
-        addKnownHeader(1, "ms","MS", false);
-        addMappedHeader(1, "ms","MS", "ms", new StringMapper());
-        addMappedHeader(1, "message_type","Message Type", "message_type", new StringMapper());
+
+        // String[] latH = getPossibleHeaders(DataLoadPreferences.DR_LATITUDE);
+        // addKnownHeader(1, INeoConstants.PROPERTY_LATITUDE_NAME, latH, false);
+
+        // addMainHeader(INeoConstants.PROPERTY_LONGITUDE_NAME,
+        // getPossibleHeaders(DataLoadPreferences.DR_LONGITUDE));
+
+        PropertyMapper cpm = new PropertyMapper() {
+
+            @Override
+            public Object mapValue(String originalValue) {
+                try {
+                    return Float.valueOf(originalValue);
+                } catch (NumberFormatException e) {
+                    // TODO: handle exception
+                }
+                Pattern p = Pattern.compile("^([+-]{0,1}\\d+(\\.\\d+)*)([NESW]{0,1})$");
+                Matcher m = p.matcher(originalValue);
+                if (m.matches()) {
+                    try {
+                        System.out.println(m.group(1));
+                        return Float.valueOf(m.group(1));
+                    } catch (NumberFormatException e) {
+                        e.printStackTrace();
+                        // TODO: handle exception
+                    }
+                } else {
+                    System.out.println("originalValue: " + originalValue);
+                    return null;
+                }
+                return null;
+            }
+        };
+        String[] headers = getPossibleHeaders(DataLoadPreferences.DR_LONGITUDE);
+        for (String singleHeader : headers) {
+            addMappedHeader(1, INeoConstants.PROPERTY_LONGITUDE_NAME, singleHeader, "parsedLongitude", cpm);
+        }
+
+        headers = getPossibleHeaders(DataLoadPreferences.DR_LATITUDE);
+        for (String singleHeader : headers) {
+            addMappedHeader(1, INeoConstants.PROPERTY_LATITUDE_NAME, singleHeader, "parsedLatitude", cpm);
+        }
+        // addKnownHeader(1, "longitude", ".*longitude", false);
+        addKnownHeader(1, "ms", "MS", false);
+        addMappedHeader(1, "ms", "MS", "ms", new StringMapper());
+        addMappedHeader(1, "message_type", "Message Type", "message_type", new StringMapper());
         addMappedHeader(1, "event", "Event Type", "event_type", new PropertyMapper() {
 
             @Override
@@ -183,14 +222,20 @@ public class TEMSLoader extends DriveLoader {
                 try {
                     datetime = df.parse(time);
                 } catch (ParseException e) {
-                    error(e.getLocalizedMessage());
-                    return 0L;
+                    SimpleDateFormat dfn = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss.SSS");
+                    try {
+                        datetime = dfn.parse(time);
+                    } catch (ParseException e1) {
+                        error(e.getLocalizedMessage());
+                        return 0L;
+                    }
+
                 }
                 return datetime;
             }
         });
         PropertyMapper intMapper = new PropertyMapper() {
-            
+
             @Override
             public Object mapValue(String value) {
                 try {
@@ -201,22 +246,22 @@ public class TEMSLoader extends DriveLoader {
                 }
             }
         };
-        addMappedHeader(1, "all_rxlev_full","All-RxLev Full", "all_rxlev_full", intMapper);
-        addMappedHeader(1, "all_rxlev_sub","All-RxLev Sub", "all_rxlev_sub", intMapper);
-        addMappedHeader(1, "all_rxqual_full","All-RxQual Full", "all_rxqual_full", intMapper);
-        addMappedHeader(1, "all_rxqual_sub","All-RxQual Sub", "all_rxqual_sub", intMapper);
-        addMappedHeader(1, "all_sqi","All-SQI", "all_sqi", intMapper);
-        List<String>keys=new ArrayList<String>();
-        
-        for (int i=1;i<=12;i++){
-            keys.add("all_active_set_channel_"+i);
-            keys.add("all_active_set_pn_"+i);
-            keys.add("all_active_set_ec_io_"+i);
+        addMappedHeader(1, "all_rxlev_full", "All-RxLev Full", "all_rxlev_full", intMapper);
+        addMappedHeader(1, "all_rxlev_sub", "All-RxLev Sub", "all_rxlev_sub", intMapper);
+        addMappedHeader(1, "all_rxqual_full", "All-RxQual Full", "all_rxqual_full", intMapper);
+        addMappedHeader(1, "all_rxqual_sub", "All-RxQual Sub", "all_rxqual_sub", intMapper);
+        addMappedHeader(1, "all_sqi", "All-SQI", "all_sqi", intMapper);
+        List<String> keys = new ArrayList<String>();
+
+        for (int i = 1; i <= 12; i++) {
+            keys.add("all_active_set_channel_" + i);
+            keys.add("all_active_set_pn_" + i);
+            keys.add("all_active_set_ec_io_" + i);
         }
         keys.add("all_pilot_set_count");
         addNonDataHeaders(1, keys);
         PropertyMapper floatMapper = new PropertyMapper() {
-            
+
             @Override
             public Object mapValue(String value) {
                 try {
@@ -227,13 +272,13 @@ public class TEMSLoader extends DriveLoader {
                 }
             }
         };
-        addMappedHeader(1, "all_sqi_mos","All-SQI MOS", "all_sqi_mos", floatMapper);
+        addMappedHeader(1, "all_sqi_mos", "All-SQI MOS", "all_sqi_mos", floatMapper);
     }
 
     private void addDriveIndexes() {
         try {
             String virtualDatasetName = DriveTypes.MS.getFullDatasetName(dataset);
-            
+
             addIndex(NodeTypes.M.getId(), NeoUtils.getTimeIndexProperty(dataset));
             addIndex(INeoConstants.HEADER_MS, NeoUtils.getTimeIndexProperty(virtualDatasetName));
             addIndex(NodeTypes.MP.getId(), NeoUtils.getLocationIndexProperty(dataset));
@@ -273,19 +318,21 @@ public class TEMSLoader extends DriveLoader {
         event = (String)lineData.get("event"); // currently only getting this as a change
 
         // marker
-        String message_type = (String)lineData.get("message_type"); // need this to filter for only      
-        
+        String message_type = (String)lineData.get("message_type"); // need this to filter for only
+
         this.incValidMessage();
-        
-        Float latitude = (Float)lineData.get("latitude");
-        Float longitude = (Float)lineData.get("longitude");
+        // TODO test
+        System.out.println("Latitude: " + lineData.get("parsedLatitude"));
+        Float latitude = (Float)lineData.get("parsedLatitude");
+        System.out.println("Longitude: " + lineData.get("parsedLongitude"));
+        Float longitude = (Float)lineData.get("parsedLongitude");
         if (time == null || latitude == null || longitude == null) {
             return;
         }
         if ((latitude != null)
                 && (longitude != null)
-                && (((currentLatitude == null) && (currentLongitude == null)) || ((Math.abs(currentLatitude - latitude) > 10E-10) || (Math
-                        .abs(currentLongitude - longitude) > 10E-10)))) {
+                && (((currentLatitude == null) && (currentLongitude == null)) || ((Math.abs(currentLatitude - latitude) > 10E-10) || (Math.abs(currentLongitude
+                        - longitude) > 10E-10)))) {
             currentLatitude = latitude;
             currentLongitude = longitude;
             saveData(); // persist the current data to database
@@ -337,8 +384,8 @@ public class TEMSLoader extends DriveLoader {
                 first_line = lineNumber;
             last_line = lineNumber;
             this.incValidChanged();
-            debug(time + ": server channel[" + channel + "] pn[" + pn_code + "] Ec/Io[" + ec_io + "]\t" + event + "\t"
-                    + this.currentLatitude + "\t" + this.currentLongitude);
+            debug(time + ": server channel[" + channel + "] pn[" + pn_code + "] Ec/Io[" + ec_io + "]\t" + event + "\t" + this.currentLatitude + "\t"
+                    + this.currentLongitude);
             for (int i = 1; i <= measurement_count; i++) {
                 // Delete invalid data, as you can have empty ec_io
                 // zero ec_io is correct, but empty ec_io is not
@@ -368,7 +415,7 @@ public class TEMSLoader extends DriveLoader {
         if (signals.size() > 0 || !data.isEmpty()) {
             Transaction transaction = neo.beginTx();
             try {
-                Node mp=null;
+                Node mp = null;
                 if (!data.isEmpty()) {
                     mp = neo.createNode();
                     if (timestamp != 0) {
@@ -388,7 +435,7 @@ public class TEMSLoader extends DriveLoader {
                         findOrCreateFileNode(m);
                         m.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
                         for (Map.Entry<String, Object> entry : dataLine.entrySet()) {
-                            if (isMMProperties(entry.getKey())){
+                            if (isMMProperties(entry.getKey())) {
                                 continue;
                             }
                             if (entry.getKey().equals(INeoConstants.SECTOR_ID_PROPERTIES)) {
@@ -517,9 +564,8 @@ public class TEMSLoader extends DriveLoader {
         last_line = 0;
     }
 
-
     private boolean isMMProperties(String string) {
-        return  signalProp.matcher(string).matches();
+        return signalProp.matcher(string).matches();
     }
 
     /**
@@ -571,59 +617,57 @@ public class TEMSLoader extends DriveLoader {
     @Override
     protected Node getStoringNode(Integer key) {
         if (key == 1) {
-           return datasetNode;
+            return datasetNode;
+        } else {
+            return getVirtualDataset(DriveTypes.MS, false);
         }
-        else {
-            return getVirtualDataset(DriveTypes.MS,false);
-        }
-        
+
     }
+
     @Override
     protected String getPrymaryType(Integer key) {
-        
+
         if (key == 1) {
             return NodeTypes.M.getId();
-         }
-         else {
+        } else {
             return INeoConstants.HEADER_MS;
-         }
-    }   
+        }
+    }
+
     @Override
     protected ArrayList<Node> getGisNodes() {
         ArrayList<Node> result = new ArrayList<Node>();
-        
+
         Transaction transaction = neo.beginTx();
         try {
             Iterator<Node> gisNodes = datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
-            
+
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     return NeoUtils.isGisNode(currentPos.currentNode());
-                }   
-            }, GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING,
-               GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).iterator();
-        
+                }
+            }, GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).iterator();
+
             while (gisNodes.hasNext()) {
-                result.add(gisNodes.next());            
+                result.add(gisNodes.next());
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             NeoCorePlugin.error(null, e);
             transaction.failure();
-        }
-        finally {
+        } finally {
             transaction.finish();
         }
-        
+
         return result;
     }
+
     @Override
     protected void saveProperties() {
         LinkedHashMap<String, Header> header = getHeaderMap(1).headers;
         Iterator<String> iter = header.keySet().iterator();
-        while (iter.hasNext()){
+        while (iter.hasNext()) {
             String key = iter.next();
-            if (isMMProperties(key)){
+            if (isMMProperties(key)) {
                 iter.remove();
             }
         }

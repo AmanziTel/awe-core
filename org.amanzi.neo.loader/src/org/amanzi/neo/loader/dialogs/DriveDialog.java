@@ -16,6 +16,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
@@ -37,10 +38,10 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.core.utils.CSVParser;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.loader.AbstractLoader;
 import org.amanzi.neo.loader.DriveLoader;
 import org.amanzi.neo.loader.GPSLoader;
@@ -92,6 +93,7 @@ public class DriveDialog {
     /** String ASC_PAT_FILE field */
     private static final String ASC_PAT_FILE = ".*_(\\d{6})_.*";
     private static final String FMT_PAT_FILE = ".*(\\d{4}-\\d{2}-\\d{2}).*";
+    private static final String CSV_PAT_FILE = ".*(\\d{2}/\\d{2}/\\d{4}).*";
 
     /*
      * Minimum height of Shell
@@ -891,6 +893,38 @@ public class DriveDialog {
                 calendar.setTimeInMillis(file.lastModified());
                 correctTime = false;
             }
+        } else if (extension.equals("csv")) {
+            BufferedReader reader;
+            try {
+                reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+                reader.readLine();
+                String line = reader.readLine();
+                reader.close();
+                Pattern p = Pattern.compile(CSV_PAT_FILE);
+                Matcher m = p.matcher(line);
+                if (m.matches()) {
+                    try {
+                        calendar.setTimeInMillis(new SimpleDateFormat("dd/MM/yyyy").parse(m.group(1)).getTime());
+                        correctTime = true;
+                        correctTime = true;
+                    } catch (ParseException e) {
+                        NeoLoaderPlugin.error("Wrong filename format: " + file.getName());
+                        correctTime = false;
+                        calendar.setTimeInMillis(file.lastModified());
+                    }
+                } else {
+                    NeoLoaderPlugin.error("Wrong filename format: " + file.getName());
+                    calendar.setTimeInMillis(file.lastModified());
+                    correctTime = false;
+                }
+            } catch (FileNotFoundException e1) {
+                // TODO Handle FileNotFoundException
+                throw (RuntimeException) new RuntimeException( ).initCause( e1 );
+            } catch (IOException e) {
+                // TODO Handle IOException
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
+            
         }// NEMO 1.86
         else if (extension.equals("dt1")) {
             try {
