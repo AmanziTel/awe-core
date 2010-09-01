@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension
+         point="org.amanzi.neo.loader.ui.loaders">
+      <loader
+            description="Ericsson GPEH"
+            gui="org.amanzi.neo.loader.ui.wizards.OssImportWizard"
+            parser="org.amanzi.awe.gpeh.GpehParser"
+            saver="org.amanzi.awe.gpeh.GpehSaver">
+         <pages
+               class="org.amanzi.awe.gpeh.GpehImportWizardPage"></pages>
+      </loader>
+   </extension>
+   <extension
+         point="org.amanzi.loader.core.saver">
+      <saver
+            class="org.amanzi.awe.gpeh.GpehSaver"
+            id="org.amanzi.awe.gpeh.GpehSaver">
+      </saver>
+   </extension>
+   <extension
+         point="org.amanzi.loader.core.parser">
+      <parser
+            class="org.amanzi.awe.gpeh.GpehParser"
+            id="org.amanzi.awe.gpeh.GpehParser">
+      </parser>
+   </extension>
+
+</plugin>
