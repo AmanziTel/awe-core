@@ -179,14 +179,14 @@ public class TEMSLoader extends DriveLoader {
                 Matcher m = p.matcher(originalValue);
                 if (m.matches()) {
                     try {
-                        System.out.println(m.group(1));
+                        // System.out.println(m.group(1));
                         return Float.valueOf(m.group(1));
                     } catch (NumberFormatException e) {
                         e.printStackTrace();
                         // TODO: handle exception
                     }
                 } else {
-                    System.out.println("originalValue: " + originalValue);
+                    // System.out.println("originalValue: " + originalValue);
                     return null;
                 }
                 return null;
@@ -310,8 +310,13 @@ public class TEMSLoader extends DriveLoader {
             return;
         Map<String, Object> lineData = makeDataMap(fields);
         // debug(line);
-
-        this.time = lineData.get("time").toString();
+        try {
+            this.time = String.valueOf(lineData.get("time"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("OLOLO");
+            System.out.println(lineData.get("time"));
+        }
         Object timest = lineData.get("timestamp");
         this.timestamp = getTimeStamp(1, (Date)timest);
         String ms = (String)lineData.get("ms");
@@ -322,9 +327,9 @@ public class TEMSLoader extends DriveLoader {
 
         this.incValidMessage();
         // TODO test
-        System.out.println("Latitude: " + lineData.get("parsedLatitude"));
+        // System.out.println("Latitude: " + lineData.get("parsedLatitude"));
         Float latitude = (Float)lineData.get("parsedLatitude");
-        System.out.println("Longitude: " + lineData.get("parsedLongitude"));
+        // System.out.println("Longitude: " + lineData.get("parsedLongitude"));
         Float longitude = (Float)lineData.get("parsedLongitude");
         if (time == null || latitude == null || longitude == null) {
             return;
@@ -569,7 +574,7 @@ public class TEMSLoader extends DriveLoader {
     }
 
     /**
-     *get name of virtual dataset
+     * get name of virtual dataset
      * 
      * @return
      */
