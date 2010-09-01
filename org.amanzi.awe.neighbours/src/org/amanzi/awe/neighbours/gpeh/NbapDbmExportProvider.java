@@ -95,7 +95,7 @@ public class NbapDbmExportProvider extends ExportProvider3GPP {
         }
         double maxTrPowWatt = Math.pow(10, -3) * Math.pow(10, (double)power / 100);
         for (int i = value3gpp.getMin3GPP(); i <= value3gpp.getMax3GPP(); i++) {
-            double txpowerdbm = 10.0 * Math.log10(Math.ceil(maxTrPowWatt * value3gpp.getRightBound(i) / 1000) / 0.001);// (txpower=TxPower*10
+            double txpowerdbm = 10.0 * Math.log10(Math.ceil(maxTrPowWatt * i / 1000) / 0.001);// (txpower=TxPower*10
             // i - 0-1000
             // i/1000);
             if (txpowerdbm < 0 || txpowerdbm > 50) {
