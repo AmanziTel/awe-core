@@ -55,6 +55,7 @@
     <module>org.amanzi.awe.views.tree.drive</module>
     <module>org.amanzi.printing</module>
     <module>org.amanzi.gef</module>
+    <module>org.amanzi.gpeh</module>
     <module>org.amanzi.integrator.awe</module>
     <module>org.amanzi.integrator.rdt</module>
     <module>org.amanzi.neo.core</module>
