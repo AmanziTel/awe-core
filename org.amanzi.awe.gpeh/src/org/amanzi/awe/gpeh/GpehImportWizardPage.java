@@ -64,7 +64,6 @@ public class GpehImportWizardPage extends LoaderPage<CommonConfigData> {
     @Override
     public void createControl(Composite parent) {
         final Composite main = new Composite(parent, SWT.FILL);
-notcompiletest!
         GridLayout mainLayout = new GridLayout(2, false);
         main.setLayout(mainLayout);
 
