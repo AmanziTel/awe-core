@@ -194,12 +194,12 @@ public class TEMSLoader extends DriveLoader {
         };
         String[] headers = getPossibleHeaders(DataLoadPreferences.DR_LONGITUDE);
         for (String singleHeader : headers) {
-            addMappedHeader(1, INeoConstants.PROPERTY_LONGITUDE_NAME, singleHeader, "parsedLongitude", cpm);
+            addMappedHeader(1, singleHeader, singleHeader, "parsedLongitude", cpm);
         }
 
         headers = getPossibleHeaders(DataLoadPreferences.DR_LATITUDE);
         for (String singleHeader : headers) {
-            addMappedHeader(1, INeoConstants.PROPERTY_LATITUDE_NAME, singleHeader, "parsedLatitude", cpm);
+            addMappedHeader(1, singleHeader, singleHeader, "parsedLatitude", cpm);
         }
         // addKnownHeader(1, "longitude", ".*longitude", false);
         addKnownHeader(1, "ms", "MS", false);

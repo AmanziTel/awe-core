@@ -29,8 +29,8 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import net.refractions.udig.catalog.CatalogPlugin;
@@ -47,10 +47,10 @@ import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.core.utils.CSVParser;
 import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.preferences.CommonCRSPreferencePage;
@@ -127,7 +127,7 @@ public abstract class AbstractLoader {
         Double min = Double.POSITIVE_INFINITY;
         Double max = Double.NEGATIVE_INFINITY;
         HashMap<Object, Integer> values = new HashMap<Object, Integer>();
-        boolean isIdentityHeader=false;
+        boolean isIdentityHeader = false;
         int parseCount = 0;
         int countALL = 0;
 
@@ -147,7 +147,7 @@ public abstract class AbstractLoader {
             this.min = old.min;
             this.max = old.max;
             this.countALL = old.countALL;
-            this.isIdentityHeader=old.isIdentityHeader;
+            this.isIdentityHeader = old.isIdentityHeader;
         }
 
         protected boolean invalid(String field) {
@@ -221,7 +221,7 @@ public abstract class AbstractLoader {
                     // }
                     // }
                 }
-                //do not drop statistics for identity properties
+                // do not drop statistics for identity properties
                 if (discard && !isIdentityHeader) {
                     // Detected too much variety in property values, stop
                     // counting
@@ -236,8 +236,7 @@ public abstract class AbstractLoader {
         boolean shouldConvert() {
             return parseCount > 10;
         }
-        
-       
+
         Class< ? extends Object> knownType() {
             Class< ? extends Object> best = String.class;
             int maxCount = 0;
@@ -601,6 +600,7 @@ public abstract class AbstractLoader {
      * <pre>
      * addKnownHeader(&quot;y&quot;, &quot;lat.*&quot;);
      * </pre>
+     * 
      * @param key the name to use for the property
      * @param regex a regular expression to use to find the property
      * @param isIdentityHeader true if the property is an identity property
@@ -621,6 +621,7 @@ public abstract class AbstractLoader {
      * <pre>
      * addKnownHeader(&quot;y&quot;, new String[] {&quot;lat.*&quot;, &quot;y_wert.*&quot;}, true);
      * </pre>
+     * 
      * @param key the name to use for the property
      * @param isIdentityHeader true if the property is an identity property
      * @param array of regular expressions to use to find the single property
@@ -729,6 +730,7 @@ public abstract class AbstractLoader {
         headerMap.dropStatsHeaders.addAll(keys);
         headerMap.nonDataHeaders.addAll(keys);
     }
+
     protected final void addIdentityHeaders(Integer headerMapId, Collection<String> keys) {
         HeaderMaps headerMap = getHeaderMap(headerMapId);
         headerMap.dropStatsHeaders.addAll(keys);
@@ -801,21 +803,33 @@ public abstract class AbstractLoader {
         for (StoringProperty sProp : storingProperties.values()) {
             HeaderMaps headerMap = sProp.getHeaders();
             for (String key : headerMap.mappedHeaders.keySet()) {
-                if (headerMap.headers.containsKey(key)) {
+                boolean contains = headerMap.headers.containsKey(key);
+                String findedHead = key;
+                if (!contains)
+                    for (String head : headerMap.headers.keySet()) {
+                        Pattern p = Pattern.compile(key);
+                        if (Pattern.matches(key, head)) {
+                            contains = true;
+                            findedHead = head;
+                            break;
+                        }
+                    }
+
+                if (contains) {
                     MappedHeaderRule mapRule = headerMap.mappedHeaders.get(key);
                     if (headerMap.headers.containsKey(mapRule.key)) {
                         // We only allow replacement if the user passed null for
                         // the name
                         if (mapRule.name == null) {
-                            headerMap.headers.put(mapRule.key, new MappedHeader(headerMap.headers.get(key), mapRule));
+                            headerMap.headers.put(mapRule.key, new MappedHeader(headerMap.headers.get(findedHead), mapRule));
                         } else {
                             notify("Cannot add mapped header with key '" + mapRule.key + "': header with that name already exists");
                         }
                     } else {
-                        headerMap.headers.put(mapRule.key, new MappedHeader(headerMap.headers.get(key), mapRule));
+                        headerMap.headers.put(mapRule.key, new MappedHeader(headerMap.headers.get(findedHead), mapRule));
                     }
                 } else {
-                    notify("No original header found matching mapped header key: " + key);
+                    notify("No original header found matching mapped header key: " + findedHead);
                 }
             }
             for (String key : headerMap.dropStatsHeaders) {
@@ -1005,7 +1019,7 @@ public abstract class AbstractLoader {
      * @throws IOException
      */
     public void run(IProgressMonitor monitor) throws IOException {
-        if (monitor != null && !taskSetted){
+        if (monitor != null && !taskSetted) {
             monitor.beginTask(basename, 100);
         }
         CountingFileInputStream is = new CountingFileInputStream(new File(filename));
@@ -1415,8 +1429,8 @@ public abstract class AbstractLoader {
         HashMap<String, Node> valueNodes = new HashMap<String, Node>();
         ArrayList<String> noStatsProperties = new ArrayList<String>();
         ArrayList<String> dataProperties = new ArrayList<String>();
-        ArrayList<String> identityProperties= new ArrayList<String>();
-        for (Relationship relation : propTypeNode.getRelationships(GeoNeoRelationshipTypes.PROPERTIES,GeoNeoRelationshipTypes.IDENTITY_PROPERTIES)) {
+        ArrayList<String> identityProperties = new ArrayList<String>();
+        for (Relationship relation : propTypeNode.getRelationships(GeoNeoRelationshipTypes.PROPERTIES, GeoNeoRelationshipTypes.IDENTITY_PROPERTIES)) {
             Node valueNode = relation.getEndNode();
             String property = relation.getProperty("property", "").toString();
             valueNodes.put(property, valueNode);
@@ -1433,8 +1447,7 @@ public abstract class AbstractLoader {
             if (header == null) {
                 continue;
             }
-            GeoNeoRelationshipTypes relType = !header.isIdentityHeader ? GeoNeoRelationshipTypes.PROPERTIES
-                    : GeoNeoRelationshipTypes.IDENTITY_PROPERTIES;
+            GeoNeoRelationshipTypes relType = !header.isIdentityHeader ? GeoNeoRelationshipTypes.PROPERTIES : GeoNeoRelationshipTypes.IDENTITY_PROPERTIES;
             HashMap<Object, Integer> values = header.values;
             Relationship valueRelation = null;
             if (values == null) {
@@ -1447,7 +1460,7 @@ public abstract class AbstractLoader {
                 }
                 noStatsProperties.add(property);
             } else {
-                if (header.isIdentityHeader){
+                if (header.isIdentityHeader) {
                     noStatsProperties.add(property);
                     identityProperties.add(property);
                 }
@@ -1628,8 +1641,8 @@ public abstract class AbstractLoader {
     public void addLayersToMap() {
         LoaderUtils.addGisNodeToMap(getDataName(), getGisNodes().toArray(new Node[0]));
     }
-    
-    protected String getDataName(){
+
+    protected String getDataName() {
         return filename;
     }
 
@@ -1971,5 +1984,5 @@ public abstract class AbstractLoader {
     public void setTaskSetted(boolean taskSetted) {
         this.taskSetted = taskSetted;
     }
-    
+
 }
