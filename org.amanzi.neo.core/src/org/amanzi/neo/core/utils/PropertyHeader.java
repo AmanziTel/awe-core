@@ -16,9 +16,11 @@ package org.amanzi.neo.core.utils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
@@ -32,7 +34,6 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.TraversalPosition;
-import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 
 /**
@@ -153,14 +154,16 @@ public class PropertyHeader {
         Relationship rel = node.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
         if (rel != null) {
             Node propertyNode = rel.getEndNode();
-             for (Node node:propertyNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING)){
-                result.addAll(Arrays.asList((String[]) node.getProperty("identity_properties")));
-             }
+            for (Node node : propertyNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD,
+                    Direction.OUTGOING)) {
+                result.addAll(Arrays.asList((String[])node.getProperty("identity_properties")));
+            }
         }
         return result.toArray(new String[result.size()]);
     }
+
     /**
-     *Get all defined fields from drive gis node
+     * Get all defined fields from drive gis node
      * 
      * @return
      */
@@ -327,7 +330,7 @@ public class PropertyHeader {
      * @return list of possible event
      */
     public Collection<String> getEvents() {
-        if (isGis){
+        if (isGis) {
             return getDataVault().getEvents();
         }
         Set<String> result = new HashSet<String>();
@@ -439,15 +442,16 @@ public class PropertyHeader {
             this.typeNode = typeNode;
             this.valueNode = valueNode;
         }
-        
+
         /**
          * Gets the count of property
-         *
+         * 
          * @return the count
          */
-        public Integer getCount(){
-            return statisticsRelation!=null?(Integer)statisticsRelation.getProperty("count",null):null;
+        public Integer getCount() {
+            return statisticsRelation != null ? (Integer)statisticsRelation.getProperty("count", null) : null;
         }
+
         /**
          * @return Returns the statisticsRelation.
          */
@@ -475,16 +479,16 @@ public class PropertyHeader {
         }
 
         /**
-         *get wrapped value depends of type of property
+         * get wrapped value depends of type of property
          * 
          * @param value - number value
          * @return (cast to type of property)value
          */
-        public Object getWrappedValue(Number value,GraphDatabaseService service) {
+        public Object getWrappedValue(Number value, GraphDatabaseService service) {
             if (value == null) {
                 return null;
             }
-            String name = NeoUtils.getSimpleNodeName(typeNode, "",service);
+            String name = NeoUtils.getSimpleNodeName(typeNode, "", service);
             if (name.equals("long")) {
                 return value.longValue();
             }
@@ -533,4 +537,18 @@ public class PropertyHeader {
     public boolean isHavePropertyNode() {
         return havePropertyNode;
     }
+
+    public Map<String, Object> copyNetworkNode() {
+        Map<String, Object> result = new HashMap<String, Object>();
+        for (String propertyKey : node.getPropertyKeys()) {
+            result.put(propertyKey, getAverageValue(propertyKey, node.getProperty(propertyKey)));
+        }
+        return result;
+    }
+
+    // TODO traversing implementation
+    public <T> T getAverageValue(String propertyName, T defValue) {
+        return defValue;
+    }
+
 }

@@ -66,7 +66,7 @@ public class NewElementAction extends Action {
     
     private String defaultValue;
     
-    private boolean askType;
+    private final boolean askType;
     
     private String newType;
     
