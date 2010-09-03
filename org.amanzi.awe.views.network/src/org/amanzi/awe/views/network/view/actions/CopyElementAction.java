@@ -16,6 +16,7 @@ package org.amanzi.awe.views.network.view.actions;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
@@ -62,9 +63,9 @@ public class CopyElementAction extends NewElementAction {
             }
 
             PropertyHeader ph = new PropertyHeader(sourceNode);
-            Map<String, Object> copyPropertyesph = ph.copyNetworkNode();
-//            copyPropertyesph.
-            defaultProperties.putAll(copyPropertyesph);
+            Map<String, Object> copyPropertyes = ph.copyNetworkNode();
+            copyPropertyes.remove(INeoConstants.PROPERTY_NAME_NAME);
+            defaultProperties.putAll(copyPropertyes);
             tx.success();
         } finally {
             tx.finish();
