@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.gpeh;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -113,8 +114,9 @@ public class GpehParser extends CommonFilesParser<GpehTransferData, CommonConfig
         cl.set(Calendar.MONTH, timeWrapper.getMonth());
         cl.set(Calendar.DAY_OF_MONTH, timeWrapper.getDay());
         long timestamp = cl.getTimeInMillis();
+        InputStream inputStream=null;
         try {
-            InputStream inputStream = new FileInputStream(element.getFile());
+            inputStream = new FileInputStream(element.getFile());
             long fileSize = element.getFile().length();
             if (element.getFile().getName().endsWith("gz")) {
                 inputStream = new GZIPInputStream(inputStream);
@@ -165,8 +167,26 @@ public class GpehParser extends CommonFilesParser<GpehTransferData, CommonConfig
         } catch (IOException e) {
             // TODO: handle
             e.printStackTrace();
+        }finally{
+            closeStream(inputStream);
         }
         return false;
+    }
+
+ 
+    /**
+     * Close stream.
+     *
+     * @param inputStream the input stream
+     */
+    protected void closeStream(Closeable inputStream) {
+        if (inputStream!=null){
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace(getPrintStream());
+            }
+        }
     }
 
     /**

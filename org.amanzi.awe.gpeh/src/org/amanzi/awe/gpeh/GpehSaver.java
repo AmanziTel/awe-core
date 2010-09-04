@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.gpeh;
 
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -55,6 +56,7 @@ public class GpehSaver implements ISaver<GpehTransferData> {
     private GpehStatisticModel statmodel;
     private Transaction tx;
     private long oldTimestamp;
+    private PrintStream outputStream;
 
     /**
      * Instantiates a new gpeh saver.
@@ -269,6 +271,19 @@ public class GpehSaver implements ISaver<GpehTransferData> {
             return true;
         }
 
+    }
+
+    @Override
+    public PrintStream getPrintStream() {
+        if (outputStream==null){
+            return System.out;
+        }
+        return outputStream;
+    }
+
+    @Override
+    public void setPrintStream(PrintStream outputStream) {
+        this.outputStream = outputStream;
     }
 
 }

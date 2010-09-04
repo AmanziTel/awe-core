@@ -25,7 +25,7 @@ import org.amanzi.neo.loader.core.IMapBasedDataElement;
  * @author TsAr
  * @since 1.0.0
  */
-public class GpehTransferData extends LinkedHashMap<String,Object> implements IMapBasedDataElement<String> {
+public class GpehTransferData extends LinkedHashMap<String,Object> implements IMapBasedDataElement<String,Object> {
 
     /** long serialVersionUID field */
     private static final long serialVersionUID = 6034771565805664352L;
