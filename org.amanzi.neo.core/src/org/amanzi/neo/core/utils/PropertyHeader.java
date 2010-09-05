@@ -26,15 +26,22 @@ import java.util.Set;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser.Order;
+import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.graphdb.traversal.Traverser;
+import org.neo4j.graphdb.traversal.Uniqueness;
+import org.neo4j.helpers.Predicate;
+import org.neo4j.kernel.Traversal;
 
 /**
  * <p>
@@ -547,7 +554,24 @@ public class PropertyHeader {
     }
 
     // TODO traversing implementation
-    public <T> T getAverageValue(String propertyName, T defValue) {
+    public <T> T getAverageValue(final String propertyName, T defValue) {
+        Node root = NeoUtils.getParentNode(node, NodeTypes.NETWORK.getId());
+        final TraversalDescription td = Traversal.description().depthFirst().relationships(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING).relationships(
+                GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
+        // .uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
+                .uniqueness(Uniqueness.NODE_GLOBAL).filter(new Predicate<Path>() {
+
+                    @Override
+                    public boolean accept(Path item) {
+                        return item.lastRelationship() != null && item.lastRelationship().isType(GeoNeoRelationshipTypes.PROPERTIES)
+                                && propertyName.equals(item.lastRelationship().getProperty("property", ""));
+                    }
+                });
+        Traverser traverser = td.traverse(root);
+        Iterator<Path> iterator = traverser.iterator();
+        if (iterator.hasNext()) {
+            return (T)iterator.next().endNode().getProperty(propertyName, defValue);
+        }
         return defValue;
     }
 
