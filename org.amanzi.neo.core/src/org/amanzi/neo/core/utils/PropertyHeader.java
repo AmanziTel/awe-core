@@ -556,9 +556,9 @@ public class PropertyHeader {
     // TODO traversing implementation
     public <T> T getAverageValue(final String propertyName, T defValue) {
         Node root = NeoUtils.getParentNode(node, NodeTypes.NETWORK.getId());
-        final TraversalDescription td = Traversal.description().depthFirst().relationships(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING).relationships(
-                GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
-        // .uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
+        final TraversalDescription td = Traversal.description().depthFirst().relationships(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING)
+                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
+                // .uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
                 .uniqueness(Uniqueness.NODE_GLOBAL).filter(new Predicate<Path>() {
 
                     @Override
@@ -570,9 +570,43 @@ public class PropertyHeader {
         Traverser traverser = td.traverse(root);
         Iterator<Path> iterator = traverser.iterator();
         if (iterator.hasNext()) {
-            return (T)iterator.next().endNode().getProperty(propertyName, defValue);
+            Path next = iterator.next();
+            System.out.println(next.endNode());
+            int count = 0;
+            String result = null;
+            for (String key : next.endNode().getPropertyKeys()) {
+                Integer curCount = (Integer)next.endNode().getProperty(key, 0);
+                if (curCount > count) {
+                    count = curCount;
+                    result = key;
+                }
+            }
+            if (result != null) {
+                if (defValue instanceof Number) {
+                    // Silly structure
+                    Number parsRes = null;
+                    try {
+                        parsRes = Integer.parseInt(result);
+                    } catch (NumberFormatException e) {
+                        try {
+                            parsRes = Long.parseLong(result);
+                        } catch (NumberFormatException e2) {
+                            try {
+                                parsRes = Float.parseFloat(result);
+                            } catch (NumberFormatException e3) {
+                                try {
+                                    parsRes = Double.parseDouble(result);
+                                } catch (NumberFormatException e4) {
+                                    return defValue;
+                                }
+                            }
+                        }
+                    }
+                    return (T)parsRes;
+                }
+                return (T)result;
+            }
         }
         return defValue;
     }
-
 }
