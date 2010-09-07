@@ -297,6 +297,7 @@
       <module>org.amanzi.awe.afp</module>
       <module>org.amanzi.awe.afp.win32</module>
       <module>org.amanzi.awe.afp.linux</module>
+      <module>org.amanzi.awe.afp.macosx</module>
     </modules>
     <build>
       <plugins>	  
