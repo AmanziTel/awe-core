@@ -53,6 +53,8 @@ public class AfpExporter {
 	private GraphDatabaseService service;
 	private Node afpRoot;
 	
+	protected static final String AMANZI_STR = ".amanzi";
+	private static final String DATA_SAVER_DIR = "AfpTemp";
 	public final String tmpAfpFolder = getTmpFolderPath();
 	
 	/** The Control File*/
@@ -471,14 +473,21 @@ public class AfpExporter {
 	}
 	
 	private String getTmpFolderPath(){
-		String folderPath = File.separator;
-		try {
-			folderPath = Platform.getInstanceLocation().getURL().toURI().getPath() + "AfpTemp" + File.separator;
-			System.out.println(folderPath);
-		} catch (URISyntaxException e) {
-			AweConsolePlugin.exception(e);
-		}
-		return folderPath;
+		
+		File dir = new File(System.getProperty("user.home"));
+        if (!dir.exists()) {
+            dir.mkdir();
+        }
+        dir = new File(dir, AMANZI_STR);
+        if (!dir.exists()) {
+            dir.mkdir();
+        }
+        dir = new File(dir, DATA_SAVER_DIR);
+        if (!dir.exists()) {
+            dir.mkdir();
+        }
+		
+		return dir.getPath() + "/";
 	}
 
 
