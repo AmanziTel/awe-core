@@ -14,6 +14,9 @@
 package org.amanzi.neo.db.manager;
 
 import java.util.ArrayList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -49,7 +52,9 @@ public class DatabaseManager {
          */
         BATCH;
     }
-    
+    private final ReadWriteLock rwl=new ReentrantReadWriteLock();
+    private final Lock r = rwl.readLock();
+    private final Lock w = rwl.writeLock();
     /*
      * Current Database Service
      */
@@ -81,6 +86,7 @@ public class DatabaseManager {
      * Listeners for Database Access Type changes 
      */
     private ArrayList<IDatabaseChangeListener> listeners = new ArrayList<IDatabaseChangeListener>();
+    private final DatabaseServiceWrapper databaseWrapper=new DatabaseServiceWrapper(null);
     
     /**
      * Return instance of manager 
@@ -104,8 +110,8 @@ public class DatabaseManager {
      *
      * @return DatabaseService of current Access Type
      */
-    public synchronized GraphDatabaseService getCurrentDatabaseService() {
-        return databaseService;
+    public  GraphDatabaseService getCurrentDatabaseService() {
+       return databaseWrapper;
     }
     
     /**
@@ -115,43 +121,52 @@ public class DatabaseManager {
      */
     public synchronized void setDatabaseAccessType(DatabaseAccessType type) {
         if ((currentAccessType == null) || (currentAccessType != type)) {
-            if (databaseService != null) {
-                if (indexService != null) {
-                    indexService.shutdown();
-                }
-                
-                //TODO: Lagutko: temporary workaround until we have another way for database access
-                if (currentAccessType.equals(DatabaseAccessType.BATCH)) {
-                    for (int i=0;i<10000;i++){
-                        databaseService.createNode();
+            w.lock();
+            databaseWrapper.lockWrite();
+            try {
+                if (databaseService != null) {
+                    if (indexService != null) {
+                        indexService.shutdown();
                     }
-                    databaseService.shutdown();
+
+                    // TODO: Lagutko: temporary workaround until we have another way for database
+                    // access
+                    if (currentAccessType.equals(DatabaseAccessType.BATCH)) {
+                        for (int i = 0; i < 10000; i++) {
+                            databaseService.createNode();
+                        }
+                        databaseService.shutdown();
+                    }
                 }
+
+                String dbLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
+
+                switch (type) {
+                case BATCH:
+                    // TODO: Lagutko: temporary workaround until we have another way for database
+                    // access
+                    NeoServiceProvider.getProvider().stopNeo();
+
+                    batchInserter = new BatchInserterImpl(dbLocation);
+                    databaseService = batchInserter.getGraphDbService();
+
+                    break;
+                case EMBEDDED:
+                    databaseService = NeoServiceProvider.getProvider().getService();
+                    break;
+                }
+                databaseWrapper.setRealService(databaseService);
+                // skip IndexService of current type
+                indexService = null;
+                currentAccessType = type;
+            } finally {
+                w.unlock();
+                databaseWrapper.writeUnlock();
             }
-            
-            String dbLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
-            
-            switch (type) {           
-            case BATCH:
-                //TODO: Lagutko: temporary workaround until we have another way for database access
-                NeoServiceProvider.getProvider().stopNeo();
-                
-                batchInserter = new BatchInserterImpl(dbLocation);
-                databaseService = batchInserter.getGraphDbService();
-                
-                break;
-            case EMBEDDED:                
-                databaseService = NeoServiceProvider.getProvider().getService();
-                break;
-            }
-            
-            //skip IndexService of current type
-            indexService = null;
-            currentAccessType = type;
             fireDatabaseAccessChangeEvent();
         }
     }
-    
+
     /**
      * Returns IndexService for current Database Access Type
      *
@@ -188,6 +203,19 @@ public class DatabaseManager {
     private void fireDatabaseAccessChangeEvent() {
         for (IDatabaseChangeListener singleListener : listeners) {
             singleListener.onDatabaseAccessChange();
+        }
+    }
+
+    /**
+     *
+     * @return
+     */
+    GraphDatabaseService getRealDatabaseService() {
+        r.lock();
+        try{
+            return databaseService;
+        }finally{
+            r.unlock();
         }
     }
 }
