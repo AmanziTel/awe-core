@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension-point id="org.amanzi.loader.core.parser" name="Extension for Parsers" schema="schema/org.amanzi.loader.core.parser.exsd"/>
+   <extension-point id="org.amanzi.loader.core.saver" name="Extension for Saver" schema="schema/org.amanzi.loader.core.saver.exsd"/>
+
+</plugin>

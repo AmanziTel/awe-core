@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension-point id="org.amanzi.neo.loader.ui.gui" name="GUI for loaders" schema="schema/org.amanzi.neo.loader.ui.gui.exsd"/>
+   <extension-point id="org.amanzi.neo.loader.ui.loaders" name="Loaders" schema="schema/org.amanzi.neo.loader.ui.loaders.exsd"/>
+      <extension
+          point="org.eclipse.ui.commands">
+       <category
+             id="org.amanzi.neo.loader.commands.category"
+             name="Amanzi Loading Commands">
+       </category>         
+       <command
+             categoryId="org.amanzi.neo.loader.commands.category"
+             id="org.amanzi.neo.loader.ui.commands.LoadGPEHHandler"
+             name="Load OSS Data">
+                       <commandParameter id="org.amanzi.neo.loader.commands.addtoselect" name="add to select" optional="true">
+        </commandParameter>
+       </command>
+       <command
+             categoryId="org.amanzi.neo.loader.commands.category"
+             id="org.amanzi.neo.loader.ui.commands.LaunchLoader"
+             name="LoadLauncher">
+          <commandParameter
+                id="org.amanzi.neo.loader.ui.commands.guiId"
+                name="gui id"
+                optional="false">
+          </commandParameter>
+       </command>   
+    </extension>
+    <extension
+          point="org.eclipse.ui.handlers">       
+       <handler
+             class="org.amanzi.neo.loader.ui.handlers.LaunchLoader"
+             commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader">
+       </handler>
+    </extension>
+   
+    <extension
+          point="org.eclipse.ui.menus">
+       <menuContribution
+             locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+          <toolbar
+                id="org.amanzi.neo.loader.toolbar2">             
+             <command
+                   commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader"
+                   icon="icons/16/delta_network.png"
+                   id="org.amanzi.neo.loader.ui.LoadLauncher"
+                   tooltip="Load OSS Data">
+                <parameter
+                      name="org.amanzi.neo.loader.ui.commands.guiId"
+                      value="org.amanzi.neo.loader.ui.wizards.OssImportWizard">
+                </parameter>
+             </command>
+             <command
+                   commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader"
+                   icon="icons/16/network.png"
+                   id="org.amanzi.neo.loader.ui.LoadLauncher"
+                   tooltip="Load Network  Data">
+                <parameter
+                      name="org.amanzi.neo.loader.ui.commands.guiId"
+                      value="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard">
+                </parameter>
+             </command>            
+          </toolbar>
+       </menuContribution>
+    </extension>
+    <extension
+          point="org.amanzi.neo.loader.ui.gui">
+       <GUI
+             class="org.amanzi.neo.loader.ui.wizards.OssImportWizard"
+             id="org.amanzi.neo.loader.ui.wizards.OssImportWizard">
+       </GUI>
+       <GUI
+             class="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
+             id="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard">
+       </GUI>
+    </extension>
+
+</plugin>
