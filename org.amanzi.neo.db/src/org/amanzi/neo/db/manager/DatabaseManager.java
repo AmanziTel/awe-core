@@ -110,7 +110,7 @@ public class DatabaseManager {
      *
      * @return DatabaseService of current Access Type
      */
-    public  GraphDatabaseService getCurrentDatabaseService() {
+    public  INeoDbService getCurrentDatabaseService() {
        return databaseWrapper;
     }
     
@@ -155,7 +155,7 @@ public class DatabaseManager {
                     databaseService = NeoServiceProvider.getProvider().getService();
                     break;
                 }
-                databaseWrapper.setRealService(databaseService);
+                databaseWrapper.setRealService(type,databaseService);
                 // skip IndexService of current type
                 indexService = null;
                 currentAccessType = type;
