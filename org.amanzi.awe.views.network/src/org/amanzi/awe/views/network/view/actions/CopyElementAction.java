@@ -19,7 +19,6 @@ import java.util.Map;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.PropertyHeader;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -62,8 +61,14 @@ public class CopyElementAction extends NewElementAction {
                 }
             }
 
-            PropertyHeader ph = new PropertyHeader(sourceNode);
-            Map<String, Object> copyPropertyes = ph.copyNetworkNode();
+//            PropertyHeader ph = new PropertyHeader(sourceNode);
+//            Map<String, Object> copyPropertyes = ph.copyNetworkNode();
+            
+            Map<String, Object> copyPropertyes = new HashMap<String, Object>();
+            for (String propertyKey : sourceNode.getPropertyKeys()) {
+                copyPropertyes.put(propertyKey, sourceNode.getProperty(propertyKey));
+            }
+            
             copyPropertyes.remove(INeoConstants.PROPERTY_NAME_NAME);
             defaultProperties.putAll(copyPropertyes);
             tx.success();
