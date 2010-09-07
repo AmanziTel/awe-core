@@ -333,6 +333,7 @@ public class DataGenerateManager {
             propertyMap.clear();
             propertyMap.put("name", "ERNBC1");
             propertyMap.put("type", "rnc");
+            propertyMap.put("rncId", "1");
             propertyMap.put("userLabel", "ERNBC1");
             Node rnc = NeoDataUtils.createNode(propertyMap, neo);
             NeoDataUtils.createRelationship(network, rnc, "CHILD");
@@ -342,6 +343,7 @@ public class DataGenerateManager {
             propertyMap.put("name", "30431");
             propertyMap.put("type", "sector");
             propertyMap.put("azimuth", 335);
+            propertyMap.put("rncId", "1");
             propertyMap.put("userLabel", "ERNBC1");
             propertyMap.put("sector_type", "utran");
             Node sector = NeoDataUtils.createNode(propertyMap, neo);
