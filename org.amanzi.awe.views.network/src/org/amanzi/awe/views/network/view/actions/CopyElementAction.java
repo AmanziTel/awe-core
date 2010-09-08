@@ -14,9 +14,7 @@
 package org.amanzi.awe.views.network.view.actions;
 
 import java.util.HashMap;
-import java.util.Map;
 
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -48,29 +46,18 @@ public class CopyElementAction extends NewElementAction {
     }
 
     @Override
-    protected void createNewElement(Node sourceNode, HashMap<String, Object> properties) {
+    protected void createNewElement(Node parentElement, HashMap<String, Object> properties) {
         Node parent = null;
 
         Transaction tx = service.beginTx();
         try {
-            parent = NeoUtils.getParent(service, sourceNode);
+            parent = NeoUtils.getParent(service, parentElement);
 
-            for (String key : sourceNode.getPropertyKeys()) {
+            for (String key : parentElement.getPropertyKeys()) {
                 if (!defaultProperties.containsKey(key)) {
-                    defaultProperties.put(key, sourceNode.getProperty(key));
+                    defaultProperties.put(key, parentElement.getProperty(key));
                 }
             }
-
-//            PropertyHeader ph = new PropertyHeader(sourceNode);
-//            Map<String, Object> copyPropertyes = ph.copyNetworkNode();
-            
-            Map<String, Object> copyPropertyes = new HashMap<String, Object>();
-            for (String propertyKey : sourceNode.getPropertyKeys()) {
-                copyPropertyes.put(propertyKey, sourceNode.getProperty(propertyKey));
-            }
-            
-            copyPropertyes.remove(INeoConstants.PROPERTY_NAME_NAME);
-            defaultProperties.putAll(copyPropertyes);
             tx.success();
         } finally {
             tx.finish();
