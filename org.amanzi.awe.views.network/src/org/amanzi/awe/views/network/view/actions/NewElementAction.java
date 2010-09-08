@@ -16,7 +16,6 @@ package org.amanzi.awe.views.network.view.actions;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesAndMapEvent;
@@ -28,7 +27,6 @@ import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.PropertyHeader;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -68,7 +66,7 @@ public class NewElementAction extends Action {
 
     private String defaultValue;
 
-    private final boolean askType;
+    private boolean askType;
 
     private String newType;
 
@@ -231,13 +229,6 @@ public class NewElementAction extends Action {
             for (String key : properties.keySet()) {
                 child.setProperty(key, properties.get(key));
             }
-
-            PropertyHeader ph = new PropertyHeader(parentElement);
-            Map<String, Object> copyPropertyes = ph.copyNetworkNode();
-            for (String propertyKey : copyPropertyes.keySet()) {
-                child.setProperty(propertyKey, copyPropertyes.get(propertyKey));
-            }
-            
             if (type == NodeTypes.SECTOR) {
                 parentElement.createRelationshipTo(child, NetworkRelationshipTypes.CHILD);
             } else {
