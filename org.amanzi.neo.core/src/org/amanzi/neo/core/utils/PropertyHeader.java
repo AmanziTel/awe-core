@@ -43,35 +43,26 @@ import org.neo4j.graphdb.traversal.Uniqueness;
 import org.neo4j.helpers.Predicate;
 import org.neo4j.kernel.Traversal;
 
-// TODO: Auto-generated Javadoc
 /**
  * <p>
  * Contains information of property
- * </p>.
- *
+ * </p>
+ * 
  * @author Cinkel_A
  * @since 1.0.0
  */
 public class PropertyHeader {
 
-    /** String RELATION_PROPERTY field. */
+    /** String RELATION_PROPERTY field */
     private static final String RELATION_PROPERTY = "property";
-    
-    /** The node. */
     private final Node node;
-    
-    /** The is gis. */
     private final boolean isGis;
-    
-    /** The is dataset. */
     private final boolean isDataset;
-    
-    /** The have property node. */
     private final boolean havePropertyNode;
 
     /**
-     * Constructor.
-     *
+     * Constructor
+     * 
      * @param node - gis Node
      */
     public PropertyHeader(Node node) {
@@ -82,8 +73,8 @@ public class PropertyHeader {
     }
 
     /**
-     * get Numeric Fields of Neighbour.
-     *
+     * get Numeric Fields of Neighbour
+     * 
      * @param neighbourName name of neighbour
      * @return array or null
      */
@@ -97,8 +88,8 @@ public class PropertyHeader {
     }
 
     /**
-     * get All Fields of Neighbour.
-     *
+     * get All Fields of Neighbour
+     * 
      * @param neighbourName name of neighbour
      * @return array or null
      */
@@ -115,8 +106,8 @@ public class PropertyHeader {
     }
 
     /**
-     * get All Fields of Neighbour.
-     *
+     * get All Fields of Neighbour
+     * 
      * @param neighbourName name of neighbour
      * @return array or null
      */
@@ -133,8 +124,8 @@ public class PropertyHeader {
     }
 
     /**
-     * get Numeric Fields of current node.
-     *
+     * get Numeric Fields of current node
+     * 
      * @return array or null
      */
     public String[] getNumericFields() {
@@ -143,8 +134,8 @@ public class PropertyHeader {
     }
 
     /**
-     * get String Fields of current node.
-     *
+     * get String Fields of current node
+     * 
      * @return array or null
      */
     public String[] getStringFields() {
@@ -153,28 +144,18 @@ public class PropertyHeader {
     }
 
     /**
-     * get data vault.
-     *
+     * get data vault
+     * 
      * @return data vault
      */
     public PropertyHeader getDataVault() {
         return isGis || isDataset ? new PropertyHeader(node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(node)) : this;
     }
 
-    /**
-     * Gets the all fields.
-     *
-     * @return the all fields
-     */
     public String[] getAllFields() {
         return havePropertyNode ? getDefinedAllFields() : isGis ? getDataVault().getAllFields() : getNumericFields();// NeoUtils.getAllFields(node);
     }
 
-    /**
-     * Gets the identity fields.
-     *
-     * @return the identity fields
-     */
     public String[] getIdentityFields() {
         List<String> result = new ArrayList<String>();
         Relationship rel = node.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
@@ -189,9 +170,9 @@ public class PropertyHeader {
     }
 
     /**
-     * Get all defined fields from drive gis node.
-     *
-     * @return the defined all fields
+     * Get all defined fields from drive gis node
+     * 
+     * @return
      */
     private String[] getDefinedAllFields() {
         List<String> result = new ArrayList<String>();
@@ -212,11 +193,6 @@ public class PropertyHeader {
         return result.toArray(new String[0]);
     }
 
-    /**
-     * Gets the defined numeric fields.
-     *
-     * @return the defined numeric fields
-     */
     private String[] getDefinedNumericFields() {
         List<String> ints = new ArrayList<String>();
         List<String> floats = new ArrayList<String>();
@@ -248,11 +224,6 @@ public class PropertyHeader {
         return result.toArray(new String[0]);
     }
 
-    /**
-     * Gets the defined string fields.
-     *
-     * @return the defined string fields
-     */
     private String[] getDefinedStringFields() {
         List<String> result = new ArrayList<String>();
         Relationship propRel = node.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
@@ -273,8 +244,8 @@ public class PropertyHeader {
     }
 
     /**
-     * get list of properties.
-     *
+     * get list of properties
+     * 
      * @return AllChannels properties
      */
     public String[] getAllChannels() {
@@ -282,8 +253,8 @@ public class PropertyHeader {
     }
 
     /**
-     * gets list of Neighbour properties in network.
-     *
+     * gets list of Neighbour properties in network
+     * 
      * @return Collection
      */
     public Collection<String> getNeighbourList() {
@@ -299,10 +270,8 @@ public class PropertyHeader {
     }
 
     /**
-     * Gets the neighbour integer fields.
-     *
-     * @param neighbourName the neighbour name
-     * @return the neighbour integer fields
+     * @param neighbourName
+     * @return
      */
     public String[] getNeighbourIntegerFields(String neighbourName) {
         if (isGis) {
@@ -317,10 +286,8 @@ public class PropertyHeader {
     }
 
     /**
-     * Gets the transmission integer fields.
-     *
-     * @param neighbourName the neighbour name
-     * @return the transmission integer fields
+     * @param neighbourName
+     * @return
      */
     public String[] getTransmissionIntegerFields(String neighbourName) {
         if (isGis) {
@@ -335,10 +302,8 @@ public class PropertyHeader {
     }
 
     /**
-     * Gets the neighbour double fields.
-     *
-     * @param neighbourName the neighbour name
-     * @return the neighbour double fields
+     * @param neighbourName
+     * @return
      */
     public String[] getNeighbourDoubleFields(String neighbourName) {
         if (isGis) {
@@ -353,10 +318,8 @@ public class PropertyHeader {
     }
 
     /**
-     * Gets the transmission double fields.
-     *
-     * @param neighbourName the neighbour name
-     * @return the transmission double fields
+     * @param neighbourName
+     * @return
      */
     public String[] getTransmissionDoubleFields(String neighbourName) {
         if (isGis) {
@@ -371,8 +334,6 @@ public class PropertyHeader {
     }
 
     /**
-     * Gets the events.
-     *
      * @return list of possible event
      */
     public Collection<String> getEvents() {
@@ -407,8 +368,8 @@ public class PropertyHeader {
     }
 
     /**
-     * Get property node of necessary property.
-     *
+     * Get property node of necessary property
+     * 
      * @param propertyName - property name
      * @return node
      */
@@ -435,9 +396,7 @@ public class PropertyHeader {
     }
 
     /**
-     * Gets the sector or measurment names.
-     *
-     * @return the sector or measurment names
+     * @return
      */
     public String[] getSectorOrMeasurmentNames() {
         // if (GisTypes.NETWORK != gisType) {
@@ -467,28 +426,22 @@ public class PropertyHeader {
     /**
      * <p>
      * Contains information about property statistics
-     * </p>.
-     *
+     * </p>
+     * 
      * @author Cinkel_A
      * @since 1.0.0
      */
     public static class PropertyStatistics {
-        
-        /** The statistics relation. */
         private final Relationship statisticsRelation;
-        
-        /** The type node. */
         private final Node typeNode;
-        
-        /** The value node. */
         private final Node valueNode;
 
         /**
-         * Constructor.
-         *
-         * @param statisticsRelation the statistics relation
-         * @param typeNode the type node
-         * @param valueNode the value node
+         * Constructor
+         * 
+         * @param statisticsRelation
+         * @param typeNode
+         * @param valueNode
          */
         public PropertyStatistics(Relationship statisticsRelation, Node typeNode, Node valueNode) {
             super();
@@ -498,8 +451,8 @@ public class PropertyHeader {
         }
 
         /**
-         * Gets the count of property.
-         *
+         * Gets the count of property
+         * 
          * @return the count
          */
         public Integer getCount() {
@@ -507,8 +460,6 @@ public class PropertyHeader {
         }
 
         /**
-         * Gets the statistics relation.
-         *
          * @return Returns the statisticsRelation.
          */
         public Relationship getStatisticsRelation() {
@@ -516,8 +467,6 @@ public class PropertyHeader {
         }
 
         /**
-         * Gets the type node.
-         *
          * @return Returns the typeNode.
          */
         public Node getTypeNode() {
@@ -525,29 +474,21 @@ public class PropertyHeader {
         }
 
         /**
-         * Gets the value node.
-         *
          * @return Returns the valueNode.
          */
         public Node getValueNode() {
             return valueNode;
         }
 
-        /**
-         * Gets the min max.
-         *
-         * @return the min max
-         */
         public Pair<Double, Double> getMinMax() {
             return new Pair<Double, Double>((Double)statisticsRelation.getProperty(INeoConstants.MIN_VALUE, null), (Double)statisticsRelation.getProperty(
                     INeoConstants.MAX_VALUE, null));
         }
 
         /**
-         * get wrapped value depends of type of property.
-         *
+         * get wrapped value depends of type of property
+         * 
          * @param value - number value
-         * @param service the service
          * @return (cast to type of property)value
          */
         public Object getWrappedValue(Number value, GraphDatabaseService service) {
@@ -573,10 +514,8 @@ public class PropertyHeader {
     }
 
     /**
-     * Gets the property statistic.
-     *
-     * @param propertyName the property name
-     * @return the property statistic
+     * @param propertyName
+     * @return
      */
     public PropertyStatistics getPropertyStatistic(final String propertyName) {
         if (isGis) {
@@ -602,44 +541,26 @@ public class PropertyHeader {
         return null;
     }
 
-    /**
-     * Checks if is have property node.
-     *
-     * @return true, if is have property node
-     */
     public boolean isHavePropertyNode() {
         return havePropertyNode;
     }
 
-    /**
-     * Copy network node.
-     *
-     * @return the map
-     */
     public Map<String, Object> copyNetworkNode() {
         Map<String, Object> result = new HashMap<String, Object>();
-        for (String propertyKey : node.getPropertyKeys()) {
-            result.put(propertyKey, getAverageValue(propertyKey, node.getProperty(propertyKey)));
-        }
+        // for (String propertyKey : node.getPropertyKeys()) {
+        // result.put(propertyKey, getAverageValue(propertyKey, node.getProperty(propertyKey)));
+        // }
         return result;
     }
 
-    /**
-     * Gets the average value for needed property from statistics
-     *
-     * @param <T> the generic type of value
-     * @param propertyName the property name
-     * @param defValue the default value
-     * @return the average value
-     */
-    public <T> T getAverageValue(final String propertyName, T defValue) {
-        if(!(defValue instanceof String || defValue instanceof Number)){
+    // TODO traversing implementation
+    public <T> T getAverageValue(String nodeType, final String propertyName, T defValue) {
+        if (!NodeTypes.SECTOR.getId().equals(nodeType))
             return defValue;
-        }
         Node root = NeoUtils.getParentNode(node, NodeTypes.NETWORK.getId());
-        final TraversalDescription td = Traversal.description().depthFirst().relationships(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING)
-                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
-                // .uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
+        final TraversalDescription td = Traversal.description().depthFirst().relationships(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING).relationships(
+                GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
+        // .uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
                 .uniqueness(Uniqueness.NODE_GLOBAL).filter(new Predicate<Path>() {
 
                     @Override
@@ -663,31 +584,76 @@ public class PropertyHeader {
                 }
             }
             if (result != null) {
-                if (defValue instanceof Number) {
-                    // Silly structure
-                    Number parsRes = null;
-                    try {
+                Class< ? extends Object> clazz = defValue.getClass();
+                Object parsRes = result;
+                try {
+                    if (clazz == Integer.class) {
                         parsRes = Integer.parseInt(result);
-                    } catch (NumberFormatException e) {
-                        try {
-                            parsRes = Long.parseLong(result);
-                        } catch (NumberFormatException e2) {
-                            try {
-                                parsRes = Float.parseFloat(result);
-                            } catch (NumberFormatException e3) {
-                                try {
-                                    parsRes = Double.parseDouble(result);
-                                } catch (NumberFormatException e4) {
-                                    return defValue;
-                                }
-                            }
-                        }
+                    } else if (clazz == Long.class) {
+                        parsRes = Long.parseLong(result);
+                    } else if (clazz == Float.class) {
+                        parsRes = Float.parseFloat(result);
+                    } else if (clazz == Double.class) {
+                        parsRes = Double.parseDouble(result);
                     }
                     return (T)parsRes;
+                } catch (NumberFormatException e) {
+                    return defValue;
                 }
-                return (T)result;
             }
+            return defValue;
         }
         return defValue;
     }
+
+    private Map<String, String[]> getDefinedFields() {
+        Map<String, String[]> result = new HashMap<String, String[]>();
+        Relationship propRel = node.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
+        if (propRel != null) {
+            Node propNode = propRel.getEndNode();
+            for (Node node : propNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD,
+                    Direction.OUTGOING)) {
+                String propType = (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
+                String propertyName = propType.equals("string") ? INeoConstants.PROPERTY_STATS : INeoConstants.PROPERTY_DATA;
+                String[] properties = (String[])node.getProperty(propertyName, null);
+                if (propType != null && properties != null) {
+                    result.put(propType, properties);
+                }
+            }
+
+        }
+        return result;
+    }
+
+    /**
+     * @param type
+     * @return
+     */
+    public Map<String, Object> getStatisticParams(NodeTypes type) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        if (type != NodeTypes.SECTOR)
+            return result;
+
+        Map<String, String[]> defFields = getDefinedFields();
+        for (Map.Entry<String, String[]> entry : defFields.entrySet()) {
+            Object defValue = "";
+            if (entry.getKey().equalsIgnoreCase("String")) {
+                defValue = "";
+            } else if (entry.getKey().equalsIgnoreCase("Integer")) {
+                defValue = 0;
+            } else if (entry.getKey().equalsIgnoreCase("Long")) {
+                defValue = 0L;
+            } else if (entry.getKey().equalsIgnoreCase("Double")) {
+                defValue = 0D;
+            } else if (entry.getKey().equalsIgnoreCase("Float")) {
+                defValue = 0F;
+            }
+            for (String paramNane : entry.getValue()) {
+                result.put(paramNane, getAverageValue(type.getId(), paramNane, defValue));
+            }
+
+        }
+        return result;
+    }
+
 }
