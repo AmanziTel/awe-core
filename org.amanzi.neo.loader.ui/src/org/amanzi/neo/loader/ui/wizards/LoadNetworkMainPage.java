@@ -138,8 +138,8 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
                     networkName=new java.io.File(getFileName()).getName(); 
                     network.setText(networkName);
                     networkNode = members.get(networkName);
-                    update();
                 }
+                update();
             }
         });
         

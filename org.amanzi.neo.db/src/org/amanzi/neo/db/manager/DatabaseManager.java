@@ -173,19 +173,23 @@ public class DatabaseManager {
      * @return Index Service
      */
     public IndexService getIndexService() {
-        if (indexService == null) {
-            switch (currentAccessType) {
-            case EMBEDDED:
-                indexService = new LuceneIndexService(databaseService);
-                break;
-            case BATCH:
-                LuceneIndexBatchInserter batchLuceneIndex = new LuceneIndexBatchInserterImpl(batchInserter);
-                indexService = batchLuceneIndex.getIndexService();
-                break;
+        r.lock();
+        try {
+            if (indexService == null) {
+                switch (currentAccessType) {
+                case EMBEDDED:
+                    indexService = new LuceneIndexService(databaseService);
+                    break;
+                case BATCH:
+                    LuceneIndexBatchInserter batchLuceneIndex = new LuceneIndexBatchInserterImpl(batchInserter);
+                    indexService = batchLuceneIndex.getIndexService();
+                    break;
+                }
             }
+            return indexService;
+        } finally {
+            r.unlock();
         }
-        
-        return indexService;
     }
 
     /**

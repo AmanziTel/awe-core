@@ -13,30 +13,28 @@
 
 package org.amanzi.neo.loader.core.saver;
 
-import java.io.PrintStream;
 import java.util.LinkedHashMap;
 
 import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.loader.core.parser.HeaderTransferData;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.StatisticHandler;
+import org.amanzi.neo.services.statistic.IStatistic;
+import org.amanzi.neo.services.statistic.StatisticManager;
 import org.neo4j.graphdb.Node;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ *Abstract Saver based on  HeaderTransferData
  * </p>
  * @author TsAr
  * @since 1.0.0
  */
-public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> implements ISaver<T> {
+public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> extends AbstractSaver<T> {
 
     protected DatasetService service;
-    protected Node rootNode;
-    protected StatisticHandler statistic;
-    protected PrintStream outputStream;
+
+    protected IStatistic statistic;
     protected LinkedHashMap<Node, GisProperties> gisNodes=new LinkedHashMap<Node, GisProperties>();
     protected T element;
 
@@ -45,15 +43,14 @@ public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> impleme
         this.element = element;
         String rootNodeType=getRootNodeType();
         String projectName = element.getProjectName();
-        String rootname = element.getProjectName();
+        String rootname = element.getRootName();
         service=NeoServiceFactory.getInstance().getDatasetService();
-         rootNode=service.findRoot(projectName,rootname);
+        rootNode=service.findRoot(projectName,rootname);
         if (rootNode==null){
             rootNode= service.createRootNode(projectName,rootname,rootNodeType);
             fillRootNode(rootNode,element);
         }
-        statistic=new StatisticHandler();
-        statistic.loadStatistic(rootNode);
+        statistic=StatisticManager.getStatistic(rootNode);
         
     }
     /**
@@ -85,21 +82,10 @@ public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> impleme
 
     @Override
     public void finishUp(T element) {
-        statistic.saveStatistic(rootNode);
+        statistic.save();
     }
 
-    @Override
-    public PrintStream getPrintStream() {
-        if (outputStream==null){
-            return System.out;
-        }
-        return outputStream;
-    }
 
-    @Override
-    public void setPrintStream(PrintStream outputStream) {
-        this.outputStream = outputStream;
-    }
 
 
 }
