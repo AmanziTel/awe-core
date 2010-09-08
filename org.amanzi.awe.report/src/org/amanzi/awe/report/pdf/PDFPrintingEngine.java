@@ -35,6 +35,7 @@ import org.amanzi.awe.report.charts.Charts;
 import org.amanzi.awe.report.model.Chart;
 import org.amanzi.awe.report.model.IReportPart;
 import org.amanzi.awe.report.model.Report;
+import org.amanzi.awe.report.model.ReportImage;
 import org.amanzi.awe.report.model.ReportMap;
 import org.amanzi.awe.report.model.ReportText;
 import org.apache.log4j.Logger;
@@ -157,6 +158,10 @@ public class PDFPrintingEngine {
                     paragraph.setIndentationLeft(30);
                     paragraph.setIndentationRight(30);
                     document.add(paragraph);
+                }else if (part instanceof ReportImage){
+                    ReportImage image=(ReportImage)part;
+                    Image img = Image.getInstance(image.getImageFileName());
+                    document.add(img);
                 }
             }
             document.newPage();
