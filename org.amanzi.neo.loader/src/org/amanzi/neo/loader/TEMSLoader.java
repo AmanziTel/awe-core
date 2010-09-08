@@ -212,6 +212,9 @@ public class TEMSLoader extends DriveLoader {
                 return originalValue.replaceAll("HO Command.*", "HO Command");
             }
         });
+        
+        //lagutko, add additional header for cell id
+        addKnownHeader(1, INeoConstants.SECTOR_ID_PROPERTIES, ".*Cell Id.*", true);
 
         final SimpleDateFormat df = new SimpleDateFormat(TIMESTAMP_DATE_FORMAT);
         addMappedHeader(1, "time", "Timestamp", "timestamp", new PropertyMapper() {

@@ -15,11 +15,16 @@ package org.amanzi.awe.views.network.property;
 
 import java.io.IOException;
 
+import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
+import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEvent;
+import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Composite;
+import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.neoclipse.property.PropertyTransform.PropertyHandler;
 
@@ -125,5 +130,16 @@ public class NewAction extends Action
             e.printStackTrace();
         }
         page.refresh();
+        
+        NeoServiceProvider.getProvider().commit();
+        updateLayer(container);
+    }
+    
+    /**
+     *updates layer
+     */
+    private void updateLayer(PropertyContainer container) {
+        Node gisNode = NeoUtils.findGisNodeByChild((Node)container);
+        NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(new UpdateLayerEvent(gisNode));
     }
 }
