@@ -25,6 +25,6 @@ public interface IFilter {
 
 //    public void setProperty(String property);
 //
-//    public String getProperty();
+    public String getProperty();
 
 }

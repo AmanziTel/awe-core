@@ -16,6 +16,8 @@ package org.amanzi.awe.filters.experimental;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.neo4j.graphdb.Node;
+
 /**
  * Represents a composite filter which contains two or more filters and relations between them.
  * <p>
@@ -57,11 +59,17 @@ public class CompositeFilter implements IFilter {
 
     @Override
     public boolean accept(Object value) {
+        Node node = (Node)value;
         int n = subfilters.size();
         if (n >= 0) {
-            boolean result = subfilters.get(0).accept(value);
+            IFilter filter = subfilters.get(0);
+            String prop = filter.getProperty();
+            boolean result = (filter instanceof CompositeFilter) ? filter.accept(node) : node.hasProperty(prop)&&filter.accept(node.getProperty(filter
+                    .getProperty()));
             for (int i = 1; i <= n - 1; i++) {
-                boolean res = subfilters.get(i).accept(value);
+                filter = subfilters.get(i);
+                prop = filter.getProperty();
+                boolean res = (filter instanceof CompositeFilter) ? filter.accept(node) : node.hasProperty(prop)&& filter.accept(node.getProperty(prop));
                 if (relations.get(i - 1).equals(Relation.AND)) {
                     result = result && res;
                 } else {
