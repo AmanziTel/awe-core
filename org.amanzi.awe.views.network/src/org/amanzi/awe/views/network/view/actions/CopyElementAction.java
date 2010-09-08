@@ -15,6 +15,8 @@ package org.amanzi.awe.views.network.view.actions;
 
 import java.util.HashMap;
 
+import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -31,7 +33,7 @@ import org.neo4j.graphdb.Transaction;
  */
 public class CopyElementAction extends NewElementAction {
 
-    protected static final NodeTypes[] COPY_ACTION_SUPPORTED_TYPES = new NodeTypes[] {};
+    protected static final NodeTypes[] COPY_ACTION_SUPPORTED_TYPES = new NodeTypes[] {NodeTypes.NETWORK};
 
     /**
      * @param selection
@@ -47,24 +49,40 @@ public class CopyElementAction extends NewElementAction {
 
     @Override
     protected void createNewElement(Node parentElement, HashMap<String, Object> properties) {
-        Node parent = null;
+        // Node parent = null;
 
         Transaction tx = service.beginTx();
         try {
-            parent = NeoUtils.getParent(service, parentElement);
 
-            for (String key : parentElement.getPropertyKeys()) {
-                if (!defaultProperties.containsKey(key)) {
-                    defaultProperties.put(key, parentElement.getProperty(key));
-                }
+            Node child = service.createNode();
+
+            for (String key : selectedNode.getPropertyKeys()) {
+                if (!child.hasProperty(key))
+                    child.setProperty(key, selectedNode.getProperty(key));
             }
+
+            // for (String key : properties.keySet()) {
+            // if (!child.hasProperty(key))
+            // child.setProperty(key, properties.get(key));
+            // }
+            Node parent = NeoUtils.getParent(service, parentElement);
+            child.setProperty(INeoConstants.PROPERTY_NAME_NAME, properties.get(INeoConstants.PROPERTY_NAME_NAME));
+            setType(child);
+
+            if (type == NodeTypes.SECTOR) {
+                parent.createRelationshipTo(child, NetworkRelationshipTypes.CHILD);
+            } else {
+                NeoUtils.addChild(parent, child, null, service);
+                parent.createRelationshipTo(child, NetworkRelationshipTypes.CHILD);
+            }
+
+            postCreating(child);
+
             tx.success();
+        } catch (Exception e) {
+            tx.failure();
         } finally {
             tx.finish();
-        }
-
-        if (parent != null) {
-            super.createNewElement(parent, defaultProperties);
         }
     }
 }

@@ -16,17 +16,20 @@ package org.amanzi.awe.views.network.view.actions;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesAndMapEvent;
 import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.awe.views.network.proxy.NeoNode;
+import org.amanzi.awe.views.network.proxy.Root;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.PropertyHeader;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -50,13 +53,13 @@ import org.neo4j.index.lucene.LuceneIndexService;
  */
 public class NewElementAction extends Action {
 
-    protected static final NodeTypes[] CREATE_ACTION_SUPPORTED_TYPES = new NodeTypes[] {NodeTypes.SECTOR};
+    protected static final NodeTypes[] CREATE_ACTION_SUPPORTED_TYPES = new NodeTypes[] {NodeTypes.SECTOR, NodeTypes.NETWORK};
 
-    private Node selectedNode;
+    protected Node selectedNode;
 
     protected GraphDatabaseService service;
 
-    private NodeTypes type;
+    protected NodeTypes type;
 
     protected HashMap<String, Object> defaultProperties = new HashMap<String, Object>();
 
@@ -86,7 +89,9 @@ public class NewElementAction extends Action {
         if (enabled) {
             // check content of selection - it should be NeoNode
             Object element = selection.getFirstElement();
-            if (element instanceof NeoNode) {
+            if (element instanceof Root)
+                enabled = false;
+            else if (element instanceof NeoNode) {
                 selectedNode = ((NeoNode)element).getNode();
                 type = NodeTypes.getNodeType(selectedNode, service);
                 enabled = initialize(unsupportedTypes);
@@ -108,6 +113,9 @@ public class NewElementAction extends Action {
 
     private void initializeDefaultProperties() {
         networkNode = NeoUtils.getParentNode(selectedNode, NodeTypes.NETWORK.getId());
+        Node gis = NeoUtils.getGisNodeByDataset(networkNode);
+        GisProperties prop = new GisProperties(gis);
+        double[] bb = prop.getBbox();
         luceneIndexName = NeoUtils.getLuceneIndexKeyByProperty(networkNode, INeoConstants.PROPERTY_NAME_NAME, type);
 
         if (askType) {
@@ -118,8 +126,8 @@ public class NewElementAction extends Action {
 
         switch (type) {
         case SITE:
-            defaultProperties.put(INeoConstants.PROPERTY_LAT_NAME, 0.0d);
-            defaultProperties.put(INeoConstants.PROPERTY_LON_NAME, 0.0d);
+            defaultProperties.put(INeoConstants.PROPERTY_LAT_NAME, (bb[2] + bb[3]) / 2D);
+            defaultProperties.put(INeoConstants.PROPERTY_LON_NAME, (bb[0] + bb[1]) / 2D);
             break;
         case SECTOR:
             defaultProperties.put("azimuth", 0.0d);
@@ -213,7 +221,7 @@ public class NewElementAction extends Action {
         return pattern;
     }
 
-    private void setType(Node element) {
+    protected void setType(Node element) {
         if (type != null) {
             type.setNodeType(element, service);
         } else {
@@ -225,21 +233,30 @@ public class NewElementAction extends Action {
         Transaction tx = service.beginTx();
         try {
             Node child = service.createNode();
-            setType(child);
-            for (String key : properties.keySet()) {
-                child.setProperty(key, properties.get(key));
+            // NeoUtils.getParentNode(parentElement, NodeTypes.NETWORK.getId());
+            PropertyHeader ph = new PropertyHeader(networkNode);
+            Map<String, Object> statisticProperties = ph.getStatisticParams(type);
+            for (String key : statisticProperties.keySet()) {
+                child.setProperty(key, statisticProperties.get(key));
             }
+            child.setProperty(INeoConstants.PROPERTY_NAME_NAME, properties.get(INeoConstants.PROPERTY_NAME_NAME));
+
+            setType(child);
             if (type == NodeTypes.SECTOR) {
                 parentElement.createRelationshipTo(child, NetworkRelationshipTypes.CHILD);
             } else {
                 NeoUtils.addChild(parentElement, child, null, service);
                 parentElement.createRelationshipTo(child, NetworkRelationshipTypes.CHILD);
             }
-
+            for (String key : properties.keySet()) {
+                if (!child.hasProperty(key))
+                    child.setProperty(key, properties.get(key));
+            }
             postCreating(child);
 
             tx.success();
         } catch (Exception e) {
+            e.printStackTrace();
             tx.failure();
         } finally {
             tx.finish();
