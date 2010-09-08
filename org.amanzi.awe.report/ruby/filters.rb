@@ -4,6 +4,7 @@ include_class 'org.amanzi.awe.filters.experimental.Relation'
 
 module LogicalExpressions
   def &(filter)
+    puts "&filter"
     cf=CompositeFilter.new(self.property)
     cf.subfilters<<self<<filter
     cf.relations<<Relation::AND
@@ -11,6 +12,7 @@ module LogicalExpressions
   end
 
   def |(filter)
+    puts "|filter"
     cf=CompositeFilter.new(self.property)
     cf.subfilters<<self<<filter
     cf.relations<<Relation::OR

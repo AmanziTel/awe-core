@@ -407,7 +407,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                                                 CompositeFilter cFilter = (CompositeFilter)filter;
                                                 final String property = cFilter.getProperty();
                                                 if (currentNode.hasProperty(property)) {
-                                                    result = result || cFilter.accept(currentNode.getProperty(property));
+                                                    result = result || cFilter.accept(currentNode);
                                                 }
                                             } else if (filter instanceof Filter) {
                                                 Filter simpleFilter = (Filter)filter;
@@ -456,7 +456,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                                         final String property = cFilter.getProperty();
                                         if (node.hasProperty(property)) {
                                             final Object value = node.getProperty(property);
-                                            if (cFilter.accept(value)) {
+                                            if (cFilter.accept(node)) {
                                                 Pair<ShapeType, List<Color>> shapeStyle = styles.get(i);
                                                 List<Color> colors = shapeStyle.r();
                                                 Color color = colors.get(j < colors.size() ? j : colors.size() - 1);
