@@ -18,5 +18,6 @@ public class StatisticProperties{
     private StatisticProperties() {
         //hide constructor
     }
-    public static final String PROPERTY_KEY="property_key";
+    public static final String KEY="property_key";
+    public static final String NAME="name";
 }

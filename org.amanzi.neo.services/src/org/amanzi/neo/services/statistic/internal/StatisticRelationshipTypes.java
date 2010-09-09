@@ -12,5 +12,5 @@ import org.neo4j.graphdb.RelationshipType;
  * @since 1.0.0
  */
     public enum StatisticRelationshipTypes implements RelationshipType{
-        PROPERTIES,PROPERTY;
+        STATISTIC_PROP,PROPERTIES,NODE_TYPES,PROPERTY;
     }

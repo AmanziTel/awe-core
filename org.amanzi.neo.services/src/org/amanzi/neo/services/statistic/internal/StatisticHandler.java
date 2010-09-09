@@ -14,16 +14,16 @@
 package org.amanzi.neo.services.statistic.internal;
 
 import java.util.HashMap;
+import java.util.HashSet;
 
 import org.amanzi.neo.db.manager.INeoDbService;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.statistic.ChangeClassRule;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.traversal.TraversalDescription;
-import org.neo4j.graphdb.traversal.Uniqueness;
-import org.neo4j.kernel.Traversal;
 
 
 /**
@@ -35,7 +35,6 @@ import org.neo4j.kernel.Traversal;
  * @since 1.0.0
  */
 public class StatisticHandler {
-    static final TraversalDescription PROPERTYS=Traversal.description().depthFirst().relationships(StatisticRelationshipTypes.PROPERTIES, Direction.OUTGOING).uniqueness(Uniqueness.NONE).filter(Traversal.returnAllButStartNode()).prune(Traversal.pruneAfterDepth( 1));
     /** The vaults. */
     private HashMap<String,Vault>vaults=new HashMap<String, Vault>();
     
@@ -52,12 +51,13 @@ public class StatisticHandler {
     public void loadStatistic(Node root){
         this.root = root;
         clearStatistic();
-        for (Path path:PROPERTYS.traverse(root)){
-           String key= (String)path.endNode().getProperty(StatisticProperties.PROPERTY_KEY);
-           Vault vault=new Vault(key);
-           vault.loadVault(path.endNode());
-           vaults.put(key, vault);
+        Relationship rel = root.getSingleRelationship(StatisticRelationshipTypes.STATISTIC_PROP,Direction.OUTGOING);
+        if (rel==null){
+            return;
         }
+        Node statRoot=rel.getEndNode();
+        vaults.putAll(Vault.loadVaults(statRoot));
+
         isChanged=false;
     }
 
@@ -75,18 +75,28 @@ public class StatisticHandler {
      */
     public void saveStatistic(INeoDbService service,Node root){
         if (isChanged(root)) {
-            // TODO implement
             Transaction tx = service.beginTx();
             try {
-                for (Path path:PROPERTYS.traverse(root)){
-                    String key= (String)path.endNode().getProperty(StatisticProperties.PROPERTY_KEY);
-                    Vault vault=getVault(key);
+                HashSet<Node>treeToDelete=new HashSet<Node>();
+                HashSet<Vault>savedVault=new HashSet<Vault>();
+                for (Path path:Vault.PROPERTYS.traverse(root)){
+                    String key= (String)path.endNode().getProperty(StatisticProperties.KEY);
+                    Vault vault=vaults.get(key);
                     if (vault==null){
-//                        deleteTree
+                        treeToDelete.add(path.endNode());
+                    }else {
+                        vault.saveVault(root,path.endNode());
+                        savedVault.add(vault);
                     }
-                    vault.loadVault(path.endNode());
-                    vaults.put(key, vault);
-                 }              
+                 }   
+                for (Node node:treeToDelete){
+                    NeoServiceFactory.getInstance().getDatasetService().deleteTree(service, node);
+                }
+                for (Vault vault:vaults.values()){
+                    if (!savedVault.contains(vault)){
+                        vault.saveVault(root, null);
+                    }
+                }
                 tx.success();
             } finally {
                 tx.finish();
@@ -101,7 +111,15 @@ public class StatisticHandler {
      * @return
      */
     private boolean isChanged(Node root) {
-        return isChanged||this.root==null||!root.equals(this.root);
+        if ( isChanged||this.root==null||!root.equals(this.root)){
+            return true;
+        }
+        for (Vault vault:vaults.values()){
+            if (vault.isChanged()){
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

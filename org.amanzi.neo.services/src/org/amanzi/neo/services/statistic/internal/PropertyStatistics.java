@@ -4,13 +4,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.amanzi.neo.services.statistic.ChangeClassRule;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.graphdb.traversal.Uniqueness;
+import org.neo4j.kernel.Traversal;
 
 /**
  * The Class PropertyStatistics.
  */
 public class PropertyStatistics {
-    
+    private static final TraversalDescription PROPERTYS=Traversal.description().depthFirst().relationships(StatisticRelationshipTypes.PROPERTY, Direction.OUTGOING).uniqueness(Uniqueness.NONE).filter(Traversal.returnAllButStartNode()).prune(Traversal.pruneAfterDepth( 1));
+
     /** The property name. */
     private final String propertyName;
     
@@ -34,7 +39,7 @@ public class PropertyStatistics {
     
     /** The is comparable. */
     private boolean isComparable;
-    private boolean changed;
+    private boolean isChanged;
 
     /**
      * Instantiates a new property statistics.
@@ -46,9 +51,12 @@ public class PropertyStatistics {
         super();
         this.propertyName = propertyName;
         this.rule =ChangeClassRule.REMOVE_OLD_CLASS;
-        changed=false;
+        isChanged=false;
     }
-    void load(Node node){
+    public void load(Node vaultNode){
+        clearStatistic();
+        
+        isChanged=false;
         
     }
     public PropertyStatistics(String propertyName, ChangeClassRule rule) {
@@ -194,4 +202,22 @@ public class PropertyStatistics {
             }
         }
     }
+
+    public boolean register(Class klass, ChangeClassRule rule) {
+        if (this.klass!=null){
+            setClass(klass);
+            this.rule=rule;
+            return true;
+        }
+        return false;
+    }
+    /**
+     *
+     * @param vaultNode
+     * @return
+     */
+    public static Map<String,PropertyStatistics> loadProperties(Node vaultNode) {
+        return null;
+    }
+    
 }

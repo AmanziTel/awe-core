@@ -4,7 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.amanzi.neo.services.statistic.ChangeClassRule;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.graphdb.traversal.Uniqueness;
+import org.neo4j.kernel.Traversal;
 
 /**
  * <p>
@@ -19,11 +24,21 @@ public class Vault {
     /** The key. */
     private final String key;
     
-    /** The default rule. */
-    private  ChangeClassRule defaultRule;
     
     /** The property map. */
-    private HashMap<String,Map<String,PropertyStatistics>> propertyMap=new HashMap<String,Map<String,PropertyStatistics>>();
+    private HashMap<String,NodeTypeVault> propertyMap=new HashMap<String,NodeTypeVault>();
+
+
+    private boolean isChanged;
+
+
+    private Node vaultNode;
+
+
+    static final TraversalDescription PROPERTYS=Traversal.description().depthFirst().relationships(StatisticRelationshipTypes.PROPERTIES, Direction.OUTGOING).uniqueness(Uniqueness.NONE).filter(Traversal.returnAllButStartNode()).prune(Traversal.pruneAfterDepth( 1));
+
+
+    private Node parent;
 
     /**
      * Instantiates a new vault.
@@ -33,7 +48,7 @@ public class Vault {
     public Vault(String key) {
         super();
         this.key = key;
-        defaultRule=ChangeClassRule.REMOVE_OLD_CLASS;
+        isChanged=false;
     }
 
 
@@ -47,31 +62,11 @@ public class Vault {
      * @return true, if successful
      */
     public boolean registerProperty(String nodeType, String propertyName, Class klass, ChangeClassRule rule) {
-        Map<String,PropertyStatistics> propertySet=getPropertysForType(nodeType);
-        if (propertySet.get(klass)!=null){
-            return false;
-        }
-        propertySet.put(propertyName, new PropertyStatistics(propertyName, klass, rule));
-        return true;
+         NodeTypeVault propertySet = getPropertysForType(nodeType);
+        return propertySet.registerProperty(propertyName,klass,rule);
     }
 
-    /**
-     * Gets the default rule.
-     *
-     * @return the default rule
-     */
-    public ChangeClassRule getDefaultRule() {
-        return defaultRule;
-    }
 
-    /**
-     * Sets the default rule.
-     *
-     * @param defaultRule the new default rule
-     */
-    public void setDefaultRule(ChangeClassRule defaultRule) {
-        this.defaultRule = defaultRule;
-    }
 
     /**
      * Adds the value.
@@ -94,8 +89,8 @@ public class Vault {
      * @return the property statistic
      */
     private PropertyStatistics getPropertyStatistic(String nodeType, String propertyName) {
-        Map<String,PropertyStatistics> propertySet=getPropertysForType(nodeType);
-        return getProperty(propertySet,propertyName);
+        NodeTypeVault propertySet = getPropertysForType(nodeType);
+        return propertySet.getPropertyStatistic(propertyName);
     }
 
 
@@ -122,25 +117,24 @@ public class Vault {
      * @param nodeType the node type
      * @return the propertys for type
      */
-    private Map<String, PropertyStatistics> getPropertysForType(String nodeType) {
-        Map<String, PropertyStatistics> properties=propertyMap.get(nodeType);
+    private NodeTypeVault getPropertysForType(String nodeType) {
+         NodeTypeVault properties = propertyMap.get(nodeType);
             if (properties==null){
-                properties=new HashMap<String, PropertyStatistics>();
+                properties=new NodeTypeVault(nodeType);
                 propertyMap.put(nodeType, properties);
             }
         return properties;
     }
 
-    /**
-     * Load vault.
-     *
-     * @param root the root
-     */
-    public void loadVault(Node root){
+
+    private void loadVault(Node parent, Node vaultNode){
         clearVault();
-        //TODO implement
+        this.parent = parent;
+        this.vaultNode = vaultNode;
+        propertyMap.putAll(NodeTypeVault.loadNodeTypes(vaultNode));
+        isChanged=false;
     }
-    
+ 
     /**
      * Clear vault.
      */
@@ -152,8 +146,9 @@ public class Vault {
      * Save vault.
      *
      * @param root the root
+     * @param node 
      */
-    public void saveVault(Node root){
+    public void saveVault(Node root, Node node){
         //change rule, because in fynnaly during save the vault contains correct information about property
         //TODO implement
     }
@@ -193,5 +188,31 @@ public class Vault {
             return false;
         return true;
     }
-    
+
+
+
+    /**
+     *
+     * @param statRoot
+     * @return
+     */
+    public static Map<String,Vault> loadVaults(Node statRoot) {
+        Map<String, Vault> result=new HashMap<String, Vault>();
+        for (Path path:PROPERTYS.traverse(statRoot)){
+            String key= (String)path.endNode().getProperty(StatisticProperties.KEY);
+            Vault vault=new Vault(key);
+            result.put(key, vault);
+            vault.loadVault(statRoot,path.endNode());
+         }
+        return result;
+    }
+
+
+    /**
+     *
+     * @return
+     */
+    public boolean isChanged() {
+        return false;
+    }
 }
