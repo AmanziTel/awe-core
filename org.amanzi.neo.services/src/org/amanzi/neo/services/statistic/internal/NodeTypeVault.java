@@ -16,6 +16,7 @@ package org.amanzi.neo.services.statistic.internal;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.amanzi.neo.db.manager.INeoDbService;
 import org.amanzi.neo.services.statistic.ChangeClassRule;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
@@ -34,7 +35,7 @@ import org.neo4j.kernel.Traversal;
  */
 public class NodeTypeVault {
     private final String nodeType;
-    private static final TraversalDescription PROPERTYS=Traversal.description().depthFirst().relationships(StatisticRelationshipTypes.NODE_TYPES, Direction.OUTGOING).uniqueness(Uniqueness.NONE).filter(Traversal.returnAllButStartNode()).prune(Traversal.pruneAfterDepth( 1));
+    public static final TraversalDescription PROPERTYS=Traversal.description().depthFirst().relationships(StatisticRelationshipTypes.NODE_TYPES, Direction.OUTGOING).uniqueness(Uniqueness.NONE).filter(Traversal.returnAllButStartNode()).prune(Traversal.pruneAfterDepth( 1));
 
     private HashMap<String,PropertyStatistics> propertyMap=new HashMap<String,PropertyStatistics>();
  private boolean isChanged;
@@ -103,6 +104,25 @@ private Node vaultNode;
      */
     private void clearVault() {
         propertyMap.clear();
+    }
+
+    /**
+     *
+     * @param vaultNode2
+     * @return
+     */
+    public boolean isChanged(Node vaultNode2) {
+        return false;
+    }
+
+    /**
+     *
+     * @param service
+     * @param vaultNode2
+     * @param endNode
+     */
+    public void saveVault(INeoDbService service, Node vaultNode, Node nodeTypeVault) {
+        //TODO implement
     }
     
 }
