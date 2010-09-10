@@ -14,15 +14,20 @@
 package org.amanzi.neo.services.statistic.internal;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.amanzi.neo.db.manager.INeoDbService;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.statistic.ChangeClassRule;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Uniqueness;
+import org.neo4j.helpers.Predicate;
 import org.neo4j.kernel.Traversal;
 
 /**
@@ -39,7 +44,7 @@ public class NodeTypeVault {
 
     private HashMap<String,PropertyStatistics> propertyMap=new HashMap<String,PropertyStatistics>();
  private boolean isChanged;
-private Object parent;
+private Node parent;
 private Node vaultNode;
     /**
      * @param nodeType
@@ -121,8 +126,57 @@ private Node vaultNode;
      * @param vaultNode2
      * @param endNode
      */
-    public void saveVault(INeoDbService service, Node vaultNode, Node nodeTypeVault) {
-        //TODO implement
+    public void saveVault(INeoDbService service, Node parentNode, Node nodeTypeVault) {
+        if (isChanged(parentNode)) {
+            parent = parentNode;
+            Transaction tx = service.beginTx();
+            try {
+                if (nodeTypeVault == null) {
+                    Iterator<Node> iterator = PROPERTYS.filter(new Predicate<Path>() {
+
+                        @Override
+                        public boolean accept(Path paramT) {
+                            return nodeType.equals(paramT.endNode().getProperty(StatisticProperties.KEY, ""));
+                        }
+                    }).traverse(parent).nodes().iterator();
+                    if (iterator.hasNext()) {
+                        nodeTypeVault = iterator.next();
+                    } else {
+                        nodeTypeVault = service.createNode();
+                        nodeTypeVault.setProperty(StatisticProperties.KEY, nodeType);
+                        parent.createRelationshipTo(parentNode, StatisticRelationshipTypes.NODE_TYPES);
+                    }
+                } else {
+                    this.vaultNode = nodeTypeVault;
+                }
+                HashSet<Node> treeToDelete = new HashSet<Node>();
+                HashSet<PropertyStatistics> savedVault = new HashSet<PropertyStatistics>();
+                for (Path path : NodeTypeVault.PROPERTYS.traverse(vaultNode)) {
+                    String key = (String)path.endNode().getProperty(StatisticProperties.KEY);
+                    PropertyStatistics propStat = propertyMap.get(key);
+                    if (propStat == null) {
+                        treeToDelete.add(path.endNode());
+                    } else {
+                        propStat.saveVault(service, parentNode, path.endNode());
+                        savedVault.add(propStat);
+                    }
+                }
+                for (Node node : treeToDelete) {
+                    NeoServiceFactory.getInstance().getDatasetService().deleteTree(service, node);
+                }
+                for (PropertyStatistics nodeTypeV : propertyMap.values()) {
+                    if (!savedVault.contains(nodeTypeV)) {
+                        nodeTypeV.saveVault(service, parentNode, null);
+                    }
+                }
+
+                tx.success();
+            } finally {
+                tx.finish();
+            }
+        }
+        isChanged = false;
+ 
     }
     
 }

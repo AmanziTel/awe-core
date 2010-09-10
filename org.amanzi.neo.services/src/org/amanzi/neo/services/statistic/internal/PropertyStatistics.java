@@ -1,19 +1,27 @@
 package org.amanzi.neo.services.statistic.internal;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
+import org.amanzi.neo.db.manager.INeoDbService;
 import org.amanzi.neo.services.statistic.ChangeClassRule;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Uniqueness;
+import org.neo4j.helpers.Predicate;
 import org.neo4j.kernel.Traversal;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Class PropertyStatistics.
  */
 public class PropertyStatistics {
+    
+    /** The Constant PROPERTYS. */
     private static final TraversalDescription PROPERTYS=Traversal.description().depthFirst().relationships(StatisticRelationshipTypes.PROPERTY, Direction.OUTGOING).uniqueness(Uniqueness.NONE).filter(Traversal.returnAllButStartNode()).prune(Traversal.pruneAfterDepth( 1));
 
     /** The property name. */
@@ -39,13 +47,20 @@ public class PropertyStatistics {
     
     /** The is comparable. */
     private boolean isComparable;
+    
+    /** The is changed. */
     private boolean isChanged;
+    
+    /** The parent. */
+    private Node parent;
+    
+    /** The prop node. */
+    private Node propertyNode;
 
     /**
      * Instantiates a new property statistics.
-     * 
+     *
      * @param propertyName the property name
-     * @param rule the rule
      */
     public PropertyStatistics(String propertyName){
         super();
@@ -53,12 +68,45 @@ public class PropertyStatistics {
         this.rule =ChangeClassRule.REMOVE_OLD_CLASS;
         isChanged=false;
     }
-    public void load(Node vaultNode){
+    
+    /**
+     * Load.
+     *
+     * @param vaultNode the vault node
+     * @param propNode the prop node
+     */
+    public void load(Node vaultNode,Node propNode){
         clearStatistic();
-        
-        isChanged=false;
+        this.parent = vaultNode;
+        this.propertyNode = propNode;
+        String klassName=(String)propNode.getProperty(StatisticProperties.CLASS,null);
+        if (klassName!=null){
+            Class<?> classValue;
+            try {
+                classValue = Class.forName(klassName);
+                setClass(classValue);
+            } catch (ClassNotFoundException e) {
+                // TODO Handle ClassNotFoundException
+                e.printStackTrace();
+            }
+        }
+        count=(Integer)propNode.getProperty(StatisticProperties.COUNT,0);
+        int statCount=(Integer)propNode.getProperty(StatisticProperties.STAT_SIZE,0);
+        for (int i=0;i<statCount;i++){
+            long coun=(Long)propNode.getProperty(StatisticProperties.VALUE_COUNT+i,0l);
+            Object key=(Long)propNode.getProperty(StatisticProperties.VALUE_KEY+i);
+            values.put(key, coun);
+        }
+        isChanged = false;   
         
     }
+    
+    /**
+     * Instantiates a new property statistics.
+     *
+     * @param propertyName the property name
+     * @param rule the rule
+     */
     public PropertyStatistics(String propertyName, ChangeClassRule rule) {
         this(propertyName);
         this.rule = rule;
@@ -203,6 +251,13 @@ public class PropertyStatistics {
         }
     }
 
+    /**
+     * Register.
+     *
+     * @param klass the klass
+     * @param rule the rule
+     * @return true, if successful
+     */
     public boolean register(Class klass, ChangeClassRule rule) {
         if (this.klass!=null){
             setClass(klass);
@@ -211,13 +266,71 @@ public class PropertyStatistics {
         }
         return false;
     }
+    
     /**
+     * Load properties.
      *
-     * @param vaultNode
-     * @return
+     * @param vaultNode the vault node
+     * @return the map
      */
     public static Map<String,PropertyStatistics> loadProperties(Node vaultNode) {
-        return null;
+        Map<String, PropertyStatistics> result=new HashMap<String, PropertyStatistics>();
+        for (Path path:PROPERTYS.traverse(vaultNode)){
+            String key= (String)path.endNode().getProperty(StatisticProperties.KEY);
+            PropertyStatistics properties=new PropertyStatistics(key);
+            result.put(key, properties);
+            properties.load(vaultNode,path.endNode());
+         }
+        return result;
+    }
+    
+    /**
+     * Save vault.
+     *
+     * @param service the service
+     * @param parentNode the parent node
+     * @param endNode the end node
+     */
+    public void saveVault(INeoDbService service, Node parentNode, Node propNode) {
+        if (isChanged(parentNode)) {
+            parent = parentNode;
+            Transaction tx = service.beginTx();
+            try {
+                if (propNode == null) {
+                    Iterator<Node> iterator = PROPERTYS.filter(new Predicate<Path>() {
+
+                        @Override
+                        public boolean accept(Path paramT) {
+                            return propertyName.equals(paramT.endNode().getProperty(StatisticProperties.KEY, ""));
+                        }
+                    }).traverse(parent).nodes().iterator();
+                    if (iterator.hasNext()) {
+                        propertyNode = iterator.next();
+                    } else {
+                        propertyNode = service.createNode();
+                        propertyNode.setProperty(StatisticProperties.KEY, propertyName);
+                        parent.createRelationshipTo(parentNode, StatisticRelationshipTypes.PROPERTY);
+                    }
+                } else {
+                    propertyNode= propNode;
+                }
+                //TODO implement
+                tx.success();
+            } finally {
+                tx.finish();
+            }
+        }
+        isChanged = false;
+    }
+
+    /**
+     * Checks if is changed.
+     *
+     * @param parentNode the parent node
+     * @return true, if is changed
+     */
+    public boolean isChanged(Node parentNode) {
+        return isChanged||parent==null||!parentNode.equals(this.parent);
     }
     
 }

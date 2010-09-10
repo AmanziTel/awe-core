@@ -147,7 +147,6 @@ public class Vault {
      * @param node
      */
     public void saveVault(INeoDbService service, Node statRoot, Node vault) {
-        // TODO implement
         if (isChanged(statRoot)) {
             parent = statRoot;
             Transaction tx = service.beginTx();
@@ -164,6 +163,7 @@ public class Vault {
                         vaultNode = iterator.next();
                     } else {
                         vaultNode = service.createNode();
+                        vaultNode.setProperty(StatisticProperties.KEY, key);
                         parent.createRelationshipTo(vaultNode, StatisticRelationshipTypes.PROPERTIES);
                     }
                 } else {

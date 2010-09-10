@@ -82,6 +82,7 @@ public class StatisticHandler {
                 Relationship rel = root.getSingleRelationship(StatisticRelationshipTypes.STATISTIC_PROP,Direction.OUTGOING);
                 if (rel==null){
                     statRoot=service.createNode();
+                    statRoot.setProperty(StatisticProperties.KEY, "PROPERTIES");
                     root.createRelationshipTo(statRoot, StatisticRelationshipTypes.STATISTIC_PROP);
                 }else{
                     statRoot=rel.getEndNode();

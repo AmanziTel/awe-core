@@ -18,6 +18,10 @@ public class StatisticProperties{
     private StatisticProperties() {
         //hide constructor
     }
-    public static final String KEY="property_key";
-    public static final String NAME="name";
+    public static final String KEY="name";
+    public static final String CLASS = "class";
+    public static final String COUNT = "count";
+    public static final String STAT_SIZE = "stat_size";
+    public static final String VALUE_COUNT = "c";
+    public static final String VALUE_KEY = "v";
 }
