@@ -157,7 +157,7 @@ private Node vaultNode;
                     if (propStat == null) {
                         treeToDelete.add(path.endNode());
                     } else {
-                        propStat.saveVault(service, parentNode, path.endNode());
+                        propStat.save(service, parentNode, path.endNode());
                         savedVault.add(propStat);
                     }
                 }
@@ -166,7 +166,7 @@ private Node vaultNode;
                 }
                 for (PropertyStatistics nodeTypeV : propertyMap.values()) {
                     if (!savedVault.contains(nodeTypeV)) {
-                        nodeTypeV.saveVault(service, parentNode, null);
+                        nodeTypeV.save(service, parentNode, null);
                     }
                 }
 
@@ -177,6 +177,15 @@ private Node vaultNode;
         }
         isChanged = false;
  
+    }
+
+    /**
+     *
+     * @param key
+     * @return
+     */
+    public PropertyStatistics findProperty(String key) {
+        return propertyMap.get(key);
     }
     
 }

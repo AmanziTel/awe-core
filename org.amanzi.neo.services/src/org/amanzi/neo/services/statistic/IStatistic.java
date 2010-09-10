@@ -24,4 +24,6 @@ package org.amanzi.neo.services.statistic;
 public interface IStatistic {
     void save();
     boolean indexValue(String rootKey, String nodeType, String propertyName, Object propertyValue);
+
+    Object parseValue(String rootname, String nodeType, String key, String value);
 }

@@ -27,7 +27,10 @@ public class CRS {
         return epsg;
     }
 
-    public static CRS fromLocation(float lat, float lon, String hint) {
+    public static CRS fromLocation(Float lat, Float lon, String hint) {
+        return fromLocation(lat.doubleValue(),lon.doubleValue(),hint);
+    }
+    public static CRS fromLocation(double lat, double lon, String hint) {
         CRS crs = new CRS();
         crs.wkt=null;
         crs.type = "geographic";

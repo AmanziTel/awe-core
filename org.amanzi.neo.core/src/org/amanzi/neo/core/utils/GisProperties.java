@@ -14,7 +14,6 @@
 package org.amanzi.neo.core.utils;
 
 import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.utils.CRS;
 import org.neo4j.graphdb.Node;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -38,6 +37,13 @@ public class GisProperties {
     }
 
     public final void checkCRS(float lat, float lon, String hint) {
+        if (crs == null) {
+            // TODO move CRS class and update CRS in amanzi.neo.core
+            crs = CRS.fromLocation(lat, lon, hint);
+            saveCRS();
+        }
+    }
+    public final void checkCRS(double lat, double lon, String hint) {
         if (crs == null) {
             // TODO move CRS class and update CRS in amanzi.neo.core
             crs = CRS.fromLocation(lat, lon, hint);

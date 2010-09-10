@@ -28,6 +28,7 @@ import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.db.manager.INeoDbService;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.loader.core.parser.IDataElement;
+import org.amanzi.neo.services.statistic.IStatistic;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.index.IndexService;
@@ -40,12 +41,17 @@ import org.neo4j.index.IndexService;
  * @since 1.0.0
  */
 public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T> {
+    protected static final String ALL_NODE_TYPES="all_node_types";
     private final LinkedHashMap<String, ArrayList<MultiPropertyIndex< ? >>> indexes = new LinkedHashMap<String, ArrayList<MultiPropertyIndex< ? >>>();
     private final LinkedHashMap<String, LinkedHashMap<String, HashSet<MultiPropertyIndex< ? >>>> mappedIndexes = new LinkedHashMap<String, LinkedHashMap<String, HashSet<MultiPropertyIndex< ? >>>>();
+    private final LinkedHashMap<String, HashSet<String>> statToAnalyse = new LinkedHashMap<String, HashSet<String>>();
+    private final HashSet<String> ignoredProperties=new HashSet<String>();
     private boolean indexesInitialized = false;
     private PrintStream outputStream;
     protected Node rootNode;
-    private Transaction mainTx;
+    protected Transaction mainTx;
+    protected IStatistic statistic;
+    protected T element;
     @Override
     public PrintStream getPrintStream() {
         if (outputStream==null){
@@ -53,7 +59,10 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
         }
         return outputStream;
     }
-
+    public void init(T element) {
+        this.element = element;
+        ignoredProperties.add(INeoConstants.PROPERTY_TYPE_NAME);
+    };
     @Override
     public void setPrintStream(PrintStream outputStream) {
         this.outputStream = outputStream;
@@ -73,7 +82,12 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
             }
         }
     }
-
+    /**
+    *
+    */
+   protected void startMainTx() {
+       mainTx=getService().beginTx();
+   }
     /**
      * Indexes mapped
      * 
@@ -114,6 +128,7 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
                     index.flush();
                 } catch (IOException e) {
                     // TODO:Log error
+                    e.printStackTrace();
                     removeIndex(entry.getKey(), index);
                 }
             }
@@ -173,6 +188,34 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
         indexesInitialized = true;
     }
 
+    protected  void addAnalysedNodeTypes(String key, String nodeType) {
+        HashSet<String> nodetypes = statToAnalyse.get(key);
+        if (nodetypes==null){
+            nodetypes=new HashSet<String>();
+            statToAnalyse.put(key, nodetypes);
+        }
+        if (nodetypes.contains(ALL_NODE_TYPES)){
+            return;
+        }
+        nodetypes.add(nodeType);
+    }
+    protected void indexStat(String key,Node node){
+        HashSet<String> nodeTypes = statToAnalyse.get(key);
+        if (nodeTypes==null){
+            return;
+        }
+        String nodeType = NeoUtils.getNodeType(node, "");
+        if (!nodeTypes.contains(ALL_NODE_TYPES)){
+            if (!nodeTypes.contains(nodeType)){
+                return;
+            }
+        }
+        for (String keys:node.getPropertyKeys()){
+            if (!ignoredProperties.contains(keys)){
+                statistic.indexValue(key, nodeType, keys, node.getProperty(keys));
+            }
+        }
+    }
 
     protected INeoDbService getService() {
         return DatabaseManager.getInstance().getCurrentDatabaseService();

@@ -19,6 +19,9 @@ import java.util.Iterator;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.GisTypes;
+import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.neo4j.graphdb.Direction;
@@ -320,7 +323,25 @@ public class DatasetService extends AbstractService {
 
     public Node findGisNode(Node rootNode, boolean createNew) {
         Relationship rel = rootNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT,Direction.INCOMING);
-        //TODO implement
+        if (rel!=null){
+            return rel.getOtherNode(rootNode);
+        }else if (createNew){
+            Transaction tx = databaseService.beginTx();
+            try {
+                Node result = databaseService.createNode();
+                NeoUtils.setNodeName(result, NeoUtils.getSimpleNodeName(rootNode, ""), null);
+                result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.GIS.getId());
+                result.setProperty(INeoConstants.PROPERTY_NAME_NAME, rootNode.getProperty(INeoConstants.PROPERTY_NAME_NAME,""));
+                GisTypes gisType=GisTypes.getGisTypeFromRootType((String)rootNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME));
+                result.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, gisType);
+                result.createRelationshipTo(rootNode, GeoNeoRelationshipTypes.NEXT);
+                databaseService.getReferenceNode().createRelationshipTo(result, NetworkRelationshipTypes.CHILD);
+                tx.success();
+                return result;
+            } finally {
+                tx.finish();
+            }
+        }
         return null;
     }
 

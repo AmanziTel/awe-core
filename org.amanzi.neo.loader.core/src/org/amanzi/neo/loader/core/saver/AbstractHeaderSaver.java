@@ -19,7 +19,6 @@ import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.loader.core.parser.HeaderTransferData;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.statistic.IStatistic;
 import org.amanzi.neo.services.statistic.StatisticManager;
 import org.neo4j.graphdb.Node;
 
@@ -34,16 +33,20 @@ public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> extends
 
     protected DatasetService service;
 
-    protected IStatistic statistic;
+    
     protected LinkedHashMap<Node, GisProperties> gisNodes=new LinkedHashMap<Node, GisProperties>();
-    protected T element;
+
+
+    protected String rootname;
+
 
     @Override
     public void init(T element) {
-        this.element = element;
+
+        super.init(element);
         String rootNodeType=getRootNodeType();
         String projectName = element.getProjectName();
-        String rootname = element.getRootName();
+        rootname = element.getRootName();
         service=NeoServiceFactory.getInstance().getDatasetService();
         rootNode=service.findRoot(projectName,rootname);
         if (rootNode==null){
@@ -62,8 +65,9 @@ public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> extends
     protected GisProperties getGisProperties(Node rootNode) {
         GisProperties property = gisNodes.get(rootNode);
         if (property==null){
-            //TODO implement
             Node gis=service.findGisNode(rootNode,true);
+            property=new GisProperties(gis);
+            gisNodes.put(rootNode, property);
         }
         return property;
     }
@@ -83,6 +87,7 @@ public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> extends
     @Override
     public void finishUp(T element) {
         statistic.save();
+        commit(false);
     }
 
 

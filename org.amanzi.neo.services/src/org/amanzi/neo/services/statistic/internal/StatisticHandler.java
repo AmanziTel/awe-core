@@ -174,4 +174,13 @@ public class StatisticHandler {
         }
         return vault;
     }
+
+
+    public PropertyStatistics findProperty(String rootname, String nodeType, String key) {
+        Vault vault=vaults.get(rootname);
+        if (vault==null){
+            return null;
+        }
+        return vault.findProperty(nodeType,key);
+    }
 }

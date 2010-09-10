@@ -256,4 +256,18 @@ public class Vault {
         }
         return false;
     }
+
+    /**
+     *
+     * @param nodeType
+     * @param key2
+     * @return
+     */
+    public PropertyStatistics findProperty(String nodeType, String key) {
+        NodeTypeVault vault=propertyMap.get(nodeType);
+        if (vault==null){
+            return null;
+        }
+        return vault.findProperty(key);
+    }
 }

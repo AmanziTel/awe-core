@@ -14,6 +14,8 @@ package org.amanzi.neo.core.utils;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
@@ -77,6 +79,7 @@ import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Uniqueness;
 import org.neo4j.helpers.Predicate;
 import org.neo4j.index.IndexHits;
+import org.neo4j.index.IndexService;
 import org.neo4j.index.lucene.LuceneIndexService;
 import org.neo4j.kernel.Traversal;
 import org.neo4j.neoclipse.preference.DecoratorPreferences;
@@ -2451,7 +2454,7 @@ public class NeoUtils {
      * @param service the service
      * @return the node
      */
-    public static Node findSector(Node baseName, Integer ci, Integer lac, String name, boolean returnFirsElement, LuceneIndexService index, GraphDatabaseService service) {
+    public static Node findSector(Node baseName, Integer ci, Integer lac, String name, boolean returnFirsElement, IndexService index, GraphDatabaseService service) {
         assert baseName != null && (ci != null || name != null) && index != null;
         Transaction tx = beginTx(service);
         try {
@@ -3079,5 +3082,31 @@ public class NeoUtils {
             return true;
         }
 
+    }
+
+    /**
+     * Gets the number value.
+     *
+     * @param <T> the generic type
+     * @param klass the klass
+     * @param value the value
+     * @return the number value
+     * @throws SecurityException the security exception
+     * @throws NoSuchMethodException the no such method exception
+     * @throws IllegalArgumentException the illegal argument exception
+     * @throws IllegalAccessException the illegal access exception
+     * @throws InvocationTargetException the invocation target exception
+     */
+    @SuppressWarnings("unchecked")
+    public
+    static <T extends Number> T getNumberValue(Class<T> klass, String value) throws SecurityException, NoSuchMethodException, IllegalArgumentException,
+            IllegalAccessException, InvocationTargetException {
+        if (value == null) {
+            return null;
+        }
+        String methodName = klass == Integer.class ? "parseInt" : "parse" + klass.getSimpleName();
+    
+        Method metod = klass.getMethod(methodName, String.class);
+        return (T)metod.invoke(null, value);
     }
 }
