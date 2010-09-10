@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -62,6 +63,7 @@ import org.hsqldb.lib.StringUtil;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
@@ -71,8 +73,12 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
+import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.graphdb.traversal.Uniqueness;
+import org.neo4j.helpers.Predicate;
 import org.neo4j.index.IndexHits;
 import org.neo4j.index.lucene.LuceneIndexService;
+import org.neo4j.kernel.Traversal;
 import org.neo4j.neoclipse.preference.DecoratorPreferences;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -3017,5 +3023,49 @@ public class NeoUtils {
             }
         }, NetworkRelationshipTypes.CHILD, Direction.INCOMING);
         return traverse.iterator().hasNext() ? traverse.iterator().next() : null;
+    }
+    
+    /**
+     * Gets the root nodes.
+     *
+     * @param additionalFilter the additional filter
+     * @return the root nodes
+     */
+    public static TraversalDescription getTDRootNodes(Predicate<Path> additionalFilter) {
+        FilterAND filter=new FilterAND();
+        filter.addFilter(new Predicate<Path>() {
+            
+            @Override
+            public boolean accept(Path paramT) {
+                 if (paramT.length()!=2){
+                     return false;
+                 }
+                 return NodeTypes.AWE_PROJECT.getId().equals(paramT.lastRelationship().getStartNode().getProperty("type",""));
+            }
+        });
+        filter.addFilter(additionalFilter);
+        return Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(2)).filter(filter).relationships(SplashRelationshipTypes.AWE_PROJECT,Direction.OUTGOING).relationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING);
+    }
+    
+    /**
+     * The Class FilterAND.
+     */
+    public static class FilterAND implements Predicate<Path>{
+        public LinkedHashSet<Predicate<Path>> filters=new LinkedHashSet<Predicate<Path>>();
+        public void addFilter(Predicate<Path> filter){
+            if (filter!=null){
+                filters.add(filter);
+            }
+        }
+        @Override
+        public boolean accept(Path paramT) {
+            for (Predicate<Path> filter:filters){
+                if (!filter.accept(paramT)){
+                    return false;
+                }
+            }
+            return true;
+        }
+        
     }
 }

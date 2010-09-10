@@ -62,4 +62,19 @@ public enum GisTypes {
         }
         return null;
     }
+
+    /**
+     *
+     * @param property
+     * @return
+     */
+    public static GisTypes getGisTypeFromRootType(String rootType) {
+        if (NodeTypes.NETWORK.getId().equals(rootType)){
+            return NETWORK;
+        }else if (NodeTypes.DATASET.getId().equals(rootType)){
+            return DRIVE;
+        }else {
+            return OSS;
+        }
+    }
 }

@@ -19,10 +19,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -97,43 +97,25 @@ public class Root extends NeoNode {
         HashMap<String,NeoNode> deltaNodes = new HashMap<String,NeoNode>();
 
         GraphDatabaseService service = serviceProvider.getService();
-
-        Transaction transaction = service.beginTx();
-        try {
-            Node reference = service.getReferenceNode();
-
-            for (Relationship relationship : reference.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
-                Node node = relationship.getEndNode();
-                Node gisNode = null;
-                if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.GIS.getId())) {
-                    gisNode = node;
-                }
-                if (gisNode != null) {
-                    int nextNum = number+1;
-                    for (Relationship gisRelationship : gisNode.getRelationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
-                        node = gisRelationship.getEndNode();
-                        if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.NETWORK.getId())) {
-                            networkNodes.add(new NeoNode(node,nextNum++));
-                            for (Relationship deltaRelationship : node.getRelationships(NetworkRelationshipTypes.DELTA_REPORT, Direction.INCOMING)) {
-                                Node deltaNode = deltaRelationship.getStartNode();
-                                String deltaName = (String)deltaNode.getProperty("name",null);
-                                if (!deltaNodes.containsKey(deltaName)) {
-                                    deltaNodes.put(deltaName,new NeoNode(deltaNode,nextNum++));
-                                }
-                            }
-                        }
+        
+        Node reference = service.getReferenceNode();
+        int nextNum = number+1;
+        for (Node node : NeoUtils.getTDRootNodes(null).traverse(reference).nodes()) {
+            if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.NETWORK.getId())) {
+                networkNodes.add(new NeoNode(node, nextNum++));
+                for (Relationship deltaRelationship : node.getRelationships(NetworkRelationshipTypes.DELTA_REPORT, Direction.INCOMING)) {
+                    Node deltaNode = deltaRelationship.getStartNode();
+                    String deltaName = (String)deltaNode.getProperty("name", null);
+                    if (!deltaNodes.containsKey(deltaName)) {
+                        deltaNodes.put(deltaName, new NeoNode(deltaNode, nextNum++));
                     }
                 }
-                if(networkNodes.size()+deltaNodes.size()>MAX_CHILDREN_COUNT){
-                    break;
-                }
-            }           
-            
-            transaction.success();
-        } finally {
-            transaction.finish();
+            }
+            if (networkNodes.size() + deltaNodes.size() > MAX_CHILDREN_COUNT) {
+                break;
+            }
         }
-        
+
         if (networkNodes.isEmpty() && deltaNodes.isEmpty()) {
             return NO_NODES;
         } else {
