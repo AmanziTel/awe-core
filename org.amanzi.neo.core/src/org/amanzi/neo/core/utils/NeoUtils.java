@@ -3046,26 +3046,38 @@ public class NeoUtils {
         filter.addFilter(additionalFilter);
         return Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(2)).filter(filter).relationships(SplashRelationshipTypes.AWE_PROJECT,Direction.OUTGOING).relationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING);
     }
-    
+
     /**
-     * The Class FilterAND.
+     * <p>
+     * Wrapper for set of filters
+     * </p>
+     * 
+     * @author tsinkel_a
+     * @since 1.0.0
      */
-    public static class FilterAND implements Predicate<Path>{
-        public LinkedHashSet<Predicate<Path>> filters=new LinkedHashSet<Predicate<Path>>();
-        public void addFilter(Predicate<Path> filter){
-            if (filter!=null){
+    public static class FilterAND implements Predicate<Path> {
+        public LinkedHashSet<Predicate<Path>> filters = new LinkedHashSet<Predicate<Path>>();
+
+        /**
+         * Adds the filter.
+         *
+         * @param filter the filter
+         */
+        public void addFilter(Predicate<Path> filter) {
+            if (filter != null) {
                 filters.add(filter);
             }
         }
+
         @Override
         public boolean accept(Path paramT) {
-            for (Predicate<Path> filter:filters){
-                if (!filter.accept(paramT)){
+            for (Predicate<Path> filter : filters) {
+                if (!filter.accept(paramT)) {
                     return false;
                 }
             }
             return true;
         }
-        
+
     }
 }
