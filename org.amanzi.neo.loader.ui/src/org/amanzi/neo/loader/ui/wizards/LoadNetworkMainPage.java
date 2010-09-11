@@ -20,7 +20,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -48,11 +47,8 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.traversal.TraversalDescription;
 
 /**
  * <p>
@@ -228,32 +224,23 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
      * @return array of GIS nodes
      */
     private String[] getGisItems() {
-        Transaction tx = NeoUtils.beginTransaction();
-        try {
-            GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
-            Node refNode = service.getReferenceNode();
-            restrictedNames.clear();
-            members = new HashMap<String, Node>();
-            String header = GisTypes.NETWORK.getHeader();
-            for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
-                Node node = relationship.getEndNode();
-                if (node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)
-                        && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString().equalsIgnoreCase(NodeTypes.GIS.getId())                        ) {
-                    String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-                    if (header.equals(node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, ""))){ //$NON-NLS-1$
-                        members.put(id, node);
-                    }else{
-                        restrictedNames.add(id);
-                    }
-                }
+        // TODO find in active project?
+        TraversalDescription td = NeoUtils.getTDRootNodes(null);
+        Node refNode = DatabaseManager.getInstance().getCurrentDatabaseService().getReferenceNode();
+        restrictedNames.clear();
+        members = new HashMap<String, Node>();
+        for (Node node : td.traverse(refNode).nodes()) {
+            String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+            if (NodeTypes.NETWORK.checkNode(node)) { //$NON-NLS-1$
+                members.put(id, node);
+            } else {
+                restrictedNames.add(id);
             }
-
-            String[] result = members.keySet().toArray(new String[] {});
-            Arrays.sort(result);
-            return result;
-        } finally {
-            tx.finish();
         }
+
+        String[] result = members.keySet().toArray(new String[] {});
+        Arrays.sort(result);
+        return result;
     }
 
     /**
