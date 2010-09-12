@@ -333,7 +333,7 @@ public class DatasetService extends AbstractService {
                 result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.GIS.getId());
                 result.setProperty(INeoConstants.PROPERTY_NAME_NAME, rootNode.getProperty(INeoConstants.PROPERTY_NAME_NAME,""));
                 GisTypes gisType=GisTypes.getGisTypeFromRootType((String)rootNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME));
-                result.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, gisType);
+                result.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, gisType.getHeader());
                 result.createRelationshipTo(rootNode, GeoNeoRelationshipTypes.NEXT);
                 databaseService.getReferenceNode().createRelationshipTo(result, NetworkRelationshipTypes.CHILD);
                 tx.success();
