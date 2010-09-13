@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader.savers;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -74,7 +75,19 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
         headerNotHandled = true;
         trimSectorName = NeoLoaderPlugin.getDefault().getPreferenceStore().getBoolean(DataLoadPreferences.REMOVE_SITE_NAME);
         line = 0l;
+        addNetworkIndexes();
+
+        
     }
+    private void addNetworkIndexes() {
+        try {
+            addIndex(NodeTypes.SITE.getId(),getLocationIndexProperty(rootname));
+        } catch (IOException e) {
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+
+    }
+
 
     @Override
     public void save(HeaderTransferData element) {
@@ -82,6 +95,7 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
         if (headerNotHandled) {
             definePropertyMap(element);
             startMainTx();
+            initializeIndexes();
             headerNotHandled = false;
 
         }
@@ -133,7 +147,7 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
                 }
             }
             Double lat = getNumberValue(Double.class, INeoConstants.PROPERTY_LAT_NAME, element);
-            Double lon = getNumberValue(Double.class, INeoConstants.PROPERTY_LAT_NAME, element);
+            Double lon = getNumberValue(Double.class, INeoConstants.PROPERTY_LON_NAME, element);
             if (lat == null) {
                 lat = 0d;
             }
@@ -198,11 +212,11 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
                     getIndexService().index(sector, NeoUtils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_SECTOR_LAC, NodeTypes.SECTOR), lac);
                 }
             }
-            Double beamwith = getNumberValue(Double.class, "beamwidth", element);
+            Integer beamwith = getNumberValue(Integer.class, "beamwidth", element);
             if (beamwith!=null){
                 updateProperty(rootname,NodeTypes.SECTOR.getId(),sector,"beamwidth",beamwith);
             }
-            Double azimuth = getNumberValue(Double.class, "azimuth", element);
+            Integer azimuth = getNumberValue(Integer.class, "azimuth", element);
             if (azimuth!=null){
                 updateProperty(rootname,NodeTypes.SECTOR.getId(),sector,"azimuth",azimuth);
             }
@@ -322,11 +336,7 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
             }
         }
     }
-public static void main(String[] args) {
-    Pattern pat=Pattern.compile("lat.*",Pattern.CASE_INSENSITIVE);
-    Matcher mat = pat.matcher("Lat");
-    System.out.println(mat.matches());
-}
+
     @Override
     protected void fillRootNode(Node rootNode, HeaderTransferData element) {
 

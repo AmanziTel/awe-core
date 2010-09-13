@@ -24,4 +24,6 @@ public class StatisticProperties{
     public static final String STAT_SIZE = "stat_size";
     public static final String VALUE_COUNT = "c";
     public static final String VALUE_KEY = "v";
+    public static final String MIN_VALUE = "min";
+    public static final String MAX_VALUE = "max";
 }

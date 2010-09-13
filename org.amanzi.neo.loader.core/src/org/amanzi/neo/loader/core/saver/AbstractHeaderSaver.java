@@ -90,7 +90,9 @@ public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> extends
         for(GisProperties gis:gisNodes.values()){
             gis.saveBBox();
             gis.saveCRS();
+            gis.saveCount();
         }
+        finishUpIndexes();
         commit(false);
     }
 

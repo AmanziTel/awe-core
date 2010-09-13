@@ -117,6 +117,9 @@ public class GisProperties {
             gis.setProperty(INeoConstants.PROPERTY_BBOX_NAME, getBbox());
         }
     }
+    public void saveCount() {
+        gis.setProperty(INeoConstants.COUNT_TYPE_NAME, getSavedData());
+    }
 
     /**
      *save CRS to gis node

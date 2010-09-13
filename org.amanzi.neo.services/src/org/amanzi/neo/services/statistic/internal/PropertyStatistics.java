@@ -297,6 +297,7 @@ public class PropertyStatistics {
      */
     public void save(INeoDbService service, Node parentNode, Node propNode) {
         if (isChanged(parentNode)) {
+            rule=ChangeClassRule.IGNORE_NEW_CLASS;
             parent = parentNode;
             Transaction tx = service.beginTx();
             try {
@@ -313,12 +314,23 @@ public class PropertyStatistics {
                     } else {
                         propertyNode = service.createNode();
                         propertyNode.setProperty(StatisticProperties.KEY, propertyName);
-                        parent.createRelationshipTo(parentNode, StatisticRelationshipTypes.PROPERTY);
+                        parent.createRelationshipTo(propertyNode, StatisticRelationshipTypes.PROPERTY);
                     }
                 } else {
                     propertyNode = propNode;
                 }
                 propertyNode.setProperty(StatisticProperties.COUNT, count);
+                if (klass!=null){
+                    propertyNode.setProperty(StatisticProperties.CLASS, klass.getCanonicalName());
+                }
+                if (isComparable){
+                    if (minValue!=null){
+                        propertyNode.setProperty(StatisticProperties.MIN_VALUE, minValue);
+                    }
+                    if (maxValue!=null){
+                        propertyNode.setProperty(StatisticProperties.MAX_VALUE, maxValue);
+                    }
+                }
                 propertyNode.setProperty(StatisticProperties.STAT_SIZE, values.size());
                 int i = 0;
                 for (Map.Entry<Object, Long> entry : values.entrySet()) {

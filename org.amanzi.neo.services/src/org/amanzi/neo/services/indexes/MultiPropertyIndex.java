@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.services.indexes.PropertyIndex.NeoIndexRelationshipTypes;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -439,10 +440,12 @@ public class MultiPropertyIndex<E extends Object> {
             while (toDelete.size() > 0) {
                 Node node = toDelete.remove(0);
                 for (Relationship rel : node.getRelationships(NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)) {
-                    toDelete.add(rel.getEndNode());                    
-                    rel.delete();
+                    toDelete.add(rel.getEndNode());  
+                    DatabaseManager.getInstance().getCurrentDatabaseService().delete(rel);
+//                    rel.delete();
                 }
-                node.delete();
+                DatabaseManager.getInstance().getCurrentDatabaseService().delete(node);
+//                node.delete();
             }
         }
         levels.clear();
@@ -485,7 +488,8 @@ public class MultiPropertyIndex<E extends Object> {
             if (highestIndex != null) {
                 // Deleting any previous starting relationships
                 for (Relationship rel : root.getRelationships(PropertyIndex.NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)) {
-                    rel.delete();
+//                    rel.delete();
+                    DatabaseManager.getInstance().getCurrentDatabaseService().delete(rel);
                 }
                 // Make a new one to the top node (might be same as before or higher level node
                 root.createRelationshipTo(highestIndex, PropertyIndex.NeoIndexRelationshipTypes.IND_CHILD);

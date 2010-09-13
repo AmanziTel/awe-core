@@ -116,7 +116,15 @@ private Node vaultNode;
      * @param vaultNode2
      * @return
      */
-    public boolean isChanged(Node vaultNode2) {
+    public boolean isChanged(Node vaultRoot) {
+        if (isChanged || parent == null || !vaultRoot.equals(parent)) {
+            return true;
+        }
+        for (PropertyStatistics prop : propertyMap.values()) {
+            if (prop.isChanged(vaultNode)) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -140,11 +148,11 @@ private Node vaultNode;
                         }
                     }).traverse(parent).nodes().iterator();
                     if (iterator.hasNext()) {
-                        nodeTypeVault = iterator.next();
+                        vaultNode = iterator.next();
                     } else {
-                        nodeTypeVault = service.createNode();
-                        nodeTypeVault.setProperty(StatisticProperties.KEY, nodeType);
-                        parent.createRelationshipTo(parentNode, StatisticRelationshipTypes.NODE_TYPES);
+                        vaultNode = service.createNode();
+                        vaultNode.setProperty(StatisticProperties.KEY, nodeType);
+                        parent.createRelationshipTo(vaultNode, StatisticRelationshipTypes.NODE_TYPES);
                     }
                 } else {
                     this.vaultNode = nodeTypeVault;
@@ -164,9 +172,9 @@ private Node vaultNode;
                 for (Node node : treeToDelete) {
                     NeoServiceFactory.getInstance().getDatasetService().deleteTree(service, node);
                 }
-                for (PropertyStatistics nodeTypeV : propertyMap.values()) {
-                    if (!savedVault.contains(nodeTypeV)) {
-                        nodeTypeV.save(service, parentNode, null);
+                for (PropertyStatistics property : propertyMap.values()) {
+                    if (!savedVault.contains(property)) {
+                        property.save(service, vaultNode, null);
                     }
                 }
 
