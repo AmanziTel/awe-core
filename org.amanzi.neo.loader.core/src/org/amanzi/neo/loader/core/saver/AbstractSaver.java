@@ -217,6 +217,12 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
         }
     }
 
+   protected void updateProperty(String key, String nodeType, Node node, String propertyName, Object value) {
+       if (!node.hasProperty(propertyName)){
+           node.setProperty(propertyName, value);
+           statistic.indexValue(key, nodeType, propertyName, value);
+       }
+   }
     protected INeoDbService getService() {
         return DatabaseManager.getInstance().getCurrentDatabaseService();
     }

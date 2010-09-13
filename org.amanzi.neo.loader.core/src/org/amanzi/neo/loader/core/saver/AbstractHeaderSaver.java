@@ -87,6 +87,10 @@ public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> extends
     @Override
     public void finishUp(T element) {
         statistic.save();
+        for(GisProperties gis:gisNodes.values()){
+            gis.saveBBox();
+            gis.saveCRS();
+        }
         commit(false);
     }
 
