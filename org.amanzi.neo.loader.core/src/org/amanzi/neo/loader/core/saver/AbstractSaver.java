@@ -26,8 +26,8 @@ import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.db.manager.INeoDbService;
-import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.loader.core.parser.IDataElement;
+import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.statistic.IStatistic;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -88,6 +88,35 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
    protected void startMainTx() {
        mainTx=getService().beginTx();
    }
+   protected void addIndex(String nodeType, MultiPropertyIndex< ? > index) {
+       ArrayList<MultiPropertyIndex< ? >> indList = indexes.get(nodeType);
+       if (indList == null) {
+           indList = new ArrayList<MultiPropertyIndex< ? >>();
+           indexes.put(nodeType, indList);
+       }
+       if (!indList.contains(index)) {
+           indList.add(index);
+       }
+   }
+   protected static  MultiPropertyIndex< ? > getLocationIndexProperty(String rootname) throws IOException {
+       return new MultiPropertyIndex<Double>(NeoUtils.getLocationIndexName(rootname), new String[] {INeoConstants.PROPERTY_LAT_NAME, INeoConstants.PROPERTY_LON_NAME},
+               new org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiDoubleConverter(0.001), 10);
+}
+   protected void addMappedIndex(String key, String nodeType, MultiPropertyIndex< ? > index) {
+       LinkedHashMap<String, HashSet<MultiPropertyIndex< ? >>> mappIndex = mappedIndexes.get(key);
+       if (mappIndex == null) {
+           mappIndex = new LinkedHashMap<String, HashSet<MultiPropertyIndex< ? >>>();
+           mappedIndexes.put(key, mappIndex);
+       }
+       HashSet<MultiPropertyIndex< ? >> indSet = mappIndex.get(nodeType);
+       if (indSet == null) {
+           indSet = new HashSet<MultiPropertyIndex< ? >>();
+           mappIndex.put(nodeType, indSet);
+       }
+       indSet.add(index);
+   }
+
+
     /**
      * Indexes mapped
      * 
