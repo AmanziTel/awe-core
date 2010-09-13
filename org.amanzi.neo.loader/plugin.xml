@@ -269,5 +269,12 @@
             label="New neighbours">
       </action>
    </extension>
+   <extension
+         point="org.amanzi.loader.core.saver">
+      <saver
+            class="org.amanzi.neo.loader.savers.NetworkSaver"
+            id="org.amanzi.neo.loader.savers.NetworkSaver">
+      </saver>
+   </extension>
 
 </plugin>
