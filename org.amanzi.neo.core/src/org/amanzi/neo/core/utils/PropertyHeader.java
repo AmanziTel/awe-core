@@ -59,13 +59,16 @@ public class PropertyHeader {
     private final boolean isGis;
     private final boolean isDataset;
     private final boolean havePropertyNode;
-
+    
+    public static PropertyHeader getPropertyStatistic(Node node){
+        return new PropertyHeader(node);
+    }
     /**
      * Constructor
      * 
      * @param node - gis Node
      */
-    public PropertyHeader(Node node) {
+    private PropertyHeader(Node node) {
         isGis = NeoUtils.isGisNode(node);
         isDataset = !isGis && NeoUtils.isDatasetNode(node);
         this.node = node;

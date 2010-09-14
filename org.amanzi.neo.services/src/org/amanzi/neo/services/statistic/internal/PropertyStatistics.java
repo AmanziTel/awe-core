@@ -93,11 +93,11 @@ public class PropertyStatistics {
                 e.printStackTrace();
             }
         }
-        count = (Integer)propNode.getProperty(StatisticProperties.COUNT, 0);
+        count = (Long)propNode.getProperty(StatisticProperties.COUNT, 0l);
         int statCount = (Integer)propNode.getProperty(StatisticProperties.STAT_SIZE, 0);
         for (int i = 0; i < statCount; i++) {
             long coun = (Long)propNode.getProperty(StatisticProperties.VALUE_COUNT + i, 0l);
-            Object key = (Long)propNode.getProperty(StatisticProperties.VALUE_KEY + i);
+            Object key = propNode.getProperty(StatisticProperties.VALUE_KEY + i);
             values.put(key, coun);
         }
         isChanged = false;

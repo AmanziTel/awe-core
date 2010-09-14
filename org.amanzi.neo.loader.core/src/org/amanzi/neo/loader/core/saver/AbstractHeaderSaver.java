@@ -42,7 +42,6 @@ public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> extends
 
     @Override
     public void init(T element) {
-
         super.init(element);
         String rootNodeType=getRootNodeType();
         String projectName = element.getProjectName();

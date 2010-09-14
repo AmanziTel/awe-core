@@ -143,10 +143,7 @@ public class Loader<T extends IDataElement, T2 extends IConfigurationData> imple
                         wasAdded = true;
                     }
                 }
-                if (wasAdded) {
-                    sendUpdateEvent(UpdateViewEventType.GIS);
-                }
-                neoProvider.commit();
+
             }
         } catch (MalformedURLException e) {
             //TODO handle exception

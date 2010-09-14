@@ -231,7 +231,7 @@ public class ReuseAnalyserModel {
             Map<Node, Number> mpMap = new HashMap<Node, Number>();
             // List<Number> aggregatedValues = new ArrayList<Number>();
             final GisTypes typeOfGis;
-            PropertyStatistics stat = new PropertyHeader(rootNode).getPropertyStatistic(propertyName);
+            PropertyStatistics stat = PropertyHeader.getPropertyStatistic(rootNode).getPropertyStatistic(propertyName);
             Integer totalWork=null;
             int relCount = 0;
             
@@ -265,7 +265,7 @@ public class ReuseAnalyserModel {
             Double max = null;
             propertyValue = null;
             if (select == Select.EXISTS) {
-                PropertyHeader header = new PropertyHeader(rootNode);
+                PropertyHeader header = PropertyHeader.getPropertyStatistic(rootNode);
                 PropertyHeader.PropertyStatistics statistics = header.getPropertyStatistic(propertyName);
                 if (statistics != null) {
                     Pair<Double, Double> pair = statistics.getMinMax();
@@ -540,7 +540,7 @@ public class ReuseAnalyserModel {
         private boolean createStringChart(Node gisNode, Node aggrNode, String propertyName, Distribute distribute, Select select, IProgressMonitor monitor) {
             Transaction tx = service.beginTx();
             try {
-                PropertyStatistics stat = new PropertyHeader(gisNode).getPropertyStatistic(propertyName);
+                PropertyStatistics stat = PropertyHeader.getPropertyStatistic(gisNode).getPropertyStatistic(propertyName);
                 Integer totalWork=null;
                 if (stat!=null){
                     totalWork=stat.getCount();
@@ -552,7 +552,7 @@ public class ReuseAnalyserModel {
                 monitor.beginTask("Calculating statistics for " + propertyName, totalWork);
 
                 GisTypes gisTypes = NeoUtils.getGisType(gisNode, null);
-                Node propertyNode = new PropertyHeader(gisNode).getPropertyNode(propertyName);
+                Node propertyNode = PropertyHeader.getPropertyStatistic(gisNode).getPropertyNode(propertyName);
                 if (propertyNode == null) {
                     return false;
                 }

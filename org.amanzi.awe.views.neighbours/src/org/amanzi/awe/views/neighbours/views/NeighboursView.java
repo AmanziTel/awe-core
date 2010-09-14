@@ -515,7 +515,7 @@ public class NeighboursView extends ViewPart implements INeoServiceProviderListe
         if (neighbour.getSelectionIndex() < 0 || gis == null) {
             return;
         } else {
-            PropertyHeader header = new PropertyHeader(gis);
+            PropertyHeader header = PropertyHeader.getPropertyStatistic(gis);
             String neighbourName = neighbour.getText();
             String[] arrayInt = header.getNeighbourIntegerFields(neighbourName);
             if (arrayInt != null) {
@@ -759,7 +759,7 @@ public class NeighboursView extends ViewPart implements INeoServiceProviderListe
         if (gis == null || neighbour.getSelectionIndex() < 0) {
             return result;
         }
-        String[] array = new PropertyHeader(gis).getNeighbourAllFields(neighbour.getText());
+        String[] array = PropertyHeader.getPropertyStatistic(gis).getNeighbourAllFields(neighbour.getText());
         return array == null ? result : Arrays.asList(array);
     }
 

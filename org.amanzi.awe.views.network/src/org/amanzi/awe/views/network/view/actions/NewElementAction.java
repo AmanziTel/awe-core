@@ -234,7 +234,7 @@ public class NewElementAction extends Action {
         try {
             Node child = service.createNode();
             // NeoUtils.getParentNode(parentElement, NodeTypes.NETWORK.getId());
-            PropertyHeader ph = new PropertyHeader(networkNode);
+            PropertyHeader ph = PropertyHeader.getPropertyStatistic(networkNode);
             Map<String, Object> statisticProperties = ph.getStatisticParams(type);
             for (String key : statisticProperties.keySet()) {
                 child.setProperty(key, statisticProperties.get(key));

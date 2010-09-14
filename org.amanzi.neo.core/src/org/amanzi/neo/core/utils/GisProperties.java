@@ -15,6 +15,7 @@ package org.amanzi.neo.core.utils;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.neo4j.graphdb.Node;
+import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 public class GisProperties {
@@ -27,6 +28,7 @@ public class GisProperties {
         this.gis = gis;
         bbox = (double[])gis.getProperty(INeoConstants.PROPERTY_BBOX_NAME, null);
         savedData = (Long)gis.getProperty(INeoConstants.COUNT_TYPE_NAME, 0L);
+        initCRS();
     }
 
     /**
@@ -55,6 +57,15 @@ public class GisProperties {
      * initCRS
      */
     public void initCRS() {
+        if (gis.hasProperty(INeoConstants.PROPERTY_WKT_CRS)){
+            try {
+                crs=CRS.fromCRS(org.geotools.referencing.CRS.parseWKT((String)gis.getProperty(INeoConstants.PROPERTY_WKT_CRS)));
+                return;
+            } catch (FactoryException e) {
+                e.printStackTrace();
+                crs=null;
+            }
+        }
         if (gis.hasProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME) && gis.hasProperty(INeoConstants.PROPERTY_CRS_NAME)) {
             crs = CRS.fromCRS((String)gis.getProperty(INeoConstants.PROPERTY_CRS_TYPE_NAME), (String)gis.getProperty(INeoConstants.PROPERTY_CRS_NAME));
         }

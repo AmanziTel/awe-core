@@ -131,7 +131,7 @@ public class NeoUtils {
      * @return node name or defValue
      */
     public static String getNodeType(Node node, String defValue) {
-        return node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, defValue).toString();
+        return (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, defValue);
     }
 
     /**
@@ -3040,14 +3040,33 @@ public class NeoUtils {
             
             @Override
             public boolean accept(Path paramT) {
-                 if (paramT.length()!=2){
-                     return false;
-                 }
-                 return NodeTypes.AWE_PROJECT.getId().equals(paramT.lastRelationship().getStartNode().getProperty("type",""));
+                if (paramT.length()!=2){
+                    return false;
+                }
+                return NodeTypes.AWE_PROJECT.checkNode(paramT.lastRelationship().getStartNode());
             }
         });
         filter.addFilter(additionalFilter);
         return Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(2)).filter(filter).relationships(SplashRelationshipTypes.AWE_PROJECT,Direction.OUTGOING).relationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING);
+    }
+    
+    /**
+     * Gets the tD project nodes.
+     *
+     * @param additionalFilter the additional filter
+     * @return the tD project nodes
+     */
+    public static TraversalDescription getTDProjectNodes(Predicate<Path> additionalFilter) {
+        FilterAND filter=new FilterAND();
+        filter.addFilter(new Predicate<Path>() {
+            
+            @Override
+            public boolean accept(Path paramT) {
+                return paramT.length()==1;
+            }
+        });
+        filter.addFilter(additionalFilter);
+        return Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1)).filter(filter).relationships(SplashRelationshipTypes.AWE_PROJECT,Direction.OUTGOING);
     }
 
     /**
@@ -3067,7 +3086,7 @@ public class NeoUtils {
          * @param filter the filter
          */
         public void addFilter(Predicate<Path> filter) {
-            if (filter != null) {
+            if (filter != null) { 
                 filters.add(filter);
             }
         }
@@ -3098,8 +3117,7 @@ public class NeoUtils {
      * @throws InvocationTargetException the invocation target exception
      */
     @SuppressWarnings("unchecked")
-    public
-    static <T extends Number> T getNumberValue(Class<T> klass, String value) throws SecurityException, NoSuchMethodException, IllegalArgumentException,
+    public  static <T extends Number> T getNumberValue(Class<T> klass, String value) throws SecurityException, NoSuchMethodException, IllegalArgumentException,
             IllegalAccessException, InvocationTargetException {
         if (value == null) {
             return null;

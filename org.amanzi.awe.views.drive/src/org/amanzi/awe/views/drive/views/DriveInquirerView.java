@@ -454,7 +454,7 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
                 return;
             }
             currentIndex = cDrive.getSelectionIndex();
-            PropertyHeader propertyHeader = new PropertyHeader(gis);
+            PropertyHeader propertyHeader =PropertyHeader.getPropertyStatistic(gis);
             Collection<String> events = propertyHeader.getEvents();
             eventList = new ArrayList<String>();
             eventList.add(ALL_EVENTS);
@@ -1467,7 +1467,7 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
         try {
             Node gis = getGisDriveNode();
             currentIndex = cDrive.getSelectionIndex();
-            PropertyHeader propertyHeader = new PropertyHeader(gis);
+            PropertyHeader propertyHeader =PropertyHeader.getPropertyStatistic(gis);
             Collection<String> events = propertyHeader.getEvents();
             eventList = new ArrayList<String>();
             if (events != null) {

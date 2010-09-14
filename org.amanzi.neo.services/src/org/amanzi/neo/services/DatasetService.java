@@ -17,43 +17,45 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.helpers.Predicate;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Lagutko_N
  * @since 1.0.0
  */
 public class DatasetService extends AbstractService {
-    
+
     public enum DatasetType {
-        NETWORK("network"), 
-        DRIVE("dataset");
-        
+        NETWORK("network"), DRIVE("dataset");
+
         private String propertyValue;
-        
+
         private DatasetType(String propertyValue) {
             this.propertyValue = propertyValue;
         }
-        
+
         public String getPropertyValue() {
             return propertyValue;
         }
     }
-    
+
     public Node getProjectNode(String projectName, boolean canExists) {
         Node projectNode = null;
         if (canExists) {
@@ -63,28 +65,27 @@ public class DatasetService extends AbstractService {
             projectNode = databaseService.createNode();
             projectNode.setProperty("name", projectName);
             projectNode.setProperty("type", "awe_project");
-            
+
             databaseService.getReferenceNode().createRelationshipTo(projectNode, DatasetRelationshipTypes.AWE_PROJECT);
         }
-        
+
         return projectNode;
     }
-    
+
     public Node findProjectNode(String projectName) {
         Node referenceNode = databaseService.getReferenceNode();
-        
+
         Iterable<Relationship> relationships = referenceNode.getRelationships(DatasetRelationshipTypes.AWE_PROJECT, Direction.OUTGOING);
         for (Relationship singleRel : relationships) {
             Node endNode = singleRel.getEndNode();
-            if (endNode.getProperty("type").equals("awe_project") &&
-                endNode.getProperty("name").equals(projectName)) {
+            if (endNode.getProperty("type").equals("awe_project") && endNode.getProperty("name").equals(projectName)) {
                 return endNode;
             }
         }
-        
+
         return null;
     }
-    
+
     public Node getDatasetNode(Node projectNode, String datasetName, DatasetType datasetType, boolean canExists) {
         Node datasetNode = null;
         if (canExists) {
@@ -98,78 +99,76 @@ public class DatasetService extends AbstractService {
         }
         return datasetNode;
     }
-    
+
     public Node findDatasetNode(Node projectNode, String datasetName, DatasetType datasetType) {
         Iterable<Relationship> relationships = projectNode.getRelationships(DatasetRelationshipTypes.CHILD, Direction.OUTGOING);
         for (Relationship singleRel : relationships) {
             Node endNode = singleRel.getEndNode();
             if (endNode.getProperty("name").equals(datasetName)) {
-                if (!endNode.getProperty("type").equals(datasetType.getPropertyValue())){
-                    //TODO add description
+                if (!endNode.getProperty("type").equals(datasetType.getPropertyValue())) {
+                    // TODO add description
                     throw new IllegalArgumentException();
                 }
                 return endNode;
             }
         }
-        
+
         return null;
     }
-    
+
     public Node getFileNode(Node datasetNode, String fileName) {
         Node fileNode = findFileNode(datasetNode, fileName);
-        
+
         if (fileNode == null) {
             fileNode = databaseService.createNode();
             fileNode.setProperty("type", "file");
             fileNode.setProperty("name", fileName);
-            
+
             datasetNode.createRelationshipTo(fileNode, DatasetRelationshipTypes.CHILD);
         }
-        
+
         return fileNode;
     }
-    
+
     public Node findFileNode(Node datasetNode, String fileName) {
         Iterable<Relationship> relationships = datasetNode.getRelationships(DatasetRelationshipTypes.CHILD, Direction.OUTGOING);
         for (Relationship singleRel : relationships) {
             Node endNode = singleRel.getEndNode();
-            if (endNode.getProperty("type").equals("file") &&
-                endNode.getProperty("name").equals(fileName)) {
+            if (endNode.getProperty("type").equals("file") && endNode.getProperty("name").equals(fileName)) {
                 return endNode;
             }
         }
-        
+
         return null;
     }
-    
+
     public Node createMNode(Node parentNode, Node lastChild) {
-        //TODO: throw exception if parent and last child are null
-        
+        // TODO: throw exception if parent and last child are null
+
         Node mNode = databaseService.createNode();
         mNode.setProperty("type", "m");
-        
+
         if (lastChild == null) {
             parentNode.createRelationshipTo(mNode, DatasetRelationshipTypes.CHILD);
-        }
-        else {
+        } else {
             lastChild.createRelationshipTo(mNode, DatasetRelationshipTypes.NEXT);
         }
-        
+
         return mNode;
     }
-    
+
     public Node createMNode(Node parentNode, Node lastChild, HashMap<String, Object> indexInfo) {
         Node mNode = this.createMNode(parentNode, lastChild);
-        
+
         if (indexInfo != null) {
             for (String indexName : indexInfo.keySet()) {
                 getIndexService().index(mNode, indexName, indexInfo.get(indexName));
             }
         }
-        
+
         return mNode;
     }
-    
+
     public Node getLastNodeInFile(Node fileNode) {
         Long id = (Long)fileNode.getProperty("lastNodeId", null);
         if ((id != null) && (id != -1)) {
@@ -177,35 +176,35 @@ public class DatasetService extends AbstractService {
         }
         return null;
     }
-    
+
     public Node createMPNode(Node mNode) {
         Node mpNode = databaseService.createNode();
         mpNode.setProperty("type", "mp");
-        
+
         mNode.createRelationshipTo(mpNode, DatasetRelationshipTypes.LOCATION);
-        
+
         return mpNode;
     }
-    
+
     public Iterator<Node> getAllDatasets(Node projectNode, final String type) {
         if (projectNode == null) {
             projectNode = getProjectNode("project", true);
         }
         Iterator<Relationship> relationships = projectNode.getRelationships(DatasetRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
-        
+
         return new NodeIterator(relationships) {
-            
+
             @Override
             protected boolean checkNode(Node node) {
                 return node.getProperty("drive_type").equals(type);
             }
         };
     }
-    
+
     private abstract class NodeIterator implements Iterator<Node> {
-        
+
         private Iterator<Relationship> relationships;
-        
+
         public NodeIterator(Iterator<Relationship> relationships) {
             this.relationships = relationships;
         }
@@ -220,35 +219,33 @@ public class DatasetService extends AbstractService {
             Node result = null;
             do {
                 result = relationships.next().getEndNode();
-            }
-            while (checkNode(result));
+            } while (checkNode(result));
             return result;
         }
-        
+
         protected abstract boolean checkNode(Node node);
 
         @Override
         public void remove() {
         }
-        
-    }
 
+    }
 
     /**
      * Gets the gpeh statistics.
-     *
+     * 
      * @param datasetNode the dataset node
      * @return the gpeh statistics
      */
     public GpehStatisticModel getGpehStatistics(Node datasetNode) {
-        //TODO add synchroniza and multi instance
-        if (datasetNode.hasRelationship(DatasetRelationshipTypes.GPEH_STATISTICS, Direction.OUTGOING)){
+        // TODO add synchroniza and multi instance
+        if (datasetNode.hasRelationship(DatasetRelationshipTypes.GPEH_STATISTICS, Direction.OUTGOING)) {
             Node statNode = datasetNode.getSingleRelationship(DatasetRelationshipTypes.GPEH_STATISTICS, Direction.OUTGOING).getEndNode();
-            return new GpehStatisticModel(datasetNode,statNode,databaseService);
-        }else{
+            return new GpehStatisticModel(datasetNode, statNode, databaseService);
+        } else {
             Node statNode = databaseService.createNode();
             datasetNode.createRelationshipTo(statNode, DatasetRelationshipTypes.GPEH_STATISTICS);
-            return new GpehStatisticModel(datasetNode,statNode,databaseService);
+            return new GpehStatisticModel(datasetNode, statNode, databaseService);
         }
     }
 
@@ -257,33 +254,32 @@ public class DatasetService extends AbstractService {
      */
     public void _test() {
         Node node = databaseService.createNode();
-        
-        node.setProperty("ss",2);
+
+        node.setProperty("ss", 2);
         Node node2 = databaseService.createNode();
-        node2.setProperty("ss",2);
-        org.neo4j.graphdb.RelationshipType rel =new org.neo4j.graphdb.RelationshipType() {
-            
+        node2.setProperty("ss", 2);
+        org.neo4j.graphdb.RelationshipType rel = new org.neo4j.graphdb.RelationshipType() {
+
             @Override
             public String name() {
                 return "sss";
             }
         };
-        node.createRelationshipTo(node2, rel );
-         node = databaseService.createNode();
-        
-         node.setProperty("ss",2);
-         node2 = databaseService.createNode();
-         node2.setProperty("ss",2);
-         rel =new org.neo4j.graphdb.RelationshipType() {
-            
+        node.createRelationshipTo(node2, rel);
+        node = databaseService.createNode();
+
+        node.setProperty("ss", 2);
+        node2 = databaseService.createNode();
+        node2.setProperty("ss", 2);
+        rel = new org.neo4j.graphdb.RelationshipType() {
+
             @Override
             public String name() {
                 return "sss3";
             }
         };
-        node.createRelationshipTo(node2, rel );
+        node.createRelationshipTo(node2, rel);
     }
-
 
     /**
      * Find root node by name.
@@ -293,14 +289,75 @@ public class DatasetService extends AbstractService {
      * @param service the service
      * @return the node
      */
-    public Node findRoot(String projectName, String rootname) {
-        return NeoUtils.findRootNodeByName(projectName, rootname, databaseService);
+    public Node findRoot(final String projectName, final String rootname) {
+        TraversalDescription td = NeoUtils.getTDRootNodes(new Predicate<Path>() {
+
+            @Override
+            public boolean accept(Path paramT) {
+                return rootname.equals(paramT.endNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, ""))
+                        && projectName.equals(paramT.lastRelationship().getStartNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, ""));
+            }
+        });
+        Iterator<Node> it = td.traverse(databaseService.getReferenceNode()).nodes().iterator();
+        return it.hasNext() ? it.next() : null;
     }
 
+    public void addDataNodeToProject(String aweProjectName, Node childNode) {
+
+        for (Relationship rel : childNode.getRelationships(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING)) {
+            if (NodeTypes.AWE_PROJECT.checkNode(rel.getOtherNode(childNode))) {
+                return;
+            }
+        }
+        Transaction transacation = databaseService.beginTx();
+        try {
+            Node project = findOrCreateAweProject(aweProjectName);
+            project.createRelationshipTo(childNode, GeoNeoRelationshipTypes.CHILD);
+            transacation.success();
+        } finally {
+            transacation.finish();
+        }
+    }
+
+    public Node findOrCreateAweProject(String aweProjectName) {
+        Node result = null;
+        // Lagutko, 13.08.2009, use findAweProject() method to find an AWEProjectNode
+        result = findAweProject(aweProjectName);
+        if (result == null) {
+            result = createEmptyAweProject(aweProjectName);
+        }
+        return result;
+    }
+
+    private Node createEmptyAweProject(String projectName) {
+        Transaction transaction = databaseService.beginTx();
+        try {
+            Node result = databaseService.createNode();
+            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.AWE_PROJECT.getId());
+            result.setProperty(INeoConstants.PROPERTY_NAME_NAME, projectName);
+            databaseService.getReferenceNode().createRelationshipTo(result, SplashRelationshipTypes.AWE_PROJECT);
+            transaction.success();
+            return result;
+        } finally {
+            transaction.finish();
+        }
+
+    }
+
+    public Node findAweProject(final String aweProjectName) {
+        Iterator<Node> it = NeoUtils.getTDProjectNodes(new Predicate<Path>() {
+
+            @Override
+            public boolean accept(Path paramT) {
+                return aweProjectName.equals(paramT.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, ""));
+            }
+        }).traverse(databaseService.getReferenceNode()).nodes().iterator();
+        return it.hasNext() ? it.next() : null;
+    }
 
     /**
      * Creates the root node.
-     *
+     * 
      * @param projectName the project name
      * @param rootname the rootname
      * @param rootNodeType the root node type
@@ -312,7 +369,7 @@ public class DatasetService extends AbstractService {
             Node result = databaseService.createNode();
             NeoUtils.setNodeName(result, rootname, null);
             result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, rootNodeType);
-            NeoCorePlugin.getDefault().getProjectService().addDataNodeToProject(projectName, result);
+            addDataNodeToProject(projectName, result);
             tx.success();
             return result;
         } finally {
@@ -320,19 +377,18 @@ public class DatasetService extends AbstractService {
         }
     }
 
-
     public Node findGisNode(Node rootNode, boolean createNew) {
-        Relationship rel = rootNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT,Direction.INCOMING);
-        if (rel!=null){
+        Relationship rel = rootNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
+        if (rel != null) {
             return rel.getOtherNode(rootNode);
-        }else if (createNew){
+        } else if (createNew) {
             Transaction tx = databaseService.beginTx();
             try {
                 Node result = databaseService.createNode();
-                NeoUtils.setNodeName(result, NeoUtils.getSimpleNodeName(rootNode, ""), null);
+                NeoUtils.setNodeName(result, NeoUtils.getSimpleNodeName(rootNode, "",databaseService), databaseService);
                 result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.GIS.getId());
-                result.setProperty(INeoConstants.PROPERTY_NAME_NAME, rootNode.getProperty(INeoConstants.PROPERTY_NAME_NAME,""));
-                GisTypes gisType=GisTypes.getGisTypeFromRootType((String)rootNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME));
+                result.setProperty(INeoConstants.PROPERTY_NAME_NAME, rootNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, ""));
+                GisTypes gisType = GisTypes.getGisTypeFromRootType((String)rootNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME));
                 result.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, gisType.getHeader());
                 result.createRelationshipTo(rootNode, GeoNeoRelationshipTypes.NEXT);
                 databaseService.getReferenceNode().createRelationshipTo(result, NetworkRelationshipTypes.CHILD);

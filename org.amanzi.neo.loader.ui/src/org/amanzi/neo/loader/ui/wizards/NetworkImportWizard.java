@@ -16,13 +16,17 @@ package org.amanzi.neo.loader.ui.wizards;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
+import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.eclipse.jface.wizard.IWizardPage;
 
 /**
  * <p>
- *Network import wizard page
+ * Network import wizard page
  * </p>
+ * 
  * @author TsAr
  * @since 1.0.0
  */
@@ -32,17 +36,26 @@ public class NetworkImportWizard extends AbstractLoaderWizard<CommonConfigData> 
 
     @Override
     protected List<IWizardPage> getMainPagesList() {
-        List<IWizardPage> result=new ArrayList<IWizardPage>();
+        List<IWizardPage> result = new ArrayList<IWizardPage>();
         result.add(new LoadNetworkMainPage());
         return result;
     }
 
     @Override
     public CommonConfigData getConfigurationData() {
-        if (data==null){
-            data=new CommonConfigData();
+        if (data == null) {
+            data = new CommonConfigData();
         }
         return data;
     }
 
+    @Override
+    public boolean performFinish() {
+        if (super.performFinish()) {
+            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDatabaseEvent(UpdateViewEventType.GIS));
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

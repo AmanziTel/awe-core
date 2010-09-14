@@ -301,7 +301,7 @@ public class NeighbourAnalyser extends ViewPart  implements INeoServiceProviderL
             // break;
             // }
             // }
-            String[] fields = new PropertyHeader(gisNode).getNeighbourAllFields("utran relation");
+            String[] fields = PropertyHeader.getPropertyStatistic(gisNode).getNeighbourAllFields("utran relation");
             Traverser traverse = netNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
             
             @Override

@@ -15,10 +15,8 @@ package org.amanzi.awe.wizards.utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -33,7 +31,6 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
@@ -213,7 +210,7 @@ public class DBUtils {
      * @return
      */
     public static List<String> getProperties(Node node) {
-        List<String> list = Arrays.asList(new PropertyHeader(node).getNumericFields());
+        List<String> list = Arrays.asList(PropertyHeader.getPropertyStatistic(node).getNumericFields());
         Collections.sort(list);
         return list;
     }

@@ -61,7 +61,7 @@ public class ReuseAnalyserTest {
             tx=util.getNeo().beginTx();
             ReuseAnalyserModel model = new ReuseAnalyserModel(new HashMap<String, String[]>(), propertyReturnableEvalvator, util.getNeo());
             
-            for (String property: new PropertyHeader(root).getNumericFields()){
+            for (String property: PropertyHeader.getPropertyStatistic(root).getNumericFields()){
                 for (Distribute distribute:Distribute.values()){
                     model.findOrCreateAggregateNode(root, property, false, distribute.toString(), Select.EXISTS.toString(), new NullProgressMonitor());
                 }

@@ -496,7 +496,7 @@ public class TransmissionView extends ViewPart {
         if (neighbour.getSelectionIndex() < 0 || gis == null) {
             return;
         } else {
-            PropertyHeader header = new PropertyHeader(gis);
+            PropertyHeader header = PropertyHeader.getPropertyStatistic(gis);
             String neighbourName = neighbour.getText();
             String[] arrayInt = header.getTransmissionIntegerFields(neighbourName);
             if (arrayInt != null) {
@@ -757,7 +757,7 @@ public class TransmissionView extends ViewPart {
         if (gis == null || neighbour.getSelectionIndex() < 0) {
             return result;
         }
-        String[] array = new PropertyHeader(gis).getTransmissionAllFields(neighbour.getText());
+        String[] array = PropertyHeader.getPropertyStatistic(gis).getTransmissionAllFields(neighbour.getText());
         return array == null ? result : Arrays.asList(array);
     }
 

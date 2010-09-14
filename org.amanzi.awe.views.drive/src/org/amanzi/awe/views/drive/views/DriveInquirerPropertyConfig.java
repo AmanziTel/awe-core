@@ -274,7 +274,7 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
         } finally {
             NeoUtils.finishTx(tx);
         }
-        propertySet.addAll(new PropertyFilterModel().filerProperties(nodeName, Arrays.asList(new PropertyHeader(dataset).getNumericFields())));
+        propertySet.addAll(new PropertyFilterModel().filerProperties(nodeName, Arrays.asList(PropertyHeader.getPropertyStatistic(dataset).getNumericFields())));
     }
 
     /**

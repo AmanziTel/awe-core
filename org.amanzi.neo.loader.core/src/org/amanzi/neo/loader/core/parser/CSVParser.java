@@ -63,10 +63,11 @@ public class CSVParser extends CommonFilesParser<HeaderTransferData, CommonConfi
                     }
 
                     if (header.length != nextLine.length) {
-                        error(String.format("File %s, line %s:incorrect data: Header length=%s,data length=%s", element.getFile().getName(), line, header.length, nextLine.length));
+                        error(String.format("File %s, line %s:incorrect data: Header length=%s,data length=%s. Data was skipped", element.getFile().getName(), line, header.length, nextLine.length));
                         continue;
                     }
                     HeaderTransferData data = new HeaderTransferData();
+                    data.setLine(line);
                     data.setFileName(element.getFile().getName());
                     for (int i = 0; i < header.length; i++) {
                         data.put(header[i], nextLine[i]);

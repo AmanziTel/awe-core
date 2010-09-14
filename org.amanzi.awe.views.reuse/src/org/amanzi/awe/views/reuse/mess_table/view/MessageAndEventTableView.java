@@ -735,7 +735,7 @@ public class MessageAndEventTableView extends ViewPart {
             if(propRoot == null){
                 propRoot = dataset;
             }
-            PropertyHeader header = new PropertyHeader(propRoot);
+            PropertyHeader header = PropertyHeader.getPropertyStatistic(propRoot);
             String[] propNames = header.getStringFields();
             if(propNames==null){
                 return;

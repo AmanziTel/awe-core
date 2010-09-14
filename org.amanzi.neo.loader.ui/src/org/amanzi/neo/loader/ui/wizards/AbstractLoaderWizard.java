@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader.ui.wizards;
 
+import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.db.manager.DatabaseManager.DatabaseAccessType;
@@ -94,6 +96,7 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
+        setNeedsProgressMonitor(true);
         maxMainPageId = -1;
         List<IWizardPage> mainPages = getMainPagesList();
         for (IWizardPage iWizardPage : mainPages) {
@@ -251,7 +254,10 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
                     }, false);
                     try {
                         load(accessType, data, loader, monitor);
-                    } finally {
+                    }catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    finally {
                         ActionUtil.getInstance().runTask(new Runnable() {
 
                             @Override
@@ -296,6 +302,9 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
     protected void load(final DatabaseAccessType accessType, final T data, final ILoader< ? extends IDataElement, T> loader, IProgressMonitor monitor) {
         assignMonitorToProgressLoader(monitor, loader);
         loader.setup(accessType, data);
+        if (accessType==DatabaseAccessType.EMBEDDED){
+            loader.setPrintStream(new PrintStream(AweConsolePlugin.getDefault().getPrintStream()));
+        }
         loader.load();
     }
 

@@ -755,7 +755,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
                 tx = service.beginTx();
                 try {
                     ArrayList<TreeElem> networkElements = new ArrayList<TreeElem>();
-                    String[] allProperties = new PropertyHeader(node).getAllFields();
+                    String[] allProperties = PropertyHeader.getPropertyStatistic(node).getAllFields();
                     if (allProperties != null) {
                         for (String string : allProperties) {
                             networkElements.add(new TreeElem(ElemType.PROPERTY, string, node, this, service));
@@ -806,7 +806,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
             case ROOT:
                 tx = service.beginTx();
                 try {
-                    return NodeTypes.NETWORK.checkNode(node) || new PropertyHeader(node).isHavePropertyNode();
+                    return NodeTypes.NETWORK.checkNode(node) || PropertyHeader.getPropertyStatistic(node).isHavePropertyNode();
                 } finally {
                     tx.finish();
                 }
@@ -815,7 +815,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
             case SET:
                 tx = service.beginTx();
                 try {
-                    return new PropertyHeader(node).isHavePropertyNode();
+                    return PropertyHeader.getPropertyStatistic(node).isHavePropertyNode();
                 } finally {
                     tx.finish();
                 }

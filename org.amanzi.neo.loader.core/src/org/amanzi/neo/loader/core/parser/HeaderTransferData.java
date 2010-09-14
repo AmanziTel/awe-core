@@ -38,7 +38,16 @@ public class HeaderTransferData extends LinkedHashMap<String, String>implements 
     
     /** The file name. */
     private String fileName;
+    private long line;
     
+    public long getLine() {
+        return line;
+    }
+
+    public void setLine(long line) {
+        this.line = line;
+    }
+
     /**
      * Gets the project name.
      *

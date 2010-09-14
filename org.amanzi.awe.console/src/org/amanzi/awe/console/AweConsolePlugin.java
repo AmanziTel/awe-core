@@ -1,6 +1,7 @@
 package org.amanzi.awe.console;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 
 import org.apache.log4j.Logger;
@@ -212,7 +213,12 @@ public class AweConsolePlugin extends AbstractUIPlugin {
             e.printStackTrace(System.out);
         }
     }
-    
+    public OutputStream getPrintStream(){
+        if (loggingPossible){
+            return consoleStream;
+        }
+        return System.out;
+    }
     /** Print a message to Console */
     private boolean printToStream(final String line) {
         if (loggingPossible) {
@@ -240,6 +246,5 @@ public class AweConsolePlugin extends AbstractUIPlugin {
         }
         return loggingPossible;
     }
-
 
 }

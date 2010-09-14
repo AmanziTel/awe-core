@@ -51,6 +51,6 @@ public class OssImportWizard extends AbstractLoaderWizard<CommonConfigData> {
 public void init(IWorkbench workbench, IStructuredSelection selection) {
     super.init(workbench, selection);
     setWindowTitle(NeoLoaderPluginMessages.GpehWindowTitle);
-    setNeedsProgressMonitor(true);
+
 }
 }

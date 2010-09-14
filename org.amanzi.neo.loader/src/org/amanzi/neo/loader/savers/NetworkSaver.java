@@ -66,7 +66,6 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
 
     private Set<NetworkLevels> levels = EnumSet.of(NetworkLevels.NETWORK);
     private boolean trimSectorName;
-    private long line;
 
     @Override
     public void init(HeaderTransferData element) {
@@ -74,7 +73,6 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
         propertyMap.isEmpty();
         headerNotHandled = true;
         trimSectorName = NeoLoaderPlugin.getDefault().getPreferenceStore().getBoolean(DataLoadPreferences.REMOVE_SITE_NAME);
-        line = 0l;
         addNetworkIndexes();
 
         
@@ -91,7 +89,6 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
 
     @Override
     public void save(HeaderTransferData element) {
-        line++;
         if (headerNotHandled) {
             definePropertyMap(element);
             startMainTx();
@@ -105,7 +102,7 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
             String siteField = getStringValue("site", element);
             String sectorField = getStringValue("sector", element);
             if (sectorField == null) {
-                error("Missing sector name on line " + line);
+                error("Missing sector name on line " + element.getLine());
                 return;
             }
 
@@ -174,8 +171,8 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
                     }
                     newSite = addChild(siteRoot, NodeTypes.SITE, siteName);
                     (site == null ? rootNode : site).createRelationshipTo(newSite, GeoNeoRelationshipTypes.NEXT);
-                    site = newSite;
                 }
+                site = newSite;
 
                 GisProperties gisProperties = getGisProperties(rootNode);
                 gisProperties.updateBBox(lat, lon);
@@ -233,7 +230,7 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
 //            updateTx(0,0);
             // return true;
         } catch (Exception e) {
-            exception("Error parsing line " + line + ": ", e);
+            exception("Error parsing line " + element.getLine() + ": ", e);
         }
     }
 
