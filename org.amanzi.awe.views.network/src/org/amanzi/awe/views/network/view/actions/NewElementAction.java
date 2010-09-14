@@ -28,6 +28,7 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.GisProperties;
+import org.amanzi.neo.core.utils.IPropertyHeader;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
 import org.amanzi.neo.index.MultiPropertyIndex;
@@ -234,7 +235,7 @@ public class NewElementAction extends Action {
         try {
             Node child = service.createNode();
             // NeoUtils.getParentNode(parentElement, NodeTypes.NETWORK.getId());
-            PropertyHeader ph = PropertyHeader.getPropertyStatistic(networkNode);
+            IPropertyHeader ph = PropertyHeader.getPropertyStatistic(networkNode);
             Map<String, Object> statisticProperties = ph.getStatisticParams(type);
             for (String key : statisticProperties.keySet()) {
                 child.setProperty(key, statisticProperties.get(key));

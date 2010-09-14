@@ -52,6 +52,7 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.propertyFilter.PropertyFilterModel;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.IPropertyHeader;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.PropertyHeader;
@@ -454,7 +455,7 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
                 return;
             }
             currentIndex = cDrive.getSelectionIndex();
-            PropertyHeader propertyHeader =PropertyHeader.getPropertyStatistic(gis);
+            IPropertyHeader propertyHeader = PropertyHeader.getPropertyStatistic(gis);
             Collection<String> events = propertyHeader.getEvents();
             eventList = new ArrayList<String>();
             eventList.add(ALL_EVENTS);
@@ -1467,7 +1468,7 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
         try {
             Node gis = getGisDriveNode();
             currentIndex = cDrive.getSelectionIndex();
-            PropertyHeader propertyHeader =PropertyHeader.getPropertyStatistic(gis);
+            IPropertyHeader propertyHeader =PropertyHeader.getPropertyStatistic(gis);
             Collection<String> events = propertyHeader.getEvents();
             eventList = new ArrayList<String>();
             if (events != null) {

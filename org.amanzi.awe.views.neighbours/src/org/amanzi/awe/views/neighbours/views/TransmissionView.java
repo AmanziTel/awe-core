@@ -34,6 +34,7 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.icons.IconManager;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.IPropertyHeader;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
 import org.eclipse.jface.action.Action;
@@ -496,7 +497,7 @@ public class TransmissionView extends ViewPart {
         if (neighbour.getSelectionIndex() < 0 || gis == null) {
             return;
         } else {
-            PropertyHeader header = PropertyHeader.getPropertyStatistic(gis);
+            IPropertyHeader header = PropertyHeader.getPropertyStatistic(gis);
             String neighbourName = neighbour.getText();
             String[] arrayInt = header.getTransmissionIntegerFields(neighbourName);
             if (arrayInt != null) {

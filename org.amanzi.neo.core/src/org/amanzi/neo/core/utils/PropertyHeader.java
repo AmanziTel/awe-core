@@ -51,7 +51,7 @@ import org.neo4j.kernel.Traversal;
  * @author Cinkel_A
  * @since 1.0.0
  */
-public class PropertyHeader {
+public class PropertyHeader implements IPropertyHeader {
 
     /** String RELATION_PROPERTY field */
     private static final String RELATION_PROPERTY = "property";
@@ -59,10 +59,11 @@ public class PropertyHeader {
     private final boolean isGis;
     private final boolean isDataset;
     private final boolean havePropertyNode;
-    
-    public static PropertyHeader getPropertyStatistic(Node node){
+
+    public static IPropertyHeader getPropertyStatistic(Node node) {
         return new PropertyHeader(node);
     }
+
     /**
      * Constructor
      * 
@@ -81,6 +82,7 @@ public class PropertyHeader {
      * @param neighbourName name of neighbour
      * @return array or null
      */
+    @Override
     public String[] getNeighbourNumericFields(String neighbourName) {
         Node neighbour = NeoUtils.findNeighbour(node, neighbourName);
         if (neighbour == null) {
@@ -96,6 +98,7 @@ public class PropertyHeader {
      * @param neighbourName name of neighbour
      * @return array or null
      */
+    @Override
     public String[] getNeighbourAllFields(String neighbourName) {
         if (isGis) {
             return getDataVault().getNeighbourAllFields(neighbourName);
@@ -114,6 +117,7 @@ public class PropertyHeader {
      * @param neighbourName name of neighbour
      * @return array or null
      */
+    @Override
     public String[] getTransmissionAllFields(String neighbourName) {
         if (isGis) {
             return getDataVault().getTransmissionAllFields(neighbourName);
@@ -131,6 +135,7 @@ public class PropertyHeader {
      * 
      * @return array or null
      */
+    @Override
     public String[] getNumericFields() {
 
         return havePropertyNode ? getDefinedNumericFields() : isGis ? getDataVault().getNumericFields() : NeoUtils.getNumericFields(node);
@@ -141,6 +146,7 @@ public class PropertyHeader {
      * 
      * @return array or null
      */
+    @Override
     public String[] getStringFields() {
 
         return havePropertyNode ? getDefinedStringFields() : isGis ? getDataVault().getStringFields() : null;
@@ -151,14 +157,16 @@ public class PropertyHeader {
      * 
      * @return data vault
      */
-    public PropertyHeader getDataVault() {
+    protected PropertyHeader getDataVault() {
         return isGis || isDataset ? new PropertyHeader(node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(node)) : this;
     }
 
+    @Override
     public String[] getAllFields() {
         return havePropertyNode ? getDefinedAllFields() : isGis ? getDataVault().getAllFields() : getNumericFields();// NeoUtils.getAllFields(node);
     }
 
+    @Override
     public String[] getIdentityFields() {
         List<String> result = new ArrayList<String>();
         Relationship rel = node.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
@@ -251,6 +259,7 @@ public class PropertyHeader {
      * 
      * @return AllChannels properties
      */
+    @Override
     public String[] getAllChannels() {
         return isGis ? getDataVault().getAllChannels() : (String[])node.getProperty(INeoConstants.PROPERTY_ALL_CHANNELS_NAME, null);
     }
@@ -260,6 +269,7 @@ public class PropertyHeader {
      * 
      * @return Collection
      */
+    @Override
     public Collection<String> getNeighbourList() {
         List<String> result = new ArrayList<String>();
         if (isGis) {
@@ -276,6 +286,7 @@ public class PropertyHeader {
      * @param neighbourName
      * @return
      */
+    @Override
     public String[] getNeighbourIntegerFields(String neighbourName) {
         if (isGis) {
             return getDataVault().getNeighbourIntegerFields(neighbourName);
@@ -292,6 +303,7 @@ public class PropertyHeader {
      * @param neighbourName
      * @return
      */
+    @Override
     public String[] getTransmissionIntegerFields(String neighbourName) {
         if (isGis) {
             return getDataVault().getTransmissionIntegerFields(neighbourName);
@@ -308,6 +320,7 @@ public class PropertyHeader {
      * @param neighbourName
      * @return
      */
+    @Override
     public String[] getNeighbourDoubleFields(String neighbourName) {
         if (isGis) {
             return getDataVault().getNeighbourDoubleFields(neighbourName);
@@ -324,6 +337,7 @@ public class PropertyHeader {
      * @param neighbourName
      * @return
      */
+    @Override
     public String[] getTransmissionDoubleFields(String neighbourName) {
         if (isGis) {
             return getDataVault().getTransmissionDoubleFields(neighbourName);
@@ -339,6 +353,7 @@ public class PropertyHeader {
     /**
      * @return list of possible event
      */
+    @Override
     public Collection<String> getEvents() {
         if (isGis) {
             return getDataVault().getEvents();
@@ -376,6 +391,7 @@ public class PropertyHeader {
      * @param propertyName - property name
      * @return node
      */
+    @Override
     public Node getPropertyNode(final String propertyName) {
         if (isGis) {
             return getDataVault().getPropertyNode(propertyName);
@@ -401,6 +417,7 @@ public class PropertyHeader {
     /**
      * @return
      */
+    @Override
     public String[] getSectorOrMeasurmentNames() {
         // if (GisTypes.NETWORK != gisType) {
         // return null;
@@ -446,6 +463,7 @@ public class PropertyHeader {
          * @param typeNode
          * @param valueNode
          */
+
         public PropertyStatistics(Relationship statisticsRelation, Node typeNode, Node valueNode) {
             super();
             this.statisticsRelation = statisticsRelation;
@@ -484,8 +502,8 @@ public class PropertyHeader {
         }
 
         public Pair<Double, Double> getMinMax() {
-            return new Pair<Double, Double>((Double)statisticsRelation.getProperty(INeoConstants.MIN_VALUE, null), (Double)statisticsRelation.getProperty(
-                    INeoConstants.MAX_VALUE, null));
+            return new Pair<Double, Double>((Double)statisticsRelation.getProperty(INeoConstants.MIN_VALUE, null), (Double)statisticsRelation.getProperty(INeoConstants.MAX_VALUE,
+                    null));
         }
 
         /**
@@ -520,6 +538,7 @@ public class PropertyHeader {
      * @param propertyName
      * @return
      */
+    @Override
     public PropertyStatistics getPropertyStatistic(final String propertyName) {
         if (isGis) {
             return getDataVault().getPropertyStatistic(propertyName);
@@ -543,27 +562,20 @@ public class PropertyHeader {
         }
         return null;
     }
-
+    @Override
     public boolean isHavePropertyNode() {
         return havePropertyNode;
     }
 
-    public Map<String, Object> copyNetworkNode() {
-        Map<String, Object> result = new HashMap<String, Object>();
-        // for (String propertyKey : node.getPropertyKeys()) {
-        // result.put(propertyKey, getAverageValue(propertyKey, node.getProperty(propertyKey)));
-        // }
-        return result;
-    }
 
     // TODO traversing implementation
-    public <T> T getAverageValue(String nodeType, final String propertyName, T defValue) {
+    protected <T> T getAverageValue(String nodeType, final String propertyName, T defValue) {
         if (!NodeTypes.SECTOR.getId().equals(nodeType))
             return defValue;
         Node root = NeoUtils.getParentNode(node, NodeTypes.NETWORK.getId());
-        final TraversalDescription td = Traversal.description().depthFirst().relationships(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING).relationships(
-                GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
-        // .uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
+        final TraversalDescription td = Traversal.description().depthFirst().relationships(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING)
+                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
+                // .uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
                 .uniqueness(Uniqueness.NODE_GLOBAL).filter(new Predicate<Path>() {
 
                     @Override
@@ -632,6 +644,7 @@ public class PropertyHeader {
      * @param type
      * @return
      */
+    @Override
     public Map<String, Object> getStatisticParams(NodeTypes type) {
         Map<String, Object> result = new HashMap<String, Object>();
         if (type != NodeTypes.SECTOR)

@@ -52,6 +52,7 @@ import org.amanzi.neo.core.propertyFilter.PropertyFilterModel;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
+import org.amanzi.neo.core.utils.IPropertyHeader;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.PropertyHeader;
@@ -1374,7 +1375,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
 
         aggregatedProperties.clear();
         propertyList = new ArrayList<String>();
-        PropertyHeader propertyHeader = PropertyHeader.getPropertyStatistic(node);
+        IPropertyHeader propertyHeader = PropertyHeader.getPropertyStatistic(node);
         allFields = Arrays.asList(propertyHeader.getAllFields());
         numericFields = Arrays.asList(propertyHeader.getNumericFields());
         propertyList.addAll(allFields);

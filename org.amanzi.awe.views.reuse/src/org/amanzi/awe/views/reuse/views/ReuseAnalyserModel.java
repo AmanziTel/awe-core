@@ -31,6 +31,7 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.utils.IPropertyHeader;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.PropertyHeader;
@@ -265,7 +266,7 @@ public class ReuseAnalyserModel {
             Double max = null;
             propertyValue = null;
             if (select == Select.EXISTS) {
-                PropertyHeader header = PropertyHeader.getPropertyStatistic(rootNode);
+                IPropertyHeader header = PropertyHeader.getPropertyStatistic(rootNode);
                 PropertyHeader.PropertyStatistics statistics = header.getPropertyStatistic(propertyName);
                 if (statistics != null) {
                     Pair<Double, Double> pair = statistics.getMinMax();

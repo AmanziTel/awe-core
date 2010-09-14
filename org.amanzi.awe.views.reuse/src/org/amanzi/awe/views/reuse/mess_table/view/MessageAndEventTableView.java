@@ -31,6 +31,7 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.IPropertyHeader;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -735,7 +736,7 @@ public class MessageAndEventTableView extends ViewPart {
             if(propRoot == null){
                 propRoot = dataset;
             }
-            PropertyHeader header = PropertyHeader.getPropertyStatistic(propRoot);
+            IPropertyHeader header = PropertyHeader.getPropertyStatistic(propRoot);
             String[] propNames = header.getStringFields();
             if(propNames==null){
                 return;
