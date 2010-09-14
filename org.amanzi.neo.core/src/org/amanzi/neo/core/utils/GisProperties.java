@@ -166,4 +166,16 @@ public class GisProperties {
     public long getSavedData() {
         return savedData;
     }
+
+    public void setSavedData(long savedData) {
+        this.savedData = savedData;
+    }
+
+
+    public void save() {
+        saveBBox();
+        saveCRS();
+        saveCount();
+    }
+    
 }

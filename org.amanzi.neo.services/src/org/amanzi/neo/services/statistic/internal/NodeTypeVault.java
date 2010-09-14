@@ -30,91 +30,121 @@ import org.neo4j.graphdb.traversal.Uniqueness;
 import org.neo4j.helpers.Predicate;
 import org.neo4j.kernel.Traversal;
 
+// TODO: Auto-generated Javadoc
 /**
- * TODO Purpose of 
  * <p>
+ * Provide work with part (Node type) of statistic structure
+ * </p>.
  *
- * </p>
  * @author TsAr
  * @since 1.0.0
  */
 public class NodeTypeVault {
+    
+    /** The node type. */
     private final String nodeType;
-    public static final TraversalDescription PROPERTYS=Traversal.description().depthFirst().relationships(StatisticRelationshipTypes.NODE_TYPES, Direction.OUTGOING).uniqueness(Uniqueness.NONE).filter(Traversal.returnAllButStartNode()).prune(Traversal.pruneAfterDepth( 1));
+    
+    /** The Constant PROPERTYS. */
+    public static final TraversalDescription PROPERTYS = Traversal.description().depthFirst().relationships(StatisticRelationshipTypes.NODE_TYPES, Direction.OUTGOING)
+            .uniqueness(Uniqueness.NONE).filter(Traversal.returnAllButStartNode()).prune(Traversal.pruneAfterDepth(1));
 
-    private HashMap<String,PropertyStatistics> propertyMap=new HashMap<String,PropertyStatistics>();
- private boolean isChanged;
-private Node parent;
-private Node vaultNode;
+    /** The property map. */
+    private HashMap<String, PropertyStatistics> propertyMap = new HashMap<String, PropertyStatistics>();
+    
+    /** The is changed. */
+    private boolean isChanged;
+    
+    /** The parent. */
+    private Node parent;
+    
+    /** The vault node. */
+    private Node vaultNode;
+    
+    /** The total count. */
+    private long totalCount;
+
     /**
-     * @param nodeType
+     * Instantiates a new node type vault.
+     *
+     * @param nodeType the node type
      */
     public NodeTypeVault(String nodeType) {
         super();
         this.nodeType = nodeType;
-        isChanged=false;
+        isChanged = false;
     }
 
     /**
+     * Gets the property statistic.
      *
-     * @param propertySet
-     * @param propertyName
-     * @return
+     * @param propertyName the property name
+     * @return the property statistic
      */
     public PropertyStatistics getPropertyStatistic(String propertyName) {
         PropertyStatistics result = propertyMap.get(propertyName);
-        if (result==null){
-            result=new PropertyStatistics(propertyName);
+        if (result == null) {
+            result = new PropertyStatistics(propertyName);
             propertyMap.put(propertyName, result);
         }
         return result;
     }
 
-
+    /**
+     * Register property.
+     *
+     * @param propertyName the property name
+     * @param klass the klass
+     * @param rule the rule
+     * @return true, if successful
+     */
     public boolean registerProperty(String propertyName, Class klass, ChangeClassRule rule) {
-        return getPropertyStatistic(propertyName).register(klass,rule);
+        return getPropertyStatistic(propertyName).register(klass, rule);
     }
 
     /**
+     * Load node types.
      *
-     * @param vaultNode
-     * @return
+     * @param vaultNode the vault node
+     * @return the map
      */
-    public static Map< String, NodeTypeVault> loadNodeTypes(Node vaultNode) {
-        Map<String, NodeTypeVault> result=new HashMap<String, NodeTypeVault>();
-        for (Path path:PROPERTYS.traverse(vaultNode)){
-            String key= (String)path.endNode().getProperty(StatisticProperties.KEY);
-            NodeTypeVault vault=new NodeTypeVault(key);
+    public static Map<String, NodeTypeVault> loadNodeTypes(Node vaultNode) {
+        Map<String, NodeTypeVault> result = new HashMap<String, NodeTypeVault>();
+        for (Path path : PROPERTYS.traverse(vaultNode)) {
+            String key = (String)path.endNode().getProperty(StatisticProperties.KEY);
+            NodeTypeVault vault = new NodeTypeVault(key);
             result.put(key, vault);
-            vault.loadVault(vaultNode,path.endNode());
-         }
+            vault.loadVault(vaultNode, path.endNode());
+        }
         return result;
     }
 
     /**
+     * Load vault.
      *
-     * @param vaultNode
-     * @param endNode
+     * @param parent the parent
+     * @param vaultNode the vault node
      */
     private void loadVault(Node parent, Node vaultNode) {
         clearVault();
         this.parent = parent;
         this.vaultNode = vaultNode;
+        totalCount = (Long)vaultNode.getProperty(StatisticProperties.COUNT, 0l);
         propertyMap.putAll(PropertyStatistics.loadProperties(vaultNode));
-        isChanged=false;
+        isChanged = false;
     }
 
     /**
-     *
+     * Clear vault.
      */
     private void clearVault() {
         propertyMap.clear();
     }
 
     /**
+     * Checks if is changed.
      *
-     * @param vaultNode2
-     * @return
+     * @param vaultRoot the vault root
+     * @return true, if is changed
      */
     public boolean isChanged(Node vaultRoot) {
         if (isChanged || parent == null || !vaultRoot.equals(parent)) {
@@ -129,10 +159,11 @@ private Node vaultNode;
     }
 
     /**
+     * Save vault.
      *
-     * @param service
-     * @param vaultNode2
-     * @param endNode
+     * @param service the service
+     * @param parentNode the parent node
+     * @param nodeTypeVault the node type vault
      */
     public void saveVault(INeoDbService service, Node parentNode, Node nodeTypeVault) {
         if (isChanged(parentNode)) {
@@ -157,6 +188,7 @@ private Node vaultNode;
                 } else {
                     this.vaultNode = nodeTypeVault;
                 }
+                vaultNode.setProperty(StatisticProperties.COUNT, totalCount);
                 HashSet<Node> treeToDelete = new HashSet<Node>();
                 HashSet<PropertyStatistics> savedVault = new HashSet<PropertyStatistics>();
                 for (Path path : NodeTypeVault.PROPERTYS.traverse(vaultNode)) {
@@ -184,16 +216,38 @@ private Node vaultNode;
             }
         }
         isChanged = false;
- 
+
     }
 
     /**
+     * Find property.
      *
-     * @param key
-     * @return
+     * @param key the key
+     * @return the property statistics
      */
     public PropertyStatistics findProperty(String key) {
         return propertyMap.get(key);
     }
-    
+
+
+    /**
+     * Increase total count.
+     *
+     * @param count the count
+     */
+    public void increaseTotalCount(long count) {
+        isChanged = true;
+        totalCount += count;
+    }
+
+
+    /**
+     * Gets the total count.
+     *
+     * @return the total count
+     */
+    public long getTotalCount() {
+        return totalCount;
+    }
+
 }

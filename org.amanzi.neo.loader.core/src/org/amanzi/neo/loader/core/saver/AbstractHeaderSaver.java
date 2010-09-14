@@ -93,9 +93,8 @@ public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> extends
     public void finishUp(T element) {
         statistic.save();
         for(GisProperties gis:gisNodes.values()){
-            gis.saveBBox();
-            gis.saveCRS();
-            gis.saveCount();
+            gis.setSavedData(statistic.getTotalCount(rootname,NodeTypes.SECTOR.getId()));
+            gis.save();
         }
         finishUpIndexes();
         commit(false);

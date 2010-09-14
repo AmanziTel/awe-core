@@ -26,10 +26,11 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 
 
+// TODO: Auto-generated Javadoc
 /**
  * <p>
  * Provide work with statistic
- * </p>
+ * </p>.
  *
  * @author TsAr
  * @since 1.0.0
@@ -40,8 +41,17 @@ public class StatisticHandler {
     
     /** The Constant MAX_VALUES_SIZE. */
     public static final int MAX_VALUES_SIZE=100;
+    
+    /** The is changed. */
     private boolean isChanged=false;
+    
+    /** The root. */
     private Node root;
+    
+    /** The total count. */
+    private long totalCount;
+    
+    /** The stat root. */
     private Node statRoot;
 
     /**
@@ -52,13 +62,14 @@ public class StatisticHandler {
     public void loadStatistic(Node root){
         this.root = root;
         clearStatistic();
+        
         Relationship rel = root.getSingleRelationship(StatisticRelationshipTypes.STATISTIC_PROP,Direction.OUTGOING);
         if (rel==null){
             return;
         }
         statRoot=rel.getEndNode();
+        totalCount=(Long)statRoot.getProperty(StatisticProperties.COUNT, 0l);
         vaults.putAll(Vault.loadVaults(statRoot));
-
         isChanged=false;
     }
 
@@ -67,11 +78,13 @@ public class StatisticHandler {
      */
     private void clearStatistic() {
         vaults.clear();
+        totalCount=0;
     }
     
     /**
      * Save statistic.
      *
+     * @param service the service
      * @param root the root
      */
     public void saveStatistic(INeoDbService service,Node root){
@@ -87,6 +100,7 @@ public class StatisticHandler {
                 }else{
                     statRoot=rel.getEndNode();
                 }
+                statRoot.setProperty(StatisticProperties.COUNT, totalCount);
                 HashSet<Node>treeToDelete=new HashSet<Node>();
                 HashSet<Vault>savedVault=new HashSet<Vault>();
                 for (Path path:Vault.PROPERTYS.traverse(statRoot)){
@@ -115,6 +129,12 @@ public class StatisticHandler {
         isChanged=false;
     }
     
+    /**
+     * Checks if is changed.
+     *
+     * @param root the root
+     * @return true, if is changed
+     */
     private boolean isChanged(Node root) {
         if ( isChanged||this.root==null||!root.equals(this.root)){
             return true;
@@ -176,11 +196,57 @@ public class StatisticHandler {
     }
 
 
+    /**
+     * Find property.
+     *
+     * @param rootname the rootname
+     * @param nodeType the node type
+     * @param key the key
+     * @return the property statistics
+     */
     public PropertyStatistics findProperty(String rootname, String nodeType, String key) {
         Vault vault=vaults.get(rootname);
         if (vault==null){
             return null;
         }
         return vault.findProperty(nodeType,key);
+    }
+
+
+    /**
+     * Increase type count.
+     *
+     * @param rootKey the root key
+     * @param nodeType the node type
+     * @param count the count
+     */
+    public void increaseTypeCount(String rootKey, String nodeType, long count) {
+        increaseTotalCount(count);
+        getVault(rootKey).increaseTypeCount(nodeType,count);
+    }
+
+    /**
+     * Increase total count.
+     *
+     * @param count the count
+     */
+    private void increaseTotalCount(long count) {
+        isChanged=true;
+        totalCount+=count;
+    }
+
+    /**
+     * Gets the total count.
+     *
+     * @param rootNode the root node
+     * @param nodeType the node type
+     * @return the total count
+     */
+    public long getTotalCount(String rootNode, String nodeType) {
+        Vault vault=vaults.get(rootNode);
+        if (vault==null){
+            return 0;
+        }
+        return vault.getTotalCount(nodeType);
     }
 }

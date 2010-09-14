@@ -14,18 +14,21 @@
 package org.amanzi.neo.services.statistic;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * Interface for statistic property
  * </p>
+ * 
  * @author tsinkel_a
  * @since 1.0.0
  */
 public interface IStatistic {
     void save();
+
     boolean indexValue(String rootKey, String nodeType, String propertyName, Object propertyValue);
 
     Object parseValue(String rootKey, String nodeType, String key, String value);
 
-    void increaseTypeCount(String rootKey, String nodeType, int count);
+    void increaseTypeCount(String rootKey, String nodeType, long count);
+
+    long getTotalCount(String rootKey, String nodeType);
 }

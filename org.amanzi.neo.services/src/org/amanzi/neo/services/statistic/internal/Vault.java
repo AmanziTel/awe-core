@@ -43,6 +43,8 @@ public class Vault {
 
     private Node parent;
 
+    private long totalCount;
+
     /**
      * Instantiates a new vault.
      * 
@@ -129,6 +131,7 @@ public class Vault {
         clearVault();
         this.parent = parent;
         this.vaultNode = vaultNode;
+        totalCount=(Long)vaultNode.getProperty(StatisticProperties.COUNT, 0l);
         propertyMap.putAll(NodeTypeVault.loadNodeTypes(vaultNode));
         isChanged = false;
     }
@@ -138,6 +141,7 @@ public class Vault {
      */
     private void clearVault() {
         propertyMap.clear();
+        totalCount=0;
     }
 
     /**
@@ -169,6 +173,7 @@ public class Vault {
                 } else {
                     vaultNode = vault;
                 }
+                vaultNode.setProperty(StatisticProperties.COUNT, totalCount);
                 HashSet<Node> treeToDelete = new HashSet<Node>();
                 HashSet<NodeTypeVault> savedVault = new HashSet<NodeTypeVault>();
                 for (Path path : NodeTypeVault.PROPERTYS.traverse(vaultNode)) {
@@ -257,17 +262,33 @@ public class Vault {
         return false;
     }
 
-    /**
-     *
-     * @param nodeType
-     * @param key2
-     * @return
-     */
+
     public PropertyStatistics findProperty(String nodeType, String key) {
         NodeTypeVault vault=propertyMap.get(nodeType);
         if (vault==null){
             return null;
         }
         return vault.findProperty(key);
+    }
+
+
+    public void increaseTypeCount(String nodeType, long count) {
+        increaseTotalCount(count);
+        getPropertysForType(nodeType).increaseTotalCount(count);
+    }
+
+
+    private void increaseTotalCount(long count) {
+        isChanged=true;
+        totalCount+=count;
+    }
+
+
+    public long getTotalCount(String nodeType) {
+        NodeTypeVault vault=propertyMap.get(nodeType);
+        if (vault==null){
+            return 0;
+        }
+        return vault.getTotalCount();
     }
 }

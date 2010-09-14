@@ -120,7 +120,13 @@ public class DatasetStatistic implements IStatistic {
     }
 
     @Override
-    public void increaseTypeCount(String rootKey, String nodeType, int count) {
+    public void increaseTypeCount(String rootKey, String nodeType, long count) {
+        handler.increaseTypeCount(rootKey,  nodeType,  count);
+    }
+
+    @Override
+    public long getTotalCount(String rootKey, String nodeType) {
+        return handler.getTotalCount(rootKey,nodeType);
     }
 
 }

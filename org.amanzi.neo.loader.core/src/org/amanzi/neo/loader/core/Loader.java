@@ -100,8 +100,6 @@ public class Loader<T extends IDataElement, T2 extends IConfigurationData> imple
 
     @Override
     public void load() {
-        // TODO use in main thread
-        // DatabaseManager.getInstance().setDatabaseAccessType(accessType);
         try {
             if (getPrintStream() != null) {
                 parser.setPrintStream(getPrintStream());
@@ -134,13 +132,11 @@ public class Loader<T extends IDataElement, T2 extends IConfigurationData> imple
                 url = new URL("file://" + databaseLocation);
 
                 List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(url);
-                boolean wasAdded = false;
                 for (IService service : services) {
                     if (catalog.getById(IService.class, service.getIdentifier(), new NullProgressMonitor()) != null) {
-                        catalog.replace(service.getIdentifier(), service);
+//                        catalog.replace(service.getIdentifier(), service);
                     } else {
                         catalog.add(service);
-                        wasAdded = true;
                     }
                 }
 

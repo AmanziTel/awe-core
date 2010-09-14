@@ -226,7 +226,6 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
             }
             index(sector);
             getGisProperties(rootNode).updateBBox(lat, lon);
-            getGisProperties(rootNode).incSaved();
 //            updateTx(0,0);
             // return true;
         } catch (Exception e) {
