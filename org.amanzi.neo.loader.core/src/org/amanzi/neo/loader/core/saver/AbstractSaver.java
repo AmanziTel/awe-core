@@ -317,7 +317,18 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
         return addChild(parent, type, name, name);
     }
 
-
+    protected Node createNode(String key, String nodeType) {
+        statistic.increaseTypeCount(key, nodeType, 1);
+        Transaction tx = getService().beginTx();
+        try {
+            Node result = getService().createNode();
+            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, nodeType);
+            tx.success();
+            return result;
+        } finally {
+            tx.finish();
+        }
+    }
     protected Node addChild(Node parent, NodeTypes type, String name, String indexName) {
         Node child = null;
         Transaction tx = getService().beginTx();

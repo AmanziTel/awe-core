@@ -25,5 +25,7 @@ public interface IStatistic {
     void save();
     boolean indexValue(String rootKey, String nodeType, String propertyName, Object propertyValue);
 
-    Object parseValue(String rootname, String nodeType, String key, String value);
+    Object parseValue(String rootKey, String nodeType, String key, String value);
+
+    void increaseTypeCount(String rootKey, String nodeType, int count);
 }

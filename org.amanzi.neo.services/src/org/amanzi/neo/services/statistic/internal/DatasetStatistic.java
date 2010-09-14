@@ -119,4 +119,8 @@ public class DatasetStatistic implements IStatistic {
         }
     }
 
+    @Override
+    public void increaseTypeCount(String rootKey, String nodeType, int count) {
+    }
+
 }
