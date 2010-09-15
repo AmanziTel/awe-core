@@ -317,7 +317,6 @@ public class TEMSLoader extends DriveLoader {
             this.time = String.valueOf(lineData.get("time"));
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("OLOLO");
             System.out.println(lineData.get("time"));
         }
         Object timest = lineData.get("timestamp");
