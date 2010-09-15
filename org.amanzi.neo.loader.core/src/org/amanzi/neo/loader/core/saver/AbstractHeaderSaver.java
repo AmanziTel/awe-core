@@ -15,6 +15,8 @@ package org.amanzi.neo.loader.core.saver;
 
 import java.util.LinkedHashMap;
 
+import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.loader.core.parser.HeaderTransferData;
@@ -83,10 +85,11 @@ public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> extends
 
     protected abstract String getRootNodeType();
 
-    @Override
-    protected Node addChild(Node parent, NodeTypes type, String name, String indexName) {
+    protected Node addSimpleChild(Node parent, INodeType type, String name) {
         statistic.increaseTypeCount(rootname,type.getId(),1);
-        return super.addChild(parent, type, name, indexName);
+        Node child = service.addSimpleChild(parent, type, name);
+        service.indexByProperty(rootNode.getId(),child, INeoConstants.PROPERTY_NAME_NAME);
+        return child;
     }
 
     @Override

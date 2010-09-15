@@ -40,8 +40,8 @@ import org.neo4j.graphdb.Relationship;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * TODO Purpose of
  * <p>
+ * Network saver
  * </p>
  * 
  * @author tsinkel_a
@@ -122,7 +122,7 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
                 if (city == null) {
                     city = getIndexService().getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.CITY), cityName);
                     if (city == null) {
-                        city = addChild(rootNode, NodeTypes.CITY, cityName);
+                        city = addSimpleChild(rootNode, NodeTypes.CITY, cityName);
                         indexStat(rootname, city);
                     }
                     city_s.put(cityField, city);
@@ -137,7 +137,7 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
                 if (bsc == null) {
                     bsc = getIndexService().getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.BSC), bscName);
                     if (bsc == null) {
-                        bsc = addChild(city == null ? rootNode : city, NodeTypes.BSC, bscName);
+                        bsc = addSimpleChild(city == null ? rootNode : city, NodeTypes.BSC, bscName);
                         indexStat(rootname, bsc);
                     }
                     bsc_s.put(bscField, bsc);
@@ -159,7 +159,7 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
                     Relationship relation = newSite.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING);
                     Node oldRoot = relation.getOtherNode(newSite);
                     if (!oldRoot.equals(siteRoot)) {
-                        // TODO not work in batchinserter?
+                        // TODO check work in batchinserter
                         getService().delete(relation);
                         siteRoot.createRelationshipTo(newSite, GeoNeoRelationshipTypes.CHILD);
                     }
@@ -169,7 +169,7 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
                         // not stored site!
                         return;
                     }
-                    newSite = addChild(siteRoot, NodeTypes.SITE, siteName);
+                    newSite = addSimpleChild(siteRoot, NodeTypes.SITE, siteName);
                     (site == null ? rootNode : site).createRelationshipTo(newSite, GeoNeoRelationshipTypes.NEXT);
                 }
                 site = newSite;
@@ -193,13 +193,13 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
             }
             Integer ci = getNumberValue(Integer.class, INeoConstants.PROPERTY_SECTOR_CI, element);
             Integer lac = getNumberValue(Integer.class, INeoConstants.PROPERTY_SECTOR_LAC, element);
-            // Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(basename,
-            // INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorIndexName);
             Node sector = NeoUtils.findSector(rootNode, ci, lac, sectorIndexName, true, getIndexService(), getService());
             if (sector != null) {
                 // TODO check
             } else {
-                sector = addChild(site, NodeTypes.SECTOR, sectorField, sectorIndexName);
+                sector = addSimpleChild(site, NodeTypes.SECTOR, sectorField);
+                sector.setProperty("sector_id", sectorIndexName);
+                service.indexByProperty(rootNode.getId(), sector, "sector_id");
                 if (ci != null) {
                     sector.setProperty(INeoConstants.PROPERTY_SECTOR_CI, ci);
                     getIndexService().index(sector, NeoUtils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR), ci);

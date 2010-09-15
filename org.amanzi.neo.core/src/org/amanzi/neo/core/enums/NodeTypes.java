@@ -16,6 +16,7 @@ package org.amanzi.neo.core.enums;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -41,7 +42,8 @@ import org.neo4j.graphdb.Transaction;
  * @author Saelenchits_N
  * @since 1.0.0
  */
-public enum NodeTypes {
+public enum NodeTypes implements INodeType{
+
     // TODO: Enum has a copy: org.neo4j.neoclipse.property.NodeTypes
     // TODO: Copy needed for fully implementation of Feature #962
     // TODO: All changes must be reflected in copy
@@ -696,6 +698,7 @@ public enum NodeTypes {
     /**
      * @return Returns the id.
      */
+    @Override
     public String getId() {
         return id;
     }
@@ -705,6 +708,12 @@ public enum NodeTypes {
      */
     public Image getImage() {
         return IconManager.getIconManager().getImage(id);
+    }
+    private static final HashMap<String,NodeTypes>typeMap=new HashMap<String, NodeTypes>();
+    static {
+        for (NodeTypes type : NodeTypes.values()) {
+            typeMap.put(type.getId(), type);
+        }
     }
     /**
      * Returns NodeTypes by its ID
@@ -716,12 +725,7 @@ public enum NodeTypes {
         if (enumId == null) {
             return null;
         }
-        for (NodeTypes call : NodeTypes.values()) {
-            if (call.getId().equals(enumId)) {
-                return call;
-            }
-        }
-        return null;
+        return typeMap.get(enumId);
     }
     
     /**

@@ -21,8 +21,6 @@ import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 
 import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.db.manager.INeoDbService;
@@ -33,25 +31,65 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.index.IndexService;
 
+// TODO: Auto-generated Javadoc
 /**
  * <p>
- *Abstract saver
- * </p>
+ * Abstract saver
+ * </p>.
+ *
+ * @param <T> the generic type
  * @author tsinkel_a
  * @since 1.0.0
  */
+/**
+ * TODO Purpose of 
+ * <p>
+ *
+ * </p>
+ * @author TsAr
+ * @since 1.0.0
+ * @param <T>
+ */
 public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T> {
+    
+    /** The Constant ALL_NODE_TYPES. */
     protected static final String ALL_NODE_TYPES="all_node_types";
+    
+    /** The indexes. */
     private final LinkedHashMap<String, ArrayList<MultiPropertyIndex< ? >>> indexes = new LinkedHashMap<String, ArrayList<MultiPropertyIndex< ? >>>();
+    
+    /** The mapped indexes. */
     private final LinkedHashMap<String, LinkedHashMap<String, HashSet<MultiPropertyIndex< ? >>>> mappedIndexes = new LinkedHashMap<String, LinkedHashMap<String, HashSet<MultiPropertyIndex< ? >>>>();
+    
+    /** The stat to analyse. */
     private final LinkedHashMap<String, HashSet<String>> statToAnalyse = new LinkedHashMap<String, HashSet<String>>();
+    
+    /** The ignored properties. */
     private final HashSet<String> ignoredProperties=new HashSet<String>();
+    
+    /** The indexes initialized. */
     private boolean indexesInitialized = false;
+    
+    /** The output stream. */
     private PrintStream outputStream;
+    
+    /** The root node. */
     protected Node rootNode;
+    
+    /** The main tx. */
     protected Transaction mainTx;
+    
+    /** The statistic. */
     protected IStatistic statistic;
+    
+    /** The element. */
     protected T element;
+    
+    /**
+     * Gets the prints the stream.
+     *
+     * @return the prints the stream
+     */
     @Override
     public PrintStream getPrintStream() {
         if (outputStream==null){
@@ -59,14 +97,32 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
         }
         return outputStream;
     }
+    
+    /**
+     * Inits the.
+     *
+     * @param element the element
+     */
     public void init(T element) {
         this.element = element;
         ignoredProperties.add(INeoConstants.PROPERTY_TYPE_NAME);
     };
+    
+    /**
+     * Sets the prints the stream.
+     *
+     * @param outputStream the new prints the stream
+     */
     @Override
     public void setPrintStream(PrintStream outputStream) {
         this.outputStream = outputStream;
     }
+    
+    /**
+     * Index.
+     *
+     * @param node the node
+     */
     protected void index(Node node) {
         String nodeType = NeoUtils.getNodeType(node, "");
         ArrayList<MultiPropertyIndex< ? >> indList = indexes.get(nodeType);
@@ -82,12 +138,20 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
             }
         }
     }
+    
     /**
-    *
-    */
+     * Start main tx.
+     */
    protected void startMainTx() {
        mainTx=getService().beginTx();
    }
+   
+   /**
+    * Adds the index.
+    *
+    * @param nodeType the node type
+    * @param index the index
+    */
    protected void addIndex(String nodeType, MultiPropertyIndex< ? > index) {
        ArrayList<MultiPropertyIndex< ? >> indList = indexes.get(nodeType);
        if (indList == null) {
@@ -98,10 +162,26 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
            indList.add(index);
        }
    }
+   
+   /**
+    * Gets the location index property.
+    *
+    * @param rootname the rootname
+    * @return the location index property
+    * @throws IOException Signals that an I/O exception has occurred.
+    */
    protected static  MultiPropertyIndex< ? > getLocationIndexProperty(String rootname) throws IOException {
        return new MultiPropertyIndex<Double>(NeoUtils.getLocationIndexName(rootname), new String[] {INeoConstants.PROPERTY_LAT_NAME, INeoConstants.PROPERTY_LON_NAME},
                new org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiDoubleConverter(0.001), 10);
 }
+   
+   /**
+    * Adds the mapped index.
+    *
+    * @param key the key
+    * @param nodeType the node type
+    * @param index the index
+    */
    protected void addMappedIndex(String key, String nodeType, MultiPropertyIndex< ? > index) {
        LinkedHashMap<String, HashSet<MultiPropertyIndex< ? >>> mappIndex = mappedIndexes.get(key);
        if (mappIndex == null) {
@@ -118,8 +198,8 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
 
 
     /**
-     * Indexes mapped
-     * 
+     * Indexes mapped.
+     *
      * @param key - index key
      * @param node - node
      */
@@ -142,6 +222,13 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
             }
         }
     }
+    
+    /**
+     * Removes the index.
+     *
+     * @param nodeType the node type
+     * @param index the index
+     */
     protected void removeIndex(String nodeType, MultiPropertyIndex< ? > index) {
         ArrayList<MultiPropertyIndex< ? >> indList = indexes.get(nodeType);
         if (indList != null) {
@@ -149,6 +236,10 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
         }
 
     }
+    
+    /**
+     * Flush indexes.
+     */
     protected void flushIndexes() {
         for (Entry<String, ArrayList<MultiPropertyIndex< ? >>> entry : indexes.entrySet()) {
 
@@ -177,6 +268,14 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
             }
         }
     }
+    
+    /**
+     * Removes the mapped index.
+     *
+     * @param key the key
+     * @param nodeType the node type
+     * @param index the index
+     */
     private void removeMappedIndex(String key, String nodeType, MultiPropertyIndex< ? > index) {
         LinkedHashMap<String, HashSet<MultiPropertyIndex< ? >>> mapIn = mappedIndexes.get(key);
         if (mapIn != null) {
@@ -186,6 +285,10 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
             }
         }
     }
+    
+    /**
+     * Initialize indexes.
+     */
     protected void initializeIndexes() {
         if (indexesInitialized) {
             return;
@@ -217,6 +320,12 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
         indexesInitialized = true;
     }
 
+    /**
+     * Adds the analysed node types.
+     *
+     * @param key the key
+     * @param nodeType the node type
+     */
     protected  void addAnalysedNodeTypes(String key, String nodeType) {
         HashSet<String> nodetypes = statToAnalyse.get(key);
         if (nodetypes==null){
@@ -228,6 +337,13 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
         }
         nodetypes.add(nodeType);
     }
+    
+    /**
+     * Index stat.
+     *
+     * @param key the key
+     * @param node the node
+     */
     protected void indexStat(String key,Node node){
         HashSet<String> nodeTypes = statToAnalyse.get(key);
         if (nodeTypes==null){
@@ -246,19 +362,43 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
         }
     }
 
+   /**
+    * Update property.
+    *
+    * @param key the key
+    * @param nodeType the node type
+    * @param node the node
+    * @param propertyName the property name
+    * @param value the value
+    */
    protected void updateProperty(String key, String nodeType, Node node, String propertyName, Object value) {
        if (!node.hasProperty(propertyName)){
            node.setProperty(propertyName, value);
            statistic.indexValue(key, nodeType, propertyName, value);
        }
    }
+    
+    /**
+     * Gets the service.
+     *
+     * @return the service
+     */
     protected INeoDbService getService() {
         return DatabaseManager.getInstance().getCurrentDatabaseService();
     }
 
+    /**
+     * Gets the index service.
+     *
+     * @return the index service
+     */
     protected IndexService getIndexService() {
        return DatabaseManager.getInstance().getIndexService();
    }
+    
+    /**
+     * Finish up indexes.
+     */
     protected void finishUpIndexes() {
         for (Entry<String, ArrayList<MultiPropertyIndex< ? >>> entry : indexes.entrySet()) {
             for (MultiPropertyIndex< ? > index : entry.getValue()) {
@@ -276,6 +416,11 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
         }
     }
 
+    /**
+     * Commit.
+     *
+     * @param restart the restart
+     */
     protected void commit(boolean restart) {
         if (mainTx != null) {
             flushIndexes();
@@ -291,59 +436,54 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
             }
         }
     }
+    
+    /**
+     * Println.
+     *
+     * @param s the s
+     */
     protected void println(String s) {
         getPrintStream().println(s);
     }
 
+    /**
+     * Info.
+     *
+     * @param info the info
+     */
     protected void info(String info) {
         println(info);
     }
 
+    /**
+     * Error.
+     *
+     * @param error the error
+     */
     protected void error(String error) {
         println(error);
 
     }
 
+    /**
+     * Exception.
+     *
+     * @param exception the exception
+     */
     protected void exception(Throwable exception) {
         exception.printStackTrace(getPrintStream());
 
     }
 
+    /**
+     * Exception.
+     *
+     * @param s the s
+     * @param exception the exception
+     */
     protected void exception(String s, Throwable exception) {
         println(s);
         exception(exception);
     }
-    protected Node addChild(Node parent, NodeTypes type, String name) {
-        return addChild(parent, type, name, name);
-    }
-
-    protected Node createNode(String key, String nodeType) {
-        statistic.increaseTypeCount(key, nodeType, 1);
-        Transaction tx = getService().beginTx();
-        try {
-            Node result = getService().createNode();
-            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, nodeType);
-            tx.success();
-            return result;
-        } finally {
-            tx.finish();
-        }
-    }
-    protected Node addChild(Node parent, NodeTypes type, String name, String indexName) {
-        Node child = null;
-        Transaction tx = getService().beginTx();
-        try {
-            child = getService().createNode();
-            child.setProperty(INeoConstants.PROPERTY_TYPE_NAME, type.getId());
-            child.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
-            getIndexService().index(child, NeoUtils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, type), indexName);
-            if (parent != null) {
-                parent.createRelationshipTo(child, NetworkRelationshipTypes.CHILD);
-            }
-            tx.success();
-            return child;
-        } finally {
-            tx.finish();
-        }
-    }
+    
 }

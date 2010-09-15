@@ -21,7 +21,6 @@ import org.amanzi.awe.parser.core.IDataElementOldVersion;
 import org.amanzi.awe.parser.core.IParserOldVersion;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.services.DatasetService;
-import org.amanzi.neo.services.DatasetService.DatasetType;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.neo4j.graphdb.Node;
@@ -51,9 +50,9 @@ public abstract class AbstractSaverOld<T extends IDataElementOldVersion>  {
         this.datasetService = NeoServiceFactory.getInstance().getDatasetService();
     }
     
-    public void init(String projectName, String datasetName, DatasetType datasetType, int existsMask) {
-        Node projectNode = datasetService.getProjectNode(projectName, (existsMask & PROJECT_EXISTS) == PROJECT_EXISTS);
-        datasetNode = datasetService.getDatasetNode(projectNode, datasetName, datasetType, (existsMask & DATASET_EXISTS) == DATASET_EXISTS);        
+    public void init(String projectName, String datasetName, Object datasetType, int existsMask) {
+        Node projectNode = datasetService.findOrCreateAweProject(projectName);
+        datasetNode =null;// datasetService.getRootNode(projectNode, datasetName, datasetType);        
     }
     
     protected void addIndex(String nodeType, MultiPropertyIndex<?> index) {

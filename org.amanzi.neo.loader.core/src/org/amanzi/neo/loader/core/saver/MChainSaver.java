@@ -20,7 +20,6 @@ import java.util.Map.Entry;
 
 import org.amanzi.awe.parser.core.IDataElementOldVersion;
 import org.amanzi.neo.loader.core.DatasetInfo;
-import org.amanzi.neo.services.DatasetService.DatasetType;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiTimeIndexConverter;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -46,7 +45,7 @@ public abstract class MChainSaver<T extends IDataElementOldVersion> extends File
     }
     
     @Override
-    public void init(String projectName, String datasetName, DatasetType datasetType, int existsMask) {
+    public void init(String projectName, String datasetName, Object datasetType, int existsMask) {
         super.init(projectName, datasetName, datasetType, existsMask);
         if ((existsMask & DATASET_EXISTS) == DATASET_EXISTS) {
             datasetInfo = new DatasetInfo(datasetNode);
