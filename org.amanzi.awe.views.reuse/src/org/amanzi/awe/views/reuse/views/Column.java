@@ -162,9 +162,9 @@ public class Column implements Comparable<Column> {
         if (distribute == Distribute.INTEGERS) {
             nameCol = (minValue.add(new BigDecimal(0.5))).setScale(0, RoundingMode.HALF_UP).toString();
         } else if (propertyValue instanceof Integer) {
-            minValue = minValue.setScale(0, RoundingMode.UP);
-            maxValue = maxValue.setScale(0, RoundingMode.DOWN);
-            if (maxValue.subtract(minValue).compareTo(BigDecimal.ONE) < 1) {
+            minValue = minValue.setScale(0, RoundingMode.CEILING);
+            maxValue = maxValue.setScale(0, RoundingMode.FLOOR);
+            if (maxValue.subtract(minValue).compareTo(BigDecimal.ONE) < 0) {
                 nameCol = minValue.toString();
             } else {
                 nameCol = minValue.toString() + "-" + maxValue.toString();
