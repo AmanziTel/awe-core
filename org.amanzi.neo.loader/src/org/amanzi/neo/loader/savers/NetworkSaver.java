@@ -21,8 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -48,7 +46,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @since 1.0.0
  */
 public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
-    protected Map<String, String> propertyMap = new HashMap<String, String>();
+
     private boolean headerNotHandled;
     private boolean is3G;
     private String siteName = null;
@@ -70,7 +68,7 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
     @Override
     public void init(HeaderTransferData element) {
         super.init(element);
-        propertyMap.isEmpty();
+        propertyMap.clear();
         headerNotHandled = true;
         trimSectorName = NeoLoaderPlugin.getDefault().getPreferenceStore().getBoolean(DataLoadPreferences.REMOVE_SITE_NAME);
         addNetworkIndexes();
@@ -79,7 +77,7 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
     }
     private void addNetworkIndexes() {
         try {
-            addIndex(NodeTypes.SITE.getId(),getLocationIndexProperty(rootname));
+            addIndex(NodeTypes.SITE.getId(),service.getLocationIndexProperty(rootname));
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
@@ -309,29 +307,8 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
         addAnalysedNodeTypes(element.getRootName(), ALL_NODE_TYPES);
     }
 
-    /**
-     * @param headers
-     * @param string
-     * @param possibleHeaders
-     */
-    private void defineHeader(Set<String> headers, String newName, String[] possibleHeaders) {
-        if (possibleHeaders == null) {
-            return;
-        }
-        for (String header : headers) {
-            if (propertyMap.values().contains(header)) {
-                continue;
-            }
-            for (String headerRegExp : possibleHeaders) {
-                Pattern pat=Pattern.compile(headerRegExp,Pattern.CASE_INSENSITIVE);
-                Matcher match = pat.matcher(header);
-                if (match.matches()) {
-                    propertyMap.put(newName, header);
-                    return;
-                }
-            }
-        }
-    }
+
+
 
     @Override
     protected void fillRootNode(Node rootNode, HeaderTransferData element) {

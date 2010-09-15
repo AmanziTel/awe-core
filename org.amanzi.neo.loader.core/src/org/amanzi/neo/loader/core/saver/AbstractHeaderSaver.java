@@ -13,7 +13,12 @@
 
 package org.amanzi.neo.loader.core.saver;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.INodeType;
@@ -35,7 +40,7 @@ import org.neo4j.graphdb.Node;
 public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> extends AbstractSaver<T> {
 
     protected DatasetService service;
-
+    protected Map<String, String> propertyMap = new HashMap<String, String>();
     
     protected LinkedHashMap<Node, GisProperties> gisNodes=new LinkedHashMap<Node, GisProperties>();
 
@@ -102,7 +107,24 @@ public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> extends
         finishUpIndexes();
         commit(false);
     }
-
+    protected void defineHeader(Set<String> headers, String newName, String[] possibleHeaders) {
+        if (possibleHeaders == null) {
+            return;
+        }
+        for (String header : headers) {
+            if (propertyMap.values().contains(header)) {
+                continue;
+            }
+            for (String headerRegExp : possibleHeaders) {
+                Pattern pat=Pattern.compile(headerRegExp,Pattern.CASE_INSENSITIVE);
+                Matcher match = pat.matcher(header);
+                if (match.matches()) {
+                    propertyMap.put(newName, header);
+                    return;
+                }
+            }
+        }
+    }
 
 
 

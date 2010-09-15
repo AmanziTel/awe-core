@@ -275,6 +275,10 @@
             class="org.amanzi.neo.loader.savers.NetworkSaver"
             id="org.amanzi.neo.loader.savers.NetworkSaver">
       </saver>
+      <saver
+            class="org.amanzi.neo.loader.savers.TemsSaver"
+            id="org.amanzi.neo.loader.savers.TemsSaver">
+      </saver>
    </extension>
 
 </plugin>

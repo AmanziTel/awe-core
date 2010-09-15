@@ -163,17 +163,7 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
        }
    }
    
-   /**
-    * Gets the location index property.
-    *
-    * @param rootname the rootname
-    * @return the location index property
-    * @throws IOException Signals that an I/O exception has occurred.
-    */
-   protected static  MultiPropertyIndex< ? > getLocationIndexProperty(String rootname) throws IOException {
-       return new MultiPropertyIndex<Double>(NeoUtils.getLocationIndexName(rootname), new String[] {INeoConstants.PROPERTY_LAT_NAME, INeoConstants.PROPERTY_LON_NAME},
-               new org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiDoubleConverter(0.001), 10);
-}
+
    
    /**
     * Adds the mapped index.

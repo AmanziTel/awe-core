@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -25,6 +26,7 @@ import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
+import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.internal.DynamicNodeType;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
@@ -502,5 +504,18 @@ public class DatasetService extends AbstractService {
             tx.finish();
         }
     }
-
+    /**
+     * Gets the location index property.
+     *
+     * @param rootname the rootname
+     * @return the location index property
+     * @throws IOException Signals that an I/O exception has occurred.
+     */
+    public  MultiPropertyIndex< ? > getLocationIndexProperty(String rootname) throws IOException {
+        return new MultiPropertyIndex<Double>(NeoUtils.getLocationIndexName(rootname), new String[] {INeoConstants.PROPERTY_LAT_NAME, INeoConstants.PROPERTY_LON_NAME},
+                new org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiDoubleConverter(0.001), 10);
+    }
+    public  MultiPropertyIndex<Long> getTimeIndexProperty(String name) throws IOException {
+        return new MultiPropertyIndex<Long>(NeoUtils.getTimeIndexName(name), new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME}, new org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiTimeIndexConverter(), 10);
+    }
 }
