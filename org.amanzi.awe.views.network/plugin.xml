@@ -11,6 +11,27 @@
             class="org.amanzi.awe.views.network.view.NetworkTreeView"
             id="org.amanzi.awe.views.network.views.NetworkTreeView">
       </view>
+      
    </extension>
+   <extension
+            point="org.eclipse.ui.viewActions">
+         <viewContribution
+               targetID="org.amanzi.awe.views.network.views.NetworkTreeView"
+               id="org.amanzi.awe.views.network.view.NewTypeAction0">
+            <action
+                  toolbarPath="additions"
+                  label="Label"
+                  class="org.amanzi.awe.views.network.view.NewTypeAction"
+                  icon="icons/network.png"
+                  tooltip="tOOltip"
+                  style="push"
+                  id="org.amanzi.awe.views.network.view.NewTypeAction">
+               <!--<enablement>
+                  <objectClass name="net.refractions.udig.project.ILayer"/>
+               </enablement>!-->
+            </action>
+            
+         </viewContribution>
+      </extension>
 
 </plugin>
