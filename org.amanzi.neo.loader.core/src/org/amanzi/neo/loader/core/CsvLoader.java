@@ -17,9 +17,9 @@ import java.io.File;
 import java.util.List;
 
 import org.amanzi.awe.parser.core.IDataElementOldVersion;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.loader.core.saver.MChainSaver;
-import org.amanzi.neo.services.DatasetService.DatasetType;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
@@ -56,7 +56,7 @@ public class CsvLoader implements IProgressableLoader<IDataElementOldVersion> {
 
     public void load() {
         CsvSaver saver = new CsvSaver();
-        saver.init(projectName, datasetName, DatasetType.DRIVE, 1);
+        saver.init(projectName, datasetName, NodeTypes.DATASET, 1);
         
         long before = System.currentTimeMillis();
         // saver.process(org.amanzi.awe.parser.csv.CsvFileParser.class, monitor);
