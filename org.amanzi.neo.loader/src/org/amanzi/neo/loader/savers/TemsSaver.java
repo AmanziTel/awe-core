@@ -77,11 +77,11 @@ public class TemsSaver extends AbstractHeaderSaver<HeaderTransferData> implement
             info(String.format("Line %s not saved.",element.getLine()));
             return;
         }
-//        currentLatitude
-//        if ((latitude != null)
-//                && (longitude != null)
-//                && (((currentLatitude == null) && (currentLongitude == null)) || ((Math.abs(currentLatitude - latitude) > 10E-10) || (Math.abs(currentLongitude
-//                        - longitude) > 10E-10)))) {
+        if (currentLatitude == null ||currentLongitude == null || Math.abs(currentLatitude - latitude) > 10E-10 || Math.abs(currentLongitude
+                        - longitude) > 10E-10) {
+          currentLatitude = latitude;
+          currentLongitude = longitude;  
+        }
 //            currentLatitude = latitude;
 //            currentLongitude = longitude;
 //            saveData(); // persist the current data to database
