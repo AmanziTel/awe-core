@@ -216,5 +216,4 @@ public class GpehParser extends CommonFilesParser<GpehTransferData, CommonConfig
         data.put(GpehTransferData.DATASET, properties.getDbRootName());
         return data;
     }
-
 }
