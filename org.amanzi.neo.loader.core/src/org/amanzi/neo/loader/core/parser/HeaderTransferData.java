@@ -13,16 +13,26 @@
 
 package org.amanzi.neo.loader.core.parser;
 
+import java.util.Calendar;
 import java.util.LinkedHashMap;
 
 import org.amanzi.neo.loader.core.IMapBasedDataElement;
 
+// TODO: Auto-generated Javadoc
 /**
  * <p>
  * TransferData containse information about headers (key - header(column name), value - value from table)
  * </p>.
  *
  * @author TsAr
+ * @since 1.0.0
+ */
+/**
+ * TODO Purpose of 
+ * <p>
+ *
+ * </p>
+ * @author tsinkel_a
  * @since 1.0.0
  */
 public class HeaderTransferData extends LinkedHashMap<String, String>implements IMapBasedDataElement<String,String>  {
@@ -38,12 +48,27 @@ public class HeaderTransferData extends LinkedHashMap<String, String>implements 
     
     /** The file name. */
     private String fileName;
+    
+    /** The line. */
     private long line;
     
+    /** The work date. */
+    private Calendar workDate;
+    
+    /**
+     * Gets the line.
+     *
+     * @return the line
+     */
     public long getLine() {
         return line;
     }
 
+    /**
+     * Sets the line.
+     *
+     * @param line the new line
+     */
     public void setLine(long line) {
         this.line = line;
     }
@@ -57,6 +82,14 @@ public class HeaderTransferData extends LinkedHashMap<String, String>implements 
         return projectName;
     }
     
+    public Calendar getWorkDate() {
+        return workDate;
+    }
+
+    public void setWorkDate(Calendar workDate) {
+        this.workDate = workDate;
+    }
+
     /**
      * Sets the project name.
      *

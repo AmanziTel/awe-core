@@ -14,7 +14,6 @@
 package org.amanzi.neo.loader.savers;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -249,42 +248,9 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
         return result;
     }
 
-    protected String getStringValue(String key, HeaderTransferData element) {
-        String header = propertyMap.get(key);
-        if (header == null) {
-            header = key;
-        }
-        return element.get(header);
-    }
 
-    /**
-     * Gets the number value.
-     * 
-     * @param <T> the generic type
-     * @param klass the klass
-     * @param key the key
-     * @param element the element
-     * @return the number value
-     */
 
-    protected <T extends Number> T getNumberValue(Class<T> klass, String key, HeaderTransferData element) {
-        String value = getStringValue(key, element);
-        try {
-            return NeoUtils.getNumberValue(klass, value);
-        } catch (SecurityException e) {
-            exception(e);
-        } catch (IllegalArgumentException e) {
-            exception(e);
-        } catch (NoSuchMethodException e) {
-            exception(e);
-        } catch (IllegalAccessException e) {
-            exception(e);
-        } catch (InvocationTargetException e) {
-            exception(e);
-        }
-        return null;
 
-    }
 
 
     /**

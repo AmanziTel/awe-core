@@ -134,4 +134,17 @@ public class CSVParser extends CommonFilesParser<HeaderTransferData, CommonConfi
         return initdata;
     }
 
+    @Override
+    protected HeaderTransferData getStartupElement(FileElement element) {
+        HeaderTransferData result=new HeaderTransferData();
+        result.setFileName(element.getFile().getName());
+        result.put("timestamp", String.valueOf(element.getFile().lastModified()));
+         return result;
+    }
+
+    @Override
+    protected HeaderTransferData getFinishElement(FileElement element) {
+        return null;
+    }
+
 }

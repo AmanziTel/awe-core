@@ -18,6 +18,7 @@ import java.util.List;
 import org.amanzi.neo.loader.core.IProgressEvent;
 import org.amanzi.neo.loader.core.ProgressEventImpl;
 import org.amanzi.neo.loader.core.parser.StructuredParser.IStructuredElement;
+import org.amanzi.neo.loader.core.saver.IStructuredSaver;
 
 /**
  * <p>
@@ -31,6 +32,7 @@ public abstract class StructuredParser<S extends IStructuredElement, T extends I
     private double percentage;
     private long totalLen;
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public void parce() {
         percentage = 0;
@@ -41,15 +43,29 @@ public abstract class StructuredParser<S extends IStructuredElement, T extends I
         try {
             for (S element : elementList) {
                 ProgressEventImpl event = new ProgressEventImpl(element.getDescription(), percentage);
-                if (fireProgressEvent(event)){
+                if (fireProgressEvent(event)) {
                     return;
                 }
-                if (parseElement(element)){
-                    return;
+                if (getSaver() instanceof IStructuredSaver) {
+                    if (((IStructuredSaver)getSaver()).beforeSaveNewElement(getStartupElement(element))){
+                        continue;
+                    }
+                    try{
+                        if (parseElement(element)) {
+                            return;
+                        }
+                    }finally{
+                        ((IStructuredSaver)getSaver()).finishSaveNewElement(getFinishElement(element));
+                       
+                    }
+                } else {
+                    if (parseElement(element)) {
+                        return;
+                    }
                 }
                 percentage += (double)element.getSize() / totalLen;
                 ProgressEventImpl event2 = new ProgressEventImpl(element.getDescription(), percentage);
-                if (fireProgressEvent(event2)){
+                if (fireProgressEvent(event2)) {
                     return;
                 }
             }
@@ -58,6 +74,10 @@ public abstract class StructuredParser<S extends IStructuredElement, T extends I
         }
     }
 
+    protected abstract T getStartupElement(S element);
+
+    protected abstract T getFinishElement(S element);
+
     /**
      * Fire sub progress event.
      * 
@@ -65,7 +85,7 @@ public abstract class StructuredParser<S extends IStructuredElement, T extends I
      * @param event the event
      */
     protected boolean fireSubProgressEvent(S element, final IProgressEvent event) {
-       return fireProgressEvent(new ProgressEventImpl(event.getProcessName(), percentage +  (double)event.getPercentage()*element.getSize()/totalLen));
+        return fireProgressEvent(new ProgressEventImpl(event.getProcessName(), percentage + (double)event.getPercentage() * element.getSize() / totalLen));
     }
 
     /**
@@ -83,10 +103,10 @@ public abstract class StructuredParser<S extends IStructuredElement, T extends I
      * @param elementList the element list
      * @return the total length
      */
-    protected  long getTotalLength(List<S> elementList){
-        long totalLen=0;
-        for (S element:elementList){
-            totalLen+=element.getSize();
+    protected long getTotalLength(List<S> elementList) {
+        long totalLen = 0;
+        for (S element : elementList) {
+            totalLen += element.getSize();
         }
         return totalLen;
     }

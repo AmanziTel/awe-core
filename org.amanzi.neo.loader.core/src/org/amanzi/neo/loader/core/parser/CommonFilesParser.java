@@ -34,7 +34,6 @@ import org.amanzi.neo.loader.core.parser.CommonFilesParser.FileElement;
  */
 public abstract class CommonFilesParser<T extends IDataElement, C extends CommonConfigData> extends StructuredParser<FileElement, T, C> {
 
-
     @Override
     protected List<FileElement> getElementList() {
         C prop = getProperties();
@@ -49,14 +48,14 @@ public abstract class CommonFilesParser<T extends IDataElement, C extends Common
         }
         return result;
     }
-    
+
     /**
      * Close stream.
-     *
+     * 
      * @param inputStream the input stream
      */
     protected void closeStream(Closeable inputStream) {
-        if (inputStream!=null){
+        if (inputStream != null) {
             try {
                 inputStream.close();
             } catch (IOException e) {
@@ -64,6 +63,7 @@ public abstract class CommonFilesParser<T extends IDataElement, C extends Common
             }
         }
     }
+
     /**
      * Gets the all files.
      * 
@@ -148,7 +148,7 @@ public abstract class CommonFilesParser<T extends IDataElement, C extends Common
 
         /**
          * Gets the file.
-         *
+         * 
          * @return the file
          */
         public File getFile() {
@@ -157,4 +157,13 @@ public abstract class CommonFilesParser<T extends IDataElement, C extends Common
 
     }
 
+    @Override
+    protected T getStartupElement(FileElement element) {
+        return null;
+    }
+
+    @Override
+    protected T getFinishElement(FileElement element) {
+        return null;
+    }
 }
