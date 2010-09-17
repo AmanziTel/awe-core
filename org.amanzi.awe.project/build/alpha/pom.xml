@@ -361,6 +361,7 @@
       </resources>
     </build>
     </profile>
+    <profile>
     <id>system_test_build</id>
     <activation>
       <activeByDefault>true</activeByDefault>
@@ -506,6 +507,5 @@
       </resources>
     </build>
     </profile>
-    <profile>
   </profiles>
 </project>
