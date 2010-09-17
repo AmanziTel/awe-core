@@ -451,8 +451,8 @@
       <module>org.amanzi.awe.views.reuse.testing</module>
       <module>org.amanzi.awe.views.calls.testing</module>
       <module>org.amanzi.neo.loader.testing</module>
+      <module>org.amanzi.neo.data-generator</module>
       <module>org.amanzi.splash.testing</module>
-      <module>org.amanzi.rdt.testing</module>
       <module>org.amanzi.testing</module>
     </modules>
     <build>
