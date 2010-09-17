@@ -22,6 +22,7 @@ import org.amanzi.neo.core.utils.Pair;
 import org.apache.log4j.Logger;
 import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.AbstractRenderer;
 import org.jfree.data.general.AbstractDataset;
 
 /**
@@ -45,6 +46,7 @@ public class Chart implements IReportPart {
     private final List<String> errors = new ArrayList<String>();
     private Plot plot;
     private AbstractDataset dataset;
+    private AbstractRenderer renderer;
     //JFReeChart settings
     private String title="";
     private List<String> subtitles=new ArrayList<String>(0);
@@ -438,6 +440,20 @@ public class Chart implements IReportPart {
      */
     public void setHeight(int height) {
         this.height = height;
+    }
+
+    /**
+     * @return Returns the renderer.
+     */
+    public AbstractRenderer getRenderer() {
+        return renderer;
+    }
+
+    /**
+     * @param renderer The renderer to set.
+     */
+    public void setRenderer(AbstractRenderer renderer) {
+        this.renderer = renderer;
     }
 
 

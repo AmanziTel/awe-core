@@ -48,6 +48,7 @@ import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.CategoryItemRenderer;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
@@ -79,7 +80,6 @@ public class Charts {
         return activePage.getActiveEditor();
     }
 
-   
     public static String getFactoryId() {
         return FACTORY_ID;
     }
@@ -113,9 +113,9 @@ public class Charts {
 
             @Override
             public void run() {
-                ErrorDialog.openError(display.getActiveShell(), "Invalid input",
-                        "There were "+countBad+" data parsing errors in creating the chart!", new Status(Status.ERROR, ReportPlugin.PLUGIN_ID,
-                                NumberFormatException.class.getName()));
+                ErrorDialog.openError(display.getActiveShell(), "Invalid input", "There were " + countBad
+                        + " data parsing errors in creating the chart!", new Status(Status.ERROR, ReportPlugin.PLUGIN_ID,
+                        NumberFormatException.class.getName()));
             }
 
         });
@@ -163,9 +163,10 @@ public class Charts {
         domainAxis.setCategoryLabelPositions(CategoryLabelPositions.createUpRotationLabelPositions(Math.PI / 6.0));
         return chart;
     }
+
     /**
      * Creates a bar chart
-     *
+     * 
      * @param reportChart chart model
      * @return a JFreeChart
      */
@@ -193,6 +194,9 @@ public class Charts {
         rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 
         // disable bar outlines...
+        if (reportChart.getRenderer()!=null){
+            plot.setRenderer((CategoryItemRenderer)reportChart.getRenderer());
+        }
         BarRenderer renderer = (BarRenderer)plot.getRenderer();
         renderer.setDrawBarOutline(false);
 
@@ -208,13 +212,13 @@ public class Charts {
     /**
      * This method creates a chart.
      * 
-     * @param t dataset provides the data to be displayed in the chart. The parameter is
-     *        provided by the 'createDataset()' method.
+     * @param t dataset provides the data to be displayed in the chart. The parameter is provided by
+     *        the 'createDataset()' method.
      * @return A chart.
      */
     public static JFreeChart createPieChart(DefaultPieDataset dataset) {
 
-        JFreeChart chart = ChartFactory.createPieChart3D("", dataset, true, true,true);
+        JFreeChart chart = ChartFactory.createPieChart3D("", dataset, true, true, true);
 
         return chart;
     }
@@ -262,10 +266,10 @@ public class Charts {
             @Override
             public void run() {
                 try {
-//                    NeoSplashUtil.logn("Try to open editor " + editorId);
+                    // NeoSplashUtil.logn("Try to open editor " + editorId);
                     page.openEditor(editorInput, editorId);
                 } catch (PartInitException e) {
-//                    NeoSplashUtil.logn(e.getMessage());
+                    // NeoSplashUtil.logn(e.getMessage());
                 }
             }
         });
@@ -310,23 +314,23 @@ public class Charts {
                 if (node.hasProperty(categoriesProperty)) {
                     Object catName = node.getProperty(categoriesProperty);
                     String stringVal;
-                    if (catName instanceof String){
-                        stringVal=(String)catName;
-                    }else{
-                        stringVal=catName.toString();
+                    if (catName instanceof String) {
+                        stringVal = (String)catName;
+                    } else {
+                        stringVal = catName.toString();
                     }
                     for (int i = 0; i < n; i++) {
                         String property = valuesProperties[i];
                         if (node.hasProperty(property)) {
                             Object value = node.getProperty(property);
-                            double doubleVal=Double.NaN;
-                            if (value instanceof Double){
-                                doubleVal=(Double)value;
-                            }else if(value instanceof Integer){
-                                doubleVal=((Integer)value).doubleValue();
-                                
-                            }else if(value instanceof String){
-                                doubleVal=Double.parseDouble((String)value);
+                            double doubleVal = Double.NaN;
+                            if (value instanceof Double) {
+                                doubleVal = (Double)value;
+                            } else if (value instanceof Integer) {
+                                doubleVal = ((Integer)value).doubleValue();
+
+                            } else if (value instanceof String) {
+                                doubleVal = Double.parseDouble((String)value);
                             }
                             dataset.addValue(doubleVal, property, stringVal);
                         }
@@ -339,6 +343,7 @@ public class Charts {
 
         return dataset;
     }
+
     public static void applyDefaultSettings(Plot plot, Dataset dataset, int dsNum) {
         if (plot instanceof XYPlot) {
             XYPlot xyplot = (XYPlot)plot;
@@ -348,7 +353,7 @@ public class Charts {
             xyplot.setDomainCrosshairLockedOnData(false);
             xyplot.setRangeCrosshairVisible(false);
             xyplot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
-           
+
             if (dataset instanceof TimeSeriesCollection) {
 
                 xyplot.setDataset(dsNum, (TimeSeriesCollection)dataset);
@@ -356,13 +361,13 @@ public class Charts {
                 StandardXYItemRenderer standardxyitemrenderer = new StandardXYItemRenderer();
                 standardxyitemrenderer.setBaseShapesFilled(true);
                 xyplot.setRenderer(dsNum, standardxyitemrenderer);
-//                if (dsNum == 0) {
-//                    xyplot.getRenderer(0).setSeriesPaint(0, new Color(0, 0, 0, 0));
-//                } else if (dsNum == 1) {
-//                    xyplot.getRenderer(1).setSeriesPaint(0, COLOR_LEFT_PROPERTY);
-//                } else if (dsNum == 2) {
-//                    xyplot.getRenderer(2).setSeriesPaint(0, COLOR_RIGHT_PROPERTY);
-//                }
+                // if (dsNum == 0) {
+                // xyplot.getRenderer(0).setSeriesPaint(0, new Color(0, 0, 0, 0));
+                // } else if (dsNum == 1) {
+                // xyplot.getRenderer(1).setSeriesPaint(0, COLOR_LEFT_PROPERTY);
+                // } else if (dsNum == 2) {
+                // xyplot.getRenderer(2).setSeriesPaint(0, COLOR_RIGHT_PROPERTY);
+                // }
                 NumberAxis numberaxis = new NumberAxis("Value");
                 numberaxis.setAutoRangeIncludesZero(false);
                 xyplot.setRangeAxis(dsNum, numberaxis);
@@ -371,52 +376,56 @@ public class Charts {
             } else if (dataset instanceof EventDataset) {
                 EventDataset eventDataset = (EventDataset)dataset;
                 xyplot.setDataset(dsNum, eventDataset);
-               
+
                 XYBarRenderer eventRenderer = new EventRenderer(eventDataset);
                 xyplot.setRenderer(dsNum, eventRenderer);
-               
+
                 NumberAxis rangeAxis = new NumberAxis("Events");
                 rangeAxis.setVisible(false);
                 xyplot.setRangeAxis(dsNum, rangeAxis);
-            }else if (dataset instanceof XYBarDataset) {
+            } else if (dataset instanceof XYBarDataset) {
                 XYBarDataset xydataset = (XYBarDataset)dataset;
                 xyplot.setDataset(dsNum, xydataset);
-               
+
                 XYBarRenderer xyRenderer = new XYBarRenderer();
                 xyRenderer.setBarPainter(new StandardXYBarPainter());
                 xyplot.setRenderer(dsNum, xyRenderer);
-               
+
                 ValueAxis rangeAxis = xyplot.getRangeAxis();
                 if (rangeAxis == null)
                     rangeAxis = new NumberAxis("Axis Name");
                 rangeAxis.setVisible(true);
                 xyplot.setRangeAxis(dsNum, rangeAxis);
-//                xyplot.setDomainAxis(new DateAxis());
+                // xyplot.setDomainAxis(new DateAxis());
                 xydataset.setBarWidth(0.0);
             }
-        }else if (plot instanceof CategoryPlot){
-         // get a reference to the plot for further customisation...
+        } else if (plot instanceof CategoryPlot) {
+            // get a reference to the plot for further customisation...
             CategoryPlot categoryPlot = (CategoryPlot)plot;
 
             // set the range axis to display integers only...
             NumberAxis rangeAxis = new NumberAxis();
             rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
             categoryPlot.setRangeAxis(rangeAxis);
-            
+
             // disable bar outlines...
-            BarRenderer renderer = new BarRenderer();
+            BarRenderer renderer = (BarRenderer)categoryPlot.getRenderer();
+            if (renderer == null) {
+                renderer = new BarRenderer();
+            }
             renderer.setDrawBarOutline(false);
-            
+
             // set up gradient paints for series...
             GradientPaint gp0 = new GradientPaint(0.0f, 0.0f, Color.blue, 0.0f, 0.0f, new Color(0, 0, 64));
             renderer.setSeriesPaint(0, gp0);
             categoryPlot.setRenderer(renderer);
-            
+
             CategoryAxis domainAxis = new CategoryAxis();
             domainAxis.setCategoryLabelPositions(CategoryLabelPositions.createUpRotationLabelPositions(Math.PI / 6.0));
             categoryPlot.setDomainAxis(domainAxis);
         }
     }
+
     public static void applyDefaultSettingsToDataset(Plot plot, Dataset dataset, int dsNum) {
         if (plot instanceof XYPlot) {
             XYPlot xyplot = (XYPlot)plot;
@@ -429,10 +438,10 @@ public class Charts {
                 xyplot.setRenderer(dsNum, standardxyitemrenderer);
 
                 ValueAxis rangeAxis = xyplot.getRangeAxis();
-                if (rangeAxis == null){
-                    NumberAxis numberaxis=new NumberAxis("Value");
+                if (rangeAxis == null) {
+                    NumberAxis numberaxis = new NumberAxis("Value");
                     numberaxis.setAutoRangeIncludesZero(false);
-                    rangeAxis=numberaxis;
+                    rangeAxis = numberaxis;
                 }
                 xyplot.setRangeAxis(dsNum, rangeAxis);
                 xyplot.setRangeAxisLocation(dsNum, AxisLocation.BOTTOM_OR_LEFT);
@@ -440,21 +449,21 @@ public class Charts {
             } else if (dataset instanceof EventDataset) {
                 EventDataset eventDataset = (EventDataset)dataset;
                 xyplot.setDataset(dsNum, eventDataset);
-               
+
                 XYBarRenderer eventRenderer = new EventRenderer(eventDataset);
                 xyplot.setRenderer(dsNum, eventRenderer);
-               
+
                 NumberAxis rangeAxis = new NumberAxis("Events");
                 rangeAxis.setVisible(false);
                 xyplot.setRangeAxis(dsNum, rangeAxis);
-            }else if (dataset instanceof XYBarDataset) {
+            } else if (dataset instanceof XYBarDataset) {
                 XYBarDataset xydataset = (XYBarDataset)dataset;
                 xyplot.setDataset(dsNum, xydataset);
-               
+
                 XYBarRenderer xyRenderer = new XYBarRenderer();
                 xyRenderer.setBarPainter(new StandardXYBarPainter());
                 xyplot.setRenderer(dsNum, xyRenderer);
-               
+
                 ValueAxis rangeAxis = xyplot.getRangeAxis();
                 if (rangeAxis == null)
                     rangeAxis = new NumberAxis("Value");
@@ -463,6 +472,7 @@ public class Charts {
             }
         }
     }
+
     public static void applyDefaultSettingsToPlot(Plot plot) {
         if (plot instanceof XYPlot) {
             XYPlot xyplot = (XYPlot)plot;
@@ -471,30 +481,35 @@ public class Charts {
             xyplot.setDomainCrosshairLockedOnData(false);
             xyplot.setRangeCrosshairVisible(false);
             xyplot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
-            
-        }else if (plot instanceof CategoryPlot){
+
+        } else if (plot instanceof CategoryPlot) {
             // get a reference to the plot for further customisation...
             CategoryPlot categoryPlot = (CategoryPlot)plot;
-            
+
             // set the range axis to display integers only...
             NumberAxis rangeAxis = new NumberAxis();
             rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
             categoryPlot.setRangeAxis(rangeAxis);
-            
+
             // disable bar outlines...
-            BarRenderer renderer = new BarRenderer();
+
+            BarRenderer renderer = (BarRenderer)categoryPlot.getRenderer();
+            if (renderer == null) {
+                renderer = new BarRenderer();
+            }
             renderer.setDrawBarOutline(false);
-            
+
             // set up gradient paints for series...
             GradientPaint gp0 = new GradientPaint(0.0f, 0.0f, Color.blue, 0.0f, 0.0f, new Color(0, 0, 64));
             renderer.setSeriesPaint(0, gp0);
             categoryPlot.setRenderer(renderer);
-            
+
             CategoryAxis domainAxis = new CategoryAxis();
             domainAxis.setCategoryLabelPositions(CategoryLabelPositions.createUpRotationLabelPositions(Math.PI / 6.0));
             categoryPlot.setDomainAxis(domainAxis);
         }
     }
+
     public static void applyMainVisualSettings(Plot plot, String rangeAxisLablel, String domainAxisLabel,
             PlotOrientation orientation) {
         if (plot instanceof CategoryPlot) {
@@ -508,16 +523,15 @@ public class Charts {
             if (rangeAxisLablel != null)
                 xyPlot.getRangeAxis().setLabel(rangeAxisLablel);
             ValueAxis domainAxis = xyPlot.getDomainAxis();
-            if (domainAxisLabel != null){
-                System.out.println(domainAxis);//TODO delete
+            if (domainAxisLabel != null) {
                 domainAxis.setLabel(domainAxisLabel);
-                }
+            }
             xyPlot.setOrientation(orientation);
         }
     }
 
     public static JFreeChart createChart(Chart chart) {
-        switch (chart.getChartType()){
+        switch (chart.getChartType()) {
         case BAR:
             return Charts.createBarChart(chart);
         case PIE:
@@ -527,7 +541,7 @@ public class Charts {
         case TIME:
         case COMBINED:
         default:
-            return new JFreeChart(chart.getTitle(),null/*use default font*/,chart.getPlot(),chart.isShowLegend());
+            return new JFreeChart(chart.getTitle(), null/* use default font */, chart.getPlot(), chart.isShowLegend());
         }
     }
 
@@ -536,8 +550,7 @@ public class Charts {
     }
 
     private static JFreeChart createPieChart(Chart chart) {
-        return  ChartFactory.createPieChart3D("", ((PiePlot)chart.getPlot()).getDataset(), true, true,true);
+        return ChartFactory.createPieChart3D("", ((PiePlot)chart.getPlot()).getDataset(), true, true, true);
     }
-    
-    
+
 }

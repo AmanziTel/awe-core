@@ -23,6 +23,7 @@ include_class org.amanzi.awe.report.model.ReportMap
 include_class org.amanzi.awe.report.charts.ChartType
 include_class org.amanzi.awe.report.charts.EventDataset
 include_class org.amanzi.awe.report.charts.Charts
+include_class org.amanzi.awe.report.charts.CustomBarRenderer
 include_class org.amanzi.awe.report.util.ReportUtils
 include_class org.amanzi.awe.report.pdf.PDFPrintingEngine
 
@@ -81,10 +82,13 @@ module NodeUtils
     traverser.first
   end
 
-  def create_chart_dataset_aggr(aggr_node,type=:bar)
+  def create_chart_dataset_aggr(aggr_node,renderer,type=:bar)
     ds=DefaultCategoryDataset.new()
     aggr_node.outgoing(:CHILD,:NEXT).depth(:all).each do |node|
       #      puts "count_node: #{node[:name]} -  #{node[:name]} - #{node[:value]}"
+      if node.property? renderer.colorPropertyName
+        renderer.addColor(node[renderer.colorPropertyName])
+      end
       ds.addValue(java.lang.Double.parseDouble(node[:value].to_s), "name", node[:name]);
     end
     ds
@@ -121,10 +125,11 @@ module NodeUtils
     end
     ds
   end
+
   def update_chart_dataset(ds,aggregation,property,x_label)
     aggregation.each do |row|
-        ds.addValue(java.lang.Double.parseDouble(row[property].to_s), property.to_s,row[x_label].to_s);
-#        ds.addValue(java.lang.Double.parseDouble(row[property].to_s), property.to_s,Hour.new(x_label).to_s);
+      ds.addValue(java.lang.Double.parseDouble(row[property].to_s), property.to_s,row[x_label].to_s);
+      #        ds.addValue(java.lang.Double.parseDouble(row[property].to_s), property.to_s,Hour.new(x_label).to_s);
     end
     ds
   end
@@ -490,6 +495,7 @@ class Chart
   attr_writer:property, :distribute, :select
   attr_writer :drive, :event, :property1, :property2, :start_time, :length
   attr_accessor :dataset, :properties, :aggregation, :kpi
+  attr_accessor :renderer
   attr_writer :data, :time, :threshold, :threshold_label
   def initialize(title)
     @datasets=[]
@@ -499,6 +505,7 @@ class Chart
   def sheet=(sheet_name)
     @sheet=sheet_name
   end
+
   def subtitle=(subtitle)
     addSubtitle(subtitle)
   end
@@ -565,9 +572,9 @@ class Chart
         puts "dataset_node #{dataset_node}"
         if !@property.nil? and !@distribute.nil? and !@select.nil?
           aggr_node=find_aggr_node(dataset_node,@property,@distribute,@select)
-          puts "aggr_node #{aggr_node}"
-          #                            setDataset(create_chart_dataset_aggr(aggr_node))
-          @datasets<<create_chart_dataset_aggr(aggr_node)
+          @renderer=CustomBarRenderer.new
+          @datasets<<create_chart_dataset_aggr(aggr_node,@renderer)
+          setRenderer(@renderer)
         end
       elsif !@dataset.nil?
         ds=DefaultCategoryDataset.new
@@ -575,43 +582,43 @@ class Chart
           @time||="time"
           update_chart_dataset(ds,@dataset,property,@time)
         end
-#        puts "chart setup #{Time.now}"
-#        props=[]
-#        @properties.each do |p|
-#          props<<p
-#        end
-#        props<<"site_name"<<"cell_name"<<"time"<<"date"
-#        props.flatten
-#        puts "collecting data: #{Time.now}"
-#        aggr=@dataset.collect(props).aggregate("site_name")
-#        puts "collecting data finished: #{Time.now}"
-#        result=[]
-#        @properties.each do |p|
-#          result<<Hash.new
-#        end
-#        puts "aggregating data: #{Time.now}"
-#        aggr.each do |obj,rows|
-#          rows.each do |row|
-#            site=obj
-#            cell=row['cell_name']
-#            date=row['date']
-#            time=row['time']
-#            @properties.each_with_index do |p,i|
-#              value=row[p]
-#              aggregate_sites(result[i],site,cell,date,time,value)
-#            end
-#          end
-#        end
-#        puts "aggregating data finished: #{Time.now}"
-#        averages=[]
-#        ds=DefaultCategoryDataset.new()
-#        time_label=get_time_label(aggregation)
-#        puts "calculating averages: #{Time.now}"
-#        @properties.each_with_index do |p,i|
-#          average=calculate_average(result[i], @aggregation)
-#          update_chart_dataset(ds,average,p)
-#        end
-#        puts "calculating averages finished: #{Time.now}"
+        #        puts "chart setup #{Time.now}"
+        #        props=[]
+        #        @properties.each do |p|
+        #          props<<p
+        #        end
+        #        props<<"site_name"<<"cell_name"<<"time"<<"date"
+        #        props.flatten
+        #        puts "collecting data: #{Time.now}"
+        #        aggr=@dataset.collect(props).aggregate("site_name")
+        #        puts "collecting data finished: #{Time.now}"
+        #        result=[]
+        #        @properties.each do |p|
+        #          result<<Hash.new
+        #        end
+        #        puts "aggregating data: #{Time.now}"
+        #        aggr.each do |obj,rows|
+        #          rows.each do |row|
+        #            site=obj
+        #            cell=row['cell_name']
+        #            date=row['date']
+        #            time=row['time']
+        #            @properties.each_with_index do |p,i|
+        #              value=row[p]
+        #              aggregate_sites(result[i],site,cell,date,time,value)
+        #            end
+        #          end
+        #        end
+        #        puts "aggregating data finished: #{Time.now}"
+        #        averages=[]
+        #        ds=DefaultCategoryDataset.new()
+        #        time_label=get_time_label(aggregation)
+        #        puts "calculating averages: #{Time.now}"
+        #        @properties.each_with_index do |p,i|
+        #          average=calculate_average(result[i], @aggregation)
+        #          update_chart_dataset(ds,average,p)
+        #        end
+        #        puts "calculating averages finished: #{Time.now}"
         @datasets<<ds
       elsif !@kpi.nil?
         ds=DefaultCategoryDataset.new()
@@ -649,17 +656,17 @@ class Chart
               ds_series[i].add(date, java.lang.Double.parseDouble(row[val].to_s))
             end
           end
-#          ds_series.add(date, java.lang.Double.parseDouble(row[@values].to_s)) if !row[@time].nil? and !row[@values].nil?
-          ds_time_series.add(date, @threshold) if !@threshold.nil? and !row[@time].nil? 
+          #          ds_series.add(date, java.lang.Double.parseDouble(row[@values].to_s)) if !row[@time].nil? and !row[@values].nil?
+          ds_time_series.add(date, @threshold) if !@threshold.nil? and !row[@time].nil?
         end
-          if @values.is_a? String
-            ds.addSeries(ds_series)
-          elsif @values.is_a? Array
-            ds_series.each do |series|
-              ds.addSeries(series)
-            end
+        if @values.is_a? String
+          ds.addSeries(ds_series)
+        elsif @values.is_a? Array
+          ds_series.each do |series|
+            ds.addSeries(series)
           end
-#        ds.addSeries(ds_series)
+        end
+        #        ds.addSeries(ds_series)
         if !@threshold.nil?
           ds_time.addSeries(ds_time_series)
           @datasets<<ds_time
@@ -688,22 +695,23 @@ class Chart
         Charts.applyMainVisualSettings(plot, getRangeAxisLabel(),getDomainAxisLabel(),getOrientation())
       elsif @type==:bar
         plot=Java::org.jfree.chart.plot.CategoryPlot.new
+        plot.setRenderer(@renderer) if @renderer
         plot.setDataset(@datasets[0])
       elsif @type==:combined
         plot=Java::org.jfree.chart.plot.XYPlot.new
-#        date_axis=DateAxis.new("Date")
-#        if @aggregation==:hourly
-#          date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::HOUR,24,SimpleDateFormat.new("HH, dd")))
-#        elsif @aggregation==:daily
-#          date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::DAY,1,SimpleDateFormat.new("MM.dd")))
-#        elsif @aggregation==:weekly
-#          date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::DAY,7,SimpleDateFormat.new("w, yyyy")))
-#        elsif @aggregation==:monthly
-#          date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::MONTH,1,SimpleDateFormat.new("MMMMM")))
-#        end
-#        plot.setDomainAxis(date_axis)
+        #        date_axis=DateAxis.new("Date")
+        #        if @aggregation==:hourly
+        #          date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::HOUR,24,SimpleDateFormat.new("HH, dd")))
+        #        elsif @aggregation==:daily
+        #          date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::DAY,1,SimpleDateFormat.new("MM.dd")))
+        #        elsif @aggregation==:weekly
+        #          date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::DAY,7,SimpleDateFormat.new("w, yyyy")))
+        #        elsif @aggregation==:monthly
+        #          date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::MONTH,1,SimpleDateFormat.new("MMMMM")))
+        #        end
+        #        plot.setDomainAxis(date_axis)
         plot.setDomainAxis(createDateAxis(@range_axis_ticks,@aggregation))
-#        Charts.applyDefaultSettingsToPlot(plot)
+        #        Charts.applyDefaultSettingsToPlot(plot)
         for i in 0..@datasets.size-1
           Charts.applyDefaultSettingsToDataset(plot,@datasets[i],i)
         end
@@ -713,7 +721,7 @@ class Chart
     }
     self
   end
-  
+
   def createDateAxis(tick_units,aggregation)
     date_axis=DateAxis.new("Date")
     if !tick_units.nil? and aggregation==:hourly
@@ -735,16 +743,16 @@ class Chart
       date_axis.setStandardTickUnits(tu)
     else
       if aggregation==:hourly
-#        date_axis.setDateFormatOverride(SimpleDateFormat.new("HH, dd"))
+        #        date_axis.setDateFormatOverride(SimpleDateFormat.new("HH, dd"))
         date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::HOUR,24,SimpleDateFormat.new("HH, dd")))
       elsif aggregation==:daily
-#        date_axis.setDateFormatOverride(SimpleDateFormat.new("MM.dd"))
+        #        date_axis.setDateFormatOverride(SimpleDateFormat.new("MM.dd"))
         date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::DAY,1,SimpleDateFormat.new("MM.dd")))
       elsif aggregation==:weekly
-#        date_axis.setDateFormatOverride(SimpleDateFormat.new("w, yyyy"))
+        #        date_axis.setDateFormatOverride(SimpleDateFormat.new("w, yyyy"))
         date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::DAY,7,SimpleDateFormat.new("w, yyyy")))
       elsif aggregation==:monthly
-#        date_axis.setDateFormatOverride(SimpleDateFormat.new("MMMMM"))
+        #        date_axis.setDateFormatOverride(SimpleDateFormat.new("MMMMM"))
         date_axis.setTickUnit(DateTickUnit.new(DateTickUnit::MONTH,1,SimpleDateFormat.new("MMMMM")))
       end
     end
