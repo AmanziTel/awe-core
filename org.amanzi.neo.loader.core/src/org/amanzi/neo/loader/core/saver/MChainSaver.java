@@ -68,7 +68,7 @@ public abstract class MChainSaver<T extends IDataElementOldVersion> extends File
     }
     
     protected void processElement(T dataElement, HashMap<String, Object> indexInfo, IProgressMonitor monitor) {
-        Node mNode = datasetService.createMNode(currentFileNode, previousMNode, indexInfo);
+        Node mNode = null;//datasetService.createMNode(currentFileNode, previousMNode, indexInfo);
         datasetInfo.increaseNodes();
         
         mNode.setProperty("name", dataElement.getName());
@@ -93,7 +93,7 @@ public abstract class MChainSaver<T extends IDataElementOldVersion> extends File
             return;
         }
         
-        Node mpNode = datasetService.createMPNode(mNode);
+        Node mpNode = null;//datasetService.createMPNode(mNode);
         mpNode.setProperty("latitude", lat);
         mpNode.setProperty("longitude", lon);
         mpNode.setProperty("timestamp", timestamp);

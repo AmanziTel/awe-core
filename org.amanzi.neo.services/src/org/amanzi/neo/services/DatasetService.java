@@ -14,10 +14,10 @@
 package org.amanzi.neo.services;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Iterator;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.INodeType;
@@ -25,6 +25,7 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.NeoUtils.FilterAND;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.internal.DynamicNodeType;
@@ -33,11 +34,15 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.traversal.PruneEvaluator;
 import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.graphdb.traversal.Uniqueness;
 import org.neo4j.helpers.Predicate;
+import org.neo4j.kernel.Traversal;
 
 import com.vividsolutions.jts.util.Assert;
 
+// TODO: Auto-generated Javadoc
 /**
  * <p>
  * Service provide common operations with datasets
@@ -174,24 +179,20 @@ public class DatasetService extends AbstractService {
         node.setProperty("type", typeId);
     }
 
+
     /**
      * Gets the file node.
-     * 
-     * @param datasetNode the dataset node
+     *
+     * @param rootNode the root node
      * @param fileName the file name
      * @return the file node
      */
-    public Node getFileNode(Node datasetNode, String fileName) {
-        Node fileNode = findFileNode(datasetNode, fileName);
-
+    public Node getFileNode(Node rootNode, String fileName) {
+        Node fileNode = findFileNode(rootNode, fileName);
         if (fileNode == null) {
-            fileNode = databaseService.createNode();
-            fileNode.setProperty("type", "file");
-            fileNode.setProperty("name", fileName);
-
-            datasetNode.createRelationshipTo(fileNode, DatasetRelationshipTypes.CHILD);
+            fileNode=createFileNode(fileName);
+            addChild(rootNode, fileNode, null);
         }
-
         return fileNode;
     }
 
@@ -203,58 +204,10 @@ public class DatasetService extends AbstractService {
      * @return the node
      */
     public Node findFileNode(Node datasetNode, String fileName) {
-        Iterable<Relationship> relationships = datasetNode.getRelationships(DatasetRelationshipTypes.CHILD, Direction.OUTGOING);
-        for (Relationship singleRel : relationships) {
-            Node endNode = singleRel.getEndNode();
-            if (endNode.getProperty("type").equals("file") && endNode.getProperty("name").equals(fileName)) {
-                return endNode;
-            }
-        }
-
-        return null;
+        return findChildByName(datasetNode, fileName);
     }
 
-    /**
-     * Creates the m node.
-     * 
-     * @param parentNode the parent node
-     * @param lastChild the last child
-     * @return the node
-     */
-    public Node createMNode(Node parentNode, Node lastChild) {
-        // TODO: throw exception if parent and last child are null
 
-        Node mNode = databaseService.createNode();
-        mNode.setProperty("type", "m");
-
-        if (lastChild == null) {
-            parentNode.createRelationshipTo(mNode, DatasetRelationshipTypes.CHILD);
-        } else {
-            lastChild.createRelationshipTo(mNode, DatasetRelationshipTypes.NEXT);
-        }
-
-        return mNode;
-    }
-
-    /**
-     * Creates the m node.
-     * 
-     * @param parentNode the parent node
-     * @param lastChild the last child
-     * @param indexInfo the index info
-     * @return the node
-     */
-    public Node createMNode(Node parentNode, Node lastChild, HashMap<String, Object> indexInfo) {
-        Node mNode = this.createMNode(parentNode, lastChild);
-
-        if (indexInfo != null) {
-            for (String indexName : indexInfo.keySet()) {
-                getIndexService().index(mNode, indexName, indexInfo.get(indexName));
-            }
-        }
-
-        return mNode;
-    }
 
     /**
      * Gets the last node in file.
@@ -270,20 +223,7 @@ public class DatasetService extends AbstractService {
         return null;
     }
 
-    /**
-     * Creates the mp node.
-     * 
-     * @param mNode the m node
-     * @return the node
-     */
-    public Node createMPNode(Node mNode) {
-        Node mpNode = databaseService.createNode();
-        mpNode.setProperty("type", "mp");
 
-        mNode.createRelationshipTo(mpNode, DatasetRelationshipTypes.LOCATION);
-
-        return mpNode;
-    }
 
     /**
      * Gets the gpeh statistics.
@@ -504,18 +444,290 @@ public class DatasetService extends AbstractService {
             tx.finish();
         }
     }
+
     /**
      * Gets the location index property.
-     *
+     * 
      * @param rootname the rootname
      * @return the location index property
      * @throws IOException Signals that an I/O exception has occurred.
      */
-    public  MultiPropertyIndex< ? > getLocationIndexProperty(String rootname) throws IOException {
+    public MultiPropertyIndex< ? > getLocationIndexProperty(String rootname) throws IOException {
         return new MultiPropertyIndex<Double>(NeoUtils.getLocationIndexName(rootname), new String[] {INeoConstants.PROPERTY_LAT_NAME, INeoConstants.PROPERTY_LON_NAME},
                 new org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiDoubleConverter(0.001), 10);
     }
-    public  MultiPropertyIndex<Long> getTimeIndexProperty(String name) throws IOException {
-        return new MultiPropertyIndex<Long>(NeoUtils.getTimeIndexName(name), new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME}, new org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiTimeIndexConverter(), 10);
+
+    /**
+     * Gets the time index property.
+     *
+     * @param name the name
+     * @return the time index property
+     * @throws IOException Signals that an I/O exception has occurred.
+     */
+    public MultiPropertyIndex<Long> getTimeIndexProperty(String name) throws IOException {
+        return new MultiPropertyIndex<Long>(NeoUtils.getTimeIndexName(name), new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME},
+                new org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiTimeIndexConverter(), 10);
+    }
+
+    /**
+     * Find child by name.
+     *
+     * @param parent the parent
+     * @param name the name
+     * @return the node
+     */
+    public Node findChildByName(Node parent, final String name) {
+        TraversalDescription td = getChildTraversal(new Predicate<Path>() {
+
+            @Override
+            public boolean accept(Path item) {
+                return name.equals(getName(item.endNode()));
+            }
+
+        });
+        Iterator<Node> it = td.traverse(parent).nodes().iterator();
+        return it.hasNext() ? it.next() : null;
+    };
+
+    /**
+     * Gets the child traversal.
+     *
+     * @param additionalFilter the additional filter
+     * @return the child traversal
+     */
+    public TraversalDescription getChildTraversal(Predicate<Path> additionalFilter) {
+        FilterAND filter = new FilterAND();
+        filter.addFilter(new Predicate<Path>() {
+
+            @Override
+            public boolean accept(Path paramT) {
+                int length = paramT.length();
+                if (length == 0) {
+                    return false;
+                }
+                if (length == 1) {
+                    return paramT.lastRelationship().isType(GeoNeoRelationshipTypes.CHILD);
+                } else {
+                    return paramT.lastRelationship().isType(GeoNeoRelationshipTypes.NEXT);
+                }
+            }
+        });
+        filter.addFilter(additionalFilter);
+        return Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1)).filter(filter)
+                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).prune(new PruneEvaluator() {
+
+                    @Override
+                    public boolean pruneAfter(Path position) {
+                        if (position.lastRelationship() == null) {
+                            return false;
+                        }
+                        if (position.length() == 1) {
+                            return position.lastRelationship().isType(GeoNeoRelationshipTypes.NEXT);
+                        } else {
+                            return position.lastRelationship().isType(GeoNeoRelationshipTypes.CHILD);
+                        }
+                    }
+                });
+    }
+
+    /**
+     * Adds the child.
+     *
+     * @param mainNode the main node
+     * @param subNode the sub node
+     * @param lastChild the last child
+     */
+    public void addChild(Node mainNode, Node subNode, Node lastChild) {
+        if (lastChild == null) {
+            lastChild = findLastChild(mainNode);
+        }
+        Transaction tx = databaseService.beginTx();
+        try {
+            if (lastChild == null) {
+                mainNode.createRelationshipTo(subNode, GeoNeoRelationshipTypes.CHILD);
+            } else {
+                lastChild.createRelationshipTo(subNode, GeoNeoRelationshipTypes.NEXT);
+            }
+            // save last child like properti in main node
+            mainNode.setProperty(INeoConstants.LAST_CHILD_ID, subNode.getId());
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+    }
+
+    /**
+     * return last child of node.
+     *
+     * @param mainNode root node
+     * @return the node
+     */
+    public Node findLastChild(Node mainNode) {
+        Long lastChild = (Long)mainNode.getProperty(INeoConstants.LAST_CHILD_ID, null);
+        if (lastChild != null) {
+            Node result = databaseService.getNodeById(lastChild);
+            assert !result.hasRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            return result;
+        }
+        TraversalDescription td = getChildTraversal(new Predicate<Path>() {
+
+            @Override
+            public boolean accept(Path item) {
+                return !item.endNode().hasRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            }
+        });
+
+        Iterator<Node> iterator = td.traverse(mainNode).nodes().iterator();
+        return iterator.hasNext() ? iterator.next() : null;
+    }
+
+
+    /**
+     * Creates the file node.
+     *
+     * @param fileName the file name
+     * @return the node
+     */
+    public Node createFileNode(String fileName) {
+        return createNode(NodeTypes.FILE, fileName);
+
+    }
+
+    /**
+     * Creates the node.
+     *
+     * @param type the type
+     * @param name the name
+     * @return the node
+     */
+    public Node createNode(INodeType type, String name) {
+        return createNode(type.getId(), INeoConstants.PROPERTY_NAME_NAME, name);
+    }
+
+    /**
+     * Creates the node.
+     *
+     * @param typeId the type id
+     * @param additionalProperties the additional properties
+     * @return the node
+     */
+    private Node createNode(String typeId,Object... additionalProperties) {
+        Transaction tx = databaseService.beginTx();
+        try {
+            Node node = databaseService.createNode();
+            setType(node, typeId);
+            if (additionalProperties!=null){
+                for (int i=0;i<additionalProperties.length-1;i+=2){
+                    node.setProperty(String.valueOf(additionalProperties[i]), additionalProperties[i+1]);
+                }
+            }
+            tx.success();
+            return node;
+        } finally {
+            tx.finish();
+        }
+    }
+
+    /**
+     * Sets the name.
+     *
+     * @param node the node
+     * @param name the name
+     */
+    private void setName(Node node, String name) {
+        node.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
+    }
+
+    /**
+     * Gets the name.
+     *
+     * @param node the node
+     * @return the name
+     */
+    private String getName(Node node) {
+        return (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
+    }
+
+
+    /**
+     * Creates the m node.
+     *
+     * @param parent the parent
+     * @param lastMNode the last m node
+     * @return the node
+     */
+    public Node createMNode(Node parent, Node lastMNode) {
+        return createChild(parent, lastMNode, NodeTypes.M.getId());
+    }
+
+
+    /**
+     * Gets the virtual dataset.
+     *
+     * @param rootNode the root node
+     * @param type the type
+     * @return the virtual dataset
+     */
+    public Node getVirtualDataset(Node rootNode, DriveTypes type) {
+        Node result=findVirtualDataset(rootNode,type);
+        if (result==null){
+            result=createNode(NodeTypes.DATASET.getId(), INeoConstants.PROPERTY_NAME_NAME, type.getFullDatasetName(getName(rootNode)),INeoConstants.DRIVE_TYPE, type.getId());
+            Transaction tx = databaseService.beginTx();
+            try{
+                rootNode.createRelationshipTo(result, GeoNeoRelationshipTypes.VIRTUAL_DATASET);
+                tx.success();
+            }finally{
+                tx.finish();
+            }
+        }
+        return result;
+    }
+
+
+    /**
+     * Find virtual dataset.
+     *
+     * @param rootNode the root node
+     * @param type the type
+     * @return the node
+     */
+    public Node findVirtualDataset(Node rootNode,final  DriveTypes type) {
+        TraversalDescription td=Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1)).relationships(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).filter(new Predicate<Path>() {
+            
+            @Override
+            public boolean accept(Path item) {
+                return item.length()==1&&type==DriveTypes.getNodeType(item.endNode());
+            }
+        });
+        Iterator<Node> it = td.traverse(rootNode).nodes().iterator();
+        return it.hasNext()?it.next():null;
+    }
+
+
+    /**
+     * Creates the ms node.
+     *
+     * @param parent the parent
+     * @param lastMsNode the last ms node
+     * @return the node
+     */
+    public Node createMsNode(Node parent, Node lastMsNode) {
+        return createChild(parent,lastMsNode,NodeTypes.HEADER_MS.getId());
+
+    }
+
+
+    /**
+     * Creates the child.
+     *
+     * @param parent the parent
+     * @param lastNode the last node
+     * @param typeId the type id
+     * @return the node
+     */
+    private Node createChild(Node parent, Node lastNode, String typeId) {
+        Node node=createNode(typeId);
+        addChild(parent, node, lastNode);
+        return node;
     }
 }

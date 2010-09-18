@@ -215,7 +215,7 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
                 updateProperty(rootname,NodeTypes.SECTOR.getId(),sector,"azimuth",azimuth);
             }
             // header.parseLine(sector, fields);
-            Map<String, Object> sectorData = getSectorData(element);
+            Map<String, Object> sectorData = getNotHandledData(element,rootname,NodeTypes.SECTOR.getId());
 
             for (Map.Entry<String, Object> entry : sectorData.entrySet()) {
                 String key = entry.getKey();
@@ -230,23 +230,7 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
         }
     }
 
-    /*
-     * @param element
-     * @return
-     */
-    protected Map<String, Object> getSectorData(HeaderTransferData element) {
-        Map<String, Object> result = new HashMap<String, Object>();
-        for (String key : element.keySet()) {
-            if (!propertyMap.values().contains(key)) {
-                Object value=statistic.parseValue(rootname,NodeTypes.SECTOR.getId(),key,element.get(key));
-                if(value!=null){
-                    result.put(key, value);
-                }
-                continue;
-            }
-        }
-        return result;
-    }
+
 
 
 

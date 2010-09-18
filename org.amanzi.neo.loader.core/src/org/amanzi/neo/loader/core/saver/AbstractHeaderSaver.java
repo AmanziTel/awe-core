@@ -32,24 +32,37 @@ import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.statistic.StatisticManager;
 import org.neo4j.graphdb.Node;
 
+// TODO: Auto-generated Javadoc
 /**
  * <p>
- *Abstract Saver based on  HeaderTransferData
- * </p>
+ * Abstract Saver based on  HeaderTransferData
+ * </p>.
+ *
+ * @param <T> the generic type
  * @author TsAr
  * @since 1.0.0
  */
 public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> extends AbstractSaver<T> {
 
+    /** The service. */
     protected DatasetService service;
+    
+    /** The property map. */
     protected Map<String, String> propertyMap = new HashMap<String, String>();
     
+    /** The gis nodes. */
     protected LinkedHashMap<Node, GisProperties> gisNodes=new LinkedHashMap<Node, GisProperties>();
 
 
+    /** The rootname. */
     protected String rootname;
 
 
+    /**
+     * Inits the.
+     *
+     * @param element the element
+     */
     @Override
     public void init(T element) {
         super.init(element);
@@ -65,10 +78,11 @@ public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> extends
         statistic=StatisticManager.getStatistic(rootNode);
         
     }
+    
     /**
-     * get gisProperties by gis name
-     * 
-     * @param name gis name
+     * get gisProperties by gis name.
+     *
+     * @param rootNode the root node
      * @return GisProperties
      */
     protected GisProperties getGisProperties(Node rootNode) {
@@ -81,6 +95,16 @@ public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> extends
         return property;
     }
 
+    /**
+     * Sets the property to node.
+     *
+     * @param key the key
+     * @param nodeType the node type
+     * @param node the node
+     * @param propertyName the property name
+     * @param propertyValue the property value
+     * @return true, if successful
+     */
     protected boolean setPropertyToNode(String key,String nodeType,Node node,String propertyName,Object propertyValue){
         if (propertyValue==null){
             return false;
@@ -88,10 +112,30 @@ public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> extends
         node.setProperty(propertyName, propertyValue);
         return statistic.indexValue(key, nodeType, propertyName, propertyValue);
     }
+    
+    /**
+     * Fill root node.
+     *
+     * @param rootNode the root node
+     * @param element the element
+     */
     protected abstract void fillRootNode(Node rootNode, T element);
 
+    /**
+     * Gets the root node type.
+     *
+     * @return the root node type
+     */
     protected abstract String getRootNodeType();
 
+    /**
+     * Adds the simple child.
+     *
+     * @param parent the parent
+     * @param type the type
+     * @param name the name
+     * @return the node
+     */
     protected Node addSimpleChild(Node parent, INodeType type, String name) {
         statistic.increaseTypeCount(rootname,type.getId(),1);
         Node child = service.addSimpleChild(parent, type, name);
@@ -99,6 +143,11 @@ public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> extends
         return child;
     }
 
+    /**
+     * Finish up.
+     *
+     * @param element the element
+     */
     @Override
     public void finishUp(T element) {
         statistic.save();
@@ -109,6 +158,14 @@ public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> extends
         finishUpIndexes();
         commit(false);
     }
+    
+    /**
+     * Define header.
+     *
+     * @param headers the headers
+     * @param newName the new name
+     * @param possibleHeaders the possible headers
+     */
     protected void defineHeader(Set<String> headers, String newName, String[] possibleHeaders) {
         if (possibleHeaders == null) {
             return;
@@ -127,6 +184,14 @@ public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> extends
             }
         }
     }
+    
+    /**
+     * Gets the string value.
+     *
+     * @param key the key
+     * @param element the element
+     * @return the string value
+     */
     protected String getStringValue(String key, HeaderTransferData element) {
         String header = propertyMap.get(key);
         if (header == null) {
@@ -147,6 +212,19 @@ public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> extends
 
     protected <T extends Number> T getNumberValue(Class<T> klass, String key, HeaderTransferData element) {
         String value = getStringValue(key, element);
+        return     getNumberValue(klass,value);
+        
+    }
+    
+    /**
+     * Gets the number value.
+     *
+     * @param <T> the generic type
+     * @param klass the klass
+     * @param value the value
+     * @return the number value
+     */
+    protected <T extends Number> T getNumberValue(Class<T> klass, String value) {
         try {
             return NeoUtils.getNumberValue(klass, value);
         } catch (SecurityException e) {
@@ -162,5 +240,34 @@ public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> extends
         }
         return null;
 
+    }
+
+    /**
+     * Gets the not handled data.
+     *
+     * @param element the element
+     * @param keyId the key id
+     * @param typeId the type id
+     * @return the not handled data
+     */
+    protected Map<String, Object> getNotHandledData(HeaderTransferData element,String keyId,String typeId) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        for (String key : element.keySet()) {
+            if (!propertyMap.values().contains(key)) {
+                Object value=statistic.parseValue(keyId,typeId,key,element.get(key));
+                if(value!=null){
+                    result.put(key, value);
+                }
+                continue;
+            }
+        }
+        return result;
+    }
+    protected boolean  setUnparsedProperty(Node node, String keyId, String typeId, String propertyName, String stringValue) {
+        Object value=statistic.parseValue(keyId,typeId,propertyName,stringValue);
+        if (value!=null){
+            return setProperty(keyId,typeId,node,propertyName,value);
+        }
+        return false;
     }
 }

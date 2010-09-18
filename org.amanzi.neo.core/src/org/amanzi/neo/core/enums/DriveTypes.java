@@ -180,6 +180,9 @@ public enum DriveTypes {
             }
         }
     }
+    public static DriveTypes getNodeType(PropertyContainer node) {
+        return findById((String)node.getProperty(INeoConstants.DRIVE_TYPE, null));
+    }
 
     /**
      * Set drive type to current node
