@@ -41,8 +41,8 @@ import org.neo4j.graphdb.Node;
 import au.com.bytecode.opencsv.CSVReader;
 
 /**
- * TODO Purpose of
  * <p>
+ * Loader for greed counters data
  * </p>
  * 
  * @author TsAr
@@ -55,10 +55,13 @@ public class GridLoader extends DriveLoader {
     private Node parent;
     private Node lastMNode;
 
+
     /**
-     * @param directory
-     * @param datasetName
-     * @param display
+     * Instantiates a new grid loader.
+     *
+     * @param directory the directory
+     * @param datasetName the dataset name
+     * @param display the display
      */
     public GridLoader(String directory, String datasetName, Display display) {
         initialize("Grid Counter", null, directory, display);
@@ -139,9 +142,10 @@ public class GridLoader extends DriveLoader {
 
 
     /**
+     * Pet property prfix.
      *
-     * @param gridFile
-     * @return
+     * @param gridFile the grid file
+     * @return the string
      */
     private String petPropertyPrfix(File gridFile) {
         int len=gridFile.getName().indexOf('.');
@@ -156,6 +160,11 @@ public class GridLoader extends DriveLoader {
         return propertyFormat+"%s";
     }
 
+    /**
+     * Save data
+     *
+     * @param data the data
+     */
     private void save(HeaderTransferData data) {
         lastMNode=service.createMNode(parent, lastMNode);  
         for (Map.Entry<String,String>entry:data.entrySet()){
@@ -163,10 +172,13 @@ public class GridLoader extends DriveLoader {
         }
     }
 
+
     /**
-     * @param gridFile
-     * @return
-     * @throws IOException
+     * Gets the input stream for file
+     *
+     * @param gridFile the grid file
+     * @return the input stream
+     * @throws IOException Signals that an I/O exception has occurred.
      */
     private InputStream getInputStream(File gridFile) throws IOException {
         InputStream in = new FileInputStream(gridFile);
@@ -178,9 +190,12 @@ public class GridLoader extends DriveLoader {
         return in;
     }
 
+
     /**
-     * @param filename
-     * @return
+     * Gets the sorted list.
+     *
+     * @param filename the filename
+     * @return the sorted list
      */
     private List<File> getSortedList(String filename) {
         List<File> result = getAllFiles(new File(filename));
@@ -188,6 +203,12 @@ public class GridLoader extends DriveLoader {
         return result;
     }
 
+    /**
+     * Gets the all files.
+     *
+     * @param root the root
+     * @return the all files
+     */
     protected List<File> getAllFiles(File root) {
         FileFilter filter = new FileFilter() {
 
@@ -210,6 +231,13 @@ public class GridLoader extends DriveLoader {
         }
     }
 
+    /**
+     * Gets the all files.
+     *
+     * @param directory the directory
+     * @param filter the filter
+     * @return the all files
+     */
     public static List<File> getAllFiles(File directory, FileFilter filter) {
         LinkedList<File> result = new LinkedList<File>();
         for (File childFile : directory.listFiles(filter)) {
