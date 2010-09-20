@@ -19,14 +19,19 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
+import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.core.parser.HeaderTransferData;
@@ -68,12 +73,19 @@ public class GridLoader extends DriveLoader {
         basename = datasetName;
         service = NeoServiceFactory.getInstance().getDatasetService();
     }
-
+    private void addDriveIndexes() {
+        try {
+            addIndex(NodeTypes.M.getId(), NeoUtils.getTimeIndexProperty(basename));
+        } catch (IOException e) {
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+    }
     @Override
     public void run(IProgressMonitor monitor) throws IOException {
         List<File> fileList = getSortedList(filename);
         String characterSet = NeoLoaderPlugin.getDefault().getCharacterSet();
         mainTx = neo.beginTx();
+        addDriveIndexes();
         NeoUtils.addTransactionLog(mainTx, Thread.currentThread(), "AbstractLoader");
         try {
             initializeIndexes();
@@ -104,11 +116,18 @@ public class GridLoader extends DriveLoader {
                             data.setLine(line);
                             data.setFileName(gridFile.getName());
                             String propertyFormat=petPropertyPrfix(gridFile);
-
-                            for (int i = 0; i < nextLine.length; i++) {
+                            boolean containceData = gridFile.getName().contains("_stat.");
+                            int startind=containceData?2:0;
+                            for (int i = startind; i < nextLine.length; i++) {
                                 if (StringUtils.isNotEmpty(nextLine[i])){
                                     data.put(String.format(propertyFormat, i), nextLine[i]);
                                 }
+                            }
+                            if (containceData&&nextLine.length>=2){
+                                String dateTime=new StringBuilder(nextLine[0]).append(' ').append(nextLine[1]).toString();
+                                Calendar cl= getTime(dateTime);
+                                data.put(INeoConstants.PROPERTY_TIME_NAME,dateTime);
+                                data.setWorkDate(cl);
                             }
                             save(data);
                         } finally {
@@ -141,6 +160,27 @@ public class GridLoader extends DriveLoader {
     }
 
 
+
+
+    /**
+     * Gets the time.
+     *
+     * @param datetime the datetime
+     * @return the time
+     */
+    private Calendar getTime(String datetime) {
+        SimpleDateFormat df=new SimpleDateFormat("MM/dd/yyyy HH:mm");
+        Date result;
+        try {
+            result = df.parse(datetime);
+        } catch (ParseException e) {
+            error(String.format("Can't parce time %s", datetime));
+            return null;
+        }
+        Calendar cl=Calendar.getInstance();
+        cl.setTime(result);
+        return cl;
+    }
     /**
      * Pet property prfix.
      *
@@ -169,6 +209,10 @@ public class GridLoader extends DriveLoader {
         lastMNode=service.createMNode(parent, lastMNode);  
         for (Map.Entry<String,String>entry:data.entrySet()){
             setIndexPropertyNotParcedValue(getHeaderMap(1).headers, lastMNode, entry.getKey(), entry.getValue());
+        }
+        if (data.getWorkDate()!=null){
+            lastMNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME,data.getWorkDate().getTimeInMillis());
+            index(lastMNode);
         }
     }
 
