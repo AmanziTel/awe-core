@@ -16,6 +16,7 @@ package org.amanzi.neo.services.statistic.internal;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.services.statistic.IStatistic;
+import org.hsqldb.lib.StringUtil;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -67,7 +68,7 @@ public class DatasetStatistic implements IStatistic {
 
     @Override
     public Object parseValue(String rootname, String nodeType, String key, String value) {
-        if (value==null){
+        if (StringUtil.isEmpty(value)){
             return null;
         }
         PropertyStatistics prop=handler.findProperty(rootname,nodeType,key);

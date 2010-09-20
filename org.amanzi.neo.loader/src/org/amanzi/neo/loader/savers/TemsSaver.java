@@ -18,6 +18,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +70,7 @@ public class TemsSaver extends AbstractHeaderSaver<HeaderTransferData> implement
     private String previous_time = null;
     private int previous_pn_code = -1;
     private String virtualDatasetName;
+    private Integer hours;
     @Override
     public void save(HeaderTransferData element) {
         if (count++>4000){
@@ -86,7 +88,7 @@ public class TemsSaver extends AbstractHeaderSaver<HeaderTransferData> implement
         String message_type = getStringValue("message_type",element); 
         Double latitude = getLatitude(getStringValue("latitude", element));
         Double longitude = getLongitude(getStringValue("longitude", element));
-        if (time == null || latitude == null || longitude == null) {
+        if (time == null || latitude == null || longitude == null||timestamp==null) {
             info(String.format("Line %s not saved.",element.getLine()));
             return;
         }
@@ -232,34 +234,99 @@ public class TemsSaver extends AbstractHeaderSaver<HeaderTransferData> implement
     }
 
     /**
+     * Gets the longitude.
      *
-     * @param stringValue
-     * @return
+     * @param stringValue the string value
+     * @return the longitude
      */
     protected Double getLongitude(String stringValue) {
+        if (stringValue==null){
+            return null;
+        }
+        try {
+            return Double.valueOf(stringValue);
+        } catch (NumberFormatException e) {
+            Pattern p = Pattern.compile("^([+-]{0,1}\\d+(\\.\\d+)*)([NESW]{0,1})$");
+            Matcher m = p.matcher(stringValue);
+            if (m.matches()) {
+                try {
+                    return Double.valueOf(m.group(1));
+                } catch (NumberFormatException e2) {
+                    error(String.format("Can't get Longitude from: %s",stringValue));
+                }
+            }
+        }
         return null;
     }
 
+
     /**
+     * Gets the latitude.
      *
-     * @param stringValue
-     * @return
+     * @param stringValue the string value
+     * @return the latitude
      */
     protected Double getLatitude(String stringValue) {
+        if (stringValue==null){
+            return null;
+        }
+        try {
+            return Double.valueOf(stringValue);
+        } catch (NumberFormatException e) {
+            Pattern p = Pattern.compile("^([+-]{0,1}\\d+(\\.\\d+)*)([NESW]{0,1})$");
+            Matcher m = p.matcher(stringValue);
+            if (m.matches()) {
+                try {
+                    return Double.valueOf(m.group(1));
+                } catch (NumberFormatException e2) {
+                    error(String.format("Can't get Latitude from: %s",stringValue));
+                }
+            }
+        }
         return null;
     }
+
 
     /**
+     * Define timestamp.
      *
-     * @param workDate2
-     * @param time
-     * @return
+     * @param workDate the work date
+     * @param time the time
+     * @return the long
      */
-    private Long defineTimestamp(Calendar workDate2, String time) {
+    @SuppressWarnings("deprecation")
+    private Long defineTimestamp(Calendar workDate, String time) {
+        if (time==null){
+            return null;
+        }
+        SimpleDateFormat dfn = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss.SSS");
+        try {
+            Date datetime = dfn.parse(time);
+            return datetime.getTime();
+        } catch (ParseException e1) {
+            dfn = new SimpleDateFormat("HH:mm:ss.S");
+            try{
+                Date nodeDate = dfn.parse(time);
+                final int nodeHours = nodeDate.getHours();
+                if (hours != null && hours > nodeHours) {
+                    // next day
+                    workDate.add(Calendar.DAY_OF_MONTH, 1);
+
+                }
+                hours = nodeHours;
+                workDate.set(Calendar.HOUR_OF_DAY, nodeHours);
+                workDate.set(Calendar.MINUTE, nodeDate.getMinutes());
+                workDate.set(Calendar.SECOND, nodeDate.getSeconds());
+                return  workDate.getTimeInMillis();
+              
+            }catch (Exception e) {
+              error(String.format("Can't parse time: %s", time));
+              
+            }
+        }
         return null;
     }
 
-    private static final String MS_KEY = "ms";
     private void addDriveIndexes() {
         try {
             String virtualDatasetName = DriveTypes.MS.getFullDatasetName(rootname);
@@ -289,7 +356,7 @@ public class TemsSaver extends AbstractHeaderSaver<HeaderTransferData> implement
         defineHeader(headers, "message_type",new String[]{"message_type","Message Type"});
         defineHeader(headers, "event",new String[]{"Event Type","event_type"});
         defineHeader(headers, INeoConstants.SECTOR_ID_PROPERTIES,new String[]{".*Cell Id.*"});
-        defineHeader(headers, "time",new String[]{"Timestamp","timestamp"});
+        defineHeader(headers, "time",new String[]{"time","Timestamp","timestamp"});
         defineHeader(headers, "all_rxlev_full",new String[]{"All-RxLev Full","all_rxlev_full"});
         defineHeader(headers, "all_rxlev_sub",new String[]{"All-RxLev Sub", "all_rxlev_sub"});
         defineHeader(headers, "all_rxqual_full",new String[]{"All-RxQual Full", "all_rxqual_full"});
@@ -309,6 +376,7 @@ public class TemsSaver extends AbstractHeaderSaver<HeaderTransferData> implement
         applyToAll=false;
         startMainTx();
         initializeIndexes();
+        element.put("cleanHeaders", "true");
     }
     /**
      * @param key -key of value from preference store
@@ -338,7 +406,7 @@ public class TemsSaver extends AbstractHeaderSaver<HeaderTransferData> implement
     @Override
     public boolean beforeSaveNewElement(HeaderTransferData element) {
         newElem=true;
-        
+        hours=null;
         //TODO define new latitude
         currentLatitude=null;
         currentLatitude=null; 

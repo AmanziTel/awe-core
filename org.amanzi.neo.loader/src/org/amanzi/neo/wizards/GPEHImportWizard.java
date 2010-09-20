@@ -24,6 +24,7 @@ import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.OssType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.loader.GPEHLoader;
+import org.amanzi.neo.loader.GridLoader;
 import org.amanzi.neo.loader.LoaderUtils;
 import org.amanzi.neo.loader.OSSCounterLoader;
 import org.amanzi.neo.loader.PerformanceCountersLoader;
@@ -72,6 +73,11 @@ public class GPEHImportWizard extends Wizard implements IImportWizard {
                         OSSCounterLoader loaderOss = new OSSCounterLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display);
                         loaderOss.run(monitor);
                         handleSelect(monitor, loaderOss.getRootNodes());
+                        break;
+                    case GRID:
+                        GridLoader grid = new GridLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display);
+                        grid.run(monitor);
+                        handleSelect(monitor, grid.getRootNodes());
                         break;
                     case PERFORMANCE_COUNTER:
                         PerformanceCountersLoader performanceCountersLoader = new PerformanceCountersLoader(OssType.PERFORMANCE_COUNTER,mainPage.getDirectory(), mainPage.getDatasetName(), display);

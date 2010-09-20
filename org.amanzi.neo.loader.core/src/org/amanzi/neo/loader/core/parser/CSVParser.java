@@ -34,9 +34,10 @@ import au.com.bytecode.opencsv.CSVReader;
  * @since 1.0.0
  */
 public class CSVParser extends CommonFilesParser<HeaderTransferData, CommonConfigData> {
-    private static final int PERCENTAGE_FIRE = 5;
+    private static final int PERCENTAGE_FIRE = 2;
     protected String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
     Character delimeters;
+    private HeaderTransferData initdata;
 
     @Override
     protected HeaderTransferData getFinishData() {
@@ -59,6 +60,9 @@ public class CSVParser extends CommonFilesParser<HeaderTransferData, CommonConfi
                     line++;
                     if (header == null) {
                         header = nextLine;
+                        if ("true".equals(initdata.get("cleanHeaders"))){
+                            cleanHeader(header);
+                        }
                         continue;
                     }
 
@@ -77,7 +81,7 @@ public class CSVParser extends CommonFilesParser<HeaderTransferData, CommonConfi
                     int persentage = is.percentage();
                     if (persentage - persentageOld > PERCENTAGE_FIRE) {
                         persentageOld = persentage;
-                        if (fireSubProgressEvent(element, new ProgressEventImpl(String.format(getDescriptionFormat(), element.getFile().getName()), persentage))) {
+                        if (fireSubProgressEvent(element, new ProgressEventImpl(String.format(getDescriptionFormat(), element.getFile().getName()), persentage/100d))) {
                             return true;
                         }
                     }
@@ -93,6 +97,17 @@ public class CSVParser extends CommonFilesParser<HeaderTransferData, CommonConfi
     }
 
 
+
+    private void cleanHeader(String[] header) {
+        if (header!=null){
+            for (int i = 0; i < header.length; i++) {
+                header[i]=cleanHeader(header[i]); 
+            }
+        }
+    }
+    private final static String cleanHeader(String header) {
+        return header.replaceAll("[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+", "_").replaceAll("[^\\w]+", "_").replaceAll("_+", "_").replaceAll("\\_$", "").toLowerCase();
+    }
     /**
      * Gets the delimiters.
      *
@@ -128,7 +143,7 @@ public class CSVParser extends CommonFilesParser<HeaderTransferData, CommonConfi
 
     @Override
     protected HeaderTransferData getInitData(CommonConfigData properties) {
-        HeaderTransferData initdata = new HeaderTransferData();
+         initdata = new HeaderTransferData();
         initdata.setProjectName(properties.getProjectName());
         initdata.setRootName(properties.getDbRootName());
         return initdata;

@@ -77,7 +77,7 @@ public class DatasetService extends AbstractService {
     protected Node getRootNode(String projectName, String datasetName, String rootTypeId) {
         Node datasetNode = findRoot(projectName, datasetName);
         if (datasetNode != null) {
-            if (!rootTypeId.equals(getNodeType(datasetNode))) {
+            if (!rootTypeId.equals(getType(datasetNode))) {
                 throw new IllegalArgumentException(String.format("Wrong types of found node. Expected type: %s, real type: %s", rootTypeId, datasetNode));
             }
         }
@@ -366,7 +366,7 @@ public class DatasetService extends AbstractService {
 
             @Override
             public boolean accept(Path paramT) {
-                return aweProjectName.equals(paramT.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, ""));
+                return aweProjectName.equals(paramT.endNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, ""));
             }
         }).traverse(databaseService.getReferenceNode()).nodes().iterator();
         return it.hasNext() ? it.next() : null;
