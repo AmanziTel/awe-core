@@ -51,11 +51,11 @@ import org.amanzi.neo.core.preferences.NeoCorePreferencesConstants;
 import org.amanzi.neo.core.propertyFilter.PropertyFilterModel;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.core.utils.IPropertyHeader;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.core.utils.PropertyHeader;
+import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -64,9 +64,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
 import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -115,9 +115,8 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.helpers.Predicate;
 import org.rubypeople.rdt.core.IRubyProject;
 import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
@@ -1387,13 +1386,14 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
         }
         setVisibleForChart(false);
         final String nodeTypeId = getNodeTypeId(node);
-        ReturnableEvaluator propertyReturnableEvalvator = new ReturnableEvaluator() {
+        Predicate<org.neo4j.graphdb.Path> propertyReturnableEvalvator = new Predicate<org.neo4j.graphdb.Path>() {
 
-            @Override
-            public boolean isReturnableNode(TraversalPosition currentPos) {
-                return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(nodeTypeId);
-            }
-        };
+			@Override
+			public boolean accept(org.neo4j.graphdb.Path item) {
+				return item.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(nodeTypeId);
+			}
+		};
+        
         propertyList = new PropertyFilterModel().filerProperties(gisCombo.getText(), propertyList);
         model = new ReuseAnalyserModel(aggregatedProperties, propertyReturnableEvalvator, NeoServiceProvider.getProvider().getService());
 

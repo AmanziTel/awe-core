@@ -30,9 +30,9 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.helpers.Predicate;
 
 
 /**
@@ -55,7 +55,7 @@ public class ReuseAnalyserTest {
         Transaction tx = util.getNeo().beginTx();
         try{
             Node root=createStructure();
-            ReturnableEvaluator propertyReturnableEvalvator =createReturnableEvaluator(root);
+            Predicate<Path> propertyReturnableEvalvator =createReturnableEvaluator(root);
             tx.success();
             tx.finish();
             tx=util.getNeo().beginTx();
@@ -71,16 +71,17 @@ public class ReuseAnalyserTest {
         }
     }
 
-    private ReturnableEvaluator createReturnableEvaluator(Node root) {
+    private Predicate<Path> createReturnableEvaluator(Node root) {
+    	
         
         final String type= NeoUtils.getPrimaryType(root,util.getNeo());
-       return  new ReturnableEvaluator() {
-            
-            @Override
-            public boolean isReturnableNode(TraversalPosition currentPos) {
-                return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(type);
-            }
-        };
+        return new Predicate<Path>() {
+
+        	@Override
+        	public boolean accept(Path item) {
+        		return item.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(type);
+        	}
+        };       
     }
 
     /**

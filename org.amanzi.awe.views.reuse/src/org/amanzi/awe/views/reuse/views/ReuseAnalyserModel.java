@@ -41,13 +41,17 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
-import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
+import org.neo4j.graphdb.traversal.Traverser;
+import org.neo4j.graphdb.traversal.Uniqueness;
+import org.neo4j.helpers.Predicate;
+import org.neo4j.kernel.Traversal;
 
 /**
  * <p>
@@ -83,7 +87,7 @@ public class ReuseAnalyserModel {
         private final ArrayList<Pair<Node, Node>> correlationUpdate = new ArrayList<Pair<Node,Node>>();
         
         /** The property returnable evalvator. */
-        private final  ReturnableEvaluator propertyReturnableEvalvator;
+        private final  Predicate<Path> propertyReturnableEvalvator;
         private final  Map<String, String[]> aggregatedProperties ;
         
         private Transaction currentTransaction;
@@ -110,7 +114,7 @@ public class ReuseAnalyserModel {
          * @param propertyReturnableEvalvator the property returnable evalvator
          * @param service the service
          */
-        public ReuseAnalyserModel(Map<String, String[]> aggregatedProperties ,ReturnableEvaluator propertyReturnableEvalvator, GraphDatabaseService service) {
+        public ReuseAnalyserModel(Map<String, String[]> aggregatedProperties ,Predicate<Path> propertyReturnableEvalvator, GraphDatabaseService service) {
             super();
             this.aggregatedProperties = aggregatedProperties;
             this.propertyReturnableEvalvator = propertyReturnableEvalvator;
@@ -259,8 +263,11 @@ public class ReuseAnalyserModel {
            
             TreeMap<Column, Integer> result = new TreeMap<Column, Integer>();
             Node startTraverse=rootNode.hasRelationship(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING)||gisNode==null?rootNode:gisNode;
-            Traverser travers = startTraverse.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, propertyReturnableEvalvator, NetworkRelationshipTypes.CHILD,
-                    Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            
+            Traverser travers = Traversal.description().depthFirst().uniqueness(Uniqueness.NODE_GLOBAL).
+			  	      relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).
+			  	      relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).
+			  	      filter(propertyReturnableEvalvator).traverse(startTraverse);
 
             Double min = null;
             Double max = null;
@@ -282,7 +289,8 @@ public class ReuseAnalyserModel {
             // Collection<Node> trav = travers.getAllNodes();
             if (min == null || max == null) {
                 monitor.beginTask("Calculating statistics for " + propertyName, totalWork*2);
-                for (Node node : travers) {
+                for (Path path : travers) {
+                	Node node = path.endNode();
                     monitor.worked(1);
                     if (isAggregatedProperty) {
                         Double minValue = getNodeValue(node, propertyName, select, false);
@@ -427,10 +435,13 @@ public class ReuseAnalyserModel {
             }
             runGcIfBig(totalWork);
             if (isAggregatedProperty) {
-                travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, propertyReturnableEvalvator, NetworkRelationshipTypes.CHILD,
-                        Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            	travers = Traversal.description().depthFirst().uniqueness(Uniqueness.NODE_GLOBAL).
+            			  relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).
+            			  relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).
+            			  filter(propertyReturnableEvalvator).traverse(gisNode);                
                 monitor.subTask("Building results from database");
-                for (Node node : travers) {
+                for (Path path : travers) {
+                	Node node = path.endNode();
                     Double value = null;
                     for (Column column : keySet) {
                         value = value == null || select == Select.EXISTS ? getNodeValue(node, propertyName, select, column.getMinValue(), column.getRange()) : value;
@@ -456,10 +467,16 @@ public class ReuseAnalyserModel {
                         break;
                 }
             } else if (typeOfGis == GisTypes.NETWORK || select == Select.EXISTS) {
-                travers = rootNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, propertyReturnableEvalvator, NetworkRelationshipTypes.CHILD,
-                        Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
-                monitor.subTask("Building results from database");
-                for (Node node : travers) {
+            	
+            	
+            	travers = Traversal.description().depthFirst().uniqueness(Uniqueness.NODE_GLOBAL).
+            			  relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).
+            			  relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).
+            			  filter(propertyReturnableEvalvator).traverse(rootNode);
+            	monitor.subTask("Building results from database");
+                int i = 0;
+                for (Path path  : travers) {
+                	Node node = path.endNode();
                     if (node.hasProperty(propertyName)) {
                         double value = ((Number)node.getProperty(propertyName)).doubleValue();
                         for (Column column : keySet) {
@@ -488,7 +505,8 @@ public class ReuseAnalyserModel {
                     monitor.worked(1);
                     if (monitor.isCanceled())
                         break;
-                }
+                   
+                }                
             } else {
                 monitor.subTask("Building results from memory cache of " + mpMap.size() + " data");
                 for (Node node : mpMap.keySet()) {
@@ -506,6 +524,7 @@ public class ReuseAnalyserModel {
                             break;
                     }
                 }
+                
             }
             runGcIfBig(totalWork);
             // Now merge any gaps in the distribution into a single category (TODO: Prevent adjacency
@@ -571,9 +590,12 @@ public class ReuseAnalyserModel {
                     columns.add(column);
                 }
                 // linked node
-                Traverser travers = gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, propertyReturnableEvalvator, NetworkRelationshipTypes.CHILD,
-                        Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
-                for (Node node : travers) {
+                Traverser travers = Traversal.description().depthFirst().uniqueness(Uniqueness.NODE_GLOBAL).
+  			  			  relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).
+  			  			  relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).
+  			  			  filter(propertyReturnableEvalvator).traverse(gisNode);
+                for (Path path : travers) {
+                	Node node = path.endNode();                	
                     monitor.worked(1);
                     if (node.hasProperty(propertyName)) {
                         String propertyVal = node.getProperty(propertyName).toString();
@@ -647,9 +669,10 @@ public class ReuseAnalyserModel {
                     return result;
                 }
             };
-            Traverser travers = rootNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator, NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
-
-            GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            Traverser travers = Traversal.description().depthFirst().uniqueness(Uniqueness.NODE_GLOBAL).
+			  				    relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).
+			  				    relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).
+			  				    filter(propertyReturnableEvalvator).traverse(rootNode);
 
             Double min = null;
             Double max = null;
@@ -658,7 +681,8 @@ public class ReuseAnalyserModel {
             runGcIfBig(totalWork);
             monitor.subTask("Searching database");
             // Collection<Node> trav = travers.getAllNodes();
-            for (Node node : travers) {
+            for (Path path : travers) {
+            	Node node = path.endNode();
                 Double minValue = getTransmissionValue(node, neighbourName, propertyName, select, false);
                 Double maxValue = select == Select.EXISTS ? getTransmissionValue(node, neighbourName, propertyName, select, true) : minValue;
                 if (minValue == null || maxValue == null) {
@@ -718,11 +742,14 @@ public class ReuseAnalyserModel {
                     break;
                 }
             }
-            runGcIfBig(totalWork);
-            travers = rootNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator, NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
-                    GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            runGcIfBig(totalWork);            
+            travers = Traversal.description().depthFirst().uniqueness(Uniqueness.NODE_GLOBAL).
+			  	 	  relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).
+			  	 	  relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).
+			  	 	  filter(propertyReturnableEvalvator).traverse(rootNode);
             monitor.subTask("Building results from database");
-            for (Node node : travers) {
+            for (Path path : travers) {
+            	Node node = path.endNode();
                 Double value = null;
                 for (Column column : keySet) {
                     value = value == null || select == Select.EXISTS ? getTransmissionValue(node, neighbourName, propertyName, select, column.getMinValue(), column.getRange()) : value;
@@ -794,8 +821,10 @@ public class ReuseAnalyserModel {
                     return result;
                 }
             };
-            Traverser travers = rootNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator, NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
-                    GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            Traverser travers = Traversal.description().depthFirst().uniqueness(Uniqueness.NODE_GLOBAL).
+			  				    relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).
+			  				    relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).
+			  				    filter(propertyReturnableEvalvator).traverse(rootNode);
 
             Double min = null;
             Double max = null;
@@ -804,7 +833,8 @@ public class ReuseAnalyserModel {
             runGcIfBig(totalWork);
             monitor.subTask("Searching database");
             // Collection<Node> trav = travers.getAllNodes();
-            for (Node node : travers) {
+            for (Path path : travers) {
+            	Node node = path.endNode();
                 Double minValue = getNeighbourValue(node, neighbourName, propertyName, select, false);
                 Double maxValue = select == Select.EXISTS ? getNeighbourValue(node, neighbourName, propertyName, select, true) : minValue;
                 if (minValue == null || maxValue == null) {
@@ -865,10 +895,13 @@ public class ReuseAnalyserModel {
                 }
             }
             runGcIfBig(totalWork);
-            travers = rootNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator, NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
-                    GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            travers = Traversal.description().depthFirst().uniqueness(Uniqueness.NODE_GLOBAL).
+			  		  relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).
+			  		  relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).
+			  		  filter(propertyReturnableEvalvator).traverse(rootNode);
             monitor.subTask("Building results from database");
-            for (Node node : travers) {
+            for (Path path : travers) {
+            	Node node = path.endNode();
                 Double value = null;
                 for (Column column : keySet) {
                     value = value == null || select == Select.EXISTS ? getNeighbourValue(node, neighbourName, propertyName, select, column.getMinValue(), column.getRange()) : value;
@@ -1175,15 +1208,19 @@ public class ReuseAnalyserModel {
          * @return first value
          */
         private Number getFirstValueOfMpNode(Node mpNode, final String propertyName) {
-            Traverser traverse = mpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    return !currentPos.isStartNode() && currentPos.currentNode().hasProperty(propertyName);
-                }
-            }, GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING);
+        	Traverser traverse = Traversal.description().depthFirst().uniqueness(Uniqueness.NODE_GLOBAL).
+			  				    relationships(GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING).			  				    
+			  				    filter(propertyReturnableEvalvator).filter(new Predicate<Path>() {
+									
+									@Override
+									public boolean accept(Path item) {
+										return (item.length() == 0) && item.endNode().hasProperty(propertyName);
+									}
+								}).traverse(mpNode);
+        	
             Node minNode = null;
-            for (Node node : traverse) {
+            for (Path path : traverse) {
+            	Node node = path.endNode();
                 minNode = minNode == null || minNode.getId() > node.getId() ? node : minNode;
             }
             return minNode == null ? null : (Number)minNode.getProperty(propertyName);
