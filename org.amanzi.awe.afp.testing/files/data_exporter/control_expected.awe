@@ -1,0 +1,26 @@
+SiteSpacing 2
+CellSpacing 3
+RegNbrSpacing 1
+MinNbrSpacing 0
+SecondNbrSpacing 1
+RecalculateAll 1
+UseTraffic 1
+UseSONbrs 1
+Quality 100
+DecomposeInCliques 0
+ExistCliques 0
+GMaxRTperCell 1
+GMaxRTperSite 1
+HoppingType 0
+UseGrouping 1
+NrOfGroups 6
+LogFile "/Users/Sudhanshu/.amanzi/AfpTemp/logfile.awe"
+CellCardinality 61
+CellFile "/Users/Sudhanshu/.amanzi/AfpTemp/InputCellFile.awe"
+NeighboursFile "/Users/Sudhanshu/.amanzi/AfpTemp/InputNeighboursFile.awe"
+InterferenceFile "/Users/Sudhanshu/.amanzi/AfpTemp/InputInterferenceFile.awe"
+OutputFile "/Users/Sudhanshu/.amanzi/AfpTemp/outputFile.awe"
+CliquesFile "/Users/Sudhanshu/.amanzi/AfpTemp/InputCliquesFile.awe"
+ForbiddenFile "/Users/Sudhanshu/.amanzi/AfpTemp/InputForbiddenFile.awe"
+ExceptionFile "/Users/Sudhanshu/.amanzi/AfpTemp/InputExceptionFile.awe"
+Carriers 6 1 2 3 4 5 6
