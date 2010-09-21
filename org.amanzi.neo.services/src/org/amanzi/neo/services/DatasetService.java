@@ -14,7 +14,9 @@
 package org.amanzi.neo.services;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.DriveTypes;
@@ -778,5 +780,20 @@ public class DatasetService extends AbstractService {
             rel = refNode.getSingleRelationship(DatasetRelationshipTypes.GLOBAL_PROPERTIES, Direction.OUTGOING);
         }
         return rel.getEndNode();
+    }
+
+
+    /**
+     * Gets the user defined node types.
+     * 
+     * @return the user defined node types
+     */
+    public List<INodeType> getUserDefinedNodeTypes() {
+        String[] types = (String[])getGlobalConfigNode().getProperty(DYNAMIC_TYPES, new String[0]);
+        List<INodeType> result = new ArrayList<INodeType>(types.length);
+        for (int i = 0; i < types.length; i++) {
+            result.add(new DynamicNodeType(types[i]));
+        }
+        return result;
     }
 }

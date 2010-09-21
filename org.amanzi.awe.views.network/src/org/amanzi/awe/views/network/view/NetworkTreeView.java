@@ -63,12 +63,15 @@ import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.service.listener.NeoServiceProviderEventAdapter;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.apache.log4j.Logger;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
@@ -78,9 +81,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
 import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -150,7 +153,7 @@ import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
  */
 
 public class NetworkTreeView extends ViewPart {
-    
+
     private static final int MAX_FILE_SIZE = 102400;
 
     private static final Logger LOGGER = Logger.getLogger(NetworkTreeView.class);
@@ -507,27 +510,63 @@ public class NetworkTreeView extends ViewPart {
                 return selection.size() == 1;
             }
         });
-        
+
         manager.add(new Separator());
-        
-        //add corresponding actions only if they should work
+
+        IMenuManager menu = new MenuManager("Create new element", "new_elem_submenu_ID");
+        manager.add(menu);
+        fillMenu(menu, (IStructuredSelection)viewer.getSelection());
+
+        // // add corresponding actions only if they should work
         IAction elementAction = new NewElementAction((IStructuredSelection)viewer.getSelection(), false);
         if (elementAction.isEnabled()) {
-            manager.add(elementAction);
+            menu.add(elementAction);
         }
 
         elementAction = new CopyElementAction((IStructuredSelection)viewer.getSelection());
         if (elementAction.isEnabled()) {
-            manager.add(elementAction);
+            menu.add(elementAction);
         }
 
         elementAction = new NewElementAction((IStructuredSelection)viewer.getSelection(), true);
         if (elementAction.isEnabled()) {
-            manager.add(elementAction);
+            menu.add(elementAction);
         }
     }
-    
-    private void openFileFromNode(NeoNode neoNode){ 
+
+    /**
+     * @param menu
+     * @param selection
+     */
+    private void fillMenu(IMenuManager menu, IStructuredSelection selection) {
+        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+        Object element = selection.getFirstElement();
+        if (element instanceof Root)
+            return;
+        else if (element instanceof NeoNode) {
+            Node selectedNode = ((NeoNode)element).getNode();
+            // NodeTypes type = NodeTypes.getNodeType(selectedNode, service);
+
+            Node networkNode = NeoUtils.getParentNode(selectedNode, NodeTypes.NETWORK.getId());
+            String[] stTypes = (String[])networkNode.getProperty(INeoConstants.PROPERTY_STRUCTURE_NAME, new String[0]);
+            List<INodeType> structureTypes = new ArrayList<INodeType>(stTypes.length);
+            DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
+            for (int i = 0; i < stTypes.length; i++) {
+                NodeTypes nodeType = NodeTypes.getEnumById(stTypes[i]);
+                if (nodeType != null) {
+                    structureTypes.add(nodeType);
+                } else {
+                    structureTypes.add(ds.getNodeType(stTypes[i]));
+                }
+            }
+
+            List<INodeType> userDefTypes = ds.getUserDefinedNodeTypes();
+            userDefTypes.removeAll(structureTypes);
+        }
+        return;
+    }
+
+    private void openFileFromNode(NeoNode neoNode) {
         Transaction transaction = getService().beginTx();
         String filename = "";
         try {
@@ -541,12 +580,12 @@ public class NetworkTreeView extends ViewPart {
                 showCanNotOpenMessage();
                 return;
             }
-            File file = new File(filename);            
-            if(!file.exists()){
+            File file = new File(filename);
+            if (!file.exists()) {
                 showCanNotOpenMessage();
                 return;
             }
-            if(file.length()>MAX_FILE_SIZE&&!userConfirmTooLarge(file.getName())){
+            if (file.length() > MAX_FILE_SIZE && !userConfirmTooLarge(file.getName())) {
                 return;
             }
         } finally {
@@ -556,72 +595,71 @@ public class NetworkTreeView extends ViewPart {
         FileStoreEditorInput editorInput = new FileStoreEditorInput(file);
         IWorkbench workbench = PlatformUI.getWorkbench();
         IEditorDescriptor desc = workbench.getEditorRegistry().getDefaultEditor(file.getName());
-        
-        try {            
-            if(desc==null){
+
+        try {
+            if (desc == null) {
                 getViewSite().getPage().openEditor(editorInput, "org.eclipse.ui.DefaultTextEditor");
-            }else{
+            } else {
                 getViewSite().getPage().openEditor(editorInput, desc.getId());
             }
         } catch (PartInitException e) {
-            throw (RuntimeException) new RuntimeException().initCause(e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
         }
-
 
     }
-    
-    private Node getFileNode(NeoNode neoNode){
+
+    private Node getFileNode(NeoNode neoNode) {
         Node node = neoNode.getNode();
         NodeTypes nodeType = NodeTypes.getNodeType(node, null);
-        if(node==null||nodeType==null){
+        if (node == null || nodeType == null) {
             return null;
         }
-        if(nodeType.equals(NodeTypes.FILE)){
+        if (nodeType.equals(NodeTypes.FILE)) {
             return node;
         }
-        if(nodeType.equals(NodeTypes.CALL)){
-            Iterator<Node> events = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {                
+        if (nodeType.equals(NodeTypes.CALL)) {
+            Iterator<Node> events = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     return NeoUtils.isDriveMNode(currentPos.currentNode());
                 }
-            }, ProbeCallRelationshipType.CALL_M,Direction.OUTGOING).iterator();
-            return events.hasNext()?getFileNodeForSubNode(events.next(), NodeTypes.M):null;
+            }, ProbeCallRelationshipType.CALL_M, Direction.OUTGOING).iterator();
+            return events.hasNext() ? getFileNodeForSubNode(events.next(), NodeTypes.M) : null;
         }
-        //TODO Support this for any node with a file node in the parent tree (depth max 3).
+        // TODO Support this for any node with a file node in the parent tree (depth max 3).
         return getFileNodeForSubNode(node, nodeType);
     }
 
     private Node getFileNodeForSubNode(Node node, NodeTypes nodeType) {
-        while(node!=null&&nodeType!=null&&!nodeType.equals(NodeTypes.FILE)){
+        while (node != null && nodeType != null && !nodeType.equals(NodeTypes.FILE)) {
             node = NeoUtils.getParent(null, node);
             nodeType = NodeTypes.getNodeType(node, null);
         }
         return node;
     }
-    
-    protected void showCanNotOpenMessage(){
+
+    protected void showCanNotOpenMessage() {
         MessageDialog.openInformation(viewer.getControl().getShell(), "No file found", "No file found for this data");
     }
-    
-    protected boolean userConfirmTooLarge(String filemane){
-        return MessageDialog.openConfirm(viewer.getControl().getShell(), "File is quite large", 
-                "The file "+filemane+" is quite large, do you want to open it anyway?");
+
+    protected boolean userConfirmTooLarge(String filemane) {
+        return MessageDialog.openConfirm(viewer.getControl().getShell(), "File is quite large", "The file " + filemane
+                + " is quite large, do you want to open it anyway?");
     }
-    
+
     /**
      * Sends event to refresh map
-     *
+     * 
      * @param node wrapper of node that occurs map refreshing
-     * @author Lagutko_N 
+     * @author Lagutko_N
      */
     private void refreshMap(NeoNode node) {
         refreshMap(node.getNode());
     }
-    
+
     /**
      * Sends event to refresh map
-     *
+     * 
      * @param node node that occurs map refreshing
      * @author Lagutko_N
      */
@@ -633,7 +671,7 @@ public class NetworkTreeView extends ViewPart {
         UpdateLayerEvent event = new UpdateLayerEvent(gis);
         NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(event);
     }
-    
+
     /**
      * Shows selected node on map
      * 
@@ -798,7 +836,7 @@ public class NetworkTreeView extends ViewPart {
                     || NodeTypes.MISSING_SECTOR.getId().equals(nodeType) || NodeTypes.M.getId().equalsIgnoreCase(nodeType)
                     || NodeTypes.PROBE.getId().equalsIgnoreCase(nodeType) || NodeTypes.MP.getId().equalsIgnoreCase(nodeType)
                     || NodeTypes.FILE.getId().equalsIgnoreCase(nodeType) || NodeTypes.DATASET.getId().equalsIgnoreCase(nodeType)
-                    ||NodeTypes.CALL.getId().equals(nodeType)||NodeTypes.S_CELL.getId().equals(nodeType)||NodeTypes.S_ROW.getId().equals(nodeType);
+                    || NodeTypes.CALL.getId().equals(nodeType) || NodeTypes.S_CELL.getId().equals(nodeType) || NodeTypes.S_ROW.getId().equals(nodeType);
         }
 
     }
@@ -811,9 +849,9 @@ public class NetworkTreeView extends ViewPart {
      */
 
     private class NeoServiceEventListener extends NeoServiceProviderEventAdapter {
-        
+
         private boolean neoStopped = false;
-        
+
         public NeoServiceEventListener() {
             neoServiceProvider.addServiceProviderListener(this);
         }
@@ -822,7 +860,7 @@ public class NetworkTreeView extends ViewPart {
         public void onNeoStop(Object source) {
             neoStopped = true;
         }
-        
+
         @Override
         public void onNeoStart(Object source) {
             neoStopped = false;
@@ -1064,7 +1102,7 @@ public class NetworkTreeView extends ViewPart {
                 node.setProperty(INeoConstants.PROPERTY_NAME_NAME, oldName);
                 node.setProperty(INeoConstants.PROPERTY_OLD_NAME, name);
                 tx.success();
-                NeoServiceProvider.getProvider().commit();// viewer will be refreshed after commit                
+                NeoServiceProvider.getProvider().commit();// viewer will be refreshed after commit
             } finally {
                 tx.finish();
             }
@@ -1237,9 +1275,9 @@ public class NetworkTreeView extends ViewPart {
                     size = size * 2;
                     monitor.beginTask(getText(), size);
                     // First we cut the tree out of the graph so only CHILD relations exist
-                    
+
                     boolean containsNetwork = false;
-                    
+
                     for (NeoNode neoNode : nodesToDelete) {
                         if (monitor.isCanceled()) {
                             break;
@@ -1281,7 +1319,7 @@ public class NetworkTreeView extends ViewPart {
                     if (gisNode != null && networkNode != null) {
                         // TODO: Remove this code once we trust the delete function more fully
                         fixOrphanedNodes(gisNode, networkNode, monitor);
-                        
+
                         if (containsNetwork) {
                             MapImpl map = (MapImpl)ApplicationGIS.getActiveMap();
                             List<Layer> layers = map.getLayersInternal();
@@ -1297,27 +1335,27 @@ public class NetworkTreeView extends ViewPart {
                                 // Not found
                                 e.printStackTrace();
                             }
-                            if(targetLayer != null){
+                            if (targetLayer != null) {
                                 map.sendCommandSync(new DeleteLayerCommand(targetLayer));
                             }
                         }
-                        
+
                         NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDatabaseEvent(UpdateViewEventType.GIS));
-                    } 
+                    }
                     if (gisNode != null && (containsNetwork || containseDatasetNode)) {
                         NeoServiceProvider neoProvider = NeoServiceProvider.getProvider();
-                            String databaseLocation = neoProvider.getDefaultDatabaseLocation();
-                            ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
-                            URL url;
-                            try {
-                                url = new URL("file://" + databaseLocation);
-                            } catch (MalformedURLException e) {
-                                // TODO Handle MalformedURLException
-                                throw (RuntimeException) new RuntimeException( ).initCause( e );
-                            }
-                            NeoService serv = catalog.getById(NeoService.class, url, monitor);
-                            catalog.remove(serv);
-                            neoProvider.commit();
+                        String databaseLocation = neoProvider.getDefaultDatabaseLocation();
+                        ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
+                        URL url;
+                        try {
+                            url = new URL("file://" + databaseLocation);
+                        } catch (MalformedURLException e) {
+                            // TODO Handle MalformedURLException
+                            throw (RuntimeException)new RuntimeException().initCause(e);
+                        }
+                        NeoService serv = catalog.getById(NeoService.class, url, monitor);
+                        catalog.remove(serv);
+                        neoProvider.commit();
                         Transaction transaction = getService().beginTx();
                         try {
                             for (Relationship relation : gisNode.getRelationships()) {
@@ -1331,19 +1369,16 @@ public class NetworkTreeView extends ViewPart {
                         serv.updateResource();
                         List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(url);
                         catalog.add(services.iterator().next());
-                    }
-                    else {
+                    } else {
                         Transaction tx = getService().beginTx();
                         try {
                             refreshMap(gisNode);
                             tx.success();
-                        }
-                        finally {
+                        } finally {
                             tx.finish();
                         }
                     }
 
-                    
                     monitor.done();
                     return Status.OK_STATUS;
                 }
@@ -1362,7 +1397,7 @@ public class NetworkTreeView extends ViewPart {
 
                                 @Override
                                 public boolean isReturnableNode(TraversalPosition currentPos) {
-                                    Node cn = currentPos.currentNode();                                    
+                                    Node cn = currentPos.currentNode();
                                     return cn.getId() == refId || cn.getId() == netId;
                                 }
                             }, NetworkRelationshipTypes.CHILD, Direction.INCOMING).iterator().hasNext()) {
@@ -1473,7 +1508,7 @@ public class NetworkTreeView extends ViewPart {
                 }
 
             };
-            job.schedule();            
+            job.schedule();
         }
 
         @Override
@@ -1516,14 +1551,14 @@ public class NetworkTreeView extends ViewPart {
                 (new DeleteAction(Arrays.asList(new NeoNode[] {previousReport}), "Deleting previous delta report: " + getName())).run();
             }
 
-
             NeoServiceProvider.getProvider().commit();
             Job job = new Job(getName()) {
 
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
                     monitor.beginTask(getName(), 100);
-                    // TODO: Consider building on previous report instead of rebuilding for performance
+                    // TODO: Consider building on previous report instead of rebuilding for
+                    // performance
                     // reasons
                     makePreviousReport();
                     int initPerc = 5;
@@ -1857,7 +1892,7 @@ public class NetworkTreeView extends ViewPart {
                 // TODO Handle CoreException
                 throw (RuntimeException)new RuntimeException().initCause(e2);
             }
-            
+
             final IProject project = rubyProject.getProject();
 
             // correct
@@ -1874,14 +1909,14 @@ public class NetworkTreeView extends ViewPart {
                 is.close();
             } catch (Exception e) {
                 // TODO Handle IOException
-                LOGGER.error(e.getMessage(),e);
+                LOGGER.error(e.getMessage(), e);
                 throw (RuntimeException)new RuntimeException().initCause(e);
             }
             try {
                 getViewSite().getPage().openEditor(new FileEditorInput(file), "org.amanzi.awe.report.editor.ReportEditor");
             } catch (PartInitException e) {
                 // TODO Handle PartInitException
-                LOGGER.error(e.getMessage(),e);
+                LOGGER.error(e.getMessage(), e);
                 throw (RuntimeException)new RuntimeException().initCause(e);
             }
         }

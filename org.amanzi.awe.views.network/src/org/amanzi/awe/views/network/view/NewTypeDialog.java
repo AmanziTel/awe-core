@@ -13,8 +13,6 @@
 
 package org.amanzi.awe.views.network.view;
 
-import java.util.LinkedHashMap;
-
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.AbstractDialog;
@@ -31,43 +29,54 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.neo4j.graphdb.Node;
 
 /**
- * TODO Purpose of
  * <p>
+ * Dialog for creating new (user defined) node types
  * </p>
+ * .
  * 
  * @author NiCK
  * @since 1.0.0
  */
 public class NewTypeDialog extends AbstractDialog<Integer> {
 
+    /** The Constant MIN_FIELD_WIDTH. */
     private static final int MIN_FIELD_WIDTH = 50;
-    private Node node;
+
+    /** The t new node. */
     private Text tNewNode;
-    private final LinkedHashMap<String, Node> gisNetworkNodes = new LinkedHashMap<String, Node>();
+
+    /** The b ok. */
     private Button bOk;
+
+    /** The b cancel. */
     private Button bCancel;
+
+    /** The shell. */
     private Shell shell;
-    private Label errorLabel;
+
+    /** The ds. */
     private final DatasetService ds;
 
-    // public NewTypeDialog(Shell parent, String title, int style) {
-    // super(parent, "Dataset properties configura\tion", SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL |
-    // SWT.CENTER);
-    // // this.dataset = dataset;
-    // status = SWT.CANCEL;
-    // service = NeoServiceProvider.getProvider().getService();
-    // }
-
-    public NewTypeDialog(Shell parent, String title, Node node, int style) {
+    /**
+     * Instantiates a new new type dialog.
+     * 
+     * @param parent the parent
+     * @param title the title
+     * @param style the style
+     */
+    public NewTypeDialog(Shell parent, String title, int style) {
         super(parent, title, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.CENTER);
-        this.node = node;
         status = SWT.CANCEL;
         ds = NeoServiceFactory.getInstance().getDatasetService();
     }
 
+    /**
+     * Creates the contents.
+     * 
+     * @param shell the shell
+     */
     @Override
     protected void createContents(Shell shell) {
         this.shell = shell;
@@ -75,30 +84,10 @@ public class NewTypeDialog extends AbstractDialog<Integer> {
         shell.setImage(NodeTypes.DATASET.getImage());
         shell.setLayout(new GridLayout(2, true));
 
-        // errorLabel = new Label(shell, SWT.FLAT);
-        // errorLabel.setText("no_errors");
-        // errorLabel.setForeground(new org.eclipse.swt.graphics.Color(shell.getDisplay(),255,0,0));
-        // errorLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false,2,1));
-        // errorLabel.setVisible(false);
-
         Label label = new Label(shell, SWT.NONE);
-        // label.setText("Target network");
-        // label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-        // cNetwork = new Combo(shell, SWT.DROP_DOWN | SWT.READ_ONLY);
-
         GridData layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
         layoutData.minimumWidth = MIN_FIELD_WIDTH;
-        // cNetwork.setLayoutData(layoutData);
-        //
-        // label = new Label(shell, SWT.NONE);
-        // label.setText("Parent node");
-        // label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-        // cNodeTypes = new Combo(shell, SWT.DROP_DOWN | SWT.READ_ONLY);
-        // layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        // layoutData.minimumWidth = MIN_FIELD_WIDTH;
-        // cNodeTypes.setLayoutData(layoutData);
 
-        // label = new Label(shell, SWT.NONE);
         label.setText("New node type");
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
         tNewNode = new Text(shell, SWT.BORDER);
@@ -116,12 +105,15 @@ public class NewTypeDialog extends AbstractDialog<Integer> {
         load();
     }
 
+    /**
+     * Adds the listeners.
+     */
     private void addListeners() {
         bOk.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 status = SWT.OK;
-                perfomSave();
+                perfomrSave();
                 shell.close();
             }
         });
@@ -146,7 +138,7 @@ public class NewTypeDialog extends AbstractDialog<Integer> {
     }
 
     /**
-     *
+     * Check type name.
      */
     protected void checkTypeName() {
         String newType = tNewNode.getText().toLowerCase().trim();
@@ -158,15 +150,18 @@ public class NewTypeDialog extends AbstractDialog<Integer> {
     }
 
     /**
-     *
+     * Perform save.
      */
-    protected void perfomSave() {
+    protected void perfomrSave() {
         ds.saveDynamicNodeType(tNewNode.getText());
         NeoServiceProvider.getProvider().commit();
     }
 
+    /**
+     * Load.
+     */
     private void load() {
-
+        // nothing to load
     }
 
 }
