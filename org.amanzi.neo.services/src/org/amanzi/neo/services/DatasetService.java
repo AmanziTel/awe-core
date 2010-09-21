@@ -54,6 +54,9 @@ import com.vividsolutions.jts.util.Assert;
  */
 public class DatasetService extends AbstractService {
 
+    /** String DYNAMIC_TYPES field. */
+    private static final String DYNAMIC_TYPES = "dynamic_types";
+
     /**
      * Gets the root node.
      * 
@@ -156,7 +159,12 @@ public class DatasetService extends AbstractService {
      * @return the dynamic node type
      */
     private INodeType getDynamicNodeType(String type) {
-        return new DynamicNodeType(type);
+        String[] types = (String[])getGlobalConfigNode().getProperty(DYNAMIC_TYPES, new String[0]);
+        for (int i = 0; i < types.length; i++) {
+            if (types[i].equals(type))
+                return new DynamicNodeType(type);
+        }
+        return null;
     }
 
     /**
@@ -179,10 +187,9 @@ public class DatasetService extends AbstractService {
         node.setProperty("type", typeId);
     }
 
-
     /**
      * Gets the file node.
-     *
+     * 
      * @param rootNode the root node
      * @param fileName the file name
      * @return the file node
@@ -190,7 +197,7 @@ public class DatasetService extends AbstractService {
     public Node getFileNode(Node rootNode, String fileName) {
         Node fileNode = findFileNode(rootNode, fileName);
         if (fileNode == null) {
-            fileNode=createFileNode(fileName);
+            fileNode = createFileNode(fileName);
             addChild(rootNode, fileNode, null);
         }
         return fileNode;
@@ -207,8 +214,6 @@ public class DatasetService extends AbstractService {
         return findChildByName(datasetNode, fileName);
     }
 
-
-
     /**
      * Gets the last node in file.
      * 
@@ -222,8 +227,6 @@ public class DatasetService extends AbstractService {
         }
         return null;
     }
-
-
 
     /**
      * Gets the gpeh statistics.
@@ -459,7 +462,7 @@ public class DatasetService extends AbstractService {
 
     /**
      * Gets the time index property.
-     *
+     * 
      * @param name the name
      * @return the time index property
      * @throws IOException Signals that an I/O exception has occurred.
@@ -471,7 +474,7 @@ public class DatasetService extends AbstractService {
 
     /**
      * Find child by name.
-     *
+     * 
      * @param parent the parent
      * @param name the name
      * @return the node
@@ -491,7 +494,7 @@ public class DatasetService extends AbstractService {
 
     /**
      * Gets the child traversal.
-     *
+     * 
      * @param additionalFilter the additional filter
      * @return the child traversal
      */
@@ -513,26 +516,26 @@ public class DatasetService extends AbstractService {
             }
         });
         filter.addFilter(additionalFilter);
-        return Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1)).filter(filter)
-                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).prune(new PruneEvaluator() {
+        return Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1)).filter(filter).relationships(
+                GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).prune(new PruneEvaluator() {
 
-                    @Override
-                    public boolean pruneAfter(Path position) {
-                        if (position.lastRelationship() == null) {
-                            return false;
-                        }
-                        if (position.length() == 1) {
-                            return position.lastRelationship().isType(GeoNeoRelationshipTypes.NEXT);
-                        } else {
-                            return position.lastRelationship().isType(GeoNeoRelationshipTypes.CHILD);
-                        }
-                    }
-                });
+            @Override
+            public boolean pruneAfter(Path position) {
+                if (position.lastRelationship() == null) {
+                    return false;
+                }
+                if (position.length() == 1) {
+                    return position.lastRelationship().isType(GeoNeoRelationshipTypes.NEXT);
+                } else {
+                    return position.lastRelationship().isType(GeoNeoRelationshipTypes.CHILD);
+                }
+            }
+        });
     }
 
     /**
      * Adds the child.
-     *
+     * 
      * @param mainNode the main node
      * @param subNode the sub node
      * @param lastChild the last child
@@ -558,7 +561,7 @@ public class DatasetService extends AbstractService {
 
     /**
      * return last child of node.
-     *
+     * 
      * @param mainNode root node
      * @return the node
      */
@@ -581,10 +584,9 @@ public class DatasetService extends AbstractService {
         return iterator.hasNext() ? iterator.next() : null;
     }
 
-
     /**
      * Creates the file node.
-     *
+     * 
      * @param fileName the file name
      * @return the node
      */
@@ -595,7 +597,7 @@ public class DatasetService extends AbstractService {
 
     /**
      * Creates the node.
-     *
+     * 
      * @param type the type
      * @param name the name
      * @return the node
@@ -606,19 +608,19 @@ public class DatasetService extends AbstractService {
 
     /**
      * Creates the node.
-     *
+     * 
      * @param typeId the type id
      * @param additionalProperties the additional properties
      * @return the node
      */
-    private Node createNode(String typeId,Object... additionalProperties) {
+    private Node createNode(String typeId, Object... additionalProperties) {
         Transaction tx = databaseService.beginTx();
         try {
             Node node = databaseService.createNode();
             setType(node, typeId);
-            if (additionalProperties!=null){
-                for (int i=0;i<additionalProperties.length-1;i+=2){
-                    node.setProperty(String.valueOf(additionalProperties[i]), additionalProperties[i+1]);
+            if (additionalProperties != null) {
+                for (int i = 0; i < additionalProperties.length - 1; i += 2) {
+                    node.setProperty(String.valueOf(additionalProperties[i]), additionalProperties[i + 1]);
                 }
             }
             tx.success();
@@ -630,7 +632,7 @@ public class DatasetService extends AbstractService {
 
     /**
      * Sets the name.
-     *
+     * 
      * @param node the node
      * @param name the name
      */
@@ -640,7 +642,7 @@ public class DatasetService extends AbstractService {
 
     /**
      * Gets the name.
-     *
+     * 
      * @param node the node
      * @return the name
      */
@@ -648,10 +650,9 @@ public class DatasetService extends AbstractService {
         return (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
     }
 
-
     /**
      * Creates the m node.
-     *
+     * 
      * @param parent the parent
      * @param lastMNode the last m node
      * @return the node
@@ -660,74 +661,122 @@ public class DatasetService extends AbstractService {
         return createChild(parent, lastMNode, NodeTypes.M.getId());
     }
 
-
     /**
      * Gets the virtual dataset.
-     *
+     * 
      * @param rootNode the root node
      * @param type the type
      * @return the virtual dataset
      */
     public Node getVirtualDataset(Node rootNode, DriveTypes type) {
-        Node result=findVirtualDataset(rootNode,type);
-        if (result==null){
-            result=createNode(NodeTypes.DATASET.getId(), INeoConstants.PROPERTY_NAME_NAME, type.getFullDatasetName(getName(rootNode)),INeoConstants.DRIVE_TYPE, type.getId());
+        Node result = findVirtualDataset(rootNode, type);
+        if (result == null) {
+            result = createNode(NodeTypes.DATASET.getId(), INeoConstants.PROPERTY_NAME_NAME, type.getFullDatasetName(getName(rootNode)), INeoConstants.DRIVE_TYPE, type
+                    .getId());
             Transaction tx = databaseService.beginTx();
-            try{
+            try {
                 rootNode.createRelationshipTo(result, GeoNeoRelationshipTypes.VIRTUAL_DATASET);
                 tx.success();
-            }finally{
+            } finally {
                 tx.finish();
             }
         }
         return result;
     }
 
-
     /**
      * Find virtual dataset.
-     *
+     * 
      * @param rootNode the root node
      * @param type the type
      * @return the node
      */
-    public Node findVirtualDataset(Node rootNode,final  DriveTypes type) {
-        TraversalDescription td=Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1)).relationships(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).filter(new Predicate<Path>() {
-            
+    public Node findVirtualDataset(Node rootNode, final DriveTypes type) {
+        TraversalDescription td = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1)).relationships(
+                GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).filter(new Predicate<Path>() {
+
             @Override
             public boolean accept(Path item) {
-                return item.length()==1&&type==DriveTypes.getNodeType(item.endNode());
+                return item.length() == 1 && type == DriveTypes.getNodeType(item.endNode());
             }
         });
         Iterator<Node> it = td.traverse(rootNode).nodes().iterator();
-        return it.hasNext()?it.next():null;
+        return it.hasNext() ? it.next() : null;
     }
-
 
     /**
      * Creates the ms node.
-     *
+     * 
      * @param parent the parent
      * @param lastMsNode the last ms node
      * @return the node
      */
     public Node createMsNode(Node parent, Node lastMsNode) {
-        return createChild(parent,lastMsNode,NodeTypes.HEADER_MS.getId());
+        return createChild(parent, lastMsNode, NodeTypes.HEADER_MS.getId());
 
     }
 
-
     /**
      * Creates the child.
-     *
+     * 
      * @param parent the parent
      * @param lastNode the last node
      * @param typeId the type id
      * @return the node
      */
     private Node createChild(Node parent, Node lastNode, String typeId) {
-        Node node=createNode(typeId);
+        Node node = createNode(typeId);
         addChild(parent, node, lastNode);
         return node;
+    }
+
+
+    /**
+     * Save dynamic node type.
+     * 
+     * @param nodeTypeId the node type id
+     */
+    public void saveDynamicNodeType(String nodeTypeId) {
+        nodeTypeId = nodeTypeId.toLowerCase().trim();
+
+        Node node = getGlobalConfigNode();
+        String[] types = (String[])node.getProperty(DYNAMIC_TYPES, new String[0]);
+        String[] newTypes = new String[types.length + 1];
+        for (int i = 0; i < types.length; i++) {
+            if (types[i].equals(nodeTypeId))
+                return;
+            newTypes[i] = types[i];
+        }
+        newTypes[newTypes.length - 1] = nodeTypeId;
+        Transaction tx = databaseService.beginTx();
+        try {
+            node.setProperty(DYNAMIC_TYPES, newTypes);
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+    }
+
+    /**
+     * Gets the global config node.
+     * 
+     * @return the global config node
+     */
+    private Node getGlobalConfigNode() {
+        Node refNode = databaseService.getReferenceNode();
+        Relationship rel = refNode.getSingleRelationship(DatasetRelationshipTypes.GLOBAL_PROPERTIES, Direction.OUTGOING);
+        if (rel == null) {
+            Transaction tx = databaseService.beginTx();
+            try {
+                Node globalPropertiesNode = createNode(NodeTypes.GLOBAL_PROPERTIES.getId(), INeoConstants.PROPERTY_NAME_NAME, "Global properties", DYNAMIC_TYPES,
+                        new String[0]);
+                refNode.createRelationshipTo(globalPropertiesNode, DatasetRelationshipTypes.GLOBAL_PROPERTIES);
+                tx.success();
+            } finally {
+                tx.finish();
+            }
+            rel = refNode.getSingleRelationship(DatasetRelationshipTypes.GLOBAL_PROPERTIES, Direction.OUTGOING);
+        }
+        return rel.getEndNode();
     }
 }
