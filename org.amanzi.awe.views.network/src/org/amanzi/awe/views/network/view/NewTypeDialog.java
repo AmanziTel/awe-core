@@ -13,35 +13,25 @@
 
 package org.amanzi.awe.views.network.view;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.List;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.AbstractDialog;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.Transaction;
 
 /**
  * TODO Purpose of
@@ -54,16 +44,14 @@ import org.neo4j.graphdb.Transaction;
 public class NewTypeDialog extends AbstractDialog<Integer> {
 
     private static final int MIN_FIELD_WIDTH = 50;
-    private final Node node;
-    private final GraphDatabaseService service;
-    private Combo cNetwork;
-    private Combo cNodeTypes;
+    private Node node;
     private Text tNewNode;
     private final LinkedHashMap<String, Node> gisNetworkNodes = new LinkedHashMap<String, Node>();
     private Button bOk;
     private Button bCancel;
     private Shell shell;
     private Label errorLabel;
+    private final DatasetService ds;
 
     // public NewTypeDialog(Shell parent, String title, int style) {
     // super(parent, "Dataset properties configura\tion", SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL |
@@ -77,7 +65,7 @@ public class NewTypeDialog extends AbstractDialog<Integer> {
         super(parent, title, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.CENTER);
         this.node = node;
         status = SWT.CANCEL;
-        service = NeoServiceProvider.getProvider().getService();
+        ds = NeoServiceFactory.getInstance().getDatasetService();
     }
 
     @Override
@@ -94,23 +82,23 @@ public class NewTypeDialog extends AbstractDialog<Integer> {
         // errorLabel.setVisible(false);
 
         Label label = new Label(shell, SWT.NONE);
-        label.setText("Target network");
-        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-        cNetwork = new Combo(shell, SWT.DROP_DOWN | SWT.READ_ONLY);
+        // label.setText("Target network");
+        // label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        // cNetwork = new Combo(shell, SWT.DROP_DOWN | SWT.READ_ONLY);
 
         GridData layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
         layoutData.minimumWidth = MIN_FIELD_WIDTH;
-        cNetwork.setLayoutData(layoutData);
+        // cNetwork.setLayoutData(layoutData);
+        //
+        // label = new Label(shell, SWT.NONE);
+        // label.setText("Parent node");
+        // label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        // cNodeTypes = new Combo(shell, SWT.DROP_DOWN | SWT.READ_ONLY);
+        // layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+        // layoutData.minimumWidth = MIN_FIELD_WIDTH;
+        // cNodeTypes.setLayoutData(layoutData);
 
-        label = new Label(shell, SWT.NONE);
-        label.setText("Parent node");
-        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-        cNodeTypes = new Combo(shell, SWT.DROP_DOWN | SWT.READ_ONLY);
-        layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        layoutData.minimumWidth = MIN_FIELD_WIDTH;
-        cNodeTypes.setLayoutData(layoutData);
-
-        label = new Label(shell, SWT.NONE);
+        // label = new Label(shell, SWT.NONE);
         label.setText("New node type");
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
         tNewNode = new Text(shell, SWT.BORDER);
@@ -128,22 +116,7 @@ public class NewTypeDialog extends AbstractDialog<Integer> {
         load();
     }
 
-    /**
-     *
-     */
     private void addListeners() {
-        cNetwork.addSelectionListener(new SelectionListener() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                changeNetwork();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                widgetSelected(e);
-            }
-        });
         bOk.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -176,8 +149,8 @@ public class NewTypeDialog extends AbstractDialog<Integer> {
      *
      */
     protected void checkTypeName() {
-        String newType = tNewNode.getText();
-        if (NodeTypes.getEnumById(newType) != null) {
+        String newType = tNewNode.getText().toLowerCase().trim();
+        if (ds.getNodeType(newType) != null) {
             bOk.setEnabled(false);
         } else {
             bOk.setEnabled(true);
@@ -188,73 +161,11 @@ public class NewTypeDialog extends AbstractDialog<Integer> {
      *
      */
     protected void perfomSave() {
-        Transaction tx = service.beginTx();
-        try {
-            Node selectedNode = gisNetworkNodes.get(cNetwork.getText());
-            String[] structure = (String[])selectedNode.getProperty(org.amanzi.neo.core.INeoConstants.PROPERTY_STRUCTURE_NAME, new String[] {});
-            List<String> newStructure = new ArrayList<String>(structure.length + 1);
-            String selectedParent = cNodeTypes.getText();
-            int i = 0;
-            for (; i < structure.length; i++) {
-                newStructure.add(structure[i]);
-                if (selectedParent.equals(structure[i])) {
-                    newStructure.add(tNewNode.getText());
-                }
-            }
-            selectedNode.setProperty(INeoConstants.PROPERTY_STRUCTURE_NAME, newStructure.toArray(new String[] {}));
-
-        } finally {
-            tx.finish();
-        }
+        ds.saveDynamicNodeType(tNewNode.getText());
+        NeoServiceProvider.getProvider().commit();
     }
 
-    /**
-     *
-     */
-    protected void changeNetwork() {
-        Node selectedNode = gisNetworkNodes.get(cNetwork.getText());
-        String[] structure = (String[])selectedNode.getProperty(org.amanzi.neo.core.INeoConstants.PROPERTY_STRUCTURE_NAME, new String[] {});
-        cNodeTypes.setItems(structure);
-    }
-
-    /**
-     *
-     */
     private void load() {
-        loadNetwork();
-    }
-
-    private void loadNetwork() {
-        Node refNode = service.getReferenceNode();
-        gisNetworkNodes.clear();
-
-        Transaction tx = service.beginTx();
-        try {
-            for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
-                Node node = relationship.getEndNode();
-                Object type = node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").toString();
-                if (NeoUtils.isGisNode(node)) {
-                    String id = NeoUtils.getSimpleNodeName(node, null);
-
-                    /*
-                     * if (type.equals(GisTypes.DRIVE.getHeader())) { gisDriveNodes.put(id, node); }
-                     * else
-                     */
-                    if (type.equals(GisTypes.NETWORK.getHeader())) {
-                        for (Relationship rel : node.getRelationships(Direction.OUTGOING)) {
-                            node = rel.getEndNode();
-                            break;
-                        }
-                        gisNetworkNodes.put(id, node);
-                    }
-                }
-            }
-        } finally {
-            tx.finish();
-        }
-        String[] items = gisNetworkNodes.keySet().toArray(new String[] {});
-        Arrays.sort(items);
-        cNetwork.setItems(items);
 
     }
 

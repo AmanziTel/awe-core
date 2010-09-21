@@ -636,7 +636,8 @@ public enum NodeTypes implements INodeType{
         protected boolean isGoodLink(Node aNode, Relationship cameFrom, Relationship link) {
             return isGoodLinkForCorrectStructure(aNode, cameFrom, link);
         }
-    }, UTRAN_DATA("utran_data");
+    },
+    UTRAN_DATA("utran_data"), GLOBAL_PROPERTIES("global_properties");
     
     private final String id;
     private boolean nodeReadOnly;
