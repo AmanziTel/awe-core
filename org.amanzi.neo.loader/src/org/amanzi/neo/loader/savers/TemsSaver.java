@@ -363,6 +363,11 @@ public class TemsSaver extends AbstractHeaderSaver<HeaderTransferData> implement
         defineHeader(headers, "all_rxqual_sub",new String[]{"All-RxQual Sub", "all_rxqual_sub"});
         defineHeader(headers, "all_sqi",new String[]{"All-SQI", "all_sqi"});
         defineHeader(headers, "all_sqi_mos",new String[]{"All-SQI MOS", "all_sqi_mos"});
+        for (int i=0;i<=12;i++){
+            defineHeader(headers, "all_pilot_set_ec_io_" + i,new String[]{"all_pilot_set_ec_io_" + i});
+            defineHeader(headers, "all_pilot_set_channel_" + i,new String[]{"all_pilot_set_channel_" + i});
+            defineHeader(headers, "all_pilot_set_pn_" + i,new String[]{"all_pilot_set_pn_" + i});
+        }
         addAnalysedNodeTypes(element.getRootName(), ALL_NODE_TYPES);
 
     }
