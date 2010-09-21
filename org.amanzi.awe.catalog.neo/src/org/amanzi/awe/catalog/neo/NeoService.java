@@ -180,4 +180,9 @@ public class NeoService extends IService  implements INeoServiceProviderListener
 	    public void onNeoRollback(Object source) {
 	    }
 
+
+        public void updateResource() {
+            members=null;
+        }
+
 }

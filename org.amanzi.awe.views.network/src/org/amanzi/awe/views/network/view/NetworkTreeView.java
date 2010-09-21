@@ -16,6 +16,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,7 +33,10 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.refractions.udig.catalog.CatalogPlugin;
+import net.refractions.udig.catalog.ICatalog;
 import net.refractions.udig.catalog.IGeoResource;
+import net.refractions.udig.catalog.IService;
 import net.refractions.udig.project.internal.Layer;
 import net.refractions.udig.project.internal.commands.DeleteLayerCommand;
 import net.refractions.udig.project.internal.impl.MapImpl;
@@ -40,6 +45,7 @@ import net.refractions.udig.project.ui.ApplicationGIS;
 import org.amanzi.awe.awe.views.view.provider.NetworkTreeContentProvider;
 import org.amanzi.awe.awe.views.view.provider.NetworkTreeLabelProvider;
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
+import org.amanzi.awe.catalog.neo.NeoService;
 import org.amanzi.awe.catalog.neo.upd_layers.events.ChangeSelectionEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesAndMapEvent;
@@ -72,9 +78,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
 import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -1299,6 +1305,19 @@ public class NetworkTreeView extends ViewPart {
                         NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDatabaseEvent(UpdateViewEventType.GIS));
                     } 
                     if (gisNode != null && (containsNetwork || containseDatasetNode)) {
+                        NeoServiceProvider neoProvider = NeoServiceProvider.getProvider();
+                            String databaseLocation = neoProvider.getDefaultDatabaseLocation();
+                            ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
+                            URL url;
+                            try {
+                                url = new URL("file://" + databaseLocation);
+                            } catch (MalformedURLException e) {
+                                // TODO Handle MalformedURLException
+                                throw (RuntimeException) new RuntimeException( ).initCause( e );
+                            }
+                            NeoService serv = catalog.getById(NeoService.class, url, monitor);
+                            catalog.remove(serv);
+                            neoProvider.commit();
                         Transaction transaction = getService().beginTx();
                         try {
                             for (Relationship relation : gisNode.getRelationships()) {
@@ -1309,6 +1328,9 @@ public class NetworkTreeView extends ViewPart {
                         } finally {
                             transaction.finish();
                         }
+                        serv.updateResource();
+                        List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(url);
+                        catalog.add(services.iterator().next());
                     }
                     else {
                         Transaction tx = getService().beginTx();
@@ -1320,8 +1342,8 @@ public class NetworkTreeView extends ViewPart {
                             tx.finish();
                         }
                     }
-                    
 
+                    
                     monitor.done();
                     return Status.OK_STATUS;
                 }
