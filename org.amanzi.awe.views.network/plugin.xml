@@ -23,7 +23,7 @@
                   label="Label"
                   class="org.amanzi.awe.views.network.view.NewTypeAction"
                   icon="icons/network.png"
-                  tooltip="tOOltip"
+                  tooltip="Create new node type"
                   style="push"
                   id="org.amanzi.awe.views.network.view.NewTypeAction">
                <!--<enablement>
