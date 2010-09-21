@@ -286,5 +286,9 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
     protected String getRootNodeType() {
         return NodeTypes.NETWORK.getId();
     }
+    @Override
+    protected String getTypeIdForGisCount(GisProperties gis) {
+        return NodeTypes.SECTOR.getId();
+    }
 
 }

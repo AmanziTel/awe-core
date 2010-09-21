@@ -33,6 +33,7 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
+import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.loader.LoaderUtils;
 import org.amanzi.neo.loader.core.parser.HeaderTransferData;
 import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
@@ -130,6 +131,9 @@ public class TemsSaver extends AbstractHeaderSaver<HeaderTransferData> implement
           lastMLocation.setProperty(INeoConstants.PROPERTY_LAT_NAME, currentLatitude.doubleValue());
           lastMLocation.setProperty(INeoConstants.PROPERTY_LON_NAME, currentLongitude.doubleValue());
           index(lastMLocation);
+          GisProperties gisProperties = getGisProperties(rootNode);
+          gisProperties.updateBBox(currentLatitude, currentLongitude);
+          gisProperties.checkCRS(currentLatitude, currentLongitude, null);
         }
         lastMNode.createRelationshipTo(lastMLocation, GeoNeoRelationshipTypes.LOCATION);
 
@@ -491,6 +495,13 @@ public class TemsSaver extends AbstractHeaderSaver<HeaderTransferData> implement
     }
     @Override
     public void finishSaveNewElement(HeaderTransferData element) {
+    }
+
+
+
+    @Override
+    protected String getTypeIdForGisCount(GisProperties gis) {
+        return NodeTypes.M.getId();
     }
 
 }

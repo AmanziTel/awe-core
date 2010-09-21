@@ -23,7 +23,6 @@ import java.util.regex.Pattern;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.INodeType;
-import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.core.parser.HeaderTransferData;
@@ -152,13 +151,15 @@ public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> extends
     public void finishUp(T element) {
         statistic.save();
         for(GisProperties gis:gisNodes.values()){
-            gis.setSavedData(statistic.getTotalCount(rootname,NodeTypes.SECTOR.getId()));
+            gis.setSavedData(statistic.getTotalCount(rootname,getTypeIdForGisCount(gis)));
             gis.save();
         }
         finishUpIndexes();
         commit(false);
     }
     
+    protected abstract String getTypeIdForGisCount(GisProperties gis);
+
     /**
      * Define header.
      *
