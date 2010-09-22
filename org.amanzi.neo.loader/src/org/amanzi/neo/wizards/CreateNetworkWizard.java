@@ -14,6 +14,7 @@
 package org.amanzi.neo.wizards;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.core.enums.INodeType;
@@ -50,14 +51,14 @@ public class CreateNetworkWizard extends Wizard implements INewWizard {
 
     @Override
     public IWizardPage getPreviousPage(IWizardPage page) {
-        INodeType[] struct = mainPage.getStructure();
+         List<INodeType> struct = mainPage.getStructure();
         if (page instanceof CreateNetworkMainPage) {
             return null;
         } else if (page instanceof CreateNetworkConfigPage) {
             INodeType type = ((CreateNetworkConfigPage)page).getType();
-            for (int i = 2; i < struct.length; i++) {
-                if (struct[i].equals(type)) {
-                    return pages.get(struct[i - 1]);
+            for (int i = 2; i < struct.size(); i++) {
+                if (struct.get(i).equals(type)) {
+                    return pages.get(struct.get(i-1));
                 }
             }
         }
@@ -66,14 +67,14 @@ public class CreateNetworkWizard extends Wizard implements INewWizard {
 
     @Override
     public IWizardPage getNextPage(IWizardPage page) {
-        INodeType[] struct = mainPage.getStructure();
+        List<INodeType> struct = mainPage.getStructure();
         if (page instanceof CreateNetworkMainPage) {
-            return pages.get(struct[1]);
+            return pages.get(struct.get(1));
         } else if (page instanceof CreateNetworkConfigPage) {
             INodeType type = ((CreateNetworkConfigPage)page).getType();
-            for (int i = 1; i < struct.length - 1; i++) {
-                if (struct[i].equals(type)) {
-                    return pages.get(struct[i + 1]);
+            for (int i = 1; i < struct.size() - 1; i++) {
+                if (struct.get(i).equals(type)) {
+                    return pages.get(struct.get(i+1));
                 }
             }
         }

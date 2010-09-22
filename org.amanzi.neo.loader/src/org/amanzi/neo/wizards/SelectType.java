@@ -36,30 +36,49 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
 /**
- * TODO Purpose of 
  * <p>
+ * Select new type
+ * </p>.
  *
- * </p>
  * @author TsAr
  * @since 1.0.0
  */
 public class SelectType extends AbstractDialog<String> {
+    
+    /** The Constant MIN_FIELD_WIDTH. */
     private static final int MIN_FIELD_WIDTH = 50;
+    
+    /** The shell. */
     private Shell shell;
+    
+    /** The t new node. */
     private Combo tNewNode;
+    
+    /** The b ok. */
     private Button bOk;
+    
+    /** The b cancel. */
     private Button bCancel;
+    
+    /** The possible types. */
     private final Map<String,INodeType> possibleTypes=new LinkedHashMap<String, INodeType>();
+    
+    /** The service. */
     private DatasetService service;
+    
+    /** The node type. */
     protected String nodeType="";
 
     /**
-     * @param parent
-     * @param title
+     * Instantiates a new select type.
+     *
+     * @param parent the parent
+     * @param title the title
+     * @param possibleTypes the possible types
      */
     public SelectType(Shell parent, String title,List<INodeType> possibleTypes) {
         super(parent, title);
-        possibleTypes.clear();
+        this.possibleTypes.clear();
         service=NeoServiceFactory.getInstance().getDatasetService();
         
         for (INodeType type:possibleTypes){
@@ -67,6 +86,11 @@ public class SelectType extends AbstractDialog<String> {
         }
     }
 
+    /**
+     * Creates the contents.
+     *
+     * @param shell the shell
+     */
     @Override
     protected void createContents(Shell shell) {
         this.shell = shell;
@@ -95,8 +119,9 @@ public class SelectType extends AbstractDialog<String> {
         addListeners();
     }
 
+
     /**
-     *
+     * Adds the listeners.
      */
     private void addListeners() {
         bOk.addSelectionListener(new SelectionAdapter() {
@@ -118,12 +143,14 @@ public class SelectType extends AbstractDialog<String> {
             @Override
             public void modifyText(ModifyEvent e) {
                 nodeType=tNewNode.getText().trim();
+               checkTypeName(); 
             }
         });
     }
 
+
     /**
-     *
+     * Check type name.
      */
     protected void checkTypeName() {
         if (StringUtils.isEmpty(nodeType)){
@@ -136,9 +163,11 @@ public class SelectType extends AbstractDialog<String> {
         bOk.setEnabled(service.getNodeType(tNewNode.getText())==null);
     }
 
+
     /**
+     * Gets the possible items.
      *
-     * @return
+     * @return the possible items
      */
     private String[] getPossibleItems() {
         return possibleTypes.keySet().toArray(new String[0]);

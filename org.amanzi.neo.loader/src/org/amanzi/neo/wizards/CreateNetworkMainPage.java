@@ -13,7 +13,9 @@
 
 package org.amanzi.neo.wizards;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 
 import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.enums.NodeTypes;
@@ -61,7 +63,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @since 1.0.0
  */
 public class CreateNetworkMainPage extends WizardPage {
-
+    private DatasetService service = NeoServiceFactory.getInstance().getDatasetService();
     /** String CREATE_NETWORK_STRUCTURE field. */
     private static final String CREATE_NETWORK_STRUCTURE = "Create network structure";
 
@@ -84,7 +86,7 @@ public class CreateNetworkMainPage extends WizardPage {
     private Button remove;
 
     /** The structure. */
-    private INodeType[] structure;
+    private ArrayList<INodeType> structure=new ArrayList<INodeType>();
 
     /** The structure list. */
     private List structureList;
@@ -97,6 +99,8 @@ public class CreateNetworkMainPage extends WizardPage {
 
     /** The network name. */
     private String networkName;
+
+    private Group main;
 
     /**
      * Instantiates a new creates the network main page.
@@ -113,7 +117,7 @@ public class CreateNetworkMainPage extends WizardPage {
      * 
      * @return the structure
      */
-    public INodeType[] getStructure() {
+    public java.util.List<INodeType> getStructure() {
         return structure;
     }
 
@@ -124,7 +128,7 @@ public class CreateNetworkMainPage extends WizardPage {
      */
     @Override
     public void createControl(Composite parent) {
-        final Group main = new Group(parent, SWT.FILL);
+        main = new Group(parent, SWT.FILL);
         main.setLayout(new GridLayout(3, false));
         Label networklb = new Label(main, SWT.LEFT);
         networklb.setText("Network:");
@@ -164,7 +168,7 @@ public class CreateNetworkMainPage extends WizardPage {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                changeListSelection(e);
+                changeListSelection();
             }
 
             @Override
@@ -211,6 +215,57 @@ public class CreateNetworkMainPage extends WizardPage {
      * Adds the new type.
      */
     protected void addNewType() {
+       SelectType dialog = new SelectType(main.getShell(), "Select type to add", getPossibleTypes());
+       String newType = dialog.open();
+       if (StringUtils.isNotEmpty(newType)){
+           INodeType type=service.getNodeType(newType,true);
+           addNewType(type);
+       }
+    }
+
+
+    /**
+     *
+     * @param type
+     */
+    private void addNewType(INodeType type) {
+        if (structure.contains(type)){
+            return;
+        }
+        int id = structureList.getSelectionIndex();
+        id=id<0?0:id>structure.size()-3?structure.size()-3:id;
+        structure.add(id+1, type);
+        addPage(type);
+        updateList();
+        structureList.select(id);
+        changeListSelection();
+        validate();
+        
+    }
+
+    private java.util.List<INodeType> getPossibleTypes() {
+        java.util.List<INodeType>result=getAllPossibletypes();
+        Iterator<INodeType> it = result.iterator();
+        while (it.hasNext()) {
+             INodeType iNodeType = it.next();
+             if (structure.contains(iNodeType)){
+                 it.remove();
+             }
+            
+        }
+        return result;
+    }
+
+    /**
+     *
+     * @return
+     */
+    private java.util.List<INodeType> getAllPossibletypes() {
+        java.util.List<INodeType> result=new ArrayList<INodeType>();
+        result.add(NodeTypes.CITY);
+        result.add(NodeTypes.BSC);
+        result.addAll(service.getUserDefinedNodeTypes());
+        return result;
     }
 
     /**
@@ -218,22 +273,22 @@ public class CreateNetworkMainPage extends WizardPage {
      * 
      * @param e the e
      */
-    protected void changeListSelection(SelectionEvent e) {
+    protected void changeListSelection() {
         int selId = structureList.getSelectionIndex();
-        if (selId < 2 || selId >= structure.length - 2) {
+        if (selId < 2 || selId >= structure.size() - 2) {
             up.setEnabled(false);
         } else {
             up.setEnabled(true);
         }
-        if (selId < 1 || selId >= structure.length - 3) {
+        if (selId < 1 || selId >= structure.size() - 3) {
             down.setEnabled(false);
         } else {
             down.setEnabled(true);
         }
-        if (selId >0&& selId < structure.length - 2) {
-            remove.setEnabled(false);
-        } else {
+        if (selId >0&& selId < structure.size() - 2) {
             remove.setEnabled(true);
+        } else {
+            remove.setEnabled(false);
         }
     }
 
@@ -346,7 +401,10 @@ public class CreateNetworkMainPage extends WizardPage {
      * Inits the.
      */
     private void init() {
-        structure = new INodeType[] {NodeTypes.NETWORK, NodeTypes.SITE, NodeTypes.SECTOR};
+        structure.clear();
+        structure.add(NodeTypes.NETWORK);
+        structure.add(NodeTypes.SITE);
+        structure.add(NodeTypes.SECTOR);
         addPage(NodeTypes.SITE);
         addPage(NodeTypes.SECTOR);
         updateList();
@@ -386,9 +444,9 @@ public class CreateNetworkMainPage extends WizardPage {
      * Update list.
      */
     private void updateList() {
-        String[] structurStr = new String[structure.length];
+        String[] structurStr = new String[structure.size()];
         for (int i = 0; i < structurStr.length; i++) {
-            structurStr[i] = structure[i].getId();
+            structurStr[i] = structure.get(i).getId();
         }
         structureList.setItems(structurStr);
     }
