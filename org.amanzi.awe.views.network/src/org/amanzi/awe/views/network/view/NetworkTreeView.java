@@ -560,6 +560,9 @@ public class NetworkTreeView extends ViewPart {
 
             List<INodeType> userDefTypes = ds.getUserDefinedNodeTypes();
             userDefTypes.removeAll(structureTypes);
+            if(sourceType != NodeTypes.SITE){
+                structureTypes.remove(NodeTypes.SECTOR);
+            }
             boolean parentPassed = false;
             for (INodeType iNodeType : structureTypes) {
                 if (parentPassed){

@@ -62,10 +62,14 @@ public class NewNodeAction extends Action {
         if (result != Dialog.CANCEL) {
             defaultProperties.put(INeoConstants.PROPERTY_NAME_NAME, dialog.getValue());
             createNewElement();
-
+            postCreating();
             NeoServiceProvider.getProvider().commit();
         }
 
+    }
+
+    private void postCreating() {
+//        if()
     }
 
     private void createNewElement() {
