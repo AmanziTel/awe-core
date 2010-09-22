@@ -185,7 +185,12 @@ public class IconManager implements IPropertyChangeListener {
             if (result == null) {
                 // if no such Image in UserIcons than search in NeoIcons
                 name = "TYPE_" + convertName(name);
-                result = Icons.valueOf(name).image();
+                try {
+                    result = Icons.valueOf(name).image();
+                } catch (IllegalArgumentException e) {
+                    // TODO check returned img for user defined types
+                    return Icons.NEW_TYPE_ENABLED.image();
+                }
             }
 
             return result;

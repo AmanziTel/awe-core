@@ -13,7 +13,9 @@
 
 package org.amanzi.awe.views.network.view;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.core.INeoConstants;
@@ -24,6 +26,8 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.IPropertyHeader;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.PropertyHeader;
+import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.InputDialog;
@@ -42,14 +46,14 @@ import org.neo4j.graphdb.Transaction;
  */
 public class NewNodeAction extends Action {
     private final INodeType iNodeType;
-    private final Node sourcedNode;
+    private final Node sourceNode;
     private final GraphDatabaseService service;
     private Node targetNode;
     protected HashMap<String, Object> defaultProperties = new HashMap<String, Object>();
 
     public NewNodeAction(INodeType iNodeType, Node sourcedNode) {
         this.iNodeType = iNodeType;
-        this.sourcedNode = sourcedNode;
+        this.sourceNode = sourcedNode;
         service = NeoServiceProvider.getProvider().getService();
         setText(iNodeType.getId());
     }
@@ -69,7 +73,41 @@ public class NewNodeAction extends Action {
     }
 
     private void postCreating() {
-//        if()
+        DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
+        INodeType sourceType = ds.getNodeType(sourceNode);
+        Node networkNode = NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId());
+        String[] stTypes = (String[])networkNode.getProperty(INeoConstants.PROPERTY_STRUCTURE_NAME, new String[0]);
+        List<INodeType> structureTypes = new ArrayList<INodeType>(stTypes.length);
+
+        for (int i = 0; i < stTypes.length; i++) {
+            NodeTypes nodeType = NodeTypes.getEnumById(stTypes[i]);
+            if (nodeType != null) {
+                structureTypes.add(nodeType);
+            } else {
+                structureTypes.add(ds.getNodeType(stTypes[i]));
+            }
+        }
+
+        List<INodeType> userDefTypes = ds.getUserDefinedNodeTypes();
+        userDefTypes.removeAll(structureTypes);
+
+        if (userDefTypes.contains(iNodeType)) {
+            String[] newStructureTypes = new String[stTypes.length + 1];
+            int i = 0;
+            for (INodeType type : structureTypes) {
+                newStructureTypes[i++] = type.getId();
+                if (type.equals(sourceType)) {
+                    newStructureTypes[i++] = iNodeType.getId();
+                }
+            }
+            Transaction tx = service.beginTx();
+            try {
+                networkNode.setProperty(INeoConstants.PROPERTY_STRUCTURE_NAME, newStructureTypes);
+                tx.success();
+            } finally {
+                tx.finish();
+            }
+        }
     }
 
     private void createNewElement() {
@@ -77,10 +115,10 @@ public class NewNodeAction extends Action {
         try {
             targetNode = service.createNode();
             targetNode.setProperty("type", iNodeType.getId());
-            sourcedNode.createRelationshipTo(targetNode, NetworkRelationshipTypes.CHILD);
+            sourceNode.createRelationshipTo(targetNode, NetworkRelationshipTypes.CHILD);
             NodeTypes type = NodeTypes.getEnumById(iNodeType.getId());
             if (type != null) {
-                IPropertyHeader ph = PropertyHeader.getPropertyStatistic(NeoUtils.getParentNode(sourcedNode, NodeTypes.NETWORK.getId()));
+                IPropertyHeader ph = PropertyHeader.getPropertyStatistic(NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId()));
                 Map<String, Object> statisticProperties = ph.getStatisticParams(type);
                 for (String key : statisticProperties.keySet()) {
                     targetNode.setProperty(key, statisticProperties.get(key));
