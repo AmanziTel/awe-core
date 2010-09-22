@@ -206,13 +206,21 @@ public class AfpExporter {
 			writer.write("ExceptionFile " + "\"" + this.inputExceptionFileName + "\"");
 			writer.newLine();
 			
-			writer.write("Carriers " + parameters.get("Carriers"));
+			writer.write("Carriers " + parseCarriers(parameters.get("Carriers")));
 			writer.newLine();
 
 			writer.close();
 		}catch (Exception e){
 			AweConsolePlugin.exception(e);
 		}
+	}
+	
+	private String parseCarriers(String commaSeparated){
+		int numCarriers = commaSeparated.split("\\,").length;
+		String spaceSeparated = commaSeparated.replaceAll(",", " ");
+		spaceSeparated = numCarriers + " " + spaceSeparated;
+		
+		return spaceSeparated;
 	}
 	
 	/**
@@ -472,7 +480,7 @@ public class AfpExporter {
 		return file; 
 	}
 	
-	private String getTmpFolderPath(){
+	public String getTmpFolderPath(){
 		
 		File dir = new File(System.getProperty("user.home"));
         if (!dir.exists()) {

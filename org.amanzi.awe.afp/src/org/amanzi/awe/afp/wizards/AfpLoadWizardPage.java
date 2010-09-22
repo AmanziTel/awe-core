@@ -19,6 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
 import org.amanzi.awe.afp.Activator;
+import org.amanzi.awe.afp.ControlFileProperties;
 import org.amanzi.awe.afp.files.ControlFile;
 import org.amanzi.awe.afp.loaders.AfpLoader;
 import org.amanzi.awe.console.AweConsolePlugin;
@@ -153,24 +154,24 @@ public class AfpLoadWizardPage extends WizardPage {
                 datasetNode = members.get(datasetName);
                 setPageComplete(isValidPage());
                 
-                siteSpacing.setText(datasetNode.getProperty("SiteSpacing").toString());
-                cellSpacing.setText(datasetNode.getProperty("CellSpacing").toString());
-                regNbrSpacing.setText(datasetNode.getProperty("RegNbrSpacing").toString());
-                minNbrSpacing.setText(datasetNode.getProperty("MinNbrSpacing").toString());
-                secondNbrSpacing.setText(datasetNode.getProperty("SecondNbrSpacing").toString());
-                qualityScale.setSelection(Integer.parseInt(datasetNode.getProperty("Quality").toString()));
-                gMaxRTperCell.setText(datasetNode.getProperty("GMaxRTperCell").toString());
-                gMaxRTperSite.setText(datasetNode.getProperty("GMaxRTperSite").toString());
-                hoppingType.setText(datasetNode.getProperty("HoppingType").toString());
-                nrOfGroups.setText(datasetNode.getProperty("NrOfGroups").toString());
-                cellCardinality.setText(datasetNode.getProperty("CellCardinality").toString());
-                carriers.setText(datasetNode.getProperty("Carriers").toString());
-                useGrouping.setSelection(datasetNode.getProperty("UseGrouping").toString().equals("1"));
-                existCliques.setSelection(datasetNode.getProperty("ExistCliques").toString().equals("1"));
-                recalculateAll.setSelection(datasetNode.getProperty("RecalculateAll").toString().equals("1"));
-                useTraffic.setSelection(datasetNode.getProperty("UseTraffic").toString().equals("1"));
-                useSONbrs.setSelection(datasetNode.getProperty("UseSONbrs").toString().equals("1"));
-                decomposeInCliques.setSelection(datasetNode.getProperty("DecomposeInCliques").toString().equals("1"));
+                siteSpacing.setText(datasetNode.getProperty(ControlFileProperties.SITE_SPACING).toString());
+                cellSpacing.setText(datasetNode.getProperty(ControlFileProperties.CELL_SPACING).toString());
+                regNbrSpacing.setText(datasetNode.getProperty(ControlFileProperties.REG_NBR_SPACING).toString());
+                minNbrSpacing.setText(datasetNode.getProperty(ControlFileProperties.MIN_NEIGBOUR_SPACING).toString());
+                secondNbrSpacing.setText(datasetNode.getProperty(ControlFileProperties.SECOND_NEIGHBOUR_SPACING).toString());
+                qualityScale.setSelection(Integer.parseInt(datasetNode.getProperty(ControlFileProperties.QUALITY).toString()));
+                gMaxRTperCell.setText(datasetNode.getProperty(ControlFileProperties.G_MAX_RT_PER_CELL).toString());
+                gMaxRTperSite.setText(datasetNode.getProperty(ControlFileProperties.G_MAX_RT_PER_SITE).toString());
+                hoppingType.setText(datasetNode.getProperty(ControlFileProperties.HOPPING_TYPE).toString());
+                nrOfGroups.setText(datasetNode.getProperty(ControlFileProperties.NUM_GROUPS).toString());
+                cellCardinality.setText(datasetNode.getProperty(ControlFileProperties.CELL_CARDINALITY).toString());
+                carriers.setText(datasetNode.getProperty(ControlFileProperties.CARRIERS).toString().substring(2).replaceAll("\\s", ","));
+                useGrouping.setSelection(datasetNode.getProperty(ControlFileProperties.USE_GROUPING).toString().equals("1"));
+                existCliques.setSelection(datasetNode.getProperty(ControlFileProperties.EXIST_CLIQUES).toString().equals("1"));
+                recalculateAll.setSelection(datasetNode.getProperty(ControlFileProperties.RECALCULATE_ALL).toString().equals("1"));
+                useTraffic.setSelection(datasetNode.getProperty(ControlFileProperties.USE_TRAFFIC).toString().equals("1"));
+                useSONbrs.setSelection(datasetNode.getProperty(ControlFileProperties.USE_SO_NEIGHBOURS).toString().equals("1"));
+                decomposeInCliques.setSelection(datasetNode.getProperty(ControlFileProperties.DECOMPOSE_CLIQUES).toString().equals("1"));
                 
                 populateFileLists();
                 neighbourData.setItems(neighbourLists.keySet().toArray(new String[0]));
@@ -303,7 +304,7 @@ public class AfpLoadWizardPage extends WizardPage {
         cellCardinality.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
         
         //TODO show carriers in some other format
-        new Label(propertiesGroup, SWT.LEFT).setText("Carriers");
+        new Label(propertiesGroup, SWT.LEFT).setText("Carriers (Comma-separated)");
         carriers = new Text (propertiesGroup, SWT.BORDER | SWT.SINGLE);
         carriers.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
         
@@ -578,7 +579,7 @@ public class AfpLoadWizardPage extends WizardPage {
     	hoppingType.setText("0");
     	nrOfGroups.setText("6");
     	cellCardinality.setText("61");
-    	carriers.setText("6 1 2 3 4 5 6");
+    	carriers.setText("1,2,3,4,5,6");
     	useGrouping.setSelection(true);
     	existCliques.setSelection(false);
     	recalculateAll.setSelection(true);
