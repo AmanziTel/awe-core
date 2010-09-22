@@ -14,12 +14,13 @@ GMaxRTperSite 1
 HoppingType 0
 UseGrouping 1
 NrOfGroups 6
+LogFile "/Users/Sudhanshu/Amanzi/awe-2/awe/org.amanzi.awe.afp.testing/files/dataset1/log.awe"
 CellCardinality 61
-CellFile "/home/hudson/jobs/Amanzi Wireless Explorer/workspace/awe/org.amanzi.awe.afp.testing/files/dataset2/carriers.awe"
-NeighboursFile "/home/hudson/jobs/Amanzi Wireless Explorer/workspace/awe/org.amanzi.awe.afp.testing/files/dataset2/neighbours.awe"
-InterferenceFile "/home/hudson/jobs/Amanzi Wireless Explorer/workspace/awe/org.amanzi.awe.afp.testing/files/dataset2/interference.awe"
-OutputFile "/home/hudson/jobs/Amanzi Wireless Explorer/workspace/awe/org.amanzi.awe.afp.testing/files/dataset2/output.awe"
-CliquesFile "/home/hudson/jobs/Amanzi Wireless Explorer/workspace/awe/org.amanzi.awe.afp.testing/files/dataset2/cliques.awe"
+CellFile "/Users/Sudhanshu/Amanzi/awe-2/awe/org.amanzi.awe.afp.testing/files/dataset1/carriers.awe"
+NeighboursFile "/Users/Sudhanshu/Amanzi/awe-2/awe/org.amanzi.awe.afp.testing/files/dataset1/neighbours.awe"
+InterferenceFile "/Users/Sudhanshu/Amanzi/awe-2/awe/org.amanzi.awe.afp.testing/files/dataset1/interference.awe"
+OutputFile "/Users/Sudhanshu/Amanzi/awe-2/awe/org.amanzi.awe.afp.testing/files/dataset1/output.awe"
+CliquesFile "/Users/Sudhanshu/Amanzi/awe-2/awe/org.amanzi.awe.afp.testing/files/dataset1/cliques.awe"
 ForbiddenFile ""
 ExceptionFile ""
 Carriers 6 1 2 3 4 5 6
