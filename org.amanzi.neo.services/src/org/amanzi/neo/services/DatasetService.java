@@ -136,15 +136,15 @@ public class DatasetService extends AbstractService {
         String typeId = getType(node);
         return getNodeType(typeId);
     }
-    
+
     /**
      * Gets the node name.
-     *
+     * 
      * @param node the node
      * @return the node name
      */
-    public String  getNodeName(Node node) {
-        return (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME,null);
+    public String getNodeName(Node node) {
+        return (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
     }
 
     /**
@@ -528,21 +528,21 @@ public class DatasetService extends AbstractService {
             }
         });
         filter.addFilter(additionalFilter);
-        return Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1)).filter(filter).relationships(
-                GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).prune(new PruneEvaluator() {
+        return Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1)).filter(filter)
+                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).prune(new PruneEvaluator() {
 
-            @Override
-            public boolean pruneAfter(Path position) {
-                if (position.lastRelationship() == null) {
-                    return false;
-                }
-                if (position.length() == 1) {
-                    return position.lastRelationship().isType(GeoNeoRelationshipTypes.NEXT);
-                } else {
-                    return position.lastRelationship().isType(GeoNeoRelationshipTypes.CHILD);
-                }
-            }
-        });
+                    @Override
+                    public boolean pruneAfter(Path position) {
+                        if (position.lastRelationship() == null) {
+                            return false;
+                        }
+                        if (position.length() == 1) {
+                            return position.lastRelationship().isType(GeoNeoRelationshipTypes.NEXT);
+                        } else {
+                            return position.lastRelationship().isType(GeoNeoRelationshipTypes.CHILD);
+                        }
+                    }
+                });
     }
 
     /**
@@ -683,8 +683,7 @@ public class DatasetService extends AbstractService {
     public Node getVirtualDataset(Node rootNode, DriveTypes type) {
         Node result = findVirtualDataset(rootNode, type);
         if (result == null) {
-            result = createNode(NodeTypes.DATASET.getId(), INeoConstants.PROPERTY_NAME_NAME, type.getFullDatasetName(getName(rootNode)), INeoConstants.DRIVE_TYPE, type
-                    .getId());
+            result = createNode(NodeTypes.DATASET.getId(), INeoConstants.PROPERTY_NAME_NAME, type.getFullDatasetName(getName(rootNode)), INeoConstants.DRIVE_TYPE, type.getId());
             Transaction tx = databaseService.beginTx();
             try {
                 rootNode.createRelationshipTo(result, GeoNeoRelationshipTypes.VIRTUAL_DATASET);
@@ -704,14 +703,14 @@ public class DatasetService extends AbstractService {
      * @return the node
      */
     public Node findVirtualDataset(Node rootNode, final DriveTypes type) {
-        TraversalDescription td = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1)).relationships(
-                GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).filter(new Predicate<Path>() {
+        TraversalDescription td = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1))
+                .relationships(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).filter(new Predicate<Path>() {
 
-            @Override
-            public boolean accept(Path item) {
-                return item.length() == 1 && type == DriveTypes.getNodeType(item.endNode());
-            }
-        });
+                    @Override
+                    public boolean accept(Path item) {
+                        return item.length() == 1 && type == DriveTypes.getNodeType(item.endNode());
+                    }
+                });
         Iterator<Node> it = td.traverse(rootNode).nodes().iterator();
         return it.hasNext() ? it.next() : null;
     }
@@ -741,7 +740,6 @@ public class DatasetService extends AbstractService {
         addChild(parent, node, lastNode);
         return node;
     }
-
 
     /**
      * Save dynamic node type.
@@ -780,8 +778,7 @@ public class DatasetService extends AbstractService {
         if (rel == null) {
             Transaction tx = databaseService.beginTx();
             try {
-                Node globalPropertiesNode = createNode(NodeTypes.GLOBAL_PROPERTIES.getId(), INeoConstants.PROPERTY_NAME_NAME, "Global properties", DYNAMIC_TYPES,
-                        new String[0]);
+                Node globalPropertiesNode = createNode(NodeTypes.GLOBAL_PROPERTIES.getId(), INeoConstants.PROPERTY_NAME_NAME, "Global properties", DYNAMIC_TYPES, new String[0]);
                 refNode.createRelationshipTo(globalPropertiesNode, DatasetRelationshipTypes.GLOBAL_PROPERTIES);
                 tx.success();
             } finally {
@@ -792,30 +789,47 @@ public class DatasetService extends AbstractService {
         return rel.getEndNode();
     }
 
-
     /**
      * Gets the user defined node types.
      * 
      * @return the user defined node types
      */
     public List<INodeType> getUserDefinedNodeTypes() {
-        String[] types = (String[])getGlobalConfigNode().getProperty(DYNAMIC_TYPES, new String[0]);
-        List<INodeType> result = new ArrayList<INodeType>(types.length);
-        for (int i = 0; i < types.length; i++) {
-            result.add(new DynamicNodeType(types[i]));
+        List<INodeType> result = new ArrayList<INodeType>();
+        Node globalConfigNode = getGlobalConfigNode();
+        if (globalConfigNode != null) {
+            String[] types = (String[])globalConfigNode.getProperty(DYNAMIC_TYPES, new String[0]);
+            for (int i = 0; i < types.length; i++) {
+                result.add(new DynamicNodeType(types[i]));
+            }
         }
         return result;
     }
-
 
     public org.neo4j.graphdb.traversal.Traverser getRoots(final String projectName) {
         TraversalDescription td = NeoUtils.getTDRootNodes(new Predicate<Path>() {
 
             @Override
             public boolean accept(Path paramT) {
-                return  projectName.equals(paramT.lastRelationship().getStartNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, ""));
+                return projectName.equals(paramT.lastRelationship().getStartNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, ""));
             }
         });
         return td.traverse(databaseService.getReferenceNode());
+    }
+
+
+    /**
+     * Gets the node type.
+     *
+     * @param type the type
+     * @param createFake the create fake
+     * @return the node type
+     */
+    public INodeType getNodeType(String type, boolean createFake) {
+        INodeType result=getNodeType(type);
+        if (result!=null||!createFake){
+            return result;
+        }
+        return new DynamicNodeType(type);
     }
 }
