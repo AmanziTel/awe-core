@@ -1,0 +1,404 @@
+/* AWE - Amanzi Wireless Explorer
+ * http://awe.amanzi.org
+ * (C) 2008-2009, AmanziTel AB
+ *
+ * This library is provided under the terms of the Eclipse Public License
+ * as described at http://www.eclipse.org/legal/epl-v10.html. Any use,
+ * reproduction or distribution of the library constitutes recipient's
+ * acceptance of this agreement.
+ *
+ * This library is distributed WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ */
+
+package org.amanzi.neo.wizards;
+
+import java.util.HashSet;
+
+import org.amanzi.neo.core.enums.INodeType;
+import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
+import org.amanzi.neo.loader.LoaderUtils;
+import org.amanzi.neo.preferences.CommonCRSPreferencePage;
+import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.jface.preference.IPreferenceNode;
+import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.preference.PreferenceManager;
+import org.eclipse.jface.preference.PreferenceNode;
+import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.List;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
+import org.geotools.referencing.CRS;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.traversal.Traverser;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+// TODO: Auto-generated Javadoc
+/**
+ * <p>
+ * Main page for custom network creation
+ * </p>
+ * .
+ * 
+ * @author tsinkel_a
+ * @since 1.0.0
+ */
+public class CreateNetworkMainPage extends WizardPage {
+
+    /** String CREATE_NETWORK_STRUCTURE field. */
+    private static final String CREATE_NETWORK_STRUCTURE = "Create network structure";
+
+    /** The select crs. */
+    private Button selectCRS;
+
+    /** The selected crs. */
+    private CoordinateReferenceSystem selectedCRS;
+
+    /** The add. */
+    private Button add;
+
+    /** The up. */
+    private Button up;
+
+    /** The down. */
+    private Button down;
+
+    /** The remove. */
+    private Button remove;
+
+    /** The structure. */
+    private INodeType[] structure;
+
+    /** The structure list. */
+    private List structureList;
+
+    /** The restricted names. */
+    private HashSet<String> restrictedNames;
+
+    /** The network. */
+    private Text network;
+
+    /** The network name. */
+    private String networkName;
+
+    /**
+     * Instantiates a new creates the network main page.
+     * 
+     * @param pageName the page name
+     */
+    public CreateNetworkMainPage(String pageName) {
+        super(pageName);
+        setDescription(CREATE_NETWORK_STRUCTURE);
+    }
+
+    /**
+     * Gets the structure.
+     * 
+     * @return the structure
+     */
+    public INodeType[] getStructure() {
+        return structure;
+    }
+
+    /**
+     * Creates the control.
+     * 
+     * @param parent the parent
+     */
+    @Override
+    public void createControl(Composite parent) {
+        final Group main = new Group(parent, SWT.FILL);
+        main.setLayout(new GridLayout(3, false));
+        Label networklb = new Label(main, SWT.LEFT);
+        networklb.setText("Network:");
+        network = new Text(main, SWT.FILL | SWT.BORDER);
+        network.addModifyListener(new ModifyListener() {
+
+            @Override
+            public void modifyText(ModifyEvent e) {
+                updateNetworkName(e);
+            }
+        });
+        GridData networkLayoutdata = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+        // networkLayoutdata.minimumWidth=200;
+        network.setLayoutData(networkLayoutdata);
+        selectCRS = new Button(main, SWT.FILL | SWT.PUSH);
+        selectCRS.setAlignment(SWT.LEFT);
+        selectCRS.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        selectCRS.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                selectCRS();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+        Group gr = new Group(main, SWT.FILL);
+        gr.setText("Network structure:");
+        GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 3, 1);
+        gr.setLayoutData(layoutData);
+        gr.setLayout(new GridLayout(2, false));
+        structureList = new List(gr, SWT.FILL | SWT.BORDER);
+        structureList.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                changeListSelection(e);
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+        layoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 4);
+        structureList.setLayoutData(layoutData);
+        add = new Button(gr, SWT.PUSH);
+        add.addSelectionListener(new SelectionListener() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                addNewType();
+            }
+            
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+        add.setText("add");
+        add.setLayoutData(new GridData(SWT.FILL, SWT.UP, false, false, 1, 1));
+        up = new Button(gr, SWT.PUSH);
+        up.setText("up");
+        up.setLayoutData(new GridData(SWT.FILL, SWT.UP, false, false, 1, 1));
+        up.setEnabled(false);
+        down = new Button(gr, SWT.PUSH);
+        down.setText("down");
+        down.setLayoutData(new GridData(SWT.FILL, SWT.UP, false, false, 1, 1));
+        down.setEnabled(false);
+        remove = new Button(gr, SWT.PUSH);
+        remove.setText("remove");
+        remove.setLayoutData(new GridData(SWT.FILL, SWT.UP, false, false, 1, 1));
+        remove.setEnabled(false);
+        updateButtonLabel();
+        init();
+        setControl(main);
+    }
+
+
+    /**
+     * Adds the new type.
+     */
+    protected void addNewType() {
+    }
+
+    /**
+     * Change list selection.
+     * 
+     * @param e the e
+     */
+    protected void changeListSelection(SelectionEvent e) {
+        int selId = structureList.getSelectionIndex();
+        if (selId < 2 || selId >= structure.length - 2) {
+            up.setEnabled(false);
+        } else {
+            up.setEnabled(true);
+        }
+        if (selId < 1 || selId >= structure.length - 3) {
+            down.setEnabled(false);
+        } else {
+            down.setEnabled(true);
+        }
+        if (selId >0&& selId < structure.length - 2) {
+            remove.setEnabled(false);
+        } else {
+            remove.setEnabled(true);
+        }
+    }
+
+    /**
+     * Select crs.
+     */
+    protected void selectCRS() {
+        CoordinateReferenceSystem result = ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<CoordinateReferenceSystem>() {
+
+            private CoordinateReferenceSystem result;
+
+            @Override
+            public CoordinateReferenceSystem getValue() {
+                return result;
+            }
+
+            @Override
+            public void run() {
+                result = null;
+                CommonCRSPreferencePage page = new CommonCRSPreferencePage();
+                page.setSelectedCRS(getSelectedCRS());
+                page.setTitle("Select Coordinate Reference System");
+                page.setSubTitle("Select the coordinate reference system from the list of commonly used CRS's, or add a new one with the Add button");
+                page.init(PlatformUI.getWorkbench());
+                PreferenceManager mgr = new PreferenceManager();
+                IPreferenceNode node = new PreferenceNode("1", page); //$NON-NLS-1$
+                mgr.addToRoot(node);
+                Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+                PreferenceDialog pdialog = new PreferenceDialog(shell, mgr);;
+                if (pdialog.open() == PreferenceDialog.OK) {
+                    page.performOk();
+                    result = page.getCRS();
+                }
+
+            }
+
+        });
+
+        setSelectedCRS(result);
+    }
+
+    /**
+     * Sets the selected crs.
+     * 
+     * @param result the new selected crs
+     */
+    private void setSelectedCRS(CoordinateReferenceSystem result) {
+        if (result == null) {
+            return;
+        }
+        selectedCRS = result;
+        updateButtonLabel();
+    }
+
+    /**
+     * Update button label.
+     */
+    private void updateButtonLabel() {
+        CoordinateReferenceSystem crs = getSelectedCRS();
+        selectCRS.setText(String.format("CRS: %s", crs.getName().toString()));
+    }
+
+    /**
+     * Gets the selected crs.
+     * 
+     * @return the selected crs
+     */
+    private CoordinateReferenceSystem getSelectedCRS() {
+        return selectedCRS == null ? getDefaultCRS() : selectedCRS;
+    }
+
+    /**
+     * Gets the default crs.
+     * 
+     * @return the default crs
+     */
+    private CoordinateReferenceSystem getDefaultCRS() {
+        try {
+            return CRS.decode("EPSG:4326");
+        } catch (NoSuchAuthorityCodeException e) {
+            // TODO Handle NoSuchAuthorityCodeException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+    }
+
+    /**
+     * Update network name.
+     * 
+     * @param e the e
+     */
+    protected void updateNetworkName(ModifyEvent e) {
+        networkName = network.getText().trim();
+        validate();
+    }
+
+    /**
+     * Validate.
+     */
+    private void validate() {
+        if (StringUtils.isEmpty(networkName) || restrictedNames.contains(networkName)) {
+            setDescription("Please enter name of new network:");
+            setPageComplete(false);
+            return;
+        }
+        setDescription(CREATE_NETWORK_STRUCTURE);
+        setPageComplete(true);
+    }
+
+    /**
+     * Inits the.
+     */
+    private void init() {
+        structure = new INodeType[] {NodeTypes.NETWORK, NodeTypes.SITE, NodeTypes.SECTOR};
+        addPage(NodeTypes.SITE);
+        addPage(NodeTypes.SECTOR);
+        updateList();
+        setPageComplete(false);
+        restrictedNames = new HashSet<String>();
+        DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
+        Traverser restrictedNamesTr = datasetService.getRoots(getProjectName());
+        for (Node root : restrictedNamesTr.nodes()) {
+            restrictedNames.add(datasetService.getNodeName(root));
+        }
+
+    }
+
+    /**
+     * Adds the page.
+     * 
+     * @param type the type
+     */
+    private void addPage(INodeType type) {
+        ((CreateNetworkWizard)getWizard()).createPage(type);
+        if (getContainer().getCurrentPage() != null) {
+            getContainer().updateButtons();
+        }
+    }
+
+    /**
+     * Removes the page.
+     * 
+     * @param type the type
+     */
+    private void removePage(INodeType type) {
+        ((CreateNetworkWizard)getWizard()).removePage(type);
+        getContainer().updateButtons();
+    }
+
+    /**
+     * Update list.
+     */
+    private void updateList() {
+        String[] structurStr = new String[structure.length];
+        for (int i = 0; i < structurStr.length; i++) {
+            structurStr[i] = structure[i].getId();
+        }
+        structureList.setItems(structurStr);
+    }
+
+    /**
+     * Gets the project name.
+     * 
+     * @return the project name
+     */
+    private String getProjectName() {
+        return LoaderUtils.getAweProjectName();
+    };
+}

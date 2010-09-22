@@ -268,6 +268,12 @@
             id="org.amanzi.neo.loader.newNeighbour"
             label="New neighbours">
       </action>
+      <action
+            class="org.amanzi.neo.loader.actions.CreateNetworkAction"
+            icon="icons/16/network.png"
+            id="org.amanzi.neo.loader.actions.CreateNetworkAction"
+            label="Create new network">
+      </action>
    </extension>
    <extension
          point="org.amanzi.loader.core.saver">

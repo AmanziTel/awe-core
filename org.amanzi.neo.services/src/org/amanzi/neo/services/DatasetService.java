@@ -136,6 +136,16 @@ public class DatasetService extends AbstractService {
         String typeId = getType(node);
         return getNodeType(typeId);
     }
+    
+    /**
+     * Gets the node name.
+     *
+     * @param node the node
+     * @return the node name
+     */
+    public String  getNodeName(Node node) {
+        return (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME,null);
+    }
 
     /**
      * Gets the node type.
@@ -795,5 +805,17 @@ public class DatasetService extends AbstractService {
             result.add(new DynamicNodeType(types[i]));
         }
         return result;
+    }
+
+
+    public org.neo4j.graphdb.traversal.Traverser getRoots(final String projectName) {
+        TraversalDescription td = NeoUtils.getTDRootNodes(new Predicate<Path>() {
+
+            @Override
+            public boolean accept(Path paramT) {
+                return  projectName.equals(paramT.lastRelationship().getStartNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, ""));
+            }
+        });
+        return td.traverse(databaseService.getReferenceNode());
     }
 }
