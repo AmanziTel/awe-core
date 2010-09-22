@@ -53,8 +53,6 @@ import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.awe.views.network.property.NetworkPropertySheetPage;
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
-import org.amanzi.awe.views.network.view.actions.CopyElementAction;
-import org.amanzi.awe.views.network.view.actions.NewElementAction;
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -81,12 +79,11 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
 import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
@@ -516,22 +513,23 @@ public class NetworkTreeView extends ViewPart {
         IMenuManager menu = new MenuManager("Create new element", "new_elem_submenu_ID");
         manager.add(menu);
         fillMenu(menu, (IStructuredSelection)viewer.getSelection());
-
-        // // add corresponding actions only if they should work
-        IAction elementAction = new NewElementAction((IStructuredSelection)viewer.getSelection(), false);
-        if (elementAction.isEnabled()) {
-            menu.add(elementAction);
-        }
-
-        elementAction = new CopyElementAction((IStructuredSelection)viewer.getSelection());
-        if (elementAction.isEnabled()) {
-            menu.add(elementAction);
-        }
-
-        elementAction = new NewElementAction((IStructuredSelection)viewer.getSelection(), true);
-        if (elementAction.isEnabled()) {
-            menu.add(elementAction);
-        }
+        //
+        // // // add corresponding actions only if they should work
+        // IAction elementAction = new NewElementAction((IStructuredSelection)viewer.getSelection(),
+        // false);
+        // if (elementAction.isEnabled()) {
+        // menu.add(elementAction);
+        // }
+        //
+        // elementAction = new CopyElementAction((IStructuredSelection)viewer.getSelection());
+        // if (elementAction.isEnabled()) {
+        // menu.add(elementAction);
+        // }
+        //
+        // elementAction = new NewElementAction((IStructuredSelection)viewer.getSelection(), true);
+        // if (elementAction.isEnabled()) {
+        // menu.add(elementAction);
+        // }
     }
 
     /**
@@ -545,7 +543,7 @@ public class NetworkTreeView extends ViewPart {
             return;
         else if (element instanceof NeoNode) {
             Node selectedNode = ((NeoNode)element).getNode();
-            // NodeTypes type = NodeTypes.getNodeType(selectedNode, service);
+            NodeTypes sourceType = NodeTypes.getNodeType(selectedNode, service);
 
             Node networkNode = NeoUtils.getParentNode(selectedNode, NodeTypes.NETWORK.getId());
             String[] stTypes = (String[])networkNode.getProperty(INeoConstants.PROPERTY_STRUCTURE_NAME, new String[0]);
@@ -562,8 +560,20 @@ public class NetworkTreeView extends ViewPart {
 
             List<INodeType> userDefTypes = ds.getUserDefinedNodeTypes();
             userDefTypes.removeAll(structureTypes);
+            boolean parentPassed = false;
+            for (INodeType iNodeType : structureTypes) {
+                if (parentPassed){
+                    menu.add(new NewNodeAction(iNodeType, selectedNode));
+                }else{
+                    if(iNodeType.equals(sourceType)){
+                        parentPassed = true;
+                    }
+                }
+            }
+            for (INodeType iNodeType : userDefTypes) {
+                menu.add(new NewNodeAction(iNodeType, selectedNode));
+            }
         }
-        return;
     }
 
     private void openFileFromNode(NeoNode neoNode) {
@@ -1423,8 +1433,8 @@ public class NetworkTreeView extends ViewPart {
                         try {
                             String parentType = "unknown";
                             try {
-                                parentType = networkNode.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator().next().getEndNode().getProperty(
-                                        "type").toString();
+                                parentType = networkNode.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator().next().getEndNode()
+                                        .getProperty("type").toString();
                             } catch (Exception e) {
                             }
                             Node parent = getService().createNode();
