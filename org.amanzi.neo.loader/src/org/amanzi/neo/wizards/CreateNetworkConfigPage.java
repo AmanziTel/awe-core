@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.neo.core.enums.INodeType;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.viewers.CellEditor;
@@ -84,6 +85,20 @@ public class CreateNetworkConfigPage extends WizardPage {
         super(pageName);
         this.nodeType = nodeType;
         setDescription(getNormalDescription());
+        initProperty();
+    }
+
+    /**
+     *
+     */
+    private void initProperty() {
+        propertyList.clear();
+        PropertyWrapper name = new PropertyWrapper("name", String.class, "", false);
+        propertyList.add(name);
+        //TODO implement
+        if (nodeType==NodeTypes.SITE){
+            
+        }
     }
 
     /**
@@ -184,9 +199,7 @@ public class CreateNetworkConfigPage extends WizardPage {
      * Inits the.
      */
     private void init() {
-        propertyList.clear();
-        PropertyWrapper name = new PropertyWrapper("name", String.class, "", false);
-        propertyList.add(name);
+
         update();
     }
 
