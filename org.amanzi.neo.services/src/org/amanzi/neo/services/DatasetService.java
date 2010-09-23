@@ -15,6 +15,7 @@ package org.amanzi.neo.services;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -806,6 +807,12 @@ public class DatasetService extends AbstractService {
         return result;
     }
 
+    /**
+     * Gets the roots.
+     *
+     * @param projectName the project name
+     * @return the roots
+     */
     public org.neo4j.graphdb.traversal.Traverser getRoots(final String projectName) {
         TraversalDescription td = NeoUtils.getTDRootNodes(new Predicate<Path>() {
 
@@ -830,5 +837,38 @@ public class DatasetService extends AbstractService {
             return result;
         }
         return new DynamicNodeType(type);
+    }
+
+    /**
+     * Sets the structure.
+     *
+     * @param root the root
+     * @param structure the structure
+     */
+    public void setStructure(Node root, Collection<INodeType> structure) {
+        String[] structureProperty=new String[structure.size()];
+        int i=0;
+        for (INodeType element:structure){
+            structureProperty[i++]=element.getId();
+        }
+        setStructure(root, structureProperty);
+    }
+
+
+    /**
+     * Sets the structure.
+     *
+     * @param root the root
+     * @param structureProperty the structure property
+     */
+    public void setStructure(Node root, String[] structureProperty) {
+        Transaction tx = databaseService.beginTx();
+        
+        try {
+            root.setProperty(INeoConstants.PROPERTY_STRUCTURE_NAME, structureProperty);
+            tx.success();
+        } finally {
+            tx.finish();
+        }
     }
 }
