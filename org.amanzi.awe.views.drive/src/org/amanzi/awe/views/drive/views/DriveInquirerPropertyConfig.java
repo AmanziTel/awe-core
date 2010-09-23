@@ -25,7 +25,7 @@ import org.amanzi.neo.core.propertyFilter.PropertyFilterModel;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.AbstractDialog;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.PropertyHeader;
+import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.IStructuredContentProvider;

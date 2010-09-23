@@ -28,7 +28,7 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.service.listener.INeoServiceProviderListener;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.PropertyHeader;
+import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;

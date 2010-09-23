@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.core.utils;
+package org.amanzi.neo.services.statistic;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,6 +28,8 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.Pair;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -539,7 +541,7 @@ public class PropertyHeader implements IPropertyHeader {
      * @return
      */
     @Override
-    public PropertyStatistics getPropertyStatistic(final String propertyName) {
+    public PropertyHeader.PropertyStatistics getPropertyStatistic(final String propertyName) {
         if (isGis) {
             return getDataVault().getPropertyStatistic(propertyName);
         }

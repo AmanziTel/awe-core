@@ -11,13 +11,12 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.core.utils;
+package org.amanzi.neo.services.statistic;
 
 import java.util.Collection;
 import java.util.Map;
 
 import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.utils.PropertyHeader.PropertyStatistics;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -138,7 +137,7 @@ public interface IPropertyHeader {
      */
     @Deprecated
     //TODO refactor for remove
-    PropertyStatistics getPropertyStatistic(String propertyName);
+    PropertyHeader.PropertyStatistics getPropertyStatistic(String propertyName);
 
     /**
      *

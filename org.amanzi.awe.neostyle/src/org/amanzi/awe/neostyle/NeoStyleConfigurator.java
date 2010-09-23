@@ -28,7 +28,7 @@ import org.amanzi.awe.catalog.neo.NeoGeoResource;
 import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.PropertyHeader;
+import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionEvent;

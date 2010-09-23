@@ -39,7 +39,7 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.service.listener.INeoServiceProviderListener;
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.PropertyHeader;
+import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
