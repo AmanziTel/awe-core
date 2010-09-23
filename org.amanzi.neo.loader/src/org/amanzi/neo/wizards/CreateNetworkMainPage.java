@@ -52,7 +52,6 @@ import org.neo4j.graphdb.traversal.Traverser;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-// TODO: Auto-generated Javadoc
 /**
  * <p>
  * Main page for custom network creation
@@ -112,7 +111,7 @@ public class CreateNetworkMainPage extends WizardPage {
      */
     public CreateNetworkMainPage(String pageName) {
         super(pageName);
-        setDescription(CREATE_NETWORK_STRUCTURE);
+        setTitle(CREATE_NETWORK_STRUCTURE);
     }
 
     /**
@@ -488,7 +487,7 @@ public class CreateNetworkMainPage extends WizardPage {
             setPageComplete(false);
             return;
         }
-        setDescription(CREATE_NETWORK_STRUCTURE);
+        setDescription("");
         setPageComplete(true);
     }
 
