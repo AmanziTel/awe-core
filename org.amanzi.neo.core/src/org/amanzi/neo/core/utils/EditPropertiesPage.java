@@ -87,7 +87,7 @@ public class EditPropertiesPage extends WizardPage {
      * @param pageName the page name
      * @param nodeType the node type
      */
-    protected EditPropertiesPage(String pageName, INodeType nodeType) {
+    public EditPropertiesPage(String pageName, INodeType nodeType) {
         super(pageName);
         this.nodeType = nodeType;
         setDescription(getNormalDescription());
