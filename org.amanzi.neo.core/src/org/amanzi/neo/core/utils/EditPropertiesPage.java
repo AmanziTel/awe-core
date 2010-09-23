@@ -87,9 +87,10 @@ public class EditPropertiesPage extends WizardPage {
      * @param pageName the page name
      * @param nodeType the node type
      */
-    public EditPropertiesPage(String pageName, INodeType nodeType) {
+    public EditPropertiesPage(String pageName,String title, INodeType nodeType) {
         super(pageName);
         this.nodeType = nodeType;
+        setTitle(title);
         setDescription(getNormalDescription());
         initProperty();
     }
@@ -115,7 +116,7 @@ public class EditPropertiesPage extends WizardPage {
      * @return the normal description
      */
     protected String getNormalDescription() {
-        return String.format("Configure type '%s'", nodeType.getId());
+        return "";
     }
 
     /**
