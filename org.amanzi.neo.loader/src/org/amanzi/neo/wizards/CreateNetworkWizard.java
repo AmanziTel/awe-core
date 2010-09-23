@@ -20,12 +20,13 @@ import java.util.Map;
 import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.EditPropertiesPage;
+import org.amanzi.neo.core.utils.EditPropertiesPage.PropertyWrapper;
 import org.amanzi.neo.loader.LoaderUtils;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.statistic.IStatistic;
 import org.amanzi.neo.services.statistic.StatisticManager;
-import org.amanzi.neo.wizards.CreateNetworkConfigPage.PropertyWrapper;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -49,7 +50,7 @@ public class CreateNetworkWizard extends Wizard implements INewWizard {
 
     private IWorkbench workbench;
     private IStructuredSelection selection;
-    private Map<INodeType, CreateNetworkConfigPage> pages = new HashMap<INodeType, CreateNetworkConfigPage>();
+    private Map<INodeType, EditPropertiesPage> pages = new HashMap<INodeType, EditPropertiesPage>();
     private CreateNetworkMainPage mainPage;
 
     @Override
@@ -67,8 +68,8 @@ public class CreateNetworkWizard extends Wizard implements INewWizard {
          List<INodeType> struct = mainPage.getStructure();
         if (page instanceof CreateNetworkMainPage) {
             return null;
-        } else if (page instanceof CreateNetworkConfigPage) {
-            INodeType type = ((CreateNetworkConfigPage)page).getType();
+        } else if (page instanceof EditPropertiesPage) {
+            INodeType type = ((EditPropertiesPage)page).getType();
             for (int i = 2; i < struct.size(); i++) {
                 if (struct.get(i).equals(type)) {
                     return pages.get(struct.get(i-1));
@@ -83,8 +84,8 @@ public class CreateNetworkWizard extends Wizard implements INewWizard {
         List<INodeType> struct = mainPage.getStructure();
         if (page instanceof CreateNetworkMainPage) {
             return pages.get(struct.get(1));
-        } else if (page instanceof CreateNetworkConfigPage) {
-            INodeType type = ((CreateNetworkConfigPage)page).getType();
+        } else if (page instanceof EditPropertiesPage) {
+            INodeType type = ((EditPropertiesPage)page).getType();
             for (int i = 1; i < struct.size() - 1; i++) {
                 if (struct.get(i).equals(type)) {
                     return pages.get(struct.get(i+1));
@@ -130,7 +131,7 @@ public class CreateNetworkWizard extends Wizard implements INewWizard {
                     if (!(type instanceof NodeTypes)){
                         service.saveDynamicNodeType(type.getId());
                     }
-                    CreateNetworkConfigPage page = pages.get(type);
+                    EditPropertiesPage page = pages.get(type);
                     if (page==null){
                         continue;
                     }
@@ -155,7 +156,7 @@ public class CreateNetworkWizard extends Wizard implements INewWizard {
         if (pages.containsKey(type)) {
             return;
         }
-        CreateNetworkConfigPage page = new CreateNetworkConfigPage(type.getId(), type);
+        EditPropertiesPage page = new EditPropertiesPage(type.getId(), type);
         pages.put(type, page);
         page.setWizard(this);
     }
