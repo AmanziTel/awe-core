@@ -131,9 +131,10 @@ public class PropertyStatistics {
      * Adds the new value.
      * 
      * @param value the value
+     * @param count 
      * @return true, if successful
      */
-    public boolean addNewValue(Object value) {
+    public boolean addNewValue(Object value, int count) {
         if (value == null) {
             return false;
         }
@@ -142,13 +143,13 @@ public class PropertyStatistics {
             setClass(classValue);
         }
         if (klass == classValue) {
-            addValueToStatistic(value);
+            addValueToStatistic(value,count);
         } else {
             switch (rule) {
             case REMOVE_OLD_CLASS:
                 clearStatistic();
                 setClass(classValue);
-                addValueToStatistic(value);
+                addValueToStatistic(value,count);
                 break;
             default/* ignore variant */:
                 return false;
@@ -221,11 +222,12 @@ public class PropertyStatistics {
      * Adds the value to statistic.
      * 
      * @param value the value
+     * @param countVal 
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private void addValueToStatistic(Object value) {
+    private void addValueToStatistic(Object value, int countVal) {
         isChanged = true;
-        count++;
+        count+=countVal;
         if (isComparable) {
             if (minValue == null) {
                 minValue = value;
@@ -263,7 +265,7 @@ public class PropertyStatistics {
      * @return true, if successful
      */
     public boolean register(Class<?> klass, ChangeClassRule rule) {
-        if (this.klass != null) {
+        if (this.klass == null) {
             setClass(klass);
             this.rule = rule;
             return true;

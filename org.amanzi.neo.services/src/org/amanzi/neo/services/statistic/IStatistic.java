@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services.statistic;
 
+
 /**
  * <p>
  * Interface for statistic property
@@ -31,4 +32,6 @@ public interface IStatistic {
     void increaseTypeCount(String rootKey, String nodeType, long count);
 
     long getTotalCount(String rootKey, String nodeType);
+
+    void registerProperty(String networkName, String id, String name, @SuppressWarnings("rawtypes") Class klass, String defValue);
 }

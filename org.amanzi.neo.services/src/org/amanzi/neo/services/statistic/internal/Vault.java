@@ -76,11 +76,12 @@ public class Vault {
      * @param nodeType the node type
      * @param propertyName the property name
      * @param value the value
+     * @param count 
      * @return true, if successful
      */
-    public boolean addValue(String nodeType, String propertyName, Object value) {
+    public boolean addValue(String nodeType, String propertyName, Object value, int count) {
         PropertyStatistics propStat = getPropertyStatistic(nodeType, propertyName);
-        return propStat.addNewValue(value);
+        return propStat.addNewValue(value,count);
     }
 
     /**

@@ -252,7 +252,7 @@ public class CreateNetworkMainPage extends WizardPage {
 
 
     /**
-     * Removes the element from list
+     * Removes the element from list.
      */
     protected void remove() {
         int id= structureList.getSelectionIndex();
@@ -268,7 +268,7 @@ public class CreateNetworkMainPage extends WizardPage {
     }
 
     /**
-     * Down the element in list
+     * Down the element in list.
      */
     protected void down() {
         int id= structureList.getSelectionIndex();
@@ -284,7 +284,7 @@ public class CreateNetworkMainPage extends WizardPage {
     }
 
     /**
-     * Up the element in list
+     * Up the element in list.
      */
     protected void up() {
         int id= structureList.getSelectionIndex();
@@ -553,5 +553,15 @@ public class CreateNetworkMainPage extends WizardPage {
      */
     private String getProjectName() {
         return LoaderUtils.getAweProjectName();
+    }
+
+
+    /**
+     * Gets the network name.
+     *
+     * @return the network name
+     */
+    public String getNetworkName() {
+        return networkName;
     };
 }

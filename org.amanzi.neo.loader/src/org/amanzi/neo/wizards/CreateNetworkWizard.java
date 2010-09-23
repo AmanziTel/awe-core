@@ -18,11 +18,24 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.core.enums.INodeType;
+import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.loader.LoaderUtils;
+import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.statistic.IStatistic;
+import org.amanzi.neo.services.statistic.StatisticManager;
+import org.amanzi.neo.wizards.CreateNetworkConfigPage.PropertyWrapper;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
+import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of
@@ -36,7 +49,7 @@ public class CreateNetworkWizard extends Wizard implements INewWizard {
 
     private IWorkbench workbench;
     private IStructuredSelection selection;
-    private Map<INodeType, IWizardPage> pages = new HashMap<INodeType, IWizardPage>();
+    private Map<INodeType, CreateNetworkConfigPage> pages = new HashMap<INodeType, CreateNetworkConfigPage>();
     private CreateNetworkMainPage mainPage;
 
     @Override
@@ -101,6 +114,37 @@ public class CreateNetworkWizard extends Wizard implements INewWizard {
 
     @Override
     public boolean performFinish() {
+        NeoServiceProvider.getProvider().commit();
+        Job job=new Job("finish") {
+            
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                DatasetService service = NeoServiceFactory.getInstance().getDatasetService();
+                String networkName=mainPage.getNetworkName();
+                List<INodeType> structure = mainPage.getStructure();
+                String projectName=LoaderUtils.getAweProjectName();
+                Node root = service.getRootNode(projectName, networkName, NodeTypes.NETWORK);
+                service.setStructure(root,structure);
+                IStatistic statistics = StatisticManager.getStatistic(root);
+                for (INodeType type:structure){
+                    if (!(type instanceof NodeTypes)){
+                        service.saveDynamicNodeType(type.getId());
+                    }
+                    CreateNetworkConfigPage page = pages.get(type);
+                    if (page==null){
+                        continue;
+                    }
+                    List<PropertyWrapper> propList = page.getProperties();
+                    for (PropertyWrapper property:propList){
+                        statistics.registerProperty(networkName,type.getId(),property.getName(),property.getType(),property.getDefValue());  
+                    }
+                    
+                }
+                statistics.save();
+                return Status.OK_STATUS;
+            }
+        };
+        job.schedule();
         return true;
     }
 

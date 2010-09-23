@@ -15,6 +15,7 @@ package org.amanzi.neo.services.statistic.internal;
 
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.db.manager.DatabaseManager;
+import org.amanzi.neo.services.statistic.ChangeClassRule;
 import org.amanzi.neo.services.statistic.IStatistic;
 import org.hsqldb.lib.StringUtil;
 import org.neo4j.graphdb.Node;
@@ -128,6 +129,24 @@ public class DatasetStatistic implements IStatistic {
     @Override
     public long getTotalCount(String rootKey, String nodeType) {
         return handler.getTotalCount(rootKey,nodeType);
+    }
+
+    @Override
+    public void registerProperty(String rootKey, String nodeType, String name, Class klass, String defValue) {
+        Object value=defValue;
+        if(Number.class.isAssignableFrom(klass)){
+            try {
+                value=NeoUtils.getNumberValue(klass, defValue);
+            } catch (Exception e) {
+                //TODO handle exception
+                e.printStackTrace();
+                value=null;
+            } 
+        }
+       if (handler.registerProperty(rootKey,  nodeType,  name,  klass, ChangeClassRule.IGNORE_NEW_CLASS)){
+            handler.indexValue(rootKey, nodeType, name, value,0);
+        }
+        
     }
 
 }

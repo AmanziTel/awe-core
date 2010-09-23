@@ -157,12 +157,15 @@ public class StatisticHandler {
      * @return true, if successful
      */
     public boolean indexValue(String key,String nodeType,String propertyName,Object value){
-        Vault vault=getVault(key);
-        boolean result = vault.addValue(nodeType,propertyName,value);
-        isChanged=isChanged|result;
-        return result;
+        return indexValue(key, nodeType, propertyName, value,1);
     }
-    
+
+   public boolean indexValue(String rootKey, String nodeType, String propertyName, Object value, int count) {
+       Vault vault=getVault(rootKey);
+       boolean result = vault.addValue(nodeType,propertyName,value,count);
+       isChanged=isChanged|result;
+       return result;
+   } 
     /**
      * Register property.
      *
@@ -249,4 +252,7 @@ public class StatisticHandler {
         }
         return vault.getTotalCount(nodeType);
     }
+
+
+
 }

@@ -51,6 +51,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 
+// TODO: Auto-generated Javadoc
 /**
  * <p>
  * Create Network Config Page
@@ -70,9 +71,15 @@ public class CreateNetworkConfigPage extends WizardPage {
 
     /** The property list. */
     private List<PropertyWrapper> propertyList = new ArrayList<PropertyWrapper>();
-    protected static final Color GRAY = new Color(null, 220, 220, 220);
+    
+    /** The Constant GRAY. */
+    protected static final Color GRAY = new Color(null, 240, 240, 240);
+    
+    /** The types. */
     @SuppressWarnings("rawtypes")
     private Map<String, Class> types = new LinkedHashMap<String, Class>();
+    
+    /** The remove. */
     private Button remove;
 
     /**
@@ -89,7 +96,7 @@ public class CreateNetworkConfigPage extends WizardPage {
     }
 
     /**
-     *
+     * Inits the property.
      */
     private void initProperty() {
         propertyList.clear();
@@ -97,6 +104,8 @@ public class CreateNetworkConfigPage extends WizardPage {
         propertyList.add(name);
         //TODO implement
         if (nodeType==NodeTypes.SITE){
+            propertyList.add(new PropertyWrapper("lat", Double.class, "", false));
+            propertyList.add(new PropertyWrapper("lon", Double.class, "", false));
             
         }
     }
@@ -173,7 +182,7 @@ public class CreateNetworkConfigPage extends WizardPage {
     }
 
     /**
-     *
+     * Removes the selection.
      */
     protected void removeSelection() {
       IStructuredSelection sel= (IStructuredSelection) viewer.getSelection();
@@ -188,7 +197,7 @@ public class CreateNetworkConfigPage extends WizardPage {
     }
 
     /**
-     *
+     * Adds the property.
      */
     protected void addProperty() {
         propertyList.add(new PropertyWrapper("type new name", String.class, "", true));
@@ -305,10 +314,23 @@ public class CreateNetworkConfigPage extends WizardPage {
             this.columnIndex = columnIndex;
         }
 
+        /**
+         * Gets the text.
+         *
+         * @param element the element
+         * @return the text
+         */
         @Override
         public String getText(Object element) {
             return String.valueOf(((PropertyWrapper)element).getStringValueById(columnIndex));
         }
+        
+        /**
+         * Gets the background.
+         *
+         * @param element the element
+         * @return the background
+         */
         @Override
         public Color getBackground(Object element) {
             return ((PropertyWrapper)element).isEditable()?super.getBackground(element):GRAY;
@@ -404,7 +426,7 @@ public class CreateNetworkConfigPage extends WizardPage {
     /**
      * The Class PropertyWrapper.
      */
-    private class PropertyWrapper {
+    public class PropertyWrapper {
 
         /** The name. */
         private String name;
@@ -419,6 +441,34 @@ public class CreateNetworkConfigPage extends WizardPage {
         /** The editable. */
         private boolean editable;
 
+
+        /**
+         * Gets the name.
+         *
+         * @return the name
+         */
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * Gets the type.
+         *
+         * @return the type
+         */
+        @SuppressWarnings("rawtypes")
+        public Class getType() {
+            return type;
+        }
+
+        /**
+         * Gets the def value.
+         *
+         * @return the def value
+         */
+        public String getDefValue() {
+            return defValue;
+        }
 
         /**
          * Instantiates a new property wrapper.
@@ -489,13 +539,17 @@ public class CreateNetworkConfigPage extends WizardPage {
         }
 
         /**
+         * Checks if is valid.
          *
-         * @return
+         * @return true, if is valid
          */
         @SuppressWarnings("unchecked")
         public boolean isValid() {
             if (StringUtils.isEmpty(name)){
                 return false;
+            }
+            if (StringUtils.isEmpty(defValue)){
+                return true;
             }
             if (Number.class.isAssignableFrom(type)){
                 try {
@@ -557,5 +611,15 @@ public class CreateNetworkConfigPage extends WizardPage {
         setDescription(getNormalDescription());
         setPageComplete(true);
         return;
+    }
+
+
+    /**
+     * Gets the properties.
+     *
+     * @return the properties
+     */
+    public List<PropertyWrapper> getProperties() {
+        return propertyList;
     }
 }
