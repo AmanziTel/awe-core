@@ -21,6 +21,6 @@ NeighboursFile "/home/hudson/jobs/Amanzi Wireless Explorer/workspace/awe/org.ama
 InterferenceFile "/home/hudson/jobs/Amanzi Wireless Explorer/workspace/awe/org.amanzi.awe.afp.testing/files/dataset1/interference.awe"
 OutputFile "/home/hudson/jobs/Amanzi Wireless Explorer/workspace/awe/org.amanzi.awe.afp.testing/files/dataset1/output.awe"
 CliquesFile "/home/hudson/jobs/Amanzi Wireless Explorer/workspace/awe/org.amanzi.awe.afp.testing/files/dataset1/cliques.awe"
-ForbiddenFile ""
-ExceptionFile ""
+ForbiddenFile "/home/hudson/jobs/Amanzi Wireless Explorer/workspace/awe/org.amanzi.awe.afp.testing/files/dataset1/forbidden.awe"
+ExceptionFile "/home/hudson/jobs/Amanzi Wireless Explorer/workspace/awe/org.amanzi.awe.afp.testing/files/dataset1/exceptions.awe"
 Carriers 6 1 2 3 4 5 6

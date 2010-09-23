@@ -36,7 +36,22 @@ When /the engine is executed/ do
 end
  
 Then /the output file should match the expected file at relative path (.*)/ do |expectedFile|
-  FileUtils.compare_file(@dir + expectedFile, @outputFile).should == true
+#  FileUtils.compare_file(@dir + expectedFile, @outputFile).should == true
+  puts "Comparing the output files... "
+  arr_expected = Array.new
+  File.read(@dir + expectedFile).each do |line|
+    line.strip
+    arr_expected.push(line)
+  end
+  
+  arr_actual = Array.new
+  File.read(@outputFile).each do |line|
+    line.strip
+    arr_actual.push(line)
+  end
+  
+  #Check if both arrays are equal after sorting
+  arr_actual.sort.eql?(arr_expected.sort).should == true
 end
 
 Then /the output file should not be generated/ do

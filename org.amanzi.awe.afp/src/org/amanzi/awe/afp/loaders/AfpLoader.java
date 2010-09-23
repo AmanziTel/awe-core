@@ -92,6 +92,9 @@ public class AfpLoader extends AbstractLoader {
      * Define root.
      */
     protected void defineRoot() {
+    	defineRoot(null);
+    }
+    protected void defineRoot(String projectName) {
         RunnableWithResult<Node> creater = new RunnableWithResult<Node>() {
 
             private Node node = null;
@@ -119,7 +122,9 @@ public class AfpLoader extends AbstractLoader {
                 return node;
             }
         };
-        String projectName = ApplicationGIS.getActiveProject().getName();
+        if(projectName == null) {
+        	projectName = ApplicationGIS.getActiveProject().getName();
+        }
         afpRoot = NeoUtils.findorCreateRootInActiveProject(projectName, rootName, creater, neo);
         
     }
@@ -143,6 +148,10 @@ public class AfpLoader extends AbstractLoader {
     @Override
     public void run(IProgressMonitor monitor) throws IOException {
         monitor.beginTask("Load AFP data", 7);
+        runAfpLoader(monitor,null);
+    }
+    
+    public void runAfpLoader(IProgressMonitor monitor, String projectName) {
         if (file.getCellFile() == null) {
             error("Not found Cite file");
             return;
@@ -150,7 +159,7 @@ public class AfpLoader extends AbstractLoader {
         mainTx = neo.beginTx();
         NeoUtils.addTransactionLog(mainTx, Thread.currentThread(), "AfpLoader");
         try {
-            defineRoot();
+            defineRoot(projectName);
             if (file.getCellFile() != null) {
             	if (isMonitorCancelled(monitor))
             		return; 	
