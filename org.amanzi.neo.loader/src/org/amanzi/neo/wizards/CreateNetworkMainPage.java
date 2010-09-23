@@ -63,6 +63,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @since 1.0.0
  */
 public class CreateNetworkMainPage extends WizardPage {
+    
+    /** The service. */
     private DatasetService service = NeoServiceFactory.getInstance().getDatasetService();
     /** String CREATE_NETWORK_STRUCTURE field. */
     private static final String CREATE_NETWORK_STRUCTURE = "Create network structure";
@@ -100,6 +102,7 @@ public class CreateNetworkMainPage extends WizardPage {
     /** The network name. */
     private String networkName;
 
+    /** The main. */
     private Group main;
 
     /**
@@ -197,17 +200,103 @@ public class CreateNetworkMainPage extends WizardPage {
         up.setText("up");
         up.setLayoutData(new GridData(SWT.FILL, SWT.UP, false, false, 1, 1));
         up.setEnabled(false);
+        up.addSelectionListener(new SelectionListener() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                up();
+            }
+            
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
         down = new Button(gr, SWT.PUSH);
         down.setText("down");
         down.setLayoutData(new GridData(SWT.FILL, SWT.UP, false, false, 1, 1));
         down.setEnabled(false);
+        down.addSelectionListener(new SelectionListener() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                down();
+            }
+            
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
         remove = new Button(gr, SWT.PUSH);
         remove.setText("remove");
         remove.setLayoutData(new GridData(SWT.FILL, SWT.UP, false, false, 1, 1));
         remove.setEnabled(false);
+        remove.addSelectionListener(new SelectionListener() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                remove();
+            }
+            
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
         updateButtonLabel();
         init();
         setControl(main);
+    }
+
+
+
+    /**
+     * Removes the element from list
+     */
+    protected void remove() {
+        int id= structureList.getSelectionIndex();
+        if (id<0){
+            return;
+        }
+        INodeType elem = structure.remove(id);
+        ((CreateNetworkWizard)getWizard()).removePage(elem);
+        updateList();
+        structureList.select(id);
+        changeListSelection();
+        validate();
+    }
+
+    /**
+     * Down the element in list
+     */
+    protected void down() {
+        int id= structureList.getSelectionIndex();
+        if (id>structure.size()-2){
+            return;
+        }
+        INodeType elem = structure.remove(id);
+        structure.add(id+1, elem);
+        updateList();
+        structureList.select(id+1);
+        changeListSelection();
+        validate();
+    }
+
+    /**
+     * Up the element in list
+     */
+    protected void up() {
+        int id= structureList.getSelectionIndex();
+        if (id<1){
+            return;
+        }
+        INodeType elem = structure.remove(id);
+        structure.add(id-1, elem);
+        updateList();
+        structureList.select(id-1);
+        changeListSelection();
+        validate();
     }
 
 
@@ -225,8 +314,9 @@ public class CreateNetworkMainPage extends WizardPage {
 
 
     /**
+     * Adds the new type.
      *
-     * @param type
+     * @param type the type
      */
     private void addNewType(INodeType type) {
         if (structure.contains(type)){
@@ -243,6 +333,11 @@ public class CreateNetworkMainPage extends WizardPage {
         
     }
 
+    /**
+     * Gets the possible types.
+     *
+     * @return the possible types
+     */
     private java.util.List<INodeType> getPossibleTypes() {
         java.util.List<INodeType>result=getAllPossibletypes();
         Iterator<INodeType> it = result.iterator();
@@ -257,8 +352,9 @@ public class CreateNetworkMainPage extends WizardPage {
     }
 
     /**
+     * Gets the all possibletypes.
      *
-     * @return
+     * @return the all possibletypes
      */
     private java.util.List<INodeType> getAllPossibletypes() {
         java.util.List<INodeType> result=new ArrayList<INodeType>();
@@ -270,8 +366,7 @@ public class CreateNetworkMainPage extends WizardPage {
 
     /**
      * Change list selection.
-     * 
-     * @param e the e
+     *
      */
     protected void changeListSelection() {
         int selId = structureList.getSelectionIndex();
