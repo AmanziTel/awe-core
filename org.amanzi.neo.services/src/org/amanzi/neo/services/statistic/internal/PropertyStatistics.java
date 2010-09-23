@@ -15,7 +15,6 @@ import org.neo4j.graphdb.traversal.Uniqueness;
 import org.neo4j.helpers.Predicate;
 import org.neo4j.kernel.Traversal;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class PropertyStatistics.
  */

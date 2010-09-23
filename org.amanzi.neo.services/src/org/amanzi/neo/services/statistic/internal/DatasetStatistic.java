@@ -133,7 +133,10 @@ public class DatasetStatistic implements IStatistic {
 
     @Override
     public void registerProperty(String rootKey, String nodeType, String name, Class klass, String defValue) {
-        Object value=defValue;
+        Object value=null;
+        if (StringUtil.isEmpty(defValue)){
+            value=defValue;
+        }else{
         if(Number.class.isAssignableFrom(klass)){
             try {
                 value=NeoUtils.getNumberValue(klass, defValue);
@@ -142,6 +145,7 @@ public class DatasetStatistic implements IStatistic {
                 e.printStackTrace();
                 value=null;
             } 
+        }
         }
        if (handler.registerProperty(rootKey,  nodeType,  name,  klass, ChangeClassRule.IGNORE_NEW_CLASS)){
             handler.indexValue(rootKey, nodeType, name, value,0);
