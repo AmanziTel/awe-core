@@ -45,7 +45,6 @@ import org.neo4j.kernel.Traversal;
 
 import com.vividsolutions.jts.util.Assert;
 
-// TODO: Auto-generated Javadoc
 /**
  * <p>
  * Service provide common operations with datasets
@@ -871,4 +870,27 @@ public class DatasetService extends AbstractService {
             tx.finish();
         }
     }
+
+    /**
+     * Gets the list of the node type ids that keeped in network node.
+     *
+     * @param sourceNode the source node
+     * @return the sructure types
+     */
+    public List<INodeType> getSructureTypes(Node sourceNode) {
+        Node networkNode = NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId());
+        String[] stTypes = (String[])networkNode.getProperty(INeoConstants.PROPERTY_STRUCTURE_NAME, new String[0]);
+        List<INodeType> result = new ArrayList<INodeType>(stTypes.length);
+        
+        for (int i = 0; i < stTypes.length; i++) {
+            NodeTypes nodeType = NodeTypes.getEnumById(stTypes[i]);
+            if (nodeType != null) {
+                result.add(nodeType);
+            } else {
+                result.add(getNodeType(stTypes[i]));
+            }
+        }
+        return result;
+    }
+
 }

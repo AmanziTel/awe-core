@@ -79,9 +79,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
 import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
@@ -547,17 +547,7 @@ public class NetworkTreeView extends ViewPart {
             Node selectedNode = ((NeoNode)element).getNode();
             INodeType sourceType = ds.getNodeType(selectedNode);
 
-            Node networkNode = NeoUtils.getParentNode(selectedNode, NodeTypes.NETWORK.getId());
-            String[] stTypes = (String[])networkNode.getProperty(INeoConstants.PROPERTY_STRUCTURE_NAME, new String[0]);
-            List<INodeType> structureTypes = new ArrayList<INodeType>(stTypes.length);
-            for (int i = 0; i < stTypes.length; i++) {
-                NodeTypes nodeType = NodeTypes.getEnumById(stTypes[i]);
-                if (nodeType != null) {
-                    structureTypes.add(nodeType);
-                } else {
-                    structureTypes.add(ds.getNodeType(stTypes[i]));
-                }
-            }
+            List<INodeType> structureTypes =ds.getSructureTypes(selectedNode);
 
             List<INodeType> userDefTypes = ds.getUserDefinedNodeTypes();
             userDefTypes.removeAll(structureTypes);

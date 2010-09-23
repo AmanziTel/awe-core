@@ -13,7 +13,6 @@
 
 package org.amanzi.awe.views.network.view;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,24 +74,14 @@ public class NewNodeAction extends Action {
     private void postCreating() {
         DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
         INodeType sourceType = ds.getNodeType(sourceNode);
-        Node networkNode = NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId());
-        String[] stTypes = (String[])networkNode.getProperty(INeoConstants.PROPERTY_STRUCTURE_NAME, new String[0]);
-        List<INodeType> structureTypes = new ArrayList<INodeType>(stTypes.length);
 
-        for (int i = 0; i < stTypes.length; i++) {
-            NodeTypes nodeType = NodeTypes.getEnumById(stTypes[i]);
-            if (nodeType != null) {
-                structureTypes.add(nodeType);
-            } else {
-                structureTypes.add(ds.getNodeType(stTypes[i]));
-            }
-        }
+        List<INodeType> structureTypes = ds.getSructureTypes(sourceNode);
 
         List<INodeType> userDefTypes = ds.getUserDefinedNodeTypes();
         userDefTypes.removeAll(structureTypes);
 
         if (userDefTypes.contains(iNodeType)) {
-            String[] newStructureTypes = new String[stTypes.length + 1];
+            String[] newStructureTypes = new String[structureTypes.size() + 1];
             int i = 0;
             for (INodeType type : structureTypes) {
                 newStructureTypes[i++] = type.getId();
@@ -100,13 +89,7 @@ public class NewNodeAction extends Action {
                     newStructureTypes[i++] = iNodeType.getId();
                 }
             }
-            Transaction tx = service.beginTx();
-            try {
-                networkNode.setProperty(INeoConstants.PROPERTY_STRUCTURE_NAME, newStructureTypes);
-                tx.success();
-            } finally {
-                tx.finish();
-            }
+            ds.setStructure(NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId()), newStructureTypes);
         }
     }
 
