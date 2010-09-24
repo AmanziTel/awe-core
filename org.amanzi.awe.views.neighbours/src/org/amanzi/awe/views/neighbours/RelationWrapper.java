@@ -39,7 +39,7 @@ public class RelationWrapper {
      */
     public RelationWrapper(Relationship relation) {
         this.relation = relation;
-        name = NeoUtils.getNeighbourName(relation, null);
+        name = NeoUtils.getNeighbourName(relation, "").equals("") ? NeoUtils.getNeighbourName(getServeNode()) : NeoUtils.getNeighbourName(relation, null);
         id = relation.getId();
     }
 

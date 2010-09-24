@@ -104,6 +104,8 @@ public class NeoUtils {
 
     /** The Constant LOGGER. */
     private static final Logger LOGGER = Logger.getLogger(NeoUtils.class);
+    
+    private static final String PROXY_NAME_SEPARATOR = "/";
 
     /**
      * Instantiates a new neo utils.
@@ -645,6 +647,17 @@ public class NeoUtils {
             tx.finish();
         }
     }
+    
+    /**
+     * Gets Neighbour name of the proxy server node.
+     * 
+     * @param serverNode the proxy server node
+     * @return name
+     */
+    public static String getNeighbourName(Node serveNode) {
+    	String sectorName = serveNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+        return sectorName.split(PROXY_NAME_SEPARATOR)[0];
+    }
 
     /**
      * Gets Neighbour name of relation.
@@ -672,7 +685,8 @@ public class NeoUtils {
         }
         ArrayList<Relationship> result = new ArrayList<Relationship>();
         for (Relationship relation : relationships) {
-            if (neighbourName.equals(getNeighbourName(relation, null))) {
+//            if (neighbourName.equals(getNeighbourName(relation, null))) {
+        	if (neighbourName.equals(getNeighbourName(relation, "").equals("") ? getNeighbourName(relation.getStartNode()) : getNeighbourName(relation, null))){
                 result.add(relation);
             }
         }
@@ -3105,5 +3119,64 @@ public class NeoUtils {
     
         Method metod = klass.getMethod(methodName, String.class);
         return (T)metod.invoke(null, value);
+    }
+    
+    /**
+     * @param sector the sector whose proxy is to be created
+     * @param fileName the name of file
+     * @param neighbour the root neighbour node for this file
+     * @param service the service
+     * @return the proxy sector node
+     */
+    public static Node createProxySector(Node sector, String fileName, Node neighbour, Node lastSector, RelationshipType type, GraphDatabaseService service){
+    	Node proxySector = null;
+        Transaction tx = service.beginTx();
+        try {
+        	proxySector = service.createNode();
+        	String sectorName = sector.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+        	String proxySectorName = fileName + PROXY_NAME_SEPARATOR + sectorName;
+        	proxySector.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS.getId());                    	
+        	proxySector.setProperty(INeoConstants.PROPERTY_NAME_NAME, proxySectorName);
+
+        	if (lastSector == null || lastSector.equals(neighbour))
+        		neighbour.createRelationshipTo(proxySector, NetworkRelationshipTypes.CHILD);
+        	else 
+        		lastSector.createRelationshipTo(proxySector, NetworkRelationshipTypes.NEXT);
+
+        	sector.createRelationshipTo(proxySector, type);           	
+        	tx.success();
+        } catch (Exception e) {
+            NeoCorePlugin.error(e.getLocalizedMessage(), e);
+        } finally {
+            tx.finish();
+        }
+
+    	return proxySector;
+    }
+    
+    
+
+    /**
+     * @param proxyNode the proxy node
+     * @param type Relationship type between proxy node and parent
+     * @param service the service
+     * @return the parent node
+     */
+    public static Node getNodeFromProxy(Node proxyNode, RelationshipType type, GraphDatabaseService service){
+    	Transaction tx = service.beginTx();
+        try {
+        	return proxyNode.getSingleRelationship(type, Direction.INCOMING).getStartNode();
+        } finally {
+            tx.finish();
+        }
+    }
+    
+    public static Node getProxySector(Node sector, String fileName){
+    	String proxySectorName = fileName + PROXY_NAME_SEPARATOR + sector.getProperty(INeoConstants.PROPERTY_NAME_NAME);
+    	for (Node node: sector.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.NEIGHBOURS, Direction.OUTGOING)){
+        		if (node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString().equals(proxySectorName))
+        			return node;
+        }
+    	return null;
     }
 }

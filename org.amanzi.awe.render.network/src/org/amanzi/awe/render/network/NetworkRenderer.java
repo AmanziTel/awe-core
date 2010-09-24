@@ -567,7 +567,7 @@ public class NetworkRenderer extends RendererImpl {
                 properties = geoNeo.getProperties(GeoNeo.NEIGH_MAIN_NODE);
                 Object type=geoNeo.getProperties(GeoNeo.NEIGH_TYPE);
                 if (properties != null) {
-                    drawNeighbour(g, neiName, (Node)properties, lineColor, nodesMap,type);
+                    drawNeighbour(g, neiName, (Node)properties, lineColor, nodesMap,type, neo);
                 }
             }
             LOGGER.debug("Network renderer took " + ((System.currentTimeMillis() - startTime) / 1000.0) + "s to draw " + count + " sites from "+neoGeoResource.getIdentifier());
@@ -690,13 +690,15 @@ public class NetworkRenderer extends RendererImpl {
      * @param nodesMap map of nodes
      * @param type 
      */
-    private void drawNeighbour(Graphics2D g, String neiName, Node node, Color lineColor, Map<Node, Point> nodesMap, Object type) {
+    private void drawNeighbour(Graphics2D g, String neiName, Node node, Color lineColor, Map<Node, Point> nodesMap, Object type, GraphDatabaseService neo) {
         g.setColor(lineColor);
         Point point1 = nodesMap.get(node);
+        Node proxyServeNode = NeoUtils.getProxySector(node, neiName);
         NetworkSiteType siteType=(NetworkSiteType)type;
         if (point1 != null) {
-            for (Relationship relation : NeoUtils.getNeighbourRelations(node, neiName)) {
-                final Node neighNode = relation.getOtherNode(node);
+            for (Relationship relation : NeoUtils.getNeighbourRelations(proxyServeNode, neiName)) {
+                Node proxyNeighNode = relation.getOtherNode(proxyServeNode);
+            	final Node neighNode = NeoUtils.getNodeFromProxy(proxyNeighNode, NetworkRelationshipTypes.NEIGHBOURS, neo);
                 if (siteType!=null){
                     if (!siteType.checkNode(NeoUtils.getParent(null, neighNode),null)){
                         continue;

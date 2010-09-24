@@ -21,6 +21,7 @@ import java.util.Set;
 import javax.xml.transform.TransformerConfigurationException;
 
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.data_generator.DataGenerateManager;
 import org.amanzi.neo.data_generator.utils.CompareResult;
 import org.amanzi.neo.data_generator.utils.NeoDataUtils;
@@ -97,7 +98,8 @@ public class EriccsonTopologyTest extends AbstractLoaderTest {
         idProperties.add("type");
         result.setIdProperties(idProperties);
         NeoDataUtils.compareNet(result, loader.getNetworkNode(), etalonNetwork, getNeo(), GeoNeoRelationshipTypes.NEXT,
-                Direction.OUTGOING, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING);
+                Direction.OUTGOING, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING, 
+                NetworkRelationshipTypes.NEIGHBOURS, Direction.OUTGOING);
         if (!result.isEquals()) {
             Assert.assertTrue(result.getMissedNodes().isEmpty());
             Assert.assertTrue(result.getMoredNodes().isEmpty());

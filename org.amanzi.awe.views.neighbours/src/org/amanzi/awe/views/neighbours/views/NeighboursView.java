@@ -215,7 +215,7 @@ public class NeighboursView extends ViewPart implements INeoServiceProviderListe
             while (iterator.hasNext() && ++count < MAX_FIELD) {
                 Relationship relation = iterator.next();
                 results.add(new RelationWrapper(relation));
-            }
+			}
             return results.toArray(emptyArray);
 		}
 
@@ -266,7 +266,7 @@ public class NeighboursView extends ViewPart implements INeoServiceProviderListe
                     Node mainNode = nodeIterator.next();
                     for (Relationship relation : mainNode.getRelationships(NetworkRelationshipTypes.NEIGHBOUR,
                             Direction.OUTGOING)) {
-                        if (NeoUtils.getNeighbourName(relation, "").equals(name)) {
+                    	if (mainNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString().startsWith(name, 0)){
                             result.add(relation);
                         }
                     }
@@ -293,7 +293,8 @@ public class NeighboursView extends ViewPart implements INeoServiceProviderListe
                                             return currentPos.currentNode().hasRelationship(NetworkRelationshipTypes.NEIGHBOUR,
                                                     Direction.OUTGOING);
                         }
-                    }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
+                    }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING, 
+                    	NetworkRelationshipTypes.NEIGHBOURS, Direction.OUTGOING)
                             .iterator();
                 }
             }
@@ -343,14 +344,14 @@ public class NeighboursView extends ViewPart implements INeoServiceProviderListe
             // try {
             RelationWrapper relation = (RelationWrapper)obj;
             if (index == 0) {
-                return NeoUtils.getSimpleNodeName(relation.getServeNode(), "");
+                return NeoUtils.getSimpleNodeName(NeoUtils.getNodeFromProxy(relation.getServeNode(), NetworkRelationshipTypes.NEIGHBOURS, graphDatabaseService), "");
             } else if (index == 1) {
-                NetworkSiteType networkSiteType = NetworkSiteType.getNetworkSiteType(NeoUtils.getParent(graphDatabaseService, relation.getServeNode()), graphDatabaseService);
+                NetworkSiteType networkSiteType = NetworkSiteType.getNetworkSiteType(NeoUtils.getParent(graphDatabaseService, NeoUtils.getNodeFromProxy(relation.getServeNode(), NetworkRelationshipTypes.NEIGHBOURS, graphDatabaseService)), graphDatabaseService);
                 return networkSiteType==null?"":networkSiteType.getId();
             } else if (index == 2) {
-                return NeoUtils.getSimpleNodeName(relation.getNeighbourNode(), "");
+            	return NeoUtils.getSimpleNodeName(NeoUtils.getNodeFromProxy(relation.getNeighbourNode(), NetworkRelationshipTypes.NEIGHBOURS, graphDatabaseService), "");
             } else if (index == 3) {
-                NetworkSiteType networkSiteType = NetworkSiteType.getNetworkSiteType(NeoUtils.getParent(graphDatabaseService, relation.getNeighbourNode()), graphDatabaseService);
+                NetworkSiteType networkSiteType = NetworkSiteType.getNetworkSiteType(NeoUtils.getParent(graphDatabaseService, NeoUtils.getNodeFromProxy(relation.getNeighbourNode(), NetworkRelationshipTypes.NEIGHBOURS, graphDatabaseService)), graphDatabaseService);
                 return networkSiteType==null?"":networkSiteType.getId();
             }else {
                 return relation.getRelation().getProperty(columns.get(index), "").toString();
@@ -516,7 +517,7 @@ public class NeighboursView extends ViewPart implements INeoServiceProviderListe
         if (neighbour.getSelectionIndex() < 0 || gis == null) {
             return;
         } else {
-            IPropertyHeader header = PropertyHeader.getPropertyStatistic(gis);
+        	IPropertyHeader header = PropertyHeader.getPropertyStatistic(gis);
             String neighbourName = neighbour.getText();
             String[] arrayInt = header.getNeighbourIntegerFields(neighbourName);
             if (arrayInt != null) {
@@ -722,12 +723,15 @@ public class NeighboursView extends ViewPart implements INeoServiceProviderListe
      */
     protected void showServe(RelationWrapper relationWrapper) {
         setServeSelection(relationWrapper);
+        Node serveNode = NeoUtils.getNodeFromProxy(relationWrapper.getServeNode(), NetworkRelationshipTypes.NEIGHBOURS, graphDatabaseService);
         HashMap<String, Object> properties = new HashMap<String, Object>();
-        properties.put(GeoNeo.NEIGH_MAIN_NODE, relationWrapper.getServeNode());
+        properties.put(GeoNeo.NEIGH_MAIN_NODE, serveNode);
+//        properties.put(GeoNeo.NEIGH_MAIN_NODE, relationWrapper.getServeNode());
         properties.put(GeoNeo.NEIGH_NAME, relationWrapper.toString());
         properties.put(GeoNeo.NEIGH_RELATION, null);
         properties.put(GeoNeo.NEIGH_TYPE, null);
-        UpdatePropertiesAndMapEvent event = getLayerEvent(properties, relationWrapper.getServeNode(), relationWrapper.getServeNode());
+        UpdatePropertiesAndMapEvent event = getLayerEvent(properties, serveNode, serveNode);
+//        UpdatePropertiesAndMapEvent event = getLayerEvent(properties, relationWrapper.getServeNode(), relationWrapper.getServeNode());
         NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(event);
     }
 
@@ -951,7 +955,8 @@ public class NeighboursView extends ViewPart implements INeoServiceProviderListe
     protected void showServe(RelationWrapper relationWrapper, NetworkSiteType siteType) {
         setServeSelection(relationWrapper);
         HashMap<String, Object> properties = new HashMap<String, Object>();
-        properties.put(GeoNeo.NEIGH_MAIN_NODE, relationWrapper.getServeNode());
+        properties.put(GeoNeo.NEIGH_MAIN_NODE, NeoUtils.getNodeFromProxy(relationWrapper.getServeNode(), NetworkRelationshipTypes.NEIGHBOURS, graphDatabaseService));
+//        properties.put(GeoNeo.NEIGH_MAIN_NODE, relationWrapper.getServeNode());
         properties.put(GeoNeo.NEIGH_NAME, relationWrapper.toString());
         properties.put(GeoNeo.NEIGH_RELATION, null);
         properties.put(GeoNeo.NEIGH_TYPE, siteType);

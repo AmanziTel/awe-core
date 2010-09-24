@@ -55,7 +55,11 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.index.lucene.LuceneIndexService;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -165,6 +169,11 @@ public class UTRANLoader extends AbstractLoader {
     public Node rncExtGsmSite;
     private int perc;
     private String scrCodeIndName;
+    private String proxySectorName;
+    private Node lastSector;
+    private String proxyNeighbourName;
+    private Node lastUtranSector;
+    private Node lastGsmSector;
 
     /**
      * Constructor.
@@ -362,12 +371,70 @@ public class UTRANLoader extends AbstractLoader {
      * @return the relationship
      */
     private Relationship addNeighbourLink(Node server, Node neighbour, String neighbourName) {
+    	Node proxyServer = null;
+        Node proxyNeighbour = null;
+        Node lastSector = lastUtranSector;
+        Node neighborNode = utranNeighbourNode;
+        
+        if (neighbourName.equals(GSM_NEIGHBOUR_NAME)){
+        	lastSector = lastGsmSector;
+        	neighborNode = gsmNeighbourNode;
+        }
+        
+        proxySectorName = neighbourName + "/" + server.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+        proxyNeighbourName = neighbourName + "/" + neighbour.getProperty(INeoConstants.PROPERTY_NAME_NAME);
+        
         Transaction tx = neo.beginTx();
         try {
-            Relationship relation = NeoUtils.getNeighbourRelation(server, neighbour, neighbourName, neo);
+	        for (Node node: server.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+	        	@Override
+	            public boolean isReturnableNode(TraversalPosition currentPos) {
+	                Node node = currentPos.currentNode();
+	                return node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString().equals(proxySectorName);
+	            }
+	        }, NetworkRelationshipTypes.NEIGHBOURS, Direction.OUTGOING)){
+	        		proxyServer = node;
+	        		break;
+	        }
+	        if (proxyServer == null) {
+	        	proxyServer = NeoUtils.createProxySector(server, neighbourName, neighborNode, lastSector, NetworkRelationshipTypes.NEIGHBOURS, neo);
+	        	index.index(proxyServer, NeoUtils.getLuceneIndexKeyByProperty(neighborNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS), proxySectorName);
+
+        		lastSector = proxyServer;
+	        	if (neighbourName.equals(UTRAN_NEIGHBOUR_NAME)){
+	        		lastUtranSector = proxyServer;
+	        	}
+	        	else {
+	        		lastGsmSector = proxyServer;
+	        	}
+	        }
+	        
+	        
+	        for (Node node: neighbour.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
+	    		@Override
+	            public boolean isReturnableNode(TraversalPosition currentPos) {
+	                Node node = currentPos.currentNode();
+	                return node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString().equals(proxyNeighbourName);
+	            }
+	    	}, NetworkRelationshipTypes.NEIGHBOURS, Direction.OUTGOING)){
+	        		proxyNeighbour = node;
+	        		break;
+	        }
+	        if (proxyNeighbour == null) {
+	        	proxyNeighbour = NeoUtils.createProxySector(neighbour, neighbourName, neighborNode, lastSector, NetworkRelationshipTypes.NEIGHBOURS, neo);
+	        	index.index(proxyNeighbour, NeoUtils.getLuceneIndexKeyByProperty(neighborNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS), proxyNeighbourName);
+
+	        	if (neighbourName.equals(UTRAN_NEIGHBOUR_NAME)){
+	        		lastUtranSector = proxyNeighbour;
+	        	}
+	        	else {
+	        		lastGsmSector = proxyNeighbour;
+	        	}
+	        }       
+        
+            Relationship relation = NeoUtils.getNeighbourRelation(proxyServer, proxyNeighbour, neighbourName, neo);
             if (relation == null) {
-                relation = server.createRelationshipTo(neighbour, NetworkRelationshipTypes.NEIGHBOUR);
-                relation.setProperty(INeoConstants.NEIGHBOUR_NAME, neighbourName);
+                relation = proxyServer.createRelationshipTo(proxyNeighbour, NetworkRelationshipTypes.NEIGHBOUR);
                 String servCounName = NeoUtils.getNeighbourPropertyName(neighbourName);
                 updateCount(server, servCounName);
                 tx.success();

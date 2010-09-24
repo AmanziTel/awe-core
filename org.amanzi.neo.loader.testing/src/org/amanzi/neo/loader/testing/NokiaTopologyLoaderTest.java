@@ -63,6 +63,7 @@ public class NokiaTopologyLoaderTest extends AbstractLoaderTest{
     
     private static final String NETWORK_NAME = "nokia_network";
     private static final String DATA_SAVER_DIR = "nokia_data";
+    private static final String PROXY_NAME_SEPARATOR = "/";
     
     private String dataDirectory;
     private NokiaTopologyData genData;
@@ -307,8 +308,16 @@ public class NokiaTopologyLoaderTest extends AbstractLoaderTest{
                 etalon = mals.get(Integer.parseInt(sectorData.getProperties().get("underlayMaIdUsed")));
                 real = (Integer)sector.getProperty("underlayMaIdUsed", null);
                 assertEquals("Wrong underlayMaIdUsed in Sector <"+name+"> ("+assertKey+").",etalon, real);
+                
+                Node proxySector = sector.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOURS, Direction.OUTGOING).getEndNode();
+                
+                for (SectorData sd : sectorData.getNeighbors()){
+                	System.out.println(sd.getProperties());
+                }
                 assertSectors("neighbor for Sector <"+name+">, "+assertKey, 
-                        getListOfNodes(sector, NodeTypes.SECTOR, true), sectorData.getNeighbors(), true,null,null);
+                        getListOfNodes(proxySector, NodeTypes.SECTOR_SECTOR_RELATIONS, true), sectorData.getNeighbors(), true,null,null);
+//                assertSectors("neighbor for Sector <"+name+">, "+assertKey, 
+//                        getListOfNodes(sector, NodeTypes.SECTOR, true), sectorData.getNeighbors(), true,null,null);
             }
         }
     }
@@ -357,6 +366,9 @@ public class NokiaTopologyLoaderTest extends AbstractLoaderTest{
             }
             if(currName.startsWith(name)&& currName.contains("external")){
                 return node;
+            }
+            if (currName.equals(NETWORK_NAME + PROXY_NAME_SEPARATOR + name)){
+            	return node;
             }
         }
         return null;
