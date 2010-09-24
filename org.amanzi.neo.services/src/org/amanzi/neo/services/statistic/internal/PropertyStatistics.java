@@ -1,11 +1,14 @@
 package org.amanzi.neo.services.statistic.internal;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.db.manager.INeoDbService;
 import org.amanzi.neo.services.statistic.ChangeClassRule;
+import org.amanzi.neo.services.statistic.ISinglePropertyStat;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
@@ -18,7 +21,7 @@ import org.neo4j.kernel.Traversal;
 /**
  * The Class PropertyStatistics.
  */
-public class PropertyStatistics {
+public class PropertyStatistics implements ISinglePropertyStat{
 
     /** The Constant PROPERTYS. */
     private static final TraversalDescription PROPERTYS = Traversal.description().depthFirst().relationships(StatisticRelationshipTypes.PROPERTY, Direction.OUTGOING)
@@ -28,7 +31,8 @@ public class PropertyStatistics {
     private final String propertyName;
 
     /** The klass. */
-    private Class< ? > klass = null;
+    @SuppressWarnings("rawtypes")
+    private Class klass = null;
 
 
 
@@ -227,7 +231,7 @@ public class PropertyStatistics {
     private void addValueToStatistic(Object value, int countVal) {
         isChanged = true;
         count+=countVal;
-        if (isComparable) {
+        if (isComparable&&countVal>0) {
             if (minValue == null) {
                 minValue = value;
             } else if (((Comparable)minValue).compareTo((Comparable)value) > 0) {
@@ -360,5 +364,61 @@ public class PropertyStatistics {
     }
     public Class< ? > getKlass() {
         return klass;
+    }
+
+    @Override
+    public long getCount() {
+        return count;
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    public Class getType() {
+        return klass;
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    public Comparable getMin() {
+        return (Comparable)minValue;
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    public Comparable getMax() {
+        return (Comparable)maxValue;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Object parseValue(String value) {
+        if (klass==null){
+            return autoParse(value);
+        }
+        if (klass==String.class){
+            return value;
+        }
+        try {
+            return NeoUtils.getNumberValue(klass,  value);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } 
+        return autoParse(value);
+    }
+    
+    public static Object autoParse(String value) {
+        try{
+        if (value.contains(".")){
+            return Float.parseFloat(value);
+        }else{
+            return Integer.parseInt(value);
+        }
+        }catch (Exception e) {
+            return value;
+        }
+    }
+    @Override
+    public Map<Object, Long> getValueMap() {
+        return Collections.unmodifiableMap(values);
     }
 }

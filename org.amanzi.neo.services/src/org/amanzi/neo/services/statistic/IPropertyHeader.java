@@ -17,138 +17,140 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.amanzi.neo.core.enums.NodeTypes;
-import org.neo4j.graphdb.Node;
 
+// TODO: Auto-generated Javadoc
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
+ * 
+ * </p>.
  *
- * </p>
  * @author tsinkel_a
  * @since 1.0.0
  */
 public interface IPropertyHeader {
 
+    /**
+     * Gets the neighbour numeric fields.
+     *
+     * @param neighbourName the neighbour name
+     * @return the neighbour numeric fields
+     */
     String[] getNeighbourNumericFields(String neighbourName);
 
+
     /**
+     * Gets the neighbour all fields.
      *
-     * @param neighbourName
-     * @return
+     * @param neighbourName the neighbour name
+     * @return the neighbour all fields
      */
     String[] getNeighbourAllFields(String neighbourName);
 
     /**
+     * Gets the transmission all fields.
      *
-     * @param neighbourName
-     * @return
+     * @param neighbourName the neighbour name
+     * @return the transmission all fields
      */
     String[] getTransmissionAllFields(String neighbourName);
 
-    /**
-     *
-     * @return
-     */
-    String[] getStringFields();
+
+
 
     /**
+     * Gets the numeric fields.
      *
-     * @return
+     * @param nodeTypeId the node type id
+     * @return the numeric fields
      */
-    String[] getNumericFields();
+    String[] getNumericFields(String nodeTypeId);
+
 
     /**
+     * Gets the all fields.
      *
-     * @return
+     * @param nodeTypeId the node type id
+     * @return the all fields
      */
-    String[] getAllFields();
+    String[] getAllFields(String nodeTypeId);
+
+
 
     /**
+     * Gets the all channels.
      *
-     * @return
-     */
-    String[] getIdentityFields();
-
-    /**
-     *
-     * @return
+     * @return the all channels
      */
     String[] getAllChannels();
 
     /**
+     * Gets the neighbour list.
      *
-     * @return
+     * @return the neighbour list
      */
     Collection<String> getNeighbourList();
 
     /**
+     * Gets the neighbour integer fields.
      *
-     * @param neighbourName
-     * @return
+     * @param neighbourName the neighbour name
+     * @return the neighbour integer fields
      */
     String[] getNeighbourIntegerFields(String neighbourName);
 
     /**
+     * Gets the transmission integer fields.
      *
-     * @param neighbourName
-     * @return
+     * @param neighbourName the neighbour name
+     * @return the transmission integer fields
      */
     String[] getTransmissionIntegerFields(String neighbourName);
 
     /**
+     * Gets the neighbour double fields.
      *
-     * @param neighbourName
-     * @return
+     * @param neighbourName the neighbour name
+     * @return the neighbour double fields
      */
     String[] getNeighbourDoubleFields(String neighbourName);
 
     /**
+     * Gets the events.
      *
-     * @return
+     * @return the events
      */
     Collection<String> getEvents();
 
     /**
+     * Gets the transmission double fields.
      *
-     * @param neighbourName
-     * @return
+     * @param neighbourName the neighbour name
+     * @return the transmission double fields
      */
     String[] getTransmissionDoubleFields(String neighbourName);
 
     /**
+     * Gets the property statistic.
+     * @param nodeTypeId TODO
+     * @param propertyName the property name
      *
-     * @param propertyName
-     * @return
+     * @return the property statistic
      */
-    @Deprecated
-    //TODO refactor for remove
-    Node getPropertyNode(String propertyName);
+    ISinglePropertyStat getPropertyStatistic(String nodeTypeId, String propertyName);
 
     /**
+     * Checks if is have property node.
      *
-     * @return
-     */
-    String[] getSectorOrMeasurmentNames();
-
-    /**
-     *
-     * @param propertyName
-     * @return
-     */
-    @Deprecated
-    //TODO refactor for remove
-    PropertyHeader.PropertyStatistics getPropertyStatistic(String propertyName);
-
-    /**
-     *
-     * @return
+     * @return true, if is have property node
      */
     boolean isHavePropertyNode();
 
     /**
+     * Gets the statistic params.
      *
-     * @param type
-     * @return
+     * @param type the type
+     * @return the statistic params
      */
     Map<String, Object> getStatisticParams(NodeTypes type);
 

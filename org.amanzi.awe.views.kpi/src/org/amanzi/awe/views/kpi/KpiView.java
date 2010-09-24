@@ -878,7 +878,7 @@ public class KpiView extends ViewPart {
             if (netNode != null) {
                 result.add("sites");
                 result.add("sectors");
-                String[] fields = PropertyHeader.getPropertyStatistic(netNode).getNumericFields();
+                String[] fields = PropertyHeader.getPropertyStatistic(netNode).getNumericFields(NodeTypes.SECTOR.getId());
                 for (String string : fields) {
                     result.add("sectors." + string);
                 }
@@ -886,7 +886,7 @@ public class KpiView extends ViewPart {
             Node drivNode = drives.get(driveNode.getText());
             if (drivNode != null) {
                 //TODO Pechko_E add properties correctly 
-                String[] fields = PropertyHeader.getPropertyStatistic(drivNode).getNumericFields();
+                String[] fields = PropertyHeader.getPropertyStatistic(drivNode).getNumericFields(NodeTypes.M.getId());
                 if (fields.length!=0)
                 result.add("properties");
                 for (String string : fields) {
@@ -913,7 +913,7 @@ public class KpiView extends ViewPart {
             }
             Node dirNode = directories.get(directoriesNode.getText());
             if (dirNode != null) {
-                String[] counters = PropertyHeader.getPropertyStatistic(dirNode).getNumericFields();
+                String[] counters = PropertyHeader.getPropertyStatistic(dirNode).getNumericFields("-main-type-");
                 if (counters.length!=0)
                     result.add("counters");
                     for (String counter : counters) {

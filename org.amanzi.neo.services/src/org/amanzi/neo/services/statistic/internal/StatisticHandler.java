@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.services.statistic.internal;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -80,7 +82,6 @@ public class StatisticHandler {
         vaults.clear();
         totalCount=0;
     }
-    
     /**
      * Save statistic.
      *
@@ -252,6 +253,17 @@ public class StatisticHandler {
         }
         return vault.getTotalCount(nodeType);
     }
+
+
+    public Collection<String> getPropertyNameCollection(String key, String nodeTypeId, @SuppressWarnings("rawtypes") Comparable<Class> comparable) {
+        Vault vault=vaults.get(key);
+        if (vault==null){
+            return new ArrayList<String>();
+        }
+        return vault.getPropertyNameCollection(nodeTypeId,comparable);
+    }
+
+
 
 
 

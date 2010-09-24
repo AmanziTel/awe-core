@@ -210,7 +210,7 @@ public class DBUtils {
      * @return
      */
     public static List<String> getProperties(Node node) {
-        List<String> list = Arrays.asList(PropertyHeader.getPropertyStatistic(node).getNumericFields());
+        List<String> list = Arrays.asList(PropertyHeader.getPropertyStatistic(node).getNumericFields("-main-type-"));
         Collections.sort(list);
         return list;
     }

@@ -512,7 +512,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         result.add(NeoStyleContent.DEF_NONE);
         try {
             GeoNeo resource = getLayer().findGeoResource(GeoNeo.class).resolve(GeoNeo.class, null);
-            String[] allFields = PropertyHeader.getPropertyStatistic(resource.getMainGisNode()).getSectorOrMeasurmentNames();
+            String[] allFields = PropertyHeader.getPropertyStatistic(resource.getMainGisNode()).getAllFields("-main-type-");
             if (allFields != null) {
                 result.addAll(Arrays.asList(allFields));
             }

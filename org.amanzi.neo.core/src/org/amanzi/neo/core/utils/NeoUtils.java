@@ -151,16 +151,7 @@ public class NeoUtils {
      * @return node name or empty string
      * @deprecated
      */
-    @Deprecated
     public static String getNodeName(Node node) {
-        // String type = node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").toString();
-        // if (type.equals(INeoConstants.MP_TYPE_NAME)) {
-        // return node.getProperty(INeoConstants.PROPERTY_TIME_NAME, "").toString();
-        //        
-        // } else if (type.equals(INeoConstants.HEADER_M)) {
-        // return node.getProperty(INeoConstants.PROPERTY_CODE_NAME, "").toString();
-        //        
-        // }
         return getSimpleNodeName(node, "");
     }
 
@@ -191,13 +182,7 @@ public class NeoUtils {
      * @return node name or empty string
      */
     public static String getSimpleNodeName(PropertyContainer node, String defValue) {
-        Transaction tx = beginTransaction();
-        try {
-            return node.getProperty(INeoConstants.PROPERTY_NAME_NAME, defValue).toString();
-        } finally {
-            tx.success();
-            tx.finish();
-        }
+            return (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, defValue);
     }
 
     /**
@@ -2609,16 +2594,10 @@ public class NeoUtils {
      * Gets the primary type of dataset node.
      * 
      * @param dataNode the root node
-     * @param service the service
      * @return the primary type or null
      */
-    public static String getPrimaryType(Node dataNode, GraphDatabaseService service) {
-        Transaction tx = beginTx(service);
-        try {
+    public static String getPrimaryType(Node dataNode) {
             return (String)dataNode.getProperty(INeoConstants.PRIMARY_TYPE_ID, null);
-        } finally {
-            finishTx(tx);
-        }
     }
 
     /**
@@ -2808,7 +2787,7 @@ public class NeoUtils {
      * @return the primary elem traverser
      */
     public static Traverser getPrimaryElemTraverser(Node node, GraphDatabaseService service) {
-        final String type = NeoUtils.getPrimaryType(node, service);
+        final String type = NeoUtils.getPrimaryType(node);
         ReturnableEvaluator re = new ReturnableEvaluator() {
 
             @Override

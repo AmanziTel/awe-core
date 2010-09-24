@@ -1575,7 +1575,7 @@ public class FilterView extends ViewPart  implements INeoServiceProviderListener
 
         String[] fields;
         if (data != null) {            
-            fields = PropertyHeader.getPropertyStatistic(data).getAllFields();
+            fields = PropertyHeader.getPropertyStatistic(data).getAllFields("-main-type-");
         } else {
             fields = new String[0];
         }

@@ -737,7 +737,8 @@ public class MessageAndEventTableView extends ViewPart {
                 propRoot = dataset;
             }
             IPropertyHeader header = PropertyHeader.getPropertyStatistic(propRoot);
-            String[] propNames = header.getStringFields();
+            //TODO fix it after refactoting statistics
+            String[] propNames = null;//header.getStringFields();
             if(propNames==null){
                 return;
             }
@@ -745,7 +746,7 @@ public class MessageAndEventTableView extends ViewPart {
                 allProperties.put(property, true);
                 filteredProperties.add(property);
             }
-            propNames = header.getNumericFields();
+            propNames = header.getNumericFields("-main-type-");
             if(propNames==null){
                 return;
             }

@@ -34,8 +34,8 @@ import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
+import org.amanzi.neo.services.statistic.ISinglePropertyStat;
 import org.amanzi.neo.services.statistic.PropertyHeader;
-import org.amanzi.neo.services.statistic.PropertyHeader.PropertyStatistics;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.neo4j.graphdb.Direction;
@@ -236,12 +236,12 @@ public class ReuseAnalyserModel {
             Map<Node, Number> mpMap = new HashMap<Node, Number>();
             // List<Number> aggregatedValues = new ArrayList<Number>();
             final GisTypes typeOfGis;
-            PropertyStatistics stat = PropertyHeader.getPropertyStatistic(rootNode).getPropertyStatistic(propertyName);
+             ISinglePropertyStat stat = PropertyHeader.getPropertyStatistic(rootNode).getPropertyStatistic("-main-type-", propertyName);
             Integer totalWork=null;
             int relCount = 0;
             
             if (stat!=null){
-                totalWork=stat.getCount();
+                totalWork=(int)stat.getCount();
             }
             if (totalWork==null){
              LOGGER.warn(String.format("For property '%s' not found counts. Take default value=1000",propertyName));
@@ -274,12 +274,11 @@ public class ReuseAnalyserModel {
             propertyValue = null;
             if (select == Select.EXISTS) {
                 IPropertyHeader header = PropertyHeader.getPropertyStatistic(rootNode);
-                PropertyHeader.PropertyStatistics statistics = header.getPropertyStatistic(propertyName);
+                 ISinglePropertyStat statistics = header.getPropertyStatistic("-main-type-", propertyName);
                 if (statistics != null) {
-                    Pair<Double, Double> pair = statistics.getMinMax();
-                    min = pair.getLeft();
-                    max = pair.getRight();
-                    propertyValue = statistics.getWrappedValue(1,service);
+                    min = ((Number)statistics.getMin()).doubleValue();
+                    max = ((Number)statistics.getMax()).doubleValue();
+                    propertyValue = statistics.parseValue("1");
                 }
             }
             int missingPropertyCount = 0;
@@ -560,10 +559,10 @@ public class ReuseAnalyserModel {
         private boolean createStringChart(Node gisNode, Node aggrNode, String propertyName, Distribute distribute, Select select, IProgressMonitor monitor) {
             Transaction tx = service.beginTx();
             try {
-                PropertyStatistics stat = PropertyHeader.getPropertyStatistic(gisNode).getPropertyStatistic(propertyName);
+                 ISinglePropertyStat stat = PropertyHeader.getPropertyStatistic(gisNode).getPropertyStatistic("-main-type-", propertyName);
                 Integer totalWork=null;
                 if (stat!=null){
-                    totalWork=stat.getCount();
+                    totalWork=(int)stat.getCount();
                 }
                 if (totalWork==null){
                  LOGGER.warn(String.format("For property '%s' not found counts. Take default value=1000",propertyName));
@@ -572,20 +571,21 @@ public class ReuseAnalyserModel {
                 monitor.beginTask("Calculating statistics for " + propertyName, totalWork);
 
                 GisTypes gisTypes = NeoUtils.getGisType(gisNode, null);
-                Node propertyNode = PropertyHeader.getPropertyStatistic(gisNode).getPropertyNode(propertyName);
+                ISinglePropertyStat propertyNode = PropertyHeader.getPropertyStatistic(gisNode).getPropertyStatistic("-main-type-",propertyName);
                 if (propertyNode == null) {
                     return false;
                 }
                 ArrayList<Column> columns = new ArrayList<Column>();
                 // fill the column
                 TreeSet<String> propertyValue = new TreeSet<String>();
-                for (String property : propertyNode.getPropertyKeys()) {
-                    propertyValue.add(property);
+                Map<Object, Long> valueMap = propertyNode.getValueMap();
+                for (Object property : valueMap.keySet()) {
+                    propertyValue.add(String.valueOf(property));
                 }
                 Node parent = aggrNode;
-                for (String property : propertyValue) {
-                    Column column = new Column(aggrNode, parent, 0, 0.0, distribute, property,service);
-                    column.setValue(((Number)propertyNode.getProperty(property)).intValue());
+                for (Object property : propertyValue) {
+                    Column column = new Column(aggrNode, parent, 0, 0.0, distribute, String.valueOf(property),service);
+                    column.setValue(((Number)valueMap.get(property)).intValue());
                     parent = column.getNode();
                     columns.add(column);
                 }

@@ -186,7 +186,7 @@ public class CorrelationList extends ViewPart implements INeoServiceProviderList
         final String datasetName = curDriveNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString();
 
         Node curNetworkNode = gisNetworkNodes.get(cNetwork.getText());
-        String[] columns = PropertyHeader.getPropertyStatistic(curDriveNode).getAllFields();
+        String[] columns = PropertyHeader.getPropertyStatistic(curDriveNode).getAllFields("-main-type-");
 
         Transaction tx = graphDatabaseService.beginTx();
         try {

@@ -13,16 +13,19 @@
 
 package org.amanzi.neo.services.statistic.internal;
 
+import java.util.Collection;
+
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.services.statistic.ChangeClassRule;
+import org.amanzi.neo.services.statistic.ISinglePropertyStat;
 import org.amanzi.neo.services.statistic.IStatistic;
 import org.hsqldb.lib.StringUtil;
 import org.neo4j.graphdb.Node;
 
 /**
- * TODO implement
  * <p>
+ * Dataset Statistic
  * </p>
  * 
  * @author tsinkel_a
@@ -74,52 +77,12 @@ public class DatasetStatistic implements IStatistic {
         }
         PropertyStatistics prop=handler.findProperty(rootname,nodeType,key);
         if (prop==null){
-            return autoParse(value);
+            return PropertyStatistics.autoParse(value);
         }
-        return parseV(prop.getKlass(),value);
+        return prop.parseValue(value);
     }
 
 
-    /**
-     * Parses the v.
-     *
-     * @param klass the klass
-     * @param value the value
-     * @return the object
-     */
-    private Object parseV(Class klass, String value) {
-        if (klass==null){
-            return autoParse(value);
-        }
-        if (klass==String.class){
-            return value;
-        }
-        try {
-            return NeoUtils.getNumberValue(klass,  value);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } 
-        return autoParse(value);
-    }
-
-
-    /**
-     * Auto parse.
-     *
-     * @param value the value
-     * @return the object
-     */
-    private Object autoParse(String value) {
-        try{
-        if (value.contains(".")){
-            return Float.parseFloat(value);
-        }else{
-            return Integer.parseInt(value);
-        }
-        }catch (Exception e) {
-            return value;
-        }
-    }
 
     @Override
     public void increaseTypeCount(String rootKey, String nodeType, long count) {
@@ -151,6 +114,17 @@ public class DatasetStatistic implements IStatistic {
             handler.indexValue(rootKey, nodeType, name, value,0);
         }
         
+    }
+
+    @Override
+    public Collection<String> getPropertyNameCollection(String key, String nodeTypeId, Comparable<Class> comparable) {
+        return handler.getPropertyNameCollection(key,nodeTypeId,comparable);
+    }
+
+    @Override
+    public ISinglePropertyStat findPropertyStatistic(String key, String nodeTypeId, String propertyName) {
+        PropertyStatistics stat=handler.findProperty(key,nodeTypeId,propertyName);
+        return stat;
     }
 
 }

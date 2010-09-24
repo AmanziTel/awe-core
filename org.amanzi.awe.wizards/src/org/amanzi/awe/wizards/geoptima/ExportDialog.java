@@ -755,7 +755,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
                 tx = service.beginTx();
                 try {
                     ArrayList<TreeElem> networkElements = new ArrayList<TreeElem>();
-                    String[] allProperties = PropertyHeader.getPropertyStatistic(node).getAllFields();
+                    String[] allProperties = PropertyHeader.getPropertyStatistic(node).getAllFields("-main-type-");
                     if (allProperties != null) {
                         for (String string : allProperties) {
                             networkElements.add(new TreeElem(ElemType.PROPERTY, string, node, this, service));

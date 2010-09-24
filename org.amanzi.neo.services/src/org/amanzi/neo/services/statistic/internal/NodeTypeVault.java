@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.services.statistic.internal;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -248,6 +250,23 @@ public class NodeTypeVault {
      */
     public long getTotalCount() {
         return totalCount;
+    }
+
+
+    /**
+     * Gets the property name collection.
+     *
+     * @param comparable the comparable
+     * @return the property name collection
+     */
+    public Collection<String> getPropertyNameCollection(Comparable<Class> comparable) {
+        Collection<String> result=new ArrayList<String>();
+        for (Map.Entry<String, PropertyStatistics> entry:propertyMap.entrySet()){
+            if (comparable.compareTo(entry.getValue().getKlass())==0){
+                result.add(entry.getKey());
+            }
+        }
+        return result;
     }
 
 }

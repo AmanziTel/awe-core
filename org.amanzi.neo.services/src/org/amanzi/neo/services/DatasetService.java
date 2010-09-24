@@ -39,6 +39,7 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.traversal.PruneEvaluator;
 import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.graphdb.traversal.Traverser;
 import org.neo4j.graphdb.traversal.Uniqueness;
 import org.neo4j.helpers.Predicate;
 import org.neo4j.kernel.Traversal;
@@ -891,6 +892,47 @@ public class DatasetService extends AbstractService {
             }
         }
         return result;
+    }
+
+
+    /**
+     * Find root by child.
+     *
+     * @param node the node
+     * @return the node
+     */
+    public Node findRootByChild(Node node) {
+        Traverser traverser=findProjectByChild(node);
+        Iterator<Path> rel = traverser.iterator();
+        if (rel.hasNext()){
+            Path next = rel.next();
+            return next.lastRelationship().getEndNode();
+        }else{
+            return null;
+        }
+    }
+
+
+
+    /**
+     * Find project by child.
+     *
+     * @param node the node
+     * @return the traverser
+     */
+    public Traverser findProjectByChild(Node node) {
+        TraversalDescription trd = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst().relationships(GeoNeoRelationshipTypes.NEXT,Direction.INCOMING).relationships(GeoNeoRelationshipTypes.CHILD,Direction.INCOMING).relationships(GeoNeoRelationshipTypes.VIRTUAL_DATASET,Direction.INCOMING).filter(new Predicate<Path>() {
+            
+            @Override
+            public boolean accept(Path item) {
+                return NodeTypes.AWE_PROJECT.checkNode(item.endNode());
+            }
+        });
+        if (NodeTypes.GIS.checkNode(node)){
+            return trd.traverse(node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode());
+        }
+
+        return trd.traverse(node);
     }
 
 }

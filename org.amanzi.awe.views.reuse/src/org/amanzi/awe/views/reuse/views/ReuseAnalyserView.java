@@ -51,9 +51,9 @@ import org.amanzi.neo.core.preferences.NeoCorePreferencesConstants;
 import org.amanzi.neo.core.propertyFilter.PropertyFilterModel;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.apache.log4j.Logger;
@@ -64,9 +64,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
 import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -1375,8 +1375,9 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
         aggregatedProperties.clear();
         propertyList = new ArrayList<String>();
         IPropertyHeader propertyHeader = PropertyHeader.getPropertyStatistic(node);
-        allFields = Arrays.asList(propertyHeader.getAllFields());
-        numericFields = Arrays.asList(propertyHeader.getNumericFields());
+        allFields = Arrays.asList(propertyHeader.getAllFields("-main-type-"));
+        final String nodeTypeId = getNodeTypeId(node);
+        numericFields = Arrays.asList(propertyHeader.getNumericFields(nodeTypeId));
         propertyList.addAll(allFields);
         propertyList.addAll(propertyHeader.getNeighbourList());
         String[] channels = propertyHeader.getAllChannels();
@@ -1385,7 +1386,6 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
             propertyList.add(INeoConstants.PROPERTY_ALL_CHANNELS_NAME);
         }
         setVisibleForChart(false);
-        final String nodeTypeId = getNodeTypeId(node);
         Predicate<org.neo4j.graphdb.Path> propertyReturnableEvalvator = new Predicate<org.neo4j.graphdb.Path>() {
 
 			@Override
@@ -1407,7 +1407,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
      */
     private String getNodeTypeId(Node node) {
         GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
-        return NeoUtils.getPrimaryType(node, service);
+        return NeoUtils.getPrimaryType(node);
     }
 
     /**
