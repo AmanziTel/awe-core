@@ -179,8 +179,8 @@ module KPI
     end
   end
 
-  def mediana(data)
-    arr=Array.new
+  def median(data)
+    arr=[]
     data.each do |element|
       arr<<element #if element.is_a? Fixnum
     end

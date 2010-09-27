@@ -1,4 +1,5 @@
 require 'neo4j'
+require 'aggregation'
 
 #TODO this code was copied from report plugin
 module Neo4j
@@ -121,12 +122,13 @@ def filter(root_node,type_name,options={})
 end
 
 class NodeSet
+  include Aggregatable
   def initialize(traverser)
     @traverser=traverser
   end
 
   def each
-    @traverser.each{|node|yield node}
+    @traverser.each{|node|puts node;yield node}
   end
 
   def count_internal

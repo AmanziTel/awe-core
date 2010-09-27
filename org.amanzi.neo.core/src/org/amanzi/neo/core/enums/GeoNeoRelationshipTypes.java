@@ -27,6 +27,8 @@ public enum GeoNeoRelationshipTypes implements DeletableRelationshipType {
     IDENTITY_PROPERTIES(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_WITH_LINKED),
     CHILD(RelationDeletableTypes.RELINK,RelationDeletableTypes.DELETE_WITH_LINKED),
     VIRTUAL_DATASET(RelationDeletableTypes.DELETE_WITH_LINKED,RelationDeletableTypes.DELETE_ONLY_LINK),
+    ANALYSIS(RelationDeletableTypes.DELETE_WITH_LINKED,RelationDeletableTypes.DELETE_ONLY_LINK),
+    KEY(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_ONLY_LINK),
     LOCATION(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DEETE_WITH_CHECK_LINKED),
     SOURCE(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_ONLY_LINK),//TODO ? 
     CALLS(RelationDeletableTypes.DELETE_ONLY_LINK,RelationDeletableTypes.DELETE_ONLY_LINK), 

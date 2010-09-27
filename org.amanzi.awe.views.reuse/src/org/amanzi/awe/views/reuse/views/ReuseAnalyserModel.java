@@ -191,6 +191,8 @@ public class ReuseAnalyserModel {
                     computeStatistics(gisNode, result, propertyName,isStringProperty, distributeColumn, Select.findSelectByValue(select), monitor);
 
                 } catch (RuntimeException e) {
+                    //TODO delete
+                    e.printStackTrace();
                     NeoCorePlugin.error(e.getLocalizedMessage(), e);
                     result.setProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME, true);
                     result.setProperty(INeoConstants.PROPERTY_CHART_ERROR_DESCRIPTION, e.getLocalizedMessage());

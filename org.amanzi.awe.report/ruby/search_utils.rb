@@ -46,7 +46,6 @@ class SearchQuery
         result[node[key_property]]=node[value_property]
       else
         @properties.each do |prop|
-#          puts "prop: #{prop}"
           result[prop]=(node.property? prop) ? node.get_property(prop): nil
         end
       end

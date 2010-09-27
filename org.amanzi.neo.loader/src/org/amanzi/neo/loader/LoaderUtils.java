@@ -279,7 +279,7 @@ public class LoaderUtils {
     
     }
 
-    private static IService getMapService() throws MalformedURLException {
+    public static IService getMapService() throws MalformedURLException {
         String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
         URL url = new URL("file://" + databaseLocation);
         IService curService = CatalogPlugin.getDefault().getLocalCatalog().getById(IService.class, url, null);
@@ -372,7 +372,7 @@ public class LoaderUtils {
         
     }
     
-    private static IGeoResource getResourceForGis(IService service, IMap map, Node gis) throws IOException{
+    public static IGeoResource getResourceForGis(IService service, IMap map, Node gis) throws IOException{
         if (service != null && NetworkLoader.findLayerByNode(map, gis) == null) {
             for (IGeoResource iGeoResource : service.resources(null)) {
                 if (iGeoResource.canResolve(Node.class)) {

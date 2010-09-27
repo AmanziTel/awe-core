@@ -85,7 +85,7 @@ public class PDFPrintingEngine {
             fileName += File.separator + "report" + System.currentTimeMillis() + ".pdf";
             report.setFile(fileName);
         } else {
-            if (reportFileName.matches("[\\w|\\d|_]*.pdf")){
+            if (reportFileName.matches("[\\w|\\d|_|\\.]*.pdf")){
                 //the report file name doesn't contain the directory name
                 //save it to default directory ('user.home'/Amanzi reports)
                 fileName += File.separator + reportFileName;

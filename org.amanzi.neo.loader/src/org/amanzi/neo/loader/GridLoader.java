@@ -211,7 +211,9 @@ public class GridLoader extends DriveLoader {
             setIndexPropertyNotParcedValue(getHeaderMap(1).headers, lastMNode, entry.getKey(), entry.getValue());
         }
         if (data.getWorkDate()!=null){
-            lastMNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME,data.getWorkDate().getTimeInMillis());
+            long timeInMillis = data.getWorkDate().getTimeInMillis();
+            updateTimestampMinMax(1, timeInMillis);
+            lastMNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME,timeInMillis);
             index(lastMNode);
         }
     }

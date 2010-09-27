@@ -153,5 +153,11 @@ public interface IPropertyHeader {
      * @return the statistic params
      */
     Map<String, Object> getStatisticParams(NodeTypes type);
-
+    
+    /**
+     * Gets identity field
+     *
+     * @return the identity fields
+     */
+    String[] getIdentityFields();
 }

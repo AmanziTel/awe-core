@@ -21,12 +21,14 @@ import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.IProjectElement;
+import net.refractions.udig.project.internal.Layer;
 import net.refractions.udig.project.internal.ProjectPlugin;
 import net.refractions.udig.project.internal.impl.MapImpl;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.swt.widgets.Display;
 import org.geotools.data.FeatureSource;
 import org.geotools.feature.Feature;
 import org.geotools.feature.FeatureCollection;
@@ -145,5 +147,14 @@ public class GIS {
             }
         }
         return features;
+    }
+    public static void setLayerVisibility(final Layer layer, final boolean visible) {
+        Display.getDefault().syncExec(new Runnable() {
+
+            @Override
+            public void run() {
+                layer.setVisible(visible);
+            }
+        });
     }
 }

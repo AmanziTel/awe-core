@@ -90,10 +90,12 @@ public class NetworkLoader extends AbstractLoader {
     private boolean needParceHeader;
     private LuceneIndexService luceneInd;
     private NetworkSiteType sitesType;
-    private enum NetworkLevels{
-        NETWORK, CITY,BSC,SITE,SECTOR;
+
+    private enum NetworkLevels {
+        NETWORK, CITY, BSC, SITE, SECTOR;
     }
-    private Set<NetworkLevels> levels=EnumSet.of(NetworkLevels.NETWORK);
+
+    private Set<NetworkLevels> levels = EnumSet.of(NetworkLevels.NETWORK);
 
     /**
      * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
@@ -160,7 +162,7 @@ public class NetworkLoader extends AbstractLoader {
      */
     private void initializeKnownHeaders() {
         needParceHeader = true;
-       
+
         addMainHeader("city", getPossibleHeaders(DataLoadPreferences.NH_CITY));
         addMainHeader("msc", getPossibleHeaders(DataLoadPreferences.NH_MSC));
         addMainHeader("bsc", getPossibleHeaders(DataLoadPreferences.NH_BSC));
@@ -193,9 +195,10 @@ public class NetworkLoader extends AbstractLoader {
         addKnownHeader(1, key, regexes, false);
         mainHeaders.add(key);
     }
+
     /**
-     * Add a known header entry as well as mark it as a main header and identity header. All other fields will be
-     * assumed to be sector properties.
+     * Add a known header entry as well as mark it as a main header and identity header. All other
+     * fields will be assumed to be sector properties.
      * 
      * @param key
      * @param regexes
@@ -260,14 +263,15 @@ public class NetworkLoader extends AbstractLoader {
 
     /**
      * Gets all found network levels
+     * 
      * @return levels found as an array of Strings
      */
     private String[] getLevelsFound() {
-        String[] levelsFound=new String[levels.size()];
+        String[] levelsFound = new String[levels.size()];
         Iterator<NetworkLevels> iterator = levels.iterator();
-        int i=0;
-        while (iterator.hasNext()){
-            levelsFound[i++]=iterator.next().name().toLowerCase();
+        int i = 0;
+        while (iterator.hasNext()) {
+            levelsFound[i++] = iterator.next().name().toLowerCase();
         }
         return levelsFound;
     }
@@ -296,13 +300,14 @@ public class NetworkLoader extends AbstractLoader {
         ActionUtil.getInstance().runTask(new Runnable() {
             @Override
             public void run() {
-                NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowViewEvent(NetworkTreeView.NETWORK_TREE_VIEW_ID));
+                NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
+                        new ShowViewEvent(NetworkTreeView.NETWORK_TREE_VIEW_ID));
             }
         }, false);
     }
 
     /**
-     *Returns layer, that contains necessary gis node
+     * Returns layer, that contains necessary gis node
      * 
      * @param map map
      * @param gisNode gis node
@@ -476,7 +481,8 @@ public class NetworkLoader extends AbstractLoader {
                 cityName = cityField;
                 city = city_s.get(cityField);
                 if (city == null) {
-                    city = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(getNetworkNode(), INeoConstants.PROPERTY_NAME_NAME, NodeTypes.CITY), cityName);
+                    city = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(getNetworkNode(),
+                            INeoConstants.PROPERTY_NAME_NAME, NodeTypes.CITY), cityName);
                     if (city == null) {
                         debug("New City: " + cityName);
                         city = addChild(network, NodeTypes.CITY, cityName);
@@ -491,7 +497,8 @@ public class NetworkLoader extends AbstractLoader {
                 bscName = bscField;
                 bsc = bsc_s.get(bscField);
                 if (bsc == null) {
-                    bsc = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(getNetworkNode(), INeoConstants.PROPERTY_NAME_NAME, NodeTypes.BSC), bscName);
+                    bsc = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(getNetworkNode(),
+                            INeoConstants.PROPERTY_NAME_NAME, NodeTypes.BSC), bscName);
                     if (bsc == null) {
                         debug("New BSC: " + bscName);
                         bsc = addChild(city == null ? network : city, NodeTypes.BSC, bscName);
@@ -505,7 +512,8 @@ public class NetworkLoader extends AbstractLoader {
                 siteName = siteField;
                 debug("New site: " + siteName);
                 Node siteRoot = bsc == null ? (city == null ? network : city) : bsc;
-                Node newSite = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(getNetworkNode(), INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteName);
+                Node newSite = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(getNetworkNode(),
+                        INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteName);
                 if (newSite != null) {
                     Relationship relation = newSite.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING);
                     Node oldRoot = relation.getOtherNode(newSite);
@@ -514,11 +522,12 @@ public class NetworkLoader extends AbstractLoader {
                         siteRoot.createRelationshipTo(newSite, GeoNeoRelationshipTypes.CHILD);
                     }
                 } else {
-
-                    if (latitude == 0 && longitude == 0) {
-                        // not stored site!
-                        return;
-                    }
+                    // Pechko_E: disabled for now - it will allow to load the logical structure
+                    // without coordinates
+                    // if (latitude == 0 && longitude == 0) {
+                    // // not stored site!
+                    // return;
+                    // }
                     newSite = addChild(siteRoot, NodeTypes.SITE, siteName);
                     sitesType.setSiteType(newSite, neo);
 
@@ -529,20 +538,22 @@ public class NetworkLoader extends AbstractLoader {
                 }
 
                 GisProperties gisProperties = getGisProperties(basename);
-                gisProperties.updateBBox(latitude, longitude);
-                if (gisProperties.getCrs() == null) {
-                    gisProperties.checkCRS(latitude, longitude, networkHeader.getCrsHint());
-                    if (!isTest() && gisProperties.getCrs() != null) {
-                        CoordinateReferenceSystem crs = askCRSChoise(gisProperties);
-                        if (crs != null) {
-                            gisProperties.setCrs(crs);
-                            gisProperties.saveCRS();
+                // Pechko_E: remove this check
+                if (latitude != null && longitude != null) {
+                    gisProperties.updateBBox(latitude, longitude);
+                    if (gisProperties.getCrs() == null) {
+                        gisProperties.checkCRS(latitude, longitude, networkHeader.getCrsHint());
+                        if (!isTest() && gisProperties.getCrs() != null) {
+                            CoordinateReferenceSystem crs = askCRSChoise(gisProperties);
+                            if (crs != null) {
+                                gisProperties.setCrs(crs);
+                                gisProperties.saveCRS();
+                            }
                         }
                     }
+                    site.setProperty(INeoConstants.PROPERTY_LAT_NAME, latitude.doubleValue());
+                    site.setProperty(INeoConstants.PROPERTY_LON_NAME, longitude.doubleValue());
                 }
-                site.setProperty(INeoConstants.PROPERTY_LAT_NAME, latitude.doubleValue());
-                site.setProperty(INeoConstants.PROPERTY_LON_NAME, longitude.doubleValue());
-
                 index(site);
             }
             debug("New Sector: " + sectorField);
@@ -558,11 +569,13 @@ public class NetworkLoader extends AbstractLoader {
                 sector = addChild(site, NodeTypes.SECTOR, sectorField, sectorIndexName);
                 if (ci != null) {
                     sector.setProperty(INeoConstants.PROPERTY_SECTOR_CI, ci);
-                    luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(getNetworkNode(), INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR), ci);
+                    luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(getNetworkNode(),
+                            INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR), ci);
                 }
                 if (lac != null) {
                     sector.setProperty(INeoConstants.PROPERTY_SECTOR_LAC, lac);
-                    luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(getNetworkNode(), INeoConstants.PROPERTY_SECTOR_LAC, NodeTypes.SECTOR), lac);
+                    luceneInd.index(sector, NeoUtils.getLuceneIndexKeyByProperty(getNetworkNode(),
+                            INeoConstants.PROPERTY_SECTOR_LAC, NodeTypes.SECTOR), lac);
                 }
             }
             // TODO: deprecated sectorNumber in favour of saved data
@@ -611,7 +624,8 @@ public class NetworkLoader extends AbstractLoader {
         // TODO refactor 2 property with same name!
         child.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
         child.setProperty(INeoConstants.PROPERTY_SECTOR_NAME, indexName);
-        luceneInd.index(child, NeoUtils.getLuceneIndexKeyByProperty(getNetworkNode(), INeoConstants.PROPERTY_NAME_NAME, type), indexName);
+        luceneInd.index(child, NeoUtils.getLuceneIndexKeyByProperty(getNetworkNode(), INeoConstants.PROPERTY_NAME_NAME, type),
+                indexName);
         if (parent != null) {
             parent.createRelationshipTo(child, NetworkRelationshipTypes.CHILD);
             debug("Added '" + name + "' as child of '" + parent.getProperty(INeoConstants.PROPERTY_NAME_NAME));
@@ -650,7 +664,9 @@ public class NetworkLoader extends AbstractLoader {
         }
         info(tab.toString() + node.getProperty(INeoConstants.PROPERTY_NAME_NAME) + properties);
         for (Relationship relationship : node.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
-            // debug(tab.toString()+"("+relationship.toString()+") - "+relationship.getStartNode().getProperty("name")+" -("+relationship.getType()+")-> "+relationship.getEndNode().getProperty("name"));
+            // debug(tab.toString()+"("+relationship.toString()+") -
+            // "+relationship.getStartNode().getProperty("name")+" -("+relationship.getType()+")->
+            // "+relationship.getEndNode().getProperty("name"));
             printChildren(relationship.getEndNode(), depth + 1);
         }
     }

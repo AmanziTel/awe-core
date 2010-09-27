@@ -11,6 +11,7 @@ require "ruby/style"
 require 'ruby/search_utils'
 require "initKpi"
 
+
 include_class org.amanzi.neo.core.database.nodes.CellID
 include_class org.amanzi.neo.core.service.NeoServiceProvider
 
@@ -38,6 +39,7 @@ include_class org.jfree.chart.axis.DateTickUnit
 include_class org.jfree.chart.plot.PlotOrientation
 include_class org.jfree.chart.plot.Plot
 include_class org.jfree.data.time.Millisecond
+include_class org.jfree.data.time.Minute
 include_class org.jfree.data.time.Day
 include_class org.jfree.data.time.Hour
 include_class org.jfree.data.time.Week
@@ -65,14 +67,21 @@ module NodeUtils
   end
 
   def find_dataset(dataset_name)
-    traverser=Neo4j.ref_node.outgoing(:CHILD).depth(1).filter      do
+    puts "Neo4j.reference_node #{Neo4j.ref_node}"
+    traverser=Neo4j.ref_node.outgoing(:CHILD).depth(2).filter      do
+      puts "find_dataset #{get_property(:name.to_s)} #{neo_id}"
       get_property(:name.to_s)== dataset_name
     end
     traverser.first
   end
 
   def find_aggr_node(gis_node,property, distribute, select)
-    dataset_node=gis_node.rel(:NEXT).end_node
+    puts "gis node #{gis_node}"
+    if gis_node.rel? :NEXT
+      dataset_node=gis_node.rel(:NEXT).end_node
+    else
+      dataset_node=gis_node
+    end
     traverser=dataset_node.outgoing(:AGGREGATION).depth(1).filter do
       prop_name=get_property('name')
       prop_distr=get_property('distribute')
@@ -100,8 +109,8 @@ module NodeUtils
       nodes.each do |node|
         puts node.props
         values.each do |value|
-          puts node[value]
-          puts node[category]
+          #          puts node[value]
+          #          puts node[category]
           ds.addValue(java.lang.Double.parseDouble(node[value].to_s), value, node[category].to_s);
         end
       end
@@ -141,9 +150,11 @@ module NodeUtils
     nodes.each do |node|
       if time_period==:millisecond
         if node.property? value
-          puts "#{node.neo_id} - #{node[time_property]} - #{node[value]}"
           series.addOrUpdate(Millisecond.new(java.util.Date.new(node[time_property])), java.lang.Double.parseDouble(node[value].to_s));
         end
+      elsif time_period==:hour
+        puts "time_period==:hour #{Hour.new(java.util.Date.new(node[time_property])).to_s} = #{node[time_property]}"
+        series.addOrUpdate(Hour.new(java.util.Date.new(node[time_property])), java.lang.Double.parseDouble(node[value].to_s));
       end
     end
     ds.addSeries(series)
@@ -568,6 +579,7 @@ class Chart
         #            setDataset(create_chart_dataset(@nodes,@categories,@values))
         @datasets<<create_chart_dataset(@nodes,@categories,@values)
       elsif !@statistics.nil?
+        puts "@statistics #{@statistics}"
         dataset_node=find_dataset(@statistics)
         puts "dataset_node #{dataset_node}"
         if !@property.nil? and !@distribute.nil? and !@select.nil?
@@ -582,43 +594,6 @@ class Chart
           @time||="time"
           update_chart_dataset(ds,@dataset,property,@time)
         end
-        #        puts "chart setup #{Time.now}"
-        #        props=[]
-        #        @properties.each do |p|
-        #          props<<p
-        #        end
-        #        props<<"site_name"<<"cell_name"<<"time"<<"date"
-        #        props.flatten
-        #        puts "collecting data: #{Time.now}"
-        #        aggr=@dataset.collect(props).aggregate("site_name")
-        #        puts "collecting data finished: #{Time.now}"
-        #        result=[]
-        #        @properties.each do |p|
-        #          result<<Hash.new
-        #        end
-        #        puts "aggregating data: #{Time.now}"
-        #        aggr.each do |obj,rows|
-        #          rows.each do |row|
-        #            site=obj
-        #            cell=row['cell_name']
-        #            date=row['date']
-        #            time=row['time']
-        #            @properties.each_with_index do |p,i|
-        #              value=row[p]
-        #              aggregate_sites(result[i],site,cell,date,time,value)
-        #            end
-        #          end
-        #        end
-        #        puts "aggregating data finished: #{Time.now}"
-        #        averages=[]
-        #        ds=DefaultCategoryDataset.new()
-        #        time_label=get_time_label(aggregation)
-        #        puts "calculating averages: #{Time.now}"
-        #        @properties.each_with_index do |p,i|
-        #          average=calculate_average(result[i], @aggregation)
-        #          update_chart_dataset(ds,average,p)
-        #        end
-        #        puts "calculating averages finished: #{Time.now}"
         @datasets<<ds
       elsif !@kpi.nil?
         ds=DefaultCategoryDataset.new()
@@ -643,6 +618,8 @@ class Chart
               date=Hour.new(time)
             elsif @aggregation==:daily
               date=Day.new(time)
+            elsif @aggregation==:minutely
+              date=Minute.new(time)
             elsif @aggregation==:weekly
               date=Week.new(time)
             elsif @aggregation==:monthly
@@ -688,6 +665,7 @@ class Chart
 
       if @type==:time
         plot=Java::org.jfree.chart.plot.XYPlot.new
+        #        plot.setDomainAxis(createDateAxis(nil,@aggregation)) if @aggregation
         for i in 0..@datasets.size-1
           puts "i=#{i} #{@datasets[i]}" #TODO delete debug info
           Charts.applyDefaultSettings(plot,@datasets[i],i)

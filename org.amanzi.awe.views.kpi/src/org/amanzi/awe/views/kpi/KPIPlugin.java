@@ -121,18 +121,12 @@ public class KPIPlugin extends AbstractUIPlugin {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 URL scriptURL;
-                Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
-                NeoUtils.addTransactionLog(tx, Thread.currentThread(), "1111");
-                tx.finish();
                 try {
                     scriptURL = FileLocator.toFileURL(KPIPlugin.getDefault().getBundle().getEntry("ruby/initKpi.rb"));
                 } catch (IOException e) {
                     scriptURL = null;
                 }
                 String script = NeoSplashUtil.getScriptContent(scriptURL.getPath());
-                tx = NeoServiceProvider.getProvider().getService().beginTx();
-                NeoUtils.addTransactionLog(tx, Thread.currentThread(), "2222");
-                tx.finish();
                 try {
                     runtime.evalScriptlet(script);
                     LOGGER.debug("INIT OK!");

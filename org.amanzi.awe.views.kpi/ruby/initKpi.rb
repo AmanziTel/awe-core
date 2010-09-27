@@ -16,10 +16,10 @@ puts "$LOAD_PATH: #{$LOAD_PATH}"
 neo_service = NeoServiceProvider.getProvider.getService
 database_location = NeoServiceProvider.getProvider.getDefaultDatabaseLocation
 
-
+#tx=neo_service.beginTx();
 Neo4j::Config[:storage_path] = database_location
 Neo4j::start(neo_service)
-
+#tx.finish;
 include KPI
 
 def allFormula

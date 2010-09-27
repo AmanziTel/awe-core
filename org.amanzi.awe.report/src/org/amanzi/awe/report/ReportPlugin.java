@@ -46,6 +46,8 @@ public class ReportPlugin extends AbstractUIPlugin {
     public static String REPORTS_FOLDER="reports";
 
     protected static String INIT_FILE="ruby/init.rb";
+    
+    public static final String REPORT_SCRIPT = "ruby/report.rb";
 
     private Ruby runtime;
 

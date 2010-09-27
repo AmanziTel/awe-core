@@ -14,6 +14,7 @@
 package org.amanzi.neo.services.statistic.internal;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -21,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -32,6 +34,9 @@ import org.amanzi.neo.services.statistic.StatisticManager;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Traverser.Order;
 
 /**
  * TODO Purpose of 
@@ -209,5 +214,16 @@ public class PropertyHeaderImpl implements IPropertyHeader {
     public Map<String, Object> getStatisticParams(NodeTypes type) {
         return null;
     }
-
+    public String[] getIdentityFields() {
+        List<String> result = new ArrayList<String>();
+        Relationship rel = node.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
+        if (rel != null) {
+            Node propertyNode = rel.getEndNode();
+            for (Node node : propertyNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.CHILD,
+                    Direction.OUTGOING)) {
+                result.addAll(Arrays.asList((String[])node.getProperty("identity_properties")));
+            }
+        }
+        return result.toArray(new String[result.size()]);
+    }
 }

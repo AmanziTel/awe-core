@@ -162,14 +162,21 @@ class LayerIterator
 
   def find(hash,&block)
     type=hash[:type]
+    name=hash[:name]
     iter=iterator
     layers=[]
     while (iter.hasNext)do
       layer=iter.next
-      resource = layer.findGeoResource($geo_neo_class)
+      resource = layer.findGeoResource(GeoNeo.java_class)
       if !resource.nil?
-        geo_neo=resource.resolve($geo_neo_class,nil)
-        layers<<layer if geo_neo.getGisType().to_s==type.to_s.upcase
+        geo_neo=resource.resolve(GeoNeo.java_class,nil)
+        if geo_neo.getGisType().to_s==type.to_s.upcase
+          if name and geo_neo.getName()==name
+            layers<<layer
+          else
+            layers<<layer
+          end
+        end
       end
     end
     layers
@@ -180,6 +187,10 @@ class GIS
   #Returns all maps
   def self.maps
     MapIterator.new(GIS::getAllMaps())
+  end
+
+  def self.active_map
+    ApplicationGIS::getActiveMap()
   end
 
 end

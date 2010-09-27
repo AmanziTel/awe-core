@@ -129,9 +129,9 @@ import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
  * @since 1.0.0
  */
 public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListener {
-   
+
     private static final Logger LOGGER = Logger.getLogger(ReuseAnalyserView.class);
-    
+
     private static final String DRIVE_ID = "org.amanzi.awe.views.tree.drive.views.DriveTreeView";
 
     /** String TOOL_TIP_LOG field */
@@ -397,7 +397,8 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
             }
         });
         dataset = new PropertyCategoryDataset();
-        chart = ChartFactory.createBarChart("SWTBarChart", VALUES_DOMAIN, COUNT_AXIS, dataset, PlotOrientation.VERTICAL, false, false, false);
+        chart = ChartFactory.createBarChart("SWTBarChart", VALUES_DOMAIN, COUNT_AXIS, dataset, PlotOrientation.VERTICAL, false,
+                false, false);
         CategoryPlot plot = (CategoryPlot)chart.getPlot();
         NumberAxis rangeAxis = (NumberAxis)plot.getRangeAxis();
         rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
@@ -446,7 +447,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
                         middleColumn = (ChartNode)columnKey;
                         setMiddleSelectionName(middleColumn);
                         chartUpdate();
-                    }else if(chartmouseevent.getEntity() instanceof CategoryItemEntity){
+                    } else if (chartmouseevent.getEntity() instanceof CategoryItemEntity) {
                         CategoryItemEntity entity = (CategoryItemEntity)chartmouseevent.getEntity();
                         columnKey = entity.getColumnKey();
                         showInTreeView((ChartNode)columnKey);
@@ -585,7 +586,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
     }
 
     /**
-     *Change the middle color position
+     * Change the middle color position
      */
     protected void changeMiddleRange() {
         double valueToFind;
@@ -612,7 +613,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
     }
 
     /**
-     *change blend colors
+     * change blend colors
      */
     protected void changeBlendColors() {
         saveColors();
@@ -620,7 +621,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
     }
 
     /**
-     *save blend colors in aggregation node
+     * save blend colors in aggregation node
      */
     private void saveColors() {
         Job job = new Job("saveColors aggr node") {
@@ -794,7 +795,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
     }
 
     /**
-     *change logarithmicSelection
+     * change logarithmicSelection
      */
     protected void logarithmicSelection() {
         CategoryPlot plot = (CategoryPlot)chart.getPlot();
@@ -808,7 +809,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
     }
 
     /**
-     *update select information
+     * update select information
      */
     protected void findSelectionInformation() {
         String text = tSelectedInformation.getText();
@@ -879,7 +880,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
     }
 
     /**
-     *sets visibility for colored theme
+     * sets visibility for colored theme
      * 
      * @param isVisible - visibility
      */
@@ -900,7 +901,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
     }
 
     /**
-     *sets visibility for not colored theme
+     * sets visibility for not colored theme
      * 
      * @param isVisible - visibility
      */
@@ -1070,11 +1071,11 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
 
     /**
      * Show selected aggregation in tree view.
-     *
+     * 
      * @param aggrNode
      */
     private void showInTreeView(ChartNode columnKey) {
-        if (columnKey!=null) {
+        if (columnKey != null) {
             Node columnNode = columnKey.getNode();
             NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent(DRIVE_ID, columnNode));
         }
@@ -1154,7 +1155,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
             }
         }
     }
-    
+
     /**
      * Select column
      * 
@@ -1162,17 +1163,18 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
      */
     private void setSelection(ChartNode columnKey) {
 
-        Node realGis = NeoUtils.findGisNodeByChild(members.get(gisCombo.getText()));
+        Node node = members.get(gisCombo.getText());
+        Node realGis = NeoUtils.findGisNodeByChild(node);
         List<Node> correlated = new ArrayList<Node>();
-        if (realGis == null) {
-            correlated = NeoUtils.getCorrelationNetworks(members.get(gisCombo.getText()), NeoServiceProvider.getProvider().getService());
+        if (node != null) {
+            if (realGis == null) {
+                correlated = NeoUtils.getCorrelationNetworks(node, NeoServiceProvider.getProvider().getService());
+            } else {
+                correlated.add(realGis);
+            }
         }
-        else {
-            correlated.add(realGis);
-        }
-        
         Node aggrNode = dataset.getAggrNode();
-        
+
         for (Node gisNode : correlated) {
             if (selectedColumn != null) {
                 selectedColumn = columnKey;
@@ -1334,8 +1336,9 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
             Transaction tx = NeoUtils.beginTransaction();
             NeoUtils.addTransactionLog(tx, Thread.currentThread(), "ComputeStatisticsJob");
             try {
-            	model.setCurrenTransaction(tx);
-                node = model.findOrCreateAggregateNode(gisNode, propertyName, isStringProperty(propertyName), distribute, select, monitor);
+                model.setCurrenTransaction(tx);
+                node = model.findOrCreateAggregateNode(gisNode, propertyName, isStringProperty(propertyName), distribute, select,
+                        monitor);
                 tx = model.getCurrenTransaction();
                 Boolean haveError = (Boolean)node.getProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME, false);
                 if (haveError) {
@@ -1388,14 +1391,15 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
         setVisibleForChart(false);
         Predicate<org.neo4j.graphdb.Path> propertyReturnableEvalvator = new Predicate<org.neo4j.graphdb.Path>() {
 
-			@Override
-			public boolean accept(org.neo4j.graphdb.Path item) {
-				return item.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(nodeTypeId);
-			}
-		};
-        
+            @Override
+            public boolean accept(org.neo4j.graphdb.Path item) {
+                return item.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(nodeTypeId);
+            }
+        };
+
         propertyList = new PropertyFilterModel().filerProperties(gisCombo.getText(), propertyList);
-        model = new ReuseAnalyserModel(aggregatedProperties, propertyReturnableEvalvator, NeoServiceProvider.getProvider().getService());
+        model = new ReuseAnalyserModel(aggregatedProperties, propertyReturnableEvalvator, NeoServiceProvider.getProvider()
+                .getService());
 
     }
 
@@ -1893,8 +1897,9 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
                         try {
                             Integer valueToSave = color == null ? null : color.getRGB();
                             if (valueToSave == null) {
-                                ColoredFlags flag = ColoredFlags.getFlagById((String)node.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, ColoredFlags.NONE.getId()));
-                                if(!flag.equals(ColoredFlags.NONE)){
+                                ColoredFlags flag = ColoredFlags.getFlagById((String)node.getProperty(
+                                        INeoConstants.PROPERTY_FLAGGED_NAME, ColoredFlags.NONE.getId()));
+                                if (!flag.equals(ColoredFlags.NONE)) {
                                     node.setProperty(INeoConstants.AGGREGATION_COLOR, flag.getRgb());
                                 }
                                 node.removeProperty(INeoConstants.AGGREGATION_COLOR);
@@ -2013,7 +2018,8 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
         if (factor > 1.0)
             factor = 1F;
         float complement = 1.0F - factor;
-        return new RGB((int)(complement * bg.red + factor * fg.red), (int)(complement * bg.green + factor * fg.green), (int)(complement * bg.blue + factor * fg.blue));
+        return new RGB((int)(complement * bg.red + factor * fg.red), (int)(complement * bg.green + factor * fg.green),
+                (int)(complement * bg.blue + factor * fg.blue));
     }
 
     /**
@@ -2044,11 +2050,13 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
             final Select select = !cSelect.isEnabled() ? Select.EXISTS : Select.findSelectByValue(cSelect.getText());
             final String distribute = Distribute.findEnumByValue(cDistribute.getText()).getDescription();
             final String propName = propertyCombo.getText();
-            StringBuffer sb = new StringBuffer("report '").append("Distribution analysis of ").append(gisCombo.getText()).append(" ").append(propName).append("' do\n");
+            StringBuffer sb = new StringBuffer("report '").append("Distribution analysis of ").append(gisCombo.getText()).append(
+                    " ").append(propName).append("' do\n");
             sb.append("  author '").append(System.getProperty("user.name")).append("'\n");
             sb.append("  date '").append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\n");
-            sb.append("  text 'Distribution analysis of ").append(gisCombo.getText()).append(" ").append(propName).append(", with values distributed ")
-                    .append(distribute).append(" and calculated using ").append(select.getDescription()).append("'\n");
+            sb.append("  text 'Distribution analysis of ").append(gisCombo.getText()).append(" ").append(propName).append(
+                    ", with values distributed ").append(distribute).append(" and calculated using ").append(
+                    select.getDescription()).append("'\n");
             sb.append("  map 'Drive map', :map => GIS.maps.first.copy, :width => 600, :height => 400 do |m|\n");
             sb.append("    layer = m.layers.find(:type => 'drive').first\n");
             sb.append("  end\n");
@@ -2082,8 +2090,8 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
 
             @Override
             public void run() {
-                ErrorDialog.openError(display.getActiveShell(), "Error", "Report can't be created due to the following error:", new Status(Status.ERROR,
-                        ReusePlugin.PLUGIN_ID, e.getClass().getName(), e));
+                ErrorDialog.openError(display.getActiveShell(), "Error", "Report can't be created due to the following error:",
+                        new Status(Status.ERROR, ReusePlugin.PLUGIN_ID, e.getClass().getName(), e));
             }
 
         });

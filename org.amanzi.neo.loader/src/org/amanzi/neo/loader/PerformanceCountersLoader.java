@@ -14,9 +14,13 @@
 package org.amanzi.neo.loader;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +31,7 @@ import org.amanzi.neo.core.enums.SectorIdentificationType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.loader.AbstractLoader.DateMapper;
 import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Node;
@@ -42,45 +47,60 @@ import org.neo4j.index.lucene.LuceneIndexService;
  */
 public class PerformanceCountersLoader extends AbstractLoader {
     private static boolean needParceHeader;
-    
+
     private LuceneIndexService luceneService;
     private String luceneIndexName;
     private final ArrayList<String> possibleCellNames = new ArrayList<String>();
 
-
     private Node ossRoot;
     private Node fileNode;
     private Node lastChild;
-    
-    private final OssType ossType; 
-    
+
+    private final OssType ossType;
+
+    private SimpleDateFormat dateFormat;
+
+    private SimpleDateFormat timeFormat;
+
     public PerformanceCountersLoader(OssType ossType, String directory, String datasetName, Display display) {
         initialize("Performance Counter", null, directory, display);
         basename = datasetName;
-        this.ossType = ossType; 
+        this.ossType = ossType;
         needParceHeader = true;
         getHeaderMap(1);
         init();
     }
-    
 
     private void init() {
         final String SITE = "site";
         possibleCellNames.add(SITE);
-        addKnownHeader(1,SITE, getPossibleHeaders(DataLoadPreferences.NH_SITE),true);
+        addKnownHeader(1, SITE, getPossibleHeaders(DataLoadPreferences.NH_SITE), true);
         useMapper(1, SITE, new StringMapper());
 
         final String CELL = "sector";
         possibleCellNames.add(CELL);
-        addKnownHeader(1,CELL, getPossibleHeaders(DataLoadPreferences.NH_SECTOR),true);
+        addKnownHeader(1, CELL, getPossibleHeaders(DataLoadPreferences.NH_SECTOR), true);
         useMapper(1, CELL, new StringMapper());
-        
-        final String TIMESTAMP = "timestamp";
-        addKnownHeader(1, TIMESTAMP, ".*date.*", false);
-        useMapper(1, TIMESTAMP, new LongDateMapper("dd.MM.yy"));
-       
+
+//        addKnownHeader(1, "Date", "date", false);
+        dateFormat = new SimpleDateFormat("dd.MM.yy");
+        timeFormat = new SimpleDateFormat("HH:mm:ss");
+//        addKnownHeader(1, "time", ".*time.*", false);
+//        useMapper(1, "time", new LongDateMapper("HH:mm:ss"));
+//
+//        final String date = "date";
+//        addKnownHeader(1, date, ".*date.*", false);
+//        useMapper(1, date, new LongDateMapper("dd.MM.yy"));
+
+        try {
+            addIndex(NodeTypes.M.getId(), NeoUtils.getTimeIndexProperty(basename));
+        } catch (IOException e) {
+            // TODO Handle IOException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+
     }
-    
+
     protected class LongDateMapper implements PropertyMapper {
         private SimpleDateFormat format;
 
@@ -105,7 +125,6 @@ public class PerformanceCountersLoader extends AbstractLoader {
         }
     }
 
-
     @Override
     protected boolean needParceHeaders() {
         if (needParceHeader) {
@@ -119,12 +138,19 @@ public class PerformanceCountersLoader extends AbstractLoader {
     protected void parseLine(String line) {
         if (fileNode == null) {
             ossRoot = LoaderUtils.findOrCreateOSSNode(ossType, basename, neo);// TODO target
-                                                                                   // type
-            Pair<Boolean, Node> fileNodePair = NeoUtils.findOrCreateFileNode(neo, ossRoot, new File(basename).getName(), new File(basename).getName());
+            // type
+            Pair<Boolean, Node> fileNodePair = NeoUtils.findOrCreateFileNode(neo, ossRoot, new File(basename).getName(), new File(
+                    basename).getName());
             fileNode = fileNodePair.getRight();
             lastChild = null;
 
             initializeLucene(ossRoot);
+            Transaction transaction = neo.beginTx();
+            try {
+                initializeIndexes();
+            } finally {
+                transaction.finish();
+            }
         }
         List<String> fields = splitLine(line);
         if (fields.size() < 2)
@@ -140,9 +166,22 @@ public class PerformanceCountersLoader extends AbstractLoader {
         try {
             Node node = neo.createNode();
             NodeTypes.M.setNodeType(node, neo);
+            long timestamp;
             for (Map.Entry<String, Object> entry : lineData.entrySet()) {
                 node.setProperty(entry.getKey(), entry.getValue());
+                if ("time".equals(entry.getKey())) {
+                    System.out.println(lineData.get("date") + " " + entry.getValue());
+                    String date = (String)lineData.get("date");
+//                    System.out.print(entry.getValue() + ": " + entry.getValue().getClass() + "\t");
+                    String time = (String)entry.getValue();
 
+                    GregorianCalendar cal0 = new GregorianCalendar();
+                    cal0.setTimeInMillis(dateFormat.parse(date).getTime() + timeFormat.parse(time).getTime());
+                                        
+                    timestamp = cal0.getTimeInMillis();
+                    node.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+                    updateTimestampMinMax(1, timestamp);
+                }
                 indexData(entry, node);
             }
             node.setProperty(INeoConstants.PROPERTY_NAME_NAME, "performance counter");
@@ -151,6 +190,9 @@ public class PerformanceCountersLoader extends AbstractLoader {
             NeoUtils.addChild(fileNode, node, lastChild, neo);
             lastChild = node;
             storingProperties.values().iterator().next().incSaved();
+        } catch (ParseException e) {
+            // TODO Handle ParseException
+            throw (RuntimeException) new RuntimeException( ).initCause( e );
         } finally {
             transaction.finish();
         }
@@ -181,10 +223,10 @@ public class PerformanceCountersLoader extends AbstractLoader {
     public Node[] getRootNodes() {
         return new Node[] {ossRoot};
     }
-    
+
     @Override
     public void finishUp() {
-        //Pechko_E what does this property mean?
+        // Pechko_E what does this property mean?
         getStoringNode(1).setProperty(INeoConstants.SECTOR_ID_TYPE, SectorIdentificationType.NAME.toString());
         super.finishUp();
     }
