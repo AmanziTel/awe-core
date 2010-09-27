@@ -1,0 +1,26 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Geoptima Reports Plug-in
+Bundle-SymbolicName: org.amanzi.awe.reports.geoptima;singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Activator: org.amanzi.awe.reports.geoptima.GeoptimaReportsPlugin
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.amanzi.neo.loader,
+ org.amanzi.neo.loader.core,
+ org.amanzi.neo.core,
+ org.neo4j,
+ org.amanzi.neo.services,
+ org.amanzi.awe.views.reuse,
+ org.jruby,
+ org.amanzi.scripting.jruby,
+ org.amanzi.awe.report,
+ org.amanzi.awe.script.jirb,
+ org.amanzi.awe.neostyle,
+ org.amanzi.awe.filters,
+ org.amanzi.awe.views.kpi,
+ org.jfree,
+ org.amanzi.awe.catalog.neo,
+ net.refractions.udig.project.edit,
+ net.refractions.udig.project.ui
+Eclipse-LazyStart: true
