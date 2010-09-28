@@ -201,8 +201,8 @@ public abstract class AbstractLoader {
                     // of the map
                     // We should perform threshold tests to decide whether to
                     // drop the map or not
-                    if (values.size() >= MAX_PROPERTY_VALUE_COUNT) {
-                        // Exceeded absolute threashold, drop map
+                    if (values.size() >= MAX_PROPERTY_VALUE_COUNT && !isIdentityHeader) {
+                        // Exceeded absolute threshold, drop map if it's not an identity header
                         LOGGER.debug("Property values exceeded maximum count, no longer tracking value set: " + this.key);
                         discard = true;
                     }
@@ -221,8 +221,7 @@ public abstract class AbstractLoader {
                     // }
                     // }
                 }
-                // do not drop statistics for identity properties
-                if (discard && !isIdentityHeader) {
+                if (discard) {
                     // Detected too much variety in property values, stop
                     // counting
                     dropStats();
