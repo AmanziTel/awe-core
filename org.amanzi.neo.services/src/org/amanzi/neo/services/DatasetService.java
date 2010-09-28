@@ -951,6 +951,8 @@ public class DatasetService extends AbstractService {
                 INodeType type = getNodeType(root);
                 GisTypes gisType = GisTypes.NETWORK.getGisTypeFromRootType(type.getId());
                 gis.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, gisType.getHeader());
+                databaseService.getReferenceNode().createRelationshipTo(gis, GeoNeoRelationshipTypes.CHILD);
+                gis.createRelationshipTo(root, GeoNeoRelationshipTypes.NEXT);
                 tx.success();
             } finally {
                 tx.finish();
