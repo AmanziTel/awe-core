@@ -450,7 +450,7 @@ public class CreateNetworkMainPage extends WizardPage {
      * 
      * @return the selected crs
      */
-    private CoordinateReferenceSystem getSelectedCRS() {
+    public CoordinateReferenceSystem getSelectedCRS() {
         return selectedCRS == null ? getDefaultCRS() : selectedCRS;
     }
 
@@ -562,5 +562,6 @@ public class CreateNetworkMainPage extends WizardPage {
      */
     public String getNetworkName() {
         return networkName;
-    };
+    }
+
 }

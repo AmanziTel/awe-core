@@ -128,7 +128,7 @@ public class CreateNetworkWizard extends Wizard implements INewWizard {
                 Node root = service.getRootNode(projectName, networkName, NodeTypes.NETWORK);
                 GisProperties gis=service.getGisNode(root);
                 gis.setCrs(mainPage.getSelectedCRS());
-                gis.save();
+                service.saveGis(gis);
                 service.setStructure(root,structure);
                 IStatistic statistics = StatisticManager.getStatistic(root);
                 for (INodeType type:structure){
