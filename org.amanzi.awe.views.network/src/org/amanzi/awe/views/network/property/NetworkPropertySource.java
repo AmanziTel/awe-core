@@ -141,7 +141,7 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
             Node root = service.findRootByChild((Node)container);
             if (root!=null){
                 IndexManager manager= service.getIndexManader(root);
-                manager.updateIndexes(container,propertyName,value);
+//                manager.updateIndexes(container,propertyName,value);
             }
         }
     }
