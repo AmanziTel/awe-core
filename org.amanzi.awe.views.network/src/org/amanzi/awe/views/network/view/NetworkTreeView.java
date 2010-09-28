@@ -509,12 +509,8 @@ public class NetworkTreeView extends ViewPart {
                 return selection.size() == 1;
             }
         });
+        createAdditionalAction(manager);
 
-        manager.add(new Separator());
-
-        IMenuManager menu = new MenuManager("Create new element", "new_elem_submenu_ID");
-        manager.add(menu);
-        fillMenu(menu, (IStructuredSelection)viewer.getSelection());
         //
         // // // add corresponding actions only if they should work
         // IAction elementAction = new NewElementAction((IStructuredSelection)viewer.getSelection(),
@@ -523,10 +519,7 @@ public class NetworkTreeView extends ViewPart {
         // menu.add(elementAction);
         // }
         //
-        IAction elementAction = new CopyElementAction((IStructuredSelection)viewer.getSelection());
-         if (elementAction.isEnabled()) {
-         menu.add(elementAction);
-         }
+
         //
         // elementAction = new NewElementAction((IStructuredSelection)viewer.getSelection(), true);
         // if (elementAction.isEnabled()) {
@@ -534,11 +527,28 @@ public class NetworkTreeView extends ViewPart {
         // }
     }
 
+
+    /**
+     * Creates the additional action.
+     *
+     * @param manager the manager
+     */
+    protected void createAdditionalAction(IMenuManager manager) {
+        manager.add(new Separator());
+        IMenuManager menu = new MenuManager("Create new element", "new_elem_submenu_ID");
+        manager.add(menu);
+        fillMenu(menu, (IStructuredSelection)viewer.getSelection());
+    }
+
     /**
      * @param menu
      * @param selection
      */
     private void fillMenu(IMenuManager menu, IStructuredSelection selection) {
+        IAction elementAction = new CopyElementAction((IStructuredSelection)viewer.getSelection());
+        if (elementAction.isEnabled()) {
+            menu.add(elementAction);
+        }
         GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
         Object element = selection.getFirstElement();
         if (element instanceof Root)
@@ -570,6 +580,7 @@ public class NetworkTreeView extends ViewPart {
                 menu.add(new NewNodeAction(iNodeType, selectedNode));
             }
         }
+        
     }
 
     private void openFileFromNode(NeoNode neoNode) {
