@@ -53,6 +53,7 @@ import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.awe.views.network.property.NetworkPropertySheetPage;
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
+import org.amanzi.awe.views.network.view.actions.CopyElementAction;
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -84,6 +85,7 @@ import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
@@ -507,8 +509,12 @@ public class NetworkTreeView extends ViewPart {
                 return selection.size() == 1;
             }
         });
-        createAdditionalAction(manager);
 
+        manager.add(new Separator());
+
+        IMenuManager menu = new MenuManager("Create new element", "new_elem_submenu_ID");
+        manager.add(menu);
+        fillMenu(menu, (IStructuredSelection)viewer.getSelection());
         //
         // // // add corresponding actions only if they should work
         // IAction elementAction = new NewElementAction((IStructuredSelection)viewer.getSelection(),
@@ -517,28 +523,15 @@ public class NetworkTreeView extends ViewPart {
         // menu.add(elementAction);
         // }
         //
-        // elementAction = new CopyElementAction((IStructuredSelection)viewer.getSelection());
-        // if (elementAction.isEnabled()) {
-        // menu.add(elementAction);
-        // }
+        IAction elementAction = new CopyElementAction((IStructuredSelection)viewer.getSelection());
+         if (elementAction.isEnabled()) {
+         menu.add(elementAction);
+         }
         //
         // elementAction = new NewElementAction((IStructuredSelection)viewer.getSelection(), true);
         // if (elementAction.isEnabled()) {
         // menu.add(elementAction);
         // }
-    }
-
-
-    /**
-     * Creates the additional action.
-     *
-     * @param manager the manager
-     */
-    protected void createAdditionalAction(IMenuManager manager) {
-        manager.add(new Separator());
-        IMenuManager menu = new MenuManager("Create new element", "new_elem_submenu_ID");
-        manager.add(menu);
-        fillMenu(menu, (IStructuredSelection)viewer.getSelection());
     }
 
     /**
