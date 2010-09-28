@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Geoptima Reports Plug-in
-Bundle-SymbolicName: org.amanzi.awe.reports.geoptima;singleton:=true
+Bundle-SymbolicName: org.amanzi.awe.report.geoptima;singleton:=true
 Bundle-Version: 1.0.0
 Bundle-Activator: org.amanzi.awe.reports.geoptima.GeoptimaReportsPlugin
 Require-Bundle: org.eclipse.ui,
