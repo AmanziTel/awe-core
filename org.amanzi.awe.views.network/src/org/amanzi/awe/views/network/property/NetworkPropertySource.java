@@ -27,6 +27,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.neoclipse.property.NodePropertySource;
 import org.neo4j.neoclipse.property.PropertyDescriptor;
@@ -87,6 +88,7 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
             Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
             try {
                 if (container.hasProperty((String)id)) {
+                    updateIndexes(container, (String)id,value);
                     // try to keep the same type as the previous value
                     Class< ? > c = container.getProperty((String)id).getClass();
                     PropertyHandler propertyHandler = PropertyTransform.getHandler(c);
@@ -126,6 +128,11 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
                 updateLayer();
             }
         }
+    }
+
+
+    private void updateIndexes(PropertyContainer container, String id, Object value) {
+        
     }
 
     /**

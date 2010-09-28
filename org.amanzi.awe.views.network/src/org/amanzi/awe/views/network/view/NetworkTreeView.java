@@ -507,12 +507,8 @@ public class NetworkTreeView extends ViewPart {
                 return selection.size() == 1;
             }
         });
+        createAdditionalAction(manager);
 
-        manager.add(new Separator());
-
-        IMenuManager menu = new MenuManager("Create new element", "new_elem_submenu_ID");
-        manager.add(menu);
-        fillMenu(menu, (IStructuredSelection)viewer.getSelection());
         //
         // // // add corresponding actions only if they should work
         // IAction elementAction = new NewElementAction((IStructuredSelection)viewer.getSelection(),
@@ -530,6 +526,19 @@ public class NetworkTreeView extends ViewPart {
         // if (elementAction.isEnabled()) {
         // menu.add(elementAction);
         // }
+    }
+
+
+    /**
+     * Creates the additional action.
+     *
+     * @param manager the manager
+     */
+    protected void createAdditionalAction(IMenuManager manager) {
+        manager.add(new Separator());
+        IMenuManager menu = new MenuManager("Create new element", "new_elem_submenu_ID");
+        manager.add(menu);
+        fillMenu(menu, (IStructuredSelection)viewer.getSelection());
     }
 
     /**

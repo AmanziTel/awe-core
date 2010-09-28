@@ -16,6 +16,7 @@ import org.amanzi.awe.views.network.view.NetworkTreeView;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.ui.PlatformUI;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.TraversalPosition;
@@ -62,5 +63,9 @@ public class DriveTreeView extends NetworkTreeView {
                 return result;
             }
         };
+    }
+    @Override
+    protected void createAdditionalAction(IMenuManager manager) {
+//        super.createAdditionalAction(manager);
     }
 }
