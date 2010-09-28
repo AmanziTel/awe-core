@@ -22,6 +22,7 @@ import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.EditPropertiesPage;
 import org.amanzi.neo.core.utils.EditPropertiesPage.PropertyWrapper;
+import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.loader.LoaderUtils;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
@@ -125,6 +126,9 @@ public class CreateNetworkWizard extends Wizard implements INewWizard {
                 List<INodeType> structure = mainPage.getStructure();
                 String projectName=LoaderUtils.getAweProjectName();
                 Node root = service.getRootNode(projectName, networkName, NodeTypes.NETWORK);
+                GisProperties gis=service.getGisNode(root);
+                gis.setCrs(mainPage.getSelectedCRS());
+                gis.save();
                 service.setStructure(root,structure);
                 IStatistic statistics = StatisticManager.getStatistic(root);
                 for (INodeType type:structure){
