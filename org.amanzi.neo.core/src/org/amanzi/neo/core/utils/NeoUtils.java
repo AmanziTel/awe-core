@@ -45,6 +45,7 @@ import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.GisTypes;
+import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
@@ -2077,7 +2078,7 @@ public class NeoUtils {
      * @param type - node type
      * @return luciene key
      */
-    public static String getLuceneIndexKeyByProperty(Node basename, String propertyName, NodeTypes type) {
+    public static String getLuceneIndexKeyByProperty(Node basename, String propertyName, INodeType type) {
         return new StringBuilder("Id").append(basename.getId()).append("@").append(type.getId()).append("@").append(propertyName).toString();
     }
 
