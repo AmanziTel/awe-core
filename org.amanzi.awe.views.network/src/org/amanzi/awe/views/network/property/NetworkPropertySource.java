@@ -23,6 +23,9 @@ import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.IndexManager;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
@@ -131,8 +134,16 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
     }
 
 
-    private void updateIndexes(PropertyContainer container, String id, Object value) {
-        
+    private void updateIndexes(PropertyContainer container, String propertyName, Object value) {
+        if (container instanceof Node){
+            
+            DatasetService service = NeoServiceFactory.getInstance().getDatasetService();
+            Node root = service.findRootByChild((Node)container);
+            if (root!=null){
+                IndexManager manager= service.getIndexManader(root);
+                manager.updateIndexes(container,propertyName,value);
+            }
+        }
     }
 
     /**
