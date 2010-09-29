@@ -72,6 +72,8 @@ public class TransmissionLoader {
     private final GraphDatabaseService neo;
     private final String gisName;
     private final Node gis;
+    private Node lastSector;
+    private static final String PROXY_NAME_SEPARATOR = "/";
 
     /**
      * Constructor
@@ -370,19 +372,50 @@ public class TransmissionLoader {
                 String servCounName = NeoUtils.getTransmissionPropertyName(fileName);
                 serverNodeName.setFieldValues(fields);
                 neighbourNodeName.setFieldValues(fields);
+                Node proxyServer = null;
+                Node proxyNeighbour = null;
                 Node serverNode = getSiteNodeById(serverNodeName);
                 Node neighbourNode = getSiteNodeById(neighbourNodeName);
+                String proxySectorName = null;
+                String proxyNeighbourName = null;
                 if (serverNode == null) {
                     serverNode = createTransmissionSite(serverNodeName, fields);
+                    proxySectorName = fileName + PROXY_NAME_SEPARATOR + serverNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+                    proxyServer = NeoUtils.createProxySite(serverNode, fileName, neighbour, lastSector, NetworkRelationshipTypes.TRANSMISSIONS, neo);
+                	index.index(proxyServer, NeoUtils.getLuceneIndexKeyByProperty(neighbour, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS), proxySectorName);
+                	lastSector = proxyServer;
                     NeoLoaderPlugin.error("Not found site: " + serverNodeName.getId1());
                 }
+                else {
+                	proxySectorName = fileName + PROXY_NAME_SEPARATOR + serverNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+                	proxyServer = NeoUtils.getProxySector(serverNode, fileName);
+                	if (proxyServer == null) {
+                    	proxyServer = NeoUtils.createProxySite(serverNode, fileName, neighbour, lastSector, NetworkRelationshipTypes.TRANSMISSIONS, neo);
+                    	index.index(proxyServer, NeoUtils.getLuceneIndexKeyByProperty(neighbour, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS), proxySectorName);
+                    	lastSector = proxyServer;
+                    }
+                }
+                
                 if (neighbourNode == null) {
                     neighbourNode = createTransmissionSite(neighbourNodeName, fields);
+                    proxyNeighbourName = fileName + PROXY_NAME_SEPARATOR + neighbourNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
+                    proxyNeighbour = NeoUtils.createProxySector(neighbourNode, fileName, neighbour, lastSector, NetworkRelationshipTypes.TRANSMISSIONS, neo);
+                	index.index(proxyNeighbour, NeoUtils.getLuceneIndexKeyByProperty(neighbour, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS), proxyNeighbourName);
+                	lastSector = proxyNeighbour;
                     NeoLoaderPlugin.error("Not found site: " + neighbourNodeName.getId1());
                 }
+                else{
+                	proxyNeighbourName = fileName + PROXY_NAME_SEPARATOR + neighbourNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
+                	proxyNeighbour = NeoUtils.getProxySector(neighbourNode, fileName);
+                	if (proxyNeighbour == null) {
+                    	proxyNeighbour = NeoUtils.createProxySector(neighbourNode, fileName, neighbour, lastSector, NetworkRelationshipTypes.TRANSMISSIONS, neo);
+                    	index.index(proxyNeighbour, NeoUtils.getLuceneIndexKeyByProperty(neighbour, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS), proxyNeighbourName);
+                    	lastSector = proxyNeighbour;
+                    }
+                }
 
-                Relationship relation = serverNode.createRelationshipTo(neighbourNode, NetworkRelationshipTypes.TRANSMISSION);
-                relation.setProperty(INeoConstants.NEIGHBOUR_NAME, fileName);
+                Relationship relation = proxyServer.createRelationshipTo(proxyNeighbour, NetworkRelationshipTypes.TRANSMISSION);
+//                relation.setProperty(INeoConstants.NEIGHBOUR_NAME, fileName);
                 for (Integer index : indexMap.keySet()) {
                     String value = fields[index];
                     if (value.length() > 0) {

@@ -562,7 +562,7 @@ public class NetworkRenderer extends RendererImpl {
             if (neiName != null) {
                 Object properties = geoNeo.getProperties(GeoNeo.NEIGH_RELATION);
                 if (properties != null) {
-                    drawRelation(g, (Relationship)properties, lineColor, nodesMap);
+                    drawRelation(g, (Relationship)properties, lineColor, nodesMap, neo);
                 }
                 properties = geoNeo.getProperties(GeoNeo.NEIGH_MAIN_NODE);
                 Object type=geoNeo.getProperties(GeoNeo.NEIGH_TYPE);
@@ -709,8 +709,10 @@ public class NetworkRenderer extends RendererImpl {
                     g.drawLine(point1.x, point1.y, point2.x, point2.y);
                 }
             }
-            for (Relationship relation : NeoUtils.getTransmissionRelations(node, neiName)) {
-                Point point2 = nodesMap.get(relation.getOtherNode(node));
+            for (Relationship relation : NeoUtils.getTransmissionRelations(proxyServeNode, neiName)) {
+            	Node proxyTransNode = relation.getOtherNode(proxyServeNode);
+            	final Node transNode = NeoUtils.getNodeFromProxy(proxyTransNode, NetworkRelationshipTypes.TRANSMISSIONS, neo);
+                Point point2 = nodesMap.get(transNode);
                 if (point2 != null) {
                     g.drawLine(point1.x, point1.y, point2.x, point2.y);
                 }
@@ -726,10 +728,18 @@ public class NetworkRenderer extends RendererImpl {
      * @param lineColor - line color
      * @param nodesMap map of nodes
      */
-    private void drawRelation(Graphics2D g, Relationship relation, Color lineColor, Map<Node, Point> nodesMap) {
+    private void drawRelation(Graphics2D g, Relationship relation, Color lineColor, Map<Node, Point> nodesMap, GraphDatabaseService neo) {
         g.setColor(lineColor);
         Point point1 = nodesMap.get(relation.getStartNode());
+        if (point1 == null){
+        	Node servNode = NeoUtils.getNodeFromProxy(relation.getStartNode(), NetworkRelationshipTypes.TRANSMISSIONS, neo);
+        	point1 = nodesMap.get(servNode);
+        }
         Point point2 = nodesMap.get(relation.getEndNode());
+        if (point2 == null){
+        	Node transNode = NeoUtils.getNodeFromProxy(relation.getEndNode(), NetworkRelationshipTypes.TRANSMISSIONS, neo);
+        	point2 = nodesMap.get(transNode);
+        }
         if (point1 != null && point2 != null) {
             g.drawLine(point1.x, point1.y, point2.x, point2.y);
         }

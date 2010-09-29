@@ -67,6 +67,7 @@ public class NeighbourLoader {
     private static final String ADJ_CI_HEADER = "ADJ_CI";
     private static final String ADJ_LAC_HEADER = "ADJ_LAC";
     private static final String ADJ_BTS_HEADER = "ADJ_BTS_NAME";
+    private static final String PROXY_NAME_SEPARATOR = "/";
 
     // private static String directory = null;
     private static final int COMMIT_MAX = 1000;
@@ -373,7 +374,7 @@ public class NeighbourLoader {
                 Node proxyServer = null;
                 Node proxyNeighbour = null;
                 if (serverNode != null) {
-                	proxySectorName = fileName + "/" + serverNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+                	proxySectorName = fileName + PROXY_NAME_SEPARATOR + serverNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
                     neighbourNode = getSectorNodeById(neighbourNodeName);
                     for (Node node: serverNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
                     	@Override
@@ -393,7 +394,7 @@ public class NeighbourLoader {
                 }
                 
                 if (neighbourNode != null){
-                	proxyNeighbourName = fileName + "/" + neighbourNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
+                	proxyNeighbourName = fileName + PROXY_NAME_SEPARATOR + neighbourNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
                 	for (Node node: neighbourNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
                 		@Override
                         public boolean isReturnableNode(TraversalPosition currentPos) {

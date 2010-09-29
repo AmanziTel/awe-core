@@ -398,6 +398,7 @@ public class NeoUtils {
         Transaction tx = beginTx(service);
         try {
             Node root = service.getReferenceNode();
+//            root.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, , Direction.OUTGOING)
             Iterator<Node> gisIterator = root.traverse(Order.DEPTH_FIRST, getStopEvaluator(2), new ReturnableEvaluator() {
 
                 @Override
@@ -409,6 +410,9 @@ public class NeoUtils {
                     return getNodeName(node, service).equals(nodeName);
                 }
             }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
+            while(gisIterator.hasNext()){
+            	System.out.println("GIS:" + gisIterator.next());
+            }
             return gisIterator.hasNext() ? gisIterator.next() : null;
         } finally {
             finishTx(tx);
@@ -709,7 +713,7 @@ public class NeoUtils {
         }
         ArrayList<Relationship> result = new ArrayList<Relationship>();
         for (Relationship relation : relationships) {
-            if (neighbourName.equals(getNeighbourName(relation, null))) {
+        	if (neighbourName.equals(getNeighbourName(relation, "").equals("") ? getNeighbourName(relation.getStartNode()) : getNeighbourName(relation, null))){
                 result.add(relation);
             }
         }
@@ -3145,6 +3149,39 @@ public class NeoUtils {
         		lastSector.createRelationshipTo(proxySector, NetworkRelationshipTypes.NEXT);
 
         	sector.createRelationshipTo(proxySector, type);           	
+        	tx.success();
+        } catch (Exception e) {
+            NeoCorePlugin.error(e.getLocalizedMessage(), e);
+        } finally {
+            tx.finish();
+        }
+
+    	return proxySector;
+    }
+    
+    /**
+     * @param site the sector whose proxy is to be created
+     * @param fileName the name of file
+     * @param neighbour the root neighbour node for this file
+     * @param service the service
+     * @return the proxy site node
+     */
+    public static Node createProxySite(Node site, String fileName, Node neighbour, Node lastSite, RelationshipType type, GraphDatabaseService service){
+    	Node proxySector = null;
+        Transaction tx = service.beginTx();
+        try {
+        	proxySector = service.createNode();
+        	String sectorName = site.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+        	String proxySectorName = fileName + PROXY_NAME_SEPARATOR + sectorName;
+        	proxySector.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.SITE_SITE_RELATIONS.getId());                    	
+        	proxySector.setProperty(INeoConstants.PROPERTY_NAME_NAME, proxySectorName);
+
+        	if (lastSite == null || lastSite.equals(neighbour))
+        		neighbour.createRelationshipTo(proxySector, NetworkRelationshipTypes.CHILD);
+        	else 
+        		lastSite.createRelationshipTo(proxySector, NetworkRelationshipTypes.NEXT);
+
+        	site.createRelationshipTo(proxySector, type);           	
         	tx.success();
         } catch (Exception e) {
             NeoCorePlugin.error(e.getLocalizedMessage(), e);

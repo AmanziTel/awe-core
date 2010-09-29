@@ -76,6 +76,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
     private static final String EXTERNAL_DTD_LOADING_FEATURE = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
     private static final String TAG_ATTR_NAME = "name";
     private static final String LIST_NAME = "frequency";
+    private static final String PROXY_NAME_SEPARATOR = "/";
     
     private final ReadContentHandler handler;
     private CountingFileInputStream inputStream;
@@ -354,8 +355,8 @@ public class NokiaTopologyLoader extends AbstractLoader {
         Node proxyNeighbour = null;
         
         getNeighbourNode(); //initialize neighbors
-        proxySectorName = neighbourName + "/" + server.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-        proxyNeighbourName = neighbourName + "/" + neighbour.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+        proxySectorName = neighbourName + PROXY_NAME_SEPARATOR + server.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+        proxyNeighbourName = neighbourName + PROXY_NAME_SEPARATOR + neighbour.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
         
         for (Node node: server.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
         	@Override

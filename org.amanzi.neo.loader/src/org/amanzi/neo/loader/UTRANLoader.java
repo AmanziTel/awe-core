@@ -100,6 +100,9 @@ public class UTRANLoader extends AbstractLoader {
 
     /** The Constant GSM_NEIGHBOUR_NAME. */
     private static final String GSM_NEIGHBOUR_NAME = "external gsm relation";
+    
+    /** The Constant PROXY_NAME_SEPARATOR*/
+    private static final String PROXY_NAME_SEPARATOR = "/";
     static {
         siteProperty = new LinkedList<String>();
         siteProperty.add("latitude");
@@ -381,8 +384,8 @@ public class UTRANLoader extends AbstractLoader {
         	neighborNode = gsmNeighbourNode;
         }
         
-        proxySectorName = neighbourName + "/" + server.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-        proxyNeighbourName = neighbourName + "/" + neighbour.getProperty(INeoConstants.PROPERTY_NAME_NAME);
+        proxySectorName = neighbourName + PROXY_NAME_SEPARATOR + server.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+        proxyNeighbourName = neighbourName + PROXY_NAME_SEPARATOR + neighbour.getProperty(INeoConstants.PROPERTY_NAME_NAME);
         
         Transaction tx = neo.beginTx();
         try {

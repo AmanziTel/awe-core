@@ -31,6 +31,7 @@ import org.amanzi.awe.views.neighbours.RelationWrapper;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NetworkSiteType;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.icons.IconManager;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -98,6 +99,8 @@ public class TransmissionView extends ViewPart {
      * The ID of the view as specified by the extension.
      */
     public static final String ID = "org.amanzi.awe.views.neighbours.views.TransmissionView";
+    
+    private GraphDatabaseService graphDatabaseService=NeoServiceProvider.getProvider().getService();
 
     /** String SHOW_NEIGHBOUR field */
     private static final String SHOW_NEIGHBOUR = "show transmission relation '%s' > '%s' on map";
@@ -255,7 +258,7 @@ public class TransmissionView extends ViewPart {
                     Node mainNode = nodeIterator.next();
                     for (Relationship relation : mainNode.getRelationships(NetworkRelationshipTypes.TRANSMISSION,
                             Direction.OUTGOING)) {
-                        if (NeoUtils.getNeighbourName(relation, "").equals(name)) {
+                    	if (mainNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString().startsWith(name, 0)){
                             result.add(relation);
                         }
                     }
@@ -301,8 +304,8 @@ public class TransmissionView extends ViewPart {
                             return currentPos.currentNode().hasRelationship(NetworkRelationshipTypes.TRANSMISSION,
                                                     Direction.OUTGOING);
                                         }
-                    }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT,
-                                    Direction.OUTGOING)
+                    }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING,
+                    	NetworkRelationshipTypes.TRANSMISSIONS, Direction.OUTGOING)
                             .iterator();
                 }
             }
@@ -351,9 +354,11 @@ public class TransmissionView extends ViewPart {
             // try {
             RelationWrapper relation = (RelationWrapper)obj;
             if (index == 0) {
-                return NeoUtils.getSimpleNodeName(relation.getServeNode(), "");
+            	return NeoUtils.getSimpleNodeName(NeoUtils.getNodeFromProxy(relation.getServeNode(), NetworkRelationshipTypes.TRANSMISSIONS, graphDatabaseService), "");
+//                return NeoUtils.getSimpleNodeName(relation.getServeNode(), "");
             } else if (index == 1) {
-                return NeoUtils.getSimpleNodeName(relation.getNeighbourNode(), "");
+            	return NeoUtils.getSimpleNodeName(NeoUtils.getNodeFromProxy(relation.getNeighbourNode(), NetworkRelationshipTypes.TRANSMISSIONS, graphDatabaseService), "");
+//                return NeoUtils.getSimpleNodeName(relation.getNeighbourNode(), "");
             } else {
                 return relation.getRelation().getProperty(columns.get(index), "").toString();
             }
@@ -721,11 +726,13 @@ public class TransmissionView extends ViewPart {
      */
     protected void showServe(RelationWrapper relationWrapper) {
         setServeSelection(relationWrapper);
+        Node serveNode = NeoUtils.getNodeFromProxy(relationWrapper.getServeNode(), NetworkRelationshipTypes.TRANSMISSIONS, graphDatabaseService);
         HashMap<String, Object> properties = new HashMap<String, Object>();
         properties.put(GeoNeo.NEIGH_MAIN_NODE, null);
         properties.put(GeoNeo.NEIGH_NAME, relationWrapper.toString());
         properties.put(GeoNeo.NEIGH_RELATION, relationWrapper.getRelation());
-        UpdatePropertiesAndMapEvent event = getLayerEvent(properties, relationWrapper.getServeNode(), relationWrapper.getServeNode());
+        UpdatePropertiesAndMapEvent event = getLayerEvent(properties, serveNode, serveNode);
+//        UpdatePropertiesAndMapEvent event = getLayerEvent(properties, relationWrapper.getServeNode(), relationWrapper.getServeNode());
         NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(event);
     }
 
