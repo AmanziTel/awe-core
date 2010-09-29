@@ -37,17 +37,27 @@ import org.neo4j.neoclipse.property.PropertyDescriptor;
 import org.neo4j.neoclipse.property.PropertyTransform;
 import org.neo4j.neoclipse.property.PropertyTransform.PropertyHandler;
 
+// TODO: Auto-generated Javadoc
 /**
- * Class that creates a properties of given Node
- * 
+ * Class that creates a properties of given Node.
+ *
  * @author Lagutko_N
  * @since 1.0.0
  */
 
 public class NetworkPropertySource extends NodePropertySource implements IPropertySource {
+    
+    /** The is delta node. */
     private boolean isDeltaNode;
+    
+    /** The pattern. */
     Pattern pattern = Pattern.compile("Delta (\\w+)\\s+(.*)");
 
+    /**
+     * Instantiates a new network property source.
+     *
+     * @param node the node
+     */
     public NetworkPropertySource(NeoNode node) {
         super(node.getNode(), null);
         isDeltaNode = node.getNode().getProperty("type","").toString().startsWith("delta_");
@@ -55,6 +65,8 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
 
     /**
      * Returns the descriptors for the properties of the node.
+     *
+     * @return the property descriptors
      */
     public IPropertyDescriptor[] getPropertyDescriptors() {
         List<IPropertyDescriptor> descs = new ArrayList<IPropertyDescriptor>();
@@ -85,13 +97,21 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
         return descs.toArray(new IPropertyDescriptor[descs.size()]);
     }
 
+    /**
+     * Sets the property value.
+     *
+     * @param id the id
+     * @param value the value
+     */
     @Override
     public void setPropertyValue(Object id, Object value) {
         if (!((String)id).startsWith("delta_")) {
             Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
             try {
+                Object oldValue=null;
                 if (container.hasProperty((String)id)) {
-                    updateIndexes(container, (String)id,value);
+                    oldValue=container.getProperty((String)id);
+
                     // try to keep the same type as the previous value
                     Class< ? > c = container.getProperty((String)id).getClass();
                     PropertyHandler propertyHandler = PropertyTransform.getHandler(c);
@@ -115,6 +135,7 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
                     } catch (Exception e) {
                         MessageDialog.openError(null, "Error", "Error in Neo service: " + e.getMessage());
                     }
+                    updateIndexes(container, (String)id,oldValue);
                 } else {
                     // simply set the value
                     try {
@@ -125,6 +146,7 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
                 }
                 tx.success();
                 updateLayer();
+                updateStatistics(container, (String)id,oldValue);
             } finally {
                 tx.finish();
                 NeoServiceProvider.getProvider().commit();
@@ -134,20 +156,39 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
     }
 
 
-    private void updateIndexes(PropertyContainer container, String propertyName, Object value) {
+
+    /**
+     * Update statistics.
+     *
+     * @param container the container
+     * @param id the id
+     * @param oldValue the old value
+     */
+    private void updateStatistics(PropertyContainer container, String id, Object oldValue) {
+        //TODO implement update statistics
+    }
+
+    /**
+     * Update indexes.
+     *
+     * @param container the container
+     * @param propertyName the property name
+     * @param oldValue the old value
+     */
+    private void updateIndexes(PropertyContainer container, String propertyName,Object oldValue) {
         if (container instanceof Node){
             
             DatasetService service = NeoServiceFactory.getInstance().getDatasetService();
             Node root = service.findRootByChild((Node)container);
             if (root!=null){
                 IndexManager manager= service.getIndexManader(root);
-//                manager.updateIndexes(container,propertyName,value);
+                manager.updateIndexes(container,propertyName,oldValue);
             }
         }
     }
 
     /**
-     *updates layer
+     * updates layer.
      */
     private void updateLayer() {
         Node gisNode = NeoUtils.findGisNodeByChild((Node)container);

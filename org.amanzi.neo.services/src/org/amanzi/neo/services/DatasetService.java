@@ -991,4 +991,22 @@ public class DatasetService extends AbstractService {
         return new IndexManager(root);
     }
 
+
+    /**
+     * Fing gis node.
+     *
+     * @param root the root
+     * @return the gis properties
+     */
+    public GisProperties fingGisNode(Node root) {
+        Relationship rel = root.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
+        Node gis;
+        if (rel == null) {
+            return null;
+        } else {
+            gis = rel.getOtherNode(root);
+        }
+        return new GisProperties(gis);
+    }
+
 }

@@ -18,10 +18,13 @@ import java.io.IOException;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.index.IndexService;
 
 /**
@@ -61,11 +64,12 @@ public class IndexManager {
      * @param propertyName the property name
      * @param value the value
      */
-    public void updateIndexes(PropertyContainer container, String propertyName, Object oldValue, Object value) {
+    public void updateIndexes(PropertyContainer container, String propertyName, Object oldValue) {
         // TODO not fully implement
         if ( name == null) {
             return;
         }
+        Object value = container.getProperty(propertyName, null);
         if (oldValue == null && value == null || oldValue != null && oldValue.equals(value)) {
             return;
         }
@@ -91,10 +95,34 @@ public class IndexManager {
                 return false;
             }
             if (type == NodeTypes.SITE) {
-                if (INeoConstants.PROPERTY_LAT_NAME.equals(propertyName)) {
+                if (INeoConstants.PROPERTY_LAT_NAME.equals(propertyName)|| INeoConstants.PROPERTY_LON_NAME.equals(propertyName)){
                     try {
+                        
+                        GisProperties prop=service.fingGisNode(root);
+                        if (prop==null){
+                            return false;
+                        }
+                        Double lat = (Double)node.getProperty(INeoConstants.PROPERTY_LAT_NAME,0d);
+                        Double lon = (Double)node.getProperty(INeoConstants.PROPERTY_LON_NAME,0d);
+                        if (lat==0||lon==0){
+                            return false;
+                        }
+                        if (((Number)value).doubleValue() ==0.0){
+                            return false;
+                        }
+                        prop.updateBBox(lat, lon);
+                        
                         MultiPropertyIndex<Double> id = NeoUtils.getLocationIndexProperty(name);
-//                        id.initialize(neo, reference)
+                        Transaction tx = DatabaseManager.getInstance().getCurrentDatabaseService().beginTx();
+                        try {
+                            id.initialize(DatabaseManager.getInstance().getCurrentDatabaseService(), null);
+                            id.add(node);
+                            id.finishUp();
+                            tx.success();
+                        } finally {
+                            tx.finish();
+                        }
+                        service.saveGis(prop);
                     } catch (IOException e) {
                         // TODO Handle IOException
                         e.printStackTrace();
@@ -118,7 +146,7 @@ public class IndexManager {
                 return false;
             }
             boolean indexPr = false;
-            for (Node nodeIdx : index.getNodes(idName, value)) {
+            for (Node nodeIdx : index.getNodes(idName, oldValue)) {
                 if (nodeIdx.equals(node)) {
                     indexPr = true;
                     break;
