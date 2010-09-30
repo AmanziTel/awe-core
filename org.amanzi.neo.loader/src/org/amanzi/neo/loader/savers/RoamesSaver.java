@@ -52,14 +52,14 @@ public class RoamesSaver extends AbstractHeaderSaver<HeaderTransferData> impleme
     }
 
     @Override
-    public boolean beforeSaveNewElement(HeaderTransferData element) {+
+    public boolean beforeSaveNewElement(HeaderTransferData element) {
         newElem=true;
     hours=null;
     //TODO define new latitude
     currentLatitude=null;
     currentLatitude=null; 
     virtualParent=null;
-    workDate=getWorkDate(element);
+//    workDate=getWorkDate(element);
     boolean result = workDate==null;
     parent=null;
     if (!result){
