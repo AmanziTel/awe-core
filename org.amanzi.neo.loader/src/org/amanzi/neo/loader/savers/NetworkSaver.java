@@ -88,7 +88,7 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
     public void save(HeaderTransferData element) {
         if (headerNotHandled) {
             definePropertyMap(element);
-            startMainTx();
+            startMainTx(1000);
             initializeIndexes();
             headerNotHandled = false;
 

@@ -85,6 +85,10 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
     /** The element. */
     protected T element;
 
+    private long maxTransactionSize;
+
+    private TransactionCounter txCounter;
+
     /**
      * Gets the prints the stream.
      * 
@@ -142,7 +146,9 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
     /**
      * Start main tx.
      */
-    protected void startMainTx() {
+    protected void startMainTx(long maxTransactionSize) {
+        this.maxTransactionSize = maxTransactionSize;
+        txCounter=new TransactionCounter(maxTransactionSize);
         mainTx = getService().beginTx();
     }
 
@@ -375,7 +381,7 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
      * @param value the value
      */
     protected boolean setProperty(String key, String nodeType, Node node, String propertyName, Object value) {
-        if (value==null){
+        if (value == null) {
             return false;
         }
         node.setProperty(propertyName, value);
@@ -426,6 +432,9 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
      * @param restart the restart
      */
     protected void commit(boolean restart) {
+        if (txCounter!=null){
+            txCounter.flush();
+        }
         if (mainTx != null) {
             flushIndexes();
             mainTx.success();
@@ -438,6 +447,11 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
             } else {
                 mainTx = null;
             }
+        }
+    }
+    public void updateTx(long nodes,long relations){
+        if (txCounter.updateTx(nodes, relations)){
+            commit(true);
         }
     }
 
@@ -490,4 +504,54 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
         exception(exception);
     }
 
+    /**
+     * <p>
+     * TransactionCounter
+     * </p>
+     * @author tsinkel_a
+     * @since 1.0.0
+     */
+    public static class TransactionCounter {
+        long nodes = 0;
+        long nodesAll = 0;
+        long relations = 0;
+        long relationsAll = 0;
+        long maxTotal;
+
+
+        /**
+         * Instantiates a new transaction counter.
+         *
+         * @param maxTotal the max total
+         */
+        public TransactionCounter(long maxTotal) {
+            super();
+            this.maxTotal = maxTotal;
+        }
+
+        /**
+         * Update tx.
+         *
+         * @param nodes the nodes
+         * @param rel the rel
+         * @return true, if successful
+         */
+        public boolean updateTx(long nodes, long rel) {
+            this.nodes += nodes;
+            this.nodesAll += nodes;
+            this.relations += rel;
+            this.relationsAll += rel;
+            return nodes + relations >= maxTotal;
+        }
+
+
+        /**
+         * Flush.
+         */
+        public void flush() {
+            nodes = 0;
+            relations = 0;
+        }
+
+    }
 }

@@ -13,6 +13,9 @@
 
 package org.amanzi.neo.loader.savers;
 
+import java.util.Calendar;
+
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.loader.core.parser.HeaderTransferData;
 import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
@@ -28,14 +31,42 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class RoamesSaver extends AbstractHeaderSaver<HeaderTransferData> implements IStructuredSaver<HeaderTransferData> {
-
+    protected boolean newElem;
+    protected Calendar workDate;
+    protected boolean applyToAll;
+    protected Double currentLatitude;
+    protected Double currentLongitude;
+    private Node parent;
+    private Node virtualParent;
+    private long count;
+    private Node lastMNode;
+    private Node lastMsNode;
+    private Node lastMLocation;
+    private String previous_ms = null;
+    private String previous_time = null;
+    private int previous_pn_code = -1;
+    private String virtualDatasetName;
+    private Integer hours;
     @Override
     public void save(HeaderTransferData element) {
     }
 
     @Override
-    public boolean beforeSaveNewElement(HeaderTransferData element) {
-        return false;
+    public boolean beforeSaveNewElement(HeaderTransferData element) {+
+        newElem=true;
+    hours=null;
+    //TODO define new latitude
+    currentLatitude=null;
+    currentLatitude=null; 
+    virtualParent=null;
+    workDate=getWorkDate(element);
+    boolean result = workDate==null;
+    parent=null;
+    if (!result){
+        parent=service.getFileNode(rootNode, element.getFileName());
+        lastMNode=null;
+    }
+    return result;
     }
 
     @Override
@@ -44,11 +75,12 @@ public class RoamesSaver extends AbstractHeaderSaver<HeaderTransferData> impleme
 
     @Override
     protected void fillRootNode(Node rootNode, HeaderTransferData element) {
+        
     }
 
     @Override
     protected String getRootNodeType() {
-        return null;
+        return NodeTypes.DATASET.getId();
     }
 
     @Override
