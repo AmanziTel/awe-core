@@ -143,21 +143,21 @@ PURPOSE.
          id="net.refractions.udig.project"
          download-size="0"
          install-size="0"
-         version="1.1.1"
+         version="1.1.1.awe"
          unpack="false"/>
 
    <plugin
          id="net.refractions.udig.project.edit"
          download-size="0"
          install-size="0"
-         version="1.1.1"
+         version="1.1.1.awe"
          unpack="false"/>
 
    <plugin
          id="net.refractions.udig.project.ui"
          download-size="0"
          install-size="0"
-         version="1.1.1"
+         version="1.1.1.awe"
          unpack="false"/>
 
    <plugin
@@ -233,14 +233,14 @@ PURPOSE.
          id="net.refractions.udig.style.sld"
          download-size="0"
          install-size="0"
-         version="1.1.1"
+         version="1.1.1.awe"
          unpack="false"/>
 
    <plugin
          id="net.refractions.udig.ui"
          download-size="0"
          install-size="0"
-         version="1.1.1"
+         version="1.1.1.awe"
          unpack="false"/>
 
    <plugin
@@ -282,27 +282,27 @@ PURPOSE.
          id="com.lowagie.itext"
          download-size="0"
          install-size="0"
-         version="1.1.1"/>
+         version="1.1.1.awe"/>
 
    <plugin
          id="net.refractions.udig.printing.model"
          download-size="0"
          install-size="0"
-         version="1.1.0"
+         version="1.1.0.awe"
          unpack="false"/>
 
    <plugin
          id="net.refractions.udig.printing.model.edit"
          download-size="0"
          install-size="0"
-         version="1.1.0"
+         version="1.1.0.awe"
          unpack="false"/>
 
    <plugin
          id="net.refractions.udig.printing.ui"
          download-size="0"
          install-size="0"
-         version="1.1.0"
+         version="1.1.0.awe"
          unpack="false"/>
 
    <plugin
@@ -372,7 +372,7 @@ PURPOSE.
          id="org.amanzi.awe.gps"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
@@ -386,7 +386,7 @@ PURPOSE.
          id="org.amanzi.awe.console"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
@@ -400,28 +400,28 @@ PURPOSE.
          id="org.amanzi.awe.parser"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="org.amanzi.neo.loader.core"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="org.amanzi.neo.loader.ui"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="org.amanzi.neo.services"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
