@@ -16,11 +16,9 @@ package org.amanzi.neo.loader.savers;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -31,17 +29,11 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.loader.LoaderUtils;
 import org.amanzi.neo.loader.core.parser.HeaderTransferData;
-import org.amanzi.neo.loader.dialogs.DateTimeDialogWithToggle;
-import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.preferences.DataLoadPreferences;
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialogWithToggle;
-import org.eclipse.ui.PlatformUI;
+import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -56,11 +48,11 @@ public class TemsSaver extends DriveSaver<HeaderTransferData> {
 
     protected Double currentLatitude;
     protected Double currentLongitude;
-    private Node parent;
-    private Node virtualParent;
-    private Node lastMNode;
-    private Node lastMsNode;
     private Node lastMLocation;
+
+    private Node virtualParent;
+
+    private Node lastMsNode;
     private String previous_ms = null;
     private String previous_time = null;
     private int previous_pn_code = -1;
@@ -69,148 +61,150 @@ public class TemsSaver extends DriveSaver<HeaderTransferData> {
 
     @Override
     public void save(HeaderTransferData element) {
-            super.save(element);
-            String time = getStringValue("time", element);
-            Long timestamp = defineTimestamp(workDate, time);
-            String message_type = getStringValue("message_type", element);
-            Double latitude = getLatitude(getStringValue("latitude", element));
-            Double longitude = getLongitude(getStringValue("longitude", element));
-            if (time == null || latitude == null || longitude == null || timestamp == null) {
-                info(String.format("Line %s not saved.", element.getLine()));
-                return;
-            }
-            lastMNode = service.createMNode(parent, lastMNode);
-            updateTx(1, 1);
-            statistic.increaseTypeCount(rootname, NodeTypes.M.getId(), 1);
-            String mtypeId = NodeTypes.M.getId();
-            setProperty(rootname, mtypeId, lastMNode, INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
-            setProperty(rootname, mtypeId, lastMNode, "message_type", message_type);
-            setProperty(rootname, mtypeId, lastMNode, "time", time);
-            String event = getStringValue("event", element);
+        super.save(element);
+        String time = getStringValue("time", element);
+        Long timestamp = defineTimestamp(workDate, time);
+        String message_type = getStringValue("message_type", element);
+        Double latitude = getLatitude(getStringValue("latitude", element));
+        Double longitude = getLongitude(getStringValue("longitude", element));
+        if (time == null || latitude == null || longitude == null || timestamp == null) {
+            info(String.format("Line %s not saved.", element.getLine()));
+            return;
+        }
+        lastMNode = service.createMNode(parent, lastMNode);
+        updateTx(1, 1);
+        statistic.increaseTypeCount(rootname, NodeTypes.M.getId(), 1);
+        String mtypeId = NodeTypes.M.getId();
+        setProperty(rootname, mtypeId, lastMNode, INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+        setProperty(rootname, mtypeId, lastMNode, "message_type", message_type);
+        setProperty(rootname, mtypeId, lastMNode, "time", time);
+        String event = getStringValue("event", element);
+        if (StringUtils.isNotEmpty(event)) {
             setProperty(rootname, mtypeId, lastMNode, "event", event);
-            setProperty(rootname, mtypeId, lastMNode, INeoConstants.SECTOR_ID_PROPERTIES, getStringValue(INeoConstants.SECTOR_ID_PROPERTIES, element));
-            setUnparsedProperty(lastMNode, rootname, mtypeId, INeoConstants.PROPERTY_BCCH_NAME, getStringValue(INeoConstants.PROPERTY_BCCH_NAME, element));
-            setUnparsedProperty(lastMNode, rootname, mtypeId, INeoConstants.PROPERTY_TCH_NAME, getStringValue(INeoConstants.PROPERTY_TCH_NAME, element));
-            setUnparsedProperty(lastMNode, rootname, mtypeId, INeoConstants.PROPERTY_SC_NAME, getStringValue(INeoConstants.PROPERTY_SC_NAME, element));
-            setUnparsedProperty(lastMNode, rootname, mtypeId, INeoConstants.PROPERTY_PN_NAME, getStringValue(INeoConstants.PROPERTY_PN_NAME, element));
-            setUnparsedProperty(lastMNode, rootname, mtypeId, INeoConstants.PROPERTY_EcIo_NAME, getStringValue(INeoConstants.PROPERTY_EcIo_NAME, element));
-            setUnparsedProperty(lastMNode, rootname, mtypeId, INeoConstants.PROPERTY_RSSI_NAME, getStringValue(INeoConstants.PROPERTY_RSSI_NAME, element));
-            setUnparsedProperty(lastMNode, rootname, mtypeId, INeoConstants.PROPERTY_CI_NAME, getStringValue(INeoConstants.PROPERTY_CI_NAME, element));
-            String ms = getStringValue("ms", element);
-            setUnparsedProperty(lastMNode, rootname, mtypeId, "ms", ms);
-            Map<String, Object> sectorData = getNotHandledData(element, rootname, NodeTypes.SECTOR.getId());
-            for (Map.Entry<String, Object> entry : sectorData.entrySet()) {
-                String key = entry.getKey();
-                setProperty(rootname, mtypeId, lastMNode, key, entry.getValue());
-            }
+        }
+        setProperty(rootname, mtypeId, lastMNode, INeoConstants.SECTOR_ID_PROPERTIES, getStringValue(INeoConstants.SECTOR_ID_PROPERTIES, element));
+        setUnparsedProperty(lastMNode, rootname, mtypeId, INeoConstants.PROPERTY_BCCH_NAME, getStringValue(INeoConstants.PROPERTY_BCCH_NAME, element));
+        setUnparsedProperty(lastMNode, rootname, mtypeId, INeoConstants.PROPERTY_TCH_NAME, getStringValue(INeoConstants.PROPERTY_TCH_NAME, element));
+        setUnparsedProperty(lastMNode, rootname, mtypeId, INeoConstants.PROPERTY_SC_NAME, getStringValue(INeoConstants.PROPERTY_SC_NAME, element));
+        setUnparsedProperty(lastMNode, rootname, mtypeId, INeoConstants.PROPERTY_PN_NAME, getStringValue(INeoConstants.PROPERTY_PN_NAME, element));
+        setUnparsedProperty(lastMNode, rootname, mtypeId, INeoConstants.PROPERTY_EcIo_NAME, getStringValue(INeoConstants.PROPERTY_EcIo_NAME, element));
+        setUnparsedProperty(lastMNode, rootname, mtypeId, INeoConstants.PROPERTY_RSSI_NAME, getStringValue(INeoConstants.PROPERTY_RSSI_NAME, element));
+        setUnparsedProperty(lastMNode, rootname, mtypeId, INeoConstants.PROPERTY_CI_NAME, getStringValue(INeoConstants.PROPERTY_CI_NAME, element));
+        String ms = getStringValue("ms", element);
+        setUnparsedProperty(lastMNode, rootname, mtypeId, "ms", ms);
+        Map<String, Object> sectorData = getNotHandledData(element, rootname, NodeTypes.SECTOR.getId());
+        for (Map.Entry<String, Object> entry : sectorData.entrySet()) {
+            String key = entry.getKey();
+            setProperty(rootname, mtypeId, lastMNode, key, entry.getValue());
+        }
 
-            index(lastMNode);
-            if (currentLatitude == null || currentLongitude == null || Math.abs(currentLatitude - latitude) > 10E-10 || Math.abs(currentLongitude - longitude) > 10E-10) {
-                currentLatitude = latitude;
-                currentLongitude = longitude;
-                if (lastMLocation != null) {
-                    lastMLocation.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, element.getLine() - 1);
+        index(lastMNode);
+        if (currentLatitude == null || currentLongitude == null || Math.abs(currentLatitude - latitude) > 10E-10 || Math.abs(currentLongitude - longitude) > 10E-10) {
+            currentLatitude = latitude;
+            currentLongitude = longitude;
+            if (lastMLocation != null) {
+                lastMLocation.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, element.getLine() - 1);
+            }
+            lastMLocation = service.createNode(NodeTypes.MP, time);
+            updateTx(1, 0);
+            lastMLocation.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+            lastMLocation.setProperty(INeoConstants.PROPERTY_FIRST_LINE_NAME, element.getLine());
+            lastMLocation.setProperty(INeoConstants.PROPERTY_LAT_NAME, currentLatitude.doubleValue());
+            lastMLocation.setProperty(INeoConstants.PROPERTY_LON_NAME, currentLongitude.doubleValue());
+            index(lastMLocation);
+            GisProperties gisProperties = getGisProperties(rootNode);
+            gisProperties.updateBBox(currentLatitude, currentLongitude);
+            gisProperties.checkCRS(currentLatitude, currentLongitude, null);
+        }
+        lastMNode.createRelationshipTo(lastMLocation, GeoNeoRelationshipTypes.LOCATION);
+        updateTx(0, 1);
+        if (!"EV-DO Pilot Sets Ver2".equals(message_type))
+            return;
+        if (virtualParent == null) {
+            virtualParent = defineVirtualParent(element);
+            lastMsNode = null;
+        }
+        int channel = 0;
+        int pn_code = 0;
+        int ec_io = 0;
+        int measurement_count = 0;
+        try {
+            channel = getNumberValue(Integer.class, "all_active_set_channel_1", element);
+            pn_code = getNumberValue(Integer.class, "all_active_set_pn_1", element);
+            ec_io = getNumberValue(Integer.class, "all_active_set_ec_io_1", element);
+            measurement_count = getNumberValue(Integer.class, "all_pilot_set_count", element);
+        } catch (Exception e) {
+            error("Failed to parse a field on line " + element.getLine() + ": " + e.getMessage());
+            return;
+        }
+        if (measurement_count > 12) {
+            error("Measurement count " + measurement_count + " > 12");
+            measurement_count = 12;
+        }
+        boolean changed = false;
+        if (!ms.equals(this.previous_ms)) {
+            changed = true;
+            this.previous_ms = ms;
+        }
+        if (!time.equals(this.previous_time)) {
+            changed = true;
+            this.previous_time = time;
+        }
+        if (pn_code != this.previous_pn_code) {
+            if (this.previous_pn_code >= 0) {
+                error("SERVER CHANGED");
+            }
+            changed = true;
+            this.previous_pn_code = pn_code;
+        }
+        HashMap<String, float[]> signals = new HashMap<String, float[]>();
+        if (measurement_count > 0 && (changed || (event != null && event.length() > 0))) {
+            for (int i = 1; i <= measurement_count; i++) {
+                // Delete invalid data, as you can have empty ec_io
+                // zero ec_io is correct, but empty ec_io is not
+                try {
+                    ec_io = getNumberValue(Integer.class, "all_pilot_set_ec_io_" + i, element);
+                    channel = getNumberValue(Integer.class, "all_pilot_set_channel_" + i, element);
+                    pn_code = getNumberValue(Integer.class, "all_pilot_set_pn_" + i, element);
+                    String chan_code = "" + channel + "\t" + pn_code;
+                    if (!signals.containsKey(chan_code))
+                        signals.put(chan_code, new float[2]);
+                    signals.get(chan_code)[0] += Math.pow(10.0, ((ec_io) / 10.0));
+                    signals.get(chan_code)[1] += 1;
+                } catch (Exception e) {
+                    error("Error parsing column " + i + " for EC/IO, Channel or PN: " + e.getMessage());
                 }
-                lastMLocation = service.createNode(NodeTypes.MP, time);
-                updateTx(1, 0);
-                lastMLocation.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
-                lastMLocation.setProperty(INeoConstants.PROPERTY_FIRST_LINE_NAME, element.getLine());
-                lastMLocation.setProperty(INeoConstants.PROPERTY_LAT_NAME, currentLatitude.doubleValue());
-                lastMLocation.setProperty(INeoConstants.PROPERTY_LON_NAME, currentLongitude.doubleValue());
-                index(lastMLocation);
-                GisProperties gisProperties = getGisProperties(rootNode);
-                gisProperties.updateBBox(currentLatitude, currentLongitude);
-                gisProperties.checkCRS(currentLatitude, currentLongitude, null);
             }
-            lastMNode.createRelationshipTo(lastMLocation, GeoNeoRelationshipTypes.LOCATION);
-            updateTx(0, 1);
-            if (!"EV-DO Pilot Sets Ver2".equals(message_type))
-                return;
-            if (virtualParent == null) {
-                virtualParent = defineVirtualParent(element);
-                lastMsNode = null;
+        }
+        if (!signals.isEmpty()) {
+            TreeMap<Float, String> sorted_signals = new TreeMap<Float, String>();
+            for (String chanCode : signals.keySet()) {
+                float[] signal = signals.get(chanCode);
+                sorted_signals.put(signal[1] / signal[0], chanCode);
             }
-            int channel = 0;
-            int pn_code = 0;
-            int ec_io = 0;
-            int measurement_count = 0;
-            try {
-                channel = getNumberValue(Integer.class, "all_active_set_channel_1", element);
-                pn_code = getNumberValue(Integer.class, "all_active_set_pn_1", element);
-                ec_io = getNumberValue(Integer.class, "all_active_set_ec_io_1", element);
-                measurement_count = getNumberValue(Integer.class, "all_pilot_set_count", element);
-            } catch (Exception e) {
-                error("Failed to parse a field on line " + element.getLine() + ": " + e.getMessage());
-                return;
-            }
-            if (measurement_count > 12) {
-                error("Measurement count " + measurement_count + " > 12");
-                measurement_count = 12;
-            }
-            boolean changed = false;
-            if (!ms.equals(this.previous_ms)) {
-                changed = true;
-                this.previous_ms = ms;
-            }
-            if (!time.equals(this.previous_time)) {
-                changed = true;
-                this.previous_time = time;
-            }
-            if (pn_code != this.previous_pn_code) {
-                if (this.previous_pn_code >= 0) {
-                    error("SERVER CHANGED");
-                }
-                changed = true;
-                this.previous_pn_code = pn_code;
-            }
-            HashMap<String, float[]> signals = new HashMap<String, float[]>();
-            if (measurement_count > 0 && (changed || (event != null && event.length() > 0))) {
-                for (int i = 1; i <= measurement_count; i++) {
-                    // Delete invalid data, as you can have empty ec_io
-                    // zero ec_io is correct, but empty ec_io is not
-                    try {
-                        ec_io = getNumberValue(Integer.class, "all_pilot_set_ec_io_" + i, element);
-                        channel = getNumberValue(Integer.class, "all_pilot_set_channel_" + i, element);
-                        pn_code = getNumberValue(Integer.class, "all_pilot_set_pn_" + i, element);
-                        String chan_code = "" + channel + "\t" + pn_code;
-                        if (!signals.containsKey(chan_code))
-                            signals.put(chan_code, new float[2]);
-                        signals.get(chan_code)[0] += Math.pow(10.0, ((ec_io) / 10.0));
-                        signals.get(chan_code)[1] += 1;
-                    } catch (Exception e) {
-                        error("Error parsing column " + i + " for EC/IO, Channel or PN: " + e.getMessage());
-                    }
-                }
-            }
-            if (!signals.isEmpty()) {
-                TreeMap<Float, String> sorted_signals = new TreeMap<Float, String>();
-                for (String chanCode : signals.keySet()) {
-                    float[] signal = signals.get(chanCode);
-                    sorted_signals.put(signal[1] / signal[0], chanCode);
-                }
-                for (Map.Entry<Float, String> entry : sorted_signals.entrySet()) {
-                    String chanCode = entry.getValue();
-                    float[] signal = signals.get(chanCode);
-                    double mw = signal[0] / signal[1];
-                    lastMsNode = service.createMsNode(virtualParent, lastMsNode);
-                    updateTx(1, 1);
-                    statistic.increaseTypeCount(virtualDatasetName, NodeTypes.HEADER_MS.getId(), 1);
-                    String[] cc = chanCode.split("\\t");
+            for (Map.Entry<Float, String> entry : sorted_signals.entrySet()) {
+                String chanCode = entry.getValue();
+                float[] signal = signals.get(chanCode);
+                double mw = signal[0] / signal[1];
+                lastMsNode = service.createMsNode(virtualParent, lastMsNode);
+                updateTx(1, 1);
+                statistic.increaseTypeCount(virtualDatasetName, NodeTypes.HEADER_MS.getId(), 1);
+                String[] cc = chanCode.split("\\t");
 
-                    lastMsNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_MS);
-                    setProperty(virtualDatasetName, NodeTypes.HEADER_MS.getId(), lastMsNode, INeoConstants.PRPOPERTY_CHANNEL_NAME, getNumberValue(Integer.class, cc[0]));
-                    setProperty(virtualDatasetName, NodeTypes.HEADER_MS.getId(), lastMsNode, INeoConstants.PROPERTY_CODE_NAME, getNumberValue(Integer.class, cc[1]));
-                    lastMsNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, cc[1]);
-                    float dbm = LoaderUtils.mw2dbm(mw);
-                    setProperty(virtualDatasetName, NodeTypes.HEADER_MS.getId(), lastMsNode, INeoConstants.PROPERTY_DBM_NAME, dbm);
-                    lastMsNode.setProperty(INeoConstants.PROPERTY_MW_NAME, mw);
-                    setProperty(virtualDatasetName, NodeTypes.HEADER_MS.getId(), lastMsNode, INeoConstants.PROPERTY_MW_NAME, Double.valueOf(mw).floatValue());
-                    setProperty(virtualDatasetName, NodeTypes.HEADER_MS.getId(), lastMsNode, INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
-                    index(lastMsNode);
-                    lastMsNode.createRelationshipTo(lastMLocation, GeoNeoRelationshipTypes.LOCATION);
-                    updateTx(0, 1);
-                }
+                lastMsNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_MS);
+                setProperty(virtualDatasetName, NodeTypes.HEADER_MS.getId(), lastMsNode, INeoConstants.PRPOPERTY_CHANNEL_NAME, getNumberValue(Integer.class, cc[0]));
+                setProperty(virtualDatasetName, NodeTypes.HEADER_MS.getId(), lastMsNode, INeoConstants.PROPERTY_CODE_NAME, getNumberValue(Integer.class, cc[1]));
+                lastMsNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, cc[1]);
+                float dbm = LoaderUtils.mw2dbm(mw);
+                setProperty(virtualDatasetName, NodeTypes.HEADER_MS.getId(), lastMsNode, INeoConstants.PROPERTY_DBM_NAME, dbm);
+                lastMsNode.setProperty(INeoConstants.PROPERTY_MW_NAME, mw);
+                setProperty(virtualDatasetName, NodeTypes.HEADER_MS.getId(), lastMsNode, INeoConstants.PROPERTY_MW_NAME, Double.valueOf(mw).floatValue());
+                setProperty(virtualDatasetName, NodeTypes.HEADER_MS.getId(), lastMsNode, INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+                index(lastMsNode);
+                lastMsNode.createRelationshipTo(lastMLocation, GeoNeoRelationshipTypes.LOCATION);
+                updateTx(0, 1);
             }
+        }
     }
 
     /**
@@ -301,7 +295,7 @@ public class TemsSaver extends DriveSaver<HeaderTransferData> {
                 if (hours != null && hours > nodeHours) {
                     // next day
                     workDate.add(Calendar.DAY_OF_MONTH, 1);
-
+                    this.workDate.add(Calendar.DAY_OF_MONTH, 1);
                 }
                 hours = nodeHours;
                 workDate.set(Calendar.HOUR_OF_DAY, nodeHours);
@@ -361,22 +355,7 @@ public class TemsSaver extends DriveSaver<HeaderTransferData> {
 
     }
 
-    /**
-     * @param key -key of value from preference store
-     * @return array of possible headers
-     */
-    protected String[] getPossibleHeaders(String key) {
-        String text = NeoLoaderPlugin.getDefault().getPreferenceStore().getString(key);
-        String[] array = text.split(",");
-        List<String> result = new ArrayList<String>();
-        for (String string : array) {
-            String value = string.trim();
-            if (!value.isEmpty()) {
-                result.add(value);
-            }
-        }
-        return result.toArray(new String[0]);
-    }
+
 
     @Override
     protected void fillRootNode(Node rootNode, HeaderTransferData element) {
@@ -390,30 +369,20 @@ public class TemsSaver extends DriveSaver<HeaderTransferData> {
 
     @Override
     public boolean beforeSaveNewElement(HeaderTransferData element) {
-        newElem = true;
         hours = null;
-        // TODO define new latitude
         currentLatitude = null;
         currentLatitude = null;
         virtualParent = null;
-        workDate = getWorkDate(element);
-        boolean result = workDate == null;
-        parent = null;
-        if (!result) {
-            parent = service.getFileNode(rootNode, element.getFileName());
-            lastMNode = null;
-        }
-        return result;
+        return  super.beforeSaveNewElement(element);
     }
 
     /**
      * @param element
      * @return
      */
-    private Calendar getWorkDate(final HeaderTransferData element) {
-        if (applyToAll) {
-            return workDate;
-        }
+    @Override
+    protected Calendar getWorkDate(final HeaderTransferData element) {
+
         CharSequence filename = element.getFileName();
         Pattern p = Pattern.compile(".*(\\d{4}-\\d{2}-\\d{2}).*");
         Matcher m = p.matcher(filename);
@@ -442,51 +411,13 @@ public class TemsSaver extends DriveSaver<HeaderTransferData> {
         return result;
     }
 
-    /**
-     * Ask time.
-     * 
-     * @param element the element
-     * @return the calendar
-     */
-    protected Calendar askTime(final HeaderTransferData element) {
-        Calendar result = ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<Calendar>() {
-            Calendar result;
-            private DateTimeDialogWithToggle dialog;
-
-            @Override
-            public void run() {
-                Calendar prefDate = Calendar.getInstance();
-                String time = element.get("timestamp");
-                long millis = time == null ? System.currentTimeMillis() : Long.parseLong(time);
-                prefDate.setTimeInMillis(millis);
-                dialog = new DateTimeDialogWithToggle(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "Date of file", null, String.format(
-                        "File '%s' has no date information.", element.getFileName()), "Please specify the date on which this data was collected:",
-                        MessageDialogWithToggle.QUESTION, new String[] {IDialogConstants.CANCEL_LABEL, IDialogConstants.OK_LABEL}, 0, "apply this date to all files in this load ",
-                        applyToAll, prefDate.get(Calendar.YEAR), prefDate.get(Calendar.MONTH), prefDate.get(Calendar.DAY_OF_MONTH));
-                dialog.open();
-                if (dialog.getReturnCode() == IDialogConstants.OK_ID) {
-                    result = dialog.getCallendar();
-                    applyToAll = dialog.getToggleState();
-                } else {
-                    result = null;
-                }
-            }
-
-            @Override
-            public Calendar getValue() {
-                return result;
-            }
-        });
-        return result;
-    }
-
     @Override
     public void finishSaveNewElement(HeaderTransferData element) {
     }
 
     @Override
     protected String getTypeIdForGisCount(GisProperties gis) {
-        return NodeTypes.M.getId();
+        return NodeTypes.MP.getId();
     }
 
 }

@@ -420,26 +420,13 @@ public class DatasetService extends AbstractService {
      * @return the node
      */
     public Node findGisNode(Node rootNode, boolean createNew) {
+        if (createNew){
+            return getGisNode(rootNode).getGis();
+        }
         Relationship rel = rootNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
         if (rel != null) {
             return rel.getOtherNode(rootNode);
-        } else if (createNew) {
-            Transaction tx = databaseService.beginTx();
-            try {
-                Node result = databaseService.createNode();
-                NeoUtils.setNodeName(result, NeoUtils.getSimpleNodeName(rootNode, "", databaseService), databaseService);
-                result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.GIS.getId());
-                result.setProperty(INeoConstants.PROPERTY_NAME_NAME, rootNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, ""));
-                GisTypes gisType = GisTypes.getGisTypeFromRootType((String)rootNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME));
-                result.setProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, gisType.getHeader());
-                result.createRelationshipTo(rootNode, GeoNeoRelationshipTypes.NEXT);
-                databaseService.getReferenceNode().createRelationshipTo(result, NetworkRelationshipTypes.CHILD);
-                tx.success();
-                return result;
-            } finally {
-                tx.finish();
-            }
-        }
+        } 
         return null;
     }
 
