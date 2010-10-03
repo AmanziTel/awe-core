@@ -63,10 +63,10 @@ import org.eclipse.swt.widgets.TableColumn;
 public class EditPropertiesPage extends WizardPage {
 
     /** The node type. */
-    private final INodeType nodeType;
+    protected final INodeType nodeType;
 
     /** The viewer. */
-    private TableViewer viewer;
+    protected TableViewer viewer;
 
     /** The property list. */
     protected List<PropertyWrapper> propertyList = new ArrayList<PropertyWrapper>();
@@ -76,7 +76,7 @@ public class EditPropertiesPage extends WizardPage {
     
     /** The types. */
     @SuppressWarnings("rawtypes")
-    private Map<String, Class> types = new LinkedHashMap<String, Class>();
+    protected Map<String, Class> types = new LinkedHashMap<String, Class>();
     
     /** The remove. */
     private Button remove;
@@ -92,7 +92,7 @@ public class EditPropertiesPage extends WizardPage {
         this.nodeType = nodeType;
         setTitle(title);
         setDescription(getNormalDescription());
-        initProperty();
+
     }
 
     /**
@@ -126,6 +126,8 @@ public class EditPropertiesPage extends WizardPage {
      */
     @Override
     public void createControl(Composite parent) {
+        initProperty();
+
         final Group main = new Group(parent, SWT.FILL);
         main.setLayout(new GridLayout(2, false));
         viewer = new TableViewer(main, SWT.FILL | SWT.BORDER | SWT.FULL_SELECTION);
