@@ -22,7 +22,7 @@
                   toolbarPath="additions"
                   label="Label"
                   class="org.amanzi.awe.views.network.view.NewTypeAction"
-                  icon="icons/network.png"
+                  icon="icons/add-type.gif"
                   tooltip="Create new node type"
                   style="push"
                   id="org.amanzi.awe.views.network.view.NewTypeAction">

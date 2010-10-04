@@ -53,11 +53,12 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
         // propertyList.add(new PropertyWrapper("lat", Double.class, "", false));
 
         NodeTypes type = NodeTypes.getEnumById(nodeType.getId());
+        propertyList.add(new NewNodePropertyWrapper("name", String.class, "new " + nodeType.getId(), true));
         if (type != null) {
             IPropertyHeader ph = PropertyHeader.getPropertyStatistic(NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId()));
             Map<String, Object> statisticProperties = ph.getStatisticParams(type);
             for (String key : statisticProperties.keySet()) {
-                propertyList.add(new NewNodePropertyWrapper(key, statisticProperties.get(key).getClass(), statisticProperties.get(key).toString(), false));
+                propertyList.add(new NewNodePropertyWrapper(key, statisticProperties.get(key).getClass(), statisticProperties.get(key).toString(), true));
             }
         }
 

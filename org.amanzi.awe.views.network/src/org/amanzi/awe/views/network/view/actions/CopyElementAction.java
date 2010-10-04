@@ -42,10 +42,6 @@ public class CopyElementAction extends NewElementAction {
         super(selection, COPY_ACTION_SUPPORTED_TYPES, "Copy ", false);
     }
 
-    @Override
-    protected void updateNewElementType() {
-        // do nothing since type of new element equals to current
-    }
 
     @Override
     protected void createNewElement(Node parentElement, HashMap<String, Object> properties) {

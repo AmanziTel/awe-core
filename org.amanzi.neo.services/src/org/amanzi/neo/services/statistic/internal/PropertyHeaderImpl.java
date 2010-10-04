@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -211,7 +212,7 @@ public class PropertyHeaderImpl implements IPropertyHeader {
     }
 
     @Override
-    public Map<String, Object> getStatisticParams(NodeTypes type) {
+    public Map<String, Object> getStatisticParams(INodeType type) {
         return null;
     }
     public String[] getIdentityFields() {

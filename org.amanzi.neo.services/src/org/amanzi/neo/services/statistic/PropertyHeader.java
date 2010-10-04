@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -70,11 +71,11 @@ public class PropertyHeader implements IPropertyHeader {
         DatasetService service = NeoServiceFactory.getInstance().getDatasetService();
         String key = service.getNodeName(node);
         Node root = service.findRootByChild(node);
-        if (StringUtil.isEmpty(key)){
+        if (StringUtil.isEmpty(key)) {
             key = service.getNodeName(root);
         }
-        if (root!=null&&root.hasRelationship(StatisticRelationshipTypes.STATISTIC_PROP,Direction.OUTGOING)){
-            return new PropertyHeaderImpl(node,key);
+        if (root != null && root.hasRelationship(StatisticRelationshipTypes.STATISTIC_PROP, Direction.OUTGOING)) {
+            return new PropertyHeaderImpl(node, key);
         }
         return new PropertyHeader(node);
     }
@@ -155,8 +156,6 @@ public class PropertyHeader implements IPropertyHeader {
 
         return havePropertyNode ? getDefinedNumericFields() : isGis ? getDataVault().getNumericFields(nodeTypeId) : NeoUtils.getNumericFields(node);
     }
-
-
 
     /**
      * get data vault
@@ -398,7 +397,7 @@ public class PropertyHeader implements IPropertyHeader {
      * @author Cinkel_A
      * @since 1.0.0
      */
-    public static class PropertyStatistics implements ISinglePropertyStat{
+    public static class PropertyStatistics implements ISinglePropertyStat {
         private final Relationship statisticsRelation;
         private final Node typeNode;
         private final Node valueNode;
@@ -417,7 +416,7 @@ public class PropertyHeader implements IPropertyHeader {
             this.statisticsRelation = statisticsRelation;
             this.typeNode = typeNode;
             this.valueNode = valueNode;
-            name = NeoUtils.getSimpleNodeName(typeNode,"");
+            name = NeoUtils.getSimpleNodeName(typeNode, "");
         }
 
         /**
@@ -429,13 +428,10 @@ public class PropertyHeader implements IPropertyHeader {
             return statisticsRelation != null ? ((Number)statisticsRelation.getProperty("count", 0)).longValue() : 0l;
         }
 
-
-
         public Pair<Double, Double> getMinMax() {
-            return new Pair<Double, Double>((Double)statisticsRelation.getProperty(INeoConstants.MIN_VALUE, null), (Double)statisticsRelation.getProperty(INeoConstants.MAX_VALUE,
-                    null));
+            return new Pair<Double, Double>((Double)statisticsRelation.getProperty(INeoConstants.MIN_VALUE, null), (Double)statisticsRelation.getProperty(
+                    INeoConstants.MAX_VALUE, null));
         }
-
 
         @Override
         public Class getType() {
@@ -466,7 +462,7 @@ public class PropertyHeader implements IPropertyHeader {
 
         @Override
         public Object parseValue(String string) {
-            if (Number.class.isAssignableFrom(getType())){
+            if (Number.class.isAssignableFrom(getType())) {
                 try {
                     return NeoUtils.getNumberValue(getType(), string);
                 } catch (Exception e) {
@@ -479,9 +475,9 @@ public class PropertyHeader implements IPropertyHeader {
 
         @Override
         public Map<Object, Long> getValueMap() {
-            Map<Object, Long> result=new HashMap<Object, Long>();
-            if (valueNode!=null){
-                for (String propString:valueNode.getPropertyKeys()){
+            Map<Object, Long> result = new HashMap<Object, Long>();
+            if (valueNode != null) {
+                for (String propString : valueNode.getPropertyKeys()) {
                     result.put(propString, ((Number)valueNode.getProperty(propString)).longValue());
                 }
             }
@@ -518,20 +514,28 @@ public class PropertyHeader implements IPropertyHeader {
         }
         return null;
     }
+
     @Override
     public boolean isHavePropertyNode() {
         return havePropertyNode;
     }
 
-
-    // TODO traversing implementation
+    /**
+     * Returns the COMMONLY USED VALUE value of property type from statistic
+     * 
+     * @param <T> type of property value
+     * @param nodeType type of node
+     * @param propertyName property name
+     * @param defValue default value
+     * @return average value (or default if average is not found)
+     */
     protected <T> T getAverageValue(String nodeType, final String propertyName, T defValue) {
         if (!NodeTypes.SECTOR.getId().equals(nodeType))
             return defValue;
         Node root = NeoUtils.getParentNode(node, NodeTypes.NETWORK.getId());
-        final TraversalDescription td = Traversal.description().depthFirst().relationships(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING)
-                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
-                // .uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
+        final TraversalDescription td = Traversal.description().depthFirst().relationships(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING).relationships(
+                GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
+        // .uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)
                 .uniqueness(Uniqueness.NODE_GLOBAL).filter(new Predicate<Path>() {
 
                     @Override
@@ -544,7 +548,6 @@ public class PropertyHeader implements IPropertyHeader {
         Iterator<Path> iterator = traverser.iterator();
         if (iterator.hasNext()) {
             Path next = iterator.next();
-            System.out.println(next.endNode());
             int count = 0;
             String result = null;
             for (String key : next.endNode().getPropertyKeys()) {
@@ -577,6 +580,11 @@ public class PropertyHeader implements IPropertyHeader {
         return defValue;
     }
 
+    /**
+     * Returns the list of fields from statistic by value types
+     * 
+     * @return Map<String, String[]>
+     */
     private Map<String, String[]> getDefinedFields() {
         Map<String, String[]> result = new HashMap<String, String[]>();
         Relationship propRel = node.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
@@ -597,11 +605,13 @@ public class PropertyHeader implements IPropertyHeader {
     }
 
     /**
-     * @param type
-     * @return
+     * Returns the map of property keys and values from statistic for target nodeType
+     * 
+     * @param type type of node
+     * @return Map<String, Object>
      */
     @Override
-    public Map<String, Object> getStatisticParams(NodeTypes type) {
+    public Map<String, Object> getStatisticParams(INodeType type) {
         Map<String, Object> result = new HashMap<String, Object>();
         if (type != NodeTypes.SECTOR)
             return result;

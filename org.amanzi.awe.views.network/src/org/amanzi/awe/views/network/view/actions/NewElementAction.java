@@ -24,12 +24,15 @@ import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.index.MultiPropertyIndex;
+import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.eclipse.core.runtime.IStatus;
@@ -60,7 +63,7 @@ public class NewElementAction extends Action {
 
     protected GraphDatabaseService service;
 
-    protected NodeTypes type;
+    protected INodeType type;
 
     protected HashMap<String, Object> defaultProperties = new HashMap<String, Object>();
 
@@ -94,7 +97,9 @@ public class NewElementAction extends Action {
                 enabled = false;
             else if (element instanceof NeoNode) {
                 selectedNode = ((NeoNode)element).getNode();
-                type = NodeTypes.getNodeType(selectedNode, service);
+                DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
+                type = ds.getNodeType(selectedNode);
+                // type = NodeTypes.getNodeType(selectedNode, service);
                 enabled = initialize(unsupportedTypes);
             } else {
                 enabled = false;
@@ -125,17 +130,14 @@ public class NewElementAction extends Action {
             defaultValue = "New " + type.getId();
         }
 
-        switch (type) {
-        case SITE:
+        if (type == NodeTypes.SITE) {
             defaultProperties.put(INeoConstants.PROPERTY_LAT_NAME, (bb[2] + bb[3]) / 2D);
             defaultProperties.put(INeoConstants.PROPERTY_LON_NAME, (bb[0] + bb[1]) / 2D);
-            break;
-        case SECTOR:
+        } else if (type == NodeTypes.SECTOR) {
             defaultProperties.put("azimuth", 0.0d);
             defaultProperties.put("beamwidth", 0.0d);
             defaultProperties.put(INeoConstants.PROPERTY_SECTOR_CI, 0);
             defaultProperties.put(INeoConstants.PROPERTY_SECTOR_LAC, 0);
-            break;
         }
 
     }
@@ -156,7 +158,6 @@ public class NewElementAction extends Action {
             }
 
             if (result) {
-                updateNewElementType();
                 initializeDefaultProperties();
             }
 
@@ -166,18 +167,6 @@ public class NewElementAction extends Action {
         }
 
         return result;
-    }
-
-    protected void updateNewElementType() {
-        switch (type) {
-        case BSC:
-        case CITY:
-            type = NodeTypes.SITE;
-            break;
-        case SITE:
-            type = NodeTypes.SECTOR;
-            break;
-        }
     }
 
     @Override
@@ -224,7 +213,9 @@ public class NewElementAction extends Action {
 
     protected void setType(Node element) {
         if (type != null) {
-            type.setNodeType(element, service);
+            DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
+            ds.setNodeType(element, type);
+            // type.setNodeType(element, service);
         } else {
             element.setProperty(INeoConstants.PROPERTY_TYPE_NAME, newType);
         }
@@ -269,21 +260,28 @@ public class NewElementAction extends Action {
      */
     protected void postCreating(Node newElement) {
         if (type != null) {
-            switch (type) {
-            case BSC:
-            case CITY:
+            if (type == NodeTypes.BSC || type == NodeTypes.CITY || type == NodeTypes.SECTOR) {
                 indexElement(newElement);
-                break;
-            case SITE:
+            } else if (type == NodeTypes.SITE) {
                 indexElement(newElement);
                 multiPropertyIndex(newElement);
                 updateBounds(newElement);
-                break;
-            case SECTOR:
-                // TODO: sectors need to have more flexible indexing
-                indexElement(newElement);
-                break;
             }
+            // switch (type) {
+            // case BSC:
+            // case CITY:
+            // indexElement(newElement);
+            // break;
+            // case SITE:
+            // indexElement(newElement);
+            // multiPropertyIndex(newElement);
+            // updateBounds(newElement);
+            // break;
+            // case SECTOR:
+            // // TODO: sectors need to have more flexible indexing
+            // indexElement(newElement);
+            // break;
+            // }
         }
     }
 

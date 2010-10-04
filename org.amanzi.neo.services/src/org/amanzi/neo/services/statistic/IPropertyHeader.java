@@ -16,7 +16,7 @@ package org.amanzi.neo.services.statistic;
 import java.util.Collection;
 import java.util.Map;
 
-import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.enums.INodeType;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -152,7 +152,7 @@ public interface IPropertyHeader {
      * @param type the type
      * @return the statistic params
      */
-    Map<String, Object> getStatisticParams(NodeTypes type);
+    Map<String, Object> getStatisticParams(INodeType type);
     
     /**
      * Gets identity field

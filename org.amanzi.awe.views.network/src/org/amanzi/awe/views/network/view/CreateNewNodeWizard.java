@@ -13,12 +13,23 @@
 
 package org.amanzi.awe.views.network.view;
 
+import java.util.List;
+
 import org.amanzi.neo.core.enums.INodeType;
+import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.EditPropertiesPage.PropertyWrapper;
+import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * TODO Purpose of
@@ -48,6 +59,66 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
 
     @Override
     public boolean performFinish() {
+        try {
+            // Creating new node
+            GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+            Transaction tx = service.beginTx();
+            try {
+                Node targetNode = service.createNode();
+                targetNode.setProperty("type", iNodeType.getId());
+                sourceNode.createRelationshipTo(targetNode, NetworkRelationshipTypes.CHILD);
+                // NodeTypes type = NodeTypes.getEnumById(iNodeType.getId());
+                // if (type != null) {
+                // IPropertyHeader ph =
+                // PropertyHeader.getPropertyStatistic(NeoUtils.getParentNode(sourceNode,
+                // NodeTypes.NETWORK.getId()));
+                // Map<String, Object> statisticProperties = ph.getStatisticParams(type);
+                // for (String key : statisticProperties.keySet()) {
+                // targetNode.setProperty(key, statisticProperties.get(key));
+                // }
+                // }
+                List<PropertyWrapper> properties = page.getProperties();
+                for (PropertyWrapper propertyWrapper : properties) {
+                    if (!targetNode.hasProperty(propertyWrapper.getName()))
+                        targetNode.setProperty(propertyWrapper.getName(), propertyWrapper.getDefValue());
+                }
+
+                tx.success();
+            } catch (Exception e) {
+                e.printStackTrace();
+                tx.failure();
+            } finally {
+                tx.finish();
+            }
+
+            // Change structure
+            DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
+            INodeType sourceType = ds.getNodeType(sourceNode);
+
+            List<INodeType> structureTypes = ds.getSructureTypes(sourceNode);
+
+            List<INodeType> userDefTypes = ds.getUserDefinedNodeTypes();
+            userDefTypes.removeAll(structureTypes);
+
+            if (userDefTypes.contains(iNodeType)) {
+                String[] newStructureTypes = new String[structureTypes.size() + 1];
+                int i = 0;
+                for (INodeType type : structureTypes) {
+                    newStructureTypes[i++] = type.getId();
+                    if (type.equals(sourceType)) {
+                        newStructureTypes[i++] = iNodeType.getId();
+                    }
+                }
+                ds.setStructure(NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId()), newStructureTypes);
+            }
+
+            NeoServiceProvider.getProvider().commit();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        System.out.println("\nOK\n");
         return false;
     }
 

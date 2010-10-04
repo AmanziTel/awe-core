@@ -192,6 +192,15 @@ public class DatasetService extends AbstractService {
         return (String)node.getProperty("type", null);
     }
 
+    public void setNodeType(Node node, INodeType type) {
+        Transaction tx = databaseService.beginTx();
+        try {
+            setType(node, type.getId());
+        } finally {
+            tx.finish();
+        }
+    }
+
     /**
      * Sets the type.
      * 
@@ -420,13 +429,13 @@ public class DatasetService extends AbstractService {
      * @return the node
      */
     public Node findGisNode(Node rootNode, boolean createNew) {
-        if (createNew){
+        if (createNew) {
             return getGisNode(rootNode).getGis();
         }
         Relationship rel = rootNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
         if (rel != null) {
             return rel.getOtherNode(rootNode);
-        } 
+        }
         return null;
     }
 
@@ -518,21 +527,21 @@ public class DatasetService extends AbstractService {
             }
         });
         filter.addFilter(additionalFilter);
-        return Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1)).filter(filter)
-                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).prune(new PruneEvaluator() {
+        return Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1)).filter(filter).relationships(
+                GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).prune(new PruneEvaluator() {
 
-                    @Override
-                    public boolean pruneAfter(Path position) {
-                        if (position.lastRelationship() == null) {
-                            return false;
-                        }
-                        if (position.length() == 1) {
-                            return position.lastRelationship().isType(GeoNeoRelationshipTypes.NEXT);
-                        } else {
-                            return position.lastRelationship().isType(GeoNeoRelationshipTypes.CHILD);
-                        }
-                    }
-                });
+            @Override
+            public boolean pruneAfter(Path position) {
+                if (position.lastRelationship() == null) {
+                    return false;
+                }
+                if (position.length() == 1) {
+                    return position.lastRelationship().isType(GeoNeoRelationshipTypes.NEXT);
+                } else {
+                    return position.lastRelationship().isType(GeoNeoRelationshipTypes.CHILD);
+                }
+            }
+        });
     }
 
     /**
@@ -673,7 +682,8 @@ public class DatasetService extends AbstractService {
     public Node getVirtualDataset(Node rootNode, DriveTypes type) {
         Node result = findVirtualDataset(rootNode, type);
         if (result == null) {
-            result = createNode(NodeTypes.DATASET.getId(), INeoConstants.PROPERTY_NAME_NAME, type.getFullDatasetName(getName(rootNode)), INeoConstants.DRIVE_TYPE, type.getId());
+            result = createNode(NodeTypes.DATASET.getId(), INeoConstants.PROPERTY_NAME_NAME, type.getFullDatasetName(getName(rootNode)), INeoConstants.DRIVE_TYPE, type
+                    .getId());
             Transaction tx = databaseService.beginTx();
             try {
                 rootNode.createRelationshipTo(result, GeoNeoRelationshipTypes.VIRTUAL_DATASET);
@@ -693,14 +703,14 @@ public class DatasetService extends AbstractService {
      * @return the node
      */
     public Node findVirtualDataset(Node rootNode, final DriveTypes type) {
-        TraversalDescription td = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1))
-                .relationships(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).filter(new Predicate<Path>() {
+        TraversalDescription td = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1)).relationships(
+                GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).filter(new Predicate<Path>() {
 
-                    @Override
-                    public boolean accept(Path item) {
-                        return item.length() == 1 && type == DriveTypes.getNodeType(item.endNode());
-                    }
-                });
+            @Override
+            public boolean accept(Path item) {
+                return item.length() == 1 && type == DriveTypes.getNodeType(item.endNode());
+            }
+        });
         Iterator<Node> it = td.traverse(rootNode).nodes().iterator();
         return it.hasNext() ? it.next() : null;
     }
@@ -714,8 +724,9 @@ public class DatasetService extends AbstractService {
      */
     public Node createMsNode(Node parent, Node lastMsNode) {
         return createChild(parent, lastMsNode, NodeTypes.HEADER_MS.getId());
-        
+
     }
+
     public Node createMMNode(Node parent, Node lastMsNode) {
         return createChild(parent, lastMsNode, NodeTypes.MM.getId());
     }
@@ -771,7 +782,8 @@ public class DatasetService extends AbstractService {
         if (rel == null) {
             Transaction tx = databaseService.beginTx();
             try {
-                Node globalPropertiesNode = createNode(NodeTypes.GLOBAL_PROPERTIES.getId(), INeoConstants.PROPERTY_NAME_NAME, "Global properties", DYNAMIC_TYPES, new String[0]);
+                Node globalPropertiesNode = createNode(NodeTypes.GLOBAL_PROPERTIES.getId(), INeoConstants.PROPERTY_NAME_NAME, "Global properties", DYNAMIC_TYPES,
+                        new String[0]);
                 refNode.createRelationshipTo(globalPropertiesNode, DatasetRelationshipTypes.GLOBAL_PROPERTIES);
                 tx.success();
             } finally {
@@ -908,14 +920,14 @@ public class DatasetService extends AbstractService {
      */
     public Traverser findProjectByChild(Node node) {
         TraversalDescription trd = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst().relationships(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING)
-                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).relationships(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.INCOMING)
-                .filter(new Predicate<Path>() {
+                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).relationships(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.INCOMING).filter(
+                        new Predicate<Path>() {
 
-                    @Override
-                    public boolean accept(Path item) {
-                        return NodeTypes.AWE_PROJECT.checkNode(item.endNode());
-                    }
-                });
+                            @Override
+                            public boolean accept(Path item) {
+                                return NodeTypes.AWE_PROJECT.checkNode(item.endNode());
+                            }
+                        });
         if (NodeTypes.GIS.checkNode(node)) {
             return trd.traverse(node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode());
         }
@@ -954,10 +966,9 @@ public class DatasetService extends AbstractService {
         return new GisProperties(gis);
     }
 
-
     /**
      * Save gis.
-     *
+     * 
      * @param gis the gis
      */
     public void saveGis(GisProperties gis) {
@@ -967,13 +978,12 @@ public class DatasetService extends AbstractService {
             tx.success();
         } finally {
             tx.finish();
-        }        
+        }
     }
-
 
     /**
      * Gets the index manader.
-     *
+     * 
      * @param root the root
      * @return the index manader
      */
@@ -981,10 +991,9 @@ public class DatasetService extends AbstractService {
         return new IndexManager(root);
     }
 
-
     /**
      * Fing gis node.
-     *
+     * 
      * @param root the root
      * @return the gis properties
      */
