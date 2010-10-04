@@ -714,7 +714,10 @@ public class DatasetService extends AbstractService {
      */
     public Node createMsNode(Node parent, Node lastMsNode) {
         return createChild(parent, lastMsNode, NodeTypes.HEADER_MS.getId());
-
+        
+    }
+    public Node createMMNode(Node parent, Node lastMsNode) {
+        return createChild(parent, lastMsNode, NodeTypes.MM.getId());
     }
 
     /**
