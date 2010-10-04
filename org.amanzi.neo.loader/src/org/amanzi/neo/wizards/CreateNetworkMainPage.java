@@ -64,7 +64,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class CreateNetworkMainPage extends WizardPage {
     
     /** The service. */
-    private DatasetService service = NeoServiceFactory.getInstance().getDatasetService();
+    private final DatasetService service = NeoServiceFactory.getInstance().getDatasetService();
     /** String CREATE_NETWORK_STRUCTURE field. */
     private static final String CREATE_NETWORK_STRUCTURE = "Create network structure";
 
@@ -87,7 +87,7 @@ public class CreateNetworkMainPage extends WizardPage {
     private Button remove;
 
     /** The structure. */
-    private ArrayList<INodeType> structure=new ArrayList<INodeType>();
+    private final ArrayList<INodeType> structure=new ArrayList<INodeType>();
 
     /** The structure list. */
     private List structureList;
@@ -165,7 +165,7 @@ public class CreateNetworkMainPage extends WizardPage {
         GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 3, 1);
         gr.setLayoutData(layoutData);
         gr.setLayout(new GridLayout(2, false));
-        structureList = new List(gr, SWT.FILL | SWT.BORDER);
+        structureList = new List(gr, SWT.FILL | SWT.BORDER | SWT.V_SCROLL);
         structureList.addSelectionListener(new SelectionListener() {
 
             @Override

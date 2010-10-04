@@ -21,10 +21,11 @@ import org.amanzi.neo.core.utils.EditPropertiesPage;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Composite;
 import org.neo4j.graphdb.Node;
 
 /**
- * TODO Purpose of 
  * <p>
  *
  * </p>
@@ -33,6 +34,8 @@ import org.neo4j.graphdb.Node;
  */
 public class CreateNewNodeWizardPage extends EditPropertiesPage {
 
+    /** int VIEVER_HEIGHT_HINT field */
+    private static final int VIEVER_HEIGHT_HINT = 150;
     private final Node sourceNode;
     /**
      * @param pageName
@@ -77,6 +80,12 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
             super(name, type, defValue, editable);
         }
 
+    }
+    
+    @Override
+    public void createControl(Composite parent) {
+        super.createControl(parent);
+        ((GridData)viewer.getTable().getLayoutData()).heightHint = VIEVER_HEIGHT_HINT;
     }
 
 }

@@ -129,6 +129,7 @@ public class EditPropertiesPage extends WizardPage {
         initProperty();
 
         final Group main = new Group(parent, SWT.FILL);
+        
         main.setLayout(new GridLayout(2, false));
         viewer = new TableViewer(main, SWT.FILL | SWT.BORDER | SWT.FULL_SELECTION);
         viewer.getTable().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2));
@@ -450,7 +451,7 @@ public class EditPropertiesPage extends WizardPage {
         private String defValue = "";
 
         /** The editable. */
-        private boolean editable;
+        private final boolean editable;
 
 
         /**
