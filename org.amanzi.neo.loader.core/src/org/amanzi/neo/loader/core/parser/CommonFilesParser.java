@@ -33,7 +33,7 @@ import org.amanzi.neo.loader.core.parser.CommonFilesParser.FileElement;
  * @since 1.0.0
  */
 public abstract class CommonFilesParser<T extends IDataElement, C extends CommonConfigData> extends StructuredParser<FileElement, T, C> {
-
+    protected static final int PERCENTAGE_FIRE = 2;
     @Override
     protected List<FileElement> getElementList() {
         C prop = getProperties();

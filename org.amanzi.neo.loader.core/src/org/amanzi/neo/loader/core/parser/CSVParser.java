@@ -34,7 +34,7 @@ import au.com.bytecode.opencsv.CSVReader;
  * @since 1.0.0
  */
 public class CSVParser extends CommonFilesParser<HeaderTransferData, CommonConfigData> {
-    private static final int PERCENTAGE_FIRE = 2;
+    
     protected String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
     Character delimeters;
     private HeaderTransferData initdata;

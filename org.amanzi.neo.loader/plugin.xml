@@ -290,5 +290,21 @@
             id="org.amanzi.neo.loader.savers.RomesSaver">
       </saver>
    </extension>
+   <extension
+         point="org.eclipse.ui.viewActions">
+      <viewContribution
+            id="org.amanzi.awe.views.network.view.NewTypeAction0"
+            targetID="org.amanzi.awe.views.network.views.NetworkTreeView">
+         <action
+               class="org.amanzi.neo.loader.actions.CreateNetworkAction"
+               icon="icons/16/network.png"
+               id="org.amanzi.neo.loader.actions.CreateNetworkAction"
+               label="createNetwork"
+               style="push"
+               toolbarPath="additions"
+               tooltip="Create New Network">
+         </action>
+      </viewContribution>
+   </extension>
 
 </plugin>

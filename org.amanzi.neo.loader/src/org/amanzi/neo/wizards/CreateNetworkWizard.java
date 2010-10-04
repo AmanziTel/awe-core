@@ -13,16 +13,19 @@
 
 package org.amanzi.neo.wizards;
 
+import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.EditPropertiesPage;
 import org.amanzi.neo.core.utils.EditPropertiesPage.PropertyWrapper;
 import org.amanzi.neo.core.utils.GisProperties;
+import org.amanzi.neo.loader.AbstractLoader;
 import org.amanzi.neo.loader.LoaderUtils;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
@@ -146,6 +149,12 @@ public class CreateNetworkWizard extends Wizard implements INewWizard {
                     
                 }
                 statistics.save();
+                try {
+                    AbstractLoader.addDataToCatalog();
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+                AbstractLoader.sendUpdateEvent(UpdateViewEventType.GIS);
                 return Status.OK_STATUS;
             }
         };

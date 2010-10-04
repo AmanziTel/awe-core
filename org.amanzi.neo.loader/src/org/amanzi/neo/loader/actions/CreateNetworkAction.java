@@ -20,6 +20,9 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.INewWizard;
+import org.eclipse.ui.IViewActionDelegate;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
@@ -31,23 +34,23 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
  * @author tsinkel_a
  * @since 1.0.0
  */
-public class CreateNetworkAction implements IWorkbenchWindowActionDelegate {
+public class CreateNetworkAction implements IViewActionDelegate,IWorkbenchWindowActionDelegate {
 
-    private IWorkbenchWindow window;
     private IStructuredSelection selection;
+    private IWorkbench workbench;
+    private Shell shell;
 
     public void run() {
-
+        INewWizard wizard = new CreateNetworkWizard();
+        wizard.init(workbench, selection);
+        WizardDialog dialog = new WizardDialog(shell, wizard);
+        dialog.create();
+        dialog.open();
     }
 
     @Override
     public void run(IAction action) {
-        INewWizard wizard = new CreateNetworkWizard();
-        wizard.init(window.getWorkbench(), selection);
-        Shell parent = window.getShell();
-        WizardDialog dialog = new WizardDialog(parent, wizard);
-        dialog.create();
-        dialog.open();
+        run();
     }
 
     @Override
@@ -61,7 +64,14 @@ public class CreateNetworkAction implements IWorkbenchWindowActionDelegate {
 
     @Override
     public void init(IWorkbenchWindow window) {
-        this.window = window;
+        workbench= window.getWorkbench();
+        shell=window.getShell();
+    }
+
+    @Override
+    public void init(IViewPart view) {
+        shell=view.getSite().getWorkbenchWindow().getShell();
+        workbench= view.getSite().getWorkbenchWindow().getWorkbench();
     };
 
 }

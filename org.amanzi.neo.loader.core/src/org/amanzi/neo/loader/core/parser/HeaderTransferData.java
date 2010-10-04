@@ -18,21 +18,12 @@ import java.util.LinkedHashMap;
 
 import org.amanzi.neo.loader.core.IMapBasedDataElement;
 
-// TODO: Auto-generated Javadoc
 /**
  * <p>
- * TransferData containse information about headers (key - header(column name), value - value from table)
+ * TransferData contains information about headers (key - header(column name), value - value from table)
  * </p>.
  *
  * @author TsAr
- * @since 1.0.0
- */
-/**
- * TODO Purpose of 
- * <p>
- *
- * </p>
- * @author tsinkel_a
  * @since 1.0.0
  */
 public class HeaderTransferData extends LinkedHashMap<String, String>implements IMapBasedDataElement<String,String>  {
