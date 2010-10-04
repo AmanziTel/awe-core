@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.core;
+package org.amanzi.neo.loader.ui;
 
 import java.io.PrintStream;
 import java.net.MalformedURLException;
@@ -22,12 +22,18 @@ import net.refractions.udig.catalog.CatalogPlugin;
 import net.refractions.udig.catalog.ICatalog;
 import net.refractions.udig.catalog.IService;
 
+import org.amanzi.awe.catalog.neo.NeoService;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.db.manager.DatabaseManager.DatabaseAccessType;
+import org.amanzi.neo.loader.core.ILoader;
+import org.amanzi.neo.loader.core.ILoaderInputValidator;
+import org.amanzi.neo.loader.core.ILoaderProgressListener;
+import org.amanzi.neo.loader.core.IValidateResult;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
+import org.amanzi.neo.loader.core.ValidateResultImpl;
 import org.amanzi.neo.loader.core.parser.IConfigurationData;
 import org.amanzi.neo.loader.core.parser.IDataElement;
 import org.amanzi.neo.loader.core.parser.IParser;
@@ -133,7 +139,9 @@ public class Loader<T extends IDataElement, T2 extends IConfigurationData> imple
 
                 List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(url);
                 for (IService service : services) {
-                    if (catalog.getById(IService.class, service.getIdentifier(), new NullProgressMonitor()) != null) {
+                    NeoService serviceold = catalog.getById(NeoService.class, service.getIdentifier(), new NullProgressMonitor());
+                    if (serviceold != null) {
+                        serviceold.updateResource();
 //                        catalog.replace(service.getIdentifier(), service);
                     } else {
                         catalog.add(service);

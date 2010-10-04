@@ -16,6 +16,8 @@ package org.amanzi.neo.loader.savers;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
@@ -98,7 +100,57 @@ public abstract class DriveSaver<T extends HeaderTransferData> extends AbstractH
         });
         return result;
     }
-    
+    /**
+     * Gets the longitude.
+     * 
+     * @param stringValue the string value
+     * @return the longitude
+     */
+    protected Double getLongitude(String stringValue) {
+        if (stringValue == null) {
+            return null;
+        }
+        try {
+            return Double.valueOf(stringValue);
+        } catch (NumberFormatException e) {
+            Pattern p = Pattern.compile("^([+-]{0,1}\\d+(\\.\\d+)*)([NESW]{0,1})$");
+            Matcher m = p.matcher(stringValue);
+            if (m.matches()) {
+                try {
+                    return Double.valueOf(m.group(1));
+                } catch (NumberFormatException e2) {
+                    error(String.format("Can't get Longitude from: %s", stringValue));
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets the latitude.
+     * 
+     * @param stringValue the string value
+     * @return the latitude
+     */
+    protected Double getLatitude(String stringValue) {
+        if (stringValue == null) {
+            return null;
+        }
+        try {
+            return Double.valueOf(stringValue);
+        } catch (NumberFormatException e) {
+            Pattern p = Pattern.compile("^([+-]{0,1}\\d+(\\.\\d+)*)([NESW]{0,1})$");
+            Matcher m = p.matcher(stringValue);
+            if (m.matches()) {
+                try {
+                    return Double.valueOf(m.group(1));
+                } catch (NumberFormatException e2) {
+                    error(String.format("Can't get Latitude from: %s", stringValue));
+                }
+            }
+        }
+        return null;
+    }   
     
     public boolean beforeSaveNewElement(T element) {
         newElem = true;

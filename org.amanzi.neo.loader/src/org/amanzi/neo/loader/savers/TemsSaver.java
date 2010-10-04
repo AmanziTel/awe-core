@@ -92,13 +92,14 @@ public class TemsSaver extends DriveSaver<HeaderTransferData> {
         setUnparsedProperty(lastMNode, rootname, mtypeId, INeoConstants.PROPERTY_CI_NAME, getStringValue(INeoConstants.PROPERTY_CI_NAME, element));
         String ms = getStringValue("ms", element);
         setUnparsedProperty(lastMNode, rootname, mtypeId, "ms", ms);
-        Map<String, Object> sectorData = getNotHandledData(element, rootname, NodeTypes.SECTOR.getId());
+        Map<String, Object> sectorData = getNotHandledData(element, rootname, NodeTypes.M.getId());
         for (Map.Entry<String, Object> entry : sectorData.entrySet()) {
             String key = entry.getKey();
             setProperty(rootname, mtypeId, lastMNode, key, entry.getValue());
         }
 
         index(lastMNode);
+      //TODO refactor creating MP node - union with RomesSaver
         if (currentLatitude == null || currentLongitude == null || Math.abs(currentLatitude - latitude) > 10E-10 || Math.abs(currentLongitude - longitude) > 10E-10) {
             currentLatitude = latitude;
             currentLongitude = longitude;
@@ -106,11 +107,13 @@ public class TemsSaver extends DriveSaver<HeaderTransferData> {
                 lastMLocation.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, element.getLine() - 1);
             }
             lastMLocation = service.createNode(NodeTypes.MP, time);
+            String mpId = NodeTypes.MP.getId();
+            statistic.increaseTypeCount(rootname, mpId, 1);
             updateTx(1, 0);
-            lastMLocation.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+            setProperty(rootname, mpId, lastMLocation, INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+            setProperty(rootname, mpId, lastMLocation, INeoConstants.PROPERTY_LAT_NAME, currentLatitude.doubleValue());
+            setProperty(rootname, mpId, lastMLocation, INeoConstants.PROPERTY_LON_NAME, currentLongitude.doubleValue());
             lastMLocation.setProperty(INeoConstants.PROPERTY_FIRST_LINE_NAME, element.getLine());
-            lastMLocation.setProperty(INeoConstants.PROPERTY_LAT_NAME, currentLatitude.doubleValue());
-            lastMLocation.setProperty(INeoConstants.PROPERTY_LON_NAME, currentLongitude.doubleValue());
             index(lastMLocation);
             GisProperties gisProperties = getGisProperties(rootNode);
             gisProperties.updateBBox(currentLatitude, currentLongitude);
@@ -217,58 +220,6 @@ public class TemsSaver extends DriveSaver<HeaderTransferData> {
         Node virtualDataset = service.getVirtualDataset(rootNode, DriveTypes.MS);
         virtualDatasetName = DriveTypes.MS.getFullDatasetName(rootname);
         return service.getFileNode(virtualDataset, element.getFileName());
-    }
-
-    /**
-     * Gets the longitude.
-     * 
-     * @param stringValue the string value
-     * @return the longitude
-     */
-    protected Double getLongitude(String stringValue) {
-        if (stringValue == null) {
-            return null;
-        }
-        try {
-            return Double.valueOf(stringValue);
-        } catch (NumberFormatException e) {
-            Pattern p = Pattern.compile("^([+-]{0,1}\\d+(\\.\\d+)*)([NESW]{0,1})$");
-            Matcher m = p.matcher(stringValue);
-            if (m.matches()) {
-                try {
-                    return Double.valueOf(m.group(1));
-                } catch (NumberFormatException e2) {
-                    error(String.format("Can't get Longitude from: %s", stringValue));
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Gets the latitude.
-     * 
-     * @param stringValue the string value
-     * @return the latitude
-     */
-    protected Double getLatitude(String stringValue) {
-        if (stringValue == null) {
-            return null;
-        }
-        try {
-            return Double.valueOf(stringValue);
-        } catch (NumberFormatException e) {
-            Pattern p = Pattern.compile("^([+-]{0,1}\\d+(\\.\\d+)*)([NESW]{0,1})$");
-            Matcher m = p.matcher(stringValue);
-            if (m.matches()) {
-                try {
-                    return Double.valueOf(m.group(1));
-                } catch (NumberFormatException e2) {
-                    error(String.format("Can't get Latitude from: %s", stringValue));
-                }
-            }
-        }
-        return null;
     }
 
     /**

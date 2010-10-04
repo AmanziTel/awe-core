@@ -38,6 +38,7 @@ public class CSVParser extends CommonFilesParser<HeaderTransferData, CommonConfi
     protected String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
     Character delimeters;
     private HeaderTransferData initdata;
+    private int minSize=2;
 
     @Override
     protected HeaderTransferData getFinishData() {
@@ -59,6 +60,9 @@ public class CSVParser extends CommonFilesParser<HeaderTransferData, CommonConfi
                 try {
                     line++;
                     if (header == null) {
+                        if (nextLine.length<minSize){
+                           continue; 
+                        }
                         header = nextLine;
                         if ("true".equals(initdata.get("cleanHeaders"))){
                             cleanHeader(header);
@@ -117,14 +121,12 @@ public class CSVParser extends CommonFilesParser<HeaderTransferData, CommonConfi
     private char getDelimiters(File file) {
         if (delimeters == null) {
             String fieldSepRegex = "\t";
-            BufferedReader read;
+            BufferedReader read=null;
             String line;
             try {
                 read = new BufferedReader(new FileReader(file));
-                line = read.readLine();
-                read.close();
-                int maxMatch = 0;
-                if (line != null) {
+                while ((line = read.readLine()) != null) {
+                    int maxMatch = 0;
                     for (String regex : possibleFieldSepRegexes) {
                         String[] fields = line.split(regex);
                         if (fields.length > maxMatch) {
@@ -132,9 +134,18 @@ public class CSVParser extends CommonFilesParser<HeaderTransferData, CommonConfi
                             fieldSepRegex = regex;
                         }
                     }
+                    if (maxMatch>=minSize){
+                        break;
+                    }
                 }
             } catch (IOException e) {
                 exception(e);
+            }finally{
+                try {
+                    read.close();
+                } catch (IOException e) {
+                    exception(e);
+                };
             }
             delimeters = fieldSepRegex.charAt(0);
         }

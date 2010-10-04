@@ -27,6 +27,7 @@ import org.amanzi.neo.db.manager.INeoDbService;
 import org.amanzi.neo.loader.core.parser.IDataElement;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.statistic.IStatistic;
+import org.hsqldb.lib.StringUtil;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.index.IndexService;
@@ -381,7 +382,7 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
      * @param value the value
      */
     protected boolean setProperty(String key, String nodeType, Node node, String propertyName, Object value) {
-        if (value == null) {
+        if (value == null||(value instanceof String&&StringUtil.isEmpty((String)value))) {
             return false;
         }
         node.setProperty(propertyName, value);

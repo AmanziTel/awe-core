@@ -18,11 +18,11 @@ import java.util.List;
 
 import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.ILoaderInputValidator;
-import org.amanzi.neo.loader.core.Loader;
 import org.amanzi.neo.loader.core.parser.IConfigurationData;
 import org.amanzi.neo.loader.core.parser.IDataElement;
 import org.amanzi.neo.loader.core.parser.IParser;
 import org.amanzi.neo.loader.core.saver.ISaver;
+import org.amanzi.neo.loader.ui.Loader;
 import org.amanzi.neo.loader.ui.wizards.IGraphicInterfaceForLoaders;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.commands.AbstractHandler;

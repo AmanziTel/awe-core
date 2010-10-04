@@ -89,6 +89,12 @@
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
              saver="org.amanzi.neo.loader.savers.TemsSaver">
        </loader>
+       <loader
+             description="ROMES data"
+             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
+             parser="org.amanzi.neo.loader.core.parser.CSVParser"
+             saver="org.amanzi.neo.loader.savers.RomesSaver">
+       </loader>
     </extension>
 
 </plugin>

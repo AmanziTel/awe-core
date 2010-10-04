@@ -17,7 +17,8 @@ Require-Bundle: org.eclipse.core.commands;bundle-version="3.3.0",
  org.neo4j;bundle-version="1.0.0",
  org.amanzi.neo.loader;bundle-version="1.0.0",
  org.amanzi.neo.loader.core;bundle-version="1.0.0",
- org.amanzi.awe.console;bundle-version="1.0.0"
+ org.amanzi.awe.console;bundle-version="1.0.0",
+ org.amanzi.awe.catalog.neo;bundle-version="1.0.0"
 Export-Package: org.amanzi.neo.loader,
  org.amanzi.neo.loader.ui.handlers,
  org.amanzi.neo.loader.ui.wizards
