@@ -6,8 +6,6 @@ package org.amanzi.awe.l3messages.rrc;
 // Any modifications to this file will be lost upon recompilation of the source ASN.1. 
 //
 
-import javax.management.RuntimeErrorException;
-
 import org.bn.*;
 import org.bn.annotations.*;
 import org.bn.annotations.constraints.*;
@@ -198,8 +196,6 @@ import org.bn.types.*;
                     setUe_positioning_MeasuredResults(null);
                 
                     setSpare(null);
-                    
-//                    throw new RuntimeException();
                             
         }
 
@@ -235,8 +231,6 @@ import org.bn.types.*;
                     setUe_positioning_MeasuredResults(null);
                 
                     setSpare(null);
-                    
-//                    throw new RuntimeException();
                             
         }
 

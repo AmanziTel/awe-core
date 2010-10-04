@@ -61,6 +61,10 @@ public class L3MessagesPlugin extends Plugin {
     }
     
     public void logError(Exception e) {
-        getLog().log(new Status(Status.ERROR, PLUGIN_ID, "Error on parsing Lever 3 Message", e));
+        getLog().log(new Status(Status.ERROR, PLUGIN_ID, "Error on parsing Level 3 Message", e));
+    }
+    
+    public void info(String info) {
+        getLog().log(new Status(Status.INFO, PLUGIN_ID, info));
     }
 }
