@@ -50,7 +50,7 @@ public abstract class DatasetSaver<T extends BaseTransferData> extends AbstractH
         }
         lastMLocation = service.createNode(NodeTypes.MP, time);
         String mpId = NodeTypes.MP.getId();
-        statistic.increaseTypeCount(rootname, mpId, 1);
+        statistic.updateTypeCount(rootname, mpId, 1);
         updateTx(1, 0);
         setProperty(rootname, mpId, lastMLocation, INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
         setProperty(rootname, mpId, lastMLocation, INeoConstants.PROPERTY_LAT_NAME, latitude.doubleValue());

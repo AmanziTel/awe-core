@@ -186,6 +186,12 @@ public class PropertyHeaderImpl implements IPropertyHeader {
     @Override
     public Collection<String> getEvents() {
         Set<String> result = new HashSet<String>();
+        ISinglePropertyStat events = getPropertyStatistic(NodeTypes.M.getId(), "event_type");
+        if (events!=null){
+            for (Map.Entry<Object,Long> entry:events.getValueMap().entrySet()){
+                
+            }
+        }
         return result;
     }
 
@@ -208,7 +214,7 @@ public class PropertyHeaderImpl implements IPropertyHeader {
 
     @Override
     public boolean isHavePropertyNode() {
-        return false;
+        return true;
     }
 
     @Override
@@ -230,11 +236,17 @@ public class PropertyHeaderImpl implements IPropertyHeader {
 
     @Override
     public <T> boolean updateStatistic(String nodeTypeId, String propertyName, T newValue, T oldValue) {
-        return false;
+        boolean result =stat.updateValue(key,nodeTypeId,propertyName,newValue,oldValue);
+        if (result){
+            stat.save();
+        }
+        return result;
     }
 
     @Override
     public boolean updateStatisticCount(String nodeTypeId, long count) {
-        return false;
+        stat.updateTypeCount(key , nodeTypeId, count);
+        stat.save();
+        return true;
     }
 }

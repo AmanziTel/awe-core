@@ -10,8 +10,8 @@
             id="org.amanzi.neo.loader.core.parser.CSVParser">
       </parser>
       <parser
-            class="org.amanzi.neo.loader.core.parser.LineTransferData"
-            id="org.amanzi.neo.loader.core.parser.LineTransferData">
+            class="org.amanzi.neo.loader.core.parser.LineParser"
+            id="org.amanzi.neo.loader.core.parser.LineParser">
       </parser>
    </extension>
 

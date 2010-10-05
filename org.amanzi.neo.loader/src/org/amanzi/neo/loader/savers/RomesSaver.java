@@ -132,7 +132,7 @@ public class RomesSaver extends DriveSaver<BaseTransferData> {
         }
         lastMNode = service.createMNode(parent, lastMNode);
         updateTx(1, 1);
-        statistic.increaseTypeCount(rootname, NodeTypes.M.getId(), 1);
+        statistic.updateTypeCount(rootname, NodeTypes.M.getId(), 1);
         String mtypeId = NodeTypes.M.getId();
         setProperty(rootname, mtypeId, lastMNode, INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
         setProperty(rootname, mtypeId, lastMNode, "time", time);

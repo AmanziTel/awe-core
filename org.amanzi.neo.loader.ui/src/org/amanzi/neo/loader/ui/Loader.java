@@ -141,8 +141,9 @@ public class Loader<T extends IDataElement, T2 extends IConfigurationData> imple
                 for (IService service : services) {
                     NeoService serviceold = catalog.getById(NeoService.class, service.getIdentifier(), new NullProgressMonitor());
                     if (serviceold != null) {
-                        serviceold.updateResource();
-//                        catalog.replace(service.getIdentifier(), service);
+                        //TODO refactor for working in 2 database modes
+//                        serviceold.updateResource();
+                        catalog.replace(service.getIdentifier(), service);
                     } else {
                         catalog.add(service);
                     }

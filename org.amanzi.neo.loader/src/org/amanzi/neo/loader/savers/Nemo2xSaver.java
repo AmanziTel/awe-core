@@ -113,8 +113,10 @@ public class Nemo2xSaver extends DatasetSaver<LineTransferData> implements IStru
         try {
             parParam = event.fill(getVersion(), parameters);
         } catch (Exception e1) {
-            // TODO Handle Exception
-            throw (RuntimeException)new RuntimeException().initCause(e1);
+            error(String.format("Line %s not parsed", element.getLine()));
+            e1.printStackTrace();
+//            exception(e1);
+            return;
         }
         if (parParam.isEmpty()) {
             return;
@@ -194,7 +196,7 @@ public class Nemo2xSaver extends DatasetSaver<LineTransferData> implements IStru
      */
     protected void createMNode(String eventId, DriveEvents driveEvents, long timestamp) {
         lastMNode = service.createMNode(parent, lastMNode);
-        statistic.increaseTypeCount(rootname, NodeTypes.M.getId(), 1);
+        statistic.updateTypeCount(rootname, NodeTypes.M.getId(), 1);
         updateTx(1, 1);
 
 
@@ -241,7 +243,7 @@ public class Nemo2xSaver extends DatasetSaver<LineTransferData> implements IStru
             }
             try {
                 lastMsNode = service.createMsNode(getVirtualParent(), lastMsNode);
-                statistic.increaseTypeCount(virtualDatasetName, NodeTypes.M.getId(), 1);
+                statistic.updateTypeCount(virtualDatasetName, NodeTypes.M.getId(), 1);
                 updateTx(1, 1);
                 if (timestamp != 0) {
                     setProperty(virtualDatasetName, NodeTypes.HEADER_MS.getId(), lastMsNode, INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);

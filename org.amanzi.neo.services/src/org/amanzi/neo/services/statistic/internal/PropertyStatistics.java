@@ -406,6 +406,12 @@ public class PropertyStatistics implements ISinglePropertyStat{
         return autoParse(value);
     }
     
+    /**
+     * Auto parse.
+     *
+     * @param value the value
+     * @return the object
+     */
     public static Object autoParse(String value) {
         try{
         if (value.contains(".")){
@@ -420,5 +426,72 @@ public class PropertyStatistics implements ISinglePropertyStat{
     @Override
     public Map<Object, Long> getValueMap() {
         return Collections.unmodifiableMap(values);
+    }
+
+    public  <T extends Object> boolean updateNotNullValues(T newValue,T oldValue){
+        if (klass!=newValue.getClass()){
+            return false;
+        }
+        if (deleteValue(oldValue)){
+            addNewValue(newValue, 1);
+            return true;
+        }
+        return false;
+    }
+    /**
+     * Delete value.
+     *
+     * @param valueToDelete the value to delete
+     * @return true, if successful
+     */
+    public boolean deleteValue(Object valueToDelete) {
+        if (valueToDelete==null){
+            return false;
+        }
+        Long countV = values.get(valueToDelete);
+        if (countV==null||countV<1){
+            return false;
+        }
+        isChanged=true;
+        countV--;
+        int c=0;
+        if (countV==0){
+            values.remove(valueToDelete);
+            c++;
+        }else{
+            values.put(valueToDelete, countV);
+        }
+        if (values.size()<StatisticHandler.MAX_VALUES_SIZE-c){
+            updateMinMaxFromValues();
+        }
+        return true;
+    }
+
+
+    /**
+     * Update min max from values.
+     */
+    private void updateMinMaxFromValues() {
+        if (isComparable){
+            minValue=null;
+            maxValue=null;
+            for (Map.Entry<Object, Long>entry:values.entrySet()){
+                Object value = entry.getKey();
+                if (entry.getValue()==null||entry.getValue()<1){
+                    continue;
+                }
+                if (minValue == null) {
+                    minValue = value;
+                } else if (((Comparable)minValue).compareTo((Comparable)value) > 0) {
+                    minValue = value;
+                }
+                if (maxValue == null) {
+                    maxValue = value;
+                } else if (((Comparable)maxValue).compareTo((Comparable)value) < 0) {
+                    maxValue = value;
+                }          
+            }
+            
+        }
     }
 }

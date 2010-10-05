@@ -26,12 +26,12 @@ import java.util.Collection;
  */
 public interface IStatistic {
     void save();
-
+    <T extends Object> boolean updateValue(String rootKey, String nodeType, String propertyName,T newValue,T oldValue);
     boolean indexValue(String rootKey, String nodeType, String propertyName, Object propertyValue);
 
     Object parseValue(String rootKey, String nodeType, String key, String value);
 
-    void increaseTypeCount(String rootKey, String nodeType, long count);
+    void updateTypeCount(String rootKey, String nodeType, long count);
 
     long getTotalCount(String rootKey, String nodeType);
 

@@ -98,7 +98,7 @@
        <loader
              description="Nemo v2x data"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
-             parser="org.amanzi.neo.loader.core.parser.LineTransferData"
+             parser="org.amanzi.neo.loader.core.parser.LineParser"
              saver="org.amanzi.neo.loader.savers.Nemo2xSaver">
        </loader>
     </extension>

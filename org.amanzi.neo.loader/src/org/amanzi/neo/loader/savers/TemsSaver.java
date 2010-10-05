@@ -73,7 +73,7 @@ public class TemsSaver extends DriveSaver<BaseTransferData> {
         }
         lastMNode = service.createMNode(parent, lastMNode);
         updateTx(1, 1);
-        statistic.increaseTypeCount(rootname, NodeTypes.M.getId(), 1);
+        statistic.updateTypeCount(rootname, NodeTypes.M.getId(), 1);
         String mtypeId = NodeTypes.M.getId();
         setProperty(rootname, mtypeId, lastMNode, INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
         setProperty(rootname, mtypeId, lastMNode, "message_type", message_type);
@@ -177,7 +177,7 @@ public class TemsSaver extends DriveSaver<BaseTransferData> {
                 double mw = signal[0] / signal[1];
                 lastMsNode = service.createMsNode(virtualParent, lastMsNode);
                 updateTx(1, 1);
-                statistic.increaseTypeCount(virtualDatasetName, NodeTypes.HEADER_MS.getId(), 1);
+                statistic.updateTypeCount(virtualDatasetName, NodeTypes.HEADER_MS.getId(), 1);
                 String[] cc = chanCode.split("\\t");
 
                 lastMsNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, INeoConstants.HEADER_MS);

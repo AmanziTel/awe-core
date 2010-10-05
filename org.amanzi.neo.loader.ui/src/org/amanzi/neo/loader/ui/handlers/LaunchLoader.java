@@ -228,7 +228,7 @@ public class LaunchLoader extends AbstractHandler {
             if (parserId.equals(elementParser.getAttribute("id"))){
                 try {
                     return (IParser< ? extends IDataElement, ? extends IConfigurationData>)elementParser.createExecutableExtension("class");
-                } catch (CoreException e) {
+                } catch (Exception e) {
                     // TODO Handle CoreException
                     e.printStackTrace();
                     return null;

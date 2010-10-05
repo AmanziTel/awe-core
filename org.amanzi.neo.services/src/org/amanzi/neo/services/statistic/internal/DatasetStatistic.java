@@ -46,13 +46,13 @@ public class DatasetStatistic implements IStatistic {
      * 
      */
     public DatasetStatistic() {
-         handler=new StatisticHandler();
+        handler = new StatisticHandler();
     }
 
     @Override
     public void save() {
-        if (root!=null){
-            handler.saveStatistic(DatabaseManager.getInstance().getCurrentDatabaseService(),root);
+        if (root != null) {
+            handler.saveStatistic(DatabaseManager.getInstance().getCurrentDatabaseService(), root);
         }
     }
 
@@ -60,7 +60,7 @@ public class DatasetStatistic implements IStatistic {
      *
      */
     public void init() {
-        if (root!=null){
+        if (root != null) {
             handler.loadStatistic(root);
         }
     }
@@ -72,59 +72,83 @@ public class DatasetStatistic implements IStatistic {
 
     @Override
     public Object parseValue(String rootname, String nodeType, String key, String value) {
-        if (StringUtil.isEmpty(value)){
+        if (StringUtil.isEmpty(value)) {
             return null;
         }
-        PropertyStatistics prop=handler.findProperty(rootname,nodeType,key);
-        if (prop==null){
+        PropertyStatistics prop = handler.findProperty(rootname, nodeType, key);
+        if (prop == null) {
             return PropertyStatistics.autoParse(value);
         }
         return prop.parseValue(value);
     }
 
-
-
     @Override
-    public void increaseTypeCount(String rootKey, String nodeType, long count) {
-        handler.increaseTypeCount(rootKey,  nodeType,  count);
+    public void updateTypeCount(String rootKey, String nodeType, long count) {
+        handler.increaseTypeCount(rootKey, nodeType, count);
     }
 
     @Override
     public long getTotalCount(String rootKey, String nodeType) {
-        return handler.getTotalCount(rootKey,nodeType);
+        return handler.getTotalCount(rootKey, nodeType);
     }
 
     @Override
     public void registerProperty(String rootKey, String nodeType, String name, Class klass, String defValue) {
-        Object value=null;
-        if (StringUtil.isEmpty(defValue)){
-            value=defValue;
-        }else{
-        if(Number.class.isAssignableFrom(klass)){
-            try {
-                value=NeoUtils.getNumberValue(klass, defValue);
-            } catch (Exception e) {
-                //TODO handle exception
-                e.printStackTrace();
-                value=null;
-            } 
+        Object value = null;
+        if (StringUtil.isEmpty(defValue)) {
+            value = defValue;
+        } else {
+            if (Number.class.isAssignableFrom(klass)) {
+                try {
+                    value = NeoUtils.getNumberValue(klass, defValue);
+                } catch (Exception e) {
+                    // TODO handle exception
+                    e.printStackTrace();
+                    value = null;
+                }
+            }
         }
+        if (handler.registerProperty(rootKey, nodeType, name, klass, ChangeClassRule.IGNORE_NEW_CLASS)) {
+            handler.indexValue(rootKey, nodeType, name, value, 0);
         }
-       if (handler.registerProperty(rootKey,  nodeType,  name,  klass, ChangeClassRule.IGNORE_NEW_CLASS)){
-            handler.indexValue(rootKey, nodeType, name, value,0);
-        }
-        
+
     }
 
     @Override
     public Collection<String> getPropertyNameCollection(String key, String nodeTypeId, Comparable<Class> comparable) {
-        return handler.getPropertyNameCollection(key,nodeTypeId,comparable);
+        return handler.getPropertyNameCollection(key, nodeTypeId, comparable);
     }
 
     @Override
     public ISinglePropertyStat findPropertyStatistic(String key, String nodeTypeId, String propertyName) {
-        PropertyStatistics stat=handler.findProperty(key,nodeTypeId,propertyName);
+        PropertyStatistics stat = handler.findProperty(key, nodeTypeId, propertyName);
         return stat;
     }
 
+    @Override
+    public <T> boolean updateValue(String rootKey, String nodeType, String propertyName, T newValue, T oldValue) {
+        if (oldValue == null) {
+            return indexValue(rootKey, nodeType, propertyName, newValue);
+        } else if (newValue == null) {
+            return deleteValue(rootKey, nodeType, propertyName, oldValue);
+        } else {
+            return updateNotNullValues(rootKey, nodeType, propertyName, newValue, oldValue);
+        }
+    }
+
+    public boolean deleteValue(String rootKey, String nodeTypeId, String propertyName, Object valueToDelete) {
+        PropertyStatistics stat = handler.findProperty(rootKey, nodeTypeId, propertyName);
+        if (stat == null) {
+            return false;
+        }
+        return stat.deleteValue(valueToDelete);
+    }
+
+    protected  <T extends Object> boolean updateNotNullValues(String rootKey, String nodeTypeId,String propertyName,T newValue,T oldValue){
+        PropertyStatistics stat=handler.findProperty(rootKey,nodeTypeId,propertyName);
+        if (stat==null){
+            return false;
+        }
+        return stat.updateNotNullValues(newValue,oldValue);
+    }
 }
