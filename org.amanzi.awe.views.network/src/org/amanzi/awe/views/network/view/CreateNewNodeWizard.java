@@ -19,8 +19,8 @@ import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.EditPropertiesPage.PropertyWrapper;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -60,6 +60,9 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
     @Override
     public boolean performFinish() {
         try {
+            //TODO if SECTOR created need to increeas 
+            
+            
             // Creating new node
             GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
             Transaction tx = service.beginTx();

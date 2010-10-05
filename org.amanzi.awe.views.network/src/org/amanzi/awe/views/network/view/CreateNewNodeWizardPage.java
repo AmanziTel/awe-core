@@ -13,7 +13,9 @@
 
 package org.amanzi.awe.views.network.view;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.enums.NodeTypes;
@@ -27,8 +29,8 @@ import org.neo4j.graphdb.Node;
 
 /**
  * <p>
- *
  * </p>
+ * 
  * @author NiCK
  * @since 1.0.0
  */
@@ -37,6 +39,7 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
     /** int VIEVER_HEIGHT_HINT field */
     private static final int VIEVER_HEIGHT_HINT = 150;
     private final Node sourceNode;
+
     /**
      * @param pageName
      * @param title
@@ -58,10 +61,37 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
             IPropertyHeader ph = PropertyHeader.getPropertyStatistic(NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId()));
             Map<String, Object> statisticProperties = ph.getStatisticParams(type);
             for (String key : statisticProperties.keySet()) {
-                propertyList.add(new NewNodePropertyWrapper(key, statisticProperties.get(key).getClass(), statisticProperties.get(key).toString(), true));
+                propertyList.add(new NewNodePropertyWrapper(key, statisticProperties.get(key).getClass(), statisticProperties.get(key).toString(), false));
             }
         }
+    }
 
+    /**
+     * validate properties
+     */
+    @Override
+    protected void validate() {
+//        super.validate();
+        Set<String> names = new HashSet<String>();
+        for (int i = 0; i < propertyList.size(); i++) {
+            PropertyWrapper wr = propertyList.get(i);
+            if (!wr.isValid()) {
+                setDescription(String.format("Row %s not valid", i + 1));
+                setPageComplete(false);
+                return;
+            }
+            if (names.contains(wr.getName())) {
+                setDescription(String.format("Dublicate property name '%s'", wr.getName()));
+                setPageComplete(false);
+                return;
+            } else {
+                names.add(wr.getName());
+            }
+
+        }
+        setDescription(getNormalDescription());
+        setPageComplete(true);
+        return;
     }
 
     /**
@@ -82,7 +112,7 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
         }
 
     }
-    
+
     @Override
     public void createControl(Composite parent) {
         super.createControl(parent);

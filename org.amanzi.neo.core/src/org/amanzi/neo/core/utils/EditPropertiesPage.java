@@ -602,7 +602,7 @@ public class EditPropertiesPage extends WizardPage {
     /**
      * Validate.
      */
-    private void validate() {
+    protected void validate() {
         Set<String>names=new HashSet<String>();
         for (int i=0;i<propertyList.size();i++){
             PropertyWrapper wr = propertyList.get(i);
