@@ -19,10 +19,12 @@ import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.EditPropertiesPage.PropertyWrapper;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.EditPropertiesPage.PropertyWrapper;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.statistic.IPropertyHeader;
+import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
@@ -60,9 +62,8 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
     @Override
     public boolean performFinish() {
         try {
-            //TODO if SECTOR created need to increeas 
-            
-            
+            // TODO if SECTOR created need to increeas
+
             // Creating new node
             GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
             Transaction tx = service.beginTx();
@@ -80,10 +81,11 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
                 // targetNode.setProperty(key, statisticProperties.get(key));
                 // }
                 // }
+                IPropertyHeader ph = PropertyHeader.getPropertyStatistic(NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId()));
                 List<PropertyWrapper> properties = page.getProperties();
                 for (PropertyWrapper propertyWrapper : properties) {
-                    if (!targetNode.hasProperty(propertyWrapper.getName()))
-                        targetNode.setProperty(propertyWrapper.getName(), propertyWrapper.getDefValue());
+                    targetNode.setProperty(propertyWrapper.getName(), propertyWrapper.getDefValue());
+                    ph.updateStatistic(iNodeType.getId(), propertyWrapper.getName(), propertyWrapper.getDefValue(), null);
                 }
 
                 tx.success();

@@ -40,7 +40,6 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.nodes.AweProjectNode;
 import org.amanzi.neo.core.database.nodes.DeletableRelationshipType;
-import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -51,12 +50,13 @@ import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
+import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.index.MultiPropertyIndex;
+import org.amanzi.neo.index.PropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
-import org.amanzi.neo.index.PropertyIndex;
 import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -2447,7 +2447,7 @@ public class NeoUtils {
      * Find sector by next rules: baseName must be defined, ci or name must be defined (lac used
      * only if ci!=null).
      * 
-     * @param baseName the base name
+     * @param baseNode the base node
      * @param ci the ci
      * @param lac the lac
      * @param name the name
@@ -2458,12 +2458,12 @@ public class NeoUtils {
      * @param service the service
      * @return the node
      */
-    public static Node findSector(Node baseName, Integer ci, Integer lac, String name, boolean returnFirsElement, IndexService index, GraphDatabaseService service) {
-        assert baseName != null && (ci != null || name != null) && index != null;
+    public static Node findSector(Node baseNode, Integer ci, Integer lac, String name, boolean returnFirsElement, IndexService index, GraphDatabaseService service) {
+        assert baseNode != null && (ci != null || name != null) && index != null;
         Transaction tx = beginTx(service);
         try {
             if (ci == null) {
-                String indexName = getLuceneIndexKeyByProperty(baseName, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR);
+                String indexName = getLuceneIndexKeyByProperty(baseNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR);
                 IndexHits<Node> nodesName = index.getNodes(indexName, name);
                 Node sector = nodesName.size() > 0 ? nodesName.next() : null;
                 if (nodesName.size() == 1) {
@@ -2474,7 +2474,7 @@ public class NeoUtils {
                     return returnFirsElement ? sector : null;
                 }
             }
-            String indexName = getLuceneIndexKeyByProperty(baseName, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR);
+            String indexName = getLuceneIndexKeyByProperty(baseNode, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR);
             IndexHits<Node> nodesCi = index.getNodes(indexName, ci);
             if (lac == null && name == null) {
                 Node sector = nodesCi.size() > 0 ? nodesCi.next() : null;
@@ -2523,18 +2523,18 @@ public class NeoUtils {
     /**
      * Find sector.
      * 
-     * @param baseName the base name
+     * @param baseNode the base name
      * @param ci the ci
      * @param rnc the rnc
      * @param luceneService the lucene service
      * @param service the service
      * @return the node
      */
-    public static Node findSector(Node baseName, Integer ci, String rnc, LuceneIndexService luceneService, GraphDatabaseService service) {
-        assert baseName != null && ci != null && rnc != null && luceneService != null;
+    public static Node findSector(Node baseNode, Integer ci, String rnc, LuceneIndexService luceneService, GraphDatabaseService service) {
+        assert baseNode != null && ci != null && rnc != null && luceneService != null;
         Transaction tx = beginTx(service);
         try {
-            String indexName = getLuceneIndexKeyByProperty(baseName, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR);
+            String indexName = getLuceneIndexKeyByProperty(baseNode, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR);
             IndexHits<Node> nodesCi = luceneService.getNodes(indexName, ci);
             for (Node node : nodesCi) {
                 Object rncId = node.getProperty(GpehReportUtil.RNC_ID, null);

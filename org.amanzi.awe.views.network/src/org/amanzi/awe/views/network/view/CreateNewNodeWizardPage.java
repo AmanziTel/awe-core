@@ -13,12 +13,12 @@
 
 package org.amanzi.awe.views.network.view;
 
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
+import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.EditPropertiesPage;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
@@ -26,6 +26,7 @@ import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.neo4j.graphdb.Node;
+import org.neo4j.index.lucene.LuceneIndexService;
 
 /**
  * <p>
@@ -58,6 +59,10 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
         NodeTypes type = NodeTypes.getEnumById(nodeType.getId());
         propertyList.add(new NewNodePropertyWrapper("name", String.class, "new " + nodeType.getId(), true));
         if (type != null) {
+            if (type == NodeTypes.SECTOR) {
+                propertyList.add(new NewNodePropertyWrapper(INeoConstants.PROPERTY_SECTOR_CI, Integer.class, "0", true));
+                propertyList.add(new NewNodePropertyWrapper(INeoConstants.PROPERTY_SECTOR_LAC, Integer.class, "0", true));
+            }
             IPropertyHeader ph = PropertyHeader.getPropertyStatistic(NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId()));
             Map<String, Object> statisticProperties = ph.getStatisticParams(type);
             for (String key : statisticProperties.keySet()) {
@@ -71,24 +76,45 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
      */
     @Override
     protected void validate() {
-//        super.validate();
-        Set<String> names = new HashSet<String>();
+        super.validate();
+
         for (int i = 0; i < propertyList.size(); i++) {
             PropertyWrapper wr = propertyList.get(i);
-            if (!wr.isValid()) {
-                setDescription(String.format("Row %s not valid", i + 1));
-                setPageComplete(false);
-                return;
+            if (wr.getName() == INeoConstants.PROPERTY_NAME_NAME) {
+                LuceneIndexService luceneInd = NeoServiceProvider.getProvider().getIndexService();
+                if (luceneInd.getNodes(INeoConstants.PROPERTY_NAME_NAME, wr.getName()).size() > 0) {
+                    setDescription(String.format("Node with the name '%s' is alredy exist", wr.getDefValue()));
+                    setPageComplete(false);
+                    return;
+                }
             }
-            if (names.contains(wr.getName())) {
-                setDescription(String.format("Dublicate property name '%s'", wr.getName()));
-                setPageComplete(false);
-                return;
-            } else {
-                names.add(wr.getName());
-            }
-
         }
+
+        if (nodeType == NodeTypes.SECTOR) {
+            PropertyWrapper ciWr = null;
+            PropertyWrapper lacWr = null;
+            for (int i = 0; i < propertyList.size(); i++) {
+                if (propertyList.get(i).getName() == INeoConstants.PROPERTY_SECTOR_CI)
+                    ciWr = propertyList.get(i);
+                if (propertyList.get(i).getName() == INeoConstants.PROPERTY_SECTOR_LAC)
+                    lacWr = propertyList.get(i);
+            }
+            try {
+                Node sector = NeoUtils.findSector(NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId()), Integer.valueOf(ciWr.getDefValue()), Integer
+                        .valueOf(lacWr.getDefValue()), null, true, NeoServiceProvider.getProvider().getIndexService(), NeoServiceProvider.getProvider().getService());
+                if (sector != null) {
+                    setDescription(String.format("Sector node with CI = '%s' and LAC = '%s' is alredy exist", ciWr.getDefValue(), lacWr.getDefValue()));
+                    setPageComplete(false);
+                    return;
+                }
+            } catch (Exception e) {
+                setDescription(e.getMessage());
+                e.printStackTrace();
+                setPageComplete(false);
+                return;
+            }
+        }
+
         setDescription(getNormalDescription());
         setPageComplete(true);
         return;
