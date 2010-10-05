@@ -95,6 +95,12 @@
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
              saver="org.amanzi.neo.loader.savers.RomesSaver">
        </loader>
+       <loader
+             description="Nemo v2x data"
+             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
+             parser="org.amanzi.neo.loader.core.parser.LineTransferData"
+             saver="org.amanzi.neo.loader.savers.Nemo2xSaver">
+       </loader>
     </extension>
 
 </plugin>

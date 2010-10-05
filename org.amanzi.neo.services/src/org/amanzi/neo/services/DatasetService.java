@@ -1007,5 +1007,4 @@ public class DatasetService extends AbstractService {
         }
         return new GisProperties(gis);
     }
-
 }

@@ -9,6 +9,10 @@
             class="org.amanzi.neo.loader.core.parser.CSVParser"
             id="org.amanzi.neo.loader.core.parser.CSVParser">
       </parser>
+      <parser
+            class="org.amanzi.neo.loader.core.parser.LineTransferData"
+            id="org.amanzi.neo.loader.core.parser.LineTransferData">
+      </parser>
    </extension>
 
 </plugin>

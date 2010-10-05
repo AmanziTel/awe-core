@@ -33,15 +33,15 @@ import au.com.bytecode.opencsv.CSVReader;
  * @author TsAr
  * @since 1.0.0
  */
-public class CSVParser extends CommonFilesParser<HeaderTransferData, CommonConfigData> {
+public class CSVParser extends CommonFilesParser<BaseTransferData, CommonConfigData> {
     
     protected String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
     Character delimeters;
-    private HeaderTransferData initdata;
+    private BaseTransferData initdata;
     private int minSize=2;
 
     @Override
-    protected HeaderTransferData getFinishData() {
+    protected BaseTransferData getFinishData() {
         return null;
     }
 
@@ -74,7 +74,7 @@ public class CSVParser extends CommonFilesParser<HeaderTransferData, CommonConfi
                         error(String.format("File %s, line %s:incorrect data: Header length=%s,data length=%s. Data was skipped", element.getFile().getName(), line, header.length, nextLine.length));
                         continue;
                     }
-                    HeaderTransferData data = new HeaderTransferData();
+                    BaseTransferData data = new BaseTransferData();
                     data.setLine(line);
                     data.setFileName(element.getFile().getName());
                     for (int i = 0; i < header.length; i++) {
@@ -153,23 +153,23 @@ public class CSVParser extends CommonFilesParser<HeaderTransferData, CommonConfi
     }
 
     @Override
-    protected HeaderTransferData getInitData(CommonConfigData properties) {
-         initdata = new HeaderTransferData();
+    protected BaseTransferData getInitData(CommonConfigData properties) {
+         initdata = new BaseTransferData();
         initdata.setProjectName(properties.getProjectName());
         initdata.setRootName(properties.getDbRootName());
         return initdata;
     }
 
     @Override
-    protected HeaderTransferData getStartupElement(FileElement element) {
-        HeaderTransferData result=new HeaderTransferData();
+    protected BaseTransferData getStartupElement(FileElement element) {
+        BaseTransferData result=new BaseTransferData();
         result.setFileName(element.getFile().getName());
         result.put("timestamp", String.valueOf(element.getFile().lastModified()));
          return result;
     }
 
     @Override
-    protected HeaderTransferData getFinishElement(FileElement element) {
+    protected BaseTransferData getFinishElement(FileElement element) {
         return null;
     }
 

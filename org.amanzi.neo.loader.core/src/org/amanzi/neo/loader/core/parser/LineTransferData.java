@@ -20,7 +20,7 @@ package org.amanzi.neo.loader.core.parser;
  * @author tsinkel_a
  * @since 1.0.0
  */
-public class LineTransferData extends HeaderTransferData {
+public class LineTransferData extends BaseTransferData {
     
     /** long serialVersionUID field */
     private static final long serialVersionUID = -1270324348309659750L;

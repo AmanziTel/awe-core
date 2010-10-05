@@ -25,7 +25,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.loader.core.parser.HeaderTransferData;
+import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.statistic.StatisticManager;
@@ -41,7 +41,7 @@ import org.neo4j.graphdb.Node;
  * @author TsAr
  * @since 1.0.0
  */
-public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> extends AbstractSaver<T> {
+public abstract  class AbstractHeaderSaver<T extends BaseTransferData> extends AbstractSaver<T> {
 
     /** The service. */
     protected DatasetService service;
@@ -193,7 +193,7 @@ public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> extends
      * @param element the element
      * @return the string value
      */
-    protected String getStringValue(String key, HeaderTransferData element) {
+    protected String getStringValue(String key, BaseTransferData element) {
         String header = propertyMap.get(key);
         if (header == null) {
             header = key;
@@ -211,7 +211,7 @@ public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> extends
      * @return the number value
      */
 
-    protected <T extends Number> T getNumberValue(Class<T> klass, String key, HeaderTransferData element) {
+    protected <T extends Number> T getNumberValue(Class<T> klass, String key, BaseTransferData element) {
         String value = getStringValue(key, element);
         return     getNumberValue(klass,value);
         
@@ -251,7 +251,7 @@ public abstract  class AbstractHeaderSaver<T extends HeaderTransferData> extends
      * @param typeId the type id
      * @return the not handled data
      */
-    protected Map<String, Object> getNotHandledData(HeaderTransferData element,String keyId,String typeId) {
+    protected Map<String, Object> getNotHandledData(BaseTransferData element,String keyId,String typeId) {
         Map<String, Object> result = new HashMap<String, Object>();
         for (String key : element.keySet()) {
             if (!propertyMap.values().contains(key)) {

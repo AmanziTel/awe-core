@@ -289,6 +289,10 @@
             class="org.amanzi.neo.loader.savers.RomesSaver"
             id="org.amanzi.neo.loader.savers.RomesSaver">
       </saver>
+      <saver
+            class="org.amanzi.neo.loader.savers.Nemo2xSaver"
+            id="org.amanzi.neo.loader.savers.Nemo2xSaver">
+      </saver>
    </extension>
    <extension
          point="org.eclipse.ui.viewActions">

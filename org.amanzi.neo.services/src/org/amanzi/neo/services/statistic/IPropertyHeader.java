@@ -55,9 +55,10 @@ public interface IPropertyHeader {
      */
     String[] getTransmissionAllFields(String neighbourName);
 
-
-
-
+    <T extends Object> boolean updateStatistic(String nodeTypeId, String propertyName,T newValue,T oldValue);
+    
+    boolean updateStatisticCount(String nodeTypeId, long count);
+    
     /**
      * Gets the numeric fields.
      *
@@ -75,8 +76,7 @@ public interface IPropertyHeader {
      */
     String[] getAllFields(String nodeTypeId);
 
-
-
+    
     /**
      * Gets the all channels.
      *

@@ -31,7 +31,7 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.loader.LoaderUtils;
-import org.amanzi.neo.loader.core.parser.HeaderTransferData;
+import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Node;
@@ -44,7 +44,7 @@ import org.neo4j.graphdb.Node;
  * @author TsAr
  * @since 1.0.0
  */
-public class TemsSaver extends DriveSaver<HeaderTransferData> {
+public class TemsSaver extends DriveSaver<BaseTransferData> {
 
     protected Double currentLatitude;
     protected Double currentLongitude;
@@ -60,7 +60,7 @@ public class TemsSaver extends DriveSaver<HeaderTransferData> {
     private Integer hours;
 
     @Override
-    public void save(HeaderTransferData element) {
+    public void save(BaseTransferData element) {
         super.save(element);
         String time = getStringValue("time", element);
         Long timestamp = defineTimestamp(workDate, time);
@@ -103,21 +103,7 @@ public class TemsSaver extends DriveSaver<HeaderTransferData> {
         if (currentLatitude == null || currentLongitude == null || Math.abs(currentLatitude - latitude) > 10E-10 || Math.abs(currentLongitude - longitude) > 10E-10) {
             currentLatitude = latitude;
             currentLongitude = longitude;
-            if (lastMLocation != null) {
-                lastMLocation.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, element.getLine() - 1);
-            }
-            lastMLocation = service.createNode(NodeTypes.MP, time);
-            String mpId = NodeTypes.MP.getId();
-            statistic.increaseTypeCount(rootname, mpId, 1);
-            updateTx(1, 0);
-            setProperty(rootname, mpId, lastMLocation, INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
-            setProperty(rootname, mpId, lastMLocation, INeoConstants.PROPERTY_LAT_NAME, currentLatitude.doubleValue());
-            setProperty(rootname, mpId, lastMLocation, INeoConstants.PROPERTY_LON_NAME, currentLongitude.doubleValue());
-            lastMLocation.setProperty(INeoConstants.PROPERTY_FIRST_LINE_NAME, element.getLine());
-            index(lastMLocation);
-            GisProperties gisProperties = getGisProperties(rootNode);
-            gisProperties.updateBBox(currentLatitude, currentLongitude);
-            gisProperties.checkCRS(currentLatitude, currentLongitude, null);
+            lastMLocation=createMpLocation(lastMLocation,element, time, timestamp, latitude, longitude);
         }
         lastMNode.createRelationshipTo(lastMLocation, GeoNeoRelationshipTypes.LOCATION);
         updateTx(0, 1);
@@ -210,13 +196,15 @@ public class TemsSaver extends DriveSaver<HeaderTransferData> {
         }
     }
 
+
+
     /**
      * Define virtual parent.
      * 
      * @param element the element
      * @return the node
      */
-    private Node defineVirtualParent(HeaderTransferData element) {
+    private Node defineVirtualParent(BaseTransferData element) {
         Node virtualDataset = service.getVirtualDataset(rootNode, DriveTypes.MS);
         virtualDatasetName = DriveTypes.MS.getFullDatasetName(rootname);
         return service.getFileNode(virtualDataset, element.getFileName());
@@ -275,7 +263,7 @@ public class TemsSaver extends DriveSaver<HeaderTransferData> {
     }
 
     @Override
-    protected void definePropertyMap(HeaderTransferData element) {
+    protected void definePropertyMap(BaseTransferData element) {
         Set<String> headers = element.keySet();
         defineHeader(headers, INeoConstants.PROPERTY_BCCH_NAME, getPossibleHeaders(DataLoadPreferences.DR_BCCH));
         defineHeader(headers, INeoConstants.PROPERTY_TCH_NAME, getPossibleHeaders(DataLoadPreferences.DR_TCH));
@@ -309,7 +297,7 @@ public class TemsSaver extends DriveSaver<HeaderTransferData> {
 
 
     @Override
-    protected void fillRootNode(Node rootNode, HeaderTransferData element) {
+    protected void fillRootNode(Node rootNode, BaseTransferData element) {
         DriveTypes.TEMS.setTypeToNode(rootNode, getService());
     }
 
@@ -319,7 +307,7 @@ public class TemsSaver extends DriveSaver<HeaderTransferData> {
     }
 
     @Override
-    public boolean beforeSaveNewElement(HeaderTransferData element) {
+    public boolean beforeSaveNewElement(BaseTransferData element) {
         hours = null;
         currentLatitude = null;
         currentLatitude = null;
@@ -332,7 +320,7 @@ public class TemsSaver extends DriveSaver<HeaderTransferData> {
      * @return
      */
     @Override
-    protected Calendar getWorkDate(final HeaderTransferData element) {
+    protected Calendar getWorkDate(final BaseTransferData element) {
 
         CharSequence filename = element.getFileName();
         Pattern p = Pattern.compile(".*(\\d{4}-\\d{2}-\\d{2}).*");
@@ -363,7 +351,7 @@ public class TemsSaver extends DriveSaver<HeaderTransferData> {
     }
 
     @Override
-    public void finishSaveNewElement(HeaderTransferData element) {
+    public void finishSaveNewElement(BaseTransferData element) {
     }
 
     @Override

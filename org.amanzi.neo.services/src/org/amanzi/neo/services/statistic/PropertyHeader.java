@@ -638,4 +638,14 @@ public class PropertyHeader implements IPropertyHeader {
         return result;
     }
 
+    @Override
+    public <T> boolean updateStatistic(String nodeTypeId, String propertyName, T newValue, T oldValue) {
+        return false;
+    }
+
+    @Override
+    public boolean updateStatisticCount(String nodeTypeId, long count) {
+        return false;
+    }
+
 }

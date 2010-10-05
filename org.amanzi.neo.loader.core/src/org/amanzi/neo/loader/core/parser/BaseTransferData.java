@@ -26,7 +26,7 @@ import org.amanzi.neo.loader.core.IMapBasedDataElement;
  * @author TsAr
  * @since 1.0.0
  */
-public class HeaderTransferData extends LinkedHashMap<String, String>implements IMapBasedDataElement<String,String>  {
+public class BaseTransferData extends LinkedHashMap<String, String>implements IMapBasedDataElement<String,String>  {
 
     /** long serialVersionUID field. */
     private static final long serialVersionUID = -5686953917241479358L;

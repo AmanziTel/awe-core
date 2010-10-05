@@ -29,13 +29,13 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.DriveEvents;
 import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.loader.NemoEvents;
 import org.amanzi.neo.loader.core.parser.LineTransferData;
-import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
 import org.amanzi.neo.loader.core.saver.IStructuredSaver;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.hsqldb.lib.StringUtil;
@@ -49,7 +49,7 @@ import org.neo4j.graphdb.Node;
  * @author tsinkel_a
  * @since 1.0.0
  */
-public class Nemo2xSaver extends AbstractHeaderSaver<LineTransferData> implements IStructuredSaver<LineTransferData> {
+public class Nemo2xSaver extends DatasetSaver<LineTransferData> implements IStructuredSaver<LineTransferData> {
     protected static final SimpleDateFormat EVENT_DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy");
     protected static final String TIME_FORMAT = "HH:mm:ss.S";
     protected Calendar workDate;
@@ -57,6 +57,10 @@ public class Nemo2xSaver extends AbstractHeaderSaver<LineTransferData> implement
     protected Node lastMNode;
     protected Node lastMPNode;
     private SimpleDateFormat timeFormat;
+    private Node virtualParent;
+    private Node virtualDataset;
+    private Node lastMsNode;
+    private String virtualDatasetName;
 
     @Override
     public void save(LineTransferData element) {
@@ -158,10 +162,6 @@ public class Nemo2xSaver extends AbstractHeaderSaver<LineTransferData> implement
         for (Entry<String, Object> entry : entrySet) {
             parsedParameters.put(cleanHeader(entry.getKey()), entry.getValue());
         }
-        // create M node
-        lastMNode=service.createMNode(parent, lastMNode);
-        statistic.increaseTypeCount(rootname, NodeTypes.M.getId(), 1);
-        updateTx(1, 1);
         long timestamp;
         try {
             timestamp = getTimeStamp(1, timeFormat.parse(time));
@@ -170,6 +170,33 @@ public class Nemo2xSaver extends AbstractHeaderSaver<LineTransferData> implement
             // NeoLoaderPlugin.error(e.getLocalizedMessage());
             timestamp = 0;
         }
+        // create M node
+        createMNode(eventId, driveEvents, timestamp);
+        // create subnodes
+        createSubNodes(eventId, subNodes, timestamp);
+        if ("GPS".equalsIgnoreCase(eventId)) {
+            Float lon = (Float)parsedParameters.get("lon");
+            Float lat = (Float)parsedParameters.get("lat");
+            if ((lon == null || lat == null) || (lon == 0) && (lat == 0)) {
+                return;
+            }
+            lastMPNode=createMpLocation(lastMPNode, element, time, timestamp, lat, lon);
+        }
+    }
+
+
+    /**
+     * Creates the m node.
+     *
+     * @param eventId the event id
+     * @param driveEvents the drive events
+     * @param timestamp the timestamp
+     */
+    protected void createMNode(String eventId, DriveEvents driveEvents, long timestamp) {
+        lastMNode = service.createMNode(parent, lastMNode);
+        statistic.increaseTypeCount(rootname, NodeTypes.M.getId(), 1);
+        updateTx(1, 1);
+
 
         if (timestamp != 0) {
             setProperty(rootname, NodeTypes.M.getId(), lastMNode, INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
@@ -177,7 +204,8 @@ public class Nemo2xSaver extends AbstractHeaderSaver<LineTransferData> implement
         setProperty(rootname, NodeTypes.M.getId(), lastMNode, INeoConstants.PROPERTY_NAME_NAME, eventId);
         if (lastMPNode != null) {
             lastMNode.createRelationshipTo(lastMPNode, GeoNeoRelationshipTypes.LOCATION);
-            if (timestamp != 0&&!lastMPNode.hasProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME)) {
+            updateTx(0, 1);
+            if (timestamp != 0 && !lastMPNode.hasProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME)) {
                 setProperty(rootname, NodeTypes.MP.getId(), lastMPNode, INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
                 lastMPNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
             }
@@ -186,56 +214,85 @@ public class Nemo2xSaver extends AbstractHeaderSaver<LineTransferData> implement
             }
         }
         index(lastMNode);
-        //create subnodes
+    }
+
+
+    /**
+     * Creates the sub nodes.
+     *
+     * @param eventId the event id
+     * @param subNodes the sub nodes
+     * @param timestamp the timestamp
+     */
+    protected void createSubNodes(String eventId, List<Map<String, Object>> subNodes, long timestamp) {
         if (subNodes == null) {
             return;
         }
-        Node lastMMNode=null;
-            for (Map<String, Object> propertyMap : subNodes) {
-                Iterator<Entry<String, Object>> iter = propertyMap.entrySet().iterator();
-                while (iter.hasNext()) {
-                    Entry<String, Object> entry = iter.next();
-                    if (entry.getValue() == null) {
-                        iter.remove();
-                    }
-                }
-                if (propertyMap.isEmpty()) {
-                    continue;
-                }
-                try {
-                    lastMMNode =service.createMMNode(parent, lastMMNode);
-                    if (timestamp != 0) {
-                        setProperty(rootname, NodeTypes.MM.getId(), lastMMNode, INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
-                    }
-/*                    findOrCreateVirtualFileNode(mm);
-                    NodeTypes.HEADER_MS.setNodeType(mm, neo);
-                    mm.setProperty(INeoConstants.PROPERTY_NAME_NAME, event.eventId);
-                    findOrCreateVirtualFileNode(mm);
-                    if (virtualMnode != null) {
-                        virtualMnode.createRelationshipTo(mm, GeoNeoRelationshipTypes.NEXT);
-                    }
-                    virtualMnode = mm;
-                    for (String key : propertyMap.keySet()) {
-
-                        Object parsedValue = propertyMap.get(key);
-                        if (parsedValue != null && parsedValue.getClass().isArray()) {
-                            setProperty(mm, key, parsedValue);
-                        } else {
-                            setIndexProperty(headersVirt, mm, key, parsedValue);
-                        }
-                    }
-
-                    index(mm);
-                    if (pointNode != null) {
-                        mm.createRelationshipTo(pointNode, GeoNeoRelationshipTypes.LOCATION);
-                    }*/
-                } catch (Exception e) {
-                    NeoLoaderPlugin.exception(e);
-                    e.printStackTrace();
+        for (Map<String, Object> propertyMap : subNodes) {
+            Iterator<Entry<String, Object>> iter = propertyMap.entrySet().iterator();
+            while (iter.hasNext()) {
+                Entry<String, Object> entry = iter.next();
+                if (entry.getValue() == null) {
+                    iter.remove();
                 }
             }
+            if (propertyMap.isEmpty()) {
+                continue;
+            }
+            try {
+                lastMsNode = service.createMsNode(getVirtualParent(), lastMsNode);
+                statistic.increaseTypeCount(virtualDatasetName, NodeTypes.M.getId(), 1);
+                updateTx(1, 1);
+                if (timestamp != 0) {
+                    setProperty(virtualDatasetName, NodeTypes.HEADER_MS.getId(), lastMsNode, INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+                }
+                setProperty(virtualDatasetName, NodeTypes.HEADER_MS.getId(), lastMsNode, INeoConstants.PROPERTY_NAME_NAME, eventId);
 
+                for (String key : propertyMap.keySet()) {
+                    Object parsedValue = propertyMap.get(key);
+                    setProperty(virtualDatasetName, NodeTypes.HEADER_MS.getId(), lastMsNode, key, parsedValue);
+                }
+
+                index(lastMsNode);
+                if (lastMPNode != null) {
+                    lastMsNode.createRelationshipTo(lastMPNode, GeoNeoRelationshipTypes.LOCATION);
+                    updateTx(0, 1);
+                }
+            } catch (Exception e) {
+                exception(e);
+                e.printStackTrace();
+            }
+        }
     }
+
+
+    /**
+     * Gets the virtual parent.
+     *
+     * @return the virtual parent
+     */
+    protected Node getVirtualParent() {
+        if (virtualParent==null){
+            virtualParent=service.getFileNode(virtualDataset, element.getFileName());
+        }
+        return virtualParent;
+    }
+
+
+    /**
+     * Gets the virtual dataset.
+     *
+     * @return the virtual dataset
+     */
+    protected Node getVirtualDataset() {
+        if (virtualDataset==null){
+            virtualDataset = service.getVirtualDataset(rootNode, DriveTypes.MS);
+            virtualDatasetName = DriveTypes.MS.getFullDatasetName(rootname);
+        }
+        return virtualDataset;
+    }
+
+
     /**
      * get Timestamp of nodeDate
      * 
@@ -254,6 +311,7 @@ public class Nemo2xSaver extends AbstractHeaderSaver<LineTransferData> implement
         final long timestamp = workDate.getTimeInMillis();
         return timestamp;
     }
+
     /**
      * @return
      */
@@ -285,10 +343,12 @@ public class Nemo2xSaver extends AbstractHeaderSaver<LineTransferData> implement
 
     @Override
     public boolean beforeSaveNewElement(LineTransferData element) {
-        workDate=null;
+        workDate = null;
         parent = service.getFileNode(rootNode, element.getFileName());
+        virtualParent = null;
         lastMNode = null;
-        lastMPNode=null;
+        lastMPNode = null;
+        lastMsNode = null;
         return false;
     }
 
@@ -303,8 +363,9 @@ public class Nemo2xSaver extends AbstractHeaderSaver<LineTransferData> implement
         addIndex(element);
         startMainTx(4000);
         initializeIndexes();
+        virtualDataset = null;
+        virtualParent = null;
     }
-
 
     protected void addIndex(LineTransferData element) {
         try {

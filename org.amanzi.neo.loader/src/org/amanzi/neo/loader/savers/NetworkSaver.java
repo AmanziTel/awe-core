@@ -27,7 +27,7 @@ import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.AbstractLoader;
-import org.amanzi.neo.loader.core.parser.HeaderTransferData;
+import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.preferences.DataLoadPreferences;
@@ -44,7 +44,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author tsinkel_a
  * @since 1.0.0
  */
-public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
+public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
 
     private boolean headerNotHandled;
     private boolean is3G;
@@ -65,7 +65,7 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
     private boolean trimSectorName;
 
     @Override
-    public void init(HeaderTransferData element) {
+    public void init(BaseTransferData element) {
         super.init(element);
         propertyMap.clear();
         headerNotHandled = true;
@@ -85,7 +85,7 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
 
 
     @Override
-    public void save(HeaderTransferData element) {
+    public void save(BaseTransferData element) {
         if (headerNotHandled) {
             definePropertyMap(element);
             startMainTx(1000);
@@ -240,7 +240,7 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
     /**
      * @param element
      */
-    private void definePropertyMap(HeaderTransferData element) {
+    private void definePropertyMap(BaseTransferData element) {
         Set<String> headers = element.keySet();
         defineHeader(headers, "city", getPossibleHeaders(DataLoadPreferences.NH_CITY));
         defineHeader(headers, "msc", getPossibleHeaders(DataLoadPreferences.NH_MSC));
@@ -261,7 +261,7 @@ public class NetworkSaver extends AbstractHeaderSaver<HeaderTransferData> {
 
 
     @Override
-    protected void fillRootNode(Node rootNode, HeaderTransferData element) {
+    protected void fillRootNode(Node rootNode, BaseTransferData element) {
 
     }
 

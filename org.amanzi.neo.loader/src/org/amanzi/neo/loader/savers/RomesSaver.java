@@ -27,7 +27,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.GisProperties;
-import org.amanzi.neo.loader.core.parser.HeaderTransferData;
+import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -38,18 +38,18 @@ import org.neo4j.graphdb.Node;
  * @author tsinkel_a
  * @since 1.0.0
  */
-public class RomesSaver extends DriveSaver<HeaderTransferData> {
+public class RomesSaver extends DriveSaver<BaseTransferData> {
     protected Double currentLatitude;
     protected Double currentLongitude;
     private Node lastMLocation;
     private Integer hours;
 
     @Override
-    public void finishSaveNewElement(HeaderTransferData element) {
+    public void finishSaveNewElement(BaseTransferData element) {
     }
 
     @Override
-    protected Calendar getWorkDate(HeaderTransferData element) {
+    protected Calendar getWorkDate(BaseTransferData element) {
         CharSequence filename = element.getFileName();
         Pattern p = Pattern.compile(".*_(\\d{6})_.*");
         Matcher m = p.matcher(filename);
@@ -78,13 +78,13 @@ public class RomesSaver extends DriveSaver<HeaderTransferData> {
     }
 
     @Override
-    public boolean beforeSaveNewElement(HeaderTransferData element) {
+    public boolean beforeSaveNewElement(BaseTransferData element) {
         hours = null;
         return super.beforeSaveNewElement(element);
     }
 
     @Override
-    protected void definePropertyMap(HeaderTransferData element) {
+    protected void definePropertyMap(BaseTransferData element) {
         Set<String> headers = element.keySet();
         defineHeader(headers, "time", new String[] {"time.*"});
         defineHeader(headers, "latitude", new String[] {".*latitude.*"});
@@ -106,7 +106,7 @@ public class RomesSaver extends DriveSaver<HeaderTransferData> {
     }
 
     @Override
-    protected void fillRootNode(Node rootNode, HeaderTransferData element) {
+    protected void fillRootNode(Node rootNode, BaseTransferData element) {
     }
 
     @Override
@@ -120,7 +120,7 @@ public class RomesSaver extends DriveSaver<HeaderTransferData> {
     }
 
     @Override
-    public void save(HeaderTransferData element) {
+    public void save(BaseTransferData element) {
         super.save(element);
         String time = getStringValue("time", element);
         Long timestamp = defineTimestamp(workDate, time);
@@ -145,25 +145,10 @@ public class RomesSaver extends DriveSaver<HeaderTransferData> {
             setProperty(rootname, mtypeId, lastMNode, key, entry.getValue());
         }
         index(lastMNode);
-        // TODO refactor creating MP node - union with TemsSaver
         if (currentLatitude == null || currentLongitude == null || Math.abs(currentLatitude - latitude) > 10E-10 || Math.abs(currentLongitude - longitude) > 10E-10) {
             currentLatitude = latitude;
             currentLongitude = longitude;
-            if (lastMLocation != null) {
-                lastMLocation.setProperty(INeoConstants.PROPERTY_LAST_LINE_NAME, element.getLine() - 1);
-            }
-            lastMLocation = service.createNode(NodeTypes.MP, time);
-            String mpId = NodeTypes.MP.getId();
-            statistic.increaseTypeCount(rootname, mpId, 1);
-            updateTx(1, 0);
-            setProperty(rootname, mpId, lastMLocation, INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
-            setProperty(rootname, mpId, lastMLocation, INeoConstants.PROPERTY_LAT_NAME, currentLatitude.doubleValue());
-            setProperty(rootname, mpId, lastMLocation, INeoConstants.PROPERTY_LON_NAME, currentLongitude.doubleValue());
-            lastMLocation.setProperty(INeoConstants.PROPERTY_FIRST_LINE_NAME, element.getLine());
-            index(lastMLocation);
-            GisProperties gisProperties = getGisProperties(rootNode);
-            gisProperties.updateBBox(currentLatitude, currentLongitude);
-            gisProperties.checkCRS(currentLatitude, currentLongitude, null);
+            lastMLocation=createMpLocation(lastMLocation, element, time, timestamp, latitude, longitude);
         }
         lastMNode.createRelationshipTo(lastMLocation, GeoNeoRelationshipTypes.LOCATION);
         updateTx(0, 1);

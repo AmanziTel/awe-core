@@ -34,7 +34,7 @@ import java.util.zip.GZIPInputStream;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.loader.core.parser.HeaderTransferData;
+import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
@@ -112,7 +112,7 @@ public class GridLoader extends DriveLoader {
                         try {
                             line++;
                             comm++;
-                            HeaderTransferData data = new HeaderTransferData();
+                            BaseTransferData data = new BaseTransferData();
                             data.setLine(line);
                             data.setFileName(gridFile.getName());
                             String propertyFormat=petPropertyPrfix(gridFile);
@@ -205,7 +205,7 @@ public class GridLoader extends DriveLoader {
      *
      * @param data the data
      */
-    private void save(HeaderTransferData data) {
+    private void save(BaseTransferData data) {
         lastMNode=service.createMNode(parent, lastMNode);  
         for (Map.Entry<String,String>entry:data.entrySet()){
             setIndexPropertyNotParcedValue(getHeaderMap(1).headers, lastMNode, entry.getKey(), entry.getValue());

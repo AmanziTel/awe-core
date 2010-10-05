@@ -21,8 +21,7 @@ import java.util.regex.Pattern;
 
 import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
-import org.amanzi.neo.loader.core.parser.HeaderTransferData;
-import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
+import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.saver.IStructuredSaver;
 import org.amanzi.neo.loader.dialogs.DateTimeDialogWithToggle;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
@@ -39,12 +38,13 @@ import org.neo4j.graphdb.Node;
  * @author tsinkel_a
  * @since 1.0.0
  */
-public abstract class DriveSaver<T extends HeaderTransferData> extends AbstractHeaderSaver<T> implements IStructuredSaver<T> {
+public abstract class DriveSaver<T extends BaseTransferData> extends DatasetSaver<T> implements IStructuredSaver<T> {
     protected boolean newElem;
     protected Calendar workDate;
     protected boolean applyToAll;
     protected Node parent;
     protected Node lastMNode;
+
     @Override
     public void init(T element) {
         super.init(element);
@@ -56,6 +56,7 @@ public abstract class DriveSaver<T extends HeaderTransferData> extends AbstractH
         }
     }
 
+
     public void save(T element) {
         if (newElem) {
             handleFirstRow(element);
@@ -63,6 +64,7 @@ public abstract class DriveSaver<T extends HeaderTransferData> extends AbstractH
         }
 
     };
+
     /**
      * Ask time.
      * 
@@ -100,6 +102,7 @@ public abstract class DriveSaver<T extends HeaderTransferData> extends AbstractH
         });
         return result;
     }
+
     /**
      * Gets the longitude.
      * 
@@ -150,12 +153,12 @@ public abstract class DriveSaver<T extends HeaderTransferData> extends AbstractH
             }
         }
         return null;
-    }   
-    
+    }
+
     public boolean beforeSaveNewElement(T element) {
         newElem = true;
 
-        workDate = applyToAll?workDate:getWorkDate(element);
+        workDate = applyToAll ? workDate : getWorkDate(element);
         boolean result = workDate == null;
         parent = null;
         if (!result) {
@@ -164,6 +167,7 @@ public abstract class DriveSaver<T extends HeaderTransferData> extends AbstractH
         }
         return result;
     };
+
     /**
      * @param key -key of value from preference store
      * @return array of possible headers
@@ -180,6 +184,7 @@ public abstract class DriveSaver<T extends HeaderTransferData> extends AbstractH
         }
         return result.toArray(new String[0]);
     }
+
     protected abstract Calendar getWorkDate(T element);
 
     /**
