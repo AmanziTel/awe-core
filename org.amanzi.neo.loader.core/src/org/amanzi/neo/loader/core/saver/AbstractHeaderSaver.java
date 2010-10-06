@@ -138,7 +138,9 @@ public abstract  class AbstractHeaderSaver<T extends BaseTransferData> extends A
     protected Node addSimpleChild(Node parent, INodeType type, String name) {
         statistic.updateTypeCount(rootname,type.getId(),1);
         Node child = service.addSimpleChild(parent, type, name);
+        statistic.indexValue(rootname, type.getId(), INeoConstants.PROPERTY_NAME_NAME, name);
         service.indexByProperty(rootNode.getId(),child, INeoConstants.PROPERTY_NAME_NAME);
+        updateTx(1, 1);
         return child;
     }
 

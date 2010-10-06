@@ -43,7 +43,7 @@ import org.neo4j.graphdb.Node;
 
 /**
  * <p>
- * Nemo 2x Saver
+ *  Saver for nemo data v.2.01
  * </p>
  * 
  * @author tsinkel_a
@@ -56,11 +56,13 @@ public class Nemo2xSaver extends DatasetSaver<LineTransferData> implements IStru
     protected Node parent;
     protected Node lastMNode;
     protected Node lastMPNode;
-    private SimpleDateFormat timeFormat;
+    protected SimpleDateFormat timeFormat;
     private Node virtualParent;
     private Node virtualDataset;
     private Node lastMsNode;
     private String virtualDatasetName;
+    protected DriveEvents driveEvents;
+    protected List<Map<String, Object>> subNodes;
 
     @Override
     public void save(LineTransferData element) {
@@ -102,12 +104,40 @@ public class Nemo2xSaver extends DatasetSaver<LineTransferData> implements IStru
             parameters.add(parcedLine.get(i));
         }
         // analyse
-        if (parameters.isEmpty()) {
+        Map<String, Object> parsedParameters = analyseKnownParameters(element, event, contextId, parameters);
+        if (parsedParameters == null) {
             return;
+        }
+        long timestamp;
+        try {
+            timestamp = getTimeStamp(1, timeFormat.parse(time));
+        } catch (ParseException e) {
+            // some parameters do not have time
+            // NeoLoaderPlugin.error(e.getLocalizedMessage());
+            timestamp = 0;
+        }
+        if ("GPS".equalsIgnoreCase(eventId)) {
+            Float lon = (Float)parsedParameters.get("lon");
+            Float lat = (Float)parsedParameters.get("lat");
+            if ((lon == null || lat == null) || (lon == 0) && (lat == 0)) {
+                return;
+            }
+            lastMPNode = createMpLocation(lastMPNode, element, time, timestamp, lat, lon);
+        }
+        // create M node
+        createMNode(eventId, driveEvents, timestamp, parsedParameters);
+        // create subnodes
+        createSubNodes(eventId, subNodes, timestamp);
+
+    }
+
+    protected Map<String, Object> analyseKnownParameters(LineTransferData element, NemoEvents event, List<Integer> contextId, ArrayList<String> parameters) {
+        if (parameters.isEmpty()) {
+            return null;
         }
 
         if (event == null) {
-            return;
+            return null;
         }
         Map<String, Object> parParam;
         try {
@@ -115,14 +145,14 @@ public class Nemo2xSaver extends DatasetSaver<LineTransferData> implements IStru
         } catch (Exception e1) {
             error(String.format("Line %s not parsed", element.getLine()));
             e1.printStackTrace();
-//            exception(e1);
-            return;
+            // exception(e1);
+            return null;
         }
         if (parParam.isEmpty()) {
-            return;
+            return null;
         }
-        DriveEvents driveEvents = (DriveEvents)parParam.remove(NemoEvents.DRIVE_EVENTS);
-        List<Map<String, Object>> subNodes = (List<Map<String, Object>>)parParam.remove(NemoEvents.SUB_NODES);
+        driveEvents = (DriveEvents)parParam.remove(NemoEvents.DRIVE_EVENTS);
+        subNodes = (List<Map<String, Object>>)parParam.remove(NemoEvents.SUB_NODES);
         // TODO check documentation
         if (subNodes != null) {
             // store in parameters like prop1,prop2...
@@ -139,9 +169,11 @@ public class Nemo2xSaver extends DatasetSaver<LineTransferData> implements IStru
         if (parParam.containsKey(NemoEvents.FIRST_CONTEXT_NAME)) {
             List<String> contextName = (List<String>)parParam.get(NemoEvents.FIRST_CONTEXT_NAME);
             parParam.remove(NemoEvents.FIRST_CONTEXT_NAME);
-            for (int i = 0; i < contextId.size() && i < contextName.size(); i++) {
-                if (contextId.get(i) != 0) {
-                    parParam.put(contextName.get(i), contextId.get(i));
+            if (contextId != null) {
+                for (int i = 0; i < contextId.size() && i < contextName.size(); i++) {
+                    if (contextId.get(i) != 0) {
+                        parParam.put(contextName.get(i), contextId.get(i));
+                    }
                 }
             }
         }
@@ -164,46 +196,37 @@ public class Nemo2xSaver extends DatasetSaver<LineTransferData> implements IStru
         for (Entry<String, Object> entry : entrySet) {
             parsedParameters.put(cleanHeader(entry.getKey()), entry.getValue());
         }
-        long timestamp;
-        try {
-            timestamp = getTimeStamp(1, timeFormat.parse(time));
-        } catch (ParseException e) {
-            // some parameters do not have time
-            // NeoLoaderPlugin.error(e.getLocalizedMessage());
-            timestamp = 0;
-        }
-        // create M node
-        createMNode(eventId, driveEvents, timestamp);
-        // create subnodes
-        createSubNodes(eventId, subNodes, timestamp);
-        if ("GPS".equalsIgnoreCase(eventId)) {
-            Float lon = (Float)parsedParameters.get("lon");
-            Float lat = (Float)parsedParameters.get("lat");
-            if ((lon == null || lat == null) || (lon == 0) && (lat == 0)) {
-                return;
-            }
-            lastMPNode=createMpLocation(lastMPNode, element, time, timestamp, lat, lon);
-        }
+        return parsedParameters;
     }
-
 
     /**
      * Creates the m node.
-     *
+     * 
      * @param eventId the event id
      * @param driveEvents the drive events
      * @param timestamp the timestamp
+     * @param parsedParameters
      */
-    protected void createMNode(String eventId, DriveEvents driveEvents, long timestamp) {
+    protected void createMNode(String eventId, DriveEvents driveEvents, long timestamp, Map<String, Object> parsedParameters) {
         lastMNode = service.createMNode(parent, lastMNode);
         statistic.updateTypeCount(rootname, NodeTypes.M.getId(), 1);
         updateTx(1, 1);
-
 
         if (timestamp != 0) {
             setProperty(rootname, NodeTypes.M.getId(), lastMNode, INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
         }
         setProperty(rootname, NodeTypes.M.getId(), lastMNode, INeoConstants.PROPERTY_NAME_NAME, eventId);
+        setProperty(rootname, NodeTypes.M.getId(), lastMNode, INeoConstants.PROPERTY_TYPE_EVENT, eventId);
+        if (driveEvents != null) {
+            setProperty(rootname, NodeTypes.M.getId(), lastMNode, INeoConstants.PROPERTY_DRIVE_TYPE_EVENT, driveEvents.name());
+        }
+        for (Map.Entry<String, Object> entry : parsedParameters.entrySet()) {
+            if (lastMNode.hasProperty(entry.getKey())) {
+                continue;
+            }
+            setProperty(rootname, NodeTypes.M.getId(), lastMNode, entry.getKey(), entry.getValue());
+        }
+
         if (lastMPNode != null) {
             lastMNode.createRelationshipTo(lastMPNode, GeoNeoRelationshipTypes.LOCATION);
             updateTx(0, 1);
@@ -215,13 +238,13 @@ public class Nemo2xSaver extends DatasetSaver<LineTransferData> implements IStru
                 getIndexService().index(lastMPNode, INeoConstants.EVENTS_LUCENE_INDEX_NAME, rootname);
             }
         }
+
         index(lastMNode);
     }
 
-
     /**
      * Creates the sub nodes.
-     *
+     * 
      * @param eventId the event id
      * @param subNodes the sub nodes
      * @param timestamp the timestamp
@@ -267,33 +290,30 @@ public class Nemo2xSaver extends DatasetSaver<LineTransferData> implements IStru
         }
     }
 
-
     /**
      * Gets the virtual parent.
-     *
+     * 
      * @return the virtual parent
      */
     protected Node getVirtualParent() {
-        if (virtualParent==null){
-            virtualParent=service.getFileNode(virtualDataset, element.getFileName());
+        if (virtualParent == null) {
+            virtualParent = service.getFileNode(virtualDataset, element.getFileName());
         }
         return virtualParent;
     }
 
-
     /**
      * Gets the virtual dataset.
-     *
+     * 
      * @return the virtual dataset
      */
     protected Node getVirtualDataset() {
-        if (virtualDataset==null){
+        if (virtualDataset == null) {
             virtualDataset = service.getVirtualDataset(rootNode, DriveTypes.MS);
             virtualDatasetName = DriveTypes.MS.getFullDatasetName(rootname);
         }
         return virtualDataset;
     }
-
 
     /**
      * get Timestamp of nodeDate
@@ -314,10 +334,13 @@ public class Nemo2xSaver extends DatasetSaver<LineTransferData> implements IStru
         return timestamp;
     }
 
+
     /**
-     * @return
+     * Gets the version.
+     *
+     * @return the version
      */
-    private String getVersion() {
+    protected String getVersion() {
         return "2.01";
     }
 

@@ -293,6 +293,14 @@
             class="org.amanzi.neo.loader.savers.Nemo2xSaver"
             id="org.amanzi.neo.loader.savers.Nemo2xSaver">
       </saver>
+      <saver
+            class="org.amanzi.neo.loader.savers.Nemo1xSaver"
+            id="org.amanzi.neo.loader.savers.Nemo1xSaver">
+      </saver>
+      <saver
+            class="org.amanzi.neo.loader.savers.NetworkSiteSaver"
+            id="org.amanzi.neo.loader.savers.NetworkSiteSaver">
+      </saver>
    </extension>
    <extension
          point="org.eclipse.ui.viewActions">

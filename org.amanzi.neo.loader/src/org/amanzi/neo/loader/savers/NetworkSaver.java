@@ -71,8 +71,6 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
         headerNotHandled = true;
         trimSectorName = NeoLoaderPlugin.getDefault().getPreferenceStore().getBoolean(DataLoadPreferences.REMOVE_SITE_NAME);
         addNetworkIndexes();
-
-        
     }
     private void addNetworkIndexes() {
         try {
@@ -93,6 +91,15 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
             headerNotHandled = false;
 
         }
+        saveRow(element);
+    }
+    
+    /**
+     * Save row.
+     *
+     * @param element the element
+     */
+    protected void saveRow(BaseTransferData element) {
         try {
             String bscField = getStringValue("bsc", element);
             String cityField = getStringValue("city", element);
@@ -120,7 +127,6 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
                     city = getIndexService().getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.CITY), cityName);
                     if (city == null) {
                         city = addSimpleChild(rootNode, NodeTypes.CITY, cityName);
-                        indexStat(rootname, city);
                     }
                     city_s.put(cityField, city);
                 }
@@ -135,7 +141,6 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
                     bsc = getIndexService().getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.BSC), bscName);
                     if (bsc == null) {
                         bsc = addSimpleChild(city == null ? rootNode : city, NodeTypes.BSC, bscName);
-                        indexStat(rootname, bsc);
                     }
                     bsc_s.put(bscField, bsc);
                 }
@@ -240,7 +245,7 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
     /**
      * @param element
      */
-    private void definePropertyMap(BaseTransferData element) {
+    protected void definePropertyMap(BaseTransferData element) {
         Set<String> headers = element.keySet();
         defineHeader(headers, "city", getPossibleHeaders(DataLoadPreferences.NH_CITY));
         defineHeader(headers, "msc", getPossibleHeaders(DataLoadPreferences.NH_MSC));
@@ -254,7 +259,6 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
         defineHeader(headers, "beamwidth", getPossibleHeaders(DataLoadPreferences.NH_BEAMWIDTH));
         defineHeader(headers, "azimuth", getPossibleHeaders(DataLoadPreferences.NH_AZIMUTH));
         is3G = element.keySet().contains("gsm_ne");
-        addAnalysedNodeTypes(element.getRootName(), ALL_NODE_TYPES);
     }
 
 

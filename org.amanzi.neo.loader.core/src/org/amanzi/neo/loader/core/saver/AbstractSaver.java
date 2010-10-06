@@ -63,7 +63,7 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
     private final LinkedHashMap<String, LinkedHashMap<String, HashSet<MultiPropertyIndex< ? >>>> mappedIndexes = new LinkedHashMap<String, LinkedHashMap<String, HashSet<MultiPropertyIndex< ? >>>>();
 
     /** The stat to analyse. */
-    private final LinkedHashMap<String, HashSet<String>> statToAnalyse = new LinkedHashMap<String, HashSet<String>>();
+//    private final LinkedHashMap<String, HashSet<String>> statToAnalyse = new LinkedHashMap<String, HashSet<String>>();
 
     /** The ignored properties. */
     private final HashSet<String> ignoredProperties = new HashSet<String>();
@@ -314,47 +314,47 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
         indexesInitialized = true;
     }
 
-    /**
-     * Adds the analysed node types.
-     * 
-     * @param key the key
-     * @param nodeType the node type
-     */
-    protected void addAnalysedNodeTypes(String key, String nodeType) {
-        HashSet<String> nodetypes = statToAnalyse.get(key);
-        if (nodetypes == null) {
-            nodetypes = new HashSet<String>();
-            statToAnalyse.put(key, nodetypes);
-        }
-        if (nodetypes.contains(ALL_NODE_TYPES)) {
-            return;
-        }
-        nodetypes.add(nodeType);
-    }
-
-    /**
-     * Index stat.
-     * 
-     * @param key the key
-     * @param node the node
-     */
-    protected void indexStat(String key, Node node) {
-        HashSet<String> nodeTypes = statToAnalyse.get(key);
-        if (nodeTypes == null) {
-            return;
-        }
-        String nodeType = NeoUtils.getNodeType(node, "");
-        if (!nodeTypes.contains(ALL_NODE_TYPES)) {
-            if (!nodeTypes.contains(nodeType)) {
-                return;
-            }
-        }
-        for (String keys : node.getPropertyKeys()) {
-            if (!ignoredProperties.contains(keys)) {
-                statistic.indexValue(key, nodeType, keys, node.getProperty(keys));
-            }
-        }
-    }
+//    /**
+//     * Adds the analysed node types.
+//     * 
+//     * @param key the key
+//     * @param nodeType the node type
+//     */
+//    protected void addAnalysedNodeTypes(String key, String nodeType) {
+//        HashSet<String> nodetypes = statToAnalyse.get(key);
+//        if (nodetypes == null) {
+//            nodetypes = new HashSet<String>();
+//            statToAnalyse.put(key, nodetypes);
+//        }
+//        if (nodetypes.contains(ALL_NODE_TYPES)) {
+//            return;
+//        }
+//        nodetypes.add(nodeType);
+//    }
+//
+//    /**
+//     * Index stat.
+//     * 
+//     * @param key the key
+//     * @param node the node
+//     */
+//    protected void indexStat(String key, Node node) {
+//        HashSet<String> nodeTypes = statToAnalyse.get(key);
+//        if (nodeTypes == null) {
+//            return;
+//        }
+//        String nodeType = NeoUtils.getNodeType(node, "");
+//        if (!nodeTypes.contains(ALL_NODE_TYPES)) {
+//            if (!nodeTypes.contains(nodeType)) {
+//                return;
+//            }
+//        }
+//        for (String keys : node.getPropertyKeys()) {
+//            if (!ignoredProperties.contains(keys)) {
+//                statistic.indexValue(key, nodeType, keys, node.getProperty(keys));
+//            }
+//        }
+//    }
 
     /**
      * Update property.

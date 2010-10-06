@@ -290,7 +290,6 @@ public class TemsSaver extends DriveSaver<BaseTransferData> {
             defineHeader(headers, "all_pilot_set_channel_" + i, new String[] {"all_pilot_set_channel_" + i});
             defineHeader(headers, "all_pilot_set_pn_" + i, new String[] {"all_pilot_set_pn_" + i});
         }
-        addAnalysedNodeTypes(element.getRootName(), ALL_NODE_TYPES);
 
     }
 

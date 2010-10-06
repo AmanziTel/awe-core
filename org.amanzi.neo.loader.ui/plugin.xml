@@ -101,6 +101,12 @@
              parser="org.amanzi.neo.loader.core.parser.LineParser"
              saver="org.amanzi.neo.loader.savers.Nemo2xSaver">
        </loader>
+       <loader
+             description="Nemo data v1.86"
+             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
+             parser="org.amanzi.neo.loader.core.parser.LineParser"
+             saver="org.amanzi.neo.loader.savers.Nemo1xSaver">
+       </loader>
     </extension>
 
 </plugin>
