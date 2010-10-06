@@ -84,6 +84,12 @@
              saver="org.amanzi.neo.loader.savers.NetworkSaver">
        </loader>
        <loader
+             description="Network Site Data"
+             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
+             parser="org.amanzi.neo.loader.core.parser.CSVParser"
+             saver="org.amanzi.neo.loader.savers.NetworkSiteSaver">
+       </loader>
+       <loader
              description="TEMS data"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
