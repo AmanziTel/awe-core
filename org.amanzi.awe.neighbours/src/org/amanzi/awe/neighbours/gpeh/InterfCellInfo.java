@@ -90,7 +90,7 @@ public class InterfCellInfo extends CellNodeInfo {
      */
     public boolean isDifinedNeighbour(Node cellSector,GraphDatabaseService service) {
         if (defNeigh==null){
-            Set<Relationship> relations = NeoUtils.getRelations(cellSector, getCellSector(), NetworkRelationshipTypes.NEIGHBOUR, service);
+            Set<Relationship> relations = NeoUtils.getRelations(cellSector, getCellSector(), NetworkRelationshipTypes.NEIGHBOUR);
             defNeigh = !relations.isEmpty();
         }
         return defNeigh;

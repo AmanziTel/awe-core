@@ -29,6 +29,7 @@ import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.statistic.IStatistic;
 import org.hsqldb.lib.StringUtil;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.index.IndexService;
 
@@ -361,13 +362,13 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
      * 
      * @param key the key
      * @param nodeType the node type
-     * @param node the node
+     * @param rel the node
      * @param propertyName the property name
      * @param value the value
      */
-    protected boolean updateProperty(String key, String nodeType, Node node, String propertyName, Object value) {
-        if (!node.hasProperty(propertyName)) {
-            return setProperty(key, nodeType, node, propertyName, value);
+    protected boolean updateProperty(String key, String nodeType, PropertyContainer rel, String propertyName, Object value) {
+        if (!rel.hasProperty(propertyName)) {
+            return setProperty(key, nodeType, rel, propertyName, value);
         }
         return false;
     }
@@ -377,15 +378,15 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
      * 
      * @param key the key
      * @param nodeType the node type
-     * @param node the node
+     * @param rel the node
      * @param propertyName the property name
      * @param value the value
      */
-    protected boolean setProperty(String key, String nodeType, Node node, String propertyName, Object value) {
+    protected boolean setProperty(String key, String nodeType, PropertyContainer rel, String propertyName, Object value) {
         if (value == null||(value instanceof String&&StringUtil.isEmpty((String)value))) {
             return false;
         }
-        node.setProperty(propertyName, value);
+        rel.setProperty(propertyName, value);
         return statistic.indexValue(key, nodeType, propertyName, value);
     }
 

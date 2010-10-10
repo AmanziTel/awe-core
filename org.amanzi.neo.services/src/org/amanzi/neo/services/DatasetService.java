@@ -33,6 +33,7 @@ import org.amanzi.neo.core.utils.NeoUtils.FilterAND;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.internal.DynamicNodeType;
+import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
@@ -61,6 +62,9 @@ public class DatasetService extends AbstractService {
 
     /** String DYNAMIC_TYPES field. */
     private static final String DYNAMIC_TYPES = "dynamic_types";
+
+    /** The Constant PROXY_NAME_SEPARATOR. */
+    private static final String PROXY_NAME_SEPARATOR = "/";
 
     /**
      * Gets the root node.
@@ -192,6 +196,12 @@ public class DatasetService extends AbstractService {
         return (String)node.getProperty("type", null);
     }
 
+    /**
+     * Sets the node type.
+     * 
+     * @param node the node
+     * @param type the type
+     */
     public void setNodeType(Node node, INodeType type) {
         Transaction tx = databaseService.beginTx();
         try {
@@ -527,21 +537,21 @@ public class DatasetService extends AbstractService {
             }
         });
         filter.addFilter(additionalFilter);
-        return Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1)).filter(filter).relationships(
-                GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).prune(new PruneEvaluator() {
+        return Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1)).filter(filter)
+                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).prune(new PruneEvaluator() {
 
-            @Override
-            public boolean pruneAfter(Path position) {
-                if (position.lastRelationship() == null) {
-                    return false;
-                }
-                if (position.length() == 1) {
-                    return position.lastRelationship().isType(GeoNeoRelationshipTypes.NEXT);
-                } else {
-                    return position.lastRelationship().isType(GeoNeoRelationshipTypes.CHILD);
-                }
-            }
-        });
+                    @Override
+                    public boolean pruneAfter(Path position) {
+                        if (position.lastRelationship() == null) {
+                            return false;
+                        }
+                        if (position.length() == 1) {
+                            return position.lastRelationship().isType(GeoNeoRelationshipTypes.NEXT);
+                        } else {
+                            return position.lastRelationship().isType(GeoNeoRelationshipTypes.CHILD);
+                        }
+                    }
+                });
     }
 
     /**
@@ -682,8 +692,7 @@ public class DatasetService extends AbstractService {
     public Node getVirtualDataset(Node rootNode, DriveTypes type) {
         Node result = findVirtualDataset(rootNode, type);
         if (result == null) {
-            result = createNode(NodeTypes.DATASET.getId(), INeoConstants.PROPERTY_NAME_NAME, type.getFullDatasetName(getName(rootNode)), INeoConstants.DRIVE_TYPE, type
-                    .getId());
+            result = createNode(NodeTypes.DATASET.getId(), INeoConstants.PROPERTY_NAME_NAME, type.getFullDatasetName(getName(rootNode)), INeoConstants.DRIVE_TYPE, type.getId());
             Transaction tx = databaseService.beginTx();
             try {
                 rootNode.createRelationshipTo(result, GeoNeoRelationshipTypes.VIRTUAL_DATASET);
@@ -703,14 +712,14 @@ public class DatasetService extends AbstractService {
      * @return the node
      */
     public Node findVirtualDataset(Node rootNode, final DriveTypes type) {
-        TraversalDescription td = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1)).relationships(
-                GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).filter(new Predicate<Path>() {
+        TraversalDescription td = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1))
+                .relationships(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).filter(new Predicate<Path>() {
 
-            @Override
-            public boolean accept(Path item) {
-                return item.length() == 1 && type == DriveTypes.getNodeType(item.endNode());
-            }
-        });
+                    @Override
+                    public boolean accept(Path item) {
+                        return item.length() == 1 && type == DriveTypes.getNodeType(item.endNode());
+                    }
+                });
         Iterator<Node> it = td.traverse(rootNode).nodes().iterator();
         return it.hasNext() ? it.next() : null;
     }
@@ -727,6 +736,13 @@ public class DatasetService extends AbstractService {
 
     }
 
+    /**
+     * Creates the mm node.
+     * 
+     * @param parent the parent
+     * @param lastMsNode the last ms node
+     * @return the node
+     */
     public Node createMMNode(Node parent, Node lastMsNode) {
         return createChild(parent, lastMsNode, NodeTypes.MM.getId());
     }
@@ -782,8 +798,7 @@ public class DatasetService extends AbstractService {
         if (rel == null) {
             Transaction tx = databaseService.beginTx();
             try {
-                Node globalPropertiesNode = createNode(NodeTypes.GLOBAL_PROPERTIES.getId(), INeoConstants.PROPERTY_NAME_NAME, "Global properties", DYNAMIC_TYPES,
-                        new String[0]);
+                Node globalPropertiesNode = createNode(NodeTypes.GLOBAL_PROPERTIES.getId(), INeoConstants.PROPERTY_NAME_NAME, "Global properties", DYNAMIC_TYPES, new String[0]);
                 refNode.createRelationshipTo(globalPropertiesNode, DatasetRelationshipTypes.GLOBAL_PROPERTIES);
                 tx.success();
             } finally {
@@ -920,14 +935,14 @@ public class DatasetService extends AbstractService {
      */
     public Traverser findProjectByChild(Node node) {
         TraversalDescription trd = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst().relationships(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING)
-                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).relationships(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.INCOMING).filter(
-                        new Predicate<Path>() {
+                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).relationships(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.INCOMING)
+                .filter(new Predicate<Path>() {
 
-                            @Override
-                            public boolean accept(Path item) {
-                                return NodeTypes.AWE_PROJECT.checkNode(item.endNode());
-                            }
-                        });
+                    @Override
+                    public boolean accept(Path item) {
+                        return NodeTypes.AWE_PROJECT.checkNode(item.endNode());
+                    }
+                });
         if (NodeTypes.GIS.checkNode(node)) {
             return trd.traverse(node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode());
         }
@@ -1007,4 +1022,255 @@ public class DatasetService extends AbstractService {
         }
         return new GisProperties(gis);
     }
+
+    /**
+     * Find sector.
+     * 
+     * @param rootNode the root node
+     * @param ci the ci
+     * @param lac the lac
+     * @param name the name
+     * @param returnFirsElement the return firs element
+     * @return the node
+     */
+    public Node findSector(Node rootNode, Integer ci, Integer lac, String name, boolean returnFirsElement) {
+        return NeoUtils.findSector(getGlobalConfigNode(), ci, lac, name, returnFirsElement, getIndexService(), databaseService);
+    }
+
+    /**
+     * Gets the neighbour.
+     * 
+     * @param rootNode the root node
+     * @param neighbourName the neighbour name
+     * @return the neighbour
+     */
+    public Node getNeighbour(Node rootNode, String neighbourName) {
+        Node result = findNeighbour(rootNode, neighbourName);
+        if (result == null) {
+            Transaction tx = databaseService.beginTx();
+            try {
+                result = createNode(NodeTypes.NEIGHBOUR, neighbourName);
+                rootNode.createRelationshipTo(result, NetworkRelationshipTypes.NEIGHBOUR_DATA);
+                tx.success();
+            } finally {
+                tx.finish();
+            }
+        }
+        return result;
+    }
+    public Node getTransmission(Node rootNode, String neighbourName) {
+        Node result = findTransmission(rootNode, neighbourName);
+        if (result == null) {
+            Transaction tx = databaseService.beginTx();
+            try {
+                result = createNode(NodeTypes.TRANSMISSION, neighbourName);
+                rootNode.createRelationshipTo(result, NetworkRelationshipTypes.TRANSMISSION_DATA);
+                tx.success();
+            } finally {
+                tx.finish();
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Find neighbour.
+     * 
+     * @param rootNode the root node
+     * @param neighbourName the neighbour name
+     * @return the node
+     */
+    public Node findNeighbour(final Node rootNode, final String neighbourName) {
+        if (rootNode == null || StringUtils.isEmpty(neighbourName)) {
+            return null;
+        }
+        TraversalDescription td = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst().prune(Traversal.pruneAfterDepth(1))
+        .relationships(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING).filter(new Predicate<Path>() {
+            
+            @Override
+            public boolean accept(Path item) {
+                if (item.length() == 1 && NodeTypes.NEIGHBOUR.checkNode(item.endNode())) {
+                    return neighbourName.equals(getName(item.endNode()));
+                }
+                return false;
+            }
+        });
+        Iterator<Node> it = td.traverse(rootNode).nodes().iterator();
+        return it.hasNext() ? it.next() : null;
+    }
+    public Node findTransmission(final Node rootNode, final String transmissionName) {
+        if (rootNode == null || StringUtils.isEmpty(transmissionName)) {
+            return null;
+        }
+        TraversalDescription td = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst().prune(Traversal.pruneAfterDepth(1))
+                .relationships(NetworkRelationshipTypes.TRANSMISSION_DATA, Direction.OUTGOING).filter(new Predicate<Path>() {
+
+                    @Override
+                    public boolean accept(Path item) {
+                        if (item.length() == 1 && NodeTypes.TRANSMISSION.checkNode(item.endNode())) {
+                            return transmissionName.equals(getName(item.endNode()));
+                        }
+                        return false;
+                    }
+                });
+        Iterator<Node> it = td.traverse(rootNode).nodes().iterator();
+        return it.hasNext() ? it.next() : null;
+    }
+
+    /**
+     * Gets the neighbour proxy.
+     * 
+     * @param neighbourRoot the neighbour root
+     * @param sector the sector
+     * @return the neighbour proxy
+     */
+    public NodeResult getNeighbourProxy(Node neighbourRoot, Node sector) {
+        String proxySectorName = getName(neighbourRoot) + PROXY_NAME_SEPARATOR + getName(sector);
+        String luceneIndexKeyByProperty = NeoUtils.getLuceneIndexKeyByProperty(neighbourRoot, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS);
+        Node proxySector = null;
+        for (Node node : getIndexService().getNodes(luceneIndexKeyByProperty, proxySectorName)) {
+            if (node.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOURS, Direction.INCOMING).getOtherNode(node).equals(sector)) {
+                proxySector = node;
+                break;
+            }
+        }
+        boolean isCreated = false;
+        if (proxySector == null) {
+            Transaction tx = databaseService.beginTx();
+            try {
+                proxySector = createNode(NodeTypes.SECTOR_SECTOR_RELATIONS, proxySectorName);
+                getIndexService().index(proxySector, luceneIndexKeyByProperty, proxySectorName);
+                isCreated = true;
+                // TODO check documentation
+                addChild(neighbourRoot, proxySector, null);
+                tx.success();
+            } finally {
+                tx.finish();
+            }
+        }
+        return new NodeResultImpl(proxySector, isCreated);
+    }
+
+    /**
+     * The Interface NodeResult.
+     */
+    public interface NodeResult extends Node {
+
+        /**
+         * Checks if is created.
+         * 
+         * @return true, if is created
+         */
+        boolean isCreated();
+    }
+
+    /**
+     * The Class NodeResultImpl.
+     */
+    private static class NodeResultImpl extends NodeWrapper implements NodeResult {
+
+        /** The is created. */
+        private final boolean isCreated;
+
+        /**
+         * Instantiates a new node result impl.
+         * 
+         * @param node the node
+         * @param isCreated the is created
+         */
+        public NodeResultImpl(Node node, boolean isCreated) {
+            super(node);
+            this.isCreated = isCreated;
+        }
+
+        /**
+         * Checks if is created.
+         * 
+         * @return true, if is created
+         */
+        @Override
+        public boolean isCreated() {
+            return isCreated;
+        }
+
+    }
+
+    /**
+     * Find site.
+     * 
+     * @param rootNode the root node
+     * @param name the name
+     * @param site_no the site_no
+     * @return the node
+     */
+    public Node findSite(Node rootNode, String name, String site_no) {
+        if (StringUtils.isNotEmpty(name)) {
+            return getIndexService().getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), name);
+        }
+        if (StringUtils.isNotEmpty(site_no)) {
+            return getIndexService().getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_SITE_NO, NodeTypes.SITE), site_no);
+        }
+        return null;
+    }
+
+    /**
+     *
+     * @param transmissionRoot
+     * @param serSite
+     * @return
+     */
+    public NodeResult getTransmissionProxy(Node transmissionRoot, Node site) {
+        String proxySiteName = getName(transmissionRoot) + PROXY_NAME_SEPARATOR + getName(site);
+        String luceneIndexKeyByProperty = NeoUtils.getLuceneIndexKeyByProperty(transmissionRoot, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE_SITE_RELATIONS);
+        Node proxySite = null;
+        for (Node node : getIndexService().getNodes(luceneIndexKeyByProperty, proxySiteName)) {
+            if (node.getSingleRelationship(NetworkRelationshipTypes.TRANSMISSIONS, Direction.INCOMING).getOtherNode(node).equals(site)) {
+                proxySite = node;
+                break;
+            }
+        }
+        boolean isCreated = false;
+        if (proxySite == null) {
+            Transaction tx = databaseService.beginTx();
+            try {
+                proxySite = createNode(NodeTypes.SITE_SITE_RELATIONS, proxySiteName);
+                getIndexService().index(proxySite, luceneIndexKeyByProperty, proxySiteName);
+                isCreated = true;
+                // TODO check documentation
+                addChild(transmissionRoot, proxySite, null);
+                tx.success();
+            } finally {
+                tx.finish();
+            }
+        }
+        return new NodeResultImpl(proxySite, isCreated);
+
+    }
+
+    /**
+     *
+     * @param rootNode
+     * @param probeName
+     * @return
+     */
+    public NodeResult getProbe(Node rootNode, String probeName) {
+        String indName=NeoUtils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.PROBE);
+        boolean isCreated = false;
+        Node result = getIndexService().getSingleNode(indName, probeName);
+        if (result==null){
+            Transaction tx = databaseService.beginTx();
+            try {
+                isCreated=true;
+                result = createNode(NodeTypes.PROBE, probeName);
+                getIndexService().index(result, indName, probeName);
+                isCreated = true;
+                rootNode.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
+                tx.success();
+            } finally {
+                tx.finish();
+            }         
+        }
+        return new NodeResultImpl(result, isCreated);
+    }
+
 }

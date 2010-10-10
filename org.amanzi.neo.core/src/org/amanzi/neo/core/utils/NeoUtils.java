@@ -40,6 +40,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.nodes.AweProjectNode;
 import org.amanzi.neo.core.database.nodes.DeletableRelationshipType;
+import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
@@ -50,14 +51,14 @@ import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
-import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.index.MultiPropertyIndex;
-import org.amanzi.neo.index.PropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiTimeIndexConverter;
+import org.amanzi.neo.index.PropertyIndex;
 import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.graphics.RGB;
@@ -2407,7 +2408,7 @@ public class NeoUtils {
     public static Relationship getNeighbourRelation(Node server, Node neighbour, String neighbourName, GraphDatabaseService service) {
         Transaction tx = beginTx(service);
         try {
-            Set<Relationship> allRelations = getRelations(server, neighbour, NetworkRelationshipTypes.NEIGHBOUR, service);
+            Set<Relationship> allRelations = getRelations(server, neighbour, NetworkRelationshipTypes.NEIGHBOUR);
             for (Relationship relation : allRelations) {
                 if (relation.getProperty(INeoConstants.NEIGHBOUR_NAME, "").equals(neighbourName)) {
                     return relation;
@@ -2425,12 +2426,9 @@ public class NeoUtils {
      * @param from the 'from' node
      * @param to the 'to' node
      * @param relationType the relation type
-     * @param service the service
      * @return the relations
      */
-    public static Set<Relationship> getRelations(Node from, Node to, RelationshipType relationType, GraphDatabaseService service) {
-        Transaction tx = beginTx(service);
-        try {
+    public static Set<Relationship> getRelations(Node from, Node to, RelationshipType relationType) {
             Set<Relationship> result = new HashSet<Relationship>();
             for (Relationship relation : from.getRelationships(relationType, Direction.OUTGOING)) {
                 if (relation.getOtherNode(from).equals(to)) {
@@ -2438,9 +2436,6 @@ public class NeoUtils {
                 }
             }
             return result;
-        } finally {
-            finishTx(tx);
-        }
     }
 
     /**
@@ -2459,6 +2454,9 @@ public class NeoUtils {
      * @return the node
      */
     public static Node findSector(Node baseNode, Integer ci, Integer lac, String name, boolean returnFirsElement, IndexService index, GraphDatabaseService service) {
+        if (baseNode==null||(ci==null&&name==null)){
+            return null;
+        }
         assert baseNode != null && (ci != null || name != null) && index != null;
         Transaction tx = beginTx(service);
         try {
@@ -3117,7 +3115,7 @@ public class NeoUtils {
     @SuppressWarnings("unchecked")
     public  static <T extends Number> T getNumberValue(Class<T> klass, String value) throws SecurityException, NoSuchMethodException, IllegalArgumentException,
             IllegalAccessException, InvocationTargetException {
-        if (value == null) {
+        if (StringUtils.isEmpty(value)) {
             return null;
         }
         String methodName = klass == Integer.class ? "parseInt" : "parse" + klass.getSimpleName();
