@@ -23,6 +23,9 @@ import org.amanzi.neo.core.utils.EditPropertiesPage;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
+import org.eclipse.jface.viewers.EditingSupport;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.neo4j.graphdb.Node;
@@ -30,6 +33,7 @@ import org.neo4j.index.lucene.LuceneIndexService;
 
 /**
  * <p>
+ * Page for creating new nodes
  * </p>
  * 
  * @author NiCK
@@ -57,11 +61,11 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
         // propertyList.add(new PropertyWrapper("lat", Double.class, "", false));
 
         NodeTypes type = NodeTypes.getEnumById(nodeType.getId());
-        propertyList.add(new NewNodePropertyWrapper("name", String.class, "new " + nodeType.getId(), true));
+        propertyList.add(new NewNodePropertyWrapper("name", String.class, "new " + nodeType.getId(), false));
         if (type != null) {
             if (type == NodeTypes.SECTOR) {
-                propertyList.add(new NewNodePropertyWrapper(INeoConstants.PROPERTY_SECTOR_CI, Integer.class, "0", true));
-                propertyList.add(new NewNodePropertyWrapper(INeoConstants.PROPERTY_SECTOR_LAC, Integer.class, "0", true));
+                propertyList.add(new NewNodePropertyWrapper(INeoConstants.PROPERTY_SECTOR_CI, Integer.class, "0", false));
+                propertyList.add(new NewNodePropertyWrapper(INeoConstants.PROPERTY_SECTOR_LAC, Integer.class, "0", false));
             }
             IPropertyHeader ph = PropertyHeader.getPropertyStatistic(NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId()));
             Map<String, Object> statisticProperties = ph.getStatisticParams(type);
@@ -78,6 +82,9 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
     protected void validate() {
         super.validate();
 
+        if (!isPageComplete()) {
+            return;
+        }
         for (int i = 0; i < propertyList.size(); i++) {
             PropertyWrapper wr = propertyList.get(i);
             if (wr.getName() == INeoConstants.PROPERTY_NAME_NAME) {
@@ -94,9 +101,9 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
             PropertyWrapper ciWr = null;
             PropertyWrapper lacWr = null;
             for (int i = 0; i < propertyList.size(); i++) {
-                if (propertyList.get(i).getName() == INeoConstants.PROPERTY_SECTOR_CI)
+                if (propertyList.get(i).getName().equals(INeoConstants.PROPERTY_SECTOR_CI))
                     ciWr = propertyList.get(i);
-                if (propertyList.get(i).getName() == INeoConstants.PROPERTY_SECTOR_LAC)
+                if (propertyList.get(i).getName().equals(INeoConstants.PROPERTY_SECTOR_LAC))
                     lacWr = propertyList.get(i);
             }
             try {
@@ -143,6 +150,55 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
     public void createControl(Composite parent) {
         super.createControl(parent);
         ((GridData)viewer.getTable().getLayoutData()).heightHint = VIEVER_HEIGHT_HINT;
+    }
+
+    private class NewNodeTableEditableSupport extends TableEditableSupport {
+
+        /**
+         * @param viewer
+         * @param id
+         */
+        public NewNodeTableEditableSupport(TableViewer viewer, int id) {
+            super(viewer, id);
+        }
+
+        @Override
+        protected boolean canEdit(Object element) {
+            if (id != 2)
+                return super.canEdit(element);
+            else {
+                return true;
+            }
+        }
+
+    }
+
+    @Override
+    protected EditingSupport getEditingSupport(TableViewer viewer, int id) {
+        return new NewNodeTableEditableSupport(viewer, id);
+    }
+
+    private class NewNodeColLabelProvider extends ColLabelProvider {
+
+        /**
+         * @param columnIndex
+         */
+        public NewNodeColLabelProvider(int columnIndex) {
+            super(columnIndex);
+        }
+
+        @Override
+        public Color getBackground(Object element) {
+            if (columnIndex != 2)
+                return super.getBackground(element);
+            else
+                return null;
+        }
+    }
+
+    @Override
+    protected ColLabelProvider getColumnLabelProvider(int id) {
+        return new NewNodeColLabelProvider(id);
     }
 
 }

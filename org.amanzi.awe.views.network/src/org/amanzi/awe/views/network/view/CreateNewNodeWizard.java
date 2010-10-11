@@ -19,8 +19,8 @@ import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.EditPropertiesPage.PropertyWrapper;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.EditPropertiesPage.PropertyWrapper;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
@@ -131,7 +131,8 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.workbench = workbench;
         this.selection = selection;
-        page = new CreateNewNodeWizardPage("pageName", "title", iNodeType, sourceNode);
+        setWindowTitle("Create new node");
+        page = new CreateNewNodeWizardPage("Create new node", "Create new " + iNodeType, iNodeType, sourceNode);
         addPage(page);
     }
 

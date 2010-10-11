@@ -237,24 +237,24 @@ public class EditPropertiesPage extends WizardPage {
         col.setText("Name");
         col.setWidth(100);
         col.setResizable(true);
-        column.setLabelProvider(new ColLabelProvider(0));
-        column.setEditingSupport(new TableEditableSupport(viewer, 0));
+        column.setLabelProvider(getColumnLabelProvider(0));
+        column.setEditingSupport(getEditingSupport(viewer, 0));
 
         column = new TableViewerColumn(viewer, SWT.CENTER);
         col = column.getColumn();
         col.setText("Type");
         col.setWidth(200);
         col.setResizable(true);
-        column.setLabelProvider(new ColLabelProvider(1));
-        column.setEditingSupport(new TableEditableSupport(viewer, 1));
+        column.setLabelProvider(getColumnLabelProvider(1));
+        column.setEditingSupport(getEditingSupport(viewer, 1));
 
         column = new TableViewerColumn(viewer, SWT.CENTER);
         col = column.getColumn();
         col.setText("Default value");
         col.setWidth(200);
         col.setResizable(true);
-        column.setLabelProvider(new ColLabelProvider(2));
-        column.setEditingSupport(new TableEditableSupport(viewer, 2));
+        column.setLabelProvider(getColumnLabelProvider(2));
+        column.setEditingSupport(getEditingSupport(viewer, 2));
 
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
@@ -311,10 +311,10 @@ public class EditPropertiesPage extends WizardPage {
     /**
      * The Class ColLabelProvider.
      */
-    private class ColLabelProvider extends ColumnLabelProvider {
+    protected class ColLabelProvider extends ColumnLabelProvider {
 
         /** The column index. */
-        private final int columnIndex;
+        protected final int columnIndex;
 
         /**
          * Instantiates a new col label provider.
@@ -352,13 +352,13 @@ public class EditPropertiesPage extends WizardPage {
     /**
      * The Class TableEditableSupport.
      */
-    private class TableEditableSupport extends EditingSupport {
+    protected class TableEditableSupport extends EditingSupport {
 
         /** The editor. */
         private CellEditor editor;
 
         /** The id. */
-        private final int id;
+        protected final int id;
 
         /**
          * Instantiates a new table editable support.
@@ -574,6 +574,11 @@ public class EditPropertiesPage extends WizardPage {
             return true;
         }
 
+        @Override
+        public String toString() {
+            return name;
+        }
+
     }
 
     /**
@@ -607,7 +612,7 @@ public class EditPropertiesPage extends WizardPage {
         for (int i=0;i<propertyList.size();i++){
             PropertyWrapper wr = propertyList.get(i);
             if (!wr.isValid()){
-                setDescription(String.format("Row %s not valid", i+1));
+                setDescription(String.format("Property \"%s\" not valid", wr));
                 setPageComplete(false);
                 return;
             }
@@ -633,5 +638,13 @@ public class EditPropertiesPage extends WizardPage {
      */
     public List<PropertyWrapper> getProperties() {
         return propertyList;
+    }
+
+    protected EditingSupport getEditingSupport(TableViewer viewer, int id) {
+        return new TableEditableSupport(viewer, id);
+    }
+
+    protected ColLabelProvider getColumnLabelProvider(int id) {
+        return new ColLabelProvider(id);
     }
 }
