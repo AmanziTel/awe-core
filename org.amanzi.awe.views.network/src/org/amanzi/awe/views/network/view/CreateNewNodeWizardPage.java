@@ -63,15 +63,25 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
         NodeTypes type = NodeTypes.getEnumById(nodeType.getId());
         propertyList.add(new NewNodePropertyWrapper("name", String.class, "new " + nodeType.getId(), false));
         if (type != null) {
-            if (type == NodeTypes.SECTOR) {
-                propertyList.add(new NewNodePropertyWrapper(INeoConstants.PROPERTY_SECTOR_CI, Integer.class, "0", false));
-                propertyList.add(new NewNodePropertyWrapper(INeoConstants.PROPERTY_SECTOR_LAC, Integer.class, "0", false));
-            }
             IPropertyHeader ph = PropertyHeader.getPropertyStatistic(NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId()));
             Map<String, Object> statisticProperties = ph.getStatisticParams(type);
             for (String key : statisticProperties.keySet()) {
                 propertyList.add(new NewNodePropertyWrapper(key, statisticProperties.get(key).getClass(), statisticProperties.get(key).toString(), false));
             }
+        }
+        if (type == NodeTypes.SECTOR) {
+            NewNodePropertyWrapper ci = new NewNodePropertyWrapper(INeoConstants.PROPERTY_SECTOR_CI, Integer.class, "0", false);
+            if(!propertyList.contains(ci))
+                propertyList.add(ci);
+            NewNodePropertyWrapper lac = new NewNodePropertyWrapper(INeoConstants.PROPERTY_SECTOR_LAC, Integer.class, "0", false);
+            if(!propertyList.contains(lac))
+                propertyList.add(lac);
+            NewNodePropertyWrapper beamwidth = new NewNodePropertyWrapper("beamwidth", Integer.class, "0", false);
+            if(!propertyList.contains(beamwidth))
+                propertyList.add(beamwidth);
+            NewNodePropertyWrapper azimuth = new NewNodePropertyWrapper("azimuth", Integer.class, "0", false);
+            if(!propertyList.contains(azimuth))
+                propertyList.add(azimuth);
         }
     }
 
@@ -143,6 +153,40 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
         public NewNodePropertyWrapper(String name, Class< ? > type, String defValue, boolean editable) {
             super(name, type, defValue, editable);
         }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + getOuterType().hashCode();
+            result = prime * result + ((name == null) ? 0 : name.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            NewNodePropertyWrapper other = (NewNodePropertyWrapper)obj;
+            if (!getOuterType().equals(other.getOuterType()))
+                return false;
+            if (name == null) {
+                if (other.name != null)
+                    return false;
+            } else if (!name.equals(other.name))
+                return false;
+            return true;
+        }
+
+        private CreateNewNodeWizardPage getOuterType() {
+            return CreateNewNodeWizardPage.this;
+        }
+
+        
 
     }
 

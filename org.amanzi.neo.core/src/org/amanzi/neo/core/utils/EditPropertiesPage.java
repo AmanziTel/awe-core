@@ -441,7 +441,7 @@ public class EditPropertiesPage extends WizardPage {
     public class PropertyWrapper {
 
         /** The name. */
-        private String name;
+        protected String name;
 
         /** The type. */
         @SuppressWarnings("rawtypes")
