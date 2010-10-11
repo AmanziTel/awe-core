@@ -62,10 +62,16 @@ public class RemoteServerUrlPage extends FieldEditorPreferencePage implements IW
         // addField(new StringFieldEditor(DataLoadPreferences.REMOTE_SERVER_URL,
         // NeoLoaderPluginMessages.RemoteServerUrlPage_0, width, marginPanel));
         StringFieldEditor field = new UrlFieldEditor(DataLoadPreferences.REMOTE_SERVER_URL, NeoLoaderPluginMessages.RemoteServerUrlPage_0, width, 0, marginPanel);
+        StringFieldEditor imeiField = new StringFieldEditor(DataLoadPreferences.USER_IMEI,NeoLoaderPluginMessages.PrefUrl_imei, 20, 0, marginPanel);
+        imeiField.setEmptyStringAllowed(false);
+        StringFieldEditor imsiField = new StringFieldEditor(DataLoadPreferences.USER_IMSI,NeoLoaderPluginMessages.PrefUrl_imsi, 20, 0, marginPanel);
+        imsiField.setEmptyStringAllowed(false);
         // field.setEmptyStringAllowed(false);
         // field
         // field.
         addField(field);
+        addField(imeiField);
+        addField(imsiField);
         // setMessage("BUGOGA", IStatus.WARNING);
     }
 
