@@ -299,6 +299,9 @@ public class NeoLoaderPluginMessages extends NLS {
     public static String RemoteServerUrlPage_0;
 
     public static String RemoteServerUrlPage_1;
+
+    public static String PrefUrl_imei;
+    public static String PrefUrl_imsi;
     
     private NeoLoaderPluginMessages() {
     }

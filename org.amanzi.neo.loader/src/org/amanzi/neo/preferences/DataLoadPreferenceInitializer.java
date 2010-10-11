@@ -103,6 +103,8 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         }
         pref.setDefault(DataLoadPreferences.COMMON_CRS_LIST, def.toString());
         pref.setDefault(DataLoadPreferences.SELECTED_DATA, "");
+        
+        pref.setDefault(DataLoadPreferences.REMOTE_SERVER_URL, "http://explorer.amanzitel.com/geoptima");
     }
 
 }

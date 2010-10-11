@@ -88,6 +88,8 @@ public class DataLoadPreferences {
     // public static final String FILTER_RULES = "FILTER_RULES";
     public static final String SELECTED_DATA = "SELECTED_DATA";
     public static final String REMOTE_SERVER_URL = "REMOTE_SERVER_URL";
+    public static final String USER_IMEI = "USER_IMEI";
+    public static final String USER_IMSI = "USER_IMSI";
 
 
     private DataLoadPreferences() {

@@ -88,6 +88,25 @@ public class TEMSLoader extends DriveLoader {
         initializeKnownHeaders();
         addDriveIndexes();
     }
+    
+    /**
+     * Constructor for loading data in AWE, with specified display and dataset, but no NeoService and workdate
+     * 
+     * @param filename of file to load
+     * @param display for opening message dialogs
+     * @param dataset to add data to
+     */
+    public TEMSLoader(String filename, Display display, String dataset, Node mNode, Node virtualMnode) {
+    	_workDate = new GregorianCalendar();
+    	_workDate.setTimeInMillis(System.currentTimeMillis());
+    	driveType = DriveTypes.TEMS;
+        this.mNode = mNode;
+        virtualMnode = null;
+        initialize("TEMS", null, filename, display, dataset);
+        initializeLuceneIndex();
+        initializeKnownHeaders();
+        addDriveIndexes();
+    }
 
     /**
      * Constructor for loading data in test mode, with no display and NeoService passed
@@ -329,9 +348,7 @@ public class TEMSLoader extends DriveLoader {
 
         this.incValidMessage();
         // TODO test
-        // System.out.println("Latitude: " + lineData.get("parsedLatitude"));
         Float latitude = (Float)lineData.get("parsedLatitude");
-        // System.out.println("Longitude: " + lineData.get("parsedLongitude"));
         Float longitude = (Float)lineData.get("parsedLongitude");
         if (time == null || latitude == null || longitude == null) {
             return;

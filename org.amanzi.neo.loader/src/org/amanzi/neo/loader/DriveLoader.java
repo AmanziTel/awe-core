@@ -167,7 +167,8 @@ public abstract class DriveLoader extends AbstractLoader {
                 Node virtualDatasetNode = getVirtualDataset(type, false);
                 Pair<Boolean, Node> pair = NeoUtils.findOrCreateFileNode(neo, virtualDatasetNode, basename, filename);
                 virtualFile = pair.getRight();
-                virtualFile.createRelationshipTo(firstChildNode, GeoNeoRelationshipTypes.CHILD);
+                if (pair.getLeft() && !(virtualFile.hasRelationship(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)))
+                	virtualFile.createRelationshipTo(firstChildNode, GeoNeoRelationshipTypes.CHILD);
 
                 Object time = null;
                 if (firstChildNode.hasProperty(INeoConstants.PROPERTY_TIME_NAME)) {
@@ -202,7 +203,8 @@ public abstract class DriveLoader extends AbstractLoader {
                 file = pair.getRight();
 
                 Node mainFileNode = datasetNode == null ? file : datasetNode;
-                file.createRelationshipTo(firstChild, GeoNeoRelationshipTypes.CHILD);
+                if (pair.getLeft() && !(file.hasRelationship(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)))
+                	file.createRelationshipTo(firstChild, GeoNeoRelationshipTypes.CHILD);
                 findOrCreateGISNode(mainFileNode, gisType.getHeader());
 
                 Object time = null;

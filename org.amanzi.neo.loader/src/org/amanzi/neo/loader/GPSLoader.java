@@ -21,15 +21,21 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SectorIdentificationType;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.loader.AbstractLoader.PropertyMapper;
+import org.amanzi.neo.loader.AbstractLoader.StringMapper;
+import org.amanzi.neo.preferences.DataLoadPreferences;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -52,6 +58,8 @@ public class GPSLoader extends DriveLoader {
     private LuceneIndexService luceneService;
     
     private String luceneIndexName;
+    
+    private static final String TIMESTAMP_DATE_FORMAT = "HH:mm:ss.S";
 
     /**
      * Constructor
@@ -61,7 +69,19 @@ public class GPSLoader extends DriveLoader {
      * @param display
      */
     public GPSLoader(String directory, String datasetName, Display display) {
-        initialize("GPS", null, directory, display);
+    	driveType = DriveTypes.TEMS;
+    	initialize("GPS", null, directory, display);
+    	
+        if (datasetName == null || datasetName.trim().isEmpty()) {
+            this.dataset = null;
+        } else {
+            this.dataset = datasetName.trim();
+        }
+
+        if (gisType == null) {
+            gisType = GisTypes.DRIVE;
+        }
+    	
         basename = datasetName;
         getHeaderMap(1);
         needParceHeader = true;
@@ -77,7 +97,7 @@ public class GPSLoader extends DriveLoader {
      * @param dataset to add data to
      */
     public GPSLoader(Calendar workTime, String filename, Display display, String dataset) {
-        driveType = DriveTypes.GPS;
+        driveType = DriveTypes.TEMS;
         initialize("GSM", null, filename, display, dataset);
         basename = dataset;
         getHeaderMap(1);
@@ -105,14 +125,163 @@ public class GPSLoader extends DriveLoader {
      * Build a map of internal header names to format specific names for types that need to be known
      * in the algorithms later.
      */
-    private void initializeKnownHeaders() {
-        addKnownHeader(1, "timestamp", ".*timestamp.*", false);
-        
-        addKnownHeader(1, "latitude", ".*latitude.*", false);
-        addKnownHeader(1, "longitude", ".*longitude.*", false);
-        addKnownHeader(1, INeoConstants.SECTOR_ID_PROPERTIES, "cellid", false);
-        dropHeaderStats(1, new String[] {"timestamp", "latitude", "longitude"});
+//    private void initializeKnownHeaders() {
+//        addKnownHeader(1, "timestamp", ".*timestamp.*", false);
+//        
+//        addKnownHeader(1, "latitude", ".*latitude.*", false);
+//        addKnownHeader(1, "longitude", ".*longitude.*", false);
+//        addKnownHeader(1, INeoConstants.SECTOR_ID_PROPERTIES, "cellid", false);
+//        dropHeaderStats(1, new String[] {"timestamp", "latitude", "longitude"});
+//    }
+    
+    
+    /**
+     * Add a known header entry as well as mark it as a main header. All other fields will be
+     * assumed to be sector properties.
+     * 
+     * @param key
+     * @param regexes
+     */
+    private void addMainHeader(String key, String[] regexes) {
+        addKnownHeader(1, key, regexes, false);
+        // mainHeaders.add(key);
     }
+    
+    /**
+     * Build a map of internal header names to format specific names for types that need to be known
+     * in the algorithms later.
+     */
+    private void initializeKnownHeaders() {
+        // addMainHeader(INeoConstants.PROPERTY_LATITUDE_NAME,
+        // getPossibleHeaders(DataLoadPreferences.DR_LATITUDE));
+        // addMainHeader(INeoConstants.PROPERTY_LONGITUDE_NAME,
+        // getPossibleHeaders(DataLoadPreferences.DR_LONGITUDE));
+        addMainHeader(INeoConstants.PROPERTY_BCCH_NAME, getPossibleHeaders(DataLoadPreferences.DR_BCCH));
+        addMainHeader(INeoConstants.PROPERTY_TCH_NAME, getPossibleHeaders(DataLoadPreferences.DR_TCH));
+        addMainHeader(INeoConstants.PROPERTY_SC_NAME, getPossibleHeaders(DataLoadPreferences.DR_SC));
+        addMainHeader(INeoConstants.PROPERTY_PN_NAME, getPossibleHeaders(DataLoadPreferences.DR_PN));
+        addMainHeader(INeoConstants.PROPERTY_EcIo_NAME, getPossibleHeaders(DataLoadPreferences.DR_EcIo));
+        addMainHeader(INeoConstants.PROPERTY_RSSI_NAME, getPossibleHeaders(DataLoadPreferences.DR_RSSI));
+        addMainHeader(INeoConstants.PROPERTY_CI_NAME, getPossibleHeaders(DataLoadPreferences.DR_CI));
+
+        // String[] latH = getPossibleHeaders(DataLoadPreferences.DR_LATITUDE);
+        // addKnownHeader(1, INeoConstants.PROPERTY_LATITUDE_NAME, latH, false);
+
+        // addMainHeader(INeoConstants.PROPERTY_LONGITUDE_NAME,
+        // getPossibleHeaders(DataLoadPreferences.DR_LONGITUDE));
+
+        PropertyMapper cpm = new PropertyMapper() {
+
+            @Override
+            public Object mapValue(String originalValue) {
+                try {
+                    return Float.valueOf(originalValue);
+                } catch (NumberFormatException e) {
+                    // TODO: handle exception
+                }
+                Pattern p = Pattern.compile("^([+-]{0,1}\\d+(\\.\\d+)*)([NESW]{0,1})$");
+                Matcher m = p.matcher(originalValue);
+                if (m.matches()) {
+                    try {
+                        // System.out.println(m.group(1));
+                        return Float.valueOf(m.group(1));
+                    } catch (NumberFormatException e) {
+                        e.printStackTrace();
+                        // TODO: handle exception
+                    }
+                } else {
+                    // System.out.println("originalValue: " + originalValue);
+                    return null;
+                }
+                return null;
+            }
+        };
+        String[] headers = getPossibleHeaders(DataLoadPreferences.DR_LONGITUDE);
+        for (String singleHeader : headers) {
+            addMappedHeader(1, singleHeader, singleHeader, "parsedLongitude", cpm);
+        }
+
+        headers = getPossibleHeaders(DataLoadPreferences.DR_LATITUDE);
+        for (String singleHeader : headers) {
+            addMappedHeader(1, singleHeader, singleHeader, "parsedLatitude", cpm);
+        }
+        // addKnownHeader(1, "longitude", ".*longitude", false);
+        addKnownHeader(1, "ms", "MS", false);
+        addMappedHeader(1, "ms", "MS", "ms", new StringMapper());
+        addMappedHeader(1, "message_type", "Message Type", "message_type", new StringMapper());
+        addMappedHeader(1, "event", "Event Type", "event_type", new PropertyMapper() {
+
+            @Override
+            public Object mapValue(String originalValue) {
+                return originalValue.replaceAll("HO Command.*", "HO Command");
+            }
+        });
+        
+        //lagutko, add additional header for cell id
+        addKnownHeader(1, INeoConstants.SECTOR_ID_PROPERTIES, ".*Cell Id.*", true);
+
+        final SimpleDateFormat df = new SimpleDateFormat(TIMESTAMP_DATE_FORMAT);
+        addMappedHeader(1, "time", "Timestamp", "timestamp", new PropertyMapper() {
+
+            @Override
+            public Object mapValue(String time) {
+                Date datetime;
+                try {
+                    datetime = df.parse(time);
+                } catch (ParseException e) {
+                    SimpleDateFormat dfn = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss.SSS");
+                    try {
+                        datetime = dfn.parse(time);
+                    } catch (ParseException e1) {
+                        error(e.getLocalizedMessage());
+                        return 0L;
+                    }
+
+                }
+                return datetime;
+            }
+        });
+        PropertyMapper intMapper = new PropertyMapper() {
+
+            @Override
+            public Object mapValue(String value) {
+                try {
+                    return Integer.parseInt(value);
+                } catch (NumberFormatException e) {
+                    error(e.getLocalizedMessage());
+                    return 0L;
+                }
+            }
+        };
+        addMappedHeader(1, "all_rxlev_full", "All-RxLev Full", "all_rxlev_full", intMapper);
+        addMappedHeader(1, "all_rxlev_sub", "All-RxLev Sub", "all_rxlev_sub", intMapper);
+        addMappedHeader(1, "all_rxqual_full", "All-RxQual Full", "all_rxqual_full", intMapper);
+        addMappedHeader(1, "all_rxqual_sub", "All-RxQual Sub", "all_rxqual_sub", intMapper);
+        addMappedHeader(1, "all_sqi", "All-SQI", "all_sqi", intMapper);
+        List<String> keys = new ArrayList<String>();
+
+        for (int i = 1; i <= 12; i++) {
+            keys.add("all_active_set_channel_" + i);
+            keys.add("all_active_set_pn_" + i);
+            keys.add("all_active_set_ec_io_" + i);
+        }
+        keys.add("all_pilot_set_count");
+        addNonDataHeaders(1, keys);
+        PropertyMapper floatMapper = new PropertyMapper() {
+
+            @Override
+            public Object mapValue(String value) {
+                try {
+                    return Float.parseFloat(value);
+                } catch (NumberFormatException e) {
+                    error(e.getLocalizedMessage());
+                    return 0L;
+                }
+            }
+        };
+        addMappedHeader(1, "all_sqi_mos", "All-SQI MOS", "all_sqi_mos", floatMapper);
+    }
+    
     
     public Object testMapValue(String time) {
         Date datetime;
@@ -156,11 +325,11 @@ public class GPSLoader extends DriveLoader {
             this.incValidMessage(); // we have not filtered the message out on non-accepted content
             this.incValidChanged(); // we have not filtered the message out on lack of data change
             Map<String, Object> lineData = makeDataMap(fields);
-            this.time = (String)lineData.get("timestamp");
+            this.time = (String)lineData.get("time");
             // Date nodeDate = (Date)lineData.get("timestamp");
             // this.timestamp = getTimeStamp(nodeDate);
-            Float latitude = (Float)lineData.get("latitude");
-            Float longitude = (Float)lineData.get("longitude");
+            Float latitude = (Float)lineData.get("gps_latitude");
+            Float longitude = (Float)lineData.get("gps_longitude");
             if (time == null || latitude == null || longitude == null) {
                 return;
             }

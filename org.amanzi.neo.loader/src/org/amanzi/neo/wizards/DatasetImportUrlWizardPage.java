@@ -24,14 +24,18 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.amanzi.neo.preferences.DataLoadPreferences;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Traverser;
@@ -58,6 +62,14 @@ public class DatasetImportUrlWizardPage extends WizardPage {
 
     /** The l url. */
     private Label lUrl;
+    
+    private Shell shell;
+    
+    private String imsi;
+    private String imei;
+    
+    public LinkedHashMap<String, Node> dataset = new LinkedHashMap<String, Node>();
+    
 
 
     /**
@@ -79,6 +91,10 @@ public class DatasetImportUrlWizardPage extends WizardPage {
      */
     @Override
     public void createControl(Composite parent) {
+    	shell = parent.getShell();
+    	imei = NeoLoaderPlugin.getDefault().getPreferenceStore().getString(DataLoadPreferences.USER_IMEI);
+    	imsi = NeoLoaderPlugin.getDefault().getPreferenceStore().getString(DataLoadPreferences.USER_IMSI);
+    	
         Composite main = new Composite(parent, SWT.FILL);
         main.setLayout(new GridLayout(2, false));
 
@@ -87,8 +103,8 @@ public class DatasetImportUrlWizardPage extends WizardPage {
         lUrl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 
         fUrl = new Text(main, SWT.NONE);
-        fUrl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        fUrl.setEditable(false);
+        fUrl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        fUrl.setEditable(true);
 
         loadUrl();
         if (url != null && !url.isEmpty())
@@ -96,6 +112,16 @@ public class DatasetImportUrlWizardPage extends WizardPage {
         else
             fUrl.setText("not specified");
 
+        fUrl.addModifyListener(new ModifyListener(){
+
+			@Override
+			public void modifyText(ModifyEvent e) {
+				url = fUrl.getText();
+				validateFinish();
+			}
+        	
+        });
+        
         Label ldataset = new Label(main, SWT.NONE);
         ldataset.setText(NeoLoaderPluginMessages.DriveDialog_DatasetLabel);
         ldataset.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
@@ -107,14 +133,18 @@ public class DatasetImportUrlWizardPage extends WizardPage {
 
         Traverser allDatasetTraverser = NeoCorePlugin.getDefault().getProjectService().getAllDatasetTraverser(
                 NeoServiceProvider.getProvider().getService().getReferenceNode());
-        LinkedHashMap<String, Node> dataset = new LinkedHashMap<String, Node>();
+        
 
         for (Node node : allDatasetTraverser) {
             dataset.put((String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME), node);
         }
+        
         String[] items = dataset.keySet().toArray(new String[0]);
+        
+        	
         Arrays.sort(items);
         cDataset.setItems(items);
+        
 
         setControl(main);
         validateFinish();
@@ -140,6 +170,12 @@ public class DatasetImportUrlWizardPage extends WizardPage {
      * @return true, if is valid page
      */
     private boolean isValidPage() {
+    	if (imei == null || imei.trim().isEmpty() || imsi == null || imsi.trim().isEmpty()){
+    		MessageDialog.openInformation(shell, "Imei/Imsi not set", "Please set your imei and imsi in the preferences");
+    		return false;
+    	}
+    	
+    	
         if (url != null && !url.isEmpty()) {
             try {
                 new URL(url);
@@ -158,7 +194,9 @@ public class DatasetImportUrlWizardPage extends WizardPage {
      * @return the url
      */
     public String getUrl() {
-        return url;
+    	
+    	String completeUrl = url + "/event/extract.csv?dataset=" + imsi.substring(0, 5) + "&imsi=" + imsi + "&imei=" + imei;
+        return completeUrl;
     }
 
     /**
@@ -168,6 +206,14 @@ public class DatasetImportUrlWizardPage extends WizardPage {
      */
     public String getDataset() {
         return cDataset.getText();
+    }
+    
+    public Node getDatasetNode(String datasetName){
+    	if (!dataset.containsKey(datasetName)){
+    		return null;
+    	}
+    	
+    	return dataset.get(datasetName);
     }
 
 }

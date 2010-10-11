@@ -16,12 +16,21 @@ package org.amanzi.neo.wizards;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 
+import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.DriveLoader;
 import org.amanzi.neo.loader.GPSRemoteUrlLoader;
 import org.amanzi.neo.loader.LoaderUtils;
+import org.amanzi.neo.loader.TemsRemoteUrlLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -34,7 +43,8 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
-import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.*;
+import org.neo4j.graphdb.Traverser.Order;
 
 /**
  * <p>
@@ -60,6 +70,10 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
 
     /** The url. */
     private URL url;
+    
+    private Node lastMNode;
+    
+    private Node lastMsNode;
 
     /**
      * Perform finish.
@@ -68,8 +82,45 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
      */
     @Override
     public boolean performFinish() {
+    	datasetName = mainPage.getDataset();
         try {
-            url = new URL(mainPage.getUrl());
+        	String urlString = mainPage.getUrl();
+        	Node datasetNode = mainPage.getDatasetNode(datasetName);
+        	
+        	if (datasetNode != null){
+        		Traverser traverser = datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
+        			@Override
+                    public boolean isReturnableNode(TraversalPosition currentPos) {
+                        if (currentPos.currentNode().hasRelationship(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING))
+                        	return false;
+        				return true;
+                    }
+        		}, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING);
+        		
+        		for (Node node: traverser){
+        			if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.M.getId())){
+        				lastMNode = findLastNode(node);
+        			}
+        			else if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.HEADER_MS)){
+        				lastMsNode  = findLastNode(node);
+        			}
+        		}
+        		
+        		String time = (String) lastMNode.getProperty(INeoConstants.PROPERTY_TIME_NAME);
+        		SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss.SSS");
+        		Date date = new Date();
+        		try {
+        			date = format.parse(time);
+        		} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+        		time = dateFormat.format(date);
+				
+        		urlString = urlString + "&start=" + time;
+        	}
+            url = new URL(urlString);
         } catch (MalformedURLException e) {
             e.printStackTrace();
             return false;
@@ -77,12 +128,24 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
         runLoadingJob();
         return true;
     }
+    
+    private Node findLastNode (Node startNode){
+    	
+    	Traverser traverser = startNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, 
+    							ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+    	for (Node node: traverser){
+    		if (!node.hasRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)){
+    			return node;
+    		}
+    	}
+    	
+    	return startNode;
+    }
 
     /**
      * Run loading job.
      */
     private void runLoadingJob() {
-        datasetName = mainPage.getDataset();
         LoadDriveJob job = new LoadDriveJob(mainPage.getControl().getDisplay());
         job.schedule(50);
     }
@@ -148,7 +211,8 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
         DriveLoader driveLoader = null;
         try {
 
-            driveLoader = new GPSRemoteUrlLoader(url, datasetName, display);
+//            driveLoader = new GPSRemoteUrlLoader(url, datasetName, display);
+        	driveLoader = new TemsRemoteUrlLoader(url, datasetName, display, lastMNode, lastMsNode);
 
             driveLoader.run(monitor);
             driveLoader.printStats(false);
