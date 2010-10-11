@@ -641,6 +641,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 prev_p = null;// else we do not show selected node
                 // Now draw the actual points
                 for (GeoNode node : geoNeo.getGeoNodes(bounds_transformed)) {
+                    if (node.getNode().hasRelationship( NetworkRelationshipTypes.DRIVE)){
+                        System.out.print("ssssssss");
+                    }
                     if (filterMp != null) {
                         if (!filterMp.filterNodesByTraverser(node.getNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.LOCATION,Direction.INCOMING)).isValid()) {
                             continue;
@@ -756,6 +759,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                         break;
                     // TODO refactor
                     final Node mpNode = node.getNode();
+                    if (mpNode.hasRelationship( NetworkRelationshipTypes.DRIVE)){
+                        System.out.print("ssssssss");
+                    }
                     if (needDrawLines) {
                         Long time = NeoUtils.getNodeTime(mpNode);
                         // if (true) {
@@ -868,7 +874,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                         }
                         if (prev_p != null && prev_p.x == p.x && prev_p.y == p.y) {
                             prev_p = p;
-                            continue;
+//                            continue;
                         } else {
                             prev_p = p;
                         }
@@ -898,7 +904,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                             } catch (Exception e) {
                             }
                         }
-                        if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
+                        if (true||Math.abs(dx) > 20 || Math.abs(dy) > 20) {
                             renderEvents(g, node, p, theta);
                             if (cached_node != null) {
                                 renderEvents(g, cached_node, cached_l_p, theta);
