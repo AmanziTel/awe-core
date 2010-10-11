@@ -97,13 +97,18 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
         }
         for (int i = 0; i < propertyList.size(); i++) {
             PropertyWrapper wr = propertyList.get(i);
-            if (wr.getName() == INeoConstants.PROPERTY_NAME_NAME) {
+            if (wr.getName().equals(INeoConstants.PROPERTY_NAME_NAME)) {
                 LuceneIndexService luceneInd = NeoServiceProvider.getProvider().getIndexService();
                 if (luceneInd.getNodes(INeoConstants.PROPERTY_NAME_NAME, wr.getName()).size() > 0) {
                     setDescription(String.format("Node with the name '%s' is alredy exist", wr.getDefValue()));
                     setPageComplete(false);
                     return;
                 }
+            }
+            if (wr.getName().equals("type")) {
+                setDescription("Property name \"type\" is not allowed.");
+                setPageComplete(false);
+                return;
             }
         }
 
