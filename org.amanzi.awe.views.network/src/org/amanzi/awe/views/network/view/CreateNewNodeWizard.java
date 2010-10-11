@@ -124,7 +124,7 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
             return false;
         }
         System.out.println("\nOK\n");
-        return false;
+        return true;
     }
 
     @Override
