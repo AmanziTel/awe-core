@@ -3201,7 +3201,7 @@ public class NeoUtils {
     public static Node getNodeFromProxy(Node proxyNode, RelationshipType type, GraphDatabaseService service){
     	Transaction tx = service.beginTx();
         try {
-        	return proxyNode.getSingleRelationship(type, Direction.INCOMING).getStartNode();
+        	return proxyNode.getSingleRelationship(type, Direction.INCOMING).getOtherNode(proxyNode);
         } finally {
             tx.finish();
         }
