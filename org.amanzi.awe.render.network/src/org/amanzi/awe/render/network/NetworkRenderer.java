@@ -731,13 +731,14 @@ public class NetworkRenderer extends RendererImpl {
     private void drawRelation(Graphics2D g, Relationship relation, Color lineColor, Map<Node, Point> nodesMap, GraphDatabaseService neo) {
         g.setColor(lineColor);
         Point point1 = nodesMap.get(relation.getStartNode());
+        NetworkRelationshipTypes proxyRelation = relation.isType(NetworkRelationshipTypes.TRANSMISSION)?NetworkRelationshipTypes.TRANSMISSIONS:NetworkRelationshipTypes.NEIGHBOURS;
         if (point1 == null){
-        	Node servNode = NeoUtils.getNodeFromProxy(relation.getStartNode(), NetworkRelationshipTypes.TRANSMISSIONS, neo);
+        	Node servNode = NeoUtils.getNodeFromProxy(relation.getStartNode(), proxyRelation, neo);
         	point1 = nodesMap.get(servNode);
         }
         Point point2 = nodesMap.get(relation.getEndNode());
         if (point2 == null){
-        	Node transNode = NeoUtils.getNodeFromProxy(relation.getEndNode(), NetworkRelationshipTypes.TRANSMISSIONS, neo);
+        	Node transNode = NeoUtils.getNodeFromProxy(relation.getEndNode(), proxyRelation, neo);
         	point2 = nodesMap.get(transNode);
         }
         if (point1 != null && point2 != null) {
