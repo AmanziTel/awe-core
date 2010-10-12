@@ -44,7 +44,6 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 
-// TODO: Auto-generated Javadoc
 /**
  * <p>
  * Abstract class for wizard for loaders
