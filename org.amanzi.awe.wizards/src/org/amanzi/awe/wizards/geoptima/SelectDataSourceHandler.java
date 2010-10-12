@@ -13,7 +13,7 @@
 
 package org.amanzi.awe.wizards.geoptima;
 
-import org.amanzi.neo.preferences.SelectDataPreferencePage;
+import org.amanzi.neo.loader.ui.preferences.SelectDataPreferencePage;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;

@@ -1,7 +1,7 @@
-package org.amanzi.neo.preferences;
+package org.amanzi.neo.loader.ui.preferences;
 
-import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
-import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
+import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
+import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.StringFieldEditor;

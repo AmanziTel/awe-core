@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.amanzi.neo.index.MultiPropertyIndex;
-import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
-import org.amanzi.neo.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
+import org.amanzi.neo.loader.ui.preferences.DataLoadPreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.CellEditor;

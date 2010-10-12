@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader.ui.wizards;
 
+import org.amanzi.neo.loader.ui.utils.LoaderUtils;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.swt.widgets.Composite;
 
@@ -42,7 +43,7 @@ public class DirectoryEditor extends DirectoryFieldEditor {
      */
     @Override
     protected String changePressed() {
-        getTextControl().setText(DriveDialog.getDefaultDirectory());
+        getTextControl().setText(LoaderUtils.getDefaultDirectory());
         
         return super.changePressed();
     }

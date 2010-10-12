@@ -27,7 +27,7 @@ import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
-import org.amanzi.neo.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.ui.preferences.DataLoadPreferences;
 import org.amanzi.neo.services.DatasetService.NodeResult;
 import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Node;

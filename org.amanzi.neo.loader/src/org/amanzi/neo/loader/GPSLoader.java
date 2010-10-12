@@ -35,7 +35,7 @@ import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.AbstractLoader.PropertyMapper;
 import org.amanzi.neo.loader.AbstractLoader.StringMapper;
-import org.amanzi.neo.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.ui.preferences.DataLoadPreferences;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;

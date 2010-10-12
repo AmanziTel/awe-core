@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.neo.loader.core.CommonConfigData;
-import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
+import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;

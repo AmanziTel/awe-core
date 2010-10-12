@@ -26,14 +26,11 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.db.manager.DatabaseManager.DatabaseAccessType;
-import org.amanzi.neo.loader.LoadNetwork;
-import org.amanzi.neo.loader.LoaderUtils;
-import org.amanzi.neo.loader.NeighbourLoader;
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.IValidateResult;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
-import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
-import org.amanzi.neo.wizards.FileFieldEditorExt;
+import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
+import org.amanzi.neo.loader.ui.utils.LoaderUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -58,6 +55,22 @@ import org.neo4j.graphdb.traversal.TraversalDescription;
  * @since 1.0.0
  */
 public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
+    /*
+     * Names of supported files for Network
+     */
+    public static final String[] NETWORK_FILE_NAMES = {
+        "All supported (*.*)",
+        "Comma Separated Values Files (*.csv)",
+        "Plain Text Files (*.txt)",
+        "OpenOffice.org Spreadsheet Files (*.sxc)",
+        "Microsoft Excel Spreadsheet Files (*.xls)",
+        "eXtensible Markup Language Files (*.xml)"};
+    
+    /*
+     * Extensions of supported files for Network
+     */
+    public static final String[] NETWORK_FILE_EXTENSIONS = {"*.*","*.csv", "*.txt", "*.sxc", "*.xls", "*.xml"};
+
     /** The Constant PAGE_TITLE. */
     private static final String PAGE_TITLE = NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_TITLE;
     
@@ -124,7 +137,7 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
             }
         });
         editor = new FileFieldEditorExt("fileSelectNeighb", NeoLoaderPluginMessages.NetworkSiteImportWizard_FILE, main); // NON-NLS-1 //$NON-NLS-1$
-        editor.setDefaulDirectory(NeighbourLoader.getDirectory());
+        editor.setDefaulDirectory(LoaderUtils.getDefaultDirectory());
 
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
@@ -139,8 +152,8 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
             }
         });
         
-        editor.setFileExtensions(LoadNetwork.NETWORK_FILE_EXTENSIONS);
-        editor.setFileExtensionNames(LoadNetwork.NETWORK_FILE_NAMES);
+        editor.setFileExtensions(NETWORK_FILE_EXTENSIONS);
+        editor.setFileExtensionNames(NETWORK_FILE_NAMES);
         label = new Label(main, SWT.LEFT);
         label.setText(NeoLoaderPluginMessages.NetworkSiteImportWizard_DATA_TYPE);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
@@ -215,7 +228,7 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         this.fileName = fileName;
         update();
         // editor.store();
-        NeighbourLoader.setDirectory(editor.getDefaulDirectory());
+        LoaderUtils.setDefaultDirectory(editor.getDefaulDirectory());
     }
 
     /**

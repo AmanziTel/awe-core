@@ -30,9 +30,9 @@ import org.amanzi.neo.core.enums.DriveTypes;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.GisProperties;
-import org.amanzi.neo.loader.LoaderUtils;
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
-import org.amanzi.neo.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.ui.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.ui.utils.LoaderUtils;
 import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Node;
 

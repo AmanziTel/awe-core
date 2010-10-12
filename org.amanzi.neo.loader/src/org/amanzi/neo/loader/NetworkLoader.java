@@ -45,7 +45,7 @@ import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
-import org.amanzi.neo.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.ui.preferences.DataLoadPreferences;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;

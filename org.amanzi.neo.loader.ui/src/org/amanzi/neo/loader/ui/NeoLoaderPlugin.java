@@ -11,8 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader;
+package org.amanzi.neo.loader.ui;
 
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -62,5 +63,53 @@ public class NeoLoaderPlugin extends AbstractUIPlugin {
     public static NeoLoaderPlugin getDefault() {
         return plugin;
     }
-
+    /**
+     * Print debug message
+     * 
+     * @param line
+     */
+    
+    public static void debug(String line) {
+        AweConsolePlugin.debug(line);
+    }
+    
+    /**
+     * Print info message
+     * 
+     * @param line
+     */
+    
+    public static void info(String line) {
+        AweConsolePlugin.info(line);
+    }
+    
+    /**
+     * Print a notification message
+     * 
+     * @param line
+     */
+    
+    public static void notify(String line) {
+        AweConsolePlugin.notify(line);
+    }
+    
+    /**
+     * Print an error message
+     * 
+     * @param line
+     */
+    
+    public static void error(String line) {
+        AweConsolePlugin.error(line);
+    }
+    
+    /**
+     * Print an exception
+     * 
+     * @param line
+     */
+    
+    public static void exception(Exception e) {
+        AweConsolePlugin.exception(e);
+    }
 }

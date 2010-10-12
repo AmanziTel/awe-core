@@ -26,7 +26,7 @@ import org.amanzi.neo.core.utils.EditPropertiesPage;
 import org.amanzi.neo.core.utils.EditPropertiesPage.PropertyWrapper;
 import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.loader.AbstractLoader;
-import org.amanzi.neo.loader.LoaderUtils;
+import org.amanzi.neo.loader.ui.utils.LoaderUtils;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.statistic.IStatistic;

@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.ui;
+package org.amanzi.neo.loader.ui.loaders;
 
 import java.io.PrintStream;
 import java.net.MalformedURLException;

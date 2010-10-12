@@ -55,6 +55,7 @@ import org.amanzi.neo.loader.sax_parsers.IXmlTag;
 import org.amanzi.neo.loader.sax_parsers.IXmlTagFactory;
 import org.amanzi.neo.loader.sax_parsers.PropertyCollector;
 import org.amanzi.neo.loader.sax_parsers.ReadContentHandler;
+import org.amanzi.neo.loader.ui.utils.LoaderUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IAdaptable;

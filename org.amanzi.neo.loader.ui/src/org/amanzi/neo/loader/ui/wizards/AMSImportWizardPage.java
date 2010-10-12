@@ -23,7 +23,8 @@ import org.amanzi.neo.core.enums.GisTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
+import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
+import org.amanzi.neo.loader.ui.utils.LoaderUtils;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -218,7 +219,7 @@ public class AMSImportWizardPage extends WizardPage {
     protected void setFileName(String fileName) {
         this.fileName = fileName;
         setPageComplete(isValidPage());
-        DriveDialog.setDefaultDirectory(fileName);
+        LoaderUtils.setDefaultDirectory(fileName);
     }
 
     /**

@@ -11,10 +11,10 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.preferences;
+package org.amanzi.neo.loader.ui.preferences;
 
-import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
-import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
+import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
+import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.StringFieldEditor;
@@ -28,12 +28,18 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 /**
- * Network Loader loading preference page
+ *Drive Loader loading preference page
  * 
- * @author Cinkel_A
+ * @author NiCK
  * @since 1.0.0
  */
-public class NetworkLoaderPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
+public class DriveLoaderPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
+
+    public DriveLoaderPreferencePage() {
+        super();
+        setPreferenceStore(NeoLoaderPlugin.getDefault().getPreferenceStore());
+    }
+
     @Override
     protected void createFieldEditors() {
         Composite attributePanel = getFieldEditorParent();
@@ -41,25 +47,26 @@ public class NetworkLoaderPreferencePage extends FieldEditorPreferencePage imple
         attributePanel.setLayout(new GridLayout());
 
         Label label = new Label(attributePanel, SWT.FLAT);
-        label.setText(NeoLoaderPluginMessages.PrefNetwork_title_network);
+        label.setText("When loading drive data find special types that match:");
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-        
+
         Group attributeGroup = new Group(attributePanel, attributePanel.getStyle());
-        attributeGroup.setText(NeoLoaderPluginMessages.PrefNetwork_title_site);
+        attributeGroup.setText("Latitude and Longitude");
         attributeGroup.setLayout(new GridLayout());
         Composite marginPanel = new Composite(attributeGroup, attributeGroup.getStyle());
         GridLayout layout = new GridLayout();
         layout.marginHeight = 15;
         layout.marginWidth = 15;
         marginPanel.setLayout(layout);
-        
-        int width = 52;                
-        addField(new StringFieldEditor(DataLoadPreferences.NH_SITE, NeoLoaderPluginMessages.PrefNetwork_field_site,width, marginPanel));
-        addField(new StringFieldEditor(DataLoadPreferences.NH_LATITUDE, NeoLoaderPluginMessages.PrefNetwork_field_latitude,width, marginPanel));
-        addField(new StringFieldEditor(DataLoadPreferences.NH_LONGITUDE, NeoLoaderPluginMessages.PrefNetwork_field_longitude,width, marginPanel));
-        
+
+        int width = 49;
+        // addField(new StringFieldEditor(DataLoadPreferences.NH_SITE,
+        // NeoLoaderPluginMessages.PrefNetwork_field_site,width, marginPanel));
+        addField(new StringFieldEditor(DataLoadPreferences.DR_LATITUDE, NeoLoaderPluginMessages.PrefNetwork_field_latitude, width, marginPanel));
+        addField(new StringFieldEditor(DataLoadPreferences.DR_LONGITUDE, NeoLoaderPluginMessages.PrefNetwork_field_longitude, width, marginPanel));
+
         attributeGroup = new Group(attributePanel, attributePanel.getStyle());
-        attributeGroup.setText(NeoLoaderPluginMessages.PrefNetwork_title_sector);
+        attributeGroup.setText("Channel identification");
         attributeGroup.setLayout(new GridLayout());
         marginPanel = new Composite(attributeGroup, attributeGroup.getStyle());
         layout = new GridLayout();
@@ -67,15 +74,15 @@ public class NetworkLoaderPreferencePage extends FieldEditorPreferencePage imple
         layout.marginWidth = 15;
         marginPanel.setLayout(layout);
 
-        width = 51;
-        addField(new StringFieldEditor(DataLoadPreferences.NH_SECTOR, NeoLoaderPluginMessages.PrefNetwork_field_sector,width, marginPanel));
-        addField(new StringFieldEditor(DataLoadPreferences.NH_SECTOR_CI, NeoLoaderPluginMessages.PrefNetwork_field_sector_ci,width, marginPanel));
-        addField(new StringFieldEditor(DataLoadPreferences.NH_SECTOR_LAC, NeoLoaderPluginMessages.PrefNetwork_field_sector_lac,width, marginPanel));
-        addField(new StringFieldEditor(DataLoadPreferences.NH_BEAMWIDTH, NeoLoaderPluginMessages.PrefNetwork_field_beamwidth, width,marginPanel));
-        addField(new StringFieldEditor(DataLoadPreferences.NH_AZIMUTH, NeoLoaderPluginMessages.PrefNetwork_field_azimuth,width, marginPanel));
-        
+        width = 52;
+
+        addField(new StringFieldEditor(DataLoadPreferences.DR_BCCH, "BCCH", width, marginPanel));
+        addField(new StringFieldEditor(DataLoadPreferences.DR_TCH, "TCH", width, marginPanel));
+        addField(new StringFieldEditor(DataLoadPreferences.DR_TCH, "SC", width, marginPanel));
+        addField(new StringFieldEditor(DataLoadPreferences.DR_PN, "PN", width, marginPanel));
+
         attributeGroup = new Group(attributePanel, attributePanel.getStyle());
-        attributeGroup.setText(NeoLoaderPluginMessages.PrefNetwork_title_oprional);
+        attributeGroup.setText("Signal measurements");
         attributeGroup.setLayout(new GridLayout());
         marginPanel = new Composite(attributeGroup, attributeGroup.getStyle());
         layout = new GridLayout();
@@ -83,12 +90,10 @@ public class NetworkLoaderPreferencePage extends FieldEditorPreferencePage imple
         layout.marginWidth = 15;
         marginPanel.setLayout(layout);
 
-        width = 57;
-        addField(new StringFieldEditor(DataLoadPreferences.NH_CITY, NeoLoaderPluginMessages.PrefNetwork_field_city, width,marginPanel));
-        addField(new StringFieldEditor(DataLoadPreferences.NH_MSC, NeoLoaderPluginMessages.PrefNetwork_field_msc, width,marginPanel));
-        addField(new StringFieldEditor(DataLoadPreferences.NH_BSC, NeoLoaderPluginMessages.PrefNetwork_field_bsc, width,marginPanel));
-                
-        
+        width = 53;
+        addField(new StringFieldEditor(DataLoadPreferences.DR_EcIo, "Ec/Io", width, marginPanel));
+        addField(new StringFieldEditor(DataLoadPreferences.DR_RSSI, "RSSI", width, marginPanel));
+        addField(new StringFieldEditor(DataLoadPreferences.DR_CI, "C/I", width, marginPanel));
     }
 
     @Override
@@ -99,4 +104,5 @@ public class NetworkLoaderPreferencePage extends FieldEditorPreferencePage imple
     public IPreferenceStore getPreferenceStore() {
         return NeoLoaderPlugin.getDefault().getPreferenceStore();
     }
+
 }

@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.dialogs;
+package org.amanzi.neo.loader.ui.utils.dialogs;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;

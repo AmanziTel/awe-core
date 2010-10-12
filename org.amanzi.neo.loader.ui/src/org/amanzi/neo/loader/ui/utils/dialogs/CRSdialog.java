@@ -11,12 +11,12 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.dialogs;
+package org.amanzi.neo.loader.ui.utils.dialogs;
 
 import net.refractions.udig.ui.CRSChooser;
 import net.refractions.udig.ui.Controller;
 
-import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
+import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;

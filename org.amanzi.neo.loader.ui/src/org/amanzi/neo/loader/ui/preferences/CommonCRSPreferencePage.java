@@ -11,13 +11,13 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.preferences;
+package org.amanzi.neo.loader.ui.preferences;
 
 import java.util.LinkedHashMap;
 
-import org.amanzi.neo.loader.dialogs.CRSdialog;
-import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
-import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
+import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
+import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
+import org.amanzi.neo.loader.ui.utils.dialogs.CRSdialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;

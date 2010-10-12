@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.preferences;
+package org.amanzi.neo.loader.ui.preferences;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -28,7 +28,7 @@ import org.amanzi.neo.core.utils.NeoTreeContentProvider;
 import org.amanzi.neo.core.utils.NeoTreeElement;
 import org.amanzi.neo.core.utils.NeoTreeLabelProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;

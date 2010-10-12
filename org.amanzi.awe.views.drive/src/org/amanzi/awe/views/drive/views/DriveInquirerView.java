@@ -55,7 +55,7 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.index.MultiPropertyIndex;
-import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.apache.log4j.Logger;

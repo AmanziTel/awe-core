@@ -1,4 +1,4 @@
-package org.amanzi.neo.loader;
+package org.amanzi.neo.loader.ui;
 /* AWE - Amanzi Wireless Explorer
  * http://awe.amanzi.org
  * (C) 2008-2009, AmanziTel AB
@@ -300,6 +300,9 @@ public class NeoLoaderPluginMessages extends NLS {
     public static String RemoteServerUrlPage_0;
 
     public static String RemoteServerUrlPage_1;
+    
+    public static String PrefUrl_imei;
+    public static String PrefUrl_imsi;
     
     private NeoLoaderPluginMessages() {
     }

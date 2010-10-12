@@ -22,9 +22,9 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.db.manager.DatabaseManager.DatabaseAccessType;
-import org.amanzi.neo.loader.LoaderUtils;
 import org.amanzi.neo.loader.core.CommonConfigData;
-import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
+import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
+import org.amanzi.neo.loader.ui.utils.LoaderUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.swt.SWT;
@@ -42,9 +42,8 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ *Load OSS main page
  * </p>
  * @author tsinkel_a
  * @since 1.0.0
@@ -137,7 +136,7 @@ public class LoadOssMainPage extends LoaderPage<CommonConfigData>{
         });
         editorFile = new FileFieldEditorExt(NeoLoaderPluginMessages.GpehImportDirEditorTitle, "Load single file: ", main);
         editorFile.setEmptyStringAllowed(true);
-        editorFile.setDefaulDirectory(DriveDialog.getDefaultDirectory());
+        editorFile.setDefaulDirectory(LoaderUtils.getDefaultDirectory());
         editorFile.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 if (!editorFile.getTextControl(main).isEnabled()) {
@@ -214,7 +213,7 @@ public class LoadOssMainPage extends LoaderPage<CommonConfigData>{
      */
     protected void setFileName(String dirName) {
         directory = dirName;
-        DriveDialog.setDefaultDirectory(dirName);
+        LoaderUtils.setDefaultDirectory(dirName);
         autoDefineOSSType();
         update();
     }

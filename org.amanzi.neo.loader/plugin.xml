@@ -197,57 +197,7 @@
        </category>
 
     </extension>
-   <extension
-         point="org.eclipse.core.runtime.preferences">
-      <initializer
-            class="org.amanzi.neo.preferences.DataLoadPreferenceInitializer">
-      </initializer>
-   </extension>
-   <extension
-         point="org.eclipse.ui.preferencePages">
-      <page
-            class="org.amanzi.neo.preferences.DataLoadPreferencePage"
-            id="org.amanzi.neo.preferences.DataLoadPreferencePage"
-            name="Amanzi Data">
-      </page>
-       <page
-            class="org.amanzi.neo.preferences.NetworkLoaderPreferencePage"
-            id="org.amanzi.neo.preferences.NetworkLoaderPreferencePage"
-            name="Network data"
-            category="org.amanzi.neo.preferences.DataLoadPreferencePage">
-      </page>
-      <page
-            class="org.amanzi.neo.preferences.DriveLoaderPreferencePage"
-            id="org.amanzi.neo.preferences.DrivekLoaderPreferencePage"
-            name="Drive data"
-            category="org.amanzi.neo.preferences.DataLoadPreferencePage">
-      </page>
-      <page
-            class="org.amanzi.neo.preferences.CommonCRSPreferencePage"
-            id="org.amanzi.neo.preferences.CommonCRSPreferencePage"
-            name="Common CRS"
-            category="org.amanzi.neo.preferences.DataLoadPreferencePage">
-      </page>
 
-	  <page
-            class="org.amanzi.neo.preferences.NeighbourLoaderPreferencePage"
-            id="org.amanzi.neo.preferences.NeighbourLoaderPreferencePage"
-            name="Neighbour lists"
-            category="org.amanzi.neo.preferences.DataLoadPreferencePage">
-      </page>
-      <page
-            class="org.amanzi.neo.preferences.ProbeLoaderPreferencePage"
-            id="org.amanzi.neo.preferences.ProbeLoaderPreferencePage"
-            name="Probe data"
-            category="org.amanzi.neo.preferences.DataLoadPreferencePage">
-      </page>
-      <page
-            class="org.amanzi.neo.preferences.TransmissionLoaderPreferencePage"
-            id="org.amanzi.neo.preferences.TransmissionLoaderPreferencePage"
-            name="Transmission lists"
-            category="org.amanzi.neo.preferences.DataLoadPreferencePage">
-      </page>
-   </extension>
    <extension
          point="net.refractions.udig.ui.newObjectAction">
       <action

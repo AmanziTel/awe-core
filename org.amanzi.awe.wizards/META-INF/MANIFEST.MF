@@ -17,13 +17,13 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.ide,
  org.amanzi.scripting.jruby,
  org.amanzi.awe.gps;bundle-version="1.0.0",
- org.amanzi.neo.loader;bundle-version="1.0.0",
  net.refractions.udig.mapgraphic;bundle-version="1.1.1",
  net.refractions.udig.project.ui;bundle-version="1.1.1",
  org.amanzi.awe.catalog.neo;bundle-version="1.0.0",
  org.eclipse.gef;bundle-version="3.2.102",
  org.amanzi.splash;bundle-version="1.0.0",
- org.amanzi.neo.services;bundle-version="1.0.0"
+ org.amanzi.neo.services;bundle-version="1.0.0",
+ org.amanzi.neo.loader.ui;bundle-version="1.0.0"
 Eclipse-LazyStart: true
 Bundle-ClassPath: lib/opencsv-2.1.jar,
  .

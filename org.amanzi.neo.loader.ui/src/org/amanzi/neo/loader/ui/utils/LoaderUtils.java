@@ -10,7 +10,7 @@
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.amanzi.neo.loader;
+package org.amanzi.neo.loader.ui.utils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -50,9 +50,9 @@ import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.core.utils.CSVParser;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
-import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
-import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
-import org.amanzi.neo.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
+import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
+import org.amanzi.neo.loader.ui.preferences.DataLoadPreferences;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -373,7 +373,7 @@ public class LoaderUtils {
     }
     
     public static IGeoResource getResourceForGis(IService service, IMap map, Node gis) throws IOException{
-        if (service != null && NetworkLoader.findLayerByNode(map, gis) == null) {
+        if (service != null && findLayerByNode(map, gis) == null) {
             for (IGeoResource iGeoResource : service.resources(null)) {
                 if (iGeoResource.canResolve(Node.class)) {
                     if (iGeoResource.resolve(Node.class, null).equals(gis)) {
@@ -384,7 +384,40 @@ public class LoaderUtils {
         }
         return null;
     }
+    /**
+     * Returns Default Directory path for file dialogs in DriveLoad and NetworkLoad
+     * 
+     * @return default directory
+     */
     
+    public static String getDefaultDirectory() {
+        return NeoLoaderPlugin.getDefault().getPluginPreferences().getString(DataLoadPreferences.DEFAULT_DIRRECTORY_LOADER);
+    }
+    
+    /**
+     * Sets Default Directory path for file dialogs in DriveLoad and NetworkLoad
+     * 
+     * @param newDirectory new default directory
+     */
+    
+    public static void setDefaultDirectory(String newDirectory) {
+        NeoLoaderPlugin.getDefault().getPluginPreferences().setValue(DataLoadPreferences.DEFAULT_DIRRECTORY_LOADER, newDirectory);
+    }
+    public static ILayer findLayerByNode(IMap map, Node gisNode) {
+        try {
+            for (ILayer layer : map.getMapLayers()) {
+                IGeoResource resource = layer.findGeoResource(Node.class);
+                if (resource != null && resource.resolve(Node.class, null).equals(gisNode)) {
+                    return layer;
+                }
+            }
+            return null;
+        } catch (IOException e) {
+            // TODO Handle IOException
+            e.printStackTrace();
+            return null;
+        }
+    }  
     /**
      * Calculates list of files 
      *

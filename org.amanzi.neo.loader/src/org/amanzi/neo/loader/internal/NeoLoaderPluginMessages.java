@@ -16,7 +16,7 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
 import org.eclipse.osgi.util.NLS;
-
+@Deprecated
 public class NeoLoaderPluginMessages extends NLS {
     
     private static final String BUNDLE_NAME = NeoLoaderPluginMessages.class.getName();

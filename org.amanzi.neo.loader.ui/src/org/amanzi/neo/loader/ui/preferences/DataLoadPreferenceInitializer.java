@@ -10,11 +10,11 @@
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.amanzi.neo.preferences;
+package org.amanzi.neo.loader.ui.preferences;
 
 import java.nio.charset.Charset;
 
-import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.geotools.referencing.CRS;

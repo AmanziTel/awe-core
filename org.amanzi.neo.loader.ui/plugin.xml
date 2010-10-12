@@ -115,4 +115,55 @@
        </loader>
     </extension>
 
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="org.amanzi.neo.loader.ui.preferences.DataLoadPreferencePage"
+            id="org.amanzi.neo.loader.ui.preferences.DataLoadPreferencePage"
+            name="Amanzi Data">
+      </page>
+       <page
+            class="org.amanzi.neo.loader.ui.preferences.NetworkLoaderPreferencePage"
+            id="org.amanzi.neo.loader.ui.preferences.NetworkLoaderPreferencePage"
+            name="Network data"
+            category="org.amanzi.neo.loader.ui.preferences.DataLoadPreferencePage">
+      </page>
+      <page
+            class="org.amanzi.neo.loader.ui.preferences.DriveLoaderPreferencePage"
+            id="org.amanzi.neo.loader.ui.preferences.DriveLoaderPreferencePage"
+            name="Drive data"
+            category="org.amanzi.neo.loader.ui.preferences.DataLoadPreferencePage">
+      </page>
+      <page
+            class="org.amanzi.neo.loader.ui.preferences.CommonCRSPreferencePage"
+            id="org.amanzi.neo.loader.ui.preferences.CommonCRSPreferencePage"
+            name="Common CRS"
+            category="org.amanzi.neo.loader.ui.preferences.DataLoadPreferencePage">
+      </page>
+
+	  <page
+            class="org.amanzi.neo.loader.ui.preferences.NeighbourLoaderPreferencePage"
+            id="org.amanzi.neo.loader.ui.preferences.NeighbourLoaderPreferencePage"
+            name="Neighbour lists"
+            category="org.amanzi.neo.loader.ui.preferences.DataLoadPreferencePage">
+      </page>
+      <page
+            class="org.amanzi.neo.loader.ui.preferences.ProbeLoaderPreferencePage"
+            id="org.amanzi.neo.loader.ui.preferences.ProbeLoaderPreferencePage"
+            name="Probe data"
+            category="org.amanzi.neo.loader.ui.preferences.DataLoadPreferencePage">
+      </page>
+      <page
+            class="org.amanzi.neo.loader.ui.preferences.TransmissionLoaderPreferencePage"
+            id="org.amanzi.neo.loader.ui.preferences.TransmissionLoaderPreferencePage"
+            name="Transmission lists"
+            category="org.amanzi.neo.loader.ui.preferences.DataLoadPreferencePage">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.amanzi.neo.loader.ui.preferences.DataLoadPreferenceInitializer">
+      </initializer>
+   </extension>
 </plugin>

@@ -10,7 +10,7 @@
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.amanzi.neo.preferences;
+package org.amanzi.neo.loader.ui.preferences;
 
 /**
  * <p>
@@ -21,6 +21,7 @@ package org.amanzi.neo.preferences;
  * @since 1.0.0
  */
 public class DataLoadPreferences {
+    public static final String DEFAULT_DIRRECTORY_LOADER = "DEFAULT_DIRRECTORY_LOADER";
     /** DataLoadPreferences REMOVE_SITE_NAME field */
     public static final String REMOVE_SITE_NAME = "REMOVE_SITE_NAME";
     public static final String NETWORK_COMBINED_CALCULATION = "USE_COMBINED_CALCULATION";

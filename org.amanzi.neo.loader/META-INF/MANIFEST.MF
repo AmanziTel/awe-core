@@ -16,7 +16,8 @@ Require-Bundle: org.eclipse.ui,
  org.amanzi.awe.l3messages;bundle-version="1.0.0",
  org.amanzi.neo.loader.core;bundle-version="1.0.0",
  org.amanzi.neo.services;bundle-version="1.0.0",
- org.amanzi.neo.db;bundle-version="1.0.0"
+ org.amanzi.neo.db;bundle-version="1.0.0",
+ org.amanzi.neo.loader.ui;bundle-version="1.0.0"
 Eclipse-LazyStart: true
 Bundle-Vendor: amanzi.org
 Bundle-ClassPath: .,
@@ -32,7 +33,6 @@ Export-Package: org.amanzi.neo.loader,
  org.amanzi.neo.loader.correlate,
  org.amanzi.neo.loader.internal;uses:="org.amanzi.neo.loader.preferences,org.eclipse.core.runtime,org.osgi.framework",
  org.amanzi.neo.loader.nemo_enum,
- org.amanzi.neo.preferences,
  org.amanzi.neo.wizards
 Bundle-Activator: org.amanzi.neo.loader.internal.NeoLoaderPlugin
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
