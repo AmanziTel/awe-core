@@ -18,7 +18,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.amanzi.awe.parser.internal.util.Pair;
+import org.amanzi.neo.core.utils.Pair;
+
 
 /**
  * <p>

@@ -163,7 +163,6 @@
 	  <module>org.amanzi.neo.loader.core</module>
 	  <module>org.amanzi.neo.loader.ui</module>
 	  <module>org.amanzi.neo.services</module>	  
-	  <module>org.amanzi.awe.parser</module>
     </modules>
     <build>
       <plugins>	  

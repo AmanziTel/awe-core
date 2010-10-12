@@ -397,13 +397,6 @@ PURPOSE.
          unpack="false"/>
 
    <plugin
-         id="org.amanzi.awe.parser"
-         download-size="0"
-         install-size="0"
-         version="1.0.0.qualifier"
-         unpack="false"/>
-
-   <plugin
          id="org.amanzi.neo.loader.core"
          download-size="0"
          install-size="0"
