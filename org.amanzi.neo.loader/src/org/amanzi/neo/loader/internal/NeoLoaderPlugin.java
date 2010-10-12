@@ -18,10 +18,8 @@ import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.Plugin;
-import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -42,7 +40,7 @@ public class NeoLoaderPlugin extends Plugin {
 	static private NeoLoaderPlugin plugin;
 	
 
-    private IPreferenceStore preferenceStore = null;
+//    private IPreferenceStore preferenceStore = null;
 	
 	/*
 	 * Logging properties
@@ -143,12 +141,13 @@ public class NeoLoaderPlugin extends Plugin {
      * @return the preference store
      */
     public IPreferenceStore getPreferenceStore() {
-        // Create the preference store lazily.
-        if (preferenceStore == null) {
-            preferenceStore = new ScopedPreferenceStore(new InstanceScope(), getBundle().getSymbolicName());
-
-        }
-        return preferenceStore;
+        return  org.amanzi.neo.loader.ui.NeoLoaderPlugin.getDefault().getPreferenceStore();
+//        // Create the preference store lazily.
+//        if (preferenceStore == null) {
+//            preferenceStore = new ScopedPreferenceStore(new InstanceScope(), getBundle().getSymbolicName());
+//
+//        }
+//        return preferenceStore;
     }
 
     /**
