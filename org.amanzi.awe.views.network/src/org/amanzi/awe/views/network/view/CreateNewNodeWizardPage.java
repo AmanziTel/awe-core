@@ -61,7 +61,8 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
         // propertyList.add(new PropertyWrapper("lat", Double.class, "", false));
 
         NodeTypes type = NodeTypes.getEnumById(nodeType.getId());
-        propertyList.add(new NewNodePropertyWrapper("name", String.class, "new " + nodeType.getId(), false));
+        // propertyList.add(new NewNodePropertyWrapper("name", String.class, "new " +
+        // nodeType.getId(), false));
         if (type != null) {
             IPropertyHeader ph = PropertyHeader.getPropertyStatistic(NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId()));
             Map<String, Object> statisticProperties = ph.getStatisticParams(type);
@@ -69,6 +70,11 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
                 propertyList.add(new NewNodePropertyWrapper(key, statisticProperties.get(key).getClass(), statisticProperties.get(key).toString(), false));
             }
         }
+
+        NewNodePropertyWrapper name = new NewNodePropertyWrapper("name", String.class, "new " + nodeType.getId(), false);
+        if (!propertyList.contains(name))
+            propertyList.add(name);
+
         if (type == NodeTypes.SECTOR) {
             NewNodePropertyWrapper ci = new NewNodePropertyWrapper(INeoConstants.PROPERTY_SECTOR_CI, Integer.class, "0", false);
             if(!propertyList.contains(ci))
