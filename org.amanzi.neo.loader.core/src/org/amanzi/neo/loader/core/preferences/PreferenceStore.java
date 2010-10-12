@@ -15,7 +15,6 @@ package org.amanzi.neo.loader.core.preferences;
 
 import java.util.HashMap;
 
-// TODO: Auto-generated Javadoc
 /**
  * <p>
  * Preference store

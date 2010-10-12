@@ -30,6 +30,7 @@ import org.amanzi.neo.loader.core.ILoaderProgressListener;
 import org.amanzi.neo.loader.core.IProgressEvent;
 import org.amanzi.neo.loader.core.parser.IConfigurationData;
 import org.amanzi.neo.loader.core.parser.IDataElement;
+import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -96,6 +97,9 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
+        //init pref store in not initialized before
+        NeoLoaderPlugin.getDefault().getPreferenceStore().getString("init");
+        
         setNeedsProgressMonitor(true);
         maxMainPageId = -1;
         List<IWizardPage> mainPages = getMainPagesList();
