@@ -157,7 +157,7 @@ public class NeoLoaderPlugin extends Plugin {
      * @return
      */
     public String getCharacterSet() {
-        String characterSet = getPreferenceStore().getString(DataLoadPreferences.DEFAULT_CHARSET);
+        String characterSet = org.amanzi.neo.loader.ui.NeoLoaderPlugin.getDefault().getPreferenceStore().getString(DataLoadPreferences.DEFAULT_CHARSET);
         if (characterSet == null) {
             characterSet = DEFAULT_CHARSET;
         }
