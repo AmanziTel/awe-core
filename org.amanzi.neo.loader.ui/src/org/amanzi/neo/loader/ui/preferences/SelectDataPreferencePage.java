@@ -28,6 +28,7 @@ import org.amanzi.neo.core.utils.NeoTreeContentProvider;
 import org.amanzi.neo.core.utils.NeoTreeElement;
 import org.amanzi.neo.core.utils.NeoTreeLabelProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.preference.IPreferenceStore;

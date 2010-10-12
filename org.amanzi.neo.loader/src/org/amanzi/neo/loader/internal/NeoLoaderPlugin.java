@@ -15,7 +15,7 @@ package org.amanzi.neo.loader.internal;
 import java.io.IOException;
 
 import org.amanzi.awe.console.AweConsolePlugin;
-import org.amanzi.neo.loader.ui.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.preferences.InstanceScope;

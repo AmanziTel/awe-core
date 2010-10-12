@@ -1,5 +1,6 @@
 package org.amanzi.neo.loader.ui.preferences;
 
+import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;

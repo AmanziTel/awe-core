@@ -16,9 +16,9 @@ package org.amanzi.awe.views.drive.preferences;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
-import org.amanzi.neo.loader.ui.preferences.DataLoadPreferences;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;

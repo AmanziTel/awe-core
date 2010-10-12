@@ -36,7 +36,7 @@ import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.loader.ui.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.utils.LoaderUtils;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Direction;

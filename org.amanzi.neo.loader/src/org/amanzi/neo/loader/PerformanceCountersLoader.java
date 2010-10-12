@@ -32,7 +32,7 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.AbstractLoader.DateMapper;
-import org.amanzi.neo.loader.ui.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.utils.LoaderUtils;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Node;

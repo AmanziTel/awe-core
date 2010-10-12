@@ -17,10 +17,10 @@ import java.io.File;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Scanner;
 
 import org.amanzi.awe.gpeh.parser.Events;
-import org.amanzi.awe.gpeh.parser.GPEHDataElement;
 import org.amanzi.awe.l3messages.AsnParserEvent;
 import org.amanzi.awe.l3messages.IAsnParserListener;
 import org.amanzi.awe.l3messages.MessageDecoder;
@@ -40,7 +40,7 @@ import org.amanzi.awe.l3messages.rrc.UL_DCCH_MessageType;
 import org.amanzi.neo.services.GpehReportUtil;
 
 /**
- * TODO Purpose of 
+ * TODO refactor for support new mechanism
  * <p>
  *
  * </p>
@@ -220,7 +220,7 @@ public class AsnParserTest {
         check();
     }
     
-    private static void processEvent(GPEHDataElement event) {
+    private static void processEvent(/*GPEHDataElement*/Map event) {
         if (event != null) {
             if (event.containsKey("EVENT_PARAM_MESSAGE_CONTENTS")) {
                 byte[] content = (byte[])event.get("EVENT_PARAM_MESSAGE_CONTENTS");

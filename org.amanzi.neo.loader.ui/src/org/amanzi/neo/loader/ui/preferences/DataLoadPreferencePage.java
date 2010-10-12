@@ -14,6 +14,7 @@ package org.amanzi.neo.loader.ui.preferences;
 
 import net.refractions.udig.ui.preferences.CharSetFieldEditor;
 
+import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;

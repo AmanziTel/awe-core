@@ -14,13 +14,15 @@
 package org.amanzi.neo.loader.ui;
 
 import org.amanzi.awe.console.AweConsolePlugin;
+import org.amanzi.neo.loader.core.preferences.PreferenceStore;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ *NeoLoaderPlugin
  * </p>
  * @author lagutko_n
  * @since 1.0.0
@@ -32,6 +34,7 @@ public class NeoLoaderPlugin extends AbstractUIPlugin {
      */
 
     static private NeoLoaderPlugin plugin;
+    private IPropertyChangeListener propertyListener;
     
     /**
      * Constructor for SplashPlugin.
@@ -45,6 +48,14 @@ public class NeoLoaderPlugin extends AbstractUIPlugin {
     public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
+        propertyListener=new IPropertyChangeListener() {
+            
+            @Override
+            public void propertyChange(PropertyChangeEvent event) {
+                PreferenceStore.getPreferenceStore().changeProperty(event.getProperty(),event.getNewValue(),event.getOldValue());
+            }
+        };
+        getPreferenceStore().addPropertyChangeListener(propertyListener);
     }
     
     /*
@@ -54,6 +65,7 @@ public class NeoLoaderPlugin extends AbstractUIPlugin {
     @Override
     public void stop(BundleContext context) throws Exception {
         plugin = null;
+        getPreferenceStore().removePropertyChangeListener(propertyListener); 
         super.stop(context);
     }
     

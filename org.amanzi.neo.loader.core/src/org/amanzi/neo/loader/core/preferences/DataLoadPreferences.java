@@ -10,7 +10,7 @@
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.amanzi.neo.loader.ui.preferences;
+package org.amanzi.neo.loader.core.preferences;
 
 /**
  * <p>

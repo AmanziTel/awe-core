@@ -15,7 +15,7 @@ Require-Bundle: org.eclipse.core.commands;bundle-version="3.3.0",
  net.refractions.udig.libs;bundle-version="1.1.1",
  org.amanzi.neo.core;bundle-version="1.0.0",
  org.neo4j;bundle-version="1.0.0",
- org.amanzi.neo.loader.core;bundle-version="1.0.0",
+ org.amanzi.neo.loader.core;bundle-version="1.0.0";visibility:=reexport,
  org.amanzi.awe.console;bundle-version="1.0.0",
  org.amanzi.awe.catalog.neo;bundle-version="1.0.0",
  net.refractions.udig.project.ui;bundle-version="1.1.1"

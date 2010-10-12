@@ -21,7 +21,7 @@ import java.util.regex.PatternSyntaxException;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.preferences.NeoCorePreferencesConstants;
 import org.amanzi.neo.core.propertyFilter.OperationCase;
-import org.amanzi.neo.loader.ui.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.CellEditor;

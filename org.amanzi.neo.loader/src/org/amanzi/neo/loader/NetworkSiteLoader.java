@@ -26,7 +26,7 @@ import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.loader.ui.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;

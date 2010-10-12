@@ -15,6 +15,7 @@ package org.amanzi.neo.loader.ui.preferences;
 
 import java.util.LinkedHashMap;
 
+import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.dialogs.CRSdialog;
