@@ -107,6 +107,11 @@ public class EditPropertiesPage extends WizardPage {
             propertyList.add(new PropertyWrapper("lat", Double.class, "", false));
             propertyList.add(new PropertyWrapper("lon", Double.class, "", false));
             
+        }else if (nodeType==NodeTypes.SECTOR){
+            propertyList.add(new PropertyWrapper("ci", Integer.class, "", false));
+            propertyList.add(new PropertyWrapper("lac", Integer.class, "", false));      
+            propertyList.add(new PropertyWrapper("beamwidth", Integer.class, "", false));      
+            propertyList.add(new PropertyWrapper("azimuth", Integer.class, "", false));      
         }
     }
 
@@ -345,7 +350,7 @@ public class EditPropertiesPage extends WizardPage {
          */
         @Override
         public Color getBackground(Object element) {
-            return ((PropertyWrapper)element).isEditable()?super.getBackground(element):GRAY;
+            return columnIndex==2||((PropertyWrapper)element).isEditable()?super.getBackground(element):GRAY;
         }
     }
 
@@ -396,7 +401,7 @@ public class EditPropertiesPage extends WizardPage {
          */
         @Override
         protected boolean canEdit(Object element) {
-            return ((PropertyWrapper)element).isEditable();
+            return id==2||((PropertyWrapper)element).isEditable();
         }
 
         /**
