@@ -106,6 +106,8 @@ public class DatasetStatistic implements IStatistic {
                     e.printStackTrace();
                     value = null;
                 }
+            }else if (String.class==klass){
+                value=defValue;
             }
         }
         if (handler.registerProperty(rootKey, nodeType, name, klass, ChangeClassRule.IGNORE_NEW_CLASS)) {

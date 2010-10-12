@@ -21,7 +21,7 @@ import org.neo4j.kernel.Traversal;
 /**
  * The Class PropertyStatistics.
  */
-public class PropertyStatistics implements ISinglePropertyStat{
+public class PropertyStatistics implements ISinglePropertyStat {
 
     /** The Constant PROPERTYS. */
     private static final TraversalDescription PROPERTYS = Traversal.description().depthFirst().relationships(StatisticRelationshipTypes.PROPERTY, Direction.OUTGOING)
@@ -33,8 +33,6 @@ public class PropertyStatistics implements ISinglePropertyStat{
     /** The klass. */
     @SuppressWarnings("rawtypes")
     private Class klass = null;
-
-
 
     /** The rule. */
     private ChangeClassRule rule;
@@ -134,7 +132,7 @@ public class PropertyStatistics implements ISinglePropertyStat{
      * Adds the new value.
      * 
      * @param value the value
-     * @param count 
+     * @param count
      * @return true, if successful
      */
     public boolean addNewValue(Object value, int count) {
@@ -146,19 +144,19 @@ public class PropertyStatistics implements ISinglePropertyStat{
             setClass(classValue);
         }
         if (klass == classValue) {
-            addValueToStatistic(value,count);
+            addValueToStatistic(value, count);
         } else {
             switch (rule) {
             case REMOVE_OLD_CLASS:
                 clearStatistic();
                 setClass(classValue);
-                addValueToStatistic(value,count);
+                addValueToStatistic(value, count);
                 break;
             default/* ignore variant */:
                 return false;
             }
         }
-        isChanged=true;
+        isChanged = true;
         return true;
 
     }
@@ -225,37 +223,41 @@ public class PropertyStatistics implements ISinglePropertyStat{
      * Adds the value to statistic.
      * 
      * @param value the value
-     * @param countVal 
+     * @param countVal
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
     private void addValueToStatistic(Object value, int countVal) {
         isChanged = true;
-        count+=countVal;
-        if (isComparable&&countVal>0) {
-            if (minValue == null) {
-                minValue = value;
-            } else if (((Comparable)minValue).compareTo((Comparable)value) > 0) {
-                minValue = value;
-            }
-            if (maxValue == null) {
-                maxValue = value;
-            } else if (((Comparable)maxValue).compareTo((Comparable)value) < 0) {
-                maxValue = value;
-            }
-            // because from possible neo4j storing data only array is not comparable we use
-            // isComparable for define: should we compute statistics by value
-            if (values.size() < StatisticHandler.MAX_VALUES_SIZE) {
-                Long countStat = values.get(value);
-                if (countStat == null) {
-                    countStat = 0l;
+        count += countVal;
+        if (isComparable) {
+            if (countVal > 0) {
+                if (minValue == null) {
+                    minValue = value;
+                } else if (((Comparable)minValue).compareTo((Comparable)value) > 0) {
+                    minValue = value;
                 }
-                values.put(value, 1l + countStat);
-            } else {
-                // compute statistic only for first MAX_VALUES_SIZE values
-                Long countStat = values.get(value);
-                if (countStat != null) {
+                if (maxValue == null) {
+                    maxValue = value;
+                } else if (((Comparable)maxValue).compareTo((Comparable)value) < 0) {
+                    maxValue = value;
+                }
+                // because from possible neo4j storing data only array is not comparable we use
+                // isComparable for define: should we compute statistics by value
+                if (values.size() < StatisticHandler.MAX_VALUES_SIZE) {
+                    Long countStat = values.get(value);
+                    if (countStat == null) {
+                        countStat = 0l;
+                    }
                     values.put(value, 1l + countStat);
+                } else {
+                    // compute statistic only for first MAX_VALUES_SIZE values
+                    Long countStat = values.get(value);
+                    if (countStat != null) {
+                        values.put(value, 1l + countStat);
+                    }
                 }
+            } else if (values.isEmpty()) {
+                values.put(value, 0l);
             }
         }
     }
@@ -267,7 +269,7 @@ public class PropertyStatistics implements ISinglePropertyStat{
      * @param rule the rule
      * @return true, if successful
      */
-    public boolean register(Class<?> klass, ChangeClassRule rule) {
+    public boolean register(Class< ? > klass, ChangeClassRule rule) {
         if (this.klass == null) {
             setClass(klass);
             this.rule = rule;
@@ -302,7 +304,7 @@ public class PropertyStatistics implements ISinglePropertyStat{
      */
     public void save(INeoDbService service, Node parentNode, Node propNode) {
         if (isChanged(parentNode)) {
-            rule=ChangeClassRule.IGNORE_NEW_CLASS;
+            rule = ChangeClassRule.IGNORE_NEW_CLASS;
             parent = parentNode;
             Transaction tx = service.beginTx();
             try {
@@ -325,14 +327,14 @@ public class PropertyStatistics implements ISinglePropertyStat{
                     propertyNode = propNode;
                 }
                 propertyNode.setProperty(StatisticProperties.COUNT, count);
-                if (klass!=null){
+                if (klass != null) {
                     propertyNode.setProperty(StatisticProperties.CLASS, klass.getCanonicalName());
                 }
-                if (isComparable){
-                    if (minValue!=null){
+                if (isComparable) {
+                    if (minValue != null) {
                         propertyNode.setProperty(StatisticProperties.MIN_VALUE, minValue);
                     }
-                    if (maxValue!=null){
+                    if (maxValue != null) {
                         propertyNode.setProperty(StatisticProperties.MAX_VALUE, maxValue);
                     }
                 }
@@ -362,6 +364,7 @@ public class PropertyStatistics implements ISinglePropertyStat{
     public boolean isChanged(Node parentNode) {
         return isChanged || parent == null || !parentNode.equals(this.parent);
     }
+
     public Class< ? > getKlass() {
         return klass;
     }
@@ -392,92 +395,93 @@ public class PropertyStatistics implements ISinglePropertyStat{
     @SuppressWarnings("unchecked")
     @Override
     public Object parseValue(String value) {
-        if (klass==null){
+        if (klass == null) {
             return autoParse(value);
         }
-        if (klass==String.class){
+        if (klass == String.class) {
             return value;
         }
         try {
-            return NeoUtils.getNumberValue(klass,  value);
+            return NeoUtils.getNumberValue(klass, value);
         } catch (Exception e) {
             e.printStackTrace();
-        } 
+        }
         return autoParse(value);
     }
-    
+
     /**
      * Auto parse.
-     *
+     * 
      * @param value the value
      * @return the object
      */
     public static Object autoParse(String value) {
-        try{
-        if (value.contains(".")){
-            return Float.parseFloat(value);
-        }else{
-            return Integer.parseInt(value);
-        }
-        }catch (Exception e) {
+        try {
+            if (value.contains(".")) {
+                return Float.parseFloat(value);
+            } else {
+                return Integer.parseInt(value);
+            }
+        } catch (Exception e) {
             return value;
         }
     }
+
     @Override
     public Map<Object, Long> getValueMap() {
         return Collections.unmodifiableMap(values);
     }
 
-    public  <T extends Object> boolean updateNotNullValues(T newValue,T oldValue){
-        if (klass!=newValue.getClass()){
+    public <T extends Object> boolean updateNotNullValues(T newValue, T oldValue) {
+        if (klass != newValue.getClass()) {
             return false;
         }
-        if (deleteValue(oldValue)){
+        if (deleteValue(oldValue)) {
             addNewValue(newValue, 1);
             return true;
         }
         return false;
     }
+
     /**
      * Delete value.
-     *
+     * 
      * @param valueToDelete the value to delete
      * @return true, if successful
      */
     public boolean deleteValue(Object valueToDelete) {
-        if (valueToDelete==null){
+        if (valueToDelete == null) {
             return false;
         }
         Long countV = values.get(valueToDelete);
-        if (countV==null||countV<1){
+        if (countV == null || countV < 1) {
             return false;
         }
-        isChanged=true;
+        isChanged = true;
         countV--;
-        int c=0;
-        if (countV==0){
+        int c = 0;
+        if (countV == 0) {
             values.remove(valueToDelete);
             c++;
-        }else{
+        } else {
             values.put(valueToDelete, countV);
         }
-        if (values.size()<StatisticHandler.MAX_VALUES_SIZE-c){
+        if (values.size() < StatisticHandler.MAX_VALUES_SIZE - c) {
             updateMinMaxFromValues();
         }
         return true;
     }
 
-
     /**
      * Update min max from values.
      */
     private void updateMinMaxFromValues() {
-        if (isComparable){
-            minValue=null;
-            maxValue=null;
-            for (Map.Entry<Object, Long>entry:values.entrySet()){
+        if (isComparable) {
+            minValue = null;
+            maxValue = null;
+            for (Map.Entry<Object, Long> entry : values.entrySet()) {
                 Object value = entry.getKey();
-                if (entry.getValue()==null||entry.getValue()<1){
+                if (entry.getValue() == null || entry.getValue() < 1) {
                     continue;
                 }
                 if (minValue == null) {
@@ -489,9 +493,9 @@ public class PropertyStatistics implements ISinglePropertyStat{
                     maxValue = value;
                 } else if (((Comparable)maxValue).compareTo((Comparable)value) < 0) {
                     maxValue = value;
-                }          
+                }
             }
-            
+
         }
     }
 }

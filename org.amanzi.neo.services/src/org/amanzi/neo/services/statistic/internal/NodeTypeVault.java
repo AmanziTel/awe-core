@@ -262,7 +262,7 @@ public class NodeTypeVault {
     public Collection<String> getPropertyNameCollection(Comparable<Class> comparable) {
         Collection<String> result=new ArrayList<String>();
         for (Map.Entry<String, PropertyStatistics> entry:propertyMap.entrySet()){
-            if (comparable.compareTo(entry.getValue().getKlass())==0){
+            if (comparable==null||comparable.compareTo(entry.getValue().getKlass())==0){
                 result.add(entry.getKey());
             }
         }
