@@ -16,6 +16,7 @@ package org.amanzi.neo.services.statistic.internal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -219,7 +220,7 @@ public class PropertyHeaderImpl implements IPropertyHeader {
 
     @Override
     public Map<String, Object> getStatisticParams(INodeType type) {
-        return null;
+        return new HashMap<String, Object>();
     }
     public String[] getIdentityFields() {
         List<String> result = new ArrayList<String>();
