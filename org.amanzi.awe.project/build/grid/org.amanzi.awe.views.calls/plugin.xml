@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            name="Call Analyser"
+            icon="icons/call_analyser.png"
+            category="org.amanzi.awe.script"
+            class="org.amanzi.awe.views.calls.views.CallAnalyserView"
+            id="org.amanzi.awe.views.calls.views.CallAnalyserView">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.amanzi.awe.perspective">
+         <view
+               id="org.amanzi.awe.views.calls.views.CallAnalyserView"
+               relationship="stack"
+               relative="net.refractions.udig.catalog.ui.CatalogView"
+               visible="true">
+         </view>
+         <viewShortcut
+               id="org.amanzi.awe.views.calls.views.CallAnalyserView">
+         </viewShortcut>
+      </perspectiveExtension>
+   </extension>
+   
+   <extension
+          point="org.eclipse.ui.importWizards">
+	       <wizard  
+	             category="org.ams.load"
+	             class="org.amanzi.awe.views.calls.views.AmsImportWizard"
+	             icon="icons/call_analyser.png"
+	             id="org.amanzi.awe.views.calls.views.AmsImportWizard"
+	             name="Import AMS statistics data">
+	          <description>
+	 				Import a data file from the local file system into the project
+	          </description>
+	       </wizard>                
+	       <category
+	             id="org.ams.load"
+	             name="AMS Data">
+	       </category>
+       
+    </extension>
+</plugin>
