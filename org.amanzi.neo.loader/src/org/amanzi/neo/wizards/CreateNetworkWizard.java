@@ -170,6 +170,7 @@ public class CreateNetworkWizard extends Wizard implements INewWizard {
             return;
         }
         EditPropertiesPage page = new EditPropertiesPage(type.getId(),String.format("Configure type '%s'", type.getId()), type);
+        page.initProperty();
         pages.put(type, page);
         page.setWizard(this);
     }

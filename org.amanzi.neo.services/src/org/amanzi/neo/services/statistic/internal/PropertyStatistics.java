@@ -271,6 +271,7 @@ public class PropertyStatistics implements ISinglePropertyStat {
      */
     public boolean register(Class< ? > klass, ChangeClassRule rule) {
         if (this.klass == null) {
+            isChanged=true;
             setClass(klass);
             this.rule = rule;
             return true;

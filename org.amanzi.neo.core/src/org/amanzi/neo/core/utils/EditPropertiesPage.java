@@ -80,6 +80,7 @@ public class EditPropertiesPage extends WizardPage {
     
     /** The remove. */
     private Button remove;
+    private boolean initialize=false;
 
     /**
      * Instantiates a new creates the network config page.
@@ -92,26 +93,28 @@ public class EditPropertiesPage extends WizardPage {
         this.nodeType = nodeType;
         setTitle(title);
         setDescription(getNormalDescription());
-
     }
 
     /**
      * Inits the property.
      */
-    protected void initProperty() {
-        propertyList.clear();
-        PropertyWrapper name = new PropertyWrapper("name", String.class, "", false);
-        propertyList.add(name);
-        //TODO implement
-        if (nodeType==NodeTypes.SITE){
-            propertyList.add(new PropertyWrapper("lat", Double.class, "", false));
-            propertyList.add(new PropertyWrapper("lon", Double.class, "", false));
-            
-        }else if (nodeType==NodeTypes.SECTOR){
-            propertyList.add(new PropertyWrapper("ci", Integer.class, "", false));
-            propertyList.add(new PropertyWrapper("lac", Integer.class, "", false));      
-            propertyList.add(new PropertyWrapper("beamwidth", Integer.class, "", false));      
-            propertyList.add(new PropertyWrapper("azimuth", Integer.class, "", false));      
+    public void initProperty() {
+        if (!initialize) {
+            propertyList.clear();
+            PropertyWrapper name = new PropertyWrapper("name", String.class, "", false);
+            propertyList.add(name);
+            // TODO implement
+            if (nodeType == NodeTypes.SITE) {
+                propertyList.add(new PropertyWrapper("lat", Double.class, "", false));
+                propertyList.add(new PropertyWrapper("lon", Double.class, "", false));
+
+            } else if (nodeType == NodeTypes.SECTOR) {
+                propertyList.add(new PropertyWrapper("ci", Integer.class, "", false));
+                propertyList.add(new PropertyWrapper("lac", Integer.class, "", false));
+                propertyList.add(new PropertyWrapper("beamwidth", Integer.class, "", false));
+                propertyList.add(new PropertyWrapper("azimuth", Integer.class, "", false));
+            }
+            initialize = true;
         }
     }
 
@@ -186,7 +189,6 @@ public class EditPropertiesPage extends WizardPage {
         init();
         setControl(main);
     }
-
 
    /**
     * Change table selection.
