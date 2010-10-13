@@ -26,6 +26,8 @@ import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.IndexManager;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.statistic.IPropertyHeader;
+import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
@@ -108,6 +110,9 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
         if (!((String)id).startsWith("delta_")) {
             Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
             try {
+                DatasetService service = NeoServiceFactory.getInstance().getDatasetService();
+
+                Node root = service.findRootByChild((Node)container);
                 Object oldValue=null;
                 if (container.hasProperty((String)id)) {
                     oldValue=container.getProperty((String)id);
@@ -135,7 +140,7 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
                     } catch (Exception e) {
                         MessageDialog.openError(null, "Error", "Error in Neo service: " + e.getMessage());
                     }
-                    updateIndexes(container, (String)id,oldValue);
+                    updateIndexes(root,container, (String)id,oldValue);
                 } else {
                     // simply set the value
                     try {
@@ -146,7 +151,7 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
                 }
                 tx.success();
                 updateLayer();
-                updateStatistics(container, (String)id,oldValue);
+                updateStatistics(root,container, (String)id,oldValue);
             } finally {
                 tx.finish();
                 NeoServiceProvider.getProvider().commit();
@@ -161,11 +166,18 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
      * Update statistics.
      *
      * @param container the container
+     * @param container 
      * @param id the id
      * @param oldValue the old value
      */
-    private void updateStatistics(PropertyContainer container, String id, Object oldValue) {
-        //TODO implement update statistics
+    private void updateStatistics(Node   root, PropertyContainer container, String id, Object oldValue) {
+        if (container instanceof Node){
+            DatasetService service = NeoServiceFactory.getInstance().getDatasetService();
+            if (root!=null){
+                IPropertyHeader stat = PropertyHeader.getPropertyStatistic(root);
+                stat.updateStatistic(service.getNodeType((Node)container).getId(), id, container.getProperty(id, null), oldValue);
+            }
+        }
     }
 
     /**
@@ -175,11 +187,9 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
      * @param propertyName the property name
      * @param oldValue the old value
      */
-    private void updateIndexes(PropertyContainer container, String propertyName,Object oldValue) {
+    private void updateIndexes(Node root,PropertyContainer container, String propertyName,Object oldValue) {
         if (container instanceof Node){
-            
             DatasetService service = NeoServiceFactory.getInstance().getDatasetService();
-            Node root = service.findRootByChild((Node)container);
             if (root!=null){
                 IndexManager manager= service.getIndexManader(root);
                 manager.updateIndexes(container,propertyName,oldValue);
