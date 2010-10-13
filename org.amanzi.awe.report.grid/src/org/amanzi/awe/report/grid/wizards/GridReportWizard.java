@@ -165,7 +165,7 @@ public class GridReportWizard extends Wizard implements IWizard {
                             int i = 0;
                             for (Pair<String, DefaultValueDataset> pair : datasets) {
                                 addDialChart(report, pair.l(), pair.r());
-                                if (++i>= 10) {
+                                if (++i> 10) {
                                     break;
                                 }
                             }
