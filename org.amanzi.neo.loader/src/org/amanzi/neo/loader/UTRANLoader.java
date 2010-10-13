@@ -46,7 +46,7 @@ import org.amanzi.neo.loader.sax_parsers.IXmlTagFactory;
 import org.amanzi.neo.loader.sax_parsers.PropertyCollector;
 import org.amanzi.neo.loader.sax_parsers.ReadContentHandler;
 import org.amanzi.neo.loader.sax_parsers.SkipTag;
-import org.amanzi.neo.loader.ui.utils.LoaderUtils;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -304,7 +304,7 @@ public class UTRANLoader extends AbstractLoader {
             File file = new File(filename);
             List<File> fileList;
             if (file.isDirectory()) {
-                fileList = LoaderUtils.getAllFiles(filename, new FileFilter() {
+                fileList = LoaderUiUtils.getAllFiles(filename, new FileFilter() {
 
                     @Override
                     public boolean accept(File pathname) {

@@ -32,7 +32,7 @@ import org.amanzi.neo.core.enums.OssType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
-import org.amanzi.neo.loader.ui.utils.LoaderUtils;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -95,7 +95,7 @@ public class OSSCounterLoader extends AbstractLoader {
             monitor.subTask(basename);
         addIndex(MI_TYPE, NeoUtils.getTimeIndexProperty(basename));
 
-        List<File> fileList = LoaderUtils.getAllFiles(filename, new FileFilter() {
+        List<File> fileList = LoaderUiUtils.getAllFiles(filename, new FileFilter() {
 
             @Override
             public boolean accept(File pathname) {
@@ -108,7 +108,7 @@ public class OSSCounterLoader extends AbstractLoader {
             initializeIndexes();
             int sizeAll = fileList.size();
             monitor = SubMonitor.convert(monitor, sizeAll);
-            ossNode = LoaderUtils.findOrCreateOSSNode(OssType.COUNTER, basename, neo);
+            ossNode = LoaderUiUtils.findOrCreateOSSNode(OssType.COUNTER, basename, neo);
             for (File file : fileList) {
                 try {
                     monitor.subTask(file.getName());

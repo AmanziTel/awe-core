@@ -33,7 +33,7 @@ import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.AbstractLoader.DateMapper;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
-import org.amanzi.neo.loader.ui.utils.LoaderUtils;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -138,7 +138,7 @@ public class PerformanceCountersLoader extends AbstractLoader {
     @Override
     protected void parseLine(String line) {
         if (fileNode == null) {
-            ossRoot = LoaderUtils.findOrCreateOSSNode(ossType, basename, neo);// TODO target
+            ossRoot = LoaderUiUtils.findOrCreateOSSNode(ossType, basename, neo);// TODO target
             // type
             Pair<Boolean, Node> fileNodePair = NeoUtils.findOrCreateFileNode(neo, ossRoot, new File(basename).getName(), new File(
                     basename).getName());

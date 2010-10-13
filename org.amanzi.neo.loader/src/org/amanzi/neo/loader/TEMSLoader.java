@@ -37,7 +37,7 @@ import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
-import org.amanzi.neo.loader.ui.utils.LoaderUtils;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -423,7 +423,7 @@ public class TEMSLoader extends DriveLoader {
                     String chan_code = "" + channel + "\t" + pn_code;
                     if (!signals.containsKey(chan_code))
                         signals.put(chan_code, new float[2]);
-                    signals.get(chan_code)[0] += LoaderUtils.dbm2mw(ec_io);
+                    signals.get(chan_code)[0] += LoaderUiUtils.dbm2mw(ec_io);
                     signals.get(chan_code)[1] += 1;
                 } catch (Exception e) {
                     error("Error parsing column " + i + " for EC/IO, Channel or PN: " + e.getMessage());
@@ -552,7 +552,7 @@ public class TEMSLoader extends DriveLoader {
                         valueToSave = header.parse(cc[1]);
                         ms.setProperty(INeoConstants.PROPERTY_CODE_NAME, valueToSave);
                         ms.setProperty(INeoConstants.PROPERTY_NAME_NAME, cc[1]);
-                        float dbm = LoaderUtils.mw2dbm(mw);
+                        float dbm = LoaderUiUtils.mw2dbm(mw);
                         header = statisticHeader.get(INeoConstants.PROPERTY_DBM_NAME);
                         valueToSave = header.parse(String.valueOf(dbm));
                         ms.setProperty(INeoConstants.PROPERTY_DBM_NAME, valueToSave);

@@ -21,7 +21,7 @@ import org.amanzi.neo.core.enums.NetworkFileType;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
-import org.amanzi.neo.loader.ui.utils.LoaderUtils;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -106,7 +106,7 @@ public class LoadNetwork extends AbstractActionTool {
                     try {
                         NeoUtils.checkTransactionOnThread(null, "load1");
                         // TODO refactor
-                        if (NetworkFileType.RADIO_SECTOR == LoaderUtils.getFileType(filename).getLeft()) {
+                        if (NetworkFileType.RADIO_SECTOR == LoaderUiUtils.getFileType(filename).getLeft()) {
                             networkLoader = new NetworkLoader(new File(filename).getName(),filename, dlg.getParent().getDisplay());
                             networkLoader.setup();
                             SubMonitor monitor2 = SubMonitor.convert(monitor, 100);

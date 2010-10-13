@@ -55,7 +55,7 @@ import org.amanzi.neo.loader.sax_parsers.IXmlTag;
 import org.amanzi.neo.loader.sax_parsers.IXmlTagFactory;
 import org.amanzi.neo.loader.sax_parsers.PropertyCollector;
 import org.amanzi.neo.loader.sax_parsers.ReadContentHandler;
-import org.amanzi.neo.loader.ui.utils.LoaderUtils;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IAdaptable;
@@ -371,11 +371,11 @@ public class AMSXMLoader extends AbstractCallLoader {
     public void run(IProgressMonitor monitor) throws IOException {
         monitor.beginTask("Loading AMS data", 2);
         monitor.subTask("Searching for files to load");
-        List<File> allFiles = LoaderUtils.getAllFiles(directoryName, new FileFilter() {
+        List<File> allFiles = LoaderUiUtils.getAllFiles(directoryName, new FileFilter() {
 
             @Override
             public boolean accept(File pathname) {
-                return pathname.isDirectory() || LoaderUtils.getFileExtension(pathname.getName()).equalsIgnoreCase(".xml");
+                return pathname.isDirectory() || LoaderUiUtils.getFileExtension(pathname.getName()).equalsIgnoreCase(".xml");
             }
         });
 
@@ -421,7 +421,7 @@ public class AMSXMLoader extends AbstractCallLoader {
     
     @Override
     public void addLayersToMap() {
-        LoaderUtils.addAmsGisNodesToMap(getDataName(), gisNodes.get(networkName).getGis(), datasetGis, gisNodes.get(calldatasetName).getGis());
+        LoaderUiUtils.addAmsGisNodesToMap(getDataName(), gisNodes.get(networkName).getGis(), datasetGis, gisNodes.get(calldatasetName).getGis());
     }
 
     /**

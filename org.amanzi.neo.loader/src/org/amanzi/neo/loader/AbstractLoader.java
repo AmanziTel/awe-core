@@ -54,7 +54,7 @@ import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.ui.preferences.CommonCRSPreferencePage;
-import org.amanzi.neo.loader.ui.utils.LoaderUtils;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -1299,7 +1299,7 @@ public abstract class AbstractLoader {
      */
     protected void addRootToProject() {
         for (Node root : getRootNodes()) {
-            String aweProjectName = LoaderUtils.getAweProjectName();
+            String aweProjectName = LoaderUiUtils.getAweProjectName();
             if (root != null) {
                 NeoCorePlugin.getDefault().getProjectService().addDataNodeToProject(aweProjectName, root);
             }
@@ -1640,7 +1640,7 @@ public abstract class AbstractLoader {
      * @param gis node
      */
     public void addLayersToMap() {
-        LoaderUtils.addGisNodeToMap(getDataName(), getGisNodes().toArray(new Node[0]));
+        LoaderUiUtils.addGisNodeToMap(getDataName(), getGisNodes().toArray(new Node[0]));
     }
 
     protected String getDataName() {
