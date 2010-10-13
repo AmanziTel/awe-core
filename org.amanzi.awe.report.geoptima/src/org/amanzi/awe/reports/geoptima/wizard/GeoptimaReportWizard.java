@@ -41,7 +41,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.TEMSLoader;
-import org.amanzi.neo.loader.ui.utils.LoaderUtils;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
@@ -157,7 +157,7 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
                     monitor.beginTask("Add layers to map", filesCount);
                     IService curService;
                     try {
-                        curService = LoaderUtils.getMapService();
+                        curService = LoaderUiUtils.getMapService();
                         System.out.print("MapService " + curService);
                         IMap map = ApplicationGIS.getActiveMap();
                         // map.getBounds(null).init(120.848, 121.147, 14.641, 14.765);
@@ -176,7 +176,7 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
                             List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
                             Node gisNode = NeoUtils.getGisNodeByDataset(node);
                             System.out.println("gisNode " + gisNode);
-                            IGeoResource iGeoResource = LoaderUtils.getResourceForGis(curService, map, gisNode);
+                            IGeoResource iGeoResource = LoaderUiUtils.getResourceForGis(curService, map, gisNode);
                             System.out.println("iGeoResource " + iGeoResource);
                             if (iGeoResource != null) {
                                 listGeoRes.add(iGeoResource);
