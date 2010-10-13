@@ -29,7 +29,7 @@ import org.amanzi.neo.loader.PerformanceCountersLoader;
 import org.amanzi.neo.loader.grid.IDENLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
-import org.amanzi.neo.loader.ui.utils.LoaderUtils;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -128,11 +128,11 @@ public class GPEHImportWizard extends Wizard implements IImportWizard {
         if (!addToSelect || monitor.isCanceled()) {
             return;
         }
-        LinkedHashSet<Node> sets = LoaderUtils.getSelectedNodes(NeoServiceProvider.getProvider().getService());
+        LinkedHashSet<Node> sets = LoaderUiUtils.getSelectedNodes(NeoServiceProvider.getProvider().getService());
         for (Node node : rootNodes) {
             sets.add(node);
         }
-        LoaderUtils.storeSelectedNodes(sets);
+        LoaderUiUtils.storeSelectedNodes(sets);
     }
 
 }

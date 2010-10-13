@@ -19,7 +19,7 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.NetworkFileType;
 import org.amanzi.neo.loader.NetworkLoader;
 import org.amanzi.neo.loader.ProbeLoader;
-import org.amanzi.neo.loader.ui.utils.LoaderUtils;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -57,7 +57,7 @@ public class NetworkImportWizard extends Wizard implements IImportWizard {
                 NetworkLoader networkLoader;
                 try {
                     // TODO refactor
-                    if (NetworkFileType.RADIO_SECTOR == LoaderUtils.getFileType(mainPage.getFileName()).getLeft()) {
+                    if (NetworkFileType.RADIO_SECTOR == LoaderUiUtils.getFileType(mainPage.getFileName()).getLeft()) {
                         networkLoader = new NetworkLoader(new File(mainPage.getFileName()).getName(),mainPage.getFileName(), display);
                         networkLoader.setup();
                         networkLoader.run(monitor);

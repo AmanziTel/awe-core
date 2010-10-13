@@ -26,7 +26,7 @@ import org.amanzi.neo.core.utils.EditPropertiesPage;
 import org.amanzi.neo.core.utils.EditPropertiesPage.PropertyWrapper;
 import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.loader.AbstractLoader;
-import org.amanzi.neo.loader.ui.utils.LoaderUtils;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.statistic.IStatistic;
@@ -127,7 +127,7 @@ public class CreateNetworkWizard extends Wizard implements INewWizard {
                 DatasetService service = NeoServiceFactory.getInstance().getDatasetService();
                 String networkName=mainPage.getNetworkName();
                 List<INodeType> structure = mainPage.getStructure();
-                String projectName=LoaderUtils.getAweProjectName();
+                String projectName=LoaderUiUtils.getAweProjectName();
                 Node root = service.getRootNode(projectName, networkName, NodeTypes.NETWORK);
                 GisProperties gis=service.getGisNode(root);
                 gis.setCrs(mainPage.getSelectedCRS());

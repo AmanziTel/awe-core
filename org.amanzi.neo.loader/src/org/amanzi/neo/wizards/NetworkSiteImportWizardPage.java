@@ -30,7 +30,7 @@ import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.LoadNetwork;
 import org.amanzi.neo.loader.NeighbourLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
-import org.amanzi.neo.loader.ui.utils.LoaderUtils;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -248,7 +248,7 @@ public class NetworkSiteImportWizardPage extends WizardPage {
      *update file description
      */
     protected void updateLabelFileDescr() {
-        netwFile = LoaderUtils.getFileType(getFileName());
+        netwFile = LoaderUiUtils.getFileType(getFileName());
         NetworkFileType fileType = netwFile.getLeft();
         if (fileType!=null){
             networkType.setText(fileType.getId());
