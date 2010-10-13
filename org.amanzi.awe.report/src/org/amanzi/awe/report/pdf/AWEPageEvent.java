@@ -40,14 +40,16 @@ public class AWEPageEvent extends PdfPageEventHelper {
 
     public AWEPageEvent() {
         try {
-         final URL entry = FileLocator.toFileURL(Platform.getBundle(ReportPlugin.PLUGIN_ID).getEntry("icons/amanzi_tel_logo.png"));
-            logo=Image.getInstance(entry.getPath());
+            final URL entry = FileLocator.toFileURL(Platform.getBundle(ReportPlugin.PLUGIN_ID)
+                    .getEntry("icons/amanzi_tel_logo.png"));
+            logo = Image.getInstance(entry.getPath());
+            logo.setDpi(300, 300);
+            logo.scalePercent(72f / logo.getDpiX() * 100);
             logo.setAbsolutePosition(0, 0);
         } catch (Exception e) {
-           LOGGER.error(e);
+            LOGGER.error(e);
         }
-           
-       
+
     }
 
     @Override

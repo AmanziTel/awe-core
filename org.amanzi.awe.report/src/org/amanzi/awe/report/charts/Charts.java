@@ -15,6 +15,8 @@ package org.amanzi.awe.report.charts;
 
 import java.awt.Color;
 import java.awt.GradientPaint;
+import java.awt.Point;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -47,6 +49,14 @@ import org.jfree.chart.plot.PiePlot;
 import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.plot.dial.DialBackground;
+import org.jfree.chart.plot.dial.DialCap;
+import org.jfree.chart.plot.dial.DialPlot;
+import org.jfree.chart.plot.dial.DialTextAnnotation;
+import org.jfree.chart.plot.dial.DialValueIndicator;
+import org.jfree.chart.plot.dial.StandardDialFrame;
+import org.jfree.chart.plot.dial.StandardDialRange;
+import org.jfree.chart.plot.dial.StandardDialScale;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.category.CategoryItemRenderer;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
@@ -55,9 +65,12 @@ import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.Dataset;
 import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.data.general.ValueDataset;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.IntervalXYDataset;
 import org.jfree.data.xy.XYBarDataset;
+import org.jfree.ui.GradientPaintTransformType;
+import org.jfree.ui.StandardGradientPaintTransformer;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -194,7 +207,7 @@ public class Charts {
         rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 
         // disable bar outlines...
-        if (reportChart.getRenderer()!=null){
+        if (reportChart.getRenderer() != null) {
             plot.setRenderer((CategoryItemRenderer)reportChart.getRenderer());
         }
         BarRenderer renderer = (BarRenderer)plot.getRenderer();
@@ -347,8 +360,8 @@ public class Charts {
     public static void applyDefaultSettings(Plot plot, Dataset dataset, int dsNum) {
         if (plot instanceof XYPlot) {
             XYPlot xyplot = (XYPlot)plot;
-
-            xyplot.setDomainAxis(new DateAxis("Time"));
+            if (xyplot.getDomainAxis() == null)
+                xyplot.setDomainAxis(new DateAxis("Time"));
             xyplot.setDomainCrosshairVisible(true);
             xyplot.setDomainCrosshairLockedOnData(false);
             xyplot.setRangeCrosshairVisible(false);
@@ -368,9 +381,12 @@ public class Charts {
                 // } else if (dsNum == 2) {
                 // xyplot.getRenderer(2).setSeriesPaint(0, COLOR_RIGHT_PROPERTY);
                 // }
-                NumberAxis numberaxis = new NumberAxis("Value");
-                numberaxis.setAutoRangeIncludesZero(false);
-                xyplot.setRangeAxis(dsNum, numberaxis);
+                ValueAxis rangeAxis = xyplot.getRangeAxis();
+                if (rangeAxis == null) {
+                    rangeAxis = new NumberAxis("Value");
+                    ((NumberAxis)rangeAxis).setAutoRangeIncludesZero(false);
+                    xyplot.setRangeAxis(dsNum, rangeAxis);
+                }
                 xyplot.setRangeAxisLocation(dsNum, AxisLocation.BOTTOM_OR_LEFT);
                 xyplot.mapDatasetToRangeAxis(dsNum, dsNum);
             } else if (dataset instanceof EventDataset) {
@@ -439,13 +455,12 @@ public class Charts {
 
                 ValueAxis rangeAxis = xyplot.getRangeAxis();
                 if (rangeAxis == null) {
-                    NumberAxis numberaxis = new NumberAxis("Value");
-                    numberaxis.setAutoRangeIncludesZero(false);
-                    rangeAxis = numberaxis;
+                    rangeAxis = new NumberAxis("Value");
+                    ((NumberAxis)rangeAxis).setAutoRangeIncludesZero(false);
+                    xyplot.setRangeAxis(dsNum, rangeAxis);
+                    xyplot.setRangeAxisLocation(dsNum, AxisLocation.BOTTOM_OR_LEFT);
+                    xyplot.mapDatasetToRangeAxis(dsNum, dsNum);
                 }
-                xyplot.setRangeAxis(dsNum, rangeAxis);
-                xyplot.setRangeAxisLocation(dsNum, AxisLocation.BOTTOM_OR_LEFT);
-                xyplot.mapDatasetToRangeAxis(dsNum, dsNum);
             } else if (dataset instanceof EventDataset) {
                 EventDataset eventDataset = (EventDataset)dataset;
                 xyplot.setDataset(dsNum, eventDataset);
@@ -470,13 +485,17 @@ public class Charts {
                 rangeAxis.setVisible(true);
                 xyplot.setRangeAxis(dsNum, rangeAxis);
             }
+        } else if (plot instanceof DialPlot) {
+            DialPlot dialPlot = (DialPlot)plot;
+            applySettingsToDialPlot(dialPlot, (ValueDataset)dataset, "Value");
         }
     }
 
     public static void applyDefaultSettingsToPlot(Plot plot) {
         if (plot instanceof XYPlot) {
             XYPlot xyplot = (XYPlot)plot;
-            xyplot.setDomainAxis(new DateAxis("Time"));
+            if (xyplot.getDomainAxis() == null)
+                xyplot.setDomainAxis(new DateAxis("Time"));
             xyplot.setDomainCrosshairVisible(true);
             xyplot.setDomainCrosshairLockedOnData(false);
             xyplot.setRangeCrosshairVisible(false);
@@ -540,6 +559,7 @@ public class Charts {
             return Charts.createLineChart(chart);
         case TIME:
         case COMBINED:
+        case DIAL:
         default:
             return new JFreeChart(chart.getTitle(), null/* use default font */, chart.getPlot(), chart.isShowLegend());
         }
@@ -553,4 +573,60 @@ public class Charts {
         return ChartFactory.createPieChart3D("", ((PiePlot)chart.getPlot()).getDataset(), true, true, true);
     }
 
+    private static void applySettingsToDialPlot(DialPlot dialplot, ValueDataset dataset, String anno) {
+        dialplot.setView(0.0D, 0.0D, 1.0D, 1.0D);
+        dialplot.setDataset(0, dataset);
+        StandardDialFrame standarddialframe = new StandardDialFrame();
+        standarddialframe.setBackgroundPaint(Color.lightGray);
+        standarddialframe.setForegroundPaint(Color.darkGray);
+        dialplot.setDialFrame(standarddialframe);
+        GradientPaint gradientpaint = new GradientPaint(new Point(), new Color(255, 255, 255), new Point(),
+                new Color(170, 170, 220));
+        DialBackground dialbackground = new DialBackground(gradientpaint);
+        dialbackground.setGradientPaintTransformer(new StandardGradientPaintTransformer(GradientPaintTransformType.VERTICAL));
+        dialplot.setBackground(dialbackground);
+        DialTextAnnotation dialtextannotation = new DialTextAnnotation(anno);
+        // dialtextannotation.setFont(new Font("Dialog", 1, 14));
+        dialtextannotation.setRadius(0.69999999999999996D);
+        dialplot.addLayer(dialtextannotation);
+
+        DialValueIndicator dialvalueindicator = new DialValueIndicator(0);
+        // dialvalueindicator.setFont(new Font("Dialog", 0, 10));
+        dialvalueindicator.setOutlinePaint(Color.darkGray);
+        dialvalueindicator.setNumberFormat(new DecimalFormat("#0.0"));
+        dialplot.addLayer(dialvalueindicator);
+
+        double value = dataset.getValue().doubleValue();
+        int scaleFactor = value <= 10D ? 1 : 10;
+
+        StandardDialScale standarddialscale = new StandardDialScale(0D, 10D * scaleFactor, -120D, -300D, 1D * scaleFactor, 4);
+        standarddialscale.setTickRadius(0.88D);
+        standarddialscale.setTickLabelOffset(0.14999999999999999D);
+        standarddialscale.setTickLabelFormatter(new DecimalFormat("#"));
+        // standarddialscale.setTickLabelFont(new Font("Dialog", 0, 14));
+        dialplot.addScale(0, standarddialscale);
+        standarddialscale.setMinorTickPaint(Color.red);
+
+        // standarddialscale1.setTickLabelFont(new Font("Dialog", 0, 10));
+        dialplot.mapDatasetToScale(0, 0);
+
+        StandardDialRange standarddialrange = new StandardDialRange(0D, 2D* scaleFactor, Color.green);
+        standarddialrange.setScaleIndex(0);
+        StandardDialRange standarddialrange1 = new StandardDialRange(2D* scaleFactor, 5D* scaleFactor, Color.yellow);
+        standarddialrange.setScaleIndex(0);
+        StandardDialRange standarddialrange2 = new StandardDialRange(5D* scaleFactor, 10D * scaleFactor, Color.red);
+        standarddialrange.setScaleIndex(0);
+
+        dialplot.addLayer(standarddialrange);
+        dialplot.addLayer(standarddialrange1);
+        dialplot.addLayer(standarddialrange2);
+//        org.jfree.chart.plot.dial.DialPointer.Pin pin = new org.jfree.chart.plot.dial.DialPointer.Pin(1);
+//        pin.setRadius(0.55000000000000004D);
+//        dialplot.addPointer(pin);
+        org.jfree.chart.plot.dial.DialPointer.Pointer pointer = new org.jfree.chart.plot.dial.DialPointer.Pointer(0);
+        dialplot.addPointer(pointer);
+        DialCap dialcap = new DialCap();
+        dialplot.setCap(dialcap);
+
+    }
 }

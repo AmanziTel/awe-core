@@ -9,7 +9,7 @@ import org.osgi.framework.BundleContext;
 public class GeoptimaReportsPlugin extends AbstractUIPlugin {
 
 	// The plug-in ID
-	public static final String PLUGIN_ID = "org.amanzi.awe.reports.geoptima";
+	public static final String PLUGIN_ID = "org.amanzi.awe.report.geoptima";
 
 	// The shared instance
 	private static GeoptimaReportsPlugin plugin;

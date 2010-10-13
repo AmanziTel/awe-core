@@ -27,6 +27,9 @@ Require-Bundle: org.eclipse.ui,
  com.lowagie.itext
 Eclipse-LazyStart: true
 Export-Package: org.amanzi.awe.report,
+ org.amanzi.awe.report.charts,
  org.amanzi.awe.report.editor,
  org.amanzi.awe.report.model,
- org.amanzi.awe.report.util
+ org.amanzi.awe.report.pdf,
+ org.amanzi.awe.report.util,
+ org.amanzi.awe.report.wizards

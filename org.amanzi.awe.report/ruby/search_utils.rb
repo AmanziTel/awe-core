@@ -38,6 +38,7 @@ class SearchQuery
   def each
     configure_traverser
     @traverser.each do |node|
+#      puts "#{node[:type]} ->#{node[:name]} ->#{node.props}"
       result=Hash.new
 #      puts @properties.class
       if @properties.is_a? Hash

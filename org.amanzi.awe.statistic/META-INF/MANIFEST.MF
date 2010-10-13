@@ -7,8 +7,16 @@ Bundle-Activator: org.amanzi.awe.statistic.StatisticPlugin
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.amanzi.neo.core;bundle-version="1.0.0",
- org.neo4j;bundle-version="1.0.0"
+ org.neo4j;bundle-version="1.0.0",
+ org.jruby
 Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Export-Package: org.amanzi.awe.statistic
+Export-Package: org.amanzi.awe.statistic,
+ org.amanzi.awe.statistics.builder,
+ org.amanzi.awe.statistics.database,
+ org.amanzi.awe.statistics.database.entity,
+ org.amanzi.awe.statistics.engine,
+ org.amanzi.awe.statistics.functions,
+ org.amanzi.awe.statistics.template,
+ org.amanzi.awe.statistics.time
 Bundle-Vendor: org.amanzi

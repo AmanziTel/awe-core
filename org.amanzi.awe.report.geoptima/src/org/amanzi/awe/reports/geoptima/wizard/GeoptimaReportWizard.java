@@ -32,6 +32,7 @@ import net.refractions.udig.project.internal.render.ViewportModel;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.report.model.ReportModel;
+import org.amanzi.awe.report.wizards.SelectDataPage;
 import org.amanzi.awe.reports.geoptima.GeoptimaReportsPlugin;
 import org.amanzi.awe.views.reuse.Distribute;
 import org.amanzi.awe.views.reuse.Select;
@@ -108,7 +109,7 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
             URL scriptURL = FileLocator.toFileURL(GeoptimaReportsPlugin.getDefault().getBundle().getEntry("ruby/automation.rb"));
             String path = scriptURL.getPath();
             reportModel = new ReportModel(new String[] {FileLocator.resolve(entry).getFile()}, new String[] {path});
-        } catch (IOException e1) {
+        } catch (Exception e1) {
             // TODO Handle IOException
             e1.printStackTrace();
             throw (RuntimeException)new RuntimeException().initCause(e1);
@@ -250,24 +251,39 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
                         // String[] fields =
                         // PropertyHeader.getPropertyStatistic(node).getNumericFields(NodeTypes.M.getId());
 
-                        for (String field : fields) {
-                            updateMessage("Dataset (" + i + " of " + filesCount + "):\n" + datasetName
-                                    + "\nBuiding statistics for '" + field);
-                            ReuseAnalyserModel model = new ReuseAnalyserModel(new HashMap<String, String[]>(),
-                                    getPropertyReturnableEvaluator(node), service);
-                            Transaction tx = NeoUtils.beginTransaction();
-                            try {
-                                model.setCurrenTransaction(tx);
-                                model.findOrCreateAggregateNode(node, field, false, Distribute.AUTO.toString(), Select.EXISTS
-                                        .toString(), monitor);
-                                tx = model.getCurrenTransaction();
-                                tx.success();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            } finally {
-                                monitor.done();
-                                tx.finish();
-                            }
+//                        for (String field : fields) {
+//                            updateMessage("Dataset (" + i + " of " + filesCount + "):\n" + datasetName
+//                                    + "\nBuiding statistics for '" + field);
+//                            ReuseAnalyserModel model = new ReuseAnalyserModel(new HashMap<String, String[]>(),
+//                                    getPropertyReturnableEvaluator(node), service);
+//                            Transaction tx = NeoUtils.beginTransaction();
+//                            try {
+//                                model.setCurrenTransaction(tx);
+//                                model.findOrCreateAggregateNode(node, field, false, Distribute.AUTO.toString(), Select.EXISTS
+//                                        .toString(), monitor);
+//                                tx = model.getCurrenTransaction();
+//                                tx.success();
+//                            } catch (Exception e) {
+//                                e.printStackTrace();
+//                            } finally {
+//                                monitor.done();
+//                                tx.finish();
+//                            }
+//                        }
+                        ReuseAnalyserModel model = new ReuseAnalyserModel(new HashMap<String, String[]>(),
+                                getPropertyReturnableEvaluator(node), service);
+                        Transaction tx = NeoUtils.beginTransaction();
+                        try {
+                            model.setCurrenTransaction(tx);
+                            model.findOrCreateAggregateNode(node, "event_id", true, Distribute.AUTO.toString(), Select.EXISTS
+                                    .toString(), monitor);
+                            tx = model.getCurrenTransaction();
+                            tx.success();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        } finally {
+                            monitor.done();
+                            tx.finish();
                         }
                     }
                 }

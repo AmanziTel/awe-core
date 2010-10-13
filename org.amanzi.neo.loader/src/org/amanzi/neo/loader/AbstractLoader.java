@@ -113,7 +113,7 @@ public abstract class AbstractLoader {
     public static final Class[] NUMERIC_PROPERTY_TYPES = new Class[] {Integer.class, Long.class, Float.class, Double.class};
     @SuppressWarnings("unchecked")
     public static final Class[] KNOWN_PROPERTY_TYPES = new Class[] {Integer.class, Long.class, Float.class, Double.class, String.class};
-    private boolean indexesInitialized = false;
+    protected boolean indexesInitialized = false;
     private boolean taskSetted;
 
     protected CSVParser parser;
@@ -733,7 +733,7 @@ public abstract class AbstractLoader {
 
     protected final void addIdentityHeaders(Integer headerMapId, Collection<String> keys) {
         HeaderMaps headerMap = getHeaderMap(headerMapId);
-        headerMap.dropStatsHeaders.addAll(keys);
+        headerMap.dropStatsHeaders.removeAll(keys);
         headerMap.nonDataHeaders.addAll(keys);
         headerMap.identityHeaders.addAll(keys);
     }
@@ -1003,7 +1003,8 @@ public abstract class AbstractLoader {
         Header header = headers.get(key);
         if (header == null) {
             header = new Header(key, key, 1);
-
+            //TODO Pechko_E check loaders
+            header.isIdentityHeader = getHeaderMap(1).identityHeaders.contains(key);
             headers.put(key, header);
         }
         Object value = header.parse(nonParsedValue);

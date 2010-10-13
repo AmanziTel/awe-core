@@ -35,6 +35,7 @@ import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.internal.DynamicNodeType;
 import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Relationship;
@@ -59,6 +60,21 @@ import com.vividsolutions.jts.util.Assert;
  * @since 1.0.0
  */
 public class DatasetService extends AbstractService {
+
+    /**
+     * 
+     */
+    public DatasetService() {
+        super();
+    }
+
+    /**
+     * @param databaseService
+     */
+    public DatasetService(GraphDatabaseService databaseService) {
+        super(databaseService);
+    }
+
 
     /** String DYNAMIC_TYPES field. */
     private static final String DYNAMIC_TYPES = "dynamic_types";

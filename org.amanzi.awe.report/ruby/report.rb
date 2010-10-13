@@ -11,7 +11,6 @@ require "ruby/style"
 require 'ruby/search_utils'
 require "initKpi"
 
-
 include_class org.amanzi.neo.core.database.nodes.CellID
 include_class org.amanzi.neo.core.service.NeoServiceProvider
 
@@ -30,6 +29,7 @@ include_class org.amanzi.awe.report.pdf.PDFPrintingEngine
 
 include_class "java.text.SimpleDateFormat"
 include_class org.jfree.data.category.DefaultCategoryDataset;
+include_class org.jfree.data.general.DefaultValueDataset
 include_class org.jfree.data.xy.XYSeries
 include_class org.jfree.data.xy.XYSeriesCollection
 include_class org.jfree.data.xy.XYBarDataset
@@ -508,6 +508,7 @@ class Chart
   attr_accessor :dataset, :properties, :aggregation, :kpi
   attr_accessor :renderer
   attr_writer :data, :time, :threshold, :threshold_label
+  attr_writer :value
   def initialize(title)
     @datasets=[]
     self.title = title
@@ -599,82 +600,116 @@ class Chart
         ds=DefaultCategoryDataset.new()
         @datasets<<update_chart_dataset(ds,@kpi,"value")
       elsif !@data.nil?
-        ds=TimeSeriesCollection.new()
-        if @values.is_a? String
-          ds_series=TimeSeries.new(@values)
-        elsif @values.is_a? Array
-          ds_series=[]
-          @values.each {|val| ds_series<<TimeSeries.new(val)}
-        end
-        if !@threshold.nil?
-          ds_time=TimeSeriesCollection.new()
-          ds_time_series=TimeSeries.new(!@threshold_label.nil? ? @threshold_label : "Threshold")
-        end
-
-        @data.each do |row|
-          if !row[@time].nil?
-            time=java.util.Date.new(row[@time])
-            if @aggregation==:hourly
-              date=Hour.new(time)
-            elsif @aggregation==:daily
-              date=Day.new(time)
-            elsif @aggregation==:minutely
-              date=Minute.new(time)
-            elsif @aggregation==:weekly
-              date=Week.new(time)
-            elsif @aggregation==:monthly
-              date=Month.new(time)
-            end
+        if @type==:dial
+          begin
+            puts "dial"
+            ds=DefaultValueDataset.new()
+            ds.setValue(java.lang.Double.new(@data.to_s))
+            @datasets<<ds
+            puts "ds added"
+          rescue=>e
+            puts "#{e}\n#{e.backtrace}"
           end
-          if @values.is_a? String
-            ds_series.add(date, java.lang.Double.parseDouble(row[@values].to_s)) if !row[@time].nil? and !row[@values].nil?
-          elsif @values.is_a? Array
-            @values.each_with_index do |val,i|
-              ds_series[i].add(date, java.lang.Double.parseDouble(row[val].to_s))
-            end
-          end
-          #          ds_series.add(date, java.lang.Double.parseDouble(row[@values].to_s)) if !row[@time].nil? and !row[@values].nil?
-          ds_time_series.add(date, @threshold) if !@threshold.nil? and !row[@time].nil?
-        end
-        if @values.is_a? String
-          ds.addSeries(ds_series)
-        elsif @values.is_a? Array
-          ds_series.each do |series|
-            ds.addSeries(series)
-          end
-        end
-        #        ds.addSeries(ds_series)
-        if !@threshold.nil?
-          ds_time.addSeries(ds_time_series)
-          @datasets<<ds_time
-        end
-        if @aggregation==:hourly
-          width=1000*60*60*0.5
-        elsif @aggregation==:daily
-          width=1000*60*60*24*0.5
-        elsif @aggregation==:weekly
-          width=1000*60*60*24*7*0.5
-        elsif @aggregation==:monthly
-          width=1000*60*60*24*7*4*0.5
         else
-          width=0.5
-        end
-        xybardataset=XYBarDataset.new(ds,width)
-        @datasets<<XYBarDataset.new(ds,width)
-      end
+          ds= TimeSeriesCollection.new()
+          if @values.is_a? String
+            ds_series=TimeSeries.new(@values)
+          elsif @values.is_a? Array
+            ds_series=[]
+            @values.each {|val| ds_series<<TimeSeries.new(val)}
+          end
+          if !@threshold.nil?
+            ds_time=TimeSeriesCollection.new()
+            ds_time_series=TimeSeries.new(!@threshold_label.nil? ? @threshold_label : "Threshold")
+          end
 
+          @data.each do |row|
+            #          puts "aggregation #{@aggregation} time #{row[@time]} threshold #{@threshold};"
+            #          puts "#{row.keys.join(".\t")}"
+            #          puts "#{row.values.join("\t")}"
+            if !row[@time].nil?
+              time=java.util.Date.new(row[@time])
+              if @aggregation==:hourly
+                date=Hour.new(time)
+              elsif @aggregation==:daily
+                date=Day.new(time)
+              elsif @aggregation==:minutely
+                date=Minute.new(time)
+              elsif @aggregation==:weekly
+                date=Week.new(time)
+              elsif @aggregation==:monthly
+                date=Month.new(time)
+              end
+            end
+            begin
+              if @values.is_a? String
+                #              puts "added: #{date}\t#{row[@time]}\t#{row[@values].to_s}"
+                ds_series.add(date, java.lang.Double.parseDouble(row[@values].to_s)) if !row[@time].nil? and !row[@values].nil?
+              elsif @values.is_a? Array
+                @values.each_with_index do |val,i|
+                  ds_series[i].add(date, java.lang.Double.parseDouble(row[val].to_s))
+                end
+              end
+              ds_time_series.add(date, @threshold) if !@threshold.nil? and !row[@time].nil?
+            rescue=>e
+              puts "#{e}\n"
+            end
+            #          ds_series.add(date, java.lang.Double.parseDouble(row[@values].to_s)) if !row[@time].nil? and !row[@values].nil?
+          end
+          #        puts "addingg values ds"
+          if @values.is_a? String
+            ds.addSeries(ds_series)
+          elsif @values.is_a? Array
+            ds_series.each do |series|
+              ds.addSeries(series)
+            end
+          end
+          #        puts "addingg threshold ds"
+          #        ds.addSeries(ds_series)
+          if !@threshold.nil?
+            ds_time.addSeries(ds_time_series)
+            @datasets<<ds_time
+          end
+          if @aggregation==:hourly
+            width=1000*60*60*0.5
+          elsif @aggregation==:daily
+            width=1000*60*60*24*0.5
+            puts " @aggregation daily"
+          elsif @aggregation==:weekly
+            width=1000*60*60*24*7*0.5
+          elsif @aggregation==:monthly
+            width=1000*60*60*24*7*4*0.5
+          else
+            width=0.5
+          end
+          #        puts "Creating chart dataset @type #{@type} @aggregation #{@aggregation}"
+          if @type==:combined
+            @datasets<<XYBarDataset.new(ds,width)
+          else
+            @datasets<<ds
+          end
+        end
+      end
       if @type==:time
         plot=Java::org.jfree.chart.plot.XYPlot.new
-        #        plot.setDomainAxis(createDateAxis(nil,@aggregation)) if @aggregation
+        plot.setDomainAxis(createDateAxis(@range_axis_ticks,@aggregation)) if @aggregation
         for i in 0..@datasets.size-1
           puts "i=#{i} #{@datasets[i]}" #TODO delete debug info
-          Charts.applyDefaultSettings(plot,@datasets[i],i)
+          Charts.applyDefaultSettingsToDataset(plot,@datasets[i],i)
         end
         Charts.applyMainVisualSettings(plot, getRangeAxisLabel(),getDomainAxisLabel(),getOrientation())
       elsif @type==:bar
         plot=Java::org.jfree.chart.plot.CategoryPlot.new
         plot.setRenderer(@renderer) if @renderer
         plot.setDataset(@datasets[0])
+      elsif @type==:dial
+        puts "trying to create plot"
+        plot=Java::org.jfree.chart.plot.dial.DialPlot.new
+        puts "plot created"
+        plot.setDataset(@datasets[0])
+        puts "trying to apply settings to plot"
+        Charts.applyDefaultSettingsToDataset(plot,@datasets[0],0)
+        puts "settings applied"
       elsif @type==:combined
         plot=Java::org.jfree.chart.plot.XYPlot.new
         #        date_axis=DateAxis.new("Date")
@@ -695,6 +730,7 @@ class Chart
         end
         Charts.applyMainVisualSettings(plot, getRangeAxisLabel(),getDomainAxisLabel(),getOrientation())
       end
+      #      puts "set plot"
       setPlot(plot)
     }
     self

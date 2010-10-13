@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.reports.geoptima.wizard;
+package org.amanzi.awe.report.wizards;
 
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.FileFieldEditor;
@@ -36,7 +36,7 @@ public class SelectDataPage extends WizardPage {
     private static final String SELECT_DIRECTORY = "Select directory";
     private DirectoryFieldEditor directoryFieldEditor;
 
-    protected SelectDataPage(String pageName) {
+    public SelectDataPage(String pageName) {
         super(pageName);
     }
 
