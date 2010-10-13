@@ -58,6 +58,7 @@
     <module>org.amanzi.integrator.awe</module>
     <module>org.amanzi.integrator.rdt</module>
     <module>org.amanzi.neo.core</module>
+    <module>org.amanzi.neo.db</module>
     <module>org.amanzi.neo.loader</module>
     <module>org.amanzi.neo.loader.core</module>
     <module>org.amanzi.neo.loader.ui</module>
