@@ -163,7 +163,7 @@ public class GridReportWizard extends Wizard implements IWizard {
                             int i = 0;
                             for (Pair<String, DefaultValueDataset> pair : datasets) {
                                 addDialChart(report, pair.l(), pair.r());
-                                if (++i> 10) {
+                                if (++i >= 10) {
                                     break;
                                 }
                             }
@@ -397,11 +397,12 @@ public class GridReportWizard extends Wizard implements IWizard {
 
             @Override
             public void run() {
-                isExportToPdfRequired = viewResultPage.isExportToPdfRequired();
-                isExportToXlsRequired = viewResultPage.isExportToXlsRequired();
-                is10WorstSitesReportRequired = viewResultPage.is10WorstSitesReportRequired();
                 directory = loadDataPage.getDirectory();
                 outputDirectory = loadDataPage.getOutputDirectory();
+
+                isExportToPdfRequired = loadDataPage.isExportToPdfRequired();
+                isExportToXlsRequired = loadDataPage.isExportToXlsRequired();
+                is10WorstSitesReportRequired = viewResultPage.is10WorstSitesReportRequired();
                 aggregation = loadDataPage.getAggregation();
                 chartType = viewResultPage.getChartType();
                 kpi = viewResultPage.getKpi();
@@ -481,8 +482,8 @@ public class GridReportWizard extends Wizard implements IWizard {
                 chart.setChartType(chartType);
                 chart.setDomainAxisLabel("Value");
                 chart.setRangeAxisLabel("Time");
-                chart.setWidth(250);
-                chart.setHeight(250);
+                chart.setWidth(400);
+                chart.setHeight(300);
                 TimeSeries[] series = e.getValue();
                 switch (chartType) {
                 case COMBINED:

@@ -13,7 +13,6 @@
 
 package org.amanzi.awe.report.grid.wizards;
 
-import org.amanzi.awe.report.charts.ChartType;
 import org.amanzi.awe.report.pdf.PDFPrintingEngine;
 import org.amanzi.awe.statistic.CallTimePeriods;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
@@ -37,11 +36,17 @@ public class GridWizardPageStep1 extends WizardPage {
 
     private static final String SELECT_DIRECTORY = "Select directory";
     private static final String SELECT_OUTPUT_DIRECTORY = "Select output directory";
+
+    private static final String EXPORT_STATISTICS_TO_EXCEL = "Export KPIs to Excel";
+    private static final String EXPORT_STATISTICS_TO_PDF = "Export KPIs to PDF";
     private static final String DAILY = "daily";
     private static final String HOURLY = "hourly";
     private static final String SELECT_AGGREGATION = "Select aggregation:";
 
-       private Button btnHourly;
+    private Button btnXLS;
+    private Button btnPDF;
+
+    private Button btnHourly;
     private Button btnDaily;
     private DirectoryFieldEditor directoryFieldEditor;
     private DirectoryFieldEditor outputDirectotyEditor;
@@ -87,8 +92,21 @@ public class GridWizardPageStep1 extends WizardPage {
         btnDaily = new Button(aggregationTypeGroup, SWT.RADIO);
         btnDaily.setText(DAILY);
         btnDaily.setLayoutData(new GridData());
+        Composite settings = new Composite(container, SWT.NONE);
+        gd = new GridData();
+        gd.horizontalSpan = 4;
+        settings.setLayoutData(gd);
+        settings.setLayout(new GridLayout());
 
-        
+        btnXLS = new Button(settings, SWT.CHECK);
+        btnXLS.setText(EXPORT_STATISTICS_TO_EXCEL);
+        btnXLS.setSelection(true);
+        btnXLS.setLayoutData(new GridData());
+
+        btnPDF = new Button(settings, SWT.CHECK);
+        btnPDF.setText(EXPORT_STATISTICS_TO_PDF);
+        btnPDF.setLayoutData(new GridData());
+
         setPageComplete(false);
         setControl(container);
     }
@@ -125,6 +143,22 @@ public class GridWizardPageStep1 extends WizardPage {
         }
     }
 
-   
+    /**
+     * Is export to Excel required
+     * 
+     * @return true if export to XLS is required
+     */
+    public boolean isExportToXlsRequired() {
+        return btnXLS.getSelection();
+    }
+
+    /**
+     * Is export to PDF required
+     * 
+     * @return true if export to PDF is required
+     */
+    public boolean isExportToPdfRequired() {
+        return btnPDF.getSelection();
+    }
 
 }

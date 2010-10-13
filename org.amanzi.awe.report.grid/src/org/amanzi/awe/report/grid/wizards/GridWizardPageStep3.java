@@ -40,13 +40,11 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
-import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.plot.dial.DialPlot;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYBarDataset;
-import org.jfree.data.xy.XYDataset;
 import org.jfree.experimental.chart.swt.ChartComposite;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
@@ -54,8 +52,6 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Traverser.Order;
-
-import com.google.protobuf.DescriptorProtos.FieldOptions.CType;
 
 /**
  * TODO Purpose of
@@ -68,8 +64,6 @@ import com.google.protobuf.DescriptorProtos.FieldOptions.CType;
 public class GridWizardPageStep3 extends WizardPage {
     private static final String SELECT_SITE = "Select site:";
     private static final String TEN_WORST_SITES_REPORT = "Create PDF report for 10 worst sites";
-    private static final String EXPORT_STATISTICS_TO_EXCEL = "Export KPIs to Excel";
-    private static final String EXPORT_STATISTICS_TO_PDF = "Export KPIs to PDF";
     private static final String SELECT_KPI = "Select KPI:";
     private static final String EXPORT_CHART_TO_PDF = "Export chart";
     private static final String SELECT_CHART_TYPE = "Select chart type:";
@@ -79,10 +73,8 @@ public class GridWizardPageStep3 extends WizardPage {
     private Button btnBar;
     private Button btnLine;
     private Button btnDial;
-
-    private Button btnXLS;
-    private Button btnPDF;
     private Button btn10Worst;
+
     private JFreeChart jfreechart;
     private Combo cmbSites;
     private Composite container;
@@ -182,15 +174,6 @@ public class GridWizardPageStep3 extends WizardPage {
             }
         });
 
-        btnXLS = new Button(settings, SWT.CHECK);
-        btnXLS.setText(EXPORT_STATISTICS_TO_EXCEL);
-        btnXLS.setSelection(true);
-        btnXLS.setLayoutData(new GridData());
-
-        btnPDF = new Button(settings, SWT.CHECK);
-        btnPDF.setText(EXPORT_STATISTICS_TO_PDF);
-        btnPDF.setLayoutData(new GridData());
-
         btn10Worst = new Button(settings, SWT.CHECK);
         btn10Worst.setText(TEN_WORST_SITES_REPORT);
         btn10Worst.setLayoutData(new GridData());
@@ -213,33 +196,6 @@ public class GridWizardPageStep3 extends WizardPage {
         System.out.println("Chart was exported in " + (System.currentTimeMillis() - t) / 1000 + " seconds");
     }
 
-    /**
-     * Is export to Excel required
-     * 
-     * @return true if export to XLS is required
-     */
-    public boolean isExportToXlsRequired() {
-        return btnXLS.getSelection();
-    }
-
-    /**
-     * Is export to PDF required
-     * 
-     * @return true if export to PDF is required
-     */
-    public boolean isExportToPdfRequired() {
-        return btnPDF.getSelection();
-    }
-
-    /**
-     * Is export to PDF of 10 worst sites results required
-     * 
-     * @return true if export to PDF of 10 worst sites results is required
-     */
-    public boolean is10WorstSitesReportRequired() {
-        return btn10Worst.getSelection();
-    }
-
     @Override
     public void setVisible(boolean visible) {
         if (visible) {
@@ -260,6 +216,15 @@ public class GridWizardPageStep3 extends WizardPage {
             container.pack();
         }
         super.setVisible(visible);
+    }
+
+    /**
+     * Is export to PDF of 10 worst sites results required
+     * 
+     * @return true if export to PDF of 10 worst sites results is required
+     */
+    public boolean is10WorstSitesReportRequired() {
+        return btn10Worst.getSelection();
     }
 
     /**
