@@ -22,6 +22,7 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.EditPropertiesPage.PropertyWrapper;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.IndexManager;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
@@ -65,6 +66,7 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
             // TODO if SECTOR created need to increeas
 
             // Creating new node
+            DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
             GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
             Transaction tx = service.beginTx();
             try {
@@ -83,11 +85,13 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
                 // }
                 IPropertyHeader ph = PropertyHeader.getPropertyStatistic(NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId()));
                 List<PropertyWrapper> properties = page.getProperties();
+                IndexManager indexManader = ds.getIndexManader(ds.findRootByChild(targetNode));
                 for (PropertyWrapper propertyWrapper : properties) {
                     targetNode.setProperty(propertyWrapper.getName(), propertyWrapper.getParsedValue());
                     ph.updateStatistic(iNodeType.getId(), propertyWrapper.getName(), propertyWrapper.getParsedValue(), null);
+                    indexManader.updateIndexes(targetNode, propertyWrapper.getName(), null);
                 }
-
+                
                 tx.success();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -95,9 +99,7 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
             } finally {
                 tx.finish();
             }
-
             // Change structure
-            DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
             INodeType sourceType = ds.getNodeType(sourceNode);
 
             List<INodeType> structureTypes = ds.getSructureTypes(sourceNode);
