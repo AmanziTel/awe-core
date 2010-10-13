@@ -51,7 +51,7 @@ import org.amanzi.neo.loader.RomesLoader;
 import org.amanzi.neo.loader.TEMSLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
-import org.amanzi.neo.loader.ui.utils.LoaderUtils;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.loader.ui.utils.dialogs.DateTimeDialogWithToggle;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -786,11 +786,11 @@ public class DriveDialog {
         if (!addToSelect||monitor.isCanceled()){
             return;
         }
-        LinkedHashSet<Node> sets = LoaderUtils.getSelectedNodes(NeoServiceProvider.getProvider().getService());
+        LinkedHashSet<Node> sets = LoaderUiUtils.getSelectedNodes(NeoServiceProvider.getProvider().getService());
         for (Node node : rootNodes) {
             sets.add(node);
         }
-        LoaderUtils.storeSelectedNodes(sets);
+        LoaderUiUtils.storeSelectedNodes(sets);
     }
     /**
      * Gets Data of TEMS file

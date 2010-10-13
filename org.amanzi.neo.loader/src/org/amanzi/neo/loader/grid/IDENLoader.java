@@ -42,7 +42,7 @@ import org.amanzi.neo.loader.DriveLoader;
 import org.amanzi.neo.loader.UncompressInputStream;
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
-import org.amanzi.neo.loader.ui.utils.LoaderUtils;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.apache.commons.lang.StringUtils;
@@ -230,7 +230,7 @@ public class IDENLoader extends DriveLoader {
                 addDriveIndexes();
                 initializeIndexes();
               
-                root = service.getRootNode(LoaderUtils.getAweProjectName(), basename, NodeTypes.OSS);
+                root = service.getRootNode(LoaderUiUtils.getAweProjectName(), basename, NodeTypes.OSS);
                 monitor.subTask("Load " + name);
                 lastMNode = null;
                 parent = service.findFileNode(root, path);

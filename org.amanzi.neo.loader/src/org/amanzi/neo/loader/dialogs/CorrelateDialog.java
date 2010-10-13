@@ -24,7 +24,7 @@ import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.correlate.AMSCorrellator;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
-import org.amanzi.neo.loader.ui.utils.LoaderUtils;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -211,7 +211,7 @@ public class CorrelateDialog {
     
                         @Override
                         public void run() {
-                            LoaderUtils.addGisNodeToMap(firstDataset, NeoUtils.findGisNode(firstDataset));
+                            LoaderUiUtils.addGisNodeToMap(firstDataset, NeoUtils.findGisNode(firstDataset));
                         }
                     }, true);
                     return Status.OK_STATUS;

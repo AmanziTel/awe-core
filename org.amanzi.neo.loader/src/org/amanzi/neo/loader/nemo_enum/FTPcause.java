@@ -23,6 +23,7 @@ import java.util.Random;
  * @author Saelenchits_N
  * @since 1.0.0
  */
+@Deprecated
 public enum FTPcause {
     
     /** The TIMEOUT. */

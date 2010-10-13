@@ -20,6 +20,7 @@ package org.amanzi.neo.loader.nemo_enum;
  * @author Shcharbatsevich_A
  * @since 1.0.0
  */
+@Deprecated
 public enum TechnologySystems {
 
     GSM(1,"GSM"),

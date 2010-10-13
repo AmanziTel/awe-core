@@ -23,6 +23,7 @@ import java.util.Random;
  * @author Saelenchits_N
  * @since 1.0.0
  */
+@Deprecated
 public enum ApplicationProtocol {
 
     NEMO_MODEM(0, "Nemo protocol using modem connection"), NEMO_TCP(1, "Nemo protocol using TCP"), NEMO_UPD(2, "Nemo protocol using UPD"), FTP(3, "FTP"), HTTP(4, "HTTP"), SMTP(5,
