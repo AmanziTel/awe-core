@@ -38,6 +38,7 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.traversal.PruneEvaluator;
@@ -155,7 +156,7 @@ public class DatasetService extends AbstractService {
      * @param node the node
      * @return the node type
      */
-    public INodeType getNodeType(Node node) {
+    public INodeType getNodeType(PropertyContainer node) {
         String typeId = getType(node);
         return getNodeType(typeId);
     }
@@ -208,7 +209,7 @@ public class DatasetService extends AbstractService {
      * @param node the node
      * @return the type
      */
-    protected String getType(Node node) {
+    protected String getType(PropertyContainer node) {
         return (String)node.getProperty("type", null);
     }
 

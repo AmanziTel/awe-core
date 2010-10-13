@@ -40,9 +40,9 @@ public class IndexManager {
 
     /** The root. */
     private final Node root;
-    private DatasetService service;
-    private IndexService index;
-    private String name;
+    private final DatasetService service;
+    private final IndexService index;
+    private final String name;
 
     /**
      * Instantiates a new index manager.
@@ -142,7 +142,17 @@ public class IndexManager {
                 return false;
             }
             String idName = getLuceneIndexKeyByProperty(type, propertyName);
-            if (oldValue == null || oldValue.equals(value)) {
+            if (oldValue==null){
+                if (value==null){
+                    return false;
+                }
+                if (needLuceneIndex(container,propertyName)){
+                    index.index(node, idName, value);
+                    return true;
+                }
+                return false;
+            }
+            if ( oldValue.equals(value)) {
                 return false;
             }
             boolean indexPr = false;
@@ -162,6 +172,21 @@ public class IndexManager {
 
         return false;
     };
+
+    /**
+     *
+     * @param container
+     * @param propertyName
+     * @return
+     */
+    private boolean needLuceneIndex(PropertyContainer container, String propertyName) {
+        INodeType type = service.getNodeType(container);
+        if(INeoConstants.PROPERTY_NAME_NAME.equals(propertyName))
+        if(NodeTypes.SECTOR == type){
+            
+        }
+        return false;
+    }
 
     public String getLuceneIndexKeyByProperty(INodeType type, String propertyName) {
         return NeoUtils.getLuceneIndexKeyByProperty(root, propertyName, type);

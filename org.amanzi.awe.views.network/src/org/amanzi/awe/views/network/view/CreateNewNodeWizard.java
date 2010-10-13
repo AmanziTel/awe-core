@@ -15,6 +15,8 @@ package org.amanzi.awe.views.network.view;
 
 import java.util.List;
 
+import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
+import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEvent;
 import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
@@ -125,6 +127,10 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
             e.printStackTrace();
             return false;
         }
+        //TODO need to use service for updating layer
+        Node gisNode = NeoUtils.findGisNodeByChild(sourceNode);
+        NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(new UpdateLayerEvent(gisNode));
+        
         System.out.println("\nOK\n");
         return true;
     }
