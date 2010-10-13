@@ -50,6 +50,7 @@ import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.core.utils.CSVParser;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
@@ -77,7 +78,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 
-public class LoaderUtils {
+public class LoaderUiUtils extends LoaderUtils{
     /**
      * return AWE project name of active map
      * 
@@ -88,25 +89,9 @@ public class LoaderUtils {
         return map == ApplicationGIS.NO_MAP ? ApplicationGIS.getActiveProject().getName() : map.getProject().getName();
     }
 
-    /**
-     * Convert dBm values to milliwatts
-     * 
-     * @param dbm
-     * @return milliwatts
-     */
-    public static final double dbm2mw(int dbm) {
-        return Math.pow(10.0, ((dbm) / 10.0));
-    }
 
-    /**
-     * Convert milliwatss values to dBm
-     * 
-     * @param milliwatts
-     * @return dBm
-     */
-    public static final float mw2dbm(double mw) {
-        return (float)(10.0 * Math.log10(mw));
-    }
+
+
 
     /**
      * get type of network files
@@ -269,7 +254,7 @@ public class LoaderUtils {
     
                 IPreferenceStore preferenceStore = NeoLoaderPlugin.getDefault().getPreferenceStore();
                 if (preferenceStore.getBoolean(DataLoadPreferences.ZOOM_TO_LAYER)) {
-                    LoaderUtils.zoomToLayer(layerList);
+                    LoaderUiUtils.zoomToLayer(layerList);
                 }
             }
         } catch (Exception e) {
@@ -362,7 +347,7 @@ public class LoaderUtils {
                 }
                 layerList.addAll(ApplicationGIS.addLayersToMap(map, listGeoRes, 0));
                 if (preferenceStore.getBoolean(DataLoadPreferences.ZOOM_TO_LAYER)) {
-                    LoaderUtils.zoomToLayer(layerList);
+                    LoaderUiUtils.zoomToLayer(layerList);
                 }
             }
         } catch (Exception e) {
@@ -463,7 +448,7 @@ public class LoaderUtils {
                 oss.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.OSS.getId());
                 oss.setProperty(INeoConstants.PROPERTY_NAME_NAME, ossName);
                 ossType.setOssType(oss, neo);
-                String aweProjectName = LoaderUtils.getAweProjectName();
+                String aweProjectName = LoaderUiUtils.getAweProjectName();
                 NeoCorePlugin.getDefault().getProjectService().addDataNodeToProject(aweProjectName, oss);
                 //TODO remove this relation!
                 neo.getReferenceNode().createRelationshipTo(oss, GeoNeoRelationshipTypes.CHILD);
@@ -562,7 +547,7 @@ public class LoaderUtils {
                             selectedNode.add(node);
                         }
                     } catch (Exception e) {
-                        Logger.getLogger(LoaderUtils.class).error("not loaded id " + nodeId, e);
+                        Logger.getLogger(LoaderUiUtils.class).error("not loaded id " + nodeId, e);
                     }
                     
                 }

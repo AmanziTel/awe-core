@@ -18,6 +18,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map.Entry;
 
 import org.amanzi.neo.core.INeoConstants;
@@ -25,6 +26,7 @@ import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.db.manager.INeoDbService;
 import org.amanzi.neo.loader.core.parser.IDataElement;
+import org.amanzi.neo.loader.core.preferences.PreferenceStore;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.statistic.IStatistic;
 import org.hsqldb.lib.StringUtil;
@@ -87,7 +89,6 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
     /** The element. */
     protected T element;
 
-    private long maxTransactionSize;
 
     private TransactionCounter txCounter;
 
@@ -149,7 +150,6 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
      * Start main tx.
      */
     protected void startMainTx(long maxTransactionSize) {
-        this.maxTransactionSize = maxTransactionSize;
         txCounter=new TransactionCounter(maxTransactionSize);
         mainTx = getService().beginTx();
     }
@@ -556,4 +556,21 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
         }
 
     }
+    /**
+     * @param key -key of value from preference store
+     * @return array of possible headers
+     */
+    protected String[] getPossibleHeaders(String key) {
+        String text = PreferenceStore.getPreferenceStore().getValue(key);
+        String[] array = text.split(",");
+        List<String> result = new ArrayList<String>();
+        for (String string : array) {
+            String value = string.trim();
+            if (!value.isEmpty()) {
+                result.add(value);
+            }
+        }
+        return result.toArray(new String[0]);
+    }
+    
 }

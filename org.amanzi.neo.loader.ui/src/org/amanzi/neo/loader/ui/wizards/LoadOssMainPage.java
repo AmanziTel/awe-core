@@ -24,7 +24,7 @@ import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.db.manager.DatabaseManager.DatabaseAccessType;
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
-import org.amanzi.neo.loader.ui.utils.LoaderUtils;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.swt.SWT;
@@ -136,7 +136,7 @@ public class LoadOssMainPage extends LoaderPage<CommonConfigData>{
         });
         editorFile = new FileFieldEditorExt(NeoLoaderPluginMessages.GpehImportDirEditorTitle, "Load single file: ", main);
         editorFile.setEmptyStringAllowed(true);
-        editorFile.setDefaulDirectory(LoaderUtils.getDefaultDirectory());
+        editorFile.setDefaulDirectory(LoaderUiUtils.getDefaultDirectory());
         editorFile.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 if (!editorFile.getTextControl(main).isEnabled()) {
@@ -213,7 +213,7 @@ public class LoadOssMainPage extends LoaderPage<CommonConfigData>{
      */
     protected void setFileName(String dirName) {
         directory = dirName;
-        LoaderUtils.setDefaultDirectory(dirName);
+        LoaderUiUtils.setDefaultDirectory(dirName);
         autoDefineOSSType();
         update();
     }
@@ -266,7 +266,7 @@ public class LoadOssMainPage extends LoaderPage<CommonConfigData>{
             if (!(file.isAbsolute() && file.exists())) {
                 return false;
             }
-            configurationData.setProjectName(LoaderUtils.getAweProjectName());
+            configurationData.setProjectName(LoaderUiUtils.getAweProjectName());
             configurationData.setDbRootName(datasetName);
             configurationData.setRoot(file);
             return true;

@@ -30,7 +30,7 @@ import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.IValidateResult;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
-import org.amanzi.neo.loader.ui.utils.LoaderUtils;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -137,7 +137,7 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
             }
         });
         editor = new FileFieldEditorExt("fileSelectNeighb", NeoLoaderPluginMessages.NetworkSiteImportWizard_FILE, main); // NON-NLS-1 //$NON-NLS-1$
-        editor.setDefaulDirectory(LoaderUtils.getDefaultDirectory());
+        editor.setDefaulDirectory(LoaderUiUtils.getDefaultDirectory());
 
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
@@ -228,7 +228,7 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         this.fileName = fileName;
         update();
         // editor.store();
-        LoaderUtils.setDefaultDirectory(editor.getDefaulDirectory());
+        LoaderUiUtils.setDefaultDirectory(editor.getDefaulDirectory());
     }
 
     /**
@@ -305,7 +305,7 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
             setDescription(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_TYPE); 
             return false;           
         }
-        configurationData.setProjectName(LoaderUtils.getAweProjectName());
+        configurationData.setProjectName(LoaderUiUtils.getAweProjectName());
         configurationData.setDbRootName(networkName);
         configurationData.setRoot(file);
         IValidateResult result = getSelectedLoader().getValidator().validate(configurationData);

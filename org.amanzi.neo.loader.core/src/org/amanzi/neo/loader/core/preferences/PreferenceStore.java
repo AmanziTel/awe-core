@@ -72,4 +72,16 @@ public class PreferenceStore {
     public void setProperty(String name, Object value) {
             propertyMap.put(name, value);
     }
+
+
+    /**
+     * Gets the value.
+     *
+     * @param <T> the generic type
+     * @param key the key
+     * @return the value
+     */
+    public <T>T getValue(String key) {
+        return (T)propertyMap.get(key);
+    }
 }

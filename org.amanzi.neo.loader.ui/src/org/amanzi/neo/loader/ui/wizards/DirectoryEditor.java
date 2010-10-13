@@ -13,7 +13,7 @@
 
 package org.amanzi.neo.loader.ui.wizards;
 
-import org.amanzi.neo.loader.ui.utils.LoaderUtils;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.swt.widgets.Composite;
 
@@ -43,7 +43,7 @@ public class DirectoryEditor extends DirectoryFieldEditor {
      */
     @Override
     protected String changePressed() {
-        getTextControl().setText(LoaderUtils.getDefaultDirectory());
+        getTextControl().setText(LoaderUiUtils.getDefaultDirectory());
         
         return super.changePressed();
     }
