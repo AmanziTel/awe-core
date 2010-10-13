@@ -73,7 +73,7 @@ public class NewElementAction extends Action {
 
     private String defaultValue;
 
-    private boolean askType;
+    private final boolean askType;
 
     private String newType;
 
@@ -131,8 +131,16 @@ public class NewElementAction extends Action {
         }
 
         if (type == NodeTypes.SITE) {
-            defaultProperties.put(INeoConstants.PROPERTY_LAT_NAME, (bb[2] + bb[3]) / 2D);
-            defaultProperties.put(INeoConstants.PROPERTY_LON_NAME, (bb[0] + bb[1]) / 2D);
+            if (bb != null) {
+                defaultProperties.put(INeoConstants.PROPERTY_LAT_NAME, (bb[2] + bb[3]) / 2D);
+                defaultProperties.put(INeoConstants.PROPERTY_LON_NAME, (bb[0] + bb[1]) / 2D);
+            } else {
+              //TODO debug
+                System.out.println("prop.getBbox(): null");
+                
+                defaultProperties.put(INeoConstants.PROPERTY_LAT_NAME, 0.0d);
+                defaultProperties.put(INeoConstants.PROPERTY_LON_NAME, 0.0d);
+            }
         } else if (type == NodeTypes.SECTOR) {
             defaultProperties.put("azimuth", 0.0d);
             defaultProperties.put("beamwidth", 0.0d);
