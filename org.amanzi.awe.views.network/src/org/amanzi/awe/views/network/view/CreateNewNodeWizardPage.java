@@ -56,7 +56,7 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
     }
 
     @Override
-    protected void initProperty() {
+    public void initProperty() {
         // super.initProperty();
         // propertyList.add(new PropertyWrapper("lat", Double.class, "", false));
 
