@@ -488,6 +488,17 @@ public class EditPropertiesPage extends WizardPage {
         public String getDefValue() {
             return defValue;
         }
+        public Object getParsedValue() {
+            if (getType()==null||getType()==String.class){
+                return defValue;
+            }
+            try {
+                return NeoUtils.getNumberValue(type, defValue);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
 
         /**
          * Instantiates a new property wrapper.

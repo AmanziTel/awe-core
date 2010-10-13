@@ -2234,7 +2234,7 @@ public class NeoUtils {
             if (relation != null) {
                 return relation.getOtherNode(gisNode);
             }
-            NetworkTypes type = NetworkTypes.getNodeType(gisNode, neo);
+            NetworkTypes type = NetworkTypes.getNodeType(gisNode);
             network = neo.createNode();
             if (type != null) {
                 type.setTypeToNode(network, neo);

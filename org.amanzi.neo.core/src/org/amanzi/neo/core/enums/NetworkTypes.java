@@ -82,20 +82,12 @@ public enum NetworkTypes {
 
     /**
      * returns type of node
-     * 
      * @param container PropertyContainer
-     * @param service NeoService
+     * 
      * @return type of node
      */
-    public static NetworkTypes getNodeType(PropertyContainer networkGis, GraphDatabaseService service) {
-        Transaction tx = service == null ? null : service.beginTx();
-        try {
+    public static NetworkTypes getNodeType(PropertyContainer networkGis) {
             return getEnumById((String)networkGis.getProperty(PROPERTY_NAME, null));
-        } finally {
-            if (service != null) {
-                tx.finish();
-            }
-        }
     }
 
     /**

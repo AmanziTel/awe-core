@@ -80,7 +80,7 @@ public class NeoDataService {
                 throw new AssertionFailedException("Node should fave correct type: " + node);
             }
             if (klass == Network.class) {
-                NetworkTypes netType = NetworkTypes.getNodeType(node, null);
+                NetworkTypes netType = NetworkTypes.getNodeType(node);
                 switch (netType) {
                 case PROBE:
                     klass = RadioNetwork.class;

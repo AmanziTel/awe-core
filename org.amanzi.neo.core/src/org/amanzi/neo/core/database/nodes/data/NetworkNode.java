@@ -41,7 +41,7 @@ public class NetworkNode extends DataRootNode {
      * @return NetworkTypes
      */
     public NetworkTypes getNetworkType(){
-        return NetworkTypes.getNodeType(getUnderlyingNode(), null);
+        return NetworkTypes.getNodeType(getUnderlyingNode());
     }
     /**
      * Set network types

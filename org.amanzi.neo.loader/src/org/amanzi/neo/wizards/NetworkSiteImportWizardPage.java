@@ -125,7 +125,7 @@ public class NetworkSiteImportWizardPage extends WizardPage {
             return true;
         }
 
-        NetworkTypes netType = NetworkTypes.getNodeType(networkNode, NeoServiceProvider.getProvider().getService());
+        NetworkTypes netType = NetworkTypes.getNodeType(networkNode);
         if (netType!=null&&!netType.isCorrectFileType(type)){
             setDescription(String.format(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_WRONG_TYPE_FOR_NETWORK,type.getId(),netType.getId()));  
             return false;
@@ -264,7 +264,7 @@ public class NetworkSiteImportWizardPage extends WizardPage {
     protected void updateLabelNetwDescr() {
         String text = ""; //$NON-NLS-1$
         if (networkNode != null) {
-            NetworkTypes type = NetworkTypes.getNodeType(networkNode, NeoServiceProvider.getProvider().getService());
+            NetworkTypes type = NetworkTypes.getNodeType(networkNode);
             if (type != null) {
                 text = "Network type: " + type.getId(); //$NON-NLS-1$
             }

@@ -23,6 +23,7 @@ import org.amanzi.neo.core.utils.EditPropertiesPage;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.graphics.Color;
@@ -77,16 +78,16 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
 
         if (type == NodeTypes.SECTOR) {
             NewNodePropertyWrapper ci = new NewNodePropertyWrapper(INeoConstants.PROPERTY_SECTOR_CI, Integer.class, "0", false);
-            if(!propertyList.contains(ci))
+            if (!propertyList.contains(ci))
                 propertyList.add(ci);
             NewNodePropertyWrapper lac = new NewNodePropertyWrapper(INeoConstants.PROPERTY_SECTOR_LAC, Integer.class, "0", false);
-            if(!propertyList.contains(lac))
+            if (!propertyList.contains(lac))
                 propertyList.add(lac);
             NewNodePropertyWrapper beamwidth = new NewNodePropertyWrapper("beamwidth", Integer.class, "0", false);
-            if(!propertyList.contains(beamwidth))
+            if (!propertyList.contains(beamwidth))
                 propertyList.add(beamwidth);
             NewNodePropertyWrapper azimuth = new NewNodePropertyWrapper("azimuth", Integer.class, "0", false);
-            if(!propertyList.contains(azimuth))
+            if (!propertyList.contains(azimuth))
                 propertyList.add(azimuth);
         }
     }
@@ -128,8 +129,8 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
                     lacWr = propertyList.get(i);
             }
             try {
-                Node sector = NeoUtils.findSector(NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId()), Integer.valueOf(ciWr.getDefValue()), Integer
-                        .valueOf(lacWr.getDefValue()), null, true, NeoServiceProvider.getProvider().getIndexService(), NeoServiceProvider.getProvider().getService());
+                Node sector = NeoUtils.findSector(NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId()), Integer.valueOf(ciWr.getDefValue()),
+                        Integer.valueOf(lacWr.getDefValue()), null, true, NeoServiceProvider.getProvider().getIndexService(), NeoServiceProvider.getProvider().getService());
                 if (sector != null) {
                     setDescription(String.format("Sector node with CI = '%s' and LAC = '%s' is alredy exist", ciWr.getDefValue(), lacWr.getDefValue()));
                     setPageComplete(false);
@@ -175,6 +176,14 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
         }
 
         @Override
+        public boolean isValid() {
+            if (super.isValid()) {
+                return StringUtils.isNotEmpty(getDefValue());
+            }
+            return false;
+        }
+
+        @Override
         public boolean equals(Object obj) {
             if (this == obj)
                 return true;
@@ -196,8 +205,6 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
         private CreateNewNodeWizardPage getOuterType() {
             return CreateNewNodeWizardPage.this;
         }
-
-        
 
     }
 

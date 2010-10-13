@@ -19,8 +19,8 @@ import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.EditPropertiesPage.PropertyWrapper;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
@@ -84,8 +84,8 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
                 IPropertyHeader ph = PropertyHeader.getPropertyStatistic(NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId()));
                 List<PropertyWrapper> properties = page.getProperties();
                 for (PropertyWrapper propertyWrapper : properties) {
-                    targetNode.setProperty(propertyWrapper.getName(), propertyWrapper.getDefValue());
-                    ph.updateStatistic(iNodeType.getId(), propertyWrapper.getName(), propertyWrapper.getDefValue(), null);
+                    targetNode.setProperty(propertyWrapper.getName(), propertyWrapper.getParsedValue());
+                    ph.updateStatistic(iNodeType.getId(), propertyWrapper.getName(), propertyWrapper.getParsedValue(), null);
                 }
 
                 tx.success();

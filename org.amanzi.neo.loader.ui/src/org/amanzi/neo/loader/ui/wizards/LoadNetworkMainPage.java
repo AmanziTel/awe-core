@@ -22,7 +22,6 @@ import java.util.Set;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.db.manager.DatabaseManager.DatabaseAccessType;
@@ -44,8 +43,11 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * <p>
@@ -89,6 +91,10 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
     
     private boolean needCheckFilds;
 
+    private Button selectCRS;
+
+    private CoordinateReferenceSystem selectedCRS;
+
     /**
      * Instantiates a new load network main page.
      */
@@ -110,25 +116,20 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         label.setText(NeoLoaderPluginMessages.NetworkSiteImportWizard_NETWORK);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
         network = new Combo(main, SWT.DROP_DOWN);
-        network.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
+        network.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         network.setItems(getGisItems());
         network.addModifyListener(new ModifyListener() {
 
             @Override
             public void modifyText(ModifyEvent e) {
-                networkName = network.getText();
-                networkNode = members.get(networkName);   
-                update();
+                changeNetworkName();
             }
         });
         network.addSelectionListener(new SelectionListener() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                networkName = network.getText();
-                networkNode = members.get(networkName);
-                updateLabelNetwDescr();
-                update();
+                changeNetworkName();
             }
 
             @Override
@@ -136,6 +137,24 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
                 widgetSelected(e);
             }
         });
+        selectCRS = new Button(main, SWT.FILL | SWT.PUSH);
+        selectCRS.setAlignment(SWT.LEFT);
+        GridData selCrsData = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+        selCrsData.widthHint=150;
+        selectCRS.setLayoutData(selCrsData);
+        selectCRS.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                selectCRS();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+        
         editor = new FileFieldEditorExt("fileSelectNeighb", NeoLoaderPluginMessages.NetworkSiteImportWizard_FILE, main); // NON-NLS-1 //$NON-NLS-1$
         editor.setDefaulDirectory(LoaderUiUtils.getDefaultDirectory());
 
@@ -196,7 +215,46 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         setControl(main);
         update();
     }
-    
+    @Override
+    protected void update() {
+        updateButtonLabel();
+        super.update();
+    }
+    /**
+     * Update button label.
+     */
+    private void updateButtonLabel() {
+        CoordinateReferenceSystem crs = getSelectedCRS();
+        selectCRS.setText(String.format("CRS: %s", crs.getName().toString()));
+    }
+    /**
+     * Gets the selected crs.
+     * 
+     * @return the selected crs
+     */
+    public CoordinateReferenceSystem getSelectedCRS() {
+        return selectedCRS == null ? getDefaultCRS() : selectedCRS;
+    }  
+    /**
+     * Gets the default crs.
+     * 
+     * @return the default crs
+     */
+    private CoordinateReferenceSystem getDefaultCRS() {
+        try {
+            return CRS.decode("EPSG:4326");
+        } catch (NoSuchAuthorityCodeException e) {
+            // TODO Handle NoSuchAuthorityCodeException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+    }
+    /**
+     *
+     */
+    protected void selectCRS() {
+    }
+
+
     /**
      * Sets the access type.
      *
@@ -211,7 +269,7 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
     protected void updateLabelNetwDescr() {
         String text = ""; //$NON-NLS-1$
         if (networkNode != null) {
-            NetworkTypes type = NetworkTypes.getNodeType(networkNode, NeoServiceProvider.getProvider().getService());
+            NetworkTypes type = NetworkTypes.getNodeType(networkNode);
             if (type != null) {
                 text = "Network type: " + type.getId(); //$NON-NLS-1$
             }
@@ -315,6 +373,14 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         }
         setDescription(NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_DESCR); //$NON-NLS-1$
         return true;
+    }
+
+
+    protected void changeNetworkName() {
+        networkName = network.getText();
+        networkNode = members.get(networkName);
+        updateLabelNetwDescr();
+        update();
     }
 
 }

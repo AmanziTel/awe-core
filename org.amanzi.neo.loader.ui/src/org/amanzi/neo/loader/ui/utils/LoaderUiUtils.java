@@ -13,8 +13,6 @@
 package org.amanzi.neo.loader.ui.utils;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -403,41 +401,13 @@ public class LoaderUiUtils extends LoaderUtils{
             return null;
         }
     }  
-    /**
-     * Calculates list of files 
-     *
-     * @param directoryName directory to import
-     * @param filter - filter (if filter teturn true for directory this directory will be handled also  )
-     * @return list of files to import
-     */
-    public static List<File> getAllFiles(String directoryName, FileFilter filter) {
-        File directory = new File(directoryName);
-        return getAllFiles(directory,filter);
-    }
-    /**
-     * Calculates list of files 
-     *
-     * @param directory -  directory to import
-     * @param filter - filter (if filter teturn true for directory this directory will be handled also  )
-     * @return list of files to import
-     */
-    public static List<File> getAllFiles(File directory, FileFilter filter) {
-        LinkedList<File> result = new LinkedList<File>();
-        for (File childFile : directory.listFiles(filter)) {
-            if (childFile.isDirectory()) {
-                result.addAll(getAllFiles(childFile,filter));
-            }
-            else  {
-                result.add(childFile);
-            }
-        }
-        return result;
-    }
+
     /**
      *find or create OSS node
      * 
      * @return
      */
+    @Deprecated
     public static Node findOrCreateOSSNode(OssType ossType,String ossName,GraphDatabaseService neo) {
         Node oss;
         Transaction tx = neo.beginTx();
@@ -488,43 +458,7 @@ public class LoaderUiUtils extends LoaderUtils{
             tx.finish();
         }
     }
-    /**
-     * get file extension
-     *
-     * @param fileName - file name
-     * @return file extension
-     */
-    public static String getFileExtension(String fileName) {
-        int idx = fileName.lastIndexOf(".");
-        return idx < 1 ? "" : fileName.substring(idx);
-    }
 
-
-
-    public static File getFirstFile(String dirName) {
-        File file = new File(dirName);
-        if (file.isFile()){
-            return file;
-        }
-        File[] list = file.listFiles();
-        if (list.length>0){
-            return list[0];
-        }else{
-            //TODO optimize
-          List<File> all = getAllFiles(dirName, new FileFilter() {
-                
-                @Override
-                public boolean accept(File pathname) {
-                    return true;
-                }
-            });
-          if (all.isEmpty()){
-              return null;
-          }else{
-              return all.iterator().next();
-          }
-        }
-    }
     
     /**
      * Gets the selected nodes.
