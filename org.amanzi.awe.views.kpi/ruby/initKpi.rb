@@ -1,7 +1,9 @@
 require 'neo4j'
 require 'formulas'
+require 'annotations'
 require 'default'
 require 'search'
+require 'neo_node'
 include Java
 
 include_class 'org.amanzi.neo.core.service.NeoServiceProvider'
@@ -76,4 +78,13 @@ def find_methods(mod)
   methods_found=mod.singleton_methods.sort
   methods.concat(methods_found.collect! {|x| mod.name+"."+x}) if !methods_found.empty?
   methods
+end
+
+def evaluate(id,kpi)
+  puts "evaluate"
+  puts kpi.class
+  node=Neo4j::load_node(id)
+  puts node
+  kpi_method=method(kpi)
+  node.instance_eval {kpi_method.call(node)}
 end

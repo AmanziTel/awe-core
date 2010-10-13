@@ -1,3 +1,3 @@
 #require 'ericsson'
-require 'grid'
+KPI.module_eval {load 'grid.rb'}
 #require 'test'
