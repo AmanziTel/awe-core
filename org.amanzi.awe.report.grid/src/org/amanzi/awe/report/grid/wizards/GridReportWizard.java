@@ -45,8 +45,8 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.Pair;
-import org.amanzi.neo.loader.ui.utils.LoaderUtils;
 import org.amanzi.neo.loader.grid.IDENLoader;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.eclipse.core.runtime.FileLocator;
@@ -55,9 +55,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Display;
-import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
@@ -142,7 +140,7 @@ public class GridReportWizard extends Wizard implements IWizard {
                         }
                         if (isExportToXlsRequired) {
                             if (datasetNode == null) {
-                                datasetNode = dsService.getRootNode(LoaderUtils.getAweProjectName(), "ecl_stat.unl.Z",
+                                datasetNode = dsService.getRootNode(LoaderUiUtils.getAweProjectName(), "ecl_stat.unl.Z",
                                         NodeTypes.OSS);
                             }
                             updateMessage("Exporting statistics to excel...");
@@ -307,7 +305,7 @@ public class GridReportWizard extends Wizard implements IWizard {
 
                     datasetNode = gridLoader.getDatasetNode();
                     if (datasetNode == null) {
-                        datasetNode = dsService.getRootNode(LoaderUtils.getAweProjectName(), "ecl_stat.unl.Z", NodeTypes.OSS);
+                        datasetNode = dsService.getRootNode(LoaderUiUtils.getAweProjectName(), "ecl_stat.unl.Z", NodeTypes.OSS);
                     }
                     isLoaded = true;
                 }
