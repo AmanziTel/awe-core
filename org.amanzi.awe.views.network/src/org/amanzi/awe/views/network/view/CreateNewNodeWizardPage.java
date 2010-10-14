@@ -74,24 +74,26 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
             }
         }
 
-        NewNodePropertyWrapper name = new NewNodePropertyWrapper("name", String.class, "new " + nodeType.getId(), false);
+        // NewNodePropertyWrapper name = new NewNodePropertyWrapper("name", String.class, "new " +
+        // nodeType.getId(), false);
+        NewNodePropertyWrapper name = new NewNodePropertyWrapper("name", String.class, "", false);
         if (!propertyList.contains(name))
             propertyList.add(name);
 
         if (type == NodeTypes.SECTOR) {
-            NewNodePropertyWrapper ci = new NewNodePropertyWrapper(INeoConstants.PROPERTY_SECTOR_CI, Integer.class, "0", false);
+            NewNodePropertyWrapper ci = new NewNodePropertyWrapper(INeoConstants.PROPERTY_SECTOR_CI, Integer.class, "", false);
             if (!propertyList.contains(ci))
                 propertyList.add(ci);
-            NewNodePropertyWrapper lac = new NewNodePropertyWrapper(INeoConstants.PROPERTY_SECTOR_LAC, Integer.class, "0", false);
+            NewNodePropertyWrapper lac = new NewNodePropertyWrapper(INeoConstants.PROPERTY_SECTOR_LAC, Integer.class, "", false);
             if (!propertyList.contains(lac))
                 propertyList.add(lac);
-            NewNodePropertyWrapper beamwidth = new NewNodePropertyWrapper("beamwidth", Integer.class, "0", false);
+            NewNodePropertyWrapper beamwidth = new NewNodePropertyWrapper("beamwidth", Double.class, "0", false);
             if (!propertyList.contains(beamwidth))
                 propertyList.add(beamwidth);
             NewNodePropertyWrapper azimuth = new NewNodePropertyWrapper("azimuth", Integer.class, "0", false);
             if (!propertyList.contains(azimuth))
                 propertyList.add(azimuth);
-        }else if (type == NodeTypes.SITE){
+        } else if (type == NodeTypes.SITE) {
             NewNodePropertyWrapper lat = new NewNodePropertyWrapper(INeoConstants.PROPERTY_LAT_NAME, Double.class, "", false);
             if (!propertyList.contains(lat))
                 propertyList.add(lat);
@@ -99,33 +101,42 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
             if (!propertyList.contains(lon))
                 propertyList.add(lon);
         }
-        Collections.sort(propertyList,new Comparator<PropertyWrapper>() {
+
+        if (type == NodeTypes.SITE) {
+            NewNodePropertyWrapper lat = new NewNodePropertyWrapper(INeoConstants.PROPERTY_LAT_NAME, Double.class, "", false);
+            if (!propertyList.contains(lat))
+                propertyList.add(lat);
+            NewNodePropertyWrapper lac = new NewNodePropertyWrapper(INeoConstants.PROPERTY_LON_NAME, Double.class, "", false);
+            if (!propertyList.contains(lac))
+                propertyList.add(lac);
+        }
+        Collections.sort(propertyList, new Comparator<PropertyWrapper>() {
 
             @Override
             public int compare(PropertyWrapper o1, PropertyWrapper o2) {
-                if ("name".equalsIgnoreCase(o1.getName())){
+                if ("name".equalsIgnoreCase(o1.getName())) {
                     return -1;
                 }
-                if ("name".equalsIgnoreCase(o2.getName())){
+                if ("name".equalsIgnoreCase(o2.getName())) {
                     return 1;
                 }
-                if ("ci".equalsIgnoreCase(o1.getName())){
+                if ("ci".equalsIgnoreCase(o1.getName())) {
                     return -1;
                 }
-                if ("ci".equalsIgnoreCase(o2.getName())){
+                if ("ci".equalsIgnoreCase(o2.getName())) {
                     return 1;
                 }
-                if ("lac".equalsIgnoreCase(o1.getName())){
+                if ("lac".equalsIgnoreCase(o1.getName())) {
                     return -1;
                 }
-                if ("lac".equalsIgnoreCase(o2.getName())){
+                if ("lac".equalsIgnoreCase(o2.getName())) {
                     return 1;
                 }
                 return o1.getName().compareTo(o2.getName());
             }
-            
+
         });
-        
+
     }
 
     /**
@@ -134,7 +145,7 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
     @Override
     protected void validate() {
         super.validate();
-
+        Node network = NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId());
         if (!isPageComplete()) {
             return;
         }
@@ -142,7 +153,8 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
             PropertyWrapper wr = propertyList.get(i);
             if (wr.getName().equals(INeoConstants.PROPERTY_NAME_NAME)) {
                 LuceneIndexService luceneInd = NeoServiceProvider.getProvider().getIndexService();
-                if (luceneInd.getNodes(INeoConstants.PROPERTY_NAME_NAME, wr.getName()).size() > 0) {
+                String key = NeoUtils.getLuceneIndexKeyByProperty(network, INeoConstants.PROPERTY_NAME_NAME, nodeType);
+                if (luceneInd.getNodes(key, wr.getParsedValue()).size() > 0) {
                     setDescription(String.format("Node with the name '%s' is alredy exist", wr.getDefValue()));
                     setPageComplete(false);
                     return;
@@ -165,8 +177,8 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
                     lacWr = propertyList.get(i);
             }
             try {
-                Node sector = NeoUtils.findSector(NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId()), Integer.valueOf(ciWr.getDefValue()),
-                        Integer.valueOf(lacWr.getDefValue()), null, true, NeoServiceProvider.getProvider().getIndexService(), NeoServiceProvider.getProvider().getService());
+                Node sector = NeoUtils.findSector(network, Integer.valueOf(ciWr.getDefValue()), Integer.valueOf(lacWr.getDefValue()), null, true, NeoServiceProvider
+                        .getProvider().getIndexService(), NeoServiceProvider.getProvider().getService());
                 if (sector != null) {
                     setDescription(String.format("Sector node with CI = '%s' and LAC = '%s' is alredy exist", ciWr.getDefValue(), lacWr.getDefValue()));
                     setPageComplete(false);
