@@ -23,6 +23,7 @@ import java.util.Set;
 import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
@@ -630,12 +631,12 @@ public class EditPropertiesPage extends WizardPage {
         for (int i=0;i<propertyList.size();i++){
             PropertyWrapper wr = propertyList.get(i);
             if (!wr.isValid()){
-                setDescription(String.format("Property \"%s\" not valid", wr));
+                setMessage(String.format("Property \"%s\" not valid", wr), DialogPage.ERROR);
                 setPageComplete(false);
                 return;
             }
             if (names.contains(wr.name)){
-                setDescription(String.format("Dublicate property name '%s'", wr.name));
+                setMessage(String.format("Dublicate property name '%s'", wr.name), DialogPage.ERROR);
                 setPageComplete(false);
                 return;
             }else{
@@ -643,7 +644,7 @@ public class EditPropertiesPage extends WizardPage {
             }
             
         }
-        setDescription(getNormalDescription());
+        setMessage(getNormalDescription());
         setPageComplete(true);
         return;
     }
