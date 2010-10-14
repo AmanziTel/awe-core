@@ -18,10 +18,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
+import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.EditPropertiesPage;
 import org.amanzi.neo.core.utils.EditPropertiesPage.PropertyWrapper;
 import org.amanzi.neo.core.utils.GisProperties;
@@ -128,7 +132,7 @@ public class CreateNetworkWizard extends Wizard implements INewWizard {
                 String networkName=mainPage.getNetworkName();
                 List<INodeType> structure = mainPage.getStructure();
                 String projectName=LoaderUiUtils.getAweProjectName();
-                Node root = service.getRootNode(projectName, networkName, NodeTypes.NETWORK);
+                final Node root = service.getRootNode(projectName, networkName, NodeTypes.NETWORK);
                 GisProperties gis=service.getGisNode(root);
                 gis.setCrs(mainPage.getSelectedCRS());
                 service.saveGis(gis);
@@ -155,6 +159,13 @@ public class CreateNetworkWizard extends Wizard implements INewWizard {
                     e.printStackTrace();
                 }
                 AbstractLoader.sendUpdateEvent(UpdateViewEventType.GIS);
+                ActionUtil.getInstance().runTask(new Runnable() {
+                    
+                    @Override
+                    public void run() {
+                        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDrillDownEvent(root, "org.amanzi.neo.wizards.CreateNetworkWizard"));
+                    }
+                }, true);
                 return Status.OK_STATUS;
             }
         };
