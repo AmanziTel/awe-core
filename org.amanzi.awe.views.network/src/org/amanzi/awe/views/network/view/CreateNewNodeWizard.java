@@ -17,12 +17,14 @@ import java.util.List;
 
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEvent;
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.EditPropertiesPage.PropertyWrapper;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.core.utils.EditPropertiesPage.PropertyWrapper;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.IndexManager;
 import org.amanzi.neo.services.NeoServiceFactory;
@@ -64,8 +66,16 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
 
     @Override
     public boolean performFinish() {
+        Node network = NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId());
+
+        // DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
+        // if (ds.getNodeType(sourceNode).equals(iNodeType)) {
+        //
+        // } else {
+        //
+        // }
+
         try {
-            // TODO if SECTOR created need to increeas
 
             // Creating new node
             DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
@@ -93,7 +103,7 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
                     ph.updateStatistic(iNodeType.getId(), propertyWrapper.getName(), propertyWrapper.getParsedValue(), null);
                     indexManader.updateIndexes(targetNode, propertyWrapper.getName(), null);
                 }
-                
+
                 tx.success();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -118,7 +128,7 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
                         newStructureTypes[i++] = iNodeType.getId();
                     }
                 }
-                ds.setStructure(NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId()), newStructureTypes);
+                ds.setStructure(network, newStructureTypes);
             }
 
             NeoServiceProvider.getProvider().commit();
@@ -127,11 +137,12 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
             e.printStackTrace();
             return false;
         }
-        //TODO need to use service for updating layer
+        // TODO imho need to use service for updating layer
         Node gisNode = NeoUtils.findGisNodeByChild(sourceNode);
         NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(new UpdateLayerEvent(gisNode));
-        
-        System.out.println("\nOK\n");
+        // TODO imho need to use service for updating Tree View
+        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDrillDownEvent(network, "org.amanzi.neo.wizards.CreateNetworkWizard"));
+
         return true;
     }
 
@@ -139,9 +150,16 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.workbench = workbench;
         this.selection = selection;
-        setWindowTitle("Create new node");
-        page = new CreateNewNodeWizardPage("Create new node", "Create new " + iNodeType, iNodeType, sourceNode);
-        addPage(page);
+        DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
+        if (ds.getNodeType(sourceNode).equals(iNodeType)) {
+            setWindowTitle("Copy node");
+            page = new CreateNewNodeWizardPage("Copy node", "Copy " + iNodeType, iNodeType, sourceNode);
+            addPage(page);
+        } else {
+            setWindowTitle("Create new node");
+            page = new CreateNewNodeWizardPage("Create new node", "Create new " + iNodeType, iNodeType, sourceNode);
+            addPage(page);
+        }
     }
 
 }

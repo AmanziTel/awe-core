@@ -24,9 +24,12 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.EditPropertiesPage;
 import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.graphics.Color;
@@ -61,23 +64,47 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
 
     @Override
     public void initProperty() {
-        // super.initProperty();
-        // propertyList.add(new PropertyWrapper("lat", Double.class, "", false));
 
-        NodeTypes type = NodeTypes.getEnumById(nodeType.getId());
-        // propertyList.add(new NewNodePropertyWrapper("name", String.class, "new " +
-        // nodeType.getId(), false));
-        if (type != null) {
-            IPropertyHeader ph = PropertyHeader.getPropertyStatistic(NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId()));
-            Map<String, Object> statisticProperties = ph.getStatisticParams(type);
-            for (String key : statisticProperties.keySet()) {
-                propertyList.add(new NewNodePropertyWrapper(key, statisticProperties.get(key).getClass(), statisticProperties.get(key).toString(), false));
-            }
+        DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
+        if (ds.getNodeType(sourceNode).equals(nodeType)) {
+            initPropertyForCopy();
+        } else {
+            initPropertiesForCreating();
         }
+        initDefaultProperties();
 
-        // NewNodePropertyWrapper name = new NewNodePropertyWrapper("name", String.class, "new " +
-        // nodeType.getId(), false);
-        NewNodePropertyWrapper name = new NewNodePropertyWrapper("name", String.class, "", false);
+        Collections.sort(propertyList, new Comparator<PropertyWrapper>() {
+
+            @Override
+            public int compare(PropertyWrapper o1, PropertyWrapper o2) {
+                if (INeoConstants.PROPERTY_NAME_NAME.equalsIgnoreCase(o1.getName())) {
+                    return -1;
+                }
+                if (INeoConstants.PROPERTY_NAME_NAME.equalsIgnoreCase(o2.getName())) {
+                    return 1;
+                }
+                if (INeoConstants.PROPERTY_SECTOR_CI.equalsIgnoreCase(o1.getName())) {
+                    return -1;
+                }
+                if (INeoConstants.PROPERTY_SECTOR_CI.equalsIgnoreCase(o2.getName())) {
+                    return 1;
+                }
+                if (INeoConstants.PROPERTY_SECTOR_LAC.equalsIgnoreCase(o1.getName())) {
+                    return -1;
+                }
+                if (INeoConstants.PROPERTY_SECTOR_LAC.equalsIgnoreCase(o2.getName())) {
+                    return 1;
+                }
+                return o1.getName().compareTo(o2.getName());
+            }
+
+        });
+
+    }
+
+    private void initDefaultProperties() {
+        NodeTypes type = NodeTypes.getEnumById(nodeType.getId());
+        NewNodePropertyWrapper name = new NewNodePropertyWrapper(INeoConstants.PROPERTY_NAME_NAME, String.class, "", false);
         if (!propertyList.contains(name))
             propertyList.add(name);
 
@@ -99,8 +126,8 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
             Node gis = NeoUtils.getGisNodeByDataset(networkNode);
             GisProperties prop = new GisProperties(gis);
             double[] bb = prop.getBbox();
-            String latVal = "0.0",lonVal = "0.0";
-            if(bb != null){
+            String latVal = "0.0", lonVal = "0.0";
+            if (bb != null) {
                 latVal = String.valueOf((bb[2] + bb[3]) / 2D);
                 lonVal = String.valueOf((bb[0] + bb[1]) / 2D);
             }
@@ -111,33 +138,30 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
             if (!propertyList.contains(lon))
                 propertyList.add(lon);
         }
+    }
 
-        Collections.sort(propertyList, new Comparator<PropertyWrapper>() {
-
-            @Override
-            public int compare(PropertyWrapper o1, PropertyWrapper o2) {
-                if ("name".equalsIgnoreCase(o1.getName())) {
-                    return -1;
-                }
-                if ("name".equalsIgnoreCase(o2.getName())) {
-                    return 1;
-                }
-                if ("ci".equalsIgnoreCase(o1.getName())) {
-                    return -1;
-                }
-                if ("ci".equalsIgnoreCase(o2.getName())) {
-                    return 1;
-                }
-                if ("lac".equalsIgnoreCase(o1.getName())) {
-                    return -1;
-                }
-                if ("lac".equalsIgnoreCase(o2.getName())) {
-                    return 1;
-                }
-                return o1.getName().compareTo(o2.getName());
+    private void initPropertyForCopy() {
+        for (String key : sourceNode.getPropertyKeys()) {
+            if (INeoConstants.PROPERTY_NAME_NAME.equals(key) || INeoConstants.PROPERTY_TYPE_NAME.equals(key)) {
+                // skip
+            } else {
+                NewNodePropertyWrapper wr = new NewNodePropertyWrapper(key, String.class, String.valueOf(sourceNode.getProperty(key, "")), false);
+                if (!propertyList.contains(wr))
+                    propertyList.add(wr);
             }
+        }
+    }
 
-        });
+    private void initPropertiesForCreating() {
+        DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
+        INodeType type = ds.getNodeType(sourceNode);
+        if (type != null) {
+            IPropertyHeader ph = PropertyHeader.getPropertyStatistic(NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId()));
+            Map<String, Object> statisticProperties = ph.getStatisticParams(type);
+            for (String key : statisticProperties.keySet()) {
+                propertyList.add(new NewNodePropertyWrapper(key, statisticProperties.get(key).getClass(), statisticProperties.get(key).toString(), false));
+            }
+        }
 
     }
 
@@ -157,13 +181,13 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
                 LuceneIndexService luceneInd = NeoServiceProvider.getProvider().getIndexService();
                 String key = NeoUtils.getLuceneIndexKeyByProperty(network, INeoConstants.PROPERTY_NAME_NAME, nodeType);
                 if (luceneInd.getNodes(key, wr.getParsedValue()).size() > 0) {
-                    setDescription(String.format("Node with the name '%s' is alredy exist", wr.getDefValue()));
+                    setMessage(String.format("Node with the name '%s' is alredy exist", wr.getDefValue()), DialogPage.ERROR);
                     setPageComplete(false);
                     return;
                 }
             }
             if (wr.getName().equals("type")) {
-                setDescription("Property name \"type\" is not allowed.");
+                setMessage("Property name \"type\" is not allowed.", DialogPage.ERROR);
                 setPageComplete(false);
                 return;
             }
@@ -182,19 +206,19 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
                 Node sector = NeoUtils.findSector(network, Integer.valueOf(ciWr.getDefValue()), Integer.valueOf(lacWr.getDefValue()), null, true, NeoServiceProvider
                         .getProvider().getIndexService(), NeoServiceProvider.getProvider().getService());
                 if (sector != null) {
-                    setDescription(String.format("Sector node with CI = '%s' and LAC = '%s' is alredy exist", ciWr.getDefValue(), lacWr.getDefValue()));
+                    setMessage(String.format("Sector node with CI = '%s' and LAC = '%s' is alredy exist", ciWr.getDefValue(), lacWr.getDefValue()), DialogPage.ERROR);
                     setPageComplete(false);
                     return;
                 }
             } catch (Exception e) {
-                setDescription(e.getMessage());
+                setMessage(e.getMessage(), DialogPage.ERROR);
                 e.printStackTrace();
                 setPageComplete(false);
                 return;
             }
         }
 
-        setDescription(getNormalDescription());
+        setMessage(getNormalDescription());
         setPageComplete(true);
         return;
     }

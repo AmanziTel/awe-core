@@ -53,7 +53,6 @@ import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.awe.views.network.property.NetworkPropertySheetPage;
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
-import org.amanzi.awe.views.network.view.actions.CopyElementAction;
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -534,7 +533,7 @@ public class NetworkTreeView extends ViewPart {
      */
     protected void createAdditionalAction(IMenuManager manager) {
         manager.add(new Separator());
-        IAction elementAction = new CopyElementAction((IStructuredSelection)viewer.getSelection());
+        IAction elementAction = new CopyNodeAction((IStructuredSelection)viewer.getSelection());
         if (elementAction.isEnabled()) {
             manager.add(elementAction);
         }
@@ -549,7 +548,6 @@ public class NetworkTreeView extends ViewPart {
      */
     private void fillMenu(IMenuManager menu, IStructuredSelection selection) {
 
-        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
         Object element = selection.getFirstElement();
         if (element instanceof Root)
             return;
