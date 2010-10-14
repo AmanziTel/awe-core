@@ -63,6 +63,7 @@
     <module>org.amanzi.neo.loader.core</module>
     <module>org.amanzi.neo.loader.ui</module>
     <module>org.amanzi.neo.services</module>
+    <module>org.amanzi.neo.services.ui</module>	  	 
     <module>org.amanzi.rdt.launching</module>
     <module>org.amanzi.rdt.testing</module>
     <module>org.amanzi.scripting.jirb</module>
