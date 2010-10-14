@@ -102,14 +102,14 @@ public class IndexManager {
                         if (prop == null) {
                             return false;
                         }
-                        Double lat = (Double)node.getProperty(INeoConstants.PROPERTY_LAT_NAME, 0d);
-                        Double lon = (Double)node.getProperty(INeoConstants.PROPERTY_LON_NAME, 0d);
-                        if (lat == 0 || lon == 0) {
+                        Double lat = (Double)node.getProperty(INeoConstants.PROPERTY_LAT_NAME,null);
+                        Double lon = (Double)node.getProperty(INeoConstants.PROPERTY_LON_NAME,null);
+                        if (lat==null||lon==null){
                             return false;
                         }
-                        if (((Number)value).doubleValue() == 0.0) {
-                            return false;
-                        }
+//                        if (((Number)value).doubleValue() ==0.0){
+//                            return false;
+//                        }
                         prop.updateBBox(lat, lon);
 
                         MultiPropertyIndex<Double> id = NeoUtils.getLocationIndexProperty(name);
