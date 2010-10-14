@@ -66,7 +66,7 @@ public class IndexManager {
      */
     public void updateIndexes(PropertyContainer container, String propertyName, Object oldValue) {
         // TODO not fully implement
-        if ( name == null) {
+        if (name == null) {
             return;
         }
         Object value = container.getProperty(propertyName, null);
@@ -95,23 +95,23 @@ public class IndexManager {
                 return false;
             }
             if (type == NodeTypes.SITE) {
-                if (INeoConstants.PROPERTY_LAT_NAME.equals(propertyName)|| INeoConstants.PROPERTY_LON_NAME.equals(propertyName)){
+                if (INeoConstants.PROPERTY_LAT_NAME.equals(propertyName) || INeoConstants.PROPERTY_LON_NAME.equals(propertyName)) {
                     try {
-                        
-                        GisProperties prop=service.fingGisNode(root);
-                        if (prop==null){
+
+                        GisProperties prop = service.fingGisNode(root);
+                        if (prop == null) {
                             return false;
                         }
-                        Double lat = (Double)node.getProperty(INeoConstants.PROPERTY_LAT_NAME,0d);
-                        Double lon = (Double)node.getProperty(INeoConstants.PROPERTY_LON_NAME,0d);
-                        if (lat==0||lon==0){
+                        Double lat = (Double)node.getProperty(INeoConstants.PROPERTY_LAT_NAME, 0d);
+                        Double lon = (Double)node.getProperty(INeoConstants.PROPERTY_LON_NAME, 0d);
+                        if (lat == 0 || lon == 0) {
                             return false;
                         }
-                        if (((Number)value).doubleValue() ==0.0){
+                        if (((Number)value).doubleValue() == 0.0) {
                             return false;
                         }
                         prop.updateBBox(lat, lon);
-                        
+
                         MultiPropertyIndex<Double> id = NeoUtils.getLocationIndexProperty(name);
                         Transaction tx = DatabaseManager.getInstance().getCurrentDatabaseService().beginTx();
                         try {
@@ -142,17 +142,17 @@ public class IndexManager {
                 return false;
             }
             String idName = getLuceneIndexKeyByProperty(type, propertyName);
-            if (oldValue==null){
-                if (value==null){
+            if (oldValue == null) {
+                if (value == null) {
                     return false;
                 }
-                if (needLuceneIndex(container,propertyName)){
+                if (needLuceneIndex(container, propertyName)) {
                     index.index(node, idName, value);
                     return true;
                 }
                 return false;
             }
-            if ( oldValue.equals(value)) {
+            if (oldValue.equals(value)) {
                 return false;
             }
             boolean indexPr = false;
@@ -174,16 +174,20 @@ public class IndexManager {
     };
 
     /**
-     *
+     * Check if need to add new Lucene Index for current property
+     * 
      * @param container
      * @param propertyName
      * @return
      */
     private boolean needLuceneIndex(PropertyContainer container, String propertyName) {
         INodeType type = service.getNodeType(container);
-        if(INeoConstants.PROPERTY_NAME_NAME.equals(propertyName))
-        if(NodeTypes.SECTOR == type){
-            
+        if (NodeTypes.SECTOR == type) {
+            if (INeoConstants.PROPERTY_SECTOR_CI.equals(propertyName) || INeoConstants.PROPERTY_SECTOR_LAC.equals(propertyName)) {
+                return true;
+            }
+        } else if (INeoConstants.PROPERTY_NAME_NAME.equals(propertyName)) {
+            return true;
         }
         return false;
     }
