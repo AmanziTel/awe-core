@@ -135,9 +135,6 @@ public class NewElementAction extends Action {
                 defaultProperties.put(INeoConstants.PROPERTY_LAT_NAME, (bb[2] + bb[3]) / 2D);
                 defaultProperties.put(INeoConstants.PROPERTY_LON_NAME, (bb[0] + bb[1]) / 2D);
             } else {
-              //TODO debug
-                System.out.println("prop.getBbox(): null");
-                
                 defaultProperties.put(INeoConstants.PROPERTY_LAT_NAME, 0.0d);
                 defaultProperties.put(INeoConstants.PROPERTY_LON_NAME, 0.0d);
             }

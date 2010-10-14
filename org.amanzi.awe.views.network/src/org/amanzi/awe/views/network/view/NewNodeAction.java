@@ -16,13 +16,11 @@ package org.amanzi.awe.views.network.view;
 import java.util.HashMap;
 
 import org.amanzi.neo.core.enums.INodeType;
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.INewWizard;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -36,14 +34,11 @@ import org.neo4j.graphdb.Node;
 public class NewNodeAction extends Action {
     private final INodeType iNodeType;
     private final Node sourceNode;
-    private final GraphDatabaseService service;
-    private Node targetNode;
     protected HashMap<String, Object> defaultProperties = new HashMap<String, Object>();
 
     public NewNodeAction(INodeType iNodeType, Node sourcedNode) {
         this.iNodeType = iNodeType;
         this.sourceNode = sourcedNode;
-        service = NeoServiceProvider.getProvider().getService();
         setText(iNodeType.getId());
     }
 

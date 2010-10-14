@@ -22,6 +22,7 @@ import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.EditPropertiesPage;
+import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
@@ -94,22 +95,23 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
             if (!propertyList.contains(azimuth))
                 propertyList.add(azimuth);
         } else if (type == NodeTypes.SITE) {
-            NewNodePropertyWrapper lat = new NewNodePropertyWrapper(INeoConstants.PROPERTY_LAT_NAME, Double.class, "", false);
+            Node networkNode = NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId());
+            Node gis = NeoUtils.getGisNodeByDataset(networkNode);
+            GisProperties prop = new GisProperties(gis);
+            double[] bb = prop.getBbox();
+            String latVal = "0.0",lonVal = "0.0";
+            if(bb != null){
+                latVal = String.valueOf((bb[2] + bb[3]) / 2D);
+                lonVal = String.valueOf((bb[0] + bb[1]) / 2D);
+            }
+            NewNodePropertyWrapper lat = new NewNodePropertyWrapper(INeoConstants.PROPERTY_LAT_NAME, Double.class, latVal, false);
             if (!propertyList.contains(lat))
                 propertyList.add(lat);
-            NewNodePropertyWrapper lon = new NewNodePropertyWrapper(INeoConstants.PROPERTY_LON_NAME, Double.class, "", false);
+            NewNodePropertyWrapper lon = new NewNodePropertyWrapper(INeoConstants.PROPERTY_LON_NAME, Double.class, lonVal, false);
             if (!propertyList.contains(lon))
                 propertyList.add(lon);
         }
 
-        if (type == NodeTypes.SITE) {
-            NewNodePropertyWrapper lat = new NewNodePropertyWrapper(INeoConstants.PROPERTY_LAT_NAME, Double.class, "", false);
-            if (!propertyList.contains(lat))
-                propertyList.add(lat);
-            NewNodePropertyWrapper lac = new NewNodePropertyWrapper(INeoConstants.PROPERTY_LON_NAME, Double.class, "", false);
-            if (!propertyList.contains(lac))
-                propertyList.add(lac);
-        }
         Collections.sort(propertyList, new Comparator<PropertyWrapper>() {
 
             @Override

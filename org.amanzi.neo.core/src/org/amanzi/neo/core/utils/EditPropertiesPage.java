@@ -111,7 +111,7 @@ public class EditPropertiesPage extends WizardPage {
             } else if (nodeType == NodeTypes.SECTOR) {
                 propertyList.add(new PropertyWrapper("ci", Integer.class, "", false));
                 propertyList.add(new PropertyWrapper("lac", Integer.class, "", false));
-                propertyList.add(new PropertyWrapper("beamwidth", Integer.class, "", false));
+                propertyList.add(new PropertyWrapper("beamwidth", Double.class, "", false));
                 propertyList.add(new PropertyWrapper("azimuth", Integer.class, "", false));
             }
             initialize = true;
