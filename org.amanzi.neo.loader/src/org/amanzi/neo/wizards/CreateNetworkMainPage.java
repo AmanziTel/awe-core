@@ -26,6 +26,7 @@ import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferenceManager;
@@ -246,6 +247,7 @@ public class CreateNetworkMainPage extends WizardPage {
         updateButtonLabel();
         init();
         setControl(main);
+        validate();
     }
 
 
@@ -482,12 +484,16 @@ public class CreateNetworkMainPage extends WizardPage {
      * Validate.
      */
     private void validate() {
-        if (StringUtils.isEmpty(networkName) || restrictedNames.contains(networkName)) {
-            setDescription("Please enter name of new network:");
+        if (StringUtils.isEmpty(networkName)) {
+            setMessage("Please enter name of new network.", DialogPage.ERROR);
             setPageComplete(false);
             return;
+        }else if (restrictedNames.contains(networkName)){
+            setMessage("Network/dataset with same name already exist in project.", DialogPage.ERROR);
+            setPageComplete(false);
+            return;            
         }
-        setDescription("");
+        setMessage("");
         setPageComplete(true);
     }
 
