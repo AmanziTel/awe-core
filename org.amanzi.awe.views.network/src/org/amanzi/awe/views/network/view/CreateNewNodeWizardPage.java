@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.views.network.view;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Map;
 
 import org.amanzi.neo.core.INeoConstants;
@@ -89,7 +91,41 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
             NewNodePropertyWrapper azimuth = new NewNodePropertyWrapper("azimuth", Integer.class, "0", false);
             if (!propertyList.contains(azimuth))
                 propertyList.add(azimuth);
+        }else if (type == NodeTypes.SITE){
+            NewNodePropertyWrapper lat = new NewNodePropertyWrapper(INeoConstants.PROPERTY_LAT_NAME, Double.class, "", false);
+            if (!propertyList.contains(lat))
+                propertyList.add(lat);
+            NewNodePropertyWrapper lon = new NewNodePropertyWrapper(INeoConstants.PROPERTY_LON_NAME, Double.class, "", false);
+            if (!propertyList.contains(lon))
+                propertyList.add(lon);
         }
+        Collections.sort(propertyList,new Comparator<PropertyWrapper>() {
+
+            @Override
+            public int compare(PropertyWrapper o1, PropertyWrapper o2) {
+                if ("name".equalsIgnoreCase(o1.getName())){
+                    return -1;
+                }
+                if ("name".equalsIgnoreCase(o2.getName())){
+                    return 1;
+                }
+                if ("ci".equalsIgnoreCase(o1.getName())){
+                    return -1;
+                }
+                if ("ci".equalsIgnoreCase(o2.getName())){
+                    return 1;
+                }
+                if ("lac".equalsIgnoreCase(o1.getName())){
+                    return -1;
+                }
+                if ("lac".equalsIgnoreCase(o2.getName())){
+                    return 1;
+                }
+                return o1.getName().compareTo(o2.getName());
+            }
+            
+        });
+        
     }
 
     /**

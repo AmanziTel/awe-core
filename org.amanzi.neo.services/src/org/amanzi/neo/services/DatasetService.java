@@ -974,9 +974,9 @@ public class DatasetService extends AbstractService {
      * @return the gis node
      */
     public GisProperties getGisNode(Node root) {
-        Relationship rel = root.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
-        Node gis;
-        if (rel == null) {
+       
+        Node gis=findGisNode(root);
+        if (gis == null) {
             Transaction tx = databaseService.beginTx();
             try {
                 gis = databaseService.createNode();
@@ -992,10 +992,25 @@ public class DatasetService extends AbstractService {
                 tx.finish();
             }
 
-        } else {
-            gis = rel.getOtherNode(root);
-        }
+        } 
         return new GisProperties(gis);
+    }
+
+
+    /**
+     * Find gis node.
+     *
+     * @param root the root
+     * @return the node
+     */
+    public Node findGisNode(Node root) {
+        Assert.isTrue(NeoUtils.isRoootNode(root));
+        Node gis=null;
+        Relationship rel = root.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
+        if (rel!=null){
+            gis=rel.getOtherNode(root);
+        }
+        return gis;
     }
 
     /**

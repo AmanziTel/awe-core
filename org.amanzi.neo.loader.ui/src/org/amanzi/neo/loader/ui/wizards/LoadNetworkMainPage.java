@@ -30,6 +30,7 @@ import org.amanzi.neo.loader.core.IValidateResult;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -165,7 +166,8 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
                 if (networkName==null||networkName.trim().isEmpty()){
                     networkName=new java.io.File(getFileName()).getName(); 
                     network.setText(networkName);
-                    networkNode = members.get(networkName);
+                    changeNetworkName();
+                    return;
                 }
                 update();
             }
@@ -379,8 +381,31 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
     protected void changeNetworkName() {
         networkName = network.getText();
         networkNode = members.get(networkName);
+        if (networkNode!=null){
+            Node gis = NeoServiceFactory.getInstance().getDatasetService().findGisNode(networkNode);
+            if (gis!=null){
+                CoordinateReferenceSystem crs = NeoUtils.getCRS(gis, null);
+                if (crs!=null){
+                    selectCRS.setEnabled(false);
+                    setSelectedCRS(crs);
+                }else{
+                    selectCRS.setEnabled(true);
+                    setSelectedCRS(getDefaultCRS());
+                }
+            }else{
+                selectCRS.setEnabled(true);
+                setSelectedCRS(getDefaultCRS());               
+            }
+        }
         updateLabelNetwDescr();
         update();
+    }
+    private void setSelectedCRS(CoordinateReferenceSystem result) {
+        if (result == null) {
+            return;
+        }
+        selectedCRS = result;
+        updateButtonLabel();
     }
 
 }

@@ -151,7 +151,7 @@ public class RrcModel<M extends RrcModelHandler> {
         if (crs == null) {
             Node gis = NeoUtils.findGisNodeByChild(network, service);
             if (gis != null) {
-                crs = NeoUtils.getCRS(gis, service, null);
+                crs = NeoUtils.getCRS(gis, null);
             } else {
                 IntraMatrixProvider.LOGGER.debug("Not fount CRS for network");
                 return null;

@@ -182,7 +182,7 @@ public class UpdateLayerListener {
             IMap map = layer.getMap();
             CoordinateReferenceSystem crs = null;
             if (event.isNeedCentered()) {
-                crs=NeoUtils.getCRS(gis, null, null);
+                crs=NeoUtils.getCRS(gis, null);
 //                if (gis.hasProperty(INeoConstants.PROPERTY_CRS_NAME)) {
 //                    crs = CRS.decode(gis.getProperty(INeoConstants.PROPERTY_CRS_NAME).toString());
 //                } else if (gis.hasProperty(INeoConstants.PROPERTY_CRS_HREF_NAME)) {

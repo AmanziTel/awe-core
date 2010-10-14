@@ -2699,13 +2699,11 @@ public class NeoUtils {
      * Gets the cRS.
      * 
      * @param gisNode the gis node
-     * @param service the service
      * @param defaultCRS the default crs
      * @return the cRS
      */
-    public static CoordinateReferenceSystem getCRS(Node gisNode, GraphDatabaseService service, CoordinateReferenceSystem defaultCRS) {
+    public static CoordinateReferenceSystem getCRS(Node gisNode, CoordinateReferenceSystem defaultCRS) {
         CoordinateReferenceSystem crs = defaultCRS; // default if crs cannot be found below
-        Transaction tx = beginTx(service);
         try {
             if (gisNode.hasProperty(INeoConstants.PROPERTY_WKT_CRS)) {
                 crs = CRS.parseWKT((String)gisNode.getProperty(INeoConstants.PROPERTY_WKT_CRS));
@@ -2724,9 +2722,7 @@ public class NeoUtils {
         } catch (Exception crs_e) {
             System.err.println("Failed to interpret CRS: " + crs_e.getMessage());
             crs_e.printStackTrace(System.err);
-        } finally {
-            finishTx(tx);
-        }
+        } 
         return crs;
     }
 

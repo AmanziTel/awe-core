@@ -242,7 +242,7 @@ public class GeoNeo extends NeoServiceProviderListener {
      */
     public CoordinateReferenceSystem getCRS(CoordinateReferenceSystem defaultCRS) {
         if (crs == null) {
-            crs=NeoUtils.getCRS(gisNode, null,defaultCRS);
+            crs=NeoUtils.getCRS(gisNode, defaultCRS);
 //            crs = defaultCRS; // default if crs cannot be found below
 //            try {
 //                if (gisNode.hasProperty(INeoConstants.PROPERTY_CRS_NAME)) {
