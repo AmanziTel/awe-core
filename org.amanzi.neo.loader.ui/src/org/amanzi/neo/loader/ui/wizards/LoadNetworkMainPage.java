@@ -22,6 +22,8 @@ import java.util.Set;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NetworkTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.db.manager.DatabaseManager.DatabaseAccessType;
@@ -29,9 +31,14 @@ import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.IValidateResult;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
+import org.amanzi.neo.loader.ui.preferences.CommonCRSPreferencePage;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.jface.preference.IPreferenceNode;
+import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.preference.PreferenceManager;
+import org.eclipse.jface.preference.PreferenceNode;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -44,6 +51,8 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.traversal.TraversalDescription;
@@ -254,6 +263,38 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
      *
      */
     protected void selectCRS() {
+        CoordinateReferenceSystem result = ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<CoordinateReferenceSystem>() {
+
+            private CoordinateReferenceSystem result;
+
+            @Override
+            public CoordinateReferenceSystem getValue() {
+                return result;
+            }
+
+            @Override
+            public void run() {
+                result = null;
+                CommonCRSPreferencePage page = new CommonCRSPreferencePage();
+                page.setSelectedCRS(getSelectedCRS());
+                page.setTitle("Select Coordinate Reference System");
+                page.setSubTitle("Select the coordinate reference system from the list of commonly used CRS's, or add a new one with the Add button");
+                page.init(PlatformUI.getWorkbench());
+                PreferenceManager mgr = new PreferenceManager();
+                IPreferenceNode node = new PreferenceNode("1", page); //$NON-NLS-1$
+                mgr.addToRoot(node);
+                Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+                PreferenceDialog pdialog = new PreferenceDialog(shell, mgr);;
+                if (pdialog.open() == PreferenceDialog.OK) {
+                    page.performOk();
+                    result = page.getCRS();
+                }
+
+            }
+
+        });
+
+        setSelectedCRS(result);
     }
 
 
