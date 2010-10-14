@@ -13,6 +13,8 @@ public class NeoServicesUiPlugin extends AbstractUIPlugin {
 
 	// The shared instance
 	private static NeoServicesUiPlugin plugin;
+	private UiService service=null;
+	private  Object mon=new Object();
 	
 	/**
 	 * The constructor
@@ -37,7 +39,22 @@ public class NeoServicesUiPlugin extends AbstractUIPlugin {
 		plugin = null;
 		super.stop(context);
 	}
-
+	
+	/**
+	 * Gets the ui service.
+	 *
+	 * @return the ui service
+	 */
+	public UiService getUiService(){
+	    if (service==null){
+	        synchronized (mon) {
+	            if (service==null){
+	                service=new UiService();
+	            }
+            }
+	    }
+	    return service;
+	}
 	/**
 	 * Returns the shared instance
 	 *

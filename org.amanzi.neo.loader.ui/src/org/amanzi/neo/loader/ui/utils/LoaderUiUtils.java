@@ -52,6 +52,7 @@ import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
+import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -83,8 +84,7 @@ public class LoaderUiUtils extends LoaderUtils{
      * @return
      */
     public static String getAweProjectName() {
-        IMap map = ApplicationGIS.getActiveMap();
-        return map == ApplicationGIS.NO_MAP ? ApplicationGIS.getActiveProject().getName() : map.getProject().getName();
+        return NeoServicesUiPlugin.getDefault().getUiService().getActiveProjectName();
     }
 
 

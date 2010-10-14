@@ -1,6 +1,5 @@
 package org.amanzi.neo.services;
 
-import org.neo4j.graphdb.GraphDatabaseService;
 
 /* AWE - Amanzi Wireless Explorer
  * http://awe.amanzi.org
@@ -25,29 +24,30 @@ import org.neo4j.graphdb.GraphDatabaseService;
  */
 public class NeoServiceFactory {
     
-    private static NeoServiceFactory instance = null;
-    
+    private static NeoServiceFactory instance = new NeoServiceFactory();
+    private Object datasetMon=new Object();
     private DatasetService datasetService = null;
     
-    public static synchronized NeoServiceFactory getInstance() {
-        if (instance == null) {
-            instance = new NeoServiceFactory();
-        }
+    public static  NeoServiceFactory getInstance() {
         return instance;
     }
     
-    public synchronized DatasetService getDatasetService() {
+    public  DatasetService getDatasetService() {
         if (datasetService == null) {
-            datasetService = new DatasetService();
+            synchronized (datasetMon) {
+                if (datasetService == null) {
+                    datasetService = new DatasetService();
+                }
+            }
         }
         return datasetService;
     }
-    public synchronized DatasetService getDatasetService(GraphDatabaseService neo) {
-        if (datasetService == null) {
-            datasetService = new DatasetService(neo);
-        }
-        return datasetService;
-    }
+//    public synchronized DatasetService getDatasetService(GraphDatabaseService neo) {
+//        if (datasetService == null) {
+//            datasetService = new DatasetService(neo);
+//        }
+//        return datasetService;
+//    }
     
     
 }
