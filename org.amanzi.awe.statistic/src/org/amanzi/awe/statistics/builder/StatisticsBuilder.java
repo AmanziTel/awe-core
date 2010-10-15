@@ -79,7 +79,7 @@ public class StatisticsBuilder {
         this.neo = neo;
         this.ruby = ruby;
         this.dataset = dataset;
-        dsService = getDatasetService(dataset);
+       
     }
 
     /**
@@ -97,6 +97,7 @@ public class StatisticsBuilder {
         // validate(dataset, template);
         mainTx = neo.beginTx();
         try {
+            dsService = getDatasetService(dataset);
             monitor.beginTask("Building statistics", IProgressMonitor.UNKNOWN);
             DatasetStatistics statisticsRoot = findOrCreateStatisticsRoot(dataset, template);
             Dimension networkDimension = statisticsRoot.getNetworkDimension();
