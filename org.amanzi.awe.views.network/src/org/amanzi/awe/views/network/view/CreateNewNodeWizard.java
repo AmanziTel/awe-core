@@ -23,8 +23,8 @@ import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.EditPropertiesPage.PropertyWrapper;
+import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.IndexManager;
 import org.amanzi.neo.services.NeoServiceFactory;
@@ -68,49 +68,42 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
     public boolean performFinish() {
         Node network = NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId());
 
-        // DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
-        // if (ds.getNodeType(sourceNode).equals(iNodeType)) {
-        //
-        // } else {
-        //
-        // }
+        Node parentnode;
+        DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
+        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+        boolean needCheckStructure = true;
+        if (ds.getNodeType(sourceNode).equals(iNodeType)) {
+            parentnode = NeoUtils.getParent(service, sourceNode);
+            needCheckStructure = false;
+        } else {
+            parentnode = sourceNode;
+        }
 
+        // Creating new node
+        Transaction tx = service.beginTx();
         try {
+            Node targetNode = service.createNode();
+            targetNode.setProperty("type", iNodeType.getId());
+            parentnode.createRelationshipTo(targetNode, NetworkRelationshipTypes.CHILD);
 
-            // Creating new node
-            DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
-            GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
-            Transaction tx = service.beginTx();
-            try {
-                Node targetNode = service.createNode();
-                targetNode.setProperty("type", iNodeType.getId());
-                sourceNode.createRelationshipTo(targetNode, NetworkRelationshipTypes.CHILD);
-                // NodeTypes type = NodeTypes.getEnumById(iNodeType.getId());
-                // if (type != null) {
-                // IPropertyHeader ph =
-                // PropertyHeader.getPropertyStatistic(NeoUtils.getParentNode(sourceNode,
-                // NodeTypes.NETWORK.getId()));
-                // Map<String, Object> statisticProperties = ph.getStatisticParams(type);
-                // for (String key : statisticProperties.keySet()) {
-                // targetNode.setProperty(key, statisticProperties.get(key));
-                // }
-                // }
-                IPropertyHeader ph = PropertyHeader.getPropertyStatistic(NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId()));
-                List<PropertyWrapper> properties = page.getProperties();
-                IndexManager indexManader = ds.getIndexManader(ds.findRootByChild(targetNode));
-                for (PropertyWrapper propertyWrapper : properties) {
-                    targetNode.setProperty(propertyWrapper.getName(), propertyWrapper.getParsedValue());
-                    ph.updateStatistic(iNodeType.getId(), propertyWrapper.getName(), propertyWrapper.getParsedValue(), null);
-                    indexManader.updateIndexes(targetNode, propertyWrapper.getName(), null);
-                }
-
-                tx.success();
-            } catch (Exception e) {
-                e.printStackTrace();
-                tx.failure();
-            } finally {
-                tx.finish();
+            IPropertyHeader ph = PropertyHeader.getPropertyStatistic(network);
+            List<PropertyWrapper> properties = page.getProperties();
+            IndexManager indexManader = ds.getIndexManader(ds.findRootByChild(targetNode));
+            for (PropertyWrapper propertyWrapper : properties) {
+                targetNode.setProperty(propertyWrapper.getName(), propertyWrapper.getParsedValue());
+                ph.updateStatistic(iNodeType.getId(), propertyWrapper.getName(), propertyWrapper.getParsedValue(), null);
+                indexManader.updateIndexes(targetNode, propertyWrapper.getName(), null);
             }
+
+            tx.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            tx.failure();
+        } finally {
+            tx.finish();
+        }
+
+        if (needCheckStructure) {
             // Change structure
             INodeType sourceType = ds.getNodeType(sourceNode);
 
@@ -130,13 +123,10 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
                 }
                 ds.setStructure(network, newStructureTypes);
             }
-
-            NeoServiceProvider.getProvider().commit();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
         }
+
+        NeoServiceProvider.getProvider().commit();
+
         // TODO imho need to use service for updating layer
         Node gisNode = NeoUtils.findGisNodeByChild(sourceNode);
         NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(new UpdateLayerEvent(gisNode));

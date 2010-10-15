@@ -153,14 +153,10 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
     }
 
     private void initPropertiesForCreating() {
-        DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
-        INodeType type = ds.getNodeType(sourceNode);
-        if (type != null) {
-            IPropertyHeader ph = PropertyHeader.getPropertyStatistic(NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId()));
-            Map<String, Object> statisticProperties = ph.getStatisticParams(type);
-            for (String key : statisticProperties.keySet()) {
-                propertyList.add(new NewNodePropertyWrapper(key, statisticProperties.get(key).getClass(), statisticProperties.get(key).toString(), false));
-            }
+        IPropertyHeader ph = PropertyHeader.getPropertyStatistic(NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId()));
+        Map<String, Object> statisticProperties = ph.getStatisticParams(nodeType);
+        for (String key : statisticProperties.keySet()) {
+            propertyList.add(new NewNodePropertyWrapper(key, statisticProperties.get(key).getClass(), statisticProperties.get(key).toString(), false));
         }
 
     }
