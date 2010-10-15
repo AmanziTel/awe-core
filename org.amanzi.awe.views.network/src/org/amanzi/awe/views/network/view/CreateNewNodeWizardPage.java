@@ -24,7 +24,6 @@ import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.EditPropertiesPage;
 import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
@@ -35,8 +34,11 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.index.lucene.LuceneIndexService;
+import org.neo4j.neoclipse.property.RelationshipTypes;
 
 /**
  * <p>
@@ -51,6 +53,7 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
     /** int VIEVER_HEIGHT_HINT field */
     private static final int VIEVER_HEIGHT_HINT = 150;
     private final Node sourceNode;
+    private Boolean copy;
 
     /**
      * @param pageName
@@ -65,8 +68,7 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
     @Override
     public void initProperty() {
 
-        DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
-        if (ds.getNodeType(sourceNode).equals(nodeType)) {
+        if (isCopy()) {
             initPropertyForCopy();
         } else {
             initPropertiesForCreating();
@@ -145,7 +147,7 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
             if (INeoConstants.PROPERTY_NAME_NAME.equals(key) || INeoConstants.PROPERTY_TYPE_NAME.equals(key)) {
                 // skip
             } else {
-                NewNodePropertyWrapper wr = new NewNodePropertyWrapper(key, String.class, String.valueOf(sourceNode.getProperty(key, "")), false);
+                NewNodePropertyWrapper wr = new NewNodePropertyWrapper(key, sourceNode.getProperty(key).getClass(), String.valueOf(sourceNode.getProperty(key, "")), false);
                 if (!propertyList.contains(wr))
                     propertyList.add(wr);
             }
@@ -192,15 +194,32 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
         if (nodeType == NodeTypes.SECTOR) {
             PropertyWrapper ciWr = null;
             PropertyWrapper lacWr = null;
+            PropertyWrapper name = null;
             for (int i = 0; i < propertyList.size(); i++) {
                 if (propertyList.get(i).getName().equals(INeoConstants.PROPERTY_SECTOR_CI))
                     ciWr = propertyList.get(i);
                 if (propertyList.get(i).getName().equals(INeoConstants.PROPERTY_SECTOR_LAC))
                     lacWr = propertyList.get(i);
+                if (propertyList.get(i).getName().equals(INeoConstants.PROPERTY_NAME_NAME))
+                    name = propertyList.get(i);
             }
             try {
-                Node sector = NeoUtils.findSector(network, Integer.valueOf(ciWr.getDefValue()), Integer.valueOf(lacWr.getDefValue()), null, true, NeoServiceProvider
-                        .getProvider().getIndexService(), NeoServiceProvider.getProvider().getService());
+                Node parent;
+                if (isCopy()) {
+                     parent = NeoUtils.getParent(NeoServiceProvider.getProvider().getService(), sourceNode);
+                }else{
+                    parent = sourceNode;
+                }                     
+                     for (Relationship rel : parent.getRelationships(RelationshipTypes.CHILD, Direction.OUTGOING)) {
+                        if(name.getDefValue().equals(rel.getEndNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, ""))){
+                            setMessage(String.format("Sector node with name = '%s' is alredy exist for this Site node", name.getDefValue()), DialogPage.ERROR);
+                            setPageComplete(false);
+                            return;
+                        }
+                    }
+
+                Node sector = NeoUtils.findSector(network, (Integer)ciWr.getParsedValue(), (Integer)lacWr.getParsedValue(), null, true, NeoServiceProvider.getProvider()
+                        .getIndexService(), NeoServiceProvider.getProvider().getService());
                 if (sector != null) {
                     setMessage(String.format("Sector node with CI = '%s' and LAC = '%s' is alredy exist", ciWr.getDefValue(), lacWr.getDefValue()), DialogPage.ERROR);
                     setPageComplete(false);
@@ -214,7 +233,7 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
             }
         }
 
-        setMessage(getNormalDescription());
+        setDescription(getNormalDescription());
         setPageComplete(true);
         return;
     }
@@ -333,4 +352,11 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
         return new NewNodeColLabelProvider(id);
     }
 
+    public boolean isCopy() {
+        if (copy != null)
+            return copy;
+        copy = NeoServiceFactory.getInstance().getDatasetService().getNodeType(sourceNode).equals(nodeType);
+        return copy;
+
+    }
 }

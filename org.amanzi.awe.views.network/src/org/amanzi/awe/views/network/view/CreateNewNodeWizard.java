@@ -131,7 +131,7 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
         Node gisNode = NeoUtils.findGisNodeByChild(sourceNode);
         NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(new UpdateLayerEvent(gisNode));
         // TODO imho need to use service for updating Tree View
-        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDrillDownEvent(network, "org.amanzi.neo.wizards.CreateNetworkWizard"));
+        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDrillDownEvent(parentnode, "org.amanzi.neo.wizards.CreateNetworkWizard"));
 
         return true;
     }
@@ -143,11 +143,11 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
         DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
         if (ds.getNodeType(sourceNode).equals(iNodeType)) {
             setWindowTitle("Copy node");
-            page = new CreateNewNodeWizardPage("Copy node", "Copy " + iNodeType, iNodeType, sourceNode);
+            page = new CreateNewNodeWizardPage("Copy node", "Copy " + iNodeType.getId(), iNodeType, sourceNode);
             addPage(page);
         } else {
             setWindowTitle("Create new node");
-            page = new CreateNewNodeWizardPage("Create new node", "Create new " + iNodeType, iNodeType, sourceNode);
+            page = new CreateNewNodeWizardPage("Create new node", "Create new " + iNodeType.getId(), iNodeType, sourceNode);
             addPage(page);
         }
     }
