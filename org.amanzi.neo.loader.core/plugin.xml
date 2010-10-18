@@ -14,5 +14,44 @@
             id="org.amanzi.neo.loader.core.parser.LineParser">
       </parser>
    </extension>
+   <extension
+         point="org.amanzi.loader.core.saver">
+      <saver
+            class="org.amanzi.neo.loader.core.saver.impl.NeighbourSaver"
+            id="org.amanzi.neo.loader.core.saver.impl.NeighbourSaver">
+      </saver>
+      <saver
+            class="org.amanzi.neo.loader.core.saver.impl.Nemo1xSaver"
+            id="org.amanzi.neo.loader.core.saver.impl.Nemo1xSaver">
+      </saver>
+      <saver
+            class="org.amanzi.neo.loader.core.saver.impl.Nemo2xSaver"
+            id="org.amanzi.neo.loader.core.saver.impl.Nemo2xSaver">
+      </saver>
+      <saver
+            class="org.amanzi.neo.loader.core.saver.impl.NetworkSiteSaver"
+            id="org.amanzi.neo.loader.core.saver.impl.NetworkSiteSaver">
+      </saver>
+      <saver
+            class="org.amanzi.neo.loader.core.saver.impl.ProbeSaver"
+            id="org.amanzi.neo.loader.core.saver.impl.ProbeSaver">
+      </saver>
+      <saver
+            class="org.amanzi.neo.loader.core.saver.impl.RomesSaver"
+            id="org.amanzi.neo.loader.core.saver.impl.RomesSaver">
+      </saver>
+      <saver
+            class="org.amanzi.neo.loader.core.saver.impl.TemsSaver"
+            id="org.amanzi.neo.loader.core.saver.impl.TemsSaver">
+      </saver>
+      <saver
+            class="org.amanzi.neo.loader.core.saver.impl.TransmissionSaver"
+            id="org.amanzi.neo.loader.core.saver.impl.TransmissionSaver">
+      </saver>
+      <saver
+            class="org.amanzi.neo.loader.core.saver.impl.NetworkSaver"
+            id="org.amanzi.neo.loader.core.saver.impl.NetworkSaver">
+      </saver>
+   </extension>
 
 </plugin>

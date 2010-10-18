@@ -81,37 +81,37 @@
              description="Network Sector Data"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             saver="org.amanzi.neo.loader.savers.NetworkSaver">
+             saver="org.amanzi.neo.loader.core.saver.impl.NetworkSaver">
        </loader>
        <loader
              description="Network Site Data"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             saver="org.amanzi.neo.loader.savers.NetworkSiteSaver">
+             saver="org.amanzi.neo.loader.core.saver.impl.NetworkSiteSaver">
        </loader>
        <loader
              description="TEMS data"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             saver="org.amanzi.neo.loader.savers.TemsSaver">
+             saver="org.amanzi.neo.loader.core.saver.impl.TemsSaver">
        </loader>
        <loader
              description="ROMES data"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             saver="org.amanzi.neo.loader.savers.RomesSaver">
+             saver="org.amanzi.neo.loader.core.saver.impl.RomesSaver">
        </loader>
        <loader
              description="Nemo v2x data"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              parser="org.amanzi.neo.loader.core.parser.LineParser"
-             saver="org.amanzi.neo.loader.savers.Nemo2xSaver">
+             saver="org.amanzi.neo.loader.core.saver.impl.Nemo2xSaver">
        </loader>
        <loader
              description="Nemo data v1.86"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              parser="org.amanzi.neo.loader.core.parser.LineParser"
-             saver="org.amanzi.neo.loader.savers.Nemo1xSaver">
+             saver="org.amanzi.neo.loader.core.saver.impl.Nemo1xSaver">
        </loader>
     </extension>
 
