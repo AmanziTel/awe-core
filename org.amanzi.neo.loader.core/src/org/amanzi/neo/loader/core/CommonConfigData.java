@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.loader.core.parser.IConfigurationData;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /* AWE - Amanzi Wireless Explorer
  * http://awe.amanzi.org
@@ -42,6 +43,16 @@ public class CommonConfigData implements IConfigurationData {
     /** The db root name. */
     private String dbRootName;
     private FileFilter filter;
+    private CoordinateReferenceSystem crs=null;
+    
+    public CoordinateReferenceSystem getCrs() {
+        return crs;
+    }
+
+    public void setCrs(CoordinateReferenceSystem crs) {
+        this.crs = crs;
+    }
+
     private final Map<String,Object>additionalProperties=new HashMap<String, Object>();
     
     /**

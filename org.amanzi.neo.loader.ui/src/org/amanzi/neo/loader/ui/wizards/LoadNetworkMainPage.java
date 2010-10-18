@@ -407,6 +407,7 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
             return false;           
         }
         configurationData.setProjectName(LoaderUiUtils.getAweProjectName());
+        configurationData.setCrs(getSelectedCRS());
         configurationData.setDbRootName(networkName);
         configurationData.setRoot(file);
         IValidateResult result = getSelectedLoader().getValidator().validate(configurationData);

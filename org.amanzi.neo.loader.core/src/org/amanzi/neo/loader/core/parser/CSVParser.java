@@ -22,6 +22,7 @@ import java.io.InputStreamReader;
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.CountingFileInputStream;
 import org.amanzi.neo.loader.core.ProgressEventImpl;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -154,10 +155,27 @@ public class CSVParser extends CommonFilesParser<BaseTransferData, CommonConfigD
 
     @Override
     protected BaseTransferData getInitData(CommonConfigData properties) {
-         initdata = new BaseTransferData();
+        initdata = new BaseTransferData();
         initdata.setProjectName(properties.getProjectName());
         initdata.setRootName(properties.getDbRootName());
+        CoordinateReferenceSystem crs = properties.getCrs();
+        setCrs(initdata,crs);
         return initdata;
+    }
+
+
+    /**
+     * Sets the crs.
+     *TODO move no utility
+     * @param data the data
+     * @param crs the crs
+     */
+    protected void setCrs(BaseTransferData data, CoordinateReferenceSystem crs) {
+        if (crs!=null){
+            data.put("CRS", crs.toWKT());
+        }else{
+            data.remove("CRS");
+        }
     }
 
     @Override

@@ -21,6 +21,7 @@ import java.nio.charset.Charset;
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.CountingFileInputStream;
 import org.amanzi.neo.loader.core.ProgressEventImpl;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * <p>
@@ -104,9 +105,22 @@ public class LineParser extends CommonFilesParser<LineTransferData, CommonConfig
         initdata = new LineTransferData();
         initdata.setProjectName(properties.getProjectName());
         initdata.setRootName(properties.getDbRootName());
+        setCrs(initdata, properties.getCrs());
         return initdata;
     }
-
+    /**
+     * Sets the crs.
+     *TODO move no utility
+     * @param data the data
+     * @param crs the crs
+     */
+    protected void setCrs(BaseTransferData data, CoordinateReferenceSystem crs) {
+        if (crs!=null){
+            data.put("CRS", crs.toWKT());
+        }else{
+            data.remove("CRS");
+        }
+    }
     @Override
     protected LineTransferData getStartupElement(FileElement element) {
         LineTransferData result = new LineTransferData();

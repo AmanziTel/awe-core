@@ -90,28 +90,16 @@
              saver="org.amanzi.neo.loader.core.saver.impl.NetworkSiteSaver">
        </loader>
        <loader
-             description="TEMS data"
+             description="Neighbour Loader"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             saver="org.amanzi.neo.loader.core.saver.impl.TemsSaver">
+             saver="org.amanzi.neo.loader.core.saver.impl.NeighbourSaver">
        </loader>
        <loader
-             description="ROMES data"
+             description="Transmission Loader"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             saver="org.amanzi.neo.loader.core.saver.impl.RomesSaver">
-       </loader>
-       <loader
-             description="Nemo v2x data"
-             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
-             parser="org.amanzi.neo.loader.core.parser.LineParser"
-             saver="org.amanzi.neo.loader.core.saver.impl.Nemo2xSaver">
-       </loader>
-       <loader
-             description="Nemo data v1.86"
-             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
-             parser="org.amanzi.neo.loader.core.parser.LineParser"
-             saver="org.amanzi.neo.loader.core.saver.impl.Nemo1xSaver">
+             saver="org.amanzi.neo.loader.core.saver.impl.TransmissionSaver">
        </loader>
     </extension>
 
