@@ -338,8 +338,8 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
      * @return array of GIS nodes
      */
     private String[] getGisItems() {
-        // TODO find in active project?
-        TraversalDescription td = NeoUtils.getTDRootNodes(null);
+        final String  projectName = LoaderUiUtils.getAweProjectName();
+        TraversalDescription td = NeoUtils.getTDRootNodesOfProject(projectName, null);
         Node refNode = DatabaseManager.getInstance().getCurrentDatabaseService().getReferenceNode();
         restrictedNames.clear();
         members = new HashMap<String, Node>();
@@ -432,12 +432,12 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
                     setSelectedCRS(crs);
                 }else{
                     selectCRS.setEnabled(true);
-                    setSelectedCRS(getDefaultCRS());
                 }
             }else{
                 selectCRS.setEnabled(true);
-                setSelectedCRS(getDefaultCRS());               
             }
+        }else{
+            selectCRS.setEnabled(true);
         }
         updateLabelNetwDescr();
         update();
