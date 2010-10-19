@@ -16,6 +16,7 @@ package org.amanzi.neo.loader.ui.validators;
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.ILoaderInputValidator;
 import org.amanzi.neo.loader.core.IValidateResult;
+import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 
 /**
  * <p>
@@ -25,10 +26,12 @@ import org.amanzi.neo.loader.core.IValidateResult;
  * @since 1.0.0
  */
 public class NeighbourDataValidator implements ILoaderInputValidator<CommonConfigData>{
-
+    private String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
+    
     @Override
     public IValidateResult validate(CommonConfigData data) {
-        return null;
+        return ValidatorUtils.checkFileAndHeaders(data.getRoot(), 3, new String[]{DataLoadPreferences.NE_CI,DataLoadPreferences.NE_ADJ_CI}, possibleFieldSepRegexes);
+
     }
 
     @Override

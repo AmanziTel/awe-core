@@ -95,13 +95,15 @@
              description="Neighbour Loader"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             saver="org.amanzi.neo.loader.core.saver.impl.NeighbourSaver">
+             saver="org.amanzi.neo.loader.core.saver.impl.NeighbourSaver"
+             validator="org.amanzi.neo.loader.ui.validators.NeighbourDataValidator">
        </loader>
        <loader
              description="Transmission Loader"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             saver="org.amanzi.neo.loader.core.saver.impl.TransmissionSaver">
+             saver="org.amanzi.neo.loader.core.saver.impl.TransmissionSaver"
+             validator="org.amanzi.neo.loader.ui.validators.TransmissionDataValidator">
        </loader>
     </extension>
 

@@ -20,24 +20,22 @@ import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 
 /**
  * <p>
- * Validator for network sector data
+ *Transmission data validator
  * </p>
- * 
  * @author tsinkel_a
  * @since 1.0.0
  */
-public class NetworkSectorDataValidator implements ILoaderInputValidator<CommonConfigData>{
-
+public class TransmissionDataValidator implements ILoaderInputValidator<CommonConfigData>{
     private String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
-
+    
     @Override
     public IValidateResult validate(CommonConfigData data) {
-        return ValidatorUtils.checkFileAndHeaders(data.getRoot(), 3, new String[]{DataLoadPreferences.NH_SECTOR,DataLoadPreferences.NH_LATITUDE}, possibleFieldSepRegexes);
+        return ValidatorUtils.checkFileAndHeaders(data.getRoot(), 3, new String[]{DataLoadPreferences.TR_SITE_ID_SERV,DataLoadPreferences.TR_SITE_ID_NEIB}, possibleFieldSepRegexes);
     }
 
     @Override
     public void filter(CommonConfigData data) {
     }
 
-
 }
+
