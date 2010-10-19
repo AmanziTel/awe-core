@@ -175,7 +175,7 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
         }
         for (int i = 0; i < propertyList.size(); i++) {
             PropertyWrapper wr = propertyList.get(i);
-            if (wr.getName().equals(INeoConstants.PROPERTY_NAME_NAME)) {
+            if (nodeType != NodeTypes.SECTOR && wr.getName().equals(INeoConstants.PROPERTY_NAME_NAME)) {
                 LuceneIndexService luceneInd = NeoServiceProvider.getProvider().getIndexService();
                 String key = NeoUtils.getLuceneIndexKeyByProperty(network, INeoConstants.PROPERTY_NAME_NAME, nodeType);
                 if (luceneInd.getNodes(key, wr.getParsedValue()).size() > 0) {
