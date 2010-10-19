@@ -542,6 +542,10 @@ public class Charts {
             if (rangeAxisLablel != null)
                 xyPlot.getRangeAxis().setLabel(rangeAxisLablel);
             ValueAxis domainAxis = xyPlot.getDomainAxis();
+            if (domainAxis==null){
+                domainAxis=new DateAxis("Time");
+                xyPlot.setDomainAxis(domainAxis);
+            }
             if (domainAxisLabel != null) {
                 domainAxis.setLabel(domainAxisLabel);
             }

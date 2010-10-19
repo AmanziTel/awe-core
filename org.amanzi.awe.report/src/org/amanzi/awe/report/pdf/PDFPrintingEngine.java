@@ -38,6 +38,7 @@ import org.amanzi.awe.report.model.IReportPart;
 import org.amanzi.awe.report.model.Report;
 import org.amanzi.awe.report.model.ReportImage;
 import org.amanzi.awe.report.model.ReportMap;
+import org.amanzi.awe.report.model.ReportTable;
 import org.amanzi.awe.report.model.ReportText;
 import org.apache.log4j.Logger;
 import org.jdom.adapters.XercesDOMAdapter;
@@ -45,6 +46,7 @@ import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.title.TextTitle;
 
+import com.lowagie.text.Cell;
 import com.lowagie.text.Document;
 import com.lowagie.text.Font;
 import com.lowagie.text.Image;
@@ -52,8 +54,11 @@ import com.lowagie.text.ImgTemplate;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Rectangle;
+import com.lowagie.text.SimpleTable;
+import com.lowagie.text.Table;
 import com.lowagie.text.pdf.DefaultFontMapper;
 import com.lowagie.text.pdf.PdfContentByte;
+import com.lowagie.text.pdf.PdfTable;
 import com.lowagie.text.pdf.PdfTemplate;
 import com.lowagie.text.pdf.PdfWriter;
 
@@ -83,7 +88,7 @@ public class PDFPrintingEngine {
         final Rectangle paperSize = PageSize.A4;
         Rectangle paperRectangle = paperSize;
         y = paperSize.getTop() - INDENTATION - SPACE_VERTICAL;
-        Document document = new Document(paperRectangle, 0f, 0f, 0f, 0f);
+        Document document = new Document(PageSize.A4, 30, 30,30, 30);
         String fileName = System.getProperty("user.home") + File.separator + REPORT_DIRECTORY;
         File directory = new File(fileName);
         if (!directory.exists()) {
@@ -139,8 +144,8 @@ public class PDFPrintingEngine {
                     img.setIndentationLeft(INDENTATION);
                     img.setIndentationRight(INDENTATION);
                     document.add(img);
+                    System.out.println("Added map");
                 } else if (part instanceof Chart) {
-                    // document.newPage();
                     Chart chart = (Chart)part;
                     // create chart
                     final JFreeChart jFreeChart = Charts.createChart(chart);
@@ -152,8 +157,15 @@ public class PDFPrintingEngine {
                         jFreeChart.removeLegend();
                     ChartUtilities.applyCurrentTheme(jFreeChart);
 
-                    int width = chart.getWidth();
+                    int width = Math.min((int)PageSize.A4.getWidth(),chart.getWidth());
                     int height = chart.getHeight();
+                    float scalefactorH = Math.min(1, paperSize.getHeight() / height);
+                    float scalefactorW = Math.min(1, (paperSize.getWidth() - 2 * INDENTATION) / width);
+                    float scalefactor = Math.min(scalefactorH, scalefactorW);
+                    
+                    width *= scalefactor;
+                    height *= scalefactor;
+                    
                     PdfContentByte cb = writer.getDirectContent();
                     PdfTemplate tp = cb.createTemplate(width, height);
                     Graphics2D g2 = tp.createGraphics(width, height, new DefaultFontMapper());
@@ -165,10 +177,8 @@ public class PDFPrintingEngine {
                     image.setIndentationRight(INDENTATION);
                     image.setAlignment(Image.ALIGN_MIDDLE);
                     document.add(image);
-
-                    float scalefactorH = Math.min(1, paperSize.getHeight() / height);
-                    float scalefactorW = Math.min(1, (paperSize.getWidth() - 2 * INDENTATION) / width);
-                    float scalefactor = Math.min(scalefactorH, scalefactorW);
+                    System.out.println("Added chart");
+               
 
                 } else if (part instanceof ReportText) {
                     ReportText text = (ReportText)part;
@@ -176,11 +186,45 @@ public class PDFPrintingEngine {
                     paragraph.setIndentationLeft(INDENTATION);
                     paragraph.setIndentationRight(INDENTATION);
                     document.add(paragraph);
-                    System.out.println("Added text: y=" + document.top() + "\ttop_margin=" + document.topMargin());
+                    System.out.println("Added text");
                 } else if (part instanceof ReportImage) {
                     ReportImage image = (ReportImage)part;
                     Image img = Image.getInstance(image.getImageFileName());
                     document.add(img);
+                } else if (part instanceof ReportTable) {
+                    ReportTable table = (ReportTable)part;
+                    String[] headers = table.getHeaders();
+                    int n = headers.length;
+                    Table pdfTable = new Table(n);
+                    pdfTable.setPadding(5);
+//                    pdfTable.setWidth(1);
+
+                    Cell pdfCell = new Cell(table.getTitle());
+                    pdfCell.setColspan(n);
+                    pdfTable.addCell(pdfCell);
+                    pdfCell.setHorizontalAlignment(Cell.ALIGN_CENTER);
+                    System.out.println("Added table title");
+                    
+
+                    for (String header : headers) {
+                        pdfCell = new Cell(header);
+                        pdfCell.setHeader(true);
+                        pdfCell.setGrayFill(0.751f);
+                        pdfTable.addCell(pdfCell);
+                    }
+                    System.out.println("Added table headers");
+                    //force headers to  be printed on every page
+                    pdfTable.endHeaders();
+                    for (String[] row : table.getTableItems()) {
+                        for (String cell : row) {
+                            pdfTable.addCell(cell);
+                        }
+                        System.out.println("Added table row");
+                    }
+                    // large table have to be splitted
+                    pdfTable.setTableFitsPage(false);
+                    document.add(pdfTable);
+                    System.out.println("Added table");
                 }
             }
             document.newPage();
