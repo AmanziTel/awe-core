@@ -81,13 +81,15 @@
              description="Network Sector Data"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             saver="org.amanzi.neo.loader.core.saver.impl.NetworkSaver">
+             saver="org.amanzi.neo.loader.core.saver.impl.NetworkSaver"
+             validator="org.amanzi.neo.loader.ui.validators.NetworkSectorDataValidator">
        </loader>
        <loader
              description="Network Site Data"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             saver="org.amanzi.neo.loader.core.saver.impl.NetworkSiteSaver">
+             saver="org.amanzi.neo.loader.core.saver.impl.NetworkSiteSaver"
+             validator="org.amanzi.neo.loader.ui.validators.NetworkSiteDataValidator">
        </loader>
        <loader
              description="Neighbour Loader"

@@ -38,6 +38,7 @@ import org.amanzi.neo.loader.core.parser.IConfigurationData;
 import org.amanzi.neo.loader.core.parser.IDataElement;
 import org.amanzi.neo.loader.core.parser.IParser;
 import org.amanzi.neo.loader.core.saver.ISaver;
+import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 /**
@@ -51,7 +52,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 public class Loader<T extends IDataElement, T2 extends IConfigurationData> implements ILoader<T, T2> {
     private final ILoaderInputValidator<T2> fakeValidator = new ILoaderInputValidator<T2>() {
 
-        private IValidateResult unknownResult = new ValidateResultImpl(Result.UNKNOWN, "fake validator");
+        private IValidateResult unknownResult = new ValidateResultImpl(Result.UNKNOWN, NeoLoaderPluginMessages.Loader_fake_validator);
 
         @Override
         public IValidateResult validate(T2 data) {

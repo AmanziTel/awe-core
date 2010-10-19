@@ -177,7 +177,7 @@ public class LaunchLoader extends AbstractHandler {
         }
         
         try {
-            return (ILoaderInputValidator< ? extends IConfigurationData>)element.createExecutableExtension(validatorClass);
+            return (ILoaderInputValidator< ? extends IConfigurationData>)element.createExecutableExtension("validator");
         } catch (CoreException e) {
             // TODO Handle IllegalAccessException
             e.printStackTrace();

@@ -20,7 +20,10 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.loader.core.CommonConfigData;
+import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.ui.IWorkbench;
 
 /**
  * <p>
@@ -48,7 +51,11 @@ public class NetworkImportWizard extends AbstractLoaderWizard<CommonConfigData> 
         }
         return data;
     }
-
+@Override
+public void init(IWorkbench workbench, IStructuredSelection selection) {
+    super.init(workbench, selection);
+    setWindowTitle(NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_TITLE);
+}
     @Override
     public boolean performFinish() {
         if (super.performFinish()) {

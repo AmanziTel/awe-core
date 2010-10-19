@@ -13,14 +13,13 @@
 
 package org.amanzi.neo.loader.core.parser;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.CountingFileInputStream;
+import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.loader.core.ProgressEventImpl;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -121,37 +120,14 @@ public class CSVParser extends CommonFilesParser<BaseTransferData, CommonConfigD
      */
     private char getDelimiters(File file) {
         if (delimeters == null) {
-            String fieldSepRegex = "\t";
-            BufferedReader read=null;
-            String line;
-            try {
-                read = new BufferedReader(new FileReader(file));
-                while ((line = read.readLine()) != null) {
-                    int maxMatch = 0;
-                    for (String regex : possibleFieldSepRegexes) {
-                        String[] fields = line.split(regex);
-                        if (fields.length > maxMatch) {
-                            maxMatch = fields.length;
-                            fieldSepRegex = regex;
-                        }
-                    }
-                    if (maxMatch>=minSize){
-                        break;
-                    }
-                }
-            } catch (IOException e) {
-                exception(e);
-            }finally{
-                try {
-                    read.close();
-                } catch (IOException e) {
-                    exception(e);
-                };
-            }
+            
+            String fieldSepRegex = LoaderUtils.defineDelimeters(file,minSize,possibleFieldSepRegexes);
             delimeters = fieldSepRegex.charAt(0);
         }
         return delimeters;
     }
+
+
 
     @Override
     protected BaseTransferData getInitData(CommonConfigData properties) {

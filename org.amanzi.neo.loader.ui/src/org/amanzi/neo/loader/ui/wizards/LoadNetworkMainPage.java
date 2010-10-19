@@ -28,13 +28,16 @@ import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.db.manager.DatabaseManager.DatabaseAccessType;
 import org.amanzi.neo.loader.core.CommonConfigData;
+import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.IValidateResult;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
+import org.amanzi.neo.loader.core.parser.IDataElement;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.preferences.CommonCRSPreferencePage;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferenceManager;
@@ -83,8 +86,6 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
      */
     public static final String[] NETWORK_FILE_EXTENSIONS = {"*.*","*.csv", "*.txt", "*.sxc", "*.xls", "*.xml"};
 
-    /** The Constant PAGE_TITLE. */
-    private static final String PAGE_TITLE = NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_TITLE;
     
     /** The Constant PAGE_DESCR. */
     private static final String PAGE_DESCR = NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_DESCR;
@@ -99,7 +100,6 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
     private Combo networkType;
     protected String networkName=""; //$NON-NLS-1$
     
-    private boolean needCheckFilds;
 
     private Button selectCRS;
 
@@ -110,8 +110,7 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
      */
     public LoadNetworkMainPage() {
         super("mainNetworkPage");
-        setTitle(PAGE_TITLE);
-        setDescription(PAGE_DESCR);
+        setTitle(PAGE_DESCR);
         networkNode = null;
 
     }
@@ -119,7 +118,6 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
 
     @Override
     public void createControl(Composite parent) {
-        needCheckFilds = false;
         main = new Group(parent, SWT.NULL);
         main.setLayout(new GridLayout(3, false));
         Label label = new Label(main, SWT.LEFT);
@@ -171,7 +169,6 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 setFileName(editor.getStringValue());
-                needCheckFilds = true;
                 if (networkName==null||networkName.trim().isEmpty()){
                     networkName=new java.io.File(getFileName()).getName(); 
                     network.setText(networkName);
@@ -326,11 +323,25 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
      * @param fileName file name
      */
     protected void setFileName(String fileName) {
+        if (this.fileName!=null&&this.fileName.equals(fileName)){
+            return;
+        }
         this.fileName = fileName;
+        CommonConfigData configurationData = getConfigurationData();
+        configurationData.setRoot(new File(fileName));
+        ILoader< ? extends IDataElement, CommonConfigData> loader = autodefine(configurationData);
+        int id=setSelectedLoader(loader);
+        if (id>=0){
+            networkType.select(id);
+        }
         update();
         // editor.store();
         LoaderUiUtils.setDefaultDirectory(editor.getDefaulDirectory());
     }
+
+
+
+
 
     /**
      * Forms list of GIS nodes
@@ -382,28 +393,25 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
     @Override
     protected boolean validateConfigData(CommonConfigData configurationData) {
         //TODO must be refactoring after change loaders
-        if(!needCheckFilds){
-            return false;
-        }
         if (fileName==null){
-            setDescription(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE); 
+            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE,DialogPage.ERROR); 
             return false;
         }
         File file = new File(fileName);
         if (!(file.isAbsolute() && file.exists())){
-            setDescription(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE); 
+            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE,DialogPage.ERROR); 
             return false;         
         }
         if ( StringUtils.isEmpty(networkName)){
-            setDescription(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_NETWORK);  
+            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_NETWORK,DialogPage.ERROR); 
             return false;
         }
         if (restrictedNames.contains(networkName)){
-            setDescription(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_RESTRICTED_NETWORK_NAME); 
+            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_RESTRICTED_NETWORK_NAME,DialogPage.ERROR);  
             return false;
         }
         if (getSelectedLoader() == null){
-            setDescription(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_TYPE); 
+            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_TYPE,DialogPage.ERROR); 
             return false;           
         }
         configurationData.setProjectName(LoaderUiUtils.getAweProjectName());
@@ -412,10 +420,13 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         configurationData.setRoot(file);
         IValidateResult result = getSelectedLoader().getValidator().validate(configurationData);
         if (result.getResult()==Result.FAIL){
-            setDescription(String.format(result.getMessages(), getSelectedLoader().getDescription())); 
+            setMessage(String.format(result.getMessages(), getSelectedLoader().getDescription()),DialogPage.ERROR); 
             return false;          
+        }else if (result.getResult()==Result.UNKNOWN){
+            setMessage(String.format(result.getMessages(), getSelectedLoader().getDescription()),DialogPage.WARNING); 
+        }else{
+            setMessage(""); //$NON-NLS-1$
         }
-        setDescription(NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_DESCR); //$NON-NLS-1$
         return true;
     }
 

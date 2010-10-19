@@ -297,6 +297,8 @@ public class NeoLoaderPluginMessages extends NLS {
     public static String CTXN_tx_cont_0;
     public static String CTXN_tx_cont_1;
 
+    public static String Loader_fake_validator;
+
     public static String RemoteServerUrlPage_0;
 
     public static String RemoteServerUrlPage_1;

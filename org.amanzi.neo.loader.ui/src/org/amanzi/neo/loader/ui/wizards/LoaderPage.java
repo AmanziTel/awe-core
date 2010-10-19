@@ -16,6 +16,8 @@ package org.amanzi.neo.loader.ui.wizards;
 import java.util.ArrayList;
 
 import org.amanzi.neo.loader.core.ILoader;
+import org.amanzi.neo.loader.core.IValidateResult;
+import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.core.parser.IConfigurationData;
 import org.amanzi.neo.loader.core.parser.IDataElement;
 import org.eclipse.core.runtime.CoreException;
@@ -33,7 +35,7 @@ import org.eclipse.jface.wizard.WizardPage;
  */
 public abstract class LoaderPage<T extends IConfigurationData> extends WizardPage implements ILoaderPage<T> {
 
-    private ArrayList<ILoader< ? extends IDataElement, T>> loaders=new ArrayList<ILoader<? extends IDataElement,T>>();
+    private ArrayList<ILoader< ? extends IDataElement, T>> loaders = new ArrayList<ILoader< ? extends IDataElement, T>>();
 
     /**
      * Instantiates a new loader page.
@@ -54,6 +56,32 @@ public abstract class LoaderPage<T extends IConfigurationData> extends WizardPag
         }
     }
 
+    protected ILoader< ? extends IDataElement, T> autodefine(T data) {
+        ILoader< ? extends IDataElement, T> loader = getSelectedLoader();
+        ILoader< ? extends IDataElement, T> candidate=null;
+        if (loader != null) {
+            IValidateResult validateResult = loader.getValidator().validate(data);
+            if (validateResult.getResult() == Result.SUCCESS ) {
+                return loader;
+            }else if (validateResult.getResult()==Result.UNKNOWN){
+                candidate=loader;
+            }
+        }
+        if (loaders.isEmpty()) {
+            AbstractLoaderWizard<T> wizard = (AbstractLoaderWizard<T>)getWizard();
+            loaders.addAll(wizard.getLoaders());
+        }
+        for (ILoader< ? extends IDataElement, T> loadr:loaders){
+            Result result = loadr.getValidator().validate(data).getResult();
+            if (result==Result.SUCCESS){
+                return loadr;
+            }else if (candidate==null&&result==Result.UNKNOWN){
+                candidate=loadr;
+            }
+        }
+        return candidate;
+    }
+
     /**
      * update
      */
@@ -63,50 +91,56 @@ public abstract class LoaderPage<T extends IConfigurationData> extends WizardPag
 
     /**
      * Gets the loaders descriptions.
-     *
+     * 
      * @return the loaders descriptions
      */
     protected String[] getLoadersDescriptions() {
-        if (loaders.isEmpty()){
+        if (loaders.isEmpty()) {
             AbstractLoaderWizard<T> wizard = (AbstractLoaderWizard<T>)getWizard();
             loaders.addAll(wizard.getLoaders());
         }
-        String[] result=new String[loaders.size()];
+        String[] result = new String[loaders.size()];
         for (int i = 0; i < result.length; i++) {
-            result[i]=loaders.get(i).getDescription();
+            result[i] = loaders.get(i).getDescription();
         }
-        return result;      
+        return result;
     }
 
     @Override
     public void setWizard(IWizard newWizard) {
         if (newWizard instanceof AbstractLoaderWizard) {
             super.setWizard(newWizard);
-        }else{
+        } else {
             throw new IllegalArgumentException();
         }
     }
 
     protected void selectLoader(int selectionIndex) {
         ILoader< ? extends IDataElement, T> loader;
-        if (selectionIndex<0||selectionIndex>=loaders.size()){
-            loader=null;
-        }else{
+        if (selectionIndex < 0 || selectionIndex >= loaders.size()) {
+            loader = null;
+        } else {
             loader = loaders.get(selectionIndex);
         }
+        setSelectedLoader(loader);
+    }
+    protected int setSelectedLoader(ILoader< ? extends IDataElement, T> loader) {
         AbstractLoaderWizard<T> wizard = (AbstractLoaderWizard<T>)getWizard();
         wizard.setSelectedLoader(loader);
-   }
+        return loader==null?-1:loaders.indexOf(loader);
+    }
     
+
     /**
      * Gets the selected loader.
-     *
+     * 
      * @return the selected loader
      */
-    protected ILoader< ? extends IDataElement, T> getSelectedLoader(){
+    protected ILoader< ? extends IDataElement, T> getSelectedLoader() {
         AbstractLoaderWizard<T> wizard = (AbstractLoaderWizard<T>)getWizard();
         return wizard.getSelectedLoader();
     }
+
     /**
      * Gets the configuration data.
      * 
@@ -116,7 +150,7 @@ public abstract class LoaderPage<T extends IConfigurationData> extends WizardPag
         IWizard wizard = getWizard();
         return ((AbstractLoaderWizard<T>)wizard).getConfigurationData();
     }
-    
+
     /**
      * Validate config data.
      * 
