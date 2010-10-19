@@ -21,6 +21,7 @@ public class TemsRemoteUrlLoader extends TEMSLoader {
     	super(datasetName, display, datasetName, mNode, virtualMnode);
         this.url = url;
         dataset = datasetName;
+        System.out.println("URL to load :: " + url);
     }
     
     
@@ -41,13 +42,26 @@ public class TemsRemoteUrlLoader extends TEMSLoader {
         NeoUtils.addTransactionLog(mainTx, Thread.currentThread(), "temsUrlLoader");
         try {
             InputStream inputStream = url.openStream();
+            if(monitor.isCanceled()) {
+            	return;
+            }
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, characterSet);
             reader = new BufferedReader(inputStreamReader);
+            if(monitor.isCanceled()) {
+            	return;
+            }
             initializeIndexes();
+            if(monitor.isCanceled()) {
+            	return;
+            }
             int prevLineNumber = 0;
             String line;
             headerWasParced = !needParceHeaders();
             while ((line = reader.readLine()) != null) {
+                if(monitor.isCanceled()) {
+                	return;
+                }
+
                 lineNumber++;
                 System.out.println(line);
                 if (!headerWasParced) {
@@ -64,11 +78,19 @@ public class TemsRemoteUrlLoader extends TEMSLoader {
                     break;
 
             }
+            if(monitor.isCanceled()) {
+            	return;
+            }
             commit(true);
             saveProperties();
             finishUpIndexes();
             finishUp();
         } finally {
+            if(monitor.isCanceled()) {
+            	mainTx.failure();
+            	mainTx.finish();
+            	throw new IOException("Operation Cancelled");
+            }
             commit(false);
             if (reader != null) {
                 reader.close();

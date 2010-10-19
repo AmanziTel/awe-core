@@ -195,7 +195,8 @@ public class DatasetImportUrlWizardPage extends WizardPage {
      */
     public String getUrl() {
     	
-    	String completeUrl = url + "/event/extract.csv?dataset=" + imsi.substring(0, 5) + "&imsi=" + imsi + "&imei=" + imei;
+    	//String completeUrl = url + "/event/extract.csv?dataset=" + imsi.trim().substring(0, 5) + "&imsi=" + imsi.trim() + "&imei=" + imei.trim();
+    	String completeUrl = url + "/event/extract.csv?dataset=" + imsi.trim().substring(0, 5);
         return completeUrl;
     }
 

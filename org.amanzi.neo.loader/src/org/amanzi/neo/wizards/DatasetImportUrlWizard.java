@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
@@ -38,11 +39,13 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.PlatformUI;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.Traverser.Order;
 
@@ -220,7 +223,14 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
         } catch (IOException e) {
             NeoLoaderPlugin.exception(e);
         }
-        handleSelect(monitor, driveLoader.getRootNodes());
+        try {
+        	handleSelect(monitor, driveLoader.getRootNodes());
+        } catch (Exception e) {
+        	//MessageDialog.
+    		//MessageDialog.openInformation(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "Error loading data", "Please try again");
+        	AweConsolePlugin.error("Error loading data, Please try again");
+    		driveLoader = null;
+        }
         if (driveLoader != null) {
             try {
                 DriveLoader.finishUpGis();
