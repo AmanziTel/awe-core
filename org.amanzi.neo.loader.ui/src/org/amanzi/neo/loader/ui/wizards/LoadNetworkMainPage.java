@@ -88,7 +88,6 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
 
     
     /** The Constant PAGE_DESCR. */
-    private static final String PAGE_DESCR = NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_DESCR;
     private String fileName;
     private Composite main;
     protected Combo network;
@@ -110,9 +109,8 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
      */
     public LoadNetworkMainPage() {
         super("mainNetworkPage");
-        setTitle(PAGE_DESCR);
+        setTitle(NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_DESCR);
         networkNode = null;
-
     }
 
 

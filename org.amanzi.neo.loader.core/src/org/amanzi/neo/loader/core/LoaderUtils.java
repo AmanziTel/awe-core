@@ -95,10 +95,25 @@ public class LoaderUtils {
      * @return file extension
      */
     public static String getFileExtension(String fileName) {
-        int idx = fileName.lastIndexOf(".");
-        return idx < 1 ? "" : fileName.substring(idx);
+        return getFileExtension(fileName,true);
     }
-
+    /**
+     * get file extension
+     * 
+     * @param fileName - file name
+     * @return file extension
+     */
+    public static String getFileExtension(String fileName,boolean returnDot) {
+        int idx = fileName.lastIndexOf(".");
+        if (idx<0){
+            return "";
+        }
+        if (returnDot){
+            fileName.substring(idx);
+        }
+        idx++;
+        return idx<fileName.length()?fileName.substring(idx):"";
+    }
     public static File getFirstFile(String dirName) {
         File file = new File(dirName);
         if (file.isFile()) {

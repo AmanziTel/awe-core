@@ -74,6 +74,10 @@
              class="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              id="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard">
        </GUI>
+       <GUI
+             class="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
+             id="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard">
+       </GUI>
     </extension>
     <extension
           point="org.amanzi.neo.loader.ui.loaders">
