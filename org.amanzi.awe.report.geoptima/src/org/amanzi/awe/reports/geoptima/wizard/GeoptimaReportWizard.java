@@ -36,12 +36,14 @@ import org.amanzi.awe.report.wizards.SelectDataPage;
 import org.amanzi.awe.reports.geoptima.GeoptimaReportsPlugin;
 import org.amanzi.awe.views.reuse.Distribute;
 import org.amanzi.awe.views.reuse.Select;
+import org.amanzi.awe.views.reuse.views.DefaultColorer;
 import org.amanzi.awe.views.reuse.views.ReuseAnalyserModel;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.TEMSLoader;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
@@ -64,13 +66,14 @@ import com.vividsolutions.jts.geom.Envelope;
  * @since 1.0.0
  */
 public class GeoptimaReportWizard extends Wizard implements IWizard {
-
+    private static final Logger LOGGER = Logger.getLogger(GeoptimaReportWizard.class);
     public static final String WIZARD_TITLE = "GeOptimA Report Wizard";
     private SelectDataPage selectDataPage;
     private ReportModel reportModel;
     private static final String MESSAGE = "%s (Step %d of %d)";
     private static final int STEP_COUNT = 5;
     private int step = 0;
+    private List<Node> datasetNodes=new ArrayList<Node>();
 
     @Override
     public void addPages() {
@@ -110,8 +113,7 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
             String path = scriptURL.getPath();
             reportModel = new ReportModel(new String[] {FileLocator.resolve(entry).getFile()}, new String[] {path});
         } catch (Exception e1) {
-            // TODO Handle IOException
-            e1.printStackTrace();
+            LOGGER.error(e1.getLocalizedMessage(), e1);
             throw (RuntimeException)new RuntimeException().initCause(e1);
         }
     }
@@ -132,7 +134,7 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
                 }
             });
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error(e.getLocalizedMessage(), e);
             // TODO Handle IOException
             throw (RuntimeException)new RuntimeException().initCause(e);
         } finally {
@@ -158,7 +160,7 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
                     IService curService;
                     try {
                         curService = LoaderUiUtils.getMapService();
-                        System.out.print("MapService " + curService);
+                        LOGGER.debug("MapService " + curService);
                         IMap map = ApplicationGIS.getActiveMap();
                         // map.getBounds(null).init(120.848, 121.147, 14.641, 14.765);
                         ViewportModel viewportModel = (ViewportModel)map.getViewportModel();
@@ -166,7 +168,7 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
                         viewportModel.setBounds(new Envelope(120.848, 121.147, 14.641, 14.765));
                         // // viewportModel.setBounds(new Envelope(120.0, 121.1, 14.6, 14.7));
                         LinkedHashMap<String, Node> allDatasetNodes = NeoUtils.getAllDatasetNodes(service);
-                        System.out.println("There were created " + allDatasetNodes.size() + " datasets");
+                        LOGGER.debug("There were created " + allDatasetNodes.size() + " datasets");
                         for (Entry<String, Node> entry : allDatasetNodes.entrySet()) {
                             Node node = entry.getValue();
                             // add node to map
@@ -175,19 +177,19 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
                             List<ILayer> layerList = new ArrayList<ILayer>();
                             List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
                             Node gisNode = NeoUtils.getGisNodeByDataset(node);
-                            System.out.println("gisNode " + gisNode);
+                            LOGGER.debug("gisNode " + gisNode);
                             IGeoResource iGeoResource = LoaderUiUtils.getResourceForGis(curService, map, gisNode);
-                            System.out.println("iGeoResource " + iGeoResource);
+                            LOGGER.debug("iGeoResource " + iGeoResource);
                             if (iGeoResource != null) {
                                 listGeoRes.add(iGeoResource);
                             }
                             layerList.addAll(ApplicationGIS.addLayersToMap(map, listGeoRes, 0));
                             // LoaderUtils.zoomToLayer(layerList);
-                            System.out.println("Finished.");
+                            LOGGER.debug("Finished.");
                             monitor.worked(1);
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        LOGGER.error(e.getLocalizedMessage(), e);
                         // TODO Handle IOException
                         throw (RuntimeException)new RuntimeException().initCause(e);
                     } finally {
@@ -196,7 +198,7 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
                 }
             });
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error(e.getLocalizedMessage(), e);
             // TODO Handle InterruptedException
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
@@ -239,48 +241,49 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     monitor.beginTask("Creation distributions", filesCount);
                     int i = 0;
-                    for (Entry<String, Node> entry : NeoUtils.getAllDatasetNodes(service).entrySet()) {
+                    for (Node node : datasetNodes) {
                         i++;
-                        Node node = entry.getValue();
 
                         String datasetName = node.getProperty("name").toString();
                         monitor.subTask(datasetName.toString());
 
-                        // String[] fields = new String[] {"signal_strength"};
-                        String[] fields = new String[] {"signal_strength", "imei", "rxqual", "ec_io"};
+                         String[] fields = new String[] {"signal_strength"};
+//                        String[] fields = new String[] {"signal_strength", "imei", "rxqual", "ec_io"};
                         // String[] fields =
                         // PropertyHeader.getPropertyStatistic(node).getNumericFields(NodeTypes.M.getId());
 
-//                        for (String field : fields) {
-//                            updateMessage("Dataset (" + i + " of " + filesCount + "):\n" + datasetName
-//                                    + "\nBuiding statistics for '" + field);
-//                            ReuseAnalyserModel model = new ReuseAnalyserModel(new HashMap<String, String[]>(),
-//                                    getPropertyReturnableEvaluator(node), service);
-//                            Transaction tx = NeoUtils.beginTransaction();
-//                            try {
-//                                model.setCurrenTransaction(tx);
-//                                model.findOrCreateAggregateNode(node, field, false, Distribute.AUTO.toString(), Select.EXISTS
-//                                        .toString(), monitor);
-//                                tx = model.getCurrenTransaction();
-//                                tx.success();
-//                            } catch (Exception e) {
-//                                e.printStackTrace();
-//                            } finally {
-//                                monitor.done();
-//                                tx.finish();
-//                            }
-//                        }
+                        for (String field : fields) {
+                            updateMessage("Dataset (" + i + " of " + filesCount + "):\n" + datasetName
+                                    + "\nBuiding statistics for '" + field);
+                            ReuseAnalyserModel model = new ReuseAnalyserModel(new HashMap<String, String[]>(),
+                                    getPropertyReturnableEvaluator(node), service);
+                            Transaction tx = NeoUtils.beginTransaction();
+                            try {
+                                model.setCurrenTransaction(tx);
+                                Node aggregation = model.findOrCreateAggregateNode(node, field, false, Distribute.AUTO.toString(), Select.EXISTS
+                                        .toString(), monitor);
+                                tx = model.getCurrenTransaction();
+                                tx.success();
+                                DefaultColorer.addColors(aggregation, service);
+                            } catch (Exception e) {
+                                LOGGER.error(e.getLocalizedMessage(), e);
+                            } finally {
+                                monitor.done();
+                                tx.finish();
+                            }
+                        }
                         ReuseAnalyserModel model = new ReuseAnalyserModel(new HashMap<String, String[]>(),
                                 getPropertyReturnableEvaluator(node), service);
                         Transaction tx = NeoUtils.beginTransaction();
                         try {
                             model.setCurrenTransaction(tx);
-                            model.findOrCreateAggregateNode(node, "event_id", true, Distribute.AUTO.toString(), Select.EXISTS
+                            Node aggregation = model.findOrCreateAggregateNode(node, "event_id", true, Distribute.AUTO.toString(), Select.EXISTS
                                     .toString(), monitor);
+                            DefaultColorer.addColors(aggregation, service);
                             tx = model.getCurrenTransaction();
                             tx.success();
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            LOGGER.error(e.getLocalizedMessage(), e);
                         } finally {
                             monitor.done();
                             tx.finish();
@@ -290,7 +293,7 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
             });
         } catch (Exception e) {
             // TODO Handle InterruptedException
-            e.printStackTrace();
+            LOGGER.error(e.getLocalizedMessage(), e);
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
@@ -310,6 +313,7 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
                 @Override
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
+                        datasetNodes.clear();
                         int i = 0;
                         for (File file : files) {
                             i++;
@@ -319,17 +323,23 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
                             TEMSLoader loader = new TEMSLoader(null, filepath, getShell().getDisplay(), file.getName());
                             loader.setLimit(100);
                             loader.run(monitor);
+                            Node datasetNode = loader.getDatasetNode();
+                            if (datasetNode==null){
+                                LOGGER.debug("ds==null for "+file.getName());
+                            }else{
+                                datasetNodes.add(datasetNode);
+                            }
                         }
                     } catch (IOException e) {
                         // TODO Handle IOException
-                        e.printStackTrace();
+                        LOGGER.error(e.getLocalizedMessage(), e);
                         throw (RuntimeException)new RuntimeException().initCause(e);
                     }
                 }
             });
         } catch (Exception e) {
             // TODO Handle Exception
-            e.printStackTrace();
+            LOGGER.error(e.getLocalizedMessage(), e);
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }

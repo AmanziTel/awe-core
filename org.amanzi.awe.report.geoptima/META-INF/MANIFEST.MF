@@ -22,5 +22,6 @@ Require-Bundle: org.eclipse.ui,
  net.refractions.udig.project.edit,
  net.refractions.udig.project.ui,
  org.amanzi.neo.loader.ui;bundle-version="1.0.0",
- org.amanzi.neo.loader;bundle-version="1.0.0"
+ org.amanzi.neo.loader;bundle-version="1.0.0",
+ org.apache.log4j
 Eclipse-LazyStart: true
