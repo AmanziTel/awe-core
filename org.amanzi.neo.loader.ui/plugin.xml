@@ -60,6 +60,16 @@
                       name="org.amanzi.neo.loader.ui.commands.guiId"
                       value="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard">
                 </parameter>
+             </command>
+             <command
+                   commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader"
+                   icon="icons/16/dataset.png"
+                   id="org.amanzi.neo.loader.ui.LoadLauncher"
+                   tooltip="Load dataset data">
+                <parameter
+                      name="org.amanzi.neo.loader.ui.commands.guiId"
+                      value="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard">
+                </parameter>
              </command>            
           </toolbar>
        </menuContribution>
@@ -108,6 +118,18 @@
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
              saver="org.amanzi.neo.loader.core.saver.impl.TransmissionSaver"
              validator="org.amanzi.neo.loader.ui.validators.TransmissionDataValidator">
+       </loader>
+       <loader
+             description="Tems Data"
+             gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
+             parser="org.amanzi.neo.loader.core.parser.CSVParser"
+             saver="org.amanzi.neo.loader.core.saver.impl.TemsSaver">
+       </loader>
+       <loader
+             description="Romes Data"
+             gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
+             parser="org.amanzi.neo.loader.core.parser.CSVParser"
+             saver="org.amanzi.neo.loader.core.saver.impl.RomesSaver">
        </loader>
     </extension>
 
