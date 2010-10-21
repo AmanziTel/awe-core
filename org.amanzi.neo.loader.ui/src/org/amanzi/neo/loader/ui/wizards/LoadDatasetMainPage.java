@@ -152,6 +152,7 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
     private boolean addToSelect = false;
 
     private Node rootNode;
+    private Combo cLoaders;
 
     public LoadDatasetMainPage() {
         super("mainDatasetPage");
@@ -161,7 +162,9 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
 
     @Override
     public void createControl(Composite parent) {
+        createControlForDialog(parent);
 
+        setControl(parent);
     }
 
     public void createControlForDialog(Composite parent) {
@@ -189,6 +192,24 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
         createFolderSelectionComposite(group);
         createManipulationComposite(group);
         createFileToLoadComposite(group);
+        Composite panel = new Composite(group, SWT.NONE);
+        panel.setLayout(new FormLayout());
+        GridData data = new GridData(SWT.FILL, SWT.BOTTOM, true, false);
+        panel.setLayoutData(data);
+
+        Label ldataset = new Label(panel, SWT.NONE);
+        ldataset.setText(NeoLoaderPluginMessages.NetworkSiteImportWizard_DATA_TYPE);
+        cLoaders = new Combo(panel, SWT.NONE);
+        FormData dLabel = new FormData();
+        dLabel.left = new FormAttachment(0, 5);
+        dLabel.top = new FormAttachment(cDataset, 5, SWT.CENTER);
+        ldataset.setLayoutData(dLabel);
+
+        FormData dCombo = new FormData();
+        dCombo.left = new FormAttachment(ldataset, 5);
+        dCombo.top = new FormAttachment(0, 2);
+        dCombo.width = DATASET_WIDTH;
+        cLoaders.setLayoutData(dCombo);
     }
 
     /**
