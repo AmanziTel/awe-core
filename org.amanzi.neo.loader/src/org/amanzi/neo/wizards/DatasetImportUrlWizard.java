@@ -21,9 +21,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.Map;
 
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
@@ -70,6 +72,7 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
 
     /** The dataset name. */
     private String datasetName;
+    private Node dataset = null;
 
     /** The url. */
     private URL url;
@@ -86,48 +89,7 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
     @Override
     public boolean performFinish() {
     	datasetName = mainPage.getDataset();
-        try {
-        	String urlString = mainPage.getUrl();
-        	Node datasetNode = mainPage.getDatasetNode(datasetName);
-        	
-        	if (datasetNode != null){
-        		Traverser traverser = datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
-        			@Override
-                    public boolean isReturnableNode(TraversalPosition currentPos) {
-                        if (currentPos.currentNode().hasRelationship(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING))
-                        	return false;
-        				return true;
-                    }
-        		}, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING);
-        		
-        		for (Node node: traverser){
-        			if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.M.getId())){
-        				lastMNode = findLastNode(node);
-        			}
-        			else if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.HEADER_MS)){
-        				lastMsNode  = findLastNode(node);
-        			}
-        		}
-        		
-        		String time = (String) lastMNode.getProperty(INeoConstants.PROPERTY_TIME_NAME);
-        		SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss.SSS");
-        		Date date = new Date();
-        		try {
-        			date = format.parse(time);
-        		} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-        		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
-        		time = dateFormat.format(date);
-				
-        		urlString = urlString + "&start=" + time;
-        	}
-            url = new URL(urlString);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-            return false;
-        }
+
         runLoadingJob();
         return true;
     }
@@ -171,7 +133,7 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
 
         /** The job display. */
         private final Display jobDisplay;
-
+        
         /**
          * Instantiates a new load drive job.
          * 
@@ -200,7 +162,89 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
         }
 
     }
+    
+    private void findDataset(String datasetName) {
+    	Traverser allDatasetTraverser = NeoCorePlugin.getDefault().getProjectService().getAllDatasetTraverser(
+                NeoServiceProvider.getProvider().getService().getReferenceNode());
+        
 
+        for (Node node : allDatasetTraverser) {
+        	if(((String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME)).equals(datasetName)) {
+        		dataset = node;
+        		return;
+        	}
+        }
+    }
+
+    private String getNextUrl() {
+    	lastMNode = null;
+    	lastMsNode = null;
+    	String urlString = mainPage.getUrl() + "&numEvents=10000";
+    	
+    	if(dataset == null) {
+    		findDataset(this.datasetName);
+    	}
+    	if (dataset != null){
+    		Traverser traverser = dataset.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
+    			@Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    if (currentPos.currentNode().hasRelationship(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING))
+                    	return false;
+    				return true;
+                }
+    		}, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING);
+    		
+    		for (Node node: traverser){
+    			if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.M.getId())){
+    				lastMNode = findLastNode(node);
+    			}
+    			else if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(INeoConstants.HEADER_MS)){
+    				lastMsNode  = findLastNode(node);
+    			}
+    		}
+    		
+    		if(lastMNode != null) {
+	    		String time = (String) lastMNode.getProperty(INeoConstants.PROPERTY_TIME_NAME);
+	    		SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss.SSS");
+	    		Date date = new Date();
+	    		try {
+	    			date = format.parse(time);
+	    		} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	    		
+	    		String imei=null, imsi=null;
+	    		Object ob1 = lastMNode.getProperty("imei");
+	    		Object ob2 = lastMNode.getProperty("imsi");
+	
+	    		if(ob1 instanceof Float) {
+	    			imei = Long.toString(((Float)ob1).longValue());
+	    		} else if(ob1 instanceof Integer) {
+		    			imei = Long.toString(((Integer)ob1).longValue());
+	    		} else if(ob1 instanceof Long) {
+	    			imei = ((Long)ob1).toString();
+	    		} else {
+	    			imei = ((String)ob1);
+	    		}
+	    		if(ob2 instanceof Float) {
+	    			imsi = Long.toString(((Float)ob2).longValue());
+	    		} else if(ob2 instanceof Integer) {
+		    			imsi = Long.toString(((Integer)ob2).longValue());
+	    		} else if(ob2 instanceof Long) {
+	    			imsi = ((Long)ob2).toString();
+	    		} else {
+	    			imsi = ((String)ob2);
+	    		}
+	    		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+	    		time = dateFormat.format(date);
+				
+	    		urlString = urlString + "&start=" + time + "&imei=" + imei+ "&imsi=" + imsi;
+    		}
+    	}
+    	return urlString;
+    }
+    
     /**
      * Load drive data.
      * 
@@ -212,17 +256,54 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
             monitor = new NullProgressMonitor();
         }
         DriveLoader driveLoader = null;
-        try {
 
-//            driveLoader = new GPSRemoteUrlLoader(url, datasetName, display);
-        	driveLoader = new TemsRemoteUrlLoader(url, datasetName, display, lastMNode, lastMsNode);
+        Node prev_lastMNode = null;
+        Node prev_lastMsNode = null;
+        int eventsCnt = 0;
+        while(true) {
+			String urlStr = getNextUrl();
 
-            driveLoader.run(monitor);
-            driveLoader.printStats(false);
-            driveLoader.clearCaches();
-        } catch (IOException e) {
-            NeoLoaderPlugin.exception(e);
-        }
+			try {
+				if (prev_lastMNode == lastMNode && lastMNode != null) {
+					// exit condition
+					break;
+				}
+				if (lastMNode == null && eventsCnt > 0) {
+					urlStr += "&skipCount=" + eventsCnt;
+				} else {
+					if (lastMNode != null && lastMNode == prev_lastMNode
+							&& eventsCnt > 0) {
+						urlStr += "&skipCount=" + eventsCnt;
+					} else {
+						eventsCnt = 0;
+					}
+				}
+				prev_lastMNode = lastMNode;
+				prev_lastMsNode = lastMsNode;
+				url = new URL(urlStr);
+
+				driveLoader = new TemsRemoteUrlLoader(url, datasetName,display, datasetName, lastMNode, lastMsNode);
+
+				driveLoader.run(monitor);
+				driveLoader.printStats(false);
+				driveLoader.clearCaches();
+				
+				//lastEventData = ((TemsRemoteUrlLoader)driveLoader).getLastProcessedEvent();
+				if(((TemsRemoteUrlLoader)driveLoader).getEventProcessedCount() ==0 ) {
+					break;
+				}
+				eventsCnt += 1000;
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+				break;
+			} catch (IOException e) {
+				NeoLoaderPlugin.exception(e);
+				break;
+			}
+		}
+        
+        
+        
         try {
         	handleSelect(monitor, driveLoader.getRootNodes());
         } catch (Exception e) {

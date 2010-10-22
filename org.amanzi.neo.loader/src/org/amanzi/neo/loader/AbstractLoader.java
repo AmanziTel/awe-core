@@ -166,6 +166,12 @@ public abstract class AbstractLoader {
                 return value;
             } catch (Exception e) {
                 try {
+                    long value = Long.parseLong(field);
+                    incValue(value);
+                    incType(Long.class);
+                    return value;
+            	}catch(Exception e3) {
+	                try {
                     float value = Float.parseFloat(field);
                     incValue(value);
                     incType(Float.class);
@@ -176,6 +182,7 @@ public abstract class AbstractLoader {
                     return field;
                 }
             }
+        }
         }
 
         protected void incType(Class< ? extends Object> klass) {
@@ -1288,8 +1295,12 @@ public abstract class AbstractLoader {
         for (Map.Entry<Integer, StoringProperty> entry : storingProperties.entrySet()) {
             Node storeNode = getStoringNode(entry.getKey());
             entry.getValue().storeTimeStamp(storeNode);
-            if (storeNode != null)
-                storeNode.setProperty(INeoConstants.COUNT_TYPE_NAME, entry.getValue().getDataCounter());
+            if (storeNode != null) {
+            	// RJ: if the count value already exist get the count and add to it.
+            	Long cnt = (Long)storeNode.getProperty(INeoConstants.COUNT_TYPE_NAME,new Long(0));
+            	cnt += entry.getValue().getDataCounter();
+                storeNode.setProperty(INeoConstants.COUNT_TYPE_NAME, cnt);
+            }
         }
 
     }
