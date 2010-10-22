@@ -123,7 +123,7 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
         network = new Combo(main, SWT.DROP_DOWN);
         network.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        network.setItems(getGisItems());
+        network.setItems(getRootItems());
         network.addModifyListener(new ModifyListener() {
 
             @Override
@@ -346,7 +346,7 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
      * 
      * @return array of GIS nodes
      */
-    private String[] getGisItems() {
+    private String[] getRootItems() {
         final String  projectName = LoaderUiUtils.getAweProjectName();
         TraversalDescription td = NeoUtils.getTDRootNodesOfProject(projectName, null);
         Node refNode = DatabaseManager.getInstance().getCurrentDatabaseService().getReferenceNode();

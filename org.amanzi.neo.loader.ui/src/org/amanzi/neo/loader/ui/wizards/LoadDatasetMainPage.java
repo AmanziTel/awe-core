@@ -16,14 +16,20 @@ package org.amanzi.neo.loader.ui.wizards;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -43,7 +49,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.traversal.TraversalDescription;
 
 /**
  * <p>
@@ -58,7 +64,7 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
     private static final String ASC_PAT_FILE = ".*_(\\d{6})_.*";
     private static final String FMT_PAT_FILE = ".*(\\d{4}-\\d{2}-\\d{2}).*";
     private static final String CSV_PAT_FILE = ".*(\\d{2}/\\d{2}/\\d{4}).*";
-
+    private final Set<String> restrictedNames=new HashSet<String>();
     /*
      * Minimum height of Shell
      */
@@ -111,10 +117,6 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
      */
     private List filesToLoadList;
 
-    /*
-     * Cancel button
-     */
-    private Button cancelButton;
 
     /*
      * Load button
@@ -165,6 +167,7 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
         createControlForDialog(parent);
 
         setControl(parent);
+        update();
     }
 
     public void createControlForDialog(Composite parent) {
@@ -172,10 +175,7 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
         parent.setLayout(layout);
         parent.setLayoutData(new GridData(SWT.FILL));
         loadButton = new Button(parent, SWT.NONE);
-        cancelButton = loadButton;
         createSelectFileGroup(parent);
-        cancelButton.moveBelow(null);
-        cancelButton.setVisible(false);
     }
 
     /**
@@ -314,16 +314,8 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
         dCombo.top = new FormAttachment(0, 2);
         dCombo.width = DATASET_WIDTH;
         cDataset.setLayoutData(dCombo);
+        cDataset.setItems(getRootItems());
 
-        // TODO: Check if the following line is needed
-        // Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
-        Traverser allDatasetTraverser = NeoCorePlugin.getDefault().getProjectService().getAllDatasetTraverser(NeoServiceProvider.getProvider().getService().getReferenceNode());
-        for (Node node : allDatasetTraverser) {
-            dataset.put((String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME), node);
-        }
-        String[] items = dataset.keySet().toArray(new String[0]);
-        Arrays.sort(items);
-        cDataset.setItems(items);
         cDataset.addModifyListener(new ModifyListener() {
 
             @Override
@@ -345,6 +337,32 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
         });
     }
 
+
+    /**
+     * Gets the root items.
+     *
+     * @return the root items
+     */
+    private String[] getRootItems() {
+        final String  projectName = LoaderUiUtils.getAweProjectName();
+        TraversalDescription td = NeoUtils.getTDRootNodesOfProject(projectName, null);
+        Node refNode = DatabaseManager.getInstance().getCurrentDatabaseService().getReferenceNode();
+        restrictedNames.clear();
+        dataset.clear();
+        for (Node node : td.traverse(refNode).nodes()) {
+            String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+            if (NodeTypes.DATASET.checkNode(node)) { //$NON-NLS-1$
+                dataset.put(id, node);
+            } else {
+                restrictedNames.add(id);
+            }
+        }
+
+        String[] result = dataset.keySet().toArray(new String[0]);
+        Arrays.sort(result);
+        return result;
+    }
+
     /**
      * Creates List for choosing Files
      * 
@@ -361,6 +379,11 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
 
     @Override
     protected boolean validateConfigData(CommonConfigData configurationData) {
+        String rootName = configurationData.getDbRootName();
+        if (StringUtils.isEmpty(rootName)){
+            setMessage("Select dataset",DialogPage.ERROR); 
+            return false;
+        }
         return false;
     }
 
@@ -368,14 +391,126 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
      * change dataset selection
      */
     protected void changeDatasetSelection() {
-        try {
-            Node datasetNode = dataset.get(cDataset.getText());
-            if (datasetNode != null) {
-
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            datasetName=cDataset.getText();
+            getConfigurationData().setDbRootName(datasetName);
+            update();
     }
-
+    /**
+     * Creates actions for buttons
+     * 
+     * @param parentShell Dialog Shell
+     */
+    
+    private void createActions(final Shell parentShell) {
+//        
+//        //opens Dialog for choosing files
+//        browseDialogButton.addSelectionListener(new SelectionAdapter() {
+//            
+//            @Override
+//            public void widgetSelected(SelectionEvent e) {
+//                // User has selected to open a single file
+//                FileDialog dlg = new FileDialog(parentShell, SWT.OPEN | SWT.MULTI);
+//                dlg.setText(NeoLoaderPluginMessages.DriveDialog_FileDialogTitle);
+//                dlg.setFilterPath(LoaderUiUtils.getDefaultDirectory());
+//                
+//                String fn = dlg.open();
+//              
+//                if (fn != null) {
+//                    LoaderUiUtils.setDefaultDirectory(dlg.getFilterPath());
+//                    Pattern extRegex = Pattern.compile(".*\\.(\\w+)$");
+//                    FileFilter fileFilter = null;
+//                    for (String name : dlg.getFileNames()) {
+//
+//                            addFileToLoad(name, dlg.getFilterPath(), true);
+//                            if (cDataset.getText().isEmpty()){
+//                                cDataset.setText(name);
+//                            }
+//                        }
+//                    }
+//
+//                    File[] listFiles = new File(getDefaultDirectory()).listFiles(fileFilter);
+//                    for (File file : listFiles) {
+//                        addFileToChoose(file.getName(), getDefaultDirectory(), true);
+//                    }
+//
+//                }
+//            }
+//
+//        });
+//        
+//        //adds selected files to files to load
+//        addFilesToLoaded.addSelectionListener(new SelectionAdapter() {
+//            
+//            @Override
+//            public void widgetSelected(SelectionEvent e) {
+//                for (String fileName : folderFilesList.getSelection()) {
+//                    addFileToLoad(fileName);
+//                }
+//            }
+//            
+//        });
+//        
+//        addAllFilesToLoaded.addSelectionListener(new SelectionAdapter() {
+//
+//            @Override
+//            public void widgetSelected(SelectionEvent e) {
+//                for (String fileName : folderFilesList.getItems()) {
+//                    addFileToLoad(fileName);
+//                }
+//            }
+//
+//        });
+//
+//        //removes selected files from files to load
+//        removeFilesFromLoaded.addSelectionListener(new SelectionAdapter() {
+//            
+//            @Override
+//            public void widgetSelected(SelectionEvent e) {
+//                for (String fileName : filesToLoadList.getSelection()) {
+//                    removeFileToLoad(fileName);
+//                }
+//            }
+//            
+//        });
+//        removeAllFilesFromLoaded.addSelectionListener(new SelectionAdapter() {
+//
+//            @Override
+//            public void widgetSelected(SelectionEvent e) {
+//                for (String fileName : filesToLoadList.getItems()) {
+//                    removeFileToLoad(fileName);
+//                }
+//            }
+//
+//        });
+//        
+//        //closes dialog
+//        cancelButton.addSelectionListener(new SelectionAdapter() {
+//            
+//            @Override
+//            public void widgetSelected(SelectionEvent e) {
+//                dialogShell.close();
+//            }
+//            
+//        });
+//        
+//        //loads Drive data from chosen files        
+//        loadButton.addSelectionListener(new SelectionAdapter() {
+//            
+//            @Override
+//            public void widgetSelected(SelectionEvent e) {
+//                runLoadingJob();                
+//            }
+//
+//
+//            
+//        });
+//        cDataset.addModifyListener(new ModifyListener() {
+//            
+//            @Override
+//            public void modifyText(ModifyEvent e) {
+//                checkLoadButton();
+//            }
+//        });
+        
+    }
 }
