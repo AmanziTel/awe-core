@@ -271,6 +271,28 @@ public class TemsRemoteUrlLoader extends DriveLoader {
 		};
 		addMappedHeader(1, "all_sqi_mos", "All-SQI MOS", "all_sqi_mos",
 				floatMapper);
+		addMappedHeader(1, "imei", null, "imei",
+				new StringMapper());
+		addMappedHeader(1, "imsi", null, "imsi",
+				new StringMapper());
+		addMappedHeader(1, "msisdn", null, "msisdn",
+				new StringMapper());
+		addMappedHeader(1, "manufacturer", null, "manufacturer",
+				new StringMapper());
+		addMappedHeader(1, "model", null, "model",
+				new StringMapper());
+		addMappedHeader(1, "os", null, "os",
+				new StringMapper());
+		addMappedHeader(1, "data_status", null, "data_status",
+				new StringMapper());
+		addMappedHeader(1, "sms_status", null, "sms_status",
+				new StringMapper());
+		addMappedHeader(1, "mms_status", null, "mms_status",
+				new StringMapper());
+		addMappedHeader(1, "browser_title", null, "browser_title",
+				new StringMapper());
+		addMappedHeader(1, "browser_url", null, "browser_url",
+				new StringMapper());
 	}
 
 	private void addDriveIndexes() {

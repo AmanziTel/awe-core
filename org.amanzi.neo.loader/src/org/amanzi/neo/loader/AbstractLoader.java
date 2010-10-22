@@ -890,6 +890,8 @@ public abstract class AbstractLoader {
                         Class< ? extends Object> klass = header.knownType();
                         if (klass == Integer.class) {
                             headerMap.headers.put(key, new IntegerHeader(header));
+                        } else if (klass == Long.class) {
+                            headerMap.headers.put(key, new LongHeader(header));
                         } else if (klass == Float.class) {
                             headerMap.headers.put(key, new FloatHeader(header));
                         } else {
