@@ -289,7 +289,7 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
 				prev_lastMsNode = lastMsNode;
 				url = new URL(urlStr);
 
-				driveLoader = new TemsRemoteUrlLoader(url, datasetName,display, datasetName, lastMNode, lastMsNode);
+				driveLoader = new TemsRemoteUrlLoader(url, datasetName,display, datasetName,dataset, lastMNode, lastMsNode);
 
 				driveLoader.run(monitor);
 				driveLoader.printStats(false);

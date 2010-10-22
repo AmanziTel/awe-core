@@ -89,11 +89,12 @@ public class TemsRemoteUrlLoader extends DriveLoader {
 	 * @param dataset
 	 *            to add data to
 	 */
-	public TemsRemoteUrlLoader(URL url, String filename, Display display, String dataset, Node mNode, Node virtualMnode) {
+	public TemsRemoteUrlLoader(URL url, String filename, Display display, String dataset,Node datasetNode, Node mNode, Node virtualMnode) {
 		_workDate = new GregorianCalendar();
 		_workDate.setTimeInMillis(System.currentTimeMillis());
         this.url = url;
         this.dataset = dataset;
+        this.datasetNode = datasetNode;
 		driveType = DriveTypes.TEMS;
 		this.m_node = mNode;
 		virtual_m_node = virtualMnode;
