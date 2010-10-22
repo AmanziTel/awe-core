@@ -14,6 +14,7 @@
 package org.amanzi.neo.wizards;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
@@ -22,6 +23,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.net.URLEncoder;
 
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.core.INeoConstants;
@@ -239,7 +241,12 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
 	    		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	    		time = dateFormat.format(date);
 				
-	    		urlString = urlString + "&start=" + time + "&imei=" + imei+ "&imsi=" + imsi;
+	    		try {
+					urlString = urlString + "&start=" + time + "&imei=" + URLEncoder.encode(imei, "UTF-8") + "&imsi=" + URLEncoder.encode(imsi, "UTF-8");
+				} catch (UnsupportedEncodingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
     		}
     	}
     	return urlString;
@@ -305,7 +312,7 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
         
         
         try {
-        	handleSelect(monitor, driveLoader.getRootNodes());
+        	handleSelect(monitor, new Node[] {dataset});
         } catch (Exception e) {
         	//MessageDialog.
     		//MessageDialog.openInformation(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "Error loading data", "Please try again");
