@@ -16,6 +16,9 @@ package org.amanzi.neo.loader.ui.wizards;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
+import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -49,6 +52,15 @@ public class DatasetImportWizard extends AbstractLoaderWizard<CommonConfigData>{
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle(NeoLoaderPluginMessages.TemsImportWizard_PAGE_TITLE);
         super.init(workbench, selection);
+    }
+    @Override
+    public boolean performFinish() {
+        if (super.performFinish()) {
+            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDatabaseEvent(UpdateViewEventType.GIS));
+            return true;
+        } else {
+            return false;
+        }
     }
 
 }

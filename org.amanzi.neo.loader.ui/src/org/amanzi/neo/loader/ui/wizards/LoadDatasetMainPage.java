@@ -28,6 +28,8 @@ import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.loader.core.CommonConfigData;
+import org.amanzi.neo.loader.core.IValidateResult;
+import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.apache.commons.lang.StringUtils;
@@ -401,7 +403,25 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
             setMessage("Select dataset",DialogPage.ERROR); 
             return false;
         }
-        setMessage("");
+        java.util.List<File> files = configurationData.getFileToLoad();
+        if (files==null||files.isEmpty()){
+            setMessage("Select files for import",DialogPage.ERROR); 
+            return false;            
+        }
+        if (getSelectedLoader() == null){
+            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_TYPE,DialogPage.ERROR); 
+            return false;           
+        }
+        configurationData.setProjectName(LoaderUiUtils.getAweProjectName());
+        IValidateResult result = getSelectedLoader().getValidator().validate(configurationData);
+        if (result.getResult()==Result.FAIL){
+            setMessage(String.format(result.getMessages(), getSelectedLoader().getDescription()),DialogPage.ERROR); 
+            return false;          
+        }else if (result.getResult()==Result.UNKNOWN){
+            setMessage(String.format(result.getMessages(), getSelectedLoader().getDescription()),DialogPage.WARNING); 
+        }else{
+            setMessage(""); //$NON-NLS-1$
+        }
         return true;
     }
 

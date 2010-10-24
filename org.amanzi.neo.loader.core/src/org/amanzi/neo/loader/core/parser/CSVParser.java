@@ -16,6 +16,7 @@ package org.amanzi.neo.loader.core.parser;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Calendar;
 
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.CountingFileInputStream;
@@ -158,7 +159,10 @@ public class CSVParser extends CommonFilesParser<BaseTransferData, CommonConfigD
     protected BaseTransferData getStartupElement(FileElement element) {
         BaseTransferData result=new BaseTransferData();
         result.setFileName(element.getFile().getName());
-        result.put("timestamp", String.valueOf(element.getFile().lastModified()));
+        Calendar cl=Calendar.getInstance();
+        cl.setTimeInMillis(element.getFile().lastModified());
+//        result.put("timestamp", String.valueOf(element.getFile().lastModified()));
+        result.setWorkDate(cl);
          return result;
     }
 
