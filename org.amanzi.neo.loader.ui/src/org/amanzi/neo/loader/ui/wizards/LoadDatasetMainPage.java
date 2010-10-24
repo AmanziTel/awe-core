@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.loader.ui.wizards;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -34,6 +36,7 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FormAttachment;
@@ -44,6 +47,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
@@ -165,7 +169,7 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
     @Override
     public void createControl(Composite parent) {
         createControlForDialog(parent);
-
+        createActions(parent.getShell());
         setControl(parent);
         update();
     }
@@ -174,7 +178,6 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
         GridLayout layout = layoutOneColumnNotFixedWidth;
         parent.setLayout(layout);
         parent.setLayoutData(new GridData(SWT.FILL));
-        loadButton = new Button(parent, SWT.NONE);
         createSelectFileGroup(parent);
     }
 
@@ -200,6 +203,20 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
         Label ldataset = new Label(panel, SWT.NONE);
         ldataset.setText(NeoLoaderPluginMessages.NetworkSiteImportWizard_DATA_TYPE);
         cLoaders = new Combo(panel, SWT.NONE);
+        cLoaders.setItems(getLoadersDescriptions());
+        cLoaders.addSelectionListener(new SelectionListener() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                selectLoader(cLoaders.getSelectionIndex());
+                update();
+            }
+            
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
         FormData dLabel = new FormData();
         dLabel.left = new FormAttachment(0, 5);
         dLabel.top = new FormAttachment(cDataset, 5, SWT.CENTER);
@@ -384,7 +401,8 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
             setMessage("Select dataset",DialogPage.ERROR); 
             return false;
         }
-        return false;
+        setMessage("");
+        return true;
     }
 
     /**
@@ -402,115 +420,178 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
      */
     
     private void createActions(final Shell parentShell) {
-//        
-//        //opens Dialog for choosing files
-//        browseDialogButton.addSelectionListener(new SelectionAdapter() {
-//            
-//            @Override
-//            public void widgetSelected(SelectionEvent e) {
-//                // User has selected to open a single file
-//                FileDialog dlg = new FileDialog(parentShell, SWT.OPEN | SWT.MULTI);
-//                dlg.setText(NeoLoaderPluginMessages.DriveDialog_FileDialogTitle);
-//                dlg.setFilterPath(LoaderUiUtils.getDefaultDirectory());
-//                
-//                String fn = dlg.open();
-//              
-//                if (fn != null) {
-//                    LoaderUiUtils.setDefaultDirectory(dlg.getFilterPath());
-//                    Pattern extRegex = Pattern.compile(".*\\.(\\w+)$");
-//                    FileFilter fileFilter = null;
-//                    for (String name : dlg.getFileNames()) {
-//
-//                            addFileToLoad(name, dlg.getFilterPath(), true);
-//                            if (cDataset.getText().isEmpty()){
-//                                cDataset.setText(name);
-//                            }
-//                        }
-//                    }
-//
-//                    File[] listFiles = new File(getDefaultDirectory()).listFiles(fileFilter);
-//                    for (File file : listFiles) {
-//                        addFileToChoose(file.getName(), getDefaultDirectory(), true);
-//                    }
-//
-//                }
-//            }
-//
-//        });
-//        
-//        //adds selected files to files to load
-//        addFilesToLoaded.addSelectionListener(new SelectionAdapter() {
-//            
-//            @Override
-//            public void widgetSelected(SelectionEvent e) {
-//                for (String fileName : folderFilesList.getSelection()) {
-//                    addFileToLoad(fileName);
-//                }
-//            }
-//            
-//        });
-//        
-//        addAllFilesToLoaded.addSelectionListener(new SelectionAdapter() {
-//
-//            @Override
-//            public void widgetSelected(SelectionEvent e) {
-//                for (String fileName : folderFilesList.getItems()) {
-//                    addFileToLoad(fileName);
-//                }
-//            }
-//
-//        });
-//
-//        //removes selected files from files to load
-//        removeFilesFromLoaded.addSelectionListener(new SelectionAdapter() {
-//            
-//            @Override
-//            public void widgetSelected(SelectionEvent e) {
-//                for (String fileName : filesToLoadList.getSelection()) {
-//                    removeFileToLoad(fileName);
-//                }
-//            }
-//            
-//        });
-//        removeAllFilesFromLoaded.addSelectionListener(new SelectionAdapter() {
-//
-//            @Override
-//            public void widgetSelected(SelectionEvent e) {
-//                for (String fileName : filesToLoadList.getItems()) {
-//                    removeFileToLoad(fileName);
-//                }
-//            }
-//
-//        });
-//        
-//        //closes dialog
-//        cancelButton.addSelectionListener(new SelectionAdapter() {
-//            
-//            @Override
-//            public void widgetSelected(SelectionEvent e) {
-//                dialogShell.close();
-//            }
-//            
-//        });
-//        
-//        //loads Drive data from chosen files        
-//        loadButton.addSelectionListener(new SelectionAdapter() {
-//            
-//            @Override
-//            public void widgetSelected(SelectionEvent e) {
-//                runLoadingJob();                
-//            }
-//
-//
-//            
-//        });
-//        cDataset.addModifyListener(new ModifyListener() {
-//            
-//            @Override
-//            public void modifyText(ModifyEvent e) {
-//                checkLoadButton();
-//            }
-//        });
         
+        //opens Dialog for choosing files
+        browseDialogButton.addSelectionListener(new SelectionAdapter() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                // User has selected to open a single file
+                FileDialog dlg = new FileDialog(parentShell, SWT.OPEN | SWT.MULTI);
+                dlg.setText(NeoLoaderPluginMessages.DriveDialog_FileDialogTitle);
+                dlg.setFilterPath(LoaderUiUtils.getDefaultDirectory());
+                
+                String fn = dlg.open();
+              
+                if (fn != null) {
+                    LoaderUiUtils.setDefaultDirectory(dlg.getFilterPath());
+                    for (String name : dlg.getFileNames()) {
+                            addFileToLoad(name, dlg.getFilterPath(), true);
+                            if (cDataset.getText().isEmpty()){
+                                cDataset.setText(name);
+                                changeDatasetSelection();
+                            }
+                        }
+                    }
+
+                    File[] listFiles = new File(LoaderUiUtils.getDefaultDirectory()).listFiles();
+                    for (File file : listFiles) {
+                        addFileToChoose(file.getName(), LoaderUiUtils.getDefaultDirectory(), true);
+                    }
+
+                }
+
+        });
+        
+        //adds selected files to files to load
+        addFilesToLoaded.addSelectionListener(new SelectionAdapter() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                for (String fileName : folderFilesList.getSelection()) {
+                    addFileToLoad(fileName);
+                }
+            }
+            
+        });
+        
+        addAllFilesToLoaded.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                for (String fileName : folderFilesList.getItems()) {
+                    addFileToLoad(fileName);
+                }
+            }
+
+        });
+
+        //removes selected files from files to load
+        removeFilesFromLoaded.addSelectionListener(new SelectionAdapter() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                for (String fileName : filesToLoadList.getSelection()) {
+                    removeFileToLoad(fileName);
+                }
+            }
+            
+        });
+        removeAllFilesFromLoaded.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                for (String fileName : filesToLoadList.getItems()) {
+                    removeFileToLoad(fileName);
+                }
+            }
+
+        });
+        
+
+        
+    }
+    /**
+     * Replaces file from 'File to Load' list to 'Files to Choose'
+     * 
+     * @param name name of file
+     */
+    
+    private void removeFileToLoad(String name) {
+        String path = loadedFiles.get(name);
+        loadedFiles.remove(name);
+        filesToLoadList.remove(name);
+        
+        addFileToChoose(name, path, false);
+        formListFilesToLoad();
+    }
+
+    /**
+     * Add file to 'Choose File' list
+     * 
+     * @param name name of file
+     * @param path path to file
+     * @param isNeedToConvert if true than convert name to 'fileName (filePath)'
+     */
+    
+    private void addFileToChoose(String name, String path, boolean isNeedToConvert) {       
+        if (isNeedToConvert) {
+            path = path + File.separator + name;
+            
+            name = name + " (" + path + ")";
+        }
+        
+        //if list doesn't contain this item than add it
+        if (!folderFiles.containsKey(name) && !loadedFiles.containsKey(name)) {
+            folderFiles.put(name, path);
+            
+            folderFilesList.add(name);
+        }
+    }
+    
+    /**
+     * Add file to 'Files To Load' list
+     * 
+     * @param name name of file
+     * @param path path to file
+     * @param isNeedToConvert if true than convert name to 'fileName (filePath)'
+     */
+    
+    private void addFileToLoad(String name, String path, boolean isNeedToConvert) {
+        if (isNeedToConvert) {
+            path = path + File.separator + name;
+            name = name + " (" + path + ")";
+        }
+        
+        //if list doesn't contain this item than add it
+        if (!loadedFiles.containsKey(name)) {
+            loadedFiles.put(name, path);
+            
+            filesToLoadList.add(name);
+        }
+        
+        //if added file already contains in FolderFilesList than remove it from FolderFilesList
+        if (folderFiles.containsKey(name)) {
+            folderFiles.remove(name);
+            folderFilesList.remove(name);
+        }
+        formListFilesToLoad();
+    }
+    
+    /**
+     *
+     */
+    private void formListFilesToLoad() {
+        ArrayList<File>fileToLoad=new ArrayList<File>();
+        if (loadedFiles!=null){
+            for (String file:loadedFiles.values()){
+                fileToLoad.add(new File(file));
+            }
+        }
+        getConfigurationData().setFileToLoad(fileToLoad);
+        update();
+    }
+
+    /**
+     * Replaces file from 'Files to Choose' list to 'Files to Load' list
+     * 
+     * @param name name of file
+     */
+    
+    private void addFileToLoad(String name) {
+        String path = folderFiles.get(name);
+        folderFiles.remove(name);
+        folderFilesList.remove(name);   
+        addFileToLoad(name, path, false);
     }
 }
