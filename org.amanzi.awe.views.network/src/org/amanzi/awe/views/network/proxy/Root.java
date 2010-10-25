@@ -22,7 +22,7 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.Utils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -100,7 +100,7 @@ public class Root extends NeoNode {
         
         Node reference = service.getReferenceNode();
         int nextNum = number+1;
-        for (Node node : NeoUtils.getTDRootNodes(null).traverse(reference).nodes()) {
+        for (Node node : Utils.getTDRootNodes(null).traverse(reference).nodes()) {
             if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.NETWORK.getId())) {
                 networkNodes.add(new NeoNode(node, nextNum++));
                 for (Relationship deltaRelationship : node.getRelationships(NetworkRelationshipTypes.DELTA_REPORT, Direction.INCOMING)) {

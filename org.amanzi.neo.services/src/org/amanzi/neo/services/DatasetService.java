@@ -29,7 +29,7 @@ import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.NeoUtils.FilterAND;
+import org.amanzi.neo.services.Utils.FilterAND;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.internal.DynamicNodeType;
@@ -337,7 +337,7 @@ public class DatasetService extends AbstractService {
      * @return the node
      */
     public Node findRoot(final String projectName, final String rootname) {
-        TraversalDescription td = NeoUtils.getTDRootNodes(new Predicate<Path>() {
+        TraversalDescription td = Utils.getTDRootNodes(new Predicate<Path>() {
 
             @Override
             public boolean accept(Path paramT) {
@@ -416,7 +416,7 @@ public class DatasetService extends AbstractService {
      * @return the node
      */
     public Node findAweProject(final String aweProjectName) {
-        Iterator<Node> it = NeoUtils.getTDProjectNodes(new Predicate<Path>() {
+        Iterator<Node> it = Utils.getTDProjectNodes(new Predicate<Path>() {
 
             @Override
             public boolean accept(Path paramT) {
@@ -438,7 +438,7 @@ public class DatasetService extends AbstractService {
         Transaction tx = databaseService.beginTx();
         try {
             Node result = databaseService.createNode();
-            NeoUtils.setNodeName(result, rootname, null);
+            setName(result, rootname);
             result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, rootNodeType);
             addDataNodeToProject(projectName, result);
             tx.success();
@@ -848,7 +848,7 @@ public class DatasetService extends AbstractService {
      * @return the roots
      */
     public org.neo4j.graphdb.traversal.Traverser getRoots(final String projectName) {
-        TraversalDescription td = NeoUtils.getTDRootNodes(new Predicate<Path>() {
+        TraversalDescription td = Utils.getTDRootNodes(new Predicate<Path>() {
 
             @Override
             public boolean accept(Path paramT) {

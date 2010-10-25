@@ -32,6 +32,7 @@ import org.amanzi.neo.loader.core.parser.IDataElement;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.Utils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.swt.SWT;
@@ -270,7 +271,7 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
      */
     private String[] getRootItems() {
         final String  projectName = LoaderUiUtils.getAweProjectName();
-        TraversalDescription td = NeoUtils.getTDRootNodesOfProject(projectName, null);
+        TraversalDescription td = Utils.getTDRootNodesOfProject(projectName, null);
         Node refNode = DatabaseManager.getInstance().getCurrentDatabaseService().getReferenceNode();
         restrictedNames.clear();
         members = new HashMap<String, Node>();
