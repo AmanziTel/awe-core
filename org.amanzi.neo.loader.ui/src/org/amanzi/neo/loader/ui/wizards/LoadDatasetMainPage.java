@@ -49,6 +49,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.DateTime;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
@@ -56,6 +57,7 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * <p>
@@ -70,7 +72,7 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
     private static final String ASC_PAT_FILE = ".*_(\\d{6})_.*";
     private static final String FMT_PAT_FILE = ".*(\\d{4}-\\d{2}-\\d{2}).*";
     private static final String CSV_PAT_FILE = ".*(\\d{2}/\\d{2}/\\d{4}).*";
-    private final Set<String> restrictedNames=new HashSet<String>();
+    private final Set<String> restrictedNames = new HashSet<String>();
     /*
      * Minimum height of Shell
      */
@@ -123,7 +125,6 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
      */
     private List filesToLoadList;
 
-
     /*
      * Load button
      */
@@ -161,6 +162,8 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
 
     private Node rootNode;
     private Combo cLoaders;
+    private DateTime date;
+    private Button selectCRS;
 
     public LoadDatasetMainPage() {
         super("mainDatasetPage");
@@ -197,7 +200,7 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
         createFolderSelectionComposite(group);
         createManipulationComposite(group);
         createFileToLoadComposite(group);
-        Composite panel = new Composite(group, SWT.NONE);
+        Composite panel = new Composite(parent, SWT.NONE);
         panel.setLayout(new FormLayout());
         GridData data = new GridData(SWT.FILL, SWT.BOTTOM, true, false);
         panel.setLayoutData(data);
@@ -207,13 +210,13 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
         cLoaders = new Combo(panel, SWT.NONE);
         cLoaders.setItems(getLoadersDescriptions());
         cLoaders.addSelectionListener(new SelectionListener() {
-            
+
             @Override
             public void widgetSelected(SelectionEvent e) {
                 selectLoader(cLoaders.getSelectionIndex());
                 update();
             }
-            
+
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
@@ -227,8 +230,37 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
         FormData dCombo = new FormData();
         dCombo.left = new FormAttachment(ldataset, 5);
         dCombo.top = new FormAttachment(0, 2);
-        dCombo.width = DATASET_WIDTH;
+        dCombo.right= new FormAttachment(50, -2);
         cLoaders.setLayoutData(dCombo);
+        
+         Label labl=new Label(panel, SWT.NONE);
+         labl.setText("Preffered date");
+         dLabel = new FormData();
+         dLabel.left = new FormAttachment(50, 5);
+         dLabel.top = new FormAttachment(cDataset, 5, SWT.CENTER);
+         labl.setLayoutData(dLabel);
+        
+         date= new DateTime(panel, SWT.FILL | SWT.BORDER | SWT.DATE | SWT.MEDIUM);
+         dCombo = new FormData();
+         dCombo.left = new FormAttachment(labl, 5);
+         dCombo.top = new FormAttachment(0, 2);
+         // dCombo.right = new FormAttachment(100, -2);
+         date.setLayoutData(dCombo);
+         final Button batchMode = new Button(parent,SWT.CHECK);
+         batchMode.addSelectionListener(new SelectionListener() {
+             
+             @Override
+             public void widgetSelected(SelectionEvent e) {
+                 setAccessType(batchMode.getSelection());
+             }
+             
+             @Override
+             public void widgetDefaultSelected(SelectionEvent e) {
+                 widgetSelected(e);
+             }
+         });
+         batchMode.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
+         batchMode.setText("batch mode");
     }
 
     /**
@@ -331,9 +363,30 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
         FormData dCombo = new FormData();
         dCombo.left = new FormAttachment(ldataset, 5);
         dCombo.top = new FormAttachment(0, 2);
-        dCombo.width = DATASET_WIDTH;
+        dCombo.right = new FormAttachment(50, -2);
         cDataset.setLayoutData(dCombo);
         cDataset.setItems(getRootItems());
+
+        selectCRS = new Button(panel, SWT.FILL | SWT.PUSH);
+        selectCRS.setAlignment(SWT.LEFT);
+        dLabel = new FormData();
+        dLabel.left = new FormAttachment(50, 5);
+        dLabel.right = new FormAttachment(100, -5);
+        dLabel.top = new FormAttachment(cDataset, 5, SWT.CENTER);
+        selectCRS.setLayoutData(dLabel);
+        selectCRS.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                selectCRS();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+
 
         cDataset.addModifyListener(new ModifyListener() {
 
@@ -354,16 +407,23 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
                 widgetSelected(e);
             }
         });
+
     }
 
+    @Override
+    protected void update() {
+        CoordinateReferenceSystem crs = getSelectedCRS();
+        selectCRS.setText(String.format("CRS: %s", crs.getName().toString()));
+        super.update();
+    }
 
     /**
      * Gets the root items.
-     *
+     * 
      * @return the root items
      */
     private String[] getRootItems() {
-        final String  projectName = LoaderUiUtils.getAweProjectName();
+        final String projectName = LoaderUiUtils.getAweProjectName();
         TraversalDescription td = NeoUtils.getTDRootNodesOfProject(projectName, null);
         Node refNode = DatabaseManager.getInstance().getCurrentDatabaseService().getReferenceNode();
         restrictedNames.clear();
@@ -399,27 +459,41 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
     @Override
     protected boolean validateConfigData(CommonConfigData configurationData) {
         String rootName = configurationData.getDbRootName();
-        if (StringUtils.isEmpty(rootName)){
-            setMessage("Select dataset",DialogPage.ERROR); 
+        if (StringUtils.isEmpty(rootName)) {
+            setMessage("Select dataset", DialogPage.ERROR);
             return false;
         }
         java.util.List<File> files = configurationData.getFileToLoad();
-        if (files==null||files.isEmpty()){
-            setMessage("Select files for import",DialogPage.ERROR); 
-            return false;            
+        if (files == null || files.isEmpty()) {
+            setMessage("Select files for import", DialogPage.ERROR);
+            return false;
         }
-        if (getSelectedLoader() == null){
-            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_TYPE,DialogPage.ERROR); 
-            return false;           
+        if (getSelectedLoader() == null) {
+            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_TYPE, DialogPage.ERROR);
+            return false;
         }
         configurationData.setProjectName(LoaderUiUtils.getAweProjectName());
+        configurationData.setCrs(getSelectedCRS());
+        Calendar cl=(Calendar)configurationData.getAdditionalProperties().get("workdate");
+        if (cl==null){
+            cl=Calendar.getInstance();
+            cl.set(Calendar.HOUR, 0);
+            cl.set(Calendar.MINUTE, 0);
+            cl.set(Calendar.SECOND, 0);
+            cl.set(Calendar.MILLISECOND, 0);
+            configurationData.getAdditionalProperties().put("workdate", cl);
+        }
+        cl.set(Calendar.YEAR, date.getYear());
+        cl.set(Calendar.MONTH, date.getMonth());
+        cl.set(Calendar.DAY_OF_MONTH, date.getDay());
+
         IValidateResult result = getSelectedLoader().getValidator().validate(configurationData);
-        if (result.getResult()==Result.FAIL){
-            setMessage(String.format(result.getMessages(), getSelectedLoader().getDescription()),DialogPage.ERROR); 
-            return false;          
-        }else if (result.getResult()==Result.UNKNOWN){
-            setMessage(String.format(result.getMessages(), getSelectedLoader().getDescription()),DialogPage.WARNING); 
-        }else{
+        if (result.getResult() == Result.FAIL) {
+            setMessage(String.format(result.getMessages(), getSelectedLoader().getDescription()), DialogPage.ERROR);
+            return false;
+        } else if (result.getResult() == Result.UNKNOWN) {
+            setMessage(String.format(result.getMessages(), getSelectedLoader().getDescription()), DialogPage.WARNING);
+        } else {
             setMessage(""); //$NON-NLS-1$
         }
         return true;
@@ -429,62 +503,63 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
      * change dataset selection
      */
     protected void changeDatasetSelection() {
-            datasetName=cDataset.getText();
-            getConfigurationData().setDbRootName(datasetName);
-            update();
+        datasetName = cDataset.getText();
+        getConfigurationData().setDbRootName(datasetName);
+        update();
     }
+
     /**
      * Creates actions for buttons
      * 
      * @param parentShell Dialog Shell
      */
-    
+
     private void createActions(final Shell parentShell) {
-        
-        //opens Dialog for choosing files
+
+        // opens Dialog for choosing files
         browseDialogButton.addSelectionListener(new SelectionAdapter() {
-            
+
             @Override
             public void widgetSelected(SelectionEvent e) {
                 // User has selected to open a single file
                 FileDialog dlg = new FileDialog(parentShell, SWT.OPEN | SWT.MULTI);
                 dlg.setText(NeoLoaderPluginMessages.DriveDialog_FileDialogTitle);
                 dlg.setFilterPath(LoaderUiUtils.getDefaultDirectory());
-                
+
                 String fn = dlg.open();
-              
+
                 if (fn != null) {
                     LoaderUiUtils.setDefaultDirectory(dlg.getFilterPath());
                     for (String name : dlg.getFileNames()) {
-                            addFileToLoad(name, dlg.getFilterPath(), true);
-                            if (cDataset.getText().isEmpty()){
-                                cDataset.setText(name);
-                                changeDatasetSelection();
-                            }
+                        addFileToLoad(name, dlg.getFilterPath(), true);
+                        if (cDataset.getText().isEmpty()) {
+                            cDataset.setText(name);
+                            changeDatasetSelection();
                         }
                     }
-
-                    File[] listFiles = new File(LoaderUiUtils.getDefaultDirectory()).listFiles();
-                    for (File file : listFiles) {
-                        addFileToChoose(file.getName(), LoaderUiUtils.getDefaultDirectory(), true);
-                    }
-
                 }
 
+                File[] listFiles = new File(LoaderUiUtils.getDefaultDirectory()).listFiles();
+                for (File file : listFiles) {
+                    addFileToChoose(file.getName(), LoaderUiUtils.getDefaultDirectory(), true);
+                }
+
+            }
+
         });
-        
-        //adds selected files to files to load
+
+        // adds selected files to files to load
         addFilesToLoaded.addSelectionListener(new SelectionAdapter() {
-            
+
             @Override
             public void widgetSelected(SelectionEvent e) {
                 for (String fileName : folderFilesList.getSelection()) {
                     addFileToLoad(fileName);
                 }
             }
-            
+
         });
-        
+
         addAllFilesToLoaded.addSelectionListener(new SelectionAdapter() {
 
             @Override
@@ -496,16 +571,16 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
 
         });
 
-        //removes selected files from files to load
+        // removes selected files from files to load
         removeFilesFromLoaded.addSelectionListener(new SelectionAdapter() {
-            
+
             @Override
             public void widgetSelected(SelectionEvent e) {
                 for (String fileName : filesToLoadList.getSelection()) {
                     removeFileToLoad(fileName);
                 }
             }
-            
+
         });
         removeAllFilesFromLoaded.addSelectionListener(new SelectionAdapter() {
 
@@ -517,21 +592,20 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
             }
 
         });
-        
 
-        
     }
+
     /**
      * Replaces file from 'File to Load' list to 'Files to Choose'
      * 
      * @param name name of file
      */
-    
+
     private void removeFileToLoad(String name) {
         String path = loadedFiles.get(name);
         loadedFiles.remove(name);
         filesToLoadList.remove(name);
-        
+
         addFileToChoose(name, path, false);
         formListFilesToLoad();
     }
@@ -543,22 +617,22 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
      * @param path path to file
      * @param isNeedToConvert if true than convert name to 'fileName (filePath)'
      */
-    
-    private void addFileToChoose(String name, String path, boolean isNeedToConvert) {       
+
+    private void addFileToChoose(String name, String path, boolean isNeedToConvert) {
         if (isNeedToConvert) {
             path = path + File.separator + name;
-            
+
             name = name + " (" + path + ")";
         }
-        
-        //if list doesn't contain this item than add it
+
+        // if list doesn't contain this item than add it
         if (!folderFiles.containsKey(name) && !loadedFiles.containsKey(name)) {
             folderFiles.put(name, path);
-            
+
             folderFilesList.add(name);
         }
     }
-    
+
     /**
      * Add file to 'Files To Load' list
      * 
@@ -566,35 +640,35 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
      * @param path path to file
      * @param isNeedToConvert if true than convert name to 'fileName (filePath)'
      */
-    
+
     private void addFileToLoad(String name, String path, boolean isNeedToConvert) {
         if (isNeedToConvert) {
             path = path + File.separator + name;
             name = name + " (" + path + ")";
         }
-        
-        //if list doesn't contain this item than add it
+
+        // if list doesn't contain this item than add it
         if (!loadedFiles.containsKey(name)) {
             loadedFiles.put(name, path);
-            
+
             filesToLoadList.add(name);
         }
-        
-        //if added file already contains in FolderFilesList than remove it from FolderFilesList
+
+        // if added file already contains in FolderFilesList than remove it from FolderFilesList
         if (folderFiles.containsKey(name)) {
             folderFiles.remove(name);
             folderFilesList.remove(name);
         }
         formListFilesToLoad();
     }
-    
+
     /**
      *
      */
     private void formListFilesToLoad() {
-        ArrayList<File>fileToLoad=new ArrayList<File>();
-        if (loadedFiles!=null){
-            for (String file:loadedFiles.values()){
+        ArrayList<File> fileToLoad = new ArrayList<File>();
+        if (loadedFiles != null) {
+            for (String file : loadedFiles.values()) {
                 fileToLoad.add(new File(file));
             }
         }
@@ -607,11 +681,11 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
      * 
      * @param name name of file
      */
-    
+
     private void addFileToLoad(String name) {
         String path = folderFiles.get(name);
         folderFiles.remove(name);
-        folderFilesList.remove(name);   
+        folderFilesList.remove(name);
         addFileToLoad(name, path, false);
     }
 }

@@ -15,15 +15,29 @@ package org.amanzi.neo.loader.ui.wizards;
 
 import java.util.ArrayList;
 
+import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
+import org.amanzi.neo.db.manager.DatabaseManager;
+import org.amanzi.neo.db.manager.DatabaseManager.DatabaseAccessType;
 import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.IValidateResult;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.core.parser.IConfigurationData;
 import org.amanzi.neo.loader.core.parser.IDataElement;
+import org.amanzi.neo.loader.ui.preferences.CommonCRSPreferencePage;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.jface.preference.IPreferenceNode;
+import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.preference.PreferenceManager;
+import org.eclipse.jface.preference.PreferenceNode;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
+import org.geotools.referencing.CRS;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * <p>
@@ -36,7 +50,7 @@ import org.eclipse.jface.wizard.WizardPage;
 public abstract class LoaderPage<T extends IConfigurationData> extends WizardPage implements ILoaderPage<T> {
 
     private ArrayList<ILoader< ? extends IDataElement, T>> loaders = new ArrayList<ILoader< ? extends IDataElement, T>>();
-
+    private CoordinateReferenceSystem selectedCRS;
     /**
      * Instantiates a new loader page.
      * 
@@ -55,7 +69,15 @@ public abstract class LoaderPage<T extends IConfigurationData> extends WizardPag
             setDescription(String.valueOf(data));
         }
     }
-
+    /**
+     * Sets the access type.
+     *
+     * @param batchMode the new access type
+     */
+    protected void setAccessType(final boolean batchMode) {
+        ((AbstractLoaderWizard<?>)getWizard()).setAccessType(batchMode?DatabaseManager.DatabaseAccessType.BATCH:DatabaseAccessType.EMBEDDED);
+    }
+    
     protected ILoader< ? extends IDataElement, T> autodefine(T data) {
         ILoader< ? extends IDataElement, T> loader = getSelectedLoader();
         ILoader< ? extends IDataElement, T> candidate=null;
@@ -81,6 +103,72 @@ public abstract class LoaderPage<T extends IConfigurationData> extends WizardPag
         }
         return candidate;
     }
+    /**
+    *
+    */
+   protected void selectCRS() {
+       CoordinateReferenceSystem result = ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<CoordinateReferenceSystem>() {
+
+           private CoordinateReferenceSystem result;
+
+           @Override
+           public CoordinateReferenceSystem getValue() {
+               return result;
+           }
+
+           @Override
+           public void run() {
+               result = null;
+               CommonCRSPreferencePage page = new CommonCRSPreferencePage();
+               page.setSelectedCRS(getSelectedCRS());
+               page.setTitle("Select Coordinate Reference System");
+               page.setSubTitle("Select the coordinate reference system from the list of commonly used CRS's, or add a new one with the Add button");
+               page.init(PlatformUI.getWorkbench());
+               PreferenceManager mgr = new PreferenceManager();
+               IPreferenceNode node = new PreferenceNode("1", page); //$NON-NLS-1$
+               mgr.addToRoot(node);
+               Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+               PreferenceDialog pdialog = new PreferenceDialog(shell, mgr);;
+               if (pdialog.open() == PreferenceDialog.OK) {
+                   page.performOk();
+                   result = page.getCRS();
+               }
+
+           }
+
+       });
+
+       setSelectedCRS(result);
+   }
+   protected void setSelectedCRS(CoordinateReferenceSystem result) {
+       if (result == null) {
+           return;
+       }
+       selectedCRS = result;
+       update();
+   }
+   /**
+    * Gets the selected crs.
+    * 
+    * @return the selected crs
+    */
+   public CoordinateReferenceSystem getSelectedCRS() {
+       return selectedCRS == null ? getDefaultCRS() : selectedCRS;
+   }  
+   /**
+    * Gets the default crs.
+    * 
+    * @return the default crs
+    */
+   private CoordinateReferenceSystem getDefaultCRS() {
+       try {
+           return CRS.decode("EPSG:4326");
+       } catch (NoSuchAuthorityCodeException e) {
+           // TODO Handle NoSuchAuthorityCodeException
+           throw (RuntimeException)new RuntimeException().initCause(e);
+       }
+   }
+
 
     /**
      * update

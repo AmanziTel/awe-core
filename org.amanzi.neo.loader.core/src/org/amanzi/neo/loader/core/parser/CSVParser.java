@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Calendar;
+import java.util.Map;
 
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.CountingFileInputStream;
@@ -135,6 +136,13 @@ public class CSVParser extends CommonFilesParser<BaseTransferData, CommonConfigD
         initdata = new BaseTransferData();
         initdata.setProjectName(properties.getProjectName());
         initdata.setRootName(properties.getDbRootName());
+        for (Map.Entry<String, Object> entry:properties.getAdditionalProperties().entrySet()){
+            if ("workdate".equals(entry.getKey())){
+                initdata.setWorkDate((Calendar)entry.getValue());
+            }else if (entry.getValue()!=null){
+                initdata.put(entry.getKey(), entry.getValue().toString());
+            }
+        }
         CoordinateReferenceSystem crs = properties.getCrs();
         setCrs(initdata,crs);
         return initdata;

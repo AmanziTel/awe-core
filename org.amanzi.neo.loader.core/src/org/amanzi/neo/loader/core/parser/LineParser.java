@@ -17,6 +17,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.Calendar;
+import java.util.Map;
 
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.CountingFileInputStream;
@@ -105,6 +107,13 @@ public class LineParser extends CommonFilesParser<LineTransferData, CommonConfig
         initdata = new LineTransferData();
         initdata.setProjectName(properties.getProjectName());
         initdata.setRootName(properties.getDbRootName());
+        for (Map.Entry<String, Object> entry:properties.getAdditionalProperties().entrySet()){
+            if ("workdate".equals(entry.getKey())){
+                initdata.setWorkDate((Calendar)entry.getValue());
+            }else if (entry.getValue()!=null){
+                initdata.put(entry.getKey(), entry.getValue().toString());
+            }
+        }
         setCrs(initdata, properties.getCrs());
         return initdata;
     }

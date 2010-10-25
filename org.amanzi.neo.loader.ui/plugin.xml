@@ -131,6 +131,18 @@
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
              saver="org.amanzi.neo.loader.core.saver.impl.RomesSaver">
        </loader>
+       <loader
+             description="Nemo data v1.86"
+             gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
+             parser="org.amanzi.neo.loader.core.parser.LineParser"
+             saver="org.amanzi.neo.loader.core.saver.impl.Nemo1xSaver">
+       </loader>
+       <loader
+             description="Nemo data v2.01"
+             gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
+             parser="org.amanzi.neo.loader.core.parser.LineParser"
+             saver="org.amanzi.neo.loader.core.saver.impl.Nemo2xSaver">
+       </loader>
     </extension>
 
    <extension
