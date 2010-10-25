@@ -33,6 +33,7 @@ import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.Utils;
 import org.amanzi.neo.services.statistic.internal.PropertyHeaderImpl;
 import org.amanzi.neo.services.statistic.internal.StatisticRelationshipTypes;
 import org.hsqldb.lib.StringUtil;
@@ -464,7 +465,7 @@ public class PropertyHeader implements IPropertyHeader {
         public Object parseValue(String string) {
             if (Number.class.isAssignableFrom(getType())) {
                 try {
-                    return NeoUtils.getNumberValue(getType(), string);
+                    return Utils.getNumberValue(getType(), string);
                 } catch (Exception e) {
                     e.printStackTrace();
                     return null;

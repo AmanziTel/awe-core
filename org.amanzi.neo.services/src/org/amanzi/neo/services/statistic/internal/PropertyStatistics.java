@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.db.manager.INeoDbService;
+import org.amanzi.neo.services.Utils;
 import org.amanzi.neo.services.statistic.ChangeClassRule;
 import org.amanzi.neo.services.statistic.ISinglePropertyStat;
 import org.neo4j.graphdb.Direction;
@@ -403,7 +403,7 @@ public class PropertyStatistics implements ISinglePropertyStat {
             return value;
         }
         try {
-            return NeoUtils.getNumberValue(klass, value);
+            return Utils.getNumberValue(klass, value);
         } catch (Exception e) {
             e.printStackTrace();
         }

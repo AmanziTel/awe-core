@@ -15,8 +15,8 @@ package org.amanzi.neo.services.statistic.internal;
 
 import java.util.Collection;
 
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.db.manager.DatabaseManager;
+import org.amanzi.neo.services.Utils;
 import org.amanzi.neo.services.statistic.ChangeClassRule;
 import org.amanzi.neo.services.statistic.ISinglePropertyStat;
 import org.amanzi.neo.services.statistic.IStatistic;
@@ -100,7 +100,7 @@ public class DatasetStatistic implements IStatistic {
         } else {
             if (Number.class.isAssignableFrom(klass)) {
                 try {
-                    value = NeoUtils.getNumberValue(klass, defValue);
+                    value = Utils.getNumberValue(klass, defValue);
                 } catch (Exception e) {
                     // TODO handle exception
                     e.printStackTrace();
