@@ -494,7 +494,7 @@ public class DatasetService extends AbstractService {
      * @throws IOException Signals that an I/O exception has occurred.
      */
     public MultiPropertyIndex< ? > getLocationIndexProperty(String rootname) throws IOException {
-        return new MultiPropertyIndex<Double>(NeoUtils.getLocationIndexName(rootname), new String[] {INeoConstants.PROPERTY_LAT_NAME, INeoConstants.PROPERTY_LON_NAME},
+        return new MultiPropertyIndex<Double>(Utils.getLocationIndexName(rootname), new String[] {INeoConstants.PROPERTY_LAT_NAME, INeoConstants.PROPERTY_LON_NAME},
                 new org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiDoubleConverter(0.001), 10);
     }
 
@@ -506,7 +506,7 @@ public class DatasetService extends AbstractService {
      * @throws IOException Signals that an I/O exception has occurred.
      */
     public MultiPropertyIndex<Long> getTimeIndexProperty(String name) throws IOException {
-        return new MultiPropertyIndex<Long>(NeoUtils.getTimeIndexName(name), new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME},
+        return new MultiPropertyIndex<Long>(Utils.getTimeIndexName(name), new String[] {INeoConstants.PROPERTY_TIMESTAMP_NAME},
                 new org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiTimeIndexConverter(), 10);
     }
 

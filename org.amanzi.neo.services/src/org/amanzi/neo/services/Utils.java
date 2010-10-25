@@ -44,8 +44,34 @@ import org.neo4j.kernel.Traversal;
  * @since 1.0.0
  */
 public class Utils {
+    /** The Constant TIMESTAMP_INDEX_NAME. */
+    private static final String TIMESTAMP_INDEX_NAME = "Index-timestamp-";
+
+    /** The Constant LOCATION_INDEX_NAME. */
+    private static final String LOCATION_INDEX_NAME = "Index-location-";
+
     private Utils() {
         // hide constructor
+    }
+    
+    /**
+     * gets name of timestamp index.
+     * 
+     * @param datasetName - dataset name
+     * @return index name
+     */
+    public static String getTimeIndexName(String datasetName) {
+        return TIMESTAMP_INDEX_NAME + datasetName;
+    }
+
+    /**
+     * gets name of location index.
+     * 
+     * @param datasetName - dataset name
+     * @return index name
+     */
+    public static String getLocationIndexName(String datasetName) {
+        return LOCATION_INDEX_NAME + datasetName;
     }
     /**
      * Gets the number value.
