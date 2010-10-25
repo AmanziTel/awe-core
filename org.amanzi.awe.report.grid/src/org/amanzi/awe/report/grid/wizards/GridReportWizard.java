@@ -88,7 +88,7 @@ public class GridReportWizard extends Wizard implements IWizard {
     private String outputDirectory;
     protected CallTimePeriods aggregation;
     private GridWizardPageStep1 loadDataPage;
-    private GridWizardPageStep3 viewResultPage;
+    private GridWizardPageStep2 viewResultPage;
     private GraphDatabaseService service;
     private Node datasetNode;
     protected ArrayList<String> idenKPIs;
@@ -104,7 +104,7 @@ public class GridReportWizard extends Wizard implements IWizard {
     public void addPages() {
         getContainer().getShell().setSize(700, 650);
         loadDataPage = new GridWizardPageStep1(GridWizardPageStep1.class.getName());
-        viewResultPage = new GridWizardPageStep3();
+        viewResultPage = new GridWizardPageStep2();
         addPage(loadDataPage);
         addPage(viewResultPage);
         setNeedsProgressMonitor(true);

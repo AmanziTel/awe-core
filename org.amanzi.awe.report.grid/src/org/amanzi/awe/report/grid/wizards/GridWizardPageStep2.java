@@ -61,7 +61,7 @@ import org.neo4j.graphdb.Traverser.Order;
  * @author Pechko_E
  * @since 1.0.0
  */
-public class GridWizardPageStep3 extends WizardPage {
+public class GridWizardPageStep2 extends WizardPage {
     private static final String SELECT_SITE = "Select site:";
     private static final String TEN_WORST_SITES_REPORT = "Create PDF report for 10 worst sites";
     private static final String SELECT_KPI = "Select KPI:";
@@ -83,8 +83,8 @@ public class GridWizardPageStep3 extends WizardPage {
     private Button btnExportChart;
     private Chart chart;
 
-    protected GridWizardPageStep3() {
-        super("GridWizardPageStep3");
+    protected GridWizardPageStep2() {
+        super("GridWizardPageStep2");
     }
 
     @Override
