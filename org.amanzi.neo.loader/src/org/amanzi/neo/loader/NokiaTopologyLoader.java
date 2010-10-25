@@ -41,6 +41,7 @@ import org.amanzi.neo.loader.sax_parsers.IXmlTag;
 import org.amanzi.neo.loader.sax_parsers.IXmlTagFactory;
 import org.amanzi.neo.loader.sax_parsers.ReadContentHandler;
 import org.amanzi.neo.loader.sax_parsers.SkipTag;
+import org.amanzi.neo.services.Utils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.widgets.Display;
@@ -391,7 +392,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
         	lastSector = proxyNeighbour;
         }
         
-        Relationship relation = NeoUtils.getNeighbourRelation(proxyServer, proxyNeighbour, neighbourName, neo);
+        Relationship relation = Utils.getNeighbourRelation(proxyServer, proxyNeighbour, neighbourName);
         if (relation==null){
             relation = proxyServer.createRelationshipTo(proxyNeighbour, NetworkRelationshipTypes.NEIGHBOUR);
 //            relation.setProperty(INeoConstants.NEIGHBOUR_NAME, neighbourName);

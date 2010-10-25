@@ -47,6 +47,7 @@ import org.amanzi.neo.loader.sax_parsers.PropertyCollector;
 import org.amanzi.neo.loader.sax_parsers.ReadContentHandler;
 import org.amanzi.neo.loader.sax_parsers.SkipTag;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
+import org.amanzi.neo.services.Utils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -436,7 +437,7 @@ public class UTRANLoader extends AbstractLoader {
 	        	}
 	        }       
         
-            Relationship relation = NeoUtils.getNeighbourRelation(proxyServer, proxyNeighbour, neighbourName, neo);
+            Relationship relation = Utils.getNeighbourRelation(proxyServer, proxyNeighbour, neighbourName);
             if (relation == null) {
                 relation = proxyServer.createRelationshipTo(proxyNeighbour, NetworkRelationshipTypes.NEIGHBOUR);
                 String servCounName = NeoUtils.getNeighbourPropertyName(neighbourName);

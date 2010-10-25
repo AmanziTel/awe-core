@@ -24,10 +24,10 @@ import java.util.regex.Pattern;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.utils.GisProperties;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.Utils;
 import org.amanzi.neo.services.statistic.StatisticManager;
 import org.neo4j.graphdb.Node;
 
@@ -229,7 +229,7 @@ public abstract  class AbstractHeaderSaver<T extends BaseTransferData> extends A
      */
     protected <T extends Number> T getNumberValue(Class<T> klass, String value) {
         try {
-            return NeoUtils.getNumberValue(klass, value);
+            return Utils.getNumberValue(klass, value);
         } catch (SecurityException e) {
             exception(e);
         } catch (IllegalArgumentException e) {

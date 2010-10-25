@@ -26,6 +26,7 @@ import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
 import org.amanzi.neo.services.DatasetService.NodeResult;
+import org.amanzi.neo.services.Utils;
 import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -136,7 +137,7 @@ public class TransmissionSaver extends AbstractHeaderSaver<BaseTransferData> {
             rel = proxyServ.createRelationshipTo(proxyNeigh, NetworkRelationshipTypes.TRANSMISSION);
             updateTx(0, 1);
         } else {
-            Iterator<Relationship> it = NeoUtils.getRelations(proxyServ, proxyNeigh, NetworkRelationshipTypes.TRANSMISSION).iterator();
+            Iterator<Relationship> it = Utils.getRelations(proxyServ, proxyNeigh, NetworkRelationshipTypes.TRANSMISSION).iterator();
             rel = it.hasNext() ? it.next() : null;
             if (rel == null) {
                 rel = proxyServ.createRelationshipTo(proxyNeigh, NetworkRelationshipTypes.TRANSMISSION);

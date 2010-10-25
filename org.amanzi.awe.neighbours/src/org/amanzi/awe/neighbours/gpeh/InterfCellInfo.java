@@ -16,7 +16,7 @@ package org.amanzi.awe.neighbours.gpeh;
 import java.util.Set;
 
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.Utils;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -90,7 +90,7 @@ public class InterfCellInfo extends CellNodeInfo {
      */
     public boolean isDifinedNeighbour(Node cellSector,GraphDatabaseService service) {
         if (defNeigh==null){
-            Set<Relationship> relations = NeoUtils.getRelations(cellSector, getCellSector(), NetworkRelationshipTypes.NEIGHBOUR);
+            Set<Relationship> relations = Utils.getRelations(cellSector, getCellSector(), NetworkRelationshipTypes.NEIGHBOUR);
             defNeigh = !relations.isEmpty();
         }
         return defNeigh;

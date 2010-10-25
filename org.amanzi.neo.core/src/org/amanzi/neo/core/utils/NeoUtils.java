@@ -2391,47 +2391,8 @@ public class NeoUtils {
         return defaultColor;
     }
 
-    /**
-     * Gets the neighbour relation.
-     * 
-     * @param server the server
-     * @param neighbour the neighbour
-     * @param neighbourName the neighbour name
-     * @param service the service
-     * @return the neighbour relation
-     */
-    public static Relationship getNeighbourRelation(Node server, Node neighbour, String neighbourName, GraphDatabaseService service) {
-        Transaction tx = beginTx(service);
-        try {
-            Set<Relationship> allRelations = getRelations(server, neighbour, NetworkRelationshipTypes.NEIGHBOUR);
-            for (Relationship relation : allRelations) {
-                if (relation.getProperty(INeoConstants.NEIGHBOUR_NAME, "").equals(neighbourName)) {
-                    return relation;
-                }
-            }
-            return null;
-        } finally {
-            finishTx(tx);
-        }
-    }
 
-    /**
-     * Gets the relations set.
-     * 
-     * @param from the 'from' node
-     * @param to the 'to' node
-     * @param relationType the relation type
-     * @return the relations
-     */
-    public static Set<Relationship> getRelations(Node from, Node to, RelationshipType relationType) {
-        Set<Relationship> result = new HashSet<Relationship>();
-        for (Relationship relation : from.getRelationships(relationType, Direction.OUTGOING)) {
-            if (relation.getOtherNode(from).equals(to)) {
-                result.add(relation);
-            }
-        }
-        return result;
-    }
+
 
     /**
      * Find sector by next rules: baseName must be defined, ci or name must be defined (lac used
@@ -3104,30 +3065,7 @@ public class NeoUtils {
 
     }
 
-    /**
-     * Gets the number value.
-     * 
-     * @param <T> the generic type
-     * @param klass the klass
-     * @param value the value
-     * @return the number value
-     * @throws SecurityException the security exception
-     * @throws NoSuchMethodException the no such method exception
-     * @throws IllegalArgumentException the illegal argument exception
-     * @throws IllegalAccessException the illegal access exception
-     * @throws InvocationTargetException the invocation target exception
-     */
-    @SuppressWarnings("unchecked")
-    public static <T extends Number> T getNumberValue(Class<T> klass, String value) throws SecurityException, NoSuchMethodException, IllegalArgumentException,
-            IllegalAccessException, InvocationTargetException {
-        if (StringUtils.isEmpty(value)) {
-            return null;
-        }
-        String methodName = klass == Integer.class ? "parseInt" : "parse" + klass.getSimpleName();
 
-        Method metod = klass.getMethod(methodName, String.class);
-        return (T)metod.invoke(null, value);
-    }
 
     /**
      * @param sector the sector whose proxy is to be created
@@ -3218,5 +3156,29 @@ public class NeoUtils {
                 return node;
         }
         return null;
+    }
+    /**
+     * Gets the number value.
+     * 
+     * @param <T> the generic type
+     * @param klass the klass
+     * @param value the value
+     * @return the number value
+     * @throws SecurityException the security exception
+     * @throws NoSuchMethodException the no such method exception
+     * @throws IllegalArgumentException the illegal argument exception
+     * @throws IllegalAccessException the illegal access exception
+     * @throws InvocationTargetException the invocation target exception
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends Number> T getNumberValue(Class<T> klass, String value) throws SecurityException, NoSuchMethodException, IllegalArgumentException,
+            IllegalAccessException, InvocationTargetException {
+        if (StringUtils.isEmpty(value)) {
+            return null;
+        }
+        String methodName = klass == Integer.class ? "parseInt" : "parse" + klass.getSimpleName();
+
+        Method metod = klass.getMethod(methodName, String.class);
+        return (T)metod.invoke(null, value);
     }
 }

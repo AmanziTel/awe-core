@@ -20,11 +20,11 @@ import java.util.Set;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.GisProperties;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
 import org.amanzi.neo.services.DatasetService.NodeResult;
+import org.amanzi.neo.services.Utils;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
@@ -113,7 +113,7 @@ public class NeighbourSaver extends AbstractHeaderSaver<BaseTransferData> {
             rel = proxyServ.createRelationshipTo(proxyNeigh, NetworkRelationshipTypes.NEIGHBOUR);
             updateTx(0, 1);
         } else {
-            Iterator<Relationship> it = NeoUtils.getRelations(proxyServ, proxyNeigh, NetworkRelationshipTypes.NEIGHBOUR).iterator();
+            Iterator<Relationship> it = Utils.getRelations(proxyServ, proxyNeigh, NetworkRelationshipTypes.NEIGHBOUR).iterator();
             rel = it.hasNext() ? it.next() : null;
             if (rel == null) {
                 rel = proxyServ.createRelationshipTo(proxyNeigh, NetworkRelationshipTypes.NEIGHBOUR);
