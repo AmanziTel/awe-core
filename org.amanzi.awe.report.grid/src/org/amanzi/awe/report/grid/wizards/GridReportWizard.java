@@ -470,8 +470,6 @@ public class GridReportWizard extends Wizard implements IWizard {
         long t = System.currentTimeMillis();
         final Map<String, Map<String, TimeSeries[]>> datasets = ChartUtilities.createChartDatasets(getStatistics(),
                 getAggregation().getId(), getChartType());
-        TimeSeriesCollection[] ds = ChartUtilities.createChartDataset(getStatistics(), networkElement, kpi, getAggregation()
-                .getId(), getChartType());
         System.out.println("Finished generating datasets in " + (System.currentTimeMillis() - t) / 1000 + " seconds");
         Map<String, Report> reportsPerKPI = new HashMap<String, Report>();
         for (Entry<String, Map<String, TimeSeries[]>> entry : datasets.entrySet()) {
