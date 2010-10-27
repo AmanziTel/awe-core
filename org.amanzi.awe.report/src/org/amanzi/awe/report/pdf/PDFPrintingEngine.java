@@ -144,7 +144,6 @@ public class PDFPrintingEngine {
                     img.setIndentationLeft(INDENTATION);
                     img.setIndentationRight(INDENTATION);
                     document.add(img);
-                    System.out.println("Added map");
                 } else if (part instanceof Chart) {
                     Chart chart = (Chart)part;
                     // create chart
@@ -177,16 +176,12 @@ public class PDFPrintingEngine {
                     image.setIndentationRight(INDENTATION);
                     image.setAlignment(Image.ALIGN_MIDDLE);
                     document.add(image);
-                    System.out.println("Added chart");
-               
-
                 } else if (part instanceof ReportText) {
                     ReportText text = (ReportText)part;
                     final Paragraph paragraph = new Paragraph(text.getText());
                     paragraph.setIndentationLeft(INDENTATION);
                     paragraph.setIndentationRight(INDENTATION);
                     document.add(paragraph);
-                    System.out.println("Added text");
                 } else if (part instanceof ReportImage) {
                     ReportImage image = (ReportImage)part;
                     Image img = Image.getInstance(image.getImageFileName());
@@ -203,7 +198,6 @@ public class PDFPrintingEngine {
                     pdfCell.setColspan(n);
                     pdfTable.addCell(pdfCell);
                     pdfCell.setHorizontalAlignment(Cell.ALIGN_CENTER);
-                    System.out.println("Added table title");
                     
 
                     for (String header : headers) {
@@ -212,14 +206,12 @@ public class PDFPrintingEngine {
                         pdfCell.setGrayFill(0.751f);
                         pdfTable.addCell(pdfCell);
                     }
-                    System.out.println("Added table headers");
                     //force headers to  be printed on every page
                     pdfTable.endHeaders();
                     for (String[] row : table.getTableItems()) {
                         for (String cell : row) {
                             pdfTable.addCell(cell);
                         }
-                        System.out.println("Added table row");
                     }
                     // large table have to be splitted
                     pdfTable.setTableFitsPage(false);

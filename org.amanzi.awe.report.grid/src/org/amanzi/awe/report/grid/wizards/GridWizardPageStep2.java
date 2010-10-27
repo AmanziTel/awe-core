@@ -26,6 +26,7 @@ import org.amanzi.awe.report.model.Chart;
 import org.amanzi.awe.report.model.Report;
 import org.amanzi.awe.report.pdf.PDFPrintingEngine;
 import org.amanzi.awe.statistics.database.entity.Statistics;
+import org.amanzi.awe.statistics.database.entity.StatisticsGroup;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -62,8 +63,7 @@ import org.neo4j.graphdb.Traverser.Order;
  * @since 1.0.0
  */
 public class GridWizardPageStep2 extends WizardPage {
-    private static final String SELECT_SITE = "Select site:";
-    private static final String TEN_WORST_SITES_REPORT = "Create PDF report for 10 worst sites";
+    private static final String SELECT_LEVEL = "Select %s:";
     private static final String SELECT_KPI = "Select KPI:";
     private static final String EXPORT_CHART_TO_PDF = "Export chart";
     private static final String SELECT_CHART_TYPE = "Select chart type:";
@@ -82,6 +82,12 @@ public class GridWizardPageStep2 extends WizardPage {
     private ChartComposite chartComposite;
     private Button btnExportChart;
     private Chart chart;
+    private Label lblSelectNetworkElement;
+    private Button btnAll;
+    private Button btnIndividual;
+    private Button btnTop10;
+    private Button btnTop20;
+    private Button btnTop30;
 
     protected GridWizardPageStep2() {
         super("GridWizardPageStep2");
@@ -92,14 +98,21 @@ public class GridWizardPageStep2 extends WizardPage {
         container = new Composite(parent, SWT.NONE);
         container.setLayout(new GridLayout(4, false));
 
-        final Label lblSelectSite = new Label(container, SWT.NONE);
-        lblSelectSite.setText(SELECT_SITE);
-        lblSelectSite.setLayoutData(new GridData());
+        lblSelectNetworkElement = new Label(container, SWT.NONE);
+        // lblSelectNetworkElement.setText(SELECT_LEVEL);
+        lblSelectNetworkElement.setLayoutData(new GridData());
         final SelectionAdapter listener = new SelectionAdapter() {
+            boolean deselectEvent = true;
 
             @Override
             public void widgetSelected(SelectionEvent e) {
+                System.out.println(e);
                 updateChart();
+                if (!deselectEvent) {
+                    deselectEvent = true;
+                } else {
+                    deselectEvent = false;
+                }
             }
         };
         cmbSites = new Combo(container, SWT.NONE);
@@ -115,20 +128,52 @@ public class GridWizardPageStep2 extends WizardPage {
         gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 3, 1);
         cmbKPIs.setLayoutData(gd);
         cmbKPIs.addSelectionListener(listener);
+
+        Group resultType = new Group(container, SWT.NONE);
+        resultType.setText("Select which results to export:");
+        resultType.setLayout(new GridLayout());
+
+        btnAll = new Button(resultType, SWT.RADIO);
+        btnAll.setText("all sites/cells");
+        btnAll.setLayoutData(new GridData());
+        btnAll.setSelection(true);
+
+        btnIndividual = new Button(resultType, SWT.RADIO);
+        btnIndividual.setText("selected site/cell");
+        btnIndividual.setLayoutData(new GridData());
+
+        btnTop10 = new Button(resultType, SWT.RADIO);
+        btnTop10.setText("top 10 sites/cells");
+        btnTop10.setLayoutData(new GridData());
+
+        btnTop20 = new Button(resultType, SWT.RADIO);
+        btnTop20.setText("top 20 sites/cells");
+        btnTop20.setLayoutData(new GridData());
+
+        btnTop30 = new Button(resultType, SWT.RADIO);
+        btnTop30.setText("top 30 sites/cells");
+        btnTop30.setLayoutData(new GridData());
+
+        gd = new GridData();
+        gd.grabExcessHorizontalSpace = true;
+        gd.horizontalSpan = 2;
+        resultType.setLayoutData(gd);
         Group chartTypeGroup = new Group(container, SWT.NONE);
         chartTypeGroup.setText(SELECT_CHART_TYPE);
         chartTypeGroup.setLayout(new GridLayout());
 
         gd = new GridData();
         gd.grabExcessHorizontalSpace = true;
-        gd.horizontalSpan = 3;
+        gd.horizontalSpan = 2;
 
         final SelectionAdapter changeChartTypeListener = new SelectionAdapter() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
+                System.out.println(e);
                 updateKPIs();
                 updateChart();
+                updateChoices();
             }
         };
         chartTypeGroup.setLayoutData(gd);
@@ -174,14 +219,34 @@ public class GridWizardPageStep2 extends WizardPage {
             }
         });
 
-        btn10Worst = new Button(settings, SWT.CHECK);
-        btn10Worst.setText(TEN_WORST_SITES_REPORT);
-        btn10Worst.setLayoutData(new GridData());
-
         // chartComposite.pack();
 
         setPageComplete(true);
         setControl(container);
+    }
+
+    protected void updateChoices() {
+        if (btnDial.getSelection()) {
+            enableChoices(true);
+            btnTop10.setSelection(true);
+        } else {
+            enableChoices(false);
+            if (isWorstSitesReportRequired()) {
+                btnAll.setSelection(true);
+            }
+
+        }
+    }
+
+    /**
+     *
+     */
+    private void enableChoices(boolean enable) {
+        btnAll.setEnabled(!enable);
+        btnIndividual.setEnabled(!enable);
+        btnTop10.setEnabled(enable);
+        btnTop20.setEnabled(enable);
+        btnTop30.setEnabled(enable);
     }
 
     protected void exportChartToPdf() {
@@ -202,14 +267,16 @@ public class GridWizardPageStep2 extends WizardPage {
             GridReportWizard gridReportWizard = ((GridReportWizard)getWizard());
             gridReportWizard.loadData();
             gridReportWizard.buildStatistics();
-
-            List<String> identityProperty = getIdentityProperty(gridReportWizard.getDatasetNode(), "site");
-            Collections.sort(identityProperty);
-            cmbSites.setItems(identityProperty.toArray(new String[] {}));
+            lblSelectNetworkElement.setText(String.format(SELECT_LEVEL, gridReportWizard.getNetworkLevel()));
+            updateNetworkElements();
+            // List<String> identityProperty =
+            // getIdentityProperty(gridReportWizard.getDatasetNode(), "site");
+            // Collections.sort(identityProperty);
+            // cmbSites.setItems(identityProperty.toArray(new String[] {}));
 
             cmbSites.setText(cmbSites.getItem(0));
             // cmbSites.add("all", 0);
-            System.out.println("identityProperty: " + identityProperty);
+            // System.out.println("identityProperty: " + identityProperty);
 
             updateKPIs();
             updateChart();
@@ -218,15 +285,48 @@ public class GridWizardPageStep2 extends WizardPage {
         super.setVisible(visible);
     }
 
+    private void updateNetworkElements() {
+        GridReportWizard gridReportWizard = ((GridReportWizard)getWizard());
+        Statistics statistics = gridReportWizard.getStatistics();
+        cmbSites.removeAll();
+        for (StatisticsGroup group : statistics.getGroups().values()) {
+            cmbSites.add(group.getGroupName());
+        }
+        cmbSites.setText(cmbSites.getItem(0));
+    }
+
     /**
-     * Is export to PDF of 10 worst sites results required
+     * Is export to PDF of N worst sites results required
      * 
      * @return true if export to PDF of 10 worst sites results is required
      */
-    public boolean is10WorstSitesReportRequired() {
-        return btn10Worst.getSelection();
+    public boolean isWorstSitesReportRequired() {
+        return btnTop10.getSelection() || btnTop20.getSelection() || btnTop30.getSelection();
     }
 
+    /**
+     * Gets quantity of sites/cells per report
+     * 
+     * @return quantity of sites/cells per report
+     */
+    public Integer elementsPerReport() {
+        if (btnTop10.getSelection()) {
+            return 10;
+        } else if (btnTop20.getSelection()) {
+            return 20;
+        } else if (btnTop30.getSelection()) {
+            return 30;
+        }
+        return cmbSites.getItemCount();
+    }
+    /**
+     * Is export to PDF of an individual (selected) site results required
+     * 
+     * @return true if export to PDF of an individual (selected) site results required
+     */
+    public boolean isIndividualReportRequired() {
+        return btnIndividual.getSelection();
+    }
     /**
      * @param gridReportWizard
      */
@@ -252,99 +352,42 @@ public class GridWizardPageStep2 extends WizardPage {
     /**
      */
     private void updateChart() {
-        final GridReportWizard gridReportWizard = ((GridReportWizard)getWizard());
-        final Statistics statistics = gridReportWizard.getStatistics();
-        final String aggregation = gridReportWizard.getAggregation().getId();
-        final String siteName = cmbSites.getText();
-        final String kpiName = cmbKPIs.getText();
-        chart = new Chart(siteName);
-        chart.addSubtitle(kpiName);
-        final ChartType chartType = getChartType();
-        chart.setChartType(chartType);
-        chart.setDomainAxisLabel("Value");
-        chart.setRangeAxisLabel("Time");
+        System.out.println("update chart");
+        GridReportWizard gridReportWizard = ((GridReportWizard)getWizard());
+        Statistics statistics = gridReportWizard.getStatistics();
+        String aggregation = gridReportWizard.getAggregation().getId();
+        String siteName = cmbSites.getText();
+        String kpiName = cmbKPIs.getText();
+        ChartType chartType = getChartType();
+        chart = ChartUtilities.createReportChart(siteName,kpiName,chartType);
+        long t = System.currentTimeMillis();
         switch (chartType) {
         case COMBINED:
-            updateCombinedChart(statistics, aggregation, siteName, kpiName, chart);
+            ChartUtilities.updateCombinedChart(statistics, aggregation, siteName, kpiName, chart);
             break;
         case TIME:
-            updateTimeChart(statistics, aggregation, siteName, kpiName, chart);
+            ChartUtilities.updateTimeChart(statistics, aggregation, siteName, kpiName, chart);
             break;
         case DIAL:
-            updateDialChart(statistics, siteName, kpiName, chart);
+            ChartUtilities.updateDialChart(statistics, siteName, kpiName, chart);
             break;
         default:
             break;
         }
+        System.out.println("Dataset created in " + (System.currentTimeMillis() - t) / 1000 + " sec");
+        t = System.currentTimeMillis();
         jfreechart = Charts.createChart(chart);
+        GridData gd = new GridData();
+        gd.horizontalSpan = 4;
+        gd.heightHint = 200;
+        gd.widthHint = chartType.equals(ChartType.DIAL) ? 200 : 600;
+        chartComposite.setLayoutData(gd);
         chartComposite.setChart(jfreechart);
-        if (chartType.equals(ChartType.DIAL)) {
-            GridData gd = new GridData();
-            gd.horizontalSpan = 4;
-            gd.heightHint = 200;
-            gd.widthHint = 200;
-            chartComposite.setLayoutData(gd);
-        } else {
-            GridData gd = new GridData();
-            gd.horizontalSpan = 4;
-            gd.heightHint = 200;
-            gd.widthHint = 600;
-            chartComposite.setLayoutData(gd);
-        }
-
-        chartComposite.forceRedraw();
+        chartComposite.redraw();
+        // chartComposite.forceRedraw();
+        System.out.println("Chart was redrawn in " + (System.currentTimeMillis() - t) / 1000 + " sec");
+        container.layout();
         container.pack();
-    }
-
-    /**
-     * @param statistics
-     * @param siteName
-     * @param kpiName
-     * @param chart
-     */
-    private void updateDialChart(final Statistics statistics, final String siteName, final String kpiName, final Chart chart) {
-        DialPlot dialplot = new DialPlot();
-        Charts.applyDefaultSettingsToDataset(dialplot, ChartUtilities.createDialChartDataset(statistics, siteName, kpiName), 0);
-        Charts.applyMainVisualSettings(dialplot, chart.getDomainAxisLabel(), chart.getRangeAxisLabel(), PlotOrientation.VERTICAL);
-        chart.setPlot(dialplot);
-    }
-
-    /**
-     * @param statistics
-     * @param aggregation
-     * @param siteName
-     * @param kpiName
-     * @param chart
-     */
-    private void updateTimeChart(final Statistics statistics, final String aggregation, final String siteName,
-            final String kpiName, final Chart chart) {
-        TimeSeriesCollection[] chartDataset = ChartUtilities.createChartDataset(statistics, siteName, kpiName, aggregation,
-                ChartType.TIME);
-        XYPlot plot = new XYPlot();
-        plot.setDomainAxis(new DateAxis());
-        Charts.applyDefaultSettingsToDataset(plot, chartDataset[0], 0);
-        Charts.applyDefaultSettingsToDataset(plot, chartDataset[1], 1);
-        Charts.applyMainVisualSettings(plot, chart.getDomainAxisLabel(), chart.getRangeAxisLabel(), PlotOrientation.VERTICAL);
-        chart.setPlot(plot);
-    }
-
-    /**
-     * @param statistics
-     * @param aggregation
-     * @param siteName
-     * @param kpiName
-     * @param chart
-     */
-    private void updateCombinedChart(final Statistics statistics, final String aggregation, final String siteName,
-            final String kpiName, final Chart chart) {
-        TimeSeriesCollection[] chartDataset = ChartUtilities.createChartDataset(statistics, siteName, kpiName, aggregation,
-                ChartType.COMBINED);
-        XYPlot plot = new XYPlot();
-        plot.setDomainAxis(new DateAxis());
-        Charts.applyDefaultSettingsToDataset(plot, chartDataset[0], 0);
-        Charts.applyDefaultSettingsToDataset(plot, new XYBarDataset(chartDataset[1], 1000 * 60 * 60 * 0.5), 1);
-        Charts.applyMainVisualSettings(plot, chart.getDomainAxisLabel(), chart.getRangeAxisLabel(), PlotOrientation.VERTICAL);
-        chart.setPlot(plot);
     }
 
     public static List<String> getIdentityProperty(Node dataset, String name) {
@@ -387,5 +430,9 @@ public class GridWizardPageStep2 extends WizardPage {
 
     public String getKpi() {
         return cmbKPIs.getText();
+    }
+
+    public String getNetworkElement() {
+        return cmbSites.getText();
     }
 }

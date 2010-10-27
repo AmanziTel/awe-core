@@ -83,7 +83,7 @@ public class GridReportWizard extends Wizard implements IWizard {
     public static final String WIZARD_TITLE = "Grid-NetView wizard";
     private boolean isExportToPdfRequired;
     protected boolean isExportToXlsRequired;
-    protected boolean is10WorstSitesReportRequired;
+    protected boolean isWorstSitesReportRequired;
     private String directory;
     private String outputDirectory;
     protected CallTimePeriods aggregation;
@@ -99,6 +99,10 @@ public class GridReportWizard extends Wizard implements IWizard {
     protected Statistics networkStatistics;
     private boolean isLoaded = false;
     protected String kpi;
+    protected String networkLevel;
+    protected Integer elementsPerReport;
+    protected String networkElement;
+    protected boolean individualReportRequired;
 
     @Override
     public void addPages() {
@@ -127,14 +131,17 @@ public class GridReportWizard extends Wizard implements IWizard {
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 
                     try {
-
-                        //     
                         if (isExportToPdfRequired) {
-
                             updateMessage("Exporting statistics to PDF...");
                             long t = System.currentTimeMillis();
-                            // exportToPdfOld(datasetNode, idenKPIs);
-                            generatePdfReports();
+                            if (isWorstSitesReportRequired) {
+                                exportTopElementsToPdf();
+                            } else if (individualReportRequired) {
+                                generateIndividuaPdfReport();
+                            } else {
+                                // exportToPdfOld(datasetNode, idenKPIs);
+                                generatePdfReports();
+                            }
                             System.out.println("Finished exporting to pdf in " + (System.currentTimeMillis() - t) / 1000
                                     + " seconds");
                         }
@@ -147,29 +154,10 @@ public class GridReportWizard extends Wizard implements IWizard {
                             long t = System.currentTimeMillis();
                             XlsStatisticsExporter exporter = new XlsStatisticsExporter(outputDirectory);
 
-                            exporter.export(datasetNode, "site", aggregation.getId(), getTemplateFileName());
+                            exporter.export(datasetNode, networkLevel, aggregation.getId(), getTemplateFileName());
                             System.out.println("Finished exporting in " + (System.currentTimeMillis() - t) / 1000 + " seconds");
                         }
-                        if (is10WorstSitesReportRequired) {
-                            final List<Pair<String, DefaultValueDataset>> datasets = ChartUtilities.createDialChartDatasets(
-                                    statistics, kpi);
-                            final DefaultValueDataset networkDs = ChartUtilities.createDialChartDataset(networkStatistics,
-                                    "unknown", kpi);
-                            Report report = new Report("10 worst sites report");
-                            // report.addPart(chart);
-                            String outputDirectory = getOutputDirectory();
-                            report.setFile(outputDirectory + File.separatorChar + "10 worst sites for " + kpi + ".pdf");
-                            addDialChart(report, "Network", networkDs);
-                            int i = 0;
-                            for (Pair<String, DefaultValueDataset> pair : datasets) {
-                                addDialChart(report, pair.l(), pair.r());
-                                if (++i >= 10) {
-                                    break;
-                                }
-                            }
-                            PDFPrintingEngine printingEngine = new PDFPrintingEngine();
-                            printingEngine.printReport(report);
-                        }
+
                     } catch (Exception e) {
                         e.printStackTrace();
                         loadDataPage.setPageComplete(false);
@@ -195,9 +183,11 @@ public class GridReportWizard extends Wizard implements IWizard {
     }
 
     /**
-     * @param report
-     * @param siteName
-     * @param dataset
+     * Adds dial chart
+     * 
+     * @param report report
+     * @param siteName element name
+     * @param dataset chart dataset
      */
     private void addDialChart(Report report, String siteName, final DefaultValueDataset dataset) {
         Chart chart = new Chart(siteName);
@@ -214,6 +204,11 @@ public class GridReportWizard extends Wizard implements IWizard {
         report.addPart(chart);
     }
 
+    /**
+     * Gets template file name
+     * 
+     * @return
+     */
     protected String getTemplateFileName() {
         if (chartType.equals(ChartType.BAR)) {
             return "bar.xls";
@@ -221,6 +216,12 @@ public class GridReportWizard extends Wizard implements IWizard {
         return "line.xls";
     }
 
+    /**
+     * @param datasetNode
+     * @param kpis
+     * @throws IOException
+     */
+    @Deprecated
     protected void exportToPdfOld(Node datasetNode, List<String> kpis) throws IOException {
         URL rubyFolder = FileLocator.toFileURL(GridReportPlugin.getDefault().getBundle().getEntry("ruby"));
         URL scriptURL = FileLocator.toFileURL(GridReportPlugin.getDefault().getBundle().getEntry("ruby/automation.rb"));
@@ -239,7 +240,7 @@ public class GridReportWizard extends Wizard implements IWizard {
                     }
                 }
             }
-            if (is10WorstSitesReportRequired) {
+            if (isWorstSitesReportRequired) {
                 if (kpi.contains("rate")) {
                     reportModel.updateModel(String.format("generate_dial_charts('%s','%s',:%s,:%s)", datasetName, kpiDisplayName,
                             aggregation, "time"));
@@ -279,9 +280,7 @@ public class GridReportWizard extends Wizard implements IWizard {
     }
 
     /**
-     * @param monitor
-     * @return
-     * @throws IOException
+     * Loads data
      */
     void loadData() {
         try {
@@ -316,9 +315,7 @@ public class GridReportWizard extends Wizard implements IWizard {
     }
 
     /**
-     * @param service
-     * @param datasetNode
-     * @param kpis TODO
+     * Builds statistics
      */
     void buildStatistics() {
         updateMessage("Building statistics...");
@@ -364,7 +361,7 @@ public class GridReportWizard extends Wizard implements IWizard {
 
                     }
                     networkStatistics = builder.buildStatistics(template, "network", aggregation, monitor);
-                    statistics = builder.buildStatistics(template, "site", aggregation, monitor);
+                    statistics = builder.buildStatistics(template, networkLevel, aggregation, monitor);
                     System.out.println("Finished building stats");
                 }
             });
@@ -390,7 +387,7 @@ public class GridReportWizard extends Wizard implements IWizard {
     // }
 
     /**
-     * @return
+     * Updates user choices (from different pages) in UI thread
      */
     private void updateUserChoice() {
         Display.getDefault().syncExec(new Runnable() {
@@ -399,14 +396,19 @@ public class GridReportWizard extends Wizard implements IWizard {
             public void run() {
                 directory = loadDataPage.getDirectory();
                 outputDirectory = loadDataPage.getOutputDirectory();
-
                 isExportToPdfRequired = loadDataPage.isExportToPdfRequired();
                 isExportToXlsRequired = loadDataPage.isExportToXlsRequired();
-                is10WorstSitesReportRequired = viewResultPage.is10WorstSitesReportRequired();
+                networkLevel = loadDataPage.getNetworkLevel();
+
                 aggregation = loadDataPage.getAggregation();
                 chartType = viewResultPage.getChartType();
                 kpi = viewResultPage.getKpi();
+                networkElement = viewResultPage.getNetworkElement();
 
+                isWorstSitesReportRequired = viewResultPage.isWorstSitesReportRequired();
+                elementsPerReport = viewResultPage.elementsPerReport();
+
+                individualReportRequired = viewResultPage.isIndividualReportRequired();
             }
         });
     }
@@ -449,6 +451,10 @@ public class GridReportWizard extends Wizard implements IWizard {
         return aggregation;
     }
 
+    public String getNetworkLevel() {
+        return networkLevel;
+    }
+
     public ArrayList<String> getIdenKPIs() {
         return displayNames;
     }
@@ -457,10 +463,15 @@ public class GridReportWizard extends Wizard implements IWizard {
         return chartType;
     }
 
+    /**
+     * Generates reports for all network elements
+     */
     private void generatePdfReports() {
         long t = System.currentTimeMillis();
         final Map<String, Map<String, TimeSeries[]>> datasets = ChartUtilities.createChartDatasets(getStatistics(),
                 getAggregation().getId(), getChartType());
+        TimeSeriesCollection[] ds = ChartUtilities.createChartDataset(getStatistics(), networkElement, kpi, getAggregation()
+                .getId(), getChartType());
         System.out.println("Finished generating datasets in " + (System.currentTimeMillis() - t) / 1000 + " seconds");
         Map<String, Report> reportsPerKPI = new HashMap<String, Report>();
         for (Entry<String, Map<String, TimeSeries[]>> entry : datasets.entrySet()) {
@@ -487,30 +498,10 @@ public class GridReportWizard extends Wizard implements IWizard {
                 TimeSeries[] series = e.getValue();
                 switch (chartType) {
                 case COMBINED:
-                    TimeSeriesCollection values = new TimeSeriesCollection();
-                    values.addSeries(series[1]);
-                    TimeSeriesCollection thresholds = new TimeSeriesCollection();
-                    thresholds.addSeries(series[0]);
-                    XYPlot plot = new XYPlot();
-                    plot.setDomainAxis(new DateAxis());
-                    Charts.applyDefaultSettingsToDataset(plot, thresholds, 0);
-                    Charts.applyDefaultSettingsToDataset(plot, new XYBarDataset(values, 1000 * 60 * 60 * 0.5), 1);
-                    Charts.applyMainVisualSettings(plot, chart.getDomainAxisLabel(), chart.getRangeAxisLabel(),
-                            PlotOrientation.VERTICAL);
-                    chart.setPlot(plot);
+                    addDataToCombinedChart(chart, series);
                     break;
                 case TIME:
-                    values = new TimeSeriesCollection();
-                    values.addSeries(series[1]);
-                    thresholds = new TimeSeriesCollection();
-                    thresholds.addSeries(series[0]);
-                    plot = new XYPlot();
-                    plot.setDomainAxis(new DateAxis());
-                    Charts.applyDefaultSettingsToDataset(plot, thresholds, 0);
-                    Charts.applyDefaultSettingsToDataset(plot, values, 1);
-                    Charts.applyMainVisualSettings(plot, chart.getDomainAxisLabel(), chart.getRangeAxisLabel(),
-                            PlotOrientation.VERTICAL);
-                    chart.setPlot(plot);
+                    addDataToTimeChart(chart, series);
                     break;
                 // case DIAL:
                 // DialPlot dialplot = new DialPlot();
@@ -536,5 +527,89 @@ public class GridReportWizard extends Wizard implements IWizard {
             printingEngine.printReport(report);
 
         }
+    }
+
+    /**
+     * Adds data to a time(line) chart
+     * 
+     * @param chart chart
+     * @param series series array
+     */
+    private void addDataToTimeChart(Chart chart, TimeSeries[] series) {
+        TimeSeriesCollection values = new TimeSeriesCollection();
+        values.addSeries(series[1]);
+        TimeSeriesCollection thresholds = new TimeSeriesCollection();
+        thresholds.addSeries(series[0]);
+        XYPlot plot = new XYPlot();
+        plot.setDomainAxis(new DateAxis());
+        Charts.applyDefaultSettingsToDataset(plot, thresholds, 0);
+        Charts.applyDefaultSettingsToDataset(plot, values, 1);
+        Charts.applyMainVisualSettings(plot, chart.getDomainAxisLabel(), chart.getRangeAxisLabel(), PlotOrientation.VERTICAL);
+        chart.setPlot(plot);
+    }
+
+    /**
+     * Adds data to a combined(bar+line) chart
+     * 
+     * @param chart chart
+     * @param series series array
+     */
+    private void addDataToCombinedChart(Chart chart, TimeSeries[] series) {
+        TimeSeriesCollection values = new TimeSeriesCollection();
+        values.addSeries(series[1]);
+        TimeSeriesCollection thresholds = new TimeSeriesCollection();
+        thresholds.addSeries(series[0]);
+        XYPlot plot = new XYPlot();
+        plot.setDomainAxis(new DateAxis());
+        Charts.applyDefaultSettingsToDataset(plot, thresholds, 0);
+        Charts.applyDefaultSettingsToDataset(plot, new XYBarDataset(values, 1000 * 60 * 60 * 0.5), 1);
+        Charts.applyMainVisualSettings(plot, chart.getDomainAxisLabel(), chart.getRangeAxisLabel(), PlotOrientation.VERTICAL);
+        chart.setPlot(plot);
+    }
+
+    /**
+     * Exports top N elements to PDF
+     */
+    private void exportTopElementsToPdf() {
+        final List<Pair<String, DefaultValueDataset>> datasets = ChartUtilities.createDialChartDatasets(statistics, kpi);
+        final DefaultValueDataset networkDs = ChartUtilities.createDialChartDataset(networkStatistics, "unknown", kpi);
+        Report report = new Report("10 worst " + networkLevel + "s report");
+        // report.addPart(chart);
+        String outputDirectory = getOutputDirectory();
+        report.setFile(outputDirectory + File.separatorChar + elementsPerReport + " worst " + networkLevel + "s for " + kpi
+                + ".pdf");
+        addDialChart(report, "Network", networkDs);
+        int i = 0;
+        for (Pair<String, DefaultValueDataset> pair : datasets) {
+            addDialChart(report, pair.l(), pair.r());
+            if (++i >= elementsPerReport) {
+                break;
+            }
+        }
+        PDFPrintingEngine printingEngine = new PDFPrintingEngine();
+        printingEngine.printReport(report);
+    }
+
+    /**
+     *
+     */
+    private void generateIndividuaPdfReport() {
+        Report report = new Report("KPI report");
+        String outputDirectory = getOutputDirectory();
+        report.setFile(outputDirectory + File.separatorChar + kpi + " " + networkElement + ".pdf");
+        Chart chart = ChartUtilities.createReportChart(networkElement, kpi, chartType);
+        switch (chartType) {
+        case COMBINED:
+            ChartUtilities.updateCombinedChart(statistics, aggregation.getId(), networkElement, kpi, chart);
+            break;
+        case TIME:
+            ChartUtilities.updateTimeChart(statistics, aggregation.getId(), networkElement, kpi, chart);
+            break;
+        default:
+        }
+        report.addPart(chart);
+        // save reports
+        PDFPrintingEngine printingEngine = new PDFPrintingEngine();
+        printingEngine.printReport(report);
     }
 }

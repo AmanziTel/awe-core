@@ -34,6 +34,8 @@ import org.eclipse.swt.widgets.Group;
  */
 public class GridWizardPageStep1 extends WizardPage {
 
+    private static final String HARMONY = "Harmony";
+    private static final String IDEN = "IDEN";
     private static final String SELECT_DIRECTORY = "Select directory";
     private static final String SELECT_OUTPUT_DIRECTORY = "Select output directory";
 
@@ -50,6 +52,9 @@ public class GridWizardPageStep1 extends WizardPage {
     private Button btnDaily;
     private DirectoryFieldEditor directoryFieldEditor;
     private DirectoryFieldEditor outputDirectotyEditor;
+    private Button btnNetwork;
+    private Button btnSite;
+    private Button btnCell;
 
     public GridWizardPageStep1(String pageName) {
         super(pageName);
@@ -74,6 +79,20 @@ public class GridWizardPageStep1 extends WizardPage {
         outputDirectotyEditor.getTextControl(container).addModifyListener(listener);
         outputDirectotyEditor.getTextControl(container).setText(PDFPrintingEngine.DEFAULT_REPORT_DIRECTORY);
 
+        Group systemType = new Group(container, SWT.NONE);
+        systemType.setText("Select the system:");
+        systemType.setLayout(new GridLayout());
+
+        Button btnIden = new Button(systemType, SWT.RADIO);
+        btnIden.setText(IDEN);
+        btnIden.setLayoutData(new GridData());
+        btnIden.setSelection(true);
+
+        Button btnHarmony = new Button(systemType, SWT.RADIO);
+        btnHarmony.setText(HARMONY);
+        btnHarmony.setLayoutData(new GridData());
+        btnHarmony.setEnabled(false);
+
         Group aggregationTypeGroup = new Group(container, SWT.NONE);
         aggregationTypeGroup.setText(SELECT_AGGREGATION);
         aggregationTypeGroup.setLayout(new GridLayout());
@@ -92,6 +111,24 @@ public class GridWizardPageStep1 extends WizardPage {
         btnDaily = new Button(aggregationTypeGroup, SWT.RADIO);
         btnDaily.setText(DAILY);
         btnDaily.setLayoutData(new GridData());
+
+        Group aggregationLevel = new Group(container, SWT.NONE);
+        aggregationLevel.setText("Select network level:");
+        aggregationLevel.setLayout(new GridLayout());
+
+        btnNetwork = new Button(aggregationLevel, SWT.RADIO);
+        btnNetwork.setText("network");
+        btnNetwork.setLayoutData(new GridData());
+
+        btnSite = new Button(aggregationLevel, SWT.RADIO);
+        btnSite.setText("site");
+        btnSite.setLayoutData(new GridData());
+        btnSite.setSelection(true);
+
+        btnCell = new Button(aggregationLevel, SWT.RADIO);
+        btnCell.setText("cell");
+        btnCell.setLayoutData(new GridData());
+
         Composite settings = new Composite(container, SWT.NONE);
         gd = new GridData();
         gd.horizontalSpan = 4;
@@ -141,6 +178,15 @@ public class GridWizardPageStep1 extends WizardPage {
             return CallTimePeriods.DAILY;
 
         }
+    }
+
+    public String getNetworkLevel() {
+        if (btnSite.getSelection()) {
+            return "site";
+        } else if (btnCell.getSelection()) {
+            return "cell";
+        }
+        return "network";
     }
 
     /**
