@@ -22,11 +22,11 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.db.manager.INeoDbService;
 import org.amanzi.neo.loader.core.parser.IDataElement;
 import org.amanzi.neo.loader.core.preferences.PreferenceStore;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.statistic.IStatistic;
 import org.hsqldb.lib.StringUtil;
@@ -131,7 +131,7 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
      * @param node the node
      */
     protected void index(Node node) {
-        String nodeType = NeoUtils.getNodeType(node, "");
+        String nodeType = NeoServiceFactory.getInstance().getDatasetService().getType(node);
         ArrayList<MultiPropertyIndex< ? >> indList = indexes.get(nodeType);
         if (indList == null) {
             return;
@@ -199,7 +199,7 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
      * @param node - node
      */
     protected void index(String key, Node node) {
-        String nodeType = NeoUtils.getNodeType(node, "");
+        String nodeType = NeoServiceFactory.getInstance().getDatasetService().getType(node);
         LinkedHashMap<String, HashSet<MultiPropertyIndex< ? >>> indMap = mappedIndexes.get(key);
         if (indMap == null) {
             return;

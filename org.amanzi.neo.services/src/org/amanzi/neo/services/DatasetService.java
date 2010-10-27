@@ -28,7 +28,6 @@ import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
 import org.amanzi.neo.core.utils.GisProperties;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.services.Utils.FilterAND;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
@@ -46,6 +45,8 @@ import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Traverser;
 import org.neo4j.graphdb.traversal.Uniqueness;
 import org.neo4j.helpers.Predicate;
+import org.neo4j.index.IndexHits;
+import org.neo4j.index.IndexService;
 import org.neo4j.kernel.Traversal;
 
 import com.vividsolutions.jts.util.Assert;
@@ -75,7 +76,6 @@ public class DatasetService extends AbstractService {
     public DatasetService(GraphDatabaseService databaseService) {
         super(databaseService);
     }
-
 
     /** String DYNAMIC_TYPES field. */
     private static final String DYNAMIC_TYPES = "dynamic_types";
@@ -209,7 +209,7 @@ public class DatasetService extends AbstractService {
      * @param node the node
      * @return the type
      */
-    protected String getType(PropertyContainer node) {
+    public String getType(PropertyContainer node) {
         return (String)node.getProperty("type", null);
     }
 
@@ -912,7 +912,7 @@ public class DatasetService extends AbstractService {
      * @return the sructure types
      */
     public List<INodeType> getSructureTypes(Node sourceNode) {
-        Node networkNode = NeoUtils.getParentNode(sourceNode, NodeTypes.NETWORK.getId());
+        Node networkNode = Utils.getParentNode(sourceNode, NodeTypes.NETWORK.getId());
         String[] stTypes = (String[])networkNode.getProperty(INeoConstants.PROPERTY_STRUCTURE_NAME, new String[0]);
         List<INodeType> result = new ArrayList<INodeType>(stTypes.length);
 
@@ -974,8 +974,8 @@ public class DatasetService extends AbstractService {
      * @return the gis node
      */
     public GisProperties getGisNode(Node root) {
-       
-        Node gis=findGisNode(root);
+
+        Node gis = findGisNode(root);
         if (gis == null) {
             Transaction tx = databaseService.beginTx();
             try {
@@ -992,23 +992,22 @@ public class DatasetService extends AbstractService {
                 tx.finish();
             }
 
-        } 
+        }
         return new GisProperties(gis);
     }
 
-
     /**
      * Find gis node.
-     *
+     * 
      * @param root the root
      * @return the node
      */
     public Node findGisNode(Node root) {
-        Assert.isTrue(NeoUtils.isRoootNode(root));
-        Node gis=null;
+        Assert.isTrue(Utils.isRoootNode(root));
+        Node gis = null;
         Relationship rel = root.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
-        if (rel!=null){
-            gis=rel.getOtherNode(root);
+        if (rel != null) {
+            gis = rel.getOtherNode(root);
         }
         return gis;
     }
@@ -1066,7 +1065,65 @@ public class DatasetService extends AbstractService {
      * @return the node
      */
     public Node findSector(Node rootNode, Integer ci, Integer lac, String name, boolean returnFirsElement) {
-        return NeoUtils.findSector(getGlobalConfigNode(), ci, lac, name, returnFirsElement, getIndexService(), databaseService);
+        Node baseNode = getGlobalConfigNode();
+        IndexService index = getIndexService();
+        if (baseNode == null || (ci == null && name == null)) {
+            return null;
+        }
+        assert baseNode != null && (ci != null || name != null) && index != null;
+        if (ci == null) {
+            String indexName = Utils.getLuceneIndexKeyByProperty(baseNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR);
+            IndexHits<Node> nodesName = index.getNodes(indexName, name);
+            Node sector = nodesName.size() > 0 ? nodesName.next() : null;
+            if (nodesName.size() == 1) {
+                nodesName.close();
+                return sector;
+            } else {
+                nodesName.close();
+                return returnFirsElement ? sector : null;
+            }
+        }
+        String indexName = Utils.getLuceneIndexKeyByProperty(baseNode, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR);
+        IndexHits<Node> nodesCi = index.getNodes(indexName, ci);
+        if (lac == null && name == null) {
+            Node sector = nodesCi.size() > 0 ? nodesCi.next() : null;
+            if (nodesCi.size() == 1) {
+                nodesCi.close();
+                return sector;
+            } else {
+                nodesCi.close();
+                return returnFirsElement ? sector : null;
+            }
+        }
+        boolean canCheck = true;
+        if (lac != null) {
+            canCheck = false;
+            for (Node sector : nodesCi) {
+                if (sector.hasProperty(INeoConstants.PROPERTY_SECTOR_LAC)) {
+                    if (sector.getProperty(INeoConstants.PROPERTY_SECTOR_LAC).equals(lac)) {
+                        nodesCi.close();
+                        return sector;
+                    }
+                } else {
+                    canCheck = true;
+                }
+            }
+        }
+        if (canCheck) {
+            if (lac != null) {
+                nodesCi.close();
+                nodesCi = index.getNodes(indexName, ci);
+            }
+            if (name != null) {
+                for (Node sector : nodesCi) {
+                    Object sectorName = sector.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
+                    if (name.equals(sectorName) && (lac == null || !sector.hasProperty(INeoConstants.PROPERTY_SECTOR_LAC))) {
+                        return sector;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -1090,6 +1147,7 @@ public class DatasetService extends AbstractService {
         }
         return result;
     }
+
     public Node getTransmission(Node rootNode, String neighbourName) {
         Node result = findTransmission(rootNode, neighbourName);
         if (result == null) {
@@ -1117,19 +1175,20 @@ public class DatasetService extends AbstractService {
             return null;
         }
         TraversalDescription td = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst().prune(Traversal.pruneAfterDepth(1))
-        .relationships(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING).filter(new Predicate<Path>() {
-            
-            @Override
-            public boolean accept(Path item) {
-                if (item.length() == 1 && NodeTypes.NEIGHBOUR.checkNode(item.endNode())) {
-                    return neighbourName.equals(getName(item.endNode()));
-                }
-                return false;
-            }
-        });
+                .relationships(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING).filter(new Predicate<Path>() {
+
+                    @Override
+                    public boolean accept(Path item) {
+                        if (item.length() == 1 && NodeTypes.NEIGHBOUR.checkNode(item.endNode())) {
+                            return neighbourName.equals(getName(item.endNode()));
+                        }
+                        return false;
+                    }
+                });
         Iterator<Node> it = td.traverse(rootNode).nodes().iterator();
         return it.hasNext() ? it.next() : null;
     }
+
     public Node findTransmission(final Node rootNode, final String transmissionName) {
         if (rootNode == null || StringUtils.isEmpty(transmissionName)) {
             return null;
@@ -1158,7 +1217,7 @@ public class DatasetService extends AbstractService {
      */
     public NodeResult getNeighbourProxy(Node neighbourRoot, Node sector) {
         String proxySectorName = getName(neighbourRoot) + PROXY_NAME_SEPARATOR + getName(sector);
-        String luceneIndexKeyByProperty = NeoUtils.getLuceneIndexKeyByProperty(neighbourRoot, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS);
+        String luceneIndexKeyByProperty = Utils.getLuceneIndexKeyByProperty(neighbourRoot, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS);
         Node proxySector = null;
         for (Node node : getIndexService().getNodes(luceneIndexKeyByProperty, proxySectorName)) {
             if (node.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOURS, Direction.INCOMING).getOtherNode(node).equals(sector)) {
@@ -1237,23 +1296,22 @@ public class DatasetService extends AbstractService {
      */
     public Node findSite(Node rootNode, String name, String site_no) {
         if (StringUtils.isNotEmpty(name)) {
-            return getIndexService().getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), name);
+            return getIndexService().getSingleNode(Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), name);
         }
         if (StringUtils.isNotEmpty(site_no)) {
-            return getIndexService().getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_SITE_NO, NodeTypes.SITE), site_no);
+            return getIndexService().getSingleNode(Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_SITE_NO, NodeTypes.SITE), site_no);
         }
         return null;
     }
 
     /**
-     *
      * @param transmissionRoot
      * @param serSite
      * @return
      */
     public NodeResult getTransmissionProxy(Node transmissionRoot, Node site) {
         String proxySiteName = getName(transmissionRoot) + PROXY_NAME_SEPARATOR + getName(site);
-        String luceneIndexKeyByProperty = NeoUtils.getLuceneIndexKeyByProperty(transmissionRoot, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE_SITE_RELATIONS);
+        String luceneIndexKeyByProperty = Utils.getLuceneIndexKeyByProperty(transmissionRoot, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE_SITE_RELATIONS);
         Node proxySite = null;
         for (Node node : getIndexService().getNodes(luceneIndexKeyByProperty, proxySiteName)) {
             if (node.getSingleRelationship(NetworkRelationshipTypes.TRANSMISSIONS, Direction.INCOMING).getOtherNode(node).equals(site)) {
@@ -1280,19 +1338,18 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     *
      * @param rootNode
      * @param probeName
      * @return
      */
     public NodeResult getProbe(Node rootNode, String probeName) {
-        String indName=NeoUtils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.PROBE);
+        String indName = Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.PROBE);
         boolean isCreated = false;
         Node result = getIndexService().getSingleNode(indName, probeName);
-        if (result==null){
+        if (result == null) {
             Transaction tx = databaseService.beginTx();
             try {
-                isCreated=true;
+                isCreated = true;
                 result = createNode(NodeTypes.PROBE, probeName);
                 getIndexService().index(result, indName, probeName);
                 isCreated = true;
@@ -1300,7 +1357,7 @@ public class DatasetService extends AbstractService {
                 tx.success();
             } finally {
                 tx.finish();
-            }         
+            }
         }
         return new NodeResultImpl(result, isCreated);
     }

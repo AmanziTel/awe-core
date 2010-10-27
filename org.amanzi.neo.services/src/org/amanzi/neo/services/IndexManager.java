@@ -19,9 +19,8 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.GisProperties;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.db.manager.DatabaseManager;
-import org.amanzi.neo.index.MultiPropertyIndex;
+import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Transaction;
@@ -112,7 +111,7 @@ public class IndexManager {
 //                        }
                         prop.updateBBox(lat, lon);
 
-                        MultiPropertyIndex<Double> id = NeoUtils.getLocationIndexProperty(name);
+                        MultiPropertyIndex<Double> id = Utils.getLocationIndexProperty(name);
                         Transaction tx = DatabaseManager.getInstance().getCurrentDatabaseService().beginTx();
                         try {
                             id.initialize(DatabaseManager.getInstance().getCurrentDatabaseService(), null);
@@ -193,6 +192,6 @@ public class IndexManager {
     }
 
     public String getLuceneIndexKeyByProperty(INodeType type, String propertyName) {
-        return NeoUtils.getLuceneIndexKeyByProperty(root, propertyName, type);
+        return Utils.getLuceneIndexKeyByProperty(root, propertyName, type);
     }
 }

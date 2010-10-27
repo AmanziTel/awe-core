@@ -21,7 +21,6 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.GisProperties;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
@@ -109,7 +108,7 @@ public class TransmissionSaver extends AbstractHeaderSaver<BaseTransferData> {
        Node result= addSimpleChild(rootNode, NodeTypes.SITE,name);
        if (StringUtils.isNotEmpty(no)){
            result.setProperty(INeoConstants.PROPERTY_SITE_NO, no);
-           getIndexService().index(result, NeoUtils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_SITE_NO, NodeTypes.SITE), no);
+           getIndexService().index(result, Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_SITE_NO, NodeTypes.SITE), no);
        }
         return result;
     }

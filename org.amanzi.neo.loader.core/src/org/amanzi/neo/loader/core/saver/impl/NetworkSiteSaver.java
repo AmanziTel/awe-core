@@ -18,9 +18,9 @@ import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
+import org.amanzi.neo.services.Utils;
 import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Node;
 
@@ -46,7 +46,7 @@ public class NetworkSiteSaver extends NetworkSaver {
             error("Missing sector name on line " + element.getLine());
             return;
         }
-        Node site=service.getIndexService().getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteField);
+        Node site=service.getIndexService().getSingleNode(Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteField);
         if (site==null){
             site=addSimpleChild(rootNode, NodeTypes.SITE, siteField);
         }

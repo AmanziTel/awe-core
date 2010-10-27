@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashSet;
@@ -21,15 +22,23 @@ import java.util.Set;
 
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.SplashRelationshipTypes;
+import org.amanzi.neo.services.indexes.MultiPropertyIndex;
+import org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiDoubleConverter;
 import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Uniqueness;
 import org.neo4j.helpers.Predicate;
@@ -221,5 +230,55 @@ public class Utils {
         }
 
     }
+    /**
+     * Find a parent node of the specified type, following the NEXT relations back up the chain
+     * 
+     * @param node subnode
+     * @return parent node of specified type or null
+     */
+    public static Node getParentNode(Node node, final String type) {
+        Traverser traverse = node.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
 
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(type);
+            }
+        }, NetworkRelationshipTypes.CHILD, Direction.INCOMING);
+        return traverse.iterator().hasNext() ? traverse.iterator().next() : null;
+    }
+    /**
+     * Checks if is rooot node.
+     * 
+     * @param node the node
+     * @return true, if is rooot node (OR its VIRTUAL dataset)
+     */
+    public static boolean isRoootNode(Node node) {
+        if (node == null || !node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) || node.hasRelationship(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.INCOMING)) {
+            return false;
+        }
+        String typeId = (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME);
+        return NodeTypes.DATASET.getId().equals(typeId) || NodeTypes.NETWORK.getId().equals(typeId) || NodeTypes.OSS.getId().equals(typeId);
+    }
+    /**
+     * gets name of index.
+     * 
+     * @param basename - gis name
+     * @param propertyName - property name
+     * @param type - node type
+     * @return luciene key
+     */
+    public static String getLuceneIndexKeyByProperty(Node basename, String propertyName, INodeType type) {
+        return new StringBuilder("Id").append(basename.getId()).append("@").append(type.getId()).append("@").append(propertyName).toString();
+    }
+    /**
+     * Get location index.
+     * 
+     * @param name - dataset name
+     * @return location index
+     * @throws IOException Signals that an I/O exception has occurred.
+     */
+    public static MultiPropertyIndex<Double> getLocationIndexProperty(String name) throws IOException {
+        return new MultiPropertyIndex<Double>(Utils.getLocationIndexName(name), new String[] {INeoConstants.PROPERTY_LAT_NAME, INeoConstants.PROPERTY_LON_NAME},
+                new MultiDoubleConverter(0.001), 10);
+    }
 }

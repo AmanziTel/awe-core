@@ -69,7 +69,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
-// TODO: Auto-generated Javadoc
 //TODO create abstract XML loader?
 //TODO merge methods, which works with neighbour
 

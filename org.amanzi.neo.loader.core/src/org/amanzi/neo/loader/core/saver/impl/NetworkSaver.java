@@ -23,11 +23,11 @@ import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.GisProperties;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.core.preferences.PreferenceStore;
 import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
+import org.amanzi.neo.services.Utils;
 import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
@@ -134,7 +134,7 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
                 cityName = cityField;
                 city = city_s.get(cityField);
                 if (city == null) {
-                    city = getIndexService().getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.CITY), cityName);
+                    city = getIndexService().getSingleNode(Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.CITY), cityName);
                     if (city == null) {
                         city = addSimpleChild(rootNode, NodeTypes.CITY, cityName);
                     }
@@ -148,7 +148,7 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
                 bscName = bscField;
                 bsc = bsc_s.get(bscField);
                 if (bsc == null) {
-                    bsc = getIndexService().getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.BSC), bscName);
+                    bsc = getIndexService().getSingleNode(Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.BSC), bscName);
                     if (bsc == null) {
                         bsc = addSimpleChild(city == null ? rootNode : city, NodeTypes.BSC, bscName);
                     }
@@ -166,7 +166,7 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
             if (!siteField.equals(siteName)) {
                 siteName = siteField;
                 Node siteRoot = bsc == null ? (city == null ? rootNode : city) : bsc;
-                Node newSite = getIndexService().getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteName);
+                Node newSite = getIndexService().getSingleNode(Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteName);
                 if (newSite != null) {
                     Relationship relation = newSite.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING);
                     Node oldRoot = relation.getOtherNode(newSite);
@@ -210,7 +210,7 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
             }
             Integer ci = getNumberValue(Integer.class, INeoConstants.PROPERTY_SECTOR_CI, element);
             Integer lac = getNumberValue(Integer.class, INeoConstants.PROPERTY_SECTOR_LAC, element);
-            Node sector = NeoUtils.findSector(rootNode, ci, lac, sectorIndexName, true, getIndexService(), getService());
+            Node sector = service.findSector(rootNode, ci, lac, sectorIndexName, true);
             if (sector != null) {
                 // TODO check
             } else {
@@ -219,11 +219,11 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
                 service.indexByProperty(rootNode.getId(), sector, "sector_id");
                 if (ci != null) {
                     sector.setProperty(INeoConstants.PROPERTY_SECTOR_CI, ci);
-                    getIndexService().index(sector, NeoUtils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR), ci);
+                    getIndexService().index(sector, Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR), ci);
                 }
                 if (lac != null) {
                     sector.setProperty(INeoConstants.PROPERTY_SECTOR_LAC, lac);
-                    getIndexService().index(sector, NeoUtils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_SECTOR_LAC, NodeTypes.SECTOR), lac);
+                    getIndexService().index(sector, Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_SECTOR_LAC, NodeTypes.SECTOR), lac);
                 }
             }
             Integer beamwith = getNumberValue(Integer.class, "beamwidth", element);
