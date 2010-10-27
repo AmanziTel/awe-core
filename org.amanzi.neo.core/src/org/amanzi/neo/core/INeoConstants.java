@@ -28,16 +28,22 @@ public class INeoConstants {
      * and the data structures in neo4j that are built by them
      * and used by various elements in other plugins.
      */
-
+    //Node name property
+    public static final String PROPERTY_NAME_NAME = "name";
+    //Node type property
+    public static final String PROPERTY_TYPE_NAME = "type";
+    //timestamp property 
+    public static final String PROPERTY_TIMESTAMP_NAME = "timestamp";
+    //location
+    //latitude
+    public static final String PROPERTY_LAT_NAME = "lat";
+    //longitude
+    public static final String PROPERTY_LON_NAME = "lon";
+    
     public static final String PROPERTY_SECTOR_LAC = "lac";
     public static final String PROPERTY_SECTOR_CI = "ci";
-    public static final String PROPERTY_NAME_NAME = "name";
     public static final String PROPERTY_SECTOR_NAME = "name";
     public static final String PROPERTY_GIS_TYPE_NAME = "gis_type";
-    public static final String PROPERTY_TYPE_NAME = "type";
-    public static final String PROPERTY_LON_NAME = "lon";
-    public static final String PROPERTY_LAT_NAME = "lat";
-    public static final String DATASET_TYPE_NAME = NodeTypes.DATASET.getId();//Constant used not only as a node type.
     public static final String PROPERTY_FILENAME_NAME = "filename";
     public static final String PROPERTY_MW_NAME = "mw";
     public static final String PROPERTY_DBM_NAME = "dbm";
@@ -46,7 +52,6 @@ public class INeoConstants {
     public static final String PROPERTY_LAST_LINE_NAME = "last_line";
     public static final String PROPERTY_FIRST_LINE_NAME = "first_line";
     public static final String PROPERTY_TIME_NAME = "time";
-    public static final String PROPERTY_TIMESTAMP_NAME = "timestamp";
     public static final String PROPERTY_PARAMS_NAME = "event_parameters";
     public static final String HEADER_MS = "ms";
     public static final String PROPERTY_BBOX_NAME = "bbox";

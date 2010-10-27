@@ -1376,7 +1376,7 @@ public class NeoUtils {
 
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
-                    return datasetName.equals(currentPos.currentNode().getProperty(INeoConstants.DATASET_TYPE_NAME, ""));
+                    return datasetName.equals(currentPos.currentNode().getProperty(NodeTypes.DATASET.getId(), ""));
                 }
             }, ProbeCallRelationshipType.CALLS, Direction.OUTGOING, GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).iterator();
 
