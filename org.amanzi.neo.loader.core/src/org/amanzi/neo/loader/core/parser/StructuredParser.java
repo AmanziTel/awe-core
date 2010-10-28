@@ -32,7 +32,7 @@ public abstract class StructuredParser<S extends IStructuredElement, T extends I
     private double percentage;
     private long totalLen;
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({"unchecked"})
     @Override
     public void parce() {
         percentage = 0;

@@ -206,14 +206,14 @@ public abstract  class AbstractHeaderSaver<T extends BaseTransferData> extends A
     /**
      * Gets the number value.
      * 
-     * @param <T> the generic type
+     * @param <T2> the generic type
      * @param klass the klass
      * @param key the key
      * @param element the element
      * @return the number value
      */
 
-    protected <T extends Number> T getNumberValue(Class<T> klass, String key, BaseTransferData element) {
+    protected <T2 extends Number> T2 getNumberValue(Class<T2> klass, String key, BaseTransferData element) {
         String value = getStringValue(key, element);
         return getNumberValue(klass,value);
         
@@ -222,12 +222,12 @@ public abstract  class AbstractHeaderSaver<T extends BaseTransferData> extends A
     /**
      * Gets the number value.
      *
-     * @param <T> the generic type
+     * @param <T3> the generic type
      * @param klass the klass
      * @param value the value
      * @return the number value
      */
-    protected <T extends Number> T getNumberValue(Class<T> klass, String value) {
+    protected <T3 extends Number> T3 getNumberValue(Class<T3> klass, String value) {
         try {
             return Utils.getNumberValue(klass, value);
         } catch (SecurityException e) {

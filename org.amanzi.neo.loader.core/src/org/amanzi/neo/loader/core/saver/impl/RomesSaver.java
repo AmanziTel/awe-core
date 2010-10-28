@@ -167,6 +167,7 @@ public class RomesSaver extends DriveSaver<BaseTransferData> {
         } catch (ParseException e1) {
             dfn = new SimpleDateFormat("HH:mm:ss");
             try {
+                //TODO: Lagutko: refactor to not use DEPRECATED methods
                 Date nodeDate = dfn.parse(time);
                 final int nodeHours = nodeDate.getHours();
                 if (hours != null && hours > nodeHours) {

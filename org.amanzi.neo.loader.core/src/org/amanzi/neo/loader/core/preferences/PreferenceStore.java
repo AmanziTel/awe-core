@@ -81,6 +81,7 @@ public class PreferenceStore {
      * @param key the key
      * @return the value
      */
+    @SuppressWarnings("unchecked")
     public <T>T getValue(String key) {
         return (T)propertyMap.get(key);
     }

@@ -46,7 +46,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
 
     private boolean headerNotHandled;
-    private boolean is3G;
     private String siteName = null;
     private String bscName = null;
     private String cityName = null;
@@ -273,7 +272,7 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
         defineHeader(headers, INeoConstants.PROPERTY_LON_NAME, getPossibleHeaders(DataLoadPreferences.NH_LONGITUDE));
         defineHeader(headers, "beamwidth", getPossibleHeaders(DataLoadPreferences.NH_BEAMWIDTH));
         defineHeader(headers, "azimuth", getPossibleHeaders(DataLoadPreferences.NH_AZIMUTH));
-        is3G = element.keySet().contains("gsm_ne");
+//        is3G = element.keySet().contains("gsm_ne");
     }
 
 

@@ -130,6 +130,7 @@ public class Nemo2xSaver extends DatasetSaver<LineTransferData> implements IStru
 
     }
 
+    @SuppressWarnings("unchecked")
     protected Map<String, Object> analyseKnownParameters(LineTransferData element, NemoEvents event, List<Integer> contextId, ArrayList<String> parameters) {
         if (parameters.isEmpty()) {
             return null;
