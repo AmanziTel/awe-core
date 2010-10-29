@@ -152,17 +152,23 @@
             id="org.amanzi.neo.loader.ui.preferences.DataLoadPreferencePage"
             name="Amanzi Data">
       </page>
+      <page
+      		class="org.amanzi.neo.loader.ui.preferences.SynonymLoaderPreferencePage"
+      		id="org.amanzi.neo.loader.ui.preferences.SynonymsPreferencePage"
+      		name="Synonyms"
+      		category="org.amanzi.neo.loader.ui.preferences.DataLoadPreferencePage">
+      </page>
        <page
             class="org.amanzi.neo.loader.ui.preferences.NetworkLoaderPreferencePage"
             id="org.amanzi.neo.loader.ui.preferences.NetworkLoaderPreferencePage"
             name="Network data"
-            category="org.amanzi.neo.loader.ui.preferences.DataLoadPreferencePage">
+            category="org.amanzi.neo.loader.ui.preferences.SynonymsPreferencePage">
       </page>
       <page
             class="org.amanzi.neo.loader.ui.preferences.DriveLoaderPreferencePage"
             id="org.amanzi.neo.loader.ui.preferences.DriveLoaderPreferencePage"
             name="Drive data"
-            category="org.amanzi.neo.loader.ui.preferences.DataLoadPreferencePage">
+            category="org.amanzi.neo.loader.ui.preferences.SynonymsPreferencePage">
       </page>
       <page
             class="org.amanzi.neo.loader.ui.preferences.CommonCRSPreferencePage"
@@ -175,19 +181,19 @@
             class="org.amanzi.neo.loader.ui.preferences.NeighbourLoaderPreferencePage"
             id="org.amanzi.neo.loader.ui.preferences.NeighbourLoaderPreferencePage"
             name="Neighbour lists"
-            category="org.amanzi.neo.loader.ui.preferences.DataLoadPreferencePage">
+            category="org.amanzi.neo.loader.ui.preferences.SynonymsPreferencePage">
       </page>
       <page
             class="org.amanzi.neo.loader.ui.preferences.ProbeLoaderPreferencePage"
             id="org.amanzi.neo.loader.ui.preferences.ProbeLoaderPreferencePage"
             name="Probe data"
-            category="org.amanzi.neo.loader.ui.preferences.DataLoadPreferencePage">
+            category="org.amanzi.neo.loader.ui.preferences.SynonymsPreferencePage">
       </page>
       <page
             class="org.amanzi.neo.loader.ui.preferences.TransmissionLoaderPreferencePage"
             id="org.amanzi.neo.loader.ui.preferences.TransmissionLoaderPreferencePage"
             name="Transmission lists"
-            category="org.amanzi.neo.loader.ui.preferences.DataLoadPreferencePage">
+            category="org.amanzi.neo.loader.ui.preferences.SynonymsPreferencePage">
       </page>
    </extension>
    <extension
