@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
         private int zStart;
         private int zEnd;
         Pattern time = Pattern.compile("(^A)(\\d{4})(\\d{2})(\\d{2})(\\.)(\\d{2})(\\d{2})([+-]{1}\\d{2})(\\d{2})(-)(\\d{2})(\\d{2})([+-]{1}\\d{2})(\\d{2})(.*$)");
+        Pattern time2 = Pattern.compile("(^A)(\\d{4})(\\d{2})(\\d{2})(\\.)(\\d{2})(\\d{2})(-)(\\d{2})(\\d{2})(.*$)");
         private int minEnd;
         private int minStart;
 
@@ -68,8 +69,26 @@ import java.util.regex.Pattern;
                 zEnd = Integer.valueOf(zone);
                 minStart = (hhStart - zStart) * 60 + mmStart;
                 minEnd = (hhEnd - zEnd) * 60 + mmEnd;
-            } else {
-                hhStart = -1;
+            }else {
+                matcher = time2.matcher(fileName);  
+                if (matcher.matches()){
+                    year = Integer.valueOf(matcher.group(2));
+                    month = Integer.valueOf(matcher.group(3));
+                    day = Integer.valueOf(matcher.group(4));
+                    hhStart = Integer.valueOf(matcher.group(6));
+                    mmStart = Integer.valueOf(matcher.group(7));
+
+                    zStart =0;
+
+                    hhEnd = Integer.valueOf(matcher.group(9));
+                    mmEnd = Integer.valueOf(matcher.group(10));
+
+                    zEnd = 0;
+                    minStart = (hhStart - zStart) * 60 + mmStart;
+                    minEnd = (hhEnd - zEnd) * 60 + mmEnd;                    
+                }  else {
+                    hhStart = -1;
+                }
             }
         }
 
@@ -102,7 +121,8 @@ import java.util.regex.Pattern;
 
         public static void main(String[] args) {
             Integer.valueOf("-02");
-            new GPEHTimeWrapper("A20100214.1200-0200-1215+0200_SubNetwork=ERNOR2,MeContext=ERNOR2_rnc_gpehfile_Mp1.bin.gz");
+//            new GPEHTimeWrapper("A20100214.1200-0200-1215+0200_SubNetwork=ERNOR2,MeContext=ERNOR2_rnc_gpehfile_Mp1.bin.gz");
+            new GPEHTimeWrapper("A20101101.0200-0215_SubNetwork=ERNOR1,MeContext=ERNOR1_rnc_gpehfile_Mp0.bin.gz");
         }
 
         /**
