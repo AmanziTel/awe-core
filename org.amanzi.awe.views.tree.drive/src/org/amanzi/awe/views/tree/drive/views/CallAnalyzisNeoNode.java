@@ -17,13 +17,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
-import org.amanzi.awe.views.calls.enums.StatisticsCallType;
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.database.nodes.StatisticSelectionNode;
 import org.amanzi.neo.core.enums.CallProperties;
+import org.amanzi.neo.core.enums.CallProperties.CallType;
 import org.amanzi.neo.core.enums.ColoredFlags;
 import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.core.enums.NodeTypes;
@@ -275,5 +276,181 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
             return NeoUtils.getCallsForSCellNode(node, null);
         }
         return super.getNodesForMap();
+    }
+    /**
+     * 
+     * <p>
+     *Enum of StatisticsCallTypes
+     * </p>
+     * @author TsAr
+     * @since 1.0.0
+     */
+    public enum StatisticsCallType {
+        
+        /**
+         * Second level statistics.
+         */
+        AGGREGATION_STATISTICS("Second level",null,55,2),
+        /**
+         * Individual calls.
+         */
+        INDIVIDUAL("SC (single call)",CallType.INDIVIDUAL,0, 1),
+        
+        /**
+         * Group calls.
+         */
+        GROUP("GC (group call)",CallType.GROUP,5,1 ),
+        /**
+         * SDS messages.
+         */
+        SDS("SDS",CallType.SDS,10,1),
+        /**
+         * TSM messages.
+         */
+        TSM("TSM",CallType.TSM,15,1),
+        /**
+         * Alarm messages.
+         */
+        ALARM("Alarm",CallType.ALARM,40,1),
+        /**
+         * Emergency call type 1.
+         */
+        EMERGENCY("EC1",CallType.EMERGENCY,20,1),
+        /**
+         * Emergency call type 2.
+         */
+        HELP("EC2",CallType.HELP,25,1),
+        /**
+         * ITSI attach call type.
+         */
+        ITSI_ATTACH("ITSI-attach",CallType.ITSI_ATTACH,35,1),
+        /**
+         * ITSI CC (cell change) call type.
+         */
+        ITSI_CC("Cell change",CallType.ITSI_CC,30,1),
+        /**
+         * ITSI HO (Handover) call type.
+         */
+        ITSI_HO("Handover",CallType.ITSI_HO,30,1),
+        /**
+         * Circuit-switched data call type.                       
+         */
+        CS_DATA("Circuit-switched",CallType.CS_DATA,45,1),
+        /**
+         * Packet switched data call type.
+         */
+        PS_DATA("Packet switched",CallType.PS_DATA,50,1);
+        
+        
+        public static final Integer FIRST_LEVEL = 1;
+        public static final Integer SECOND_LEVEL = 2;
+        
+        private CallType id;
+        private String viewName;
+        private Integer level;
+        private Integer order;
+        
+        /**
+         * Constructor.
+         * @param anId CallType
+         * @param statHeaders headers
+         */
+        private StatisticsCallType(String name, CallType anId,Integer orderValue, Integer aLevel ) {
+            id = anId;
+            level = aLevel;
+            viewName = name;
+            order = orderValue;
+        }
+        
+        /**
+         * @return Returns the id.
+         */
+        public CallType getId() {
+            return id;
+        }
+        
+        
+        /**
+         * @return Returns the level.
+         */
+        public Integer getLevel() {
+            return level;
+        }
+
+        
+        /**
+         * Returns call type.
+         *
+         * @param id String
+         * @return StatisticsCallTypes
+         */
+        public static StatisticsCallType getTypeById(String id){
+            for(StatisticsCallType type : values()){
+                if(type.toString().equals(id)){
+                    return type;
+                }
+            }
+            throw new IllegalArgumentException("Unknown call type <"+id+">");
+        }
+        
+        /**
+         * Returns call type.
+         *
+         * @param id String
+         * @return StatisticsCallTypes
+         */
+        public static StatisticsCallType getTypeByViewName(String name){
+            for(StatisticsCallType type : values()){
+                if(type.viewName.equals(name)){
+                    return type;
+                }
+            }
+            throw new IllegalArgumentException("Unknown call type <"+name+">");
+        }
+        
+        /**
+         * Returns call type.
+         *
+         * @param id CallType
+         * @return StatisticsCallTypes
+         */
+        public static StatisticsCallType getTypeById(CallType id){
+            for(StatisticsCallType type : getTypesByLevel(FIRST_LEVEL)){
+                if(type.id!=null&&type.id.equals(id)){
+                    return type;
+                }
+            }
+            throw new IllegalArgumentException("Unknown call type <"+id+">");
+        }
+        
+        public static List<StatisticsCallType> getTypesByLevel(Integer level){
+            List<StatisticsCallType> result = new ArrayList<StatisticsCallType>();
+            for(StatisticsCallType type : values()){
+                if(type.level.equals(level)){
+                    result.add(type);
+                }
+            }
+            return result;
+        }
+        
+        /**
+         * @return Returns the viewName.
+         */
+        public String getViewName() {
+            return viewName;
+        }
+        
+        public static List<StatisticsCallType> getSortedTypesList(Set<StatisticsCallType> typesSet){
+            List<StatisticsCallType> result = new ArrayList<StatisticsCallType>(typesSet);
+            Collections.sort(result, new Comparator<StatisticsCallType>() {
+                @Override
+                public int compare(StatisticsCallType o1, StatisticsCallType o2) {
+                    return o1.order.compareTo(o2.order);
+                }
+            });
+            return result;
+        }
+        
+        
     }
 }
