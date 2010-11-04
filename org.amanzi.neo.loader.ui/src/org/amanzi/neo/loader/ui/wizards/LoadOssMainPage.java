@@ -197,8 +197,8 @@ public class LoadOssMainPage extends LoaderPage<CommonConfigData>{
         });
         batchMode.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
         batchMode.setText("batch mode");
-        setAccessType(true);
-        batchMode.setSelection(true);
+        setAccessType(false);
+        batchMode.setSelection(false);
         setControl(main);
         update();
     }
