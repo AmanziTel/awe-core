@@ -87,8 +87,7 @@ public abstract  class AbstractHeaderSaver<T extends BaseTransferData> extends A
     protected GisProperties getGisProperties(Node rootNode) {
         GisProperties property = gisNodes.get(rootNode);
         if (property==null){
-            Node gis=service.findGisNode(rootNode,true);
-            property=new GisProperties(gis);
+            property=service.getGisNode(rootNode);
             gisNodes.put(rootNode, property);
         }
         return property;

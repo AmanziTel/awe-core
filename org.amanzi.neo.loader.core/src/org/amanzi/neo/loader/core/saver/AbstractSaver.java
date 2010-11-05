@@ -131,7 +131,7 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
      * @param node the node
      */
     protected void index(Node node) {
-        String nodeType = NeoServiceFactory.getInstance().getDatasetService().getType(node);
+        String nodeType = NeoServiceFactory.getInstance().getDatasetService().getTypeId(node);
         ArrayList<MultiPropertyIndex< ? >> indList = indexes.get(nodeType);
         if (indList == null) {
             return;
@@ -199,7 +199,7 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
      * @param node - node
      */
     protected void index(String key, Node node) {
-        String nodeType = NeoServiceFactory.getInstance().getDatasetService().getType(node);
+        String nodeType = NeoServiceFactory.getInstance().getDatasetService().getTypeId(node);
         LinkedHashMap<String, HashSet<MultiPropertyIndex< ? >>> indMap = mappedIndexes.get(key);
         if (indMap == null) {
             return;
