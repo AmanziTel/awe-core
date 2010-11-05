@@ -96,11 +96,11 @@ public class IndexManager {
             if (type == NodeTypes.SITE) {
                 if (INeoConstants.PROPERTY_LAT_NAME.equals(propertyName) || INeoConstants.PROPERTY_LON_NAME.equals(propertyName)) {
                     try {
-
-                        GisProperties prop = service.fingGisNode(root);
-                        if (prop == null) {
+                        Node gis=service.findGisNode(root);
+                        if (gis == null) {
                             return false;
                         }
+                        GisProperties prop =new GisProperties(gis);
                         Double lat = (Double)node.getProperty(INeoConstants.PROPERTY_LAT_NAME,null);
                         Double lon = (Double)node.getProperty(INeoConstants.PROPERTY_LON_NAME,null);
                         if (lat==null||lon==null){

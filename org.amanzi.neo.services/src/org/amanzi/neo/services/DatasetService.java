@@ -561,7 +561,7 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Creates the node
+     * Creates the new node
      * 
      * @param type the node type
      * @param name the node name
@@ -706,7 +706,7 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Save dynamic node type.
+     * Save dynamic node type in database
      * 
      * @param nodeTypeId the node type id
      */
@@ -733,6 +733,7 @@ public class DatasetService extends AbstractService {
 
     /**
      * Gets the global config node.
+     * IF node not exist in database, the global config node will be created
      * 
      * @return the global config node
      */
@@ -756,7 +757,7 @@ public class DatasetService extends AbstractService {
     /**
      * Gets the user defined node types.
      * 
-     * @return the user defined node types
+     * @return the list of user defined node types, which stored in database
      */
     public List<INodeType> getUserDefinedNodeTypes() {
         List<INodeType> result = new ArrayList<INodeType>();
@@ -769,10 +770,10 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Gets the roots.
+     * Gets the traverser by all child of necessary project
      * 
-     * @param projectName the project name
-     * @return the roots
+     * @param projectName the project name 
+     * @return the traverser 
      */
     public org.neo4j.graphdb.traversal.Traverser getRoots(final String projectName) {
         TraversalDescription td = Utils.getTDRootNodes(new Predicate<Path>() {
@@ -788,9 +789,9 @@ public class DatasetService extends AbstractService {
     /**
      * Gets the node type.
      * 
-     * @param type the type
-     * @param createFake the create fake
-     * @return the node type
+     * @param type the node type id
+     * @param createFake - is it necessary create type wrapper if type do not exist?
+     * @return the node type or null if createFake==false&&type do not exist in project
      */
     public INodeType getNodeType(String type, boolean createFake) {
         INodeType result = getNodeType(type);
@@ -801,10 +802,10 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Sets the structure.
+     * Sets the structure of root node
      * 
-     * @param root the root
-     * @param structure the structure
+     * @param root the child of project node (network.dataset,"")
+     * @param structure the  structure - collection of INodeType for save
      */
     public void setStructure(Node root, Collection<INodeType> structure) {
         String[] structureProperty = new String[structure.size()];
@@ -816,14 +817,13 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Sets the structure.
+     * Sets the structure of root node
      * 
-     * @param root the root
-     * @param structureProperty the structure property
+     * @param root the child of project node (network.dataset,"")
+     * @param structureProperty the structure - array of type id
      */
     public void setStructure(Node root, String[] structureProperty) {
         Transaction tx = databaseService.beginTx();
-
         try {
             root.setProperty(INeoConstants.PROPERTY_STRUCTURE_NAME, structureProperty);
             tx.success();
@@ -855,10 +855,10 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Find root by child.
+     * Find root node by child
      * 
-     * @param node the node
-     * @return the node
+     * @param node the child node
+     * @return the root node or null if root node not found
      */
     public Node findRootByChild(Node node) {
         Traverser traverser = findProjectByChild(node);
@@ -872,10 +872,10 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Find project by child.
+     * Find project by child node 
      * 
-     * @param node the node
-     * @return the traverser
+     * @param node the child node
+     * @return the path traverser
      */
     public Traverser findProjectByChild(Node node) {
         TraversalDescription trd = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst().relationships(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING)
@@ -895,10 +895,10 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Gets the gis node.
+     * Get the GIS node from root node. If GIS node not exist, it will be create.
      * 
-     * @param root the root
-     * @return the gis node
+     * @param root the root node
+     * @return the GIS node
      */
     public GisProperties getGisNode(Node root) {
 
@@ -918,16 +918,15 @@ public class DatasetService extends AbstractService {
             } finally {
                 tx.finish();
             }
-
         }
         return new GisProperties(gis);
     }
 
     /**
-     * Find gis node.
+     * Find GIS node of root node.
      * 
-     * @param root the root
-     * @return the node
+     * @param root the root node
+     * @return the GIS node or null if node not found
      */
     public Node findGisNode(Node root) {
         Assert.isTrue(Utils.isRoootNode(root));
@@ -940,9 +939,9 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Save gis.
+     * Save GisProperties in GIS node
      * 
-     * @param gis the gis
+     * @param gis the GisProperties
      */
     public void saveGis(GisProperties gis) {
         Transaction tx = databaseService.beginTx();
@@ -955,41 +954,27 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Gets the index manader.
+     * Gets the index manager for root node.
      * 
-     * @param root the root
-     * @return the index manader
+     * @param root the root node
+     * @return the index manager
      */
-    public IndexManager getIndexManader(Node root) {
+    public IndexManager getIndexManager(Node root) {
         return new IndexManager(root);
     }
 
-    /**
-     * Fing gis node.
-     * 
-     * @param root the root
-     * @return the gis properties
-     */
-    public GisProperties fingGisNode(Node root) {
-        Relationship rel = root.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
-        Node gis;
-        if (rel == null) {
-            return null;
-        } else {
-            gis = rel.getOtherNode(root);
-        }
-        return new GisProperties(gis);
-    }
 
     /**
-     * Find sector.
-     * 
+     * Find sector node
+     * Sector node find by many parameters:
+     * if  ci==null&&returnFirsElement==true - We return the first matching by name sector node
+     * or we use lucene index for finding nodes with necessary ci and fing by others defined parameters.
      * @param rootNode the root node
-     * @param ci the ci
-     * @param lac the lac
-     * @param name the name
+     * @param ci the ci property
+     * @param lac the lac property
+     * @param name the sector name
      * @param returnFirsElement the return firs element
-     * @return the node
+     * @return the sector node or null
      */
     public Node findSector(Node rootNode, Integer ci, Integer lac, String name, boolean returnFirsElement) {
         Node baseNode = getGlobalConfigNode();
@@ -1054,11 +1039,11 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Gets the neighbour.
-     * 
-     * @param rootNode the root node
+     * Gets the neighbour root node
+     * If neighbour not found, the necessary nodes was created
+     * @param rootNode the root node (child of project node)
      * @param neighbourName the neighbour name
-     * @return the neighbour
+     * @return the neighbour node
      */
     public Node getNeighbour(Node rootNode, String neighbourName) {
         Node result = findNeighbour(rootNode, neighbourName);
@@ -1074,13 +1059,19 @@ public class DatasetService extends AbstractService {
         }
         return result;
     }
-
-    public Node getTransmission(Node rootNode, String neighbourName) {
-        Node result = findTransmission(rootNode, neighbourName);
+    /**
+     * Gets the transmission root node
+     * If transmission not found, the necessary nodes was created
+     * @param rootNode the root node (child of project node)
+     * @param transmissionName the transmission name
+     * @return the transmission node
+     */
+    public Node getTransmission(Node rootNode, String transmissionName) {
+        Node result = findTransmission(rootNode, transmissionName);
         if (result == null) {
             Transaction tx = databaseService.beginTx();
             try {
-                result = createNode(NodeTypes.TRANSMISSION, neighbourName);
+                result = createNode(NodeTypes.TRANSMISSION, transmissionName);
                 rootNode.createRelationshipTo(result, NetworkRelationshipTypes.TRANSMISSION_DATA);
                 tx.success();
             } finally {
@@ -1091,11 +1082,11 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Find neighbour.
+     * Find neighbour node
      * 
      * @param rootNode the root node
      * @param neighbourName the neighbour name
-     * @return the node
+     * @return the neighbour node or null if node not found
      */
     public Node findNeighbour(final Node rootNode, final String neighbourName) {
         if (rootNode == null || StringUtils.isEmpty(neighbourName)) {
@@ -1115,7 +1106,13 @@ public class DatasetService extends AbstractService {
         Iterator<Node> it = td.traverse(rootNode).nodes().iterator();
         return it.hasNext() ? it.next() : null;
     }
-
+    /**
+     * Find transmission node
+     * 
+     * @param rootNode the root node
+     * @param transmissionName the transmission name
+     * @return the transmission node or null if node not found
+     */
     public Node findTransmission(final Node rootNode, final String transmissionName) {
         if (rootNode == null || StringUtils.isEmpty(transmissionName)) {
             return null;
