@@ -34,7 +34,6 @@ import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.internal.DynamicNodeType;
 import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.PropertyContainer;
@@ -51,12 +50,11 @@ import org.neo4j.kernel.Traversal;
 
 import com.vividsolutions.jts.util.Assert;
 
-// TODO: Auto-generated Javadoc
 /**
  * <p>
- * Service provide common operations with datasets
+ * Service provide common operations with base structure in database: network, dataset,index,
+ * statistics ect.
  * </p>
- * .
  * 
  * @author Lagutko_N
  * @since 1.0.0
@@ -64,27 +62,22 @@ import com.vividsolutions.jts.util.Assert;
 public class DatasetService extends AbstractService {
 
     /**
-     * 
+     * should be used NeoServiceFactory for getting instance of DatasetService
      */
-    public DatasetService() {
+    DatasetService() {
         super();
     }
 
-    /**
-     * @param databaseService
-     */
-    public DatasetService(GraphDatabaseService databaseService) {
-        super(databaseService);
-    }
-
-    /** String DYNAMIC_TYPES field. */
+    // Constants for property names
+    /* dynamic node type */
     private static final String DYNAMIC_TYPES = "dynamic_types";
 
-    /** The Constant PROXY_NAME_SEPARATOR. */
+    // Others constants
+    /* proxy name separator */
     private static final String PROXY_NAME_SEPARATOR = "/";
 
     /**
-     * Gets the root node.
+     * Gets the root node
      * 
      * @param projectName the project name
      * @param datasetName the dataset name
@@ -96,17 +89,17 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Gets the root node.
+     * Gets the root node. Root it is the child of project node: dataset, network,oss...
      * 
      * @param projectName the project name
-     * @param datasetName the dataset name
+     * @param datasetName the root name
      * @param rootTypeId the root type id
-     * @return the root node
+     * @return the root node or null if node not found.
      */
     protected Node getRootNode(String projectName, String datasetName, String rootTypeId) {
         Node datasetNode = findRoot(projectName, datasetName);
         if (datasetNode != null) {
-            if (!rootTypeId.equals(getType(datasetNode))) {
+            if (!rootTypeId.equals(getTypeId(datasetNode))) {
                 throw new IllegalArgumentException(String.format("Wrong types of found node. Expected type: %s, real type: %s", rootTypeId, datasetNode));
             }
         }
@@ -117,24 +110,24 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Adds the simple child.
+     * Adds the simple child. Create node and linked with parent used relation CHILD
      * 
-     * @param parent the parent
-     * @param type the type
-     * @param name the name
-     * @return the node
+     * @param parent the parent node
+     * @param type the node type
+     * @param name the node name
+     * @return the created node
      */
     public Node addSimpleChild(Node parent, INodeType type, String name) {
         return addSimpleChild(parent, type.getId(), name);
     }
 
     /**
-     * Adds the simple child.
+     * Adds the simple child. Create node and linked with parent used relation CHILD
      * 
-     * @param parent the parent
-     * @param typeId the type id
-     * @param name the name
-     * @return the node
+     * @param parent the parent node
+     * @param type the node type id
+     * @param name the node name
+     * @return the created node
      */
     protected Node addSimpleChild(Node parent, String typeId, String name) {
         Transaction tx = databaseService.beginTx();
@@ -157,7 +150,7 @@ public class DatasetService extends AbstractService {
      * @return the node type
      */
     public INodeType getNodeType(PropertyContainer node) {
-        String typeId = getType(node);
+        String typeId = getTypeId(node);
         return getNodeType(typeId);
     }
 
@@ -172,7 +165,7 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Gets the node type.
+     * Gets the node type by type id
      * 
      * @param typeId the type id
      * @return the node type
@@ -204,20 +197,20 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Gets the type.
+     * Gets the type id of node
      * 
      * @param node the node
-     * @return the type
+     * @return the type id
      */
-    public String getType(PropertyContainer node) {
+    public String getTypeId(PropertyContainer node) {
         return (String)node.getProperty("type", null);
     }
 
     /**
-     * Sets the node type.
+     * Sets the node type
      * 
      * @param node the node
-     * @param type the type
+     * @param type the node type
      */
     public void setNodeType(Node node, INodeType type) {
         Transaction tx = databaseService.beginTx();
@@ -229,17 +222,17 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Sets the type.
+     * Sets the type id in node
      * 
      * @param node the node
-     * @param typeId the type
+     * @param typeId the type id
      */
     protected void setType(Node node, String typeId) {
         node.setProperty("type", typeId);
     }
 
     /**
-     * Gets the file node.
+     * Gets the file node - if node not found, the necessary node was created
      * 
      * @param rootNode the root node
      * @param fileName the file name
@@ -255,38 +248,23 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Find file node.
+     * Find file node
      * 
-     * @param datasetNode the dataset node
+     * @param datasetNode the root node
      * @param fileName the file name
-     * @return the node
+     * @return the node or null if node not found
      */
     public Node findFileNode(Node datasetNode, String fileName) {
         return findChildByName(datasetNode, fileName);
     }
 
     /**
-     * Gets the last node in file.
-     * 
-     * @param fileNode the file node
-     * @return the last node in file
-     */
-    public Node getLastNodeInFile(Node fileNode) {
-        Long id = (Long)fileNode.getProperty("lastNodeId", null);
-        if ((id != null) && (id != -1)) {
-            return databaseService.getNodeById(id);
-        }
-        return null;
-    }
-
-    /**
-     * Gets the gpeh statistics.
+     * Gets the gpeh statistics - if node not found, the necessary node was created
      * 
      * @param datasetNode the dataset node
      * @return the gpeh statistics
      */
     public GpehStatisticModel getGpehStatistics(Node datasetNode) {
-        // TODO add synchroniza and multi instance
         if (datasetNode.hasRelationship(DatasetRelationshipTypes.GPEH_STATISTICS, Direction.OUTGOING)) {
             Node statNode = datasetNode.getSingleRelationship(DatasetRelationshipTypes.GPEH_STATISTICS, Direction.OUTGOING).getEndNode();
             return new GpehStatisticModel(datasetNode, statNode, databaseService);
@@ -298,43 +276,11 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * _test.
-     */
-    public void _test() {
-        Node node = databaseService.createNode();
-
-        node.setProperty("ss", 2);
-        Node node2 = databaseService.createNode();
-        node2.setProperty("ss", 2);
-        org.neo4j.graphdb.RelationshipType rel = new org.neo4j.graphdb.RelationshipType() {
-
-            @Override
-            public String name() {
-                return "sss";
-            }
-        };
-        node.createRelationshipTo(node2, rel);
-        node = databaseService.createNode();
-
-        node.setProperty("ss", 2);
-        node2 = databaseService.createNode();
-        node2.setProperty("ss", 2);
-        rel = new org.neo4j.graphdb.RelationshipType() {
-
-            @Override
-            public String name() {
-                return "sss3";
-            }
-        };
-        node.createRelationshipTo(node2, rel);
-    }
-
-    /**
-     * Find root node by name.
+     * Find root node by name - root node it is child of project node (network,dataset,oss)
      * 
      * @param projectName the project name
-     * @param rootname the rootname
-     * @return the node
+     * @param rootname the name of root node
+     * @return the node or null if node not found
      */
     public Node findRoot(final String projectName, final String rootname) {
         TraversalDescription td = Utils.getTDRootNodes(new Predicate<Path>() {
@@ -350,22 +296,22 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Adds the data node to project.
+     * Adds the data node to project- if root node always have incoming child relation, do nothing.
      * 
      * @param aweProjectName the awe project name
-     * @param childNode the child node
+     * @param rootNode the root node
      */
-    public void addDataNodeToProject(String aweProjectName, Node childNode) {
+    public void addDataNodeToProject(String aweProjectName, Node rootNode) {
 
-        for (Relationship rel : childNode.getRelationships(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING)) {
-            if (NodeTypes.AWE_PROJECT.checkNode(rel.getOtherNode(childNode))) {
+        for (Relationship rel : rootNode.getRelationships(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING)) {
+            if (NodeTypes.AWE_PROJECT.checkNode(rel.getOtherNode(rootNode))) {
                 return;
             }
         }
         Transaction transacation = databaseService.beginTx();
         try {
             Node project = findOrCreateAweProject(aweProjectName);
-            project.createRelationshipTo(childNode, GeoNeoRelationshipTypes.CHILD);
+            project.createRelationshipTo(rootNode, GeoNeoRelationshipTypes.CHILD);
             transacation.success();
         } finally {
             transacation.finish();
@@ -373,14 +319,13 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Find or create awe project.
+     * Find or create awe project node
      * 
      * @param aweProjectName the awe project name
      * @return the node
      */
     public Node findOrCreateAweProject(String aweProjectName) {
         Node result = null;
-        // Lagutko, 13.08.2009, use findAweProject() method to find an AWEProjectNode
         result = findAweProject(aweProjectName);
         if (result == null) {
             result = createEmptyAweProject(aweProjectName);
@@ -410,7 +355,7 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Find awe project.
+     * Find awe project node
      * 
      * @param aweProjectName the awe project name
      * @return the node
@@ -427,19 +372,19 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Creates the root node.
+     * Creates the root node and link to project
      * 
      * @param projectName the project name
-     * @param rootname the rootname
-     * @param rootNodeType the root node type
-     * @return the node
+     * @param rootname the root name
+     * @param rootNodeType the root node type id
+     * @return the root node
      */
     public Node createRootNode(String projectName, String rootname, String rootNodeType) {
         Transaction tx = databaseService.beginTx();
         try {
             Node result = databaseService.createNode();
             setName(result, rootname);
-            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, rootNodeType);
+            setType(result, rootNodeType);
             addDataNodeToProject(projectName, result);
             tx.success();
             return result;
@@ -449,35 +394,17 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Find gis node.
+     * Index by property. Indexes node by value of necessary properties. Used Lucene index service.
      * 
-     * @param rootNode the root node
-     * @param createNew the create new
-     * @return the node
-     */
-    public Node findGisNode(Node rootNode, boolean createNew) {
-        if (createNew) {
-            return getGisNode(rootNode).getGis();
-        }
-        Relationship rel = rootNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
-        if (rel != null) {
-            return rel.getOtherNode(rootNode);
-        }
-        return null;
-    }
-
-    /**
-     * Index by property.
-     * 
-     * @param rootId the root id
-     * @param node the node
+     * @param rootId the root id - additional identification (id of root node)
+     * @param node the node for index
      * @param propertyName the property name
      */
     public void indexByProperty(long rootId, Node node, String propertyName) {
         Assert.isTrue(node.hasProperty(propertyName));
         Transaction tx = databaseService.beginTx();
         try {
-            String type = getType(node);
+            String type = getTypeId(node);
             String indexName = new StringBuilder("Id").append(rootId).append("@").append(type).append("@").append(propertyName).toString();
             getIndexService().index(node, indexName, node.getProperty(propertyName));
             tx.success();
@@ -489,8 +416,8 @@ public class DatasetService extends AbstractService {
     /**
      * Gets the location index property.
      * 
-     * @param rootname the rootname
-     * @return the location index property
+     * @param rootname the name of root node
+     * @return the MultiPropertyIndex which provide work with 'lat','lon' properties
      * @throws IOException Signals that an I/O exception has occurred.
      */
     public MultiPropertyIndex< ? > getLocationIndexProperty(String rootname) throws IOException {
@@ -499,10 +426,10 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Gets the time index property.
+     * Gets the time index property
      * 
-     * @param name the name
-     * @return the time index property
+     * @param name the root name
+     * @return the MultiPropertyIndex which provide work with 'timestamp' property
      * @throws IOException Signals that an I/O exception has occurred.
      */
     public MultiPropertyIndex<Long> getTimeIndexProperty(String name) throws IOException {
@@ -511,11 +438,11 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Find child by name.
+     * Find child by name - find child node with necessary name by CHILD-NEXT structure
      * 
-     * @param parent the parent
-     * @param name the name
-     * @return the node
+     * @param parent the parent node
+     * @param name the name name of necessary node
+     * @return the node or nuu if node not found
      */
     public Node findChildByName(Node parent, final String name) {
         TraversalDescription td = getChildTraversal(new Predicate<Path>() {
@@ -531,9 +458,9 @@ public class DatasetService extends AbstractService {
     };
 
     /**
-     * Gets the child traversal.
+     * Gets the child traversal - returns TraversalDescription for CHILD-NEXT structure
      * 
-     * @param additionalFilter the additional filter
+     * @param additionalFilter the additional filter - additional filter, can be null
      * @return the child traversal
      */
     public TraversalDescription getChildTraversal(Predicate<Path> additionalFilter) {
@@ -572,11 +499,11 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Adds the child.
+     * Adds the child in CHILD-NEXT structure
      * 
      * @param mainNode the main node
-     * @param subNode the sub node
-     * @param lastChild the last child
+     * @param subNode the child node for adding to main node
+     * @param lastChild the last child - if null, then last child will be find
      */
     public void addChild(Node mainNode, Node subNode, Node lastChild) {
         if (lastChild == null) {
@@ -589,7 +516,7 @@ public class DatasetService extends AbstractService {
             } else {
                 lastChild.createRelationshipTo(subNode, GeoNeoRelationshipTypes.NEXT);
             }
-            // save last child like properti in main node
+            // save last child like property in main node
             mainNode.setProperty(INeoConstants.LAST_CHILD_ID, subNode.getId());
             tx.success();
         } finally {
@@ -598,10 +525,10 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * return last child of node.
+     * Find last child in CHILD-NEXT structure
      * 
-     * @param mainNode root node
-     * @return the node
+     * @param mainNode - root node
+     * @return last child node or null if root node do not have childs
      */
     public Node findLastChild(Node mainNode) {
         Long lastChild = (Long)mainNode.getProperty(INeoConstants.LAST_CHILD_ID, null);
@@ -623,7 +550,7 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Creates the file node.
+     * Creates the file node with necessary name
      * 
      * @param fileName the file name
      * @return the node
@@ -634,21 +561,21 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Creates the node.
+     * Creates the node
      * 
-     * @param type the type
-     * @param name the name
-     * @return the node
+     * @param type the node type
+     * @param name the node name
+     * @return the created node
      */
     public Node createNode(INodeType type, String name) {
         return createNode(type.getId(), INeoConstants.PROPERTY_NAME_NAME, name);
     }
 
     /**
-     * Creates the node.
+     * Creates the node
      * 
      * @param typeId the type id
-     * @param additionalProperties the additional properties
+     * @param additionalProperties the additional properties - pair [property name, property value]...
      * @return the node
      */
     private Node createNode(String typeId, Object... additionalProperties) {
@@ -669,7 +596,7 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Sets the name.
+     * Sets the node name
      * 
      * @param node the node
      * @param name the name
@@ -679,32 +606,32 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Gets the name.
+     * Gets the name of node
      * 
      * @param node the node
-     * @return the name
+     * @return the node name or null if node do not have necessary properties
      */
     private String getName(Node node) {
         return (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
     }
 
     /**
-     * Creates the m node.
+     * Creates the m node - created M node and add like child in CHILD-NEXT structure
      * 
-     * @param parent the parent
-     * @param lastMNode the last m node
-     * @return the node
+     * @param parent the parent node 
+     * @param lastMNode the last m node, can be null
+     * @return the created node with type 'm'
      */
     public Node createMNode(Node parent, Node lastMNode) {
         return createChild(parent, lastMNode, NodeTypes.M.getId());
     }
 
     /**
-     * Gets the virtual dataset.
+     * Gets the virtual dataset. if node not found, the necessary node was created
      * 
      * @param rootNode the root node
-     * @param type the type
-     * @return the virtual dataset
+     * @param type the virtual dataset type 
+     * @return the virtual dataset node 
      */
     public Node getVirtualDataset(Node rootNode, DriveTypes type) {
         Node result = findVirtualDataset(rootNode, type);
@@ -725,8 +652,8 @@ public class DatasetService extends AbstractService {
      * Find virtual dataset.
      * 
      * @param rootNode the root node
-     * @param type the type
-     * @return the node
+     * @param type the virtual dataset type
+     * @return the node or null if node do not found
      */
     public Node findVirtualDataset(Node rootNode, final DriveTypes type) {
         TraversalDescription td = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1))
@@ -742,11 +669,11 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Creates the ms node.
+     * Creates the ms node - created 'ms' node and add like child in CHILD-NEXT structure
      * 
-     * @param parent the parent
-     * @param lastMsNode the last ms node
-     * @return the node
+     * @param parent the parent node
+     * @param lastMsNode the last ms node, can be null
+     * @return the created node
      */
     public Node createMsNode(Node parent, Node lastMsNode) {
         return createChild(parent, lastMsNode, NodeTypes.HEADER_MS.getId());
@@ -754,23 +681,23 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Creates the mm node.
+     * Creates the mm node - created 'mm' node and add like child in CHILD-NEXT structure
      * 
-     * @param parent the parent
-     * @param lastMsNode the last ms node
-     * @return the node
+     * @param parent the parent node
+     * @param lastMsNode the last mm node, can be null
+     * @return the created node
      */
     public Node createMMNode(Node parent, Node lastMsNode) {
         return createChild(parent, lastMsNode, NodeTypes.MM.getId());
     }
 
     /**
-     * Creates the child.
+     * Creates the child for CHILD-NEXT structure
      * 
-     * @param parent the parent
-     * @param lastNode the last node
-     * @param typeId the type id
-     * @return the node
+     * @param parent the parent parent node
+     * @param lastNode the last node - last node, can be null
+     * @param typeId the typeid of created node
+     * @return the created node
      */
     private Node createChild(Node parent, Node lastNode, String typeId) {
         Node node = createNode(typeId);
