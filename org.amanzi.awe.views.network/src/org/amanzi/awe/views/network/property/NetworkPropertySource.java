@@ -191,7 +191,7 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
         if (container instanceof Node){
             DatasetService service = NeoServiceFactory.getInstance().getDatasetService();
             if (root!=null){
-                IndexManager manager= service.getIndexManader(root);
+                IndexManager manager = service.getIndexManager(root);
                 manager.updateIndexes(container,propertyName,oldValue);
             }
         }

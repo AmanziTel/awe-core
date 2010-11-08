@@ -48,8 +48,6 @@ import org.neo4j.graphdb.Transaction;
  */
 public class CreateNewNodeWizard extends Wizard implements INewWizard {
 
-    private IWorkbench workbench;
-    private IStructuredSelection selection;
     private final INodeType iNodeType;
     private CreateNewNodeWizardPage page;
     private final Node sourceNode;
@@ -88,7 +86,7 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
 
             IPropertyHeader ph = PropertyHeader.getPropertyStatistic(network);
             List<PropertyWrapper> properties = page.getProperties();
-            IndexManager indexManader = ds.getIndexManader(ds.findRootByChild(targetNode));
+            IndexManager indexManader = ds.getIndexManager(ds.findRootByChild(targetNode));
             for (PropertyWrapper propertyWrapper : properties) {
                 targetNode.setProperty(propertyWrapper.getName(), propertyWrapper.getParsedValue());
                 ph.updateStatistic(iNodeType.getId(), propertyWrapper.getName(), propertyWrapper.getParsedValue(), null);
@@ -138,8 +136,6 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
-        this.workbench = workbench;
-        this.selection = selection;
         DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
         if (ds.getNodeType(sourceNode).equals(iNodeType)) {
             setWindowTitle("Copy node");
