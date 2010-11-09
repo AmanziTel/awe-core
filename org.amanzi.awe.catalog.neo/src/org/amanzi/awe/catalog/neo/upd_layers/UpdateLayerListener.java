@@ -79,10 +79,12 @@ public class UpdateLayerListener {
                     addSelection((AddSelectionEvent)event);
                     break;
                 case PROPERTY_UPDATE:
-                    updateProperties((UpdatePropertiesEvent)event);                    
+                    //9.11.2010, Lagutko: layer should be updated after property change 
+                    updateProperties((UpdatePropertiesEvent)event, true);                    
                     break;
                 case PROPERTY_AND_MAP_UPDATE:
-                    updateProperties((UpdatePropertiesEvent)event);
+                    //9.11.2010, Lagutko: layer should not be updated after property change, since it will be updated in showOnMap
+                    updateProperties((UpdatePropertiesEvent)event, false);
                     showOnMap((UpdatePropertiesAndMapEvent)event);
                     break;
                 case PROPERTY_REFRESH:
@@ -143,22 +145,30 @@ public class UpdateLayerListener {
      * Update layer properties by event.
      *
      * @param event UpdatePropertiesEvent
+     * @param autoRefresh should layer be refreshed after changes 
      */
-    private void updateProperties(UpdatePropertiesEvent event)throws IOException{
+    private void updateProperties(UpdatePropertiesEvent event, boolean autoRefresh)throws IOException{
         HashMap<String, Object> values = event.getValues();
         if(values == null){
             return;
         }
+        //TODO: Lagutko: check is this cases can be united
         if(isEventForThisLayer(event.getGisNode())){
             GeoNeo geo = getGeoNeo();
             geo.setProperties(values);
-            layer.refresh(null);
+            
+            if (autoRefresh) {
+                layer.refresh(null);
+            }
         } else if (event.isNeedClearOther()){
             GeoNeo geo = getGeoNeo();
             for(String key : values.keySet()){
                 geo.setProperty(key, null);
             }
-            layer.refresh(null);
+            
+            if (autoRefresh) {
+                layer.refresh(null);
+            }            
         }
     }
 
