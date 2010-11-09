@@ -17,8 +17,8 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;

@@ -12,12 +12,12 @@
  */
 package org.amanzi.splash.ui;
 
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.nodes.ChartNode;
-import org.amanzi.neo.core.database.nodes.RubyProjectNode;
-import org.amanzi.neo.core.database.services.AweProjectService;
-import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
+import org.amanzi.neo.services.AweProjectService;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.nodes.ChartNode;
+import org.amanzi.neo.services.nodes.RubyProjectNode;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
+import org.amanzi.neo.services.utils.RunnableWithResult;
 import org.amanzi.splash.chart.Charts;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
@@ -74,7 +74,7 @@ public class ChartEditorInput implements IEditorInput, IPersistableElement {
             }
 
             public void run() {
-                AweProjectService projectService = NeoCorePlugin.getDefault().getProjectService();
+                AweProjectService projectService =NeoServiceFactory.getInstance().getProjectService();
                 RubyProjectNode rubyProject = projectService.findRubyProject(projectName);
                 ChartNode node = projectService.getChartByName(rubyProject, chartName);
                 result = node != null;

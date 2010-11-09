@@ -25,14 +25,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.amanzi.integrator.awe.AWEProjectManager;
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.statistic.PropertyHeader;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
@@ -419,7 +419,7 @@ public class KpiView extends ViewPart {
     private String[] getAllDrives() {
         Transaction tx = NeoUtils.beginTransaction();
         try {
-            GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+            GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
             Node refNode = service.getReferenceNode();
             drives = new LinkedHashMap<String, Node>();
             for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
@@ -447,7 +447,7 @@ public class KpiView extends ViewPart {
     private String[] getAllCounterDirectories() {
         Transaction tx = NeoUtils.beginTransaction();
         try {
-            GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+            GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
             Node refNode = service.getReferenceNode();
             directories = new LinkedHashMap<String, Node>();
             for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
@@ -518,7 +518,7 @@ public class KpiView extends ViewPart {
     private String[] getAllNetworks() {
         Transaction tx = NeoUtils.beginTransaction();
         try {
-            GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+            GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
             Node refNode = service.getReferenceNode();
             networks = new LinkedHashMap<String, Node>();
             for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {

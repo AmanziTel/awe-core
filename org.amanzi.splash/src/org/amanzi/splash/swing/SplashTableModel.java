@@ -21,10 +21,10 @@ import java.util.List;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.nodes.CellID;
-import org.amanzi.neo.core.database.nodes.RubyProjectNode;
-import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.nodes.CellID;
+import org.amanzi.neo.services.nodes.RubyProjectNode;
+import org.amanzi.neo.services.nodes.SpreadsheetNode;
 import org.amanzi.scripting.jruby.EclipseLoadService;
 import org.amanzi.scripting.jruby.ScriptUtils;
 import org.amanzi.splash.database.services.SpreadsheetService;
@@ -218,7 +218,7 @@ public class SplashTableModel extends DefaultTableModel {
 
 		// don't need to check that spreadsheet exists because it was checked in
 		// SplashEditorInput
-		spreadsheet = NeoCorePlugin.getDefault().getProjectService().findSpreadsheet(root, sheetName);
+		spreadsheet = NeoServiceFactory.getInstance().getProjectService().findSpreadsheet(root, sheetName);
 	}
 
 	/**

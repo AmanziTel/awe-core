@@ -29,23 +29,23 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 
 import org.amanzi.awe.views.network.view.NetworkTreeView;
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.events.ShowViewEvent;
-import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
-import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkSiteType;
-import org.amanzi.neo.core.enums.NetworkTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.GisProperties;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.services.GisProperties;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NetworkSiteType;
+import org.amanzi.neo.services.enums.NetworkTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.events.ShowViewEvent;
+import org.amanzi.neo.services.events.UpdateDatabaseEvent;
+import org.amanzi.neo.services.events.UpdateViewEventType;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -108,7 +108,7 @@ public class NetworkLoader extends AbstractLoader {
         initialize("Network", null, filename, display);
         basename = gisName;
         initializeKnownHeaders();
-        luceneInd = NeoServiceProvider.getProvider().getIndexService();
+        luceneInd = NeoServiceProviderUi.getProvider().getIndexService();
         addNetworkIndexes();
     }
 
@@ -122,7 +122,7 @@ public class NetworkLoader extends AbstractLoader {
     public NetworkLoader(GraphDatabaseService neo, String filename) {
         initialize("Network", neo, filename, null);
         initializeKnownHeaders();
-        luceneInd = NeoServiceProvider.getProvider().getIndexService();
+        luceneInd = NeoServiceProviderUi.getProvider().getIndexService();
         addNetworkIndexes();
     }
 
@@ -138,7 +138,7 @@ public class NetworkLoader extends AbstractLoader {
         initializeKnownHeaders();
         addNetworkIndexes();
         if (indexService == null) {
-            luceneInd = NeoServiceProvider.getProvider().getIndexService();
+            luceneInd = NeoServiceProviderUi.getProvider().getIndexService();
         } else {
             luceneInd = indexService;
         }

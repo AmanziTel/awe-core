@@ -4,6 +4,5 @@ Bundle-Name: Services
 Bundle-SymbolicName: org.amanzi.neo.db
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Require-Bundle: org.neo4j;bundle-version="1.0.0";visibility:=reexport,
- org.amanzi.neo.core;bundle-version="1.0.0";visibility:=reexport
+Require-Bundle: org.neo4j;bundle-version="1.0.0";visibility:=reexport
 Export-Package: org.amanzi.neo.db.manager

@@ -15,9 +15,9 @@ package org.amanzi.neo.wizards;
 import java.io.File;
 import java.io.IOException;
 
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.loader.NeighbourLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -49,11 +49,11 @@ public class NeighbourImportWizard extends Wizard implements IImportWizard {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 NeighbourLoader neighbourLoader;
-                neighbourLoader = new NeighbourLoader(mainPage.getNetworkNode(), mainPage.getFileName(), NeoServiceProvider
+                neighbourLoader = new NeighbourLoader(mainPage.getNetworkNode(), mainPage.getFileName(), NeoServiceProviderUi
                         .getProvider().getService());
                 try {
                     neighbourLoader.run(monitor);
-                    NeoServiceProvider.getProvider().commit();
+                    NeoServiceProviderUi.getProvider().commit();
                 } catch (IOException e) {
                     NeoLoaderPlugin.error(e.getLocalizedMessage());
                     return new Status(Status.ERROR, "org.amanzi.neo.loader", e.getMessage());

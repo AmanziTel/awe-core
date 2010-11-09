@@ -27,6 +27,7 @@ public class NeoServiceFactory {
     private static NeoServiceFactory instance = new NeoServiceFactory();
     private Object datasetMon=new Object();
     private DatasetService datasetService = null;
+    private AweProjectService projectService=null;
     
     public static  NeoServiceFactory getInstance() {
         return instance;
@@ -48,6 +49,21 @@ public class NeoServiceFactory {
 //        }
 //        return datasetService;
 //    }
+
+    /**
+     *
+     * @return
+     */
+    public AweProjectService getProjectService() {
+        if (projectService == null) {
+            synchronized (datasetMon) {
+                if (projectService == null) {
+                    projectService = new AweProjectService();
+                }
+            }
+        }
+        return projectService;
+    }
     
     
 }

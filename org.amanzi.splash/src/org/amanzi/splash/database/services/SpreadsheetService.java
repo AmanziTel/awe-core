@@ -17,25 +17,24 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.exception.LoopInCellReferencesException;
-import org.amanzi.neo.core.database.exception.SplashDatabaseException;
-import org.amanzi.neo.core.database.exception.SplashDatabaseExceptionMessages;
-import org.amanzi.neo.core.database.nodes.CellID;
-import org.amanzi.neo.core.database.nodes.CellNode;
-import org.amanzi.neo.core.database.nodes.ChartItemNode;
-import org.amanzi.neo.core.database.nodes.ChartNode;
-import org.amanzi.neo.core.database.nodes.ColumnHeaderNode;
-import org.amanzi.neo.core.database.nodes.PieChartItemNode;
-import org.amanzi.neo.core.database.nodes.PieChartNode;
-import org.amanzi.neo.core.database.nodes.RowHeaderNode;
-import org.amanzi.neo.core.database.nodes.RubyProjectNode;
-import org.amanzi.neo.core.database.nodes.SplashFormatNode;
-import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
-import org.amanzi.neo.core.database.services.AweProjectService;
-import org.amanzi.neo.core.enums.SplashRelationshipTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.service.listener.NeoServiceProviderListener;
+import org.amanzi.neo.services.AweProjectService;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.enums.SplashRelationshipTypes;
+import org.amanzi.neo.services.nodes.CellID;
+import org.amanzi.neo.services.nodes.CellNode;
+import org.amanzi.neo.services.nodes.ChartItemNode;
+import org.amanzi.neo.services.nodes.ChartNode;
+import org.amanzi.neo.services.nodes.ColumnHeaderNode;
+import org.amanzi.neo.services.nodes.LoopInCellReferencesException;
+import org.amanzi.neo.services.nodes.PieChartItemNode;
+import org.amanzi.neo.services.nodes.PieChartNode;
+import org.amanzi.neo.services.nodes.RowHeaderNode;
+import org.amanzi.neo.services.nodes.RubyProjectNode;
+import org.amanzi.neo.services.nodes.SplashDatabaseException;
+import org.amanzi.neo.services.nodes.SplashDatabaseExceptionMessages;
+import org.amanzi.neo.services.nodes.SplashFormatNode;
+import org.amanzi.neo.services.nodes.SpreadsheetNode;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.ui.SplashPlugin;
 import org.amanzi.splash.utilities.NeoSplashUtil;
@@ -54,7 +53,7 @@ import com.eteks.openjeks.format.CellFormat;
  * @author Lagutko_N
  */
 
-public class SpreadsheetService extends NeoServiceProviderListener {
+public class SpreadsheetService {
 
 	/*
 	 * Default value of Cell Value
@@ -69,7 +68,7 @@ public class SpreadsheetService extends NeoServiceProviderListener {
 	/*
 	 * NeoService Provider
 	 */
-	private final NeoServiceProvider provider;
+	private final NeoServiceProviderUi provider;
 
 
 	/*
@@ -78,6 +77,8 @@ public class SpreadsheetService extends NeoServiceProviderListener {
 	protected AweProjectService projectService;
 
 	private SplashFormatNode defaultSFNode;
+
+    private GraphDatabaseService graphDatabaseService;
 	
 	/**
 	 * Constructor of Service.
@@ -86,11 +87,11 @@ public class SpreadsheetService extends NeoServiceProviderListener {
 	 */
 	public SpreadsheetService() {
 
-        provider = NeoServiceProvider.getProvider();
+        provider = NeoServiceProviderUi.getProvider();
         graphDatabaseService = provider.getService();
         Transaction tx = graphDatabaseService.beginTx();
         try {
-            projectService = NeoCorePlugin.getDefault().getProjectService();
+            projectService = NeoServiceFactory.getInstance().getProjectService();
             defaultSFNode = new SplashFormatNode(graphDatabaseService.createNode());
             setSplashFormat(defaultSFNode, new CellFormat());
         } finally {
@@ -106,11 +107,11 @@ public class SpreadsheetService extends NeoServiceProviderListener {
      */
     public SpreadsheetService(GraphDatabaseService neo){
 
-        provider = NeoServiceProvider.getProvider();
+        provider = NeoServiceProviderUi.getProvider();
         graphDatabaseService = neo;
         Transaction tx = graphDatabaseService.beginTx();
         try {
-            projectService = NeoCorePlugin.getDefault().getProjectService();
+            projectService = NeoServiceFactory.getInstance().getProjectService();
             defaultSFNode = new SplashFormatNode(graphDatabaseService.createNode());
             setSplashFormat(defaultSFNode, new CellFormat());
         } finally {
@@ -808,7 +809,7 @@ public class SpreadsheetService extends NeoServiceProviderListener {
         } finally {
             transaction.finish();
             // commit changes to database
-            NeoServiceProvider.getProvider().commit();
+            NeoServiceProviderUi.getProvider().commit();
         }
     }
 
@@ -862,7 +863,7 @@ public class SpreadsheetService extends NeoServiceProviderListener {
 		finally {
 			transaction.finish();
 			//commit changes to database
-			NeoServiceProvider.getProvider().commit();
+			NeoServiceProviderUi.getProvider().commit();
 		}
 		
 		return true;
@@ -908,7 +909,7 @@ public class SpreadsheetService extends NeoServiceProviderListener {
         } finally {
 			transaction.finish();
 			//commit changes to database
-			NeoServiceProvider.getProvider().commit();
+			NeoServiceProviderUi.getProvider().commit();
 		}
 	}
 
@@ -962,7 +963,7 @@ public class SpreadsheetService extends NeoServiceProviderListener {
 		finally {
 			transaction.finish();
 			//commit changes to database
-			NeoServiceProvider.getProvider().commit();
+			NeoServiceProviderUi.getProvider().commit();
 		}
 		
 		return true;
@@ -1029,7 +1030,7 @@ public class SpreadsheetService extends NeoServiceProviderListener {
 		} finally {
 			transaction.finish();
 			//commit changes to database
-			NeoServiceProvider.getProvider().commit();
+			NeoServiceProviderUi.getProvider().commit();
 		}
 	}	
 
@@ -1093,7 +1094,7 @@ public class SpreadsheetService extends NeoServiceProviderListener {
 		} finally {
 			transaction.finish();
 			//commit changes to database
-			NeoServiceProvider.getProvider().commit();
+			NeoServiceProviderUi.getProvider().commit();
 		}
 	}
 }

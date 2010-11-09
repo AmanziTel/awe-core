@@ -13,11 +13,11 @@
 
 package org.amanzi.awe.views.reuse.mess_table;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.DriveTypes;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.DriveTypes;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;

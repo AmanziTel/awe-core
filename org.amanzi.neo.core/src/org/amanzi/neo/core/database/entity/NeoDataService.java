@@ -18,15 +18,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.NetworkTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.statistic_manager.DataStatisticManager;
 import org.amanzi.neo.core.utils.statistic_manager.Header;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.NetworkTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.AssertionFailedException;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -59,7 +59,7 @@ public class NeoDataService {
      * Constructor
      */
     public NeoDataService() {
-        service = NeoServiceProvider.getProvider().getService();
+        service = NeoServiceProviderUi.getProvider().getService();
     }
 
     /**

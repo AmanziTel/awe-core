@@ -12,7 +12,7 @@
  */
 package org.amanzi.awe.views.network.property;
 
-import org.amanzi.neo.core.icons.IconManager;
+import org.amanzi.neo.services.ui.IconManager;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 

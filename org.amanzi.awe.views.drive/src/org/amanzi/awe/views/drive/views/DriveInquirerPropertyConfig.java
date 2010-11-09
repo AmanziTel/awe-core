@@ -17,15 +17,16 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.propertyFilter.PropertyFilterModel;
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.AbstractDialog;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.statistic.PropertyHeader;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -93,13 +94,13 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
         super(parent, "Dataset properties configura\tion", SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.CENTER);
         this.dataset = dataset;
         status = SWT.CANCEL;
-        service = NeoServiceProvider.getProvider().getService();
+        service = NeoServiceProviderUi.getProvider().getService();
     }
 
     @Override
     protected void createContents(final Shell shell) {
         this.shell = shell;
-        shell.setImage(NodeTypes.DATASET.getImage());
+        shell.setImage(NeoServicesUiPlugin.getDefault().getImageForType(NodeTypes.DATASET));
         shell.setLayout(new GridLayout(2, false));
 
         propertyListTable = CheckboxTableViewer.newCheckList(shell, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.CHECK);

@@ -21,9 +21,9 @@ import net.refractions.udig.project.internal.Map;
 import net.refractions.udig.project.internal.ProjectPackage;
 
 import org.amanzi.awe.catalog.neo.NeoGeoResource;
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -81,7 +81,7 @@ public class MapCreateInterceptor implements MapInterceptor {
 
                         @Override
                         protected IStatus run(IProgressMonitor monitor) {
-                            GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+                            GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
                             Transaction tx = service.beginTx();
                             try{
                                 NeoUtils.setCRS(resource.getGeoNeo(monitor).getMainGisNode(),crs,service);

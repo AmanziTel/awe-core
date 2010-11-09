@@ -17,16 +17,16 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.INodeType;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.EditPropertiesPage;
-import org.amanzi.neo.core.utils.GisProperties;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.GisProperties;
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.viewers.EditingSupport;
@@ -176,7 +176,7 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
         for (int i = 0; i < propertyList.size(); i++) {
             PropertyWrapper wr = propertyList.get(i);
             if (nodeType != NodeTypes.SECTOR && wr.getName().equals(INeoConstants.PROPERTY_NAME_NAME)) {
-                LuceneIndexService luceneInd = NeoServiceProvider.getProvider().getIndexService();
+                LuceneIndexService luceneInd = NeoServiceProviderUi.getProvider().getIndexService();
                 String key = NeoUtils.getLuceneIndexKeyByProperty(network, INeoConstants.PROPERTY_NAME_NAME, nodeType);
                 if (luceneInd.getNodes(key, wr.getParsedValue()).size() > 0) {
                     setMessage(String.format("Node with the name '%s' is alredy exist", wr.getDefValue()), DialogPage.ERROR);
@@ -206,7 +206,7 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
             try {
                 Node parent;
                 if (isCopy()) {
-                     parent = NeoUtils.getParent(NeoServiceProvider.getProvider().getService(), sourceNode);
+                     parent = NeoUtils.getParent(NeoServiceProviderUi.getProvider().getService(), sourceNode);
                 }else{
                     parent = sourceNode;
                 }                     
@@ -218,8 +218,8 @@ public class CreateNewNodeWizardPage extends EditPropertiesPage {
                         }
                     }
 
-                Node sector = NeoUtils.findSector(network, (Integer)ciWr.getParsedValue(), (Integer)lacWr.getParsedValue(), null, true, NeoServiceProvider.getProvider()
-                        .getIndexService(), NeoServiceProvider.getProvider().getService());
+                Node sector = NeoUtils.findSector(network, (Integer)ciWr.getParsedValue(), (Integer)lacWr.getParsedValue(), null, true, NeoServiceProviderUi.getProvider()
+                        .getIndexService(), NeoServiceProviderUi.getProvider().getService());
                 if (sector != null) {
                     setMessage(String.format("Sector node with CI = '%s' and LAC = '%s' is alredy exist", ciWr.getDefValue(), lacWr.getDefValue()), DialogPage.ERROR);
                     setPageComplete(false);

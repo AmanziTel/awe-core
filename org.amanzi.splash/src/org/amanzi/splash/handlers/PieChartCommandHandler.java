@@ -13,7 +13,7 @@
 package org.amanzi.splash.handlers;
 
 
-import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.services.Pair;
 import org.amanzi.splash.chart.ChartType;
 import org.amanzi.splash.chart.Charts;
 import org.amanzi.splash.swing.Cell;

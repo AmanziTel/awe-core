@@ -15,8 +15,8 @@ package org.amanzi.neo.core.amscall;
 
 import java.util.Set;
 
-import org.amanzi.neo.core.enums.CallProperties.CallResult;
-import org.amanzi.neo.core.enums.CallProperties.CallType;
+import org.amanzi.neo.services.enums.CallProperties.CallResult;
+import org.amanzi.neo.services.enums.CallProperties.CallType;
 import org.neo4j.graphdb.Node;
 
 /**

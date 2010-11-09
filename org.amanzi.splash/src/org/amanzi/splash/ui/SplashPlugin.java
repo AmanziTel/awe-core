@@ -13,7 +13,7 @@ package org.amanzi.splash.ui;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.splash.database.services.SpreadsheetService;
 import org.amanzi.splash.utilities.Messages;
 import org.amanzi.splash.utilities.NeoSplashUtil;
@@ -113,7 +113,7 @@ public class SplashPlugin extends AbstractUIPlugin {
 	 */
 	public void stop(BundleContext context) throws Exception {
 	    unregisterOpenSplashListenerInRDT();
-        NeoServiceProvider.getProvider().stopNeo();
+        NeoServiceProviderUi.getProvider().stopNeo();
 		super.stop(context);
 	}
 

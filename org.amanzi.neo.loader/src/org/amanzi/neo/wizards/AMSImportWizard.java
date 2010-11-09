@@ -16,12 +16,12 @@ import java.io.File;
 import java.io.IOException;
 
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.events.ImportCsvStatisticsEvent;
 import org.amanzi.neo.loader.AMSLoader;
 import org.amanzi.neo.loader.AMSXMLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
+import org.amanzi.neo.services.events.ImportCsvStatisticsEvent;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;

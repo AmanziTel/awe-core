@@ -19,7 +19,7 @@ import java.util.Set;
 import org.amanzi.awe.neighbours.gpeh.GpehReportCreator;
 import org.amanzi.awe.neighbours.gpeh.GpehReportType;
 import org.amanzi.awe.statistic.CallTimePeriods;
-import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -75,7 +75,7 @@ public class GPEHReportWizard extends Wizard implements INewWizard {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 monitor.beginTask("generate Report", 2*repTypes.size());
-                GpehReportCreator creator = new GpehReportCreator(netNode, gpehNode, NeoServiceProvider.getProvider().getService(), NeoServiceProvider.getProvider()
+                GpehReportCreator creator = new GpehReportCreator(netNode, gpehNode, NeoServiceProviderUi.getProvider().getService(), NeoServiceProviderUi.getProvider()
                         .getIndexService());
                 creator.setMonitor(monitor);
                 for (GpehReportType type : repTypes) {

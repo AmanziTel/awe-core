@@ -18,7 +18,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.index.IndexService;
 import org.neo4j.index.lucene.LuceneIndexBatchInserter;

@@ -12,7 +12,7 @@
  */
 package org.amanzi.splash.handlers;
 
-import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.amanzi.splash.ui.AbstractSplashEditor;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;

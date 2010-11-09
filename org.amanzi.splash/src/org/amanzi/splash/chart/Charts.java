@@ -19,9 +19,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.amanzi.neo.core.database.nodes.CellNode;
-import org.amanzi.neo.core.database.nodes.ChartItemNode;
-import org.amanzi.neo.core.database.nodes.ChartNode;
+import org.amanzi.neo.services.nodes.CellNode;
+import org.amanzi.neo.services.nodes.ChartItemNode;
+import org.amanzi.neo.services.nodes.ChartNode;
 import org.amanzi.splash.ui.ChartEditorInput;
 import org.amanzi.splash.ui.SplashPlugin;
 import org.amanzi.splash.utilities.NeoSplashUtil;

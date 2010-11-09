@@ -21,11 +21,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.db.manager.INeoDbService;
 import org.amanzi.neo.loader.core.parser.IDataElement;
 import org.amanzi.neo.loader.core.preferences.PreferenceStore;
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.statistic.IStatistic;

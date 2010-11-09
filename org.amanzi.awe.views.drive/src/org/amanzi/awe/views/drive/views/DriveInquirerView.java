@@ -44,20 +44,20 @@ import net.refractions.udig.ui.graphics.Glyph;
 import org.amanzi.awe.catalog.neo.GeoConstant;
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.integrator.awe.AWEProjectManager;
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.propertyFilter.PropertyFilterModel;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.Pair;
-import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -520,7 +520,7 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
     private void initializeIndex(String datasetName) {
         try {
             timestampIndex = NeoUtils.getTimeIndexProperty(datasetName);
-            timestampIndex.initialize(NeoServiceProvider.getProvider().getService(), null);
+            timestampIndex.initialize(NeoServiceProviderUi.getProvider().getService(), null);
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
@@ -613,7 +613,7 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
      * @return String[]
      */
     private String[] getDriveItems() {
-        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+        GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
         Node refNode = service.getReferenceNode();
         gisDriveNodes = new LinkedHashMap<String, Node>();
 
@@ -1691,7 +1691,7 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
         @Override
         public Paint getItemPaint(int row, int column) {
             TimeSeriesDataItem item = eventDataset.series.getDataItem(column);
-            Node node = NeoServiceProvider.getProvider().getService().getNodeById(item.getValue().longValue());
+            Node node = NeoServiceProviderUi.getProvider().getService().getNodeById(item.getValue().longValue());
             Color color = getEventColor(node);
             return color;
         }
@@ -1995,7 +1995,7 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
 
         @Override
         public Number getY(int i, int j) {
-            return (Number)NeoServiceProvider.getProvider().getService().getNodeById(collection.getY(i, j).longValue()).getProperty(propertyName);
+            return (Number)NeoServiceProviderUi.getProvider().getService().getNodeById(collection.getY(i, j).longValue()).getProperty(propertyName);
         }
 
         @SuppressWarnings("unchecked")

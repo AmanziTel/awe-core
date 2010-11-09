@@ -38,13 +38,13 @@ import net.refractions.udig.project.ui.render.displayAdapter.MapMouseEvent;
 import net.refractions.udig.project.ui.render.displayAdapter.ViewportPane;
 import net.refractions.udig.project.ui.tool.AbstractModalTool;
 
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.events.UpdateDrillDownEvent;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -140,7 +140,7 @@ public class StarTool extends AbstractModalTool {
     private void checkAnalysisData() {
         selectedLayer = getContext().getSelectedLayer();
         if(gisNode != null && selectedLayer != null) {
-            Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+            Transaction tx = NeoServiceProviderUi.getProvider().getService().beginTx();
             try {
                 String aggregatedProperty = gisNode.getProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION, "").toString();
                 if (aggregatedProperty.length() < 1) {
@@ -189,9 +189,9 @@ public class StarTool extends AbstractModalTool {
     private void chooseAnalysisData() {
         // First find valid Reuse Analyser datasets and selected properties
         LinkedHashMap<Node, String> selectedGisNodes = new LinkedHashMap<Node, String>();
-        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+        Transaction tx = NeoServiceProviderUi.getProvider().getService().beginTx();
         try {
-            Node root = NeoServiceProvider.getProvider().getService().getReferenceNode();
+            Node root = NeoServiceProviderUi.getProvider().getService().getReferenceNode();
             Iterator<Node> gisIterator = root.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
                 @Override

@@ -18,8 +18,8 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 
-import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.nodes.SpreadsheetNode;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.splash.swing.Cell;
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFCell;

@@ -19,11 +19,11 @@ import java.util.LinkedHashMap;
 import org.amanzi.awe.neighbours.gpeh.GpehReportType;
 import org.amanzi.awe.neighbours.views.Messages;
 import org.amanzi.awe.statistic.CallTimePeriods;
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -82,7 +82,7 @@ public class GpehReportDialog extends Dialog {
     private LinkedHashMap<String, Node> gpeh;
 
     /** The neo. */
-    private final GraphDatabaseService neo = NeoServiceProvider.getProvider().getService();
+    private final GraphDatabaseService neo = NeoServiceProviderUi.getProvider().getService();
 
     /** The network. */
     private LinkedHashMap<String, Node> network;

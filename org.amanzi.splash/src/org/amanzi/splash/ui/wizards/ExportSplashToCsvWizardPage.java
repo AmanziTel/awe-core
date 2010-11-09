@@ -17,12 +17,13 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.enums.SplashRelationshipTypes;
-import org.amanzi.neo.core.icons.IconManager;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.enums.SplashRelationshipTypes;
+import org.amanzi.neo.services.nodes.SpreadsheetNode;
+import org.amanzi.neo.services.ui.IconManager;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.splash.swing.SplashTableModel;
 import org.amanzi.splash.ui.SplashResourceEditor;
 import org.apache.commons.lang.StringUtils;
@@ -72,7 +73,7 @@ public class ExportSplashToCsvWizardPage extends WizardPage {
     private String fileName;
     private TreeViewer viewer;
     private Node selectedNode;
-    private final GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+    private final GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
 
     /**
      * @param pageName
@@ -341,7 +342,7 @@ public class ExportSplashToCsvWizardPage extends WizardPage {
         public Image getImage(Object obj) {
             IconManager iconManager = IconManager.getIconManager();
             if (obj instanceof TreeNeoNode) {
-                return ((TreeNeoNode)obj).getType().getImage();
+                return NeoServicesUiPlugin.getDefault().getImageForType(((TreeNeoNode)obj).getType());
             }
             return iconManager.getImage(IconManager.NEO_ROOT);
         }

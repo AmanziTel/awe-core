@@ -16,7 +16,7 @@ package org.amanzi.awe.neighbours.gpeh;
 import java.util.LinkedList;
 
 import org.amanzi.awe.statistic.CallTimePeriods;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**

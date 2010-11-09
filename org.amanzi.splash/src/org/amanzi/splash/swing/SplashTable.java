@@ -31,12 +31,12 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
-import org.amanzi.neo.core.database.nodes.CellID;
-import org.amanzi.neo.core.database.nodes.RubyProjectNode;
-import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
-import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
+import org.amanzi.neo.services.nodes.CellID;
+import org.amanzi.neo.services.nodes.RubyProjectNode;
+import org.amanzi.neo.services.nodes.SpreadsheetNode;
+import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
+import org.amanzi.neo.services.utils.RunnableWithResult;
 import org.amanzi.splash.ui.FormulaEditor;
 import org.amanzi.splash.ui.SplashPlugin;
 import org.amanzi.splash.utilities.CellSelection;

@@ -14,10 +14,10 @@ package org.amanzi.splash.ui.wizards;
 
 import net.refractions.udig.project.internal.impl.RubyProjectImpl;
 
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.nodes.RubyProjectNode;
-import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.nodes.RubyProjectNode;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
+import org.amanzi.neo.services.utils.RunnableWithResult;
 import org.amanzi.splash.utilities.Messages;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.eclipse.core.resources.IContainer;
@@ -249,7 +249,7 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
         }
 		//TODO: Lagutko: must be added computing for Root Node of Spreadsheet
         //Lagutko: it's a fake because for now Root Node is a Reference Node
-        final RubyProjectNode root = NeoCorePlugin.getDefault().getProjectService().findRubyProject(getContainerName());// SplashPlugin.getDefault().getSpreadsheetService().getRootNode();
+        final RubyProjectNode root = NeoServiceFactory.getInstance().getProjectService().findRubyProject(getContainerName());// SplashPlugin.getDefault().getSpreadsheetService().getRootNode();
         boolean isExist = ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<Boolean>() {
 
             private boolean result;
@@ -259,7 +259,7 @@ public class SplashNewSpreadsheetWizardPage extends WizardPage {
             }
 
             public void run() {
-                result = root!=null&&NeoCorePlugin.getDefault().getProjectService().findSpreadsheet(root, fileName) != null;
+                result = root!=null&&NeoServiceFactory.getInstance().getProjectService().findSpreadsheet(root, fileName) != null;
             }
             
         });

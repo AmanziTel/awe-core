@@ -16,8 +16,8 @@ package org.amanzi.awe.views.reuse.mess_table.view;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISelectionListener;
@@ -100,7 +100,7 @@ public class EventPropertySheetPage extends PropertySheetPage implements ISelect
         
         @Override
         public void setPropertyValue(Object id, Object value) {
-            Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+            Transaction tx = NeoServiceProviderUi.getProvider().getService().beginTx();
             try {
                 if (container.hasProperty((String)id)) {
                     // try to keep the same type as the previous value
@@ -137,7 +137,7 @@ public class EventPropertySheetPage extends PropertySheetPage implements ISelect
                 tx.success();
             } finally {
                 tx.finish();
-                NeoServiceProvider.getProvider().commit();
+                NeoServiceProviderUi.getProvider().commit();
             }
         }
         

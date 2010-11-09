@@ -21,7 +21,7 @@ import org.amanzi.awe.afp.ControlFileProperties;
 import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.loaders.AfpLoader;
 import org.amanzi.awe.console.AweConsolePlugin;
-import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -86,7 +86,7 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle("Automatic Frequency Planning");
-        servise = NeoServiceProvider.getProvider().getService();
+        servise = NeoServiceProviderUi.getProvider().getService();
         loadPage = new AfpLoadWizardPage("loadPage", servise);
         addPage(loadPage);
     }

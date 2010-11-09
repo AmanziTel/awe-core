@@ -41,14 +41,14 @@ import org.amanzi.awe.statistics.functions.AggregationFunctions;
 import org.amanzi.awe.statistics.template.Template;
 import org.amanzi.awe.statistics.template.Template.DataType;
 import org.amanzi.awe.views.kpi.KPIPlugin;
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.grid.IDENLoader;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -112,7 +112,7 @@ public class GridReportWizard extends Wizard implements IWizard {
         addPage(loadDataPage);
         addPage(viewResultPage);
         setNeedsProgressMonitor(true);
-        service = NeoServiceProvider.getProvider().getService();
+        service = NeoServiceProviderUi.getProvider().getService();
 
     }
 

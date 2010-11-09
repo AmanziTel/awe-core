@@ -15,7 +15,7 @@ package org.amanzi.awe.statistics.database;
 
 import java.util.Collection;
 
-import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.services.INeoConstants;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 

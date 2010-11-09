@@ -17,8 +17,8 @@ import java.util.List;
 
 import org.amanzi.awe.neighbours.gpeh.Calculator3GPPdBm.ValueType;
 import org.amanzi.awe.statistic.CallTimePeriods;
-import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.log4j.Logger;
 import org.hsqldb.lib.StringUtil;
 import org.neo4j.graphdb.GraphDatabaseService;

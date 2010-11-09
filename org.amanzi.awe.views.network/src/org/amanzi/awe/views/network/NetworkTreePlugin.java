@@ -18,11 +18,11 @@ import java.util.HashSet;
 
 import org.amanzi.awe.views.network.view.NetworkTreeView;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.listener.IUpdateViewListener;
-import org.amanzi.neo.core.database.services.events.ShowPreparedViewEvent;
-import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;
-import org.amanzi.neo.core.database.services.events.UpdateViewEvent;
-import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
+import org.amanzi.neo.services.events.ShowPreparedViewEvent;
+import org.amanzi.neo.services.events.UpdateDrillDownEvent;
+import org.amanzi.neo.services.events.UpdateViewEvent;
+import org.amanzi.neo.services.events.UpdateViewEventType;
+import org.amanzi.neo.services.ui.IUpdateViewListener;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;

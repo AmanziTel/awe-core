@@ -13,8 +13,8 @@
 
 package org.amanzi.neo.core.database.nodes.data;
 
-import org.amanzi.neo.core.enums.DriveTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.services.enums.DriveTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.neo4j.graphdb.Node;
 
 /**

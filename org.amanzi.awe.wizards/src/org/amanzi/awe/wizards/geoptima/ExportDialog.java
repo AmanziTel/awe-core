@@ -27,18 +27,18 @@ import java.util.StringTokenizer;
 import org.amanzi.awe.wizards.WizardsPlugin;
 import org.amanzi.awe.wizards.geoptima.export.NeoExportModelImpl;
 import org.amanzi.awe.wizards.geoptima.export.NeoExportParameter;
-import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoTreeContentProvider;
-import org.amanzi.neo.core.utils.NeoTreeElement;
-import org.amanzi.neo.core.utils.NeoTreeLabelProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.core.utils.export.IExportProvider;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
+import org.amanzi.neo.services.enums.CorrelationRelationshipTypes;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.statistic.PropertyHeader;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.ui.utils.NeoTreeContentProvider;
+import org.amanzi.neo.services.ui.utils.NeoTreeElement;
+import org.amanzi.neo.services.ui.utils.NeoTreeLabelProvider;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
@@ -154,7 +154,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
      * Form input.
      */
     private void formInput() {
-        service = NeoServiceProvider.getProvider().getService();
+        service = NeoServiceProviderUi.getProvider().getService();
         property = getPreferenceStore().getString(DataLoadPreferences.SELECTED_DATA);
         viewer.setInput(property);
         viewer.setAllChecked(false);

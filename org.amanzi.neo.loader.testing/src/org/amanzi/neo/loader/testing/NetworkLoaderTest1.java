@@ -18,9 +18,9 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.util.Iterator;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.loader.NetworkLoader;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

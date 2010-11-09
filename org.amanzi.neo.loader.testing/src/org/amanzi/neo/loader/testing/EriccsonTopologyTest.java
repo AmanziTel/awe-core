@@ -20,14 +20,14 @@ import java.util.Set;
 
 import javax.xml.transform.TransformerConfigurationException;
 
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.data_generator.DataGenerateManager;
 import org.amanzi.neo.data_generator.utils.CompareResult;
 import org.amanzi.neo.data_generator.utils.NeoDataUtils;
 import org.amanzi.neo.data_generator.utils.CompareResult.CompareNodes;
 import org.amanzi.neo.data_generator.utils.CompareResult.CompareProperties;
 import org.amanzi.neo.loader.UTRANLoader;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.After;
 import org.junit.AfterClass;

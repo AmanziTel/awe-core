@@ -19,13 +19,13 @@ import java.util.HashSet;
 import org.amanzi.awe.views.neighbours.views.NeighboursView;
 import org.amanzi.awe.views.neighbours.views.TransmissionView;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.listener.IUpdateViewListener;
-import org.amanzi.neo.core.database.services.events.ShowPreparedViewEvent;
-import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;
-import org.amanzi.neo.core.database.services.events.UpdateViewEvent;
-import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.services.events.ShowPreparedViewEvent;
+import org.amanzi.neo.services.events.UpdateDrillDownEvent;
+import org.amanzi.neo.services.events.UpdateViewEvent;
+import org.amanzi.neo.services.events.UpdateViewEventType;
+import org.amanzi.neo.services.ui.IUpdateViewListener;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PartInitException;
@@ -76,7 +76,7 @@ public class NeighboursPlugin extends AbstractUIPlugin implements IUpdateViewLis
      */
     public void stop(BundleContext context) throws Exception {
         //Lagutko, 9.10.2009, use NeoServiceProvider instead NeoManager
-        NeoServiceProvider.getProvider().rollback();
+        NeoServiceProviderUi.getProvider().rollback();
         plugin = null;
         super.stop(context);
         NeoCorePlugin.getDefault().getUpdateViewManager().removeListener(this);
@@ -103,12 +103,12 @@ public class NeighboursPlugin extends AbstractUIPlugin implements IUpdateViewLis
 
     public void commit() {
         //Lagutko, 9.10.2009, use NeoServiceProvider instead NeoManager
-        NeoServiceProvider.getProvider().commit();      
+        NeoServiceProviderUi.getProvider().commit();      
     }
 
     public void rollback() {
         //Lagutko, 9.10.2009, use NeoServiceProvider instead NeoManager
-        NeoServiceProvider.getProvider().rollback();
+        NeoServiceProviderUi.getProvider().rollback();
     }
 
     /**

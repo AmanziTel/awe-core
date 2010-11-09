@@ -15,12 +15,12 @@ package org.amanzi.splash.console;
 import java.io.IOException;
 
 import org.amanzi.integrator.awe.AWEProjectManager;
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.nodes.AweProjectNode;
-import org.amanzi.neo.core.database.nodes.RubyProjectNode;
-import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
-import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.nodes.AweProjectNode;
+import org.amanzi.neo.services.nodes.RubyProjectNode;
+import org.amanzi.neo.services.nodes.SpreadsheetNode;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
+import org.amanzi.neo.services.utils.RunnableWithResult;
 import org.amanzi.splash.swing.SplashTableModel;
 import org.amanzi.splash.ui.SplashPlugin;
 import org.eclipse.core.runtime.Status;
@@ -85,7 +85,7 @@ public class NeoSplashManager {
 		        }
 		        
 		        public void run() {
-		            result = NeoCorePlugin.getDefault().getProjectService().findAweProject(realUdigName);
+		            result = NeoServiceFactory.getInstance().getProjectService().findAweProject(realUdigName);
 		        }
 		});
 		
@@ -99,7 +99,7 @@ public class NeoSplashManager {
 					}
 
 					public void run() {
-						result = NeoCorePlugin.getDefault().getProjectService().findRubyProject(aweNode, realRdtName);
+						result = NeoServiceFactory.getInstance().getProjectService().findRubyProject(aweNode, realRdtName);
 					}
 				});
 		
@@ -113,7 +113,7 @@ public class NeoSplashManager {
 					}
 
 					public void run() {
-						result = NeoCorePlugin.getDefault().getProjectService().findSpreadsheet(rootNode, name);
+						result = NeoServiceFactory.getInstance().getProjectService().findSpreadsheet(rootNode, name);
 					}
 				});
 

@@ -10,12 +10,6 @@
  *******************************************************************************/
 package org.rubypeople.rdt.ui.actions;
 
-import org.amanzi.integrator.awe.AWEProjectManager;
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.AweProjectService;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.ISelection;
@@ -33,7 +27,6 @@ import org.eclipse.ui.actions.SelectionListenerAction;
 import org.eclipse.ui.navigator.ICommonMenuConstants;
 import org.eclipse.ui.part.Page;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
-import org.eclipse.ui.views.navigator.ResourceNavigatorRenameAction;
 import org.rubypeople.rdt.ui.IPackagesViewPart;
 
 /**

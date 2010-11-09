@@ -42,19 +42,19 @@ import org.amanzi.awe.views.calls.enums.StatisticsHeaders;
 import org.amanzi.awe.views.calls.enums.StatisticsType;
 import org.amanzi.awe.views.calls.statistics.CallStatisticsUtills;
 import org.amanzi.awe.views.calls.statistics.Statistics;
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
-import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
-import org.amanzi.neo.core.enums.CallProperties;
-import org.amanzi.neo.core.enums.DriveTypes;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.NetworkTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.CallProperties;
+import org.amanzi.neo.services.enums.DriveTypes;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.NetworkTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.enums.ProbeCallRelationshipType;
+import org.amanzi.neo.services.events.UpdateDatabaseEvent;
+import org.amanzi.neo.services.events.UpdateViewEventType;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -130,7 +130,7 @@ public class StatisticsDataLoader {
         datasetName = dataset;
         service = neo;
         if(service == null){
-            service = NeoServiceProvider.getProvider().getService();
+            service = NeoServiceProviderUi.getProvider().getService();
         }
         initHeaders();
     }
@@ -270,7 +270,7 @@ public class StatisticsDataLoader {
      * @throws MalformedURLException
      */
     private void addDataToCatalog() throws MalformedURLException {
-        NeoServiceProvider neoProvider = NeoServiceProvider.getProvider();
+        NeoServiceProviderUi neoProvider = NeoServiceProviderUi.getProvider();
         if (neoProvider != null) {
             String databaseLocation = neoProvider.getDefaultDatabaseLocation();
             ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();

@@ -19,8 +19,8 @@ import java.util.Map;
 
 import org.amanzi.awe.statistics.database.StatisticsLevelIterator;
 import org.amanzi.awe.statistics.database.StatisticsRowIterator;
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.neo4j.graphdb.Node;
 
 /**

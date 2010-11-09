@@ -28,16 +28,16 @@ import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesAndMapEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesEvent;
 import org.amanzi.awe.views.neighbours.NeighboursPlugin;
 import org.amanzi.awe.views.neighbours.RelationWrapper;
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkSiteType;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.icons.IconManager;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NetworkSiteType;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
+import org.amanzi.neo.services.ui.IconManager;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -100,7 +100,7 @@ public class TransmissionView extends ViewPart {
      */
     public static final String ID = "org.amanzi.awe.views.neighbours.views.TransmissionView";
     
-    private GraphDatabaseService graphDatabaseService=NeoServiceProvider.getProvider().getService();
+    private GraphDatabaseService graphDatabaseService=NeoServiceProviderUi.getProvider().getService();
 
     /** String SHOW_NEIGHBOUR field */
     private static final String SHOW_NEIGHBOUR = "show transmission relation '%s' > '%s' on map";
@@ -796,7 +796,7 @@ public class TransmissionView extends ViewPart {
         if (gis == null || neighbour.getSelectionIndex() < 0) {
             return null;
         }
-        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+        GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
         return NeoUtils.findTransmission(NeoUtils.findRoot(gis, service), neighbour.getText(), service);
     }
 

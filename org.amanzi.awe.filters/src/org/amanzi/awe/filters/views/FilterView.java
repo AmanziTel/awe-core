@@ -29,17 +29,17 @@ import org.amanzi.awe.filters.AbstractFilter;
 import org.amanzi.awe.filters.ChainRule;
 import org.amanzi.awe.filters.FilterUtil;
 import org.amanzi.awe.filters.tree.TreeNeoNode;
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.icons.IconManager;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.service.listener.INeoServiceProviderListener;
-import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.statistic.PropertyHeader;
+import org.amanzi.neo.services.ui.INeoServiceProviderListener;
+import org.amanzi.neo.services.ui.IconManager;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -293,7 +293,7 @@ public class FilterView extends ViewPart  implements INeoServiceProviderListener
      * The constructor.
      */
     public FilterView() {
-        graphDatabaseService = NeoServiceProvider.getProvider().getService();
+        graphDatabaseService = NeoServiceProviderUi.getProvider().getService();
         dataMap = new LinkedHashMap<String, Node>();
     }
 
@@ -1645,7 +1645,7 @@ public class FilterView extends ViewPart  implements INeoServiceProviderListener
 
     @Override
     public void onNeoStart(Object source) {
-        graphDatabaseService = NeoServiceProvider.getProvider().getService();
+        graphDatabaseService = NeoServiceProviderUi.getProvider().getService();
     }
 
     @Override

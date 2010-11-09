@@ -13,7 +13,7 @@
 
 package org.amanzi.awe.tool.star;
 
-import org.amanzi.neo.core.enums.NetworkSiteType;
+import org.amanzi.neo.services.enums.NetworkSiteType;
 
 /**
  * <p>

@@ -12,6 +12,8 @@
  */
 package org.amanzi.neo.core.service.listener;
 
+import org.amanzi.neo.services.ui.INeoServiceProviderListener;
+
 /**
  * Default implementation of INeoServiceProviderListener
  * 

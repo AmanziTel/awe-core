@@ -13,7 +13,8 @@
 
 package org.amanzi.neo.core.service.listener;
 
-import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.services.ui.INeoServiceProviderListener;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
@@ -26,7 +27,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @since 1.0.0
  */
 public abstract class NeoServiceProviderListener implements INeoServiceProviderListener {
-    protected GraphDatabaseService graphDatabaseService = NeoServiceProvider.getProvider().getService();
+    protected GraphDatabaseService graphDatabaseService = NeoServiceProviderUi.getProvider().getService();
 
     @Override
     public void onNeoStop(Object source) {
@@ -35,7 +36,7 @@ public abstract class NeoServiceProviderListener implements INeoServiceProviderL
 
     @Override
     public void onNeoStart(Object source) {
-        graphDatabaseService = NeoServiceProvider.getProvider().getService();
+        graphDatabaseService = NeoServiceProviderUi.getProvider().getService();
     }
 
     @Override

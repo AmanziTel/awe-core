@@ -16,11 +16,11 @@ package org.amanzi.awe.neighbours.dialog;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
@@ -61,7 +61,7 @@ public class GPEHReportWizardPage extends WizardPage {
     /** The network. */
     private LinkedHashMap<String, Node> network;
     /** The neo. */
-    private final GraphDatabaseService neo = NeoServiceProvider.getProvider().getService();
+    private final GraphDatabaseService neo = NeoServiceProviderUi.getProvider().getService();
 
     /**
      * Instantiates a new gPEH report wizard page.

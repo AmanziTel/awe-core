@@ -19,15 +19,15 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.service.listener.NeoServiceProviderListener;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.CorrelationRelationshipTypes;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -311,7 +311,7 @@ public class GeoNeo extends NeoServiceProviderListener {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+                Transaction tx = NeoServiceProviderUi.getProvider().getService().beginTx();
                 try{
                 Node gis = getMainGisNode();
                 String stringCRS = newCRS.getIdentifiers().iterator().next().toString();
@@ -382,7 +382,7 @@ public class GeoNeo extends NeoServiceProviderListener {
                     bbox_e.printStackTrace(System.err);
                 } finally {
                     tx.finish();
-                    NeoServiceProvider.getProvider().commit();
+                    NeoServiceProviderUi.getProvider().commit();
                 }
             }
             // LOGGER.debug("Determined bounding box for " + this.name + ": " + this.bounds);

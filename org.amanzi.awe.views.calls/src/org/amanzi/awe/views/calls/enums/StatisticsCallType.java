@@ -20,7 +20,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-import org.amanzi.neo.core.enums.CallProperties.CallType;
+import org.amanzi.neo.services.enums.CallProperties.CallType;
 
 /**
  * <p>

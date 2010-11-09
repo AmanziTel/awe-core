@@ -19,8 +19,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.GraphDatabaseService;

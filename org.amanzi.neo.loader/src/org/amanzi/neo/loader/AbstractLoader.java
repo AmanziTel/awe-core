@@ -29,32 +29,32 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
 import java.util.Map.Entry;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import net.refractions.udig.catalog.CatalogPlugin;
 import net.refractions.udig.catalog.ICatalog;
 import net.refractions.udig.catalog.IService;
 
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
-import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.CSVParser;
-import org.amanzi.neo.core.utils.GisProperties;
-import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
-import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.ui.preferences.CommonCRSPreferencePage;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
+import org.amanzi.neo.services.GisProperties;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NetworkTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.events.UpdateDatabaseEvent;
+import org.amanzi.neo.services.events.UpdateViewEventType;
+import org.amanzi.neo.services.indexes.MultiPropertyIndex;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
+import org.amanzi.neo.services.ui.utils.CSVParser;
+import org.amanzi.neo.services.utils.RunnableWithResult;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -91,7 +91,7 @@ public abstract class AbstractLoader {
     protected HashMap<Integer, StoringProperty> storingProperties = new HashMap<Integer, StoringProperty>();
     protected String typeName = "CSV";
     protected GraphDatabaseService neo;
-    private NeoServiceProvider neoProvider;
+    private NeoServiceProviderUi neoProvider;
     protected HashMap<String, GisProperties> gisNodes = new HashMap<String, GisProperties>();
     protected String filename = null;
     protected String basename = null;
@@ -563,7 +563,7 @@ public abstract class AbstractLoader {
 
     private void initializeNeo() {
         if (this.neoProvider == null)
-            this.neoProvider = NeoServiceProvider.getProvider();
+            this.neoProvider = NeoServiceProviderUi.getProvider();
         if (this.neo == null)
             this.neo = this.neoProvider.getService();
     }
@@ -1543,7 +1543,7 @@ public abstract class AbstractLoader {
      * @throws MalformedURLException
      */
     public static final void finishUpGis() throws MalformedURLException {
-        NeoServiceProvider neoProvider = NeoServiceProvider.getProvider();
+        NeoServiceProviderUi neoProvider = NeoServiceProviderUi.getProvider();
         if (neoProvider != null) {
             addDataToCatalog();
         }
@@ -1574,7 +1574,7 @@ public abstract class AbstractLoader {
      */
     public static void addDataToCatalog() throws MalformedURLException {
         // TODO: Lagutko, 17.12.2009, can be run as a Job
-        NeoServiceProvider neoProvider = NeoServiceProvider.getProvider();
+        NeoServiceProviderUi neoProvider = NeoServiceProviderUi.getProvider();
         if (neoProvider != null) {
             String databaseLocation = neoProvider.getDefaultDatabaseLocation();
             sendUpdateEvent(UpdateViewEventType.GIS);

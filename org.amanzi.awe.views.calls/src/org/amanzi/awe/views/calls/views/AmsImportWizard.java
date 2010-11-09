@@ -21,13 +21,13 @@ import java.util.Collections;
 import org.amanzi.awe.views.calls.CallAnalyserPlugin;
 import org.amanzi.awe.views.calls.Messages;
 import org.amanzi.awe.views.calls.upload.StatisticsDataLoader;
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.enums.DriveTypes;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.DriveTypes;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -238,7 +238,7 @@ public class AmsImportWizard extends Wizard implements IImportWizard {
                 datasets = new ArrayList<String>();
                 wrongDatasets = new ArrayList<String>();
                 Traverser allDatasetTraverser = NeoCorePlugin.getDefault().getProjectService().getAllDatasetTraverser(
-                        NeoServiceProvider.getProvider().getService().getReferenceNode());
+                        NeoServiceProviderUi.getProvider().getService().getReferenceNode());
                 for (Node node : allDatasetTraverser) {
                     String name = (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME);
                     if (NeoUtils.getDatasetType(node, null)!=DriveTypes.AMS){
@@ -257,7 +257,7 @@ public class AmsImportWizard extends Wizard implements IImportWizard {
         private String[] getGisItems() {
             Transaction tx = NeoUtils.beginTransaction();
             try {
-                GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+                GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
                 Node refNode = service.getReferenceNode();
                 networks = new ArrayList<String>();
                 String header = GisTypes.NETWORK.getHeader();

@@ -13,6 +13,9 @@
 
 package org.amanzi.splash.testing;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,15 +23,15 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.exception.SplashDatabaseException;
-import org.amanzi.neo.core.database.nodes.AweProjectNode;
-import org.amanzi.neo.core.database.nodes.CellNode;
-import org.amanzi.neo.core.database.nodes.ColumnHeaderNode;
-import org.amanzi.neo.core.database.nodes.RowHeaderNode;
-import org.amanzi.neo.core.database.nodes.RubyProjectNode;
-import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
-import org.amanzi.neo.core.database.services.AweProjectService;
-import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.services.AweProjectService;
+import org.amanzi.neo.services.nodes.AweProjectNode;
+import org.amanzi.neo.services.nodes.CellNode;
+import org.amanzi.neo.services.nodes.ColumnHeaderNode;
+import org.amanzi.neo.services.nodes.RowHeaderNode;
+import org.amanzi.neo.services.nodes.RubyProjectNode;
+import org.amanzi.neo.services.nodes.SplashDatabaseException;
+import org.amanzi.neo.services.nodes.SpreadsheetNode;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.splash.database.services.SpreadsheetService;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -36,8 +39,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
-
-import static org.junit.Assert.*;
 
 /**
  * Tests for spreadsheet service: add, swap, delete operations for rows, columns and cells.
@@ -93,7 +94,7 @@ public class SpreadsheetServiceCellMovingTest {
     public static EmbeddedGraphDatabase getNeo(){
         if (neo == null){
             neo = new EmbeddedGraphDatabase(getDbDirectoryName());
-            NeoServiceProvider.initProvider(neo);
+            NeoServiceProviderUi.initProvider(neo);
         }
         return neo;
     }
@@ -102,7 +103,7 @@ public class SpreadsheetServiceCellMovingTest {
      * Initialize project service.
      */
     private static void initProjectService(){
-        NeoCorePlugin.getDefault().initProjectService(getNeo());
+        NeoServiceProviderUi.initProvider(getNeo());
         projectService = NeoCorePlugin.getDefault().getProjectService();
     }
     

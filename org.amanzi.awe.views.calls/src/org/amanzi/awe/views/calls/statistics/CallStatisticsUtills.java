@@ -19,9 +19,9 @@ import java.util.List;
 import org.amanzi.awe.statistic.CallTimePeriods;
 import org.amanzi.awe.views.calls.enums.InclInconclusiveStates;
 import org.amanzi.awe.views.calls.statistics.constants.ICallStatisticsConstants;
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.CallProperties;
-import org.amanzi.neo.core.enums.CallProperties.CallResult;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.CallProperties;
+import org.amanzi.neo.services.enums.CallProperties.CallResult;
 import org.neo4j.graphdb.Node;
 
 /**

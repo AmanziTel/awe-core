@@ -18,18 +18,18 @@ import java.util.List;
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEvent;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;
-import org.amanzi.neo.core.enums.INodeType;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.EditPropertiesPage.PropertyWrapper;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.IndexManager;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
@@ -68,7 +68,7 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
 
         Node parentnode;
         DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
-        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+        GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
         boolean needCheckStructure = true;
         if (ds.getNodeType(sourceNode).equals(iNodeType)) {
             parentnode = NeoUtils.getParent(service, sourceNode);
@@ -123,7 +123,7 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
             }
         }
 
-        NeoServiceProvider.getProvider().commit();
+        NeoServiceProviderUi.getProvider().commit();
 
         // TODO imho need to use service for updating layer
         Node gisNode = NeoUtils.findGisNodeByChild(sourceNode);

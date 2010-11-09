@@ -18,12 +18,13 @@ package org.amanzi.splash.ui;
 import java.util.Arrays;
 import java.util.LinkedList;
 
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.nodes.CellNode;
-import org.amanzi.neo.core.database.nodes.RubyProjectNode;
-import org.amanzi.neo.core.database.nodes.RubyScriptNode;
-import org.amanzi.neo.core.database.services.AweProjectService;
-import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.services.AweProjectService;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.nodes.CellNode;
+import org.amanzi.neo.services.nodes.RubyProjectNode;
+import org.amanzi.neo.services.nodes.RubyScriptNode;
+import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -74,14 +75,14 @@ public class EditorListener implements IResourceChangeListener {
 
         @Override
         public void run() {
-            AweProjectService projectService = NeoCorePlugin.getDefault().getProjectService();
+            AweProjectService projectService = NeoServiceFactory.getInstance().getProjectService();
             RubyProjectNode rubyProject = projectService.findRubyProject(projectName);
             if (rubyProject != null) {
                 RubyScriptNode script = projectService.findScript(rubyProject, scriptName);
                 if (script != null) {
                     CellNode cell = projectService.findCellByScriptReference(script);
                     if (cell != null) {
-                        NeoCorePlugin.getDefault().getUpdateViewManager().updateCell(projectName,
+                        NeoServicesUiPlugin.getDefault().getUpdateViewManager().updateCell(projectName,
                                 projectService.getSpreadsheetByCell(cell).getName(),
                                 SplashPlugin.getDefault().getSpreadsheetService().getFullId(cell));
                     }

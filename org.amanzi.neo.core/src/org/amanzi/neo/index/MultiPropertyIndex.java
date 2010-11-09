@@ -9,8 +9,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Random;
 
-import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;

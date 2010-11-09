@@ -41,19 +41,19 @@ import org.amanzi.awe.views.calls.enums.StatisticsCallType;
 import org.amanzi.awe.views.calls.enums.StatisticsType;
 import org.amanzi.awe.views.calls.statistics.CallStatistics;
 import org.amanzi.integrator.awe.AWEProjectManager;
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.events.ShowPreparedViewEvent;
-import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;
-import org.amanzi.neo.core.enums.CallProperties;
-import org.amanzi.neo.core.enums.ColoredFlags;
-import org.amanzi.neo.core.enums.DriveTypes;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.enums.CallProperties;
+import org.amanzi.neo.services.enums.DriveTypes;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.ProbeCallRelationshipType;
+import org.amanzi.neo.services.events.ShowPreparedViewEvent;
+import org.amanzi.neo.services.events.UpdateDrillDownEvent;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.ui.enums.ColoredFlags;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -231,7 +231,7 @@ public class CallAnalyserView extends ViewPart {
             if (!inputWr.isCorrectInput()) {
                 return;
             }
-            GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+            GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
             InclInconclusiveStates inclInconclusive = getInclInconclusive();
             Traverser sRowTraverser = inputWr.getSrowTraverser(service,inclInconclusive);
             Transaction tx = service.beginTx();
@@ -746,7 +746,7 @@ public class CallAnalyserView extends ViewPart {
         if (drive == null) {
             return;
         }
-        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+        GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
         Set<Node> nodes = new HashSet<Node>();
         if(NeoUtils.isProbeNode(node)){
             nodes = NeoUtils.getCallsForProbeNode(node, service);
@@ -819,7 +819,7 @@ public class CallAnalyserView extends ViewPart {
      */
     private void formCallDataset() {
         callDataset.clear();
-        callDataset = NeoUtils.getAllDatasetNodesByType(DriveTypes.AMS_CALLS, NeoServiceProvider.getProvider().getService());
+        callDataset = NeoUtils.getAllDatasetNodesByType(DriveTypes.AMS_CALLS, NeoServiceProviderUi.getProvider().getService());
         List<String> datasets = new ArrayList<String>(callDataset.keySet());
         Collections.sort(datasets);
         cDrive.setItems(datasets.toArray(new String[0]));
@@ -871,7 +871,7 @@ public class CallAnalyserView extends ViewPart {
                 ColumnHeaders header = columnHeaders.get(selectedColumn);
                 final String nodeName = header.header.getTitle();
                 Node cellNode = null;
-                Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+                Transaction tx = NeoServiceProviderUi.getProvider().getService().beginTx();
                 try {
                     Iterator<Node> iterator = NeoUtils.getChildTraverser(wr.sRow, new ReturnableEvaluator() {
 
@@ -1360,7 +1360,7 @@ public class CallAnalyserView extends ViewPart {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-                    GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+                    GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
                     final CallStatistics statistics = inclInconclusive.getStatistics(drive, service, monitor);
                     if(monitor.isCanceled()){
                         return Status.OK_STATUS;
@@ -1429,7 +1429,7 @@ public class CallAnalyserView extends ViewPart {
         probeCallDataset.clear();
         probeCallDataset.put(KEY_ALL, null);
         if ((drive != null) && (callType != null)&& !callType.equals(StatisticsCallType.AGGREGATION_STATISTICS)) {
-            GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+            GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
             Transaction tx = service.beginTx();
             try {
                 Collection<Node> allProbesOfDataset = NeoUtils.getAllProbesOfDataset(drive, callType.getId());
@@ -1451,7 +1451,7 @@ public class CallAnalyserView extends ViewPart {
         if (drive == null) {
             return StatisticsCallType.AGGREGATION_STATISTICS.getHeaders();
         }
-        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+        GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
         Transaction tx = service.beginTx();
         try {
             Node statRoot = null;

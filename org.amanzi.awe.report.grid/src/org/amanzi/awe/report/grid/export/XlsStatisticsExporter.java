@@ -28,7 +28,7 @@ import org.amanzi.awe.statistics.database.entity.Statistics;
 import org.amanzi.awe.statistics.database.entity.StatisticsCell;
 import org.amanzi.awe.statistics.database.entity.StatisticsGroup;
 import org.amanzi.awe.statistics.database.entity.StatisticsRow;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.apache.poi.hssf.usermodel.HSSFName;
 import org.apache.poi.hssf.usermodel.HSSFRichTextString;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;

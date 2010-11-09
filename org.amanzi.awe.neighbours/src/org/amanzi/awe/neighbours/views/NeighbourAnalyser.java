@@ -20,14 +20,14 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.service.listener.INeoServiceProviderListener;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.statistic.PropertyHeader;
+import org.amanzi.neo.services.ui.INeoServiceProviderListener;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -76,7 +76,7 @@ public class NeighbourAnalyser extends ViewPart  implements INeoServiceProviderL
     private Combo cNeighbour;
     private Button bStart;
     private LinkedHashMap<String, Node> gpeh;
-    private GraphDatabaseService graphDatabaseService=NeoServiceProvider.getProvider().getService();
+    private GraphDatabaseService graphDatabaseService=NeoServiceProviderUi.getProvider().getService();
     private LinkedHashMap<String, Node> neighbour;
 
 	/**
@@ -388,7 +388,7 @@ public class NeighbourAnalyser extends ViewPart  implements INeoServiceProviderL
 
     @Override
     public void onNeoStart(Object source) {
-        graphDatabaseService = NeoServiceProvider.getProvider().getService();
+        graphDatabaseService = NeoServiceProviderUi.getProvider().getService();
     }
 
     @Override

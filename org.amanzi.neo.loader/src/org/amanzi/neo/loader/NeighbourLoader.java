@@ -25,17 +25,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
-import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.events.UpdateDatabaseEvent;
+import org.amanzi.neo.services.events.UpdateViewEventType;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -94,7 +94,7 @@ public class NeighbourLoader {
         this.neo = neo;
         this.baseName = new File(fileName).getName();
         gisName = NeoUtils.getSimpleNodeName(networkNode, "", neo);
-        index = NeoServiceProvider.getProvider().getIndexService();
+        index = NeoServiceProviderUi.getProvider().getIndexService();
     }
     
     /**

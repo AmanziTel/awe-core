@@ -23,15 +23,16 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Set;
 
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.enums.CallProperties;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
-import org.amanzi.neo.core.enums.CallProperties.CallResult;
-import org.amanzi.neo.core.enums.CallProperties.CallType;
-import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.index.MultiPropertyIndex;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.Utils;
+import org.amanzi.neo.services.enums.CallProperties;
+import org.amanzi.neo.services.enums.CallProperties.CallResult;
+import org.amanzi.neo.services.enums.CallProperties.CallType;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.enums.ProbeCallRelationshipType;
+import org.amanzi.neo.services.indexes.MultiPropertyIndex;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.IAdaptable;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -344,7 +345,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
         if (result == null) {
             Transaction tx = neo.beginTx();
             try {
-                result = NeoUtils.getTimeIndexProperty(probeCallsName);             
+                result = Utils.getTimeIndexProperty(probeCallsName);             
                 result.initialize(neo, null);
                 
                 callTimestampIndexes.put(probeCallsName, result);

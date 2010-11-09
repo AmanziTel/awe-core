@@ -19,17 +19,15 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.DriveTypes;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.INodeType;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.enums.SplashRelationshipTypes;
-import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.services.Utils.FilterAND;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
+import org.amanzi.neo.services.enums.DriveTypes;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.enums.SplashRelationshipTypes;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.internal.DynamicNodeType;
 import org.apache.commons.lang.StringUtils;
@@ -575,7 +573,8 @@ public class DatasetService extends AbstractService {
      * Creates the node
      * 
      * @param typeId the type id
-     * @param additionalProperties the additional properties - pair [property name, property value]...
+     * @param additionalProperties the additional properties - pair [property name, property
+     *        value]...
      * @return the node
      */
     private Node createNode(String typeId, Object... additionalProperties) {
@@ -618,7 +617,7 @@ public class DatasetService extends AbstractService {
     /**
      * Creates the m node - created M node and add like child in CHILD-NEXT structure
      * 
-     * @param parent the parent node 
+     * @param parent the parent node
      * @param lastMNode the last m node, can be null
      * @return the created node with type 'm'
      */
@@ -630,8 +629,8 @@ public class DatasetService extends AbstractService {
      * Gets the virtual dataset. if node not found, the necessary node was created
      * 
      * @param rootNode the root node
-     * @param type the virtual dataset type 
-     * @return the virtual dataset node 
+     * @param type the virtual dataset type
+     * @return the virtual dataset node
      */
     public Node getVirtualDataset(Node rootNode, DriveTypes type) {
         Node result = findVirtualDataset(rootNode, type);
@@ -732,8 +731,8 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Gets the global config node.
-     * IF node not exist in database, the global config node will be created
+     * Gets the global config node. IF node not exist in database, the global config node will be
+     * created
      * 
      * @return the global config node
      */
@@ -772,8 +771,8 @@ public class DatasetService extends AbstractService {
     /**
      * Gets the traverser by all child of necessary project
      * 
-     * @param projectName the project name 
-     * @return the traverser 
+     * @param projectName the project name
+     * @return the traverser
      */
     public org.neo4j.graphdb.traversal.Traverser getRoots(final String projectName) {
         TraversalDescription td = Utils.getTDRootNodes(new Predicate<Path>() {
@@ -805,7 +804,7 @@ public class DatasetService extends AbstractService {
      * Sets the structure of root node
      * 
      * @param root the child of project node (network.dataset,"")
-     * @param structure the  structure - collection of INodeType for save
+     * @param structure the structure - collection of INodeType for save
      */
     public void setStructure(Node root, Collection<INodeType> structure) {
         String[] structureProperty = new String[structure.size()];
@@ -872,7 +871,7 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Find project by child node 
+     * Find project by child node
      * 
      * @param node the child node
      * @return the path traverser
@@ -963,12 +962,11 @@ public class DatasetService extends AbstractService {
         return new IndexManager(root);
     }
 
-
     /**
-     * Find sector node
-     * Sector node find by many parameters:
-     * if  ci==null&&returnFirsElement==true - We return the first matching by name sector node
-     * or we use lucene index for finding nodes with necessary ci and fing by others defined parameters.
+     * Find sector node Sector node find by many parameters: if ci==null&&returnFirsElement==true -
+     * We return the first matching by name sector node or we use lucene index for finding nodes
+     * with necessary ci and fing by others defined parameters.
+     * 
      * @param rootNode the root node
      * @param ci the ci property
      * @param lac the lac property
@@ -1039,8 +1037,8 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * Gets the neighbour root node
-     * If neighbour not found, the necessary nodes was created
+     * Gets the neighbour root node If neighbour not found, the necessary nodes was created
+     * 
      * @param rootNode the root node (child of project node)
      * @param neighbourName the neighbour name
      * @return the neighbour node
@@ -1059,9 +1057,10 @@ public class DatasetService extends AbstractService {
         }
         return result;
     }
+
     /**
-     * Gets the transmission root node
-     * If transmission not found, the necessary nodes was created
+     * Gets the transmission root node If transmission not found, the necessary nodes was created
+     * 
      * @param rootNode the root node (child of project node)
      * @param transmissionName the transmission name
      * @return the transmission node
@@ -1106,6 +1105,7 @@ public class DatasetService extends AbstractService {
         Iterator<Node> it = td.traverse(rootNode).nodes().iterator();
         return it.hasNext() ? it.next() : null;
     }
+
     /**
      * Find transmission node
      * 
@@ -1167,7 +1167,8 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * The Interface NodeResult.
+     * The Interface NodeResult. - wrapper of Node which contains result of operation: Node was
+     * found, or node was created
      */
     public interface NodeResult extends Node {
 
@@ -1180,7 +1181,12 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * The Class NodeResultImpl.
+     * <p>
+     * Implementation of NodeResult
+     * </p>
+     * 
+     * @author tsinkel_a
+     * @since 1.0.0
      */
     private static class NodeResultImpl extends NodeWrapper implements NodeResult {
 
@@ -1214,9 +1220,9 @@ public class DatasetService extends AbstractService {
      * Find site.
      * 
      * @param rootNode the root node
-     * @param name the name
-     * @param site_no the site_no
-     * @return the node
+     * @param name the site name
+     * @param site_no the site nomer
+     * @return the site node or null if node not found
      */
     public Node findSite(Node rootNode, String name, String site_no) {
         if (StringUtils.isNotEmpty(name)) {
@@ -1229,9 +1235,11 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * @param transmissionRoot
-     * @param serSite
-     * @return
+     * Gets the transmission proxy.
+     * 
+     * @param neighbourRoot the neighbour root
+     * @param sector the sector
+     * @return the neighbour proxy
      */
     public NodeResult getTransmissionProxy(Node transmissionRoot, Node site) {
         String proxySiteName = getName(transmissionRoot) + PROXY_NAME_SEPARATOR + getName(site);
@@ -1262,9 +1270,11 @@ public class DatasetService extends AbstractService {
     }
 
     /**
-     * @param rootNode
-     * @param probeName
-     * @return
+     * get Probe node
+     * 
+     * @param rootNode root node
+     * @param probeName - probe name
+     * @return the probe node
      */
     public NodeResult getProbe(Node rootNode, String probeName) {
         String indName = Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.PROBE);

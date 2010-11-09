@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.awe.console.AweConsolePlugin;
-import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.db.manager.DatabaseManager.DatabaseAccessType;
 import org.amanzi.neo.loader.core.ILoader;
@@ -31,6 +30,7 @@ import org.amanzi.neo.loader.core.IProgressEvent;
 import org.amanzi.neo.loader.core.parser.IConfigurationData;
 import org.amanzi.neo.loader.core.parser.IDataElement;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IProgressMonitor;

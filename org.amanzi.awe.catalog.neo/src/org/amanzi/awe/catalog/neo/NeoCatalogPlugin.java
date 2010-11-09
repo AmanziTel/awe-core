@@ -19,12 +19,12 @@ import net.refractions.udig.catalog.internal.ui.CatalogView;
 
 import org.amanzi.awe.catalog.neo.upd_layers.LayerUpdateManager;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.listener.IUpdateViewListener;
-import org.amanzi.neo.core.database.services.events.UpdateViewEvent;
-import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.service.listener.INeoServiceProviderListener;
-import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.services.events.UpdateViewEvent;
+import org.amanzi.neo.services.events.UpdateViewEventType;
+import org.amanzi.neo.services.ui.INeoServiceProviderListener;
+import org.amanzi.neo.services.ui.IUpdateViewListener;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -60,7 +60,7 @@ public class NeoCatalogPlugin extends AbstractUIPlugin implements INeoServicePro
     public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
-        NeoServiceProvider.getProvider().addServiceProviderListener(this);
+        NeoServiceProviderUi.getProvider().addServiceProviderListener(this);
         NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
         layerManager = new LayerUpdateManager();
     }
@@ -72,7 +72,7 @@ public class NeoCatalogPlugin extends AbstractUIPlugin implements INeoServicePro
     public void stop(BundleContext context) throws Exception {
         plugin = null;
         super.stop(context);
-        NeoServiceProvider.getProvider().removeServiceProviderListener(this);
+        NeoServiceProviderUi.getProvider().removeServiceProviderListener(this);
         NeoCorePlugin.getDefault().getUpdateViewManager().removeListener(this);
     }
 

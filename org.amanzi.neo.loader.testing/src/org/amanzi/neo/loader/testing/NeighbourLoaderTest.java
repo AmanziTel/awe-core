@@ -16,11 +16,11 @@ package org.amanzi.neo.loader.testing;
 import java.io.IOException;
 import java.util.Iterator;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.loader.NeighbourLoader;
 import org.amanzi.neo.loader.NetworkLoader;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.After;

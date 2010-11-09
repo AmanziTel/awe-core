@@ -22,13 +22,13 @@ import java.util.List;
 
 import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
 import org.amanzi.awe.views.calls.enums.StatisticsHeaders;
-import org.amanzi.neo.core.enums.DriveTypes;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.data_generator.DataGenerateManager;
 import org.amanzi.neo.data_generator.data.calls.Call;
 import org.amanzi.neo.data_generator.data.calls.CallParameterNames;
 import org.amanzi.neo.data_generator.generate.IDataGenerator;
 import org.amanzi.neo.loader.AMSXMLoader;
+import org.amanzi.neo.services.enums.DriveTypes;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.After;
 import org.junit.AfterClass;

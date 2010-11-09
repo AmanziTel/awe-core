@@ -21,10 +21,10 @@ import java.util.Map;
 
 import net.refractions.udig.catalog.IService;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.service.listener.INeoServiceProviderListener;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.INeoServiceProviderListener;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -131,7 +131,7 @@ public class NeoService extends IService  implements INeoServiceProviderListener
 
     private void checkNeo() {
         if(graphDatabaseService == null) {
-            graphDatabaseService = NeoServiceProvider.getProvider().getService();
+            graphDatabaseService = NeoServiceProviderUi.getProvider().getService();
             //TODO: Support actual URL
             //neo = new EmbeddedNeo(url.getPath());
         }
@@ -169,7 +169,7 @@ public class NeoService extends IService  implements INeoServiceProviderListener
 
 	    @Override
 	    public void onNeoStart(Object source) {
-	        graphDatabaseService = NeoServiceProvider.getProvider().getService();
+	        graphDatabaseService = NeoServiceProviderUi.getProvider().getService();
 	    }
 
 	    @Override

@@ -16,15 +16,15 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.enums.DriveTypes;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.enums.DriveTypes;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -232,8 +232,8 @@ public class AMSImportWizardPage extends WizardPage {
         try {        	
             datasetMembers = new ArrayList<String>();
         	wrongDatasetMembers = new ArrayList<String>();
-        	Traverser allDatasetTraverser = NeoCorePlugin.getDefault().getProjectService().getAllDatasetTraverser(
-                    NeoServiceProvider.getProvider().getService().getReferenceNode());
+        	Traverser allDatasetTraverser = NeoServiceFactory.getInstance().getProjectService().getAllDatasetTraverser(
+                    NeoServiceProviderUi.getProvider().getService().getReferenceNode());
             for (Node node : allDatasetTraverser) {
                 String name = (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME);
                 if (NeoUtils.getDatasetType(node, null)!=DriveTypes.AMS){
@@ -257,7 +257,7 @@ public class AMSImportWizardPage extends WizardPage {
     private String[] getGisItems() {
         Transaction tx = NeoUtils.beginTransaction();
         try {
-            GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+            GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
             Node refNode = service.getReferenceNode();
             networkMembers = new ArrayList<String>();
             String header = GisTypes.NETWORK.getHeader();

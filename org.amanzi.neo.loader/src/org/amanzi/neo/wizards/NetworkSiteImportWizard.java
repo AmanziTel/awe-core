@@ -18,9 +18,6 @@ import java.io.IOException;
 import java.util.LinkedHashSet;
 
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
-import org.amanzi.neo.core.enums.NetworkFileType;
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.loader.NeighbourLoader;
 import org.amanzi.neo.loader.NetworkLoader;
 import org.amanzi.neo.loader.NetworkSiteLoader;
@@ -30,6 +27,9 @@ import org.amanzi.neo.loader.TransmissionLoader;
 import org.amanzi.neo.loader.UTRANLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
+import org.amanzi.neo.services.enums.NetworkFileType;
+import org.amanzi.neo.services.events.UpdateViewEventType;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -106,21 +106,21 @@ public class NetworkSiteImportWizard extends Wizard implements IImportWizard {
                         break;
                     case NEIGHBOUR:
                         NeighbourLoader neighbourLoader;
-                        neighbourLoader = new NeighbourLoader(mainPage.getNetworkNode(), mainPage.getFileName(), NeoServiceProvider.getProvider().getService());
+                        neighbourLoader = new NeighbourLoader(mainPage.getNetworkNode(), mainPage.getFileName(), NeoServiceProviderUi.getProvider().getService());
                         neighbourLoader.run(monitor);
-                        NeoServiceProvider.getProvider().commit();
+                        NeoServiceProviderUi.getProvider().commit();
                         break;
                     case TRANSMISSION:
                         TransmissionLoader transmissionLoader;
-                        transmissionLoader = new TransmissionLoader(mainPage.getNetworkName(), mainPage.getFileName(), NeoServiceProvider.getProvider().getService());
+                        transmissionLoader = new TransmissionLoader(mainPage.getNetworkName(), mainPage.getFileName(), NeoServiceProviderUi.getProvider().getService());
                         transmissionLoader.run(monitor);
-                        NeoServiceProvider.getProvider().commit();
+                        NeoServiceProviderUi.getProvider().commit();
                         break;
                     case UTRAN:
                         UTRANLoader utranLoader;
                         utranLoader = new UTRANLoader( mainPage.getFileName(),mainPage.getNetworkName(),display);
                         utranLoader.run(monitor);
-                        NeoServiceProvider.getProvider().commit(); 
+                        NeoServiceProviderUi.getProvider().commit(); 
                         utranLoader.addLayersToMap();
                         handleSelect(monitor,utranLoader.getRootNodes());
                         break;
@@ -128,7 +128,7 @@ public class NetworkSiteImportWizard extends Wizard implements IImportWizard {
                         NokiaTopologyLoader nokiaTopologyLoader;
                         nokiaTopologyLoader = new NokiaTopologyLoader( mainPage.getFileName(),mainPage.getNetworkName(),display);
                         nokiaTopologyLoader.run(monitor);
-                        NeoServiceProvider.getProvider().commit(); 
+                        NeoServiceProviderUi.getProvider().commit(); 
                         nokiaTopologyLoader.addLayersToMap();
                         handleSelect(monitor,nokiaTopologyLoader.getRootNodes());
                         break;
@@ -158,7 +158,7 @@ public class NetworkSiteImportWizard extends Wizard implements IImportWizard {
         if (!addToSelect||monitor.isCanceled()){
             return;
         }
-        LinkedHashSet<Node> sets = LoaderUiUtils.getSelectedNodes(NeoServiceProvider.getProvider().getService());
+        LinkedHashSet<Node> sets = LoaderUiUtils.getSelectedNodes(NeoServiceProviderUi.getProvider().getService());
         for (Node node : rootNodes) {
             sets.add(node);
         }

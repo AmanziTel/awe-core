@@ -14,7 +14,7 @@ package org.amanzi.awe.awe.views.view.provider;
 
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
-import org.amanzi.neo.core.icons.IconManager;
+import org.amanzi.neo.services.ui.IconManager;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;

@@ -13,11 +13,12 @@
 
 package org.amanzi.awe.views.network.view;
 
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.AbstractDialog;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
@@ -81,7 +82,7 @@ public class NewTypeDialog extends AbstractDialog<Integer> {
     protected void createContents(Shell shell) {
         this.shell = shell;
 
-        shell.setImage(NodeTypes.DATASET.getImage());
+        shell.setImage(NeoServicesUiPlugin.getDefault().getImageForType(NodeTypes.DATASET));
         shell.setLayout(new GridLayout(2, true));
 
         Label label = new Label(shell, SWT.NONE);
@@ -154,7 +155,7 @@ public class NewTypeDialog extends AbstractDialog<Integer> {
      */
     protected void perfomrSave() {
         ds.saveDynamicNodeType(tNewNode.getText());
-        NeoServiceProvider.getProvider().commit();
+        NeoServiceProviderUi.getProvider().commit();
     }
 
     /**

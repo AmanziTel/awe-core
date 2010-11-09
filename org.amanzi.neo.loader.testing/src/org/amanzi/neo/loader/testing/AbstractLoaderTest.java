@@ -12,8 +12,8 @@
  */
 package org.amanzi.neo.loader.testing;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -23,9 +23,9 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -99,7 +99,7 @@ public abstract class AbstractLoaderTest {
 	 * Initialize project service.
 	 */
 	protected static void initProjectService(){
-		NeoCorePlugin.getDefault().initProjectService(getNeo());
+	    NeoServiceProviderUi.initProvider(getNeo());
 	}
 
 	/**

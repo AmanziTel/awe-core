@@ -17,13 +17,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
 import org.amanzi.neo.services.DatasetService.NodeResult;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.Utils;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;

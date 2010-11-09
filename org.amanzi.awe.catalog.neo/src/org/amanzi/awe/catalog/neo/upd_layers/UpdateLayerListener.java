@@ -33,7 +33,7 @@ import org.amanzi.awe.catalog.neo.upd_layers.events.RefreshPropertiesEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesAndMapEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesEvent;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.neo4j.graphdb.Node;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 

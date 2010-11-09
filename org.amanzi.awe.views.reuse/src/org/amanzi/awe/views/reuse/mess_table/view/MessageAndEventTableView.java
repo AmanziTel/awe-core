@@ -23,17 +23,17 @@ import java.util.regex.Pattern;
 
 import org.amanzi.awe.views.reuse.Messages;
 import org.amanzi.awe.views.reuse.mess_table.DataTypes;
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.events.ShowViewEvent;
-import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.events.ShowViewEvent;
+import org.amanzi.neo.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -533,7 +533,7 @@ public class MessageAndEventTableView extends ViewPart {
      * @return boolean
      */
     private boolean isNetworkNode(Node node){
-        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+        GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
         NodeTypes type = NodeTypes.getNodeType(node, service);
         return type!=null&&type.equals(NodeTypes.SECTOR);
     }
@@ -633,7 +633,7 @@ public class MessageAndEventTableView extends ViewPart {
      * @return
      */
     private HashMap<String, DatasetInfo> initDatasetsInfo(){
-        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+        GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
         Transaction tx = service.beginTx();
         LinkedHashMap<String, Node> allDatasetNodes = getAllDatasetNodes(service);
         HashMap<String, DatasetInfo> result = new HashMap<String, DatasetInfo>(allDatasetNodes.size());
@@ -1010,7 +1010,7 @@ public class MessageAndEventTableView extends ViewPart {
                     if(datasetInfo==null){
                         return Status.OK_STATUS;
                     }
-                    GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+                    GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
                     Transaction tx = service.beginTx();            
                     try{
                         if (inputData != null) {

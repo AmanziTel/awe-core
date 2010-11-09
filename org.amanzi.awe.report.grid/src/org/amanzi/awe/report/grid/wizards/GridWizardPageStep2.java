@@ -27,7 +27,7 @@ import org.amanzi.awe.report.model.Report;
 import org.amanzi.awe.report.pdf.PDFPrintingEngine;
 import org.amanzi.awe.statistics.database.entity.Statistics;
 import org.amanzi.awe.statistics.database.entity.StatisticsGroup;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;

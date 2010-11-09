@@ -20,13 +20,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.enums.gpeh.Events;
 import org.amanzi.neo.core.enums.gpeh.Parameters;
 import org.amanzi.neo.core.utils.GpehReportUtil;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.nodes.SpreadsheetNode;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.amanzi.splash.utilities.SpreadsheetCreator;

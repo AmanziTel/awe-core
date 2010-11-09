@@ -18,12 +18,12 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -132,7 +132,7 @@ public class DatasetImportUrlWizardPage extends WizardPage {
         cDataset.setLayoutData(lData);
 
         Traverser allDatasetTraverser = NeoCorePlugin.getDefault().getProjectService().getAllDatasetTraverser(
-                NeoServiceProvider.getProvider().getService().getReferenceNode());
+                NeoServiceProviderUi.getProvider().getService().getReferenceNode());
         
 
         for (Node node : allDatasetTraverser) {

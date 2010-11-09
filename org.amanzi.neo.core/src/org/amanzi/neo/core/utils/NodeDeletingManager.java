@@ -2,12 +2,13 @@ package org.amanzi.neo.core.utils;
 
 import java.util.Collection;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.database.nodes.DeletableRelationshipType;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeDeletableTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.enums.RelationDeletableTypes;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.DeletableRelationshipType;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeDeletableTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.enums.RelationDeletableTypes;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -149,7 +150,7 @@ public class NodeDeletingManager {
         Direction direction = isLinkOut?Direction.INCOMING:Direction.OUTGOING;
         Iterable<Relationship> allLinks = aNode.getRelationships(direction);     
         for(Relationship currLink : allLinks){
-            DeletableRelationshipType linkType = NeoUtils.getRelationType(currLink);
+            DeletableRelationshipType linkType = (DeletableRelationshipType)NeoUtils.getRelationType(currLink);
             RelationDeletableTypes deletable = linkType.getDeletableType(direction);
             if(deletable.equals(RelationDeletableTypes.RELINK)){
                 return currLink;
@@ -212,7 +213,7 @@ public class NodeDeletingManager {
         }
 	    for(Relationship link : aNode.getRelationships()){
 	        Direction direction = link.getStartNode().equals(aNode)?Direction.OUTGOING:Direction.INCOMING;
-	        DeletableRelationshipType linkType = NeoUtils.getRelationType(link);
+	        DeletableRelationshipType linkType = (DeletableRelationshipType)NeoUtils.getRelationType(link);
 	        RelationDeletableTypes deletable = linkType.getDeletableType(direction);
 	        if(deletable.equals(RelationDeletableTypes.FIXED)){
 	            return true;

@@ -19,9 +19,9 @@ import java.util.Collection;
 import net.refractions.udig.ui.graphics.Glyph;
 
 import org.amanzi.awe.filters.FilterUtil;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;

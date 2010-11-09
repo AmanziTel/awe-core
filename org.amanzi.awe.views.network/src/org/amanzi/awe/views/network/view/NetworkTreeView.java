@@ -54,22 +54,22 @@ import org.amanzi.awe.views.network.property.NetworkPropertySheetPage;
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
 import org.amanzi.integrator.awe.AWEProjectManager;
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.events.ShowPreparedViewEvent;
-import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
-import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;
-import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.INodeType;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.service.listener.NeoServiceProviderEventAdapter;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.enums.ProbeCallRelationshipType;
+import org.amanzi.neo.services.events.ShowPreparedViewEvent;
+import org.amanzi.neo.services.events.UpdateDatabaseEvent;
+import org.amanzi.neo.services.events.UpdateDrillDownEvent;
+import org.amanzi.neo.services.events.UpdateViewEventType;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
@@ -175,7 +175,7 @@ public class NetworkTreeView extends ViewPart {
     /*
      * NeoService provider
      */
-    private NeoServiceProvider neoServiceProvider;
+    private NeoServiceProviderUi neoServiceProvider;
 
     /*
      * PropertySheetPage for Properties of Nodes
@@ -222,7 +222,7 @@ public class NetworkTreeView extends ViewPart {
             }
         });
 
-        neoServiceProvider = NeoServiceProvider.getProvider();
+        neoServiceProvider = NeoServiceProviderUi.getProvider();
         neoEventListener = new NeoServiceEventListener();
         neoServiceProvider.addServiceProviderListener(neoEventListener);
         Transaction tx = neoServiceProvider.getService().beginTx();
@@ -372,7 +372,7 @@ public class NetworkTreeView extends ViewPart {
      * @param neoServiceProvider
      */
 
-    protected void setProviders(NeoServiceProvider neoServiceProvider) {
+    protected void setProviders(NeoServiceProviderUi neoServiceProvider) {
         viewer.setContentProvider(new NetworkTreeContentProvider(neoServiceProvider));
         viewer.setLabelProvider(new NetworkTreeLabelProvider(viewer));
     }
@@ -937,7 +937,7 @@ public class NetworkTreeView extends ViewPart {
      * @param node
      */
     public static void deleteIncomingRelations(Node node) {
-        Transaction transaction = NeoServiceProvider.getProvider().getService().beginTx();
+        Transaction transaction = NeoServiceProviderUi.getProvider().getService().beginTx();
         try {
             for (Relationship relation : node.getRelationships(Direction.INCOMING)) {
                 relation.delete();
@@ -1112,13 +1112,13 @@ public class NetworkTreeView extends ViewPart {
 
         @Override
         public void run() {
-            Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+            Transaction tx = NeoServiceProviderUi.getProvider().getService().beginTx();
             try {
                 Object name = node.getProperty(INeoConstants.PROPERTY_NAME_NAME);
                 node.setProperty(INeoConstants.PROPERTY_NAME_NAME, oldName);
                 node.setProperty(INeoConstants.PROPERTY_OLD_NAME, name);
                 tx.success();
-                NeoServiceProvider.getProvider().commit();// viewer will be refreshed after commit
+                NeoServiceProviderUi.getProvider().commit();// viewer will be refreshed after commit
             } finally {
                 tx.finish();
             }
@@ -1274,7 +1274,7 @@ public class NetworkTreeView extends ViewPart {
                 // TODO Handle InterruptedException
                 throw (RuntimeException)new RuntimeException().initCause(e1);
             }
-            NeoServiceProvider.getProvider().commit();
+            NeoServiceProviderUi.getProvider().commit();
             viewer.refresh();
 
             // Create a job for deleting all the nodes and sub-nodes in the disconnected graph from
@@ -1359,7 +1359,7 @@ public class NetworkTreeView extends ViewPart {
                         NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDatabaseEvent(UpdateViewEventType.GIS));
                     }
                     if (gisNode != null && (containsNetwork || containseDatasetNode)) {
-                        NeoServiceProvider neoProvider = NeoServiceProvider.getProvider();
+                        NeoServiceProviderUi neoProvider = NeoServiceProviderUi.getProvider();
                         String databaseLocation = neoProvider.getDefaultDatabaseLocation();
                         ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
                         URL url;
@@ -1565,7 +1565,7 @@ public class NetworkTreeView extends ViewPart {
                 (new DeleteAction(Arrays.asList(new NeoNode[] {previousReport}), "Deleting previous delta report: " + getName())).run();
             }
 
-            NeoServiceProvider.getProvider().commit();
+            NeoServiceProviderUi.getProvider().commit();
             Job job = new Job(getName()) {
 
                 @Override
@@ -1579,7 +1579,7 @@ public class NetworkTreeView extends ViewPart {
                     int searchPerc = 15;
                     int calcPerc = 40;
                     int reportPerc = 40;
-                    GraphDatabaseService neo = NeoServiceProvider.getProvider().getService();
+                    GraphDatabaseService neo = NeoServiceProviderUi.getProvider().getService();
                     Transaction tx = neo.beginTx();
                     try {
                         monitor.subTask("Preparing report");
@@ -1767,7 +1767,7 @@ public class NetworkTreeView extends ViewPart {
         }
 
         private NeoNode makePreviousReport() {
-            GraphDatabaseService neo = NeoServiceProvider.getProvider().getService();
+            GraphDatabaseService neo = NeoServiceProviderUi.getProvider().getService();
             Transaction tx = neo.beginTx();
             try {
                 reportNode = neo.createNode();
@@ -2100,7 +2100,7 @@ public class NetworkTreeView extends ViewPart {
     }
 
     private GraphDatabaseService getService() {
-        return NeoServiceProvider.getProvider().getService();
+        return NeoServiceProviderUi.getProvider().getService();
     }
 
     /**

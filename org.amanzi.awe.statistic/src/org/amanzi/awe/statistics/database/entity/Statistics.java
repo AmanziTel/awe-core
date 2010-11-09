@@ -17,8 +17,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.amanzi.awe.statistics.database.StatisticsGroupIterator;
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.neo4j.graphdb.Node;
 
 /**

@@ -17,7 +17,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.amanzi.awe.statistics.engine.IDatasetService;
-import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.services.INeoConstants;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 

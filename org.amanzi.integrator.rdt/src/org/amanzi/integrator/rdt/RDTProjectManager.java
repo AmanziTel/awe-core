@@ -14,11 +14,11 @@ package org.amanzi.integrator.rdt;
 
 import java.net.URL;
 
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.nodes.AweProjectNode;
-import org.amanzi.neo.core.database.nodes.RubyProjectNode;
-import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
-import org.amanzi.neo.core.database.services.AweProjectService;
+import org.amanzi.neo.services.AweProjectService;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.nodes.AweProjectNode;
+import org.amanzi.neo.services.nodes.RubyProjectNode;
+import org.amanzi.neo.services.nodes.SpreadsheetNode;
 import org.amanzi.rdt.launching.util.LaunchUtils;
 import org.amanzi.splash.ui.SplashEditorInput;
 import org.amanzi.splash.utilities.NeoSplashUtil;
@@ -73,9 +73,9 @@ public class RDTProjectManager {
 
 		try {
 			project.getResource().delete(deleteFiles, null);
-			RubyProjectNode rubyProject = NeoCorePlugin.getDefault().getProjectService().findRubyProject(name);
+			RubyProjectNode rubyProject = NeoServiceFactory.getInstance().getProjectService().findRubyProject(name);
 			if (rubyProject != null) {
-				NeoCorePlugin.getDefault().getProjectService().deleteNode(rubyProject);
+			    NeoServiceFactory.getInstance().getProjectService().deleteNode(rubyProject);
 			}
 		} catch (CoreException e) {
 			// TODO: handle this exception
@@ -249,7 +249,7 @@ public class RDTProjectManager {
 	    delta.removed(new Spreadsheet((SourceFolder)folder, spreadsheetName));
 	    RubyModelManager.getRubyModelManager().getDeltaProcessor().fire(delta, 0);
 	    
-	    AweProjectService service = NeoCorePlugin.getDefault().getProjectService();	   
+	    AweProjectService service = NeoServiceFactory.getInstance().getProjectService();	   
         SpreadsheetNode node = service.findOrCreateSpreadsheet(aweProjectName, rubyProjectName, spreadsheetName);
         
         IEditorReference[] editors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findEditors(new SplashEditorInput(node), NeoSplashUtil.AMANZI_SPLASH_EDITOR, IWorkbenchPage.MATCH_INPUT);
@@ -291,7 +291,7 @@ public class RDTProjectManager {
 	 * @param newSpreadsheetName
 	 */
 	public static void renameSpreadsheet(String aweProjectName, String rubyProjectName, String oldSpreadsheetName, String newSpreadsheetName) {
-	    AweProjectService service = NeoCorePlugin.getDefault().getProjectService();
+	    AweProjectService service = NeoServiceFactory.getInstance().getProjectService();
 	    
 	    AweProjectNode aweNode = service.findAweProject(aweProjectName);
 	    RubyProjectNode rubyNode = service.findRubyProject(aweNode, rubyProjectName);
@@ -340,7 +340,7 @@ public class RDTProjectManager {
 	public static void compareSpreadsheets(String aweProjectName, String rubyProjectName, String firstSpreadsheetName, String secondSpreadsheetName, String firstSpreadsheetParent, String secondSpreadsheetParent) {
 	    IRubyProject project = RubyModelManager.getRubyModelManager().getRubyModel().getRubyProject(rubyProjectName);
 	    
-	    AweProjectService aweService = NeoCorePlugin.getDefault().getProjectService();
+	    AweProjectService aweService = NeoServiceFactory.getInstance().getProjectService();
 	    
 	    AweProjectNode aweProject = aweService.findAweProject(aweProjectName);
 	    RubyProjectNode rubyProject = aweService.findRubyProject(aweProject, rubyProjectName);
@@ -362,7 +362,7 @@ public class RDTProjectManager {
 	 * @return spreadsheet by given name
 	 */
 	private static SpreadsheetNode findSpreadsheet(RubyProjectNode rubyProject, String spreadsheetName, String parentSpreadsheetName) {
-	    AweProjectService aweService = NeoCorePlugin.getDefault().getProjectService();
+	    AweProjectService aweService = NeoServiceFactory.getInstance().getProjectService();
 	    
 	    SpreadsheetNode spreadsheet = null;
 	    if (parentSpreadsheetName != null) {

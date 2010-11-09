@@ -23,10 +23,6 @@ import net.refractions.udig.catalog.ICatalog;
 import net.refractions.udig.catalog.IService;
 
 import org.amanzi.awe.catalog.neo.NeoService;
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
-import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.db.manager.DatabaseManager.DatabaseAccessType;
 import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.ILoaderInputValidator;
@@ -39,6 +35,10 @@ import org.amanzi.neo.loader.core.parser.IDataElement;
 import org.amanzi.neo.loader.core.parser.IParser;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
+import org.amanzi.neo.services.events.UpdateDatabaseEvent;
+import org.amanzi.neo.services.events.UpdateViewEventType;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 /**
@@ -130,7 +130,7 @@ public class Loader<T extends IDataElement, T2 extends IConfigurationData> imple
 
     public static void updateCatalog() {
         try {
-            NeoServiceProvider neoProvider = NeoServiceProvider.getProvider();
+            NeoServiceProviderUi neoProvider = NeoServiceProviderUi.getProvider();
             if (neoProvider != null) {
                 String databaseLocation = neoProvider.getDefaultDatabaseLocation();
 
@@ -158,7 +158,7 @@ public class Loader<T extends IDataElement, T2 extends IConfigurationData> imple
     }
 
     public static void sendUpdateEvent(UpdateViewEventType aType) {
-        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDatabaseEvent(aType));
+        NeoServicesUiPlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDatabaseEvent(aType));
     }
 
     @Override

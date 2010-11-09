@@ -1,6 +1,6 @@
 package org.amanzi.awe.report.editor;
 
-import org.amanzi.neo.core.database.nodes.RubyProjectNode;
+import org.amanzi.neo.services.nodes.RubyProjectNode;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.ui.part.FileEditorInput;
 

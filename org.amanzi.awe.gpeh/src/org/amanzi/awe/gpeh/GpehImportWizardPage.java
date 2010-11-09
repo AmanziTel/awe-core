@@ -19,12 +19,12 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.amanzi.awe.gpeh.parser.Events;
-import org.amanzi.neo.core.utils.NeoTreeContentProvider;
-import org.amanzi.neo.core.utils.NeoTreeElement;
-import org.amanzi.neo.core.utils.NeoTreeLabelProvider;
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.wizards.LoaderPage;
+import org.amanzi.neo.services.ui.utils.NeoTreeContentProvider;
+import org.amanzi.neo.services.ui.utils.NeoTreeElement;
+import org.amanzi.neo.services.ui.utils.NeoTreeLabelProvider;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;

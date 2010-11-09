@@ -25,21 +25,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
-import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.CSVParser;
-import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NetworkTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.events.UpdateDatabaseEvent;
+import org.amanzi.neo.services.events.UpdateViewEventType;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.ui.utils.CSVParser;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.neo4j.graphdb.Direction;
@@ -163,7 +163,7 @@ public class TransmissionLoader {
             }
             tx.finish();
             header.finish();
-            NeoServiceProvider.getProvider().commit();
+            NeoServiceProviderUi.getProvider().commit();
             NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
                     new UpdateDatabaseEvent(UpdateViewEventType.TRANSMISSION));
             NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
@@ -231,7 +231,7 @@ public class TransmissionLoader {
          */
         public Header(String line, GraphDatabaseService neo) {
             this.neo = neo;
-            index=NeoServiceProvider.getProvider().getIndexService();
+            index=NeoServiceProviderUi.getProvider().getIndexService();
             determineFieldSepRegex(line);
             headers = splitLine(line);
             serverNodeName = new NodeName(getPossibleHeaders(DataLoadPreferences.TR_SITE_ID_SERV), 

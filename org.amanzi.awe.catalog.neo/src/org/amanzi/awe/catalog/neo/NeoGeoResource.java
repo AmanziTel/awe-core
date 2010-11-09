@@ -18,13 +18,13 @@ import java.net.URL;
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.catalog.ui.CatalogUIPlugin;
 
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
-import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
-import org.amanzi.neo.core.icons.IconManager;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.service.listener.INeoServiceProviderListener;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.events.UpdateDatabaseEvent;
+import org.amanzi.neo.services.events.UpdateViewEventType;
+import org.amanzi.neo.services.ui.INeoServiceProviderListener;
+import org.amanzi.neo.services.ui.IconManager;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -72,7 +72,7 @@ public class NeoGeoResource extends IGeoResource implements INeoServiceProviderL
 	}
 	@Override
 	public URL getIdentifier() {
-        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+        Transaction tx = NeoServiceProviderUi.getProvider().getService().beginTx();
         try {
             URL url = new URL(identifier + this.gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME));
             if (identifierFull == null || !url.equals(identifierFull)) {
@@ -173,7 +173,7 @@ public class NeoGeoResource extends IGeoResource implements INeoServiceProviderL
 
     @Override
     public void onNeoStart(Object source) {
-        graphDatabaseService = NeoServiceProvider.getProvider().getService();
+        graphDatabaseService = NeoServiceProviderUi.getProvider().getService();
     }
 
     @Override

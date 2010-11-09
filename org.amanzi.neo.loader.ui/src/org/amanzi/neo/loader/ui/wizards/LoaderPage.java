@@ -15,8 +15,6 @@ package org.amanzi.neo.loader.ui.wizards;
 
 import java.util.ArrayList;
 
-import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.db.manager.DatabaseManager.DatabaseAccessType;
 import org.amanzi.neo.loader.core.ILoader;
@@ -25,6 +23,8 @@ import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.core.parser.IConfigurationData;
 import org.amanzi.neo.loader.core.parser.IDataElement;
 import org.amanzi.neo.loader.ui.preferences.CommonCRSPreferencePage;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
+import org.amanzi.neo.services.utils.RunnableWithResult;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.preference.IPreferenceNode;

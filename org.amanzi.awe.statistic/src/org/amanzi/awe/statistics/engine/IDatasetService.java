@@ -18,7 +18,7 @@ import java.util.List;
 
 import org.amanzi.awe.statistic.CallTimePeriods;
 import org.amanzi.awe.statistics.database.PrimaryTypeTraverser;
-import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.services.Pair;
 import org.neo4j.graphdb.Node;
 
 /**

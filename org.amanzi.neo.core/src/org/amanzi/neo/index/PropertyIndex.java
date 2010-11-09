@@ -7,8 +7,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Random;
 
-import org.amanzi.neo.core.database.nodes.DeletableRelationshipType;
-import org.amanzi.neo.core.enums.RelationDeletableTypes;
+import org.amanzi.neo.services.enums.DeletableRelationshipType;
+import org.amanzi.neo.services.enums.RelationDeletableTypes;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;

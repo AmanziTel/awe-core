@@ -13,7 +13,7 @@
 
 package org.amanzi.neo.core.database.entity;
 
-import org.amanzi.neo.core.enums.NetworkTypes;
+import org.amanzi.neo.services.enums.NetworkTypes;
 import org.neo4j.graphdb.Node;
 
 /**

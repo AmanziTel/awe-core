@@ -25,23 +25,23 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.GisProperties;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.sax_parsers.AbstractTag;
 import org.amanzi.neo.loader.sax_parsers.IXmlTag;
 import org.amanzi.neo.loader.sax_parsers.IXmlTagFactory;
 import org.amanzi.neo.loader.sax_parsers.ReadContentHandler;
 import org.amanzi.neo.loader.sax_parsers.SkipTag;
+import org.amanzi.neo.services.GisProperties;
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.Utils;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NetworkTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.events.UpdateViewEventType;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.widgets.Display;
@@ -125,7 +125,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
         headers = getHeaderMap(1).headers;
         handler = new ReadContentHandler(new LoadFactory());
         if(index == null){
-            luceneInd = NeoServiceProvider.getProvider().getIndexService();
+            luceneInd = NeoServiceProviderUi.getProvider().getIndexService();
         }else{
             luceneInd = index;
         }
@@ -143,7 +143,7 @@ public class NokiaTopologyLoader extends AbstractLoader {
         basename = network;
         headers = getHeaderMap(1).headers;
         handler = new ReadContentHandler(new LoadFactory());
-        luceneInd = NeoServiceProvider.getProvider().getIndexService();
+        luceneInd = NeoServiceProviderUi.getProvider().getIndexService();
         addNetworkIndexes();
     }
     

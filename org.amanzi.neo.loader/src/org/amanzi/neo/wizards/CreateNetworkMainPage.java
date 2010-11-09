@@ -17,14 +17,14 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import org.amanzi.neo.core.enums.INodeType;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.loader.ui.preferences.CommonCRSPreferencePage;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
+import org.amanzi.neo.services.utils.RunnableWithResult;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.preference.IPreferenceNode;

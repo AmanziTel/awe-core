@@ -28,15 +28,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.DriveTypes;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.DriveEvents;
-import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.loader.core.parser.LineTransferData;
 import org.amanzi.neo.loader.core.saver.IStructuredSaver;
 import org.amanzi.neo.loader.core.saver.nemo.NemoEvents;
+import org.amanzi.neo.services.GisProperties;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.DriveTypes;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.hsqldb.lib.StringUtil;
 import org.neo4j.graphdb.Node;
 

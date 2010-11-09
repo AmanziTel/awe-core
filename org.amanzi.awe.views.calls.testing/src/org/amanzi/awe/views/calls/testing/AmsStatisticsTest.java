@@ -35,18 +35,18 @@ import org.amanzi.awe.views.calls.enums.IStatisticsHeader;
 import org.amanzi.awe.views.calls.enums.StatisticsCallType;
 import org.amanzi.awe.views.calls.enums.StatisticsType;
 import org.amanzi.awe.views.calls.statistics.CallStatistics;
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.enums.DriveTypes;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.data_generator.data.calls.Call;
 import org.amanzi.neo.data_generator.data.calls.CallData;
 import org.amanzi.neo.data_generator.data.calls.CallGroup;
 import org.amanzi.neo.data_generator.data.calls.GeneratedCallsData;
 import org.amanzi.neo.data_generator.generate.IDataGenerator;
 import org.amanzi.neo.loader.AMSLoader;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.DriveTypes;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -102,7 +102,7 @@ public abstract class AmsStatisticsTest {
      * Initialize project service.
      */
     protected static void initProjectService(){
-        NeoCorePlugin.getDefault().initProjectService(getNeo());
+        NeoServiceProviderUi.initProvider(getNeo());
     }
 
     /**

@@ -26,20 +26,20 @@ import net.refractions.udig.project.internal.commands.DeleteLayerCommand;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.console.AweConsolePlugin;
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.enums.DriveTypes;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
-import org.amanzi.neo.core.enums.SplashRelationshipTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.GisProperties;
-import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.Pair;
-import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.services.GisProperties;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.enums.DriveTypes;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.enums.ProbeCallRelationshipType;
+import org.amanzi.neo.services.enums.SplashRelationshipTypes;
+import org.amanzi.neo.services.indexes.MultiPropertyIndex;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.neo4j.graphdb.Direction;
@@ -78,7 +78,7 @@ public class AMSCorrellator {
 	 * Initializes Neo Service
 	 */
 	public AMSCorrellator() {
-		neoService = NeoServiceProvider.getProvider().getService();
+		neoService = NeoServiceProviderUi.getProvider().getService();
 	}
 	
 	/**

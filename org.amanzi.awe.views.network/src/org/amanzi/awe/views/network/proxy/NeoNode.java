@@ -18,12 +18,12 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.enums.ProbeCallRelationshipType;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.IAdaptable;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
@@ -243,7 +243,7 @@ public class NeoNode {
      * @param value new name
      */
     public void setName(String value) {
-        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+        Transaction tx = NeoServiceProviderUi.getProvider().getService().beginTx();
         try {
             value = value == null ? "" : value.trim();
             if (node.hasProperty(INeoConstants.PROPERTY_NAME_NAME)) {
@@ -255,7 +255,7 @@ public class NeoNode {
                 name = value;
                 node.setProperty(INeoConstants.PROPERTY_OLD_NAME, oldName.toString());
                 tx.success();
-                NeoServiceProvider.getProvider().commit();
+                NeoServiceProviderUi.getProvider().commit();
             }
         } finally {
             tx.finish();

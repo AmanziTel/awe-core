@@ -13,9 +13,9 @@
 
 package org.amanzi.awe.filters;
 
-import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.service.listener.NeoServiceProviderListener;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;

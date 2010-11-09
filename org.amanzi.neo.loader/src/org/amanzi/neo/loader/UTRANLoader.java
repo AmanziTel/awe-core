@@ -30,15 +30,7 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.GpehReportUtil;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.sax_parsers.AbstractTag;
 import org.amanzi.neo.loader.sax_parsers.IXmlTag;
@@ -47,7 +39,15 @@ import org.amanzi.neo.loader.sax_parsers.PropertyCollector;
 import org.amanzi.neo.loader.sax_parsers.ReadContentHandler;
 import org.amanzi.neo.loader.sax_parsers.SkipTag;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.Utils;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NetworkTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -193,7 +193,7 @@ public class UTRANLoader extends AbstractLoader {
         headers = getHeaderMap(KEY_EVENT).headers;
         handler = new ReadContentHandler(new Factory());
         scrCodeIndName=null;
-        index = NeoServiceProvider.getProvider().getIndexService();
+        index = NeoServiceProviderUi.getProvider().getIndexService();
         try {
             addIndex(NodeTypes.SITE.getId(), NeoUtils.getLocationIndexProperty(basename));
         } catch (IOException e) {
@@ -217,7 +217,7 @@ public class UTRANLoader extends AbstractLoader {
         headers = getHeaderMap(KEY_EVENT).headers;
         handler = new ReadContentHandler(new Factory());
         if (index == null) {
-            this.index = NeoServiceProvider.getProvider().getIndexService();
+            this.index = NeoServiceProviderUi.getProvider().getIndexService();
         } else {
             this.index = index;
         }

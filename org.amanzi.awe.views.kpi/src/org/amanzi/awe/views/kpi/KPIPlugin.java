@@ -17,8 +17,8 @@ import java.io.PrintStream;
 import java.net.URL;
 
 import org.amanzi.integrator.awe.AWEProjectManager;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.scripting.jruby.ScriptUtils;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.apache.log4j.Logger;
@@ -83,7 +83,7 @@ public class KPIPlugin extends AbstractUIPlugin {
     public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-        NeoServiceProvider.getProvider().getService();
+        NeoServiceProviderUi.getProvider().getService();
 	}
 
     /**

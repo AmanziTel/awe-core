@@ -36,23 +36,23 @@ import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
 import net.refractions.udig.project.ui.internal.actions.ZoomToLayer;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkFileType;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.enums.OssType;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
-import org.amanzi.neo.core.utils.CSVParser;
-import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.awe.ui.AweUiPlugin;
 import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
-import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.NetworkFileType;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.enums.OssType;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
+import org.amanzi.neo.services.ui.utils.CSVParser;
+import org.amanzi.neo.services.utils.RunnableWithResult;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -84,7 +84,7 @@ public class LoaderUiUtils extends LoaderUtils{
      * @return
      */
     public static String getAweProjectName() {
-        return NeoServicesUiPlugin.getDefault().getUiService().getActiveProjectName();
+        return AweUiPlugin.getDefault().getUiService().getActiveProjectName();
     }
 
 
@@ -256,14 +256,14 @@ public class LoaderUiUtils extends LoaderUtils{
                 }
             }
         } catch (Exception e) {
-            NeoCorePlugin.error(null, e);
+            NeoLoaderPlugin.exception(e);
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
     
     }
 
     public static IService getMapService() throws MalformedURLException {
-        String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
+        String databaseLocation = NeoServiceProviderUi.getProvider().getDefaultDatabaseLocation();
         URL url = new URL("file://" + databaseLocation);
         IService curService = CatalogPlugin.getDefault().getLocalCatalog().getById(IService.class, url, null);
         return curService;
@@ -349,7 +349,7 @@ public class LoaderUiUtils extends LoaderUtils{
                 }
             }
         } catch (Exception e) {
-            NeoCorePlugin.error(null, e);
+            NeoLoaderPlugin.exception(e);
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
         
@@ -419,7 +419,7 @@ public class LoaderUiUtils extends LoaderUtils{
                 oss.setProperty(INeoConstants.PROPERTY_NAME_NAME, ossName);
                 ossType.setOssType(oss, neo);
                 String aweProjectName = LoaderUiUtils.getAweProjectName();
-                NeoCorePlugin.getDefault().getProjectService().addDataNodeToProject(aweProjectName, oss);
+                NeoServiceFactory.getInstance().getProjectService().addDataNodeToProject(aweProjectName, oss);
                 //TODO remove this relation!
                 neo.getReferenceNode().createRelationshipTo(oss, GeoNeoRelationshipTypes.CHILD);
             }

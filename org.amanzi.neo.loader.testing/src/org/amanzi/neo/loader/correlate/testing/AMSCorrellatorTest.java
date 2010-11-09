@@ -11,13 +11,7 @@ import java.util.ResourceBundle;
 
 import junit.framework.Assert;
 
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.enums.SplashRelationshipTypes;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.data_generator.DataGenerateManager;
 import org.amanzi.neo.data_generator.data.calls.CallData;
 import org.amanzi.neo.data_generator.data.calls.CallGroup;
@@ -29,6 +23,13 @@ import org.amanzi.neo.loader.AMSLoader;
 import org.amanzi.neo.loader.NemoLoader;
 import org.amanzi.neo.loader.OldNemoVersionLoader;
 import org.amanzi.neo.loader.correlate.AMSCorrellator;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.enums.SplashRelationshipTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.After;
 import org.junit.Before;
@@ -115,7 +116,7 @@ public class AMSCorrellatorTest {
      * Initialize project service.
      */
     protected static void initProjectService() {
-        NeoCorePlugin.getDefault().initProjectService(getNeo());
+        NeoServiceProviderUi.initProvider(getNeo());
     }
 
     /**

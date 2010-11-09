@@ -14,29 +14,18 @@ package org.amanzi.neo.core;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
 
-import org.amanzi.neo.core.database.entity.NeoDataService;
-import org.amanzi.neo.core.database.listener.IUpdateViewListener;
-import org.amanzi.neo.core.database.services.AweProjectService;
-import org.amanzi.neo.core.database.services.UpdateViewManager;
-import org.amanzi.neo.core.database.services.events.ShowPreparedViewEvent;
-import org.amanzi.neo.core.database.services.events.ShowViewEvent;
-import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;
-import org.amanzi.neo.core.database.services.events.UpdateViewEvent;
-import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
 import org.amanzi.neo.core.preferences.PreferencesInitializer;
+import org.amanzi.neo.services.AweProjectService;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
+import org.amanzi.neo.services.ui.UpdateViewManager;
 import org.apache.log4j.PropertyConfigurator;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.neoclipse.view.NeoGraphViewPart;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -46,7 +35,7 @@ import org.osgi.framework.BundleContext;
  * @since 1.0.0
  */
 
-public class NeoCorePlugin extends AbstractUIPlugin implements IUpdateViewListener {
+public class NeoCorePlugin extends AbstractUIPlugin{
 
     /*
      * Plugin's ID
@@ -67,12 +56,8 @@ public class NeoCorePlugin extends AbstractUIPlugin implements IUpdateViewListen
     private PreferencesInitializer initializer = new PreferencesInitializer();
 
     private AweProjectService aweProjectService;
-    private UpdateViewManager updateBDManager;
-    private NeoDataService neoDataService;
-    private final Object neoDataMonitor = new Object();
-    private final List<UpdateViewEventType> eventList = Arrays.asList(UpdateViewEventType.values());
 
-    private UpdateViewEvent lastExetutedEvent;
+
 
     /**
      * Constructor for SplashPlugin.
@@ -86,8 +71,7 @@ public class NeoCorePlugin extends AbstractUIPlugin implements IUpdateViewListen
     public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
-        updateBDManager = new UpdateViewManager();
-        updateBDManager.addListener(this);
+
         //TODO need solution to use log4j libraries from separate plugin but not from udig libraries
         URL url = getBundle().getEntry("/logCinfig.properties");
         if (url != null) {
@@ -129,43 +113,17 @@ public class NeoCorePlugin extends AbstractUIPlugin implements IUpdateViewListen
      * @return awe project service
      */
     public AweProjectService getProjectService() {
-        if (aweProjectService == null) {
-            aweProjectService = new AweProjectService();
-        }
-        return aweProjectService;
+       return NeoServiceFactory.getInstance().getProjectService();
     }
 
-    /**
-     * get service
-     * 
-     * @return awe project service
-     */
-    public NeoDataService getNeoDataService() {
-        if (neoDataService == null) {
-            synchronized (neoDataMonitor) {
-                if (neoDataService == null) {
-                    neoDataService = new NeoDataService();
-                }
-            }
-        }
-        return neoDataService;
-    }
 
-    /**
-     * Initialize project service for tests.
-     * 
-     * @param aNeo NeoService
-     * @author Shcharbatsevich_A
-     */
-    public void initProjectService(GraphDatabaseService aNeo) {
-        aweProjectService = new AweProjectService(aNeo);
-    }
+
 
     /**
      * @return UpdateBDManager
      */
     public UpdateViewManager getUpdateViewManager() {
-        return updateBDManager;
+        return NeoServicesUiPlugin.getDefault().getUpdateViewManager();
     }
 
     /**
@@ -198,79 +156,5 @@ public class NeoCorePlugin extends AbstractUIPlugin implements IUpdateViewListen
         }
     }
 
-    @Override
-    public void updateView(UpdateViewEvent event) {
-        UpdateViewEventType type = event.getType();
-        if (!eventExecuted(event)) {
-            // update NeoGraphViewPart
-            switch (type) {
-            case DRILL_DOWN:
-                UpdateDrillDownEvent ddEvent = (UpdateDrillDownEvent)event;
-                if (!ddEvent.getSource().equals(NeoGraphViewPart.ID)) {
-                    Node node = ddEvent.getNodes().get(0);
-                    org.neo4j.neoclipse.Activator.getDefault().updateNeoGraphView(node);
-                }
-                break;
-            case SHOW_PREPARED_VIEW:
-                ShowPreparedViewEvent spvEvent = (ShowPreparedViewEvent)event;
-                if (spvEvent.isViewNeedUpdate(NeoGraphViewPart.ID)) {
-                    Node node = spvEvent.getNodes().get(0);
-                    org.neo4j.neoclipse.Activator.getDefault().showNeoGraphView(node);
-                }
-                break;
-            case SHOW_VIEW:
-                ShowViewEvent svEvent = (ShowViewEvent)event;
-                if (svEvent.isViewNeedUpdate(NeoGraphViewPart.ID)) {
-                    org.neo4j.neoclipse.Activator.getDefault().showNeoGraphView(null);
-                }
-                break;
-            default:
-                org.neo4j.neoclipse.Activator.getDefault().updateNeoGraphView();
-            }
-            lastExetutedEvent = event;
-        }
-    }
-
-    private boolean eventExecuted(UpdateViewEvent event) {
-        if (lastExetutedEvent == null) {
-            return false;
-        }
-        if (lastExetutedEvent.equals(event)) {
-            return true;
-        }
-        if(!lastExetutedEvent.getClass().equals(event.getClass())){
-            return false;
-        }
-        Node last = getNodeFromEvent(lastExetutedEvent);
-        if (last != null) {
-            Node current = getNodeFromEvent(event);
-            if (current == null) {
-                return false;
-            }
-            return last.equals(current);
-        }
-        return false;
-    }
-
-    private Node getNodeFromEvent(UpdateViewEvent event) {
-        if (event instanceof UpdateDrillDownEvent) {
-            UpdateDrillDownEvent ddEvent = (UpdateDrillDownEvent)event;
-            if (!ddEvent.getSource().equals(NeoGraphViewPart.ID)) {
-                return ddEvent.getNodes().get(0);
-            }
-        }
-        if (event instanceof ShowPreparedViewEvent) {
-            ShowPreparedViewEvent spvEvent = (ShowPreparedViewEvent)event;
-            if (spvEvent.isViewNeedUpdate(NeoGraphViewPart.ID)) {
-                return spvEvent.getNodes().get(0);
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public Collection<UpdateViewEventType> getType() {
-        return eventList;
-    }
 
 }

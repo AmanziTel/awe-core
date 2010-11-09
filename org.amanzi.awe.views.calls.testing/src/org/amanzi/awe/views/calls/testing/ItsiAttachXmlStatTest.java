@@ -16,11 +16,11 @@ package org.amanzi.awe.views.calls.testing;
 import java.io.IOException;
 import java.text.ParseException;
 
-import org.amanzi.neo.core.enums.DriveTypes;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.data_generator.DataGenerateManager;
 import org.amanzi.neo.data_generator.generate.IDataGenerator;
 import org.amanzi.neo.loader.AMSXMLoader;
+import org.amanzi.neo.services.enums.DriveTypes;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.After;
 import org.junit.AfterClass;

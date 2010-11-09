@@ -15,7 +15,7 @@ package org.amanzi.awe.views.tree.drive.views;
 import java.util.ArrayList;
 
 import org.amanzi.awe.views.network.proxy.NeoNode;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.ReturnableEvaluator;

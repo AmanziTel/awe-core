@@ -19,14 +19,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NetworkTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -76,7 +76,7 @@ public class NetworkSiteLoader extends AbstractLoader {
         basename = gisName;
         Node gis = findOrCreateGISNode(basename, GisTypes.NETWORK.getHeader(), NetworkTypes.RADIO);
         networkNode = findOrCreateNetworkNode(gis);
-        luceneInd = NeoServiceProvider.getProvider().getIndexService();
+        luceneInd = NeoServiceProviderUi.getProvider().getIndexService();
         initializeKnownHeaders();
     }
 

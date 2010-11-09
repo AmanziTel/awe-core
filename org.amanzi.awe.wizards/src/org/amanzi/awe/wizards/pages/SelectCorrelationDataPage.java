@@ -4,13 +4,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.DriveTypes;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.OssType;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.DriveTypes;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.OssType;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -126,7 +126,7 @@ public class SelectCorrelationDataPage extends WizardPage {
 	}
 	
 	private void initializeCombos() {
-		GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+		GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
 		
 		//GPS
 		gps = NeoUtils.getAllDatasetNodesByType(DriveTypes.GPS, service);
@@ -233,6 +233,6 @@ public class SelectCorrelationDataPage extends WizardPage {
 			return null;
 		}
 		
-		return NeoUtils.findGisNodeByChild(dataset, NeoServiceProvider.getProvider().getService());
+		return NeoUtils.findGisNodeByChild(dataset, NeoServiceProviderUi.getProvider().getService());
 	}
 }

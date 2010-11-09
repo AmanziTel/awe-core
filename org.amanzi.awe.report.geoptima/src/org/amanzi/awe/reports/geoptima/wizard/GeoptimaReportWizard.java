@@ -38,11 +38,11 @@ import org.amanzi.awe.views.reuse.Distribute;
 import org.amanzi.awe.views.reuse.Select;
 import org.amanzi.awe.views.reuse.views.DefaultColorer;
 import org.amanzi.awe.views.reuse.views.ReuseAnalyserModel;
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.TEMSLoader;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -90,7 +90,7 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
         String directory = selectDataPage.getDirectory();
         final File[] files = getFilesToLoad(directory);
         final int filesCount = files.length;
-        final GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+        final GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
 
         loadFiles(files);
         // build distribution analysis for all numeric properties except lat, long and time

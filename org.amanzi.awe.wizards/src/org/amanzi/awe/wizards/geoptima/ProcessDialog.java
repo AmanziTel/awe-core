@@ -20,11 +20,11 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
 import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
@@ -169,7 +169,7 @@ public class ProcessDialog extends Dialog implements IPropertyChangeListener {
      * Before open.
      */
     private void beforeOpen() {
-        service = NeoServiceProvider.getProvider().getService();
+        service = NeoServiceProviderUi.getProvider().getService();
         formData();
     }
 

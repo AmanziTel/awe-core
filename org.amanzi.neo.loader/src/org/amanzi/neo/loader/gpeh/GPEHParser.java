@@ -26,8 +26,8 @@ import java.util.zip.GZIPInputStream;
 
 import org.amanzi.neo.core.enums.gpeh.Events;
 import org.amanzi.neo.core.enums.gpeh.Parameters;
-import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.GPEHLoader.TimePeriod;
+import org.amanzi.neo.services.Pair;
 import org.apache.log4j.Logger;
 import org.kc7bfi.jflac.io.BitInputStream;
 

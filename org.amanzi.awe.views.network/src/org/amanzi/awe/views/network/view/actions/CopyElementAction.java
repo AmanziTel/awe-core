@@ -15,10 +15,10 @@ package org.amanzi.awe.views.network.view.actions;
 
 import java.util.HashMap;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;

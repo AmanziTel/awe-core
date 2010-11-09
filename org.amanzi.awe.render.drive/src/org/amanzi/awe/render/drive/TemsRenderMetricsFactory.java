@@ -21,7 +21,7 @@ import net.refractions.udig.project.render.IRenderMetricsFactory;
 import net.refractions.udig.project.render.IRenderer;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
-import org.amanzi.neo.core.enums.GisTypes;
+import org.amanzi.neo.services.enums.GisTypes;
 
 /**
  * TODO Purpose of

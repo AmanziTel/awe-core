@@ -25,8 +25,8 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.ui.ApplicationGIS;
 import net.refractions.udig.project.ui.internal.actions.ZoomToLayer;
 
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -52,7 +52,7 @@ public class VisualiseHandler extends AbstractHandler {
         if (id==null){
             return null;
         }
-        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+        GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
         Transaction tx = service.beginTx();
         
         try{
@@ -75,7 +75,7 @@ public class VisualiseHandler extends AbstractHandler {
      */
     private ILayer launchLayer(Node gisNode) {
         try {
-            String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
+            String databaseLocation = NeoServiceProviderUi.getProvider().getDefaultDatabaseLocation();
             URL url = new URL("file://" + databaseLocation);
             List<ILayer> layers = ApplicationGIS.getActiveMap().getMapLayers();
             for (ILayer iLayer : layers) {

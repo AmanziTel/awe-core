@@ -19,10 +19,6 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
-import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
-import org.amanzi.neo.core.enums.OssType;
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.loader.GPEHLoader;
 import org.amanzi.neo.loader.OSSCounterLoader;
 import org.amanzi.neo.loader.PerformanceCountersLoader;
@@ -30,6 +26,10 @@ import org.amanzi.neo.loader.grid.IDENLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
+import org.amanzi.neo.services.enums.OssType;
+import org.amanzi.neo.services.events.UpdateDatabaseEvent;
+import org.amanzi.neo.services.events.UpdateViewEventType;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -128,7 +128,7 @@ public class GPEHImportWizard extends Wizard implements IImportWizard {
         if (!addToSelect || monitor.isCanceled()) {
             return;
         }
-        LinkedHashSet<Node> sets = LoaderUiUtils.getSelectedNodes(NeoServiceProvider.getProvider().getService());
+        LinkedHashSet<Node> sets = LoaderUiUtils.getSelectedNodes(NeoServiceProviderUi.getProvider().getService());
         for (Node node : rootNodes) {
             sets.add(node);
         }

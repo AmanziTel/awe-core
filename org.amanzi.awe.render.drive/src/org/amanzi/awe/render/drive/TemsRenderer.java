@@ -48,17 +48,17 @@ import org.amanzi.awe.filters.experimental.IFilter;
 import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
 import org.amanzi.awe.neostyle.ShapeType;
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.ColoredFlags;
-import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.DriveEvents;
-import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.Pair;
-import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.index.PropertyIndex.NeoIndexRelationshipTypes;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.enums.CorrelationRelationshipTypes;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.indexes.MultiPropertyIndex;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.ui.enums.ColoredFlags;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -147,7 +147,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     }
 
     public TemsRenderer() {
-        index = NeoServiceProvider.getProvider().getIndexService();
+        index = NeoServiceProviderUi.getProvider().getIndexService();
     }
 
     @Override
@@ -270,7 +270,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         g.setFont(font.deriveFont((float)fontSize));
 
         int drawWidth = 1 + 2 * drawSize;
-        GraphDatabaseService neo = NeoServiceProvider.getProvider().getService();
+        GraphDatabaseService neo = NeoServiceProviderUi.getProvider().getService();
         Transaction tx = neo.beginTx();
         try {
             monitor.subTask("connecting");
@@ -545,7 +545,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     endTime = (Long)selectionMap.get(GeoConstant.Drive.END_TIME);
                     if (beginTime != null && endTime != null && beginTime <= endTime) {
                         MultiPropertyIndex<Long> timestampIndex = NeoUtils.getTimeIndexProperty(geoNeo.getName());
-                        timestampIndex.initialize(NeoServiceProvider.getProvider().getService(), null);
+                        timestampIndex.initialize(NeoServiceProviderUi.getProvider().getService(), null);
                         for (Node node : timestampIndex.searchTraverser(new Long[] {beginTime}, new Long[] {endTime})) {
                             if (!node.hasRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING)) {
                                 continue;

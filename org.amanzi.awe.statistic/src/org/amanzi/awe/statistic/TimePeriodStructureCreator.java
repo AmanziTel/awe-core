@@ -13,8 +13,8 @@
 
 package org.amanzi.awe.statistic;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;

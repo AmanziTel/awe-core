@@ -16,7 +16,7 @@ package org.amanzi.awe.statistics.database;
 import org.amanzi.awe.statistics.database.entity.StatisticsCell;
 import org.amanzi.awe.statistics.engine.IDatasetService;
 import org.amanzi.awe.statistics.template.TemplateColumn;
-import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.services.INeoConstants;
 import org.neo4j.graphdb.Node;
 
 /**

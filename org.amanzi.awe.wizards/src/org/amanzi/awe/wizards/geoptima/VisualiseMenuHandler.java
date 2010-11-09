@@ -21,12 +21,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -50,7 +51,7 @@ public class VisualiseMenuHandler extends CompoundContributionItem {
 
     @Override
     protected IContributionItem[] getContributionItems() {
-        GraphDatabaseService service=NeoServiceProvider.getProvider().getService();
+        GraphDatabaseService service=NeoServiceProviderUi.getProvider().getService();
         List<IContributionItem> list = new LinkedList<IContributionItem>();
 
         String property = NeoLoaderPlugin.getDefault().getPreferenceStore().getString(DataLoadPreferences.SELECTED_DATA);
@@ -72,7 +73,7 @@ public class VisualiseMenuHandler extends CompoundContributionItem {
                     NodeTypes type = NodeTypes.getNodeType(node, service);
                     ImageDescriptor image=null;
                     if (type!=null){
-                        image=ImageDescriptor.createFromImage(type.getImage());
+                        image=ImageDescriptor.createFromImage(NeoServicesUiPlugin.getDefault().getImageForType(type));
                     }
                     Map parms = new HashMap();
                     parms.put("nodeId", String.valueOf(node.getId()));

@@ -13,9 +13,9 @@
 package org.amanzi.awe.views.tree.drive.views;
 
 import org.amanzi.awe.views.network.view.NetworkTreeView;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.ui.PlatformUI;
 import org.neo4j.graphdb.StopEvaluator;
@@ -37,7 +37,7 @@ public class DriveTreeView extends NetworkTreeView {
     public static final String ID = "org.amanzi.awe.views.tree.drive.views.DriveTreeView";
 
     @Override
-    protected void setProviders(NeoServiceProvider neoServiceProvider) {
+    protected void setProviders(NeoServiceProviderUi neoServiceProvider) {
         viewer.setContentProvider(new DriveTreeContentProvider(neoServiceProvider));
         viewer.setLabelProvider(new DriveTreeLabelProvider(viewer));
 

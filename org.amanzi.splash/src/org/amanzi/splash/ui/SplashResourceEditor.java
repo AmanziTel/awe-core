@@ -15,12 +15,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.listener.IUpdateViewListener;
-import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
-import org.amanzi.neo.core.database.services.events.UpdateViewEvent;
-import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
-import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.services.events.UpdateDatabaseEvent;
+import org.amanzi.neo.services.events.UpdateViewEvent;
+import org.amanzi.neo.services.events.UpdateViewEventType;
+import org.amanzi.neo.services.ui.IUpdateViewListener;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.swing.SplashTableModel;
 import org.amanzi.splash.utilities.NeoSplashUtil;
@@ -125,9 +125,9 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
 	 */
 	public void dispose() {
 	    super.dispose();	    
-		NeoServiceProvider.getProvider().removeServiceProviderListener(this);
+		NeoServiceProviderUi.getProvider().removeServiceProviderListener(this);
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
-		NeoCorePlugin.getDefault().getUpdateViewManager().removeListener(this);
+		NeoServicesUiPlugin.getDefault().getUpdateViewManager().removeListener(this);
 		NeoSplashUtil.logn("Closing the spreadsheet");
 
 	}
@@ -156,8 +156,8 @@ public class SplashResourceEditor extends AbstractSplashEditor implements
 		super.init(site, editorInput);
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(this,
 				IResourceChangeEvent.POST_CHANGE);
-		NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
-		NeoServiceProvider.getProvider().addServiceProviderListener(this);
+		NeoServicesUiPlugin.getDefault().getUpdateViewManager().addListener(this);
+		NeoServiceProviderUi.getProvider().addServiceProviderListener(this);
 	}
 
 	/**

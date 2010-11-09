@@ -18,13 +18,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.db.manager.DatabaseManager.DatabaseAccessType;
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.swt.SWT;
@@ -64,7 +64,7 @@ public class LoadOssMainPage extends LoaderPage<CommonConfigData>{
         super("ossMainPage");
         setTitle(NeoLoaderPluginMessages.GpehTitle);
         setDescription(NeoLoaderPluginMessages.GpehDescr);
-        service = NeoServiceProvider.getProvider().getService();
+        service = NeoServiceProviderUi.getProvider().getService();
     }
 
 

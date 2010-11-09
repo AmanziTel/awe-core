@@ -12,12 +12,12 @@
  */
 package org.amanzi.splash.ui;
 
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.nodes.RubyProjectNode;
-import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
-import org.amanzi.neo.core.database.services.AweProjectService;
-import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
+import org.amanzi.neo.services.AweProjectService;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.nodes.RubyProjectNode;
+import org.amanzi.neo.services.nodes.SpreadsheetNode;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
+import org.amanzi.neo.services.utils.RunnableWithResult;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IMemento;
@@ -62,7 +62,7 @@ public class SplashEditorInput implements IEditorInput, IPersistableElement {
      * @param root root node of Spreadsheet
      */
     public SplashEditorInput(String sheetName, RubyProjectNode root) {
-        service = NeoCorePlugin.getDefault().getProjectService();
+        service = NeoServiceFactory.getInstance().getProjectService();
         this.root = root;
         
         node = service.findSpreadsheet(root, sheetName); 
@@ -76,7 +76,7 @@ public class SplashEditorInput implements IEditorInput, IPersistableElement {
      * @param spreadsheetNode Spreadsheet Node
      */
     public SplashEditorInput(SpreadsheetNode spreadsheetNode) {
-        service = NeoCorePlugin.getDefault().getProjectService();
+        service = NeoServiceFactory.getInstance().getProjectService();
         this.sheetName = spreadsheetNode.getSpreadsheetName();
         
         this.root = spreadsheetNode.getSpreadsheetRootProject();
@@ -161,7 +161,7 @@ public class SplashEditorInput implements IEditorInput, IPersistableElement {
     public static SplashEditorInput create(IMemento memento) {
         String rubyProjectName = memento.getString(RUBY_PROJECT);
         String name = memento.getString(SPREADSHEET_NAME);
-        AweProjectService projectService = NeoCorePlugin.getDefault().getProjectService();
+        AweProjectService projectService = NeoServiceFactory.getInstance().getProjectService();
         RubyProjectNode rubyProject = projectService.findRubyProject(rubyProjectName);
         SpreadsheetNode spreadsheetNode = projectService.findSpreadsheet(rubyProject, name);
         return new SplashEditorInput(spreadsheetNode);

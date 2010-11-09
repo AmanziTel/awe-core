@@ -19,17 +19,17 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.enums.SplashRelationshipTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.service.listener.INeoServiceProviderListener;
-import org.amanzi.neo.core.utils.NeoTreeContentProvider;
-import org.amanzi.neo.core.utils.NeoTreeElement;
-import org.amanzi.neo.core.utils.NeoTreeLabelProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.enums.SplashRelationshipTypes;
+import org.amanzi.neo.services.ui.INeoServiceProviderListener;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.ui.utils.NeoTreeContentProvider;
+import org.amanzi.neo.services.ui.utils.NeoTreeElement;
+import org.amanzi.neo.services.ui.utils.NeoTreeLabelProvider;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
@@ -151,7 +151,7 @@ public class SelectDataPreferencePage extends PreferencePage implements IWorkben
 
     @Override
     public void init(IWorkbench workbench) {
-        graphDatabaseService = NeoServiceProvider.getProvider().getService();
+        graphDatabaseService = NeoServiceProviderUi.getProvider().getService();
         loadSelectedData();
         provider = new TreeContentProvider();
         labelProvider = new NeoTreeLabelProvider();
@@ -293,7 +293,7 @@ public class SelectDataPreferencePage extends PreferencePage implements IWorkben
                 Node[] nodes = (Node[])newInput;
                 elements = new TreeElement[nodes.length];
                 for (int i = 0; i < nodes.length; i++) {
-                    elements[i] = new TreeElement(nodes[i], NeoServiceProvider.getProvider().getService());
+                    elements[i] = new TreeElement(nodes[i], NeoServiceProviderUi.getProvider().getService());
                 }
             }
         }
@@ -307,7 +307,7 @@ public class SelectDataPreferencePage extends PreferencePage implements IWorkben
 
     @Override
     public void onNeoStart(Object source) {
-        graphDatabaseService = NeoServiceProvider.getProvider().getService();
+        graphDatabaseService = NeoServiceProviderUi.getProvider().getService();
     }
 
     @Override

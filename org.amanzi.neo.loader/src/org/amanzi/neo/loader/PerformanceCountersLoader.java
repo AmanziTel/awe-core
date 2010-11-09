@@ -24,16 +24,16 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.enums.OssType;
-import org.amanzi.neo.core.enums.SectorIdentificationType;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.AbstractLoader.DateMapper;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.enums.OssType;
+import org.amanzi.neo.services.enums.SectorIdentificationType;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -206,7 +206,7 @@ public class PerformanceCountersLoader extends AbstractLoader {
     }
 
     private void initializeLucene(Node baseNode) {
-        luceneService = NeoServiceProvider.getProvider().getIndexService();
+        luceneService = NeoServiceProviderUi.getProvider().getIndexService();
         luceneIndexName = NeoUtils.getLuceneIndexKeyByProperty(baseNode, INeoConstants.SECTOR_ID_PROPERTIES, NodeTypes.M);
     }
 

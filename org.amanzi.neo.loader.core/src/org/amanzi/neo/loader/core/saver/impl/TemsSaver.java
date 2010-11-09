@@ -25,14 +25,14 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.DriveTypes;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
+import org.amanzi.neo.services.GisProperties;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.DriveTypes;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Node;
 

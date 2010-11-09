@@ -14,10 +14,10 @@ package org.amanzi.splash.ui.wizards;
 
 import java.net.URI;
 
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.nodes.CellNode;
-import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
-import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.nodes.CellNode;
+import org.amanzi.neo.services.nodes.SpreadsheetNode;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.amanzi.splash.database.services.SpreadsheetService;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.ui.SplashPlugin;
@@ -68,7 +68,7 @@ public class ExportScriptWizard extends NewFileCreationWizard {
 				if (cellNode == null) {
 					cellNode = spreadsheetService.createCell(spreadsheetNode, cell.getRow(), cell.getColumn());
 				}
-				NeoCorePlugin.getDefault().getProjectService().createScript(
+				NeoServiceFactory.getInstance().getProjectService().createScript(
 						cellNode, modifiedResource.getName());
 			}
 		}, false);

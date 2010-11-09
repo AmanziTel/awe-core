@@ -13,7 +13,7 @@
 
 package org.amanzi.awe.views.neighbours;
 
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.swt.graphics.Color;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;

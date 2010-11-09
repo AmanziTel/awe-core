@@ -31,13 +31,14 @@ import net.refractions.udig.project.ui.AnimationUpdater;
 import net.refractions.udig.project.ui.IAnimation;
 import net.refractions.udig.project.ui.commands.AbstractDrawCommand;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.Pair;
-import org.amanzi.neo.index.MultiPropertyIndex;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.Utils;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.indexes.MultiPropertyIndex;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -90,7 +91,7 @@ public class VisualiseLayer implements MapGraphic, MapInterceptor {
     public static final String DATASET_PARAM = "DATASET_PARAM";
 
     /** The service. */
-    private final GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+    private final GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
 
     /**
      * Draw.
@@ -246,8 +247,8 @@ public class VisualiseLayer implements MapGraphic, MapInterceptor {
                 cRSDataset = datasetLayer.getGeoResource().getInfo(new NullProgressMonitor()).getCRS();
                 rootNode = NeoUtils.findRoot(node, service);
                 String datasetName = NeoUtils.getNodeName(node, service);
-                timestampIndex = NeoUtils.getTimeIndexProperty(datasetName);
-                timestampIndex.initialize(NeoServiceProvider.getProvider().getService(), null);
+                timestampIndex = Utils.getTimeIndexProperty(datasetName);
+                timestampIndex.initialize(NeoServiceProviderUi.getProvider().getService(), null);
                 param = (VisualiseParam)layer.getBlackboard().get(DATASET_PARAM);
                 currentTime = param.getBeginTime();
             } catch (Exception e) {

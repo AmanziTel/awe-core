@@ -14,10 +14,10 @@ package org.amanzi.awe.awe.views.view.provider;
 
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
@@ -39,7 +39,7 @@ public class NetworkTreeContentProvider implements IStructuredContentProvider, I
      * NeoServiceProvider
      */
     
-    protected NeoServiceProvider neoServiceProvider;
+    protected NeoServiceProviderUi neoServiceProvider;
     
     /**
      * Constructor of ContentProvider
@@ -47,7 +47,7 @@ public class NetworkTreeContentProvider implements IStructuredContentProvider, I
      * @param neoProvider neoServiceProvider for this ContentProvider
      */
     
-    public NetworkTreeContentProvider(NeoServiceProvider neoProvider) {
+    public NetworkTreeContentProvider(NeoServiceProviderUi neoProvider) {
         this.neoServiceProvider = neoProvider;
     }
     

@@ -33,15 +33,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.enums.DriveTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.CSVParser;
-import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.Pair;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
 import org.amanzi.neo.loader.AbstractLoader;
 import org.amanzi.neo.loader.DriveLoader;
 import org.amanzi.neo.loader.GPSLoader;
@@ -53,6 +45,14 @@ import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.loader.ui.utils.dialogs.DateTimeDialogWithToggle;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.enums.DriveTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
+import org.amanzi.neo.services.ui.utils.CSVParser;
+import org.amanzi.neo.services.utils.RunnableWithResult;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -330,7 +330,7 @@ public class DriveDialog {
         //TODO: Check if the following line is needed
         //Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
         Traverser allDatasetTraverser = NeoCorePlugin.getDefault().getProjectService().getAllDatasetTraverser(
-                NeoServiceProvider.getProvider().getService().getReferenceNode());
+                NeoServiceProviderUi.getProvider().getService().getReferenceNode());
         for (Node node : allDatasetTraverser) {
             dataset.put((String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME), node);
         }
@@ -786,7 +786,7 @@ public class DriveDialog {
         if (!addToSelect||monitor.isCanceled()){
             return;
         }
-        LinkedHashSet<Node> sets = LoaderUiUtils.getSelectedNodes(NeoServiceProvider.getProvider().getService());
+        LinkedHashSet<Node> sets = LoaderUiUtils.getSelectedNodes(NeoServiceProviderUi.getProvider().getService());
         for (Node node : rootNodes) {
             sets.add(node);
         }

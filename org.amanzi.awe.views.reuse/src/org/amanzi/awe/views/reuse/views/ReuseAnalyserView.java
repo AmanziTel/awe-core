@@ -40,22 +40,22 @@ import org.amanzi.awe.views.reuse.Messages;
 import org.amanzi.awe.views.reuse.ReusePlugin;
 import org.amanzi.awe.views.reuse.Select;
 import org.amanzi.integrator.awe.AWEProjectManager;
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.events.ShowPreparedViewEvent;
-import org.amanzi.neo.core.enums.ColoredFlags;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.core.preferences.NeoCorePreferencesConstants;
 import org.amanzi.neo.core.propertyFilter.PropertyFilterModel;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
-import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.events.ShowPreparedViewEvent;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.ui.enums.ColoredFlags;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
+import org.amanzi.neo.services.utils.RunnableWithResult;
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -756,7 +756,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
         if (gis == null) {
             return false;
         }
-        GeoNeo geoNeo = new GeoNeo(NeoServiceProvider.getProvider().getService(), gis);
+        GeoNeo geoNeo = new GeoNeo(NeoServiceProviderUi.getProvider().getService(), gis);
         boolean isAggregated = geoNeo.getGisType() != GisTypes.NETWORK;
         // if (!isAggregated) {
         // LOGGER.debug("GIS '" + geoNeo + "' is not drive: " + geoNeo.getGisType());
@@ -1168,7 +1168,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
         List<Node> correlated = new ArrayList<Node>();
         if (node != null) {
             if (realGis == null) {
-                correlated = NeoUtils.getCorrelationNetworks(node, NeoServiceProvider.getProvider().getService());
+                correlated = NeoUtils.getCorrelationNetworks(node, NeoServiceProviderUi.getProvider().getService());
             } else {
                 correlated.add(realGis);
             }
@@ -1239,7 +1239,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
     protected void fireLayerDrawEvent(Node gisNode, Node aggrNode, ChartNode columnKey) {
         gisNode = NeoUtils.findGisNodeByChild(gisNode);
         // necessary for visible changes in renderers
-        NeoServiceProvider.getProvider().commit();
+        NeoServiceProviderUi.getProvider().commit();
         int adj = spinAdj.getSelection();
         Node columnNode = columnKey == null ? null : columnKey.getNode();
         int colInd = columnKey == null ? 0 : dataset.getColumnIndex(columnKey);
@@ -1398,7 +1398,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
         };
 
         propertyList = new PropertyFilterModel().filerProperties(gisCombo.getText(), propertyList);
-        model = new ReuseAnalyserModel(aggregatedProperties, propertyReturnableEvalvator, NeoServiceProvider.getProvider()
+        model = new ReuseAnalyserModel(aggregatedProperties, propertyReturnableEvalvator, NeoServiceProviderUi.getProvider()
                 .getService());
 
     }
@@ -1410,7 +1410,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
      * @return the node type id
      */
     private String getNodeTypeId(Node node) {
-        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+        GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
         return NeoUtils.getPrimaryType(node);
     }
 
@@ -1420,7 +1420,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
      * @return array of GIS nodes
      */
     private String[] getRootItems() {
-        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+        GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
         members = new LinkedHashMap<String, Node>();
         for (Node node : NeoUtils.getAllRootTraverser(service, null)) {
             String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();

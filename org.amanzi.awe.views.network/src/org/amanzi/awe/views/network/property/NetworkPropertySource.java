@@ -20,14 +20,14 @@ import java.util.regex.Pattern;
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEvent;
 import org.amanzi.awe.views.network.proxy.NeoNode;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.IndexManager;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.Utils;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
@@ -108,7 +108,7 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
     @Override
     public void setPropertyValue(Object id, Object value) {
         if (!((String)id).startsWith("delta_")) {
-            Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+            Transaction tx = NeoServiceProviderUi.getProvider().getService().beginTx();
             try {
                 DatasetService service = NeoServiceFactory.getInstance().getDatasetService();
 
@@ -154,7 +154,7 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
                 updateStatistics(root,container, (String)id,oldValue);
             } finally {
                 tx.finish();
-                NeoServiceProvider.getProvider().commit();
+                NeoServiceProviderUi.getProvider().commit();
                 updateLayer();
             }
         }
@@ -201,7 +201,7 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
      * updates layer.
      */
     private void updateLayer() {
-        Node gisNode = NeoUtils.findGisNodeByChild((Node)container);
+        Node gisNode = Utils.findGisNodeByChild((Node)container);
         NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(new UpdateLayerEvent(gisNode));
     }
 

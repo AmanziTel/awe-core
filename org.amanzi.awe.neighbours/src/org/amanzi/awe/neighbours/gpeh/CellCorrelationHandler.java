@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 
 import org.amanzi.awe.neighbours.gpeh.CellCorrelationProvider.IntRange;
 import org.amanzi.awe.statistic.CallTimePeriods;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**

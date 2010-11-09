@@ -19,7 +19,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.services.INeoConstants;
 import org.neo4j.graphdb.Node;
 
 /**

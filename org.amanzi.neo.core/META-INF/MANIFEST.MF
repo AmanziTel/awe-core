@@ -7,27 +7,18 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  net.refractions.udig.project;bundle-version="1.1.1";visibility:=reexport,
  org.neo4j.neoclipse;bundle-version="0.4.1",
- org.neo4j;bundle-version="1.0.0"
+ org.amanzi.neo.services.ui;bundle-version="1.0.0";visibility:=reexport
 Export-Package: org.amanzi.neo.core,
  org.amanzi.neo.core.amscall,
  org.amanzi.neo.core.database.entity,
- org.amanzi.neo.core.database.exception,
- org.amanzi.neo.core.database.listener,
- org.amanzi.neo.core.database.nodes,
- org.amanzi.neo.core.database.services,
- org.amanzi.neo.core.database.services.events,
- org.amanzi.neo.core.enums,
  org.amanzi.neo.core.enums.gpeh,
- org.amanzi.neo.core.icons,
  org.amanzi.neo.core.preferences,
  org.amanzi.neo.core.propertyFilter,
- org.amanzi.neo.core.service,
  org.amanzi.neo.core.service.listener,
  org.amanzi.neo.core.utils,
  org.amanzi.neo.core.utils.export,
  org.amanzi.neo.core.utils.importer,
- org.amanzi.neo.index,
- org.amanzi.neo.index.hilbert
+ org.amanzi.neo.index
 Eclipse-LazyStart: true
 Bundle-Activator: org.amanzi.neo.core.NeoCorePlugin
 Bundle-Vendor: amanzi.org

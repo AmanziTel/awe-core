@@ -21,7 +21,7 @@ import org.amanzi.awe.report.model.ReportModel;
 import org.amanzi.awe.report.model.ReportPartType;
 import org.amanzi.awe.report.model.events.IReportModelListener;
 import org.amanzi.awe.report.model.events.ReportModelEvent;
-import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.services.Pair;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.IEditorInput;

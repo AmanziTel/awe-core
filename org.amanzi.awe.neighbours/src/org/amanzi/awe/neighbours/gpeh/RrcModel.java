@@ -22,10 +22,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.preferences.NeoCorePreferencesConstants;
 import org.amanzi.neo.core.utils.GpehReportUtil;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.geotools.geometry.jts.JTS;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;

@@ -27,8 +27,8 @@ import net.refractions.udig.project.ui.UDIGGenericAction;
 import net.refractions.udig.project.ui.internal.Messages;
 
 import org.amanzi.integrator.rdt.RDTProjectManager;
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.AweProjectService;
+import org.amanzi.neo.services.AweProjectService;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.swt.widgets.Display;
@@ -83,7 +83,7 @@ public class Rename extends UDIGGenericAction {
         project.eResource().setModified(true);
         
         //Lagutko, 17.08.2009, rename AWE Project in Database
-        AweProjectService service = NeoCorePlugin.getDefault().getProjectService();
+        AweProjectService service = NeoServiceFactory.getInstance().getProjectService();
         service.renameAweProject(oldName, newName);
     }
     

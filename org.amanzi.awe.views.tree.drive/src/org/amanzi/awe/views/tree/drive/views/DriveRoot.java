@@ -19,10 +19,10 @@ import java.util.LinkedHashMap;
 
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
-import org.amanzi.neo.core.enums.DriveTypes;
-import org.amanzi.neo.core.enums.ProbeCallRelationshipType;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.enums.DriveTypes;
+import org.amanzi.neo.services.enums.ProbeCallRelationshipType;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -41,7 +41,7 @@ public class DriveRoot extends Root {
      * 
      * @param serviceProvider service Provider
      */
-    public DriveRoot(NeoServiceProvider serviceProvider) {
+    public DriveRoot(NeoServiceProviderUi serviceProvider) {
         super(serviceProvider);
     }
 

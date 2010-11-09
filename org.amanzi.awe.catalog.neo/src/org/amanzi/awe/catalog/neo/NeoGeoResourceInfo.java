@@ -16,9 +16,9 @@ import java.io.IOException;
 
 import net.refractions.udig.catalog.IGeoResourceInfo;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.icons.IconManager;
-import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.ui.IconManager;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.ImageData;
@@ -37,7 +37,7 @@ public class NeoGeoResourceInfo extends IGeoResourceInfo {
 	Node gisNode;
 
     public NeoGeoResourceInfo(NeoGeoResource resource, Node gisNode, IProgressMonitor monitor) throws IOException {
-        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+        GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
         Transaction tx = service.beginTx();
         try {
             this.handle = resource;
@@ -72,7 +72,7 @@ public class NeoGeoResourceInfo extends IGeoResourceInfo {
 
     @Override
     public String getTitle() {
-        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+        Transaction tx = NeoServiceProviderUi.getProvider().getService().beginTx();
         try {
             return gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
         } finally {

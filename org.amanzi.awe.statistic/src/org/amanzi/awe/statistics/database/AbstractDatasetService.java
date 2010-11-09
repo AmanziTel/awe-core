@@ -18,14 +18,12 @@ import java.util.Collection;
 
 import org.amanzi.awe.statistic.CallTimePeriods;
 import org.amanzi.awe.statistics.engine.IDatasetService;
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.Pair;
-import org.amanzi.neo.index.MultiPropertyIndex;
-import org.apache.commons.lang.CharSetUtils;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.Utils;
+import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
 
 /**
  * TODO Purpose of
@@ -70,7 +68,7 @@ public abstract class AbstractDatasetService implements IDatasetService {
 
     private void initializeIndex() {
         try {
-            timeIndex = NeoUtils.getTimeIndexProperty((String)dataset.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+            timeIndex = Utils.getTimeIndexProperty((String)dataset.getProperty(INeoConstants.PROPERTY_NAME_NAME));
             timeIndex.initialize(service, null);
         } catch (IOException e) {
             e.printStackTrace();

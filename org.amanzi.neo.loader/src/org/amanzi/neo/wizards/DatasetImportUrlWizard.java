@@ -26,18 +26,18 @@ import java.util.Map;
 import java.net.URLEncoder;
 
 import org.amanzi.awe.console.AweConsolePlugin;
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.DriveLoader;
 import org.amanzi.neo.loader.GPSRemoteUrlLoader;
 import org.amanzi.neo.loader.TemsRemoteUrlLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -167,7 +167,7 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
     
     private void findDataset(String datasetName) {
     	Traverser allDatasetTraverser = NeoCorePlugin.getDefault().getProjectService().getAllDatasetTraverser(
-                NeoServiceProvider.getProvider().getService().getReferenceNode());
+                NeoServiceProviderUi.getProvider().getService().getReferenceNode());
         
 
         for (Node node : allDatasetTraverser) {
@@ -344,7 +344,7 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
         if (monitor.isCanceled()) {
             return;
         }
-        LinkedHashSet<Node> sets = LoaderUiUtils.getSelectedNodes(NeoServiceProvider.getProvider().getService());
+        LinkedHashSet<Node> sets = LoaderUiUtils.getSelectedNodes(NeoServiceProviderUi.getProvider().getService());
         for (Node node : rootNodes) {
             sets.add(node);
         }

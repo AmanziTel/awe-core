@@ -18,14 +18,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.enums.SectorIdentificationType;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.CorrelationRelationshipTypes;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.enums.SectorIdentificationType;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -115,8 +115,8 @@ public class GPSCorrelator {
 	 * @param gsmDatasetNode Dataset Node of GPS data
 	 */
 	public GPSCorrelator(Node networkNode, IProgressMonitor monitor) {
-	    neoService = NeoServiceProvider.getProvider().getService();
-	    luceneService = NeoServiceProvider.getProvider().getIndexService();
+	    neoService = NeoServiceProviderUi.getProvider().getService();
+	    luceneService = NeoServiceProviderUi.getProvider().getIndexService();
 	    
 	    this.networkNode = networkNode;
 		this.networkName = NeoUtils.getNodeName(networkNode, neoService);

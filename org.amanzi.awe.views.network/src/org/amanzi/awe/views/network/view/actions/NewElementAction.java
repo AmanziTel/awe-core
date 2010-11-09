@@ -23,18 +23,18 @@ import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesAndMapEvent;
 import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.INodeType;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.GisProperties;
-import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.index.MultiPropertyIndex;
 import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.GisProperties;
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
@@ -82,7 +82,7 @@ public class NewElementAction extends Action {
     }
 
     protected NewElementAction(IStructuredSelection selection, NodeTypes[] unsupportedTypes, String actionPrefix, boolean askType) {
-        service = NeoServiceProvider.getProvider().getService();
+        service = NeoServiceProviderUi.getProvider().getService();
         this.askType = askType;
 
         // check is action should be enabled
@@ -191,7 +191,7 @@ public class NewElementAction extends Action {
             defaultProperties.put(INeoConstants.PROPERTY_NAME_NAME, dialog.getValue());
             createNewElement(selectedNode, defaultProperties);
 
-            NeoServiceProvider.getProvider().commit();
+            NeoServiceProviderUi.getProvider().commit();
         }
     }
 
@@ -202,7 +202,7 @@ public class NewElementAction extends Action {
 
         Transaction tx = service.beginTx();
         try {
-            LuceneIndexService indexService = NeoServiceProvider.getProvider().getIndexService();
+            LuceneIndexService indexService = NeoServiceProviderUi.getProvider().getIndexService();
 
             while (indexService.getSingleNode(luceneIndexName, pattern) != null) {
                 pattern = startValue + " " + counter.toString();
@@ -326,7 +326,7 @@ public class NewElementAction extends Action {
     }
 
     protected void indexElement(Node newElement) {
-        LuceneIndexService indexService = NeoServiceProvider.getProvider().getIndexService();
+        LuceneIndexService indexService = NeoServiceProviderUi.getProvider().getIndexService();
 
         indexService.index(newElement, luceneIndexName, newElement.getProperty(INeoConstants.PROPERTY_NAME_NAME));
     }

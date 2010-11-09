@@ -4,8 +4,8 @@ import java.net.URL;
 import java.util.List;
 
 import org.amanzi.awe.wizards.geoptima.ExportDialog.NetworkExport;
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.neo.core.utils.export.IExportProvider;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.ui.SplashPlugin;
 import org.amanzi.splash.ui.wizards.CreateSpreadsheetOperation;
@@ -58,7 +58,7 @@ public class ExportToSpreadsheetWizard extends SplashNewSpreadsheetWizard{
     @Override
     protected void doFinish(String containerName, final String fileName, final IProgressMonitor monitor) throws CoreException {
         // create a sample file
-        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+        Transaction tx = NeoServiceProviderUi.getProvider().getService().beginTx();
         final IResource resource;
         try {
             if (monitor.isCanceled()){

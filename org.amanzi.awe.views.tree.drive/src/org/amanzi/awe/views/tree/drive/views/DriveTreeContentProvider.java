@@ -15,11 +15,11 @@ package org.amanzi.awe.views.tree.drive.views;
 import org.amanzi.awe.awe.views.view.provider.NetworkTreeContentProvider;
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
-import org.amanzi.neo.core.database.nodes.DistributionSelectionNode;
-import org.amanzi.neo.core.database.nodes.StatisticSelectionNode;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.ui.utils.DistributionSelectionNode;
+import org.amanzi.neo.services.ui.utils.StatisticSelectionNode;
 import org.eclipse.core.runtime.IAdaptable;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -38,7 +38,7 @@ public class DriveTreeContentProvider extends NetworkTreeContentProvider {
      * 
      * @param neoProvider neoServiceProvider for this ContentProvider
      */
-    public DriveTreeContentProvider(NeoServiceProvider neoProvider) {
+    public DriveTreeContentProvider(NeoServiceProviderUi neoProvider) {
         super(neoProvider);
     }
 

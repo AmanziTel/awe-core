@@ -17,8 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.awe.report.charts.ChartType;
-import org.amanzi.neo.core.database.nodes.CellID;
-import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.nodes.CellID;
 import org.apache.log4j.Logger;
 import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;

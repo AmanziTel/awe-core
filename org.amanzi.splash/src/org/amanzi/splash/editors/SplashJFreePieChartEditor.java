@@ -14,11 +14,10 @@ package org.amanzi.splash.editors;
 
 import java.text.MessageFormat;
 
-
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.nodes.ChartNode;
-import org.amanzi.neo.core.database.nodes.RubyProjectNode;
-import org.amanzi.neo.core.database.services.AweProjectService;
+import org.amanzi.neo.services.AweProjectService;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.nodes.ChartNode;
+import org.amanzi.neo.services.nodes.RubyProjectNode;
 import org.amanzi.splash.chart.Charts;
 import org.amanzi.splash.ui.ChartEditorInput;
 import org.amanzi.splash.utilities.NeoSplashUtil;
@@ -61,7 +60,7 @@ public class SplashJFreePieChartEditor extends EditorPart {
     }
     
     private ChartNode getChartNode() {
-        AweProjectService projectService = NeoCorePlugin.getDefault().getProjectService();
+        AweProjectService projectService = NeoServiceFactory.getInstance().getProjectService();
         ChartEditorInput chartEI = (ChartEditorInput)getEditorInput();
         RubyProjectNode rubyProject = projectService.findRubyProject(chartEI.getProjectName());
         ChartNode chartNode = projectService.getChartByName(rubyProject, chartEI.getChartName());

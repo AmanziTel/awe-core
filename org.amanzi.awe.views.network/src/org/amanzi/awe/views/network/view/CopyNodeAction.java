@@ -15,8 +15,8 @@ package org.amanzi.awe.views.network.view;
 
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
-import org.amanzi.neo.core.enums.INodeType;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.enums.INodeType;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardDialog;

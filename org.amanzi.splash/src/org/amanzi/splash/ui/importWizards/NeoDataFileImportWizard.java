@@ -14,7 +14,7 @@ package org.amanzi.splash.ui.importWizards;
 
 import java.lang.reflect.InvocationTargetException;
 
-import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
+import org.amanzi.neo.services.nodes.SpreadsheetNode;
 import org.amanzi.splash.ui.SplashPlugin;
 import org.amanzi.splash.utilities.Messages;
 import org.amanzi.splash.utilities.NeoSplashUtil;

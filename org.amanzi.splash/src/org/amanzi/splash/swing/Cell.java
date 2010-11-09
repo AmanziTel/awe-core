@@ -22,8 +22,8 @@ import java.text.Format;
 import java.text.MessageFormat;
 import java.text.ParseException;
 
-import org.amanzi.neo.core.database.nodes.CellID;
-import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.services.nodes.CellID;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.amanzi.splash.ui.SplashPlugin;
 import org.amanzi.splash.utilities.Messages;
 import org.eclipse.core.runtime.Status;

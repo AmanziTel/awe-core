@@ -23,9 +23,9 @@ import java.util.List;
 
 import org.amanzi.awe.report.ReportPlugin;
 import org.amanzi.awe.report.model.Chart;
-import org.amanzi.neo.core.database.nodes.CellNode;
-import org.amanzi.neo.core.database.nodes.ChartItemNode;
-import org.amanzi.neo.core.database.nodes.ChartNode;
+import org.amanzi.neo.services.nodes.CellNode;
+import org.amanzi.neo.services.nodes.ChartItemNode;
+import org.amanzi.neo.services.nodes.ChartNode;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.widgets.Display;

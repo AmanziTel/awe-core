@@ -21,13 +21,13 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.INodeType;
-import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.GisProperties;
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.Utils;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.statistic.StatisticManager;
 import org.neo4j.graphdb.Node;
 

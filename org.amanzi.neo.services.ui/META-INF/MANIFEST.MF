@@ -8,7 +8,10 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.amanzi.neo.services;bundle-version="1.0.0";visibility:=reexport,
  org.amanzi.neo.db;bundle-version="1.0.0";visibility:=reexport,
- net.refractions.udig.project.ui;bundle-version="1.1.1"
+ org.neo4j.neoclipse;bundle-version="0.4.1",
+ net.refractions.udig.libs;bundle-version="1.1.1"
 Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Export-Package: org.amanzi.neo.services.ui
+Export-Package: org.amanzi.neo.services.ui,
+ org.amanzi.neo.services.ui.enums,
+ org.amanzi.neo.services.ui.utils

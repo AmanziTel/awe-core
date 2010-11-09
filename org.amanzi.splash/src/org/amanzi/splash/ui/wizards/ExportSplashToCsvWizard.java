@@ -20,8 +20,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.regex.Pattern;
 
-import org.amanzi.neo.core.database.nodes.CellNode;
-import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
+import org.amanzi.neo.services.nodes.CellNode;
+import org.amanzi.neo.services.nodes.SpreadsheetNode;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;

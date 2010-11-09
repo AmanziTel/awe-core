@@ -17,8 +17,8 @@ import java.io.IOException;
 
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEvent;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.InputDialog;
@@ -131,7 +131,7 @@ public class NewAction extends Action
         }
         page.refresh();
         
-        NeoServiceProvider.getProvider().commit();
+        NeoServiceProviderUi.getProvider().commit();
         updateLayer(container);
     }
     

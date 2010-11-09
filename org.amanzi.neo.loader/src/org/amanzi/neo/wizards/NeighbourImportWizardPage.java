@@ -15,13 +15,13 @@ package org.amanzi.neo.wizards;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.LoadNetwork;
 import org.amanzi.neo.loader.NeighbourLoader;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -138,7 +138,7 @@ public class NeighbourImportWizardPage extends WizardPage {
     private String[] getGisItems() {
         Transaction tx = NeoUtils.beginTransaction();
         try {
-            GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+            GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
             Node refNode = service.getReferenceNode();
             members = new HashMap<String, Node>();
             String header = GisTypes.NETWORK.getHeader();

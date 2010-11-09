@@ -13,7 +13,7 @@
 
 package org.amanzi.neo.core.amscall;
 
-import org.amanzi.neo.core.enums.CallProperties.CallType;
+import org.amanzi.neo.services.enums.CallProperties.CallType;
 
 /**
  * <p>

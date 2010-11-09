@@ -46,19 +46,19 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.exception.SplashDatabaseException;
-import org.amanzi.neo.core.database.nodes.CellNode;
-import org.amanzi.neo.core.database.nodes.ChartItemNode;
-import org.amanzi.neo.core.database.nodes.ChartNode;
-import org.amanzi.neo.core.database.nodes.PieChartItemNode;
-import org.amanzi.neo.core.database.nodes.PieChartNode;
-import org.amanzi.neo.core.database.nodes.RubyProjectNode;
-import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
-import org.amanzi.neo.core.database.services.AweProjectService;
-import org.amanzi.neo.core.service.listener.INeoServiceProviderListener;
-import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.services.AweProjectService;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.nodes.CellNode;
+import org.amanzi.neo.services.nodes.ChartItemNode;
+import org.amanzi.neo.services.nodes.ChartNode;
+import org.amanzi.neo.services.nodes.PieChartItemNode;
+import org.amanzi.neo.services.nodes.PieChartNode;
+import org.amanzi.neo.services.nodes.RubyProjectNode;
+import org.amanzi.neo.services.nodes.SplashDatabaseException;
+import org.amanzi.neo.services.nodes.SpreadsheetNode;
+import org.amanzi.neo.services.ui.INeoServiceProviderListener;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.amanzi.splash.chart.ChartType;
 import org.amanzi.splash.database.services.SpreadsheetService;
 import org.amanzi.splash.swing.Cell;
@@ -1346,7 +1346,7 @@ public abstract class AbstractSplashEditor extends EditorPart implements
         SpreadsheetNode spreadsheet = model.getSpreadsheet();
         
         SpreadsheetService service = SplashPlugin.getDefault().getSpreadsheetService(); 
-        AweProjectService projectService = NeoCorePlugin.getDefault().getProjectService();
+        AweProjectService projectService = NeoServiceFactory.getInstance().getProjectService();
         RubyProjectNode rootProject = spreadsheet.getSpreadsheetRootProject();
         int chartNumber = projectService.getNextChartNumber(rootProject);
         

@@ -1,10 +1,10 @@
 package org.rubypeople.rdt.ui.actions;
 
 import org.amanzi.integrator.awe.AWEProjectManager;
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.nodes.AweProjectNode;
-import org.amanzi.neo.core.database.nodes.RubyProjectNode;
-import org.amanzi.neo.core.database.services.AweProjectService;
+import org.amanzi.neo.services.AweProjectService;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.nodes.AweProjectNode;
+import org.amanzi.neo.services.nodes.RubyProjectNode;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
@@ -84,7 +84,7 @@ public class RenameElementInNavigatorAction extends ResourceNavigatorRenameActio
     protected void renameSpreadsheet() {
         ISpreadsheet spreadsheet = (ISpreadsheet)getStructuredSelection().getFirstElement();
         
-        projectService = NeoCorePlugin.getDefault().getProjectService();
+        projectService = NeoServiceFactory.getInstance().getProjectService();
         String aweProjectName = AWEProjectManager.getAWEprojectNameFromResource(spreadsheet.getRubyProject().getProject());
         
         AweProjectNode aweNode = projectService.findAweProject(aweProjectName);

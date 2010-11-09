@@ -17,11 +17,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.amanzi.neo.core.enums.INodeType;
-import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.core.utils.AbstractDialog;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -95,7 +96,7 @@ public class SelectType extends AbstractDialog<String> {
     protected void createContents(Shell shell) {
         this.shell = shell;
 
-        shell.setImage(NodeTypes.DATASET.getImage());
+        shell.setImage(NeoServicesUiPlugin.getDefault().getImageForType(NodeTypes.DATASET));
         shell.setLayout(new GridLayout(2, true));
 
         Label label = new Label(shell, SWT.NONE);

@@ -23,13 +23,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.INodeType;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.db.manager.NeoServiceProvider;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.Utils;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.ISinglePropertyStat;
 import org.amanzi.neo.services.statistic.IStatistic;
@@ -64,31 +64,31 @@ public class PropertyHeaderImpl implements IPropertyHeader {
     @Override
     public String[] getNeighbourNumericFields(String neighbourName) {
         // TODO old version
-        Node neighbour = NeoUtils.findNeighbour(node, neighbourName);
+        Node neighbour = Utils.findNeighbour(node, neighbourName);
         if (neighbour == null) {
             return null;
         }
-        String[] result = NeoUtils.getNumericFields(neighbour);
+        String[] result = Utils.getNumericFields(neighbour);
         return result;
     }
 
     @Override
     public String[] getNeighbourAllFields(String neighbourName) {
-        Node neighbour = NeoUtils.findNeighbour(node, neighbourName);
+        Node neighbour = Utils.findNeighbour(node, neighbourName);
         if (neighbour == null) {
             return null;
         }
-        String[] result = NeoUtils.getAllFields(neighbour);
+        String[] result = Utils.getAllFields(neighbour);
         return result;
     }
 
     @Override
     public String[] getTransmissionAllFields(String neighbourName) {
-        Node neighbour = NeoUtils.findTransmission(node, neighbourName, NeoServiceProvider.getProvider().getService());
+        Node neighbour = Utils.findTransmission(node, neighbourName, NeoServiceProvider.getProvider().getService());
         if (neighbour == null) {
             return null;
         }
-        String[] result = NeoUtils.getAllFields(neighbour);
+        String[] result = Utils.getAllFields(neighbour);
         return result;
     }
 
@@ -145,14 +145,14 @@ public class PropertyHeaderImpl implements IPropertyHeader {
         List<String> result = new ArrayList<String>();
         Iterable<Relationship> neighb = node.getRelationships(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING);
         for (Relationship relationship : neighb) {
-            result.add(NeoUtils.getNeighbourPropertyName(NeoUtils.getSimpleNodeName(relationship.getOtherNode(node), "")));
+            result.add(Utils.getNeighbourPropertyName(Utils.getSimpleNodeName(relationship.getOtherNode(node), "")));
         }
         return result;
     }
 
     @Override
     public String[] getNeighbourIntegerFields(String neighbourName) {
-        Node neighbour = NeoUtils.findNeighbour(node, neighbourName);
+        Node neighbour = Utils.findNeighbour(node, neighbourName);
         if (neighbour == null) {
             return null;
         }
@@ -162,7 +162,7 @@ public class PropertyHeaderImpl implements IPropertyHeader {
 
     @Override
     public String[] getTransmissionIntegerFields(String neighbourName) {
-        Node neighbour = NeoUtils.findTransmission(node, neighbourName, NeoServiceProvider.getProvider().getService());
+        Node neighbour = Utils.findTransmission(node, neighbourName, NeoServiceProvider.getProvider().getService());
         if (neighbour == null) {
             return null;
         }
@@ -172,7 +172,7 @@ public class PropertyHeaderImpl implements IPropertyHeader {
 
     @Override
     public String[] getNeighbourDoubleFields(String neighbourName) {
-        Node neighbour = NeoUtils.findNeighbour(node, neighbourName);
+        Node neighbour = Utils.findNeighbour(node, neighbourName);
         if (neighbour == null) {
             return null;
         }
@@ -194,7 +194,7 @@ public class PropertyHeaderImpl implements IPropertyHeader {
 
     @Override
     public String[] getTransmissionDoubleFields(String neighbourName) {
-        Node neighbour = NeoUtils.findTransmission(node, neighbourName, NeoServiceProvider.getProvider().getService());
+        Node neighbour = Utils.findTransmission(node, neighbourName, NeoServiceProvider.getProvider().getService());
         if (neighbour == null) {
             return null;
         }

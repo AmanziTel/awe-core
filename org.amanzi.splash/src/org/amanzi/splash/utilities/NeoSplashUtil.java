@@ -31,14 +31,14 @@ import java.util.regex.Pattern;
 import net.refractions.udig.catalog.URLUtils;
 
 import org.amanzi.integrator.awe.AWEProjectManager;
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.nodes.CellID;
-import org.amanzi.neo.core.database.nodes.RubyProjectNode;
-import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
-import org.amanzi.neo.core.database.services.AweProjectService;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.AweProjectService;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.nodes.CellID;
+import org.amanzi.neo.services.nodes.RubyProjectNode;
+import org.amanzi.neo.services.nodes.SpreadsheetNode;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.splash.compare.SpreadsheetComparator;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.swing.SplashTableModel;
@@ -299,7 +299,7 @@ public class NeoSplashUtil {
 		try {
 			IWorkbenchPage page = workbench.getActiveWorkbenchWindow().getActivePage();
 			if (page != null) {			    
-				RubyProjectNode root = NeoCorePlugin.getDefault().getProjectService().findRubyProject(rdtProjectName);
+				RubyProjectNode root = NeoServiceFactory.getInstance().getProjectService().findRubyProject(rdtProjectName);
 				IEditorInput fi = new SplashEditorInput(getSpreadsheetName(spreadsheetURL), root);				
 				result = page.openEditor(fi, AMANZI_SPLASH_EDITOR);
 			}
@@ -443,7 +443,7 @@ public class NeoSplashUtil {
 	}
 	
 	public static String getFreeSpreadsheetName(String startName, String containerName){
-		AweProjectService projectService = NeoCorePlugin.getDefault().getProjectService();
+		AweProjectService projectService = NeoServiceFactory.getInstance().getProjectService();
 		if(projectService == null){
 			return startName;
 		}
@@ -471,7 +471,7 @@ public class NeoSplashUtil {
 	 * @return url of spreadsheet
 	 */
 	public static URL getSpeadsheetURL(String name) throws MalformedURLException {
-	    String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
+	    String databaseLocation = NeoServiceProviderUi.getProvider().getDefaultDatabaseLocation();
 	    String fullPath = "file://" + databaseLocation + "?" + INeoConstants.PROPERTY_NAME_NAME + "=" + name;
 	    
 	    return new URL(fullPath);	    
@@ -517,7 +517,7 @@ public class NeoSplashUtil {
 	    finally {
 	        transaction.success();
 	        transaction.finish();
-	        NeoServiceProvider.getProvider().commit();
+	        NeoServiceProviderUi.getProvider().commit();
 	        
 	        //Lagutko, 3.12.2009, open a Spreadsheet
 	        openSpreadsheet(PlatformUI.getWorkbench(), comparator.getSpreadsheet());

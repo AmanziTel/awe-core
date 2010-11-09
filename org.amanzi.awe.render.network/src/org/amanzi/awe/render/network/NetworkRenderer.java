@@ -43,17 +43,17 @@ import org.amanzi.awe.filters.AbstractFilter;
 import org.amanzi.awe.filters.FilterUtil;
 import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
-import org.amanzi.neo.core.INeoConstants;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkSiteType;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.CorrelationRelationshipTypes;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NetworkSiteType;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -216,7 +216,7 @@ public class NetworkRenderer extends RendererImpl {
         Map<Node, java.awt.Point> nodesMap = new HashMap<Node, java.awt.Point>();
         Map<Node, java.awt.Point> sectorMap = new HashMap<Node, java.awt.Point>();
         Map<Point, String> labelsMap = new HashMap<Point, String>();
-        GraphDatabaseService neo = NeoServiceProvider.getProvider().getService();
+        GraphDatabaseService neo = NeoServiceProviderUi.getProvider().getService();
         Transaction tx = neo.beginTx();
         NeoUtils.addTransactionLog(tx, Thread.currentThread(), "render Network");
         try {
@@ -912,7 +912,7 @@ public class NetworkRenderer extends RendererImpl {
      * @param context context
      */
     private void drawAnalyser(Graphics2D g, Node mainNode, Point starPoint, String property, Map<Node, Point> nodesMap) {
-        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+        Transaction tx = NeoServiceProviderUi.getProvider().getService().beginTx();
         try {
             if (aggNode == null) {
                 return;
@@ -960,7 +960,7 @@ public class NetworkRenderer extends RendererImpl {
      */
     private String getSelectProperty(GeoNeo geoNeo) {
         String result = null;
-        Transaction transaction = NeoServiceProvider.getProvider().getService().beginTx();
+        Transaction transaction = NeoServiceProviderUi.getProvider().getService().beginTx();
         try {
             result = geoNeo.getProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION, "").toString();
             

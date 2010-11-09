@@ -18,11 +18,11 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.Utils;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -42,7 +42,7 @@ import org.neo4j.graphdb.Traverser.Order;
 
 public class Root extends NeoNode {
 
-    protected NeoServiceProvider serviceProvider;
+    protected NeoServiceProviderUi serviceProvider;
     
     /**
      * Constructor that creates Root
@@ -50,7 +50,7 @@ public class Root extends NeoNode {
      * @param serviceProvider serviceProvider
      */
     
-    public Root(NeoServiceProvider serviceProvider) {
+    public Root(NeoServiceProviderUi serviceProvider) {
         super(serviceProvider.getService().getReferenceNode(),1);
         this.serviceProvider = serviceProvider;
     }

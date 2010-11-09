@@ -15,7 +15,7 @@ package org.amanzi.awe.catalog.neo.listeners;
 import net.refractions.udig.project.interceptor.LayerInterceptor;
 import net.refractions.udig.project.internal.Layer;
 
-import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
 
 /**
  * <p>

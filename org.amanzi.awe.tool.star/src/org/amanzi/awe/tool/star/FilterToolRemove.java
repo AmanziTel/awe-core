@@ -19,9 +19,9 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.tool.AbstractModalTool;
 
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -61,7 +61,7 @@ public class FilterToolRemove extends AbstractModalTool {
      * @throws IOException 
      */
     private void updateNetworksLayer(IMap map) throws IOException {
-        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+        GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
         Transaction tx = service.beginTx();
         try{
         for (ILayer layer : map.getMapLayers()) {

@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.amanzi.awe.views.calls.statistics.constants.IStatisticsConstants;
-import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.services.INeoConstants;
 import org.neo4j.graphdb.Node;
 
 /**

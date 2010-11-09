@@ -25,10 +25,10 @@ import net.refractions.udig.style.IStyleConfigurator;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.catalog.neo.NeoGeoResource;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.NetworkTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.NetworkTypes;
 import org.amanzi.neo.services.statistic.PropertyHeader;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionEvent;
@@ -532,7 +532,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
             GeoNeo geoNeo = layer1.findGeoResource(NeoGeoResource.class).resolve(GeoNeo.class, null);
             isNetwork = geoNeo.getGisType() == GisTypes.NETWORK;
             if (isNetwork) {
-                GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+                GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
                 //TODO now we store network type in gis node.
 //                Node mainNode = NeoUtils.getMainNodeFromGis(geoNeo.getMainGisNode(), service);
                 isProbe = NetworkTypes.PROBE.checkType(geoNeo.getMainGisNode(), service);

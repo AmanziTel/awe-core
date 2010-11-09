@@ -23,15 +23,15 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.IValidateResult;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.Utils;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.wizard.WizardPage;

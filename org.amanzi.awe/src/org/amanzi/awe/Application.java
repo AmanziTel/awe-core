@@ -23,7 +23,7 @@ import net.refractions.udig.internal.ui.UDIGApplication;
 import net.refractions.udig.internal.ui.UDIGWorkbenchAdvisor;
 
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.splash.ui.SplashPlugin;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -105,7 +105,7 @@ public class Application extends UDIGApplication implements IApplication {
          */
         public void createService() {
             try {
-                String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
+                String databaseLocation = NeoServiceProviderUi.getProvider().getDefaultDatabaseLocation();
                 ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
                 List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(
                         new URL("file://" + databaseLocation));

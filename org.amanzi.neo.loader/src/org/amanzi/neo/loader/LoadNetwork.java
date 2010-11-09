@@ -17,11 +17,11 @@ import java.io.File;
 import net.refractions.udig.project.ui.tool.AbstractActionTool;
 
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.enums.NetworkFileType;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
+import org.amanzi.neo.services.enums.NetworkFileType;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;

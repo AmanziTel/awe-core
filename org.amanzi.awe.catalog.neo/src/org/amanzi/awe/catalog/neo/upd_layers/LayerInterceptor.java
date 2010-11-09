@@ -21,10 +21,10 @@ import net.refractions.udig.project.LayerEvent.EventType;
 import net.refractions.udig.project.internal.Layer;
 
 import org.amanzi.awe.catalog.neo.NeoGeoResource;
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.ActionUtil.RunnableWithResult;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
+import org.amanzi.neo.services.utils.RunnableWithResult;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.SWT;
@@ -71,7 +71,7 @@ public class LayerInterceptor implements net.refractions.udig.project.intercepto
     protected void changeGisName(final Layer layer) {
         IProgressMonitor monitor = new NullProgressMonitor();
         IGeoResource resource = layer.findGeoResource(NeoGeoResource.class);
-        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+        Transaction tx = NeoServiceProviderUi.getProvider().getService().beginTx();
         try {
             NeoGeoResource geoRes = resource.resolve(NeoGeoResource.class, monitor);
             Node gisNode = geoRes.resolve(Node.class, monitor);
@@ -85,7 +85,7 @@ public class LayerInterceptor implements net.refractions.udig.project.intercepto
             }
             gisNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
 
-            NeoServiceProvider.getProvider().commit();
+            NeoServiceProviderUi.getProvider().commit();
             layer.setID(geoRes.getIdentifier());
 
         } catch (IOException e) {

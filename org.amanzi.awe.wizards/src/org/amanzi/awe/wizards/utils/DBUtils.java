@@ -20,13 +20,13 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.statistic.PropertyHeader;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -85,7 +85,7 @@ public class DBUtils {
     public static final HashMap<String, Node> getDatasets(GisTypes gisType) {
         Transaction tx = NeoUtils.beginTransaction();
         try {
-            GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+            GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
             Node refNode = service.getReferenceNode();
             LinkedHashMap<String, Node> datasets = new LinkedHashMap<String, Node>();
             for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
@@ -107,7 +107,7 @@ public class DBUtils {
     public static final HashMap<String, Node> getOSSs() {
         Transaction tx = NeoUtils.beginTransaction();
         try {
-            GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+            GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
             Node refNode = service.getReferenceNode();
             LinkedHashMap<String, Node> datasets = new LinkedHashMap<String, Node>();
             for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {

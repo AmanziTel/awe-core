@@ -20,7 +20,7 @@ import org.amanzi.awe.views.calls.Messages;
 import org.amanzi.awe.views.calls.statistics.CallStatisticsUtills;
 import org.amanzi.awe.views.calls.statistics.constants.IStatisticsConstants;
 import org.amanzi.awe.views.calls.statistics.constants.SecondLevelConstants;
-import org.amanzi.neo.core.enums.ColoredFlags;
+import org.amanzi.neo.services.ui.enums.ColoredFlags;
 import org.neo4j.graphdb.Node;
 
 /**

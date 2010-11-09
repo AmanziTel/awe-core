@@ -20,8 +20,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.amanzi.neo.core.enums.INodeType;
-import org.amanzi.neo.core.enums.NodeTypes;
+import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.viewers.CellEditor;

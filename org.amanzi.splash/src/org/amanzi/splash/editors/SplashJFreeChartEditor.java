@@ -18,14 +18,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 
-
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.listener.IUpdateViewListener;
-import org.amanzi.neo.core.database.nodes.ChartNode;
-import org.amanzi.neo.core.database.nodes.RubyProjectNode;
-import org.amanzi.neo.core.database.services.AweProjectService;
-import org.amanzi.neo.core.database.services.events.UpdateViewEvent;
-import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
+import org.amanzi.neo.services.AweProjectService;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.events.UpdateViewEvent;
+import org.amanzi.neo.services.events.UpdateViewEventType;
+import org.amanzi.neo.services.nodes.ChartNode;
+import org.amanzi.neo.services.nodes.RubyProjectNode;
+import org.amanzi.neo.services.ui.IUpdateViewListener;
+import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
 import org.amanzi.splash.chart.Charts;
 import org.amanzi.splash.ui.ChartEditorInput;
 import org.amanzi.splash.ui.SplashPlugin;
@@ -98,7 +98,7 @@ public class SplashJFreeChartEditor extends EditorPart implements
     }
 
     private ChartNode getChartNode() {
-        AweProjectService projectService = NeoCorePlugin.getDefault().getProjectService();
+        AweProjectService projectService = NeoServiceFactory.getInstance().getProjectService();
         ChartEditorInput chartEI = (ChartEditorInput)getEditorInput();
         RubyProjectNode rubyProject = projectService.findRubyProject(chartEI.getProjectName());
         ChartNode chartNode = projectService.getChartByName(rubyProject, chartEI.getChartName());
@@ -254,7 +254,7 @@ public class SplashJFreeChartEditor extends EditorPart implements
     public void dispose() {
         super.dispose();
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
-        NeoCorePlugin.getDefault().getUpdateViewManager().removeListener(this);
+        NeoServicesUiPlugin.getDefault().getUpdateViewManager().removeListener(this);
     }
 
 	/*
@@ -275,7 +275,7 @@ public class SplashJFreeChartEditor extends EditorPart implements
 					+ "does not exist.");
 
 		IEditorInput ei = validateEditorInput(editorInput);
-		NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
+		NeoServicesUiPlugin.getDefault().getUpdateViewManager().addListener(this);
 		// This message includes class names to help
 		// the programmer / reader; production code would instead
 		// log an error and provide a helpful, friendly message.

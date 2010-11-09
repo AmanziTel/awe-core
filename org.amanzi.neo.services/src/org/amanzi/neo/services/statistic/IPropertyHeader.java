@@ -16,7 +16,8 @@ package org.amanzi.neo.services.statistic;
 import java.util.Collection;
 import java.util.Map;
 
-import org.amanzi.neo.core.enums.INodeType;
+import org.amanzi.neo.services.enums.INodeType;
+
 
 // TODO: Auto-generated Javadoc
 /**

@@ -20,7 +20,7 @@ import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.StyleContent;
 
 import org.amanzi.awe.catalog.neo.NeoGeoResource;
-import org.amanzi.neo.core.enums.GisTypes;
+import org.amanzi.neo.services.enums.GisTypes;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.IMemento;
 

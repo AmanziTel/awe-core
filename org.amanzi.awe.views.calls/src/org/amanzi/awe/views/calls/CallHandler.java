@@ -16,7 +16,7 @@ package org.amanzi.awe.views.calls;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.amanzi.neo.core.enums.CallProperties;
+import org.amanzi.neo.services.enums.CallProperties;
 import org.neo4j.graphdb.Node;
 
 /**

@@ -17,7 +17,7 @@ import javax.swing.CellEditor;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 
-import org.amanzi.neo.core.utils.ActionUtil;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.amanzi.splash.swing.Cell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;

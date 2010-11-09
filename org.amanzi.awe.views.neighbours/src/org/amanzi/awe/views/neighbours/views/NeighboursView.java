@@ -28,17 +28,17 @@ import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesAndMapEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesEvent;
 import org.amanzi.awe.views.neighbours.NeighboursPlugin;
 import org.amanzi.awe.views.neighbours.RelationWrapper;
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkSiteType;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.icons.IconManager;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.service.listener.INeoServiceProviderListener;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NetworkSiteType;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
+import org.amanzi.neo.services.ui.INeoServiceProviderListener;
+import org.amanzi.neo.services.ui.IconManager;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -97,7 +97,7 @@ import org.neo4j.graphdb.Traverser.Order;
 public class NeighboursView extends ViewPart implements INeoServiceProviderListener {
     //TODO ZNN need main solution for using class NeoServiceProviderListener instead of interface INeoServiceProviderListener  
 
-    private GraphDatabaseService graphDatabaseService=NeoServiceProvider.getProvider().getService();
+    private GraphDatabaseService graphDatabaseService=NeoServiceProviderUi.getProvider().getService();
     /** String SHOW_NEIGHBOUR field */
     private static final String SHOW_NEIGHBOUR = "show neighbour relation '%s' > '%s' on map";
     private static final String SHOW_SERVE = "show all '%s' neighbours on map";
@@ -795,7 +795,7 @@ public class NeighboursView extends ViewPart implements INeoServiceProviderListe
         if (gis == null || neighbour.getSelectionIndex() < 0) {
             return null;
         }
-        return NeoUtils.findNeighbour(NeoUtils.findRoot(gis, NeoServiceProvider.getProvider().getService()), neighbour.getText());
+        return NeoUtils.findNeighbour(NeoUtils.findRoot(gis, NeoServiceProviderUi.getProvider().getService()), neighbour.getText());
     }
 
     /**
@@ -1059,7 +1059,7 @@ public class NeighboursView extends ViewPart implements INeoServiceProviderListe
 
     @Override
     public void onNeoStart(Object source) {
-        graphDatabaseService = NeoServiceProvider.getProvider().getService();
+        graphDatabaseService = NeoServiceProviderUi.getProvider().getService();
     }
 
     @Override

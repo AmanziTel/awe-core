@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.amanzi.neo.core.enums.CallProperties.CallType;
+import org.amanzi.neo.services.enums.CallProperties.CallType;
 
 // TODO: Auto-generated Javadoc
 /**

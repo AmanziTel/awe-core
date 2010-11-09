@@ -24,7 +24,6 @@ import org.amanzi.awe.gpeh.parser.internal.GPEHEvent.Event;
 import org.amanzi.awe.l3messages.AsnParserEvent;
 import org.amanzi.awe.l3messages.IAsnParserListener;
 import org.amanzi.awe.l3messages.MessageDecoder;
-import org.amanzi.neo.core.enums.NodeTypes;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.loader.core.DatasetInfo;
 import org.amanzi.neo.loader.core.saver.ISaver;
@@ -33,6 +32,7 @@ import org.amanzi.neo.services.GpehReportUtil;
 import org.amanzi.neo.services.GpehStatisticModel;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.RrcMeasurement;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 

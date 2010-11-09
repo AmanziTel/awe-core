@@ -4,8 +4,14 @@ Bundle-Name: Services
 Bundle-SymbolicName: org.amanzi.neo.services
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Require-Bundle: org.amanzi.neo.db;bundle-version="1.0.0",
- org.neo4j;bundle-version="1.0.0"
+Require-Bundle: org.amanzi.neo.db;bundle-version="1.0.0";visibility:=reexport,
+ org.neo4j;bundle-version="1.0.0",
+ net.refractions.udig.libs;bundle-version="1.1.1"
 Export-Package: org.amanzi.neo.services,
+ org.amanzi.neo.services.enums,
+ org.amanzi.neo.services.events,
+ org.amanzi.neo.services.index.hilbert,
  org.amanzi.neo.services.indexes,
- org.amanzi.neo.services.statistic
+ org.amanzi.neo.services.nodes,
+ org.amanzi.neo.services.statistic,
+ org.amanzi.neo.services.utils

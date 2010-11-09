@@ -13,12 +13,12 @@
 
 package org.amanzi.neo.services.internal;
 
-import org.amanzi.neo.core.enums.INodeType;
+import org.amanzi.neo.services.enums.INodeType;
+
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ *Dynamic node type provide work with user-defined node types
  * </p>
  * @author TsAr
  * @since 1.0.0

@@ -19,22 +19,22 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.services.events.UpdateDatabaseEvent;
-import org.amanzi.neo.core.database.services.events.UpdateDrillDownEvent;
-import org.amanzi.neo.core.database.services.events.UpdateViewEventType;
-import org.amanzi.neo.core.enums.INodeType;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.ActionUtil;
 import org.amanzi.neo.core.utils.EditPropertiesPage;
 import org.amanzi.neo.core.utils.EditPropertiesPage.PropertyWrapper;
-import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.loader.AbstractLoader;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.events.UpdateDatabaseEvent;
+import org.amanzi.neo.services.events.UpdateDrillDownEvent;
+import org.amanzi.neo.services.events.UpdateViewEventType;
 import org.amanzi.neo.services.statistic.IStatistic;
 import org.amanzi.neo.services.statistic.StatisticManager;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -123,7 +123,7 @@ public class CreateNetworkWizard extends Wizard implements INewWizard {
 
     @Override
     public boolean performFinish() {
-        NeoServiceProvider.getProvider().commit();
+        NeoServiceProviderUi.getProvider().commit();
         Job job=new Job("finish") {
             
             @Override

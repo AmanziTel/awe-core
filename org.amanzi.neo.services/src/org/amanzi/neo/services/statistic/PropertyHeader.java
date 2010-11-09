@@ -23,17 +23,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.INodeType;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.Utils;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.statistic.internal.PropertyHeaderImpl;
 import org.amanzi.neo.services.statistic.internal.StatisticRelationshipTypes;
 import org.hsqldb.lib.StringUtil;
@@ -48,6 +46,7 @@ import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Traverser;
 import org.neo4j.graphdb.traversal.Uniqueness;
+import org.neo4j.helpers.Pair;
 import org.neo4j.helpers.Predicate;
 import org.neo4j.kernel.Traversal;
 
@@ -87,8 +86,8 @@ public class PropertyHeader implements IPropertyHeader {
      * @param node - gis Node
      */
     private PropertyHeader(Node node) {
-        isGis = NeoUtils.isGisNode(node);
-        isDataset = !isGis && NeoUtils.isDatasetNode(node);
+        isGis = Utils.isGisNode(node);
+        isDataset = !isGis && Utils.isDatasetNode(node);
         this.node = node;
         havePropertyNode = node.hasRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
     }
@@ -101,11 +100,11 @@ public class PropertyHeader implements IPropertyHeader {
      */
     @Override
     public String[] getNeighbourNumericFields(String neighbourName) {
-        Node neighbour = NeoUtils.findNeighbour(node, neighbourName);
+        Node neighbour = Utils.findNeighbour(node, neighbourName);
         if (neighbour == null) {
             return null;
         }
-        String[] result = NeoUtils.getNumericFields(neighbour);
+        String[] result = Utils.getNumericFields(neighbour);
         return result;
     }
 
@@ -120,11 +119,11 @@ public class PropertyHeader implements IPropertyHeader {
         if (isGis) {
             return getDataVault().getNeighbourAllFields(neighbourName);
         }
-        Node neighbour = NeoUtils.findNeighbour(node, neighbourName);
+        Node neighbour = Utils.findNeighbour(node, neighbourName);
         if (neighbour == null) {
             return null;
         }
-        String[] result = NeoUtils.getAllFields(neighbour);
+        String[] result = Utils.getAllFields(neighbour);
         return result;
     }
 
@@ -139,11 +138,11 @@ public class PropertyHeader implements IPropertyHeader {
         if (isGis) {
             return getDataVault().getTransmissionAllFields(neighbourName);
         }
-        Node neighbour = NeoUtils.findTransmission(node, neighbourName, NeoServiceProvider.getProvider().getService());
+        Node neighbour = Utils.findTransmission(node, neighbourName, NeoServiceProvider.getProvider().getService());
         if (neighbour == null) {
             return null;
         }
-        String[] result = NeoUtils.getAllFields(neighbour);
+        String[] result = Utils.getAllFields(neighbour);
         return result;
     }
 
@@ -155,7 +154,7 @@ public class PropertyHeader implements IPropertyHeader {
     @Override
     public String[] getNumericFields(String nodeTypeId) {
 
-        return havePropertyNode ? getDefinedNumericFields() : isGis ? getDataVault().getNumericFields(nodeTypeId) : NeoUtils.getNumericFields(node);
+        return havePropertyNode ? getDefinedNumericFields() : isGis ? getDataVault().getNumericFields(nodeTypeId) : Utils.getNumericFields(node);
     }
 
     /**
@@ -169,7 +168,7 @@ public class PropertyHeader implements IPropertyHeader {
 
     @Override
     public String[] getAllFields(String nodeTypeId) {
-        return havePropertyNode ? getDefinedAllFields() : isGis ? getDataVault().getAllFields(nodeTypeId) : getNumericFields("-main-type-");// NeoUtils.getAllFields(node);
+        return havePropertyNode ? getDefinedAllFields() : isGis ? getDataVault().getAllFields(nodeTypeId) : getNumericFields("-main-type-");// Utils.getAllFields(node);
     }
 
     public String[] getIdentityFields() {
@@ -282,7 +281,7 @@ public class PropertyHeader implements IPropertyHeader {
         }
         Iterable<Relationship> neighb = node.getRelationships(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING);
         for (Relationship relationship : neighb) {
-            result.add(NeoUtils.getNeighbourPropertyName(NeoUtils.getSimpleNodeName(relationship.getOtherNode(node), "")));
+            result.add(Utils.getNeighbourPropertyName(Utils.getSimpleNodeName(relationship.getOtherNode(node), "")));
         }
         return result;
     }
@@ -296,7 +295,7 @@ public class PropertyHeader implements IPropertyHeader {
         if (isGis) {
             return getDataVault().getNeighbourIntegerFields(neighbourName);
         }
-        Node neighbour = NeoUtils.findNeighbour(node, neighbourName);
+        Node neighbour = Utils.findNeighbour(node, neighbourName);
         if (neighbour == null) {
             return null;
         }
@@ -313,7 +312,7 @@ public class PropertyHeader implements IPropertyHeader {
         if (isGis) {
             return getDataVault().getTransmissionIntegerFields(neighbourName);
         }
-        Node neighbour = NeoUtils.findTransmission(node, neighbourName, NeoServiceProvider.getProvider().getService());
+        Node neighbour = Utils.findTransmission(node, neighbourName, NeoServiceProvider.getProvider().getService());
         if (neighbour == null) {
             return null;
         }
@@ -330,7 +329,7 @@ public class PropertyHeader implements IPropertyHeader {
         if (isGis) {
             return getDataVault().getNeighbourDoubleFields(neighbourName);
         }
-        Node neighbour = NeoUtils.findNeighbour(node, neighbourName);
+        Node neighbour = Utils.findNeighbour(node, neighbourName);
         if (neighbour == null) {
             return null;
         }
@@ -347,7 +346,7 @@ public class PropertyHeader implements IPropertyHeader {
         if (isGis) {
             return getDataVault().getTransmissionDoubleFields(neighbourName);
         }
-        Node neighbour = NeoUtils.findTransmission(node, neighbourName, NeoServiceProvider.getProvider().getService());
+        Node neighbour = Utils.findTransmission(node, neighbourName, NeoServiceProvider.getProvider().getService());
         if (neighbour == null) {
             return null;
         }
@@ -417,7 +416,7 @@ public class PropertyHeader implements IPropertyHeader {
             this.statisticsRelation = statisticsRelation;
             this.typeNode = typeNode;
             this.valueNode = valueNode;
-            name = NeoUtils.getSimpleNodeName(typeNode, "");
+            name = Utils.getSimpleNodeName(typeNode, "");
         }
 
         /**
@@ -533,7 +532,7 @@ public class PropertyHeader implements IPropertyHeader {
     protected <T> T getAverageValue(String nodeType, final String propertyName, T defValue) {
         if (!NodeTypes.SECTOR.getId().equals(nodeType))
             return defValue;
-        Node root = NeoUtils.getParentNode(node, NodeTypes.NETWORK.getId());
+        Node root = Utils.getParentNode(node, NodeTypes.NETWORK.getId());
         final TraversalDescription td = Traversal.description().depthFirst().relationships(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING).relationships(
                 GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
         // .uniqueness(Uniqueness.RELATIONSHIP_GLOBAL)

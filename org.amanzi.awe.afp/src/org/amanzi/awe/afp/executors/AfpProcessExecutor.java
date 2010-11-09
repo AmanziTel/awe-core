@@ -26,7 +26,7 @@ import org.amanzi.awe.afp.Activator;
 import org.amanzi.awe.afp.AfpEngine;
 import org.amanzi.awe.afp.loaders.AfpExporter;
 import org.amanzi.awe.console.AweConsolePlugin;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;

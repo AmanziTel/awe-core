@@ -18,17 +18,17 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.CorrelationRelationshipTypes;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.GisTypes;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.service.listener.INeoServiceProviderListener;
-import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.NeoUtils;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.CorrelationRelationshipTypes;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.statistic.PropertyHeader;
+import org.amanzi.neo.services.ui.INeoServiceProviderListener;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
@@ -84,7 +84,7 @@ public class CorrelationList extends ViewPart implements INeoServiceProviderList
     private Combo cDrive;
     private Combo cNetwork;
     private TableViewer table;
-    private GraphDatabaseService graphDatabaseService = NeoServiceProvider.getProvider().getService();
+    private GraphDatabaseService graphDatabaseService = NeoServiceProviderUi.getProvider().getService();
     private final LinkedHashMap<String, Node> gisDriveNodes = new LinkedHashMap<String, Node>();
     private final LinkedHashMap<String, Node> gisNetworkNodes = new LinkedHashMap<String, Node>();
     private TableLabelProvider labelProvider;
@@ -516,7 +516,7 @@ public class CorrelationList extends ViewPart implements INeoServiceProviderList
 
     @Override
     public void onNeoStart(Object source) {
-        graphDatabaseService = NeoServiceProvider.getProvider().getService();
+        graphDatabaseService = NeoServiceProviderUi.getProvider().getService();
     }
 
     @Override

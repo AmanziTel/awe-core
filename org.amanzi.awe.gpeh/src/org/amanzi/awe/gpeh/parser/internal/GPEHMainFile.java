@@ -18,7 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.services.Pair;
 
 
 /**

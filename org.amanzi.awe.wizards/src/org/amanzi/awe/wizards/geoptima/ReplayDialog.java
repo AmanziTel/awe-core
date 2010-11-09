@@ -29,10 +29,10 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.wizards.geoptima.VisualiseLayer.VisualiseParam;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -320,7 +320,7 @@ public class ReplayDialog extends ProcessDialog {
      */
     private ILayer launchLayer(Node gisNode) {
         try {
-            String databaseLocation = NeoServiceProvider.getProvider().getDefaultDatabaseLocation();
+            String databaseLocation = NeoServiceProviderUi.getProvider().getDefaultDatabaseLocation();
             URL url = new URL("file://" + databaseLocation);
             List<ILayer> layers = ApplicationGIS.getActiveMap().getMapLayers();
             for (ILayer iLayer : layers) {

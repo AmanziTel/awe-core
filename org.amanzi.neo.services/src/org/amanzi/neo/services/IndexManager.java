@@ -15,11 +15,9 @@ package org.amanzi.neo.services;
 
 import java.io.IOException;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.INodeType;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.utils.GisProperties;
 import org.amanzi.neo.db.manager.DatabaseManager;
+import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;

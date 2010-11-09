@@ -13,8 +13,8 @@
 
 package org.amanzi.splash.job;
 
-import org.amanzi.neo.core.database.nodes.CellID;
-import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.services.nodes.CellID;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.swing.SplashTableModel;
 import org.amanzi.splash.ui.SplashPlugin;
@@ -64,7 +64,7 @@ public class InterpretTask implements SplashJobTask {
     @Override
     public SplashJobTaskResult execute() {
     	//create a real Transaction in this thread    	
-        Transaction transaction = NeoServiceProvider.getProvider().getService().beginTx();
+        Transaction transaction = NeoServiceProviderUi.getProvider().getService().beginTx();
         
         try {
         	//was copied from SplashTableMode.interpret

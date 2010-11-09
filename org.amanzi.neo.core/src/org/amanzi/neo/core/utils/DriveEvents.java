@@ -16,11 +16,12 @@ package org.amanzi.neo.core.utils;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.amanzi.neo.core.INeoConstants;
-import org.amanzi.neo.core.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.core.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.core.icons.IconManager;
-import org.amanzi.neo.core.icons.IconManager.EventIcons;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.ui.IconManager;
+import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.ui.IconManager.EventIcons;
 import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;

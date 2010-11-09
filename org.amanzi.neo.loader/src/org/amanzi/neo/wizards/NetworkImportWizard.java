@@ -16,10 +16,10 @@ import java.io.File;
 import java.io.IOException;
 
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.enums.NetworkFileType;
 import org.amanzi.neo.loader.NetworkLoader;
 import org.amanzi.neo.loader.ProbeLoader;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
+import org.amanzi.neo.services.enums.NetworkFileType;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;

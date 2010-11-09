@@ -18,10 +18,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import org.amanzi.neo.core.database.nodes.CellNode;
-import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
-import org.amanzi.neo.core.enums.SplashRelationshipTypes;
-import org.amanzi.neo.core.utils.Pair;
+import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.enums.SplashRelationshipTypes;
+import org.amanzi.neo.services.nodes.CellNode;
+import org.amanzi.neo.services.nodes.SpreadsheetNode;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.utilities.SpreadsheetCreator;
 import org.apache.log4j.Logger;

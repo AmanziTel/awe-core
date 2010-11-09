@@ -18,7 +18,7 @@ import java.awt.Paint;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.amanzi.neo.core.INeoConstants;
+import org.amanzi.neo.services.INeoConstants;
 import org.jfree.chart.renderer.category.BarRenderer;
 
 /**

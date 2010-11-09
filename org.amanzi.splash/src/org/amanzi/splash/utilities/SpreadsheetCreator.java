@@ -16,14 +16,14 @@ package org.amanzi.splash.utilities;
 import java.net.MalformedURLException;
 
 import org.amanzi.integrator.awe.AWEProjectManager;
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.nodes.AweProjectNode;
-import org.amanzi.neo.core.database.nodes.CellNode;
-import org.amanzi.neo.core.database.nodes.RubyProjectNode;
-import org.amanzi.neo.core.database.nodes.SplashFormatNode;
-import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
-import org.amanzi.neo.core.database.services.AweProjectService;
-import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.services.AweProjectService;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.nodes.AweProjectNode;
+import org.amanzi.neo.services.nodes.CellNode;
+import org.amanzi.neo.services.nodes.RubyProjectNode;
+import org.amanzi.neo.services.nodes.SplashFormatNode;
+import org.amanzi.neo.services.nodes.SpreadsheetNode;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.splash.database.services.SpreadsheetService;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.ui.SplashPlugin;
@@ -86,8 +86,8 @@ public class SpreadsheetCreator {
         this.spreadsheetName = spreadsheetName;
         
         //initializing services
-        projectService = NeoCorePlugin.getDefault().getProjectService();
-        neoService = NeoServiceProvider.getProvider().getService();
+        projectService = NeoServiceFactory.getInstance().getProjectService();
+        neoService = NeoServiceProviderUi.getProvider().getService();
         spreadsheetService = SplashPlugin.getDefault().getSpreadsheetService();
     }
     
@@ -203,7 +203,7 @@ public class SpreadsheetCreator {
         transaction.success();
         transaction.finish();
         
-        NeoServiceProvider.getProvider().commit();
+        NeoServiceProviderUi.getProvider().commit();
         Transaction result = neoService.beginTx();
         
         return result;

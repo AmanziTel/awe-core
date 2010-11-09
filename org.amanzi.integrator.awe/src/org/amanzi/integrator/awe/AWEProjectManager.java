@@ -34,12 +34,12 @@ import net.refractions.udig.project.internal.Spreadsheet;
 import net.refractions.udig.project.internal.SpreadsheetType;
 import net.refractions.udig.project.internal.impl.ProjectFactoryImpl;
 
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.database.nodes.AweProjectNode;
-import org.amanzi.neo.core.database.nodes.RubyProjectNode;
-import org.amanzi.neo.core.database.nodes.SpreadsheetNode;
-import org.amanzi.neo.core.database.services.AweProjectService;
-import org.amanzi.neo.core.service.NeoServiceProvider;
+import org.amanzi.neo.services.AweProjectService;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.nodes.AweProjectNode;
+import org.amanzi.neo.services.nodes.RubyProjectNode;
+import org.amanzi.neo.services.nodes.SpreadsheetNode;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -437,7 +437,7 @@ public class AWEProjectManager {
         RubyProject ruby = findRubyProject(project, rubyProject.getName());
         if (ruby != null) {
             if (createSpreadsheetIfNotExist(ruby, sheetName, resourcePath, SpreadsheetType.NEO4J_SPREADSHEET)){
-            	NeoCorePlugin.getDefault().getProjectService().findOrCreateSpreadsheet(aweProjectName, rubyProject.getName(), sheetName);
+            	NeoServiceFactory.getInstance().getProjectService().findOrCreateSpreadsheet(aweProjectName, rubyProject.getName(), sheetName);
             }
         }        
 	}
@@ -503,7 +503,7 @@ public class AWEProjectManager {
 			spreadsheet.setSpreadsheetType(type);
 			rubyProject.getRubyElementsInternal().add(spreadsheet);
 			if (type==SpreadsheetType.NEO4J_SPREADSHEET){
-				 NeoCorePlugin.getDefault().getProjectService();
+				 NeoServiceFactory.getInstance().getProjectService();
 			}
 		}
 		return element == null;
@@ -681,11 +681,11 @@ public class AWEProjectManager {
         String rubyProjectName = rubyProjectResource.getName();
         String aweProjectName = getAWEprojectNameFromResource(rubyProjectResource);
         
-        AweProjectService projectService = NeoCorePlugin.getDefault().getProjectService();
+        AweProjectService projectService = NeoServiceFactory.getInstance().getProjectService();
         
         AweProjectNode aweProject = projectService.findOrCreateAweProject(aweProjectName);
         RubyProjectNode rubyProject = projectService.findOrCreateRubyProject(aweProject, rubyProjectName);
-        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+        Transaction tx = NeoServiceProviderUi.getProvider().getService().beginTx();
         try {
             Iterator<SpreadsheetNode> spreadsheetIterator = rubyProject.getSpreadsheets();
 
@@ -763,7 +763,7 @@ public class AWEProjectManager {
         //add elements to new Ruby Project
         newProject.getRubyElementsInternal().addAll(rubyProject.getRubyElementsInternal());
         
-        AweProjectService service = NeoCorePlugin.getDefault().getProjectService();
+        AweProjectService service = NeoServiceFactory.getInstance().getProjectService();
         service.renameRubyProject(aweProjectName, rubyProjectName, newName);
     }
 

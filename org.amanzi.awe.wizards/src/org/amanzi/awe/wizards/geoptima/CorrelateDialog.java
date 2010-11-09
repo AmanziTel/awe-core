@@ -24,14 +24,14 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import org.amanzi.awe.gps.GPSCorrelator;
-import org.amanzi.neo.core.enums.NodeTypes;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.ActionUtil;
-import org.amanzi.neo.core.utils.NeoTreeElement;
-import org.amanzi.neo.core.utils.NeoTreeLabelProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
+import org.amanzi.neo.services.ui.utils.NeoTreeElement;
+import org.amanzi.neo.services.ui.utils.NeoTreeLabelProvider;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
@@ -92,7 +92,7 @@ public class CorrelateDialog extends Dialog implements IPropertyChangeListener {
      */
     public CorrelateDialog(Shell parent) {
         super(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.CENTER);
-        service = NeoServiceProvider.getProvider().getService();
+        service = NeoServiceProviderUi.getProvider().getService();
         property = null;
     }
 

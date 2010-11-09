@@ -18,12 +18,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 
-import org.amanzi.neo.core.enums.OssType;
-import org.amanzi.neo.core.service.NeoServiceProvider;
-import org.amanzi.neo.core.utils.NeoUtils;
-import org.amanzi.neo.core.utils.Pair;
 import org.amanzi.neo.loader.dialogs.DriveDialog;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
+import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.enums.OssType;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.wizard.WizardPage;
@@ -70,7 +70,7 @@ public class OSSImportWizardPage extends WizardPage {
         super(pageName);
         setTitle(NeoLoaderPluginMessages.GpehTitle);
         setDescription(NeoLoaderPluginMessages.GpehDescr);
-        service = NeoServiceProvider.getProvider().getService();
+        service = NeoServiceProviderUi.getProvider().getService();
         ossDirType = new Pair<OssType, Exception>(null, null);
         validateFinish();
     }

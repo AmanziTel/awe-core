@@ -15,7 +15,7 @@ package org.amanzi.awe.views.network.view;
 
 import java.util.HashMap;
 
-import org.amanzi.neo.core.enums.INodeType;
+import org.amanzi.neo.services.enums.INodeType;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Display;

@@ -12,7 +12,7 @@
  */
 package org.amanzi.splash.console;
 
-import org.amanzi.neo.core.database.nodes.CellID;
+import org.amanzi.neo.services.nodes.CellID;
 import org.amanzi.splash.swing.Cell;
 import org.amanzi.splash.swing.SplashTableModel;
 
