@@ -164,6 +164,7 @@
 	  <module>org.amanzi.neo.loader.ui</module>
 	  <module>org.amanzi.neo.services</module>
 	  <module>org.amanzi.neo.services.ui</module>	  	  
+	  <module>org.amanzi.awe.ui</module>	  	  
     </modules>
     <build>
       <plugins>	  
