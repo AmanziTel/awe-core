@@ -32,6 +32,7 @@ import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.internal.DynamicNodeType;
 import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.PropertyContainer;
@@ -892,6 +893,16 @@ public class DatasetService extends AbstractService {
 
         return trd.traverse(node);
     }
+    
+    /**
+     * Gets the gis node by dataset.
+     * 
+     * @param dataset the dataset
+     * @return the gis node by dataset
+     */
+    public Node getGisNodeByDataset(Node dataset) {
+        return dataset.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).getStartNode();
+    }
 
     /**
      * Get the GIS node from root node. If GIS node not exist, it will be create.
@@ -1296,4 +1307,45 @@ public class DatasetService extends AbstractService {
         return new NodeResultImpl(result, isCreated);
     }
 
+    public Traverser getSectorsOfSite(Node site) {
+        //check node on Sector type
+        if (!getNodeType(site).equals(NodeTypes.SITE)) {
+            //TODO: better to throw an exception, but for now only return null
+            return null;
+        }
+        
+        return Traversal.description().breadthFirst().
+                         prune(Traversal.pruneAfterDepth(1)).
+                         relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).
+                         filter(Traversal.returnAllButStartNode()).
+                         traverse(site);
+    }
+    
+    /**
+     * Gets all dataset nodes.
+     * 
+     * @param service neoservice can not be null
+     * @return Map
+     */
+    public Traverser getAllDatasetNodes() {
+        return Traversal.description().depthFirst().prune(Traversal.pruneAfterDepth(2)).filter(new Predicate<Path>() {
+
+            @Override
+            public boolean accept(Path item) {
+                return item.endNode().hasProperty(INeoConstants.PROPERTY_TYPE_NAME) &&
+                       (item.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.DATASET.getId()) ||
+                        item.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.NETWORK.getId()));
+            }
+        }).traverse(databaseService.getReferenceNode());        
+    }
+    
+    /**
+     * Gets the dataset node by gis.
+     * 
+     * @param gis the gis
+     * @return the dataset node by gis
+     */
+    public Node getDatasetNodeByGis(Node gis) {
+        return gis.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode();
+    }
 }
