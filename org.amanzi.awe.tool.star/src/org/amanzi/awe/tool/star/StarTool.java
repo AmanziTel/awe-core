@@ -45,6 +45,8 @@ import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -85,7 +87,7 @@ public class StarTool extends AbstractModalTool {
     private Map<Long, java.awt.Point> nodesMap;
     private DrawShapeCommand drawSelectedSectorCommand;
     private Pair<Point, Long> selected;
-    private Node gisNode;
+    private Node datasetNode;
     private ILayer selectedLayer;
 
     /**
@@ -139,25 +141,25 @@ public class StarTool extends AbstractModalTool {
      */
     private void checkAnalysisData() {
         selectedLayer = getContext().getSelectedLayer();
-        if(gisNode != null && selectedLayer != null) {
+        if(datasetNode != null && selectedLayer != null) {
             Transaction tx = NeoServiceProviderUi.getProvider().getService().beginTx();
             try {
-                String aggregatedProperty = gisNode.getProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION, "").toString();
+                String aggregatedProperty = datasetNode.getProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION, "").toString();
                 if (aggregatedProperty.length() < 1) {
-                    gisNode = null;
+                    datasetNode = null;
                 }
                 tx.success();
             } finally {
                 tx.finish();
             }
-            if(gisNode != null) {
+            if(datasetNode != null) {
                 try {
                     Node node = null;
                     if(selectedLayer.getGeoResource().canResolve(Node.class)) {
                         node = selectedLayer.getGeoResource().resolve(Node.class, new NullProgressMonitor());
                     }
-                    if(!node.equals(gisNode)) {
-                        gisNode = null;
+                    if(!node.equals(datasetNode)) {
+                        datasetNode = null;
                         selectedLayer = null;
                     }
                 } catch (IOException e) {
@@ -166,7 +168,7 @@ public class StarTool extends AbstractModalTool {
                 }
             }
         }
-        if(gisNode == null || selectedLayer == null) {
+        if(datasetNode == null || selectedLayer == null) {
             chooseAnalysisData();
         }
     }
@@ -189,28 +191,14 @@ public class StarTool extends AbstractModalTool {
     private void chooseAnalysisData() {
         // First find valid Reuse Analyser datasets and selected properties
         LinkedHashMap<Node, String> selectedGisNodes = new LinkedHashMap<Node, String>();
-        Transaction tx = NeoServiceProviderUi.getProvider().getService().beginTx();
-        try {
-            Node root = NeoServiceProviderUi.getProvider().getService().getReferenceNode();
-            Iterator<Node> gisIterator = root.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    String property = currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").toString();
-                    return NodeTypes.GIS.getId().equals(property);
-                }
-            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
-            while (gisIterator.hasNext()) {
-                Node node = gisIterator.next();
-                String aggregatedProperty = node.getProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION, "").toString();
-                if (aggregatedProperty.length() > 0) {
-                    selectedGisNodes.put(node, aggregatedProperty);
-                }
+        
+        DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();    
+        for (Node dataset : datasetService.getAllDatasetNodes().nodes()) {
+            String aggregatedProperty = dataset.getProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION, "").toString();
+            if (aggregatedProperty.length() > 0) {
+                selectedGisNodes.put(dataset, aggregatedProperty);
             }
-            tx.success();
-        } finally {
-            tx.finish();
-        }
+        }         
         HashMap<Node, ILayer> validLayers = new HashMap<Node, ILayer>();
         ArrayList<Node> validNodes = new ArrayList<Node>();
 
@@ -219,6 +207,7 @@ public class StarTool extends AbstractModalTool {
             for (ILayer layer : getContext().getMapLayers()) {
                 if (layer.getGeoResource().canResolve(Node.class)) {
                     Node node = layer.getGeoResource().resolve(Node.class, new NullProgressMonitor());
+                    node = datasetService.getDatasetNodeByGis(node);
                     validLayers.put(node, layer);
                     if(selectedGisNodes.containsKey(node)) {
                         validNodes.add(node);
@@ -231,25 +220,25 @@ public class StarTool extends AbstractModalTool {
         // And finally decide what to do based on the results of above search
         if(validNodes.size()==1) {
             // Perfect match, use it
-            gisNode = validNodes.get(0);
+            datasetNode = validNodes.get(0);
         }else if (validNodes.size()>1) {
             // more than one match, check with selected layer, ask the user to select the best one
             for(Node node:validNodes){
                 ILayer layer = getContext().getSelectedLayer();
                 if(validLayers.get(node).equals(layer)) {
-                    gisNode = node;
+                    datasetNode = node;
                     selectedLayer = layer;
                     break;
                 }
             }
-            if(gisNode == null) {
+            if(datasetNode == null) {
                 // no selected layer matches, ask use to select a layer
-                gisNode = validNodes.get(0);
+                datasetNode = validNodes.get(0);
                 String message = "Several datasets are available for star analysis: \n";
                 for(Node node:validNodes){
                     message += " " + validLayers.get(node).getName();
                 }
-                message += "\nThe first set, "+validLayers.get(gisNode).getName()+", has been chosen for the analysis.";
+                message += "\nThe first set, "+validLayers.get(datasetNode).getName()+", has been chosen for the analysis.";
                 message += "Should you wish to use another, select the one you want in the layers view and restart the star analysis.";
                 tellUser(message);
             }
@@ -283,8 +272,8 @@ public class StarTool extends AbstractModalTool {
             message += "is visible as a layer in the current map.";
             tellUser(message);
         }
-        if(gisNode != null) {
-            selectedLayer = validLayers.get(gisNode);
+        if(datasetNode != null) {
+            selectedLayer = validLayers.get(datasetNode);
             if(selectedLayer!=null) {
                 getContext().sendASyncCommand(new SetLayerVisibilityCommand(selectedLayer,true));
                 if(selectedLayer != getContext().getSelectedLayer()) {
