@@ -151,13 +151,15 @@ public class NeoServicesUiPlugin extends AbstractUIPlugin  implements IUpdateVie
         return eventList;
     }
 
+
     /**
+     * Gets the image for type.
      *
-     * @param type
-     * @return
+     * @param type the type
+     * @return the image for type
      */
     public Image getImageForType(NodeTypes type) {
-        return null;
+        return    IconManager.getIconManager().getImage(type.getId());
     }
 
 }
