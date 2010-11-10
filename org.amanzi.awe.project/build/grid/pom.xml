@@ -86,6 +86,7 @@
     <module>org.rubypeople.rdt.debug.ui</module>
     <module>org.rubypeople.rdt.install</module>
     <module>org.rubypeople.rdt.launching</module>
+    <module>org.amanzi.awe.ui</module>
     <module>org.rubypeople.rdt.refactoring</module>
     <module>org.rubypeople.rdt.ui</module>
   </modules>
