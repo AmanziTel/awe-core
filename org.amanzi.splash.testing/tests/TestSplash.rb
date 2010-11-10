@@ -21,7 +21,7 @@ class TestSplash < Test::Unit::TestCase
         @spreadSheetName="TEST_SPREADSHEET"
         
         Java::org.amanzi.neo.core.NeoCorePlugin.default.initializer.startupTesting
-        puts Java::org.amanzi.neo.core.service.NeoServiceProvider.getProvider.getService
+        puts Java::org.amanzi.neo.db.manager.NeoServiceProvider.getProvider.getService
         
         puts "projectService begin" 
         @projectService=Java::org.amanzi.neo.core.NeoCorePlugin.getDefault().getProjectService()

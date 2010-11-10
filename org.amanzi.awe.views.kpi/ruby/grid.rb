@@ -7,13 +7,13 @@ module KPI
       data[:dis_tch_requests]
     end
 
-    annotation :name=>'DCCH Blocking Rate',:unit=>:percent
+    annotation :name=>'DCCH Blocking Rate',:unit=>:percent, :threshold=>5
 
     def self.dcch_blk_rate(data)
       data[:tel_dcch_requests]==0?0.0:data[:tel_dcch_failed]*100.0/data[:tel_dcch_requests]
     end
 
-    annotation :name=>'Dispatch blocking queue rate',:unit=>:percent
+    annotation :name=>'Dispatch blocking queue rate',:unit=>:percent, :threshold=>5
 
     def self.dispatch_blocking_queue_rate(data)
       data[:dis_tch_requests]==0?0.0:data[:dis_tch_queued]*100.0/data[:dis_tch_requests]

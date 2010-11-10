@@ -11,8 +11,8 @@ require "ruby/style"
 require 'ruby/search_utils'
 require "initKpi"
 
-include_class org.amanzi.neo.core.database.nodes.CellID
-include_class org.amanzi.neo.core.service.NeoServiceProvider
+#include_class org.amanzi.neo.core.database.nodes.CellID
+include_class org.amanzi.neo.db.manager.NeoServiceProvider
 
 include_class org.amanzi.awe.report.model.Report
 include_class org.amanzi.awe.report.model.Chart

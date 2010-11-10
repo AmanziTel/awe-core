@@ -6,7 +6,7 @@ require 'search'
 require 'neo_node'
 include Java
 
-include_class 'org.amanzi.neo.core.service.NeoServiceProvider'
+include_class 'org.amanzi.neo.db.manager.NeoServiceProvider'
 include_class 'org.amanzi.awe.views.kpi.KPIPlugin'
 
 splash_plugin = Java::org.eclipse.core.runtime.Platform.getBundle("org.amanzi.splash").getEntry("/")

@@ -1,7 +1,7 @@
 require 'neo4j'
 include Java
 
-include_class 'org.amanzi.neo.core.service.NeoServiceProvider'
+include_class 'org.amanzi.neo.db.manager.NeoServiceProvider'
 
 database_location = NeoServiceProvider.getProvider.getDefaultDatabaseLocation
 neo_service = NeoServiceProvider.getProvider.getService
