@@ -35,6 +35,7 @@ import org.amanzi.neo.services.nodes.RubyScriptNode;
 import org.amanzi.neo.services.nodes.SplashDatabaseException;
 import org.amanzi.neo.services.nodes.SplashDatabaseExceptionMessages;
 import org.amanzi.neo.services.nodes.SpreadsheetNode;
+import org.amanzi.neo.services.utils.Utils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;

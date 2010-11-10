@@ -16,7 +16,7 @@ package org.amanzi.neo.services.index.hilbert;
 import java.util.ArrayList;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
-import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.utils.Pair;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 

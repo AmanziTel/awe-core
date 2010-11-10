@@ -26,9 +26,9 @@ import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.Utils;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.statistic.StatisticManager;
+import org.amanzi.neo.services.utils.Utils;
 import org.neo4j.graphdb.Node;
 
 // TODO: Auto-generated Javadoc

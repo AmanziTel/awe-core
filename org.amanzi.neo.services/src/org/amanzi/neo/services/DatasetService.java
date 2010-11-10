@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.amanzi.neo.services.Utils.FilterAND;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.DriveTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
@@ -30,6 +29,8 @@ import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.enums.SplashRelationshipTypes;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.internal.DynamicNodeType;
+import org.amanzi.neo.services.utils.Utils;
+import org.amanzi.neo.services.utils.Utils.FilterAND;
 import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;

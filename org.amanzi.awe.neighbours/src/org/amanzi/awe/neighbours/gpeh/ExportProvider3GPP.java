@@ -24,8 +24,8 @@ import java.util.Map.Entry;
 
 import org.amanzi.awe.neighbours.gpeh.Calculator3GPPdBm.ValueType;
 import org.amanzi.awe.statistic.CallTimePeriods;
-import org.amanzi.neo.services.Pair;
 import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.utils.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.hsqldb.lib.StringUtil;

@@ -15,8 +15,8 @@ package org.amanzi.awe.neighbours.gpeh;
 
 import java.util.Set;
 
-import org.amanzi.neo.services.Utils;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.utils.Utils;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;

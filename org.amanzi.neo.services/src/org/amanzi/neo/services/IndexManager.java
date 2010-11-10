@@ -19,6 +19,7 @@ import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
+import org.amanzi.neo.services.utils.Utils;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Transaction;

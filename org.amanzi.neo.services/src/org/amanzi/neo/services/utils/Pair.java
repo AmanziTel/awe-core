@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.services;
+package org.amanzi.neo.services.utils;
 
 /**
  * A simple class for wrapping a couple of objects. Often for return types.

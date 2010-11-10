@@ -23,8 +23,8 @@ import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
 import org.amanzi.neo.services.DatasetService.NodeResult;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.utils.Utils;
 import org.amanzi.neo.services.GisProperties;
-import org.amanzi.neo.services.Utils;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 

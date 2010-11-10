@@ -13,7 +13,7 @@
 
 package org.amanzi.neo.services.ui.utils;
 
-import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.utils.Pair;
 import org.eclipse.core.runtime.IAdaptable;
 import org.neo4j.graphdb.Node;
 

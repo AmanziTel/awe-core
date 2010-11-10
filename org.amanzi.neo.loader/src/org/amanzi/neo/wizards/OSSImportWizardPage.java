@@ -20,10 +20,10 @@ import java.util.HashMap;
 
 import org.amanzi.neo.loader.dialogs.DriveDialog;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
-import org.amanzi.neo.services.Pair;
 import org.amanzi.neo.services.enums.OssType;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.utils.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.wizard.WizardPage;

@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.amanzi.awe.filters.experimental.GroupFilter;
-import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.utils.Pair;
 
 /**
  * <p>

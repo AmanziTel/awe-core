@@ -26,13 +26,13 @@ import java.util.regex.Pattern;
 
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.Pair;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.GisTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.utils.Pair;
 import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;

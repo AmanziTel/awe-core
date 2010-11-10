@@ -19,9 +19,9 @@ import java.util.Iterator;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.Pair;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.indexes.PropertyIndex;
+import org.amanzi.neo.services.utils.Pair;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;

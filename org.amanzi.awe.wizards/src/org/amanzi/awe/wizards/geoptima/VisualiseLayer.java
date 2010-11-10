@@ -32,13 +32,13 @@ import net.refractions.udig.project.ui.IAnimation;
 import net.refractions.udig.project.ui.commands.AbstractDrawCommand;
 
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.Pair;
-import org.amanzi.neo.services.Utils;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.utils.Pair;
+import org.amanzi.neo.services.utils.Utils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;

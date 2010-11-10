@@ -18,8 +18,8 @@ import java.util.List;
 
 import org.amanzi.awe.statistic.CallTimePeriods;
 import org.amanzi.neo.core.utils.export.IExportProvider;
-import org.amanzi.neo.services.Pair;
 import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.utils.Pair;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;

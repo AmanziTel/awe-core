@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.Utils;
 import org.amanzi.neo.services.enums.CallProperties;
 import org.amanzi.neo.services.enums.CallProperties.CallResult;
 import org.amanzi.neo.services.enums.CallProperties.CallType;
@@ -33,6 +32,7 @@ import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.utils.Utils;
 import org.eclipse.core.runtime.IAdaptable;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;

@@ -19,8 +19,8 @@ import java.util.Set;
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.Utils;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.utils.Utils;
 import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Node;
 

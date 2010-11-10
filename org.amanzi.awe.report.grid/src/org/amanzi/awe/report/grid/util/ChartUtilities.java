@@ -31,7 +31,7 @@ import org.amanzi.awe.statistics.database.entity.Statistics;
 import org.amanzi.awe.statistics.database.entity.StatisticsCell;
 import org.amanzi.awe.statistics.database.entity.StatisticsGroup;
 import org.amanzi.awe.statistics.database.entity.StatisticsRow;
-import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.utils.Pair;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;

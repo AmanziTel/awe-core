@@ -29,10 +29,10 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.wizards.geoptima.VisualiseLayer.VisualiseParam;
-import org.amanzi.neo.services.Pair;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.utils.Pair;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;

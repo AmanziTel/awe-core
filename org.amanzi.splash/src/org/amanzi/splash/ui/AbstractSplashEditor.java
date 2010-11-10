@@ -48,7 +48,6 @@ import javax.swing.table.TableModel;
 
 import org.amanzi.neo.services.AweProjectService;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.Pair;
 import org.amanzi.neo.services.nodes.CellNode;
 import org.amanzi.neo.services.nodes.ChartItemNode;
 import org.amanzi.neo.services.nodes.ChartNode;
@@ -59,6 +58,7 @@ import org.amanzi.neo.services.nodes.SplashDatabaseException;
 import org.amanzi.neo.services.nodes.SpreadsheetNode;
 import org.amanzi.neo.services.ui.INeoServiceProviderListener;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
+import org.amanzi.neo.services.utils.Pair;
 import org.amanzi.splash.chart.ChartType;
 import org.amanzi.splash.database.services.SpreadsheetService;
 import org.amanzi.splash.swing.Cell;

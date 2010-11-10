@@ -16,7 +16,7 @@ package org.amanzi.neo.services.enums;
 import java.util.ArrayList;
 
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.Utils;
+import org.amanzi.neo.services.utils.Utils;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;

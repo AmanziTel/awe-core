@@ -19,10 +19,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.Utils;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.utils.Utils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;

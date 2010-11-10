@@ -18,7 +18,7 @@ import org.neo4j.index.lucene.LuceneIndexService;
 
 /**
  * <p>
- *
+ *NeoService provider - do not use in services - only for limited using. You should use NeoServiceProviderUi
  * </p>
  * @author tsinkel_a
  * @since 1.0.0
@@ -37,6 +37,7 @@ import org.neo4j.index.lucene.LuceneIndexService;
      * NeoService
      */
     private GraphDatabaseService neoService;
+    private INeoManager manager;
     /**
      * Creates an instance of NeoServiceProvider
      *
@@ -64,7 +65,8 @@ import org.neo4j.index.lucene.LuceneIndexService;
      * Initializes NeoService and NeoServiceManager
      */
     
-    public void init(GraphDatabaseService service,String databaseLocation) {
+    public void init(GraphDatabaseService service,String databaseLocation,INeoManager manager) {
+        this.manager = manager;
         if (neoService!=null){
             return;
         }
@@ -99,11 +101,16 @@ import org.neo4j.index.lucene.LuceneIndexService;
         return databaseLocation;
     }
 
-    /**
-     *
-     */
+
     public void commit() {
-        //TODO implement
+        if (manager!=null){
+            manager.commit();
+        }
+    }
+    public void rollback() {
+        if (manager!=null){
+            manager.rollback();
+        }
     }
 
 

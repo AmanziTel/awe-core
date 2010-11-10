@@ -14,6 +14,7 @@ package org.amanzi.neo.services.ui;
 
 import java.util.ArrayList;
 
+import org.amanzi.neo.db.manager.INeoManager;
 import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
@@ -33,7 +34,7 @@ import org.neo4j.neoclipse.preference.Preferences;
  * @since 1.0.0
  */
 
-public class NeoServiceProviderUi {
+public class NeoServiceProviderUi implements INeoManager{
     
 
     private static NeoServiceProviderUi provider=new NeoServiceProviderUi();
@@ -78,7 +79,7 @@ public class NeoServiceProviderUi {
         getProvider().init(service);
     }
     private void init(GraphDatabaseService service) {
-        NeoServiceProvider.getProvider().init(service,getDefaultDatabaseLocation());
+        NeoServiceProvider.getProvider().init(service,getDefaultDatabaseLocation(),this);
     } 
     /**
      * Protected constructor
@@ -129,7 +130,7 @@ public class NeoServiceProviderUi {
     }
     public GraphDatabaseService getService() {
         NeoServiceProvider neoPr = NeoServiceProvider.getProvider();
-        neoPr.init(Activator.getDefault().getGraphDbServiceSafely(),getDefaultDatabaseLocation());
+        neoPr.init(Activator.getDefault().getGraphDbServiceSafely(),getDefaultDatabaseLocation(),this);
         return neoPr.getService();
     }   
     /**
@@ -157,6 +158,7 @@ public class NeoServiceProviderUi {
     /**
      * Commits changes
      */
+    @Override
     public void commit() {
         final GraphDbServiceManager neoManager=Activator.getDefault().getGraphDbServiceManager();
         //Lagutko, 12.10.2009, also check is Workbech closing?

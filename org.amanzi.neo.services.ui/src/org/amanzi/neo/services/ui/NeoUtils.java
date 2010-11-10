@@ -12,7 +12,7 @@
  */
 package org.amanzi.neo.services.ui;
 
-import org.amanzi.neo.services.Utils;
+import org.amanzi.neo.services.utils.Utils;
 import org.eclipse.swt.graphics.RGB;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;

@@ -20,7 +20,7 @@ import java.util.List;
 import org.amanzi.awe.report.model.events.IReportModelListener;
 import org.amanzi.awe.report.model.events.ReportEventType;
 import org.amanzi.awe.report.model.events.ReportModelEvent;
-import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.utils.Pair;
 import org.apache.log4j.Logger;
 
 /**

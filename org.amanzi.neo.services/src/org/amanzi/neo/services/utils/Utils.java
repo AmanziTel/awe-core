@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.services;
+package org.amanzi.neo.services.utils;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -33,6 +33,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
+import org.amanzi.neo.services.GpehReportUtil;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.CallProperties.CallType;
 import org.amanzi.neo.services.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.services.enums.DriveTypes;
@@ -50,7 +53,6 @@ import org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiTimeIndexConverte
 import org.amanzi.neo.services.indexes.PropertyIndex;
 import org.amanzi.neo.services.indexes.PropertyIndex.NeoIndexRelationshipTypes;
 import org.amanzi.neo.services.nodes.AweProjectNode;
-import org.amanzi.neo.services.utils.RunnableWithResult;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.geotools.referencing.CRS;

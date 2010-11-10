@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.Utils;
 import org.amanzi.neo.services.indexes.PropertyIndex.NeoIndexRelationshipTypes;
+import org.amanzi.neo.services.utils.Utils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;

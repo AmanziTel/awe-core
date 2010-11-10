@@ -28,7 +28,7 @@ import java.util.zip.GZIPInputStream;
 import org.amanzi.awe.gpeh.parser.Events;
 import org.amanzi.awe.gpeh.parser.GPEHTimeWrapper;
 import org.amanzi.awe.gpeh.parser.Parameters;
-import org.amanzi.neo.services.Pair;
+import org.amanzi.neo.services.utils.Pair;
 import org.kc7bfi.jflac.io.BitInputStream;
 
 /**

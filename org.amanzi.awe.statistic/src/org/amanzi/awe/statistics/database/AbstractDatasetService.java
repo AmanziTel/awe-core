@@ -19,9 +19,9 @@ import java.util.Collection;
 import org.amanzi.awe.statistic.CallTimePeriods;
 import org.amanzi.awe.statistics.engine.IDatasetService;
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.Pair;
-import org.amanzi.neo.services.Utils;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
+import org.amanzi.neo.services.utils.Pair;
+import org.amanzi.neo.services.utils.Utils;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 

@@ -6,9 +6,9 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.amanzi.neo.db.manager.INeoDbService;
-import org.amanzi.neo.services.Utils;
 import org.amanzi.neo.services.statistic.ChangeClassRule;
 import org.amanzi.neo.services.statistic.ISinglePropertyStat;
+import org.amanzi.neo.services.utils.Utils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;

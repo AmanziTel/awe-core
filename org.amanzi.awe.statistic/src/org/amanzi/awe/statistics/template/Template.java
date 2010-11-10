@@ -19,8 +19,8 @@ import java.util.List;
 import org.amanzi.awe.statistics.engine.IAggregationFunction;
 import org.amanzi.awe.statistics.engine.IStatisticsHeader;
 import org.amanzi.awe.statistics.functions.AggregationFunctions;
-import org.amanzi.neo.services.Pair;
 import org.amanzi.neo.services.enums.OssType;
+import org.amanzi.neo.services.utils.Pair;
 import org.neo4j.graphdb.Node;
 
 /**
