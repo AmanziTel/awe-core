@@ -38,7 +38,9 @@ import org.amanzi.awe.statistics.builder.StatisticsBuilder;
 import org.amanzi.awe.statistics.database.entity.Statistics;
 import org.amanzi.awe.statistics.engine.KpiBasedHeader;
 import org.amanzi.awe.statistics.functions.AggregationFunctions;
+import org.amanzi.awe.statistics.template.Condition;
 import org.amanzi.awe.statistics.template.Template;
+import org.amanzi.awe.statistics.template.Threshold;
 import org.amanzi.awe.statistics.template.Template.DataType;
 import org.amanzi.awe.views.kpi.KPIPlugin;
 import org.amanzi.neo.loader.grid.IDENLoader;
@@ -56,6 +58,7 @@ import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.widgets.Display;
+import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
@@ -78,6 +81,45 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class GridReportWizard extends Wizard implements IWizard {
+    public enum PeriodType {
+        DAILY, HOURLY;
+    }
+
+    public enum OutputType {
+        XLS, PDF, PNG;
+    }
+
+    public enum CategoryType {
+        SYSTEM("network"), SITE("site"), CELL("cell");
+        private String networkType;
+
+        /**
+         * @param networkType
+         */
+        private CategoryType(String networkType) {
+            this.networkType = networkType;
+        }
+
+        public String getNetworkType() {
+            return networkType;
+        }
+    }
+
+    public enum AnalysisType {
+        KPI, SYSTEM_SUMMARY, SYSTEM_EVENTS;
+    }
+
+    public enum Scope {
+        ALL, SELECTED, WORST_10, WORST_20, WORST_30;
+    }
+
+    // enums
+    private OutputType outputType;
+    private CategoryType categoryType;
+    private AnalysisType analysisType;
+    private Scope scope;
+    private PeriodType period;
+
     private static final Ruby ruby = KPIPlugin.getDefault().getRubyRuntime();
     public static final String MODULE_NAME = "KPI::IDEN.";
     public static final String WIZARD_TITLE = "Grid-NetView wizard";
@@ -98,19 +140,56 @@ public class GridReportWizard extends Wizard implements IWizard {
     protected ChartType chartType;
     protected Statistics networkStatistics;
     private boolean isLoaded = false;
-    protected String kpi;
+    private String kpi;
     protected String networkLevel;
     protected Integer elementsPerReport;
     protected String networkElement;
     protected boolean individualReportRequired;
+    private SystemSummaryPage systemSummaryPage;
+    private SelectCategoryPage selectCategoryPage;
+    private SelectCellPage selectCellPage;
+    private SelectSitePage selectSitePage;
+    private SelectSystemPage selectSystemPage;
+    private SelectOutputTypePage selectOutputTypePage;
+    private SelectAnalysisTypePage selectAnalysisTypePage;
+    private SelectPeriodPage selectPeriodPage;
+
+    private List<String> selection;
+    protected long startTime;
+    protected long endTime;
 
     @Override
     public void addPages() {
-        getContainer().getShell().setSize(700, 650);
+        getContainer().getShell().setSize(500, 600);
         loadDataPage = new GridWizardPageStep1(GridWizardPageStep1.class.getName());
         viewResultPage = new GridWizardPageStep2();
-        addPage(loadDataPage);
-        addPage(viewResultPage);
+        systemSummaryPage = new SystemSummaryPage();
+        selectPeriodPage = new SelectPeriodPage();
+        selectCategoryPage = new SelectCategoryPage();
+        selectAnalysisTypePage = new SelectAnalysisTypePage();
+        selectSystemPage = new SelectSystemPage();
+        selectSitePage = new SelectSitePage();
+        selectCellPage = new SelectCellPage();
+        selectOutputTypePage = new SelectOutputTypePage();
+
+        addPage(new LoadDataPage());
+        addPage(selectPeriodPage);
+        addPage(selectAnalysisTypePage);
+        // addPage(new Page3());
+        addPage(selectCategoryPage);
+        addPage(selectSystemPage);
+        // addPage(new Page5());
+        addPage(selectSitePage);
+        // addPage(new Page6());
+        addPage(selectCellPage);
+        addPage(systemSummaryPage);
+        addPage(selectOutputTypePage);
+        addPage(new TrendChartPage());
+        addPage(new ResultingPage());
+        // old pages
+//        addPage(loadDataPage);
+//        addPage(viewResultPage);
+
         setNeedsProgressMonitor(true);
         service = NeoServiceProviderUi.getProvider().getService();
 
@@ -119,65 +198,64 @@ public class GridReportWizard extends Wizard implements IWizard {
     @Override
     public boolean performFinish() {
 
-        updateUserChoice();
-        if (!isLoaded) {
-            loadData();
-            buildStatistics();
-        }
-        try {
-            getContainer().run(true, true, new IRunnableWithProgress() {
-
-                @Override
-                public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-
-                    try {
-                        if (isExportToPdfRequired) {
-                            updateMessage("Exporting statistics to PDF...");
-                            long t = System.currentTimeMillis();
-                            if (isWorstSitesReportRequired) {
-                                exportTopElementsToPdf();
-                            } else if (individualReportRequired) {
-                                generateIndividuaPdfReport();
-                            } else {
-                                // exportToPdfOld(datasetNode, idenKPIs);
-                                generatePdfReports();
-                            }
-                            System.out.println("Finished exporting to pdf in " + (System.currentTimeMillis() - t) / 1000
-                                    + " seconds");
-                        }
-                        if (isExportToXlsRequired) {
-                            if (datasetNode == null) {
-                                datasetNode = dsService.getRootNode(LoaderUiUtils.getAweProjectName(), "ecl_stat.unl.Z",
-                                        NodeTypes.OSS);
-                            }
-                            updateMessage("Exporting statistics to excel...");
-                            long t = System.currentTimeMillis();
-                            XlsStatisticsExporter exporter = new XlsStatisticsExporter(outputDirectory);
-
-                            exporter.export(datasetNode, networkLevel, aggregation.getId(), getTemplateFileName());
-                            System.out.println("Finished exporting in " + (System.currentTimeMillis() - t) / 1000 + " seconds");
-                        }
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        loadDataPage.setPageComplete(false);
-                        loadDataPage.setErrorMessage("An error occured: " + e.getLocalizedMessage());
-                        // TODO Handle IOException
-                        throw (RuntimeException)new RuntimeException().initCause(e);
-                    }
-
-                }
-
-            });
-        } catch (InvocationTargetException e) {
-            // TODO Handle InvocationTargetException
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        } catch (InterruptedException e) {
-            // TODO Handle InterruptedException
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        }
-        final File[] files = getFilesToLoad(directory);
-        final int filesCount = files.length;
+//        updateUserChoice();
+//        if (!isLoaded) {
+//            loadData();
+//            buildStatistics();
+//        }
+//        try {
+//            getContainer().run(true, true, new IRunnableWithProgress() {
+//
+//                @Override
+//                public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+//
+//                    try {
+//                        switch (getOutputType()) {
+//                        case PDF:
+//                            generatePdfReports();
+//                            break;
+//                        case XLS:
+//                            break;
+//                        case PNG:
+//                        }
+//                        if (isExportToPdfRequired) {
+//                            updateMessage("Exporting statistics to PDF...");
+//                            long t = System.currentTimeMillis();
+//                            if (isWorstSitesReportRequired) {
+//                                exportTopElementsToPdf();
+//                            } else if (individualReportRequired) {
+//                                generateIndividuaPdfReport();
+//                            } else {
+//                                // exportToPdfOld(datasetNode, idenKPIs);
+//                                generatePdfReports();
+//                            }
+//                            System.out.println("Finished exporting to pdf in " + (System.currentTimeMillis() - t) / 1000
+//                                    + " seconds");
+//                        }
+//                        if (isExportToXlsRequired) {
+//                            exportToXls();
+//                        }
+//
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                        loadDataPage.setPageComplete(false);
+//                        loadDataPage.setErrorMessage("An error occured: " + e.getLocalizedMessage());
+//                        // TODO Handle IOException
+//                        throw (RuntimeException)new RuntimeException().initCause(e);
+//                    }
+//
+//                }
+//
+//            });
+//        } catch (InvocationTargetException e) {
+//            // TODO Handle InvocationTargetException
+//            throw (RuntimeException)new RuntimeException().initCause(e);
+//        } catch (InterruptedException e) {
+//            // TODO Handle InterruptedException
+//            throw (RuntimeException)new RuntimeException().initCause(e);
+//        }
+//        final File[] files = getFilesToLoad(directory);
+//        final int filesCount = files.length;
 
         return true;
     }
@@ -210,9 +288,9 @@ public class GridReportWizard extends Wizard implements IWizard {
      * @return
      */
     protected String getTemplateFileName() {
-        if (chartType.equals(ChartType.BAR)) {
-            return "bar.xls";
-        }
+//        if (chartType.equals(ChartType.BAR)) {
+//            return "bar.xls";
+//        }
         return "line.xls";
     }
 
@@ -340,6 +418,74 @@ public class GridReportWizard extends Wizard implements IWizard {
                     for (String kpi : idenKPIs) {
                         String kpiDisplayName = kpi;
                         String kpiUnit = "";
+                        Number threshold = null;
+                        final String fullKpiName = GridReportWizard.MODULE_NAME + kpi;
+                        final IRubyObject res = ruby.evalScriptlet(GridReportWizard.MODULE_NAME + "get_annotation(:" + kpi + ")");
+                        if (res instanceof RubyHash) {
+                            RubyHash result = (RubyHash)res;
+                            System.out.println(String.format("Found %s annotations for '%s':", result.keySet().size(), kpi));
+                            for (Object key : result.keySet()) {
+                                String strKey = key.toString();
+                                String strResult = result.get(key).toString();
+                                if ("name".equalsIgnoreCase(strKey)) {
+                                    kpiDisplayName = strResult;
+                                }
+                                if ("unit".equalsIgnoreCase(strKey)) {
+                                    kpiUnit = strResult;
+                                }
+                                if ("threshold".equalsIgnoreCase(strKey)) {
+                                    threshold = Double.parseDouble(strResult);
+                                    System.out.println("Threshold for '" + kpiDisplayName + "': " + threshold);
+                                }
+                                System.out.println("\t" + key + ":\t" + result.get(key));
+                            }
+                        }
+                        displayNames.add(kpiDisplayName);
+                        KpiBasedHeader kpiBasedHeader1 = new KpiBasedHeader(ruby, fullKpiName, kpiDisplayName);
+                        template.add(kpiBasedHeader1, AggregationFunctions.AVERAGE, threshold == null ? null : new Threshold(
+                                threshold, Condition.LT), kpiDisplayName);
+
+                    }
+                    networkStatistics = builder.buildStatistics(template, "network", aggregation, monitor);
+                    statistics = builder.buildStatistics(template, getCategoryType().getNetworkType(), aggregation, monitor);
+                    System.out.println("Finished building stats");
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            // TODO: handle exception
+        }
+
+    }
+
+    /**
+     * Builds statistics
+     */
+    @Deprecated
+    void buildStatisticsOld() {
+        updateMessage("Building statistics...");
+        try {
+            getContainer().run(true, true, new IRunnableWithProgress() {
+
+                @Override
+                public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    Object[] kpisFound = ((RubyArray)ruby
+                            .evalScriptlet("KPI::IDEN.singleton_methods.sort.select{|m| !(Annotations.hidden_methods.include? m)}"))
+                            .toArray();
+                    idenKPIs = new ArrayList<String>(kpisFound.length);
+                    for (Object kpi : kpisFound) {
+                        idenKPIs.add(kpi.toString());
+                    }
+                    displayNames = new ArrayList<String>(idenKPIs.size());
+
+                    StatisticsBuilder builder = new StatisticsBuilder(service, datasetNode, ruby);
+                    Template template = new Template("test template", DataType.GRID);
+
+                    System.out.println("kpis found: " + idenKPIs);
+                    for (String kpi : idenKPIs) {
+                        String kpiDisplayName = kpi;
+                        String kpiUnit = "";
+                        Number threshold = null;
                         final String fullKpiName = GridReportWizard.MODULE_NAME + kpi;
                         final IRubyObject res = ruby.evalScriptlet(GridReportWizard.MODULE_NAME + "get_annotation(:" + kpi + ")");
                         if (res instanceof RubyHash) {
@@ -352,12 +498,16 @@ public class GridReportWizard extends Wizard implements IWizard {
                                 if ("unit".equalsIgnoreCase(key.toString())) {
                                     kpiUnit = result.get(key).toString();
                                 }
+                                if ("threshold".equalsIgnoreCase(key.toString())) {
+                                    threshold = Double.parseDouble(result.get(key).toString());
+                                }
                                 System.out.println("\t" + key + ":\t" + result.get(key));
                             }
                         }
                         displayNames.add(kpiDisplayName);
                         KpiBasedHeader kpiBasedHeader1 = new KpiBasedHeader(ruby, fullKpiName, kpiDisplayName);
-                        template.add(kpiBasedHeader1, AggregationFunctions.AVERAGE, null, kpiDisplayName);
+                        template.add(kpiBasedHeader1, AggregationFunctions.AVERAGE, threshold == null ? null : new Threshold(
+                                threshold, Condition.LT), kpiDisplayName);
 
                     }
                     networkStatistics = builder.buildStatistics(template, "network", aggregation, monitor);
@@ -394,21 +544,21 @@ public class GridReportWizard extends Wizard implements IWizard {
 
             @Override
             public void run() {
-                directory = loadDataPage.getDirectory();
-                outputDirectory = loadDataPage.getOutputDirectory();
-                isExportToPdfRequired = loadDataPage.isExportToPdfRequired();
-                isExportToXlsRequired = loadDataPage.isExportToXlsRequired();
-                networkLevel = loadDataPage.getNetworkLevel();
-
-                aggregation = loadDataPage.getAggregation();
-                chartType = viewResultPage.getChartType();
-                kpi = viewResultPage.getKpi();
-                networkElement = viewResultPage.getNetworkElement();
-
-                isWorstSitesReportRequired = viewResultPage.isWorstSitesReportRequired();
-                elementsPerReport = viewResultPage.elementsPerReport();
-
-                individualReportRequired = viewResultPage.isIndividualReportRequired();
+                // directory = loadDataPage.getDirectory();
+                // outputDirectory = loadDataPage.getOutputDirectory();
+                // isExportToPdfRequired = loadDataPage.isExportToPdfRequired();
+                // isExportToXlsRequired = loadDataPage.isExportToXlsRequired();
+                // networkLevel = loadDataPage.getNetworkLevel();
+                //
+                // aggregation = loadDataPage.getAggregation();
+                // chartType = viewResultPage.getChartType();
+                // // kpi = viewResultPage.getKpi();
+                // networkElement = viewResultPage.getNetworkElement();
+                //
+                // isWorstSitesReportRequired = viewResultPage.isWorstSitesReportRequired();
+                // elementsPerReport = viewResultPage.elementsPerReport();
+                //
+                // individualReportRequired = viewResultPage.isIndividualReportRequired();
             }
         });
     }
@@ -460,70 +610,88 @@ public class GridReportWizard extends Wizard implements IWizard {
     }
 
     public ChartType getChartType() {
-        return chartType;
+        return ChartType.COMBINED;
     }
 
     /**
      * Generates reports for all network elements
      */
-    private void generatePdfReports() {
-        long t = System.currentTimeMillis();
-        final Map<String, Map<String, TimeSeries[]>> datasets = ChartUtilities.createChartDatasets(getStatistics(),
-                getAggregation().getId(), getChartType());
-        System.out.println("Finished generating datasets in " + (System.currentTimeMillis() - t) / 1000 + " seconds");
-        Map<String, Report> reportsPerKPI = new HashMap<String, Report>();
-        for (Entry<String, Map<String, TimeSeries[]>> entry : datasets.entrySet()) {
-            String siteName = entry.getKey();
-            for (Entry<String, TimeSeries[]> e : entry.getValue().entrySet()) {
-                String kpiName = e.getKey();
-                Report report = reportsPerKPI.get(kpiName);
-                if (report == null) {
-                    report = new Report("KPI report");
-                    // report.addPart(chart);
-                    String outputDirectory = getOutputDirectory();
-                    report.setFile(outputDirectory + File.separatorChar + kpiName + ".pdf");
-                    reportsPerKPI.put(kpiName, report);
+    public void generatePdfReports() {
+        try {
+            getContainer().run(true, true, new IRunnableWithProgress() {
+
+                @Override
+                public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    long t = System.currentTimeMillis();
+                    final Map<String, Map<String, TimeSeries[]>> datasets;
+                    if (selection != null) {
+                        Double threshold = kpi.toLowerCase().contains("rate") ? 5d : null;
+                        // TODO use threshold from template
+                        datasets = ChartUtilities.createChartDatasets(getStatistics(), getAggregation().getId(), kpi,
+                                getChartType(), selection, startTime, endTime, threshold);
+                    } else {
+                        datasets = ChartUtilities.createChartDatasets(getStatistics(), getAggregation().getId(), getChartType());
+                    }
+                    System.out.println("Finished generating datasets in " + (System.currentTimeMillis() - t) / 1000 + " seconds");
+                    Map<String, Report> reportsPerKPI = new HashMap<String, Report>();
+                    for (Entry<String, Map<String, TimeSeries[]>> entry : datasets.entrySet()) {
+                        String siteName = entry.getKey();
+                        for (Entry<String, TimeSeries[]> e : entry.getValue().entrySet()) {
+                            String kpiName = e.getKey();
+                            Report report = reportsPerKPI.get(kpiName);
+                            if (report == null) {
+                                report = new Report("KPI report");
+                                // report.addPart(chart);
+                                String outputDirectory = getOutputDirectory();
+                                report.setFile(outputDirectory + File.separatorChar + kpiName + ".pdf");
+                                reportsPerKPI.put(kpiName, report);
+                            }
+
+                            Chart chart = new Chart(siteName);
+                            chart.addSubtitle(kpiName);
+                            ChartType chartType = ChartType.COMBINED;// TODO
+                            chart.setChartType(chartType);
+                            chart.setDomainAxisLabel("Value");
+                            chart.setRangeAxisLabel("Time");
+                            chart.setWidth(400);
+                            chart.setHeight(300);
+                            TimeSeries[] series = e.getValue();
+                            switch (chartType) {
+                            case COMBINED:
+                                addDataToCombinedChart(chart, series);
+                                break;
+                            case TIME:
+                                addDataToTimeChart(chart, series);
+                                break;
+                            // case DIAL:
+                            // DialPlot dialplot = new DialPlot();
+                            // Charts.applyDefaultSettingsToDataset(dialplot,
+                            // ChartUtilities.createDialChartDataset(statistics, siteName,
+                            // kpiName), 0);
+                            // Charts.applyMainVisualSettings(dialplot, chart.getDomainAxisLabel(),
+                            // chart.getRangeAxisLabel(),
+                            // PlotOrientation.VERTICAL);
+                            // chart.setPlot(dialplot);
+                            // break;
+                            default:
+                                break;
+                            }
+                            report.addPart(chart);
+                            // report.put(siteName, chart);
+                        }
+
+                    }
+                    // save reports
+                    PDFPrintingEngine printingEngine = new PDFPrintingEngine();
+                    for (Report report : reportsPerKPI.values()) {
+                        printingEngine.printReport(report);
+
+                    }
                 }
-
-                Chart chart = new Chart(siteName);
-                chart.addSubtitle(kpiName);
-                ChartType chartType = getChartType();
-                chart.setChartType(chartType);
-                chart.setDomainAxisLabel("Value");
-                chart.setRangeAxisLabel("Time");
-                chart.setWidth(400);
-                chart.setHeight(300);
-                TimeSeries[] series = e.getValue();
-                switch (chartType) {
-                case COMBINED:
-                    addDataToCombinedChart(chart, series);
-                    break;
-                case TIME:
-                    addDataToTimeChart(chart, series);
-                    break;
-                // case DIAL:
-                // DialPlot dialplot = new DialPlot();
-                // Charts.applyDefaultSettingsToDataset(dialplot,
-                // ChartUtilities.createDialChartDataset(statistics, siteName,
-                // kpiName), 0);
-                // Charts.applyMainVisualSettings(dialplot, chart.getDomainAxisLabel(),
-                // chart.getRangeAxisLabel(),
-                // PlotOrientation.VERTICAL);
-                // chart.setPlot(dialplot);
-                // break;
-                default:
-                    break;
-                }
-                report.addPart(chart);
-                // report.put(siteName, chart);
-            }
-
-        }
-        // save reports
-        PDFPrintingEngine printingEngine = new PDFPrintingEngine();
-        for (Report report : reportsPerKPI.values()) {
-            printingEngine.printReport(report);
-
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            // TODO: handle exception
         }
     }
 
@@ -544,6 +712,53 @@ public class GridReportWizard extends Wizard implements IWizard {
         Charts.applyDefaultSettingsToDataset(plot, values, 1);
         Charts.applyMainVisualSettings(plot, chart.getDomainAxisLabel(), chart.getRangeAxisLabel(), PlotOrientation.VERTICAL);
         chart.setPlot(plot);
+    }
+
+    public void exportChartsToJpeg() {
+        try {
+            final Map<String, Map<String, TimeSeries[]>> datasets;
+            if (selection != null) {
+                Double threshold = kpi.toLowerCase().contains("rate") ? 5d : null;
+                // TODO use threshold from template
+                datasets = ChartUtilities.createChartDatasets(getStatistics(), getAggregation().getId(), kpi, getChartType(),
+                        selection, startTime, endTime, threshold);
+            } else {
+                datasets = ChartUtilities.createChartDatasets(getStatistics(), getAggregation().getId(), getChartType());
+            }
+            for (Entry<String, Map<String, TimeSeries[]>> entry : datasets.entrySet()) {
+                String siteName = entry.getKey();
+                for (Entry<String, TimeSeries[]> e : entry.getValue().entrySet()) {
+                    String kpiName = e.getKey();
+
+                    Chart chart = new Chart(siteName);
+                    chart.addSubtitle(kpiName);
+                    ChartType chartType = ChartType.COMBINED;// TODO
+                    chart.setChartType(chartType);
+                    chart.setDomainAxisLabel("Value");
+                    chart.setRangeAxisLabel("Time");
+                    chart.setWidth(400);
+                    chart.setHeight(300);
+                    TimeSeries[] series = e.getValue();
+                    switch (chartType) {
+                    case COMBINED:
+                        addDataToCombinedChart(chart, series);
+                        break;
+                    case TIME:
+                        addDataToTimeChart(chart, series);
+                        break;
+                    default:
+                        break;
+                    }
+                    org.jfree.chart.ChartUtilities.saveChartAsJPEG(new File(outputDirectory + File.separatorChar + siteName + " "
+                            + kpiName + ".jpg"), Charts.createChart(chart), 500, 300);
+                }
+
+            }
+        } catch (IOException e) {
+            // TODO Handle IOException
+            e.printStackTrace();
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
     }
 
     /**
@@ -610,4 +825,131 @@ public class GridReportWizard extends Wizard implements IWizard {
         PDFPrintingEngine printingEngine = new PDFPrintingEngine();
         printingEngine.printReport(report);
     }
+
+    // pages
+    public SystemSummaryPage getSystemSummaryPage() {
+        return systemSummaryPage;
+    }
+
+    public SelectCategoryPage getSelectCategoryPage() {
+        return selectCategoryPage;
+    }
+
+    public SelectCellPage getSelectCellPage() {
+        return selectCellPage;
+    }
+
+    public SelectSitePage getSelectSitePage() {
+        return selectSitePage;
+    }
+
+    public SelectSystemPage getSelectSystemPage() {
+        return selectSystemPage;
+    }
+
+    public SelectOutputTypePage getSelectOutputTypePage() {
+        return selectOutputTypePage;
+    }
+
+    public void setSelection(List<String> selection) {
+        this.selection = selection;
+    }
+
+    public List<String> getSelection() {
+        return selection;
+    }
+
+    // choices
+    public OutputType getOutputType() {
+        return outputType;
+    }
+
+    public void setOutputType(OutputType outputType) {
+        this.outputType = outputType;
+    }
+
+    public CategoryType getCategoryType() {
+        return categoryType;
+    }
+
+    public void setCategoryType(CategoryType categoryType) {
+        this.categoryType = categoryType;
+    }
+
+    public AnalysisType getAnalysisType() {
+        return analysisType;
+    }
+
+    public void setAnalysisType(AnalysisType analysisType) {
+        this.analysisType = analysisType;
+    }
+
+    public Scope getScope() {
+        return scope;
+    }
+
+    public void setScope(Scope scope) {
+        this.scope = scope;
+    }
+
+    public PeriodType getPeriod() {
+        return period;
+    }
+
+    public void setPeriod(PeriodType period) {
+        this.period = period;
+    }
+
+    public void setDirectory(String directory) {
+        this.directory = directory;
+    }
+
+    public void setOutputDirectory(String outputDirectory) {
+        this.outputDirectory = outputDirectory;
+    }
+
+    public void setAggregation(CallTimePeriods aggregation) {
+        this.aggregation = aggregation;
+    }
+
+    public String getKpi() {
+        return kpi;
+    }
+
+    public void setKpi(String kpi) {
+        this.kpi = kpi;
+    }
+
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
+
+    public long getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(long endTime) {
+        this.endTime = endTime;
+    }
+
+    /**
+     *
+     */
+    public void exportToXls() {
+        if (datasetNode == null) {
+            datasetNode = dsService.getRootNode(LoaderUiUtils.getAweProjectName(), "ecl_stat.unl.Z",
+                    NodeTypes.OSS);
+        }
+        updateMessage("Exporting statistics to excel...");
+        long t = System.currentTimeMillis();
+        XlsStatisticsExporter exporter = new XlsStatisticsExporter(outputDirectory);
+
+        exporter.export(datasetNode, categoryType.getNetworkType(), aggregation.getId(), getTemplateFileName());
+        System.out.println("Finished exporting in " + (System.currentTimeMillis() - t) / 1000 + " seconds");
+    }
+
 }

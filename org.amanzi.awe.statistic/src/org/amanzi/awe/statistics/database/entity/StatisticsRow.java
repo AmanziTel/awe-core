@@ -138,5 +138,16 @@ public class StatisticsRow {
     public void addSourceRow(StatisticsRow sourceRow) {
         node.createRelationshipTo(sourceRow.getNode(), GeoNeoRelationshipTypes.SOURCE);
     }
+    public void setFlagged(boolean flagged) {
+        if (flagged) {
+            node.setProperty(INeoConstants.PROPERTY_FLAGGED_NAME, true);
+        } else {
+            node.removeProperty(INeoConstants.PROPERTY_FLAGGED_NAME);
 
+        }
+    }
+
+    public boolean isFlagged() {
+        return (Boolean)node.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, false);
+    }
 }

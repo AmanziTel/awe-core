@@ -34,8 +34,10 @@ import org.amanzi.awe.statistics.database.entity.StatisticsRow;
 import org.amanzi.awe.statistics.engine.IDatasetService;
 import org.amanzi.awe.statistics.engine.KpiBasedHeader;
 import org.amanzi.awe.statistics.exceptions.IncorrectInputException;
+import org.amanzi.awe.statistics.template.Condition;
 import org.amanzi.awe.statistics.template.Template;
 import org.amanzi.awe.statistics.template.TemplateColumn;
+import org.amanzi.awe.statistics.template.Threshold;
 import org.amanzi.awe.statistics.template.Template.DataType;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.CorrelationRelationshipTypes;
@@ -254,8 +256,10 @@ public class StatisticsBuilder {
             final String task = "Building stats for " + period.getId() + "/" + networkLevel;
             System.out.println(task);
             monitor.subTask(task);
-            return buildHighLevelPeriodStatistics(template, startTime, endTime, period, networkLevel, networkDimension,
+            Statistics statistics=buildHighLevelPeriodStatistics(template, startTime, endTime, period, networkLevel, networkDimension,
                     timeDimension, uStatistics);
+            updateFlags(statistics);
+            return statistics;
 
         } else {
             final String task = "Building stats for " + period.getId() + "/" + networkLevel;
@@ -329,17 +333,72 @@ public class StatisticsBuilder {
                         if (summaryCell.update(value)) {
                             summaryCell.addSourceNode(node);
                         }
+                        checkThreshold(group, summaryRow, row, column, cell, summaryCell);
                     }
                 }
 
                 currentStartTime = nextStartTime;
                 nextStartTime = getNextStartDate(period, endTime, currentStartTime);
                 System.out.println("total=" + count + "\tCalc for period=" + (System.currentTimeMillis() - startForPeriod)
-                        + "\tper node" + (total / nodes.size()));
+                        + "\tper node" + (total / nodes.size()!=0?nodes.size():1));
                 monitor.worked(1);
             } while (currentStartTime < endTime);
+            updateFlags(statistics);
             return statistics;
         }
+    }
+
+    /**
+     *
+     * @param group
+     * @param summaryRow
+     * @param row
+     * @param column
+     * @param cell
+     * @param summaryCell
+     */
+    private void checkThreshold(StatisticsGroup group, StatisticsRow summaryRow, StatisticsRow row, TemplateColumn column,
+            StatisticsCell cell, StatisticsCell summaryCell) {
+        Threshold threshold = column.getThreshold();
+        if (threshold!=null){
+            Number thresholdValue = threshold.getThresholdValue();
+            Condition condition = threshold.getCondition();
+            switch (condition){
+            case LT:
+                if (thresholdValue.doubleValue()<cell.getValue().doubleValue()){
+                    cell.setFlagged(true);
+                    System.out.println(group.getGroupName()+"/"+cell.getName()+": threshold ("+thresholdValue+")is exceeded ("+cell.getValue()+")");
+                }else{
+                    cell.setFlagged(false);
+                }
+                if (thresholdValue.doubleValue()<summaryCell.getValue().doubleValue()){
+                    summaryCell.setFlagged(true);
+                    System.out.println(group.getGroupName()+"/"+summaryCell.getName()+": threshold ("+thresholdValue+") is exceeded by average value ("+summaryCell.getValue()+")");
+                }else{
+                    summaryCell.setFlagged(false);
+                    
+                }
+                default:
+            }
+        }
+    }
+    private void updateFlags(Statistics  statistics) {
+        Collection<StatisticsGroup> groups = statistics.getGroups().values();
+        for (StatisticsGroup group : groups) {
+                Collection<StatisticsRow> rows = group.getRows().values();
+                for (StatisticsRow row : rows) {
+                        Collection<StatisticsCell> cells = row.getCells().values();
+                        for (StatisticsCell cell : cells) {
+                            if (cell.isFlagged()) {
+                                row.setFlagged(true);
+                            }
+                        }
+                        if (row.isFlagged()) {
+                            group.setFlagged(true);
+                        }
+            }
+        }
+        
     }
 
     /**
@@ -417,6 +476,7 @@ public class StatisticsBuilder {
                                 Number value = uCell.getValue();
                                 cell.update(value);
                                 summaryCell.update(value);
+                                checkThreshold(group, summaryRow, row, column, cell, summaryCell);
                             }
                         } else {
                             continue;

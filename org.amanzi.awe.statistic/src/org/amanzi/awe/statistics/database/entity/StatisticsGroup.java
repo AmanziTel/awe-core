@@ -129,5 +129,16 @@ public class StatisticsGroup {
     public void setKeyNode(Node keyNode) {
         node.createRelationshipTo(keyNode, GeoNeoRelationshipTypes.KEY);
     }
+    public void setFlagged(boolean flagged) {
+        if (flagged) {
+            node.setProperty(INeoConstants.PROPERTY_FLAGGED_NAME, true);
+        } else {
+            node.removeProperty(INeoConstants.PROPERTY_FLAGGED_NAME);
 
+        }
+    }
+
+    public boolean isFlagged() {
+        return (Boolean)node.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, false);
+    }
 }

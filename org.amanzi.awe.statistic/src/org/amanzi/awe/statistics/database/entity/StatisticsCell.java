@@ -43,6 +43,7 @@ public class StatisticsCell {
     private IAggregationFunction function;
     private Node node;
     private boolean isReadOnly;
+    private boolean isFlagged;
 
     public StatisticsCell(Node node, TemplateColumn column) {
         this.header = column.getHeader();
@@ -77,6 +78,18 @@ public class StatisticsCell {
 
     public void setValue(Number value) {
         node.setProperty(INeoConstants.PROPERTY_VALUE_NAME, value);
+    }
+    public void setFlagged(boolean flagged) {
+        if (flagged) {
+            node.setProperty(INeoConstants.PROPERTY_FLAGGED_NAME, true);
+        } else {
+            node.removeProperty(INeoConstants.PROPERTY_FLAGGED_NAME);
+
+        }
+    }
+
+    public boolean isFlagged() {
+        return (Boolean)node.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, false);
     }
 
     public Number update(Node dataNode, IDatasetService service) {

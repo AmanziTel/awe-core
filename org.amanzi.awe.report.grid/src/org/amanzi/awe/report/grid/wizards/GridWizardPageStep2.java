@@ -153,7 +153,8 @@ public class GridWizardPageStep2 extends WizardPage {
         btnTop30 = new Button(resultType, SWT.RADIO);
         btnTop30.setText("top 30 sites/cells");
         btnTop30.setLayoutData(new GridData());
-
+        // disable choice relevant to dial charts as default chart type is bar
+        enableChoices(false);
         gd = new GridData();
         gd.grabExcessHorizontalSpace = true;
         gd.horizontalSpan = 2;
@@ -319,6 +320,7 @@ public class GridWizardPageStep2 extends WizardPage {
         }
         return cmbSites.getItemCount();
     }
+
     /**
      * Is export to PDF of an individual (selected) site results required
      * 
@@ -327,6 +329,7 @@ public class GridWizardPageStep2 extends WizardPage {
     public boolean isIndividualReportRequired() {
         return btnIndividual.getSelection();
     }
+
     /**
      * @param gridReportWizard
      */
@@ -359,7 +362,7 @@ public class GridWizardPageStep2 extends WizardPage {
         String siteName = cmbSites.getText();
         String kpiName = cmbKPIs.getText();
         ChartType chartType = getChartType();
-        chart = ChartUtilities.createReportChart(siteName,kpiName,chartType);
+        chart = ChartUtilities.createReportChart(siteName, kpiName, chartType);
         long t = System.currentTimeMillis();
         switch (chartType) {
         case COMBINED:

@@ -84,6 +84,78 @@ public class ChartUtilities {
         return new TimeSeriesCollection[] {tresholdCollection, timeSeriesCollection};
     }
 
+    public static TimeSeriesCollection[] createChartDataset(Statistics stat, String siteName, String kpiName,
+            String timeAggregation, ChartType type, long startTime, long endTime) {
+        StatisticsGroup statisticsGroup = stat.getGroupByKey(siteName);
+        TimeSeriesCollection timeSeriesCollection = new TimeSeriesCollection();
+        TimeSeries timeSeries = new TimeSeries(kpiName);
+        TimeSeriesCollection tresholdCollection = new TimeSeriesCollection();
+        TimeSeries thresholdTimeSeries = new TimeSeries("Average");
+        double threshold = 0;
+        for (Entry<String, StatisticsRow> entry : statisticsGroup.getRows().entrySet()) {
+            StatisticsRow row = entry.getValue();
+            if (!row.getName().equalsIgnoreCase("total")) {
+                Long rowPeriod = row.getPeriod();
+                if (rowPeriod >= startTime && rowPeriod <= endTime) {
+                    RegularTimePeriod period = null;
+                    GregorianCalendar calendar = new GregorianCalendar();
+                    calendar.setTimeInMillis(rowPeriod);
+                    if (CallTimePeriods.HOURLY.getId().equalsIgnoreCase(timeAggregation)) {
+                        period = new Hour(calendar.getTime());
+                    } else if (CallTimePeriods.DAILY.getId().equalsIgnoreCase(timeAggregation)) {
+                        period = new Day(calendar.getTime());
+                    }
+                    final StatisticsCell cell = row.getCellByKey(kpiName);
+                    if (cell != null) {
+                        timeSeries.add(period, cell.getValue().doubleValue());
+                    }
+                    thresholdTimeSeries.add(period, threshold);
+                }
+            } else {
+                threshold = row.getCellByKey(kpiName).getValue().doubleValue();
+            }
+        }
+        tresholdCollection.addSeries(thresholdTimeSeries);
+        timeSeriesCollection.addSeries(timeSeries);
+        return new TimeSeriesCollection[] {tresholdCollection, timeSeriesCollection};
+    }
+
+    public static TimeSeriesCollection[] createChartDataset(Statistics stat, String siteName, String kpiName,
+            String timeAggregation, ChartType type, long startTime, long endTime, Double thresholdValue) {
+        StatisticsGroup statisticsGroup = stat.getGroupByKey(siteName);
+        TimeSeriesCollection timeSeriesCollection = new TimeSeriesCollection();
+        TimeSeries timeSeries = new TimeSeries(kpiName);
+        TimeSeriesCollection tresholdCollection = new TimeSeriesCollection();
+        TimeSeries thresholdTimeSeries = new TimeSeries("Average");
+        double threshold = 0;
+        for (Entry<String, StatisticsRow> entry : statisticsGroup.getRows().entrySet()) {
+            StatisticsRow row = entry.getValue();
+            if (!row.getName().equalsIgnoreCase("total")) {
+                Long rowPeriod = row.getPeriod();
+                if (rowPeriod >= startTime && rowPeriod <= endTime) {
+                    RegularTimePeriod period = null;
+                    GregorianCalendar calendar = new GregorianCalendar();
+                    calendar.setTimeInMillis(rowPeriod);
+                    if (CallTimePeriods.HOURLY.getId().equalsIgnoreCase(timeAggregation)) {
+                        period = new Hour(calendar.getTime());
+                    } else if (CallTimePeriods.DAILY.getId().equalsIgnoreCase(timeAggregation)) {
+                        period = new Day(calendar.getTime());
+                    }
+                    final StatisticsCell cell = row.getCellByKey(kpiName);
+                    if (cell != null) {
+                        timeSeries.add(period, cell.getValue().doubleValue());
+                    }
+                    thresholdTimeSeries.add(period, threshold);
+                }
+            } else {
+                threshold = thresholdValue != null ? thresholdValue : row.getCellByKey(kpiName).getValue().doubleValue();
+            }
+        }
+        tresholdCollection.addSeries(thresholdTimeSeries);
+        timeSeriesCollection.addSeries(timeSeries);
+        return new TimeSeriesCollection[] {tresholdCollection, timeSeriesCollection};
+    }
+
     public static Map<String, Map<String, TimeSeries[]>> createChartDatasets(Statistics stat, String timeAggregation, ChartType type) {
         final Map<String, StatisticsGroup> groups = stat.getGroups();
         // site -> KPI -> datasets
@@ -126,6 +198,55 @@ public class ChartUtilities {
                         dsPerKPI.put(kpiName, new TimeSeries[] {thresholdTimeSeries, timeSeries});
 
                     }
+                }
+            }
+            result.put(key, dsPerKPI);
+        }
+        return result;
+    }
+
+    public static Map<String, Map<String, TimeSeries[]>> createChartDatasets(Statistics stat, String timeAggregation, String kpi,
+            ChartType type, List<String> networkElements, long startTime, long endTime, Double thresholdValue) {
+        final Map<String, StatisticsGroup> groups = stat.getGroups();
+        // site -> KPI -> datasets
+        Map<String, Map<String, TimeSeries[]>> result = new HashMap<String, Map<String, TimeSeries[]>>(groups.size());
+        for (StatisticsGroup group : groups.values()) {
+            String key = group.getGroupName();
+            if (!networkElements.contains(key)) {
+                continue;
+            }
+            Map<String, Double> thresholds = new HashMap<String, Double>();
+            HashMap<String, TimeSeries[]> dsPerKPI = new HashMap<String, TimeSeries[]>(group.getRows().size());
+            result.put(key, dsPerKPI);
+            for (Entry<String, StatisticsRow> entry : group.getRows().entrySet()) {
+                StatisticsRow row = entry.getValue();
+
+                if (!row.getName().equalsIgnoreCase("total")) {
+                    Long rowPeriod = row.getPeriod();
+                    if (rowPeriod >= startTime && rowPeriod <= endTime) {
+                        RegularTimePeriod period = null;
+                        GregorianCalendar calendar = new GregorianCalendar();
+                        calendar.setTimeInMillis(rowPeriod);
+                        if (CallTimePeriods.HOURLY.getId().equalsIgnoreCase(timeAggregation)) {
+                            period = new Hour(calendar.getTime());
+                        } else if (CallTimePeriods.DAILY.getId().equalsIgnoreCase(timeAggregation)) {
+                            period = new Day(calendar.getTime());
+                        }
+
+                        StatisticsCell cell = row.getCellByKey(kpi);
+                        TimeSeries[] ts = dsPerKPI.get(kpi);
+                        ts[1].add(period, cell.getValue().doubleValue());
+                        ts[0].add(period, thresholds.get(kpi));
+                    }
+                } else {
+                    StatisticsCell cell = row.getCellByKey(kpi);
+                    double threshold = thresholdValue == null ? cell.getValue().doubleValue() : thresholdValue;
+                    thresholds.put(kpi, threshold);
+                    TimeSeries timeSeries = new TimeSeries(kpi);
+                    TimeSeries thresholdTimeSeries = new TimeSeries((thresholdValue == null ? "Average (" : "Threshold (")
+                            + new DecimalFormat("#0.0").format(threshold) + ")");
+                    dsPerKPI.put(kpi, new TimeSeries[] {thresholdTimeSeries, timeSeries});
+
                 }
             }
             result.put(key, dsPerKPI);
@@ -186,6 +307,29 @@ public class ChartUtilities {
         chart.setPlot(plot);
     }
 
+    public static void updateTimeChart(Statistics statistics, String aggregation, String siteName, String kpiName, Chart chart,
+            long startTime, long endTime) {
+        TimeSeriesCollection[] chartDataset = ChartUtilities.createChartDataset(statistics, siteName, kpiName, aggregation,
+                ChartType.TIME, startTime, endTime);
+        XYPlot plot = new XYPlot();
+        plot.setDomainAxis(new DateAxis());
+        Charts.applyDefaultSettingsToDataset(plot, chartDataset[0], 0);
+        Charts.applyDefaultSettingsToDataset(plot, chartDataset[1], 1);
+        Charts.applyMainVisualSettings(plot, chart.getDomainAxisLabel(), chart.getRangeAxisLabel(), PlotOrientation.VERTICAL);
+        chart.setPlot(plot);
+    }
+    public static void updateTimeChart(Statistics statistics, String aggregation, String siteName, String kpiName, Chart chart,
+            long startTime, long endTime,Double thresholdValue) {
+        TimeSeriesCollection[] chartDataset = ChartUtilities.createChartDataset(statistics, siteName, kpiName, aggregation,
+                ChartType.TIME, startTime, endTime,thresholdValue);
+        XYPlot plot = new XYPlot();
+        plot.setDomainAxis(new DateAxis());
+        Charts.applyDefaultSettingsToDataset(plot, chartDataset[0], 0);
+        Charts.applyDefaultSettingsToDataset(plot, chartDataset[1], 1);
+        Charts.applyMainVisualSettings(plot, chart.getDomainAxisLabel(), chart.getRangeAxisLabel(), PlotOrientation.VERTICAL);
+        chart.setPlot(plot);
+    }
+
     /**
      * @param statistics
      * @param aggregation
@@ -197,6 +341,30 @@ public class ChartUtilities {
             final String kpiName, final Chart chart) {
         TimeSeriesCollection[] chartDataset = ChartUtilities.createChartDataset(statistics, siteName, kpiName, aggregation,
                 ChartType.COMBINED);
+        XYPlot plot = new XYPlot();
+        plot.setDomainAxis(new DateAxis());
+        Charts.applyDefaultSettingsToDataset(plot, chartDataset[0], 0);
+        Charts.applyDefaultSettingsToDataset(plot, new XYBarDataset(chartDataset[1], 1000 * 60 * 60 * 0.5), 1);
+        Charts.applyMainVisualSettings(plot, chart.getDomainAxisLabel(), chart.getRangeAxisLabel(), PlotOrientation.VERTICAL);
+        chart.setPlot(plot);
+    }
+
+    public static void updateCombinedChart(final Statistics statistics, final String aggregation, final String siteName,
+            final String kpiName, final Chart chart, long startTime, long endTime) {
+        TimeSeriesCollection[] chartDataset = ChartUtilities.createChartDataset(statistics, siteName, kpiName, aggregation,
+                ChartType.COMBINED, startTime, endTime);
+        XYPlot plot = new XYPlot();
+        plot.setDomainAxis(new DateAxis());
+        Charts.applyDefaultSettingsToDataset(plot, chartDataset[0], 0);
+        Charts.applyDefaultSettingsToDataset(plot, new XYBarDataset(chartDataset[1], 1000 * 60 * 60 * 0.5), 1);
+        Charts.applyMainVisualSettings(plot, chart.getDomainAxisLabel(), chart.getRangeAxisLabel(), PlotOrientation.VERTICAL);
+        chart.setPlot(plot);
+    }
+    
+    public static void updateCombinedChart(final Statistics statistics, final String aggregation, final String siteName,
+            final String kpiName, final Chart chart, long startTime, long endTime,Double thresholdValue) {
+        TimeSeriesCollection[] chartDataset = ChartUtilities.createChartDataset(statistics, siteName, kpiName, aggregation,
+                ChartType.COMBINED, startTime, endTime,thresholdValue);
         XYPlot plot = new XYPlot();
         plot.setDomainAxis(new DateAxis());
         Charts.applyDefaultSettingsToDataset(plot, chartDataset[0], 0);
@@ -217,9 +385,18 @@ public class ChartUtilities {
         Charts.applyMainVisualSettings(dialplot, chart.getDomainAxisLabel(), chart.getRangeAxisLabel(), PlotOrientation.VERTICAL);
         chart.setPlot(dialplot);
     }
-    
-    public static Chart createReportChart(String siteName,String kpiName, ChartType chartType) {
+
+    public static Chart createReportChart(String siteName, String kpiName, ChartType chartType) {
         Chart chart = new Chart(siteName);
+        chart.addSubtitle(kpiName);
+        chart.setChartType(chartType);
+        chart.setDomainAxisLabel("Value");
+        chart.setRangeAxisLabel("Time");
+        return chart;
+    }
+
+    public static Chart createReportChart(String kpiName, ChartType chartType) {
+        Chart chart = new Chart("Trend");
         chart.addSubtitle(kpiName);
         chart.setChartType(chartType);
         chart.setDomainAxisLabel("Value");
