@@ -38,6 +38,7 @@ import org.amanzi.neo.services.nodes.SpreadsheetNode;
 import org.amanzi.neo.services.utils.Utils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
@@ -64,7 +65,9 @@ public class AweProjectService extends AbstractService {
     }
     private static final Logger LOGGER = Logger.getLogger(AweProjectService.class);
 
-
+    public void setService(GraphDatabaseService service){
+        databaseService=service;
+    }
 
 	/**
 	 * Returns RootNode for projects

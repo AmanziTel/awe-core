@@ -67,12 +67,12 @@ import org.neo4j.index.lucene.LuceneIndexService;
     
     public void init(GraphDatabaseService service,String databaseLocation,INeoManager manager) {
         this.manager = manager;
-        if (neoService!=null){
-            return;
-        }
+
         this.databaseLocation = databaseLocation;
         neoService = service;
-        indexService = new LuceneIndexService(neoService);
+        if (indexService==null){
+            indexService = new LuceneIndexService(neoService);
+        }
     }
     public LuceneIndexService getIndexService() {
         return indexService;

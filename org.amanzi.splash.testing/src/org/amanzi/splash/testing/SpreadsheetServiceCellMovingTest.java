@@ -105,6 +105,7 @@ public class SpreadsheetServiceCellMovingTest {
     private static void initProjectService(){
         NeoServiceProviderUi.initProvider(getNeo());
         projectService = NeoCorePlugin.getDefault().getProjectService();
+        projectService.setService(getNeo());
     }
     
     /**
