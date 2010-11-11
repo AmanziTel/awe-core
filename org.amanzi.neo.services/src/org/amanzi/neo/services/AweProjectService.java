@@ -65,6 +65,11 @@ public class AweProjectService extends AbstractService {
     }
     private static final Logger LOGGER = Logger.getLogger(AweProjectService.class);
 
+    /**
+     * TODO temporary method - will be remove after completely changing of database structure!
+     *
+     * @param service
+     */
     public void setService(GraphDatabaseService service){
         databaseService=service;
     }
