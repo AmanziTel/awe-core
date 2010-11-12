@@ -46,8 +46,10 @@ import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.title.TextTitle;
 
+import com.lowagie.text.BadElementException;
 import com.lowagie.text.Cell;
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.Font;
 import com.lowagie.text.Image;
 import com.lowagie.text.ImgTemplate;
@@ -124,29 +126,22 @@ public class PDFPrintingEngine {
             title.getFont().setStyle(Font.BOLD);
             title.getFont().setSize(20);
             document.add(title);
-            System.out.println("Added text: y=" + document.top() + "\ttop_margin=" + document.topMargin());
-
+            
+            float maxHeight = (paperSize.getHeight() - 2 * INDENTATION);
+            float maxWidth = (paperSize.getWidth() - 2 * INDENTATION);
             final List<IReportPart> parts = report.getParts();
             for (IReportPart part : parts) {
                 if (part instanceof ReportMap) {
                     IMap map = ((ReportMap)part).getMap();
-                    BufferedImage bI = new BufferedImage(part.getWidth(), part.getHeight(), BufferedImage.TYPE_INT_ARGB);
-                    Graphics graphics2 = bI.getGraphics();
 
-                    draw((Graphics2D)graphics2, map, part.getWidth(), part.getHeight());
-                    final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    ImageIO.write(bI, "png", baos);
-                    Image img = Image.getInstance(baos.toByteArray());
-                    float scalefactorH = Math.min(1, paperSize.getHeight() / img.getHeight());
-                    float scalefactorW = Math.min(1, (paperSize.getWidth() - 2 * INDENTATION) / img.getWidth());
-                    float scalefactor = Math.min(scalefactorH, scalefactorW);
-                    img.scalePercent(100 * scalefactor);
-                    img.setIndentationLeft(INDENTATION);
-                    img.setIndentationRight(INDENTATION);
-                    document.add(img);
+                    PdfContentByte cb = writer.getDirectContent();
+                    PdfTemplate tp = cb.createTemplate(part.getWidth(), part.getHeight());
+                    Graphics2D g2 = tp.createGraphics(part.getWidth(), part.getHeight(), new DefaultFontMapper());
+                    draw(g2, map, part.getWidth(), part.getHeight());
+                    g2.dispose();
+                    addTemplateAsImage(document, tp, maxHeight, maxWidth);
                 } else if (part instanceof Chart) {
                     Chart chart = (Chart)part;
-                    // create chart
                     final JFreeChart jFreeChart = Charts.createChart(chart);
                     jFreeChart.setTitle(chart.getTitle());
                     for (String subtitle : chart.getSubtitles()) {
@@ -156,26 +151,16 @@ public class PDFPrintingEngine {
                         jFreeChart.removeLegend();
                     ChartUtilities.applyCurrentTheme(jFreeChart);
 
-                    int width = Math.min((int)PageSize.A4.getWidth(),chart.getWidth());
+                    int width = Math.min((int)PageSize.A4.getWidth(), chart.getWidth());
                     int height = chart.getHeight();
-                    float scalefactorH = Math.min(1, paperSize.getHeight() / height);
-                    float scalefactorW = Math.min(1, (paperSize.getWidth() - 2 * INDENTATION) / width);
-                    float scalefactor = Math.min(scalefactorH, scalefactorW);
-                    
-                    width *= scalefactor;
-                    height *= scalefactor;
-                    
+
                     PdfContentByte cb = writer.getDirectContent();
                     PdfTemplate tp = cb.createTemplate(width, height);
                     Graphics2D g2 = tp.createGraphics(width, height, new DefaultFontMapper());
                     jFreeChart.draw(g2, new java.awt.Rectangle(width, height));
                     g2.dispose();
 
-                    ImgTemplate image = new ImgTemplate(tp);
-                    image.setIndentationLeft(INDENTATION);
-                    image.setIndentationRight(INDENTATION);
-                    image.setAlignment(Image.ALIGN_MIDDLE);
-                    document.add(image);
+                    addTemplateAsImage(document, tp, maxHeight, maxWidth);
                 } else if (part instanceof ReportText) {
                     ReportText text = (ReportText)part;
                     final Paragraph paragraph = new Paragraph(text.getText());
@@ -216,7 +201,6 @@ public class PDFPrintingEngine {
                     // large table have to be splitted
                     pdfTable.setTableFitsPage(false);
                     document.add(pdfTable);
-                    System.out.println("Added table");
                 }
             }
             document.newPage();
@@ -269,5 +253,38 @@ public class PDFPrintingEngine {
         } catch (RenderException e) {
             e.printStackTrace();
         }
+    }
+    /**
+     * Adds the given template as an image
+     * 
+     * @param document the document
+     * @param template the template
+     * @param maxHeight maximum height
+     * @param maxWidth maximum width
+     * @throws BadElementException
+     * @throws DocumentException
+     */
+    private void addTemplateAsImage(Document document, PdfTemplate template, float maxHeight, float maxWidth)
+            throws BadElementException, DocumentException {
+        ImgTemplate image = new ImgTemplate(template);
+        image.setIndentationLeft(INDENTATION);
+        image.setIndentationRight(INDENTATION);
+        image.setAlignment(Image.ALIGN_MIDDLE);
+        scaleImage(image, maxHeight, maxWidth);
+        document.add(image);
+    }
+
+    /**
+     * Scales an image to maximum height and width
+     * 
+     * @param image the image to scale
+     * @param maxHeight maximum height
+     * @param maxWidth maximum width
+     */
+    public static void scaleImage(Image image, float maxHeight, float maxWidth) {
+        float scalefactorH = Math.min(1, maxHeight / image.getHeight());
+        float scalefactorW = Math.min(1, maxWidth / image.getWidth());
+        float scalefactor = Math.min(scalefactorH, scalefactorW);
+        image.scalePercent(100 * scalefactor);
     }
 }
