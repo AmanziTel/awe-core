@@ -43,6 +43,7 @@ import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
@@ -76,6 +77,7 @@ public class TemsRemoteUrlLoader extends DriveLoader {
 	/** The url. */
     private final URL url;
     private int linesProcessed =0;
+    private Date startDate;
 
 
 	/**
@@ -89,7 +91,7 @@ public class TemsRemoteUrlLoader extends DriveLoader {
 	 * @param dataset
 	 *            to add data to
 	 */
-	public TemsRemoteUrlLoader(URL url, String filename, Display display, String dataset,Node datasetNode, Node mNode, Node virtualMnode) {
+	public TemsRemoteUrlLoader(URL url, String filename, Display display, String dataset,Node datasetNode, Node mNode, Node virtualMnode, Date startDate) {
 		_workDate = new GregorianCalendar();
 		_workDate.setTimeInMillis(System.currentTimeMillis());
         this.url = url;
@@ -98,6 +100,7 @@ public class TemsRemoteUrlLoader extends DriveLoader {
 		driveType = DriveTypes.TEMS;
 		this.m_node = mNode;
 		virtual_m_node = virtualMnode;
+		this.startDate = startDate;
 		initialize("TEMS", null, filename, display, dataset);
 		initializeLuceneIndex();
 		initializeKnownHeaders();
@@ -363,7 +366,18 @@ public class TemsRemoteUrlLoader extends DriveLoader {
 		/*if (time == null || latitude == null || longitude == null) {
 			return;
 		}*/
-		if (time == null) {
+		
+		/* check that data of earlier date than required has not come*/
+		SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss.SSS");
+		Date date = new Date();
+		try {
+			date = format.parse(time);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		
+		if (time == null || date.compareTo(startDate) < 0) {
+			System.out.println("SKIPPED data of date: " + time);
 			return;
 		}
 		
@@ -486,6 +500,11 @@ public class TemsRemoteUrlLoader extends DriveLoader {
 					for (Map<String, Object> dataLine : data) {
 						Node m = neo.createNode();
 						findOrCreateFileNode(m);
+						Relationship relation = file.getSingleRelationship(GeoNeoRelationshipTypes.LAST, Direction.OUTGOING); 
+						if (relation != null){
+							relation.delete();
+						}
+						file.createRelationshipTo(m, GeoNeoRelationshipTypes.LAST);
 						m.setProperty(INeoConstants.PROPERTY_TYPE_NAME,
 								NodeTypes.M.getId());
 						for (Map.Entry<String, Object> entry : dataLine
@@ -648,6 +667,12 @@ public class TemsRemoteUrlLoader extends DriveLoader {
 						}
 						index(ms);
 						findOrCreateVirtualFileNode(ms);
+						Relationship relation = virtualFile.getSingleRelationship(GeoNeoRelationshipTypes.LAST, Direction.OUTGOING);
+						if (relation != null){
+							relation.delete();
+						}
+						virtualFile.createRelationshipTo(ms, GeoNeoRelationshipTypes.LAST);
+						
 						if (virtual_m_node != null) {
 							virtual_m_node.createRelationshipTo(ms,
 									GeoNeoRelationshipTypes.NEXT);
@@ -844,6 +869,7 @@ public class TemsRemoteUrlLoader extends DriveLoader {
                 } else {
                     parseLine(line);
                     linesProcessed++;
+                    monitor.worked(1);
                 }
 
                 if (lineNumber > prevLineNumber + commitSize) {

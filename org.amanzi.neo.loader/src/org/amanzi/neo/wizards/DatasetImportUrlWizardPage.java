@@ -15,7 +15,10 @@ package org.amanzi.neo.wizards;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedHashMap;
 
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -29,11 +32,14 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.DateTime;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
@@ -62,6 +68,12 @@ public class DatasetImportUrlWizardPage extends WizardPage {
 
     /** The l url. */
     private Label lUrl;
+    
+    private DateTime startTimeWidget;
+    private DateTime endTimeWidget;
+    protected Date startDate;
+    protected String startTime;
+    protected String endTime;
     
     private Shell shell;
     
@@ -144,6 +156,68 @@ public class DatasetImportUrlWizardPage extends WizardPage {
         	
         Arrays.sort(items);
         cDataset.setItems(items);
+        cDataset.addModifyListener(new ModifyListener() {
+        	@Override
+            public void modifyText(ModifyEvent e) {
+        		validateFinish();
+        	}
+        });
+        
+        cDataset.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                setPageComplete(isValidPage());
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+
+        Label startLabel = new Label(main, SWT.NONE);
+        startLabel.setText("Start date");
+        
+        /** The start time. */
+        startTimeWidget = new DateTime(main, SWT.BORDER | SWT.DATE | SWT.LONG);
+        startTimeWidget.setLayoutData(new GridData(SWT.NONE, SWT.CENTER, true, false));
+        startTimeWidget.setEnabled(true);
+        startTimeWidget.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                setPageComplete(isValidPage());
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+        
+        startTimeWidget.setDay(startTimeWidget.getDay() - 6);
+
+        Label endLabel = new Label(main, SWT.NONE);
+        endLabel.setText("End date (inclusive)");
+        
+        /** The end time. */
+        endTimeWidget = new DateTime(main, SWT.BORDER | SWT.DATE | SWT.LONG);
+        endTimeWidget.setLayoutData(new GridData(SWT.NONE, SWT.CENTER, true, false));
+        
+        endTimeWidget.setEnabled(true);
+        endTimeWidget.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+            	setPageComplete(isValidPage());
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
         
 
         setControl(main);
@@ -175,6 +249,31 @@ public class DatasetImportUrlWizardPage extends WizardPage {
     		return false;
     	}
     	
+    	if (cDataset.getText() == null)
+    		return false;
+    	
+    	if (startTimeWidget.getYear() > endTimeWidget.getYear() ||
+    		(startTimeWidget.getYear() == endTimeWidget.getYear() && startTimeWidget.getMonth() > endTimeWidget.getMonth()) ||
+    		(startTimeWidget.getYear() == endTimeWidget.getYear() && startTimeWidget.getMonth() == endTimeWidget.getMonth() && startTimeWidget.getDay() >= endTimeWidget.getDay())){
+//    		MessageDialog.openInformation(shell, "Start and end date incorrect", "Start date must be gretaer than the end time");
+    		return false;
+    	}
+    	
+    	int startMonth =  startTimeWidget.getMonth() + 1;
+    	int endMonth =  startTimeWidget.getMonth() + 1;
+    	startTime = startTimeWidget.getYear() + "-" + startMonth + "-" + startTimeWidget.getDay();
+		endTime = endTimeWidget.getYear() + "-" + endMonth + "-" + endTimeWidget.getDay();
+		
+		final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+
+		
+		startDate = new Date();
+		try {
+			startDate = format.parse(startTime);
+		} catch (ParseException pe) {
+			pe.printStackTrace();
+		}
+
     	
         if (url != null && !url.isEmpty()) {
             try {
@@ -193,8 +292,10 @@ public class DatasetImportUrlWizardPage extends WizardPage {
      * 
      * @return the url
      */
-    public String getUrl() {
-    	
+    public String getUrl(boolean getTotalCount) {
+    	if (getTotalCount){
+    		return url + "/event/getEventsCount?dataset=" + imsi.trim().substring(0,5) + "&start=" + startTime + "&end=" + endTime;
+    	}
     	//String completeUrl = url + "/event/extract.csv?dataset=" + imsi.trim().substring(0, 5) + "&imsi=" + imsi.trim() + "&imei=" + imei.trim();
     	String completeUrl = url + "/event/extractNew.csv?dataset=" + imsi.trim().substring(0, 5);
         return completeUrl;

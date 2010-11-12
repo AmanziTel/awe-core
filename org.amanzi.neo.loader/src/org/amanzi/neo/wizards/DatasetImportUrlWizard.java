@@ -13,10 +13,14 @@
 
 package org.amanzi.neo.wizards;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -82,6 +86,8 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
     private Node lastMNode;
     
     private Node lastMsNode;
+    
+    private boolean hasTotalCount = false;
 
     /**
      * Perform finish.
@@ -181,7 +187,11 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
     private String getNextUrl() {
     	lastMNode = null;
     	lastMsNode = null;
-    	String urlString = mainPage.getUrl() + "&numEvents=10000";
+    	if (!hasTotalCount){
+    		return mainPage.getUrl(!hasTotalCount);
+    	}
+    	String endTime = mainPage.endTime + "T23:59:59";
+    	String urlString = mainPage.getUrl(false) + "&numEvents=10000" + "&end=" + endTime;
     	
     	if(dataset == null) {
     		findDataset(this.datasetName);
@@ -212,7 +222,6 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
 	    		try {
 	    			date = format.parse(time);
 	    		} catch (ParseException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 	    		
@@ -240,6 +249,7 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
 	    		}
 	    		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	    		time = dateFormat.format(date);
+	    		
 				
 	    		try {
 					urlString = urlString + "&start=" + time + "&imei=" + URLEncoder.encode(imei, "UTF-8") + "&imsi=" + URLEncoder.encode(imsi, "UTF-8");
@@ -248,6 +258,10 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
 					e.printStackTrace();
 				}
     		}
+    	}
+    	else{
+    		String startTime = mainPage.startTime + "T00:00:00";
+        	urlString = urlString + "&start=" + startTime;
     	}
     	return urlString;
     }
@@ -262,6 +276,7 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
         if (monitor == null) {
             monitor = new NullProgressMonitor();
         }
+        
         DriveLoader driveLoader = null;
 
         Node prev_lastMNode = null;
@@ -269,6 +284,27 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
         int eventsCnt = 0;
         while(true) {
 			String urlStr = getNextUrl();
+			if (!hasTotalCount){
+				URLConnection urlConn;
+				try {
+					url = new URL(urlStr);
+					urlConn = url.openConnection();
+					urlConn.setConnectTimeout(60000);
+		        	urlConn.setReadTimeout(60000);
+		        	
+		            InputStream inputStream = urlConn.getInputStream();
+		            if(monitor.isCanceled()) {
+		            	return;
+		            }
+		            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+		            int totalEvents = Integer.parseInt(reader.readLine().trim());
+		            monitor.beginTask("", totalEvents);
+		            hasTotalCount = true;
+					continue;
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 
 			try {
 				if (prev_lastMNode == lastMNode && lastMNode != null) {
@@ -289,7 +325,7 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
 				prev_lastMsNode = lastMsNode;
 				url = new URL(urlStr);
 
-				driveLoader = new TemsRemoteUrlLoader(url, datasetName,display, datasetName,dataset, lastMNode, lastMsNode);
+				driveLoader = new TemsRemoteUrlLoader(url, datasetName,display, datasetName,dataset, lastMNode, lastMsNode, mainPage.startDate);
 
 				driveLoader.run(monitor);
 				driveLoader.printStats(false);
@@ -299,7 +335,7 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
 				if(((TemsRemoteUrlLoader)driveLoader).getEventProcessedCount() ==0 ) {
 					break;
 				}
-				eventsCnt += 1000;
+				eventsCnt += 10000;
 			} catch (MalformedURLException e) {
 				e.printStackTrace();
 				break;
