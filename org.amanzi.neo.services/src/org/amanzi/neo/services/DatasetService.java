@@ -1368,4 +1368,15 @@ public class DatasetService extends AbstractService {
     public Node getDatasetNodeByGis(Node gis) {
         return gis.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode();
     }
+
+
+    /**
+     * Checks if is reference node.
+     *
+     * @param node the node
+     * @return true, if is reference node
+     */
+    public boolean isReferenceNode(Node node) {
+        return node!=null&&databaseService.getReferenceNode().getId()==node.getId();
+    }
 }

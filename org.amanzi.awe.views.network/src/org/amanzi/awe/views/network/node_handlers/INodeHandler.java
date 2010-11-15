@@ -11,28 +11,25 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui;
-
-import net.refractions.udig.project.IMap;
-import net.refractions.udig.project.ui.ApplicationGIS;
-
+package org.amanzi.awe.views.network.node_handlers;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ *  INode Handler - provide work with necessary node
  * </p>
  * @author tsinkel_a
  * @since 1.0.0
  */
-public class UiService  {
+public interface INodeHandler {
+    
     /**
-     * Gets the active project name.
+     * Checks if the nessary INeoNode is parent
      *
-     * @return the active project name
+     * @param nodeId the node id
+     * @return true, if is parent
      */
-    public String getActiveProjectName() {
-        IMap map = ApplicationGIS.getActiveMap();
-        return map == ApplicationGIS.NO_MAP ? ApplicationGIS.getActiveProject().getName() : map.getProject().getName();
-    }
+    boolean isParent(INeoNode parent);
+    Iterable<INeoNode>getChildrens(INeoNode parent);
+    Iterable<INeoNode>getChildrensAfter(INeoNode childNode); 
+//    Iterable<INeoNode>findInChilds(String findStr);
 }

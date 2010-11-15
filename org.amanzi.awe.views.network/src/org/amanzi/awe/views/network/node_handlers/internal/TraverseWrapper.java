@@ -11,28 +11,34 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui;
+package org.amanzi.awe.views.network.node_handlers.internal;
 
-import net.refractions.udig.project.IMap;
-import net.refractions.udig.project.ui.ApplicationGIS;
+import java.util.Iterator;
 
+import org.amanzi.awe.views.network.node_handlers.INeoNode;
+import org.neo4j.graphdb.Node;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ *Traverser wrapper
  * </p>
  * @author tsinkel_a
  * @since 1.0.0
  */
-public class UiService  {
+public class TraverseWrapper implements Iterable<INeoNode> {
+
+    private final Iterable<Node> source;
+
     /**
-     * Gets the active project name.
-     *
-     * @return the active project name
+     * @param nodes
      */
-    public String getActiveProjectName() {
-        IMap map = ApplicationGIS.getActiveMap();
-        return map == ApplicationGIS.NO_MAP ? ApplicationGIS.getActiveProject().getName() : map.getProject().getName();
+    public TraverseWrapper(Iterable<Node> nodes) {
+        this.source = nodes;
     }
+
+    @Override
+    public Iterator<INeoNode> iterator() {
+        return new IteratorWrapper(source.iterator());
+    }
+
 }

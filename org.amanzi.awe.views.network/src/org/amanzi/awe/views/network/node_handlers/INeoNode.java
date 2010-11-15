@@ -11,28 +11,29 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui;
+package org.amanzi.awe.views.network.node_handlers;
 
-import net.refractions.udig.project.IMap;
-import net.refractions.udig.project.ui.ApplicationGIS;
-
+import org.neo4j.graphdb.Node;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ *Interface for base node of tree
  * </p>
  * @author tsinkel_a
  * @since 1.0.0
  */
-public class UiService  {
+public interface INeoNode {
     /**
-     * Gets the active project name.
+     * Get node Id (type for neo4j node)
      *
-     * @return the active project name
+     * @return
      */
-    public String getActiveProjectName() {
-        IMap map = ApplicationGIS.getActiveMap();
-        return map == ApplicationGIS.NO_MAP ? ApplicationGIS.getActiveProject().getName() : map.getProject().getName();
-    }
+    String getId();
+    /**
+     * Get node name (name for neo4j node)
+     *
+     * @return
+     */
+    String getName();
+    Node getNode();
 }
