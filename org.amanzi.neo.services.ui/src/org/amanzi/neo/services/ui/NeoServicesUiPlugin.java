@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.events.ShowPreparedViewEvent;
 import org.amanzi.neo.services.events.ShowViewEvent;
 import org.amanzi.neo.services.events.UpdateDrillDownEvent;
@@ -158,7 +158,7 @@ public class NeoServicesUiPlugin extends AbstractUIPlugin  implements IUpdateVie
      * @param type the type
      * @return the image for type
      */
-    public Image getImageForType(NodeTypes type) {
+    public Image getImageForType(INodeType type) {
         return    IconManager.getIconManager().getImage(type.getId());
     }
 

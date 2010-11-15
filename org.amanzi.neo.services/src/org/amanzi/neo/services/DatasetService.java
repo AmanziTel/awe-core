@@ -16,8 +16,11 @@ package org.amanzi.neo.services;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.DriveTypes;
@@ -33,7 +36,6 @@ import org.amanzi.neo.services.utils.Utils;
 import org.amanzi.neo.services.utils.Utils.FilterAND;
 import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.PropertyContainer;
@@ -60,7 +62,7 @@ import com.vividsolutions.jts.util.Assert;
  * @since 1.0.0
  */
 public class DatasetService extends AbstractService {
-
+    private Map<String,INodeType>registeredTypes=Collections.synchronizedMap(new HashMap<String,INodeType>());
     /**
      * should be used NeoServiceFactory for getting instance of DatasetService
      */
@@ -163,7 +165,21 @@ public class DatasetService extends AbstractService {
     public String getNodeName(Node node) {
         return (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
     }
-
+    
+    /**
+     * Register type.
+     *
+     * @param newNodeType the new node type
+     * @return true, if successful
+     */
+    public boolean registerNodeType(INodeType newNodeType){
+        if (getNodeType(newNodeType.getId())!=null){
+            return false;
+        }
+        registeredTypes.put(newNodeType.getId(),newNodeType);
+        return true;
+    }
+    
     /**
      * Gets the node type by type id
      * 
@@ -177,6 +193,9 @@ public class DatasetService extends AbstractService {
         INodeType result = NodeTypes.getEnumById(typeId);
         if (result == null) {
             result = getDynamicNodeType(typeId);
+        }
+        if (result == null) {
+            result=registeredTypes.get(typeId);
         }
         return result;
     }
