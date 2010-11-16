@@ -190,8 +190,9 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
     	if (!hasTotalCount){
     		return mainPage.getUrl(!hasTotalCount);
     	}
+		String startTime = mainPage.startTime + "T00:00:00";
     	String endTime = mainPage.endTime + "T23:59:59";
-    	String urlString = mainPage.getUrl(false) + "&numEvents=10000" + "&end=" + endTime;
+    	String urlString = mainPage.getUrl(false) + "&numEvents=10000" + "&start=" + startTime + "&end=" + endTime;
     	
     	if(dataset == null) {
     		findDataset(this.datasetName);
@@ -252,16 +253,12 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
 	    		
 				
 	    		try {
-					urlString = urlString + "&start=" + time + "&imei=" + URLEncoder.encode(imei, "UTF-8") + "&imsi=" + URLEncoder.encode(imsi, "UTF-8");
+					urlString = urlString + "&cdate=" + time + "&cimei=" + URLEncoder.encode(imei, "UTF-8") + "&cimsi=" + URLEncoder.encode(imsi, "UTF-8");
 				} catch (UnsupportedEncodingException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
     		}
-    	}
-    	else{
-    		String startTime = mainPage.startTime + "T00:00:00";
-        	urlString = urlString + "&start=" + startTime;
     	}
     	return urlString;
     }
