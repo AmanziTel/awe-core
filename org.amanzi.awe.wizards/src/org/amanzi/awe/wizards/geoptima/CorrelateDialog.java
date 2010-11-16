@@ -23,9 +23,11 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
-import org.amanzi.awe.gps.GPSCorrelator;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.correlation.CorrelationModel;
+import org.amanzi.neo.services.correlation.CorrelationService;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
@@ -34,9 +36,9 @@ import org.amanzi.neo.services.ui.utils.NeoTreeElement;
 import org.amanzi.neo.services.ui.utils.NeoTreeLabelProvider;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
 import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
@@ -123,18 +125,12 @@ public class CorrelateDialog extends Dialog implements IPropertyChangeListener {
         return status;
     }
 
-    /**
-     *
-     */
     private void formInput() {
         property = getPreferenceStore().getString(DataLoadPreferences.SELECTED_DATA);
         tableView.setInput(property);
         formNetworks();
     }
 
-    /**
-     *
-     */
     private void formNetworks() {
         corelatedNodes.clear();
         addCorrelate.clear();
@@ -290,19 +286,22 @@ public class CorrelateDialog extends Dialog implements IPropertyChangeListener {
     }
 
     protected void correlate() {
-        final Node network = networks.get(cNetwork.getText());
-        if (network == null || (addCorrelate.size() == 0 && removeCorrelate.size() == 0)) {
+        if (networks.get(cNetwork.getText()) == null || (addCorrelate.size() == 0 && removeCorrelate.size() == 0)) {
             return;
         }
+        final Node network = networks.get(cNetwork.getText());
+        
+        
         shell.setEnabled(false);
         Job correlate = new Job("process correlation") {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-                    GPSCorrelator correlator = new GPSCorrelator(network, monitor);
-                    removeCorrelation(correlator, removeCorrelate);
-                    addCorrelation(correlator, addCorrelate);
+
+                    CorrelationService cs = NeoServiceFactory.getInstance().getCorrelationService();
+                    cs.runCorrelation(new CorrelationModel(network, addCorrelate));
+
                     return Status.OK_STATUS;
                 } finally {
                     ActionUtil.getInstance().runTask(new Runnable() {
@@ -320,15 +319,7 @@ public class CorrelateDialog extends Dialog implements IPropertyChangeListener {
         };
         correlate.schedule();
     }
-
-    protected void addCorrelation(GPSCorrelator correlator, Set<Node> addCorr) {
-        correlator.correlate(addCorr);
-    }
-
-    protected void removeCorrelation(GPSCorrelator correlator, Set<Node> removeCorr) {
-        correlator.clearCorrelation(removeCorr);
-    }
-
+    
     private void updateCorrelation() {
         setNetwork(cNetwork.getText());
     }

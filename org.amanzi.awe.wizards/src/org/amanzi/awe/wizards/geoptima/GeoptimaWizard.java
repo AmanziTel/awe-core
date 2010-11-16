@@ -1,9 +1,7 @@
 package org.amanzi.awe.wizards.geoptima;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 
-import org.amanzi.awe.gps.GPSCorrelator;
 import org.amanzi.awe.wizards.pages.SelectCorrelationDataPage;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.events.NewCorrelationEvent;
@@ -48,7 +46,7 @@ public class GeoptimaWizard extends Wizard implements INewWizard, IWizard {
 
                 @Override
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    GPSCorrelator correlator = new GPSCorrelator(network, monitor);
+                    // GPSCorrelator correlator = new GPSCorrelator(network, monitor);
 
                     ActionUtil.getInstance().runTask(new Runnable() {
 
