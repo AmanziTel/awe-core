@@ -130,8 +130,12 @@ public class NeoServiceProviderUi implements INeoManager{
     }
     public GraphDatabaseService getService() {
         NeoServiceProvider neoPr = NeoServiceProvider.getProvider();
-        neoPr.init(Activator.getDefault().getGraphDbServiceSafely(),getDefaultDatabaseLocation(),this);
-        return neoPr.getService();
+        GraphDatabaseService result = neoPr.getService();
+        if (result == null) {
+            neoPr.init(Activator.getDefault().getGraphDbServiceSafely(),getDefaultDatabaseLocation(),this);
+            result = neoPr.getService();
+        }
+        return result;
     }   
     /**
      * Removes listener from Provider 
