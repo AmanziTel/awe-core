@@ -457,6 +457,7 @@
       <module>org.amanzi.neo.data-generator</module>
       <module>org.amanzi.splash.testing</module>
       <module>org.amanzi.testing</module>
+      <module>org.amanzi.awe.ui</module>
     </modules>
     <build>
       <plugins>	  
