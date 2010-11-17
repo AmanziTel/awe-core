@@ -205,7 +205,7 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         
         pref.setDefault(DataLoadPreferences.NE_ADJ_CI, "ADJ_CI,CI_t");
         pref.setDefault(DataLoadPreferences.NE_ADJ_BTS, "ADJ_BTS_NAME,BTS_Name_t");
-        pref.setDefault(DataLoadPreferences.NE_ADJ_LAC, "ADJ_LAG,LAC_t");
+        pref.setDefault(DataLoadPreferences.NE_ADJ_LAC, "ADJ_LAC,LAC_t");
         
         pref.setDefault(DataLoadPreferences.TR_SITE_ID_SERV, "Site ID, Near end Name");
         pref.setDefault(DataLoadPreferences.TR_SITE_NO_SERV, "Site No, Near End Site No");
