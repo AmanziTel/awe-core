@@ -10,17 +10,14 @@ import java.io.StringWriter;
 import java.net.URL;
 import java.util.ArrayList;
 
-import org.amanzi.neo.core.service.NeoServiceProvider;
 import org.amanzi.scripting.jruby.EclipseLoadService;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
-import org.jruby.RubyInstanceConfig.LoadServiceCreator;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.load.LoadService;
-import org.neo4j.graphdb.GraphDatabaseService;
 
 public class CucumberRunner implements IApplication {
 	
