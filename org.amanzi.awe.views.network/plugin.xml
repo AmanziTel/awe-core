@@ -27,12 +27,9 @@
                   tooltip="Create new node type"
                   style="push"
                   id="org.amanzi.awe.views.network.view.NewTypeAction">
-               <!--<enablement>
-                  <objectClass name="net.refractions.udig.project.ILayer"/>
-               </enablement>!-->
+
             </action>
             
          </viewContribution>
       </extension>
-
 </plugin>

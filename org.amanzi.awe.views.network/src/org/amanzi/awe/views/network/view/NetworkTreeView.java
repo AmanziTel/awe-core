@@ -79,9 +79,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
 import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -299,6 +299,7 @@ public class NetworkTreeView extends ViewPart {
      * @param node - node to select
      */
     public void selectNode(Node node) {
+        viewer.refresh();
         viewer.reveal(new NeoNode(node, 0));
         viewer.setSelection(new StructuredSelection(new Object[] {new NeoNode(node, 0)}));
     }

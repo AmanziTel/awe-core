@@ -78,9 +78,10 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
         }
 
         // Creating new node
+        Node targetNode=null;
         Transaction tx = service.beginTx();
         try {
-            Node targetNode = service.createNode();
+            targetNode = service.createNode();
             targetNode.setProperty("type", iNodeType.getId());
             parentnode.createRelationshipTo(targetNode, NetworkRelationshipTypes.CHILD);
 
@@ -129,7 +130,7 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
         Node gisNode = NeoUtils.findGisNodeByChild(sourceNode);
         NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(new UpdateLayerEvent(gisNode));
         // TODO imho need to use service for updating Tree View
-        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDrillDownEvent(parentnode, "org.amanzi.neo.wizards.CreateNetworkWizard"));
+        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDrillDownEvent(targetNode, "org.amanzi.neo.wizards.CreateNetworkWizard"));
 
         return true;
     }
