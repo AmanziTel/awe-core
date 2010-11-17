@@ -538,6 +538,10 @@ public class NetworkTreeView extends ViewPart {
         if (elementAction.isEnabled()) {
             manager.add(elementAction);
         }
+        elementAction = new ExportNetworkAction((IStructuredSelection)viewer.getSelection());
+        if (elementAction.isEnabled()) {
+            manager.add(elementAction);
+        }
         IMenuManager menu = new MenuManager("Create new element", "new_elem_submenu_ID");
         manager.add(menu);
         fillMenu(menu, (IStructuredSelection)viewer.getSelection());
