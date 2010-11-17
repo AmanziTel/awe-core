@@ -26,6 +26,7 @@ import org.amanzi.neo.services.ui.IUpdateViewListener;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -44,6 +45,7 @@ public class NetworkTreePlugin extends AbstractUIPlugin implements IUpdateViewLi
     static {
         Collection<UpdateViewEventType> spr = new HashSet<UpdateViewEventType>();
         spr.add(UpdateViewEventType.DRILL_DOWN);
+        spr.add(UpdateViewEventType.GIS);
         spr.add(UpdateViewEventType.SHOW_PREPARED_VIEW);
         handedTypes = Collections.unmodifiableCollection(spr);
     }
@@ -121,6 +123,11 @@ public class NetworkTreePlugin extends AbstractUIPlugin implements IUpdateViewLi
             showPreparedView((ShowPreparedViewEvent)event);
             break;
         default:
+            IViewPart viewNetwork = findTreeView();
+            if (viewNetwork != null) {
+                NetworkTreeView networkView = (NetworkTreeView)viewNetwork;
+                ((Viewer)networkView.getSite().getSelectionProvider()).refresh();
+            }
         }
     }
     
