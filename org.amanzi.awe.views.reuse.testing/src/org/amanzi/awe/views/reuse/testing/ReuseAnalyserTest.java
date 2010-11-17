@@ -23,6 +23,7 @@ import org.amanzi.awe.views.reuse.views.ReuseAnalyserModel;
 import org.amanzi.neo.loader.NetworkLoader;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.statistic.PropertyHeader;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.testing.CommonTestUtil;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -48,7 +49,9 @@ public class ReuseAnalyserTest {
     static CommonTestUtil util;
     @BeforeClass
     public static void init(){
-        util=new CommonTestUtil(DATABASE_NAME, MAIN_DIR); 
+        util=new CommonTestUtil(DATABASE_NAME, MAIN_DIR);
+        
+        NeoServiceProviderUi.initProvider(util.getNeo());
     }
     @Test
     public void testCalculation() throws IOException{
