@@ -77,9 +77,7 @@ public class SplashPlugin extends AbstractUIPlugin {
 		plugin = this;
 		//Tsinkel, add resource listener
 		org.eclipse.core.resources.ResourcesPlugin.getWorkspace().addResourceChangeListener(new EditorListener(),IResourceChangeEvent.POST_CHANGE);
-		//Lagutko, 29.07.2009, initialize SpreadsheetService
-		spreadsheetService = new SpreadsheetService();
-
+		
         try {
             registerOpenSplashListenerInRDT();
         } catch (RuntimeException e) {
@@ -141,6 +139,10 @@ public class SplashPlugin extends AbstractUIPlugin {
 	}	
 	
 	public SpreadsheetService getSpreadsheetService() {
+	    if (spreadsheetService == null) {
+	        //Lagutko, 17.11.2010, initialize SpreadsheetService
+	        spreadsheetService = new SpreadsheetService();
+	    }
 	    return spreadsheetService;
 	}
 	
