@@ -31,6 +31,7 @@ import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.NetworkTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.neo.services.utils.Utils;
 import org.apache.commons.lang.StringUtils;
@@ -272,7 +273,7 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
     private String[] getRootItems() {
         final String  projectName = LoaderUiUtils.getAweProjectName();
         TraversalDescription td = Utils.getTDRootNodesOfProject(projectName, null);
-        Node refNode = DatabaseManager.getInstance().getCurrentDatabaseService().getReferenceNode();
+        Node refNode = NeoServiceProviderUi.getProvider().getService().getReferenceNode();
         restrictedNames.clear();
         members = new HashMap<String, Node>();
         for (Node node : td.traverse(refNode).nodes()) {
