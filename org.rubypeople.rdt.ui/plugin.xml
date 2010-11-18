@@ -14,6 +14,7 @@
    <extension-point id="rubyEditorTextHovers" name="%rubyEditorTextHover" schema="schema/rubyEditorTextHovers.exsd"/>
    <extension-point id="rubyCompletionProposalComputer" name="%rubyCompletionProposalComputer" schema="schema/rubyCompletionProposalComputer.exsd"/>
    <extension-point id="rubyCompletionProposalSorters" name="%rubyCompletionProposalSorters" schema="schema/rubyCompletionProposalSorters.exsd"/>
+   <extension-point id="scriptsProvider" name="scriptsProvider" schema="schema/scriptsProvider.exsd"/>
 
    <!-- content assist processors - do not change their order -->  
 	<!-- ruby category -->

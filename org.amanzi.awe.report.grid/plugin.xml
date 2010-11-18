@@ -28,5 +28,13 @@
          </toolbar>
       </menuContribution>
    </extension>
+   <extension
+         id="gridScriptProvider"
+         name="gridScriptProvider"
+         point="org.rubypeople.rdt.ui.scriptsProvider">
+      <provider
+            class="org.amanzi.awe.report.grid.ScriptsProvider">
+      </provider>
+   </extension>
 
 </plugin>

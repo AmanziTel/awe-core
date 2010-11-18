@@ -1,5 +1,11 @@
 package org.amanzi.awe.report.grid;
 
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+import java.net.URL;
+
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -29,7 +35,7 @@ public class GridReportPlugin extends AbstractUIPlugin {
 		plugin = this;
 	}
 
-	/*
+    /*
 	 * (non-Javadoc)
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
 	 */

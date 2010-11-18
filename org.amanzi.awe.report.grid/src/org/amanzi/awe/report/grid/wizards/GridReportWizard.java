@@ -402,6 +402,7 @@ public class GridReportWizard extends Wizard implements IWizard {
 
                 @Override
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    KPIPlugin.getDefault().loadScript("grid/grid.rb");
                     Object[] kpisFound = ((RubyArray)ruby
                             .evalScriptlet("KPI::IDEN.singleton_methods.sort.select{|m| !(Annotations.hidden_methods.include? m)}"))
                             .toArray();

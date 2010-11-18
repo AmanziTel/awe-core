@@ -97,7 +97,7 @@ public class KPIPlugin extends AbstractUIPlugin {
         config.setError(getErrorOutputStream());
         config.setOutput(getOutputStream());
         runtime = Ruby.newInstance(config);
-        String[] loadPaths=new String[2];
+        String[] loadPaths=new String[3];
         try {
             String aweProjectName = AWEProjectManager.getActiveProjectName();
             IRubyProject rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, aweProjectName);
@@ -106,6 +106,7 @@ public class KPIPlugin extends AbstractUIPlugin {
             URL entry = Platform.getBundle(KPIPlugin.PLUGIN_ID).getEntry("ruby");
             loadPaths[0] = FileLocator.resolve(entry).getFile();
             loadPaths[1]=location;
+            loadPaths[2]=rubyProject.getProject().getLocation().toOSString();
 //            Platform.getBundle("").getE
         } catch (CoreException e1) {
             // TODO Handle CoreException
@@ -296,4 +297,7 @@ public class KPIPlugin extends AbstractUIPlugin {
         getPluginPreferences().setValue(DEFAULT_DIRRECTORY_LOADER, newDirectory);
     }
 
+    public void loadScript(String scriptName) {
+        runtime.evalScriptlet(String.format("KPI.module_eval {load '%s'}",scriptName));
+    }
 }

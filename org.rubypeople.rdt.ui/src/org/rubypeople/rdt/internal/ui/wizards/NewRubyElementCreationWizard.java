@@ -1,5 +1,9 @@
 package org.rubypeople.rdt.internal.ui.wizards;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -7,22 +11,31 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.amanzi.integrator.awe.AWEProjectManager;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtension;
+import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IWorkbench;
 import org.rubypeople.rdt.core.ILoadpathEntry;
 import org.rubypeople.rdt.core.IRubyProject;
 import org.rubypeople.rdt.core.RubyCore;
+import org.rubypeople.rdt.internal.ui.RubyPlugin;
 import org.rubypeople.rdt.internal.ui.wizards.buildpaths.BuildPathsBlock;
 import org.rubypeople.rdt.internal.ui.wizards.buildpaths.CPListElement;
 import org.rubypeople.rdt.launching.RubyRuntime;
 import org.rubypeople.rdt.ui.PreferenceConstants;
+import org.rubypeople.rdt.ui.extensions.IScriptsProvider;
 
 public abstract class NewRubyElementCreationWizard extends NewElementWizard {
 	
@@ -66,6 +79,8 @@ public abstract class NewRubyElementCreationWizard extends NewElementWizard {
 		
 		try {
 			IRubyProject rubyProject = configureRubyProject(rubyProjectName, aweProjectName);
+			
+			
 			newSelection = new StructuredSelection(rubyProject);
 		}
 		catch (CoreException e) {
@@ -103,7 +118,6 @@ public abstract class NewRubyElementCreationWizard extends NewElementWizard {
 		} catch (URISyntaxException e) {
 			Assert.isTrue(false, "Can't happen"); //$NON-NLS-1$		
 		}
-		
 		BuildPathsBlock.createProject(project, null, null);
 		IRubyProject rubyProject = RubyCore.create(project, aweProjectName);
 		List<ILoadpathEntry> cpEntries= new ArrayList<ILoadpathEntry>();
@@ -119,6 +133,40 @@ public abstract class NewRubyElementCreationWizard extends NewElementWizard {
 		BuildPathsBlock.addRubyNature(project, null);
 		BuildPathsBlock.flush(newClassPath, rubyProject, null);
 		
+		IExtension[] extensions = Platform.getExtensionRegistry().getExtensionPoint(RubyPlugin.PLUGIN_ID,"scriptsProvider").getExtensions();
+		for (IExtension ext:extensions){
+		    System.out.println("Name of extension: "+ext.getLabel()+"\tcontributor: "+ext.getContributor().getName());
+		    for (IConfigurationElement confe: ext.getConfigurationElements()){
+		        System.out.println("Name of config element: "+confe.getName());
+		        IScriptsProvider provider = (IScriptsProvider)confe.createExecutableExtension("class");
+		        System.out.println("Class name: "+provider.getClass().getName());
+		        IFolder folder = rubyProject.getProject().getFolder(new Path(provider.getRdtDirectoryName()));
+		        if (!folder.exists()){
+		            folder.create(IResource.FORCE, false, null);
+		        }
+		        for (File file:provider.getScriptsToCopy()){
+		            IFile rdtFile = folder.getFile(new Path(file.getName()));
+		            if (!rdtFile.exists()){
+		                FileInputStream fis;
+                        try {
+                            fis = new FileInputStream(file);
+                            rdtFile.create(fis, false, null);
+                            fis.close();
+                            
+                        } catch (FileNotFoundException e) {
+                            // TODO Handle FileNotFoundException
+                            throw (RuntimeException) new RuntimeException( ).initCause( e );
+                        } catch (IOException e) {
+                            // TODO Handle IOException
+                            throw (RuntimeException) new RuntimeException( ).initCause( e );
+                        }
+		                
+		            }
+		        }
+//                project.cr
+//              confe.createExecutableExtension(propertyName)
+		    }
+		}
 		return rubyProject;
 	}
 	

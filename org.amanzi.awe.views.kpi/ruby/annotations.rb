@@ -1,6 +1,6 @@
 module Annotations
  def self.included(mod)
-   puts "included #{mod}"
+#   puts "included #{mod}"
    mod.extend(self)
    KPI.module_eval {include mod}
    mod.class_eval { 
@@ -16,7 +16,7 @@ module Annotations
       @@annotated=false unless defined? @@annotated
       @@annotations[meth]=@@last_annotation if @@annotated
       @@annotated=false
-      puts "singleton #{meth} added, annotations: #{self.get_annotation(meth)}"
+#      puts "singleton #{meth} added, annotations: #{self.get_annotation(meth)}"
     end
     def self.get_annotation(method)
       @@annotations||={}
