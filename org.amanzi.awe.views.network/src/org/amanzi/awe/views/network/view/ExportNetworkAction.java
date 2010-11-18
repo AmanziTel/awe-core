@@ -16,9 +16,11 @@ package org.amanzi.awe.views.network.view;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TreeSet;
 
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.neo.services.DatasetService;
@@ -78,44 +80,80 @@ public class ExportNetworkAction extends Action {
         Shell shell = new Shell(Display.getDefault());
         IPropertyHeader stat = PropertyHeader.getPropertyStatistic(root);
         DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
-        List<INodeType> strtypes = datasetService.getSructureTypes(root);
-        strtypes.remove(0);
-        strtypes.remove(strtypes.size() - 1);
-        List<String> fields = new ArrayList<String>();
-        for (INodeType type : strtypes) {
-            fields.add(type.getId());
+        String[] strtypes = datasetService.getSructureTypesId(root);
+        List<String> headers = new ArrayList<String>();
+        for (int i=1;i<strtypes.length;i++) {
+            headers.add(strtypes[i]);
         }
-        String[] allFields = stat.getAllFields(NodeTypes.SECTOR.getId());
-        fields.addAll(Arrays.asList(allFields));
         FileDialog dialog = new FileDialog(shell, SWT.SAVE /* or SAVE or MULTI */);
         String fileSelected = dialog.open();
-        TraversalDescription descr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
-                .filter(new Predicate<Path>() {
+        HashMap<String, Collection<String>>propertyMap=new HashMap<String, Collection<String>>();
+        
+        TraversalDescription descr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).filter(Traversal.returnAllButStartNode());
+        for (Path path:descr.traverse(root)){
+            Node node=path.endNode();
+            INodeType type = datasetService.getNodeType(node);
+            if (type!=null&&headers.contains(type.getId())){
+                Collection<String> coll = propertyMap.get(type.getId());
+                if (coll==null){
+                    coll=new TreeSet<String>();
+                    propertyMap.put(type.getId(), coll);
+                }
+                for (String propertyName:node.getPropertyKeys()){
+                    coll.add(propertyName); 
+                }
+            }
+        }
+        descr=descr      .filter(new Predicate<Path>() {
 
                     @Override
                     public boolean accept(Path paramT) {
-                        return NodeTypes.SECTOR.checkNode(paramT.endNode());
+                        return !paramT.endNode().hasRelationship(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING);
                     }
                 });
         Iterator<Path> iter = descr.traverse(root).iterator();
+        List<String> fields = new ArrayList<String>();
         if (fileSelected != null) {
             try {
                 CSVWriter writer = new CSVWriter(new FileWriter(fileSelected));
                 try {
-
+                    for (String headerType:headers){
+                       Collection<String> propertyCol = propertyMap.get(headerType);
+                       if (propertyCol!=null){
+                           for (String propertyName:propertyCol){
+                               fields.add(new StringBuilder(headerType).append("_").append(propertyName).toString());
+                           }
+                       }
+                    }
                     writer.writeNext(fields.toArray(new String[0]));
                     while (iter.hasNext()) {
                         fields.clear();
                         Path path = iter.next();
+                        int order=1;
                         for (Node node : path.nodes()) {
                             INodeType nodeType = datasetService.getNodeType(node);
-                            if (nodeType == NodeTypes.NETWORK || nodeType == NodeTypes.SECTOR) {
+                            if (nodeType == NodeTypes.NETWORK ) {
                                 continue;
                             }
-                            fields.add(datasetService.getNodeName(node));
-                        }
-                        for (String field:allFields){
-                            fields.add(String.valueOf(path.endNode().getProperty(field,""))); 
+                            while(order<strtypes.length&&!strtypes[order++].equals(nodeType.getId())){
+                                Collection<String> propertyCol = propertyMap.get(nodeType.getId());
+                                if (propertyCol!=null){
+                                    for (@SuppressWarnings("unused") String propertyName:propertyCol){
+                                        fields.add("");
+                                    }
+                                }                               
+                            }
+                            if (order>strtypes.length){
+                                fields.add("ERROR - incorrect node structure ");
+                                break;
+                            }else{
+                                Collection<String> propertyCol = propertyMap.get(nodeType.getId());
+                                if (propertyCol!=null){
+                                    for (String propertyName:propertyCol){
+                                        fields.add(String.valueOf(node.getProperty(propertyName,"")));
+                                    }
+                                }                              
+                            }
                         }
                         writer.writeNext(fields.toArray(new String[0])); 
                     }

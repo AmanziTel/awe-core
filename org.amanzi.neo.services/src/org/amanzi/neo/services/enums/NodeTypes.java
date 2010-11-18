@@ -1091,5 +1091,5 @@ public enum NodeTypes implements INodeType{
         }
         return false;
     }
-
+    
 }

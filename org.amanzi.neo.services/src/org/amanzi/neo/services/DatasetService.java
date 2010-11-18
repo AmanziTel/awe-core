@@ -859,8 +859,7 @@ public class DatasetService extends AbstractService {
      * @return the sructure types
      */
     public List<INodeType> getSructureTypes(Node sourceNode) {
-        Node networkNode = Utils.getParentNode(sourceNode, NodeTypes.NETWORK.getId());
-        String[] stTypes = (String[])networkNode.getProperty(INeoConstants.PROPERTY_STRUCTURE_NAME, new String[0]);
+        String[] stTypes=getSructureTypesId(sourceNode);
         List<INodeType> result = new ArrayList<INodeType>(stTypes.length);
 
         for (int i = 0; i < stTypes.length; i++) {
@@ -873,7 +872,10 @@ public class DatasetService extends AbstractService {
         }
         return result;
     }
-
+    public String[] getSructureTypesId(Node sourceNode) {
+        Node networkNode = Utils.getParentNode(sourceNode, NodeTypes.NETWORK.getId());
+        return (String[])networkNode.getProperty(INeoConstants.PROPERTY_STRUCTURE_NAME, new String[0]);
+    }
     /**
      * Find root node by child
      * 
