@@ -163,6 +163,11 @@ public class RubyProjectWizard extends NewElementWizard implements IExecutableEx
 			monitor.worked(2);			
 			BuildPathsBlock.addRubyNature(project, new SubProgressMonitor(monitor, 1));
 			BuildPathsBlock.flush(newClassPath, rubyProject, new SubProgressMonitor(monitor, 5));
+		
+			NewRubyElementCreationWizard.copyScripts(rubyProject);
+			
+			
+			
 		} catch (OperationCanceledException e) {
 			throw new InterruptedException();
 		} finally {

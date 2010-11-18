@@ -45,6 +45,7 @@ public class ScriptsProvider implements IScriptsProvider {
         URL fileURL;
         try {
             fileURL = FileLocator.toFileURL(GridReportPlugin.getDefault().getBundle().getEntry("ruby/kpi"));
+            System.out.println("Grid plugin directory with scripts: "+fileURL);
             File directory = new File(fileURL.getPath());
             FileFilter fileFilter = new FileFilter(){
 
@@ -59,7 +60,7 @@ public class ScriptsProvider implements IScriptsProvider {
                 System.out.println("File to be copied: "+file.getPath());
             }
             return files;
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             // TODO Handle IOException
             throw (RuntimeException) new RuntimeException( ).initCause( e );

@@ -133,7 +133,17 @@ public abstract class NewRubyElementCreationWizard extends NewElementWizard {
 		BuildPathsBlock.addRubyNature(project, null);
 		BuildPathsBlock.flush(newClassPath, rubyProject, null);
 		
-		IExtension[] extensions = Platform.getExtensionRegistry().getExtensionPoint(RubyPlugin.PLUGIN_ID,"scriptsProvider").getExtensions();
+		copyScripts(rubyProject);
+		return rubyProject;
+	}
+
+    /**
+     * Copies scripts to RDT
+     * @param rubyProject ruby project 
+     * @throws CoreException
+     */
+    static void copyScripts(IRubyProject rubyProject) throws CoreException {
+        IExtension[] extensions = Platform.getExtensionRegistry().getExtensionPoint(RubyPlugin.PLUGIN_ID,"scriptsProvider").getExtensions();
 		for (IExtension ext:extensions){
 		    System.out.println("Name of extension: "+ext.getLabel()+"\tcontributor: "+ext.getContributor().getName());
 		    for (IConfigurationElement confe: ext.getConfigurationElements()){
@@ -145,6 +155,7 @@ public abstract class NewRubyElementCreationWizard extends NewElementWizard {
 		            folder.create(IResource.FORCE, false, null);
 		        }
 		        for (File file:provider.getScriptsToCopy()){
+		            System.out.println("Script file name: "+file.getName());
 		            IFile rdtFile = folder.getFile(new Path(file.getName()));
 		            if (!rdtFile.exists()){
 		                FileInputStream fis;
@@ -154,21 +165,20 @@ public abstract class NewRubyElementCreationWizard extends NewElementWizard {
                             fis.close();
                             
                         } catch (FileNotFoundException e) {
+                            e.printStackTrace();
                             // TODO Handle FileNotFoundException
                             throw (RuntimeException) new RuntimeException( ).initCause( e );
                         } catch (IOException e) {
+                            e.printStackTrace();
                             // TODO Handle IOException
                             throw (RuntimeException) new RuntimeException( ).initCause( e );
                         }
 		                
 		            }
 		        }
-//                project.cr
-//              confe.createExecutableExtension(propertyName)
 		    }
 		}
-		return rubyProject;
-	}
+    }
 	
 	/**
 	 * Returns loadpath entries
