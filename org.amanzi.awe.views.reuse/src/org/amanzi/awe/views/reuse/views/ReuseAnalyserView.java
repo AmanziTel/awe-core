@@ -44,6 +44,7 @@ import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.preferences.NeoCorePreferencesConstants;
 import org.amanzi.neo.core.propertyFilter.PropertyFilterModel;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.GisTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
@@ -117,6 +118,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.helpers.Predicate;
+import org.neo4j.neoclipse.property.NodeTypes;
 import org.rubypeople.rdt.core.IRubyProject;
 import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
@@ -1411,7 +1413,14 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
      */
     private String getNodeTypeId(Node node) {
         GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
-        return NeoUtils.getPrimaryType(node);
+        String result = NeoUtils.getPrimaryType(node);
+        if (result==null){
+            String typeid = NeoServiceFactory.getInstance().getDatasetService().getTypeId(node);
+            if (NodeTypes.NETWORK.getId().equals(typeid)){
+                result=NodeTypes.SECTOR.getId();
+            }
+        }
+        return result;
     }
 
     /**
