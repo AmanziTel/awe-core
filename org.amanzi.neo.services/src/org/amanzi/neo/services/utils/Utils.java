@@ -32,6 +32,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.services.GpehReportUtil;
 import org.amanzi.neo.services.INeoConstants;
@@ -757,7 +758,7 @@ public class Utils {
      * @return transaction
      */
     public static Transaction beginTransaction() {
-        return NeoServiceProvider.getProvider().getService().beginTx();
+        return DatabaseManager.getInstance().getCurrentDatabaseService().beginTx();
 
     }
 

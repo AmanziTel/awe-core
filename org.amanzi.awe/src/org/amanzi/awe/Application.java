@@ -89,6 +89,7 @@ public class Application extends UDIGApplication implements IApplication {
 	    public void initialize( IWorkbenchConfigurer configurer ) {
 			super.initialize(configurer);
 			NeoCorePlugin.getDefault().getInitializer().initializeDefaultPreferences();
+			NeoServiceProviderUi.getProvider().getService();
             createService();
 			final String ICONS_PATH = "icons/full/";
 			final String PATH_OBJECT = ICONS_PATH + "obj16/";
