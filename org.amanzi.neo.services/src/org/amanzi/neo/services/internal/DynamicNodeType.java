@@ -55,11 +55,11 @@ public class DynamicNodeType implements INodeType {
             return false;
         if (!(obj instanceof INodeType))
             return false;
-        DynamicNodeType other = (DynamicNodeType)obj;
+        INodeType other = (INodeType)obj;
         if (type == null) {
-            if (other.type != null)
+            if (other.getId() != null)
                 return false;
-        } else if (!type.equals(other.type))
+        } else if (!type.equals(other.getId()))
             return false;
         return true;
     }
