@@ -196,12 +196,6 @@
             label="New network">
       </action>
       <action
-            class="org.amanzi.neo.loader.actions.NewNetworkAction"
-            icon="icons/16/network.png"
-            id="org.amanzi.neo.loader.newNetworkAction"
-            label="New network">
-      </action>
-      <action
             class="org.amanzi.neo.loader.actions.NewDriveAction"
             icon="icons/16/drive.png"
             id="org.amanzi.neo.loader.newDriveAction"
@@ -213,6 +207,29 @@
             id="org.amanzi.neo.loader.newNeighbour"
             label="New neighbours">
       </action>
+      <action
+            class="org.amanzi.neo.loader.actions.CreateNetworkAction"
+            icon="icons/16/network.png"
+            id="org.amanzi.neo.loader.actions.CreateNetworkAction"
+            label="Create new network">
+      </action>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.viewActions">
+      <viewContribution
+            id="org.amanzi.awe.views.network.view.NewTypeAction0"
+            targetID="org.amanzi.awe.views.network.views.NetworkTreeView">
+         <action
+               class="org.amanzi.neo.loader.actions.CreateNetworkAction"
+               icon="icons/16/network.png"
+               id="org.amanzi.neo.loader.actions.CreateNetworkAction"
+               label="createNetwork"
+               style="push"
+               toolbarPath="additions"
+               tooltip="Create New Network">
+         </action>
+      </viewContribution>
    </extension>
 
 </plugin>
