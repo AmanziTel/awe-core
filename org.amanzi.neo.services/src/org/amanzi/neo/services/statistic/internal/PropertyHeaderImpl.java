@@ -204,6 +204,9 @@ public class PropertyHeaderImpl implements IPropertyHeader {
 
     @Override
     public ISinglePropertyStat getPropertyStatistic(String nodeTypeId, String propertyName) {
+        if ("-main-type-".equals(nodeTypeId)){
+            nodeTypeId=NodeTypes.NETWORK.checkNode(node)?NodeTypes.SECTOR.getId():NodeTypes.SITE.getId();
+        }
         return stat.findPropertyStatistic(key, nodeTypeId, propertyName);
     }
 
