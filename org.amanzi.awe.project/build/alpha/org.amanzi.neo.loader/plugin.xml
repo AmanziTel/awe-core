@@ -196,6 +196,12 @@
             label="New network">
       </action>
       <action
+            class="org.amanzi.neo.loader.actions.NewNetworkAction"
+            icon="icons/16/network.png"
+            id="org.amanzi.neo.loader.newNetworkAction"
+            label="New network">
+      </action>
+      <action
             class="org.amanzi.neo.loader.actions.NewDriveAction"
             icon="icons/16/drive.png"
             id="org.amanzi.neo.loader.newDriveAction"
