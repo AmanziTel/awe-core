@@ -28,7 +28,6 @@ import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
-import org.amanzi.neo.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.services.events.UpdateViewEventType;
 import org.amanzi.neo.services.statistic.IStatistic;
@@ -159,6 +158,7 @@ public class CreateNetworkWizard extends Wizard implements INewWizard {
                     e.printStackTrace();
                 }
                 AbstractLoader.sendUpdateEvent(UpdateViewEventType.GIS);
+                  LoaderUiUtils.addGisNodeToMap(networkName, gis.getGis()) ;
                 ActionUtil.getInstance().runTask(new Runnable() {
                     
                     @Override

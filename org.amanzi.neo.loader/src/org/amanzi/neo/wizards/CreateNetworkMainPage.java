@@ -104,6 +104,8 @@ public class CreateNetworkMainPage extends WizardPage {
 
     /** The main. */
     private Group main;
+    private Button addOnMapBtn;
+    protected boolean addOnMap;
 
     /**
      * Instantiates a new creates the network main page.
@@ -113,6 +115,15 @@ public class CreateNetworkMainPage extends WizardPage {
     public CreateNetworkMainPage(String pageName) {
         super(pageName);
         setTitle(CREATE_NETWORK_STRUCTURE);
+    }
+
+    /**
+     * Checks if is adds the on map.
+     *
+     * @return true, if is adds the on map
+     */
+    public boolean isAddOnMap() {
+        return addOnMap;
     }
 
     /**
@@ -244,6 +255,20 @@ public class CreateNetworkMainPage extends WizardPage {
                 widgetSelected(e);
             }
         });
+/*        addOnMapBtn=new Button(main,SWT.CHECK);
+        addOnMapBtn.setText("add on active map");
+        addOnMapBtn.addSelectionListener(new SelectionListener() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                addOnMap=addOnMapBtn.getSelection();
+            }
+            
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });*/
         updateButtonLabel();
         init();
         setControl(main);
