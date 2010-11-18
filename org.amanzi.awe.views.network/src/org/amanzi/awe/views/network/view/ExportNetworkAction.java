@@ -82,80 +82,85 @@ public class ExportNetworkAction extends Action {
         DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
         String[] strtypes = datasetService.getSructureTypesId(root);
         List<String> headers = new ArrayList<String>();
-        for (int i=1;i<strtypes.length;i++) {
+        for (int i = 1; i < strtypes.length; i++) {
             headers.add(strtypes[i]);
         }
         FileDialog dialog = new FileDialog(shell, SWT.SAVE /* or SAVE or MULTI */);
         String fileSelected = dialog.open();
-        HashMap<String, Collection<String>>propertyMap=new HashMap<String, Collection<String>>();
-        
-        TraversalDescription descr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).filter(Traversal.returnAllButStartNode());
-        for (Path path:descr.traverse(root)){
-            Node node=path.endNode();
+        HashMap<String, Collection<String>> propertyMap = new HashMap<String, Collection<String>>();
+
+        TraversalDescription descr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
+                .filter(Traversal.returnAllButStartNode());
+        for (Path path : descr.traverse(root)) {
+            Node node = path.endNode();
             INodeType type = datasetService.getNodeType(node);
-            if (type!=null&&headers.contains(type.getId())){
+            if (type != null && headers.contains(type.getId())) {
                 Collection<String> coll = propertyMap.get(type.getId());
-                if (coll==null){
-                    coll=new TreeSet<String>();
+                if (coll == null) {
+                    coll = new TreeSet<String>();
                     propertyMap.put(type.getId(), coll);
                 }
-                for (String propertyName:node.getPropertyKeys()){
-                    coll.add(propertyName); 
+                for (String propertyName : node.getPropertyKeys()) {
+                    if ("type".equals(propertyName)){
+                        continue;
+                    }
+                    coll.add(propertyName);
                 }
             }
         }
-        descr=descr      .filter(new Predicate<Path>() {
+        descr = descr.filter(new Predicate<Path>() {
 
-                    @Override
-                    public boolean accept(Path paramT) {
-                        return !paramT.endNode().hasRelationship(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING);
-                    }
-                });
+            @Override
+            public boolean accept(Path paramT) {
+                return !paramT.endNode().hasRelationship(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING);
+            }
+        });
         Iterator<Path> iter = descr.traverse(root).iterator();
         List<String> fields = new ArrayList<String>();
         if (fileSelected != null) {
             try {
                 CSVWriter writer = new CSVWriter(new FileWriter(fileSelected));
                 try {
-                    for (String headerType:headers){
-                       Collection<String> propertyCol = propertyMap.get(headerType);
-                       if (propertyCol!=null){
-                           for (String propertyName:propertyCol){
-                               fields.add(new StringBuilder(headerType).append("_").append(propertyName).toString());
-                           }
-                       }
+                    for (String headerType : headers) {
+                        Collection<String> propertyCol = propertyMap.get(headerType);
+                        if (propertyCol != null) {
+                            for (String propertyName : propertyCol) {
+                                fields.add(new StringBuilder(headerType).append("_").append(propertyName).toString());
+                            }
+                        }
                     }
                     writer.writeNext(fields.toArray(new String[0]));
                     while (iter.hasNext()) {
                         fields.clear();
                         Path path = iter.next();
-                        int order=1;
+                        int order = 1;
                         for (Node node : path.nodes()) {
                             INodeType nodeType = datasetService.getNodeType(node);
-                            if (nodeType == NodeTypes.NETWORK ) {
+                            if (nodeType == NodeTypes.NETWORK) {
                                 continue;
                             }
-                            while(order<strtypes.length&&!strtypes[order++].equals(nodeType.getId())){
-                                Collection<String> propertyCol = propertyMap.get(nodeType.getId());
-                                if (propertyCol!=null){
-                                    for (@SuppressWarnings("unused") String propertyName:propertyCol){
+                            while (order < strtypes.length && !strtypes[order++].equals(nodeType.getId())) {
+                                Collection<String> propertyCol = propertyMap.get(strtypes[order - 1]);
+                                if (propertyCol != null) {
+                                    for (@SuppressWarnings("unused")
+                                    String propertyName : propertyCol) {
                                         fields.add("");
                                     }
-                                }                               
+                                }
                             }
-                            if (order>strtypes.length){
+                            if (order > strtypes.length) {
                                 fields.add("ERROR - incorrect node structure ");
                                 break;
-                            }else{
+                            } else {
                                 Collection<String> propertyCol = propertyMap.get(nodeType.getId());
-                                if (propertyCol!=null){
-                                    for (String propertyName:propertyCol){
-                                        fields.add(String.valueOf(node.getProperty(propertyName,"")));
+                                if (propertyCol != null) {
+                                    for (String propertyName : propertyCol) {
+                                        fields.add(String.valueOf(node.getProperty(propertyName, "")));
                                     }
-                                }                              
+                                }
                             }
                         }
-                        writer.writeNext(fields.toArray(new String[0])); 
+                        writer.writeNext(fields.toArray(new String[0]));
                     }
                 } finally {
                     writer.close();
