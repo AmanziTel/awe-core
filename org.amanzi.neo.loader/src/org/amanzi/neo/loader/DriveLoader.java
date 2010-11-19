@@ -16,6 +16,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.GisProperties;
@@ -25,6 +26,7 @@ import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.GisTypes;
 import org.amanzi.neo.services.enums.MeasurementRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.enums.SectorIdentificationType;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.neo.services.utils.Pair;
@@ -52,6 +54,7 @@ public abstract class DriveLoader extends AbstractLoader {
     protected Integer hours = null;
     protected Calendar _workDate = null;
     protected boolean needParceHeader = true;
+    private String luceneIndexName;
 
     protected GisTypes gisType;
 
@@ -380,6 +383,10 @@ public abstract class DriveLoader extends AbstractLoader {
      */
     @Override
     protected void finishUp() {
+        Node storingNode = getStoringNode(1);
+        if (storingNode!=null){  
+            storingNode.setProperty(INeoConstants.SECTOR_ID_TYPE, SectorIdentificationType.CI.toString());
+        }
         super.finishUp();
         super.cleanupGisNode();// (datasetNode == null ? file : datasetNode);
     }
@@ -461,5 +468,28 @@ public abstract class DriveLoader extends AbstractLoader {
             return true;
         }
         return false;
+    }
+    
+    /**
+     * 
+     * @param m
+     * @param entry
+     */
+    protected boolean tryToIndexSectorId(Node m, Map.Entry<String, Object> entry) {
+        if (entry.getKey().equals(INeoConstants.SECTOR_ID_PROPERTIES)) {
+            m.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, entry.getValue());
+            m.setProperty(INeoConstants.PROPERTY_SECTOR_CI, entry.getValue());
+            // Pechko_E: index sector_id property for correlation
+            index.index(m, getSectorIDIndexName(), entry.getValue());
+            return true;
+        }
+        return false;
+    }
+    
+    private String getSectorIDIndexName() {
+        if (luceneIndexName != null) {
+            return luceneIndexName;
+        }
+        return luceneIndexName = NeoUtils.getLuceneIndexKeyByProperty(datasetNode, INeoConstants.SECTOR_ID_PROPERTIES, NodeTypes.M);
     }
 }

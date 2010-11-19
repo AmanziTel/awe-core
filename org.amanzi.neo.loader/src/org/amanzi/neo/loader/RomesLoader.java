@@ -32,7 +32,6 @@ import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.DriveTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
-import org.amanzi.neo.services.enums.SectorIdentificationType;
 import org.amanzi.neo.services.events.UpdateViewEventType;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.swt.widgets.Display;
@@ -51,7 +50,8 @@ public class RomesLoader extends DriveLoader {
     private String time = null;
     // private long timestamp = 0L;
     private final ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
-    private String luceneIndexName;
+    
+
     /**
      * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
      * 
@@ -70,7 +70,7 @@ public class RomesLoader extends DriveLoader {
     }
 
     /**
-     *initialize start date
+     * initialize start date
      */
     private void initData() {
         if (_workDate != null) {
@@ -135,8 +135,13 @@ public class RomesLoader extends DriveLoader {
         addMappedHeader(1, "time", "Timestamp", "timestamp", new DateMapper("HH:mm:ss"));
         addKnownHeader(1, INeoConstants.SECTOR_ID_PROPERTIES, ".*Server.*Report.*CI.*", true);
         addNonDataHeaders(1, Arrays.asList(new String[] {"timestamp"}));
-        dropHeaderStats(1, new String[] {"time", "timestamp", "latitude", "longitude"/*, INeoConstants.SECTOR_ID_PROPERTIES*/});
-        addIdentityHeaders(1, Arrays.asList(new String[]{INeoConstants.SECTOR_ID_PROPERTIES}));
+        dropHeaderStats(1, new String[] {"time", "timestamp", "latitude", "longitude"/*
+                                                                                      * ,
+                                                                                      * INeoConstants
+                                                                                      * .
+                                                                                      * SECTOR_ID_PROPERTIES
+                                                                                      */});
+        addIdentityHeaders(1, Arrays.asList(new String[] {INeoConstants.SECTOR_ID_PROPERTIES}));
     }
 
     private void addDriveIndexes() {
@@ -196,10 +201,6 @@ public class RomesLoader extends DriveLoader {
      */
     @Override
     protected void finishUp() {
-        Node storingNode = getStoringNode(1);
-        if (storingNode!=null){  
-            storingNode.setProperty(INeoConstants.SECTOR_ID_TYPE, SectorIdentificationType.CI.toString());
-        }
         saveData();
         super.finishUp();
         if (!isTest()) {
@@ -232,11 +233,7 @@ public class RomesLoader extends DriveLoader {
                     findOrCreateFileNode(m);
                     m.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
                     for (Map.Entry<String, Object> entry : dataLine.entrySet()) {
-                        if (entry.getKey().equals(INeoConstants.SECTOR_ID_PROPERTIES)) {
-                            m.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, entry.getValue());
-                            // Pechko_E: index sector_id property for correlation
-                            index.index(m, getSectorIDIndexName(), entry.getValue());
-                        } else if ("timestamp".equals(entry.getKey())) {
+                        if (!tryToIndexSectorId(m, entry) && "timestamp".equals(entry.getKey())){
                             long timeStamp = getTimeStamp(1, ((Date)entry.getValue()));
                             if (timeStamp != 0) {
                                 m.setProperty(entry.getKey(), timeStamp);
@@ -271,14 +268,7 @@ public class RomesLoader extends DriveLoader {
         }
         data.clear();
     }
-
-    private String getSectorIDIndexName() {
-        if (luceneIndexName!=null){
-            return luceneIndexName;
-        }
-        return luceneIndexName = NeoUtils.getLuceneIndexKeyByProperty(datasetNode, INeoConstants.SECTOR_ID_PROPERTIES, NodeTypes.M);
-    }
-
+    
     /**
      * get name of m node
      * 
@@ -317,7 +307,7 @@ public class RomesLoader extends DriveLoader {
 
     @Override
     protected Node getStoringNode(Integer key) {
-		return datasetNode;
+        return datasetNode;
     }
 
     @Override

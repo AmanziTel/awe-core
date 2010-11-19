@@ -234,7 +234,7 @@ public class TEMSLoader extends DriveLoader {
         });
         
         //lagutko, add additional header for cell id
-        addKnownHeader(1, INeoConstants.SECTOR_ID_PROPERTIES, ".*Cell Id.*", true);
+        addKnownHeader(1, INeoConstants.SECTOR_ID_PROPERTIES, ".*Cell.*Id.*", true);
 
         final SimpleDateFormat df = new SimpleDateFormat(TIMESTAMP_DATE_FORMAT);
         addMappedHeader(1, "time", "Timestamp", "timestamp", new PropertyMapper() {
@@ -463,11 +463,7 @@ public class TEMSLoader extends DriveLoader {
                             if (isMMProperties(entry.getKey())) {
                                 continue;
                             }
-                            if (entry.getKey().equals(INeoConstants.SECTOR_ID_PROPERTIES)) {
-                                mp.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, entry.getValue());
-                                // ms.setProperty(INeoConstants.SECTOR_ID_PROPERTIES,
-                                // entry.getValue());
-                            } else if ("timestamp".equals(entry.getKey())) {
+                            if (!tryToIndexSectorId(m, entry) && "timestamp".equals(entry.getKey())){
                                 long timeStamp = getTimeStamp(1, ((Date)entry.getValue()));
                                 if (timeStamp != 0) {
                                     m.setProperty(entry.getKey(), timeStamp);
@@ -698,4 +694,5 @@ public class TEMSLoader extends DriveLoader {
         }
         super.saveProperties();
     }
+
 }
