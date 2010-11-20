@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.loader.AbstractLoader;
+import org.amanzi.neo.loader.DingLiLoader;
 import org.amanzi.neo.loader.DriveLoader;
 import org.amanzi.neo.loader.GPSLoader;
 import org.amanzi.neo.loader.NemoLoader;
@@ -655,7 +656,7 @@ public class DriveDialog {
     protected String[] getFilterExtensions() {
         Node datasetNode = dataset.get(cDataset.getText());
         if (datasetNode == null) {
-            String[] fileExtensions = DriveTypes.getFileExtensions(DriveTypes.TEMS, DriveTypes.ROMES,DriveTypes.GPS, DriveTypes.NEMO1, DriveTypes.NEMO2);
+            String[] fileExtensions = DriveTypes.getFileExtensions(DriveTypes.TEMS, DriveTypes.ROMES,DriveTypes.GPS, DriveTypes.NEMO1, DriveTypes.NEMO2,DriveTypes.DING_LI);
             ArrayList<String> fel = new ArrayList<String>(fileExtensions.length + 1);
 //            StringBuilder allFiles = new StringBuilder("");
 //            for (int i = 0; i < fileExtensions.length; i++) {
@@ -678,7 +679,7 @@ public class DriveDialog {
     protected String[] getFilerNames() {
         Node datasetNode = dataset.get(cDataset.getText());
         if (datasetNode == null) {
-            String[] fileDescriptions = DriveTypes.getFileDescriptions(DriveTypes.TEMS, DriveTypes.ROMES, DriveTypes.GPS, DriveTypes.NEMO1, DriveTypes.NEMO2);
+            String[] fileDescriptions = DriveTypes.getFileDescriptions(DriveTypes.TEMS, DriveTypes.ROMES, DriveTypes.GPS, DriveTypes.NEMO1, DriveTypes.NEMO2,DriveTypes.DING_LI);
             ArrayList<String> fdl = new ArrayList<String>(fileDescriptions.length + 1);
             fdl.add("All Allowed(*.*)");
             fdl.addAll(Arrays.asList(fileDescriptions));
@@ -715,7 +716,7 @@ public class DriveDialog {
 			    String extension = getFileExt(filePath);
 			    
 			    Calendar time = null;
-			    if (!extension.equals(DriveTypes.GPS.getExtension())) {
+			    if (!extension.equals(DriveTypes.GPS.getExtension())&&!extension.equalsIgnoreCase(DriveTypes.DING_LI.getExtension())) {
 			        time = getDate(filePath);
 			        if (time == null) {
 			            continue;
@@ -731,6 +732,8 @@ public class DriveDialog {
                     driveLoader = new NemoLoader(time, filePath, display, datasetName);
                 } else if (extension.toLowerCase().equals("dt1")) {
                     driveLoader = new OldNemoVersionLoader(time, filePath, display, datasetName);
+                } else if (extension.toLowerCase().equals("log")) {
+                    driveLoader = new DingLiLoader( filePath, display, datasetName);
                 } else {
 			        NeoLoaderPlugin.error("Unsupported file extension: "+extension);
 			    }			

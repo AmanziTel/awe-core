@@ -31,9 +31,9 @@ import org.neo4j.graphdb.Transaction;
  * @since 1.0.0
  */
 public enum DriveTypes {
-    TEMS("tems", "fmt", "TEMS Drive Test Export (*.FMT)"), ROMES("romes", "asc", "Romes drive test export (*.ASC)"), GPS("gps", "gps",
-            "GPS truecoverage data export (*.GPS)"), NEMO2("nemo2", "nmf", "Nemo drive test export (*.nmf)"), NEMO1("nemo1", "dt1", "Nemo drive test export (*.dt1)"), AMS(
-            "ams", "log", ""), PROBE("probe", "", ""), AMS_CALLS("ams calls", "", "") {
+    TEMS("tems", "fmt", "TEMS Drive Test Export (*.FMT)"), ROMES("romes", "asc", "Romes drive test export (*.ASC)"), GPS("gps", "gps", "GPS truecoverage data export (*.GPS)"), NEMO2(
+            "nemo2", "nmf", "Nemo drive test export (*.nmf)"), NEMO1("nemo1", "dt1", "Nemo drive test export (*.dt1)"), AMS("ams", "log", ""), PROBE("probe", "", ""), DING_LI(
+            "dingli", "log", "DingLi(*.LOG)"), AMS_CALLS("ams calls", "", "") {
         @Override
         public boolean isVirtual() {
             return true;
@@ -98,8 +98,7 @@ public enum DriveTypes {
             return result.toArray(new String[0]);
         }
         for (DriveTypes driveSingle : drive) {
-            StringBuilder ext = new StringBuilder("*.").append(driveSingle.getExtension().toLowerCase()).append(";*.").append(driveSingle.getExtension().toUpperCase())
-                    .append(";");
+            StringBuilder ext = new StringBuilder("*.").append(driveSingle.getExtension().toLowerCase()).append(";*.").append(driveSingle.getExtension().toUpperCase()).append(";");
             result.add(ext.toString());
         }
         return result.toArray(new String[0]);
@@ -180,6 +179,7 @@ public enum DriveTypes {
             }
         }
     }
+
     public static DriveTypes getNodeType(PropertyContainer node) {
         return findById((String)node.getProperty(INeoConstants.DRIVE_TYPE, null));
     }
