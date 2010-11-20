@@ -32,12 +32,10 @@ import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Node;
 
-// TODO: Auto-generated Javadoc
 /**
- * TODO Purpose of
  * <p>
+ * Loader for DingLi log files
  * </p>
- * .
  * 
  * @author TsAr
  * @since 1.0.0
