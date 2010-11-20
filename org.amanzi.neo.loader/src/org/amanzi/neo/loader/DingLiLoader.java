@@ -171,6 +171,7 @@ public class DingLiLoader extends DriveLoader {
             mNode.createRelationshipTo(m, GeoNeoRelationshipTypes.NEXT);
         }
         mNode = m;
+        m.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, _workDate.getTimeInMillis());
         index(m);
     }
 
