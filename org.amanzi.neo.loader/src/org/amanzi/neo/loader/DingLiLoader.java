@@ -178,10 +178,10 @@ public class DingLiLoader extends DriveLoader {
      */
     private void createMpNode(Iterator<String> iterator) {
         lastMpNode=neo.createNode();
-        Double lat = getDoubleValue(iterator);
-        lastMpNode.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat);
         Double lon = getDoubleValue(iterator);
         lastMpNode.setProperty(INeoConstants.PROPERTY_LON_NAME, lon);
+        Double lat = getDoubleValue(iterator);
+        lastMpNode.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat);
         //TODO check real types of GPS values
         lastMpNode.setProperty("altitude", getDoubleValue(iterator));
         lastMpNode.setProperty("speed", getDoubleValue(iterator));
