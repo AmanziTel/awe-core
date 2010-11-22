@@ -500,7 +500,7 @@ public class DatasetService extends AbstractService {
             }
         });
         filter.addFilter(additionalFilter);
-        return Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1)).filter(filter)
+        return Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).filter(filter)
                 .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).prune(new PruneEvaluator() {
 
                     @Override
