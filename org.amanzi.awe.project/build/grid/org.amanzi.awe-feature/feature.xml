@@ -320,13 +320,6 @@ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
          unpack="false"/>
 
    <plugin
-         id="org.amanzi.awe.views.calls"
-         download-size="0"
-         install-size="0"
-         version="1.0.0.qualifier"
-         unpack="false"/>
-
-   <plugin
          id="org.amanzi.neo.db"
          download-size="0"
          install-size="0"
