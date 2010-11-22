@@ -109,7 +109,7 @@ public class LoaderUtils {
             return "";
         }
         if (returnDot){
-            fileName.substring(idx);
+            return fileName.substring(idx);
         }
         idx++;
         return idx<fileName.length()?fileName.substring(idx):"";
