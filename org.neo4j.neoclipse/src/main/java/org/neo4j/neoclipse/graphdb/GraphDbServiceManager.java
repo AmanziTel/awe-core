@@ -15,6 +15,8 @@ package org.neo4j.neoclipse.graphdb;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.core.runtime.ISafeRunnable;
 import org.eclipse.core.runtime.ListenerList;
@@ -89,7 +91,9 @@ public class GraphDbServiceManager
             {
             case READ_WRITE_EMBEDDED:
                 dbLocation = getDbLocation();
-                graphDb = new EmbeddedGraphDatabase( dbLocation );
+                Map<String,String> config = new HashMap<String, String>();
+                config.put( "string_block_size", "60" );
+                graphDb = new EmbeddedGraphDatabase( dbLocation, config );
                 System.out.println( "connected to embedded neo4j" );
                 break;
             case READ_ONLY_EMBEDDED:
