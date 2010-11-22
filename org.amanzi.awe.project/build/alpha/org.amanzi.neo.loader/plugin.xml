@@ -144,12 +144,6 @@
        </wizard>
     </extension>
    <extension
-         point="org.eclipse.core.runtime.preferences">
-      <initializer
-            class="org.amanzi.neo.preferences.DataLoadPreferenceInitializer">
-      </initializer>
-   </extension>   
-   <extension
          point="net.refractions.udig.ui.newObjectAction">
       <action
             class="org.amanzi.neo.loader.actions.NewNetworkAction"
