@@ -24,8 +24,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.amanzi.neo.loader.AbstractLoader.PropertyMapper;
-import org.amanzi.neo.loader.AbstractLoader.StringMapper;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.INeoConstants;
@@ -314,14 +312,15 @@ public class GPSLoader extends DriveLoader {
     }
 
     @Override
-    protected void parseLine(String line) {
+    protected int parseLine(String line) {
+        int saved = 0;
         try {
             // debug(line);
             List<String> fields = splitLine(line);
             if (fields.size() < 2)
-                return;
+                return 0;
             if (this.isOverLimit())
-                return;
+                return 0;
             this.incValidMessage(); // we have not filtered the message out on non-accepted content
             this.incValidChanged(); // we have not filtered the message out on lack of data change
             Map<String, Object> lineData = makeDataMap(fields);
@@ -331,7 +330,7 @@ public class GPSLoader extends DriveLoader {
             Float latitude = (Float)lineData.get("gps_latitude");
             Float longitude = (Float)lineData.get("gps_longitude");
             if (time == null || latitude == null || longitude == null) {
-                return;
+                return 0;
             }
             if ((latitude != null)
                     && (longitude != null)
@@ -339,7 +338,7 @@ public class GPSLoader extends DriveLoader {
                             - longitude) > 10E-10)))) {
                 currentLatitude = latitude;
                 currentLongitude = longitude;
-                saveData(); // persist the current data to database
+                saved = saveData(); // persist the current data to database
             }
             this.incValidLocation(); // we have not filtered the message out on lack of location
             if (lineData.size() > 0) {
@@ -349,13 +348,15 @@ public class GPSLoader extends DriveLoader {
             // TODO: handle exception
             e.printStackTrace();
         }
+        return saved;
     }
 
     /**
      * This method is called to dump the current cache of signals as one located point linked to a
      * number of signal strength measurements.
      */
-    private void saveData() {
+    private int saveData() {
+        int saved = 0;
         if (data.size() > 0) {
             Transaction transaction = neo.beginTx();
             try {
@@ -407,6 +408,7 @@ public class GPSLoader extends DriveLoader {
                     m.setProperty(INeoConstants.PROPERTY_NAME_NAME, getMNodeName(dataLine));
                     mNode = m;
                     index(m);
+                    saved++;
                     
                     storingProperties.values().iterator().next().incSaved();
                 }
@@ -423,6 +425,7 @@ public class GPSLoader extends DriveLoader {
             }
         }
         data.clear();
+        return saved;
     }
 
     /**

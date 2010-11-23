@@ -18,13 +18,10 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
-import org.amanzi.neo.loader.AbstractLoader.DateMapper;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.INeoConstants;
@@ -136,7 +133,7 @@ public class PerformanceCountersLoader extends AbstractLoader {
     }
 
     @Override
-    protected void parseLine(String line) {
+    protected int parseLine(String line) {
         if (fileNode == null) {
             ossRoot = LoaderUiUtils.findOrCreateOSSNode(ossType, basename, neo);// TODO target
             // type
@@ -155,14 +152,14 @@ public class PerformanceCountersLoader extends AbstractLoader {
         }
         List<String> fields = splitLine(line);
         if (fields.size() < 2)
-            return;
+            return 0;
         if (this.isOverLimit())
-            return;
+            return 0;
         Map<String, Object> lineData = makeDataMap(fields);
-        saveStatistic(lineData);
+        return saveStatistic(lineData);
     }
 
-    private void saveStatistic(Map<String, Object> lineData) {
+    private int saveStatistic(Map<String, Object> lineData) {
         Transaction transaction = neo.beginTx();
         try {
             Node node = neo.createNode();
@@ -191,6 +188,7 @@ public class PerformanceCountersLoader extends AbstractLoader {
             NeoUtils.addChild(fileNode, node, lastChild, neo);
             lastChild = node;
             storingProperties.values().iterator().next().incSaved();
+            return 1;
         } catch (ParseException e) {
             // TODO Handle ParseException
             throw (RuntimeException) new RuntimeException( ).initCause( e );

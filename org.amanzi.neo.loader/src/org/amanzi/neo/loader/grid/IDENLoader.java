@@ -68,7 +68,7 @@ public class IDENLoader extends DriveLoader {
     private static final String NTID = "ntid";
 
     private static final String FILE_FILTER_REGEX = "^.+_%s.+\\.Z$";
-    private static final String STAT_FILE_FILTER_REGEX = "ecl_%s.+\\.Z$";
+    //private static final String STAT_FILE_FILTER_REGEX = "ecl_%s.+\\.Z$";
     private static final String HEADER_FILE_LINE_PATTERN = "(\\d+)\\s(\\w+)\\s([\\w|_|\\d]+)\\s?([\\w|_]+)?";
     private static final String HEADER_ID_FILE_LINE_PATTERN = "(\\d+)\\s([\\w|_]+)";
     private static Map<String, List<String>> headers_map;
@@ -190,7 +190,7 @@ public class IDENLoader extends DriveLoader {
         try {
             InputStream is;
             List<File> idFileList = getSortedList(directory, NTID);
-            String characterSet = NeoLoaderPlugin.getDefault().getCharacterSet();
+            String characterSet = NeoLoaderPlugin.getCharacterSet();
             for (File gridFile : idFileList) {
                 if (monitor.isCanceled()) {
                     break;
@@ -474,7 +474,8 @@ public class IDENLoader extends DriveLoader {
     }
 
     @Override
-    protected void parseLine(String line) {
+    protected int parseLine(String line) {
+        return 0;
     }
 
     @Override

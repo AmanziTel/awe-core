@@ -82,7 +82,8 @@ public class OldNemoVersionLoader extends NemoLoader {
     }    
 
     @Override
-    protected void parseLine(String line) {
+    protected int parseLine(String line) {
+        int saved = 0;
         try {
             if (_workDate == null && line.startsWith("***")) {
                 _workDate = new GregorianCalendar();
@@ -94,11 +95,11 @@ public class OldNemoVersionLoader extends NemoLoader {
                     date = new Date(new File(filename).lastModified());
                 }
                 _workDate.setTime(date);
-                return;
+                return 0;
 
             } else if (line.startsWith("*") || line.startsWith("#")) {
                 NeoLoaderPlugin.error("Not parsed: " + line);
-                return;
+                return 0;
             }
             
             if (parser == null) {
@@ -107,7 +108,7 @@ public class OldNemoVersionLoader extends NemoLoader {
         	
             List<String> parsedLine = splitLine(line);
             if (parsedLine.size() < 1) {
-                return;
+                return 0;
             }
             OldEvent event = new OldEvent(parsedLine);
             try {
@@ -115,22 +116,25 @@ public class OldNemoVersionLoader extends NemoLoader {
             } catch (Exception e) {
                 e.printStackTrace();
                 NeoLoaderPlugin.error(e.getLocalizedMessage());
-                return;
+                return 0;
             }
 
             String latLon = event.latitude + "\t" + event.longitude;
             createMNode(event);
+            saved ++;
             if (Double.parseDouble(event.latitude) == 0 && Double.parseDouble(event.longitude) == 0) {
-                return;
+                return 0;
             }
             if (latLong == null || !latLong.equals(latLon)) {
                 latLong = latLon;
                 createPointNode(event);
+                saved ++;
             }
         } catch (Exception e) {
             e.printStackTrace();
             NeoLoaderPlugin.error("Not parsed: " + line);
         }
+        return saved;
 
     }
 

@@ -174,11 +174,11 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.NH_MSC, "MSC, MSC_NAME, MSC Name");
         pref.setDefault(DataLoadPreferences.NH_BSC, "BSC, BSC_NAME, RNC, BSC Name");
         pref.setDefault(DataLoadPreferences.NH_SITE, "Site, Name, Site Name, SiteName, SITE_ID, SiteID");
-        pref.setDefault(DataLoadPreferences.NH_SECTOR, "Sector, SectorName, Cell, BTS_Name, CELL_NAME, GSM Sector ID,CellIdentity, cell name, Cell Name,sector_id");
+        pref.setDefault(DataLoadPreferences.NH_SECTOR, "Sector, SectorName, Cell, BTS_Name, CELL_NAME, GSM Sector ID,CellIdentity, cell name, Cell Name,sector_id, BS_NO");
         pref.setDefault(DataLoadPreferences.NH_SECTOR_CI, "CI,CI_s,CellId,CellIdentity");
         pref.setDefault(DataLoadPreferences.NH_SECTOR_LAC, "LAC,LAC_s,La_lacId");
         pref.setDefault(DataLoadPreferences.NH_LATITUDE, "lat.*, y_wert.*, SIT.*Y, northing, latitude");
-        pref.setDefault(DataLoadPreferences.NH_LONGITUDE, "long.*, x_wert.*, SIT.*X, easting, longitude");
+        pref.setDefault(DataLoadPreferences.NH_LONGITUDE, "lon.*, x_wert.*, SIT.*X, easting, longitude");
         
         pref.setDefault(DataLoadPreferences.DR_LATITUDE, ".*latitude");
         pref.setDefault(DataLoadPreferences.DR_LONGITUDE, ".*longitude");
@@ -196,7 +196,7 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.PR_LATITUDE, "lat.*, .*latitude.*");
         pref.setDefault(DataLoadPreferences.PR_LONGITUDE, "long.*, .*longitude.*");
         
-        pref.setDefault(DataLoadPreferences.NH_AZIMUTH, ".*azimuth.*");
+        pref.setDefault(DataLoadPreferences.NH_AZIMUTH, ".*azimuth.*, bearing");
         pref.setDefault(DataLoadPreferences.NH_BEAMWIDTH, ".*beamwidth.*, beam, hbw");
         
         pref.setDefault(DataLoadPreferences.NE_CI, "CI,CI_s");

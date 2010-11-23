@@ -139,14 +139,14 @@ public class NemoLoader extends DriveLoader {
     }
 
     @Override
-    protected void parseLine(String line) {
+    protected int parseLine(String line) {
         if (parser == null) {
             determineFieldSepRegex(line);
         }
 
         List<String> parsedLine = splitLine(line);
         if (parsedLine.size() < 1) {
-            return;
+            return 0;
         }
         Event event = new Event(parsedLine);
         try {
@@ -154,14 +154,16 @@ public class NemoLoader extends DriveLoader {
         } catch (Exception e) {
             e.printStackTrace();
             NeoLoaderPlugin.error(e.getLocalizedMessage());
-            return;
+            return 0;
         }
 
         String eventId = event.eventId;
         createMNode(event);
         if ("GPS".equalsIgnoreCase(eventId)) {
             createPointNode(event);
-            return;
+            return 2;
+        }else{
+            return 1;
         }
     }
 

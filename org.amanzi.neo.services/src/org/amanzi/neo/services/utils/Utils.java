@@ -3119,4 +3119,28 @@ public class Utils {
             tx.finish();
         }
     }
+
+    /**
+     * return Traverser for all dataset node in database
+     * 
+     * @param root - start node to find
+     */
+    public static Traverser getAllDatasetTraverser(Node root) {
+        return root.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
+
+            @Override
+            public boolean isStopNode(TraversalPosition currentPos) {
+                return currentPos.depth() > 3;
+            }
+        }, new ReturnableEvaluator() {
+
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                Node node = currentPos.currentNode();
+                return node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
+                        && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.DATASET.getId());
+            }
+        }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+    }
+
 }

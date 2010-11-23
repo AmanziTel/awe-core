@@ -154,14 +154,15 @@ public class RomesLoader extends DriveLoader {
     }
 
     @Override
-    protected void parseLine(String line) {
+    protected int parseLine(String line) {
+        int saved = 0;
         try {
             // debug(line);
             List<String> fields = splitLine(line);
             if (fields.size() < 2)
-                return;
+                return 0;
             if (this.isOverLimit())
-                return;
+                return 0;
             this.incValidMessage(); // we have not filtered the message out on non-accepted content
             this.incValidChanged(); // we have not filtered the message out on lack of data change
             if (first_line == 0)
@@ -174,7 +175,7 @@ public class RomesLoader extends DriveLoader {
             Float latitude = (Float)lineData.get("latitude");
             Float longitude = (Float)lineData.get("longitude");
             if (time == null || latitude == null || longitude == null) {
-                return;
+                return 0;
             }
             if ((latitude != null)
                     && (longitude != null)
@@ -182,7 +183,7 @@ public class RomesLoader extends DriveLoader {
                             - longitude) > 10E-10)))) {
                 currentLatitude = latitude;
                 currentLongitude = longitude;
-                saveData(); // persist the current data to database
+                saved = saveData(); // persist the current data to database
             }
             this.incValidLocation(); // we have not filtered the message out on lack of location
             if (lineData.size() > 0) {
@@ -192,6 +193,7 @@ public class RomesLoader extends DriveLoader {
             // TODO: handle exception
             e.printStackTrace();
         }
+        return saved;
     }
 
     /**
@@ -212,7 +214,7 @@ public class RomesLoader extends DriveLoader {
      * This method is called to dump the current cache of signals as one located point linked to a
      * number of signal strength measurements.
      */
-    private void saveData() {
+    private int saveData() {
         if (data.size() > 0) {
             Transaction transaction = neo.beginTx();
             try {
@@ -266,7 +268,9 @@ public class RomesLoader extends DriveLoader {
                 transaction.finish();
             }
         }
+        int saved = data.size();
         data.clear();
+        return saved;
     }
     
     /**

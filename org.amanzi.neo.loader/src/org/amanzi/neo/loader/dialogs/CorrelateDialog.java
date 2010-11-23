@@ -16,7 +16,6 @@ package org.amanzi.neo.loader.dialogs;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.loader.correlate.AMSCorrellator;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
@@ -292,7 +291,7 @@ public class CorrelateDialog {
     	ArrayList<String> result = new ArrayList<String>();
     	Transaction tx = NeoUtils.beginTransaction();
         try {        	
-        	Traverser allDatasetTraverser = NeoCorePlugin.getDefault().getProjectService().getAllDatasetTraverser(
+        	Traverser allDatasetTraverser = NeoUtils.getAllDatasetTraverser(
                     NeoServiceProviderUi.getProvider().getService().getReferenceNode());        	
             for (Node node : allDatasetTraverser) {
             	DriveTypes type = NeoUtils.getDatasetType(node, NeoServiceProviderUi.getProvider().getService());
@@ -316,7 +315,7 @@ public class CorrelateDialog {
     	ArrayList<String> result = new ArrayList<String>();
     	Transaction tx = NeoUtils.beginTransaction();
         try {        	
-        	Traverser allDatasetTraverser = NeoCorePlugin.getDefault().getProjectService().getAllDatasetTraverser(
+        	Traverser allDatasetTraverser = NeoUtils.getAllDatasetTraverser(
                     NeoServiceProviderUi.getProvider().getService().getReferenceNode());        	
             for (Node node : allDatasetTraverser) {
             	DriveTypes type = NeoUtils.getDatasetType(node, NeoServiceProviderUi.getProvider().getService());

@@ -236,8 +236,9 @@ public class AMSXMLoader extends AbstractCallLoader {
      * @param line the line
      */
     @Override
-    protected void parseLine(String line) {
+    protected int parseLine(String line) {
         // do nothing
+        return 0;
     }
     
     /**

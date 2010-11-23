@@ -110,7 +110,7 @@ public class ProbeLoader extends AbstractLoader {
     }
 
     @Override
-    protected void parseLine(String line) {
+    protected int parseLine(String line) {
         if (network == null) {
             gisNode = findOrCreateGISNode(basename, GisTypes.NETWORK.getHeader(), NetworkTypes.PROBE);
             network = findOrCreateNetworkNode(gisNode);
@@ -118,21 +118,21 @@ public class ProbeLoader extends AbstractLoader {
         }
         List<String> fields = splitLine(line);
         if (fields.size() < 2)
-            return;
+            return 0;
         if (this.isOverLimit())
-            return;
+            return 0;
         Map<String, Object> lineData = makeDataMap(fields);
-        saveProbe(lineData);
+        return saveProbe(lineData);
     }
 
     /**
      * @param lineData
      */
-    private void saveProbe(Map<String, Object> lineData) {
+    private int saveProbe(Map<String, Object> lineData) {
         String probeName = (String)lineData.get("name");
         if (probeName == null) {
             NeoLoaderPlugin.error("Probe not stored:\t" + lineData);
-            return;
+            return 0;
         }
 
         Transaction transaction = neo.beginTx();
@@ -156,6 +156,7 @@ public class ProbeLoader extends AbstractLoader {
             gisProperties.incSaved();
             
             transaction.success();
+            return 1;
         } finally {
             transaction.finish();
         }

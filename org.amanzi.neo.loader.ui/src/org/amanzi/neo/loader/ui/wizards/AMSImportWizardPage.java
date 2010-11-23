@@ -19,7 +19,6 @@ import java.util.Collections;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.DriveTypes;
 import org.amanzi.neo.services.enums.GisTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
@@ -232,7 +231,7 @@ public class AMSImportWizardPage extends WizardPage {
         try {        	
             datasetMembers = new ArrayList<String>();
         	wrongDatasetMembers = new ArrayList<String>();
-        	Traverser allDatasetTraverser = NeoServiceFactory.getInstance().getProjectService().getAllDatasetTraverser(
+        	Traverser allDatasetTraverser = NeoUtils.getAllDatasetTraverser(
                     NeoServiceProviderUi.getProvider().getService().getReferenceNode());
             for (Node node : allDatasetTraverser) {
                 String name = (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME);

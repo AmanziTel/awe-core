@@ -20,8 +20,6 @@ import java.util.regex.Pattern;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.enums.SplashRelationshipTypes;
 import org.amanzi.neo.services.nodes.AbstractNode;
 import org.amanzi.neo.services.nodes.AweProjectNode;
@@ -45,8 +43,6 @@ import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.TraversalPosition;
-import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 
 /**
@@ -743,28 +739,6 @@ public class AweProjectService extends AbstractService {
         }
     }
 
-    /**
-     * return Traverser for all dataset node in database
-     * 
-     * @param root - start node to find
-     */
-    public Traverser getAllDatasetTraverser(Node root) {
-        return root.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
-
-            @Override
-            public boolean isStopNode(TraversalPosition currentPos) {
-                return currentPos.depth() > 3;
-            }
-        }, new ReturnableEvaluator() {
-
-            @Override
-            public boolean isReturnableNode(TraversalPosition currentPos) {
-                Node node = currentPos.currentNode();
-                return node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
-                        && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.DATASET.getId());
-            }
-        }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
-    }
     /**
      * Searches for a chart with given name
      *

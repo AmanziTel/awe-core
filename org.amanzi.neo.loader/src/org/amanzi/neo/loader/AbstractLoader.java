@@ -100,7 +100,7 @@ public abstract class AbstractLoader {
     protected String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
     protected int lineNumber = 0;
     private int limit = 0;
-    private final long savedData = 0;
+    private long savedData = 0;
     private long started = System.currentTimeMillis();
     protected boolean headerWasParced;
 
@@ -242,6 +242,11 @@ public abstract class AbstractLoader {
 
         boolean shouldConvert() {
             return parseCount > 10;
+        }
+        
+        String knownTypeName() {
+            String typeName = knownType().toString();
+            return typeName.replace("class java.lang.", "");
         }
 
         Class< ? extends Object> knownType() {
@@ -1033,7 +1038,7 @@ public abstract class AbstractLoader {
             monitor.beginTask(basename, 100);
         }
         CountingFileInputStream is = new CountingFileInputStream(new File(filename));
-        String characterSet = NeoLoaderPlugin.getDefault().getCharacterSet();
+        String characterSet = NeoLoaderPlugin.getCharacterSet();
         BufferedReader reader = new BufferedReader(new InputStreamReader(is, characterSet));
         mainTx = neo.beginTx();
         NeoUtils.addTransactionLog(mainTx, Thread.currentThread(), "AbstractLoader");
@@ -1050,7 +1055,7 @@ public abstract class AbstractLoader {
                 if (!headerWasParced) {
                     parseHeader(line);
                 } else {
-                    parseLine(line);
+                    savedData += parseLine(line);
                 }
                 if (monitor != null) {
                     if (monitor.isCanceled())
@@ -1281,7 +1286,7 @@ public abstract class AbstractLoader {
      * 
      * @param line
      */
-    protected abstract void parseLine(String line);
+    protected abstract int parseLine(String line);
 
     /**
      * After all lines have been parsed, this method is called, allowing the implementing class the
@@ -1674,7 +1679,7 @@ public abstract class AbstractLoader {
             for (String key : hm.headers.keySet()) {
                 Header header = hm.headers.get(key);
                 if (header.parseCount > 0) {
-                    notify("\t" + header.knownType() + " loaded: " + header.parseCount + " => " + key);
+                    notify("\t" + header.knownTypeName() + " loaded: " + header.parseCount + " => " + key);
                 }
             }
         }
@@ -1884,16 +1889,23 @@ public abstract class AbstractLoader {
      * @return array of possible headers
      */
     protected String[] getPossibleHeaders(String key) {
-        String text = NeoLoaderPlugin.getDefault().getPreferenceStore().getString(key);
-        String[] array = text.split(",");
-        List<String> result = new ArrayList<String>();
-        for (String string : array) {
-            String value = string.trim();
-            if (!value.isEmpty()) {
-                result.add(value);
+        try {
+            String text = NeoLoaderPlugin.getPossibleHeaders(key);
+            if(text!=null) {
+                String[] array = text.split(",");
+                List<String> result = new ArrayList<String>();
+                for (String string : array) {
+                    String value = string.trim();
+                    if (!value.isEmpty()) {
+                        result.add(value);
+                    }
+                }
+                return result.toArray(new String[0]);
             }
+        } catch (Exception e) {
+            NeoLoaderPlugin.exception(e);
         }
-        return result.toArray(new String[0]);
+        return new String[] {key};
     }
 
     /**

@@ -86,12 +86,13 @@ public class NetworkSiteLoader extends AbstractLoader {
      * @param line the line
      */
     @Override
-    protected void parseLine(String line) {
+    protected int parseLine(String line) {
+        int saved = 0;
         List<String> fields = splitLine(line);
         if (fields.size() < 3)
-            return;
+            return 0;
         if (this.isOverLimit())
-            return;
+            return 0;
         Transaction transaction = neo.beginTx();
         try {
             if (networkHeader == null) {
@@ -103,14 +104,15 @@ public class NetworkSiteLoader extends AbstractLoader {
 
             if (siteField == null) {
                 lineErrors.add("Missing sector name on line " + lineNumber);
-                return;
+                return 0;
             }
 
             Node siteNode = findOrCreateSiteNode(siteField);
             if (siteNode == null) {
                 lineErrors.add("Missing sector name on line " + lineNumber);
-                return;
+                return 0;
             }
+            saved++;
             // header.parseLine(sector, fields);
             Map<String, Object> sectorData = networkHeader.getSiteData();
             for (Map.Entry<String, Object> entry : sectorData.entrySet()) {
@@ -137,6 +139,7 @@ public class NetworkSiteLoader extends AbstractLoader {
         } finally {
             transaction.finish();
         }
+        return saved;
 
     }
 

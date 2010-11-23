@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.loader.AbstractLoader;
 import org.amanzi.neo.loader.DingLiLoader;
 import org.amanzi.neo.loader.DriveLoader;
@@ -330,7 +329,7 @@ public class DriveDialog {
         
         //TODO: Check if the following line is needed
         //Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
-        Traverser allDatasetTraverser = NeoCorePlugin.getDefault().getProjectService().getAllDatasetTraverser(
+        Traverser allDatasetTraverser = NeoUtils.getAllDatasetTraverser(
                 NeoServiceProviderUi.getProvider().getService().getReferenceNode());
         for (Node node : allDatasetTraverser) {
             dataset.put((String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME), node);

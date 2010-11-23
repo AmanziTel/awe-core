@@ -168,7 +168,8 @@ public class AweConsolePlugin extends AbstractUIPlugin {
                 getDefault().printToStream(line);
             }
         } else {
-            LOGGER.debug(line);
+            //LOGGER.info(line);
+            System.out.println(line);
         }
     }
     
@@ -182,7 +183,8 @@ public class AweConsolePlugin extends AbstractUIPlugin {
         if (loggingPossible) {
             getDefault().printToStream(line);
         } else {
-            LOGGER.debug(line);
+            //LOGGER.warn(line);
+            System.out.println(line);
         }
     }
     

@@ -1,17 +1,14 @@
 package org.amanzi.neo.loader;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -24,11 +21,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.loader.AbstractLoader.FloatHeader;
-import org.amanzi.neo.loader.AbstractLoader.Header;
-import org.amanzi.neo.loader.AbstractLoader.IntegerHeader;
-import org.amanzi.neo.loader.AbstractLoader.PropertyMapper;
-import org.amanzi.neo.loader.AbstractLoader.StringMapper;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
@@ -41,7 +33,6 @@ import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
@@ -49,7 +40,6 @@ import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser.Order;
-import org.neo4j.index.lucene.LuceneIndexService;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 public class TemsRemoteUrlLoader extends DriveLoader {
@@ -73,7 +63,6 @@ public class TemsRemoteUrlLoader extends DriveLoader {
 	private final ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
 	private Node m_node;
 	private Node virtual_m_node;
-	private String virtualDatasetName;
 	/** The url. */
     private final URL url;
     private int linesProcessed =0;
@@ -329,14 +318,15 @@ public class TemsRemoteUrlLoader extends DriveLoader {
 	}
 
 	@Override
-	protected void parseLine(String line) {
+	protected int parseLine(String line) {
 
+	    int saved = 0;
 		// debug(line);
 		List<String> fields = splitLine(line);
 		if (fields.size() < 2)
-			return;
+			return 0;
 		if (this.isOverLimit())
-			return;
+			return 0;
 		Map<String, Object> lineData = makeDataMap(fields);
 		// debug(line);
 		try {
@@ -378,7 +368,7 @@ public class TemsRemoteUrlLoader extends DriveLoader {
 		
 		if (time == null || date.compareTo(startDate) < 0) {
 			System.out.println("SKIPPED data of date: " + time);
-			return;
+			return 0;
 		}
 		
 		if ((latitude != null)
@@ -388,7 +378,7 @@ public class TemsRemoteUrlLoader extends DriveLoader {
 						.abs(currentLongitude - longitude) > 10E-10)))) {
 			currentLatitude = latitude;
 			currentLongitude = longitude;
-			saveData(); // persist the current data to database
+			saved = saveData(); // persist the current data to database
 		}
 		if (!lineData.isEmpty()) {
 			data.add(lineData);
@@ -396,7 +386,7 @@ public class TemsRemoteUrlLoader extends DriveLoader {
 		this.incValidLocation();
 
 		if (!"EV-DO Pilot Sets Ver2".equals(message_type))
-			return;
+			return saved;
 		int channel = 0;
 		int pn_code = 0;
 		int ec_io = 0;
@@ -409,7 +399,7 @@ public class TemsRemoteUrlLoader extends DriveLoader {
 		} catch (Exception e) {
 			error("Failed to parse a field on line " + lineNumber + ": "
 					+ e.getMessage());
-			return;
+			return saved;
 		}
 		if (measurement_count > 12) {
 			error("Measurement count " + measurement_count + " > 12");
@@ -434,7 +424,7 @@ public class TemsRemoteUrlLoader extends DriveLoader {
 		if (measurement_count > 0
 				&& (changed || (event != null && event.length() > 0))) {
 			if (this.isOverLimit())
-				return;
+				return saved;
 			if (first_line == 0)
 				first_line = lineNumber;
 			last_line = lineNumber;
@@ -464,13 +454,15 @@ public class TemsRemoteUrlLoader extends DriveLoader {
 				}
 			}
 		}
+		return saved;
 	}
 
 	/**
 	 * This method is called to dump the current cache of signals as one located
 	 * point linked to a number of signal strength measurements.
 	 */
-	private void saveData() {
+	private int saveData() {
+	    int saved = 0;
 		if (signals.size() > 0 || !data.isEmpty()) {
 			Transaction transaction = neo.beginTx();
 			try {
@@ -554,6 +546,7 @@ public class TemsRemoteUrlLoader extends DriveLoader {
 						if (storingProperties.get(1) != null) {
 							storingProperties.get(1).incSaved();
 						}
+						saved ++;
 					}
 					if (haveEvents) {
 						if(mp != null) {
@@ -595,6 +588,7 @@ public class TemsRemoteUrlLoader extends DriveLoader {
 						gisProperties.checkCRS(currentLatitude,
 								currentLongitude, null);
 						gisProperties.incSaved();
+						saved ++;
 					}
 
 					LinkedHashMap<String, Header> statisticHeader = getHeaderMap(2).headers;
@@ -683,6 +677,7 @@ public class TemsRemoteUrlLoader extends DriveLoader {
 							ms.createRelationshipTo(mp,
 								GeoNeoRelationshipTypes.LOCATION);
 						}
+						saved ++;
 					}
 				}
 
@@ -697,22 +692,11 @@ public class TemsRemoteUrlLoader extends DriveLoader {
 		data.clear();
 		first_line = 0;
 		last_line = 0;
+		return saved;
 	}
 
 	private boolean isMMProperties(String string) {
 		return signalProp.matcher(string).matches();
-	}
-
-	/**
-	 * get name of virtual dataset
-	 * 
-	 * @return
-	 */
-	private String getVirtualDatasetName() {
-		if (virtualDatasetName == null) {
-			virtualDatasetName = DriveTypes.MS.getFullDatasetName(dataset);
-		}
-		return virtualDatasetName;
 	}
 
 	/**
@@ -829,7 +813,7 @@ public class TemsRemoteUrlLoader extends DriveLoader {
         if (monitor != null) {
             monitor.setTaskName(basename);
         }
-        String characterSet = NeoLoaderPlugin.getDefault().getCharacterSet();
+        String characterSet = NeoLoaderPlugin.getCharacterSet();
         BufferedReader reader = null;
 
         mainTx = neo.beginTx();

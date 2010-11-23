@@ -434,13 +434,14 @@ public class NetworkLoader extends AbstractLoader {
     }
 
     @Override
-    protected void parseLine(String line) {
+    protected int parseLine(String line) {
         debug(line);
+        int saved = 0;
         List<String> fields = splitLine(line);
         if (fields.size() < 3)
-            return;
+            return 0;
         if (this.isOverLimit())
-            return;
+            return 0;
         Transaction transaction = neo.beginTx();
         try {
             if (networkHeader == null) {
@@ -455,7 +456,7 @@ public class NetworkLoader extends AbstractLoader {
             String sectorField = networkHeader.getString("sector");
             if (sectorField == null) {
                 lineErrors.add("Missing sector name on line " + lineNumber);
-                return;
+                return 0;
             }
             if (!levels.contains(NetworkLevels.SECTOR)) {
                 levels.add(NetworkLevels.SECTOR);
@@ -580,6 +581,7 @@ public class NetworkLoader extends AbstractLoader {
             }
             // TODO: deprecated sectorNumber in favour of saved data
             sectorNumber++;
+            saved++;
             // header.parseLine(sector, fields);
             Map<String, Object> sectorData = networkHeader.getSectorData();
 
@@ -603,6 +605,7 @@ public class NetworkLoader extends AbstractLoader {
         } finally {
             transaction.finish();
         }
+        return saved;
     }
 
     private Node addChild(Node parent, NodeTypes type, String name) {

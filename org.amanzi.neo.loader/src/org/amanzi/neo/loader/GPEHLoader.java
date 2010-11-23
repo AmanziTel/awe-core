@@ -594,7 +594,8 @@ public class GPEHLoader extends DriveLoader {
     }
 
     @Override
-    protected void parseLine(String line) {
+    protected int parseLine(String line) {
+        return 0;
     }
 
     @Override

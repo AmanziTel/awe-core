@@ -181,8 +181,9 @@ public class OSSCounterLoader extends AbstractLoader {
     }
 
     @Override
-    protected void parseLine(String line) {
+    protected int parseLine(String line) {
         // do nothing
+        return 0;
     }
 
     /**

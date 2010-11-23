@@ -13,10 +13,13 @@
 
 package org.amanzi.neo.loader;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,7 +33,9 @@ import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.swt.widgets.Display;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 /**
  * <p>
@@ -44,9 +49,33 @@ public class DingLiLoader extends DriveLoader {
 
     /** The property header map. */
     private Map<String, List<String>> propertyHeaderMap = new HashMap<String, List<String>>();
+    private HashSet<String> ignoreHeaders = new HashSet<String>();
+    private boolean ignoreHex = true;
     private Node lastMpNode = null;
     private Node mNode;
     private LinkedHashMap<String, Header> headers;
+
+    /**
+     * Instantiates a new ding li loader. This method is the normal one to be called from within AWE.
+     * 
+     * @param filename the filename
+     * @param display the display
+     * @param dataset the dataset
+     */
+    public DingLiLoader(String filename, Display display, String dataset) {
+        this(null,filename,display,dataset);
+    }
+
+    /**
+     * Instantiates a new ding li loader for testing purposes, with no display, but a pre-initialized database service.
+     * 
+     * @param neo the GraphDatabaseService to save the data to
+     * @param filename the filename
+     * @param dataset the dataset
+     */
+    public DingLiLoader(GraphDatabaseService neo, String filename, String dataset) {
+        this(neo,filename,null,dataset);
+    }
 
     /**
      * Instantiates a new ding li loader.
@@ -55,9 +84,9 @@ public class DingLiLoader extends DriveLoader {
      * @param display the display
      * @param dataset the dataset
      */
-    public DingLiLoader(String filename, Display display, String dataset) {
+    private DingLiLoader(GraphDatabaseService neo, String filename, Display display, String dataset) {
         driveType = DriveTypes.TEMS;
-        initialize("DingLi", null, filename, display, dataset);
+        initialize("DingLi", neo, filename, display, dataset);
         initializeLuceneIndex();
         addDriveIndexes();
         headers = getHeaderMap(1).headers;
@@ -98,7 +127,7 @@ public class DingLiLoader extends DriveLoader {
      * @param line the line
      */
     @Override
-    protected void parseLine(String line) {
+    protected int parseLine(String line) {
         try {
             if (parser == null) {
                 determineFieldSepRegex(line);
@@ -106,19 +135,20 @@ public class DingLiLoader extends DriveLoader {
 
             List<String> parsedLine = splitLine(line);
             if (parsedLine.size() < 1) {
-                return;
+                return 0;
             }
             String elem = parsedLine.get(0);
             if ("FileInfo".equals(elem)) {
-                return;
+                return 0;
             }
             if ("RegReport".equals(elem)) {
                 updatePropertyHeaders(parsedLine);
-                return;
+                return 0;
             }
-            storeEvent(parsedLine);
+            return storeEvent(parsedLine);
         } catch (Exception e) {
             NeoLoaderPlugin.exception(e);
+            return 0;
         }
     }
 
@@ -127,29 +157,33 @@ public class DingLiLoader extends DriveLoader {
      * 
      * @param parsedLine the parsed line
      */
-    private void storeEvent(List<String> parsedLine) {
+    private int storeEvent(List<String> parsedLine) {
         Iterator<String> iterator = parsedLine.iterator();
         String name = iterator.next();
         if ("DAY".equals(name)) {
             updateTimeByDay(iterator);
-            return;
+            return 0;
         } else if ("HOUR".equals(name)) {
             updateTimeByHour(iterator);
-            return;
+            return 0;
         } else if ("MIN".equals(name)) {
             updateTimeByMIN(iterator);
-            return;
+            return 0;
         } else if ("SEC".equals(name)) {
             updateTimeBySec(iterator);
-            return;
+            return 0;
         } else if ("GPS".equals(name)) {
             createMpNode(iterator);
-            return;
+            incValidLocation();
+            return 1;
         }
         List<String> propertyList = propertyHeaderMap.get(name);
         if (propertyList==null){
             NeoLoaderPlugin.error(String.format("Not found header for event %s",name));
-            return;
+            return 0;
+        }
+        if(ignoreHeaders.contains(name)){
+           return 0;
         }
         Node m = neo.createNode();
         findOrCreateFileNode(m);
@@ -162,8 +196,8 @@ public class DingLiLoader extends DriveLoader {
             }
             setIndexPropertyNotParcedValue(headers, m, property, value);
         }
-        if (lastMpNode!=null){
-        m.createRelationshipTo(lastMpNode, GeoNeoRelationshipTypes.LOCATION);
+        if (lastMpNode != null) {
+            m.createRelationshipTo(lastMpNode, GeoNeoRelationshipTypes.LOCATION);
         }
         if (mNode != null) {
             mNode.createRelationshipTo(m, GeoNeoRelationshipTypes.NEXT);
@@ -171,6 +205,8 @@ public class DingLiLoader extends DriveLoader {
         mNode = m;
         m.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, _workDate.getTimeInMillis());
         index(m);
+        this.incValidMessage();
+        return 1;
     }
 
     /**
@@ -247,7 +283,11 @@ public class DingLiLoader extends DriveLoader {
         String event = iterator.next();
         List<String> properties = new ArrayList<String>();
         while (iterator.hasNext()) {
-            properties.add(iterator.next());
+            String field = iterator.next();
+            if(ignoreHex && field.contains("HexContent")) {
+                ignoreHeaders.add(event);
+            }
+            properties.add(field);
         }
         propertyHeaderMap.put(event, properties);
     }
@@ -340,4 +380,67 @@ public class DingLiLoader extends DriveLoader {
 
         return Float.parseFloat(value);
     }
+
+    public static class TestScenario {
+        int stringBlockSize = 120;
+        String[] files;
+        boolean ignoreHex;
+
+        public TestScenario(int sbs, String[] files, boolean ignoreHex) {
+            this.stringBlockSize = (sbs / 2) * 2; // ensure multiple of two
+            this.files = files;
+            this.ignoreHex = ignoreHex;
+        }
+
+        public void run() {
+            String dbPath = "../../testing/dingli/neo_" + (ignoreHex ? "X" : "H") + "_" + stringBlockSize;
+            String dataset = "DingLi Dataset";
+            Map<String, String> config = new HashMap<String, String>();
+            config.put("string_block_size", String.valueOf(stringBlockSize));
+            EmbeddedGraphDatabase neo = new EmbeddedGraphDatabase(dbPath, config);
+            try {
+                for (String filename : files) {
+                    DingLiLoader driveLoader = new DingLiLoader(neo, filename, dataset);
+                    //driveLoader.setLimit(100);
+                    driveLoader.ignoreHex = ignoreHex;
+                    driveLoader.run(null);
+                    driveLoader.printStats(true); // stats for this load
+                }
+                printTimesStats(); // stats for all loads
+            } catch (IOException e) {
+                System.err.println("Error loading TEMS data: " + e);
+                e.printStackTrace(System.err);
+            } finally {
+                neo.shutdown();
+            }
+        }
+    }
+
+    /**
+     * @param args
+     */
+    public static void main(String[] args) {
+        if (args.length < 1) {
+            File dir = new File(System.getenv("HOME") + "/AWE/Data/Dingli/Canton");
+            args = dir.list(new FilenameFilter() {
+                public boolean accept(File dir, String name) {
+                    return name.endsWith(".log");
+                }
+            });
+            for (int i = 0; i < args.length; i++) {
+                args[i] = (new File(dir, args[i])).getPath();
+            }
+        }
+        ArrayList<TestScenario> tests = new ArrayList<TestScenario>();
+        for (int sbs = 240; sbs > 10; sbs /= 2) {
+            for (boolean ignoreHex : new boolean[] {true, false}) {
+                tests.add(new TestScenario(sbs, args, ignoreHex));
+            }
+        }
+        for (TestScenario test : tests) {
+            test.run();
+        }
+    }
+
+
 }

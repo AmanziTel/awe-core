@@ -29,7 +29,6 @@ import org.osgi.framework.BundleContext;
  */
 
 public class NeoLoaderPlugin extends Plugin {
-    private static final Logger LOGGER = Logger.getLogger(NeoLoaderPlugin.class);
     /** String DEFAULT_CHARSET field */
     public static final String DEFAULT_CHARSET = "UTF-8";
 	
@@ -46,7 +45,6 @@ public class NeoLoaderPlugin extends Plugin {
 	 * Logging properties
 	 */
 	public static boolean debug = false;
-	private static boolean verbose = true;	
 	
 	/**
 	 * Constructor for SplashPlugin.
@@ -155,11 +153,20 @@ public class NeoLoaderPlugin extends Plugin {
      * 
      * @return
      */
-    public String getCharacterSet() {
-        String characterSet = org.amanzi.neo.loader.ui.NeoLoaderPlugin.getDefault().getPreferenceStore().getString(DataLoadPreferences.DEFAULT_CHARSET);
+    public static String getCharacterSet() {
+        String characterSet = null;
+        try {
+            characterSet = org.amanzi.neo.loader.ui.NeoLoaderPlugin.getDefault().getPreferenceStore().getString(DataLoadPreferences.DEFAULT_CHARSET);
+        } catch (Exception e) {
+            //exception(e);
+        }
         if (characterSet == null) {
             characterSet = DEFAULT_CHARSET;
         }
         return characterSet;
+    }
+
+    public static String getPossibleHeaders(String key) {
+        return getDefault() != null ? getDefault().getPreferenceStore().getString(key) : null;
     }
 }

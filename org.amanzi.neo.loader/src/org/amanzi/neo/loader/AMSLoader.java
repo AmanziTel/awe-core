@@ -523,7 +523,8 @@ public class AMSLoader extends AbstractCallLoader {
 	}
 	
 	@Override
-	protected void parseLine(String line) {
+	protected int parseLine(String line) {
+	    int saved = 0;
 	    if (newDirectory) {
 	        saveData();
 	        newDirectory = false;
@@ -533,7 +534,7 @@ public class AMSLoader extends AbstractCallLoader {
 	    
 		StringTokenizer tokenizer = new StringTokenizer(line, "|");
 		if (!tokenizer.hasMoreTokens()) {
-			return;
+			return 0;
 		}
 		
 		//get a timestamp
@@ -541,18 +542,18 @@ public class AMSLoader extends AbstractCallLoader {
 		
 		if (!tokenizer.hasMoreTokens()) {
 			//if no more tokens than skip parsing
-			return;
+			return 0;
 		}
 		
 		//next is a kind of command, we should skip it
 		String maybePESQ = tokenizer.nextToken();
 		if (processPESQCommand(timestamp, maybePESQ, tokenizer)) {
-		    return;
+		    return 0;
 		}
 		
 		if (!tokenizer.hasMoreTokens()) {
 			//if no more tokens than skip parsing
-			return;
+			return 0;
 		}
 
 		//get a name of command
@@ -572,7 +573,7 @@ public class AMSLoader extends AbstractCallLoader {
 		
 		if (!tokenizer.hasMoreTokens()||maybePESQ.startsWith("Port.write")) {
 			//if last token is command name than it's Port.write command, do not proccess it
-			return;
+			return 0;
 		}
 		
 		boolean unsolicited = commandName.equals(UNSOLICITED);
@@ -597,7 +598,7 @@ public class AMSLoader extends AbstractCallLoader {
 			
 			AbstractAMSCommand command = AMSCommandPackage.getCommand(commandName, syntax);
 			if (command == null) {
-				return;
+				return 0;
 			}
 			
 			boolean isCallCommand = unsolicited ? true : processCommand(timestamp, command, syntax, tokenizer, false);
@@ -629,7 +630,8 @@ public class AMSLoader extends AbstractCallLoader {
 					
 						if (command != null) {
 							//should be a result of command						    
-							processCommand(timestamp, command, syntax, paramTokenizer, isCallCommand);
+							if( processCommand(timestamp, command, syntax, paramTokenizer, isCallCommand) )
+							    saved++;
 							if (command != null) {
 								commandName = command.getName();
 							}
@@ -641,6 +643,7 @@ public class AMSLoader extends AbstractCallLoader {
 				}	
 			}
 		}
+		return saved;
 	}
 	
 	/**

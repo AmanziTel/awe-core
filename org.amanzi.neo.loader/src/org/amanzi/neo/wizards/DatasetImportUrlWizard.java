@@ -24,15 +24,11 @@ import java.net.URLConnection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.net.URLEncoder;
 
 import org.amanzi.awe.console.AweConsolePlugin;
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.loader.DriveLoader;
-import org.amanzi.neo.loader.GPSRemoteUrlLoader;
 import org.amanzi.neo.loader.TemsRemoteUrlLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
@@ -47,13 +43,11 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.PlatformUI;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.Traverser.Order;
 
@@ -172,7 +166,7 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
     }
     
     private void findDataset(String datasetName) {
-    	Traverser allDatasetTraverser = NeoCorePlugin.getDefault().getProjectService().getAllDatasetTraverser(
+    	Traverser allDatasetTraverser = NeoUtils.getAllDatasetTraverser(
                 NeoServiceProviderUi.getProvider().getService().getReferenceNode());
         
 

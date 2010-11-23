@@ -70,7 +70,6 @@ public class TEMSLoader extends DriveLoader {
     private final ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
     private Node mNode;
     private Node virtualMnode;
-    private String virtualDatasetName;
 
     /**
      * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
@@ -323,14 +322,15 @@ public class TEMSLoader extends DriveLoader {
     }
 
     @Override
-    protected void parseLine(String line) {
+    protected int parseLine(String line) {
+        int saved = 0;
 
         // debug(line);
         List<String> fields = splitLine(line);
         if (fields.size() < 2)
-            return;
+            return 0;
         if (this.isOverLimit())
-            return;
+            return 0;
         Map<String, Object> lineData = makeDataMap(fields);
         // debug(line);
         try {
@@ -352,7 +352,7 @@ public class TEMSLoader extends DriveLoader {
         Float latitude = (Float)lineData.get("parsedLatitude");
         Float longitude = (Float)lineData.get("parsedLongitude");
         if (time == null || latitude == null || longitude == null) {
-            return;
+            return 0;
         }
         if ((latitude != null)
                 && (longitude != null)
@@ -360,7 +360,7 @@ public class TEMSLoader extends DriveLoader {
                         - longitude) > 10E-10)))) {
             currentLatitude = latitude;
             currentLongitude = longitude;
-            saveData(); // persist the current data to database
+            saved = saveData(); // persist the current data to database
         }
         if (!lineData.isEmpty()) {
             data.add(lineData);
@@ -368,7 +368,7 @@ public class TEMSLoader extends DriveLoader {
         this.incValidLocation();
 
         if (!"EV-DO Pilot Sets Ver2".equals(message_type))
-            return;
+            return 0;
         int channel = 0;
         int pn_code = 0;
         int ec_io = 0;
@@ -380,7 +380,7 @@ public class TEMSLoader extends DriveLoader {
             measurement_count = (Integer)(lineData.get("all_pilot_set_count"));
         } catch (Exception e) {
             error("Failed to parse a field on line " + lineNumber + ": " + e.getMessage());
-            return;
+            return 0;
         }
         if (measurement_count > 12) {
             error("Measurement count " + measurement_count + " > 12");
@@ -404,7 +404,7 @@ public class TEMSLoader extends DriveLoader {
         }
         if (measurement_count > 0 && (changed || (event != null && event.length() > 0))) {
             if (this.isOverLimit())
-                return;
+                return 0;
             if (first_line == 0)
                 first_line = lineNumber;
             last_line = lineNumber;
@@ -430,13 +430,15 @@ public class TEMSLoader extends DriveLoader {
                 }
             }
         }
+        return saved;
     }
 
     /**
      * This method is called to dump the current cache of signals as one located point linked to a
      * number of signal strength measurements.
      */
-    private void saveData() {
+    private int saveData() {
+        int saved = 0;
         if (signals.size() > 0 || !data.isEmpty()) {
             Transaction transaction = neo.beginTx();
             try {
@@ -485,6 +487,7 @@ public class TEMSLoader extends DriveLoader {
                         if (storingProperties.get(1) != null) {
                             storingProperties.get(1).incSaved();
                         }
+                        saved++;
                     }
                     if (haveEvents) {
                         index.index(mp, INeoConstants.EVENTS_LUCENE_INDEX_NAME, dataset);
@@ -511,6 +514,7 @@ public class TEMSLoader extends DriveLoader {
                         gisProperties.updateBBox(currentLatitude, currentLongitude);
                         gisProperties.checkCRS(currentLatitude, currentLongitude, null);
                         gisProperties.incSaved();
+                        saved++;
                     }
 
                     LinkedHashMap<String, Header> statisticHeader = getHeaderMap(2).headers;
@@ -569,6 +573,7 @@ public class TEMSLoader extends DriveLoader {
 
                         virtualMnode = ms;
                         ms.createRelationshipTo(mp, GeoNeoRelationshipTypes.LOCATION);
+                        saved++;
                     }
                 }
 
@@ -583,22 +588,11 @@ public class TEMSLoader extends DriveLoader {
         data.clear();
         first_line = 0;
         last_line = 0;
+        return saved;
     }
 
     private boolean isMMProperties(String string) {
         return signalProp.matcher(string).matches();
-    }
-
-    /**
-     * get name of virtual dataset
-     * 
-     * @return
-     */
-    private String getVirtualDatasetName() {
-        if (virtualDatasetName == null) {
-            virtualDatasetName = DriveTypes.MS.getFullDatasetName(dataset);
-        }
-        return virtualDatasetName;
     }
 
     /**

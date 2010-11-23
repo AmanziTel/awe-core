@@ -377,7 +377,7 @@ public class StatisticsDataLoader {
         if (datasetName == null || datasetName.isEmpty()) {
             return null;
         }
-        Traverser traverse = NeoCorePlugin.getDefault().getProjectService().getAllDatasetTraverser(service.getReferenceNode());
+        Traverser traverse = NeoUtils.getAllDatasetTraverser(service.getReferenceNode());
         for (Node node : traverse) {
             if (node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").equals(datasetName)) {
                 return node;

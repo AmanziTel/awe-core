@@ -174,7 +174,6 @@ public class UTRANLoader extends AbstractLoader {
     private int perc;
     private String scrCodeIndName;
     private String proxySectorName;
-    private Node lastSector;
     private String proxyNeighbourName;
     private Node lastUtranSector;
     private Node lastGsmSector;
@@ -494,7 +493,8 @@ public class UTRANLoader extends AbstractLoader {
      * @param line the line
      */
     @Override
-    protected void parseLine(String line) {
+    protected int parseLine(String line) {
+        return 0;
     }
 
     /**

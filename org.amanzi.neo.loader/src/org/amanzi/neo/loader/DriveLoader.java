@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.DriveTypes;
@@ -246,7 +245,7 @@ public abstract class DriveLoader extends AbstractLoader {
         if (datasetName == null || datasetName.isEmpty()) {
             return null;
         }
-        Traverser traverse = NeoCorePlugin.getDefault().getProjectService().getAllDatasetTraverser(root);
+        Traverser traverse = NeoUtils.getAllDatasetTraverser(root);
         for (Node node : traverse) {
             if (node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").equals(datasetName)) {
                 return node;
@@ -492,4 +491,5 @@ public abstract class DriveLoader extends AbstractLoader {
         }
         return luceneIndexName = NeoUtils.getLuceneIndexKeyByProperty(datasetNode, INeoConstants.SECTOR_ID_PROPERTIES, NodeTypes.M);
     }
+
 }
