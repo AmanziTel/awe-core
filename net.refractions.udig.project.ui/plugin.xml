@@ -181,15 +181,6 @@
       </editor>
    </extension>  
    <extension
-         point="org.eclipse.ui.actionSetPartAssociations">
-      <actionSetPartAssociation
-            targetID="org.eclipse.debug.ui.launchActionSet">
-         <part
-               id="net.refractions.udig.project.ui.mapEditor">
-         </part>
-      </actionSetPartAssociation>
-   </extension>   
-   <extension
          point="org.eclipse.ui.perspectiveExtensions">
       <perspectiveExtension
             targetID="net.refractions.udig.ui.mapPerspective">
@@ -1335,27 +1326,4 @@
         </action>
      </extension>
      
-     <!--Lagutko, 23.06.2009, adapters to run scripts --> 
-     <extension point="org.eclipse.core.runtime.adapters">
-         <factory 
-            class="" 
-            adaptableType="net.refractions.udig.project.ui.internal.MapEditorInput">
-            <adapter type="org.eclipse.debug.ui.actions.ILaunchable"/>
-         </factory>
-         <factory 
-            class="" 
-            adaptableType="net.refractions.udig.project.ui.internal.MapEditorInput">
-            <adapter type="org.eclipse.core.resources.IResource"/>
-         </factory>
-         <factory 
-            class="" 
-            adaptableType="net.refractions.udig.project.ui.internal.MapEditor">
-            <adapter type="org.eclipse.debug.ui.actions.ILaunchable"/>
-         </factory>
-         <factory
-         	class=""
-         	adaptableType="net.refractions.udig.project.IRubyProjectElement">
-         	<adapter type="org.eclipse.debug.ui.actions.ILaunchable"/>
-         </factory>
-    </extension>
    </plugin>
