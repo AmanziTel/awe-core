@@ -340,7 +340,8 @@ public class AfpLoader extends AbstractLoader {
      * @param line the line
      */
     @Override
-    protected void parseLine(String line) {
+    protected int parseLine(String line) {
+        return 0;
     }
 
     /**
