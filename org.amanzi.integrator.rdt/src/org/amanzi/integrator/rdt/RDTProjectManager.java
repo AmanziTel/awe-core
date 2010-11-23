@@ -16,7 +16,6 @@ import org.amanzi.neo.services.AweProjectService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.nodes.AweProjectNode;
 import org.amanzi.neo.services.nodes.RubyProjectNode;
-import org.amanzi.rdt.launching.util.LaunchUtils;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -182,27 +181,6 @@ public class RDTProjectManager {
 		}
 		catch (RubyModelException e) {
 		    RubyPlugin.log(e);
-		}
-	}
-
-	/**
-	 * Runs RubyScript
-	 * 
-	 * @param projectName
-	 *            name of project of RubyScript
-	 * @param scriptName
-	 *            name of script
-	 */
-
-	public static void runScript(String projectName, String scriptName) {
-		try {
-			IRubyProject parent = RubyModelManager.getRubyModelManager().getRubyModel().getRubyProject(projectName);
-
-			IRubyScript script = getScriptByName((RubyElement) parent, scriptName);
-
-			LaunchUtils.launchRubyScript(script);
-		} catch (RubyModelException e) {
-
 		}
 	}
 
