@@ -14,10 +14,13 @@
 package org.neo4j.neoclipse;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IViewPart;
@@ -37,8 +40,7 @@ import org.osgi.framework.BundleContext;
 /**
  * The activator class controls the plug-in life cycle.
  */
-public class Activator extends AbstractUIPlugin
-{
+public class Activator extends AbstractUIPlugin {
     /**
      * The plug-in ID.
      */
@@ -51,19 +53,18 @@ public class Activator extends AbstractUIPlugin
      * The shared instance.
      */
     private static Activator PLUGIN;
-    
+
     /**
      * The helper to keep some default values for AWE
      */
-    private static NeoPreferenceHelper helper=null;
+    private static NeoPreferenceHelper helper = null;
 
     /**
      * Starts up the plug-in and initializes the neo service.
      */
     @Override
-    public void start( final BundleContext context ) throws Exception
-    {
-        super.start( context );
+    public void start(final BundleContext context) throws Exception {
+        super.start(context);
         PLUGIN = this;
         graphDbManager = new GraphDbServiceManager();
     }
@@ -72,11 +73,10 @@ public class Activator extends AbstractUIPlugin
      * Stops the plug-in and shuts down the neo service.
      */
     @Override
-    public void stop( final BundleContext context ) throws Exception
-    {
+    public void stop(final BundleContext context) throws Exception {
         graphDbManager.stopGraphDbService();
         PLUGIN = null;
-        super.stop( context );
+        super.stop(context);
     }
 
     /**
@@ -84,45 +84,58 @@ public class Activator extends AbstractUIPlugin
      * 
      * @return the shared instance
      */
-    public static Activator getDefault()
-    {
+    public static Activator getDefault() {
         return PLUGIN;
     }
 
     /**
      * Returns the service manager.
      */
-    public GraphDbServiceManager getGraphDbServiceManager()
-    {
+    public GraphDbServiceManager getGraphDbServiceManager() {
         return graphDbManager;
     }
 
-    public GraphDatabaseService getGraphDbService() throws Exception
-    {
+    public GraphDatabaseService getGraphDbService() throws Exception {
+        graphDbManager.setUserPerformanceConfig(getUserPerformanceConfig());
         return graphDbManager.getGraphDbService();
     }
 
     /**
-     * Get the current GraphDatabaseService. Returns <code>null</code> on
-     * failure, after showing appropriate error messages.
+     * Gets the user performance config.
+     *
+     * @return the user performance config
+     */
+    private Map<String, String> getUserPerformanceConfig() {
+        Map<String, String> config = new HashMap<String, String>();
+        String[] configKeys = new String[] {Preferences.NEOSTORE_NODES, Preferences.NEOSTORE_PROPERTIES, Preferences.NEOSTORE_PROPERTIES_ARRAYS,
+                Preferences.NEOSTORE_PROPERTIES_INDEX, Preferences.NEOSTORE_PROPERTIES_KEYS, Preferences.NEOSTORE_PROPERTIES_STRING, Preferences.NEOSTORE_RELATIONSHIPS};
+        IPreferenceStore ps = getDefault().getPreferenceStore();
+        for (String key : configKeys) {
+            String value = ps.getString(key);
+            if (value != null && !value.isEmpty()) {
+                config.put(key, value);
+            }
+        }
+        return config;
+    }
+
+    /**
+     * Get the current GraphDatabaseService. Returns <code>null</code> on failure, after showing
+     * appropriate error messages.
      * 
      * @return current neo service
      */
-    public GraphDatabaseService getGraphDbServiceSafely()
-    {
+    public GraphDatabaseService getGraphDbServiceSafely() {
         GraphDbServiceManager sm = Activator.getDefault().getGraphDbServiceManager();
-        if ( sm == null )
-        {
-            MessageDialog.openError( null, "Error",
-                    "The Neo4j service manager is not available." );
+        if (sm == null) {
+            MessageDialog.openError(null, "Error", "The Neo4j service manager is not available.");
             return null;
         }
+        graphDbManager.setUserPerformanceConfig(getUserPerformanceConfig());
         GraphDatabaseService ns = null;
-        try
-        {
+        try {
             ns = sm.getGraphDbService();
-        }
-        catch (Exception rte) {
+        } catch (Exception rte) {
             Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, rte.getMessage(), rte));
             rte.printStackTrace();
             Throwable cause = rte.getCause();
@@ -146,8 +159,7 @@ public class Activator extends AbstractUIPlugin
     }
 
     private void showProblemMessage(String message) {
-        MessageDialog.openInformation( null, "Database problem",
-                message );
+        MessageDialog.openInformation(null, "Database problem", message);
     }
 
     /**
@@ -155,26 +167,23 @@ public class Activator extends AbstractUIPlugin
      * 
      * @return the reference node
      */
-    public Node getReferenceNode()
-    {
+    public Node getReferenceNode() {
         GraphDatabaseService ns = getGraphDbServiceSafely();
-        if ( ns == null )
-        {
+        if (ns == null) {
             return null;
         }
         return ns.getReferenceNode();
     }
-    
+
     /**
      * Restart the Neo service from a new location.
      */
-    public void restartNeo()
-    {
+    public void restartNeo() {
         graphDbManager.stopGraphDbService();
         // start the service using new location
         getGraphDbServiceSafely();
     }
-    
+
     public static NeoPreferenceHelper getHelper() {
         return helper;
     }
@@ -189,13 +198,10 @@ public class Activator extends AbstractUIPlugin
      * @param filtered only show Neo4j properties when true
      * @return
      */
-    public int showPreferenceDialog( final boolean filtered )
-    {
-        PreferenceDialog pref = PreferencesUtil.createPreferenceDialogOn( null,
-                "org.neo4j.neoclipse.preference.NeoPreferencePage",
-                ( filtered ? new String[] {} : null ), null );
-        if ( pref != null )
-        {
+    public int showPreferenceDialog(final boolean filtered) {
+        PreferenceDialog pref = PreferencesUtil.createPreferenceDialogOn(null, "org.neo4j.neoclipse.preference.NeoPreferencePage", (filtered ? new String[] {} : null),
+                null);
+        if (pref != null) {
             return pref.open();
         }
         return 1;
@@ -207,20 +213,17 @@ public class Activator extends AbstractUIPlugin
      * @param filtered only show Neo4j properties when true
      * @return
      */
-    public int showDecoratorPreferenceDialog( final boolean filtered )
-    {
-        PreferenceDialog pref = PreferencesUtil.createPreferenceDialogOn( null,
-                "org.neo4j.neoclipse.preference.NeoDecoratorPreferencePage",
-                ( filtered ? new String[] {} : null ), null );
-        if ( pref != null )
-        {
+    public int showDecoratorPreferenceDialog(final boolean filtered) {
+        PreferenceDialog pref = PreferencesUtil.createPreferenceDialogOn(null, "org.neo4j.neoclipse.preference.NeoDecoratorPreferencePage", (filtered ? new String[] {}
+                : null), null);
+        if (pref != null) {
             return pref.open();
         }
         return 1;
     }
-    
+
     /**
-     *Updates NeoGraphView
+     * Updates NeoGraphView
      */
     public void updateNeoGraphView() {
         Display display = PlatformUI.getWorkbench().getDisplay();
@@ -232,7 +235,7 @@ public class Activator extends AbstractUIPlugin
                     return;
                 }
                 boolean partVisible = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().isPartVisible(view);
-                if(!partVisible){
+                if (!partVisible) {
                     return;
                 }
                 NeoGraphViewPart viewGraph = (NeoGraphViewPart)view;
@@ -241,21 +244,22 @@ public class Activator extends AbstractUIPlugin
         });
 
     }
+
     /**
-     *Updates NeoGraphView
+     * Updates NeoGraphView
      */
     public void updateNeoGraphView(final Node aNode) {
         Display display = PlatformUI.getWorkbench().getDisplay();
         display.asyncExec(new Runnable() {
             @Override
             public void run() {
-                
+
                 IViewPart view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(NeoGraphViewPart.ID);
                 if (view == null) {
                     return;
                 }
                 boolean partVisible = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().isPartVisible(view);
-                if(!partVisible){
+                if (!partVisible) {
                     return;
                 }
                 NeoGraphViewPart viewGraph = (NeoGraphViewPart)view;
@@ -264,21 +268,21 @@ public class Activator extends AbstractUIPlugin
         });
 
     }
-    
+
     /**
-     *Updates NeoGraphView
+     * Updates NeoGraphView
      */
     public void showNeoGraphView(final Node aNode) {
         Display display = PlatformUI.getWorkbench().getDisplay();
         display.asyncExec(new Runnable() {
             @Override
             public void run() {
-                
+
                 IViewPart view = null;
                 try {
                     view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(NeoGraphViewPart.ID);
                 } catch (PartInitException e) {
-                   e.printStackTrace();
+                    e.printStackTrace();
                 }
                 if (view == null) {
                     return;
@@ -286,7 +290,7 @@ public class Activator extends AbstractUIPlugin
                 NeoGraphViewPart viewGraph = (NeoGraphViewPart)view;
                 if (aNode != null) {
                     viewGraph.showNodeOnEvent(aNode);
-                }else{
+                } else {
                     viewGraph.refresh();
                 }
             }
