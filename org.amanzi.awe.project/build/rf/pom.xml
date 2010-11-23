@@ -84,7 +84,6 @@
     <module>org.rubypeople.rdt.ui</module>
     <module>org.amanzi.awe.neighbours</module>
     <module>org.amanzi.awe.wizards</module>
-    <module>org.amanzi.awe.gps</module>
     <module>org.amanzi.awe.report.o2</module>
 	<module>org.amanzi.neo.data-generator</module>
 	<module>org.amanzi.neo.db</module>

@@ -151,7 +151,6 @@
       <module>org.rubypeople.rdt.ui</module>
       <module>org.amanzi.awe.neighbours</module>
       <module>org.amanzi.awe.wizards</module>
-      <module>org.amanzi.awe.gps</module>
       <module>org.amanzi.awe.report.o2</module>
       <module>org.amanzi.awe.afp-site</module>
       <module>org.amanzi.awe.afp-feature</module>
@@ -289,7 +288,6 @@
       <module>org.rubypeople.rdt.ui</module>
       <module>org.amanzi.awe.neighbours</module>
       <module>org.amanzi.awe.wizards</module>
-      <module>org.amanzi.awe.gps</module>
       <module>org.amanzi.awe.report.o2</module>
 	  <module>org.amanzi.splash.testing</module>
 	  <module>org.amanzi.neo.data-generator</module>
@@ -438,7 +436,6 @@
       <module>org.rubypeople.rdt.ui</module>
       <module>org.amanzi.awe.neighbours</module>
       <module>org.amanzi.awe.wizards</module>
-      <module>org.amanzi.awe.gps</module>
       <module>org.amanzi.awe.report.o2</module>
       <module>org.amanzi.awe.afp-site</module>
       <module>org.amanzi.awe.afp-feature</module>

@@ -369,13 +369,6 @@ PURPOSE.
          unpack="false"/>
 
    <plugin
-         id="org.amanzi.awe.gps"
-         download-size="0"
-         install-size="0"
-         version="1.0.0.qualifier"
-         unpack="false"/>
-
-   <plugin
          id="org.amanzi.awe.report.o2"
          download-size="0"
          install-size="0"
