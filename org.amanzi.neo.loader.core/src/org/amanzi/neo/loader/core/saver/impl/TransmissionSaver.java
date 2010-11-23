@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader.core.saver.impl;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -20,12 +21,13 @@ import java.util.Set;
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
+import org.amanzi.neo.loader.core.saver.MetaData;
 import org.amanzi.neo.services.DatasetService.NodeResult;
+import org.amanzi.neo.services.GisProperties;
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.utils.Utils;
-import org.amanzi.neo.services.GisProperties;
-import org.amanzi.neo.services.INeoConstants;
 import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -43,6 +45,7 @@ public class TransmissionSaver extends AbstractHeaderSaver<BaseTransferData> {
     private boolean headerNotHandled;
     private Node transmissionRoot;
     private String transmissionName;
+    private MetaData metadata=new MetaData("dataset", MetaData.SUB_TYPE,"tems");
 
     @Override
     public void init(BaseTransferData element) {
@@ -176,6 +179,11 @@ public class TransmissionSaver extends AbstractHeaderSaver<BaseTransferData> {
     @Override
     protected String getTypeIdForGisCount(GisProperties gis) {
         return NodeTypes.SECTOR.getId();
+    }
+
+    @Override
+    public Iterable<MetaData> getMetaData() {
+        return Arrays.asList(new MetaData[]{metadata});
     }
 
 }

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.loader.core.parser.LineTransferData;
+import org.amanzi.neo.loader.core.saver.MetaData;
 import org.amanzi.neo.loader.core.saver.nemo.NemoEvents;
 import org.apache.commons.lang.StringUtils;
 import org.hsqldb.lib.StringUtil;
@@ -36,6 +37,10 @@ import org.hsqldb.lib.StringUtil;
  * @since 1.0.0
  */
 public class Nemo1xSaver extends Nemo2xSaver {
+
+    public Nemo1xSaver() {
+        metadata = new MetaData("dataset", MetaData.SUB_TYPE, "nemo", "version", "1.86");
+    }
 
     private Double currentLatitude;
     private Double currentLongitude;

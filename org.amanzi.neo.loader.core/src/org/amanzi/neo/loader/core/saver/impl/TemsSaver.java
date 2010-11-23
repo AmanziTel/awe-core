@@ -16,6 +16,7 @@ package org.amanzi.neo.loader.core.saver.impl;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -28,6 +29,7 @@ import java.util.regex.Pattern;
 import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.core.saver.MetaData;
 import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.DriveTypes;
@@ -49,7 +51,7 @@ public class TemsSaver extends DriveSaver<BaseTransferData> {
     protected Double currentLatitude;
     protected Double currentLongitude;
     private Node lastMLocation;
-
+    private MetaData metadata=new MetaData("dataset", MetaData.SUB_TYPE,"tems"); 
     private Node virtualParent;
 
     private Node lastMsNode;
@@ -352,6 +354,13 @@ public class TemsSaver extends DriveSaver<BaseTransferData> {
     @Override
     protected String getTypeIdForGisCount(GisProperties gis) {
         return NodeTypes.MP.getId();
+    }
+
+
+
+    @Override
+    public Iterable<MetaData> getMetaData() {
+        return Arrays.asList(new MetaData[]{metadata});
     }
 
 }

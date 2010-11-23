@@ -14,6 +14,7 @@
 package org.amanzi.neo.loader.core.saver.impl;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,6 +24,7 @@ import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.core.preferences.PreferenceStore;
 import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
+import org.amanzi.neo.loader.core.saver.MetaData;
 import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
@@ -54,7 +56,7 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
     private Node city = null;
     private final HashMap<String, Node> bsc_s = new HashMap<String, Node>();
     private final HashMap<String, Node> city_s = new HashMap<String, Node>();
-
+    private final MetaData metadata=new MetaData("network", MetaData.SUB_TYPE,"radio"); 
     private enum NetworkLevels {
         NETWORK, CITY, BSC, SITE, SECTOR;
     }
@@ -292,6 +294,10 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
     @Override
     protected String getTypeIdForGisCount(GisProperties gis) {
         return NodeTypes.SECTOR.getId();
+    }
+    @Override
+    public Iterable<MetaData> getMetaData() {
+        return Arrays.asList(new MetaData[]{metadata});
     }
 
 }

@@ -14,6 +14,7 @@
 package org.amanzi.awe.gpeh;
 
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,6 +28,7 @@ import org.amanzi.awe.l3messages.MessageDecoder;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.loader.core.DatasetInfo;
 import org.amanzi.neo.loader.core.saver.ISaver;
+import org.amanzi.neo.loader.core.saver.MetaData;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.GpehReportUtil;
 import org.amanzi.neo.services.GpehStatisticModel;
@@ -57,12 +59,13 @@ public class GpehSaver implements ISaver<GpehTransferData> {
     private Transaction tx;
     private long oldTimestamp;
     private PrintStream outputStream;
+    private final MetaData metadata;
 
     /**
      * Instantiates a new gpeh saver.
      */
     public GpehSaver() {
-
+        metadata=new MetaData("oss", "gpeh");
     }
 
     @Override
@@ -284,6 +287,11 @@ public class GpehSaver implements ISaver<GpehTransferData> {
     @Override
     public void setPrintStream(PrintStream outputStream) {
         this.outputStream = outputStream;
+    }
+
+    @Override
+    public Iterable<MetaData> getMetaData() {
+        return Arrays.asList(new MetaData[]{metadata});
     }
 
 }

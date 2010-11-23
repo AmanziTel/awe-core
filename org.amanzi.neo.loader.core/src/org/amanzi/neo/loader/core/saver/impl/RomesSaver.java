@@ -16,6 +16,7 @@ package org.amanzi.neo.loader.core.saver.impl;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
@@ -24,6 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
+import org.amanzi.neo.loader.core.saver.MetaData;
 import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
@@ -43,7 +45,7 @@ public class RomesSaver extends DriveSaver<BaseTransferData> {
     protected Double currentLongitude;
     private Node lastMLocation;
     private Integer hours;
-
+    private MetaData metadata=new MetaData("dataset", MetaData.SUB_TYPE,"romes"); 
     @Override
     public void finishSaveNewElement(BaseTransferData element) {
     }
@@ -188,6 +190,11 @@ public class RomesSaver extends DriveSaver<BaseTransferData> {
         }
         return null;
 
+    }
+
+    @Override
+    public Iterable<MetaData> getMetaData() {
+        return Arrays.asList(new MetaData[]{metadata});
     }
 
 }

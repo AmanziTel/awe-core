@@ -14,15 +14,17 @@
 package org.amanzi.neo.loader.core.saver.impl;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
+import org.amanzi.neo.loader.core.saver.MetaData;
+import org.amanzi.neo.services.DatasetService.NodeResult;
 import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.DatasetService.NodeResult;
 import org.amanzi.neo.services.enums.NetworkTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.geotools.referencing.CRS;
@@ -42,7 +44,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class ProbeSaver extends AbstractHeaderSaver<BaseTransferData> {
     private boolean headerNotHandled;
     private CoordinateReferenceSystem crs;
-
+    private final MetaData metadata=new MetaData("network", MetaData.SUB_TYPE,"probe"); 
     @Override
     public void init(BaseTransferData element) {
         super.init(element);
@@ -146,6 +148,11 @@ public class ProbeSaver extends AbstractHeaderSaver<BaseTransferData> {
     @Override
     protected String getTypeIdForGisCount(GisProperties gis) {
         return NodeTypes.PROBE.getId();
+    }
+
+    @Override
+    public Iterable<MetaData> getMetaData() {
+        return Arrays.asList(new MetaData[]{metadata});
     }
 
 }

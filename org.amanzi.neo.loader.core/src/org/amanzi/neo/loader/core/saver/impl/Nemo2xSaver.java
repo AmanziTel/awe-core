@@ -31,6 +31,7 @@ import java.util.Set;
 import org.amanzi.neo.core.utils.DriveEvents;
 import org.amanzi.neo.loader.core.parser.LineTransferData;
 import org.amanzi.neo.loader.core.saver.IStructuredSaver;
+import org.amanzi.neo.loader.core.saver.MetaData;
 import org.amanzi.neo.loader.core.saver.nemo.NemoEvents;
 import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.INeoConstants;
@@ -62,6 +63,7 @@ public class Nemo2xSaver extends DatasetSaver<LineTransferData> implements IStru
     private String virtualDatasetName;
     protected DriveEvents driveEvents;
     protected List<Map<String, Object>> subNodes;
+    protected  MetaData metadata=new MetaData("dataset", MetaData.SUB_TYPE,"nemo","version","2.01");
 
     @Override
     public void save(LineTransferData element) {
@@ -411,5 +413,10 @@ public class Nemo2xSaver extends DatasetSaver<LineTransferData> implements IStru
      */
     protected final static String cleanHeader(String header) {
         return header.replaceAll("[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+", "_").replaceAll("[^\\w]+", "_").replaceAll("_+", "_").replaceAll("\\_$", "").toLowerCase();
+    }
+
+    @Override
+    public Iterable<MetaData> getMetaData() {
+        return Arrays.asList(new MetaData[]{metadata});
     }
 }

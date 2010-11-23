@@ -31,4 +31,5 @@ public interface ISaver<T extends IDataElement> {
     void finishUp(T element);
     PrintStream getPrintStream();
     void setPrintStream(PrintStream outputStream);
+    Iterable<MetaData> getMetaData();
 }

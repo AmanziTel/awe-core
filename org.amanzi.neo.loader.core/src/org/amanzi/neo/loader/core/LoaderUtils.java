@@ -19,10 +19,18 @@ import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.amanzi.neo.loader.core.saver.ISaver;
+import org.amanzi.neo.loader.core.saver.MetaData;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.Platform;
 
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -95,25 +103,27 @@ public class LoaderUtils {
      * @return file extension
      */
     public static String getFileExtension(String fileName) {
-        return getFileExtension(fileName,true);
+        return getFileExtension(fileName, true);
     }
+
     /**
      * get file extension
      * 
      * @param fileName - file name
      * @return file extension
      */
-    public static String getFileExtension(String fileName,boolean returnDot) {
+    public static String getFileExtension(String fileName, boolean returnDot) {
         int idx = fileName.lastIndexOf(".");
-        if (idx<0){
+        if (idx < 0) {
             return "";
         }
-        if (returnDot){
+        if (returnDot) {
             return fileName.substring(idx);
         }
         idx++;
-        return idx<fileName.length()?fileName.substring(idx):"";
+        return idx < fileName.length() ? fileName.substring(idx) : "";
     }
+
     public static File getFirstFile(String dirName) {
         File file = new File(dirName);
         if (file.isFile()) {
@@ -209,22 +219,21 @@ public class LoaderUtils {
         return null;
     }
 
-
     /**
      * Find header id.
-     *
+     * 
      * @param header the header
      * @param possibleHeaders the possible headers
      * @param firstElem the first elem
      * @return the int
      */
-    public static int findHeaderId(String[] header, String[] possibleHeaders,int firstElem) {
-        if (possibleHeaders == null||possibleHeaders.length==0) {
+    public static int findHeaderId(String[] header, String[] possibleHeaders, int firstElem) {
+        if (possibleHeaders == null || possibleHeaders.length == 0) {
             return -1;
         }
-        for (int i=firstElem;i<header.length;i++) {
+        for (int i = firstElem; i < header.length; i++) {
             for (String headerRegExp : possibleHeaders) {
-                Pattern pat=Pattern.compile(headerRegExp,Pattern.CASE_INSENSITIVE);
+                Pattern pat = Pattern.compile(headerRegExp, Pattern.CASE_INSENSITIVE);
                 Matcher match = pat.matcher(header[i]);
                 if (match.matches()) {
                     return i;
@@ -232,5 +241,30 @@ public class LoaderUtils {
             }
         }
         return -1;
+    }
+
+    public static Iterable<MetaData> getAllMetaData() {
+
+        Set<MetaData> result = new LinkedHashSet<MetaData>();
+        IExtensionRegistry reg = Platform.getExtensionRegistry();
+        IConfigurationElement[] extensions = reg.getConfigurationElementsFor("org.amanzi.loader.core.saver");
+        List<IConfigurationElement> saversEl = new LinkedList<IConfigurationElement>();
+        for (int i = 0; i < extensions.length; i++) {
+            try {
+                IConfigurationElement element = extensions[i];
+                String localGuiId = element.getAttribute("class");
+                if (localGuiId != null) {
+                    ISaver<?> saver = (ISaver)element.createExecutableExtension("class");
+                    Iterable<MetaData> metaDataIt = saver.getMetaData();
+                    for (MetaData metadata : metaDataIt) {
+                        result.add(metadata);
+                    }
+                }
+            } catch (Exception e) {
+                //TODO add handle exception
+                e.printStackTrace();
+            }
+        }
+        return result;
     }
 }
