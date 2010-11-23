@@ -437,12 +437,6 @@ public class Delete extends UDIGGenericAction {
 			RubyFile file = (RubyFile) rubyElement;
 			RDTProjectManager.deleteScript(project.getName(), file.getName(), deleteFiles);
 		}
-		// Lagutko 11.08.2009 : if ProjectElement is Spreadsheet that first
-		// delete it from RDT Project Structure
-		else if (rubyElement instanceof ISpreadsheet) {
-			Spreadsheet spreadsheet = (Spreadsheet) rubyElement;
-			RDTProjectManager.deleteSpreadsheet(project.getProject().getName(), project.getName(), spreadsheet.getName());
-		}
 		// Lagutko: also delete this RubyFile from RubyProject InternalElements
 		project.getRubyElementsInternal().remove(rubyElement);
 	}

@@ -549,28 +549,6 @@ public class ApplicationGIS {
     }    
     
     /**
-     * Opens Spreadsheet in SplashEditor
-     * 
-     * @param element Spreadsheet to open
-     * @author Lagutko_N
-     */
-    
-    private static void openSpreadsheet(Spreadsheet element) {
-        if (element.getSpreadsheetType().equals(SpreadsheetType.NEO4J_SPREADSHEET)) {
-            //Lagutko, 28.11.2009, open Spreadsheet only it didn't have any childs
-            if (element.getChildSpreadsheets().isEmpty()) {         
-            	RubyProject rubyProject = element.getRubyProjectInternal();
-            	if (rubyProject == null) {
-            		//Lagutko, 29.11.2009, if there are no Ruby Project for Spreadsheeet
-            		//than we should search for it in parent Spreadsheet
-            		rubyProject = element.getParentSpreadsheet().getRubyProjectInternal();
-            	}
-                RDTProjectManager.openSpreadsheet(element.getSpreadsheetPath(), rubyProject.getName());
-            }
-        }
-    }
-
-    /**
      * Opens a {@link IProjectElement} for editing/viewing.  
      *
      * @param obj object to open
@@ -582,11 +560,6 @@ public class ApplicationGIS {
         	//Lagutko: when we open RubyEditor it's need to be in the same thread as Plugin
         	//so we can't run this as Command, because Command runs in other thread
         	openRuby((RubyFileImpl)obj);
-        	return;
-        }
-        else if (obj instanceof ISpreadsheet){
-        	//Lagutko, 29.06.2009, same situation for Spreadsheet
-        	openSpreadsheet((Spreadsheet)obj);
         	return;
         }
         if( wait)

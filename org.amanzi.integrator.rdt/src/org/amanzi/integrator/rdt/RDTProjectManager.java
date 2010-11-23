@@ -12,22 +12,15 @@
  */
 package org.amanzi.integrator.rdt;
 
-import java.net.URL;
-
 import org.amanzi.neo.services.AweProjectService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.nodes.AweProjectNode;
 import org.amanzi.neo.services.nodes.RubyProjectNode;
-import org.amanzi.neo.services.nodes.SpreadsheetNode;
 import org.amanzi.rdt.launching.util.LaunchUtils;
-import org.amanzi.splash.ui.SplashEditorInput;
-import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.RenameResourceAction;
@@ -35,17 +28,11 @@ import org.rubypeople.rdt.core.IRubyElement;
 import org.rubypeople.rdt.core.IRubyModel;
 import org.rubypeople.rdt.core.IRubyProject;
 import org.rubypeople.rdt.core.IRubyScript;
-import org.rubypeople.rdt.core.ISourceFolder;
 import org.rubypeople.rdt.core.RubyModelException;
 import org.rubypeople.rdt.internal.core.ExternalSourceFolder;
 import org.rubypeople.rdt.internal.core.ExternalSourceFolderRoot;
 import org.rubypeople.rdt.internal.core.RubyElement;
-import org.rubypeople.rdt.internal.core.RubyElementDelta;
-import org.rubypeople.rdt.internal.core.RubyModel;
 import org.rubypeople.rdt.internal.core.RubyModelManager;
-import org.rubypeople.rdt.internal.core.SourceFolder;
-import org.rubypeople.rdt.internal.core.Spreadsheet;
-import org.rubypeople.rdt.internal.corext.util.RubyModelUtil;
 import org.rubypeople.rdt.internal.ui.RubyPlugin;
 import org.rubypeople.rdt.internal.ui.rubyeditor.EditorUtility;
 import org.rubypeople.rdt.ui.actions.RenameElementAction;
@@ -220,46 +207,6 @@ public class RDTProjectManager {
 	}
 
 	/**
-	 * Opens Neo4j-based Spreadsheet in Editor
-	 * 
-	 * @param spreadsheetURL
-	 *            URL of Neo4j Spreadsheet
-	 */
-
-	public static void openSpreadsheet(URL spreadsheetURL, String rubyProjectName) {
-		NeoSplashUtil.openSpreadsheet(PlatformUI.getWorkbench(), spreadsheetURL, rubyProjectName);
-	}
-
-	/**
-	 * Deletes the Spreadsheet from Ruby Project Tree and Database
-	 * 
-	 * @param aweProjectName
-	 *            name of AWE Project that contain Spreadsheet
-	 * @param rubyProjectName
-	 *            name of Ruby Project that contain Spreadsheet
-	 * @param spreadsheetName
-	 *            name of Spreadsheet
-	 */
-	public static void deleteSpreadsheet(String aweProjectName, String rubyProjectName, String spreadsheetName) {
-	    IRubyProject parent = RubyModelManager.getRubyModelManager().getRubyModel().getRubyProject(rubyProjectName);
-	    
-	    RubyModel model = RubyModelManager.getRubyModelManager().getRubyModel();
-	    RubyElementDelta delta = new RubyElementDelta(model);
-	    ISourceFolder folder = RubyModelUtil.getSourceFolder(parent);
-	    delta.removed(new Spreadsheet((SourceFolder)folder, spreadsheetName));
-	    RubyModelManager.getRubyModelManager().getDeltaProcessor().fire(delta, 0);
-	    
-	    AweProjectService service = NeoServiceFactory.getInstance().getProjectService();	   
-        SpreadsheetNode node = service.findOrCreateSpreadsheet(aweProjectName, rubyProjectName, spreadsheetName);
-        
-        IEditorReference[] editors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findEditors(new SplashEditorInput(node), NeoSplashUtil.AMANZI_SPLASH_EDITOR, IWorkbenchPage.MATCH_INPUT);
-        if (editors != null) {            
-            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().closeEditors(editors, false);
-        }
-        service.deleteNode(node);
-	}
-	
-	/**
 	 * Calls action for renaming script
 	 *
 	 * @param rubyProjectName Ruby Project of script for Renaming
@@ -324,56 +271,6 @@ public class RDTProjectManager {
 	        RenameElementAction action = new RenameElementAction(PlatformUI.getWorkbench().getDisplay().getActiveShell(), newRubyProjectName);
 	        action.selectionChanged(new StructuredSelection(project));	    
 	        action.run();
-	    }
-	}
-	
-	/**
-	 * Runs Delta Report for Spreadsheet 
-	 * 
-	 * @param aweProjectName Awe Project that contains Spreadsheets
-	 * @param rubyProjectName Ruby Project that contains Spreadsheets
-	 * @param firstSpreadsheetName name of first Spreadsheet
-	 * @param secondSpreadsheetName name of second Spreadsheet
-	 * @param firstSpreadsheetParent name of parent of first Spreadsheet (can be null)
-	 * @param secondSpreadsheetParent name of parent of second Spreadsheet (can be null)
-	 */
-	public static void compareSpreadsheets(String aweProjectName, String rubyProjectName, String firstSpreadsheetName, String secondSpreadsheetName, String firstSpreadsheetParent, String secondSpreadsheetParent) {
-	    IRubyProject project = RubyModelManager.getRubyModelManager().getRubyModel().getRubyProject(rubyProjectName);
-	    
-	    AweProjectService aweService = NeoServiceFactory.getInstance().getProjectService();
-	    
-	    AweProjectNode aweProject = aweService.findAweProject(aweProjectName);
-	    RubyProjectNode rubyProject = aweService.findRubyProject(aweProject, rubyProjectName);
-	    
-	    SpreadsheetNode firstSpreadsheet = findSpreadsheet(rubyProject, firstSpreadsheetName, firstSpreadsheetParent);
-	    SpreadsheetNode secondSpreadsheet = findSpreadsheet(rubyProject, secondSpreadsheetName, secondSpreadsheetParent);
-	    
-	    if ((firstSpreadsheet != null) && (secondSpreadsheet != null)) {
-	        NeoSplashUtil.compareSpreadsheets(project.getProject(), firstSpreadsheet, secondSpreadsheet);
-	    }
-	}
-	
-	/**
-	 * Returns a SpreadsheetNode
-	 *
-	 * @param rubyProject name of Ruby Project that contains spreadsheet
-	 * @param spreadsheetName name of Spreadsheet
-	 * @param parentSpreadsheetName name of Parent Spreadsheet
-	 * @return spreadsheet by given name
-	 */
-	private static SpreadsheetNode findSpreadsheet(RubyProjectNode rubyProject, String spreadsheetName, String parentSpreadsheetName) {
-	    AweProjectService aweService = NeoServiceFactory.getInstance().getProjectService();
-	    
-	    SpreadsheetNode spreadsheet = null;
-	    if (parentSpreadsheetName != null) {
-	        spreadsheet = aweService.findSpreadsheet(rubyProject, parentSpreadsheetName);
-	    }
-	    
-	    if (spreadsheet == null) {
-	        return aweService.findSpreadsheet(rubyProject, spreadsheetName);
-	    }
-	    else {
-	        return aweService.findSpreadsheet(spreadsheet, spreadsheetName);
 	    }
 	}
 }
