@@ -65,7 +65,6 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.Traverser;
 
 /**
  * <p>
@@ -269,15 +268,8 @@ public class CorrelateDialog extends Dialog implements IPropertyChangeListener {
 
     private TableElem[] getCorrelatedElements(Node networkNode) {
         corelatedNodes.clear();
-        Transaction tx = service.beginTx();
-        try{
-            Traverser traverse = NeoUtils.getAllCorrelatedDatasets(networkNode, service);
-            for (Node dataset:traverse){
-                corelatedNodes.add(dataset);
-            }
-        }finally{
-            tx.finish();
-        }
+        corelatedNodes.addAll(NeoServiceFactory.getInstance().getCorrelationService().getCorrelationModel(networkNode).getDatasets());
+
         List<TableElem>elem=new ArrayList<TableElem>();
         for (Node node:corelatedNodes){
             elem.add(new TableElem(node, service));

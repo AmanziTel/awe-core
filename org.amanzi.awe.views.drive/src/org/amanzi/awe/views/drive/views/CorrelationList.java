@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.GisTypes;
@@ -247,9 +248,8 @@ public class CorrelationList extends ViewPart implements INeoServiceProviderList
         table.getControl().setVisible(false);
 
         Node curNetworkNode = gisNetworkNodes.get(cNetwork.getText());
-        Traverser datasetsTraverser = NeoUtils.getAllCorrelatedDatasets(curNetworkNode, graphDatabaseService);
 
-        for (Node dataset : datasetsTraverser) {
+        for (Node dataset : NeoServiceFactory.getInstance().getCorrelationService().getCorrelationModel(curNetworkNode).getDatasets()) {
             Object type = dataset.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").toString();
             if (NeoUtils.isGisNode(dataset)) {
                 String id = NeoUtils.getSimpleNodeName(dataset, null);

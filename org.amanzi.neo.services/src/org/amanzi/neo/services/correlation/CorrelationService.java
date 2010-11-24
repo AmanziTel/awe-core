@@ -37,6 +37,7 @@ import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.index.lucene.LuceneIndexService;
 
@@ -163,7 +164,7 @@ public class CorrelationService extends AbstractService {
             for (Node dataNode : model.getDatasets()) {
                 dataNode.createRelationshipTo(rootCorrelationNode, CorrelationRelationshipTypes.CORRELATED);
             }
-            int counter = 0;
+            int sectorCounter = 0;
             String networkName = Utils.getNodeName(networkNode, databaseService);
             for (Node sector : getNetworkIterator(networkNode)) {
                 Node correlationNode = null;
@@ -171,6 +172,8 @@ public class CorrelationService extends AbstractService {
                 HashMap<SectorIdentificationType, String> searchValues = new HashMap<SectorIdentificationType, String>();
 
                 for (Node driveNode : model.getDatasets()) {
+                    // int driveCounter = 0;
+                    // driveCounter++;
                     SectorIdentificationType searchType = SectorIdentificationType.valueOf((String)driveNode.getProperty(INeoConstants.SECTOR_ID_TYPE));
                     String sectorId = searchValues.get(searchType);
                     if (sectorId == null) {
@@ -193,16 +196,17 @@ public class CorrelationService extends AbstractService {
                     while (nodes.hasNext()) {
                         correlateNodes(sector, correlationNode, nodes.next(), Utils.getNodeName(driveNode, databaseService), networkName);
                     }
+                    // correlationNode.setProperty(INeoConstants.COUNT_TYPE_NAME, driveCounter);
 
                 }
 
-                counter++;
-                if (counter % 5000 == 0) {
+                sectorCounter++;
+                if (sectorCounter % 5000 == 0) {
                     tx.success();
                     tx.finish();
 
                     tx = databaseService.beginTx();
-                    counter = 0;
+                    sectorCounter = 0;
                 }
 
             }
@@ -216,6 +220,28 @@ public class CorrelationService extends AbstractService {
             tx.finish();
         }
 
+    }
+
+    public void addSingleCorrelation(Node networkNode, Node datasetNode) {
+        CorrelationModel correlationModel = getCorrelationModel(networkNode);
+        if (correlationModel.getDatasets().contains(datasetNode))
+            return;
+        correlationModel.getDatasets().add(datasetNode);
+        runCorrelation(correlationModel);
+    }
+
+    /**
+     * Removes the single correlation.
+     * 
+     * @param networkNode the network node
+     * @param datasetNode the dataset node
+     */
+    public void removeSingleCorrelation(Node networkNode, Node datasetNode) {
+        CorrelationModel correlationModel = getCorrelationModel(networkNode);
+        if (!correlationModel.getDatasets().contains(datasetNode))
+            return;
+        correlationModel.getDatasets().remove(datasetNode);
+        runCorrelation(correlationModel);
     }
 
     /**
@@ -331,4 +357,32 @@ public class CorrelationService extends AbstractService {
         }
     }
 
+    public CorrelationModel getCorrelationModel(Node networkNode) {
+        Transaction tx = databaseService.beginTx();
+
+        try {
+            Traverser traverser = networkNode.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
+                @Override
+                public boolean isStopNode(TraversalPosition currentPosition) {
+                    return currentPosition.depth() >= 2;
+                }
+            }, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition currentPos) {
+                    return currentPos.notStartNode() && currentPos.lastRelationshipTraversed().isType(CorrelationRelationshipTypes.CORRELATED);
+
+                }
+            }, CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING, CorrelationRelationshipTypes.CORRELATED, Direction.INCOMING);
+            Set<Node> correlatedDatasets = new HashSet<Node>();
+            for (Node dataset : traverser) {
+                correlatedDatasets.add(dataset);
+            }
+            return new CorrelationModel(networkNode, correlatedDatasets);
+        } finally {
+            tx.success();
+            tx.finish();
+        }
+
+    }
 }

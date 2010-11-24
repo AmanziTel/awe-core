@@ -29,6 +29,9 @@ import net.refractions.udig.project.ui.ApplicationGIS;
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.views.drive.DriveInquirerPlugin;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.correlation.CorrelationModel;
+import org.amanzi.neo.services.correlation.CorrelationService;
 import org.amanzi.neo.services.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.GisTypes;
@@ -42,7 +45,6 @@ import org.amanzi.neo.services.utils.Pair;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
@@ -69,6 +71,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Table;
@@ -86,7 +89,6 @@ import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 
-
 /**
  * <p>
  * Correlation Manager between Drive and Network
@@ -96,7 +98,8 @@ import org.neo4j.graphdb.Traverser.Order;
  * @since 1.0.0
  */
 public class CorrelationManager extends ViewPart implements INeoServiceProviderListener {
-    //TODO ZNN need main solution for using class NeoServiceProviderListener instead of interface INeoServiceProviderListener  
+    // TODO ZNN need main solution for using class NeoServiceProviderListener instead of interface
+    // INeoServiceProviderListener
 
     /**
      * The ID of the view as specified by the extension.
@@ -234,7 +237,6 @@ public class CorrelationManager extends ViewPart implements INeoServiceProviderL
         getSite().registerContextMenu(menuMgr, table);
     }
 
-
     /**
      * fills context menu
      * 
@@ -263,15 +265,32 @@ public class CorrelationManager extends ViewPart implements INeoServiceProviderL
      */
     protected void removeCorrelation(final RowWrapper wrapper) {
         Transaction tx = graphDatabaseService.beginTx();
+        final Control tableControl = table.getControl();
+        final Button button = bCorrelate;
+        button.setEnabled(false);
+        tableControl.setEnabled(false);
         try {
 
             Job removeCorrelationJob = new Job("Remove correlation") {
 
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
-                    managerRemoveNetworkDriveCorrelation(monitor, wrapper);
-                    updateDriveLayer(wrapper.getNetworkNode(), wrapper.getDriveNode());
-                    return Status.OK_STATUS;
+                    try {
+                        NeoServiceFactory.getInstance().getCorrelationService().removeSingleCorrelation(wrapper.getNetworkNode(), wrapper.getDriveNode());
+                        // managerRemoveNetworkDriveCorrelation(monitor, wrapper);
+                        updateInputFromDisplay();
+                        updateDriveLayer(wrapper.getNetworkNode(), wrapper.getDriveNode());
+                        return Status.OK_STATUS;
+                    } finally {
+                        ActionUtil.getInstance().runTask(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                button.setEnabled(true);
+                                tableControl.setEnabled(true);
+                            }
+                        }, true);
+                    }
                 }
             };
             removeCorrelationJob.schedule();
@@ -323,16 +342,32 @@ public class CorrelationManager extends ViewPart implements INeoServiceProviderL
         if (networkGis == null || driveGis == null) {
             return;
         }
-        Job correlateJob = new Job("correlate") {
+        final Control viev = table.getControl();
+        viev.setEnabled(false);
+        final Button button = bCorrelate;
+        button.setEnabled(false);
+        Job correlateJob = new Job("Correlation") {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                SubMonitor monitor2 = SubMonitor.convert(monitor, 100);
-                setNetworkDriveCorrelation(monitor2, networkGis, driveGis);
-                updateInputFromDisplay();
-                updateDriveLayer(networkGis, driveGis);
-                
-                return Status.OK_STATUS;
+                try {
+                    // SubMonitor monitor2 = SubMonitor.convert(monitor, 100);
+                    NeoServiceFactory.getInstance().getCorrelationService().addSingleCorrelation(networkGis, driveGis);
+                    // setNetworkDriveCorrelation(monitor2, networkGis, driveGis);
+                    updateInputFromDisplay();
+                    updateDriveLayer(networkGis, driveGis);
+
+                    return Status.OK_STATUS;
+                } finally {
+                    ActionUtil.getInstance().runTask(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            viev.setEnabled(true);
+                            button.setEnabled(true);
+                        }
+                    }, true);
+                }
             }
 
         };
@@ -356,8 +391,7 @@ public class CorrelationManager extends ViewPart implements INeoServiceProviderL
         long totalTime = minMax.getRight() - minMax.getLeft();
         int prevPerc = 0;
         try {
-            for (Relationship relation : networkGis.getRelationships(CorrelationRelationshipTypes.LINKED_NETWORK_DRIVE,
-                    Direction.OUTGOING)) {
+            for (Relationship relation : networkGis.getRelationships(CorrelationRelationshipTypes.LINKED_NETWORK_DRIVE, Direction.OUTGOING)) {
                 if (relation.getOtherNode(networkGis).equals(driveGis)) {
                     return;
                 }
@@ -366,18 +400,21 @@ public class CorrelationManager extends ViewPart implements INeoServiceProviderL
             Traverser traverse = driveGis
                     .traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
 
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    Node node = currentPos.currentNode();
-                    return node.hasProperty(INeoConstants.SECTOR_ID_PROPERTIES)/*&&NeoUtils.isDrivePointNode(node)*/;
-                }
+                        @Override
+                        public boolean isReturnableNode(TraversalPosition currentPos) {
+                            Node node = currentPos.currentNode();
+                            return node.hasProperty(INeoConstants.SECTOR_ID_PROPERTIES)/*
+                                                                                        * &&NeoUtils.
+                                                                                        * isDrivePointNode
+                                                                                        * (node)
+                                                                                        */;
+                        }
                     }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.LOCATION,
                             Direction.OUTGOING);
             Node sectorDriveRoot = NeoUtils.findOrCreateSectorDriveRoot(driveGis, graphDatabaseService, false);
             int count = 0;
             for (Node node : traverse) {
-                Node sectorDrive = NeoUtils.findOrCreateSectorDrive(NeoUtils.getSimpleNodeName(driveGis, null), sectorDriveRoot,
-                        node, graphDatabaseService, false);
+                Node sectorDrive = NeoUtils.findOrCreateSectorDrive(NeoUtils.getSimpleNodeName(driveGis, null), sectorDriveRoot, node, graphDatabaseService, false);
                 if (sectorDrive != null) {
                     NeoUtils.linkWithSector(networkGis, sectorDrive, null);
                 }
@@ -428,10 +465,11 @@ public class CorrelationManager extends ViewPart implements INeoServiceProviderL
                 Object type = node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").toString();
                 if (NeoUtils.isGisNode(node)) {
                     String id = NeoUtils.getSimpleNodeName(node, null);
+                    Node dataNode = node.getSingleRelationship(NetworkRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode();
                     if (type.equals(GisTypes.DRIVE.getHeader())) {
-                        gisDriveNodes.put(id, node);
+                        gisDriveNodes.put(id, dataNode);
                     } else if (type.equals(GisTypes.NETWORK.getHeader())) {
-                        gisNetworkNodes.put(id, node);
+                        gisNetworkNodes.put(id, dataNode);
                     }
                 }
             }
@@ -501,7 +539,6 @@ public class CorrelationManager extends ViewPart implements INeoServiceProviderL
     private class TableLabelProvider extends LabelProvider implements ITableLabelProvider {
         private final Image delete = IconManager.getIconManager().getNeoImage("DELETE_ENABLED");
         private final ArrayList<TableColumn> columns = new ArrayList<TableColumn>();
-
 
         /**
          *create column table
@@ -575,7 +612,7 @@ public class CorrelationManager extends ViewPart implements INeoServiceProviderL
 
         @Override
         public Image getColumnImage(Object element, int columnIndex) {
-           
+
             return columnIndex == DEL_IND ? delete : null;
         }
 
@@ -609,13 +646,23 @@ public class CorrelationManager extends ViewPart implements INeoServiceProviderL
             if (newInput == null) {
                 return;
             }
-            Traverser linkedNetworkTraverser = NeoUtils.getLinkedNetworkTraverser(graphDatabaseService);
-            for (Node node : linkedNetworkTraverser) {
-                for (Relationship relation : node.getRelationships(CorrelationRelationshipTypes.LINKED_NETWORK_DRIVE,
-                        Direction.OUTGOING)) {
-                    elements.add(new RowWrapper(node, relation));
+            CorrelationService service = NeoServiceFactory.getInstance().getCorrelationService();
+            for (Node network : gisNetworkNodes.values()) {
+                CorrelationModel model = service.getCorrelationModel(network);
+                for (Node dataset : model.getDatasets()) {
+                    elements.add(new RowWrapper(network, dataset));
                 }
             }
+
+            // Traverser linkedNetworkTraverser =
+            // NeoUtils.getLinkedNetworkTraverser(graphDatabaseService);
+            // for (Node node : linkedNetworkTraverser) {
+            // for (Relationship relation :
+            // node.getRelationships(CorrelationRelationshipTypes.LINKED_NETWORK_DRIVE,
+            // Direction.OUTGOING)) {
+            // elements.add(new RowWrapper(node, relation));
+            // }
+            // }
         }
     }
 
@@ -629,10 +676,10 @@ public class CorrelationManager extends ViewPart implements INeoServiceProviderL
      */
     private class RowWrapper {
 
-        private String networkName;        
+        private String networkName;
         private final Node driveNode;
         private String driveName;
-        private final Relationship relation;
+        private Relationship relation;
         private final Node networkNode;
         private Long startTime;
         private Long endTime;
@@ -656,13 +703,26 @@ public class CorrelationManager extends ViewPart implements INeoServiceProviderL
                 networkName = NeoUtils.getSimpleNodeName(node, "");
                 driveNode = relation.getOtherNode(node);
                 driveName = NeoUtils.getSimpleNodeName(driveNode, "");
-                startTime = (Long)relation.getProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, null);
-                endTime = (Long)relation.getProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE, null);
+                // startTime = (Long)relation.getProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE,
+                // null);
+                // endTime = (Long)relation.getProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE,
+                // null);
                 count = (Integer)relation.getProperty(INeoConstants.COUNT_TYPE_NAME, 0);
 
             } finally {
                 tx.finish();
             }
+        }
+
+        /**
+         * @param network
+         * @param dataset
+         */
+        public RowWrapper(Node network, Node dataset) {
+            networkNode = network;
+            networkName = NeoUtils.getSimpleNodeName(networkNode, "");
+            driveNode = dataset;
+            driveName = NeoUtils.getSimpleNodeName(driveNode, "");
         }
 
         /**
@@ -706,7 +766,7 @@ public class CorrelationManager extends ViewPart implements INeoServiceProviderL
         public int getCount() {
             return count;
         }
-        
+
         public String getFormatTime() {
             if (startTime == null || endTime == null) {
                 return NO_TIME;
@@ -760,6 +820,7 @@ public class CorrelationManager extends ViewPart implements INeoServiceProviderL
             }
         }
     }
+
     @Override
     public void onNeoStop(Object source) {
         graphDatabaseService = null;
