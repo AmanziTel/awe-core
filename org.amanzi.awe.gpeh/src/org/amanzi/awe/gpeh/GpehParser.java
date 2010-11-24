@@ -114,7 +114,7 @@ public class GpehParser extends CommonFilesParser<GpehTransferData, CommonConfig
         cl.set(Calendar.MONTH, timeWrapper.getMonth());
         cl.set(Calendar.DAY_OF_MONTH, timeWrapper.getDay());
         long timestamp = cl.getTimeInMillis();
-        InputStream inputStream=null;
+        InputStream inputStream = null;
         try {
             inputStream = new FileInputStream(element.getFile());
             long fileSize = element.getFile().length();
@@ -129,36 +129,40 @@ public class GpehParser extends CommonFilesParser<GpehTransferData, CommonConfig
                 try {
                     int recordLen = bitStream.readRawUInt(16) - 3;
                     int recordType = bitStream.readRawUInt(8);
-                    if (recordType == 4) {
-                        GPEHEvent result = new GPEHEvent();
-                        if (recordType == 4) {
-                            org.amanzi.awe.gpeh.parser.internal.GPEHParser.parseEvent(bitStream, result, recordLen, possibleIds, timeWrapper);
-                            if (result.getEvent() != null) {
-                                GpehTransferData data = new GpehTransferData();
-                                data.put(GpehTransferData.EVENT, result.getEvent());
-                                data.put(GpehTransferData.TIMESTAMP, timestamp);
-                                for (Map.Entry<Parameters, Object> entry : result.getEvent().getProperties().entrySet()) {
-                                    data.put(entry.getKey().name(), entry.getValue());
-                                }
-                                getSaver().save(data);
+
+                    GPEHEvent result = new GPEHEvent();
+                    switch (recordType) {
+                    case 4:
+                        org.amanzi.awe.gpeh.parser.internal.GPEHParser.parseEvent(bitStream, result, recordLen, possibleIds,
+                                timeWrapper);
+                        if (result.getEvent() != null) {
+                            GpehTransferData data = new GpehTransferData();
+                            data.put(GpehTransferData.EVENT, result.getEvent());
+                            data.put(GpehTransferData.TIMESTAMP, timestamp);
+                            for (Map.Entry<Parameters, Object> entry : result.getEvent().getProperties().entrySet()) {
+                                data.put(entry.getKey().name(), entry.getValue());
                             }
-                        } else if (recordType == 7) {
-                            org.amanzi.awe.gpeh.parser.internal.GPEHParser.pareseFooter(bitStream, result);
-                        } else if (recordType == 6) {
-                            org.amanzi.awe.gpeh.parser.internal.GPEHParser.pareseError(bitStream, result);
-                        } else {
-                            // wrong file format!
-                            throw new IllegalArgumentException();
+                            getSaver().save(data);
                         }
-                        int processedSize = bitStream.getTotalBytesRead();
-                        double persentage = (double)processedSize / fileSize;
-                        if (persentage - persentageOld > PERCENTAGE_FIRE) {
-                            persentageOld = persentage;
-                            if (fireSubProgressEvent(element, new ProgressEventImpl(String.format(getDescriptionFormat(), element.getFile().getName()), persentage))) {
-                                return true;
-                            }
+                        break;
+                    case 7:
+//                        org.amanzi.awe.gpeh.parser.internal.GPEHParser.pareseFooter(bitStream, result);
+                    case 6: 
+//                        org.amanzi.awe.gpeh.parser.internal.GPEHParser.pareseError(bitStream, result);
+                    default:
+                        // wrong file format!
+                        throw new IllegalArgumentException();
+                    }
+                    int processedSize = bitStream.getTotalBytesRead();
+                    double persentage = (double)processedSize / fileSize;
+                    if (persentage - persentageOld > PERCENTAGE_FIRE) {
+                        persentageOld = persentage;
+                        if (fireSubProgressEvent(element, new ProgressEventImpl(String.format(getDescriptionFormat(), element
+                                .getFile().getName()), persentage))) {
+                            return true;
                         }
                     }
+
                 } catch (IOException e) {
                     return false;
                 }
@@ -167,20 +171,19 @@ public class GpehParser extends CommonFilesParser<GpehTransferData, CommonConfig
         } catch (IOException e) {
             // TODO: handle
             e.printStackTrace();
-        }finally{
+        } finally {
             closeStream(inputStream);
         }
         return false;
     }
 
- 
     /**
      * Close stream.
-     *
+     * 
      * @param inputStream the input stream
      */
     protected void closeStream(Closeable inputStream) {
-        if (inputStream!=null){
+        if (inputStream != null) {
             try {
                 inputStream.close();
             } catch (IOException e) {

@@ -303,17 +303,17 @@ public class GPEHParser {
         event.id = (Integer)readParameter(input, Parameters.EVENT_PARAM_EVENT_ID).getLeft();
 
         final int recLen = recordLen << 3;
-        int len = 24 + 5 + 6 + 6 + 11 + 11;
+        int len = 63; //24 + 5 + 6 + 6 + 11 + 11;
         
         if (!possibleIds.contains(event.id)) {
             // LOGGER.debug("EventID = " + event.id + " skipped");
             input.skipBitsNoCRC(recLen - len);
             return recordLen;
         }
-        if (!timeWrapper.checkDate(event.hour, event.minute, event.second, event.millisecond)) {
-            input.skipBitsNoCRC(recLen - len);
-            return recordLen;
-        }        
+//        if (!timeWrapper.checkDate(event.hour, event.minute, event.second, event.millisecond)) {
+//            input.skipBitsNoCRC(recLen - len);
+//            return recordLen;
+//        }        
         // LOGGER.debug("EventID = " + event.id + " passed");
         Events events = eventMap.get(event.id);
         
