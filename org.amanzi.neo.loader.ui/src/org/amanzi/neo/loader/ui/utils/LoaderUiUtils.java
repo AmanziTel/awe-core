@@ -20,11 +20,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -55,20 +53,9 @@ import org.amanzi.neo.services.utils.Pair;
 import org.amanzi.neo.services.utils.RunnableWithResult;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.hsqldb.lib.StringUtil;
 import org.neo4j.graphdb.Direction;
@@ -285,76 +272,7 @@ public class LoaderUiUtils extends LoaderUtils{
         }, true);
     }
     
-    public static boolean confirmAddAmsToMap(final IMap map, final String fileName) {
-        final IPreferenceStore preferenceStore = NeoLoaderPlugin.getDefault().getPreferenceStore();
-        return (Integer)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<Integer>() {
-            int result;
-    
-            @Override
-            public void run() {
-               String message = String.format(NeoLoaderPluginMessages.ADD_LAYER_MESSAGE, fileName, map.getName());
-                if (map == ApplicationGIS.NO_MAP) {
-                    message = String.format(NeoLoaderPluginMessages.ADD_NEW_MAP_MESSAGE, fileName);
-                }
-                AmsMessageDialog dialog = AmsMessageDialog.openYesNoQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-                                                                             NeoLoaderPluginMessages.ADD_LAYER_TITLE, message, preferenceStore);
-                result = dialog.getReturnCode();
-                if (result == IDialogConstants.OK_ID) {
-                    preferenceStore.putValue(DataLoadPreferences.ZOOM_TO_LAYER, String.valueOf(dialog.getToggleState(DataLoadPreferences.ZOOM_TO_LAYER)));
-                    preferenceStore.putValue(DataLoadPreferences.ADD_AMS_PROBES_TO_MAP, String.valueOf(dialog.getToggleState(DataLoadPreferences.ADD_AMS_PROBES_TO_MAP)));
-                    preferenceStore.putValue(DataLoadPreferences.ADD_AMS_EVENTS_TO_MAP, String.valueOf(dialog.getToggleState(DataLoadPreferences.ADD_AMS_EVENTS_TO_MAP)));
-                    preferenceStore.putValue(DataLoadPreferences.ADD_AMS_CALLS_TO_MAP, String.valueOf(dialog.getToggleState(DataLoadPreferences.ADD_AMS_CALLS_TO_MAP)));
-                }
-            }
-    
-            @Override
-            public Integer getValue() {
-                return result;
-            }
-        }) == IDialogConstants.OK_ID;
-    }
-    
-    public static void addAmsGisNodesToMap(String dataName, Node probeGis,Node eventsGis, Node callGis) {
-        try {
-            IService curService = getMapService();
-            IMap map = ApplicationGIS.getActiveMap();
-            if(confirmAddAmsToMap(map, dataName)){
-                List<ILayer> layerList = new ArrayList<ILayer>();
-                List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
-                IPreferenceStore preferenceStore = NeoLoaderPlugin.getDefault().getPreferenceStore();
-                if (preferenceStore.getBoolean(DataLoadPreferences.ADD_AMS_PROBES_TO_MAP)) {
-                    map = ApplicationGIS.getActiveMap();
-                    IGeoResource iGeoResource = getResourceForGis(curService, map, probeGis);
-                    if (iGeoResource!=null){
-                        listGeoRes.add(iGeoResource);
-                    }
-                }
-                if (preferenceStore.getBoolean(DataLoadPreferences.ADD_AMS_EVENTS_TO_MAP)) {
-                    map = ApplicationGIS.getActiveMap();
-                    IGeoResource iGeoResource = getResourceForGis(curService, map, eventsGis);
-                    if (iGeoResource!=null){
-                        listGeoRes.add(iGeoResource);
-                    }
-                }
-                if (preferenceStore.getBoolean(DataLoadPreferences.ADD_AMS_CALLS_TO_MAP)) {
-                    map = ApplicationGIS.getActiveMap();
-                    IGeoResource iGeoResource = getResourceForGis(curService, map, callGis);
-                    if (iGeoResource!=null){
-                        listGeoRes.add(iGeoResource);
-                    }
-                }
-                layerList.addAll(ApplicationGIS.addLayersToMap(map, listGeoRes, 0));
-                if (preferenceStore.getBoolean(DataLoadPreferences.ZOOM_TO_LAYER)) {
-                    LoaderUiUtils.zoomToLayer(layerList);
-                }
-            }
-        } catch (Exception e) {
-            NeoLoaderPlugin.exception(e);
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        }
-        
-    }
-    
+  
     public static IGeoResource getResourceForGis(IService service, IMap map, Node gis) throws IOException{
         if (service != null && findLayerByNode(map, gis) == null) {
             for (IGeoResource iGeoResource : service.resources(null)) {
@@ -504,91 +422,6 @@ public class LoaderUiUtils extends LoaderUtils{
         }
         String value = st.length() < 1 ? "" : st.substring(DataLoadPreferences.CRS_DELIMETERS.length());
         NeoLoaderPlugin.getDefault().getPreferenceStore().setValue(DataLoadPreferences.SELECTED_DATA, value);
-    }
-    
-    private static class AmsMessageDialog extends MessageDialog{
-        
-        private Map<String, Boolean> toggles;
-        private Map<String, String> messages;
-        private IPreferenceStore prefStore = null;
-
-        /**
-         * Constructor.
-         * @param parentShell
-         * @param dialogTitle
-         * @param dialogTitleImage
-         * @param dialogMessage
-         * @param dialogImageType
-         * @param dialogButtonLabels
-         * @param defaultIndex
-         */
-        public AmsMessageDialog(Shell parentShell, String dialogTitle, Image dialogTitleImage, String dialogMessage,
-                int dialogImageType, String[] dialogButtonLabels, int defaultIndex, IPreferenceStore store) {
-            super(parentShell, dialogTitle, dialogTitleImage, dialogMessage, dialogImageType, dialogButtonLabels, defaultIndex);
-            prefStore = store;
-            toggles = new HashMap<String, Boolean>();
-            messages = new HashMap<String, String>();
-            toggles.put(DataLoadPreferences.ADD_AMS_PROBES_TO_MAP, prefStore.getBoolean(DataLoadPreferences.ADD_AMS_PROBES_TO_MAP));
-            messages.put(DataLoadPreferences.ADD_AMS_PROBES_TO_MAP, NeoLoaderPluginMessages.TOGLE_MESSAGE_ADD_PROBE);
-            
-            toggles.put(DataLoadPreferences.ADD_AMS_CALLS_TO_MAP, prefStore.getBoolean(DataLoadPreferences.ADD_AMS_CALLS_TO_MAP));
-            messages.put(DataLoadPreferences.ADD_AMS_CALLS_TO_MAP, NeoLoaderPluginMessages.TOGLE_MESSAGE_ADD_CALLS);
-            
-            toggles.put(DataLoadPreferences.ADD_AMS_EVENTS_TO_MAP, prefStore.getBoolean(DataLoadPreferences.ADD_AMS_EVENTS_TO_MAP));
-            messages.put(DataLoadPreferences.ADD_AMS_EVENTS_TO_MAP, NeoLoaderPluginMessages.TOGLE_MESSAGE_ADD_EVENTS);
-            
-            toggles.put(DataLoadPreferences.ZOOM_TO_LAYER, prefStore.getBoolean(DataLoadPreferences.ZOOM_TO_LAYER));
-            messages.put(DataLoadPreferences.ZOOM_TO_LAYER, NeoLoaderPluginMessages.TOGLE_MESSAGE);
-        }
-        
-        public static AmsMessageDialog openYesNoQuestion(Shell parent,
-                String title, String message, IPreferenceStore store) {
-            AmsMessageDialog dialog = new AmsMessageDialog(parent,
-                    title, null, message, QUESTION, new String[] { IDialogConstants.YES_LABEL,
-                            IDialogConstants.NO_LABEL }, 0, store);
-            dialog.prefStore = store;            
-            dialog.open();
-            return dialog;
-        }
-        
-        protected Control createDialogArea(Composite parent) {
-            Composite dialogArea = (Composite) super.createDialogArea(parent);
-            addToggleButton(dialogArea, DataLoadPreferences.ADD_AMS_PROBES_TO_MAP);
-            addToggleButton(dialogArea, DataLoadPreferences.ADD_AMS_CALLS_TO_MAP);
-            addToggleButton(dialogArea, DataLoadPreferences.ADD_AMS_EVENTS_TO_MAP);
-            GridData data = new GridData(SWT.NONE);
-            data.horizontalSpan = 2;
-            Label empty = new Label(dialogArea, SWT.NONE);
-            empty.setLayoutData(data);
-            addToggleButton(dialogArea, DataLoadPreferences.ZOOM_TO_LAYER);
-            return dialogArea;
-        }
-        
-        protected void addToggleButton(Composite parent,final String key) {
-            final Button button = new Button(parent, SWT.CHECK | SWT.LEFT);
-
-            GridData data = new GridData(SWT.NONE);
-            data.horizontalSpan = 2;
-            button.setLayoutData(data);
-            button.setFont(parent.getFont());
-
-            button.addSelectionListener(new SelectionAdapter() {
-
-                public void widgetSelected(SelectionEvent e) {
-                    toggles.put(key, button.getSelection());
-                }
-
-            });
-            
-            button.setText(messages.get(key));
-            button.setSelection(toggles.get(key));
-
-        }
-        
-        public boolean getToggleState(String key){
-            return toggles.get(key);
-        }
-        
     }
     
 }

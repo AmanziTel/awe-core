@@ -46,11 +46,6 @@
        </command>     
        <command
              categoryId="org.amanzi.neo.loader.commands.category"
-             id="org.amanzi.neo.loader.commands.LoadAMS"
-             name="Load Probe Data">
-       </command>   
-       <command
-             categoryId="org.amanzi.neo.loader.commands.category"
              id="org.amanzi.neo.loader.commands.LoadGPEHHandler"
              name="Load OSS Data">
                        <commandParameter id="org.amanzi.neo.loader.commands.addtoselect" name="add to select" optional="true">
@@ -86,10 +81,6 @@
        <handler
              class="org.amanzi.neo.loader.handlers.LoadTransmissionHandler"
              commandId="org.amanzi.neo.loader.commands.LoadTransmission">
-       </handler>
-       <handler
-             class="org.amanzi.neo.loader.handlers.LoadAMSHandler"
-             commandId="org.amanzi.neo.loader.commands.LoadAMS">
        </handler>
     </extension>
    
@@ -128,27 +119,6 @@
        </menuContribution>
     </extension>
     
-    <extension
-          point="org.eclipse.ui.menus">
-       <menuContribution
-             locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
-          <toolbar
-                id="org.amanzi.neo.loader.toolbar.ams">             
-             <command
-                   commandId="org.amanzi.neo.loader.commands.LoadAMS"
-            icon="icons/16/call_analyser.png"
-            id="org.amanzi.neo.loader.LoadAMS"
-                   tooltip="Load Probe Data">
-             </command>
-             <command
-                   commandId="org.amanzi.neo.loader.commands.Correlate"
-            icon="icons/16/transmission.png"
-            id="org.amanzi.neo.loader.Correlate"
-                   tooltip="Associate Probe and Drive Data">
-             </command>
-          </toolbar>
-       </menuContribution>
-    </extension>
    <extension
           point="org.eclipse.ui.importWizards">
        <wizard  
@@ -181,16 +151,7 @@
  				Import a data file from the local file system into the project
           </description>
        </wizard>
-        <wizard  
-             category="org.amanzi.load"
-             class="org.amanzi.neo.wizards.AMSImportWizard"
-             icon="icons/16/neighbour.png"
-             id="org.amanzi.neo.wizards.ESTIImportWizard"
-             name="Import TETRA Drive Data">
-          <description>
- 				Import a data file from the local file system into the project
-          </description>
-       </wizard>               
+          
        <category
              id="org.amanzi.load"
              name="Amanzi Data">

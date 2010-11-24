@@ -294,7 +294,6 @@
 	  <module>org.amanzi.neo.loader.testing</module>
 	  <module>org.amanzi.testing.sanity</module>
 	  <module>org.amanzi.testing</module>
-	  <module>org.amanzi.awe.views.calls.testing</module>
 	  <module>org.amanzi.awe.views.reuse.testing</module>
       <module>org.amanzi.awe.afp-site</module>
       <module>org.amanzi.awe.afp-feature</module>
@@ -449,7 +448,6 @@
 	  <module>org.amanzi.neo.services</module>
 	  <module>org.amanzi.neo.services.ui</module>
       <module>org.amanzi.awe.views.reuse.testing</module>
-      <module>org.amanzi.awe.views.calls.testing</module>
       <module>org.amanzi.neo.loader.testing</module>
       <module>org.amanzi.neo.data-generator</module>
       <module>org.amanzi.splash.testing</module>

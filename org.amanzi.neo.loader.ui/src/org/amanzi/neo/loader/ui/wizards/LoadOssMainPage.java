@@ -118,7 +118,7 @@ public class LoadOssMainPage extends LoaderPage<CommonConfigData>{
                 editorFile.setEnabled(false, main);
                 dataset.setEnabled(false);
                 if (!manualDatasetEdit) {
-                    datasetName = AMSImportWizardPage.getDatasetDefaultName(editorDir.getTextControl(main).getText());
+                    datasetName = getDatasetDefaultName(editorDir.getTextControl(main).getText());
                     dataset.setText(datasetName);
                 }
                 String stringValue = editorDir.getStringValue();
@@ -145,7 +145,7 @@ public class LoadOssMainPage extends LoaderPage<CommonConfigData>{
                 editorDir.setEnabled(false, main);
                 dataset.setEnabled(false);
                 if (!manualDatasetEdit) {
-                    datasetName = AMSImportWizardPage.getDatasetDefaultName(editorFile.getStringValue());
+                    datasetName = getDatasetDefaultName(editorFile.getStringValue());
                     dataset.setText(datasetName);
                 }
                 String stringValue = editorFile.getStringValue();
@@ -282,5 +282,16 @@ public class LoadOssMainPage extends LoaderPage<CommonConfigData>{
      */
     protected void setAccessType(final boolean batchMode) {
         ((AbstractLoaderWizard<?>)getWizard()).setAccessType(batchMode?DatabaseManager.DatabaseAccessType.BATCH:DatabaseAccessType.EMBEDDED);
+    }
+    public static String getDatasetDefaultName(String aFileName) {
+        if(aFileName == null){
+            return "";
+        }
+        String result = aFileName;
+        int index = result.lastIndexOf(File.separator);
+        if (index > 0) {
+            return result.substring(index + 1);
+        }
+        return result;      
     }
 }

@@ -30,7 +30,6 @@ Bundle-ClassPath: .,
  META-INF/,
  src/
 Export-Package: org.amanzi.neo.loader,
- org.amanzi.neo.loader.correlate,
  org.amanzi.neo.loader.grid,
  org.amanzi.neo.loader.internal;uses:="org.amanzi.neo.loader.preferences,org.eclipse.core.runtime,org.osgi.framework",
  org.amanzi.neo.loader.nemo_enum,

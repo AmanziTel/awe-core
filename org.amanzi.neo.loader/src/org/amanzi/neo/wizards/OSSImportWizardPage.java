@@ -125,7 +125,7 @@ public class OSSImportWizardPage extends WizardPage {
                 editorFile.setEnabled(false, main);
                 dataset.setEnabled(false);
                 if (!manualDatasetEdit) {
-                    datasetName = AMSImportWizardPage.getDatasetDefaultName(editorDir.getTextControl(main).getText());
+                    datasetName = getDatasetDefaultName(editorDir.getTextControl(main).getText());
                     dataset.setText(datasetName);
                 }
                 String stringValue = editorDir.getStringValue();
@@ -152,7 +152,7 @@ public class OSSImportWizardPage extends WizardPage {
                 editorDir.setEnabled(false, main);
                 dataset.setEnabled(false);
                 if (!manualDatasetEdit) {
-                    datasetName = AMSImportWizardPage.getDatasetDefaultName(editorFile.getStringValue());
+                    datasetName = getDatasetDefaultName(editorFile.getStringValue());
                     dataset.setText(datasetName);
                 }
                 String stringValue = editorFile.getStringValue();
@@ -315,5 +315,16 @@ public class OSSImportWizardPage extends WizardPage {
             e.printStackTrace();
             return false;
         }
+    }
+    public static String getDatasetDefaultName(String aFileName) {
+        if(aFileName == null){
+            return "";
+        }
+        String result = aFileName;
+        int index = result.lastIndexOf(File.separator);
+        if (index > 0) {
+            return result.substring(index + 1);
+        }
+        return result;      
     }
 }

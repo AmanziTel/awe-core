@@ -651,31 +651,17 @@ public class ReuseAnalyserModel {
          */
         private boolean computeTransmissionStatistics(Node neighbour, Node aggrNode, String propertyName, Distribute distribute, Select select, IProgressMonitor monitor) {
             Node rootNode = neighbour.getSingleRelationship(NetworkRelationshipTypes.TRANSMISSION_DATA, Direction.INCOMING).getOtherNode(neighbour);
-            final String neighbourName = NeoUtils.getSimpleNodeName(neighbour, "");
+            final String transmissionName = NeoUtils.getSimpleNodeName(neighbour, "");
             GeoNeo geoNode = new GeoNeo(service, NeoUtils.findGisNodeByChild(rootNode,service));
             int totalWork = (int)geoNode.getCount() * 2;
             LOGGER.debug("Starting to compute statistics for " + propertyName + " with estimated work size of " + totalWork);
             monitor.beginTask("Calculating statistics for " + propertyName, totalWork);
             TreeMap<Column, Integer> result = new TreeMap<Column, Integer>();
-            ReturnableEvaluator returnableEvaluator = new ReturnableEvaluator() {
+            TraversalDescription travDescription = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).
+            relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).
+            relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+            Traverser travers = travDescription.traverse(neighbour);
 
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    boolean result = false;
-                    Node node = currentPos.currentNode();
-                    for (Relationship relation : node.getRelationships(NetworkRelationshipTypes.TRANSMISSION, Direction.OUTGOING)) {
-                        result = NeoUtils.getNeighbourName(relation, "").equals(neighbourName);
-                        if (result) {
-                            break;
-                        }
-                    }
-                    return result;
-                }
-            };
-            Traverser travers = Traversal.description().depthFirst().uniqueness(Uniqueness.NODE_GLOBAL).
-			  				    relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).
-			  				    relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).
-			  				    filter(propertyReturnableEvalvator).traverse(rootNode);
 
             Double min = null;
             Double max = null;
@@ -686,8 +672,8 @@ public class ReuseAnalyserModel {
             // Collection<Node> trav = travers.getAllNodes();
             for (Path path : travers) {
             	Node node = path.endNode();
-                Double minValue = getTransmissionValue(node, neighbourName, propertyName, select, false);
-                Double maxValue = select == Select.EXISTS ? getTransmissionValue(node, neighbourName, propertyName, select, true) : minValue;
+                Double minValue = getTransmissionValue(node, transmissionName, propertyName, select, false);
+                Double maxValue = select == Select.EXISTS ? getTransmissionValue(node, transmissionName, propertyName, select, true) : minValue;
                 if (minValue == null || maxValue == null) {
                     continue;
                 }
@@ -746,16 +732,13 @@ public class ReuseAnalyserModel {
                 }
             }
             runGcIfBig(totalWork);            
-            travers = Traversal.description().depthFirst().uniqueness(Uniqueness.NODE_GLOBAL).
-			  	 	  relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).
-			  	 	  relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).
-			  	 	  filter(propertyReturnableEvalvator).traverse(rootNode);
+            travers = travDescription.traverse(neighbour);
             monitor.subTask("Building results from database");
             for (Path path : travers) {
             	Node node = path.endNode();
                 Double value = null;
                 for (Column column : keySet) {
-                    value = value == null || select == Select.EXISTS ? getTransmissionValue(node, neighbourName, propertyName, select, column.getMinValue(), column.getRange()) : value;
+                    value = value == null || select == Select.EXISTS ? getTransmissionValue(node, transmissionName, propertyName, select, column.getMinValue(), column.getRange()) : value;
                     if (value != null && column.containsValue(value)) {
                         Integer count = result.get(column);
                         column.getNode().createRelationshipTo(node, NetworkRelationshipTypes.AGGREGATE);
@@ -1067,7 +1050,7 @@ public class ReuseAnalyserModel {
             Double first = null;
             int count = 0;
             double sum = 0;
-            for (Relationship relation : NeoUtils.getTransmissionRelations(node, neighbourName)) {
+            for (Relationship relation : getOutgoingTransmissionRelations(node)) {
 
                 if (relation.hasProperty(propertyName)) {
                     propertyValue = relation.getProperty(propertyName);
@@ -1150,6 +1133,9 @@ public class ReuseAnalyserModel {
          */
         private Iterable<Relationship> getOutgoingNeighbourRelations(Node proxyNode) {
             return proxyNode.getRelationships(NetworkRelationshipTypes.NEIGHBOUR,Direction.OUTGOING);
+        }
+        private Iterable<Relationship> getOutgoingTransmissionRelations(Node proxyNode) {
+            return proxyNode.getRelationships(NetworkRelationshipTypes.TRANSMISSION,Direction.OUTGOING);
         }
 
         /**
