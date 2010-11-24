@@ -359,12 +359,8 @@ public class MultiPropertyIndex<E extends Object> {
         }
     }
 
-    public MultiPropertyIndex(GraphDatabaseService neo, String name, String[] properties, MultiValueConverter<E> converter) throws IOException {
-        if (properties == null || properties.length < 1 || properties[0].length() < 1)
-            throw new IllegalArgumentException("Index properties must be a non-empty array of non-empty strings");
-        this.converter = converter;
-        this.name = name;
-        this.properties = properties;
+    public MultiPropertyIndex(GraphDatabaseService neo, String name, String[] properties, MultiValueConverter<E> converter,int step) throws IOException {
+        this(name,properties,converter,step);
         initialize(neo,null);
     }
 

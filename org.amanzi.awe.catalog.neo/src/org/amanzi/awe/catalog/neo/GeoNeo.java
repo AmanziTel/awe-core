@@ -20,12 +20,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.neo.core.service.listener.NeoServiceProviderListener;
-import org.amanzi.neo.index.MultiPropertyIndex;
-import org.amanzi.neo.index.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.indexes.MultiPropertyIndex;
+import org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.log4j.Logger;
@@ -269,7 +269,7 @@ public class GeoNeo extends NeoServiceProviderListener {
         try {
             MultiPropertyIndex<Double> index = new MultiPropertyIndex<Double>(graphDatabaseService, NeoUtils.getLocationIndexName(name),
                     new String[] {INeoConstants.PROPERTY_LAT_NAME, INeoConstants.PROPERTY_LON_NAME},
-                    new MultiDoubleConverter(0.001));
+                    new MultiDoubleConverter(0.001),10);
              return index.searchTraverser(new Double[] {searchBounds.getMinY(),
              searchBounds.getMinX()}, new Double[] {
              searchBounds.getMaxY(), searchBounds.getMaxX()});
