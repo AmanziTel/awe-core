@@ -302,7 +302,7 @@ public class GPEHParser {
         event.millisecond = (Long)readParameter(input, Parameters.EVENT_PARAM_TIMESTAMP_MILLISEC).getLeft();
         event.id = (Integer)readParameter(input, Parameters.EVENT_PARAM_EVENT_ID).getLeft();
 
-        final int recLen = recordLen * 8;
+        final int recLen = recordLen << 3;
         int len = 24 + 5 + 6 + 6 + 11 + 11;
         
         if (!possibleIds.contains(event.id)) {
@@ -328,7 +328,7 @@ public class GPEHParser {
                 if (parameter == Parameters.EVENT_PARAM_MESSAGE_CONTENTS) {
                     Integer lenMsg = (Integer)event.getProperties().get(Parameters.EVENT_PARAM_MESSAGE_LENGTH);
                     if (lenMsg != null) {
-                        maxBitLen = Math.min(lenMsg * 8, maxBitLen);
+                        maxBitLen = Math.min(lenMsg << 8, maxBitLen);
                     }
                 }
                 final Pair<Object, Integer> readParameter = readParameter(input, parameter, maxBitLen);

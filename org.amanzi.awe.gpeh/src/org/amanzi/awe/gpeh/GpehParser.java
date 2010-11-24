@@ -133,7 +133,7 @@ public class GpehParser extends CommonFilesParser<GpehTransferData, CommonConfig
                         GPEHEvent result = new GPEHEvent();
                         if (recordType == 4) {
                             org.amanzi.awe.gpeh.parser.internal.GPEHParser.parseEvent(bitStream, result, recordLen, possibleIds, timeWrapper);
-                            if (result.getEvent() != null && possibleIds.contains(result.getEvent().getId())) {
+                            if (result.getEvent() != null) {
                                 GpehTransferData data = new GpehTransferData();
                                 data.put(GpehTransferData.EVENT, result.getEvent());
                                 data.put(GpehTransferData.TIMESTAMP, timestamp);
