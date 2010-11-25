@@ -112,7 +112,6 @@
       <module>org.amanzi.awe.statistic</module>
       <module>org.amanzi.awe.tool.star</module>
       <module>org.amanzi.awe.ui.operation.shape_export</module>
-      <module>org.amanzi.awe.views.calls</module>
       <module>org.amanzi.awe.views.drive</module>
       <module>org.amanzi.awe.views.kpi</module>
       <module>org.amanzi.awe.views.neighbours</module>
@@ -249,7 +248,6 @@
       <module>org.amanzi.awe.statistic</module>
       <module>org.amanzi.awe.tool.star</module>
       <module>org.amanzi.awe.ui.operation.shape_export</module>
-      <module>org.amanzi.awe.views.calls</module>
       <module>org.amanzi.awe.views.drive</module>
       <module>org.amanzi.awe.views.kpi</module>
       <module>org.amanzi.awe.views.neighbours</module>
@@ -396,7 +394,6 @@
       <module>org.amanzi.awe.tool.star</module>
       <module>org.amanzi.awe.ui.operation.shape_export</module>
       <module>org.amanzi.awe.ui</module>
-      <module>org.amanzi.awe.views.calls</module>
       <module>org.amanzi.awe.views.drive</module>
       <module>org.amanzi.awe.views.kpi</module>
       <module>org.amanzi.awe.views.neighbours</module>
