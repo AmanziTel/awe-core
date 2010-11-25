@@ -22,7 +22,6 @@ import java.util.Set;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.afp.AfpNeighbourSubType;
-import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.files.ControlFile;
 import org.amanzi.awe.afp.providers.AbstractTxFileHandler;
 import org.amanzi.awe.console.AweConsolePlugin;
@@ -36,7 +35,6 @@ import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.neo.services.utils.RunnableWithResult;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.jobs.Job;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
