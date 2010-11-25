@@ -71,10 +71,6 @@
              commandId="org.amanzi.neo.loader.commands.LoadDrive">
        </handler>
        <handler
-             class="org.amanzi.neo.loader.handlers.CorrelateHandler"
-             commandId="org.amanzi.neo.loader.commands.Correlate">
-       </handler>
-        <handler
              class="org.amanzi.neo.loader.handlers.LoadNeighbourHandler"
              commandId="org.amanzi.neo.loader.commands.LoadNeighbour">
        </handler>
