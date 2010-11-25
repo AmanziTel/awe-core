@@ -204,6 +204,7 @@ public class DingLiLoader extends DriveLoader {
         }
         mNode = m;
         m.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, _workDate.getTimeInMillis());
+        updateTimestampMinMax(1, _workDate.getTimeInMillis());
         index(m);
         this.incValidMessage();
         return 1;
