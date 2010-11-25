@@ -13,29 +13,49 @@
 
 package org.amanzi.neo.services.correlation;
 
+import java.util.HashMap;
 import java.util.Set;
 
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 
 /**
  * <p>
  * Data keeper for correlation
  * </p>
+ * .
  * 
  * @author Saelenchits_N
  * @since 1.0.0
  */
 public class CorrelationModel {
+
+    /** The network. */
     private final Node network;
+
+    /** The datasets. */
     private Set<Node> datasets;
-    
+    private HashMap<Node, Relationship> relationshipsMap;
+    /**
+     * Instantiates a new correlation model.
+     * 
+     * @param networkNode the network node
+     * @param datasets the datasets
+     */
     public CorrelationModel(Node networkNode, Set<Node> datasets){
         network = networkNode;
         this.datasets = datasets;
-        
+    }
+
+    public CorrelationModel(Node networkNode, HashMap<Node, Relationship> relationshipsMap) {
+        network = networkNode;
+        this.relationshipsMap = relationshipsMap;
+        this.datasets = relationshipsMap.keySet();
     }
 
     /**
+     * Gets the network.
+     * 
      * @return Returns the network.
      */
     public Node getNetwork() {
@@ -43,6 +63,8 @@ public class CorrelationModel {
     }
 
     /**
+     * Gets the datasets.
+     * 
      * @return Returns the datasets.
      */
     public Set<Node> getDatasets() {
@@ -50,38 +72,26 @@ public class CorrelationModel {
     }
 
     /**
+     * Sets the datasets.
+     * 
      * @param datasets The datasets to set.
      */
     public void setDatasets(Set<Node> datasets) {
         this.datasets = datasets;
-    }    
-    
-    
-    
-    
-//    public static CorrelationModel getInstance(Node networkNode) {
-//        CorrelationModel model = new CorrelationModel(networkNode);
-//        model.init();
-//        return model;
-//    }
-//
-//    private final Node network;
-//    private final CorrelationService correlationService;
-//    private Set<Node> datasets;
-//    
-//    private CorrelationModel(Node networkNode) {
-//        this.network = networkNode;
-//        correlationService = NeoServiceFactory.getInstance().getCorrelationService();
-//    }
-//    
-//    private void init() {
-////        correlationService.loadCorrelation();
-//    }
-//    
-//    public void createCorrelation(Set<Node> datasets){
-//        correlationService.correlate(network, datasets);
-//    }
-//    
-//    
+    }
+
+    /**
+     * @return Returns the relationshipsMap.
+     */
+    public HashMap<Node, Relationship> getRelationshipsMap() {
+        return relationshipsMap;
+    }
+
+    /**
+     * @param relationshipsMap The relationshipsMap to set.
+     */
+    public void setRelationshipsMap(HashMap<Node, Relationship> relationshipsMap) {
+        this.relationshipsMap = relationshipsMap;
+    }
 
 }

@@ -31,15 +31,18 @@ import org.amanzi.neo.services.utils.Utils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
-import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
+import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.helpers.Predicate;
 import org.neo4j.index.lucene.LuceneIndexService;
+import org.neo4j.kernel.Traversal;
 
 /**
  * <p>
@@ -161,7 +164,7 @@ public class CorrelationService extends AbstractService {
                 }
             }
 
-            HashMap<Node,Relationship> statistic = new HashMap<Node,Relationship>(); 
+            HashMap<Node, Relationship> statistic = new HashMap<Node, Relationship>();
             for (Node dataNode : model.getDatasets()) {
                 Relationship rel = dataNode.createRelationshipTo(rootCorrelationNode, CorrelationRelationshipTypes.CORRELATED);
                 statistic.put(dataNode, rel);
@@ -196,10 +199,14 @@ public class CorrelationService extends AbstractService {
                     }
 
                     while (nodes.hasNext()) {
-                        correlateNodes(sector, correlationNode, nodes.next(), Utils.getNodeName(driveNode, databaseService), networkName);
+                        Node mNode = nodes.next();
+                        correlateNodes(sector, correlationNode, mNode, Utils.getNodeName(driveNode, databaseService), networkName);
                         Relationship rel = statistic.get(driveNode);
-                        rel.setProperty(INeoConstants.COUNT_TYPE_NAME, (Integer)rel.getProperty(INeoConstants.COUNT_TYPE_NAME,0)+1);
-//                        counters.put(driveNode, counters.get(driveNode)+1);
+                        rel.setProperty(INeoConstants.PROPERTY_COUNT_NAME, (Integer)rel.getProperty(INeoConstants.PROPERTY_COUNT_NAME, 0) + 1);
+
+                        Object timestamp = mNode.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, null);
+                        if (timestamp != null)
+                            updateTimestampMinMax(rel, (Long)timestamp);
                     }
                     // correlationNode.setProperty(INeoConstants.COUNT_TYPE_NAME, driveCounter);
 
@@ -227,6 +234,27 @@ public class CorrelationService extends AbstractService {
 
     }
 
+    /**
+     * Update timestamp min max.
+     * 
+     * @param rel the rel
+     * @param timestamp the timestamp
+     */
+    protected void updateTimestampMinMax(Relationship rel, long timestamp) {
+        Long minValue = (Long)rel.getProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, null);
+        Long maxValue = (Long)rel.getProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE, null);
+        Long minTimeStamp = minValue == null ? timestamp : Math.min(minValue, timestamp);
+        Long maxTimeStamp = maxValue == null ? timestamp : Math.max(maxValue, timestamp);
+        rel.setProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, minTimeStamp);
+        rel.setProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE, maxTimeStamp);
+    }
+
+    /**
+     * Adds the single correlation.
+     * 
+     * @param networkNode the network node
+     * @param datasetNode the dataset node
+     */
     public void addSingleCorrelation(Node networkNode, Node datasetNode) {
         CorrelationModel correlationModel = getCorrelationModel(networkNode);
         if (correlationModel.getDatasets().contains(datasetNode))
@@ -362,32 +390,30 @@ public class CorrelationService extends AbstractService {
         }
     }
 
+    /**
+     * Gets the correlation model.
+     * 
+     * @param networkNode the network node
+     * @return the correlation model
+     */
     public CorrelationModel getCorrelationModel(Node networkNode) {
-        Transaction tx = databaseService.beginTx();
 
-        try {
-            Traverser traverser = networkNode.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
-                @Override
-                public boolean isStopNode(TraversalPosition currentPosition) {
-                    return currentPosition.depth() >= 2;
-                }
-            }, new ReturnableEvaluator() {
+        TraversalDescription td = Traversal.description().depthFirst().filter(new Predicate<Path>() {
 
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    return currentPos.notStartNode() && currentPos.lastRelationshipTraversed().isType(CorrelationRelationshipTypes.CORRELATED);
-
-                }
-            }, CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING, CorrelationRelationshipTypes.CORRELATED, Direction.INCOMING);
-            Set<Node> correlatedDatasets = new HashSet<Node>();
-            for (Node dataset : traverser) {
-                correlatedDatasets.add(dataset);
+            @Override
+            public boolean accept(Path item) {
+                return (item.length() > 0) && item.lastRelationship().isType(CorrelationRelationshipTypes.CORRELATED);
             }
-            return new CorrelationModel(networkNode, correlatedDatasets);
-        } finally {
-            tx.success();
-            tx.finish();
+        }).prune(Traversal.pruneAfterDepth(2)).relationships(CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING).relationships(
+                CorrelationRelationshipTypes.CORRELATED, Direction.INCOMING);
+        HashMap<Node, Relationship> relationshipsMap = new HashMap<Node, Relationship>();
+        for (Path path : td.traverse(networkNode)) {
+            Relationship lastRel = path.lastRelationship();
+            Node dataset = lastRel.getStartNode();
+            relationshipsMap.put(dataset, lastRel);
         }
+
+        return new CorrelationModel(networkNode, relationshipsMap);
 
     }
 }

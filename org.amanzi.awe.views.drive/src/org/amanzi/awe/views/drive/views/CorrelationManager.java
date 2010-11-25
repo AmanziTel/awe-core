@@ -650,19 +650,13 @@ public class CorrelationManager extends ViewPart implements INeoServiceProviderL
             for (Node network : gisNetworkNodes.values()) {
                 CorrelationModel model = service.getCorrelationModel(network);
                 for (Node dataset : model.getDatasets()) {
-                    elements.add(new RowWrapper(network, dataset));
+                    Relationship correlatedRel = model.getRelationshipsMap().get(dataset);
+                    Integer count = (Integer)correlatedRel.getProperty(INeoConstants.PROPERTY_COUNT_NAME, null);
+                    Long minValue = (Long)correlatedRel.getProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, null);
+                    Long maxValue = (Long)correlatedRel.getProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE, null);
+                    elements.add(new RowWrapper(network, dataset,count,minValue,maxValue));
                 }
             }
-
-            // Traverser linkedNetworkTraverser =
-            // NeoUtils.getLinkedNetworkTraverser(graphDatabaseService);
-            // for (Node node : linkedNetworkTraverser) {
-            // for (Relationship relation :
-            // node.getRelationships(CorrelationRelationshipTypes.LINKED_NETWORK_DRIVE,
-            // Direction.OUTGOING)) {
-            // elements.add(new RowWrapper(node, relation));
-            // }
-            // }
         }
     }
 
@@ -690,36 +684,14 @@ public class CorrelationManager extends ViewPart implements INeoServiceProviderL
         private SimpleDateFormat sfMulDay2;
 
         /**
-         * Constructor
-         * 
-         * @param node network node
-         * @param relation - relation
-         */
-        public RowWrapper(Node node, Relationship relation) {
-            this.networkNode = node;
-            this.relation = relation;
-            Transaction tx = graphDatabaseService.beginTx();
-            try {
-                networkName = NeoUtils.getSimpleNodeName(node, "");
-                driveNode = relation.getOtherNode(node);
-                driveName = NeoUtils.getSimpleNodeName(driveNode, "");
-                // startTime = (Long)relation.getProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE,
-                // null);
-                // endTime = (Long)relation.getProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE,
-                // null);
-                count = (Integer)relation.getProperty(INeoConstants.COUNT_TYPE_NAME, 0);
-
-            } finally {
-                tx.finish();
-            }
-        }
-
-        /**
          * @param network
          * @param dataset
          */
-        public RowWrapper(Node network, Node dataset) {
+        public RowWrapper(Node network, Node dataset, int count, long startTime, long endTime) {
             networkNode = network;
+            this.count = count;
+            this.startTime = startTime;
+            this.endTime = endTime;
             networkName = NeoUtils.getSimpleNodeName(networkNode, "");
             driveNode = dataset;
             driveName = NeoUtils.getSimpleNodeName(driveNode, "");
