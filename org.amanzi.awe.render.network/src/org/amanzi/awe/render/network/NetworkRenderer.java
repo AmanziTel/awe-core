@@ -54,6 +54,7 @@ import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkSiteType;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.utils.Utils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -962,7 +963,8 @@ public class NetworkRenderer extends RendererImpl {
         String result = null;
         Transaction transaction = NeoServiceProviderUi.getProvider().getService().beginTx();
         try {
-            result = geoNeo.getProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION, "").toString();
+            Node dataset = Utils.getDatasetNodeByGis(geoNeo.getMainGisNode());
+            result = dataset.getProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION, "").toString();
             
             if (result.equals("")) {
             	result = checkCorrelated(geoNeo.getMainGisNode()); 
