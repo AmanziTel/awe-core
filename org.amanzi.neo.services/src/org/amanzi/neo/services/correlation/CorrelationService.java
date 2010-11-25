@@ -161,10 +161,12 @@ public class CorrelationService extends AbstractService {
                 }
             }
 
+            HashMap<Node,Relationship> statistic = new HashMap<Node,Relationship>(); 
             for (Node dataNode : model.getDatasets()) {
-                dataNode.createRelationshipTo(rootCorrelationNode, CorrelationRelationshipTypes.CORRELATED);
+                Relationship rel = dataNode.createRelationshipTo(rootCorrelationNode, CorrelationRelationshipTypes.CORRELATED);
+                statistic.put(dataNode, rel);
             }
-            int sectorCounter = 0;
+            int counter = 0;
             String networkName = Utils.getNodeName(networkNode, databaseService);
             for (Node sector : getNetworkIterator(networkNode)) {
                 Node correlationNode = null;
@@ -195,18 +197,21 @@ public class CorrelationService extends AbstractService {
 
                     while (nodes.hasNext()) {
                         correlateNodes(sector, correlationNode, nodes.next(), Utils.getNodeName(driveNode, databaseService), networkName);
+                        Relationship rel = statistic.get(driveNode);
+                        rel.setProperty(INeoConstants.COUNT_TYPE_NAME, (Integer)rel.getProperty(INeoConstants.COUNT_TYPE_NAME,0)+1);
+//                        counters.put(driveNode, counters.get(driveNode)+1);
                     }
                     // correlationNode.setProperty(INeoConstants.COUNT_TYPE_NAME, driveCounter);
 
                 }
 
-                sectorCounter++;
-                if (sectorCounter % 5000 == 0) {
+                counter++;
+                if (counter % 5000 == 0) {
                     tx.success();
                     tx.finish();
 
                     tx = databaseService.beginTx();
-                    sectorCounter = 0;
+                    counter = 0;
                 }
 
             }
