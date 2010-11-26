@@ -14,6 +14,7 @@
 package org.amanzi.neo.services.correlation;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.neo4j.graphdb.Node;
@@ -50,7 +51,8 @@ public class CorrelationModel {
     public CorrelationModel(Node networkNode, HashMap<Node, Relationship> relationshipsMap) {
         network = networkNode;
         this.relationshipsMap = relationshipsMap;
-        this.datasets = relationshipsMap.keySet();
+        this.datasets = new HashSet<Node>();
+        this.datasets.addAll(relationshipsMap.keySet());
     }
 
     /**
