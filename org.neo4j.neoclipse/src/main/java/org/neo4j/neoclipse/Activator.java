@@ -107,13 +107,19 @@ public class Activator extends AbstractUIPlugin {
      */
     private Map<String, String> getUserPerformanceConfig() {
         Map<String, String> config = new HashMap<String, String>();
-        String[] configKeys = new String[] {Preferences.NEOSTORE_NODES, Preferences.NEOSTORE_PROPERTIES, Preferences.NEOSTORE_PROPERTIES_ARRAYS,
-                Preferences.NEOSTORE_PROPERTIES_INDEX, Preferences.NEOSTORE_PROPERTIES_KEYS, Preferences.NEOSTORE_PROPERTIES_STRING, Preferences.NEOSTORE_RELATIONSHIPS};
+        String[] configKeys = new String[] {
+        		Preferences.NEOSTORE_NODES,
+        		Preferences.NEOSTORE_PROPERTIES,
+        		Preferences.NEOSTORE_PROPERTIES_ARRAYS,
+                Preferences.NEOSTORE_PROPERTIES_INDEX,
+                Preferences.NEOSTORE_PROPERTIES_KEYS,
+                Preferences.NEOSTORE_PROPERTIES_STRING,
+                Preferences.NEOSTORE_RELATIONSHIPS};
         IPreferenceStore ps = getDefault().getPreferenceStore();
         for (String key : configKeys) {
             String value = ps.getString(key);
             if (value != null && !value.isEmpty()) {
-                config.put(key, value);
+                config.put(key, value + "M");
             }
         }
         return config;
