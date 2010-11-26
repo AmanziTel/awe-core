@@ -18,7 +18,6 @@ import java.awt.Rectangle;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -39,27 +38,20 @@ import net.refractions.udig.project.ui.render.displayAdapter.ViewportPane;
 import net.refractions.udig.project.ui.tool.AbstractModalTool;
 
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
-import org.amanzi.neo.services.DatasetService;
-import org.amanzi.neo.services.NeoServiceFactory;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.PlatformUI;
-import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.ReturnableEvaluator;
-import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.TraversalPosition;
-import org.neo4j.graphdb.Traverser.Order;
 
 /**
  * Custom uDIG Map Tool for performing a 'star analysis'. This means it interacts with objects on
@@ -193,7 +185,7 @@ public class StarTool extends AbstractModalTool {
         LinkedHashMap<Node, String> selectedGisNodes = new LinkedHashMap<Node, String>();
         
         DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();    
-        for (Node dataset : datasetService.getAllDatasetNodes().nodes()) {
+        for (Node dataset : datasetService.getAllRootNodes().nodes()) {
             String aggregatedProperty = dataset.getProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION, "").toString();
             if (aggregatedProperty.length() > 0) {
                 selectedGisNodes.put(dataset, aggregatedProperty);

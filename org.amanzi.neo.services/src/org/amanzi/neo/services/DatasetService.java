@@ -1351,6 +1351,23 @@ public class DatasetService extends AbstractService {
      */
     public Traverser getAllDatasetNodes() {
         return Traversal.description().depthFirst().prune(Traversal.pruneAfterDepth(2)).filter(new Predicate<Path>() {
+            
+            @Override
+            public boolean accept(Path item) {
+                return item.endNode().hasProperty(INeoConstants.PROPERTY_TYPE_NAME) &&
+                (item.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.DATASET.getId()) ||
+                        item.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.NETWORK.getId()));
+            }
+        }).traverse(databaseService.getReferenceNode());        
+    }
+    /**
+     * Gets all root nodes.
+     * 
+     * @param service neoservice can not be null
+     * @return Map
+     */
+    public Traverser getAllRootNodes() {
+        return Traversal.description().depthFirst().prune(Traversal.pruneAfterDepth(2)).filter(new Predicate<Path>() {
 
             @Override
             public boolean accept(Path item) {
