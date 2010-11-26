@@ -781,20 +781,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                             } else {
                                 lineColor = FADE_LINE;
                             }
-                            
-//                          while (links.hasNext()) {
-//                        	Relationship link = links.next();
-//                        	
-//                        	if (!links.hasNext() && (!link.hasProperty(INeoConstants.NETWORK_GIS_NAME))) {
-//                        		relation = link;
-//                        		break;
-//                        	}
-//                        	else if (geoNeo.getName().equals(link.getProperty(INeoConstants.NETWORK_GIS_NAME))) {
-//                        		relation = link;
-//                        		break;
-//                        	}
-//                        }
-                            
+
                             Iterator<Relationship> links = mpNode.getRelationships(GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING).iterator();
                             HashSet<Node> mNodes = new HashSet<Node>();
                             while (links.hasNext()) {
@@ -808,10 +795,8 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                             		if ((!rels.hasNext() && (!singleLink.hasProperty(INeoConstants.NETWORK_GIS_NAME))) || geoNeo.getName().equals(singleLink.getProperty(INeoConstants.NETWORK_GIS_NAME))) {
                             			
                             			Relationship relationSector = singleLink.getStartNode().getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING);
-//                                        Node sectorDrive = singleLink.getEndNode().getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.INCOMING).getStartNode();
-//            get sector
-//                                        for (Relationship relationSector : sectorDrive.getRelationships(NetworkRelationshipTypes.SECTOR, Direction.OUTGOING)) {
-                                            Node sector = null;
+
+                            			Node sector = null;
                                             Object networkGisName = relationSector.getProperty(INeoConstants.NETWORK_GIS_NAME);
                                             IGeoResource networkGisNode = null;
                                             for (IGeoResource networkResource : networkGeoNeo) {

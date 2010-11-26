@@ -292,39 +292,6 @@ public class CorrelationManager extends ViewPart implements INeoServiceProviderL
     }
 
     /**
-     * Remove correlation manager
-     * 
-     * @param monitor
-     * @param wrapper - correlation wrapper
-     * @return
-     */
-//    protected void managerRemoveNetworkDriveCorrelation(IProgressMonitor monitor, RowWrapper wrapper) {
-//        Transaction tx = graphDatabaseService.beginTx();
-//        NeoUtils.addTransactionLog(tx, Thread.currentThread(), "managerRemoveNetworkDriveCorrelation");
-//        try {
-//            wrapper.getRelation().delete();
-//            tx.success();
-//            tx.finish();
-//            updateInputFromDisplay();
-//            tx = graphDatabaseService.beginTx();
-//            Node root = NeoUtils.findOrCreateSectorDriveRoot(wrapper.getDriveNode(), graphDatabaseService, false);
-//            for (Relationship relation : root.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
-//                Node node = relation.getOtherNode(root);
-//                Iterable<Relationship> relationships = node.getRelationships(NetworkRelationshipTypes.SECTOR, Direction.OUTGOING);
-//                for (Relationship sectorRelation : relationships) {
-//                    if (sectorRelation.getProperty(INeoConstants.NETWORK_GIS_NAME).equals(wrapper.getNetworkName())) {
-//                        relation.delete();
-//                        break;
-//                    }
-//                }
-//            }
-//            tx.success();
-//        } finally {
-//            tx.finish();
-//        }
-//    }
-
-    /**
      * Correlate network-drive trees correlate network and drive gis nodes
      */
     protected void correlateNetworkDrive() {
@@ -365,81 +332,7 @@ public class CorrelationManager extends ViewPart implements INeoServiceProviderL
         correlateJob.schedule();
     }
 
-    /**
-     * correlation manager
-     * 
-     * @param monitor - IProgressMonitor
-     * @param driveGis - drive gis node
-     * @param networkGis - network gis node
-     */
-//    protected void setNetworkDriveCorrelation(IProgressMonitor monitor, Node networkGis, Node driveGis) {
-//        Transaction tx = graphDatabaseService.beginTx();
-//        Long startTime = null;
-//        Long endTime = null;
-//        int perc = 0;
-//        NeoUtils.addTransactionLog(tx, Thread.currentThread(), "setNetworkDriveCorrelation");
-//        Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(driveGis, null);
-//        long totalTime = minMax.getRight() - minMax.getLeft();
-//        int prevPerc = 0;
-//        try {
-//            for (Relationship relation : networkGis.getRelationships(CorrelationRelationshipTypes.LINKED_NETWORK_DRIVE, Direction.OUTGOING)) {
-//                if (relation.getOtherNode(networkGis).equals(driveGis)) {
-//                    return;
-//                }
-//            }
-//            Relationship storeRelation = networkGis.createRelationshipTo(driveGis, CorrelationRelationshipTypes.LINKED_NETWORK_DRIVE);
-//            Traverser traverse = driveGis
-//                    .traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
-//
-//                        @Override
-//                        public boolean isReturnableNode(TraversalPosition currentPos) {
-//                            Node node = currentPos.currentNode();
-//                            return node.hasProperty(INeoConstants.SECTOR_ID_PROPERTIES)/*
-//                                                                                        * &&NeoUtils.
-//                                                                                        * isDrivePointNode
-//                                                                                        * (node)
-//                                                                                        */;
-//                        }
-//                    }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.LOCATION,
-//                            Direction.OUTGOING);
-//            Node sectorDriveRoot = NeoUtils.findOrCreateSectorDriveRoot(driveGis, graphDatabaseService, false);
-//            int count = 0;
-//            for (Node node : traverse) {
-//                Node sectorDrive = NeoUtils.findOrCreateSectorDrive(NeoUtils.getSimpleNodeName(driveGis, null), sectorDriveRoot, node, graphDatabaseService, false);
-//                if (sectorDrive != null) {
-//                    NeoUtils.linkWithSector(networkGis, sectorDrive, null);
-//                }
-//                Long time = NeoUtils.getNodeTime(node);
-//                startTime = startTime == null ? time : Math.min(startTime, time);
-//                endTime = endTime == null ? time : Math.max(endTime, time);
-//                count++;
-//                perc = (int)((time - minMax.getLeft()) * 100 / totalTime);
-//                if (perc > prevPerc) {
-//                    monitor.worked(perc - prevPerc);
-//                    prevPerc = perc;
-//                }
-//                storeRelation.setProperty(INeoConstants.COUNT_TYPE_NAME, count);
-//                if (startTime == null) {
-//                    storeRelation.removeProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE);
-//                } else {
-//                    storeRelation.setProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, startTime);
-//                }
-//                if (endTime == null) {
-//                    storeRelation.removeProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE);
-//                } else {
-//                    storeRelation.setProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE, endTime);
-//                }
-//            }
-//            tx.success();
-//
-//        } catch (Exception e) {
-//            // TODO remove catch all exception after debug
-//            // e.printStackTrace();
-//            DriveInquirerPlugin.error(e.getLocalizedMessage(), e);
-//        } finally {
-//            tx.finish();
-//        }
-//    }
+ 
 
     /**
      * Forms list of drive and network

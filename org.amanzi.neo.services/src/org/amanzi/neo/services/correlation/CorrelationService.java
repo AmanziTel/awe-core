@@ -93,33 +93,6 @@ public class CorrelationService extends AbstractService {
             datasetNames.add(Utils.getNodeName(datasetNode, databaseService));
         }
 
-//        RelationshipType[] types = new RelationshipType[] {CorrelationRelationshipTypes.CORRELATED, NetworkRelationshipTypes.DRIVE};
-
-        // clear correlation between sectors and M nodes
-//        for (Node correlationNode : rootCorrelationNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
-//                GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
-//            for (RelationshipType typeToCheck : types) {
-//                for (Relationship correlationRel : correlationNode.getRelationships(typeToCheck, Direction.OUTGOING)) {
-//                    String datasetName = (String)correlationRel.getProperty(INeoConstants.NETWORK_GIS_NAME);
-//                    if (datasetNames.contains(datasetName)) {
-//                        correlationRel.delete();
-//                    }
-//                }
-//            }
-//
-//            boolean delete = true;
-//            for (RelationshipType typeToCheck : types) {
-//                delete = delete && !correlationNode.getRelationships(typeToCheck, Direction.OUTGOING).iterator().hasNext();
-//            }
-//
-//            if (delete) {
-//                correlationNode.getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING).delete();
-//                correlationNode.getSingleRelationship(NetworkRelationshipTypes.SECTOR, Direction.OUTGOING).delete();
-//                correlationNode.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).delete();
-//                correlationNode.delete();
-//            }
-//        }
-
         // clear correlation between Dataset and Network
         for (Relationship datasetLink : rootCorrelationNode.getRelationships(CorrelationRelationshipTypes.CORRELATED, Direction.INCOMING)) {
             if (dataNodes.contains(datasetLink.getStartNode())) {
