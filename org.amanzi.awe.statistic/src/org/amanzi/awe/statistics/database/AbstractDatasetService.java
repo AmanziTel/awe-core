@@ -91,7 +91,6 @@ public abstract class AbstractDatasetService implements IDatasetService {
 
     @Override
     public CallTimePeriods getHighestPeriod() {
-        // Pechko_E: copied from the org.amanzi.awe.views.calls.statistics.CallStatisticsUtills;
         Pair<Long, Long> timeBounds = getTimeBounds();
         long delta = CallTimePeriods.DAILY.getFirstTime(timeBounds.r()) - CallTimePeriods.DAILY.getFirstTime(timeBounds.l());
         if (delta >= DAY) {
