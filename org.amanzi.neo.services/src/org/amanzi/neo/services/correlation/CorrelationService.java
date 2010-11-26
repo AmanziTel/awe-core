@@ -24,7 +24,6 @@ import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.enums.SectorIdentificationType;
 import org.amanzi.neo.services.utils.Utils;
@@ -33,7 +32,6 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
@@ -95,32 +93,32 @@ public class CorrelationService extends AbstractService {
             datasetNames.add(Utils.getNodeName(datasetNode, databaseService));
         }
 
-        RelationshipType[] types = new RelationshipType[] {CorrelationRelationshipTypes.CORRELATED, NetworkRelationshipTypes.DRIVE};
+//        RelationshipType[] types = new RelationshipType[] {CorrelationRelationshipTypes.CORRELATED, NetworkRelationshipTypes.DRIVE};
 
         // clear correlation between sectors and M nodes
-        for (Node correlationNode : rootCorrelationNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
-                GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
-            for (RelationshipType typeToCheck : types) {
-                for (Relationship correlationRel : correlationNode.getRelationships(typeToCheck, Direction.OUTGOING)) {
-                    String datasetName = (String)correlationRel.getProperty(INeoConstants.NETWORK_GIS_NAME);
-                    if (datasetNames.contains(datasetName)) {
-                        correlationRel.delete();
-                    }
-                }
-            }
-
-            boolean delete = true;
-            for (RelationshipType typeToCheck : types) {
-                delete = delete && !correlationNode.getRelationships(typeToCheck, Direction.OUTGOING).iterator().hasNext();
-            }
-
-            if (delete) {
-                correlationNode.getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING).delete();
-                correlationNode.getSingleRelationship(NetworkRelationshipTypes.SECTOR, Direction.OUTGOING).delete();
-                correlationNode.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).delete();
-                correlationNode.delete();
-            }
-        }
+//        for (Node correlationNode : rootCorrelationNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
+//                GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
+//            for (RelationshipType typeToCheck : types) {
+//                for (Relationship correlationRel : correlationNode.getRelationships(typeToCheck, Direction.OUTGOING)) {
+//                    String datasetName = (String)correlationRel.getProperty(INeoConstants.NETWORK_GIS_NAME);
+//                    if (datasetNames.contains(datasetName)) {
+//                        correlationRel.delete();
+//                    }
+//                }
+//            }
+//
+//            boolean delete = true;
+//            for (RelationshipType typeToCheck : types) {
+//                delete = delete && !correlationNode.getRelationships(typeToCheck, Direction.OUTGOING).iterator().hasNext();
+//            }
+//
+//            if (delete) {
+//                correlationNode.getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING).delete();
+//                correlationNode.getSingleRelationship(NetworkRelationshipTypes.SECTOR, Direction.OUTGOING).delete();
+//                correlationNode.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).delete();
+//                correlationNode.delete();
+//            }
+//        }
 
         // clear correlation between Dataset and Network
         for (Relationship datasetLink : rootCorrelationNode.getRelationships(CorrelationRelationshipTypes.CORRELATED, Direction.INCOMING)) {
@@ -318,21 +316,19 @@ public class CorrelationService extends AbstractService {
         if (create) {
             link = correlationNode.createRelationshipTo(sectorNode, CorrelationRelationshipTypes.CORRELATION);
             link.setProperty(INeoConstants.NETWORK_GIS_NAME, networkName);
-            link = correlationNode.createRelationshipTo(sectorNode, NetworkRelationshipTypes.SECTOR);
-            link.setProperty(INeoConstants.NETWORK_GIS_NAME, networkName);
         }
 
-        Relationship locationLink = correlatedNode.getSingleRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING);
-        if (locationLink != null) {
-            Node locationNode = locationLink.getEndNode();
-
-            // link = correlationNode.createRelationshipTo(locationNode,
-            // CorrelationRelationshipTypes.CORRELATED_LOCATION);
-            // link.setProperty(INeoConstants.NETWORK_GIS_NAME, correlationType);
-
-            link = correlationNode.createRelationshipTo(locationNode, NetworkRelationshipTypes.DRIVE);
-            link.setProperty(INeoConstants.NETWORK_GIS_NAME, correlationType);
-        }
+//        Relationship locationLink = correlatedNode.getSingleRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING);
+//        if (locationLink != null) {
+//            Node locationNode = locationLink.getEndNode();
+//
+//            // link = correlationNode.createRelationshipTo(locationNode,
+//            // CorrelationRelationshipTypes.CORRELATED_LOCATION);
+//            // link.setProperty(INeoConstants.NETWORK_GIS_NAME, correlationType);
+//
+////            link = correlationNode.createRelationshipTo(locationNode, NetworkRelationshipTypes.DRIVE);
+////            link.setProperty(INeoConstants.NETWORK_GIS_NAME, correlationType);
+//        }
 
         link = correlationNode.createRelationshipTo(correlatedNode, CorrelationRelationshipTypes.CORRELATED);
         link.setProperty(INeoConstants.NETWORK_GIS_NAME, correlationType);

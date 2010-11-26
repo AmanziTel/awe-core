@@ -37,6 +37,7 @@ import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.services.GpehReportUtil;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.enums.CallProperties.CallType;
 import org.amanzi.neo.services.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.services.enums.DriveTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
@@ -47,11 +48,10 @@ import org.amanzi.neo.services.enums.NetworkTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.services.enums.SplashRelationshipTypes;
-import org.amanzi.neo.services.enums.CallProperties.CallType;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
-import org.amanzi.neo.services.indexes.PropertyIndex;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiTimeIndexConverter;
+import org.amanzi.neo.services.indexes.PropertyIndex;
 import org.amanzi.neo.services.indexes.PropertyIndex.NeoIndexRelationshipTypes;
 import org.amanzi.neo.services.nodes.AweProjectNode;
 import org.apache.commons.lang.StringUtils;
@@ -368,7 +368,8 @@ public class Utils {
      * @return node name or empty string
      * @deprecated
      */
-    public static String getNodeName(Node node) {
+    @Deprecated
+	public static String getNodeName(Node node) {
         return getSimpleNodeName(node, "");
     }
 
@@ -1146,26 +1147,26 @@ public class Utils {
      * @param isNewTransaction the is new transaction
      * @return SectorDriveRoot node
      */
-    public static Node findOrCreateSectorDriveRoot(Node root, GraphDatabaseService service, boolean isNewTransaction) {
-
-        GraphDatabaseService neo = isNewTransaction ? service : null;
-        Transaction tx = beginTx(neo);
-        try {
-            Relationship relation = root.getSingleRelationship(NetworkRelationshipTypes.SECTOR_DRIVE, Direction.OUTGOING);
-            if (relation != null) {
-                return relation.getOtherNode(root);
-            }
-            Node result = service.createNode();
-            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.ROOT_SECTOR_DRIVE.getId());
-            result.setProperty(INeoConstants.PROPERTY_NAME_NAME, INeoConstants.ROOT_SECTOR_DRIVE);
-            root.createRelationshipTo(result, NetworkRelationshipTypes.SECTOR_DRIVE);
-            successTx(tx);
-            return result;
-        } finally {
-            finishTx(tx);
-        }
-
-    }
+//    public static Node findOrCreateSectorDriveRoot(Node root, GraphDatabaseService service, boolean isNewTransaction) {
+//
+//        GraphDatabaseService neo = isNewTransaction ? service : null;
+//        Transaction tx = beginTx(neo);
+//        try {
+//            Relationship relation = root.getSingleRelationship(NetworkRelationshipTypes.SECTOR_DRIVE, Direction.OUTGOING);
+//            if (relation != null) {
+//                return relation.getOtherNode(root);
+//            }
+//            Node result = service.createNode();
+//            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.ROOT_SECTOR_DRIVE.getId());
+//            result.setProperty(INeoConstants.PROPERTY_NAME_NAME, INeoConstants.ROOT_SECTOR_DRIVE);
+//            root.createRelationshipTo(result, NetworkRelationshipTypes.SECTOR_DRIVE);
+//            successTx(tx);
+//            return result;
+//        } finally {
+//            finishTx(tx);
+//        }
+//
+//    }
 
     /**
      * find or create sector-drive node.
@@ -1177,43 +1178,43 @@ public class Utils {
      * @param isNewTransaction the is new transaction
      * @return sector-drive node
      */
-    public static Node findOrCreateSectorDrive(String aDriveName, Node sectorDriveRoot, Node mpNode, GraphDatabaseService service, boolean isNewTransaction) {
-        GraphDatabaseService neo = isNewTransaction ? service : null;
-        Transaction tx = beginTx(neo);
-        try {
-            final Object idProperty = mpNode.getProperty(INeoConstants.SECTOR_ID_PROPERTIES, null);
-            if (idProperty == null) {
-                return null;
-            }
-            if (mpNode.hasRelationship(NetworkRelationshipTypes.DRIVE, Direction.INCOMING)) {
-                return mpNode.getSingleRelationship(NetworkRelationshipTypes.DRIVE, Direction.INCOMING).getOtherNode(mpNode);
-            }
-            Iterator<Node> iterator = sectorDriveRoot.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    Node node = currentPos.currentNode();
-                    Object id = node.getProperty(INeoConstants.SECTOR_ID_PROPERTIES, null);
-
-                    return id != null && idProperty.equals(id);
-                }
-            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
-            Node result;
-            if (iterator.hasNext()) {
-                result = iterator.next();
-            } else {
-                result = service.createNode();
-                result.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, idProperty);
-                sectorDriveRoot.createRelationshipTo(result, NetworkRelationshipTypes.CHILD);
-            }
-            Relationship relation = result.createRelationshipTo(mpNode, NetworkRelationshipTypes.DRIVE);
-            relation.setProperty(INeoConstants.DRIVE_GIS_NAME, aDriveName);
-            successTx(tx);
-            return result;
-        } finally {
-            finishTx(tx);
-        }
-    }
+//    public static Node findOrCreateSectorDrive(String aDriveName, Node sectorDriveRoot, Node mpNode, GraphDatabaseService service, boolean isNewTransaction) {
+//        GraphDatabaseService neo = isNewTransaction ? service : null;
+//        Transaction tx = beginTx(neo);
+//        try {
+//            final Object idProperty = mpNode.getProperty(INeoConstants.SECTOR_ID_PROPERTIES, null);
+//            if (idProperty == null) {
+//                return null;
+//            }
+//            if (mpNode.hasRelationship(NetworkRelationshipTypes.DRIVE, Direction.INCOMING)) {
+//                return mpNode.getSingleRelationship(NetworkRelationshipTypes.DRIVE, Direction.INCOMING).getOtherNode(mpNode);
+//            }
+//            Iterator<Node> iterator = sectorDriveRoot.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+//
+//                @Override
+//                public boolean isReturnableNode(TraversalPosition currentPos) {
+//                    Node node = currentPos.currentNode();
+//                    Object id = node.getProperty(INeoConstants.SECTOR_ID_PROPERTIES, null);
+//
+//                    return id != null && idProperty.equals(id);
+//                }
+//            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
+//            Node result;
+//            if (iterator.hasNext()) {
+//                result = iterator.next();
+//            } else {
+//                result = service.createNode();
+//                result.setProperty(INeoConstants.SECTOR_ID_PROPERTIES, idProperty);
+//                sectorDriveRoot.createRelationshipTo(result, NetworkRelationshipTypes.CHILD);
+//            }
+//            Relationship relation = result.createRelationshipTo(mpNode, NetworkRelationshipTypes.DRIVE);
+//            relation.setProperty(INeoConstants.DRIVE_GIS_NAME, aDriveName);
+//            successTx(tx);
+//            return result;
+//        } finally {
+//            finishTx(tx);
+//        }
+//    }
 
     /**
      * Finds or create if not exist child node. Assumes existence of transaction.
@@ -1343,41 +1344,41 @@ public class Utils {
      * @param service - neo service if null then transaction do not created
      * @return sector node or null if sector not found
      */
-    public static Node linkWithSector(Node networkGis, Node sectorDrive, GraphDatabaseService service) {
-        Transaction tx = beginTx(service);
-        try {
-            // TODO use index?
-            String networkName = getSimpleNodeName(networkGis, "");
-            for (Relationship relation : sectorDrive.getRelationships(NetworkRelationshipTypes.SECTOR, Direction.OUTGOING)) {
-                if (networkName.equals(relation.getProperty(INeoConstants.NETWORK_GIS_NAME, ""))) {
-                    return relation.getOtherNode(sectorDrive);
-                }
-            }
-            final Object id = sectorDrive.getProperty(INeoConstants.SECTOR_ID_PROPERTIES);
-            Iterator<Node> iterator = networkGis.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
-
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    Node node = currentPos.currentNode();
-                    if (!node.hasProperty("ci")) {
-                        return false;
-                    }
-                    return node.getProperty("ci").equals(id);
-                }
-            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
-            if (!iterator.hasNext()) {
-                return null;
-            }
-            Node result = iterator.next();
-            Relationship relation = sectorDrive.createRelationshipTo(result, NetworkRelationshipTypes.SECTOR);
-            relation.setProperty(INeoConstants.NETWORK_GIS_NAME, networkName);
-            successTx(tx);
-            return result;
-        } finally {
-            finishTx(tx);
-        }
-
-    }
+//    public static Node linkWithSector(Node networkGis, Node sectorDrive, GraphDatabaseService service) {
+//        Transaction tx = beginTx(service);
+//        try {
+//            // TODO use index?
+//            String networkName = getSimpleNodeName(networkGis, "");
+//            for (Relationship relation : sectorDrive.getRelationships(NetworkRelationshipTypes.SECTOR, Direction.OUTGOING)) {
+//                if (networkName.equals(relation.getProperty(INeoConstants.NETWORK_GIS_NAME, ""))) {
+//                    return relation.getOtherNode(sectorDrive);
+//                }
+//            }
+//            final Object id = sectorDrive.getProperty(INeoConstants.SECTOR_ID_PROPERTIES);
+//            Iterator<Node> iterator = networkGis.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+//
+//                @Override
+//                public boolean isReturnableNode(TraversalPosition currentPos) {
+//                    Node node = currentPos.currentNode();
+//                    if (!node.hasProperty("ci")) {
+//                        return false;
+//                    }
+//                    return node.getProperty("ci").equals(id);
+//                }
+//            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
+//            if (!iterator.hasNext()) {
+//                return null;
+//            }
+//            Node result = iterator.next();
+//            Relationship relation = sectorDrive.createRelationshipTo(result, NetworkRelationshipTypes.SECTOR);
+//            relation.setProperty(INeoConstants.NETWORK_GIS_NAME, networkName);
+//            successTx(tx);
+//            return result;
+//        } finally {
+//            finishTx(tx);
+//        }
+//
+//    }
 
     /**
      * get list of all event of mp node.

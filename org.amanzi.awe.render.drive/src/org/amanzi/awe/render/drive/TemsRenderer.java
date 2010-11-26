@@ -641,9 +641,6 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 prev_p = null;// else we do not show selected node
                 // Now draw the actual points
                 for (GeoNode node : geoNeo.getGeoNodes(bounds_transformed)) {
-                    if (node.getNode().hasRelationship( NetworkRelationshipTypes.DRIVE)){
-                        System.out.print("ssssssss");
-                    }
                     if (filterMp != null) {
                         if (!filterMp.filterNodesByTraverser(node.getNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.LOCATION,Direction.INCOMING)).isValid()) {
                             continue;
@@ -759,9 +756,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                         break;
                     // TODO refactor
                     final Node mpNode = node.getNode();
-                    if (mpNode.hasRelationship( NetworkRelationshipTypes.DRIVE)){
-                        System.out.print("ssssssss");
-                    }
+                    
                     if (needDrawLines) {
                         Long time = NeoUtils.getNodeTime(mpNode);
                         // if (true) {
@@ -786,63 +781,77 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                             } else {
                                 lineColor = FADE_LINE;
                             }
-                            Iterator<Relationship> links = mpNode.getRelationships(NetworkRelationshipTypes.DRIVE, Direction.INCOMING).iterator();
                             
-                            Relationship relation = null;
+//                          while (links.hasNext()) {
+//                        	Relationship link = links.next();
+//                        	
+//                        	if (!links.hasNext() && (!link.hasProperty(INeoConstants.NETWORK_GIS_NAME))) {
+//                        		relation = link;
+//                        		break;
+//                        	}
+//                        	else if (geoNeo.getName().equals(link.getProperty(INeoConstants.NETWORK_GIS_NAME))) {
+//                        		relation = link;
+//                        		break;
+//                        	}
+//                        }
+                            
+                            Iterator<Relationship> links = mpNode.getRelationships(GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING).iterator();
+                            HashSet<Node> mNodes = new HashSet<Node>();
                             while (links.hasNext()) {
-                            	Relationship link = links.next();
-                            	
-                            	if (!links.hasNext() && (!link.hasProperty(INeoConstants.NETWORK_GIS_NAME))) {
-                            		relation = link;                        		
-                            	}
-                            	else if (geoNeo.getName().equals(link.getProperty(INeoConstants.NETWORK_GIS_NAME))) {
-                            		relation = link;                        		
+                            	mNodes.add(links.next().getStartNode());
+                            }
+                            
+                            for(Node mNode : mNodes){
+                            	Iterator<Relationship> rels = mNode.getRelationships(CorrelationRelationshipTypes.CORRELATED, Direction.INCOMING).iterator();
+                            	while(rels.hasNext()){
+                            		Relationship singleLink = rels.next();
+                            		if ((!rels.hasNext() && (!singleLink.hasProperty(INeoConstants.NETWORK_GIS_NAME))) || geoNeo.getName().equals(singleLink.getProperty(INeoConstants.NETWORK_GIS_NAME))) {
+                            			
+                            			Relationship relationSector = singleLink.getStartNode().getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING);
+//                                        Node sectorDrive = singleLink.getEndNode().getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.INCOMING).getStartNode();
+//            get sector
+//                                        for (Relationship relationSector : sectorDrive.getRelationships(NetworkRelationshipTypes.SECTOR, Direction.OUTGOING)) {
+                                            Node sector = null;
+                                            Object networkGisName = relationSector.getProperty(INeoConstants.NETWORK_GIS_NAME);
+                                            IGeoResource networkGisNode = null;
+                                            for (IGeoResource networkResource : networkGeoNeo) {
+                                                GeoNeo networkGis = networkResource.resolve(GeoNeo.class, null);
+                                                if (networkGisName.equals(NeoUtils.getSimpleNodeName(networkGis.getMainGisNode(), ""))) {
+                                                    sector = relationSector.getEndNode();
+                                                    networkGisNode = networkResource;
+                                                    break;
+                                                }
+                                            }
+                                            if (sector != null) {
+                                                Pair<MathTransform, MathTransform> driveTransform = setCrsTransforms(networkGisNode.getInfo(monitor).getCRS());// TODO
+                                                Node site = sector.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(sector);
+                                                GeoNode siteGn = new GeoNode(site);
+                                                location = siteGn.getCoordinate();
+                                                try {
+                                                    JTS.transform(location, world_location, transform_d2w);
+                                                } catch (Exception e) {
+                                                    // JTS.transform(location, world_location,
+                                                    // transform_w2d.inverse());
+                                                }
+                                                java.awt.Point pSite = getContext().worldToPixel(world_location);
+                                                if (drawFull) {
+                                                    pSite = getSectorCenter(g, sector, pSite);
+                                                }
+                                                Color oldColor = g.getColor();
+                                                g.setColor(lineColor);
+                                                g.drawLine(p.x, p.y, pSite.x, pSite.y);
+                                                g.setColor(oldColor);
+                                                // restore old transform;
+                                                setCrsTransforms(driveTransform);
+                                            }
+//                                        }
+                                    
+                                		
+                                		break;
+                                	}
                             	}
                             }
                             
-                            
-                            if (relation != null) {
-                                Node sectorDrive = relation.getOtherNode(mpNode);
-    
-                                for (Relationship relationSector : sectorDrive.getRelationships(NetworkRelationshipTypes.SECTOR,
-                                        Direction.OUTGOING)) {
-                                    Node sector = null;
-                                    Object networkGisName = relationSector.getProperty(INeoConstants.NETWORK_GIS_NAME);
-                                    IGeoResource networkGisNode = null;
-                                    for (IGeoResource networkResource : networkGeoNeo) {
-                                        GeoNeo networkGis = networkResource.resolve(GeoNeo.class, null);
-                                        if (networkGisName.equals(NeoUtils.getSimpleNodeName(networkGis.getMainGisNode(), ""))) {
-                                            sector = relationSector.getOtherNode(sectorDrive);
-                                            networkGisNode = networkResource;
-                                            break;
-                                        }
-                                    }
-                                    if (sector != null) {
-                                        Pair<MathTransform, MathTransform> driveTransform = setCrsTransforms(networkGisNode.getInfo(
-                                                monitor).getCRS());// TODO
-                                        Node site = sector.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING)
-                                                .getOtherNode(sector);
-                                        GeoNode siteGn = new GeoNode(site);
-                                        location = siteGn.getCoordinate();
-                                        try {
-                                            JTS.transform(location, world_location, transform_d2w);
-                                        } catch (Exception e) {
-                                            // JTS.transform(location, world_location,
-                                            // transform_w2d.inverse());
-                                        }
-                                        java.awt.Point pSite = getContext().worldToPixel(world_location);
-                                        if (drawFull) {
-                                            pSite = getSectorCenter(g, sector, pSite);
-                                        }
-                                        Color oldColor = g.getColor();
-                                        g.setColor(lineColor);
-                                        g.drawLine(p.x, p.y, pSite.x, pSite.y);
-                                        g.setColor(oldColor);
-                                        // restore old transform;
-                                        setCrsTransforms(driveTransform);
-                                    }
-                                }
-                            }
                         }
                     }
                 }
