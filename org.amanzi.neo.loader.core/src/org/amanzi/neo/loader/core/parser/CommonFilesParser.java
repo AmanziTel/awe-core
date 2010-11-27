@@ -123,7 +123,6 @@ public abstract class CommonFilesParser<T extends IDataElement, C extends Common
     public static class FileElement implements IStructuredElement {
         private File file;
         private String descriptionFormat;
-
         /**
          * Instantiates a new file element.
          * 

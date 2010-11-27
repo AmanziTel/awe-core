@@ -26,11 +26,34 @@ import org.amanzi.neo.loader.core.saver.MetaData;
  * @since 1.0.0
  */
 public class AfpSaver extends AbstractSaver<LineTransferData> implements IStructuredSaver<LineTransferData> {
-
+    private int fileNum;
+    private AfpFileTypes type;
+    private boolean skipLoadFile;
+    
+    @Override
+    public void init(LineTransferData element) {
+        super.init(element);
+        fileNum=0;
+        skipLoadFile=false;
+    }
     @Override
     public void save(LineTransferData element) {
+        switch (type) {
+        case CELL:
+            saveCellLine(element);
+            break;
+
+        default:
+            break;
+        }
     }
 
+    /**
+     *
+     * @param element
+     */
+    private void saveCellLine(LineTransferData element) {
+    }
     @Override
     public void finishUp(LineTransferData element) {
     }
@@ -42,6 +65,16 @@ public class AfpSaver extends AbstractSaver<LineTransferData> implements IStruct
 
     @Override
     public boolean beforeSaveNewElement(LineTransferData element) {
+        if (skipLoadFile){
+            return true;
+        }
+        fileNum++;
+        type=AfpFileTypes.valueOf(element.get("afpType"));
+        if (fileNum==1&&type!=AfpFileTypes.CELL){
+            error("Not found Cite file");
+            skipLoadFile=true;
+            return true;
+        }
         return false;
     }
 
