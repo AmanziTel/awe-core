@@ -7,10 +7,10 @@ include_class 'org.amanzi.awe.catalog.neo.GeoNeo'
 module Amanzi
   module Report
     module Distribution
-      def run(map,drive,aggregation)
+      def run(map,drive,aggregation, suffix=nil)
         property=aggregation[:name]
         report "Distribution analysis of '#{drive}' #{property}" do |r|
-          r.file "#{property}_#{drive}.pdf"
+          r.file "#{property}_#{drive}#{suffix}.pdf"
           r.map "Drive map", :map=>map, :width=>600, :height=>400 do |m|
             layer=m.layers.find(:type=>'drive',:name=>drive).first
             layer.aggregation=aggregation
@@ -54,11 +54,19 @@ def automation
         resource = layer.findGeoResource(GeoNeo.java_class)
         if !resource.nil?
           geoNeo=resource.resolve(GeoNeo.java_class,nil)
-          GIS::setLayerVisibility(layer,geoNeo.getMainGisNode[:name]==gisNode[:name])
+          #          GIS::setLayerVisibility(layer,geoNeo.getMainGisNode[:name]==gisNode[:name]) if geoNeo.getMainGisNode[:gis_type]=='drive'
+          gisNode.rel(:NEXT).end_node.outgoing(:AGGREGATION).depth(1).each do |aggr|
+            run(map,gisNode[:name],aggr).save
+            drive_props=geoNeo.getProperties(GeoNeo::DRIVE_INQUIRER)
+            puts drive_props
+            if !drive_props.nil?
+              geoNeo.setProperty(GeoNeo::DRIVE_INQUIRER,nil)
+              run(map,gisNode[:name],aggr,"_no_lines").save
+              geoNeo.setProperty(GeoNeo::DRIVE_INQUIRER,drive_props)
+
+            end
+          end
         end
-      end
-      gisNode.rel(:NEXT).end_node.outgoing(:AGGREGATION).depth(1).each do |aggr|
-        run(map,gisNode[:name],aggr).save
       end
     end
   rescue =>e

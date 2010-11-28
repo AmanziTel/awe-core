@@ -81,7 +81,7 @@ public class StatisticsBuilder {
         this.neo = neo;
         this.ruby = ruby;
         this.dataset = dataset;
-       
+
     }
 
     /**
@@ -208,33 +208,35 @@ public class StatisticsBuilder {
                 .iterator();
         if (iterator.hasNext()) {
             Node sectorProxyNode = iterator.next().getStartNode();// correlated sector proxy node
-            Node sectorNode = sectorProxyNode.getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.INCOMING)
-                    .getStartNode();
-            Iterator<Node> iter = sectorNode.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
+            Relationship rel = sectorProxyNode.getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING);
+            if (rel != null) {
+                Node sectorNode = rel.getEndNode();
+                Iterator<Node> iter = sectorNode.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
 
-                @Override
-                public boolean isStopNode(TraversalPosition currentPos) {
-                    String type = (String)currentPos.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME);
-                    if (networkLevel.equals(type)) {
-                        return true;
+                    @Override
+                    public boolean isStopNode(TraversalPosition currentPos) {
+                        String type = (String)currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME);
+                        if (networkLevel.equals(type)) {
+                            return true;
+                        }
+                        if (NodeTypes.NETWORK.getId().equals(type)) {
+                            return true;
+                        }
+                        return false;
                     }
-                    if (NodeTypes.NETWORK.getId().equals(type)) {
-                        return true;
+
+                }, new ReturnableEvaluator() {
+
+                    @Override
+                    public boolean isReturnableNode(TraversalPosition currentPos) {
+                        String type = (String)currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME);
+                        return networkLevel.equals(type);
                     }
-                    return false;
+
+                }, GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).iterator();
+                if (iter.hasNext()) {
+                    return iter.next();
                 }
-
-            }, new ReturnableEvaluator() {
-
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    String type = (String)currentPos.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME);
-                    return networkLevel.equals(type);
-                }
-
-            }, GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).iterator();
-            if (iter.hasNext()) {
-                return iter.next();
             }
         }
         return null;
@@ -256,8 +258,8 @@ public class StatisticsBuilder {
             final String task = "Building stats for " + period.getId() + "/" + networkLevel;
             System.out.println(task);
             monitor.subTask(task);
-            Statistics statistics=buildHighLevelPeriodStatistics(template, startTime, endTime, period, networkLevel, networkDimension,
-                    timeDimension, uStatistics);
+            Statistics statistics = buildHighLevelPeriodStatistics(template, startTime, endTime, period, networkLevel,
+                    networkDimension, timeDimension, uStatistics);
             updateFlags(statistics);
             return statistics;
 
@@ -302,15 +304,15 @@ public class StatisticsBuilder {
                     long tt = System.currentTimeMillis();
                     RubyHash result = (RubyHash)ruby.evalScriptlet(script);
 
-                    // Node networkNode = findNetworkNode(node, "sector");
+                    Node networkNode = findNetworkNode(node, networkLevel);
                     // TODO use key property instead of key node name for non-correlated datasets
-                    String keyProperty = dsService.getKeyProperty(node);
+                    // String keyProperty = dsService.getKeyProperty(node);
                     StatisticsGroup group;
-                    // if (networkNode != null) {
-                    // group = findOrCreateGroup(statistics, networkNode);
-                    // } else {
-                    group = findOrCreateGroup(statistics, node.getProperty(networkLevel, "unknown").toString());
-                    // }
+                    if (networkNode != null) {
+                        group = findOrCreateGroup(statistics, networkNode);
+                    } else {
+                        group = findOrCreateGroup(statistics, node.getProperty(networkLevel, "unknown").toString());
+                    }
                     // add summary row first
                     StatisticsRow summaryRow = findOrCreateSummaryRow(group, summaries);
                     StatisticsRow row = findOrCreateRow(group, currentStartTime, period);
@@ -340,7 +342,7 @@ public class StatisticsBuilder {
                 currentStartTime = nextStartTime;
                 nextStartTime = getNextStartDate(period, endTime, currentStartTime);
                 System.out.println("total=" + count + "\tCalc for period=" + (System.currentTimeMillis() - startForPeriod)
-                        + "\tper node" + (total / nodes.size()!=0?nodes.size():1));
+                        + "\tper node" + (total / (nodes.size() != 0 ? nodes.size() : 1)));
                 monitor.worked(1);
             } while (currentStartTime < endTime);
             updateFlags(statistics);
@@ -349,7 +351,6 @@ public class StatisticsBuilder {
     }
 
     /**
-     *
      * @param group
      * @param summaryRow
      * @param row
@@ -360,45 +361,48 @@ public class StatisticsBuilder {
     private void checkThreshold(StatisticsGroup group, StatisticsRow summaryRow, StatisticsRow row, TemplateColumn column,
             StatisticsCell cell, StatisticsCell summaryCell) {
         Threshold threshold = column.getThreshold();
-        if (threshold!=null){
+        if (threshold != null) {
             Number thresholdValue = threshold.getThresholdValue();
             Condition condition = threshold.getCondition();
-            switch (condition){
+            switch (condition) {
             case LT:
-                if (thresholdValue.doubleValue()<cell.getValue().doubleValue()){
+                if (thresholdValue.doubleValue() < cell.getValue().doubleValue()) {
                     cell.setFlagged(true);
-                    System.out.println(group.getGroupName()+"/"+cell.getName()+": threshold ("+thresholdValue+")is exceeded ("+cell.getValue()+")");
-                }else{
+                    System.out.println(group.getGroupName() + "/" + cell.getName() + ": threshold (" + thresholdValue
+                            + ")is exceeded (" + cell.getValue() + ")");
+                } else {
                     cell.setFlagged(false);
                 }
-                if (thresholdValue.doubleValue()<summaryCell.getValue().doubleValue()){
+                if (thresholdValue.doubleValue() < summaryCell.getValue().doubleValue()) {
                     summaryCell.setFlagged(true);
-                    System.out.println(group.getGroupName()+"/"+summaryCell.getName()+": threshold ("+thresholdValue+") is exceeded by average value ("+summaryCell.getValue()+")");
-                }else{
+                    System.out.println(group.getGroupName() + "/" + summaryCell.getName() + ": threshold (" + thresholdValue
+                            + ") is exceeded by average value (" + summaryCell.getValue() + ")");
+                } else {
                     summaryCell.setFlagged(false);
-                    
+
                 }
-                default:
+            default:
             }
         }
     }
-    private void updateFlags(Statistics  statistics) {
+
+    private void updateFlags(Statistics statistics) {
         Collection<StatisticsGroup> groups = statistics.getGroups().values();
         for (StatisticsGroup group : groups) {
-                Collection<StatisticsRow> rows = group.getRows().values();
-                for (StatisticsRow row : rows) {
-                        Collection<StatisticsCell> cells = row.getCells().values();
-                        for (StatisticsCell cell : cells) {
-                            if (cell.isFlagged()) {
-                                row.setFlagged(true);
-                            }
-                        }
-                        if (row.isFlagged()) {
-                            group.setFlagged(true);
-                        }
+            Collection<StatisticsRow> rows = group.getRows().values();
+            for (StatisticsRow row : rows) {
+                Collection<StatisticsCell> cells = row.getCells().values();
+                for (StatisticsCell cell : cells) {
+                    if (cell.isFlagged()) {
+                        row.setFlagged(true);
+                    }
+                }
+                if (row.isFlagged()) {
+                    group.setFlagged(true);
+                }
             }
         }
-        
+
     }
 
     /**

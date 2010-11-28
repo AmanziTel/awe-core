@@ -29,6 +29,7 @@ public class Count implements IAggregationFunction {
 
     public Count(boolean acceptsNulls) {
         this.acceptsNulls = acceptsNulls;
+        count=0;
     }
 
     public Count() {

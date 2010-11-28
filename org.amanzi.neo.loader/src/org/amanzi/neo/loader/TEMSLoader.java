@@ -88,18 +88,19 @@ public class TEMSLoader extends DriveLoader {
         initializeKnownHeaders();
         addDriveIndexes();
     }
-    
+
     /**
-     * Constructor for loading data in AWE, with specified display and dataset, but no NeoService and workdate
+     * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
+     * and workdate
      * 
      * @param filename of file to load
      * @param display for opening message dialogs
      * @param dataset to add data to
      */
     public TEMSLoader(String filename, Display display, String dataset, Node mNode, Node virtualMnode) {
-    	_workDate = new GregorianCalendar();
-    	_workDate.setTimeInMillis(System.currentTimeMillis());
-    	driveType = DriveTypes.TEMS;
+        _workDate = new GregorianCalendar();
+        _workDate.setTimeInMillis(System.currentTimeMillis());
+        driveType = DriveTypes.TEMS;
         this.mNode = mNode;
         virtualMnode = null;
         initialize("TEMS", null, filename, display, dataset);
@@ -231,8 +232,8 @@ public class TEMSLoader extends DriveLoader {
                 return originalValue.replaceAll("HO Command.*", "HO Command");
             }
         });
-        
-        //lagutko, add additional header for cell id
+
+        // lagutko, add additional header for cell id
         addKnownHeader(1, INeoConstants.SECTOR_ID_PROPERTIES, ".*Cell.*Id.*", true);
 
         final SimpleDateFormat df = new SimpleDateFormat(TIMESTAMP_DATE_FORMAT);
@@ -247,6 +248,8 @@ public class TEMSLoader extends DriveLoader {
                     SimpleDateFormat dfn = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss.SSS");
                     try {
                         datetime = dfn.parse(time);
+                        _workDate.setTimeInMillis(datetime.getTime());
+                        hasDate=true;
                     } catch (ParseException e1) {
                         error(e.getLocalizedMessage());
                         return 0L;
@@ -356,8 +359,8 @@ public class TEMSLoader extends DriveLoader {
         }
         if ((latitude != null)
                 && (longitude != null)
-                && (((currentLatitude == null) && (currentLongitude == null)) || ((Math.abs(currentLatitude - latitude) > 10E-10) || (Math.abs(currentLongitude
-                        - longitude) > 10E-10)))) {
+                && (((currentLatitude == null) && (currentLongitude == null)) || ((Math.abs(currentLatitude - latitude) > 10E-10) || (Math
+                        .abs(currentLongitude - longitude) > 10E-10)))) {
             currentLatitude = latitude;
             currentLongitude = longitude;
             saved = saveData(); // persist the current data to database
@@ -409,8 +412,8 @@ public class TEMSLoader extends DriveLoader {
                 first_line = lineNumber;
             last_line = lineNumber;
             this.incValidChanged();
-            debug(time + ": server channel[" + channel + "] pn[" + pn_code + "] Ec/Io[" + ec_io + "]\t" + event + "\t" + this.currentLatitude + "\t"
-                    + this.currentLongitude);
+            debug(time + ": server channel[" + channel + "] pn[" + pn_code + "] Ec/Io[" + ec_io + "]\t" + event + "\t"
+                    + this.currentLatitude + "\t" + this.currentLongitude);
             for (int i = 1; i <= measurement_count; i++) {
                 // Delete invalid data, as you can have empty ec_io
                 // zero ec_io is correct, but empty ec_io is not
@@ -583,6 +586,8 @@ public class TEMSLoader extends DriveLoader {
             } finally {
                 transaction.finish();
             }
+        } else {
+            debug("Nothing to store for "+dataset);
         }
         signals.clear();
         data.clear();
@@ -655,13 +660,15 @@ public class TEMSLoader extends DriveLoader {
 
         Transaction transaction = neo.beginTx();
         try {
-            Iterator<Node> gisNodes = datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+            Iterator<Node> gisNodes = datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH,
+                    new ReturnableEvaluator() {
 
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    return NeoUtils.isGisNode(currentPos.currentNode());
-                }
-            }, GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).iterator();
+                        @Override
+                        public boolean isReturnableNode(TraversalPosition currentPos) {
+                            return NeoUtils.isGisNode(currentPos.currentNode());
+                        }
+                    }, GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT,
+                    Direction.INCOMING).iterator();
 
             while (gisNodes.hasNext()) {
                 result.add(gisNodes.next());

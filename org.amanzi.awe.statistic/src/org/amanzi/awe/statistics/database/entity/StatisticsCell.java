@@ -69,7 +69,7 @@ public class StatisticsCell {
     }
 
     public Number getValue() {
-        return (Number)node.getProperty(INeoConstants.PROPERTY_VALUE_NAME);
+        return (Number)node.getProperty(INeoConstants.PROPERTY_VALUE_NAME,null);
     }
 
     public void setName(String name) {

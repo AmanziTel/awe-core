@@ -53,6 +53,7 @@ public abstract class DriveLoader extends AbstractLoader {
     protected Integer hours = null;
     protected Calendar _workDate = null;
     protected boolean needParceHeader = true;
+    protected boolean hasDate;
     private String luceneIndexName;
 
     protected GisTypes gisType;
@@ -416,7 +417,8 @@ public abstract class DriveLoader extends AbstractLoader {
             return 0L;
         }
         final int nodeHours = nodeDate.getHours();
-        if (hours != null && hours > nodeHours) {
+        final int nodeDay = nodeDate.getDay();
+        if (!hasDate && hours != null && hours > nodeHours) {
             // next day
             _workDate.add(Calendar.DAY_OF_MONTH, 1);
 

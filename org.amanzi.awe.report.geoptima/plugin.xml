@@ -28,5 +28,11 @@
          </toolbar>
       </menuContribution>
    </extension>
+   <extension
+         point="org.rubypeople.rdt.ui.scriptsProvider">
+      <provider
+            class="org.amanzi.awe.report.geoptima.GeoptimaScriptsProvider">
+      </provider>
+   </extension>
 
 </plugin>

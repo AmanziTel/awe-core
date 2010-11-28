@@ -18,10 +18,12 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import net.refractions.udig.catalog.IGeoResource;
@@ -31,9 +33,20 @@ import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.internal.render.ViewportModel;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
+import org.amanzi.awe.report.charts.ChartType;
+import org.amanzi.awe.report.charts.Charts;
+import org.amanzi.awe.report.model.Chart;
+import org.amanzi.awe.report.model.Report;
 import org.amanzi.awe.report.model.ReportModel;
-import org.amanzi.awe.report.wizards.SelectDataPage;
+import org.amanzi.awe.report.pdf.PDFPrintingEngine;
 import org.amanzi.awe.reports.geoptima.GeoptimaReportsPlugin;
+import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.statistics.builder.StatisticsBuilder;
+import org.amanzi.awe.statistics.database.entity.Statistics;
+import org.amanzi.awe.statistics.template.Template;
+import org.amanzi.awe.statistics.utils.ChartUtilities;
+import org.amanzi.awe.statistics.utils.ScriptUtils;
+import org.amanzi.awe.views.kpi.KPIPlugin;
 import org.amanzi.awe.views.reuse.Distribute;
 import org.amanzi.awe.views.reuse.Select;
 import org.amanzi.awe.views.reuse.views.DefaultColorer;
@@ -51,6 +64,15 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.widgets.Display;
+import org.jfree.chart.axis.DateAxis;
+import org.jfree.chart.axis.DateTickUnit;
+import org.jfree.chart.axis.DateTickUnitType;
+import org.jfree.chart.axis.TickUnits;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
+import org.jruby.Ruby;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -59,8 +81,8 @@ import org.neo4j.helpers.Predicate;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
- * GeOptima report wizard that automatically loads the data, creates necessary distribution
- * analysis and generates reports
+ * GeOptima report wizard that automatically loads the data, creates necessary distribution analysis
+ * and generates reports
  * 
  * @author Pechko_E
  * @since 1.0.0
@@ -71,9 +93,13 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
     private SelectDataPage selectDataPage;
     private ReportModel reportModel;
     private static final String MESSAGE = "%s (Step %d of %d)";
-    private static final int STEP_COUNT = 5;
+    private static final int STEP_COUNT = 4;
     private int step = 0;
-    private List<Node> datasetNodes=new ArrayList<Node>();
+    private List<Node> datasetNodes = new ArrayList<Node>();
+    private GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
+    private Node dataset;
+    private List<Statistics> stats=new ArrayList<Statistics>();
+    protected Template template;;
 
     @Override
     public void addPages() {
@@ -87,18 +113,14 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
         setNeedsProgressMonitor(true);
         initializeReportEngine();
 
-        String directory = selectDataPage.getDirectory();
-        final File[] files = getFilesToLoad(directory);
-        final int filesCount = files.length;
-        final GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
-
-        loadFiles(files);
         // build distribution analysis for all numeric properties except lat, long and time
-        createDistribution(filesCount, service);
+        createDistribution(service);
         // TODO build distribution analysis for some string properties like event_id
         // TODO zoom to business districts
-        addLayersToMap(filesCount, service);
-        generateReports();
+        // addLayersToMap(service);
+        generateReportsForDistribution();
+        createStatistics();
+        generateReportsForStatistics();
         return true;
     }
 
@@ -107,7 +129,7 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
      */
     private void initializeReportEngine() {
         try {
-            nextStep();
+//            nextStep();
             URL entry = Platform.getBundle(GeoptimaReportsPlugin.PLUGIN_ID).getEntry("ruby");
             URL scriptURL = FileLocator.toFileURL(GeoptimaReportsPlugin.getDefault().getBundle().getEntry("ruby/automation.rb"));
             String path = scriptURL.getPath();
@@ -119,9 +141,94 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
     }
 
     /**
+     * Generates reports for all network elements
+     */
+    public void generateReportsForStatistics() {
+        nextStep();
+        selectDataPage.setTitle(String.format(MESSAGE, "Creating reports for stats", step, STEP_COUNT));
+        try {
+            getContainer().run(true, true, new IRunnableWithProgress() {
+
+                @Override
+                public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    long t = System.currentTimeMillis();
+                    monitor.beginTask("Generating PDf reports for statistics...", stats.size()*template.getColumns().size());
+                    for (Statistics statistics : stats) {
+                        final Map<String, Map<String, TimeSeries[]>> datasets;
+                        datasets = ChartUtilities.createChartDatasets(statistics, getAggregation().getId(), template);
+                        System.out.println("Finished generating datasets in " + (System.currentTimeMillis() - t) / 1000
+                                + " seconds");
+                        Map<String, Report> reportsPerKPI = new HashMap<String, Report>();
+                        for (Entry<String, Map<String, TimeSeries[]>> entry : datasets.entrySet()) {
+                            String groupName = entry.getKey();
+                            for (Entry<String, TimeSeries[]> e : entry.getValue().entrySet()) {
+                                String kpiName = e.getKey();
+                                Report report = reportsPerKPI.get(kpiName);
+                                if (report == null) {
+                                    report = new Report("KPI report");
+                                    report.setFile(kpiName +" for "+statistics.getName().replace(",", "-")+ ".pdf");
+                                    reportsPerKPI.put(kpiName, report);
+                                }
+
+                                Chart chart = new Chart(groupName);
+                                chart.addSubtitle(kpiName);
+                                ChartType chartType = ChartType.COMBINED;
+                                chart.setChartType(chartType);
+                                chart.setDomainAxisLabel("Value");
+                                chart.setRangeAxisLabel("Time");
+                                chart.setWidth(400);
+                                chart.setHeight(300);
+                                TimeSeries[] series = e.getValue();
+
+                                addDataToTimeChart(chart, series);
+                                report.addPart(chart);
+                            }
+
+                        }
+                        // save reports
+                        PDFPrintingEngine printingEngine = new PDFPrintingEngine();
+                        for (Report report : reportsPerKPI.values()) {
+                            printingEngine.printReport(report);
+                            monitor.worked(1);
+                        }
+                    }
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            // TODO: handle exception
+        }
+    }
+    /**
+     * Adds data to a time(line) chart
+     * 
+     * @param chart chart
+     * @param series series array
+     */
+    private void addDataToTimeChart(Chart chart, TimeSeries[] series) {
+        TimeSeriesCollection values = new TimeSeriesCollection();
+        values.addSeries(series[1]);
+        TimeSeriesCollection thresholds = new TimeSeriesCollection();
+        thresholds.addSeries(series[0]);
+        XYPlot plot = new XYPlot();
+        DateAxis dateAxis = new DateAxis();
+////        dateAxis.setAutoTickUnitSelection(true);
+////        dateAxis.setAutoRange(true);
+//        TickUnits tickUnits = new TickUnits();
+//        tickUnits.add(new DateTickUnit(DateTickUnitType.MONTH,1,new SimpleDateFormat("MMMMM")));
+//        dateAxis.setStandardTickUnits(tickUnits);
+//        dateAxis.setVerticalTickLabels(true);
+
+        plot.setDomainAxis(dateAxis);
+        Charts.applyDefaultSettingsToDataset(plot, thresholds, 0);
+        Charts.applyDefaultSettingsToDataset(plot, values, 1);
+        Charts.applyMainVisualSettings(plot, chart.getDomainAxisLabel(), chart.getRangeAxisLabel(), PlotOrientation.VERTICAL);
+        chart.setPlot(plot);
+    }
+    /**
      * Generates reports for all 'drive' layers found in map
      */
-    private void generateReports() {
+    private void generateReportsForDistribution() {
         try {
             nextStep();
             selectDataPage.setTitle(String.format(MESSAGE, "Creating reports", step, STEP_COUNT));
@@ -223,6 +330,28 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
         return files;
     }
 
+    private void createStatistics() {
+        nextStep();
+        selectDataPage.setTitle(String.format(MESSAGE, "Buiding stats", step, STEP_COUNT));
+        try {
+            getContainer().run(true, true, new IRunnableWithProgress() {
+                @Override
+                public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    template = ScriptUtils.createTemplateForScript("geoptima/formulas.rb", "KPI::Geoptima", "default",
+                            Template.DataType.TEMS);
+                    Ruby ruby = KPIPlugin.getDefault().getRubyRuntime();
+                    StatisticsBuilder builder = new StatisticsBuilder(service, dataset, ruby);
+                    stats.add(builder.buildStatistics(template, "imei", getAggregation(), monitor));
+                    stats.add(builder.buildStatistics(template, "sector", getAggregation(), monitor));
+                }
+            });
+        } catch (Exception e) {
+            // TODO Handle InterruptedException
+            LOGGER.error(e.getLocalizedMessage(), e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+    }
+
     /**
      * Creates distribution analysis for all datasets loaded
      * <p>
@@ -231,63 +360,59 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
      * @param filesCount
      * @param service
      */
-    private void createDistribution(final int filesCount, final GraphDatabaseService service) {
+    private void createDistribution(final GraphDatabaseService service) {
         nextStep();
-        selectDataPage.setTitle(String.format(MESSAGE, "Buiding statistics", step, STEP_COUNT));
+        selectDataPage.setTitle(String.format(MESSAGE, "Buiding distribution stats", step, STEP_COUNT));
         try {
             getContainer().run(true, true, new IRunnableWithProgress() {
 
                 @Override
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    monitor.beginTask("Creation distributions", filesCount);
-                    int i = 0;
-                    for (Node node : datasetNodes) {
-                        i++;
+                    monitor.beginTask("Creation distributions", 1);
 
-                        String datasetName = node.getProperty("name").toString();
-                        monitor.subTask(datasetName.toString());
+                    String datasetName = dataset.getProperty("name").toString();
+                    monitor.subTask(datasetName.toString());
 
-                         String[] fields = new String[] {"signal_strength"};
-//                        String[] fields = new String[] {"signal_strength", "imei", "rxqual", "ec_io"};
-                        // String[] fields =
-                        // PropertyHeader.getPropertyStatistic(node).getNumericFields(NodeTypes.M.getId());
+                    String[] fields = new String[] {"signal_strength", "imei"};
+                    // String[] fields = new String[] {"signal_strength", "imei", "rxqual",
+                    // "ec_io"};
+                    // String[] fields =
+                    // PropertyHeader.getPropertyStatistic(node).getNumericFields(NodeTypes.M.getId());
 
-                        for (String field : fields) {
-                            updateMessage("Dataset (" + i + " of " + filesCount + "):\n" + datasetName
-                                    + "\nBuiding statistics for '" + field);
-                            ReuseAnalyserModel model = new ReuseAnalyserModel(new HashMap<String, String[]>(),
-                                    getPropertyReturnableEvaluator(node), service);
-                            Transaction tx = NeoUtils.beginTransaction();
-                            try {
-                                model.setCurrenTransaction(tx);
-                                Node aggregation = model.findOrCreateAggregateNode(node, field, false, Distribute.AUTO.toString(), Select.EXISTS
-                                        .toString(), monitor);
-                                tx = model.getCurrenTransaction();
-                                tx.success();
-                                DefaultColorer.addColors(aggregation, service);
-                            } catch (Exception e) {
-                                LOGGER.error(e.getLocalizedMessage(), e);
-                            } finally {
-                                monitor.done();
-                                tx.finish();
-                            }
-                        }
+                    for (String field : fields) {
+                        updateMessage("Dataset:\n" + datasetName + "\nBuiding stats for '" + field);
                         ReuseAnalyserModel model = new ReuseAnalyserModel(new HashMap<String, String[]>(),
-                                getPropertyReturnableEvaluator(node), service);
+                                getPropertyReturnableEvaluator(dataset), service);
                         Transaction tx = NeoUtils.beginTransaction();
                         try {
                             model.setCurrenTransaction(tx);
-                            Node aggregation = model.findOrCreateAggregateNode(node, "event_id", true, Distribute.AUTO.toString(), Select.EXISTS
-                                    .toString(), monitor);
-                            DefaultColorer.addColors(aggregation, service);
+                            Node aggregation = model.findOrCreateAggregateNode(dataset, field, false, Distribute.AUTO.toString(),
+                                    Select.EXISTS.toString(), monitor);
                             tx = model.getCurrenTransaction();
                             tx.success();
+                            DefaultColorer.addColors(aggregation, service);
                         } catch (Exception e) {
                             LOGGER.error(e.getLocalizedMessage(), e);
                         } finally {
                             monitor.done();
                             tx.finish();
                         }
+                    }
+                    ReuseAnalyserModel model = new ReuseAnalyserModel(new HashMap<String, String[]>(),
+                            getPropertyReturnableEvaluator(dataset), service);
+                    Transaction tx = NeoUtils.beginTransaction();
+                    try {
+                        model.setCurrenTransaction(tx);
+                        Node aggregation = model.findOrCreateAggregateNode(dataset, "event_id", true, Distribute.AUTO.toString(),
+                                Select.EXISTS.toString(), monitor);
+                        DefaultColorer.addColors(aggregation, service);
+                        tx = model.getCurrenTransaction();
+                        tx.success();
+                    } catch (Exception e) {
+                        LOGGER.error(e.getLocalizedMessage(), e);
+                    } finally {
+                        monitor.done();
+                        tx.finish();
                     }
                 }
             });
@@ -324,9 +449,9 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
                             loader.setLimit(100);
                             loader.run(monitor);
                             Node datasetNode = loader.getDatasetNode();
-                            if (datasetNode==null){
-                                LOGGER.debug("ds==null for "+file.getName());
-                            }else{
+                            if (datasetNode == null) {
+                                LOGGER.debug("ds==null for " + file.getName());
+                            } else {
                                 datasetNodes.add(datasetNode);
                             }
                         }
@@ -381,6 +506,35 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
 
             }
         });
+    }
+
+    /**
+     * @return Returns the service.
+     */
+    public GraphDatabaseService getService() {
+        return service;
+    }
+
+    /**
+     * @return Returns the dataset.
+     */
+    public Node getDataset() {
+        return dataset;
+    }
+
+    /**
+     * @param dataset The dataset to set.
+     */
+    public void setDataset(Node dataset) {
+        this.dataset = dataset;
+    }
+
+    /**
+     *
+     * @return
+     */
+    private CallTimePeriods getAggregation() {
+        return CallTimePeriods.HOURLY;
     }
 
 }

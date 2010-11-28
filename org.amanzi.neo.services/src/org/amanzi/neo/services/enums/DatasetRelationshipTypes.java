@@ -24,5 +24,5 @@ import org.neo4j.graphdb.RelationshipType;
  * @since 1.0.0
  */
 public enum DatasetRelationshipTypes implements RelationshipType {
-    CHILD, NEXT, LOCATION, AWE_PROJECT, GPEH_STATISTICS, GLOBAL_PROPERTIES;
+    CHILD, NEXT, LOCATION, AWE_PROJECT, GPEH_STATISTICS, GLOBAL_PROPERTIES,KEY;
 }

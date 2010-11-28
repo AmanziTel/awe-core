@@ -298,6 +298,6 @@ public class KPIPlugin extends AbstractUIPlugin {
     }
 
     public void loadScript(String scriptName) {
-        runtime.evalScriptlet(String.format("KPI.module_eval {load '%s'}",scriptName));
+        getRubyRuntime().evalScriptlet(String.format("KPI.module_eval {load '%s'}",scriptName));
     }
 }
