@@ -106,6 +106,7 @@
       <module>org.amanzi.awe.render.drive</module>
       <module>org.amanzi.awe.render.network</module>
       <module>org.amanzi.awe.report</module>
+      <module>org.amanzi.awe.report.geoptima</module>
       <module>org.amanzi.awe.script</module>
       <module>org.amanzi.awe.script.jirb</module>
       <module>org.amanzi.awe.startup.splash</module>
