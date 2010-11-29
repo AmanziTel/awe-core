@@ -370,6 +370,9 @@ public class TemsRemoteUrlLoader extends DriveLoader {
 			System.out.println("SKIPPED data of date: " + time);
 			return 0;
 		}
+		if (!lineData.isEmpty()) {
+			data.add(lineData);
+		}
 		
 		if ((latitude != null)
 				&& (longitude != null)
@@ -379,9 +382,6 @@ public class TemsRemoteUrlLoader extends DriveLoader {
 			currentLatitude = latitude;
 			currentLongitude = longitude;
 			saved = saveData(); // persist the current data to database
-		}
-		if (!lineData.isEmpty()) {
-			data.add(lineData);
 		}
 		this.incValidLocation();
 
