@@ -47,6 +47,7 @@ import org.amanzi.awe.reports.geoptima.GeoptimaReportsPlugin;
 import org.amanzi.awe.statistic.CallTimePeriods;
 import org.amanzi.awe.statistics.builder.StatisticsBuilder;
 import org.amanzi.awe.statistics.database.entity.Statistics;
+import org.amanzi.awe.statistics.functions.AggregationFunctions;
 import org.amanzi.awe.statistics.template.Template;
 import org.amanzi.awe.statistics.template.TemplateColumn;
 import org.amanzi.awe.statistics.utils.ChartUtilities;
@@ -360,8 +361,8 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
                             Template.DataType.TEMS);
                     Ruby ruby = KPIPlugin.getDefault().getRubyRuntime();
                     StatisticsBuilder builder = new StatisticsBuilder(service, dataset, ruby);
-                    stats.add(builder.buildStatistics(template, "imei", getAggregation(), monitor));
                     stats.add(builder.buildStatistics(template, "network", getAggregation(), monitor));
+                    stats.add(builder.buildStatistics(template, "network", getAggregation().getUnderlyingPeriod(), monitor));
                 }
             });
         } catch (Exception e) {
@@ -389,14 +390,11 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     monitor.beginTask("Creation distributions", 1);
 
-                    String datasetName = dataset.getProperty("name").toString();
+                    String datasetName = dataset.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
                     monitor.subTask(datasetName.toString());
 
-                    String[] fields = new String[] {"signal_strength", "imei"};
-                    // String[] fields = new String[] {"signal_strength", "imei", "rxqual",
-                    // "ec_io"};
-                    // String[] fields =
-                    // PropertyHeader.getPropertyStatistic(node).getNumericFields(NodeTypes.M.getId());
+                    String[] fields = new String[] {"signal_strength"};
+                    String[] strFields = new String[] {"call_status","event_name"};
 
                     for (String field : fields) {
                         updateMessage("Dataset:\n" + datasetName + "\nBuiding stats for '" + field);
@@ -417,21 +415,24 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
                             tx.finish();
                         }
                     }
-                    ReuseAnalyserModel model = new ReuseAnalyserModel(new HashMap<String, String[]>(),
-                            getPropertyReturnableEvaluator(dataset), service);
-                    Transaction tx = NeoUtils.beginTransaction();
-                    try {
-                        model.setCurrenTransaction(tx);
-                        Node aggregation = model.findOrCreateAggregateNode(dataset, "event_id", true, Distribute.AUTO.toString(),
-                                Select.EXISTS.toString(), monitor);
-                        DefaultColorer.addColors(aggregation, service);
-                        tx = model.getCurrenTransaction();
-                        tx.success();
-                    } catch (Exception e) {
-                        LOGGER.error(e.getLocalizedMessage(), e);
-                    } finally {
-                        monitor.done();
-                        tx.finish();
+                    for (String field : strFields) {
+                        updateMessage("Dataset:\n" + datasetName + "\nBuiding stats for '" + field);
+                        ReuseAnalyserModel model = new ReuseAnalyserModel(new HashMap<String, String[]>(),
+                                getPropertyReturnableEvaluator(dataset), service);
+                        Transaction tx = NeoUtils.beginTransaction();
+                        try {
+                            model.setCurrenTransaction(tx);
+                            Node aggregation = model.findOrCreateAggregateNode(dataset, field, true, Distribute.AUTO.toString(),
+                                    Select.EXISTS.toString(), monitor);
+                            tx = model.getCurrenTransaction();
+                            tx.success();
+                            DefaultColorer.addColors(aggregation, service);
+                        } catch (Exception e) {
+                            LOGGER.error(e.getLocalizedMessage(), e);
+                        } finally {
+                            monitor.done();
+                            tx.finish();
+                        }
                     }
                 }
             });
@@ -507,7 +508,7 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
      * @return
      */
     private CallTimePeriods getAggregation() {
-        return CallTimePeriods.HOURLY;
+        return CallTimePeriods.DAILY;
     }
 
     /**
@@ -522,7 +523,7 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
             public void run() {
                 try {
                     URL url = FileLocator.toFileURL(GeoptimaReportsPlugin.getDefault().getBundle().getEntry(
-                            "ruby/report_template.rb"));
+                            "ruby/big_report_template.rb"));
                     String reportFileTemplate = ReportUtils.readScript(url.getPath());
 
                     IRubyProject rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, ApplicationGIS
@@ -532,29 +533,29 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
                     int i = 0;
                     IFile file = null;
                     for (Statistics stat : stats) {
-
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("dataset_name=\"").append(dataset.getProperty(INeoConstants.PROPERTY_NAME_NAME)).append(
+                        "\"\n");
+                        String aggr = getAggregation().getId().toLowerCase();
+                        sb.append("aggregation=:").append(stat.getName().split(", ")[1]).append("\n");
+                        sb.append("statistics=\"").append(stat.getName()).append("\"\n");
+                        sb.append("kpis=[");
                         for (TemplateColumn col : template.getColumns()) {
-                            String aggr = getAggregation().getId().toLowerCase();
                             monitor.subTask("Report for " + col.getName() + "/" + aggr);
-                            StringBuilder sb = new StringBuilder();
-                            sb.append("dataset_name=\"").append(dataset.getProperty(INeoConstants.PROPERTY_NAME_NAME)).append(
-                                    "\"\n");
-                            sb.append("kpi_name=\"").append(col.getName()).append("\"\n");
-                            sb.append("aggregation=:").append(aggr).append("\n");
-                            sb.append("statistics=\"").append(stat.getName()).append("\"\n");
-                            sb.append(reportFileTemplate);
-
-                            while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) {
-                                i++;
-                            }
-                            InputStream is = new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
-                            file.create(is, true, null);
-                            is.close();
-                            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().openEditor(new FileEditorInput(file),
-                                    ReportEditor.class.getName());
-
-                            monitor.worked(1);
+                            sb.append("[\"").append(col.getName()).append("\",").append(col.getFunction().equals(AggregationFunctions.AVERAGE)?"true":"false").append("],");
                         }
+                        sb.append("]\n");
+                        sb.append(reportFileTemplate);
+                        while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) {
+                            i++;
+                        }
+                        InputStream is = new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
+                        file.create(is, true, null);
+                        is.close();
+                        PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().openEditor(new FileEditorInput(file),
+                                ReportEditor.class.getName());
+                        
+                        monitor.worked(1);
                     }
                 } catch (IOException e) {
                     // TODO Handle IOException

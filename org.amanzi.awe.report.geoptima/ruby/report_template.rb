@@ -70,8 +70,8 @@ report=report 'KPI report' do
       chart.aggregation=aggregation
       chart.values="value"
       chart.time="time"
-      chart.threshold=averages[group]
-      chart.threshold_label="average (#{(averages[group]*1000).round/1000})"
+      chart.threshold=averages[group] if threshold
+      chart.threshold_label="average (#{(averages[group]*1000).round/1000})" if threshold
       chart.range_axis_ticks=ticks
       chart.range_axis="#"
 
