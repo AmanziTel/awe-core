@@ -361,7 +361,7 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
                     Ruby ruby = KPIPlugin.getDefault().getRubyRuntime();
                     StatisticsBuilder builder = new StatisticsBuilder(service, dataset, ruby);
                     stats.add(builder.buildStatistics(template, "imei", getAggregation(), monitor));
-//                    stats.add(builder.buildStatistics(template, "sector", getAggregation(), monitor));
+                    stats.add(builder.buildStatistics(template, "network", getAggregation(), monitor));
                 }
             });
         } catch (Exception e) {
