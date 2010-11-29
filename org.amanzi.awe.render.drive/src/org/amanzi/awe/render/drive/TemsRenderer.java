@@ -21,7 +21,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.ImageObserver;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -128,9 +127,10 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     private HashMap<Long,java.awt.Point> sectorPoints = new HashMap<Long,java.awt.Point>();
     private HashMap<String,java.awt.Point[]> driveSectorCorrelationLines = new HashMap<String,java.awt.Point[]>();
     private ArrayList<IGeoResource> networkGeoResources;
-    private IGeoResource networkGeoResource;
     private CoordinateReferenceSystem networkCRS;
+    private int networkDrawSize = 10;
     private java.awt.Point previousPoint;
+    private double dataScaleFactor = 0.0;
 
     private static int getIconSize(int size) {
         int lower = eventIconSizes[0];
@@ -304,6 +304,10 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             iterator.addCache(outRangeCache.cache);
             return iterator;
         }
+
+        public int size() {
+            return inRangeCache.size() + outRangeCache.size();
+        }
     }
     private static class CachedPoint {
         java.awt.Point p;
@@ -370,6 +374,10 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             this.maxCache = maxCache;
         }
 
+        public int size() {
+            return cache.size();
+        }
+
         private void setData(java.awt.Point p) {
             // Do not call super, because we do not need to calculate dx or dy
             this.prev_p = p;
@@ -377,7 +385,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         }
 
         private String makeKey(java.awt.Point p) {
-            return "" + (int)(p.x / step) + ":" + (int)(p.y / step);
+            return (new StringBuffer()).append((int)(p.x / step)).append(":").append((int)(p.y / step)).toString();
         }
 
         protected boolean shouldDraw() {
@@ -554,9 +562,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 drawLite = false;
                 drawLabels = false;
             } else if (data_bounds != null && data_bounds.getHeight() > 0 && data_bounds.getWidth() > 0) {
-                double dataScaled = (bounds_transformed.getHeight() * bounds_transformed.getWidth())
+                dataScaleFactor = (bounds_transformed.getHeight() * bounds_transformed.getWidth())
                         / (data_bounds.getHeight() * data_bounds.getWidth());
-                double countScaled = dataScaled * geoNeo.getCount();
+                double countScaled = dataScaleFactor * geoNeo.getCount();
                 drawLabels = countScaled < maxSitesLabel;
                 drawFull = countScaled < maxSitesFull;
                 if (scale && eventIconSize > 0) {
@@ -588,7 +596,8 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             
             fillColor = new Color(fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), trans);
             g.setColor(drawColor);
-            int count = 0;
+            int countRead = 0;
+            int countDrawn = 0;
             monitor.subTask("drawing");
             // single object for re-use in transform below (minimize object creation)
             Coordinate world_location = new Coordinate();
@@ -783,6 +792,8 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                         }
                     }
                 }
+                boolean drawLinesToSectors = true;
+                int failedToDrawLinesToSectors = 0;
                 ShouldDrawTime shouldDrawLines = new ShouldDrawTime(30,10,beginTime,endTime, 500);    // filter for drawing correlation lines every 10 pixels
                 boolean canDrawLines = !getNetworkGeoResources(geoNeo).isEmpty();
                 boolean haveSelectedEvents = canDrawLines && palette != null && selected_events != null;
@@ -859,10 +870,26 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     renderSelectedPoint(g, p, drawSize, drawFull, drawLite);
                 }
                 Node indexNode = null;
+                int skipNodes = 0;
+                int nodes2Skip = 0;
+                int nodesSkipped = 0;
                 HashMap<String, Integer> colorErrors = new HashMap<String, Integer>();
                 previousPoint = null;// else we do not show selected node
                 // Now draw the actual points. This must happen after drawing the highlights so it looks like two layers
                 for (GeoNode node : geoNeo.getGeoNodes(bounds_transformed)) {
+                    if (countRead++ > 500000) {
+                        LOGGER.warn("Exceeded maximum number of data events to process: " + countRead);
+                        break;
+                    }
+                    if(skipNodes > 1) {
+                        if(nodes2Skip > 0){
+                            nodes2Skip--;
+                            nodesSkipped++;
+                            continue;
+                        }else{
+                            nodes2Skip = skipNodes;
+                        }
+                    }
                     if (filterMp != null) {
                         if (!filterMp.filterNodesByTraverser(node.getNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.LOCATION,Direction.INCOMING)).isValid()) {
                             continue;
@@ -915,7 +942,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     if (drawLabels) {
                         shouldDrawLabels.setData(p, node);
                         if(shouldDrawLabels.shouldDraw()) {
-                            renderLabel(g, count, node, p, shouldDrawLabels.theta);
+                            renderLabel(g, countDrawn, node, p, shouldDrawLabels.theta);
                         }
                     }
                     if (base_transform != null) {
@@ -925,10 +952,18 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                         // base_transform = null;
                     }
                     monitor.worked(1);
-                    count++;
                     if (monitor.isCanceled())
                         break;
-                    
+                    if (countDrawn++ > 100000) {
+                        LOGGER.warn("Exceeded maximum number of data events to draw: " + countDrawn);
+                        break;
+                    }
+                    if(countDrawn > 1000) {
+                        int timeTaken = (int)((System.currentTimeMillis() - startTime)/1000);
+                        if (timeTaken > 10) {
+                            skipNodes = timeTaken;
+                        }
+                    }
                     if (canDrawLines) {
                         Node mpNode = node.getNode();
                         Long time = NeoUtils.getNodeTime(mpNode);
@@ -947,8 +982,16 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                                     // transform_w2d.inverse());
                                 }
                                 java.awt.Point pSite = getContext().worldToPixel(world_location);
-                                if (drawFull) {
-                                    pSite = getSectorCenter(g, sector, pSite);
+                                if (drawLinesToSectors) {
+                                    java.awt.Point pSector = getSectorCenter(g, sector, pSite);
+                                    if (shouldDrawLines.size() < 10) {
+                                        if (pSector.distance(pSite) < 3) {
+                                            failedToDrawLinesToSectors++;
+                                        }
+                                    }
+                                    if (failedToDrawLinesToSectors > 7)
+                                        drawLinesToSectors = false;
+                                    pSite = pSector;
                                 }
                                 Color lineColor = getCorrelationLineColor(eventList, selected_events, palette, haveSelectedEvents,
                                         allEvents, eventColor, mpNode);
@@ -957,6 +1000,12 @@ public class TemsRenderer extends RendererImpl implements Renderer {
 
                         }
                     }
+                }
+                if (countRead > 0) {
+                    LOGGER.info("Read " + countRead + " points and drew " + countDrawn + " (" + (100 * countDrawn / countRead) + "%)");
+                }
+                if (nodesSkipped > 0) {
+                    LOGGER.info("Due to slow rendering " + nodesSkipped + " points were skipped in groups as large as " + skipNodes);
                 }
                 // Now draw correlation lines. This should be done after the drive, so they appear
                 // as a separate layer.
@@ -1013,7 +1062,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 if (indexNode != null) {
                     renderIndex(g, bounds_transformed, indexNode);
                 }
-                LOGGER.debug("Drive renderer took " + ((System.currentTimeMillis() - startTime) / 1000.0) + "s to draw " + count
+                LOGGER.info("Drive renderer took " + ((System.currentTimeMillis() - startTime) / 1000.0) + "s to draw " + countDrawn
                         + " points");
                 tx.success();
             }//end if
@@ -1048,10 +1097,10 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         sectorPoints.clear();
         driveSectorCorrelationLines.clear();
         networkGeoResources.clear();
-        networkGeoResource = null;
         networkCRS = null;
+        networkDrawSize = 15;
     }
-    
+
     private ArrayList<IGeoResource> getNetworkGeoResources(GeoNeo geoNeo) {
         if(networkGeoResources==null || networkGeoResources.isEmpty()) {
             Iterable<Relationship> relations = geoNeo.getMainGisNode().getRelationships(
@@ -1078,17 +1127,52 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         return networkGeoResources;
     }
     
+    private void setNetworkSettings(IGeoResource networkResource, IProgressMonitor monitor) throws IOException {
+        this.networkCRS = networkResource.getInfo(monitor).getCRS();
+        this.networkDrawSize = 15;
+        boolean scaleSymbols = true;
+        int maxSitesFull = 100;
+        int maxSymbolSize = 40;
+        for(ILayer layer:getContext().getMapLayers()){
+            if (layer.getGeoResource().equals(networkResource)) {
+                try {
+                    IStyleBlackboard style = layer.getStyleBlackboard();
+                    NeoStyle neostyle = (NeoStyle)style.get(NeoStyleContent.ID);
+                    if (neostyle != null) {
+                        networkDrawSize = neostyle.getSymbolSize();
+                        scaleSymbols = !neostyle.isFixSymbolSize();
+                        maxSitesFull = neostyle.getSmallSymb();
+                        maxSymbolSize = neostyle.getMaximumSymbolSize();
+                    }
+                } catch (Exception e) {
+                    LOGGER.debug("Failed to read network style settings:" + e);
+                }
+            }
+        }
+        GeoNeo geoNeo = networkResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
+
+        if (dataScaleFactor <= 0.000001) {
+            networkDrawSize = 0;
+        }else{
+            long count = geoNeo.getCount();
+            double countScaled = dataScaleFactor * count;
+            if(countScaled < maxSitesFull && scaleSymbols) {
+                networkDrawSize *= Math.sqrt(maxSitesFull) / (3 * Math.sqrt(countScaled));
+                networkDrawSize = Math.min(networkDrawSize, maxSymbolSize);
+            }
+        }
+    }
+
     private Node findCorrelatedSectorFromPointNode(GeoNeo geoNeo, Node mpNode, IProgressMonitor monitor) throws IOException {
         Iterator<Relationship> links = mpNode.getRelationships(GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING).iterator();
         HashSet<Node> mNodes = new HashSet<Node>();
-        ArrayList<IGeoResource> networkGeoResources = getNetworkGeoResources(geoNeo);
         while (links.hasNext()) {
             mNodes.add(links.next().getStartNode());
         }
-        
+
         for (Node mNode : mNodes) {
-            Iterator<Relationship> rels = mNode.getRelationships(CorrelationRelationshipTypes.CORRELATED,
-                    Direction.INCOMING).iterator();
+            Iterator<Relationship> rels = mNode.getRelationships(CorrelationRelationshipTypes.CORRELATED, Direction.INCOMING)
+                    .iterator();
             while (rels.hasNext()) {
                 Relationship singleLink = rels.next();
                 if ((!rels.hasNext() && (!singleLink.hasProperty(INeoConstants.NETWORK_GIS_NAME)))
@@ -1098,11 +1182,12 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                             CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING);
 
                     Object networkGisName = relationSector.getProperty(INeoConstants.NETWORK_GIS_NAME);
-                    for (IGeoResource networkResource : networkGeoResources) {
+                    for (IGeoResource networkResource : getNetworkGeoResources(geoNeo)) {
                         GeoNeo networkGis = networkResource.resolve(GeoNeo.class, null);
                         if (networkGisName.equals(NeoUtils.getSimpleNodeName(networkGis.getMainGisNode(), ""))) {
-                            this.networkGeoResource = networkResource;
-                            this.networkCRS = networkResource.getInfo(monitor).getCRS();
+                            if (networkCRS == null) {
+                                setNetworkSettings(networkResource, monitor);
+                            }
                             return relationSector.getEndNode();
                         }
                     }
@@ -1165,6 +1250,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
      * @return sector coordinate
      */
     private Point getSectorCenter(Graphics2D g, Node sector, Point pSite) {
+        if (networkDrawSize < 1) {
+            return pSite;
+        }
         // double beamwidth = ((Number)sector.getProperty("beamwidth", 360.0)).doubleValue();
         double azimuth = ((Number)sector.getProperty("azimuth", Double.NaN)).doubleValue();
         if (azimuth == Double.NaN) {
@@ -1174,7 +1262,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         AffineTransform transform2 = new AffineTransform(g.getTransform());
         transform2.translate(pSite.x, pSite.y);
         transform2.rotate(Math.toRadians(angdeg), 0, 0);
-        double xLoc = 10;
+        double xLoc = networkDrawSize;
         double yLoc = 0;
         transform2.concatenate(g.getTransform());
         int x = (int)(transform2.getScaleX() * xLoc + transform2.getShearX() * yLoc + transform2.getTranslateX());
