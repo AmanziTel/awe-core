@@ -46,7 +46,7 @@ import org.neo4j.graphdb.Transaction;
  * @author TsAr
  * @since 1.0.0
  */
-public class GpehSaver implements ISaver<GpehTransferData> {
+public class GpehStatisticsSaver implements ISaver<GpehTransferData> {
     protected DatasetService datasetService;
     private Node datasetNode;
     private DatasetInfo datasetInfo;
@@ -60,11 +60,11 @@ public class GpehSaver implements ISaver<GpehTransferData> {
     private long oldTimestamp;
     private PrintStream outputStream;
     private final MetaData metadata;
-
+    
     /**
      * Instantiates a new gpeh saver.
      */
-    public GpehSaver() {
+    public GpehStatisticsSaver() {
         metadata=new MetaData("oss", "gpeh");
     }
 
@@ -77,7 +77,7 @@ public class GpehSaver implements ISaver<GpehTransferData> {
         if (event == null) {
             return;
         }
-        Long timestamp = (Long)dataElement.get(GpehTransferData.TIMESTAMP);
+        Long timestamp = (Long)dataElement.get(GpehTransferData.TIMESTAMP_OF_DAY);
         if (timestamp == null) {
             return;
         }

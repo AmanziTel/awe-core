@@ -17,6 +17,7 @@ import static org.amanzi.awe.gpeh.parser.Parameters.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -317,7 +318,8 @@ public enum Events {
     
     private static HashMap<Integer, Events> eventMap = new HashMap<Integer, Events>();
     
-    private final List<Parameters> allParameters = new ArrayList<Parameters>(); 
+    private final List<Parameters> allParameters = new LinkedList<Parameters>(); 
+    private final List<Parameters> allParametersWithTimestamp = new LinkedList<Parameters>(); 
     
     private long bitMask;
 
@@ -351,6 +353,13 @@ public enum Events {
             allParameters.add(parameters);
         }
         
+        allParametersWithTimestamp.add(EVENT_PARAM_TIMESTAMP_HOUR);
+        allParametersWithTimestamp.add(EVENT_PARAM_TIMESTAMP_MINUTE);
+        allParametersWithTimestamp.add(EVENT_PARAM_TIMESTAMP_SECOND);
+        allParametersWithTimestamp.add(EVENT_PARAM_TIMESTAMP_MILLISEC);
+        
+        allParametersWithTimestamp.addAll(allParameters);
+        
         bitMask = 0x01 << ordinal();
         
         index(this);
@@ -370,6 +379,15 @@ public enum Events {
      */
     public List<Parameters> getAllParameters() {
         return allParameters;
+    }
+    
+    /**
+     * get all parameters of event with timestamp
+     * 
+     * @return
+     */
+    public List<Parameters> getAllParametersWithTimestamp() {
+        return allParametersWithTimestamp;
     }
 
     /**

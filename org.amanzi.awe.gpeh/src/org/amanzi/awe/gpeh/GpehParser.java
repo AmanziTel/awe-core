@@ -104,7 +104,7 @@ public class GpehParser extends CommonFilesParser<GpehTransferData, CommonConfig
         }
         GPEHTimeWrapper timeWrapper = new GPEHTimeWrapper(element.getFile().getName());
         if (!timeWrapper.isValid()) {
-            System.err.println(String.format("Can't parese file %s. incorrect name format", element.getFile().getName()));
+            System.err.println(String.format("Can't parse file %s. incorrect name format", element.getFile().getName()));
             return false;
         }
 
@@ -113,6 +113,9 @@ public class GpehParser extends CommonFilesParser<GpehTransferData, CommonConfig
         cl.set(Calendar.YEAR, timeWrapper.getYear());
         cl.set(Calendar.MONTH, timeWrapper.getMonth());
         cl.set(Calendar.DAY_OF_MONTH, timeWrapper.getDay());
+        long timestampOfDay = cl.getTimeInMillis();
+        cl.set(Calendar.HOUR, timeWrapper.getHhStart());
+        cl.set(Calendar.MINUTE, timeWrapper.getMmStart());
         long timestamp = cl.getTimeInMillis();
         InputStream inputStream = null;
         try {
@@ -133,25 +136,44 @@ public class GpehParser extends CommonFilesParser<GpehTransferData, CommonConfig
                     GPEHEvent result = new GPEHEvent();
                     switch (recordType) {
                     case 4:
-                        org.amanzi.awe.gpeh.parser.internal.GPEHParser.parseEvent(bitStream, result, recordLen, possibleIds,
-                                timeWrapper);
-                        if (result.getEvent() != null) {
-                            GpehTransferData data = new GpehTransferData();
-                            data.put(GpehTransferData.EVENT, result.getEvent());
-                            data.put(GpehTransferData.TIMESTAMP, timestamp);
-                            for (Map.Entry<Parameters, Object> entry : result.getEvent().getProperties().entrySet()) {
-                                data.put(entry.getKey().name(), entry.getValue());
+                        try {
+                            org.amanzi.awe.gpeh.parser.internal.GPEHParser.parseEvent(bitStream, result, recordLen, possibleIds,
+                                    timeWrapper);
+                        
+                            if (result.getEvent() != null) {
+                                GpehTransferData data = new GpehTransferData();
+                                data.put(GpehTransferData.EVENT, result.getEvent());
+                                data.put(GpehTransferData.TIMESTAMP_OF_DAY, timestampOfDay);
+                                data.put(GpehTransferData.TIMESTAMP, timestamp);
+                                for (Map.Entry<Parameters, Object> entry : result.getEvent().getProperties().entrySet()) {
+                                    data.put(entry.getKey().name(), entry.getValue());
+                                }
+                                getSaver().save(data);
                             }
-                            getSaver().save(data);
+                        }
+                        catch (Exception e) {
+                            e.printStackTrace();
                         }
                         break;
                     case 7:
+                        
 //                        org.amanzi.awe.gpeh.parser.internal.GPEHParser.pareseFooter(bitStream, result);
+                        break;
                     case 6: 
 //                        org.amanzi.awe.gpeh.parser.internal.GPEHParser.pareseError(bitStream, result);
+                        break;
+                    case 0:
+                        break;
+                    case 1:
+                        break;
+                    case 2:
+                        break;
+                    case 8: 
+                        break;
                     default:
                         // wrong file format!
-                        throw new IllegalArgumentException();
+                        //throw new IllegalArgumentException("Incorrect value: " + recordType);
+                        break;
                     }
                     int processedSize = bitStream.getTotalBytesRead();
                     double persentage = (double)processedSize / fileSize;
@@ -217,6 +239,10 @@ public class GpehParser extends CommonFilesParser<GpehTransferData, CommonConfig
         GpehTransferData data = new GpehTransferData();
         data.put(GpehTransferData.PROJECT, properties.getProjectName());
         data.put(GpehTransferData.DATASET, properties.getDbRootName());
+        String outputDirectory = properties.getAdditionalProperties().get(GpehTransferData.OUTPUT_DIRECTORY).toString();
+        if (outputDirectory != null) {
+            data.put(GpehTransferData.OUTPUT_DIRECTORY, outputDirectory);
+        }
         return data;
     }
 }

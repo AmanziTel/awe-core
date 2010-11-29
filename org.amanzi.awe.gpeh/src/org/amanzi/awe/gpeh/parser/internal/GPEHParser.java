@@ -478,7 +478,8 @@ public class GPEHParser {
      * @throws IOException Signals that an I/O exception has occurred.
      */
     private static byte[] readBitArray(BitInputStream input, int bitsLen) throws IOException {
-        byte[] result = new byte[(bitsLen >> 3) + ((bitsLen & 0x111) == 0 ? 0 : 1)];
+        int size = (bitsLen >> 3) + ((bitsLen % 8) == 0 ? 0 : 1);
+        byte[] result = new byte[size];
         int count = 0;
         int i = 0;
         while (count < bitsLen) {
