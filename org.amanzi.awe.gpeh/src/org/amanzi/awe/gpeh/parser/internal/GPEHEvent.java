@@ -13,7 +13,6 @@
 
 package org.amanzi.awe.gpeh.parser.internal;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -148,7 +147,7 @@ public class GPEHEvent implements IGPEHBlock {
          */
         public void setType(Events type) {
             this.type = type;
-//            this.properties = new HashMap<Parameters, Object>(type.getAllParameters().size());
+            this.properties = new HashMap<Parameters, Object>(type.getAllParameters().length);
         }
 
         /**
