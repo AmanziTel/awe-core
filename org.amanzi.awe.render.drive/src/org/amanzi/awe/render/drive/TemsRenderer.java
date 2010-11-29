@@ -21,6 +21,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.ImageObserver;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -124,6 +125,12 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     private int[] xPoints;
     private int[] yPoints;
     private boolean changeTransp;
+    private HashMap<Long,java.awt.Point> sectorPoints = new HashMap<Long,java.awt.Point>();
+    private HashMap<String,java.awt.Point[]> driveSectorCorrelationLines = new HashMap<String,java.awt.Point[]>();
+    private ArrayList<IGeoResource> networkGeoResources;
+    private IGeoResource networkGeoResource;
+    private CoordinateReferenceSystem networkCRS;
+    private java.awt.Point previousPoint;
 
     private static int getIconSize(int size) {
         int lower = eventIconSizes[0];
@@ -203,6 +210,247 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     }
 
     /**
+     * This class controls filtering of points by proximity. It simply checks to see if a point is
+     * within a specified number of pixels of the previous point and returns a boolean true/false
+     * based on that. It can be used to filter the frequency of drawing on the screen.
+     * 
+     * @author craig
+     * @since 1.0.0
+     */
+    private class ShouldDraw {
+        java.awt.Point prev_p;
+        boolean always = false;
+        double dx = 0.0;
+        double dy = 0.0;
+        int step = 0;
+
+        private ShouldDraw(int step) {
+            this.step = step;
+            always = step < 0.0001;
+            dx = 0.0;
+            dy = 0.0;
+        }
+
+        private void setData(java.awt.Point p) {
+            if (prev_p != null) {
+                try {
+                    dx = p.x - prev_p.x;
+                    dy = p.y - prev_p.y;
+                } catch (Exception e) {
+                }
+            }
+            prev_p = p;
+        }
+
+        protected boolean shouldDraw() {
+            return always || Math.abs(dx) > step || Math.abs(dy) > step;
+        }
+    }
+    
+    /**
+     * This drawing filter extends the simple proximity filter by adding a time range. You specify
+     * two proximity settings and a time range, and the second proximity setting is used for points
+     * inside the range, while the first is used for points outside. This allows for data inside a
+     * time range to be rendered with higher detail.
+     * 
+     * @author craig
+     * @since 1.0.0
+     */
+    private class ShouldDrawTime extends ShouldDraw implements Iterable<CachedPoint> {
+        Long beginTime = null;
+        Long endTime = null;
+        boolean inTimeRange = false;
+        ShouldDrawCache outRangeCache;
+        ShouldDrawCache inRangeCache;
+
+        private ShouldDrawTime(int step, int smallStep, Long beginTime, Long endTime, int maxCache) {
+            super(step);
+            if (beginTime != null && endTime != null && beginTime < endTime) {
+                this.beginTime = beginTime;
+                this.endTime = endTime;
+            }
+            this.inRangeCache = new ShouldDrawCache(smallStep, maxCache);
+            this.outRangeCache = new ShouldDrawCache(step, maxCache);
+        }
+
+        private void setData(java.awt.Point p, Long time) {
+            inTimeRange = beginTime != null && time != null && time >= beginTime && time < endTime;
+            if (inTimeRange) {
+                inRangeCache.setData(p);
+            } else {
+                outRangeCache.setData(p);
+            }
+        }
+
+        protected boolean shouldDraw() {
+            if (inTimeRange) {
+                return inRangeCache.shouldDraw();
+            } else {
+                return outRangeCache.shouldDraw();
+            }
+        }
+
+        protected void updateData(java.awt.Point sector, Color color) {
+            if (inTimeRange) {
+                inRangeCache.updateData(sector,color);
+            } else {
+                outRangeCache.updateData(sector,color);
+            }
+        }
+
+        public Iterator<CachedPoint> iterator() {
+            MultiCacheIterator iterator = new MultiCacheIterator();
+            iterator.addCache(inRangeCache.cache);
+            iterator.addCache(outRangeCache.cache);
+            return iterator;
+        }
+    }
+    private static class CachedPoint {
+        java.awt.Point p;
+        java.awt.Point sector;
+        Color color;
+
+        private CachedPoint(java.awt.Point p, java.awt.Point sector, Color color) {
+            this.p = p;
+            this.sector = sector;
+            this.color = color;
+        }
+    }
+    
+    private static class MultiCacheIterator implements Iterator<CachedPoint> {
+        ArrayList<HashMap<String, CachedPoint>> caches = new ArrayList<HashMap<String, CachedPoint>>();
+        private Iterator<HashMap<String, CachedPoint>> cacheIterator = null;
+        private Iterator<CachedPoint> pointIterator = null;
+
+        public void addCache(HashMap<String, CachedPoint> cache) {
+            if (!cache.isEmpty())
+                caches.add(cache);
+        }
+
+        public boolean hasNext() {
+            if (cacheIterator == null)
+                cacheIterator = caches.iterator();
+            if (pointIterator == null || !pointIterator.hasNext()) {
+                if (cacheIterator.hasNext()) {
+                    pointIterator = cacheIterator.next().values().iterator();
+                } else {
+                    return false;
+                }
+            }
+            return pointIterator.hasNext();
+        }
+
+        public CachedPoint next() {
+            return pointIterator.next();
+        }
+
+        public void remove() {
+        }
+
+    }
+
+    /**
+     * This drawing filter is an alternative to the simple proximity filter by allowing for any
+     * order. The normal filter compares the position to the previous position only, which does not
+     * work if the points are not ordered. This version creates a location key and adds points to a
+     * cache, and if they key accurs multipe times it keeps only one of them. As such, instead of
+     * testing each point, just add them all to the cache, and at the end read them out again. The
+     * cache will only contain the points to draw.
+     * 
+     * @author craig
+     * @since 1.0.0
+     */
+    private class ShouldDrawCache extends ShouldDraw implements Iterable<CachedPoint> {
+        HashMap<String, CachedPoint> cache = new HashMap<String, CachedPoint>();
+        String key;
+        int maxCache;
+
+        private ShouldDrawCache(int step, int maxCache) {
+            super(step);
+            this.maxCache = maxCache;
+        }
+
+        private void setData(java.awt.Point p) {
+            // Do not call super, because we do not need to calculate dx or dy
+            this.prev_p = p;
+            key = makeKey(p);
+        }
+
+        private String makeKey(java.awt.Point p) {
+            return "" + (int)(p.x / step) + ":" + (int)(p.y / step);
+        }
+
+        protected boolean shouldDraw() {
+            if (cache.size()>= maxCache || cache.containsKey(key)) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+        protected void updateData(java.awt.Point sector, Color color) {
+            cache.put(key, new CachedPoint(prev_p, sector, color));
+        }
+
+        public Iterator<CachedPoint> iterator() {
+            return cache.values().iterator();
+        }
+    }
+
+    /**
+     * This filter extends the simple proximity filter with a theta calculation, so that drawing can
+     * be angled according to the angle between subsequent points. It also remembers the first point
+     * and second theta, so that they can be drawn later since they are not known about in the
+     * beginning.
+     * 
+     * @author craig
+     * @since 1.0.0
+     */
+    private class ShouldDrawTheta extends ShouldDraw {
+        GeoNode firstNode;
+        java.awt.Point firstPoint;
+        Double firstTheta = null;
+        double theta = 0.0;
+        
+        private ShouldDrawTheta(int step) {
+            super(step);
+            theta = 0.0;
+        }
+
+        private void setData(java.awt.Point p, GeoNode geoNode) {
+            super.setData(p);
+            try {
+                if (Math.abs(dx) < Math.abs(dy) / 2) {
+                    // drive goes north-south
+                    theta = 0;
+                } else if (Math.abs(dy) < Math.abs(dx) / 2) {
+                    // drive goes east-west
+                    theta = Math.PI / 2;
+                } else if (dx * dy < 0) {
+                    // drive has negative slope
+                    theta = -Math.PI / 4;
+                } else {
+                    theta = Math.PI / 4;
+                }
+            } catch (Exception e) {
+            }
+            if (firstPoint == null) {
+                firstPoint = p; // so we can draw first point using second point settings
+                firstNode = geoNode;
+            } else {
+                // we do this on the second point
+                if(firstTheta == null) {
+                    firstTheta = theta;
+                }
+            }
+        }
+
+        public double getFirstTheta() {
+            return firstTheta == null ? 0.0 : firstTheta;
+        }
+    }
+
+    /**
      * This method is called to render data from the Neo4j 'GeoNeo' Geo-Resource.
      */
     @SuppressWarnings("unchecked")
@@ -276,27 +524,6 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
             String gisName = NeoUtils.getSimpleNodeName(geoNeo.getMainGisNode(), "");
-            Iterable<Relationship> relations = geoNeo.getMainGisNode().getRelationships(
-                    CorrelationRelationshipTypes.LINKED_NETWORK_DRIVE, Direction.INCOMING);
-            ArrayList<IGeoResource> networkGeoNeo = new ArrayList<IGeoResource>();
-            for (Relationship relationship : relations) {
-                IGeoResource network = getNetwork(relationship.getOtherNode(geoNeo.getMainGisNode()));
-                if (network != null) {
-                    networkGeoNeo.add(network);
-                }
-            }
-            
-            //Lagutko, 15.05.2010, another way of correlation
-            relations = NeoUtils.getDatasetNodeByGis(geoNeo.getMainGisNode()).getRelationships(CorrelationRelationshipTypes.CORRELATED, Direction.OUTGOING);
-            for (Relationship relation : relations) {
-            	Node correlationNode = relation.getEndNode();
-            	
-            	IGeoResource network = getNetwork(NeoUtils.getGisNodeByDataset(correlationNode.getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.INCOMING).getStartNode()));
-                if (network != null) {
-                    networkGeoNeo.add(network);
-                }
-            }
-            
             
             filterMp = FilterUtil.getFilterOfData(geoNeo.getMainGisNode(), neo);
             // String selectedProp = geoNeo.getPropertyName();
@@ -346,9 +573,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     // maxSitesFull ? 16 : countScaled * 4 <= maxSitesFull ? 12
                     // : countScaled * 2 <= maxSitesFull ? 8 : 6;
                 }
-                drawLite = countScaled < maxSitesLite;
+                drawLite = countScaled > maxSitesLite;
                 if (drawFull && scale) {
-                    drawWidth *= Math.sqrt(maxSitesFull) / (3 * Math.sqrt(countScaled));
+                    drawWidth *= Math.sqrt(maxSitesFull) / (0.8 * Math.sqrt(countScaled));
                     drawWidth = Math.min(drawWidth, maxSymbolSize);
                     drawWidth=drawWidth|1;
                     drawSize=(drawWidth-1)/2;
@@ -388,6 +615,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 g.drawPolygon(xPoints, yPoints, n);
                 g.setColor(oldColor);
             }
+            //TODO: Check if the groupFilters code really should be an entirely different renderer logic? This code is missing lots of other logic from below, so we probably have bugs here.
             if (groupFilters!=null){
                 try {
                     Node gisNode = geoNeo.getMainGisNode();
@@ -519,11 +747,10 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 }
 
             }
-            else{
-                java.awt.Point prev_p = null;
-                java.awt.Point prev_l_p = null;
-                java.awt.Point cached_l_p = null;
-                GeoNode cached_node = null; // for label positioning
+            else{  // groupFilters == null
+                previousPoint = null;
+                ShouldDrawTheta shouldDrawLabels = new ShouldDrawTheta(20);   // filter for drawing labels every 20 pixels
+                ShouldDrawTheta shouldDrawIcons = new ShouldDrawTheta(20);    // filter for drawing event icons eveny 10 pixels
                 long startTime = System.currentTimeMillis();
     
                 // First we find all selected points to draw with a highlight behind the main points
@@ -556,8 +783,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                         }
                     }
                 }
-                boolean needDrawLines = !networkGeoNeo.isEmpty() & beginTime != null && endTime != null && beginTime <= endTime;
-                boolean haveSelectedEvents = needDrawLines && palette != null && selected_events != null;
+                ShouldDrawTime shouldDrawLines = new ShouldDrawTime(30,10,beginTime,endTime, 500);    // filter for drawing correlation lines every 10 pixels
+                boolean canDrawLines = !getNetworkGeoResources(geoNeo).isEmpty();
+                boolean haveSelectedEvents = canDrawLines && palette != null && selected_events != null;
                 boolean allEvents = haveSelectedEvents && selected_events.equals(GeoConstant.ALL_EVENTS);
                 Color eventColor = null;
                 if (haveSelectedEvents && !allEvents) {
@@ -569,8 +797,8 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     int index = i % colors.length;
                     eventColor = colors[index];
                 }
-                // TODO is it really necessary draw selection before drawing all mp node instead drawing
-                // in one traverse?
+                // We need to draw the section nodes first so that all highlights will appear behind all drive nodes.
+                // If we tried to draw the highlights and drive points in one loop, it would look ugly.
                 for (Node node : selectedNodes) {
                     if (NeoUtils.isFileNode(node)) {
                         // Select all 'mp' nodes in that file
@@ -625,21 +853,15 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                         continue;
                     }
                     java.awt.Point p = getContext().worldToPixel(world_location);
-                    if (geoFilter!=null && !insidePolygon(p)){
+                    if (samePixel(p) || geoFilter!=null && !insidePolygon(p)){
                         continue;
-                    }
-                    if (prev_p != null && prev_p.x == p.x && prev_p.y == p.y) {
-                        prev_p = p;
-                        continue;
-                    } else {
-                        prev_p = p;
                     }
                     renderSelectedPoint(g, p, drawSize, drawFull, drawLite);
                 }
                 Node indexNode = null;
                 HashMap<String, Integer> colorErrors = new HashMap<String, Integer>();
-                prev_p = null;// else we do not show selected node
-                // Now draw the actual points
+                previousPoint = null;// else we do not show selected node
+                // Now draw the actual points. This must happen after drawing the highlights so it looks like two layers
                 for (GeoNode node : geoNeo.getGeoNodes(bounds_transformed)) {
                     if (filterMp != null) {
                         if (!filterMp.filterNodesByTraverser(node.getNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, GeoNeoRelationshipTypes.LOCATION,Direction.INCOMING)).isValid()) {
@@ -661,16 +883,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     }
     
                     java.awt.Point p = getContext().worldToPixel(world_location);
-                    if (geoFilter!=null && !insidePolygon(p)){
+                    if (samePixel(p) || geoFilter!=null && !insidePolygon(p)){
                         continue;
                     }
-                    if (prev_p != null && prev_p.x == p.x && prev_p.y == p.y) {
-                        prev_p = p;
-                        continue;
-                    } else {
-                        prev_p = p;
-                    }
-    
                     Color nodeColor = fillColor;
                     try {
                         nodeColor = getNodeColor(node.getNode(), fillColor);
@@ -698,50 +913,9 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     
                     renderPoint(g, p, borderColor, nodeColor, drawSize, drawWidth, drawFull, drawLite);
                     if (drawLabels) {
-                        double theta = 0.0;
-                        double dx = 0.0;
-                        double dy = 0.0;
-                        if (prev_l_p == null) {
-                            prev_l_p = p;
-                            cached_l_p = p; // so we can draw first point using second point settings
-                            cached_node = node;
-                        } else {
-                            try {
-                                dx = p.x - prev_l_p.x;
-                                dy = p.y - prev_l_p.y;
-                                if (Math.abs(dx) < Math.abs(dy) / 2) {
-                                    // drive goes north-south
-                                    theta = 0;
-                                } else if (Math.abs(dy) < Math.abs(dx) / 2) {
-                                    // drive goes east-west
-                                    theta = Math.PI / 2;
-                                } else if (dx * dy < 0) {
-                                    // drive has negative slope
-                                    theta = -Math.PI / 4;
-                                } else {
-                                    theta = Math.PI / 4;
-                                }
-                            } catch (Exception e) {
-                            }
-                        }
-                        if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
-                            // if (drawLabels) {
-                            renderLabel(g, count, node, p, theta);
-                            // }
-                            // if (drawEvents) {
-                            // renderEvents(g, node, p, theta);
-                            // }
-                            if (cached_node != null) {
-                                // if (drawLabels) {
-                                renderLabel(g, 0, cached_node, cached_l_p, theta);
-                                // }
-                                // if (drawEvents) {
-                                // renderEvents(g, cached_node, cached_l_p, theta);
-                                // }
-                                cached_node = null;
-                                cached_l_p = null;
-                            }
-                            prev_l_p = p;
+                        shouldDrawLabels.setData(p, node);
+                        if(shouldDrawLabels.shouldDraw()) {
+                            renderLabel(g, count, node, p, shouldDrawLabels.theta);
                         }
                     }
                     if (base_transform != null) {
@@ -754,98 +928,54 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     count++;
                     if (monitor.isCanceled())
                         break;
-                    // TODO refactor
-                    final Node mpNode = node.getNode();
                     
-                    if (needDrawLines) {
+                    if (canDrawLines) {
+                        Node mpNode = node.getNode();
                         Long time = NeoUtils.getNodeTime(mpNode);
-                        // if (true) {
-                        if (time != null && time >= beginTime && time <= endTime) {
-                            Color lineColor;
-                            if (haveSelectedEvents) {
-                                Set<String> events = NeoUtils.getEventsList(mpNode, null);
-                                if (!events.isEmpty() && (allEvents || events.contains(selected_events))) {
-                                    if (allEvents) {
-                                        int i = eventList.indexOf(events.iterator().next());
-                                        if (i < 0) {
-                                            i = 0;
-                                        }
-                                        Color[] colors = palette.getColors(palette.getMaxColors());
-                                        int index = i % colors.length;
-                                        eventColor = colors[index];
-                                    }
-                                    lineColor = eventColor;
-                                } else {
-                                    lineColor = FADE_LINE;
+                        shouldDrawLines.setData(p, time);
+                        if(shouldDrawLines.shouldDraw()) {
+                            Node sector = findCorrelatedSectorFromPointNode(geoNeo, mpNode, monitor);
+                            if (sector != null && networkCRS != null) {
+                                Node site = sector.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING)
+                                        .getOtherNode(sector);
+                                GeoNode siteGn = new GeoNode(site);
+                                location = siteGn.getCoordinate();
+                                try {
+                                    JTS.transform(location, world_location, transform_d2w);
+                                } catch (Exception e) {
+                                    // JTS.transform(location, world_location,
+                                    // transform_w2d.inverse());
                                 }
-                            } else {
-                                lineColor = FADE_LINE;
+                                java.awt.Point pSite = getContext().worldToPixel(world_location);
+                                if (drawFull) {
+                                    pSite = getSectorCenter(g, sector, pSite);
+                                }
+                                Color lineColor = getCorrelationLineColor(eventList, selected_events, palette, haveSelectedEvents,
+                                        allEvents, eventColor, mpNode);
+                                shouldDrawLines.updateData(pSite, lineColor);
                             }
 
-                            Iterator<Relationship> links = mpNode.getRelationships(GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING).iterator();
-                            HashSet<Node> mNodes = new HashSet<Node>();
-                            while (links.hasNext()) {
-                            	mNodes.add(links.next().getStartNode());
-                            }
-                            
-                            for(Node mNode : mNodes){
-                            	Iterator<Relationship> rels = mNode.getRelationships(CorrelationRelationshipTypes.CORRELATED, Direction.INCOMING).iterator();
-                            	while(rels.hasNext()){
-                            		Relationship singleLink = rels.next();
-                            		if ((!rels.hasNext() && (!singleLink.hasProperty(INeoConstants.NETWORK_GIS_NAME))) || geoNeo.getName().equals(singleLink.getProperty(INeoConstants.NETWORK_GIS_NAME))) {
-                            			
-                            			Relationship relationSector = singleLink.getStartNode().getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING);
-
-                            			Node sector = null;
-                                            Object networkGisName = relationSector.getProperty(INeoConstants.NETWORK_GIS_NAME);
-                                            IGeoResource networkGisNode = null;
-                                            for (IGeoResource networkResource : networkGeoNeo) {
-                                                GeoNeo networkGis = networkResource.resolve(GeoNeo.class, null);
-                                                if (networkGisName.equals(NeoUtils.getSimpleNodeName(networkGis.getMainGisNode(), ""))) {
-                                                    sector = relationSector.getEndNode();
-                                                    networkGisNode = networkResource;
-                                                    break;
-                                                }
-                                            }
-                                            if (sector != null) {
-                                                Pair<MathTransform, MathTransform> driveTransform = setCrsTransforms(networkGisNode.getInfo(monitor).getCRS());// TODO
-                                                Node site = sector.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(sector);
-                                                GeoNode siteGn = new GeoNode(site);
-                                                location = siteGn.getCoordinate();
-                                                try {
-                                                    JTS.transform(location, world_location, transform_d2w);
-                                                } catch (Exception e) {
-                                                    // JTS.transform(location, world_location,
-                                                    // transform_w2d.inverse());
-                                                }
-                                                java.awt.Point pSite = getContext().worldToPixel(world_location);
-                                                if (drawFull) {
-                                                    pSite = getSectorCenter(g, sector, pSite);
-                                                }
-                                                Color oldColor = g.getColor();
-                                                g.setColor(lineColor);
-                                                g.drawLine(p.x, p.y, pSite.x, pSite.y);
-                                                g.setColor(oldColor);
-                                                // restore old transform;
-                                                setCrsTransforms(driveTransform);
-                                            }
-//                                        }
-                                    
-                                		
-                                		break;
-                                	}
-                            	}
-                            }
-                            
                         }
                     }
                 }
-                if (cached_node != null && drawLabels) {
-                    renderLabel(g, 0, cached_node, cached_l_p, 0);
+                // Now draw correlation lines. This should be done after the drive, so they appear
+                // as a separate layer.
+                for (CachedPoint linePoint : shouldDrawLines) {
+                    Color oldColor = g.getColor();
+                    Pair<MathTransform, MathTransform> driveTransform = setCrsTransforms(networkCRS);
+                    g.setColor(linePoint.color);
+                    g.drawLine(linePoint.p.x, linePoint.p.y, linePoint.sector.x, linePoint.sector.y);
+                    // restore old transform and color
+                    setCrsTransforms(driveTransform);
+                    g.setColor(oldColor);
                 }
-                prev_p = null;
-                prev_l_p = null;
-                cached_node = null;
+                // Draw the first label. We do this last because we did not know enough to do it first.
+                if (drawLabels && shouldDrawLabels.firstNode != null) {
+                    renderLabel(g, 0, shouldDrawLabels.firstNode, shouldDrawLabels.firstPoint, shouldDrawLabels.getFirstTheta());
+                }
+                previousPoint = null;
+                
+                // Now draw the event icons
                 if (eventIconSize > 0) {
                     for (Node node1 : index.getNodes(INeoConstants.EVENTS_LUCENE_INDEX_NAME, gisName)) {
                         if (monitor.isCanceled())
@@ -863,54 +993,17 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                         }
     
                         java.awt.Point p = getContext().worldToPixel(world_location);
-                        if (geoFilter!=null && !insidePolygon(p)){
+                        if (samePixel(p) || geoFilter!=null && !insidePolygon(p)){
                             continue;
                         }
-                        if (prev_p != null && prev_p.x == p.x && prev_p.y == p.y) {
-                            prev_p = p;
-//                            continue;
-                        } else {
-                            prev_p = p;
-                        }
-                        double theta = 0.0;
-                        double dx = 0.0;
-                        double dy = 0.0;
-                        if (prev_l_p == null) {
-                            prev_l_p = p;
-                            cached_l_p = p; // so we can draw first point using second point settings
-                            cached_node = node;
-                        } else {
-                            try {
-                                dx = p.x - prev_l_p.x;
-                                dy = p.y - prev_l_p.y;
-                                if (Math.abs(dx) < Math.abs(dy) / 2) {
-                                    // drive goes north-south
-                                    theta = 0;
-                                } else if (Math.abs(dy) < Math.abs(dx) / 2) {
-                                    // drive goes east-west
-                                    theta = Math.PI / 2;
-                                } else if (dx * dy < 0) {
-                                    // drive has negative slope
-                                    theta = -Math.PI / 4;
-                                } else {
-                                    theta = Math.PI / 4;
-                                }
-                            } catch (Exception e) {
-                            }
-                        }
-                        if (true||Math.abs(dx) > 20 || Math.abs(dy) > 20) {
-                            renderEvents(g, node, p, theta);
-                            if (cached_node != null) {
-                                renderEvents(g, cached_node, cached_l_p, theta);
-                                cached_node = null;
-                                cached_l_p = null;
-                            }
-                            prev_l_p = p;
+                        shouldDrawIcons.setData(p, node);
+                        if (shouldDrawIcons.shouldDraw()) {
+                            renderEvents(g, node, p, shouldDrawIcons.theta);
                         }
     
                     }
-                    if (cached_node != null) {
-                        renderEvents(g, cached_node, cached_l_p, 0);
+                    if (shouldDrawIcons.firstNode != null) {
+                        renderEvents(g, shouldDrawIcons.firstNode, shouldDrawIcons.firstPoint, shouldDrawIcons.getFirstTheta());
                     }
                 }
                 for (String errName : colorErrors.keySet()) {
@@ -936,9 +1029,112 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             tx.finish();
             // if (geoNeo != null)
             // geoNeo.close();
+            clearCaches();
             monitor.done();
 
         }
+    }
+
+    private boolean samePixel(Point p) {
+        boolean same = false;
+        if (previousPoint != null && previousPoint.x == p.x && previousPoint.y == p.y) {
+            same = true;
+        }
+        previousPoint = p;
+        return same;
+    }
+
+    private void clearCaches() {
+        sectorPoints.clear();
+        driveSectorCorrelationLines.clear();
+        networkGeoResources.clear();
+        networkGeoResource = null;
+        networkCRS = null;
+    }
+    
+    private ArrayList<IGeoResource> getNetworkGeoResources(GeoNeo geoNeo) {
+        if(networkGeoResources==null || networkGeoResources.isEmpty()) {
+            Iterable<Relationship> relations = geoNeo.getMainGisNode().getRelationships(
+                    CorrelationRelationshipTypes.LINKED_NETWORK_DRIVE, Direction.INCOMING);
+            networkGeoResources = new ArrayList<IGeoResource>();
+            for (Relationship relationship : relations) {
+                IGeoResource network = getNetwork(relationship.getOtherNode(geoNeo.getMainGisNode()));
+                if (network != null) {
+                    networkGeoResources.add(network);
+                }
+            }
+            
+            //Lagutko, 15.05.2010, another way of correlation
+            relations = NeoUtils.getDatasetNodeByGis(geoNeo.getMainGisNode()).getRelationships(CorrelationRelationshipTypes.CORRELATED, Direction.OUTGOING);
+            for (Relationship relation : relations) {
+            	Node correlationNode = relation.getEndNode();
+            	
+            	IGeoResource network = getNetwork(NeoUtils.getGisNodeByDataset(correlationNode.getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.INCOMING).getStartNode()));
+                if (network != null) {
+                    networkGeoResources.add(network);
+                }
+            }
+        }
+        return networkGeoResources;
+    }
+    
+    private Node findCorrelatedSectorFromPointNode(GeoNeo geoNeo, Node mpNode, IProgressMonitor monitor) throws IOException {
+        Iterator<Relationship> links = mpNode.getRelationships(GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING).iterator();
+        HashSet<Node> mNodes = new HashSet<Node>();
+        ArrayList<IGeoResource> networkGeoResources = getNetworkGeoResources(geoNeo);
+        while (links.hasNext()) {
+            mNodes.add(links.next().getStartNode());
+        }
+        
+        for (Node mNode : mNodes) {
+            Iterator<Relationship> rels = mNode.getRelationships(CorrelationRelationshipTypes.CORRELATED,
+                    Direction.INCOMING).iterator();
+            while (rels.hasNext()) {
+                Relationship singleLink = rels.next();
+                if ((!rels.hasNext() && (!singleLink.hasProperty(INeoConstants.NETWORK_GIS_NAME)))
+                        || geoNeo.getName().equals(singleLink.getProperty(INeoConstants.NETWORK_GIS_NAME))) {
+
+                    Relationship relationSector = singleLink.getStartNode().getSingleRelationship(
+                            CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING);
+
+                    Object networkGisName = relationSector.getProperty(INeoConstants.NETWORK_GIS_NAME);
+                    for (IGeoResource networkResource : networkGeoResources) {
+                        GeoNeo networkGis = networkResource.resolve(GeoNeo.class, null);
+                        if (networkGisName.equals(NeoUtils.getSimpleNodeName(networkGis.getMainGisNode(), ""))) {
+                            this.networkGeoResource = networkResource;
+                            this.networkCRS = networkResource.getInfo(monitor).getCRS();
+                            return relationSector.getEndNode();
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private Color getCorrelationLineColor(List<String> eventList, String selected_events, BrewerPalette palette,
+            boolean haveSelectedEvents, boolean allEvents, Color eventColor, final Node mpNode) {
+        Color lineColor;
+        if (haveSelectedEvents) {
+            Set<String> events = NeoUtils.getEventsList(mpNode, null);
+            if (!events.isEmpty() && (allEvents || events.contains(selected_events))) {
+                if (allEvents) {
+                    int i = eventList.indexOf(events.iterator().next());
+                    if (i < 0) {
+                        i = 0;
+                    }
+                    Color[] colors = palette.getColors(palette.getMaxColors());
+                    int index = i % colors.length;
+                    eventColor = colors[index];
+                }
+                lineColor = eventColor;
+            } else {
+                lineColor = FADE_LINE;
+            }
+        } else {
+            lineColor = FADE_LINE;
+        }
+        return lineColor;
     }
 
     private boolean insidePolygon(Point point) {
@@ -1198,16 +1394,13 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         Color oldColor = g.getColor();
         if (drawFull) {
             g.setColor(fillColor);
-            g.fillRect(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
-//            g.setColor(borderColor);
-//            g.drawRect(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
-
+            g.fillOval(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
         } else if (drawLite) {
             g.setColor(fillColor);
-            g.fillOval(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
+            g.fillRect(p.x - 1, p.y - 1, 3, 3);
         } else {
             g.setColor(fillColor);
-            g.fillOval(p.x - 2, p.y - 2, 5, 5);
+            g.fillRect(p.x - drawSize, p.y - drawSize, drawWidth, drawWidth);
         }
         g.setColor(oldColor);
     }
