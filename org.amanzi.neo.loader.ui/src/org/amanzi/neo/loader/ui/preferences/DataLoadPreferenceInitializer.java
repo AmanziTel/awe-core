@@ -177,19 +177,18 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.NH_SECTOR, "Sector, SectorName, Cell, BTS_Name, CELL_NAME, GSM Sector ID,CellIdentity, cell name, Cell Name,sector_id, BS_NO");
         pref.setDefault(DataLoadPreferences.NH_SECTOR_CI, "CI,CI_s,CellId,CellIdentity");
         pref.setDefault(DataLoadPreferences.NH_SECTOR_LAC, "LAC,LAC_s,La_lacId");
-        pref.setDefault(DataLoadPreferences.NH_LATITUDE, "lat.*, y_wert.*, SIT.*Y, northing, latitude");
-        pref.setDefault(DataLoadPreferences.NH_LONGITUDE, "lon.*, x_wert.*, SIT.*X, easting, longitude");
+        pref.setDefault(DataLoadPreferences.NH_LATITUDE, "latitude, y_wert.*, SIT.*Y, northing, lat.*");
+        pref.setDefault(DataLoadPreferences.NH_LONGITUDE, "longitude, x_wert.*, SIT.*X, easting, lon.*");
         
-        pref.setDefault(DataLoadPreferences.DR_LATITUDE, ".*latitude");
-        pref.setDefault(DataLoadPreferences.DR_LONGITUDE, ".*longitude");
-        pref.setDefault(DataLoadPreferences.DR_BCCH, ".*bcch");
-        pref.setDefault(DataLoadPreferences.DR_CI, ".*ci");
-        pref.setDefault(DataLoadPreferences.DR_EcIo, ".*ecio");
-        pref.setDefault(DataLoadPreferences.DR_PN, ".*pn");
-        pref.setDefault(DataLoadPreferences.DR_RSSI, ".*rssi");
-        pref.setDefault(DataLoadPreferences.DR_SC, ".*sc");
-        pref.setDefault(DataLoadPreferences.DR_TCH, ".*tch");
-        
+        pref.setDefault(DataLoadPreferences.DR_LATITUDE, "latitude");
+        pref.setDefault(DataLoadPreferences.DR_LONGITUDE, "longitude");
+        pref.setDefault(DataLoadPreferences.DR_BCCH, "bcch");
+        pref.setDefault(DataLoadPreferences.DR_CI, "ci");
+        pref.setDefault(DataLoadPreferences.DR_EcIo, "ecio");
+        pref.setDefault(DataLoadPreferences.DR_PN, "pn");
+        pref.setDefault(DataLoadPreferences.DR_RSSI, "rssi");
+        pref.setDefault(DataLoadPreferences.DR_SC, "sc");
+        pref.setDefault(DataLoadPreferences.DR_TCH, "tch");
         
         pref.setDefault(DataLoadPreferences.PR_NAME, "Probe");
         pref.setDefault(DataLoadPreferences.PR_TYPE, "Type");
