@@ -34,7 +34,9 @@ class SearchQuery
   def stop_on(&block)
     @stop_on=block
   end
-
+  def get_node_property(node,prop)
+    (node.property? prop) ? node.get_property(prop): node.send(prop.to_sym)
+  end
   def each
     configure_traverser
     @traverser.each do |node|
@@ -44,7 +46,7 @@ class SearchQuery
       if @properties.is_a? Hash
         key_property=@properties[:key]
         value_property=@properties[:value]
-        result[node[key_property]]=node[value_property]
+        result[node[key_property]]=get_node_property(node,value_property)#node[value_property]
       else
         @properties.each do |prop|
           result[prop]=(node.property? prop) ? node.get_property(prop): nil

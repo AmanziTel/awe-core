@@ -25,5 +25,9 @@ Require-Bundle: org.eclipse.ui,
  org.amanzi.neo.loader;bundle-version="1.0.0",
  org.apache.log4j,
  org.amanzi.awe.statistic,
- org.rubypeople.rdt.ui
+ org.rubypeople.rdt.ui,
+ org.eclipse.ui.editors,
+ org.eclipse.ui.ide,
+ org.rubypeople.rdt.core,
+ org.eclipse.core.resources
 Eclipse-LazyStart: true

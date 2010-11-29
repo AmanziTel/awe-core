@@ -46,6 +46,16 @@ public class ReportUtils {
         reader.close();
         return sb.toString();
     }
+    public static String readScript(StringBuilder sb ,String file) throws IOException {
+        InputStream stream = new FileInputStream(file);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            sb.append(line).append("\n");
+        }
+        reader.close();
+        return sb.toString();
+    }
     /**
      * Displays an error message
      *

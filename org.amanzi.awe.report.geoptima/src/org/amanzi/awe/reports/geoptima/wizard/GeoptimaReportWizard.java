@@ -13,9 +13,11 @@
 
 package org.amanzi.awe.reports.geoptima.wizard;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -35,15 +37,18 @@ import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.report.charts.ChartType;
 import org.amanzi.awe.report.charts.Charts;
+import org.amanzi.awe.report.editor.ReportEditor;
 import org.amanzi.awe.report.model.Chart;
 import org.amanzi.awe.report.model.Report;
 import org.amanzi.awe.report.model.ReportModel;
 import org.amanzi.awe.report.pdf.PDFPrintingEngine;
+import org.amanzi.awe.report.util.ReportUtils;
 import org.amanzi.awe.reports.geoptima.GeoptimaReportsPlugin;
 import org.amanzi.awe.statistic.CallTimePeriods;
 import org.amanzi.awe.statistics.builder.StatisticsBuilder;
 import org.amanzi.awe.statistics.database.entity.Statistics;
 import org.amanzi.awe.statistics.template.Template;
+import org.amanzi.awe.statistics.template.TemplateColumn;
 import org.amanzi.awe.statistics.utils.ChartUtilities;
 import org.amanzi.awe.statistics.utils.ScriptUtils;
 import org.amanzi.awe.views.kpi.KPIPlugin;
@@ -57,13 +62,22 @@ import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.log4j.Logger;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.FileEditorInput;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.DateTickUnit;
 import org.jfree.chart.axis.DateTickUnitType;
@@ -77,6 +91,8 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.helpers.Predicate;
+import org.rubypeople.rdt.core.IRubyProject;
+import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
 import com.vividsolutions.jts.geom.Envelope;
 
@@ -98,7 +114,7 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
     private List<Node> datasetNodes = new ArrayList<Node>();
     private GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
     private Node dataset;
-    private List<Statistics> stats=new ArrayList<Statistics>();
+    private List<Statistics> stats = new ArrayList<Statistics>();
     protected Template template;;
 
     @Override
@@ -129,7 +145,7 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
      */
     private void initializeReportEngine() {
         try {
-//            nextStep();
+            // nextStep();
             URL entry = Platform.getBundle(GeoptimaReportsPlugin.PLUGIN_ID).getEntry("ruby");
             URL scriptURL = FileLocator.toFileURL(GeoptimaReportsPlugin.getDefault().getBundle().getEntry("ruby/automation.rb"));
             String path = scriptURL.getPath();
@@ -151,13 +167,14 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
 
                 @Override
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    
+                    
                     long t = System.currentTimeMillis();
-                    monitor.beginTask("Generating PDf reports for statistics...", stats.size()*template.getColumns().size());
+                    monitor.beginTask("Generating PDf reports for statistics...", 2*stats.size() * template.getColumns().size());
+                    generateReportFiles(monitor);
                     for (Statistics statistics : stats) {
                         final Map<String, Map<String, TimeSeries[]>> datasets;
                         datasets = ChartUtilities.createChartDatasets(statistics, getAggregation().getId(), template);
-                        System.out.println("Finished generating datasets in " + (System.currentTimeMillis() - t) / 1000
-                                + " seconds");
                         Map<String, Report> reportsPerKPI = new HashMap<String, Report>();
                         for (Entry<String, Map<String, TimeSeries[]>> entry : datasets.entrySet()) {
                             String groupName = entry.getKey();
@@ -166,7 +183,7 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
                                 Report report = reportsPerKPI.get(kpiName);
                                 if (report == null) {
                                     report = new Report("KPI report");
-                                    report.setFile(kpiName +" for "+statistics.getName().replace(",", "-")+ ".pdf");
+                                    report.setFile(kpiName + " for " + statistics.getName().replace(",", "-") + ".pdf");
                                     reportsPerKPI.put(kpiName, report);
                                 }
 
@@ -199,6 +216,7 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
             // TODO: handle exception
         }
     }
+
     /**
      * Adds data to a time(line) chart
      * 
@@ -212,12 +230,12 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
         thresholds.addSeries(series[0]);
         XYPlot plot = new XYPlot();
         DateAxis dateAxis = new DateAxis();
-////        dateAxis.setAutoTickUnitSelection(true);
-////        dateAxis.setAutoRange(true);
-//        TickUnits tickUnits = new TickUnits();
-//        tickUnits.add(new DateTickUnit(DateTickUnitType.MONTH,1,new SimpleDateFormat("MMMMM")));
-//        dateAxis.setStandardTickUnits(tickUnits);
-//        dateAxis.setVerticalTickLabels(true);
+        // // dateAxis.setAutoTickUnitSelection(true);
+        // // dateAxis.setAutoRange(true);
+        // TickUnits tickUnits = new TickUnits();
+        // tickUnits.add(new DateTickUnit(DateTickUnitType.MONTH,1,new SimpleDateFormat("MMMMM")));
+        // dateAxis.setStandardTickUnits(tickUnits);
+        // dateAxis.setVerticalTickLabels(true);
 
         plot.setDomainAxis(dateAxis);
         Charts.applyDefaultSettingsToDataset(plot, thresholds, 0);
@@ -225,6 +243,7 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
         Charts.applyMainVisualSettings(plot, chart.getDomainAxisLabel(), chart.getRangeAxisLabel(), PlotOrientation.VERTICAL);
         chart.setPlot(plot);
     }
+
     /**
      * Generates reports for all 'drive' layers found in map
      */
@@ -342,7 +361,7 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
                     Ruby ruby = KPIPlugin.getDefault().getRubyRuntime();
                     StatisticsBuilder builder = new StatisticsBuilder(service, dataset, ruby);
                     stats.add(builder.buildStatistics(template, "imei", getAggregation(), monitor));
-                    stats.add(builder.buildStatistics(template, "sector", getAggregation(), monitor));
+//                    stats.add(builder.buildStatistics(template, "sector", getAggregation(), monitor));
                 }
             });
         } catch (Exception e) {
@@ -423,51 +442,6 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
         }
     }
 
-    /**
-     * Loads files
-     * 
-     * @param files files to be loaded
-     */
-    private void loadFiles(final File[] files) {
-        nextStep();
-        final int n = files.length;
-        selectDataPage.setTitle(String.format(MESSAGE, "Loading data", step, STEP_COUNT));
-        try {
-            getContainer().run(true, true, new IRunnableWithProgress() {
-
-                @Override
-                public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        datasetNodes.clear();
-                        int i = 0;
-                        for (File file : files) {
-                            i++;
-                            String filepath = file.getPath();
-                            updateMessage("Loading " + i + " of " + n + ":" + filepath);
-
-                            TEMSLoader loader = new TEMSLoader(null, filepath, getShell().getDisplay(), file.getName());
-                            loader.setLimit(100);
-                            loader.run(monitor);
-                            Node datasetNode = loader.getDatasetNode();
-                            if (datasetNode == null) {
-                                LOGGER.debug("ds==null for " + file.getName());
-                            } else {
-                                datasetNodes.add(datasetNode);
-                            }
-                        }
-                    } catch (IOException e) {
-                        // TODO Handle IOException
-                        LOGGER.error(e.getLocalizedMessage(), e);
-                        throw (RuntimeException)new RuntimeException().initCause(e);
-                    }
-                }
-            });
-        } catch (Exception e) {
-            // TODO Handle Exception
-            LOGGER.error(e.getLocalizedMessage(), e);
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        }
-    }
 
     /**
      * Creates a predicate that is necessary for distribution model creation
@@ -530,11 +504,67 @@ public class GeoptimaReportWizard extends Wizard implements IWizard {
     }
 
     /**
-     *
      * @return
      */
     private CallTimePeriods getAggregation() {
         return CallTimePeriods.HOURLY;
     }
 
+    /**
+     * Generates report files and opens editors
+     * @param monitor progress monitor
+     */
+    private void generateReportFiles(final IProgressMonitor monitor) {
+
+        Display.getDefault().asyncExec(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    URL url = FileLocator.toFileURL(GeoptimaReportsPlugin.getDefault().getBundle().getEntry(
+                            "ruby/report_template.rb"));
+                    String reportFileTemplate = ReportUtils.readScript(url.getPath());
+
+                    IRubyProject rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, ApplicationGIS
+                            .getActiveProject().getName());
+
+                    final IProject project = rubyProject.getProject();
+                    int i = 0;
+                    IFile file = null;
+                    for (Statistics stat : stats) {
+
+                        for (TemplateColumn col : template.getColumns()) {
+                            String aggr = getAggregation().getId().toLowerCase();
+                            monitor.subTask("Report for " + col.getName() + "/" + aggr);
+                            StringBuilder sb = new StringBuilder();
+                            sb.append("dataset_name=\"").append(dataset.getProperty(INeoConstants.PROPERTY_NAME_NAME)).append(
+                                    "\"\n");
+                            sb.append("kpi_name=\"").append(col.getName()).append("\"\n");
+                            sb.append("aggregation=:").append(aggr).append("\n");
+                            sb.append("statistics=\"").append(stat.getName()).append("\"\n");
+                            sb.append(reportFileTemplate);
+
+                            while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) {
+                                i++;
+                            }
+                            InputStream is = new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
+                            file.create(is, true, null);
+                            is.close();
+                            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().openEditor(new FileEditorInput(file),
+                                    ReportEditor.class.getName());
+
+                            monitor.worked(1);
+                        }
+                    }
+                } catch (IOException e) {
+                    // TODO Handle IOException
+                    throw (RuntimeException)new RuntimeException().initCause(e);
+                } catch (CoreException e) {
+                    // TODO Handle CoreException
+                    throw (RuntimeException)new RuntimeException().initCause(e);
+                }
+            }
+        });
+
+    }
 }
