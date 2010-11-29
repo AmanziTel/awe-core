@@ -674,7 +674,7 @@ public class TEMSLoader extends DriveLoader {
                 result.add(gisNodes.next());
             }
         } catch (Exception e) {
-            NeoCorePlugin.error(null, e);
+            NeoCorePlugin.error("Failed to find GIS nodes", e);
             transaction.failure();
         } finally {
             transaction.finish();
