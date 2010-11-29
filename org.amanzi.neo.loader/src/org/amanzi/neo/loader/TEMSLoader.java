@@ -357,6 +357,11 @@ public class TEMSLoader extends DriveLoader {
         if (time == null || latitude == null || longitude == null) {
             return 0;
         }
+        
+        if (!lineData.isEmpty()) {
+            data.add(lineData);
+        }
+        
         if ((latitude != null)
                 && (longitude != null)
                 && (((currentLatitude == null) && (currentLongitude == null)) || ((Math.abs(currentLatitude - latitude) > 10E-10) || (Math
@@ -364,10 +369,7 @@ public class TEMSLoader extends DriveLoader {
             currentLatitude = latitude;
             currentLongitude = longitude;
             saved = saveData(); // persist the current data to database
-        }
-        if (!lineData.isEmpty()) {
-            data.add(lineData);
-        }
+        }        
         this.incValidLocation();
 
         if (!"EV-DO Pilot Sets Ver2".equals(message_type))
@@ -444,6 +446,7 @@ public class TEMSLoader extends DriveLoader {
         int saved = 0;
         if (signals.size() > 0 || !data.isEmpty()) {
             Transaction transaction = neo.beginTx();
+            
             try {
                 Node mp = null;
                 if (!data.isEmpty()) {
@@ -461,7 +464,7 @@ public class TEMSLoader extends DriveLoader {
                     index(mp);
                     boolean haveEvents = false;
                     for (Map<String, Object> dataLine : data) {
-                        Node m = neo.createNode();
+                        Node m = neo.createNode();                    
                         findOrCreateFileNode(m);
                         m.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
                         for (Map.Entry<String, Object> entry : dataLine.entrySet()) {
