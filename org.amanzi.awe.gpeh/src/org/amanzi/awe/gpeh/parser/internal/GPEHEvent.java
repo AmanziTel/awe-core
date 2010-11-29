@@ -148,7 +148,7 @@ public class GPEHEvent implements IGPEHBlock {
          */
         public void setType(Events type) {
             this.type = type;
-            this.properties = new HashMap<Parameters, Object>(type.getAllParameters().size());
+//            this.properties = new HashMap<Parameters, Object>(type.getAllParameters().size());
         }
 
         /**

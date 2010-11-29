@@ -322,8 +322,9 @@ public class GPEHParser {
             parseOk = true;
             event.setType(events);
             // TODO debug
-            List<Parameters> allParameters = events.getAllParameters();
-            for (Parameters parameter : allParameters) {
+            Parameters[] allParameters = events.getAllParameters();
+            for (int i = 0; i < allParameters.length; i++) {
+                Parameters parameter = allParameters[i];
                 int maxBitLen = recLen - len;
                 if (parameter == Parameters.EVENT_PARAM_MESSAGE_CONTENTS) {
                     Integer lenMsg = (Integer)event.getProperties().get(Parameters.EVENT_PARAM_MESSAGE_LENGTH);

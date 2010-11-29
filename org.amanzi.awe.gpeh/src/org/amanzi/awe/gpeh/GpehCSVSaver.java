@@ -97,7 +97,7 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
             openedFiles.put(eventId,csvFile);
             
             // create headers
-            List<Parameters> parameters = events.getAllParametersWithTimestamp();
+            Parameters[] parameters = events.getAllParametersWithTimestamp();
             
             // create array list of headers
             ArrayList<String> headers = new ArrayList<String>();

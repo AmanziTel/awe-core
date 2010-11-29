@@ -16,6 +16,7 @@ package org.amanzi.awe.gpeh.parser;
 import static org.amanzi.awe.gpeh.parser.Parameters.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -318,8 +319,8 @@ public enum Events {
     
     private static HashMap<Integer, Events> eventMap = new HashMap<Integer, Events>();
     
-    private final List<Parameters> allParameters = new LinkedList<Parameters>(); 
-    private final List<Parameters> allParametersWithTimestamp = new LinkedList<Parameters>(); 
+    private Parameters[] allParameters = null; 
+    private Parameters[] allParametersWithTimestamp = null; 
     
     private long bitMask;
 
@@ -330,35 +331,44 @@ public enum Events {
         this.id = id;
         this.eventType = type;
         
-        allParameters.add(EVENT_PARAM_UE_CONTEXT);
-        allParameters.add(EVENT_PARAM_RNC_MODULE_ID);
-        allParameters.add(EVENT_PARAM_C_ID_1);
-        allParameters.add(EVENT_PARAM_RNC_ID_1);
-        allParameters.add(EVENT_PARAM_C_ID_2);
-        allParameters.add(EVENT_PARAM_RNC_ID_2);
-        allParameters.add(EVENT_PARAM_C_ID_3);
-        allParameters.add(EVENT_PARAM_RNC_ID_3);
-        allParameters.add(EVENT_PARAM_C_ID_4);
-        allParameters.add(EVENT_PARAM_RNC_ID_4);
+        int paramCount = 10;
         
         if (eventType!=EventType.RNC){
-            allParameters.add(EVENT_PARAM_PDU_TYPE);
-            allParameters.add(EVENT_PARAM_PROTOCOL_ID);
-            allParameters.add(EVENT_PARAM_MESSAGE_DIRECTION);
-            allParameters.add(EVENT_PARAM_MESSAGE_LENGTH);
-            allParameters.add(EVENT_PARAM_MESSAGE_CONTENTS);
+            paramCount += 5;
+        }
+        
+        allParameters = new Parameters[paramCount + additionalParameters.length];
+        allParameters[0] = EVENT_PARAM_UE_CONTEXT;
+        allParameters[1] = EVENT_PARAM_RNC_MODULE_ID;
+        allParameters[2] = EVENT_PARAM_C_ID_1;
+        allParameters[3] = EVENT_PARAM_RNC_ID_1;
+        allParameters[4] = EVENT_PARAM_C_ID_2;
+        allParameters[5] = EVENT_PARAM_RNC_ID_2;
+        allParameters[6] = EVENT_PARAM_C_ID_3;
+        allParameters[7] = EVENT_PARAM_RNC_ID_3;
+        allParameters[8] = EVENT_PARAM_C_ID_4;
+        allParameters[9] = EVENT_PARAM_RNC_ID_4;
+        
+        if (eventType != EventType.RNC) {
+            allParameters[10] = EVENT_PARAM_PDU_TYPE;
+            allParameters[11] = EVENT_PARAM_PROTOCOL_ID;
+            allParameters[12] = EVENT_PARAM_MESSAGE_DIRECTION;
+            allParameters[13] = EVENT_PARAM_MESSAGE_LENGTH;
+            allParameters[14] = EVENT_PARAM_MESSAGE_CONTENTS;
         }
         
         for (Parameters parameters : additionalParameters) {
-            allParameters.add(parameters);
+            allParameters[paramCount++] = parameters;
         }
         
-        allParametersWithTimestamp.add(EVENT_PARAM_TIMESTAMP_HOUR);
-        allParametersWithTimestamp.add(EVENT_PARAM_TIMESTAMP_MINUTE);
-        allParametersWithTimestamp.add(EVENT_PARAM_TIMESTAMP_SECOND);
-        allParametersWithTimestamp.add(EVENT_PARAM_TIMESTAMP_MILLISEC);
-        
-        allParametersWithTimestamp.addAll(allParameters);
+        allParametersWithTimestamp = new Parameters[allParameters.length + 4];
+        allParametersWithTimestamp[0] = EVENT_PARAM_TIMESTAMP_HOUR;
+        allParametersWithTimestamp[1] = EVENT_PARAM_TIMESTAMP_MINUTE;
+        allParametersWithTimestamp[2] = EVENT_PARAM_TIMESTAMP_SECOND;
+        allParametersWithTimestamp[3] = EVENT_PARAM_TIMESTAMP_MILLISEC;
+        for (int i = 0; i < allParameters.length; i++) {
+            allParametersWithTimestamp[i + 4] = allParameters[i];
+        }
         
         bitMask = 0x01 << ordinal();
         
@@ -377,7 +387,7 @@ public enum Events {
      * 
      * @return
      */
-    public List<Parameters> getAllParameters() {
+    public Parameters[] getAllParameters() {
         return allParameters;
     }
     
@@ -386,7 +396,7 @@ public enum Events {
      * 
      * @return
      */
-    public List<Parameters> getAllParametersWithTimestamp() {
+    public Parameters[] getAllParametersWithTimestamp() {
         return allParametersWithTimestamp;
     }
 
