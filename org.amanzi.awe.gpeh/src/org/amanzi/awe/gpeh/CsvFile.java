@@ -33,6 +33,7 @@ import java.util.ArrayList;
  */
 public class CsvFile {
 
+    private static final int BUFFER_SIZE = 8*1024;
     private String newline = System.getProperty("line.separator");
     private BufferedWriter writer  = null;
     private int eventId = 0;
@@ -83,7 +84,7 @@ public class CsvFile {
      * @throws IOException 
      */
     public CsvFile(File file) throws IOException {
-        writer = new BufferedWriter(new FileWriter(file));
+        writer = new BufferedWriter(new FileWriter(file), BUFFER_SIZE);
     }
 
     /**
