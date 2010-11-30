@@ -44,7 +44,7 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
     // output directory to saving csv-files
     private String outputDirectory = null;
     
-    private String globalTimestamp = "";
+    private long globalTimestamp = 0;
     private int globalEventId = 0;
     private CsvFile csvFileToWork = null;
     private ArrayList<String> headers = new ArrayList<String>();
@@ -52,7 +52,10 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
     private final static String TIMESTAMP = "timestamp";
     private final static String SIMPLE_DATE_FORMAT = "yyyyMMdd.hhmm";
     private final static String FILE_FORMAT = ".txt";
-    
+    private final static SimpleDateFormat simpleDateFormat = 
+                                    new SimpleDateFormat(SIMPLE_DATE_FORMAT);
+    //||| for testing
+    private long count = 0;
     @Override
     public void init(GpehTransferData element) {
         outputDirectory = element.get(GpehTransferData.OUTPUT_DIRECTORY).toString();
@@ -60,9 +63,10 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
 
     @Override
     public void save(GpehTransferData element) {
-        String timestamp = element.get(TIMESTAMP).toString();
-        if (!globalTimestamp.equals(timestamp)) {
-            if (!globalTimestamp.equals(""))
+        count++;
+        long timestamp = (Long)element.get(TIMESTAMP);
+        if (globalTimestamp != timestamp) {
+            if (globalTimestamp != 0)
                 finishUp(element);
             
             globalTimestamp = timestamp;
@@ -76,11 +80,10 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
             
             Events events = Events.findById(eventId);
             
-            Date date = new Date(Long.parseLong(globalTimestamp));
+            Date date = new Date(globalTimestamp);
 
             String wayToFile = outputDirectory + "\\" + eventId + "_" + 
-                                (new SimpleDateFormat(SIMPLE_DATE_FORMAT).
-                                 format(date)) + FILE_FORMAT;
+                                (simpleDateFormat.format(date)) + FILE_FORMAT;
             
             // create new file 
             File file = new File(wayToFile);
@@ -110,6 +113,10 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
             // write headers to csvfile
             try {
                 csvFile.writeData(headers);
+                headers.remove("EVENT_PARAM_TIMESTAMP_HOUR");
+                headers.remove("EVENT_PARAM_TIMESTAMP_MINUTE");
+                headers.remove("EVENT_PARAM_TIMESTAMP_SECOND");
+                headers.remove("EVENT_PARAM_TIMESTAMP_MILLISEC");
             } catch (IOException e) {
                 // TODO Handle IOException
                 throw (RuntimeException) new RuntimeException( ).initCause( e );
@@ -121,18 +128,14 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
             globalEventId = eventId;
             csvFileToWork = openedFiles.get(eventId);
             headers = csvFileToWork.getHeaders();
-            headers.remove("EVENT_PARAM_TIMESTAMP_HOUR");
-            headers.remove("EVENT_PARAM_TIMESTAMP_MINUTE");
-            headers.remove("EVENT_PARAM_TIMESTAMP_SECOND");
-            headers.remove("EVENT_PARAM_TIMESTAMP_MILLISEC");
         }
         
         // create array list of data
         ArrayList<String> data = new ArrayList<String>();
-        data.add(((Object)event.getHour()).toString());
-        data.add(((Object)event.getMinute()).toString());
-        data.add(((Object)event.getSecond()).toString());
-        data.add(((Object)event.getMillisecond()).toString());
+        data.add(Long.toString(event.getHour()));
+        data.add(Long.toString(event.getMinute()));
+        data.add(Long.toString(event.getSecond()));
+        data.add(Long.toString(event.getMillisecond()));
 
         String currentHeaderValue = null;
         for (String header : headers) {
@@ -175,6 +178,7 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
             }
         }
         openedFiles.clear();
+        System.out.println("Count = " + count);
     }
 
     @Override
