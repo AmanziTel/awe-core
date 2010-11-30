@@ -44,11 +44,13 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
     // output directory to saving csv-files
     private String outputDirectory = null;
     
+    //TODO: LN: comments?    
     private long globalTimestamp = 0;
     private int globalEventId = 0;
     private CsvFile csvFileToWork = null;
     private ArrayList<String> headers = new ArrayList<String>();
     
+    //TODO: LN: comments? 
     private final static String TIMESTAMP = "timestamp";
     private final static String SIMPLE_DATE_FORMAT = "yyyyMMdd.hhmm";
     private final static String FILE_FORMAT = ".txt";
@@ -67,6 +69,10 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
         long timestamp = (Long)element.get(TIMESTAMP);
         if (globalTimestamp != timestamp) {
             if (globalTimestamp != 0)
+                //TODO: LN: we should not call finishUp to clean up files - 
+                //but a architecture finishUp is a method that should be called only once
+                //as a solution - move all logic for cleaning files to another method and call this methis 
+                //from this place and from finishUp
                 finishUp(element);
             
             globalTimestamp = timestamp;
@@ -76,6 +82,9 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
         Event event = (Event)element.remove(GpehTransferData.EVENT);
         int eventId = event.getId();
         
+        //TODO: LN: to make it more quick we can replace 
+        //calling 1. contains, 2. get with
+        //1. get, 2. if result is null - than create, otherwise use result
         if (!openedFiles.containsKey(eventId)) {
             
             Events events = Events.findById(eventId);
@@ -91,6 +100,9 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
             try {
                 csvFile = new CsvFile(file);
             } catch (FileNotFoundException e1) {
+                //TODO: LN: implement good exception handling - in case if we cannot create new file - we should 
+                //inform user about this error and stop loading
+                
                 // TODO Handle FileNotFoundException
                 throw (RuntimeException) new RuntimeException( ).initCause( e1 );
             }
@@ -113,11 +125,15 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
             // write headers to csvfile
             try {
                 csvFile.writeData(headers);
+                //TODO: LN: use constants instead of strings
                 headers.remove("EVENT_PARAM_TIMESTAMP_HOUR");
                 headers.remove("EVENT_PARAM_TIMESTAMP_MINUTE");
                 headers.remove("EVENT_PARAM_TIMESTAMP_SECOND");
                 headers.remove("EVENT_PARAM_TIMESTAMP_MILLISEC");
             } catch (IOException e) {
+                //TODO: LN: implement good exception handling - in case if we cannot write data to file - we should 
+                //inform user about this error and stop loading
+                
                 // TODO Handle IOException
                 throw (RuntimeException) new RuntimeException( ).initCause( e );
             }
@@ -140,6 +156,7 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
         String currentHeaderValue = null;
         for (String header : headers) {
             if (element.get(header) != null) {
+                //TODO: LN: use constants instead of strings
                 if (header.equals("EVENT_PARAM_MESSAGE_CONTENTS")) {
                     currentHeaderValue = new String((byte[])element.get(header));
                 }
@@ -148,6 +165,7 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
                 }
             }
             
+            //TODO: LN: unnesessary if - anyway if currentHeaderValue is null we put to data null
             if (currentHeaderValue != null) {
                 data.add(currentHeaderValue);
             }
@@ -162,7 +180,9 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
         try {
             csvFileToWork.writeData(data);
         } catch (IOException e) {
-            // TODO Handle IOException
+            //TODO: LN: implement good exception handling - in case if we cannot write data to file - we should 
+            //inform user about this error and stop loading
+            
             throw (RuntimeException) new RuntimeException( ).initCause( e );
         }
     }
@@ -173,6 +193,9 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
             try {
                 csvFile.close();
             } catch (IOException e) {
+                //TODO: LN: implement good exception handling - in case if we cannot write data to file - we should 
+                //inform user about this error and stop loading
+                
                 // TODO Handle IOException
                 throw (RuntimeException) new RuntimeException( ).initCause( e );
             }
