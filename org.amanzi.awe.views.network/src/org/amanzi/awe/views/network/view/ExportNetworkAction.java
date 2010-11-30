@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.amanzi.awe.views.network.proxy.NeoNode;
+import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
@@ -87,6 +88,7 @@ public class ExportNetworkAction extends Action {
         }
         FileDialog dialog = new FileDialog(shell, SWT.SAVE /* or SAVE or MULTI */);
         String fileSelected = dialog.open();
+        
         HashMap<String, Collection<String>> propertyMap = new HashMap<String, Collection<String>>();
 
         TraversalDescription descr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
@@ -119,6 +121,15 @@ public class ExportNetworkAction extends Action {
         List<String> fields = new ArrayList<String>();
         if (fileSelected != null) {
             try {
+                // Kasnitskij_V:
+                String extention = LoaderUtils.getFileExtension(fileSelected);
+                if (extention.equals("")) {
+                    fileSelected += ".csv";
+                }
+                else if (extention.equals(".")) {
+                    fileSelected += "csv";
+                }
+                
                 CSVWriter writer = new CSVWriter(new FileWriter(fileSelected));
                 try {
                     for (String headerType : headers) {
