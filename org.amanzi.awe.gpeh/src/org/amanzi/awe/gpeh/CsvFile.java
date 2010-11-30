@@ -13,9 +13,12 @@
 
 package org.amanzi.awe.gpeh;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
@@ -31,7 +34,7 @@ import java.util.ArrayList;
 public class CsvFile {
 
     private String newline = System.getProperty("line.separator");
-    private OutputStreamWriter writer  = null;
+    private BufferedWriter writer  = null;
     private int eventId = 0;
     private File file = null;
     ArrayList<String> headers = null;
@@ -77,18 +80,17 @@ public class CsvFile {
      * Creates a csv file for writing data to it
      * @param file The file to write data to
      * @return 
-     * @throws FileNotFoundException 
+     * @throws IOException 
      */
-    public CsvFile(File file) throws FileNotFoundException {
-        FileOutputStream fout = new FileOutputStream(file);
-
-        writer = new OutputStreamWriter(fout);
+    public CsvFile(File file) throws IOException {
+        writer = new BufferedWriter(new FileWriter(file));
     }
 
     /**
      * Closes the csv-file.
      */
     public void close() throws IOException {
+        this.writer.flush();
         this.writer.close();
     }
     
@@ -113,6 +115,5 @@ public class CsvFile {
         }
 
         this.writer.write(newline);
-        this.writer.flush();
     }
 }
