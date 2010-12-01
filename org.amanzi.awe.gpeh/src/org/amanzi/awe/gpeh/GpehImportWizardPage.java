@@ -14,11 +14,14 @@
 package org.amanzi.awe.gpeh;
 
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.amanzi.awe.gpeh.parser.Events;
+import org.amanzi.awe.gpeh.wizard.EventConfig;
+import org.amanzi.awe.gpeh.wizard.EventGroup;
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.wizards.LoaderPage;
@@ -53,12 +56,14 @@ public class GpehImportWizardPage extends LoaderPage<CommonConfigData> {
     private CheckboxTreeViewer viewer;
 
     private HashSet<Events> selectedEvents;
+    
+    private EventConfig eventConfig;
 
     public GpehImportWizardPage() {
         super("GpehAdditionalPage");
         setTitle(NeoLoaderPluginMessages.GpehOptionsTitle);
         setDescription(NeoLoaderPluginMessages.GpehOptionsDescr);
-
+        eventConfig = setDefaultEventConfig();
     }
 
     @Override
@@ -87,31 +92,80 @@ public class GpehImportWizardPage extends LoaderPage<CommonConfigData> {
     }
 
     private void setDefaults() {
-        // TODO HARDCODING!!!
-
+        ArrayList<TreeElem> groups = new ArrayList<TreeElem>();
+        
         Set<TreeElem> set = new LinkedHashSet<TreeElem>();
-        TreeElem locationsGroup = new TreeElem(ElemType.GROUP, "Locations");
-        // locationsGroup.setImage(NodeTypes.CITY.getImage());
-
-        locationsGroup.addChield(new TreeElem(ElemType.EVENT, Events.findById(429).name(), Events.findById(429)));
-
-        set.add(locationsGroup);
-        // set.addAll(locationsGroup.getChildrens());
-
-        TreeElem mReportGroup = new TreeElem(ElemType.GROUP, "Measurement Reports");
-        // mReportGroup.setImage(NodeTypes.CALL_ANALYSIS.getImage());
-
-        mReportGroup.addChield(new TreeElem(ElemType.EVENT, Events.RRC_MEASUREMENT_REPORT.name(), Events.RRC_MEASUREMENT_REPORT));
-        mReportGroup.addChield(new TreeElem(ElemType.EVENT, Events.INTERNAL_RADIO_QUALITY_MEASUREMENTS_RNH.name(), Events.INTERNAL_RADIO_QUALITY_MEASUREMENTS_RNH));
-
-        set.add(mReportGroup);
-        // set.addAll(mReportGroup.getChildrens());
-
+        TreeElem treeElemGroup = null, treeElemChild = null;
+        EventConfig eventConfig = this.eventConfig;
+        for (EventGroup eventGroup : eventConfig.getEventGroups()) {
+            treeElemGroup = new TreeElem(ElemType.GROUP, eventGroup.getEventGroupName());
+            for (Events event : eventGroup.getSupportedEvents()) {
+                treeElemChild = new TreeElem(ElemType.EVENT, event.name(), event);
+                treeElemGroup.addChield(treeElemChild);
+            }
+            set.add(treeElemGroup);
+            groups.add(treeElemGroup);
+        }
+        
         viewer.setInput(set);
-
         viewer.setAllChecked(true);
-        checkStateChange(locationsGroup);
-        checkStateChange(mReportGroup);
+        
+        for (TreeElem treeElem : groups) {
+            checkStateChange(treeElem);
+        }
+    }
+    
+    private EventConfig setDefaultEventConfig() {
+        EventConfig eventConfig = new EventConfig();
+        
+        EventGroup eventGroup = new EventGroup();
+        eventGroup.setEventGroupName("Locations");
+        eventGroup.addSupportedEvent(Events.findById(429));
+        
+        eventConfig.addEventGroup(eventGroup);
+        
+        EventGroup eventGroup2 = new EventGroup();
+        eventGroup2.setEventGroupName("Measurement Reports");
+        eventGroup2.addSupportedEvent(Events.findById(8));
+        eventGroup2.addSupportedEvent(Events.findById(386));
+        
+        eventConfig.addEventGroup(eventGroup2);
+        
+        return eventConfig;
+    }
+    
+    public void setEventConfig() {
+        EventConfig eventConfig = new EventConfig();
+        
+        EventGroup eventGroup = new EventGroup();
+        eventGroup.setEventGroupName("EVENTS");
+
+        Events event = null;
+        for (int i = 384; i < 396; i++) {
+            event = Events.findById(i);
+            eventGroup.addSupportedEvent(event);
+        }
+          
+        for (int i = 397; i < 409; i++) {
+            event = Events.findById(i);
+            eventGroup.addSupportedEvent(event);
+        }
+           
+        eventGroup.addSupportedEvent(Events.findById(410));
+          
+        for (int i = 413; i < 424; i++) {
+            event = Events.findById(i);
+            eventGroup.addSupportedEvent(event);
+        }
+          
+        for (int i = 425; i < 457; i++) {
+            event = Events.findById(i);
+            eventGroup.addSupportedEvent(event);
+        }
+      
+        eventConfig.addEventGroup(eventGroup);
+        
+        this.eventConfig = eventConfig;
     }
 
     private void addListeners() {

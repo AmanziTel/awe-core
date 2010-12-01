@@ -16,6 +16,7 @@ package org.amanzi.awe.gpeh.wizard;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.awe.gpeh.GpehImportWizardPage;
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.wizards.AbstractLoaderWizard;
@@ -37,6 +38,7 @@ public class GpehCsvParserWizard extends AbstractLoaderWizard<CommonConfigData> 
     protected List<IWizardPage> getMainPagesList() {
         List<IWizardPage> result=new ArrayList<IWizardPage>();
         result.add(new GpehCsvParserWizardPage());
+        result.add(addGpehImportWizardPage());
         return result;
     }
 
@@ -52,6 +54,13 @@ public class GpehCsvParserWizard extends AbstractLoaderWizard<CommonConfigData> 
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         super.init(workbench, selection);
         setWindowTitle(NeoLoaderPluginMessages.GpehWindowTitle);
+    }
+    
+    private GpehImportWizardPage addGpehImportWizardPage() {
+        GpehImportWizardPage gpehImportWizardPage = new GpehImportWizardPage();
+        gpehImportWizardPage.setEventConfig();
+        
+        return gpehImportWizardPage;
     }
 
 }
