@@ -46,7 +46,6 @@
     <module>org.amanzi.awe.statistic</module>
     <module>org.amanzi.awe.tool.star</module>
     <module>org.amanzi.awe.ui.operation.shape_export</module>
-    <module>org.amanzi.awe.views.calls</module>
     <module>org.amanzi.awe.views.drive</module>
     <module>org.amanzi.awe.views.kpi</module>
     <module>org.amanzi.awe.views.neighbours</module>
@@ -83,8 +82,7 @@
     <module>org.rubypeople.rdt.refactoring</module>
     <module>org.rubypeople.rdt.ui</module>
     <module>org.amanzi.awe.neighbours</module>
-    <module>org.amanzi.awe.wizards</module>
-    <module>org.amanzi.awe.report.o2</module>
+    <module>org.amanzi.awe.wizards</module>    
 	<module>org.amanzi.neo.data-generator</module>
 	<module>org.amanzi.neo.db</module>
 	<module>org.amanzi.neo.loader.core</module>
