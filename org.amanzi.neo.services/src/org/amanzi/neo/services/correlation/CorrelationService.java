@@ -196,31 +196,31 @@ public class CorrelationService extends AbstractService {
 
                     if (nodes.hasNext() && (correlationNode == null)) {
                         correlationNode = getCorrelationNode(networkNode, rootCorrelationNode, sectorId);
+                        counter++;
                     }
 
                     while (nodes.hasNext()) {
                         Node mNode = nodes.next();
                         correlateNodes(sector, correlationNode, mNode, Utils.getNodeName(driveNode, databaseService), networkName);
+                        counter++;
                         Relationship rel = statistic.get(driveNode);
                         rel.setProperty(INeoConstants.PROPERTY_COUNT_NAME, (Integer)rel.getProperty(INeoConstants.PROPERTY_COUNT_NAME, 0) + 1);
 
                         Object timestamp = mNode.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, null);
                         if (timestamp != null)
                             updateTimestampMinMax(rel, (Long)timestamp);
+                        
+                        if (counter > 1000) {
+                            tx.success();
+                            tx.finish();
+
+                            tx = databaseService.beginTx();
+                            counter = 0;
+                        }
                     }
                     // correlationNode.setProperty(INeoConstants.COUNT_TYPE_NAME, driveCounter);
-
+                    
                 }
-
-                counter++;
-                if (counter % 5000 == 0) {
-                    tx.success();
-                    tx.finish();
-
-                    tx = databaseService.beginTx();
-                    counter = 0;
-                }
-
             }
 
             removeCorrelation(datasetsToClear, rootCorrelationNode);
@@ -233,6 +233,10 @@ public class CorrelationService extends AbstractService {
         }
 
     }
+    
+    
+	private void updateObjectCounter() {
+	}
 
     /**
      * Update timestamp min max.
