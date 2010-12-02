@@ -42,7 +42,8 @@ public class NeoStyleContent extends StyleContent {
     public static final int DEF_SYMB_SIZE = 15;
     public static final int DEF_SYMB_SIZE_DRIVE = 7;
     public static final boolean DEF_FIX_SYMB_SIZE = false;
-    public static final boolean CHANGE_TRANSPARENCY = true;
+    public static final boolean IGNORE_TRANSPARENCY = true;
+    public static final boolean DRAW_CORRELATIONS = true;
     public static final int DEF_LABELING = 50;
     public static final int DEF_SMALL_SYMB = 100;
     public static final int DEF_SMALLEST_SYMB = 1000;
@@ -106,7 +107,7 @@ public class NeoStyleContent extends StyleContent {
                 result.setSectorFontSize(DEF_FONT_SIZE_SECTOR);
                 result.setMainProperty(DEF_MAIN_PROPERTY);
                 result.setSecondaryProperty(DEF_SECONDARY_PROPERTY);
-                result.setChangeTransparency(CHANGE_TRANSPARENCY);
+                result.setIgnoreTransparency(IGNORE_TRANSPARENCY);
                 // result.setNetwork(true);
                 return result;
             } else {
@@ -125,7 +126,7 @@ public class NeoStyleContent extends StyleContent {
                 result.setSectorFontSize(DEF_FONT_SIZE_SECTOR);
                 result.setMainProperty(DEF_MAIN_PROPERTY);
                 result.setSecondaryProperty(DEF_SECONDARY_PROPERTY);
-                result.setChangeTransparency(CHANGE_TRANSPARENCY);
+                result.setIgnoreTransparency(IGNORE_TRANSPARENCY);
                 return result;
             }
         }
@@ -160,20 +161,6 @@ public class NeoStyleContent extends StyleContent {
         result.setSecondaryProperty((memento.getString(SECTOR_NAME)));
         // result.setNetwork(getBoolean(memento, IS_NETWORK_STYLE, true));
         return result;
-    }
-
-    /**
-     * @param memento
-     * @param isNetworkStyle
-     * @param b
-     * @return
-     */
-    private boolean getBoolean(IMemento memento, String prefix, boolean defvalue) {
-        try {
-            return Boolean.parseBoolean(memento.getString(prefix));
-        } catch (Exception e) {
-            return defvalue;
-        }
     }
 
     private Color loadColor(IMemento memento, String prfx, Color defColor) {

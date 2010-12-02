@@ -37,7 +37,8 @@ public class NeoStyle {
     private Integer smallSymb;
     private Integer labeling;
     private boolean fixSymbolSize = NeoStyleContent.DEF_FIX_SYMB_SIZE;
-    private boolean changeTransparency = NeoStyleContent.CHANGE_TRANSPARENCY;
+    private boolean ignoreTransparency = NeoStyleContent.IGNORE_TRANSPARENCY;
+    private boolean drawCorrelations = NeoStyleContent.DRAW_CORRELATIONS;
     private Integer symbolSize;
     private Integer symbolTransparency;
     private Integer maximumSymbolSize;
@@ -318,45 +319,43 @@ public class NeoStyle {
         this.fontSize = fontSize;
     }
 
-    /**
-     * @return Returns the styles.
-     */
+
     public List<Pair<ShapeType, List<Color>>> getStyles() {
         return styles;
     }
-    public void addStyle(ShapeType shape, Color[] colors){
-        styles.add(new Pair<ShapeType,List<Color>>(shape,new ArrayList<Color>(Arrays.asList(colors))));
+
+    public void addStyle(ShapeType shape, Color[] colors) {
+        styles.add(new Pair<ShapeType, List<Color>>(shape, new ArrayList<Color>(Arrays.asList(colors))));
     }
-    public void clearStyle(){
+
+    public void clearStyle() {
         styles.clear();
     }
-public void addFilter(GroupFilter filter){
-    this.filter=filter;
-}
 
-/**
- * @return Returns the filter.
- */
-public GroupFilter getFilter() {
-    return filter;
-}
-
-    /**
-     * Checks if is change transparency.
-     * 
-     * @return true, if is change transparency
-     */
-    public boolean isChangeTransparency() {
-        return changeTransparency;
+    public void addFilter(GroupFilter filter) {
+        this.filter = filter;
     }
 
-    /**
-     * Sets the change transparency.
-     * 
-     * @param changeTransparency the new change transparency
-     */
-    public void setChangeTransparency(boolean changeTransparency) {
-        this.changeTransparency = changeTransparency;
+    public GroupFilter getFilter() {
+        return filter;
+    }
+
+    public boolean isIgnoreTransparency() {
+        return ignoreTransparency;
+    }
+
+    public void setIgnoreTransparency(boolean ignoreTransparency) {
+        this.ignoreTransparency = ignoreTransparency;
+    }
+
+    public boolean isDrawCorrelations() {
+        System.out.println("Have correlation "+drawCorrelations+" for "+this);
+        return drawCorrelations;
+    }
+
+    public void setDrawCorrelations(boolean drawCorrelations) {
+        System.out.println("Set correlation "+drawCorrelations+" for "+this);
+        this.drawCorrelations = drawCorrelations;
     }
 
 }

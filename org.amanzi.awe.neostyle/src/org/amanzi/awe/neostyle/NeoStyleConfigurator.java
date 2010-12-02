@@ -59,7 +59,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
     public static final String ID = "org.amanzi.awe.neostyle.style"; //$NON-NLS-1$
 
     private static final String[] FONT_SIZE_ARRAY = new String[] {"8", "9", "10", "11", "12", "14", "16", "18", "20", "24"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$
-    private static final String[] ICON_SIZES = new String[] {"6", "8", "12", "16", "32", "48", "64"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+    //private static final String[] ICON_SIZES = new String[] {"6", "8", "12", "16", "32", "48", "64"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
 
     public NeoStyleConfigurator() {
         super();
@@ -124,6 +124,8 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
     private Label lSecondaryProperty;
 
     private Button bTransp;
+
+    private Button bCorrelation;
 
     @Override
     public void createControl(Composite parent) {
@@ -349,11 +351,18 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         tTransparency.setLayoutData(formData);
 
         bTransp = new Button(grScale, SWT.CHECK);
-        bTransp.setText(Messages.Ignore_transsparency0);
+        bTransp.setText(Messages.Ignore_transsparency);
         formData = new FormData();
         formData.left = new FormAttachment(2);
         formData.top = new FormAttachment(tTransparency, 5);
         bTransp.setLayoutData(formData);
+
+        bCorrelation = new Button(grScale, SWT.CHECK);
+        bCorrelation.setText(Messages.Draw_correlation);
+        formData = new FormData();
+        formData.left = new FormAttachment(2);
+        formData.top = new FormAttachment(bTransp, 5);
+        bCorrelation.setLayoutData(formData);
 
         lMaxSymSize = new Label(grScale, SWT.NONE);
         sMaxSymSize = new Spinner(grScale, SWT.BORDER);
@@ -366,7 +375,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
 
         formData = new FormData();
         formData.left = new FormAttachment(70, 10);
-        formData.top = new FormAttachment(bTransp, 5);
+        formData.top = new FormAttachment(bCorrelation, 5);
         formData.right = new FormAttachment(100, -5);
         sMaxSymSize.setLayoutData(formData);
         
@@ -459,7 +468,8 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
 
             tSymbolSize.setSelection(curStyle.getSymbolSize());
             tTransparency.setSelection(curStyle.getSymbolTransparency());
-            bTransp.setSelection(curStyle.isChangeTransparency());
+            bTransp.setSelection(curStyle.isIgnoreTransparency());
+            bCorrelation.setSelection(curStyle.isDrawCorrelations());
             sMaxSymSize.setSelection(curStyle.getMaximumSymbolSize());
             sDefBeamwidth.setSelection(curStyle.getDefaultBeamwidth());
             cFontSize.setText(String.valueOf(curStyle.getFontSize()));
@@ -594,7 +604,8 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         curStyle.setIconOffset(sIconOffset.getSelection());
         curStyle.setMainProperty(cMainProperty.getText());
         curStyle.setSecondaryProperty(cSecondaryProperty.getText());
-        curStyle.setChangeTransparency(bTransp.getSelection());
+        curStyle.setIgnoreTransparency(bTransp.getSelection());
+        curStyle.setDrawCorrelations(bCorrelation.getSelection());
         getStyleBlackboard().put(ID, curStyle);
     }
 

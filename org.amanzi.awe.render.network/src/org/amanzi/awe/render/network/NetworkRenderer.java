@@ -145,7 +145,7 @@ public class NetworkRenderer extends RendererImpl {
         boolean drawLabels;
         int drawSize;
         int alpha;
-        boolean changeTransp;
+        boolean ignoreTransp;
         int maxSitesLabel;
         int maxSitesFull;
         int maxSitesLite;
@@ -173,7 +173,7 @@ public class NetworkRenderer extends RendererImpl {
             drawLabels = true;
             drawSize = 15;
             alpha = (int)(0.6 * 255.0);
-            changeTransp = true;
+            ignoreTransp = true;
             maxSitesLabel = 30;
             maxSitesFull = 100;
             maxSitesLite = 1000;
@@ -202,7 +202,7 @@ public class NetworkRenderer extends RendererImpl {
                     }
                     drawSize = neostyle.getSymbolSize();
                     alpha = 255 - (int)((double)neostyle.getSymbolTransparency() / 100.0 * 255.0);
-                    changeTransp = neostyle.isChangeTransparency();
+                    ignoreTransp = neostyle.isIgnoreTransparency();
                     maxSitesLabel = neostyle.getLabeling();
                     maxSitesFull = neostyle.getSmallSymb();
                     maxSitesLite = neostyle.getSmallestSymb();
@@ -823,7 +823,7 @@ public class NetworkRenderer extends RendererImpl {
                 return defColor;
             }
             final Integer rgb = (Integer)chartNode.getProperty(INeoConstants.AGGREGATION_COLOR, defColor.getRGB());
-            if (drawHints.changeTransp) {
+            if (drawHints.ignoreTransp) {
                 return new Color(rgb);
             } else {
                 return new Color((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, (rgb >> 0) & 0xFF, drawHints.alpha);
@@ -916,7 +916,7 @@ public class NetworkRenderer extends RendererImpl {
             if (selected)
                 renderSelectionGlow(g, p, 10);
             g.setColor(borderColor);
-            g.drawRect(p.x - 1, p.y - 1, 3, 3);
+            g.drawRect(p.x - 1, p.y - 1, 2, 2);
         } else {
             if (selected)
                 renderSelectionGlow(g, p, 20);

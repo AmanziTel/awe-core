@@ -48,7 +48,8 @@ public class Messages extends NLS {
 
     public static String Icon_Offset;
 
-    public static String Ignore_transsparency0;
+    public static String Ignore_transsparency;
+    public static String Draw_correlation;
 
     public static String getFormattedString(String key, String ... args) {
         return MessageFormat.format(key, (Object[])args);
