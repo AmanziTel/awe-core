@@ -41,7 +41,8 @@ public enum NetworkRelationshipTypes implements DeletableRelationshipType {
     INTERFERENCE(null, null),
     EXCEPTION_DATA(null, null),
     EXCEPTION(null, null),
-    EXCEPTIONS(null, null);
+    EXCEPTIONS(null, null),
+    FILE_PROPERTIES(null, null);
     
     private RelationDeletableTypes deletableOut;
     private RelationDeletableTypes deletableIn;

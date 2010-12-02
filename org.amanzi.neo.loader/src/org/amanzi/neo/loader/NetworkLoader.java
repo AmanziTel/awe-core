@@ -56,6 +56,7 @@ import org.neo4j.index.lucene.LuceneIndexService;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+// TODO: Auto-generated Javadoc
 /**
  * This class was written to handle CSV (tab delimited) network data from ice.net in Sweden. It has
  * been written in a partially generic way so as to be possible to change to various other data
@@ -66,43 +67,102 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author craig
  */
 public class NetworkLoader extends AbstractLoader {
+    
+    /** The channel pattern. */
     private static Pattern channelPattern = Pattern.compile("(^BCCH$)|(^TRX\\d+$)|(^TCH\\d+$)");
     // private Map<Integer, Integer> channalMap;
+    /** The site name. */
     private String siteName = null;
+    
+    /** The bsc name. */
     private String bscName = null;
+    
+    /** The city name. */
     private String cityName = null;
+    
+    /** The site. */
     private Node site = null;
+    
+    /** The bsc_s. */
     private final HashMap<String, Node> bsc_s = new HashMap<String, Node>();
+    
+    /** The city_s. */
     private final HashMap<String, Node> city_s = new HashMap<String, Node>();
+    
+    /** The bsc. */
     private Node bsc = null;
+    
+    /** The city. */
     private Node city = null;
+    
+    /** The network. */
     private Node network = null;
+    
+    /** The main headers. */
     private final ArrayList<String> mainHeaders = new ArrayList<String>();
+    
+    /** The identity headers. */
     private final ArrayList<String> identityHeaders = new ArrayList<String>();
+    
+    /** The short lines. */
     public ArrayList<String> shortLines = new ArrayList<String>();
+    
+    /** The empty fields. */
     public ArrayList<String> emptyFields = new ArrayList<String>();
+    
+    /** The bad fields. */
     public ArrayList<String> badFields = new ArrayList<String>();
+    
+    /** The line errors. */
     public ArrayList<String> lineErrors = new ArrayList<String>();
+    
+    /** The site number. */
     private long siteNumber = 0;
+    
+    /** The sector number. */
     private long sectorNumber = 0;
+    
+    /** The trim sector name. */
     private boolean trimSectorName = true;
+    
+    /** The network header. */
     private NetworkHeader networkHeader = null;
+    
+    /** The need parce header. */
     private boolean needParceHeader;
+    
+    /** The lucene ind. */
     private LuceneIndexService luceneInd;
+    
+    /** The sites type. */
     private NetworkSiteType sitesType;
 
+    /**
+     * The Enum NetworkLevels.
+     */
     private enum NetworkLevels {
-        NETWORK, CITY, BSC, SITE, SECTOR;
+        
+        /** The NETWORK. */
+        NETWORK, 
+ /** The CITY. */
+ CITY, 
+ /** The BSC. */
+ BSC, 
+ /** The SITE. */
+ SITE, 
+ /** The SECTOR. */
+ SECTOR;
     }
 
-    private Set<NetworkLevels> levels = EnumSet.of(NetworkLevels.NETWORK);
+    /** The levels. */
+    private final Set<NetworkLevels> levels = EnumSet.of(NetworkLevels.NETWORK);
 
     /**
-     * Constructor for loading data in AWE, with specified display and dataset, but no NeoService
-     * 
+     * Constructor for loading data in AWE, with specified display and dataset, but no NeoService.
+     *
+     * @param gisName the gis name
      * @param filename of file to load
      * @param display for opening message dialogs
-     * @param dataset to add data to
      */
     public NetworkLoader(String gisName, String filename, Display display) {
         initialize("Network", null, filename, display);
@@ -113,11 +173,10 @@ public class NetworkLoader extends AbstractLoader {
     }
 
     /**
-     * Constructor for loading data in test mode, with no display and NeoService passed
-     * 
+     * Constructor for loading data in test mode, with no display and NeoService passed.
+     *
      * @param neo database to load data into
      * @param filename of file to load
-     * @param display
      */
     public NetworkLoader(GraphDatabaseService neo, String filename) {
         initialize("Network", neo, filename, null);
@@ -127,11 +186,11 @@ public class NetworkLoader extends AbstractLoader {
     }
 
     /**
-     * Constructor for loading data in test mode, with no display and NeoService passed
-     * 
+     * Constructor for loading data in test mode, with no display and NeoService passed.
+     *
      * @param neo database to load data into
      * @param filename of file to load
-     * @param display
+     * @param indexService the index service
      */
     public NetworkLoader(GraphDatabaseService neo, String filename, LuceneIndexService indexService) {
         initialize("Network", neo, filename, null);
@@ -145,7 +204,7 @@ public class NetworkLoader extends AbstractLoader {
     }
 
     /**
-     *
+     * Adds the network indexes.
      */
     private void addNetworkIndexes() {
         try {
@@ -187,9 +246,9 @@ public class NetworkLoader extends AbstractLoader {
     /**
      * Add a known header entry as well as mark it as a main header. All other fields will be
      * assumed to be sector properties.
-     * 
-     * @param key
-     * @param regexes
+     *
+     * @param key the key
+     * @param regexes the regexes
      */
     private void addMainHeader(String key, String[] regexes) {
         addKnownHeader(1, key, regexes, false);
@@ -199,15 +258,20 @@ public class NetworkLoader extends AbstractLoader {
     /**
      * Add a known header entry as well as mark it as a main header and identity header. All other
      * fields will be assumed to be sector properties.
-     * 
-     * @param key
-     * @param regexes
+     *
+     * @param key the key
+     * @param regexes the regexes
      */
     private void addMainIdentityHeader(String key, String[] regexes) {
         addKnownHeader(1, key, regexes, true);
         mainHeaders.add(key);
     }
 
+    /**
+     * Setup.
+     *
+     * @return true, if successful
+     */
     public boolean setup() {
         try {
             trimSectorName = NeoLoaderPlugin.getDefault().getPreferenceStore().getBoolean(DataLoadPreferences.REMOVE_SITE_NAME);
@@ -219,8 +283,8 @@ public class NetworkLoader extends AbstractLoader {
     }
 
     /**
-     * Returns created Network Node
-     * 
+     * Returns created Network Node.
+     *
      * @return network Node
      */
     public Node getNetworkNode() {
@@ -249,6 +313,9 @@ public class NetworkLoader extends AbstractLoader {
             network.setProperty("bsc_count", bsc_s.size());
             network.setProperty("city_count", city_s.size());
             network.setProperty(INeoConstants.PROPERTY_STRUCTURE_NAME, getLevelsFound());
+            
+            saveFileStructure();
+            
             transaction.success();
         } finally {
             transaction.finish();
@@ -261,11 +328,25 @@ public class NetworkLoader extends AbstractLoader {
         }
     }
 
-    /**
-     * Gets all found network levels
-     * 
-     * @return levels found as an array of Strings
-     */
+
+	/**
+	 * Save file structure.
+	 */
+	private void saveFileStructure() {
+		Node fileStructureNode = neo.createNode();
+		network.createRelationshipTo(fileStructureNode, NetworkRelationshipTypes.FILE_PROPERTIES);
+		StoringProperty storingProperty = storingProperties.get(storingProperties.keySet().iterator().next());
+		 for(Map.Entry<String, Header> prop : storingProperty.getHeaders().headers.entrySet()){
+			 fileStructureNode.setProperty(prop.getKey(), prop.getValue().name);
+//			 System.out.println(prop.getKey() + " - " + prop.getValue().key +" "+ prop.getValue().name);
+		 }
+	}
+
+	/**
+	 * Gets all found network levels.
+	 *
+	 * @return levels found as an array of Strings
+	 */
     private String[] getLevelsFound() {
         String[] levelsFound = new String[levels.size()];
         Iterator<NetworkLevels> iterator = levels.iterator();
@@ -276,6 +357,14 @@ public class NetworkLoader extends AbstractLoader {
         return levelsFound;
     }
 
+    /**
+     * Prints the warnings.
+     *
+     * @param warnings the warnings
+     * @param warning_type the warning_type
+     * @param limit the limit
+     * @param lineNumber the line number
+     */
     private void printWarnings(ArrayList<String> warnings, String warning_type, int limit, long lineNumber) {
         if (warnings.size() > 0) {
             info("Had " + warnings.size() + " " + warning_type + " warnings in " + lineNumber + " lines parsed");
@@ -292,6 +381,9 @@ public class NetworkLoader extends AbstractLoader {
         }
     }
 
+    /**
+     * Show network tree.
+     */
     private void showNetworkTree() {
         // TODO: See if we need this event
         NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDatabaseEvent(UpdateViewEventType.GIS));
@@ -307,8 +399,8 @@ public class NetworkLoader extends AbstractLoader {
     }
 
     /**
-     * Returns layer, that contains necessary gis node
-     * 
+     * Returns layer, that contains necessary gis node.
+     *
      * @param map map
      * @param gisNode gis node
      * @return layer or null
@@ -329,14 +421,34 @@ public class NetworkLoader extends AbstractLoader {
         }
     }
 
+    /**
+     * The Class NetworkHeader.
+     */
     private class NetworkHeader {
+        
+        /** The main keys. */
         private final Map<String, String> mainKeys = new HashMap<String, String>();
+        
+        /** The crs hint. */
         private String crsHint = null;
+        
+        /** The sector data. */
         private final ArrayList<String> sectorData = new ArrayList<String>();
+        
+        /** The channel map. */
         private final Map<String, Integer> channelMap = new HashMap<String, Integer>();
+        
+        /** The line data. */
         Map<String, Object> lineData = null;
+        
+        /** The is3 g. */
         private final boolean is3G;
 
+        /**
+         * Instantiates a new network header.
+         *
+         * @param fields the fields
+         */
         private NetworkHeader(List<String> fields) {
             lineData = makeDataMap(fields);
             HeaderMaps headerMap = getHeaderMap(1);
@@ -357,10 +469,20 @@ public class NetworkLoader extends AbstractLoader {
             is3G = headerMap.headers.keySet().contains("gsm_ne");
         }
 
+        /**
+         * Sets the data.
+         *
+         * @param fields the new data
+         */
         private void setData(List<String> fields) {
             lineData = makeDataMap(fields);
         }
 
+        /**
+         * Save statistic.
+         *
+         * @param vault the vault
+         */
         private void saveStatistic(Node vault) {
             Set<String> channelProperties = new HashSet<String>();
             for (String header : channelMap.keySet()) {
@@ -371,6 +493,12 @@ public class NetworkLoader extends AbstractLoader {
             vault.setProperty(INeoConstants.PROPERTY_ALL_CHANNELS_NAME, channelProperties.toArray(new String[0]));
         }
 
+        /**
+         * Gets the string.
+         *
+         * @param key the key
+         * @return the string
+         */
         private String getString(String key) {
             Object value = lineData.get(key);
             if (value == null || value instanceof String) {
@@ -380,6 +508,12 @@ public class NetworkLoader extends AbstractLoader {
             }
         }
 
+        /**
+         * Gets the integer.
+         *
+         * @param key the key
+         * @return the integer
+         */
         private Integer getInteger(String key) {
             Object value = lineData.get(key);
             if (value instanceof Number) {
@@ -389,6 +523,12 @@ public class NetworkLoader extends AbstractLoader {
             }
         }
 
+        /**
+         * Gets the float.
+         *
+         * @param key the key
+         * @return the float
+         */
         private Float getFloat(String key) {
             Object value = lineData.get(key);
             if (value instanceof Integer) {
@@ -398,14 +538,29 @@ public class NetworkLoader extends AbstractLoader {
             }
         }
 
+        /**
+         * Gets the lat.
+         *
+         * @return the lat
+         */
         private Float getLat() {
             return getFloat(INeoConstants.PROPERTY_LAT_NAME);
         }
 
+        /**
+         * Gets the lon.
+         *
+         * @return the lon
+         */
         private Float getLon() {
             return getFloat(INeoConstants.PROPERTY_LON_NAME);
         }
 
+        /**
+         * Gets the sector data.
+         *
+         * @return the sector data
+         */
         private Map<String, Object> getSectorData() {
             Map<String, Object> data = new LinkedHashMap<String, Object>();
             for (String key : sectorData) {
@@ -419,20 +574,31 @@ public class NetworkLoader extends AbstractLoader {
             return data;
         }
 
+        /**
+         * Gets the crs hint.
+         *
+         * @return the crs hint
+         */
         private String getCrsHint() {
             return crsHint;
         }
 
         /**
-         * is 3g network file?
-         * 
-         * @return
+         * is 3g network file?.
+         *
+         * @return true, if is 3 g
          */
         public boolean is3G() {
             return is3G;
         }
     }
 
+    /**
+     * Parses the line.
+     *
+     * @param line the line
+     * @return the int
+     */
     @Override
     protected int parseLine(String line) {
         debug(line);
@@ -608,17 +774,26 @@ public class NetworkLoader extends AbstractLoader {
         return saved;
     }
 
+    /**
+     * Adds the child.
+     *
+     * @param parent the parent
+     * @param type the type
+     * @param name the name
+     * @return the node
+     */
     private Node addChild(Node parent, NodeTypes type, String name) {
         return addChild(parent, type, name, name);
     }
 
     /**
      * This code expects you to create a transaction around it, so don't forget to do that.
-     * 
-     * @param parent
-     * @param type
-     * @param name
-     * @return
+     *
+     * @param parent the parent
+     * @param type the type
+     * @param name the name
+     * @param indexName the index name
+     * @return the node
      */
     private Node addChild(Node parent, NodeTypes type, String name, String indexName) {
         Node child = null;
@@ -636,6 +811,11 @@ public class NetworkLoader extends AbstractLoader {
         return child;
     }
 
+    /**
+     * Prints the stats.
+     *
+     * @param verbose the verbose
+     */
     @Override
     public void printStats(boolean verbose) {
         if (network != null) {
@@ -654,6 +834,12 @@ public class NetworkLoader extends AbstractLoader {
         }
     }
 
+    /**
+     * Prints the children.
+     *
+     * @param node the node
+     * @param depth the depth
+     */
     private void printChildren(Node node, int depth) {
         if (node == null || depth > 4 || !node.hasProperty(INeoConstants.PROPERTY_NAME_NAME))
             return;
@@ -677,8 +863,8 @@ public class NetworkLoader extends AbstractLoader {
     /**
      * A main method for useful quick-turn-around testing and debugging of data parsing on various
      * sample files.
-     * 
-     * @param args
+     *
+     * @param args the arguments
      */
     public static void main(String[] args) {
         // NeoLoaderPlugin.debug = true;
@@ -704,21 +890,43 @@ public class NetworkLoader extends AbstractLoader {
         }
     }
 
+    /**
+     * Gets the storing node.
+     *
+     * @param key the key
+     * @return the storing node
+     */
     @Override
     protected Node getStoringNode(Integer key) {
         return getNetworkNode();
     }
 
+    /**
+     * Gets the prymary type.
+     *
+     * @param key the key
+     * @return the prymary type
+     */
     @Override
     protected String getPrymaryType(Integer key) {
         return NodeTypes.SECTOR.getId();
     }
 
+    /**
+     * Gets the root nodes.
+     *
+     * @return the root nodes
+     */
     @Override
     public Node[] getRootNodes() {
         return new Node[] {getNetworkNode()};
     }
 
+    /**
+     * Need parce headers.
+     *
+     * @return true, if successful
+     */
     @Override
     protected boolean needParceHeaders() {
         if (needParceHeader) {
