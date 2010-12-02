@@ -381,14 +381,6 @@ public class Utils {
      * @return node name or empty string
      */
     public static String getNodeName(Node node, GraphDatabaseService service) {
-        // String type = node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").toString();
-        // if (type.equals(INeoConstants.MP_TYPE_NAME)) {
-        // return node.getProperty(INeoConstants.PROPERTY_TIME_NAME, "").toString();
-        //
-        // } else if (type.equals(INeoConstants.HEADER_M)) {
-        // return node.getProperty(INeoConstants.PROPERTY_CODE_NAME, "").toString();
-        //
-        // }
         return getSimpleNodeName(node, "", service);
     }
 
@@ -412,12 +404,7 @@ public class Utils {
      * @return node name or empty string
      */
     public static String getSimpleNodeName(PropertyContainer node, String defValue, GraphDatabaseService service) {
-        Transaction tx = beginTx(service);
-        try {
-            return node.getProperty(INeoConstants.PROPERTY_NAME_NAME, defValue).toString();
-        } finally {
-            finishTx(tx);
-        }
+        return node.getProperty(INeoConstants.PROPERTY_NAME_NAME, defValue).toString();
     }
 
     /**
@@ -610,29 +597,22 @@ public class Utils {
         if (nodeName == null || nodeName.isEmpty()) {
             return null;
         }
-        Transaction tx = beginTx(service);
-        try {
-            Node root = service.getReferenceNode();
-            // root.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL,
-            // , Direction.OUTGOING)
-            Iterator<Node> gisIterator = root.traverse(Order.DEPTH_FIRST, getStopEvaluator(2), new ReturnableEvaluator() {
+        Node root = service.getReferenceNode();
+        Iterator<Node> gisIterator = root.traverse(Order.DEPTH_FIRST, getStopEvaluator(2), new ReturnableEvaluator() {
 
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    if (currentPos.depth() != 2) {
-                        return false;
-                    }
-                    Node node = currentPos.currentNode();
-                    return getNodeName(node, service).equals(nodeName);
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                if (currentPos.depth() != 2) {
+                    return false;
                 }
-            }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
-            while (gisIterator.hasNext()) {
-                System.out.println("GIS:" + gisIterator.next());
+                Node node = currentPos.currentNode();
+                return getNodeName(node, service).equals(nodeName);
             }
-            return gisIterator.hasNext() ? gisIterator.next() : null;
-        } finally {
-            finishTx(tx);
+        }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
+        while (gisIterator.hasNext()) {
+            System.out.println("GIS:" + gisIterator.next());
         }
+        return gisIterator.hasNext() ? gisIterator.next() : null;
     }
 
     /**
@@ -733,22 +713,16 @@ public class Utils {
         if (childNode == null) {
             return null;
         }
-        Transaction tx = service.beginTx();
-        try {
-            Iterator<Node> gisIterator = childNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+        Iterator<Node> gisIterator = childNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
 
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    Node node = currentPos.currentNode();
-                    return isGisNode(node);
-                }
-            }, NetworkRelationshipTypes.CHILD, Direction.INCOMING, GeoNeoRelationshipTypes.NEXT, Direction.INCOMING, GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.INCOMING,
-                    NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.INCOMING, NetworkRelationshipTypes.TRANSMISSION_DATA, Direction.INCOMING).iterator();
-            tx.success();
-            return gisIterator.hasNext() ? gisIterator.next() : null;
-        } finally {
-            tx.finish();
-        }
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                Node node = currentPos.currentNode();
+                return isGisNode(node);
+            }
+        }, NetworkRelationshipTypes.CHILD, Direction.INCOMING, GeoNeoRelationshipTypes.NEXT, Direction.INCOMING, GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.INCOMING,
+                NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.INCOMING, NetworkRelationshipTypes.TRANSMISSION_DATA, Direction.INCOMING).iterator();
+        return gisIterator.hasNext() ? gisIterator.next() : null;
     }
 
 
@@ -788,20 +762,15 @@ public class Utils {
             return null;
         }
         assert !isGisNode(network);
-        Transaction tx = neo.beginTx();
-        try {
-            Iterator<Node> iterator = network.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+        Iterator<Node> iterator = network.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    Node node = currentPos.currentNode();
-                    return isNeighbourNode(node) && name.equals(node.getProperty(INeoConstants.PROPERTY_NAME_NAME, ""));
-                }
-            }, NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING).iterator();
-            return iterator.hasNext() ? iterator.next() : null;
-        } finally {
-            tx.finish();
-        }
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                Node node = currentPos.currentNode();
+                return isNeighbourNode(node) && name.equals(node.getProperty(INeoConstants.PROPERTY_NAME_NAME, ""));
+            }
+        }, NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING).iterator();
+        return iterator.hasNext() ? iterator.next() : null;
     }
 
     /**
@@ -811,39 +780,34 @@ public class Utils {
      * @return array or null if properties do not exist
      */
     public static String[] getNumericFields(Node node) {
-        Transaction tx = beginTransaction();
-        try {
-            if (node.hasProperty(INeoConstants.LIST_NUMERIC_PROPERTIES)) {
-                return (String[])node.getProperty(INeoConstants.LIST_NUMERIC_PROPERTIES);
-            }
-            // TODO remove this after refactoring tems loader
-            if (node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").equals(GisTypes.DRIVE.getHeader())) {
-                List<String> result = new ArrayList<String>();
-                Iterator<Node> iteratorProperties = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+        if (node.hasProperty(INeoConstants.LIST_NUMERIC_PROPERTIES)) {
+            return (String[])node.getProperty(INeoConstants.LIST_NUMERIC_PROPERTIES);
+        }
+        // TODO remove this after refactoring tems loader
+        if (node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").equals(GisTypes.DRIVE.getHeader())) {
+            List<String> result = new ArrayList<String>();
+            Iterator<Node> iteratorProperties = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
 
-                    @Override
-                    public boolean isReturnableNode(TraversalPosition traversalposition) {
-                        Node curNode = traversalposition.currentNode();
-                        Object type = curNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null);
-                        return type != null && (NodeTypes.M.getId().equals(type.toString()));
-                    }
-                }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
-                if (iteratorProperties.hasNext()) {
-                    Node propNode = iteratorProperties.next();
-                    Iterator<String> iteratorProper = propNode.getPropertyKeys().iterator();
-                    while (iteratorProper.hasNext()) {
-                        String propName = iteratorProper.next();
-                        if (propNode.getProperty(propName) instanceof Number) {
-                            result.add(propName);
-                        }
+                @Override
+                public boolean isReturnableNode(TraversalPosition traversalposition) {
+                    Node curNode = traversalposition.currentNode();
+                    Object type = curNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null);
+                    return type != null && (NodeTypes.M.getId().equals(type.toString()));
+                }
+            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).iterator();
+            if (iteratorProperties.hasNext()) {
+                Node propNode = iteratorProperties.next();
+                Iterator<String> iteratorProper = propNode.getPropertyKeys().iterator();
+                while (iteratorProper.hasNext()) {
+                    String propName = iteratorProper.next();
+                    if (propNode.getProperty(propName) instanceof Number) {
+                        result.add(propName);
                     }
                 }
-                return result.toArray(new String[0]);
             }
-            return new String[0];
-        } finally {
-            tx.finish();
+            return result.toArray(new String[0]);
         }
+        return new String[0];
     }
 
     /**
@@ -944,21 +908,15 @@ public class Utils {
         if (nodeType == null || nodeType.isEmpty()) {
             return null;
         }
-        Transaction tx = beginTransaction();
-        try {
-            Iterator<Node> iterator = node.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+        Iterator<Node> iterator = node.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
 
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    Node node = currentPos.currentNode();
-                    return nodeType.equals(getNodeType(node, ""));
-                }
-            }, NetworkRelationshipTypes.CHILD, Direction.INCOMING, GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).iterator();
-            tx.success();
-            return iterator.hasNext() ? iterator.next() : null;
-        } finally {
-            tx.finish();
-        }
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                Node node = currentPos.currentNode();
+                return nodeType.equals(getNodeType(node, ""));
+            }
+        }, NetworkRelationshipTypes.CHILD, Direction.INCOMING, GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).iterator();
+        return iterator.hasNext() ? iterator.next() : null;
     }
 
     /**
@@ -968,14 +926,8 @@ public class Utils {
      * @return array of fields or null
      */
     public static String[] getAllFields(Node node) {
-        Transaction tx = beginTransaction();
-        try {
-            String[] result = (String[])node.getProperty(INeoConstants.LIST_ALL_PROPERTIES, null);
-            return result == null ? new String[0] : result;
-        } finally {
-            tx.finish();
-        }
-
+        String[] result = (String[])node.getProperty(INeoConstants.LIST_ALL_PROPERTIES, null);
+        return result == null ? new String[0] : result;
     }
 
     /**
@@ -1008,20 +960,15 @@ public class Utils {
         if (node == null || aggNode == null) {
             return null;
         }
-        Transaction tx = beginTransaction();
         final long nodeId = aggNode.getId();
-        try {
-            Iterator<Node> iterator = node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+        Iterator<Node> iterator = node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    return nodeId == (Long)currentPos.currentNode().getProperty(INeoConstants.PROPERTY_AGGR_PARENT_ID, nodeId - 1);
-                }
-            }, NetworkRelationshipTypes.AGGREGATE, Direction.INCOMING).iterator();
-            return iterator.hasNext() ? iterator.next() : null;
-        } finally {
-            tx.finish();
-        }
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                return nodeId == (Long)currentPos.currentNode().getProperty(INeoConstants.PROPERTY_AGGR_PARENT_ID, nodeId - 1);
+            }
+        }, NetworkRelationshipTypes.AGGREGATE, Direction.INCOMING).iterator();
+        return iterator.hasNext() ? iterator.next() : null;
     }
 
     /**
@@ -1095,20 +1042,15 @@ public class Utils {
             return null;
         }
         assert !isGisNode(network);
-        Transaction tx = neo.beginTx();
-        try {
-            Iterator<Node> iterator = network.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+        Iterator<Node> iterator = network.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    Node node = currentPos.currentNode();
-                    return isTransmission(node) && name.equals(node.getProperty(INeoConstants.PROPERTY_NAME_NAME, ""));
-                }
-            }, NetworkRelationshipTypes.TRANSMISSION_DATA, Direction.OUTGOING).iterator();
-            return iterator.hasNext() ? iterator.next() : null;
-        } finally {
-            tx.finish();
-        }
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                Node node = currentPos.currentNode();
+                return isTransmission(node) && name.equals(node.getProperty(INeoConstants.PROPERTY_NAME_NAME, ""));
+            }
+        }, NetworkRelationshipTypes.TRANSMISSION_DATA, Direction.OUTGOING).iterator();
+        return iterator.hasNext() ? iterator.next() : null;
     }
 
     /**
@@ -1268,28 +1210,23 @@ public class Utils {
      */
     public static Set<String> getEventsList(Node mpNode, GraphDatabaseService service) {
         // TODO store list of events in mp node
-        Transaction tx = beginTx(service);
-        try {
-            Set<String> result = new HashSet<String>();
-            Traverser traverse = mpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+        Set<String> result = new HashSet<String>();
+        Traverser traverse = mpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    if (currentPos.isStartNode()) {
-                        return false;
-                    }
-                    Node node = currentPos.currentNode();
-                    boolean result = node.hasProperty(INeoConstants.PROPERTY_TYPE_EVENT);
-                    return result;
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                if (currentPos.isStartNode()) {
+                    return false;
                 }
-            }, GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING);
-            for (Node node : traverse) {
-                result.add(node.getProperty(INeoConstants.PROPERTY_TYPE_EVENT).toString());
+                Node node = currentPos.currentNode();
+                boolean result = node.hasProperty(INeoConstants.PROPERTY_TYPE_EVENT);
+                return result;
             }
-            return result;
-        } finally {
-            finishTx(tx);
+        }, GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING);
+        for (Node node : traverse) {
+            result.add(node.getProperty(INeoConstants.PROPERTY_TYPE_EVENT).toString());
         }
+        return result;
     }
 
     /**
@@ -1321,25 +1258,20 @@ public class Utils {
      * @return pair of min and max timestamps
      */
     public static Pair<Long, Long> getMinMaxTimeOfDataset(Node driveGisNode, GraphDatabaseService service) {
-        Transaction tx = beginTx(service);
-
-        try {
-            // TODO only for fast fix - remove code after testing
-            if (isGisNode(driveGisNode)) {
-                StringBuilder st = new StringBuilder("should be fixed - gets this property from root node instead gis node!\n");
-                for (StackTraceElement elem : Thread.currentThread().getStackTrace()) {
-                    st.append("\tat ").append(elem).append("\n");
-                }
-                LOGGER.error(st.toString());
-                return getMinMaxTimeOfDataset(driveGisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(driveGisNode), service);
+        // TODO only for fast fix - remove code after testing
+        if (isGisNode(driveGisNode)) {
+            StringBuilder st = new StringBuilder("should be fixed - gets this property from root node instead gis node!\n");
+            for (StackTraceElement elem : Thread.currentThread().getStackTrace()) {
+                st.append("\tat ").append(elem).append("\n");
             }
-            // --
-            Pair<Long, Long> pair = new Pair<Long, Long>((Long)driveGisNode.getProperty(INeoConstants.MIN_TIMESTAMP, null), (Long)driveGisNode.getProperty(
-                    INeoConstants.MAX_TIMESTAMP, null));
-            return pair;
-        } finally {
-            finishTx(tx);
+            LOGGER.error(st.toString());
+            return getMinMaxTimeOfDataset(driveGisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)
+                    .getOtherNode(driveGisNode), service);
         }
+        // --
+        Pair<Long, Long> pair = new Pair<Long, Long>((Long)driveGisNode.getProperty(INeoConstants.MIN_TIMESTAMP, null),
+                (Long)driveGisNode.getProperty(INeoConstants.MAX_TIMESTAMP, null));
+        return pair;
     }
 
     /**
@@ -1460,21 +1392,12 @@ public class Utils {
      * @return last Call node
      */
     public static Node getLastCallFromProbeCalls(Node probeCallsNode, GraphDatabaseService service) {
-        Transaction tx = beginTx(service);
-        Node callNode = null;
-        try {
-            Long lastCallId = (Long)probeCallsNode.getProperty(INeoConstants.LAST_CALL_NODE_ID_PROPERTY_NAME, new Long(-1));
-
-            if (lastCallId != -1) {
-                callNode = service.getNodeById(lastCallId);
-            }
-
-            tx.success();
-        } finally {
-            tx.finish();
+        Long lastCallId = (Long)probeCallsNode.getProperty(INeoConstants.LAST_CALL_NODE_ID_PROPERTY_NAME, new Long(-1));
+        if (lastCallId != -1) {
+            return service.getNodeById(lastCallId);
+        } else {
+            return null;
         }
-
-        return callNode;
     }
 
     /**
@@ -1485,13 +1408,8 @@ public class Utils {
      * @return DriveTypes or null
      */
     public static DriveTypes getDatasetType(Node datasetNode, GraphDatabaseService service) {
-        Transaction tx = beginTx(service);
-        try {
-            String typeId = (String)datasetNode.getProperty(INeoConstants.DRIVE_TYPE, null);
-            return DriveTypes.findById(typeId);
-        } finally {
-            finishTx(tx);
-        }
+        String typeId = (String)datasetNode.getProperty(INeoConstants.DRIVE_TYPE, null);
+        return DriveTypes.findById(typeId);
     }
 
     /**
@@ -1511,24 +1429,19 @@ public class Utils {
      * @return Map
      */
     public static LinkedHashMap<String, Node> getAllDatasetNodes(GraphDatabaseService service) {
-        Transaction tx = beginTx(service);
         LinkedHashMap<String, Node> result = new LinkedHashMap<String, Node>();
-        try {
-            Traverser traverser = service.getReferenceNode().traverse(Order.DEPTH_FIRST, getStopEvaluator(3), new ReturnableEvaluator() {
+        Traverser traverser = service.getReferenceNode().traverse(Order.DEPTH_FIRST, getStopEvaluator(3), new ReturnableEvaluator() {
 
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    Node node = currentPos.currentNode();
-                    return isDatasetNode(node);
-                }
-            }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING);
-            for (Node node : traverser) {
-                result.put(getNodeName(node, service), node);
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                Node node = currentPos.currentNode();
+                return isDatasetNode(node);
             }
-            return result;
-        } finally {
-            finishTx(tx);
+        }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING);
+        for (Node node : traverser) {
+            result.put(getNodeName(node, service), node);
         }
+        return result;
     }
 
     /**
@@ -2634,13 +2547,8 @@ public class Utils {
      * @return the main node from gis
      */
     public static Node getMainNodeFromGis(Node gisNode, GraphDatabaseService service) {
-        Transaction tx = beginTx(service);
-        try {
-            Relationship rel = gisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
-            return rel == null ? null : rel.getOtherNode(gisNode);
-        } finally {
-            tx.finish();
-        }
+        Relationship rel = gisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+        return rel == null ? null : rel.getOtherNode(gisNode);
     }
 
     /**
@@ -2671,7 +2579,6 @@ public class Utils {
      * @return correlated Networks
      */
     public static List<Node> getCorrelationNetworks(Node dataset, GraphDatabaseService service) {
-        Transaction tx = service.beginTx();
         ArrayList<Node> result = new ArrayList<Node>();
 
         try {
@@ -2682,9 +2589,6 @@ public class Utils {
             }
         } catch (Exception e) {
             LOGGER.error(e.getLocalizedMessage(), e);
-        } finally {
-            tx.success();
-            tx.finish();
         }
 
         return result;
@@ -2719,21 +2623,14 @@ public class Utils {
      * @return Set<Node>
      */
     public static Set<Node> getCallsForProbeNode(Node node, GraphDatabaseService service) {
-        Transaction tx = service == null ? null : service.beginTx();
-        try {
-            Relationship relationship = node.getSingleRelationship(ProbeCallRelationshipType.CALLS, Direction.OUTGOING);
-            if (relationship == null) {
-                return new HashSet<Node>();
-            }
-            Node probeCalls = relationship.getEndNode();
-            Traverser calls = probeCalls.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE, ProbeCallRelationshipType.CALLER,
-                    Direction.INCOMING);
-            return new HashSet<Node>(calls.getAllNodes());
-        } finally {
-            if (tx != null) {
-                tx.finish();
-            }
+        Relationship relationship = node.getSingleRelationship(ProbeCallRelationshipType.CALLS, Direction.OUTGOING);
+        if (relationship == null) {
+            return new HashSet<Node>();
         }
+        Node probeCalls = relationship.getEndNode();
+        Traverser calls = probeCalls.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE, ProbeCallRelationshipType.CALLER,
+                Direction.INCOMING);
+        return new HashSet<Node>(calls.getAllNodes());
     }
 
     /**
@@ -2744,19 +2641,12 @@ public class Utils {
      * @return Set<Node>
      */
     public static Set<Node> getCallsForSRowNode(Node node, GraphDatabaseService service) {
-        Transaction tx = service == null ? null : service.beginTx();
-        try {
-            Set<Node> nodes = new HashSet<Node>();
-            Traverser cells = getChildTraverser(node);
-            for (Node cell : cells) {
-                nodes.addAll(getCallsForSCellNode(cell, service));
-            }
-            return nodes;
-        } finally {
-            if (tx != null) {
-                tx.finish();
-            }
+        Set<Node> nodes = new HashSet<Node>();
+        Traverser cells = getChildTraverser(node);
+        for (Node cell : cells) {
+            nodes.addAll(getCallsForSCellNode(cell, service));
         }
+        return nodes;
     }
 
     /**
@@ -2767,21 +2657,14 @@ public class Utils {
      * @return Set<Node>
      */
     public static Set<Node> getCallsForSCellNode(Node node, GraphDatabaseService service) {
-        Transaction tx = service == null ? null : service.beginTx();
-        try {
-            Traverser calls = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+        Traverser calls = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
 
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    return isCallNode(currentPos.currentNode());
-                }
-            }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING);
-            return new HashSet<Node>(calls.getAllNodes());
-        } finally {
-            if (tx != null) {
-                tx.finish();
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                return isCallNode(currentPos.currentNode());
             }
-        }
+        }, GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING);
+        return new HashSet<Node>(calls.getAllNodes());
     }
 
     /**
@@ -2792,14 +2675,9 @@ public class Utils {
      * @return the full name
      */
     public static String getFullName(Node root, GraphDatabaseService service) {
-        Transaction tx = beginTx(service);
-        try {
-            Relationship parentNodeRel = root.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING);
-            Node parent = parentNodeRel == null ? null : parentNodeRel.getOtherNode(root);
-            return getFullName(parent, root, service);
-        } finally {
-            finishTx(tx);
-        }
+        Relationship parentNodeRel = root.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING);
+        Node parent = parentNodeRel == null ? null : parentNodeRel.getOtherNode(root);
+        return getFullName(parent, root, service);
     }
 
     /**
@@ -2811,19 +2689,14 @@ public class Utils {
      * @return the full name
      */
     private static String getFullName(Node parent, Node root, GraphDatabaseService service) {
-        Transaction tx = beginTx(service);
-        try {
-            StringBuilder result = new StringBuilder();
-            if (parent != null) {
-                result.append("(").append(getNodeName(parent, service)).append(")");
-            }
-            if (root != null) {
-                result.append(getNodeName(root, service));
-            }
-            return result.toString();
-        } finally {
-            finishTx(tx);
+        StringBuilder result = new StringBuilder();
+        if (parent != null) {
+            result.append("(").append(getNodeName(parent, service)).append(")");
         }
+        if (root != null) {
+            result.append(getNodeName(root, service));
+        }
+        return result.toString();
     }
 
   
@@ -2836,23 +2709,12 @@ public class Utils {
      * @return the gpeh cell name
      */
     public static String getGpehCellName(Node bestCell, GraphDatabaseService service) {
-        Transaction tx = beginTx(service);
-        try {
-            String result = (String)bestCell.getProperty("userLabel", "");
-            if (StringUtil.isEmpty(result)) {
-                result = getNodeName(bestCell, service);
-            }
-            return result;
-        } finally {
-            finishTx(tx);
+        String result = (String)bestCell.getProperty("userLabel", "");
+        if (StringUtil.isEmpty(result)) {
+            result = getNodeName(bestCell, service);
         }
+        return result;
     }
-
-
-
-
- 
-
 
     /**
      * @param sector the sector whose proxy is to be created
@@ -2927,12 +2789,7 @@ public class Utils {
      * @return the parent node
      */
     public static Node getNodeFromProxy(Node proxyNode, RelationshipType type, GraphDatabaseService service) {
-        Transaction tx = service.beginTx();
-        try {
-            return proxyNode.getSingleRelationship(type, Direction.INCOMING).getOtherNode(proxyNode);
-        } finally {
-            tx.finish();
-        }
+        return proxyNode.getSingleRelationship(type, Direction.INCOMING).getOtherNode(proxyNode);
     }
 
     public static Node getProxySector(Node sector, String fileName) {
@@ -2979,25 +2836,20 @@ public class Utils {
         if (project == null) {
             return null;
         }
-        Transaction tx = beginTx(service);
-        try {
-            Iterator<Node> it = project.getUnderlyingNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+        Iterator<Node> it = project.getUnderlyingNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    if (currentPos.isStartNode()) {
-                        return false;
-                    }
-                    return rootName.equals(getNodeName(currentPos.currentNode(), service));
+            @Override
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                if (currentPos.isStartNode()) {
+                    return false;
                 }
-            }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
-            if (it.hasNext()) {
-                return it.next();
+                return rootName.equals(getNodeName(currentPos.currentNode(), service));
             }
-            return null;
-        } finally {
-            tx.finish();
+        }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
+        if (it.hasNext()) {
+            return it.next();
         }
+        return null;
     }
 
     /**
