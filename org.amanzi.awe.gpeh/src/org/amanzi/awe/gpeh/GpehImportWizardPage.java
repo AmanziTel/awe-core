@@ -100,7 +100,7 @@ public class GpehImportWizardPage extends LoaderPage<CommonConfigData> {
         for (EventGroup eventGroup : eventConfig.getEventGroups()) {
             treeElemGroup = new TreeElem(ElemType.GROUP, eventGroup.getEventGroupName());
             for (Events event : eventGroup.getSupportedEvents()) {
-                treeElemChild = new TreeElem(ElemType.EVENT, event.name(), event);
+                treeElemChild = new TreeElem(ElemType.EVENT, Integer.toString(event.getId()), event);
                 treeElemGroup.addChield(treeElemChild);
             }
             set.add(treeElemGroup);
@@ -138,7 +138,7 @@ public class GpehImportWizardPage extends LoaderPage<CommonConfigData> {
         EventConfig eventConfig = new EventConfig();
         
         EventGroup eventGroup = new EventGroup();
-        eventGroup.setEventGroupName("EVENTS");
+        eventGroup.setEventGroupName("Internal events");
 
         Events event = null;
         for (int i = 384; i < 396; i++) {

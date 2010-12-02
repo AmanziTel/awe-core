@@ -59,11 +59,18 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
     // it's constant using in building name of file
     private final static SimpleDateFormat simpleDateFormat = 
                                     new SimpleDateFormat(SIMPLE_DATE_FORMAT);
+    private PrintStream outputStream;
+    
+    private long beforeLoading = 0, afterLoading = 0;
+    private long startTimestamp = 0;
+    private int countOfLoadedFiles = 0;
+    
     //  FOR TESTING
     private long count = 0;
     @Override
     public void init(GpehTransferData element) {
         outputDirectory = element.get(GpehTransferData.OUTPUT_DIRECTORY).toString();
+        beforeLoading = System.currentTimeMillis();
     }
 
     @Override
@@ -73,6 +80,9 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
         if (globalTimestamp != timestamp) {
             if (globalTimestamp != 0)
                 closeOpenFiles();
+            
+            if (startTimestamp == 0)
+            	startTimestamp = timestamp;
             
             globalTimestamp = timestamp;
         }
@@ -168,15 +178,31 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
     @Override
     public void finishUp(GpehTransferData element) {
         closeOpenFiles();
+        afterLoading = System.currentTimeMillis();
+        long timeOfLoading = afterLoading - beforeLoading;
+        outputStream.println(countOfLoadedFiles + " files converted");
+        
+        outputStream.println("Full time of loading = " + 
+        		(timeOfLoading) + " millisecond");
+        
+        outputStream.println("Speed of loading = " + (int)(count/timeOfLoading) + " events/millisecond");
+        
+        String periodDateFormat = new java.text.SimpleDateFormat("hh:mm").format(startTimestamp) + " - " +
+        							new java.text.SimpleDateFormat("hh:mm").format(globalTimestamp + 900000);
+        outputStream.println("Period of converted files: " + periodDateFormat + "(HOURS:MINUTES)");
     }
 
     @Override
     public PrintStream getPrintStream() {
-        return null;
+    	if (outputStream==null){
+            return System.out;
+        }
+        return outputStream;
     }
 
     @Override
     public void setPrintStream(PrintStream outputStream) {
+    	this.outputStream = outputStream;
     }
 
     @Override
@@ -192,8 +218,10 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
                 throw new RuntimeException("Sorry. Can not close file and can not write data to file. Loading stopped.");
             }
         }
+        countOfLoadedFiles += openedFiles.size();
         openedFiles.clear();
-        System.out.println("Count = " + count);
+        
+        outputStream.println("Number of events = " + count);
     }
 
 }
