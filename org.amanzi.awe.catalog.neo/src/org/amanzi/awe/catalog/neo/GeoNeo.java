@@ -498,6 +498,10 @@ public class GeoNeo extends NeoServiceProviderListener {
     }
 
     /**
+     * This node represents a recent statistics calculation that might be used for synchronized
+     * colors between various views, for example the map might look to this node to determine the
+     * colors of the sectors or drive points.
+     * 
      * @return Returns the aggrNode.
      */
     public Node getAggrNode() {
