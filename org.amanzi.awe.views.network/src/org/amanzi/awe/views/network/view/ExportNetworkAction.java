@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
 
 import org.amanzi.awe.views.network.proxy.NeoNode;
@@ -83,9 +84,11 @@ public class ExportNetworkAction extends Action {
         DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
         String[] strtypes = datasetService.getSructureTypesId(root);
         List<String> headers = new ArrayList<String>();
+        Map<String, String> originalHeaders = datasetService.getOriginalFileHeaders(root);
         for (int i = 1; i < strtypes.length; i++) {
             headers.add(strtypes[i]);
         }
+
         FileDialog dialog = new FileDialog(shell, SWT.SAVE /* or SAVE or MULTI */);
         String fileSelected = dialog.open();
         
@@ -140,6 +143,7 @@ public class ExportNetworkAction extends Action {
                             }
                         }
                     }
+
                     writer.writeNext(fields.toArray(new String[0]));
                     while (iter.hasNext()) {
                         fields.clear();
