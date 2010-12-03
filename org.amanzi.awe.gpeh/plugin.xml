@@ -51,7 +51,7 @@
                 id="org.amanzi.neo.loader.toolbar2">             
              <command
                    commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader"
-                   icon="icons/16/delta_network.png"
+                   icon="icons/16/gpeh.png"
                    id="org.amanzi.neo.loader.ui.LoadLauncher"
                    tooltip="GPEH to CSV">
                 <parameter
