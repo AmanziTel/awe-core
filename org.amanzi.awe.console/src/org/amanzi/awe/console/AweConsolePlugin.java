@@ -217,6 +217,7 @@ public class AweConsolePlugin extends AbstractUIPlugin {
     }
     public OutputStream getPrintStream(){
         if (loggingPossible){
+            pluginConsole.activate();
             return consoleStream;
         }
         return System.out;
