@@ -32,8 +32,10 @@ import org.amanzi.awe.views.network.view.NetworkTreeView;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
+import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.GisTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
@@ -333,13 +335,18 @@ public class NetworkLoader extends AbstractLoader {
 	 * Save file structure.
 	 */
 	private void saveFileStructure() {
-		Node fileStructureNode = neo.createNode();
-		network.createRelationshipTo(fileStructureNode, NetworkRelationshipTypes.FILE_PROPERTIES);
+		DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
+		Map<String,String> headers = new HashMap<String,String>();
 		StoringProperty storingProperty = storingProperties.get(storingProperties.keySet().iterator().next());
-		 for(Map.Entry<String, Header> prop : storingProperty.getHeaders().headers.entrySet()){
-			 fileStructureNode.setProperty(prop.getKey(), prop.getValue().name);
-//			 System.out.println(prop.getKey() + " - " + prop.getValue().key +" "+ prop.getValue().name);
+		for(Map.Entry<String, Header> prop : storingProperty.getHeaders().headers.entrySet()){
+			
+			String prefix = INeoConstants.SECTOR_PROPERTY_NAME_PREFIX;
+			if(prop.getKey().endsWith(INeoConstants.PROPERTY_LAT_NAME) || prop.getKey().endsWith(INeoConstants.PROPERTY_LON_NAME)) 
+				prefix = INeoConstants.SITE_PROPERTY_NAME_PREFIX;
+			
+			headers.put(prefix + prop.getKey(), prop.getValue().name);
 		 }
+		ds.addOriginalHeaders(network, headers);
 	}
 
 	/**

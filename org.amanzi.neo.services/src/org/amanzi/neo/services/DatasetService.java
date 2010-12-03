@@ -62,7 +62,7 @@ import com.vividsolutions.jts.util.Assert;
  * @since 1.0.0
  */
 public class DatasetService extends AbstractService {
-    private Map<String, INodeType> registeredTypes = Collections.synchronizedMap(new HashMap<String, INodeType>());
+    private final Map<String, INodeType> registeredTypes = Collections.synchronizedMap(new HashMap<String, INodeType>());
 
     /**
      * should be used NeoServiceFactory for getting instance of DatasetService
@@ -1422,4 +1422,26 @@ public class DatasetService extends AbstractService {
         }
         return result;
     }
+
+	
+    /**
+     * Adds the original headers.
+     *
+     * @param sourceNode the source node
+     * @param headersMap the headers map
+     */
+    public void addOriginalHeaders(Node sourceNode, Map<String,String> headersMap) {
+		Node networkNode = Utils.getParentNode(sourceNode, NodeTypes.NETWORK.getId());
+		Relationship singleRelationship = networkNode.getSingleRelationship(NetworkRelationshipTypes.FILE_PROPERTIES, Direction.OUTGOING);
+        Node filePropertiesNode = null;
+        if (singleRelationship == null){
+        	filePropertiesNode = databaseService.createNode();
+        	networkNode.createRelationshipTo(filePropertiesNode, NetworkRelationshipTypes.FILE_PROPERTIES);
+        }else{
+        	filePropertiesNode = singleRelationship.getEndNode();
+        }
+		 for(Map.Entry<String, String> prop : headersMap.entrySet()){
+			 filePropertiesNode.setProperty(prop.getKey(), prop.getValue());
+		 }
+	}
 }

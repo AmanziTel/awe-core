@@ -20,7 +20,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
+import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.GisTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkTypes;
@@ -327,7 +329,21 @@ public class NetworkSiteLoader extends AbstractLoader {
     @Override
     protected void finishUp() {
         super.finishUp();
+        saveFileStructure();
         super.cleanupGisNode();//(datasetNode == null ? file : datasetNode);
     }
+    
+    /**
+	 * Save file structure.
+	 */
+	private void saveFileStructure() {
+		DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
+		Map<String,String> headers = new HashMap<String,String>();
+		StoringProperty storingProperty = storingProperties.get(storingProperties.keySet().iterator().next());
+		for(Map.Entry<String, Header> prop : storingProperty.getHeaders().headers.entrySet()){
+			headers.put(INeoConstants.SITE_PROPERTY_NAME_PREFIX + prop.getKey(), prop.getValue().name);
+		 }
+		ds.addOriginalHeaders(networkNode, headers);
+	}
 
 }

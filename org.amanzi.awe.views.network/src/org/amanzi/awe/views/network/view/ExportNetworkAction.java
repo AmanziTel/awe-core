@@ -26,6 +26,7 @@ import java.util.TreeSet;
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
@@ -137,9 +138,16 @@ public class ExportNetworkAction extends Action {
                 try {
                     for (String headerType : headers) {
                         Collection<String> propertyCol = propertyMap.get(headerType);
+                        String parcePrefix = "";
+                        if(headerType.equals(NodeTypes.SITE.getId())){
+                        	parcePrefix = INeoConstants.SITE_PROPERTY_NAME_PREFIX;
+                        }else if(headerType.equals(NodeTypes.SECTOR.getId())){
+                        	parcePrefix = INeoConstants.SECTOR_PROPERTY_NAME_PREFIX;
+                        }
                         if (propertyCol != null) {
                             for (String propertyName : propertyCol) {
-                                fields.add(new StringBuilder(headerType).append("_").append(propertyName).toString());
+//                                fields.add(new StringBuilder(headerType).append("_").append(propertyName).toString());
+                                fields.add(originalHeaders.get(parcePrefix + propertyName) == null?propertyName:originalHeaders.get(parcePrefix + propertyName));
                             }
                         }
                     }
