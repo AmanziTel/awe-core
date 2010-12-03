@@ -1,5 +1,5 @@
-include_class org.amanzi.neo.core.INeoConstants
-include_class org.amanzi.neo.core.enums.GisTypes
+include_class org.amanzi.neo.services.INeoConstants
+include_class org.amanzi.neo.services.enums.GisTypes
 
 module AWE
   module ExtendCommandBundle

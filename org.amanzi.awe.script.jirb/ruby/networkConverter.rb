@@ -1,9 +1,9 @@
 require 'neo4j'
 
 include Java
-include_class org.amanzi.neo.core.enums.NodeTypes
-include_class org.amanzi.neo.core.utils.NeoUtils
-include_class org.amanzi.neo.core.enums.GisTypes
+include_class org.amanzi.neo.services.enums.NodeTypes
+include_class org.amanzi.neo.services.ui.NeoUtils
+include_class org.amanzi.neo.services.enums.GisTypes
 
 include_class org.amanzi.neo.loader.NetworkLoader
 
