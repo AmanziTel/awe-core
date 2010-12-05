@@ -30,6 +30,7 @@ import java.util.ArrayList;
 public class CsvFile {
 
     private static final int BUFFER_SIZE = 8*1024;
+    private final static int SIZE_EVENT_PARAM = "EVENT_PARAM_".length();
     private String newline = System.getProperty("line.separator");
     private BufferedWriter writer  = null;
     private int eventId = 0;
@@ -109,8 +110,34 @@ public class CsvFile {
                 this.writer.write(value);
                 n = 1;
             }
+            if (value == null && n == 0) {
+            	this.writer.write("\t");
+            }
         }
 
         this.writer.write(newline);
     }
+     
+     /**
+      * Writes a data-record to the file. Note that data must have
+      * same number of elements as the header had.
+      *
+      * @param data Data to write to csv-file
+      */
+      public void writeHeaders(ArrayList<String> values) throws IOException {
+
+         int n = 0;
+         for (String value : values) {
+             if (n != 0) {
+                 this.writer.write("\t");
+             }
+             
+             if (value != null) {
+                 this.writer.write(value.substring(SIZE_EVENT_PARAM));
+                 n = 1;
+             }
+         }
+
+         this.writer.write(newline);
+     }
 }

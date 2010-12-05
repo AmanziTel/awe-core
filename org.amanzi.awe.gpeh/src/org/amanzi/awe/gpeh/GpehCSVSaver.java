@@ -127,7 +127,7 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
             csvFile.setHeaders(headers);
             // write headers to csvfile
             try {
-                csvFile.writeData(headers);
+                csvFile.writeHeaders(headers);
                 headers.remove(Parameters.EVENT_PARAM_TIMESTAMP_HOUR.toString());
                 headers.remove(Parameters.EVENT_PARAM_TIMESTAMP_MINUTE.toString());
                 headers.remove(Parameters.EVENT_PARAM_TIMESTAMP_SECOND.toString());
@@ -144,8 +144,15 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
             headers = csvFileToWork.getHeaders();
         }
         
+        String scannerId = null;
+        try {
+        	scannerId = element.get(Parameters.EVENT_PARAM_SCANNER_ID.toString()).toString();
+        }
+        catch (Exception e) {
+        }
         // create array list of data
         ArrayList<String> data = new ArrayList<String>();
+        data.add(scannerId);
         data.add(Long.toString(event.getHour()));
         data.add(Long.toString(event.getMinute()));
         data.add(Long.toString(event.getSecond()));

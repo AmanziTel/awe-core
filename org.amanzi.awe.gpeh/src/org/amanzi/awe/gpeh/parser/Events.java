@@ -15,11 +15,7 @@ package org.amanzi.awe.gpeh.parser;
 
 import static org.amanzi.awe.gpeh.parser.Parameters.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * <p>
@@ -361,13 +357,14 @@ public enum Events {
             allParameters[paramCount++] = parameters;
         }
         
-        allParametersWithTimestamp = new Parameters[allParameters.length + 4];
-        allParametersWithTimestamp[0] = EVENT_PARAM_TIMESTAMP_HOUR;
-        allParametersWithTimestamp[1] = EVENT_PARAM_TIMESTAMP_MINUTE;
-        allParametersWithTimestamp[2] = EVENT_PARAM_TIMESTAMP_SECOND;
-        allParametersWithTimestamp[3] = EVENT_PARAM_TIMESTAMP_MILLISEC;
+        allParametersWithTimestamp = new Parameters[allParameters.length + 5];
+        allParametersWithTimestamp[0] = EVENT_PARAM_SCANNER_ID;
+        allParametersWithTimestamp[1] = EVENT_PARAM_TIMESTAMP_HOUR;
+        allParametersWithTimestamp[2] = EVENT_PARAM_TIMESTAMP_MINUTE;
+        allParametersWithTimestamp[3] = EVENT_PARAM_TIMESTAMP_SECOND;
+        allParametersWithTimestamp[4] = EVENT_PARAM_TIMESTAMP_MILLISEC;
         for (int i = 0; i < allParameters.length; i++) {
-            allParametersWithTimestamp[i + 4] = allParameters[i];
+            allParametersWithTimestamp[i + 5] = allParameters[i];
         }
         
         bitMask = 0x01 << ordinal();
