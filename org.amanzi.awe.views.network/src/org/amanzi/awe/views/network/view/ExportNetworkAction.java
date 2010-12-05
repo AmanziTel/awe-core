@@ -139,15 +139,18 @@ public class ExportNetworkAction extends Action {
                     for (String headerType : headers) {
                         Collection<String> propertyCol = propertyMap.get(headerType);
                         String parcePrefix = "";
+                        String writePrefix = "";
                         if(headerType.equals(NodeTypes.SITE.getId())){
                         	parcePrefix = INeoConstants.SITE_PROPERTY_NAME_PREFIX;
+                            // writePrefix = "SITE_";
                         }else if(headerType.equals(NodeTypes.SECTOR.getId())){
                         	parcePrefix = INeoConstants.SECTOR_PROPERTY_NAME_PREFIX;
                         }
                         if (propertyCol != null) {
                             for (String propertyName : propertyCol) {
 //                                fields.add(new StringBuilder(headerType).append("_").append(propertyName).toString());
-                                fields.add(originalHeaders.get(parcePrefix + propertyName) == null?propertyName:originalHeaders.get(parcePrefix + propertyName));
+                                fields.add(originalHeaders.get(parcePrefix + propertyName) == null ? writePrefix + propertyName : writePrefix
+                                        + originalHeaders.get(parcePrefix + propertyName));
                             }
                         }
                     }

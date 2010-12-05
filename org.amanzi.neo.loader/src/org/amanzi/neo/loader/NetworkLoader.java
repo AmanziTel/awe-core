@@ -339,12 +339,19 @@ public class NetworkLoader extends AbstractLoader {
 		Map<String,String> headers = new HashMap<String,String>();
 		StoringProperty storingProperty = storingProperties.get(storingProperties.keySet().iterator().next());
 		for(Map.Entry<String, Header> prop : storingProperty.getHeaders().headers.entrySet()){
-			
+
 			String prefix = INeoConstants.SECTOR_PROPERTY_NAME_PREFIX;
-			if(prop.getKey().endsWith(INeoConstants.PROPERTY_LAT_NAME) || prop.getKey().endsWith(INeoConstants.PROPERTY_LON_NAME)) 
+            String propertyKey = prop.getKey();
+            String propOriginalName = prop.getValue().name;
+
+            if (propertyKey.endsWith(INeoConstants.PROPERTY_LAT_NAME) || propertyKey.endsWith(INeoConstants.PROPERTY_LON_NAME))
 				prefix = INeoConstants.SITE_PROPERTY_NAME_PREFIX;
 			
-			headers.put(prefix + prop.getKey(), prop.getValue().name);
+            if (propertyKey.endsWith("sector")) {
+                propertyKey = INeoConstants.PROPERTY_NAME_NAME;
+            }
+
+            headers.put(prefix + propertyKey, propOriginalName);
 		 }
 		ds.addOriginalHeaders(network, headers);
 	}
