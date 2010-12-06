@@ -53,7 +53,7 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
     // it's constant to present timestamp
     private final static String TIMESTAMP = "timestamp";
     // it's constant to present format of date to name of file
-    private final static String SIMPLE_DATE_FORMAT = "yyyyMMdd.hhmm";
+    private final static String SIMPLE_DATE_FORMAT = "yyyyMMddhhmm";
     // it's constant to present format of file
     private final static String FILE_FORMAT = ".txt";
     // it's constant using in building name of file
@@ -97,8 +97,8 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
             
             Date date = new Date(globalTimestamp);
 
-            String wayToFile = outputDirectory + "\\" + eventId + "_" + 
-                                (simpleDateFormat.format(date)) + FILE_FORMAT;
+            String wayToFile = outputDirectory + "\\" + events.name() + "_" + eventId + "_" + 
+                                (simpleDateFormat.format(date)) + "_" + "MO" + FILE_FORMAT;
             
             // create new file 
             File file = new File(wayToFile);
