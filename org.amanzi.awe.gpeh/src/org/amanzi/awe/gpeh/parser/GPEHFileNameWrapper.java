@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
         private int zStart;
         private int zEnd;
         Pattern time = Pattern.compile("(^A)(\\d{4})(\\d{2})(\\d{2})(\\.)(\\d{2})(\\d{2})([+-]{1}\\d{2})(\\d{2})(-)(\\d{2})(\\d{2})([+-]{1}\\d{2})(\\d{2})(_)(\\w+)(=)(\\w+)(\\,)(\\w+)(=)(\\S+)(\\.)(\\w+)(\\.)(.*$)");
-        Pattern time2 = Pattern.compile("(^A)(\\d{4})(\\d{2})(\\d{2})(\\.)(\\d{2})(\\d{2})(-)(\\d{2})(\\d{2})(.*$)");
+        Pattern time2 = Pattern.compile("(^A)(\\d{4})(\\d{2})(\\d{2})(\\.)(\\d{2})(\\d{2})(-)(\\d{2})(\\d{2})(_)(\\w+)(=)(\\w+)(\\,)(\\w+)(=)(\\S+)(\\.)(\\w+)(\\.)(.*$)");
         private int minEnd;
         private int minStart;
         
@@ -91,7 +91,10 @@ import java.util.regex.Pattern;
 
                     zEnd = 0;
                     minStart = (hhStart - zStart) * 60 + mmStart;
-                    minEnd = (hhEnd - zEnd) * 60 + mmEnd;                    
+                    minEnd = (hhEnd - zEnd) * 60 + mmEnd;     
+                    
+                    setSubNetwork(matcher.group(14));
+                    setMeContext(matcher.group(18));
                 }  else {
                     hhStart = -1;
                 }
