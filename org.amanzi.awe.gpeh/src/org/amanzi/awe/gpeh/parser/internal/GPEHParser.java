@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import org.amanzi.awe.gpeh.parser.Events;
-import org.amanzi.awe.gpeh.parser.GPEHTimeWrapper;
+import org.amanzi.awe.gpeh.parser.GPEHFileNameWrapper;
 import org.amanzi.awe.gpeh.parser.Parameters;
 import org.amanzi.neo.services.utils.Pair;
 import org.kc7bfi.jflac.io.BitInputStream;
@@ -231,7 +231,7 @@ public class GPEHParser {
      * @throws IOException
      * @throws
      */
-    public static GPEHEvent parseEventFile(File file, Set<Integer> possibleIds,GPEHTimeWrapper wr) throws IOException {
+    public static GPEHEvent parseEventFile(File file, Set<Integer> possibleIds,GPEHFileNameWrapper wr) throws IOException {
         GPEHEvent result = new GPEHEvent();
         InputStream in = new FileInputStream(file);
         if (Pattern.matches("^.+\\.gz$", file.getName())) {
@@ -257,7 +257,7 @@ public class GPEHParser {
      * @param result GPEHEvent
      * @param wr 
      */
-    public static void parseSubFile(BitInputStream input, GPEHEvent result, Set<Integer> possibleIds, GPEHTimeWrapper wr) throws IOException {
+    public static void parseSubFile(BitInputStream input, GPEHEvent result, Set<Integer> possibleIds, GPEHFileNameWrapper wr) throws IOException {
         int recordLen = input.readRawUInt(16) - 3;
         int recordType = input.readRawUInt(8);
         if (recordType == 4) {
@@ -292,7 +292,7 @@ public class GPEHParser {
      * @param recordLen length of event
      * @throws IOException
      */
-    public static long parseEvent(BitInputStream input, GPEHEvent result, int recordLen, Set<Integer> possibleIds,GPEHTimeWrapper timeWrapper) throws IOException {
+    public static long parseEvent(BitInputStream input, GPEHEvent result, int recordLen, Set<Integer> possibleIds,GPEHFileNameWrapper timeWrapper) throws IOException {
         GPEHEvent.Event event = new GPEHEvent.Event();
         
         event.scannerId = (Integer)readParameter(input, Parameters.EVENT_PARAM_SCANNER_ID).getLeft();

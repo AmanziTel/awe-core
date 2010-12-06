@@ -96,9 +96,10 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
             Events events = Events.findById(eventId);
             
             Date date = new Date(globalTimestamp);
-
+            
+            String meContext = (String) element.get(GpehTransferData.ME_CONTEXT);
             String wayToFile = outputDirectory + "\\" + events.name() + "_" + eventId + "_" + 
-                                (simpleDateFormat.format(date)) + "_" + "MO" + FILE_FORMAT;
+                                (simpleDateFormat.format(date)) + "_" + meContext + FILE_FORMAT;
             
             // create new file 
             File file = new File(wayToFile);

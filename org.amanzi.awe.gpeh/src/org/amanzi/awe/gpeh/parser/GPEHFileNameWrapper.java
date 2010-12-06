@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
      * @author TsAr
      * @since 1.0.0
      */
-    public  class GPEHTimeWrapper {
+    public  class GPEHFileNameWrapper {
 
         private int year;
         private int month;
@@ -36,17 +36,20 @@ import java.util.regex.Pattern;
         private int mmEnd;
         private int zStart;
         private int zEnd;
-        Pattern time = Pattern.compile("(^A)(\\d{4})(\\d{2})(\\d{2})(\\.)(\\d{2})(\\d{2})([+-]{1}\\d{2})(\\d{2})(-)(\\d{2})(\\d{2})([+-]{1}\\d{2})(\\d{2})(.*$)");
+        Pattern time = Pattern.compile("(^A)(\\d{4})(\\d{2})(\\d{2})(\\.)(\\d{2})(\\d{2})([+-]{1}\\d{2})(\\d{2})(-)(\\d{2})(\\d{2})([+-]{1}\\d{2})(\\d{2})(_)(\\w+)(=)(\\w+)(\\,)(\\w+)(=)(\\S+)(\\.)(\\w+)(\\.)(.*$)");
         Pattern time2 = Pattern.compile("(^A)(\\d{4})(\\d{2})(\\d{2})(\\.)(\\d{2})(\\d{2})(-)(\\d{2})(\\d{2})(.*$)");
         private int minEnd;
         private int minStart;
+        
+        private String subNetwork;
+        private String meContext;
 
         /**
          * Instantiates a new time period.
          * 
          * @param fileName the file name
          */
-        public GPEHTimeWrapper(String fileName) {
+        public GPEHFileNameWrapper(String fileName) {
             Matcher matcher = time.matcher(fileName);
             if (matcher.matches()) {
                 year = Integer.valueOf(matcher.group(2));
@@ -69,6 +72,9 @@ import java.util.regex.Pattern;
                 zEnd = Integer.valueOf(zone);
                 minStart = (hhStart - zStart) * 60 + mmStart;
                 minEnd = (hhEnd - zEnd) * 60 + mmEnd;
+                
+                setSubNetwork(matcher.group(18));
+                setMeContext(matcher.group(22));
             }else {
                 matcher = time2.matcher(fileName);  
                 if (matcher.matches()){
@@ -122,7 +128,7 @@ import java.util.regex.Pattern;
         public static void main(String[] args) {
             Integer.valueOf("-02");
 //            new GPEHTimeWrapper("A20100214.1200-0200-1215+0200_SubNetwork=ERNOR2,MeContext=ERNOR2_rnc_gpehfile_Mp1.bin.gz");
-            new GPEHTimeWrapper("A20101101.0200-0215_SubNetwork=ERNOR1,MeContext=ERNOR1_rnc_gpehfile_Mp0.bin.gz");
+            new GPEHFileNameWrapper("A20101101.0200-0215_SubNetwork=ERNOR1,MeContext=ERNOR1_rnc_gpehfile_Mp0.bin.gz");
         }
 
         /**
@@ -255,5 +261,33 @@ import java.util.regex.Pattern;
             long timeMin = hour * 60 + minute;
             return (minStart <= timeMin) && (minEnd > timeMin);
         }
+
+		/**
+		 * @param subNetwork the subNetwork to set
+		 */
+		public void setSubNetwork(String subNetwork) {
+			this.subNetwork = subNetwork;
+		}
+
+		/**
+		 * @return the subNetwork
+		 */
+		public String getSubNetwork() {
+			return subNetwork;
+		}
+
+		/**
+		 * @param meContext the meContext to set
+		 */
+		public void setMeContext(String meContext) {
+			this.meContext = meContext;
+		}
+
+		/**
+		 * @return the meContext
+		 */
+		public String getMeContext() {
+			return meContext;
+		}
 
     }

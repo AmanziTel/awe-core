@@ -31,7 +31,7 @@ import java.util.TimeZone;
 import java.util.zip.GZIPInputStream;
 
 import org.amanzi.awe.gpeh.parser.Events;
-import org.amanzi.awe.gpeh.parser.GPEHTimeWrapper;
+import org.amanzi.awe.gpeh.parser.GPEHFileNameWrapper;
 import org.amanzi.awe.gpeh.parser.Parameters;
 import org.amanzi.awe.gpeh.parser.internal.GPEHEvent;
 import org.amanzi.neo.loader.core.CommonConfigData;
@@ -102,7 +102,7 @@ public class GpehParser extends CommonFilesParser<GpehTransferData, CommonConfig
         if (possibleIds.isEmpty()) {
             return false;
         }
-        GPEHTimeWrapper timeWrapper = new GPEHTimeWrapper(element.getFile().getName());
+        GPEHFileNameWrapper timeWrapper = new GPEHFileNameWrapper(element.getFile().getName());
         if (!timeWrapper.isValid()) {
             System.err.println(String.format("Can't parse file %s. incorrect name format", element.getFile().getName()));
             return false;
@@ -117,6 +117,9 @@ public class GpehParser extends CommonFilesParser<GpehTransferData, CommonConfig
         cl.set(Calendar.HOUR, timeWrapper.getHhStart());
         cl.set(Calendar.MINUTE, timeWrapper.getMmStart());
         long timestamp = cl.getTimeInMillis();
+        //Kasnitskij_V:
+        String meContext = timeWrapper.getMeContext();
+        
         InputStream inputStream = null;
         try {
             inputStream = new FileInputStream(element.getFile());
@@ -145,6 +148,9 @@ public class GpehParser extends CommonFilesParser<GpehTransferData, CommonConfig
                                 data.put(GpehTransferData.EVENT, result.getEvent());
                                 data.put(GpehTransferData.TIMESTAMP_OF_DAY, timestampOfDay);
                                 data.put(GpehTransferData.TIMESTAMP, timestamp);
+                                // Kasnitskij_V:
+                                
+                                data.put(GpehTransferData.ME_CONTEXT, meContext);
                                 for (Map.Entry<Parameters, Object> entry : result.getEvent().getProperties().entrySet()) {
                                     data.put(entry.getKey().name(), entry.getValue());
                                 }

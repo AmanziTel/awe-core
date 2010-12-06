@@ -35,5 +35,6 @@ public class GpehTransferData extends LinkedHashMap<String,Object> implements IM
     public static final String TIMESTAMP_OF_DAY = "timestamp_of_day";
     public static final String OUTPUT_DIRECTORY = "OUTPUT DIRECTORY";
     public static final String TIMESTAMP = "timestamp";
+    public static final String ME_CONTEXT = "MeContext";
     
 }
