@@ -33,6 +33,10 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
@@ -49,20 +53,24 @@ import org.neo4j.kernel.Traversal;
 
 import au.com.bytecode.opencsv.CSVWriter;
 
+// TODO: Auto-generated Javadoc
 /**
  * <p>
  * Export network sector
- * </p>
- * 
+ * </p>.
+ *
  * @author tsinkel_a
  * @since 1.0.0
  */
 public class ExportNetworkAction extends Action {
 
+    /** The root. */
     Node root = null;
 
     /**
-     * @param selection
+     * Instantiates a new export network action.
+     *
+     * @param selection the selection
      */
     public ExportNetworkAction(IStructuredSelection selection) {
         setText("Export network sector data in csv file");
@@ -78,26 +86,67 @@ public class ExportNetworkAction extends Action {
         setEnabled(root != null);
     }
 
+    /**
+     * Run.
+     */
     @Override
     public void run() {
         Shell shell = new Shell(Display.getDefault());
-        IPropertyHeader stat = PropertyHeader.getPropertyStatistic(root);
+
+        FileDialog dialog = new FileDialog(shell, SWT.SAVE | SWT.APPLICATION_MODAL/* or SAVE or MULTI */);
+        final String fileSelected = dialog.open();
+        final Node rootNode = this.root;
+        Job exportJob = new Job("Network export") {
+
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                try {
+                	
+                	runExport(fileSelected,rootNode);
+                    
+                    return Status.OK_STATUS;
+                } finally {
+//                    ActionUtil.getInstance().runTask(new Runnable() {
+//
+//                        @Override
+//                        public void run() {
+////                            button.setEnabled(true);
+////                            tableControl.setEnabled(true);
+//                        }
+//                    }, true);
+                }
+            }
+        };
+        exportJob.schedule();
+        
+        
+        
+        
+        System.out.println("Finished");
+    }
+
+
+	/**
+	 * Run export.
+	 *
+	 * @param fileSelected the file selected
+	 * @param rootNode 
+	 */
+	protected void runExport(final String fileSelected, Node rootNode) {
+		IPropertyHeader stat = PropertyHeader.getPropertyStatistic(rootNode);
         DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
-        String[] strtypes = datasetService.getSructureTypesId(root);
+        String[] strtypes = datasetService.getSructureTypesId(rootNode);
         List<String> headers = new ArrayList<String>();
-        Map<String, String> originalHeaders = datasetService.getOriginalFileHeaders(root);
+        
         for (int i = 1; i < strtypes.length; i++) {
             headers.add(strtypes[i]);
         }
-
-        FileDialog dialog = new FileDialog(shell, SWT.SAVE /* or SAVE or MULTI */);
-        String fileSelected = dialog.open();
-        
-        HashMap<String, Collection<String>> propertyMap = new HashMap<String, Collection<String>>();
-
+		
+		HashMap<String, Collection<String>> propertyMap = new HashMap<String, Collection<String>>();
+		Map<String, String> originalHeaders = datasetService.getOriginalFileHeaders(rootNode);
         TraversalDescription descr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
                 .filter(Traversal.returnAllButStartNode());
-        for (Path path : descr.traverse(root)) {
+        for (Path path : descr.traverse(rootNode)) {
             Node node = path.endNode();
             INodeType type = datasetService.getNodeType(node);
             if (type != null && headers.contains(type.getId())) {
@@ -107,7 +156,7 @@ public class ExportNetworkAction extends Action {
                     propertyMap.put(type.getId(), coll);
                 }
                 for (String propertyName : node.getPropertyKeys()) {
-                    if ("type".equals(propertyName)){
+                    if (INeoConstants.PROPERTY_TYPE_NAME.equals(propertyName)){
                         continue;
                     }
                     coll.add(propertyName);
@@ -121,20 +170,22 @@ public class ExportNetworkAction extends Action {
                 return !paramT.endNode().hasRelationship(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING);
             }
         });
-        Iterator<Path> iter = descr.traverse(root).iterator();
+        Iterator<Path> iter = descr.traverse(rootNode).iterator();
         List<String> fields = new ArrayList<String>();
         if (fileSelected != null) {
             try {
-                // Kasnitskij_V:
+
+            	String ext = "";
+            	
                 String extention = LoaderUtils.getFileExtension(fileSelected);
                 if (extention.equals("")) {
-                    fileSelected += ".csv";
+                	ext= ".csv";
                 }
                 else if (extention.equals(".")) {
-                    fileSelected += "csv";
+                	ext= "csv";
                 }
                 
-                CSVWriter writer = new CSVWriter(new FileWriter(fileSelected));
+                CSVWriter writer = new CSVWriter(new FileWriter(fileSelected + ext));
                 try {
                     for (String headerType : headers) {
                         Collection<String> propertyCol = propertyMap.get(headerType);
@@ -196,5 +247,5 @@ public class ExportNetworkAction extends Action {
                 throw (RuntimeException)new RuntimeException().initCause(e);
             }
         }
-    }
+	}
 }

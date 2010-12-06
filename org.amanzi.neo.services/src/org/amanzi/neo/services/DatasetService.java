@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.DriveTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
@@ -768,12 +769,15 @@ public class DatasetService extends AbstractService {
                 Node globalPropertiesNode = createNode(NodeTypes.GLOBAL_PROPERTIES.getId(), INeoConstants.PROPERTY_NAME_NAME, "Global properties", DYNAMIC_TYPES,
                         new String[0]);
                 refNode.createRelationshipTo(globalPropertiesNode, DatasetRelationshipTypes.GLOBAL_PROPERTIES);
+                
+                rel = refNode.getSingleRelationship(DatasetRelationshipTypes.GLOBAL_PROPERTIES, Direction.OUTGOING);
+                
                 tx.success();
             } finally {
                 tx.finish();
-            }
-            rel = refNode.getSingleRelationship(DatasetRelationshipTypes.GLOBAL_PROPERTIES, Direction.OUTGOING);
+            }            
         }
+        NeoServiceProvider.getProvider().commit();
         return rel.getEndNode();
     }
 
