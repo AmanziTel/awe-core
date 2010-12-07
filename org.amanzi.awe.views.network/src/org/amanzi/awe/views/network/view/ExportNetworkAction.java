@@ -210,32 +210,32 @@ public class ExportNetworkAction extends Action {
                     while (iter.hasNext()) {
                         fields.clear();
                         Path path = iter.next();
-                        int order = 1;
+//                        int order = 1;
                         for (Node node : path.nodes()) {
                             INodeType nodeType = datasetService.getNodeType(node);
                             if (nodeType == NodeTypes.NETWORK) {
                                 continue;
                             }
-                            while (order < strtypes.length && !strtypes[order++].equals(nodeType.getId())) {
-                                Collection<String> propertyCol = propertyMap.get(strtypes[order - 1]);
-                                if (propertyCol != null) {
-                                    for (@SuppressWarnings("unused")
-                                    String propertyName : propertyCol) {
-                                        fields.add("");
-                                    }
-                                }
-                            }
-                            if (order > strtypes.length) {
-                                fields.add("ERROR - incorrect node structure ");
-                                break;
-                            } else {
+//                            while (order < strtypes.length && !strtypes[order++].equals(nodeType.getId())) {
+//                                Collection<String> propertyCol = propertyMap.get(strtypes[order - 1]);
+//                                if (propertyCol != null) {
+//                                    for (@SuppressWarnings("unused")
+//                                    String propertyName : propertyCol) {
+//                                        fields.add("");
+//                                    }
+//                                }
+//                            }
+//                            if (order > strtypes.length) {
+//                                fields.add("ERROR - incorrect node structure ");
+//                                break;
+//                            } else {
                                 Collection<String> propertyCol = propertyMap.get(nodeType.getId());
                                 if (propertyCol != null) {
                                     for (String propertyName : propertyCol) {
                                         fields.add(String.valueOf(node.getProperty(propertyName, "")));
                                     }
                                 }
-                            }
+//                            }
                         }
                         writer.writeNext(fields.toArray(new String[0]));
                     }
