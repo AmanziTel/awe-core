@@ -14,18 +14,27 @@
 package org.amanzi.awe.gpeh.wizard;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 import org.amanzi.awe.gpeh.GpehTransferData;
+import org.amanzi.awe.gpeh.filebrowser.prowider.View;
 import org.amanzi.awe.gpeh.parser.Events;
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.ui.wizards.DirectoryEditor;
 import org.amanzi.neo.loader.ui.wizards.LoaderPage;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
+import org.eclipse.jface.viewers.ITreeSelection;
+import org.eclipse.jface.viewers.TreePath;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
@@ -38,10 +47,11 @@ import org.eclipse.swt.widgets.Composite;
  * @since 1.0.0
  */
 public class GpehCsvParserWizardPage extends LoaderPage<CommonConfigData> {
-    private String inputDirectory, outputDirectory;
+    private String outputDirectory;
     
     protected String datasetName;
-    private DirectoryFieldEditor inputDir, outputDir;
+    private DirectoryFieldEditor outputDir;
+    private List<File> selectedDirectories;
     
     public  static final String SELECTED_EVENT = "GPEH SELECTED_EVENTS";
     private static final String WIZARD_PAGE_TITLE = "Save GPEH-data to CSV files";
@@ -54,14 +64,32 @@ public class GpehCsvParserWizardPage extends LoaderPage<CommonConfigData> {
     public void createControl(Composite parent) {
         final Composite main = new Composite(parent, SWT.NULL);
         main.setLayout(new GridLayout(3, false));
-        inputDir = new DirectoryEditor("editor", "Input directory: ", main); // NON-NLS-1
-        inputDir.setEmptyStringAllowed(true);
-        inputDir.getTextControl(main).addModifyListener(new ModifyListener() {
-            public void modifyText(ModifyEvent e) {
-                inputDirectory = inputDir.getStringValue();
-                update();
-            }
-        });
+        
+        View view = new View();
+        view.createPartControl(main);
+        final TreeViewer treeViewer = view.getTreeViewer();
+        GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, false);
+        gridData.horizontalSpan = 3;
+        gridData.minimumHeight = 500;
+        gridData.heightHint = 300;
+        treeViewer.getTree().setLayoutData(gridData);
+        
+        treeViewer.getTree().addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				ITreeSelection treeSelection = (ITreeSelection) treeViewer.getSelection();
+				selectedDirectories = new ArrayList<File>();
+				for (TreePath path : treeSelection.getPaths()) {
+					selectedDirectories.add(new File(path.getLastSegment().toString()));
+				}
+				update();
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				// TODO Auto-generated method stub
+			}
+		});
         
         outputDir = new DirectoryEditor("editor", "Output directory: ", main);
         outputDir.setEmptyStringAllowed(true);
@@ -83,18 +111,16 @@ public class GpehCsvParserWizardPage extends LoaderPage<CommonConfigData> {
     @Override
     protected boolean validateConfigData(CommonConfigData configurationData) {
         try {
-            if (StringUtils.isEmpty(inputDirectory) ||
-                    StringUtils.isEmpty(outputDirectory)) {
+            if (StringUtils.isEmpty(outputDirectory)) {
                 return false;
             }
-            File fileInput = new File(inputDirectory);
             File fileOutput = new File(outputDirectory);
-            if ((!(fileInput.isAbsolute() && fileInput.exists())) || 
-                    (!(fileOutput.isAbsolute() && fileOutput.exists()))) {
+            if (selectedDirectories.size() == 0 || 
+            		(!(fileOutput.isAbsolute() && fileOutput.exists()))) {
                 return false;
             }
             
-            configurationData.setRoot(fileInput);
+            configurationData.setMultiRoots(selectedDirectories);
             
             HashSet<Events> selectedEvents = new HashSet<Events>();
             

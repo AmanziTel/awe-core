@@ -35,6 +35,7 @@ import org.amanzi.awe.gpeh.parser.GPEHFileNameWrapper;
 import org.amanzi.awe.gpeh.parser.Parameters;
 import org.amanzi.awe.gpeh.parser.internal.GPEHEvent;
 import org.amanzi.neo.loader.core.CommonConfigData;
+import org.amanzi.neo.loader.core.CommonConfigDataMulti;
 import org.amanzi.neo.loader.core.ProgressEventImpl;
 import org.amanzi.neo.loader.core.parser.CommonFilesParser;
 import org.amanzi.neo.loader.core.saver.ISaver;
@@ -76,7 +77,13 @@ public class GpehParser extends CommonFilesParser<GpehTransferData, CommonConfig
         CommonConfigData prop = getProperties();
         String descr = getDescriptionFormat();
         if (prop.getFileToLoad() == null) {
-            List<File> fileToLoad = getAllFiles(prop.getRoot());
+        	List<File> fileToLoad = null;
+        	if (prop.getRoot() == null) {
+        		fileToLoad = getAllFilesMulti(prop.getMultiRoots());
+        	}
+        	else {
+        		fileToLoad = getAllFiles(prop.getRoot());
+        	}
             prop.setFileToLoad(fileToLoad);
         }
         Collections.sort(prop.getFileToLoad(), new Comparator<File>() {
