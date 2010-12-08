@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.rmi.UnexpectedException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -438,7 +437,10 @@ public class GPEHParser {
     
     private static Long checkValue(Parameters parameter, long value) {
         if (parameter.firstBitIsError()) {
-            long mask = ~(0x1 << parameter.getBitsLen());
+            //LN, 8.12.2010, first convert to long
+            long one = 0x1;
+            long shift = parameter.getBitsLen();
+            long mask = ~(one << shift);
             long newValue = value & mask;
             
             if (newValue != value) {
