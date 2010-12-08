@@ -59,7 +59,7 @@ public class View extends ViewPart {
 			}
 		});
 	}
-
+	
 	public void setFocus() {
 		viewer.getControl().setFocus();
 	}
