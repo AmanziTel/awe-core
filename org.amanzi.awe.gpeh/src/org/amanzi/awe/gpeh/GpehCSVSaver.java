@@ -185,6 +185,7 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
 
     @Override
     public void finishUp(GpehTransferData element) {
+    	outputStream.println("Number of events = " + count);
         closeOpenFiles();
         afterLoading = System.currentTimeMillis();
         long timeOfLoading = afterLoading - beforeLoading;
@@ -228,8 +229,6 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
         }
         countOfLoadedFiles += openedFiles.size();
         openedFiles.clear();
-        
-        outputStream.println("Number of events = " + count);
     }
 
 }
