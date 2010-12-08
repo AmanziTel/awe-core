@@ -81,6 +81,34 @@ public abstract class CommonFilesParser<T extends IDataElement, C extends Common
             return result;
         }
     }
+    
+    /**
+     * Gets the all files multi
+     * 
+     * @param root the root
+     * @return the all files
+     */
+    protected List<File> getAllFilesMulti(List<File> roots) {
+    	List<File> result = new ArrayList<File>();
+    	List<File> tmp = new ArrayList<File>();
+    	
+    	for (File root : roots) {
+    		if (root.isDirectory()) {
+    			tmp = getAllFiles(root, getProperties().getFilter());
+    			for (File file : tmp) {
+        			result.add(file);
+        		}
+        		tmp = new ArrayList<File>();
+    		}
+    		else {
+    			if (getProperties().getFilter().accept(root)) {
+                    result.add(root);
+                }
+    		}
+    	}
+            
+    	return result;
+    }
 
     /**
      * Calculates list of files

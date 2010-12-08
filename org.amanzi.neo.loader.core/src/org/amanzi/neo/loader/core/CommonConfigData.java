@@ -33,6 +33,8 @@ public class CommonConfigData implements IConfigurationData {
     
     /** The root. */
     private File root;
+    /** The root. */
+    private List<File> roots;
     
     /** The file to load. */
     private List<File>fileToLoad;
@@ -108,6 +110,20 @@ public class CommonConfigData implements IConfigurationData {
     public void setRoot(File root) {
         this.root = root;
     }
+    
+	/**
+	 * @param roots the roots to set
+	 */
+	public void setMultiRoots(List<File> roots) {
+		this.roots = roots;
+	}
+
+	/**
+	 * @return the roots
+	 */
+	public List<File> getMultiRoots() {
+		return roots;
+	}
     
     /**
      * Gets the file to load.
