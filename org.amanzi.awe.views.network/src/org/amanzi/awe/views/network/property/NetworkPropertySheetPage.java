@@ -14,10 +14,15 @@ package org.amanzi.awe.views.network.property;
 
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.view.NetworkTreeView;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.ISelectionListener;
+import org.eclipse.ui.views.properties.PropertySheetEntry;
 import org.eclipse.ui.views.properties.PropertySheetPage;
 import org.neo4j.neoclipse.property.PropertyTransform;
 
@@ -31,6 +36,12 @@ import org.neo4j.neoclipse.property.PropertyTransform;
 public class NetworkPropertySheetPage extends PropertySheetPage implements ISelectionListener {
     
     private NetworkPropertySourceProvider provider;
+    
+    private ISelection selection;
+    
+    private Composite parent;
+    
+    private Action deleteAction;
     
     /**
      * Constructor. Sets SourceProvider for this Page 
@@ -50,6 +61,9 @@ public class NetworkPropertySheetPage extends PropertySheetPage implements ISele
     
     public void createControl(Composite parent) {
         super.createControl(parent);
+        
+        this.parent = parent;
+        
         createMenu(parent);
         getSite().getPage().addSelectionListener(NetworkTreeView.NETWORK_TREE_VIEW_ID, this);
     }
@@ -61,6 +75,11 @@ public class NetworkPropertySheetPage extends PropertySheetPage implements ISele
     private void createMenu( final Composite parent )
     {
         MenuManager menuManager = createNewSubmenu( parent );
+        
+        deleteAction = new DeleteAction(parent, this);
+        menuManager.add(new Separator());
+        menuManager.add(deleteAction);
+        
         Menu menu = menuManager.createContextMenu( getControl() );
         getControl().setMenu( menu );
     }
@@ -97,5 +116,53 @@ public class NetworkPropertySheetPage extends PropertySheetPage implements ISele
     
     public NeoNode getCurrentNode() {
         return provider.getLastRawObject();
+    }
+    
+    @Override
+    public void handleEntrySelection( final ISelection selection )
+    {
+        super.handleEntrySelection( selection );
+        this.selection = selection;
+        if ( selection instanceof IStructuredSelection )
+        {
+            IStructuredSelection ss = (IStructuredSelection) selection;
+            if ( ss.size() > 1 )
+            {
+                setRestrictedEnabled( false );
+                return;
+            }
+            Object firstElement = ss.getFirstElement();
+            if ( firstElement == null )
+            {
+                setRestrictedEnabled( false );
+                return;
+            }
+            if ( firstElement instanceof PropertySheetEntry )
+            {
+                PropertySheetEntry entry = (PropertySheetEntry) firstElement;
+                if ( entry.getEditor( parent ) == null )
+                {
+                    setRestrictedEnabled( false );
+                    return;
+                }
+            }
+        }
+        setRestrictedEnabled( true );
+    }
+    
+    /**
+     * Enable/disable actions that operate on an existing property.
+     * @param enabled
+     */
+    private void setRestrictedEnabled( final boolean enabled )
+    {
+        if ( deleteAction != null )
+        {
+            deleteAction.setEnabled( enabled );
+        }
+    }
+
+    public ISelection getSelection() { 
+        return selection;
     }
 }
