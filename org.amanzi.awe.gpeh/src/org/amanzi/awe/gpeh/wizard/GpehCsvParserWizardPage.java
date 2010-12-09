@@ -38,6 +38,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
+//TODO: LN: comments!!!!!
+
 /**
  * TODO Purpose of 
  * <p>

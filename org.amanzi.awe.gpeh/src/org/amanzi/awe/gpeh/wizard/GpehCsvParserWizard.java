@@ -24,6 +24,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
 
+//TODO: LN: comments!!!!!
+
 /**
  * TODO Purpose of 
  * <p>

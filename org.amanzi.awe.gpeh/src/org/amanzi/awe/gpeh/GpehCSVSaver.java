@@ -61,10 +61,12 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
                                     new SimpleDateFormat(SIMPLE_DATE_FORMAT);
     private PrintStream outputStream;
     
+    //TODO: LN: comments
     private long beforeLoading = 0, afterLoading = 0;
     private long startTimestamp = 0;
     private int countOfLoadedFiles = 0;
     
+    //TODO: remove testing variables
     //  FOR TESTING
     private long count = 0;
     @Override
@@ -219,6 +221,7 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
         return null;
     }
     
+    //TODO: LN: comments
     private void closeOpenFiles() {
         for (CsvFile csvFile : openedFiles.values()) {
             try {

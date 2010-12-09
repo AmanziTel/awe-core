@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.gpeh.filebrowser.prowider;
 
+//TODO: LN: comments!!!!
+
 /**
  * @author Kasnitskij_V
  * @since 1.0.0
@@ -25,6 +27,8 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 public class FileLabelProvider extends LabelProvider {
 	
+    //TODO: LN: instead of writing plugin ID, please add constant to GpehPlugin class and use it
+    //TODO: LN: move image names to constants
 	private static final Image folderImage = AbstractUIPlugin
 											.imageDescriptorFromPlugin("org.amanzi.awe.gpeh",
 											"icons/filebrowser/folder.png").createImage();
