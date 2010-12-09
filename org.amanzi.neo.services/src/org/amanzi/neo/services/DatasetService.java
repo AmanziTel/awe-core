@@ -37,6 +37,7 @@ import org.amanzi.neo.services.utils.Utils;
 import org.amanzi.neo.services.utils.Utils.FilterAND;
 import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.PropertyContainer;
@@ -68,8 +69,12 @@ public class DatasetService extends AbstractService {
     /**
      * should be used NeoServiceFactory for getting instance of DatasetService
      */
-    DatasetService() {
+    public DatasetService() {
         super();
+    }
+    
+    public DatasetService(GraphDatabaseService service) {
+        super(service);
     }
 
     // Constants for property names

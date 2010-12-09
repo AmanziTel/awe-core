@@ -190,8 +190,7 @@ public class NetworkLoader extends AbstractLoader {
         luceneInd = NeoServiceProviderUi.getProvider().getIndexService();
         addNetworkIndexes();
         
-        datasetService = new DatasetService();
-        datasetService.setGraphDatabaseService(neo);
+        datasetService = new DatasetService(neo);
     }
 
     /**
@@ -211,8 +210,7 @@ public class NetworkLoader extends AbstractLoader {
             luceneInd = indexService;
         }
         
-        datasetService = new DatasetService();
-        datasetService.setGraphDatabaseService(neo);
+        datasetService = new DatasetService(neo);
     }
 
     /**
