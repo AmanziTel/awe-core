@@ -138,6 +138,8 @@ public class NetworkLoader extends AbstractLoader {
     
     /** The sites type. */
     private NetworkSiteType sitesType;
+    
+    private DatasetService datasetService;
 
     /**
      * The Enum NetworkLevels.
@@ -172,6 +174,8 @@ public class NetworkLoader extends AbstractLoader {
         initializeKnownHeaders();
         luceneInd = NeoServiceProviderUi.getProvider().getIndexService();
         addNetworkIndexes();
+        
+        datasetService = NeoServiceFactory.getInstance().getDatasetService();
     }
 
     /**
@@ -185,6 +189,9 @@ public class NetworkLoader extends AbstractLoader {
         initializeKnownHeaders();
         luceneInd = NeoServiceProviderUi.getProvider().getIndexService();
         addNetworkIndexes();
+        
+        datasetService = new DatasetService();
+        datasetService.setGraphDatabaseService(neo);
     }
 
     /**
@@ -203,6 +210,9 @@ public class NetworkLoader extends AbstractLoader {
         } else {
             luceneInd = indexService;
         }
+        
+        datasetService = new DatasetService();
+        datasetService.setGraphDatabaseService(neo);
     }
 
     /**
