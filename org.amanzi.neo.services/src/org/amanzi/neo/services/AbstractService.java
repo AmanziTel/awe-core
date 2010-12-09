@@ -45,6 +45,8 @@ public abstract class AbstractService implements IDatabaseChangeListener {
 
     protected GraphDatabaseService databaseService;
     
+    private boolean updateService = true;
+    
     public AbstractService() {
         DatabaseManager.getInstance().addDatabaseChangeListener(this);
         this.databaseService = DatabaseManager.getInstance().getCurrentDatabaseService();
@@ -52,10 +54,13 @@ public abstract class AbstractService implements IDatabaseChangeListener {
     
     public AbstractService(GraphDatabaseService databaseService) {
         this.databaseService = databaseService;
+        updateService = false;
     }
     
     public void onDatabaseAccessChange() {
-        this.databaseService = DatabaseManager.getInstance().getCurrentDatabaseService();
+        if (updateService) {
+            this.databaseService = DatabaseManager.getInstance().getCurrentDatabaseService();
+        }
     }
     
     public IndexService getIndexService() {
