@@ -343,7 +343,6 @@ public class NetworkLoader extends AbstractLoader {
 	 * Save file structure.
 	 */
 	private void saveFileStructure() {
-		DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
 		Map<String,String> headers = new HashMap<String,String>();
 		StoringProperty storingProperty = storingProperties.get(storingProperties.keySet().iterator().next());
 		for(Map.Entry<String, Header> prop : storingProperty.getHeaders().headers.entrySet()){
@@ -357,11 +356,11 @@ public class NetworkLoader extends AbstractLoader {
 			
             if (propertyKey.endsWith("sector")) {
                 propertyKey = INeoConstants.PROPERTY_NAME_NAME;
-            }
+            }            
 
             headers.put(prefix + propertyKey, propOriginalName);
-		 }
-		ds.addOriginalHeaders(network, headers);
+		}
+		datasetService.addOriginalHeaders(network, headers);
 	}
 
 	/**
