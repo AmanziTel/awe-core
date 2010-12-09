@@ -175,7 +175,7 @@ public class NetworkLoader extends AbstractLoader {
         luceneInd = NeoServiceProviderUi.getProvider().getIndexService();
         addNetworkIndexes();
         
-        datasetService = NeoServiceFactory.getInstance().getDatasetService();
+        datasetService = new DatasetService(neo);
     }
 
     /**
