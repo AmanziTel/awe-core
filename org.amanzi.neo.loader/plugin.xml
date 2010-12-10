@@ -124,7 +124,7 @@
              id="org.amanzi.neo.wizards.NetworkSiteImportWizard"
              name="Import Network Site data">
           <description>
- 				Import a data file from the local file system into the project
+ 				Import one or more drive data log files into the project database
           </description>
        </wizard>  
         <wizard
@@ -134,7 +134,7 @@
              id="org.amanzi.neo.wizards.TemsImportWizard"
              name="Import Drive data">
           <description>
- 				Import a data file from the local file system into the project
+ 				Import one or more drive data log files into the project database
           </description>
        </wizard>
         <wizard
@@ -144,7 +144,7 @@
              id="org.amanzi.neo.wizards.GPEHImportWizard"
              name="Import Drive data">
           <description>
- 				Import a data file from the local file system into the project
+ 				Import one or more drive data log files into the project database
           </description>
        </wizard>
           
