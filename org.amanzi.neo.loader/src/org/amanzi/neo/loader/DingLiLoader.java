@@ -85,7 +85,7 @@ public class DingLiLoader extends DriveLoader {
      * @param dataset the dataset
      */
     private DingLiLoader(GraphDatabaseService neo, String filename, Display display, String dataset) {
-        driveType = DriveTypes.TEMS;
+        driveType = DriveTypes.DING_LI;
         initialize("DingLi", neo, filename, display, dataset);
         initializeLuceneIndex();
         addDriveIndexes();
