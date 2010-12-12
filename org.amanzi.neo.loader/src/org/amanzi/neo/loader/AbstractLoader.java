@@ -1801,8 +1801,15 @@ public abstract class AbstractLoader {
 
         public StoringProperty(Node storingNode) {
             // this.storingNode = storingNode;
-            if (storingNode != null)
+            if (storingNode != null){
                 dataCounter = (Long)storingNode.getProperty(INeoConstants.COUNT_TYPE_NAME, 0L);
+                if (storingNode.hasProperty(INeoConstants.MIN_TIMESTAMP)){
+                    timeStampMin = (Long)storingNode.getProperty(INeoConstants.MIN_TIMESTAMP);
+                }
+                if (storingNode.hasProperty(INeoConstants.MAX_TIMESTAMP)){
+                    timeStampMax = (Long)storingNode.getProperty(INeoConstants.MAX_TIMESTAMP);
+                }
+            }
         }
 
         /**

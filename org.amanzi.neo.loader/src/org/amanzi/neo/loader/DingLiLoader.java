@@ -35,6 +35,7 @@ import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 /**
@@ -268,8 +269,9 @@ public class DingLiLoader extends DriveLoader {
         Integer month = getIntegerValue(iterator);
         Integer day = getIntegerValue(iterator);
         _workDate.set(Calendar.YEAR, year);
-        _workDate.set(Calendar.MONTH, month);
+        _workDate.set(Calendar.MONTH, month-1);//Pechko_E: month is from 1 to 12 in Dingli DT files
         _workDate.set(Calendar.DAY_OF_MONTH, day);
+        System.out.println("day: "+day+"\t"+_workDate.getTimeInMillis());
 
     }
 
@@ -312,6 +314,15 @@ public class DingLiLoader extends DriveLoader {
      */
     @Override
     protected Node getStoringNode(Integer key) {
+        if (datasetNode == null) {
+            Transaction tx = neo.beginTx();
+            try {
+                datasetNode = findOrCreateDatasetNode(neo.getReferenceNode(), dataset);
+                tx.success();
+            } finally {
+                tx.finish();
+            }
+        }
         return datasetNode;
     }
 
