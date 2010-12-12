@@ -819,6 +819,22 @@ public class DatasetService extends AbstractService {
     }
 
     /**
+     * Gets the traverser by all child of necessary project
+     * 
+     * @param projectName the project name
+     * @return the traverser
+     */
+    public org.neo4j.graphdb.traversal.Traverser getRoots(final Node projectNode, Predicate<Path> additionalFilter) {
+        FilterAND filter = new FilterAND();
+        filter.addFilter(Traversal.returnAllButStartNode());
+        filter.addFilter(additionalFilter);
+
+        TraversalDescription td = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1)).filter(filter).relationships(
+                GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING);
+        return td.traverse(projectNode);
+    }
+
+    /**
      * Gets the node type.
      * 
      * @param type the node type id
