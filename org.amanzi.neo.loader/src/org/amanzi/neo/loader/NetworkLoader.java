@@ -35,7 +35,6 @@ import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.GisTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
@@ -351,12 +350,14 @@ public class NetworkLoader extends AbstractLoader {
             String propertyKey = prop.getKey();
             String propOriginalName = prop.getValue().name;
 
-            if (propertyKey.endsWith(INeoConstants.PROPERTY_LAT_NAME) || propertyKey.endsWith(INeoConstants.PROPERTY_LON_NAME))
+            if (propertyKey.endsWith(INeoConstants.PROPERTY_LAT_NAME) || propertyKey.endsWith(INeoConstants.PROPERTY_LON_NAME)) {
 				prefix = INeoConstants.SITE_PROPERTY_NAME_PREFIX;
-			
-            if (propertyKey.endsWith("sector")) {
+            } else if (propertyKey.endsWith("sector")) {
                 propertyKey = INeoConstants.PROPERTY_NAME_NAME;
-            }            
+            } else if (propertyKey.endsWith(NodeTypes.BSC.getId())) {
+                propertyKey = INeoConstants.PROPERTY_NAME_NAME;
+                prefix = INeoConstants.BSC_PROPERTY_NAME_PREFIX;
+            }
 
             headers.put(prefix + propertyKey, propOriginalName);
 		}
@@ -700,8 +701,8 @@ public class NetworkLoader extends AbstractLoader {
                 siteName = siteField;
                 debug("New site: " + siteName);
                 Node siteRoot = bsc == null ? (city == null ? network : city) : bsc;
-                Node newSite = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(getNetworkNode(),
-                        INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteName);
+                Node newSite = luceneInd
+                        .getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(getNetworkNode(), INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteName);
                 if (newSite != null) {
                     Relationship relation = newSite.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING);
                     Node oldRoot = relation.getOtherNode(newSite);

@@ -199,4 +199,5 @@ public class INeoConstants {
     
 	public static final String SECTOR_PROPERTY_NAME_PREFIX = "sector.property.name_";
 	public static final String SITE_PROPERTY_NAME_PREFIX = "site.property.name_";
+    public static final String BSC_PROPERTY_NAME_PREFIX = "bsc.property.name_";
 }

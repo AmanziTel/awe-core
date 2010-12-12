@@ -35,7 +35,6 @@ import org.amanzi.awe.gpeh.parser.GPEHFileNameWrapper;
 import org.amanzi.awe.gpeh.parser.Parameters;
 import org.amanzi.awe.gpeh.parser.internal.GPEHEvent;
 import org.amanzi.neo.loader.core.CommonConfigData;
-import org.amanzi.neo.loader.core.CommonConfigDataMulti;
 import org.amanzi.neo.loader.core.ProgressEventImpl;
 import org.amanzi.neo.loader.core.parser.CommonFilesParser;
 import org.amanzi.neo.loader.core.saver.ISaver;
@@ -252,7 +251,7 @@ public class GpehParser extends CommonFilesParser<GpehTransferData, CommonConfig
         GpehTransferData data = new GpehTransferData();
         data.put(GpehTransferData.PROJECT, properties.getProjectName());
         data.put(GpehTransferData.DATASET, properties.getDbRootName());
-        String outputDirectory = properties.getAdditionalProperties().get(GpehTransferData.OUTPUT_DIRECTORY).toString();
+        String outputDirectory = (String)properties.getAdditionalProperties().get(GpehTransferData.OUTPUT_DIRECTORY);
         if (outputDirectory != null) {
             data.put(GpehTransferData.OUTPUT_DIRECTORY, outputDirectory);
         }

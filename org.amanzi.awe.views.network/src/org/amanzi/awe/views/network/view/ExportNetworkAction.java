@@ -196,6 +196,8 @@ public class ExportNetworkAction extends Action {
                             // writePrefix = "SITE_";
                         }else if(headerType.equals(NodeTypes.SECTOR.getId())){
                         	parcePrefix = INeoConstants.SECTOR_PROPERTY_NAME_PREFIX;
+                        } else if (headerType.equals(NodeTypes.BSC.getId())) {
+                            parcePrefix = INeoConstants.BSC_PROPERTY_NAME_PREFIX;
                         }
                         if (propertyCol != null) {
                             for (String propertyName : propertyCol) {
