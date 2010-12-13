@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Ericsson
+Bundle-SymbolicName: org.amanzi.awe.afp.ericsson
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: org.amanzi.awe.afp.ericsson.Activator
+Require-Bundle: org.eclipse.core.runtime
+Eclipse-LazyStart: true
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
