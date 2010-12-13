@@ -429,10 +429,27 @@ public class GPEHParser {
             return new Pair<Object, Integer>(result.left(), result.right());
         case BITARRAY:
             return new Pair<Object, Integer>(readBitArray(input, bitsLen), bitsLen);
+        case DECIMAL_HEX:
+            Long decimalValue = checkDecimalHex(parameter, input);
+            return new Pair<Object, Integer>(decimalValue, bitsLen); 
         default:
             break;
         }
         return null;
+    }
+    
+    private static Long checkDecimalHex(Parameters parameter, BitInputStream inputStream) throws IOException {
+        int length = parameter.getBitsLen();
+        long value = 0;
+        while (length > 0) {
+            int digit = inputStream.readRawUInt(4);
+            value *= 10;
+            value += digit;            
+            
+            length -= 4;
+        }
+        
+        return value;
     }
     
     private static Long checkValue(Parameters parameter, long value) {
