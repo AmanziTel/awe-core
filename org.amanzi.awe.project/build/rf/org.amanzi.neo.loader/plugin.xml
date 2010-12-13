@@ -38,14 +38,7 @@
              categoryId="org.amanzi.neo.loader.commands.category"
              id="org.amanzi.neo.loader.commands.LoadTransmission"
              name="Load Transmission Data">
-       </command>
-       <command
-             categoryId="org.amanzi.neo.loader.commands.category"
-             id="org.amanzi.neo.loader.commands.LoadGPEHHandler"
-             name="Load OSS Data">
-                       <commandParameter id="org.amanzi.neo.loader.commands.addtoselect" name="add to select" optional="true">
-        </commandParameter>
-       </command>   
+       </command>       
     </extension>
     <extension
           point="org.eclipse.ui.handlers">
@@ -56,10 +49,6 @@
        <handler
              class="org.amanzi.neo.loader.handlers.LoadNetworkSiteHandler"
              commandId="org.amanzi.neo.loader.commands.LoadNetworkSite">
-       </handler>
-       <handler
-             class="org.amanzi.neo.loader.handlers.LoadGPEHHandler"
-             commandId="org.amanzi.neo.loader.commands.LoadGPEHHandler">
        </handler>
        <handler
              class="org.amanzi.neo.loader.handlers.LoadDriveHandler"
@@ -86,13 +75,7 @@
             icon="icons/16/network_site.png"
             id="org.amanzi.neo.loader.LoadNetworkSite"
                    tooltip="Load Network Data">
-             </command>
-             <command
-                   commandId="org.amanzi.neo.loader.commands.LoadGPEHHandler"
-            icon="icons/16/delta_network.png"
-            id="org.amanzi.neo.loader.LoadGPEH"
-                   tooltip="Load OSS Data">
-             </command>
+             </command>            
              <command
                    commandId="org.amanzi.neo.loader.commands.LoadDrive"
             icon="icons/16/drive.png"
