@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.views.network.view;
 
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -26,8 +27,8 @@ import org.amanzi.neo.services.ui.IconManager;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
 import org.amanzi.neo.services.ui.NeoUtils;
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -60,6 +61,7 @@ import org.neo4j.helpers.Predicate;
 
 /**
  * <p>
+ * First page of export network wizard.
  * </p>
  * 
  * @author NiCK
@@ -69,25 +71,23 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
 
     private FileFieldEditor editor;
     private Group main;
-
-    private String fileName;
+    private String fileName = "";
     private TreeViewer viewer;
     private Node selectedNode;
-
     private final List<TreeNeoNode> elements = new LinkedList<TreeNeoNode>();
-    // private final GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
     private final DatasetService service = NeoServiceFactory.getInstance().getDatasetService();
     private final IStructuredSelection selection;
 
     /**
-     * @param pageName
-     * @param selection
+     * Instantiates a new export network wizard selection page.
+     * 
+     * @param pageName the page name
+     * @param selection the selection
      */
     protected ExportNetworkWizardSelectionPage(String pageName, IStructuredSelection selection) {
-        // super(pageName);
-        super(pageName, "Export network", null);
+        super(pageName, "Choose network that should be exported and target file for export", null);
         this.selection = selection;
-        setDescription("Choose network that should be exported");
+        setDescription("");
         setPageComplete(false);
     }
 
@@ -120,12 +120,12 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
                 ExportNetworkWizardColumnsConfigPage nextPage = (ExportNetworkWizardColumnsConfigPage)getNextPage();
                 if (element.getType() == NodeTypes.NETWORK) {
                     selectedNode = element.getNode();
-					nextPage.changeNodeSelection(selectedNode);
+                    nextPage.changeNodeSelection(selectedNode);
                 } else {
                     selectedNode = null;
                 }
-                setPageComplete(isValidPage());
-                
+                validate();
+
             }
         });
 
@@ -142,47 +142,64 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
             }
         }
 
-        editor = new FileFieldEditor("fileSelectNeighb", "File", main); // NON-NLS-1 //$NON-NLS-1$
+        editor = new FileFieldEditor("fileSelectNeighb", "File", main);
 
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 setFileName(editor.getStringValue());
             }
         });
+
         setControl(main);
     }
 
+    /**
+     * Sets the file name.
+     * 
+     * @param fileName the new file name
+     */
     protected void setFileName(String fileName) {
         this.fileName = fileName;
-        setPageComplete(isValidPage());
+        validate();
     }
 
     /**
-     * @return fileName
+     * Gets the file name.
+     * 
+     * @return the file name
      */
     public String getFileName() {
         return this.fileName;
     }
 
     /**
-     * @return selectedNode
+     * Gets the selected node.
+     * 
+     * @return the selected node
      */
     public Node getSelectedNode() {
         return this.selectedNode;
     }
 
     /**
-     * @return
+     * The Class TreeNeoNode.
      */
-    protected boolean isValidPage() {
-        return selectedNode != null && StringUtils.isNotEmpty(fileName);
-    }
-
     static class TreeNeoNode implements IAdaptable {
+
+        /** The name. */
         private String name;
+
+        /** The node. */
         private final Node node;
+
+        /** The type. */
         private NodeTypes type;
 
+        /**
+         * Instantiates a new tree neo node.
+         * 
+         * @param node the node
+         */
         public TreeNeoNode(Node node) {
 
             this.node = node;
@@ -191,12 +208,20 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
         }
 
         /**
-         * @return node name
+         * Gets the name.
+         * 
+         * @return the name
          */
         public String getName() {
             return name;
         }
 
+        /**
+         * Gets the parent.
+         * 
+         * @param service the service
+         * @return the parent
+         */
         public TreeNeoNode getParent(final DatasetService service) {
             if (isRootNode())
                 return null;
@@ -205,14 +230,20 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
         }
 
         /**
-         *checks node - is root node
+         * Checks if is root node.
          * 
-         * @return
+         * @return true, if is root node
          */
         private boolean isRootNode() {
             return type == NodeTypes.AWE_PROJECT;
         }
 
+        /**
+         * Gets the children.
+         * 
+         * @param service the service
+         * @return the children
+         */
         public TreeNeoNode[] getChildren(final DatasetService service) {
 
             Iterable<Node> networks = service.getRoots(node, new Predicate<Path>() {
@@ -247,6 +278,8 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
         }
 
         /**
+         * Gets the node.
+         * 
          * @return Returns the node.
          */
         public Node getNode() {
@@ -254,6 +287,8 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
         }
 
         /**
+         * Gets the type.
+         * 
          * @return Returns the type.
          */
         public NodeTypes getType() {
@@ -261,8 +296,10 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
         }
 
         /**
-         * @param service
-         * @return
+         * Checks for children.
+         * 
+         * @param service the service
+         * @return true, if successful
          */
         public boolean hasChildren(final DatasetService service) {
             Iterable<Node> networks = service.getRoots(node, new Predicate<Path>() {
@@ -307,7 +344,7 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
         }
 
         /**
-         *
+         * Refresh.
          */
         public void refresh() {
             name = NeoUtils.getNodeName(node);
@@ -320,6 +357,7 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
      * <p>
      * filter tree label provider
      * </p>
+     * .
      * 
      * @author Cinkel_A
      * @since 1.0.0
@@ -341,8 +379,18 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
         }
     }
 
+    /**
+     * The Class ViewContentProvider.
+     */
     class ViewContentProvider implements IStructuredContentProvider, ITreeContentProvider {
 
+        /**
+         * Input changed.
+         * 
+         * @param v the v
+         * @param oldInput the old input
+         * @param newInput the new input
+         */
         public void inputChanged(Viewer v, Object oldInput, Object newInput) {
             if (newInput == null) {
                 elements.clear();
@@ -358,13 +406,28 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
 
         }
 
+        /**
+         * Dispose.
+         */
         public void dispose() {
         }
 
+        /**
+         * Gets the elements.
+         * 
+         * @param parent the parent
+         * @return the elements
+         */
         public Object[] getElements(Object parent) {
             return elements.toArray(new TreeNeoNode[0]);
         }
 
+        /**
+         * Gets the parent.
+         * 
+         * @param child the child
+         * @return the parent
+         */
         public Object getParent(Object child) {
             if (child instanceof TreeNeoNode) {
                 return ((TreeNeoNode)child).getParent(service);
@@ -372,6 +435,12 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
             return null;
         }
 
+        /**
+         * Gets the children.
+         * 
+         * @param parent the parent
+         * @return the children
+         */
         public Object[] getChildren(Object parent) {
             if (parent instanceof TreeNeoNode) {
                 return ((TreeNeoNode)parent).getChildren(service);
@@ -379,12 +448,48 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
             return new Object[0];
         }
 
+        /**
+         * Checks for children.
+         * 
+         * @param parent the parent
+         * @return true, if successful
+         */
         public boolean hasChildren(Object parent) {
             if (parent instanceof TreeNeoNode)
                 return ((TreeNeoNode)parent).hasChildren(service);
             return false;
         }
 
+    }
+
+    /**
+     * Validate page content.
+     */
+    private void validate() {
+        if (selectedNode == null) {
+            setMessage("No network selected.", DialogPage.ERROR);
+            setPageComplete(false);
+            return;
+        }
+        if (fileName.isEmpty()) {
+            setPageComplete(false);
+            setMessage("Target file is not selected.", DialogPage.ERROR);
+            return;
+        }
+        if (!new File(fileName).isAbsolute() || new File(fileName).isDirectory()) {
+            setPageComplete(false);
+            setMessage(String.format("File path '%s' is not valid.", fileName), DialogPage.ERROR);
+            return;
+        }
+
+        if (new File(fileName).isFile()) {
+            setPageComplete(true);
+            setMessage(String.format("File path '%s' is already exist.", fileName), DialogPage.WARNING);
+            return;
+        }
+
+        setMessage("", DialogPage.NONE);
+        setPageComplete(true);
     }
 
 }

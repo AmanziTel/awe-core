@@ -18,6 +18,8 @@ import java.util.Set;
 
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -28,14 +30,16 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * The third page of network export wizard
  * </p>
+ * .
+ * 
  * @author NiCK
  * @since 1.0.0
  */
 public class ExportNetworkWizardFilePropertyPage extends WizardPage {
+
     public static final String SPACE = "SPACE";
     public static final String TAB = "TAB";
     private Group main;
@@ -60,15 +64,9 @@ public class ExportNetworkWizardFilePropertyPage extends WizardPage {
         setDescription("Select CSV properties");
         charsetValue = charset;
         fieldDelValue = fieldDel;
-
         textDelValue = textDel;
     }
 
-    /**
-     * Creates the control.
-     * 
-     * @param parent the parent
-     */
     @Override
     public void createControl(Composite parent) {
         main = new Group(parent, SWT.FILL);
@@ -83,7 +81,7 @@ public class ExportNetworkWizardFilePropertyPage extends WizardPage {
         label = new Label(main, SWT.LEFT);
         label.setText("Field delimeter");
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
-        fieldDel = new Combo(main, SWT.BORDER);
+        fieldDel = new Combo(main, SWT.BORDER | SWT.READ_ONLY);
         fieldDel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
         label = new Label(main, SWT.LEFT);
         label.setText("Text delimeter");
@@ -111,6 +109,7 @@ public class ExportNetworkWizardFilePropertyPage extends WizardPage {
                 widgetSelected(e);
             }
         });
+
         fieldDel.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -128,22 +127,18 @@ public class ExportNetworkWizardFilePropertyPage extends WizardPage {
                 widgetSelected(e);
             }
         });
-        textDel.addSelectionListener(new SelectionListener() {
+
+        textDel.addModifyListener(new ModifyListener() {
 
             @Override
-            public void widgetSelected(SelectionEvent e) {
+            public void modifyText(ModifyEvent e) {
                 textDelValue = textDel.getText();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                widgetSelected(e);
             }
         });
     }
 
     /**
-     * Inits
+     * Inits.
      */
     private void init() {
         Set<String> set = Charset.availableCharsets().keySet();

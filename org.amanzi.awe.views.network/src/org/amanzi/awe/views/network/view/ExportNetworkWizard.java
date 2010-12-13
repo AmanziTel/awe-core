@@ -13,26 +13,21 @@
 
 package org.amanzi.awe.views.network.view;
 
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
-import java.util.regex.Pattern;
 
+import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.services.DatasetService;
-import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
-import org.amanzi.neo.services.statistic.IPropertyHeader;
-import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -55,34 +50,45 @@ import org.neo4j.kernel.Traversal;
 import au.com.bytecode.opencsv.CSVWriter;
 
 /**
- * TODO Purpose of
  * <p>
+ * Wizard for export network to csv file
  * </p>
+ * .
  * 
  * @author NiCK
  * @since 1.0.0
  */
 public class ExportNetworkWizard extends Wizard implements IExportWizard {
+
+    /** The selection page. */
     ExportNetworkWizardSelectionPage selectionPage = null;
+
+    /** The column config page. */
     ExportNetworkWizardColumnsConfigPage columnConfigPage = null;
+
+    /** The file property page. */
     ExportNetworkWizardFilePropertyPage filePropertyPage = null;
+
     private IStructuredSelection selection;
 
     @Override
     public boolean performFinish() {
-        try {
         final String fileSelected = selectionPage.getFileName();
-            final String separator = getSeparator();
+        final String separator = getSeparator();
+        final String quoteChar = getQuoteChar();
+        final String charSet = filePropertyPage.getCharsetValue();
         final Node rootNode = selectionPage.getSelectedNode();
+        final Map<String, Map<String, String>> propertyMap = columnConfigPage.getPropertyMap();
+
         Job exportJob = new Job("Network export") {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-
-                        runExport(fileSelected, rootNode, separator);
-
+                    runExport(fileSelected, propertyMap, rootNode, separator, quoteChar, charSet);
                     return Status.OK_STATUS;
+                } catch (IOException e) {
+                    return new Status(Status.ERROR, NetworkTreePlugin.PLUGIN_ID, e.getLocalizedMessage(), e);
                 } finally {
                     // ActionUtil.getInstance().runTask(new Runnable() {
                     //
@@ -96,26 +102,23 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
             }
         };
         exportJob.schedule();
-        } catch (Exception e) {
-            e.printStackTrace();
-            displayErrorMessage(e);
-            return false;
-        }
         return true;
     }
 
     /**
-     * @param v
-     * @return
+     * Gets the quote char.
+     * 
+     * @return the quote char
      */
-    private boolean needQuote(String v) {
-        return !Pattern.matches("\\d*\\.{0,1}\\d*", v);
-    }
-
     private String getQuoteChar() {
         return filePropertyPage.getTextDelValue();
     }
 
+    /**
+     * Gets the separator.
+     * 
+     * @return the separator
+     */
     private String getSeparator() {
         return filePropertyPage.getFieldDelValue();
     }
@@ -127,7 +130,7 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
             selectionPage = new ExportNetworkWizardSelectionPage("mainPage", selection);
         }
         if (columnConfigPage == null) {
-        	columnConfigPage = new ExportNetworkWizardColumnsConfigPage("columnConfigPage");
+            columnConfigPage = new ExportNetworkWizardColumnsConfigPage("columnConfigPage");
         }
         if (filePropertyPage == null) {
             filePropertyPage = new ExportNetworkWizardFilePropertyPage("propertyCSV", "UTF-8", "\t", "\"");
@@ -139,12 +142,13 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
+        setNeedsProgressMonitor(false);
         this.selection = selection;
         setWindowTitle("Export Network");
     }
 
     /**
-     * Displays error message instead of throwing an exception
+     * Displays error message instead of throwing an exception.
      * 
      * @param e exception thrown
      */
@@ -164,11 +168,16 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
      * Run export.
      * 
      * @param fileSelected the file selected
-     * @param rootNode
-     * @param separator
+     * @param propertyMap the property map
+     * @param rootNode the root node
+     * @param separator the separator
+     * @param quoteChar the quote char
+     * @param charSet the char set
+     * @throws IOException
      */
-    private void runExport(final String fileSelected, Node rootNode, String separator) {
-        IPropertyHeader stat = PropertyHeader.getPropertyStatistic(rootNode);
+    private void runExport(final String fileSelected, final Map<String, Map<String, String>> propertyMap, Node rootNode, String separator, String quoteChar,
+            String charSet) throws IOException {
+
         DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
         String[] strtypes = datasetService.getSructureTypesId(rootNode);
         List<String> headers = new ArrayList<String>();
@@ -177,27 +186,8 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
             headers.add(strtypes[i]);
         }
 
-        HashMap<String, Collection<String>> propertyMap = new HashMap<String, Collection<String>>();
-        Map<String, String> originalHeaders = datasetService.getOriginalFileHeaders(rootNode);
         TraversalDescription descr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
                 .filter(Traversal.returnAllButStartNode());
-        for (Path path : descr.traverse(rootNode)) {
-            Node node = path.endNode();
-            INodeType type = datasetService.getNodeType(node);
-            if (type != null && headers.contains(type.getId())) {
-                Collection<String> coll = propertyMap.get(type.getId());
-                if (coll == null) {
-                    coll = new TreeSet<String>();
-                    propertyMap.put(type.getId(), coll);
-                }
-                for (String propertyName : node.getPropertyKeys()) {
-                    if (INeoConstants.PROPERTY_TYPE_NAME.equals(propertyName)) {
-                        continue;
-                    }
-                    coll.add(propertyName);
-                }
-            }
-        }
         descr = descr.filter(new Predicate<Path>() {
 
             @Override
@@ -208,66 +198,51 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         Iterator<Path> iter = descr.traverse(rootNode).iterator();
         List<String> fields = new ArrayList<String>();
         if (fileSelected != null) {
-            try {
 
-                String ext = "";
+            String ext = "";
 
-                String extention = LoaderUtils.getFileExtension(fileSelected);
-                if (extention.equals("")) {
-                    ext = ".csv";
-                } else if (extention.equals(".")) {
-                    ext = "csv";
-                }
-
-                CSVWriter writer = new CSVWriter(new FileWriter(fileSelected + ext));
-                try {
-                    for (String headerType : headers) {
-                        Collection<String> propertyCol = propertyMap.get(headerType);
-                        String parcePrefix = "";
-                        String writePrefix = "";
-                        if (headerType.equals(NodeTypes.SITE.getId())) {
-                            parcePrefix = INeoConstants.SITE_PROPERTY_NAME_PREFIX;
-                            // writePrefix = "SITE_";
-                        } else if (headerType.equals(NodeTypes.SECTOR.getId())) {
-                            parcePrefix = INeoConstants.SECTOR_PROPERTY_NAME_PREFIX;
-                        } else if (headerType.equals(NodeTypes.BSC.getId())) {
-                            parcePrefix = INeoConstants.BSC_PROPERTY_NAME_PREFIX;
-                        }
-                        if (propertyCol != null) {
-                            for (String propertyName : propertyCol) {
-                                // fields.add(new
-                                // StringBuilder(headerType).append("_").append(propertyName).toString());
-                                fields.add(originalHeaders.get(parcePrefix + propertyName) == null ? writePrefix + propertyName : writePrefix
-                                        + originalHeaders.get(parcePrefix + propertyName));
-                            }
-                        }
-                    }
-
-                    writer.writeNext(fields.toArray(new String[0]));
-                    while (iter.hasNext()) {
-                        fields.clear();
-                        Path path = iter.next();
-                        for (Node node : path.nodes()) {
-                            INodeType nodeType = datasetService.getNodeType(node);
-                            if (nodeType == NodeTypes.NETWORK) {
-                                continue;
-                            }
-                            Collection<String> propertyCol = propertyMap.get(nodeType.getId());
-                            if (propertyCol != null) {
-                                for (String propertyName : propertyCol) {
-                                    fields.add(String.valueOf(node.getProperty(propertyName, "")));
-                                }
-                            }
-                        }
-                        writer.writeNext(fields.toArray(new String[0]));
-                    }
-                } finally {
-                    writer.close();
-                }
-            } catch (IOException e) {
-                // TODO Handle IOException
-                throw (RuntimeException)new RuntimeException().initCause(e);
+            String extention = LoaderUtils.getFileExtension(fileSelected);
+            if (extention.equals("")) {
+                ext = ".csv";
+            } else if (extention.equals(".")) {
+                ext = "csv";
             }
+
+            char separatorChar = separator.charAt(0);
+            char quote = quoteChar.isEmpty() ? CSVWriter.NO_QUOTE_CHARACTER : quoteChar.charAt(0);
+            CSVWriter writer = new CSVWriter(new OutputStreamWriter(new FileOutputStream(fileSelected + ext), charSet), separatorChar, quote);
+
+            try {
+                for (String headerType : headers) {
+                    Map<String, String> propertyCol = propertyMap.get(headerType);
+
+                    for (String col : propertyCol.values()) {
+                        fields.add(col);
+                    }
+                }
+
+                writer.writeNext(fields.toArray(new String[0]));
+                while (iter.hasNext()) {
+                    fields.clear();
+                    Path path = iter.next();
+                    for (Node node : path.nodes()) {
+                        INodeType nodeType = datasetService.getNodeType(node);
+                        if (nodeType == NodeTypes.NETWORK) {
+                            continue;
+                        }
+                        Map<String, String> propertyCol = propertyMap.get(nodeType.getId());
+                        if (propertyCol != null) {
+                            for (String propertyName : propertyCol.keySet()) {
+                                fields.add(String.valueOf(node.getProperty(propertyName, "")));
+                            }
+                        }
+                    }
+                    writer.writeNext(fields.toArray(new String[0]));
+                }
+            } finally {
+                writer.close();
+            }
+
         }
     }
 }
