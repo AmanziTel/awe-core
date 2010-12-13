@@ -64,6 +64,7 @@ import au.com.bytecode.opencsv.CSVWriter;
  */
 public class ExportNetworkWizard extends Wizard implements IExportWizard {
     ExportNetworkWizardSelectionPage selectionPage = null;
+    ExportNetworkWizardColumnsConfigPage columnConfigPage = null;
     ExportNetworkWizardFilePropertyPage filePropertyPage = null;
     private IStructuredSelection selection;
 
@@ -125,11 +126,14 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         if (selectionPage == null) {
             selectionPage = new ExportNetworkWizardSelectionPage("mainPage", selection);
         }
+        if (columnConfigPage == null) {
+        	columnConfigPage = new ExportNetworkWizardColumnsConfigPage("columnConfigPage");
+        }
         if (filePropertyPage == null) {
-            // TODO add load/store common values in memento/preference
             filePropertyPage = new ExportNetworkWizardFilePropertyPage("propertyCSV", "UTF-8", "\t", "\"");
         }
         addPage(selectionPage);
+        addPage(columnConfigPage);
         addPage(filePropertyPage);
     }
 

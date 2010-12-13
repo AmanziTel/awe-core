@@ -1440,9 +1440,6 @@ public class DatasetService extends AbstractService {
         Node filePropertiesNode = singleRelationship.getEndNode();
         for (String key : filePropertiesNode.getPropertyKeys()) {
             String value = (String)filePropertiesNode.getProperty(key, "");
-            // if (!value.isEmpty() && !value.equals("Id")) {
-            // System.out.println("OLOLO");
-            // }
             result.put(key, value);
         }
         return result;

@@ -93,7 +93,6 @@ public class ExportNetworkWizardFilePropertyPage extends WizardPage {
         addListeners();
         init();
         setControl(main);
-
     }
 
     /**

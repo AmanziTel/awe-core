@@ -117,12 +117,15 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
                     return;
                 }
                 TreeNeoNode element = (TreeNeoNode)selection.getFirstElement();
+                ExportNetworkWizardColumnsConfigPage nextPage = (ExportNetworkWizardColumnsConfigPage)getNextPage();
                 if (element.getType() == NodeTypes.NETWORK) {
                     selectedNode = element.getNode();
+					nextPage.changeNodeSelection(selectedNode);
                 } else {
                     selectedNode = null;
                 }
                 setPageComplete(isValidPage());
+                
             }
         });
 
@@ -147,13 +150,8 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
             }
         });
         setControl(main);
-        // viewer.setSelection(new StructuredSelection(new
-        // TreeNeoNode(spreadsheet.getUnderlyingNode())), true);
     }
 
-    /**
-     * @param fileName
-     */
     protected void setFileName(String fileName) {
         this.fileName = fileName;
         setPageComplete(isValidPage());

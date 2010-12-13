@@ -31,8 +31,6 @@ import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
-import org.amanzi.neo.services.statistic.IPropertyHeader;
-import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -66,7 +64,8 @@ import au.com.bytecode.opencsv.CSVWriter;
  */
 public class ExportNetworkAction extends Action {
 
-    public void run() {
+    @Override
+	public void run() {
         // TODO init
         IWorkbench workbench = null;
 
@@ -149,7 +148,7 @@ public class ExportNetworkAction extends Action {
 	 * @param rootNode 
 	 */
 	protected void runExport(final String fileSelected, Node rootNode) {
-		IPropertyHeader stat = PropertyHeader.getPropertyStatistic(rootNode);
+		
         DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
         String[] strtypes = datasetService.getSructureTypesId(rootNode);
         List<String> headers = new ArrayList<String>();
