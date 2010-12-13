@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.neo.loader.AbstractLoader.PropertyMapper;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.INeoConstants;
@@ -91,6 +92,7 @@ public class DingLiLoader extends DriveLoader {
         initializeLuceneIndex();
         addDriveIndexes();
         headers = getHeaderMap(1).headers;
+        addKnownHeader(1, "event_type", "EventInfo",false);
         possibleFieldSepRegexes = new String[] {"\t"};
         _workDate = Calendar.getInstance();
         // rounded to begin of day
@@ -289,6 +291,9 @@ public class DingLiLoader extends DriveLoader {
             String field = iterator.next();
             if(ignoreHex && field.contains("HexContent")) {
                 ignoreHeaders.add(event);
+            }
+            if (field.equalsIgnoreCase("EventInfo")){
+                field="event_id";
             }
             properties.add(field);
         }
