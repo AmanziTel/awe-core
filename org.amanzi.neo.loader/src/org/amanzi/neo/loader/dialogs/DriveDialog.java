@@ -82,8 +82,12 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Traverser;
+import org.neo4j.kernel.EmbeddedGraphDatabase;
+import org.neo4j.kernel.impl.nioneo.store.PropertyStore;
 
 /**
  * Dialog for Loading drive test data
@@ -705,6 +709,11 @@ public class DriveDialog {
 		if (monitor == null) {
 			monitor = new NullProgressMonitor();
 		}
+        GraphDatabaseService graphDb = NeoServiceProviderUi.getProvider().getService();
+        long nodesBefore = checkStoreCounts(graphDb, "nodes", Node.class);
+        long relsBefore = checkStoreCounts(graphDb, "relationships", Relationship.class);
+        long propsBefore = checkStoreCounts(graphDb, "properties", PropertyStore.class);
+
 		monitor.beginTask("Importing " + loadedFiles.size() + " drive test files", loadedFiles.size() * DriveLoader.WORKED_PER_FILE);
         DriveLoader driveLoader = null;
         long memBefore = calculateMemoryUsage();
@@ -768,9 +777,13 @@ public class DriveDialog {
 		        maxMem = mem;
 		    }
 		}
-        NeoLoaderPlugin.info("\t"+memText(memAfter, memBefore));
-        NeoLoaderPlugin.info("Transient  memory change: "+memText(maxMem, memBefore));
-        NeoLoaderPlugin.info("Persistent memory change: "+memText(memAfter, memBefore));
+        NeoLoaderPlugin.info("\t" + memText(memAfter, memBefore));
+        NeoLoaderPlugin.info("Transient  memory change: " + memText(maxMem, memBefore));
+        NeoLoaderPlugin.info("Persistent memory change: " + memText(memAfter, memBefore));
+
+        checkStoreCounts(graphDb, "nodes", nodesBefore, Node.class);
+        checkStoreCounts(graphDb, "relationships", relsBefore, Relationship.class);
+        checkStoreCounts(graphDb, "properties", propsBefore, PropertyStore.class);
 
         if(driveLoader!=null) {
             driveLoader.addLayersToMap();
@@ -1001,6 +1014,28 @@ public class DriveDialog {
 	private static String memText(long memAfter, long memBefore){
         return ""+(memAfter - memBefore)+" ("+(int)((memAfter - memBefore)/(1024*1024))+"MB)";
 	}
+	
+    private static long checkStoreCounts(GraphDatabaseService graphDb, String name, long before, Class< ? > type) {
+        long after = ((EmbeddedGraphDatabase)graphDb).getConfig().getGraphDbModule().getNodeManager().getNumberOfIdsInUse(type);
+        double fourB = 256.0 * 256.0 * 256.0 * 256.0; // TODO: move to constant
+        String ans = "increased from " + before + " to " + after;
+        if (before > 0)
+            ans += " (" + (100.0 * (after - before) / before) + "%)";
+        if (after > 1)
+            ans += " (" + (100.0 * Double.valueOf(after) / fourB) + "% of 4Bn)";
+        NeoLoaderPlugin.info("Number of " + name + " " + ans);
+        return after;
+    }
+
+    private static long checkStoreCounts(GraphDatabaseService graphDb, String name, Class< ? > type) {
+        long count = ((EmbeddedGraphDatabase)graphDb).getConfig().getGraphDbModule().getNodeManager().getNumberOfIdsInUse(type);
+        double fourB = 256.0 * 256.0 * 256.0 * 256.0; // TODO: move to constant
+        String ans = "Number of " + name + " is " + count;
+        if (count > 1)
+            ans += " (" + (100.0 * Double.valueOf(count) / fourB) + "% of 4Bn)";
+        NeoLoaderPlugin.info(ans);
+        return count;
+    }
 
 	public static long calculateMemoryUsage() {
         System.gc(); System.gc(); System.gc(); System.gc();
