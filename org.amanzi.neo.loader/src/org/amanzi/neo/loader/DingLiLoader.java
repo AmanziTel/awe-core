@@ -24,8 +24,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.amanzi.neo.loader.AbstractLoader.PropertyMapper;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.INeoConstants;
@@ -54,8 +55,11 @@ public class DingLiLoader extends DriveLoader {
     private HashSet<String> ignoreHeaders = new HashSet<String>();
     private boolean ignoreHex = true;
     private Node lastMpNode = null;
+    private Node lastEventIndexedMpNode = null;
     private Node mNode;
     private LinkedHashMap<String, Header> headers;
+    private boolean inHeader = true;
+    private Pattern urlPattern = Pattern.compile("(http\\:\\/\\/[\\w\\.]+)");
 
     /**
      * Instantiates a new ding li loader. This method is the normal one to be called from within AWE.
@@ -92,7 +96,6 @@ public class DingLiLoader extends DriveLoader {
         initializeLuceneIndex();
         addDriveIndexes();
         headers = getHeaderMap(1).headers;
-        addKnownHeader(1, "event_type", "EventInfo",false);
         possibleFieldSepRegexes = new String[] {"\t"};
         _workDate = Calendar.getInstance();
         // rounded to begin of day
@@ -100,6 +103,7 @@ public class DingLiLoader extends DriveLoader {
         _workDate.set(Calendar.SECOND, 0);
         _workDate.set(Calendar.MINUTE, 0);
         _workDate.set(Calendar.HOUR_OF_DAY, 0);
+        inHeader = true;
     }
 
     /**
@@ -140,14 +144,17 @@ public class DingLiLoader extends DriveLoader {
             if (parsedLine.size() < 1) {
                 return 0;
             }
-            String elem = parsedLine.get(0);
-            if ("FileInfo".equals(elem)) {
-                return 0;
+            if (inHeader) {
+                String elem = parsedLine.get(0);
+                if ("FileInfo".equals(elem)) {
+                    return 0;
+                }
+                if ("RegReport".equals(elem)) {
+                    updatePropertyHeaders(parsedLine);
+                    return 0;
+                }
             }
-            if ("RegReport".equals(elem)) {
-                updatePropertyHeaders(parsedLine);
-                return 0;
-            }
+            inHeader = false;
             return storeEvent(parsedLine);
         } catch (Exception e) {
             NeoLoaderPlugin.exception(e);
@@ -192,12 +199,32 @@ public class DingLiLoader extends DriveLoader {
         findOrCreateFileNode(m);
         m.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
         m.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
+        boolean haveEvents = false;
         for (String property : propertyList) {
             String value=getStringValue(iterator);
             if (value==null){
                 break;
             }
             setIndexPropertyNotParcedValue(headers, m, property, value);
+            if(property.equals("EventInfo")){
+                value = value.replaceAll("Redirect_.*", "Redirect");
+                if (value.startsWith("http://")) {
+                    int end = value.indexOf('/', 7);
+                    if (end > 7) {
+                        value = value.substring(0, end);
+                    }
+                }
+                Matcher matcher = urlPattern.matcher(value);
+                if(matcher.matches()) {
+                    value = matcher.group(1);
+                }
+                setIndexPropertyNotParcedValue(headers, m, "event_type", value);
+                haveEvents = true;
+            }
+        }
+        if (haveEvents && lastEventIndexedMpNode != lastMpNode) {
+            index.index(lastMpNode, INeoConstants.EVENTS_LUCENE_INDEX_NAME, dataset);
+            lastEventIndexedMpNode = lastMpNode;
         }
         if (lastMpNode != null) {
             m.createRelationshipTo(lastMpNode, GeoNeoRelationshipTypes.LOCATION);
@@ -291,9 +318,6 @@ public class DingLiLoader extends DriveLoader {
             String field = iterator.next();
             if(ignoreHex && field.contains("HexContent")) {
                 ignoreHeaders.add(event);
-            }
-            if (field.equalsIgnoreCase("EventInfo")){
-                field="event_id";
             }
             properties.add(field);
         }

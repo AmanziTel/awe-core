@@ -119,7 +119,7 @@ public abstract class AbstractLoader {
     protected CSVParser parser;
 
     public class Header {
-        private static final int MAX_PROPERTY_VALUE_COUNT = 100; // discard
+        private static final int MAX_PROPERTY_VALUE_COUNT = 500; // discard
         // calculate spread after this number of data points
         int index;
         String key;
@@ -394,11 +394,13 @@ public abstract class AbstractLoader {
         private final String name;
         protected String key;
         private final PropertyMapper mapper;
+        public final Pattern pattern;
 
-        MappedHeaderRule(String name, String key, PropertyMapper mapper) {
+        MappedHeaderRule(String name, String key, PropertyMapper mapper, String original) {
             this.key = key;
             this.name = name;
             this.mapper = mapper;
+            this.pattern = Pattern.compile(original);
         }
     }
 
@@ -710,7 +712,7 @@ public abstract class AbstractLoader {
      */
     protected final void addMappedHeader(Integer headerMapId, String original, String name, String key, PropertyMapper mapper) {
         HeaderMaps header = getHeaderMap(headerMapId);
-        header.mappedHeaders.put(original, new MappedHeaderRule(name, key, mapper));
+        header.mappedHeaders.put(original, new MappedHeaderRule(name, key, mapper, original));
     }
 
     /**
@@ -729,7 +731,7 @@ public abstract class AbstractLoader {
      */
     protected final void useMapper(Integer headerMapId, String key, PropertyMapper mapper) {
         HeaderMaps headerMap = getHeaderMap(headerMapId);
-        headerMap.mappedHeaders.put(key, new MappedHeaderRule(null, key, mapper));
+        headerMap.mappedHeaders.put(key, new MappedHeaderRule(null, key, mapper, key));
     }
 
     protected final void dropHeaderStats(Integer headerMapId, String[] keys) {
@@ -815,12 +817,12 @@ public abstract class AbstractLoader {
         for (StoringProperty sProp : storingProperties.values()) {
             HeaderMaps headerMap = sProp.getHeaders();
             for (String key : headerMap.mappedHeaders.keySet()) {
+                MappedHeaderRule mapRule = headerMap.mappedHeaders.get(key);
                 boolean contains = headerMap.headers.containsKey(key);
                 String findedHead = key;
                 if (!contains)
                     for (String head : headerMap.headers.keySet()) {
-                        Pattern p = Pattern.compile(key);
-                        if (Pattern.matches(key, head)) {
+                        if (mapRule.pattern.matcher(head).matches()) {
                             contains = true;
                             findedHead = head;
                             break;
@@ -828,7 +830,6 @@ public abstract class AbstractLoader {
                     }
 
                 if (contains) {
-                    MappedHeaderRule mapRule = headerMap.mappedHeaders.get(key);
                     if (headerMap.headers.containsKey(mapRule.key)) {
                         // We only allow replacement if the user passed null for
                         // the name
