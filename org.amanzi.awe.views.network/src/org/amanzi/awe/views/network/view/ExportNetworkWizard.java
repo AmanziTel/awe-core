@@ -133,7 +133,7 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
             columnConfigPage = new ExportNetworkWizardColumnsConfigPage("columnConfigPage");
         }
         if (filePropertyPage == null) {
-            filePropertyPage = new ExportNetworkWizardFilePropertyPage("propertyCSV", "UTF-8", "\t", "\"");
+            filePropertyPage = new ExportNetworkWizardFilePropertyPage("propertyCSV", "windows-1251", "\t", "\"");
         }
         addPage(selectionPage);
         addPage(columnConfigPage);
