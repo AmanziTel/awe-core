@@ -33,6 +33,7 @@ import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.enums.SplashRelationshipTypes;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.internal.DynamicNodeType;
+import org.amanzi.neo.services.networkselection.NetworkSelectionModel;
 import org.amanzi.neo.services.utils.Utils;
 import org.amanzi.neo.services.utils.Utils.FilterAND;
 import org.apache.commons.lang.StringUtils;
@@ -151,6 +152,7 @@ public class DatasetService extends AbstractService {
             tx.finish();
         }
     }
+
 
     /**
      * Gets the node type.
@@ -1038,14 +1040,13 @@ public class DatasetService extends AbstractService {
      * @return the sector node or null
      */
     public Node findSector(Node rootNode, Integer ci, Integer lac, String name, boolean returnFirsElement) {
-        Node baseNode = getGlobalConfigNode();
         IndexService index = getIndexService();
-        if (baseNode == null || (ci == null && name == null)) {
+        if (rootNode == null || (ci == null && name == null)) {
             return null;
         }
-        assert baseNode != null && (ci != null || name != null) && index != null;
+        assert rootNode != null && (ci != null || name != null) && index != null;
         if (ci == null) {
-            String indexName = Utils.getLuceneIndexKeyByProperty(baseNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR);
+            String indexName = Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR);
             IndexHits<Node> nodesName = index.getNodes(indexName, name);
             Node sector = nodesName.size() > 0 ? nodesName.next() : null;
             if (nodesName.size() == 1) {
@@ -1056,7 +1057,7 @@ public class DatasetService extends AbstractService {
                 return returnFirsElement ? sector : null;
             }
         }
-        String indexName = Utils.getLuceneIndexKeyByProperty(baseNode, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR);
+        String indexName = Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR);
         IndexHits<Node> nodesCi = index.getNodes(indexName, ci);
         if (lac == null && name == null) {
             Node sector = nodesCi.size() > 0 ? nodesCi.next() : null;
@@ -1466,4 +1467,35 @@ public class DatasetService extends AbstractService {
 			 filePropertiesNode.setProperty(prop.getKey(), prop.getValue());
 		 }
 	}
+
+    public NetworkSelectionModel getNetworkSelectionModel(Node sourceNode) {
+        Node networkNode = Utils.getParentNode(sourceNode, NodeTypes.NETWORK.getId());
+        return new NetworkSelectionModel(networkNode);
+
+    }
+
+    public Node creteSelectionNode(Node networkNode, String selectionName) {
+        Transaction tx = databaseService.beginTx();
+        try {
+            Node selNode = databaseService.createNode();
+            selNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, selectionName);
+            networkNode.createRelationshipTo(selNode, NetworkRelationshipTypes.SELECTION);
+            tx.success();
+            return selNode;
+        } finally {
+            tx.finish();
+        }
+    }
+
+    public void addSelection(Node selectionNode, Node selectedNode) {
+        Transaction tx = databaseService.beginTx();
+        try {
+            selectionNode.setProperty(INeoConstants.PROPERTY_COUNT_NAME, (Integer)selectionNode.getProperty(INeoConstants.PROPERTY_COUNT_NAME, 0) + 1);
+            selectionNode.createRelationshipTo(selectedNode, NetworkRelationshipTypes.SELECTED);
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+    }
+
 }

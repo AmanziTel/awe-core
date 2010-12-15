@@ -143,6 +143,13 @@
              parser="org.amanzi.neo.loader.core.parser.LineParser"
              saver="org.amanzi.neo.loader.core.saver.impl.Nemo2xSaver">
        </loader>
+       <loader
+             description="Network Selection"
+             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
+             parser="org.amanzi.neo.loader.core.parser.LineParser"
+             saver="org.amanzi.neo.loader.core.saver.impl.NetworkSelectionSaver"
+             validator="org.amanzi.neo.loader.ui.validators.ExistNetworkValidator">
+       </loader>
     </extension>
 
    <extension

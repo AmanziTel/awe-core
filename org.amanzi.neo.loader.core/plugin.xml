@@ -52,6 +52,10 @@
             class="org.amanzi.neo.loader.core.saver.impl.NetworkSaver"
             id="org.amanzi.neo.loader.core.saver.impl.NetworkSaver">
       </saver>
+      <saver
+            class="org.amanzi.neo.loader.core.saver.impl.NetworkSelectionSaver"
+            id="org.amanzi.neo.loader.core.saver.impl.NetworkSelectionSaver">
+      </saver>
    </extension>
 
 </plugin>
