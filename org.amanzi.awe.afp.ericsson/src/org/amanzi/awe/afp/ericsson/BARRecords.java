@@ -12,7 +12,95 @@
  */
 package org.amanzi.awe.afp.ericsson;
 
-import static org.amanzi.awe.afp.ericsson.Parameters.*;
+import static org.amanzi.awe.afp.ericsson.Parameters.ABSS;
+import static org.amanzi.awe.afp.ericsson.Parameters.ARFCN;
+import static org.amanzi.awe.afp.ericsson.Parameters.AVECNO;
+import static org.amanzi.awe.afp.ericsson.Parameters.AVECNO1;
+import static org.amanzi.awe.afp.ericsson.Parameters.AVECNO2;
+import static org.amanzi.awe.afp.ericsson.Parameters.AVECNO3;
+import static org.amanzi.awe.afp.ericsson.Parameters.AVSS;
+import static org.amanzi.awe.afp.ericsson.Parameters.BSIC;
+import static org.amanzi.awe.afp.ericsson.Parameters.CELL_NAME;
+import static org.amanzi.awe.afp.ericsson.Parameters.CHGR;
+import static org.amanzi.awe.afp.ericsson.Parameters.DAY;
+import static org.amanzi.awe.afp.ericsson.Parameters.DIVERSITY;
+import static org.amanzi.awe.afp.ericsson.Parameters.ECNOABSS;
+import static org.amanzi.awe.afp.ericsson.Parameters.FILE_FORMAT;
+import static org.amanzi.awe.afp.ericsson.Parameters.HOUR;
+import static org.amanzi.awe.afp.ericsson.Parameters.IS_NEIGHBOURING_CELL;
+import static org.amanzi.awe.afp.ericsson.Parameters.MFDDARFCN;
+import static org.amanzi.awe.afp.ericsson.Parameters.MINUTE;
+import static org.amanzi.awe.afp.ericsson.Parameters.MONTH;
+import static org.amanzi.awe.afp.ericsson.Parameters.MSCRCODE;
+import static org.amanzi.awe.afp.ericsson.Parameters.NAVSS;
+import static org.amanzi.awe.afp.ericsson.Parameters.NAVSS1;
+import static org.amanzi.awe.afp.ericsson.Parameters.NAVSS2;
+import static org.amanzi.awe.afp.ericsson.Parameters.NAVSS3;
+import static org.amanzi.awe.afp.ericsson.Parameters.NAVSS4;
+import static org.amanzi.awe.afp.ericsson.Parameters.NAVSS5;
+import static org.amanzi.awe.afp.ericsson.Parameters.NAVSS6;
+import static org.amanzi.awe.afp.ericsson.Parameters.NCELLTYPE;
+import static org.amanzi.awe.afp.ericsson.Parameters.NUCELLTYPE;
+import static org.amanzi.awe.afp.ericsson.Parameters.NUMFREQ;
+import static org.amanzi.awe.afp.ericsson.Parameters.NUMUMFI;
+import static org.amanzi.awe.afp.ericsson.Parameters.RECORD_INFORMATION;
+import static org.amanzi.awe.afp.ericsson.Parameters.RECORD_LENGTH;
+import static org.amanzi.awe.afp.ericsson.Parameters.RECORD_TYPE;
+import static org.amanzi.awe.afp.ericsson.Parameters.RECTIME;
+import static org.amanzi.awe.afp.ericsson.Parameters.RECTIMEARFCN;
+import static org.amanzi.awe.afp.ericsson.Parameters.RECTIMEUMFI;
+import static org.amanzi.awe.afp.ericsson.Parameters.RELSS;
+import static org.amanzi.awe.afp.ericsson.Parameters.RELSS2;
+import static org.amanzi.awe.afp.ericsson.Parameters.RELSS2_PLUS_MINUS;
+import static org.amanzi.awe.afp.ericsson.Parameters.RELSS3;
+import static org.amanzi.awe.afp.ericsson.Parameters.RELSS3_PLUS_MINUS;
+import static org.amanzi.awe.afp.ericsson.Parameters.RELSS4;
+import static org.amanzi.awe.afp.ericsson.Parameters.RELSS4_PLUS_MINUS;
+import static org.amanzi.awe.afp.ericsson.Parameters.RELSS5;
+import static org.amanzi.awe.afp.ericsson.Parameters.RELSS5_PLUS_MINUS;
+import static org.amanzi.awe.afp.ericsson.Parameters.RELSS_PLUS_MINUS;
+import static org.amanzi.awe.afp.ericsson.Parameters.REP;
+import static org.amanzi.awe.afp.ericsson.Parameters.REPARFCN;
+import static org.amanzi.awe.afp.ericsson.Parameters.REPHR;
+import static org.amanzi.awe.afp.ericsson.Parameters.REPUMFI;
+import static org.amanzi.awe.afp.ericsson.Parameters.REPUMTS;
+import static org.amanzi.awe.afp.ericsson.Parameters.REPUNDEFGSM;
+import static org.amanzi.awe.afp.ericsson.Parameters.REPUNDEFUMTS;
+import static org.amanzi.awe.afp.ericsson.Parameters.RID;
+import static org.amanzi.awe.afp.ericsson.Parameters.SECOND;
+import static org.amanzi.awe.afp.ericsson.Parameters.SEGTIME;
+import static org.amanzi.awe.afp.ericsson.Parameters.START_DATE_DAY;
+import static org.amanzi.awe.afp.ericsson.Parameters.START_DATE_MONTH;
+import static org.amanzi.awe.afp.ericsson.Parameters.START_DATE_YEAR;
+import static org.amanzi.awe.afp.ericsson.Parameters.START_TIME_HOUR;
+import static org.amanzi.awe.afp.ericsson.Parameters.START_TIME_MINUTE;
+import static org.amanzi.awe.afp.ericsson.Parameters.START_TIME_SECOND;
+import static org.amanzi.awe.afp.ericsson.Parameters.TERMINATION_REASON;
+import static org.amanzi.awe.afp.ericsson.Parameters.TFDDMRR;
+import static org.amanzi.awe.afp.ericsson.Parameters.TIMES;
+import static org.amanzi.awe.afp.ericsson.Parameters.TIMES1;
+import static org.amanzi.awe.afp.ericsson.Parameters.TIMES2;
+import static org.amanzi.awe.afp.ericsson.Parameters.TIMES3;
+import static org.amanzi.awe.afp.ericsson.Parameters.TIMES4;
+import static org.amanzi.awe.afp.ericsson.Parameters.TIMES5;
+import static org.amanzi.awe.afp.ericsson.Parameters.TIMES6;
+import static org.amanzi.awe.afp.ericsson.Parameters.TIMESABSS;
+import static org.amanzi.awe.afp.ericsson.Parameters.TIMESALONE;
+import static org.amanzi.awe.afp.ericsson.Parameters.TIMESRELSS;
+import static org.amanzi.awe.afp.ericsson.Parameters.TIMESRELSS2;
+import static org.amanzi.awe.afp.ericsson.Parameters.TIMESRELSS3;
+import static org.amanzi.awe.afp.ericsson.Parameters.TIMESRELSS4;
+import static org.amanzi.awe.afp.ericsson.Parameters.TIMESRELSS5;
+import static org.amanzi.awe.afp.ericsson.Parameters.TMBCR;
+import static org.amanzi.awe.afp.ericsson.Parameters.TNCCPERM_BITMAP;
+import static org.amanzi.awe.afp.ericsson.Parameters.TNCCPERM_VALIDITY_INDICATOR;
+import static org.amanzi.awe.afp.ericsson.Parameters.UTIMES;
+import static org.amanzi.awe.afp.ericsson.Parameters.UTIMES1;
+import static org.amanzi.awe.afp.ericsson.Parameters.UTIMES2;
+import static org.amanzi.awe.afp.ericsson.Parameters.UTIMES3;
+import static org.amanzi.awe.afp.ericsson.Parameters.UTIMESALONE;
+import static org.amanzi.awe.afp.ericsson.Parameters.UTIMESECNOABSS;
+import static org.amanzi.awe.afp.ericsson.Parameters.YEAR;
 
 /**
  * @author Kasnitskij_V
@@ -45,6 +133,24 @@ public enum BARRecords {
 		for (Parameters parameter : parameters) {
 			allParameters[paramCount++] = parameter;
 		}
+	}
+	
+	/**
+     * get additional parameters of record
+     * 
+     * @return
+     */
+	public Parameters[] getAllParameters7Version() {
+		int paramCount = getAllParameters().length;
+		Parameters[] parameters7version = new Parameters[paramCount + 3];
+		for (int i = 0; i < paramCount; i++) {
+			parameters7version[i] = getAllParameters()[i];
+		}
+		parameters7version[paramCount] = TNCCPERM_VALIDITY_INDICATOR;
+		parameters7version[paramCount + 1] = TNCCPERM_BITMAP;
+		parameters7version[paramCount + 2] = TMBCR;
+		
+		return parameters7version;
 	}
 	
     /**

@@ -29,7 +29,7 @@ import org.amanzi.awe.afp.ericsson.Parameters;
  */
 public class BARParser {
     public static void main(String[] args) throws IOException {
-    	File file = new File("d://–¿¡Œ“¿/AFP SRS/AFP data/Network_1/BARFIL00-0000000012");
+    	File file = new File("d://–¿¡Œ“¿/AFP SRS/AFP data/network_2/BARFIL00-0000000002");
     	InputStream input = new FileInputStream(file);
     	BufferedInputStream stream = new BufferedInputStream(input);
     	parseRecord(stream);
@@ -46,10 +46,25 @@ public class BARParser {
     	
     	while (inputStream.available() != 0) {
     		BARRecord barRecord = new BARRecord();
+    		BARRecords recordType = null;
+    		
+    		Parameters[] parameters = null;
+    		
 	    	int idRecordType = inputStream.read();
-	    	BARRecords recordType = BARRecords.findById(idRecordType);
+	    	int recordLength = inputStream.read() + inputStream.read();
+	    	barRecord.record.addProperty(Parameters.RECORD_TYPE, idRecordType);
+	    	barRecord.record.addProperty(Parameters.RECORD_LENGTH, recordLength);
+	    	
+	    	recordType = BARRecords.findById(idRecordType);
 	    	
 	    	if (recordType.toString().equals(BARRecords.ADMINISTRATIVE.toString())) {
+		    	if (recordLength == 49) {
+		    		parameters = recordType.getAllParameters();
+		    	}
+		    	else {
+		    		parameters = recordType.getAllParameters7Version();
+		    	}
+	    		
 	    		administrative++;
 	    		if (administrative == 1) {
 	    			startFile = true;
@@ -58,12 +73,16 @@ public class BARParser {
 	    			endFile = true;
 	    		}
 	    	}
+	    	else {
+	    		parameters = recordType.getAllParameters();
+	    	}
 	    	barRecord.record.setType(recordType);
 	    	
-	    	Parameters[] parameters = recordType.getAllParameters();
 	    	for (Parameters parameter : parameters) {
-	    		if (!parameter.toString().equals(Parameters.RECORD_TYPE.toString())) {
-					byte data[] = new byte[parameter.getBytesLen()];
+	    		if (!parameter.toString().equals(Parameters.RECORD_TYPE.toString()) &&
+    				!parameter.toString().equals(Parameters.RECORD_LENGTH.toString())) {
+					
+	    			byte data[] = new byte[parameter.getBytesLen()];
 					inputStream.read(data, 0, parameter.getBytesLen());
 					
 					barRecord.record.addProperty(parameter, data);

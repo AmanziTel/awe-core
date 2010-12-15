@@ -12,6 +12,7 @@
  */
 package org.amanzi.awe.afp.ericsson;
 
+
 /**
  * @author Kasnitskij_V
  *
@@ -108,7 +109,12 @@ public enum Parameters {
     UTIMES3(4),
     AVECNO3(1),
     UTIMESECNOABSS(4),
-    UTIMESALONE(4);
+    UTIMESALONE(4),
+    
+    // 7 version
+    TNCCPERM_VALIDITY_INDICATOR(1),
+    TNCCPERM_BITMAP(1),
+    TMBCR(1);
     
     
     private final int bytes;
@@ -168,5 +174,4 @@ public enum Parameters {
     public boolean firstBitIsError() {
         return rule!=Rules.STRING&&rule!=Rules.BITARRAY;
     }
-    
 }
