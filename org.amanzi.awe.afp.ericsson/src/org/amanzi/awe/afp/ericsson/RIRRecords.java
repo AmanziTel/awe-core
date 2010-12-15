@@ -16,7 +16,7 @@ import static org.amanzi.awe.afp.ericsson.Parameters.*;
 
 /**
  * @author Kasnitskij_V
- *
+ * class to represent of RIR- records
  */
 public enum RIRRecords implements IRecords {
 	ADMINISTRATIVE(40, FILE_FORMAT, YEAR, MONTH, DAY, HOUR, MINUTE, SECOND, RECORD_INFORMATION, RID, TTIME, PERCENTILE_VALUE),
@@ -27,6 +27,7 @@ public enum RIRRecords implements IRecords {
 	
 	private IParameters[] allParameters = null; 
 	
+	// constructor to RIR- record
 	private RIRRecords(int id, IParameters...parameters) {
 		
 		this.id = id;

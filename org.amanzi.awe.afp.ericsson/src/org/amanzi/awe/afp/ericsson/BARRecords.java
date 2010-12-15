@@ -104,7 +104,7 @@ import static org.amanzi.awe.afp.ericsson.Parameters.YEAR;
 
 /**
  * @author Kasnitskij_V
- *
+ * class to represent of BAR- records
  */
 public enum BARRecords implements IRecords {
 	ADMINISTRATIVE(50, FILE_FORMAT, YEAR, MONTH, DAY, HOUR, MINUTE, SECOND, RECORD_INFORMATION, RID, START_DATE_YEAR, START_DATE_MONTH, START_DATE_DAY, START_TIME_HOUR, START_TIME_MINUTE, START_TIME_SECOND, ABSS, RELSS_PLUS_MINUS, RELSS, RELSS2_PLUS_MINUS, RELSS2, RELSS3_PLUS_MINUS, RELSS3, RELSS4_PLUS_MINUS, RELSS4, RELSS5_PLUS_MINUS, RELSS5, NCELLTYPE, NUMFREQ, SEGTIME, TERMINATION_REASON, RECTIME, ECNOABSS, NUCELLTYPE, TFDDMRR, NUMUMFI),
@@ -120,6 +120,7 @@ public enum BARRecords implements IRecords {
 	
 	private IParameters[] allParameters = null; 
 	
+	// constructor to BAR- record
 	private BARRecords(int id, IParameters...parameters) {
 		
 		this.id = id;
@@ -138,7 +139,7 @@ public enum BARRecords implements IRecords {
 	/**
      * get additional parameters of record
      * 
-     * @return
+     * @return all parameters to 7th version
      */
 	public IParameters[] getAllParameters7Version() {
 		int paramCount = getAllParameters().length;

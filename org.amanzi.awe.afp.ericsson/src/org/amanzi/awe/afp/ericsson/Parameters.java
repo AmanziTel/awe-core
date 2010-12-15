@@ -15,7 +15,7 @@ package org.amanzi.awe.afp.ericsson;
 
 /**
  * @author Kasnitskij_V
- *
+ * class to represent parameters of records
  */
 public enum Parameters implements IParameters {
     RECORD_TYPE(1),
@@ -126,6 +126,7 @@ public enum Parameters implements IParameters {
     AVPERCENTILE(1),
     NOOFMEAS(4);
     
+    // count of bytes in parameter
     private final int bytes;
     private final Rules rule;
 

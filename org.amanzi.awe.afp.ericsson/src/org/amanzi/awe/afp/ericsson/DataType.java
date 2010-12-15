@@ -14,7 +14,7 @@ package org.amanzi.awe.afp.ericsson;
 
 /**
  * @author Kasnitskij_V
- *
+ * enum to represent type of record
  */
 public enum DataType {
 	BAR_DATA,

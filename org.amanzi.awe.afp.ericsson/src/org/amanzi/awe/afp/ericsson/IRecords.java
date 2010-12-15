@@ -14,7 +14,7 @@ package org.amanzi.awe.afp.ericsson;
 
 /**
  * @author Kasnitskij_V
- *
+ * interface to represent different kind of records
  */
 public interface IRecords {
 

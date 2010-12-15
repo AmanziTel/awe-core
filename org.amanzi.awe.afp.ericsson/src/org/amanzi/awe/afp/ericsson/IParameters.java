@@ -14,7 +14,7 @@ package org.amanzi.awe.afp.ericsson;
 
 /**
  * @author Kasnitskij_V
- *
+ * interface to different kind of parameters
  */
 public interface IParameters {
 

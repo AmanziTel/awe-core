@@ -14,13 +14,16 @@ package org.amanzi.awe.afp.ericsson;
 
 /**
  * @author Kasnitskij_V
- *
+ * class to represent block of parameters
  */
 public class BlockParameters implements IParameters {
 	
+	// count of parameters in block
 	private final int count;
+	// parameters in block
 	private IParameters[] parameters;
 	
+	// constructor to block parameters
 	public BlockParameters(int count, IParameters...parameters) {
 		this.setParameters(parameters);
 		this.count = count;

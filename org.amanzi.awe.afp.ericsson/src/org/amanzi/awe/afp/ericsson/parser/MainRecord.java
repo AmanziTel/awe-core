@@ -20,7 +20,7 @@ import org.amanzi.awe.afp.ericsson.IRecords;
 
 /**
  * @author Kasnitskij_V
- *
+ * Class to represent one record of BAR- or RIR- data
  */
 public class MainRecord {
 	

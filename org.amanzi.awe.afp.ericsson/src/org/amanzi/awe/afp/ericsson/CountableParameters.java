@@ -14,11 +14,12 @@ package org.amanzi.awe.afp.ericsson;
 
 /**
  * @author Kasnitskij_V
- *
+ * class to parameters with identical main part and different index
  */
 public class CountableParameters implements IParameters {
-
+	// some main parameter
 	IParameters mainParameter;
+	// index of parameter
 	int index;
 	
 	public CountableParameters(IParameters mainParameter, int index) {

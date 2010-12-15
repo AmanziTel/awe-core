@@ -18,10 +18,11 @@ import org.amanzi.neo.loader.core.parser.IDataElement;
 
 /**
  * @author Kasnitskij_V
- *
+ * class to represent of recordConfigData
  */
 public class RecordConfigData extends CommonConfigData implements IDataElement {
 	
+	// type of data(RIR of BAR)
 	private DataType dataType;
 
 	/**

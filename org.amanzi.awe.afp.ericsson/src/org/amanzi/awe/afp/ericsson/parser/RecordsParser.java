@@ -34,19 +34,23 @@ import org.amanzi.neo.loader.core.saver.ISaver;
 
 /**
  * @author Kasnitskij_V
- * 
+ * Class to parsing of RAR- or BAR- data
  */
 public class RecordsParser extends
 		CommonFilesParser<BaseTransferData, RecordConfigData> {
-	public static void main(String[] args) throws IOException {
+	// method to testing
+//	public static void main(String[] args) throws IOException {
 //		File file = new File(
 //				"d://–¿¡Œ“¿/AFP SRS/AFP data/network_2/BARFIL00-0000000002");
 //		InputStream input = new FileInputStream(file);
 //		BufferedInputStream stream = new BufferedInputStream(input);
-//		parseRecord(stream);
-//		FileElement elem = new FileElement(file, descriptionFormat);
-//		ArrayList<BARRecord> rec = (ArrayList<BARRecord>) getRecords();
-	}
+//		
+//		FileElement elem = new FileElement(file, "");
+//		RecordsParser rp = new RecordsParser();
+//		rp.dataType = DataType.BAR_DATA;
+//		rp.parseElement(elem);
+//		ArrayList<MainRecord> rec = (ArrayList<MainRecord>) getRecords();
+// 	}
 
 	private DataType dataType;
 	
@@ -78,35 +82,51 @@ public class RecordsParser extends
         dataType = properties.getDataType();
     }
 
+    /**
+     * method to parsing file
+     */
 	@Override
 	protected boolean parseElement(FileElement element) {
+		//stream of data from file
 		InputStream input = null;
 		try {
 			input = new FileInputStream(element.getFile());
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
+		// buffered stream of data from file
 		BufferedInputStream inputStream = new BufferedInputStream(input);
-
+		
+		// variable to be aware of what was the beginning and end of file
+		// administrative = 1 - is the beginning of the file
+		// administrative = 2 - is the end of the file
 		int administrative = 0;
+		// if administrative = 1 startFile will true
+		// if administrative = 2 endFile will true
 		boolean startFile = false, endFile = false;
+		// records of BAR- of RIR- data
 		records = new ArrayList<MainRecord>();
 
 		try {
+			// read file while it is possible
 			while (inputStream.available() != 0) {
-				MainRecord barRecord = new MainRecord();
+				// variable to represent one record from file
+				MainRecord mainRecord = new MainRecord();
+				// type of record. may be RIR- or BAR-
 				IRecords recordType = null;
-
+				// parameters of record
 				IParameters[] parameters = null;
 
+				// id of record
 				int idRecordType = inputStream.read();
+				// length of record
 				int recordLength = inputStream.read() + inputStream.read();
-				barRecord.record.addProperty(Parameters.RECORD_TYPE,
+				mainRecord.record.addProperty(Parameters.RECORD_TYPE,
 						idRecordType);
-				barRecord.record.addProperty(Parameters.RECORD_LENGTH,
+				mainRecord.record.addProperty(Parameters.RECORD_LENGTH,
 						recordLength);
 
-				
+				// get type of record
 				recordType = findById(idRecordType);
 
 				if (recordType.toString().equals(
@@ -127,8 +147,9 @@ public class RecordsParser extends
 				} else {
 					parameters = recordType.getAllParameters();
 				}
-				barRecord.record.setType(recordType);
+				mainRecord.record.setType(recordType);
 
+				// read data to all parameters from file
 				for (IParameters parameter : parameters) {
 					if (!parameter.toString().equals(
 							Parameters.RECORD_TYPE.toString())
@@ -142,7 +163,7 @@ public class RecordsParser extends
 									byte data[] = new byte[parameter.getBytesLen()];
 									inputStream.read(data, 0, parameter.getBytesLen());
 
-									barRecord.record.addProperty(
+									mainRecord.record.addProperty(
 											new CountableParameters(parameter, i), data);
 								}
 							}
@@ -150,11 +171,13 @@ public class RecordsParser extends
 							byte data[] = new byte[parameter.getBytesLen()];
 							inputStream.read(data, 0, parameter.getBytesLen());
 
-							barRecord.record.addProperty(parameter, data);
+							mainRecord.record.addProperty(parameter, data);
 						}
 					}
 				}
-				records.add(barRecord);
+				// add read data
+				records.add(mainRecord);
+				// if read all file then break from cycle
 				if (startFile && endFile) {
 					break;
 				}
@@ -172,6 +195,11 @@ public class RecordsParser extends
         return data;
 	}
 	
+	/**
+	 * find record by id
+	 * @param idRecordType
+	 * @return bar or rir record
+	 */
 	private IRecords findById(int idRecordType) {
 		IRecords record = null;
 		switch (dataType) {
