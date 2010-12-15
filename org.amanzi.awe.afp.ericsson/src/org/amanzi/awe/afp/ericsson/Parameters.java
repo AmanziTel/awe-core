@@ -17,7 +17,7 @@ package org.amanzi.awe.afp.ericsson;
  * @author Kasnitskij_V
  *
  */
-public enum Parameters {
+public enum Parameters implements IParameters {
     RECORD_TYPE(1),
     RECORD_LENGTH(2),
     FILE_FORMAT(1),
@@ -114,8 +114,17 @@ public enum Parameters {
     // 7 version
     TNCCPERM_VALIDITY_INDICATOR(1),
     TNCCPERM_BITMAP(1),
-    TMBCR(1);
+    TMBCR(1),
     
+    
+    //-------RIR-DATA----------
+    TTIME(2),
+    PERCENTILE_VALUE(2),
+    
+    NUMBER_OF_FREQUENCIES(1),
+    AVMEDIAN(1),
+    AVPERCENTILE(1),
+    NOOFMEAS(4);
     
     private final int bytes;
     private final Rules rule;
@@ -173,5 +182,9 @@ public enum Parameters {
      */
     public boolean firstBitIsError() {
         return rule!=Rules.STRING&&rule!=Rules.BITARRAY;
+    }
+    
+    public boolean isBlock() {
+    	return false;
     }
 }

@@ -15,18 +15,18 @@ package org.amanzi.awe.afp.ericsson.parser;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.amanzi.awe.afp.ericsson.BARRecords;
-import org.amanzi.awe.afp.ericsson.Parameters;
+import org.amanzi.awe.afp.ericsson.IParameters;
+import org.amanzi.awe.afp.ericsson.IRecords;
 
 /**
  * @author Kasnitskij_V
  *
  */
-public class BARRecord {
+public class MainRecord {
 	
     protected Record record;
     
-    public BARRecord() {
+    public MainRecord() {
     	record = new Record();
     }
 
@@ -57,20 +57,20 @@ public class BARRecord {
      * @since 1.0.0
      */
     public static class Record {
-    	private BARRecords type;
-        protected Map<Parameters, Object> properties;
+    	private IRecords type;
+        protected Map<IParameters, Object> properties;
 
         /**
          * 
          */
         public Record() {
-        	properties = new HashMap<Parameters, Object>();
+        	properties = new HashMap<IParameters, Object>();
         }
 
         /**
          * @param parameter
          */
-        public void addProperty(Parameters parameter, Object value) {
+        public void addProperty(IParameters parameter, Object value) {
             if (value==null){
                 return;
             }
@@ -80,23 +80,23 @@ public class BARRecord {
         /**
          * @return Returns the properties.
          */
-        public Map<Parameters, Object> getProperties() {
+        public Map<IParameters, Object> getProperties() {
             return properties;
         }
 
         /**
          * @return Returns the type.
          */
-        public BARRecords getType() {
+        public IRecords getType() {
             return type;
         }
 
         /**
          * @param type The type to set.
          */
-        public void setType(BARRecords type) {
+        public void setType(IRecords type) {
             this.type = type;
-            this.properties = new HashMap<Parameters, Object>(type.getAllParameters().length);
+            this.properties = new HashMap<IParameters, Object>(type.getAllParameters().length);
         }
     }
 

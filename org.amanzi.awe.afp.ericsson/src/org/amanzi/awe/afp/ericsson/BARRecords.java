@@ -106,7 +106,7 @@ import static org.amanzi.awe.afp.ericsson.Parameters.YEAR;
  * @author Kasnitskij_V
  *
  */
-public enum BARRecords {
+public enum BARRecords implements IRecords {
 	ADMINISTRATIVE(50, FILE_FORMAT, YEAR, MONTH, DAY, HOUR, MINUTE, SECOND, RECORD_INFORMATION, RID, START_DATE_YEAR, START_DATE_MONTH, START_DATE_DAY, START_TIME_HOUR, START_TIME_MINUTE, START_TIME_SECOND, ABSS, RELSS_PLUS_MINUS, RELSS, RELSS2_PLUS_MINUS, RELSS2, RELSS3_PLUS_MINUS, RELSS3, RELSS4_PLUS_MINUS, RELSS4, RELSS5_PLUS_MINUS, RELSS5, NCELLTYPE, NUMFREQ, SEGTIME, TERMINATION_REASON, RECTIME, ECNOABSS, NUCELLTYPE, TFDDMRR, NUMUMFI),
 	ACTIVE_BALIST_RECORDING_CELL_DATA(51, CELL_NAME, CHGR, REP, REPHR, REPUNDEFGSM, AVSS),
 	ACTIVE_BALIST_RECORDING_NEIGHBOURING_CELL_DATA(52, CELL_NAME, CHGR, BSIC, ARFCN, IS_NEIGHBOURING_CELL, RECTIMEARFCN, REPARFCN, TIMES, NAVSS, TIMES1, NAVSS1, TIMES2, NAVSS2, TIMES3, NAVSS3, TIMES4, NAVSS4, TIMES5, NAVSS5, TIMES6, NAVSS6, TIMESRELSS, TIMESRELSS2, TIMESRELSS3, TIMESRELSS4, TIMESRELSS5, TIMESABSS, TIMESALONE),
@@ -118,19 +118,19 @@ public enum BARRecords {
 	// record id
 	private final int id;
 	
-	private Parameters[] allParameters = null; 
+	private IParameters[] allParameters = null; 
 	
-	private BARRecords(int id, Parameters...parameters) {
+	private BARRecords(int id, IParameters...parameters) {
 		
 		this.id = id;
 		
 		int paramCount = 2;
-		allParameters = new Parameters[parameters.length + paramCount];
+		allParameters = new IParameters[parameters.length + paramCount];
 		
 		allParameters[0] = RECORD_TYPE;
 		allParameters[1] = RECORD_LENGTH;
 		
-		for (Parameters parameter : parameters) {
+		for (IParameters parameter : parameters) {
 			allParameters[paramCount++] = parameter;
 		}
 	}
@@ -140,9 +140,9 @@ public enum BARRecords {
      * 
      * @return
      */
-	public Parameters[] getAllParameters7Version() {
+	public IParameters[] getAllParameters7Version() {
 		int paramCount = getAllParameters().length;
-		Parameters[] parameters7version = new Parameters[paramCount + 3];
+		IParameters[] parameters7version = new IParameters[paramCount + 3];
 		for (int i = 0; i < paramCount; i++) {
 			parameters7version[i] = getAllParameters()[i];
 		}
@@ -158,7 +158,7 @@ public enum BARRecords {
      * 
      * @return
      */
-    public Parameters[] getAllParameters() {
+    public IParameters[] getAllParameters() {
         return allParameters;
     }
     
