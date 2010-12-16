@@ -215,7 +215,8 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
             try {
                 for (String headerType : headers) {
                     Map<String, String> propertyCol = propertyMap.get(headerType);
-
+                    if(propertyCol == null)
+                    	continue;
                     for (String col : propertyCol.values()) {
                         fields.add(col);
                     }
