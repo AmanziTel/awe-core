@@ -350,14 +350,23 @@ public class NetworkLoader extends AbstractLoader {
             String propertyKey = prop.getKey();
             String propOriginalName = prop.getValue().name;
 
-            if (propertyKey.endsWith(INeoConstants.PROPERTY_LAT_NAME) || propertyKey.endsWith(INeoConstants.PROPERTY_LON_NAME)) {
+            if (propertyKey.endsWith(INeoConstants.PROPERTY_LAT_NAME) || 
+            	propertyKey.endsWith(INeoConstants.PROPERTY_LON_NAME)) {
 				prefix = INeoConstants.SITE_PROPERTY_NAME_PREFIX;
             } else if (propertyKey.endsWith("sector")) {
                 propertyKey = INeoConstants.PROPERTY_NAME_NAME;
             } else if (propertyKey.endsWith(NodeTypes.BSC.getId())) {
                 propertyKey = INeoConstants.PROPERTY_NAME_NAME;
                 prefix = INeoConstants.BSC_PROPERTY_NAME_PREFIX;
+            } else if (propertyKey.endsWith("site")) {
+            	propertyKey = INeoConstants.PROPERTY_NAME_NAME;
+                prefix = INeoConstants.SITE_PROPERTY_NAME_PREFIX;
             }
+            else if (propertyKey.endsWith("city")) {
+            	propertyKey = INeoConstants.PROPERTY_NAME_NAME;
+                prefix = INeoConstants.CITY_PROPERTY_NAME_PREFIX;
+            }
+            
 
             headers.put(prefix + propertyKey, propOriginalName);
 		}
