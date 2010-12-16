@@ -469,7 +469,6 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
                 propertyCol = propertyMap.get(type);
             }
             propertyCol.put(property, column);
-            System.out.println("debug");
         }
         return propertyMap;
     }
