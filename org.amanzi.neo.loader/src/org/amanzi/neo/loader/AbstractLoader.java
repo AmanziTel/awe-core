@@ -1799,6 +1799,12 @@ public abstract class AbstractLoader {
         private Long timeStampMin;
         private Long timeStampMax;
         private HeaderMaps headers;
+        
+        //Kasnitskij_V:
+        private final static String SIMPLE_DATE_FORMAT = "yyyyMMdd HH:mm:ss 'GMT'Z";
+        private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(SIMPLE_DATE_FORMAT);
+        private String start;
+        private String end;
 
         public StoringProperty(Node storingNode) {
             // this.storingNode = storingNode;
@@ -1806,9 +1812,11 @@ public abstract class AbstractLoader {
                 dataCounter = (Long)storingNode.getProperty(INeoConstants.COUNT_TYPE_NAME, 0L);
                 if (storingNode.hasProperty(INeoConstants.MIN_TIMESTAMP)){
                     timeStampMin = (Long)storingNode.getProperty(INeoConstants.MIN_TIMESTAMP);
+                    start = simpleDateFormat.format(new Date(timeStampMin));
                 }
                 if (storingNode.hasProperty(INeoConstants.MAX_TIMESTAMP)){
                     timeStampMax = (Long)storingNode.getProperty(INeoConstants.MAX_TIMESTAMP);
+                    end = simpleDateFormat.format(new Date(timeStampMax));
                 }
             }
         }
@@ -1820,9 +1828,11 @@ public abstract class AbstractLoader {
             if (storeNode != null) {
                 if (timeStampMin != null) {
                     storeNode.setProperty(INeoConstants.MIN_TIMESTAMP, timeStampMin);
+                    storeNode.setProperty(INeoConstants.MIN_TIMESTAMP_STRING_FORMAT, start);
                 }
                 if (timeStampMax != null) {
                     storeNode.setProperty(INeoConstants.MAX_TIMESTAMP, timeStampMax);
+                    storeNode.setProperty(INeoConstants.MAX_TIMESTAMP_STRING_FORMAT, end);
                 }
             }
         }
@@ -1889,6 +1899,34 @@ public abstract class AbstractLoader {
         public void setDataCounter(long dataCounter) {
             this.dataCounter = dataCounter;
         }
+
+		/**
+		 * @param start the start to set
+		 */
+		public void setStart(String start) {
+			this.start = start;
+		}
+
+		/**
+		 * @return the start
+		 */
+		public String getStart() {
+			return start;
+		}
+
+		/**
+		 * @param end the end to set
+		 */
+		public void setEnd(String end) {
+			this.end = end;
+		}
+
+		/**
+		 * @return the end
+		 */
+		public String getEnd() {
+			return end;
+		}
 
     }
 
