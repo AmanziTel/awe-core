@@ -49,16 +49,7 @@ public enum RIRRecords implements IRecords {
      * @return
      */
 	public IParameters[] getAllParameters7Version() {
-		int paramCount = getAllParameters().length;
-		IParameters[] parameters7version = new IParameters[paramCount + 3];
-		for (int i = 0; i < paramCount; i++) {
-			parameters7version[i] = getAllParameters()[i];
-		}
-		parameters7version[paramCount] = TNCCPERM_VALIDITY_INDICATOR;
-		parameters7version[paramCount + 1] = TNCCPERM_BITMAP;
-		parameters7version[paramCount + 2] = TMBCR;
-		
-		return parameters7version;
+		return getAllParameters();
 	}
 	
     /**
