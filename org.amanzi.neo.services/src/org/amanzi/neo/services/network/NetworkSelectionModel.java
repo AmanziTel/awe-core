@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.services.networkselection;
+package org.amanzi.neo.services.network;
 
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
