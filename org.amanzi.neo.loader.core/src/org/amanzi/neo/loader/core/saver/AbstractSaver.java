@@ -35,7 +35,6 @@ import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.index.IndexService;
 
-// TODO: Auto-generated Javadoc
 /**
  * <p>
  * Abstract saver
@@ -44,15 +43,6 @@ import org.neo4j.index.IndexService;
  * @param <T> the generic type
  * @author tsinkel_a
  * @since 1.0.0
- */
-/**
- * TODO Purpose of
- * <p>
- * </p>
- * 
- * @author TsAr
- * @since 1.0.0
- * @param <T>
  */
 public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T> {
 
