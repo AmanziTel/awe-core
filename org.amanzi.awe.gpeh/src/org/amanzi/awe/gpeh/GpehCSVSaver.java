@@ -53,7 +53,7 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
     // it's constant to present timestamp
     private final static String TIMESTAMP = "timestamp";
     // it's constant to present format of date to name of file
-    private final static String SIMPLE_DATE_FORMAT = "yyyyMMddhhmm";
+    private final static String SIMPLE_DATE_FORMAT = "yyyyMMddHHmm";
     // it's constant to present format of file
     private final static String FILE_FORMAT = ".txt";
     // it's constant using in building name of file
@@ -61,14 +61,15 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
                                     new SimpleDateFormat(SIMPLE_DATE_FORMAT);
     private PrintStream outputStream;
     
-    //TODO: LN: comments
+    // time of before loading and after loading
     private long beforeLoading = 0, afterLoading = 0;
+    // starting timestamp
     private long startTimestamp = 0;
+    // count of loaded files
     private int countOfLoadedFiles = 0;
-    
-    //TODO: remove testing variables
-    //  FOR TESTING
+    // count of events
     private long count = 0;
+    
     @Override
     public void init(GpehTransferData element) {
         outputDirectory = element.get(GpehTransferData.OUTPUT_DIRECTORY).toString();
@@ -153,6 +154,9 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
         }
         catch (Exception e) {
         }
+        // delete scanner id from headers
+        headers.remove(Parameters.EVENT_PARAM_SCANNER_ID.toString());
+        
         // create array list of data
         ArrayList<String> data = new ArrayList<String>();
         data.add(scannerId);
@@ -221,7 +225,7 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
         return null;
     }
     
-    //TODO: LN: comments
+    // all files is closed here
     private void closeOpenFiles() {
         for (CsvFile csvFile : openedFiles.values()) {
             try {
