@@ -204,4 +204,15 @@ public class INeoConstants {
     public static final String BSC_PROPERTY_NAME_PREFIX = "bsc.property.name_";
     public static final String PROPERTY_NAME_PREFIX = ".property.name_";
     public static final String CITY_PROPERTY_NAME_PREFIX = "city.property.name_";
+    
+    public static final String AFP_OPTIMIZATION_PARAMETERS = "optimization_parameters";
+    public static final String AFP_FREQUENCY_BAND = "frequency_band";
+    public static final String AFP_CHANNEL_TYPE = "channel_type";
+    public static final String AFP_ANALYZE_CURRENT = "analyze_current";
+    public static final String AFP_AVAILABLE_FREQUENCIES_900 = "available_frequencies_900";
+    public static final String AFP_AVAILABLE_FREQUENCIES_1800 = "available_frequencies_1800";
+    public static final String AFP_AVAILABLE_FREQUENCIES_850 = "available_frequencies_850";
+    public static final String AFP_AVAILABLE_FREQUENCIES_1900 = "available_frequencies_1900";
+    public static final String AFP_AVAILABLE_NCCS = "available_nccs";
+    public static final String AFP_AVAILABLE_BCCS = "available_bccs";
 }
