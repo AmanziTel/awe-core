@@ -20,13 +20,19 @@ import org.amanzi.awe.afp.Activator;
 import org.amanzi.awe.afp.ControlFileProperties;
 import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.loaders.AfpLoader;
+import org.amanzi.awe.afp.models.AfpModel;
 import org.amanzi.awe.console.AweConsolePlugin;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Scale;
@@ -34,6 +40,8 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * <p>
@@ -44,14 +52,36 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @since 1.0.0
  */
 public class AfpImportWizard extends Wizard implements IImportWizard {
-
-    private AfpLoadWizardPage loadPage;
+	
+	protected static boolean isDone = false;
+	
+	public final static String title = "Automatic Frequency Planning";
+	public final static String page0Name = "Step 0 - Load Network Data";
+    public final static String page1Name = "Step 1 - Optimization Goals";
+    public final static String page2Name = "Step 2 - Available Sources";
+    public final static String page3Name = "Step 3 - Frequency Type";
+    public final static String page4Name = "Step 4 - SY Hopping MALs";
+    public final static String page5Name = "Step 5 - Separation Rules";
+    public final static String page6Name = "Step 6 - Scaling Rules";
+    public final static String page7Name = "Step 7 - Summary";
+	
+	private AfpLoadWizardPage loadPage;
+    private AfpOptimizationGoalsPage goalsPage;
+    AfpAvailableResourcesPage resourcesPage;
+	private AfpFrequencyTypePage frequencyPage;
+	private AfpSYHoppingMALsPage hoppingMALsPage;
+	private AfpSeparationRulesPage separationsPage;
+	private AfpScalingRulesPage scalingPage;
+	private AfpSummaryPage summaryPage;
+	
+	private AfpModel model;
+	
     private GraphDatabaseService servise;
     protected HashMap<String, String> parameters;
 
     @Override
     public boolean performFinish() {
-    	parameters = new HashMap<String, String>();
+/*    	parameters = new HashMap<String, String>();
     	parameters.put(ControlFileProperties.SITE_SPACING, loadPage.siteSpacing.getText().toString());
     	parameters.put(ControlFileProperties.CELL_SPACING, loadPage.cellSpacing.getText().toString());
     	parameters.put(ControlFileProperties.REG_NBR_SPACING, loadPage.regNbrSpacing.getText().toString());
@@ -77,6 +107,35 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
     		Job job2 = new AfpProcessExecutor("Execute Afp Process", loadPage.datasetNode, servise, parameters);
             job2.schedule();
     	}
+*/    	
+    	/**
+    	 * Write all user selected data to database
+    	 */
+    	servise = NeoServiceProviderUi.getProvider().getService();
+    	Transaction tx = servise.beginTx();
+    	try {
+	    	Node afpNode = AfpLoadNetworkPage.afpNode;
+	    	if (afpNode == null){
+	    		afpNode = servise.createNode();
+	    		NodeTypes.AFP.setNodeType(afpNode, servise);
+                NeoUtils.setNodeName(afpNode, AfpLoadNetworkPage.afpName, servise);
+                AfpLoadNetworkPage.datasetNode.createRelationshipTo(afpNode, NetworkRelationshipTypes.CHILD);
+                
+                afpNode.setProperty(INeoConstants.AFP_OPTIMIZATION_PARAMETERS, model.getOptimizationParameters());
+                afpNode.setProperty(INeoConstants.AFP_FREQUENCY_BAND, model.getFrequencyBands());
+                afpNode.setProperty(INeoConstants.AFP_CHANNEL_TYPE, model.getChanneltypes());
+                afpNode.setProperty(INeoConstants.AFP_ANALYZE_CURRENT, model.isAnalyzeCurrentFreqAllocation());
+                afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_900, model.getAvailableFreq900());
+                afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_1800, model.getAvailableFreq1800());
+                afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_850, model.getAvailableFreq850());
+                afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_1900, model.getAvailableFreq1900());
+                afpNode.setProperty(INeoConstants.AFP_AVAILABLE_BCCS, model.getAvailableBCCs());
+                afpNode.setProperty(INeoConstants.AFP_AVAILABLE_NCCS, model.getAvailableNCCs());
+                
+	    	}
+    	} finally{
+    		tx.finish();
+    	}
     	
     	
    
@@ -85,10 +144,50 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
-        setWindowTitle("Automatic Frequency Planning");
-        servise = NeoServiceProviderUi.getProvider().getService();
-        loadPage = new AfpLoadWizardPage("loadPage", servise);
-        addPage(loadPage);
+        setWindowTitle(title);
+    	servise = NeoServiceProviderUi.getProvider().getService();
+    	model = new AfpModel();
     }
+    
+    @Override
+    public void addPages(){
+    	super.addPages();
+//    	loadPage = new AfpLoadWizardPage("loadPage", servise);
+//    	addPage(loadPage);
+    	addPage(new AfpLoadNetworkPage("Load Network", servise, model));
+    	goalsPage = new AfpOptimizationGoalsPage("Optimization Goals", servise, model); 
+    	addPage(goalsPage);
+    	resourcesPage = new AfpAvailableResourcesPage("Available Sources", servise, model); 
+    	addPage(resourcesPage);
+    	frequencyPage = new AfpFrequencyTypePage("Frequency Type", servise);
+    	addPage(frequencyPage);
+    	hoppingMALsPage = new AfpSYHoppingMALsPage("SY Hopping MALs", servise);
+    	addPage(hoppingMALsPage);
+    	separationsPage = new AfpSeparationRulesPage("Separation Rules", servise); 
+    	addPage(separationsPage);
+    	scalingPage = new AfpScalingRulesPage("Scaling Rules", servise);
+    	addPage(scalingPage);
+    	summaryPage = new AfpSummaryPage("Summary", servise); 
+    	addPage(summaryPage);
+    }
+    
+    
+    @Override
+    public IWizardPage getNextPage(IWizardPage page) {
+    	IWizardPage nextPage = super.getNextPage(page);
+    	if (nextPage == resourcesPage){
+    		System.out.println("It will work. Go ahead");
+    		resourcesPage.refreshPage();
+    	}
+    	
+    	return super.getNextPage(page);
+
+    }
+    
+    @Override
+    public boolean canFinish(){
+    	return isDone;
+    }
+    
 
 }
