@@ -20,17 +20,28 @@
 <folderInfo id="cdt.managedbuild.config.gnu.macosx.exe.debug.1720764368." name="/" resourcePath="">
 <toolChain id="cdt.managedbuild.toolchain.gnu.cygwin.base.391779503" name="Cygwin GCC" superClass="cdt.managedbuild.toolchain.gnu.cygwin.base">
 <targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.Cygwin_PE;org.eclipse.cdt.core.MachO" id="cdt.managedbuild.target.gnu.platform.cygwin.base.1474256784" name="Debug Platform" osList="win32" superClass="cdt.managedbuild.target.gnu.platform.cygwin.base"/>
-<builder buildPath="${workspace_loc:/org.amanzi.awe.afp.japa/Debug}" id="cdt.managedbuild.target.gnu.builder.cygwin.base.614433726" name="Gnu Make Builder.Debug" superClass="cdt.managedbuild.target.gnu.builder.cygwin.base"/>
+<builder buildPath="${workspace_loc:/org.amanzi.awe.afp.japa/Debug}" id="cdt.managedbuild.target.gnu.builder.cygwin.base.614433726" keepEnvironmentInBuildfile="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.cygwin.base"/>
 <tool id="cdt.managedbuild.tool.gnu.assembler.cygwin.base.1262563169" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.cygwin.base">
-<option id="gnu.both.asm.option.flags.1079265237" superClass="gnu.both.asm.option.flags"/>
-<option id="gnu.both.asm.option.include.paths.58602680" superClass="gnu.both.asm.option.include.paths"/>
-<option id="gnu.both.asm.option.warnings.nowarn.153064091" superClass="gnu.both.asm.option.warnings.nowarn"/>
-<option id="gnu.both.asm.option.version.274489117" superClass="gnu.both.asm.option.version"/>
+<option id="gnu.both.asm.option.flags.1079265237" name="Assembler flags" superClass="gnu.both.asm.option.flags"/>
+<option id="gnu.both.asm.option.include.paths.58602680" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths"/>
+<option id="gnu.both.asm.option.warnings.nowarn.153064091" name="Suppress warnings (-W)" superClass="gnu.both.asm.option.warnings.nowarn"/>
+<option id="gnu.both.asm.option.version.274489117" name="Announce version (-v)" superClass="gnu.both.asm.option.version"/>
+<inputType id="cdt.managedbuild.tool.gnu.assembler.input.24916568" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 </tool>
 <tool id="cdt.managedbuild.tool.gnu.archiver.cygwin.base.231338606" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.cygwin.base"/>
 <tool id="cdt.managedbuild.tool.gnu.cpp.compiler.cygwin.base.1593170322" name="Cygwin C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.cygwin.base"/>
-<tool id="cdt.managedbuild.tool.gnu.c.compiler.cygwin.base.1924102142" name="Cygwin C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.cygwin.base"/>
-<tool id="cdt.managedbuild.tool.gnu.c.linker.cygwin.base.313083987" name="Cygwin C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.cygwin.base"/>
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.cygwin.base.1924102142" name="Cygwin C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.cygwin.base">
+<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin.16396033" superClass="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin"/>
+</tool>
+<tool id="cdt.managedbuild.tool.gnu.c.linker.cygwin.base.313083987" name="Cygwin C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.cygwin.base">
+<option id="gnu.c.link.option.libs.1973221029" superClass="gnu.c.link.option.libs" valueType="libs">
+<listOptionValue builtIn="false" value="m"/>
+</option>
+<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.764738525" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
+<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+<additionalInput kind="additionalinput" paths="$(LIBS)"/>
+</inputType>
+</tool>
 <tool id="cdt.managedbuild.tool.gnu.cpp.linker.cygwin.base.1427370467" name="Cygwin C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.cygwin.base"/>
 </toolChain>
 </folderInfo>
