@@ -13,7 +13,6 @@
 
 package org.amanzi.awe.afp.loaders;
 
-import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.loader.core.parser.LineTransferData;
 import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
 import org.amanzi.neo.loader.core.saver.IStructuredSaver;
@@ -25,7 +24,6 @@ import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
 
 /**
  * <p>
@@ -41,6 +39,7 @@ public class AfpSaver extends AbstractHeaderSaver<LineTransferData> implements I
     private Node afpNeigh;
     private String neighName;
     private Node lastSector;
+    private Node serve;
     
     @Override
     public void init(LineTransferData element) {
@@ -88,7 +87,7 @@ public class AfpSaver extends AbstractHeaderSaver<LineTransferData> implements I
      * @param element
      */
     private void saveNeighbourLine(LineTransferData element) {
-        String line;
+        String line=element.getStringLine();
         try {
             String[] field = line.split("\\s");
             int i = 0;
@@ -121,9 +120,9 @@ public class AfpSaver extends AbstractHeaderSaver<LineTransferData> implements I
         String sectorName = siteName.trim() + field.trim();
         String proxySectorName = neighName + "/" + sectorName;
         
-        Node proxySector = getIndexService().getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS), proxySectorName);
+        Node proxySector = getIndexService().getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS), proxySectorName);
         if (proxySector == null) {
-            Node sector = getIndexService().getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
+            Node sector = getIndexService().getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
             if (sector == null) {
                 error(". Neighbours File. Not found sector " + sectorName);
                 return;
