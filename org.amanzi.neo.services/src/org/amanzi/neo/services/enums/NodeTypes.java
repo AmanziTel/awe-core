@@ -742,7 +742,9 @@ public enum NodeTypes implements INodeType{
             return isGoodLinkForCorrectStructure(aNode, cameFrom, link);
         }
     },
-    UTRAN_DATA("utran_data"), GLOBAL_PROPERTIES("global_properties");
+    UTRAN_DATA("utran_data"), GLOBAL_PROPERTIES("global_properties"),
+    ROOT_PROXY("root_proxy"),
+    PROXY("proxy");
     
     private final String id;
     private boolean nodeReadOnly;

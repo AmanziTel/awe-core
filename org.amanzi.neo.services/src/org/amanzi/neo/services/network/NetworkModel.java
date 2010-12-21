@@ -15,6 +15,9 @@ package org.amanzi.neo.services.network;
 
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
+import org.amanzi.neo.services.node2node.NodeToNodeRelationService.NodeToNodeRelationshipTypes;
+import org.amanzi.neo.services.node2node.NodeToNodeRelationTypes;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -34,6 +37,10 @@ public class NetworkModel {
 		this.rootNode = rootNode;
 		ds = NeoServiceFactory.getInstance().getDatasetService();
 	}
+	
+//	public NodeToNodeRelationModel getInterferenceMatrix() {
+//		return new NodeToNodeRelationModel(rootNode, NodeToNodeRelationTypes.INTERFERENCE_MATRIX);
+//	}
 
 //	public List<NetworkSelectionModel> getSelectionModels() {
 //		List<NetworkSelectionModel> models = ds.getSelectionModels(rootNode);
