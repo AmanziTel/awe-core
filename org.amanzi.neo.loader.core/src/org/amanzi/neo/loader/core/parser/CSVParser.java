@@ -38,7 +38,7 @@ import au.com.bytecode.opencsv.CSVReader;
 public class CSVParser extends CommonFilesParser<BaseTransferData, CommonConfigData> {
     
     protected String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
-    Character delimeters;
+    protected Character delimeters;
     private BaseTransferData initdata;
     private int minSize=2;
 
