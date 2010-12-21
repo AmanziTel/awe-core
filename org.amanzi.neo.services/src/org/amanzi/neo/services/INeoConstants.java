@@ -43,6 +43,8 @@ public class INeoConstants {
     
     public static final String PROPERTY_SECTOR_LAC = "lac";
     public static final String PROPERTY_SECTOR_CI = "ci";
+    public static final String PROPERTY_SECTOR_BSIC = "bsic";
+    public static final String PROPERTY_SECTOR_ARFCN = "arfcn";
     public static final String PROPERTY_SECTOR_NAME = "name";
     public static final String PROPERTY_GIS_TYPE_NAME = "gis_type";
     public static final String PROPERTY_FILENAME_NAME = "filename";

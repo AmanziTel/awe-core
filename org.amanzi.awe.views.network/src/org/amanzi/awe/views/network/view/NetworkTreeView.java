@@ -79,9 +79,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
 import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -545,6 +545,30 @@ public class NetworkTreeView extends ViewPart {
         IMenuManager menu = new MenuManager("Create new element", "new_elem_submenu_ID");
         manager.add(menu);
         fillMenu(menu, (IStructuredSelection)viewer.getSelection());
+
+        IMenuManager selectionMenu = new MenuManager("Selection", "selection_submenu_ID");
+        manager.add(selectionMenu);
+        addSelectionMenu(selectionMenu, (IStructuredSelection)viewer.getSelection());
+    }
+
+    /**
+     * @param menu
+     * @param selection
+     */
+    private void addSelectionMenu(IMenuManager menu, IStructuredSelection selection) {
+        Object element = selection.getFirstElement();
+        if ((element instanceof Root) || !(element instanceof NeoNode))
+            return;
+        Node selectedNode = ((NeoNode)element).getNode();
+        DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
+        INodeType nodeType = ds.getNodeType(selectedNode);
+        if (NodeTypes.NETWORK != nodeType) {
+            return;
+        }
+        Iterable<Relationship> selectionRels = selectedNode.getRelationships(NetworkRelationshipTypes.SELECTION, Direction.OUTGOING);
+        for (Relationship rel : selectionRels) {
+            menu.add(new SetSelectionAction(rel, viewer));
+        }
     }
 
     /**
@@ -571,7 +595,7 @@ public class NetworkTreeView extends ViewPart {
             } else if (sourceType != NodeTypes.SITE) {
                 structureTypes.remove(NodeTypes.SECTOR);
                 // userDefTypes.clear();
-            } 
+            }
             boolean parentPassed = false;
             for (INodeType iNodeType : structureTypes) {
                 if (parentPassed) {
@@ -666,7 +690,8 @@ public class NetworkTreeView extends ViewPart {
     }
 
     protected boolean userConfirmTooLarge(String filemane) {
-        return MessageDialog.openConfirm(viewer.getControl().getShell(), "File is quite large", "The file " + filemane + " is quite large, do you want to open it anyway?");
+        return MessageDialog.openConfirm(viewer.getControl().getShell(), "File is quite large", "The file " + filemane
+                + " is quite large, do you want to open it anyway?");
     }
 
     /**
@@ -853,11 +878,12 @@ public class NetworkTreeView extends ViewPart {
             String nodeType = selectedNode.getType();
             return NodeTypes.SITE.getId().equals(nodeType) || NodeTypes.SECTOR.getId().equals(nodeType) || NodeTypes.CITY.getId().equals(nodeType)
                     || NodeTypes.BSC.getId().equals(nodeType) || NodeTypes.DELTA_NETWORK.getId().equals(nodeType) || NodeTypes.DELTA_SITE.getId().equals(nodeType)
-                    || NodeTypes.DELTA_SECTOR.getId().equals(nodeType) || NodeTypes.MISSING_SITES.getId().equals(nodeType) || NodeTypes.MISSING_SECTORS.getId().equals(nodeType)
-                    || NodeTypes.MISSING_SITE.getId().equals(nodeType) || NodeTypes.MISSING_SECTOR.getId().equals(nodeType) || NodeTypes.M.getId().equalsIgnoreCase(nodeType)
-                    || NodeTypes.PROBE.getId().equalsIgnoreCase(nodeType) || NodeTypes.MP.getId().equalsIgnoreCase(nodeType) || NodeTypes.FILE.getId().equalsIgnoreCase(nodeType)
-                    || NodeTypes.DATASET.getId().equalsIgnoreCase(nodeType) || NodeTypes.CALL.getId().equals(nodeType) || NodeTypes.S_CELL.getId().equals(nodeType)
-                    || NodeTypes.S_ROW.getId().equals(nodeType);
+                    || NodeTypes.DELTA_SECTOR.getId().equals(nodeType) || NodeTypes.MISSING_SITES.getId().equals(nodeType)
+                    || NodeTypes.MISSING_SECTORS.getId().equals(nodeType) || NodeTypes.MISSING_SITE.getId().equals(nodeType)
+                    || NodeTypes.MISSING_SECTOR.getId().equals(nodeType) || NodeTypes.M.getId().equalsIgnoreCase(nodeType)
+                    || NodeTypes.PROBE.getId().equalsIgnoreCase(nodeType) || NodeTypes.MP.getId().equalsIgnoreCase(nodeType)
+                    || NodeTypes.FILE.getId().equalsIgnoreCase(nodeType) || NodeTypes.DATASET.getId().equalsIgnoreCase(nodeType)
+                    || NodeTypes.CALL.getId().equals(nodeType) || NodeTypes.S_CELL.getId().equals(nodeType) || NodeTypes.S_ROW.getId().equals(nodeType);
         }
 
     }
@@ -924,8 +950,8 @@ public class NetworkTreeView extends ViewPart {
                 }
             }
             // try to up by 1 lvl
-            Traverser traverse = node.traverse(Traverser.Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD,
-                    Direction.BOTH);
+            Traverser traverse = node.traverse(Traverser.Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
+                    NetworkRelationshipTypes.CHILD, Direction.BOTH);
             if (traverse.iterator().hasNext()) {
                 node = traverse.iterator().next();
             } else {
@@ -1412,7 +1438,8 @@ public class NetworkTreeView extends ViewPart {
                         final long refId = getService().getReferenceNode().getId();
                         final long netId = networkNode.getId();
                         monitor.subTask("Searching for orphaned nodes");
-                        for (Node node : gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) {
+                        for (Node node : gisNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, GeoNeoRelationshipTypes.NEXT,
+                                Direction.OUTGOING)) {
                             if (!node.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
 
                                 @Override
@@ -1443,8 +1470,8 @@ public class NetworkTreeView extends ViewPart {
                         try {
                             String parentType = "unknown";
                             try {
-                                parentType = networkNode.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator().next().getEndNode().getProperty("type")
-                                        .toString();
+                                parentType = networkNode.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator().next().getEndNode().getProperty(
+                                        "type").toString();
                             } catch (Exception e) {
                             }
                             Node parent = getService().createNode();
@@ -1469,7 +1496,8 @@ public class NetworkTreeView extends ViewPart {
                     Transaction transaction = getService().beginTx();
                     try {
                         for (@SuppressWarnings("unused")
-                        Node nodeToClean : node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                        Node nodeToClean : node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL, NetworkRelationshipTypes.CHILD,
+                                Direction.OUTGOING)) {
                             size++;
                         }
                         transaction.success();
@@ -1594,8 +1622,8 @@ public class NetworkTreeView extends ViewPart {
                         // for performance
                         // but currently has no affect, since we delete previous reports
                         // TODO: Either enable building on previous reports, or delete this code
-                        for (Node node : reportNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD,
-                                Direction.OUTGOING)) {
+                        for (Node node : reportNode.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
+                                NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
                             for (NeoNode networkNode : getValidNodes()) {
                                 if (node.getProperty("name", "").equals(networkNode.toString())) {
                                     missingSitesNodes.put(networkNode.toString(), node);
@@ -1855,7 +1883,8 @@ public class NetworkTreeView extends ViewPart {
         @Override
         public void run() {
             StringBuffer sb = new StringBuffer("report '").append(reportNode.getNode().getProperty("name"));
-            sb.append("' do\n  author '").append(System.getProperty("user.name")).append("'\n  date '").append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'");
+            sb.append("' do\n  author '").append(System.getProperty("user.name")).append("'\n  date '").append(new SimpleDateFormat("yyyy-MM-dd").format(new Date()))
+                    .append("'");
             for (NeoNode node : reportNode.getChildren()) {
                 sb.append("\n  table '").append(node.getNode().getProperty("name")).append("' do\n");
                 NeoNode[] children = node.getChildren();
@@ -2020,8 +2049,8 @@ public class NetworkTreeView extends ViewPart {
                     for (String network : networks) {
                         Node site = nodes.get(network);
                         addProperties(delta, site, null);
-                        for (Node sector : site.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD,
-                                Direction.OUTGOING)) {
+                        for (Node sector : site.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
+                                NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
                             addProperties(delta, sector, sector.getProperty("name").toString());
                         }
                     }

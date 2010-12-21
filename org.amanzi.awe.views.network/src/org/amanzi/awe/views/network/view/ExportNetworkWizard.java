@@ -133,6 +133,7 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
             columnConfigPage = new ExportNetworkWizardColumnsConfigPage("columnConfigPage");
         }
         if (filePropertyPage == null) {
+            // NeoLoaderPlugin.getDefault().getPreferenceStore().getString(DataLoadPreferences.DEFAULT_CHARSET);
             filePropertyPage = new ExportNetworkWizardFilePropertyPage("propertyCSV", "windows-1251", "\t", "\"");
         }
         addPage(selectionPage);

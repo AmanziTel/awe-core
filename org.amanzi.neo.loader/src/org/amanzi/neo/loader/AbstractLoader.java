@@ -29,8 +29,8 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import net.refractions.udig.catalog.CatalogPlugin;
@@ -1038,6 +1038,7 @@ public abstract class AbstractLoader {
         if (monitor != null && !taskSetted) {
             monitor.beginTask(basename, 100);
         }
+
         CountingFileInputStream is = new CountingFileInputStream(new File(filename));
         String characterSet = NeoLoaderPlugin.getCharacterSet();
         BufferedReader reader = new BufferedReader(new InputStreamReader(is, characterSet));

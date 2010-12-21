@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.services.network;
 
+import java.util.List;
+
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
@@ -41,6 +43,12 @@ public class NetworkModel {
 //	public NodeToNodeRelationModel getInterferenceMatrix() {
 //		return new NodeToNodeRelationModel(rootNode, NodeToNodeRelationTypes.INTERFERENCE_MATRIX);
 //	}
+
+    public List<Node> findSectorByBsicAndArfcn(String bsic, String arfcn) {
+        // IndexHits<Node> nodes = ds.findSectorByBsicAndArfcn(bsic, arfcn);
+        return null;
+
+    }
 
 //	public List<NetworkSelectionModel> getSelectionModels() {
 //		List<NetworkSelectionModel> models = ds.getSelectionModels(rootNode);

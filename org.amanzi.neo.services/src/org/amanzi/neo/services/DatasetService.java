@@ -18,9 +18,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
@@ -1496,6 +1498,24 @@ public class DatasetService extends AbstractService {
         } finally {
             tx.finish();
         }
+    }
+
+    /**
+     * @param bsic
+     * @param arfcn
+     * @return
+     */
+    public Set<Node> findSectorByBsicAndArfcn(Node sourceNode, String bsic, String arfcn) {
+        IndexService indServ = getIndexService();
+        Node networkNode = Utils.getParentNode(sourceNode, NodeTypes.NETWORK.getId());
+        String key = Utils.getLuceneIndexKeyByProperty(networkNode, INeoConstants.PROPERTY_SECTOR_BSIC, NodeTypes.SECTOR);
+        IndexHits<Node> bsicNodes = indServ.getNodes(key, bsic);
+        key = Utils.getLuceneIndexKeyByProperty(networkNode, INeoConstants.PROPERTY_SECTOR_ARFCN, NodeTypes.SECTOR);
+        IndexHits<Node> arfcnNodes = indServ.getNodes(key, arfcn);
+
+        Set<Node> result = new HashSet<Node>();
+
+        return null;
     }
 
 }
