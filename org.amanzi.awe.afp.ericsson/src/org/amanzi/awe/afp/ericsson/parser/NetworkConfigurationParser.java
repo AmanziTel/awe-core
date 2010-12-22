@@ -13,10 +13,15 @@
 
 package org.amanzi.awe.afp.ericsson.parser;
 
+import java.io.File;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 
+import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.parser.CSVParser;
+import org.amanzi.neo.loader.core.saver.ISaver;
 
 /**
  * TODO Purpose of 
@@ -27,13 +32,28 @@ import org.amanzi.neo.loader.core.parser.CSVParser;
  * @since 1.0.0
  */
 public class NetworkConfigurationParser extends CSVParser{
+    private Collection<File> bsmFiles=new LinkedHashSet<File>();
     NetworkConfigurationParser(){
         super();
         delimeters=' ';
     }
     @Override
+    public void init(CommonConfigData properties, ISaver<BaseTransferData> saver) {
+        super.init(properties, saver);
+        Collection<File> bsmList = (Collection<File>)properties.getAdditionalProperties().get("BSM_FILES");
+        bsmFiles.clear();
+        if (bsmList!=null){
+            bsmFiles.addAll(bsmList); 
+        }
+    }
+    @Override
     protected List<org.amanzi.neo.loader.core.parser.CommonFilesParser.FileElement> getElementList() {
-        return super.getElementList();
+        List<FileElement> result = super.getElementList();
+        String descr = getDescriptionFormat();
+        for (File file : bsmFiles) {
+            result.add(new FileElement(file, descr));
+        }
+        return result;
     }
     @Override
     protected boolean parseElement(org.amanzi.neo.loader.core.parser.CommonFilesParser.FileElement element) {
@@ -50,12 +70,8 @@ public class NetworkConfigurationParser extends CSVParser{
         result.put("fileType", isCNAFile(element)?NetworkConfigurationFileTypes.CNA.name():NetworkConfigurationFileTypes.BSM.name());
         return result;
     }
-    /**
-     *
-     * @param element
-     * @return
-     */
+
     private boolean isCNAFile(org.amanzi.neo.loader.core.parser.CommonFilesParser.FileElement element) {
-        return false;
+        return !bsmFiles.contains(element.getFile());
     }
 }
