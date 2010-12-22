@@ -58,4 +58,12 @@ public class NodeToNodeRelationModel {
 	public Node getLastChild() { 
 		return lastChildNode;
 	}
+	
+	public Relationship getRelation(Node servingNode, Node dependentNode) {
+		return null;
+	}
+	
+	public Relationship getRelation(String servingNode, String dependentNode) {
+		return null;
+	}
 }

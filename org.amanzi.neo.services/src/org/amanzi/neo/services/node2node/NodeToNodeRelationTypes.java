@@ -10,9 +10,7 @@ import org.neo4j.graphdb.RelationshipType;
  *
  */
 public enum NodeToNodeRelationTypes implements INodeToNodeRelationType {
-	INTERFERENCE_MATRIX(NodeToNodeRelationService.NodeToNodeRelationshipTypes.INTERFERENCE_MATRIX),
-	NEIGHBOURS(null),
-	PROXY(null);
+	INTERFERENCE_MATRIX(NodeToNodeRelationService.NodeToNodeRelationshipTypes.INTERFERENCE_MATRIX);
 	
 	private RelationshipType relationshipType;
 	

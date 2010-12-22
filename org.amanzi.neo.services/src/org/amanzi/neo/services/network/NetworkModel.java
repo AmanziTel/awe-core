@@ -18,7 +18,6 @@ import java.util.List;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
-import org.amanzi.neo.services.node2node.NodeToNodeRelationService.NodeToNodeRelationshipTypes;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationTypes;
 import org.neo4j.graphdb.Node;
 
@@ -32,6 +31,7 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class NetworkModel {
+	
 	private final Node rootNode;
 	private final DatasetService ds;
 
@@ -40,9 +40,9 @@ public class NetworkModel {
 		ds = NeoServiceFactory.getInstance().getDatasetService();
 	}
 	
-//	public NodeToNodeRelationModel getInterferenceMatrix() {
-//		return new NodeToNodeRelationModel(rootNode, NodeToNodeRelationTypes.INTERFERENCE_MATRIX);
-//	}
+	public NodeToNodeRelationModel getInterferenceMatrix(String name) {
+		return new NodeToNodeRelationModel(rootNode, NodeToNodeRelationTypes.INTERFERENCE_MATRIX, name);
+	}
 
     public List<Node> findSectorByBsicAndArfcn(String bsic, String arfcn) {
         // IndexHits<Node> nodes = ds.findSectorByBsicAndArfcn(bsic, arfcn);
