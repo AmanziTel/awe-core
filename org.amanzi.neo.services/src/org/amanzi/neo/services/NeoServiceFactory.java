@@ -1,6 +1,7 @@
 package org.amanzi.neo.services;
 
 import org.amanzi.neo.services.correlation.CorrelationService;
+import org.amanzi.neo.services.node2node.NodeToNodeRelationService;
 
 
 /* AWE - Amanzi Wireless Explorer
@@ -31,6 +32,9 @@ public class NeoServiceFactory {
     private DatasetService datasetService = null;
     private CorrelationService correlationService = null;
     private AweProjectService projectService=null;
+    
+    private NodeToNodeRelationService node2nodeRelationService = null;
+    private final Object node2nodeServiceMonitor = new Object();
     
     public static  NeoServiceFactory getInstance() {
         return instance;
@@ -78,6 +82,17 @@ public class NeoServiceFactory {
         }
         return projectService;
     }
-    
+
+    public NodeToNodeRelationService getNodeToNodeRelationService() {
+    	if (node2nodeRelationService == null) {
+    		synchronized (node2nodeServiceMonitor) {
+    			if (node2nodeRelationService == null) {
+    				node2nodeRelationService = new NodeToNodeRelationService();
+    			}
+			}
+    	}
+    	
+    	return node2nodeRelationService;
+    }
     
 }

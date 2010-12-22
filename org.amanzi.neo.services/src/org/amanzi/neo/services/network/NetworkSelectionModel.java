@@ -31,6 +31,8 @@ import org.neo4j.graphdb.Relationship;
 public class NetworkSelectionModel {
     private Node networkNode;
     private DatasetService ds;
+    
+    
 
     public NetworkSelectionModel(Node networkNode) {
         this.networkNode = networkNode;

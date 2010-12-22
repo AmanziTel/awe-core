@@ -8,6 +8,7 @@ import java.util.Iterator;
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
@@ -24,13 +25,13 @@ import org.neo4j.kernel.Traversal;
  */
 public class NodeToNodeRelationService extends AbstractService {
 	public enum NodeToNodeRelationshipTypes implements RelationshipType {
-		INTERFERENCE_MATRIX;
+		INTERFERENCE_MATRIX, SHADOWING, NEIGHBOURS, TRIANGULATION;
 	}
 	
 	private DatasetService datasetService;
 	
 	public NodeToNodeRelationService() {
-		datasetService = new DatasetService();
+		datasetService = NeoServiceFactory.getInstance().getDatasetService();
 	}
 	
 	public Node findNodeToNodeRelationsRoot(Node rootNode, INodeToNodeRelationType type, final String nameRelation) {	
@@ -79,7 +80,7 @@ public class NodeToNodeRelationService extends AbstractService {
 	public Node createProxy(String index, String name, Node rootNode, Node lastChild) {
 		Node node = datasetService.createNode(NodeTypes.PROXY, name);
 		datasetService.addChild(rootNode, node, lastChild);
-		getIndexService().index(node, index, name);
+		getIndexService().index(node, index, name);		
 		
 		return node;
 	}
@@ -96,5 +97,62 @@ public class NodeToNodeRelationService extends AbstractService {
 				}
 			   }).
 			   traverse(rootNode).relationships().iterator();
+	}
+	
+	/**
+	 * Clears Node2Node relations model
+	 * 
+	 * @param rootNode root node of structure
+	 * @param indexKeys used names of indexes 
+	 * @param deleteRootNode is it need to delete root node of model
+	 */
+	public void clearNodeToNodeStructure(Node rootNode, String[] indexKeys, boolean deleteRootNode) { 
+		Iterator<Node> proxyNodes = datasetService.getChildTraversal(null).traverse(rootNode).nodes().iterator();
+		while (proxyNodes.hasNext()) {
+			Node proxy = proxyNodes.next();
+			
+			Iterator<Relationship> relationIterator = proxy.getRelationships().iterator();
+			while (relationIterator.hasNext()) {
+				relationIterator.next().delete();
+			}
+			
+			proxy.delete();
+		}
+		
+		for (String singleIndex : indexKeys) {
+			getIndexService().removeIndex(singleIndex);
+		}
+		
+		if (deleteRootNode) {
+			rootNode.delete();
+		}
+	}
+	
+	public String getIndexKeyForRelation(Node rootNode, RelationshipType relationshipType) {
+		return new StringBuilder("Id").append(rootNode.getId()).append("@").append(relationshipType.name()).toString();
+	}
+	
+	public Relationship getRelation(String servingNodeId, String dependentNodeId, INodeToNodeRelationType relationType, String proxyIndexKey) {
+		//TODO: LN: in Neo4j 1.2 more flexible indexing mechanism - we can index not only nodes, but also relationships
+		//use this since we will move to Neo4j 1.2
+		
+		Node servingProxyNode = getIndexService().getSingleNode(proxyIndexKey, servingNodeId);
+		
+		if (servingProxyNode == null) {
+			return null;
+		}
+		else {
+			Iterator<Relationship> candidates = servingProxyNode.getRelationships(relationType.getRelationType(), Direction.OUTGOING).iterator();
+			
+			while (candidates.hasNext()) {
+				Relationship candidateRelation = candidates.next();
+				
+				if (datasetService.getNodeName(candidateRelation.getEndNode()).equals(dependentNodeId)) {
+					return candidateRelation;
+				}
+			}
+			
+			return null;
+		}
 	}
 }

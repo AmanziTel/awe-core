@@ -6,7 +6,9 @@ package org.amanzi.neo.services.node2node;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.utils.Utils;
 import org.neo4j.graphdb.Node;
@@ -21,14 +23,18 @@ public class NodeToNodeRelationModel {
 	private Node rootNode;
 	private INodeToNodeRelationType type;
 	private NodeToNodeRelationService node2nodeRelationService;
+	private DatasetService datasetService;
 	private Node lastChildNode = null;
-	private String indexKey;
+	private String proxyIndexKey;
 	
 	public NodeToNodeRelationModel(Node rootModelNode, INodeToNodeRelationType type, String name) {
-		node2nodeRelationService = new NodeToNodeRelationService();
+		datasetService = NeoServiceFactory.getInstance().getDatasetService();
+		node2nodeRelationService = NeoServiceFactory.getInstance().getNodeToNodeRelationService();
+		
 		this.type = type;
-		this.rootNode = node2nodeRelationService.getNodeToNodeRelationsRoot(rootModelNode, NodeToNodeRelationTypes.INTERFERENCE_MATRIX, name);
-		setIndexKey(rootNode);
+		this.rootNode = node2nodeRelationService.getNodeToNodeRelationsRoot(rootModelNode, type, name);
+		
+		proxyIndexKey = Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.PROXY);
 	}
 	
 	public void addRelation(Node servingNode, Node dependentNode, Map<String, Object> parameters) {		
@@ -39,20 +45,17 @@ public class NodeToNodeRelationModel {
 		for (Entry<String, Object> entry : parameters.entrySet()) {
 			relationship.setProperty(entry.getKey(), entry.getValue());
 		}
+		
+		
 	}
 	
 	private Node getProxy(String name) {
-		Node node = node2nodeRelationService.findProxy(indexKey, name);
+		Node node = node2nodeRelationService.findProxy(proxyIndexKey, name);
 		if (node == null) {
-			node = node2nodeRelationService.createProxy(indexKey, name, rootNode, lastChildNode);
+			node = node2nodeRelationService.createProxy(proxyIndexKey, name, rootNode, lastChildNode);
 			lastChildNode = node;
 		}
 		return node;
-	}
-	
-	private void setIndexKey(Node rootNode) {
-		indexKey = Utils.getLuceneIndexKeyByProperty(rootNode, 
-				INeoConstants.PROPERTY_NAME_NAME, NodeTypes.PROXY);
 	}
 	
 	public Node getLastChild() { 
@@ -60,10 +63,22 @@ public class NodeToNodeRelationModel {
 	}
 	
 	public Relationship getRelation(Node servingNode, Node dependentNode) {
-		return null;
+		String servingName = datasetService.getNodeName(servingNode);
+		String dependentName = datasetService.getNodeName(dependentNode);
+		
+		return getRelation(servingName, dependentName);
 	}
 	
-	public Relationship getRelation(String servingNode, String dependentNode) {
-		return null;
+	public Relationship getRelation(String servingNodeId, String dependentNodeId) {
+		return node2nodeRelationService.getRelation(servingNodeId, dependentNodeId, type, proxyIndexKey);
+	}
+	
+	/**
+	 * Cleares Model
+	 * 
+	 * @param deleteRootNode is Root Node should be deleted
+	 */
+	public void clear(boolean deleteRootNode) {
+		node2nodeRelationService.clearNodeToNodeStructure(rootNode, new String[] {proxyIndexKey}, deleteRootNode);
 	}
 }
