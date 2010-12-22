@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension
+         point="org.amanzi.loader.core.parser">
+      <parser
+            class="org.amanzi.awe.afp.ericsson.parser.NetworkConfigurationParser"
+            id="org.amanzi.awe.afp.ericsson.parser.NetworkConfigurationParser">
+      </parser>
+   </extension>
+   <extension
+         point="org.amanzi.loader.core.saver">
+      <saver
+            class="org.amanzi.awe.afp.ericsson.parser.NetworkConfigurationSaver"
+            id="org.amanzi.awe.afp.ericsson.parser.NetworkConfigurationSaver">
+      </saver>
+   </extension>
+   <extension
+         point="org.amanzi.neo.loader.ui.loaders">
+      <loader
+            description="Network Ericsson(Test only!)"
+            gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
+            parser="org.amanzi.awe.afp.ericsson.parser.NetworkConfigurationParser"
+            saver="org.amanzi.awe.afp.ericsson.parser.NetworkConfigurationSaver">
+      </loader>
+   </extension>
+
+</plugin>

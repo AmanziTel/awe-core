@@ -35,6 +35,7 @@ public class NeoServiceFactory {
     
     private NodeToNodeRelationService node2nodeRelationService = null;
     private final Object node2nodeServiceMonitor = new Object();
+    private NetworkService networkService;
     
     public static  NeoServiceFactory getInstance() {
         return instance;
@@ -93,6 +94,16 @@ public class NeoServiceFactory {
     	}
     	
     	return node2nodeRelationService;
+    }
+    public NetworkService getNetworkService() {
+        if (networkService == null) {
+            synchronized (datasetMon) {
+                if (networkService == null) {
+                    networkService = new NetworkService();
+                }
+            }
+        }
+        return networkService;
     }
     
 }

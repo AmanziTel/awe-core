@@ -1210,7 +1210,11 @@ public class DatasetService extends AbstractService {
         String luceneIndexKeyByProperty = Utils.getLuceneIndexKeyByProperty(neighbourRoot, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS);
         Node proxySector = null;
         for (Node node : getIndexService().getNodes(luceneIndexKeyByProperty, proxySectorName)) {
-            if (node.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOURS, Direction.INCOMING).getOtherNode(node).equals(sector)) {
+            Relationship singleRelationship = node.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOURS, Direction.INCOMING);
+            if (singleRelationship==null){
+                System.err.println("sss");
+            }
+            if (singleRelationship.getOtherNode(node).equals(sector)) {
                 proxySector = node;
                 break;
             }
@@ -1220,6 +1224,7 @@ public class DatasetService extends AbstractService {
             Transaction tx = databaseService.beginTx();
             try {
                 proxySector = createNode(NodeTypes.SECTOR_SECTOR_RELATIONS, proxySectorName);
+                sector.createRelationshipTo(proxySector,NetworkRelationshipTypes.NEIGHBOURS);
                 getIndexService().index(proxySector, luceneIndexKeyByProperty, proxySectorName);
                 isCreated = true;
                 // TODO check documentation

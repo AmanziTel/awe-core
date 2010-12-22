@@ -1,12 +1,14 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Ericsson
-Bundle-SymbolicName: org.amanzi.awe.afp.ericsson
+Bundle-SymbolicName: org.amanzi.awe.afp.ericsson;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: org.amanzi.awe.afp.ericsson.Activator
 Require-Bundle: org.eclipse.core.runtime,
  net.refractions.udig.libs;bundle-version="1.1.1",
- org.amanzi.awe.ui;bundle-version="1.0.0"
+ org.amanzi.neo.loader.core,
+ org.eclipse.ui;bundle-version="3.3.1",
+ org.amanzi.awe.ui;bundle-version="1.0.0",
+ org.amanzi.neo.loader.ui;bundle-version="1.0.0"
 Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Import-Package: org.amanzi.awe.gpeh,
@@ -14,3 +16,7 @@ Import-Package: org.amanzi.awe.gpeh,
  org.amanzi.neo.loader.core,
  org.amanzi.neo.loader.core.parser,
  org.amanzi.neo.loader.core.saver
+Export-Package: org.amanzi.awe.afp.ericsson,
+ org.amanzi.awe.afp.ericsson.parser
+Bundle-Activator: org.amanzi.awe.afp.ericsson.Activator
+Bundle-Vendor: amanzi.org

@@ -14,52 +14,246 @@
 package org.amanzi.awe.afp.ericsson.parser;
 
 import java.util.Arrays;
+import java.util.Iterator;
 
-import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
 import org.amanzi.neo.loader.core.saver.IStructuredSaver;
 import org.amanzi.neo.loader.core.saver.MetaData;
+import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.DatasetService.NodeResult;
 import org.amanzi.neo.services.GisProperties;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.NetworkService;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.utils.Utils;
+import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author TsAr
  * @since 1.0.0
  */
-public class NetworkConfigurationSaver extends AbstractHeaderSaver<BaseTransferData> implements IStructuredSaver<BaseTransferData>{
-    private final MetaData metadata=new MetaData("network", MetaData.SUB_TYPE,"radio");
+public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfigurationTransferData> implements IStructuredSaver<NetworkConfigurationTransferData> {
+    private final MetaData metadata = new MetaData("network", MetaData.SUB_TYPE, "radio");
     private NetworkConfigurationFileTypes type;
+    private NetworkService networkService;
+    private Node neighbourRoot;
+    private String neighName;
+
     @Override
-    public void init(BaseTransferData element) {
+    public void init(NetworkConfigurationTransferData element) {
         super.init(element);
+        networkService = NeoServiceFactory.getInstance().getNetworkService();
         startMainTx(2000);
     }
+
     @Override
-    public void save(BaseTransferData element) {
+    public void save(NetworkConfigurationTransferData element) {
+        if (type == NetworkConfigurationFileTypes.CNA) {
+            saveCNALine(element);
+        } else {
+            saveBSMLine(element);
+        }
+    }
+
+    /**
+     * @param element
+     */
+    private void saveCNALine(NetworkConfigurationTransferData element) {
+        String bscName = getStringValue("BSC", element);
+        // TODO add vendor as property of BSC if necessary - but not from file - maybe from parser
+
+        if (StringUtils.isEmpty(bscName)) {
+            info(String.format("Line N%s not parsed - field '%s' is empty", element.getLine(), "BSC"));
+            return;
+        }
+        Node bscNode = networkService.getBscNode(rootNode, bscName, rootNode);
+        String sectorName = getStringValue("CELL", element);
+        if (StringUtils.isEmpty(sectorName)) {
+            info(String.format("Line N%s - field '%s' is empty", element.getLine(), "cell"));
+            return;
+        }
+        String siteName = getStringValue("SITE", element);
+        if (siteName == null) {
+            siteName = sectorName.substring(0, sectorName.length() - 1);
+        }
+        if (StringUtils.isEmpty(siteName)) {
+            info(String.format("Line N%s - field '%s' is empty", element.getLine(), "SITE"));
+            return;
+        }
+        Node site = networkService.getSite(rootNode, siteName, bscNode);
+        Integer ci = getNumberValue(Integer.class, "ci", element);
+        Integer lac = getNumberValue(Integer.class, "lac", element);
+
+        Node sector = networkService.findSector(rootNode, ci, lac, sectorName, true);
+        if (sector == null) {
+            sector = networkService.createSector(rootNode, site, sectorName, ci, lac);
+            updateTx(1, 1);
+            if (ci != null) {
+                statistic.indexValue(rootname, NodeTypes.SECTOR.getId(), INeoConstants.PROPERTY_SECTOR_CI, ci);
+            }
+            if (lac != null) {
+                statistic.indexValue(rootname, NodeTypes.SECTOR.getId(), INeoConstants.PROPERTY_SECTOR_LAC, lac);
+            }
+        }
+        String bcc = getStringValue("bcc", element);
+        boolean notEmptyBcc = StringUtils.isNotEmpty(bcc);
+        String ncc = getStringValue("ncc", element);
+        boolean notEmptyNcc = StringUtils.isNotEmpty(ncc);
+        if (notEmptyBcc) {
+            updateProperty(rootname, NodeTypes.SECTOR.getId(), sector, "bcc", bcc);
+        }
+        if (notEmptyNcc) {
+            updateProperty(rootname, NodeTypes.SECTOR.getId(), sector, "ncc", ncc);
+        }
+        if (notEmptyBcc && notEmptyNcc) {
+            String bsic = bcc.matches("0+") ? ncc : bcc + ncc;
+            networkService.indexProperty(rootNode, sector, "BSIC", bsic);
+        }
+        Integer bcchno = getNumberValue(Integer.class, "bcchno", element);
+        updateProperty(rootname, NodeTypes.SECTOR.getId(), sector, "bcchno", bcchno);
+        for (int i = 0; i < 16; i++) {
+            if (getStringValue("ch_group_" + i, element) != null) {
+                storeChannalInfo(sector, i, element);
+            }
+        }
+        // TODO NEIGHBOUR creation should be refactored if physical network file will be loaded
+        // AFTER CNA files...
+        for (int i = 0; i <= 63; i++) {
+            String neighbour = getStringValue("n_cell_" + i, element);
+            if (StringUtils.isNotEmpty(neighbour)) {
+                Node neighbourSector = networkService.findSector(rootNode, null, null, neighbour, true);
+                if (neighbourSector == null) {
+                    info(String.format("Line %s: Neighbour sector with name %s not found", element.getLine(), neighbour));
+                    continue;
+                }
+                getNeighbourRelation(neighbourRoot, sector, neighbourSector);
+            }
+        }
+        updateTx(5, 5);// not real values. for real values methods getXXX should return NodeResult
+                       // values
+
+    }
+
+    /**
+     * @param neighbourRoot
+     * @param sector
+     * @param neighbourSector
+     * @return
+     */
+    public Relationship getNeighbourRelation(Node neighbourRoot, Node sector, Node neighbourSector) {
+        DatasetService service = NeoServiceFactory.getInstance().getDatasetService();
+        NodeResult proxyServ = service.getNeighbourProxy(neighbourRoot, sector);
+        if (proxyServ.isCreated()) {
+            updateTx(1, 1);
+            statistic.updateTypeCount(neighName, NodeTypes.SECTOR_SECTOR_RELATIONS.getId(), 1);
+        }
+        NodeResult proxyNeigh = service.getNeighbourProxy(neighbourRoot, neighbourSector);
+        if (proxyNeigh.isCreated()) {
+            updateTx(1, 1);
+            statistic.updateTypeCount(neighName, NodeTypes.SECTOR_SECTOR_RELATIONS.getId(), 1);
+        }
+        Relationship rel;
+        if (proxyServ.isCreated() || proxyNeigh.isCreated()) {
+            rel = proxyServ.createRelationshipTo(proxyNeigh, NetworkRelationshipTypes.NEIGHBOUR);
+            updateTx(0, 1);
+        } else {
+            Iterator<Relationship> it = Utils.getRelations(proxyServ, proxyNeigh, NetworkRelationshipTypes.NEIGHBOUR).iterator();
+            rel = it.hasNext() ? it.next() : null;
+            if (rel == null) {
+                rel = proxyServ.createRelationshipTo(proxyNeigh, NetworkRelationshipTypes.NEIGHBOUR);
+                updateTx(0, 1);
+            }
+        }
+        return rel;
+
+    }
+
+    /**
+     * Store channal info.
+     * 
+     * @param sector the sector
+     * @param i the i
+     * @param element the element
+     */
+    private void storeChannalInfo(Node sector, int i, NetworkConfigurationTransferData element) {
+        Node channalGr = networkService.getChannelNode(sector, i);
+        String tg = getStringValue(i, "chgr_tg", element);
+        if (StringUtils.isNotEmpty(tg)) {
+            channalGr.setProperty("tg", tg);
+        }
+        String sctype = getStringValue(i, "sctype", element);
+        if (StringUtils.isNotEmpty(sctype)) {
+            channalGr.setProperty("sctype", sctype);
+        }
+        String band = getStringValue(i, "band", element);
+        if (StringUtils.isNotEmpty(band)) {
+            channalGr.setProperty("band", band);
+        }
+        String hop = getStringValue(i, "hop", element);
+        if (StringUtils.isNotEmpty(hop)) {
+            channalGr.setProperty("hop", hop);
+        }
+        // TODO implement;
+    }
+
+    /**
+     * Gets the string value.
+     * 
+     * @param num the num
+     * @param header the header
+     * @param element the element
+     * @return the string value
+     */
+    private String getStringValue(int num, String header, NetworkConfigurationTransferData element) {
+        int ind = -1;
+        for (int i = 0; i < element.getHeaders().length; i++) {
+            if (element.getHeaders()[i].equals(header)) {
+                if (++ind == num) {
+                    String value = element.getValuesData()[i];
+                    return value.equalsIgnoreCase("NULL") ? null : value;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Save bsm line.
+     * 
+     * @param element the element
+     */
+    private void saveBSMLine(NetworkConfigurationTransferData element) {
     }
 
     @Override
     public Iterable<MetaData> getMetaData() {
-        return Arrays.asList(new MetaData[]{metadata});
+        return Arrays.asList(new MetaData[] {metadata});
     }
 
     @Override
-    public boolean beforeSaveNewElement(BaseTransferData element) {
-         type=NetworkConfigurationFileTypes.valueOf(element.get("fileType"));
+    public boolean beforeSaveNewElement(NetworkConfigurationTransferData element) {
+        type = element.getType();
+        if (type == NetworkConfigurationFileTypes.CNA) {
+            neighName = rootname + "neigh";
+            neighbourRoot = service.getNeighbour(rootNode, neighName);
+        }
         return false;
     }
 
     @Override
-    public void finishSaveNewElement(BaseTransferData element) {
+    public void finishSaveNewElement(NetworkConfigurationTransferData element) {
     }
 
     @Override
-    protected void fillRootNode(Node rootNode, BaseTransferData element) {
+    protected void fillRootNode(Node rootNode, NetworkConfigurationTransferData element) {
     }
 
     @Override
@@ -72,5 +266,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<BaseTransferD
         return null;
     }
 
+    public static void main(String[] args) {
 
+    }
 }

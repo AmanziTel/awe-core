@@ -19,8 +19,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.amanzi.neo.loader.core.CommonConfigData;
-import org.amanzi.neo.loader.core.parser.BaseTransferData;
-import org.amanzi.neo.loader.core.parser.CSVParser;
+import org.amanzi.neo.loader.core.parser.AbstractCSVParser;
 import org.amanzi.neo.loader.core.saver.ISaver;
 
 /**
@@ -31,14 +30,17 @@ import org.amanzi.neo.loader.core.saver.ISaver;
  * @author TsAr
  * @since 1.0.0
  */
-public class NetworkConfigurationParser extends CSVParser{
+public class NetworkConfigurationParser extends AbstractCSVParser<NetworkConfigurationTransferData> {
     private Collection<File> bsmFiles=new LinkedHashSet<File>();
-    NetworkConfigurationParser(){
+
+
+    private NetworkConfigurationTransferData initdata;
+    public  NetworkConfigurationParser(){
         super();
         delimeters=' ';
     }
     @Override
-    public void init(CommonConfigData properties, ISaver<BaseTransferData> saver) {
+    public void init(CommonConfigData properties, ISaver<NetworkConfigurationTransferData> saver) {
         super.init(properties, saver);
         Collection<File> bsmList = (Collection<File>)properties.getAdditionalProperties().get("BSM_FILES");
         bsmFiles.clear();
@@ -56,6 +58,23 @@ public class NetworkConfigurationParser extends CSVParser{
         return result;
     }
     @Override
+    protected NetworkConfigurationTransferData createTransferData(FileElement element, String[] header, String[] nextLine, long line) {
+        NetworkConfigurationTransferData data =createEmptyTransferData();
+        data.setLine(line);
+        data.setFileName(element.getFile().getName());
+        for (int i = 0; i < header.length; i++) {
+            
+            String value = nextLine[i];
+            if ("NULL".equalsIgnoreCase(value)){
+                continue;
+            }
+            data.put(header[i], value);
+        }     
+        data.setHeaders(header);
+        data.setValuesData(nextLine);
+        return data;
+    }
+    @Override
     protected boolean parseElement(org.amanzi.neo.loader.core.parser.CommonFilesParser.FileElement element) {
         if (isCNAFile(element)){
             return super.parseElement(element);
@@ -65,13 +84,22 @@ public class NetworkConfigurationParser extends CSVParser{
         }
     }
     @Override
-    protected BaseTransferData getStartupElement(org.amanzi.neo.loader.core.parser.CommonFilesParser.FileElement element) {
-        BaseTransferData result = super.getStartupElement(element);
-        result.put("fileType", isCNAFile(element)?NetworkConfigurationFileTypes.CNA.name():NetworkConfigurationFileTypes.BSM.name());
+    protected NetworkConfigurationTransferData getStartupElement(FileElement element) {
+        NetworkConfigurationTransferData result=super.getStartupElement(element);
+        result.setType(isCNAFile(element)?NetworkConfigurationFileTypes.CNA:NetworkConfigurationFileTypes.BSM);
         return result;
     }
 
     private boolean isCNAFile(org.amanzi.neo.loader.core.parser.CommonFilesParser.FileElement element) {
         return !bsmFiles.contains(element.getFile());
     }
+
+    @Override
+    protected NetworkConfigurationTransferData createEmptyTransferData() {
+        return new NetworkConfigurationTransferData();
+    }
+public static void main(String[] args) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+   Object l = Class.forName("org.amanzi.awe.afp.ericsson.parser.NetworkConfigurationParser").newInstance();
+   System.out.println(l);
+}
 }

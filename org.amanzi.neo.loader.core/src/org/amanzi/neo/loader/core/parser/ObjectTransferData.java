@@ -16,15 +16,14 @@ package org.amanzi.neo.loader.core.parser;
 
 /**
  * <p>
- * TransferData contains information about headers (key - header(column name), value - value from table)
- * </p>.
- *
+ *Object transfer data
+ * </p>
  * @author TsAr
  * @since 1.0.0
  */
-public class BaseTransferData extends MapBasedTransferData<String, String> {
+public class ObjectTransferData  extends MapBasedTransferData<String, Object> {
 
-    /** long serialVersionUID field. */
-    private static final long serialVersionUID = -5686953917241479358L;
-    
+    /** long serialVersionUID field */
+    private static final long serialVersionUID = -7569678408215848038L;
+
 }

@@ -134,6 +134,7 @@ public class Utils {
      * @throws IllegalAccessException the illegal access exception
      * @throws InvocationTargetException the invocation target exception
      */
+    //TODO maybe use valueOf method
     @SuppressWarnings("unchecked")
     public static <T extends Number> T getNumberValue(Class<T> klass, String value) throws SecurityException, NoSuchMethodException, IllegalArgumentException,
             IllegalAccessException, InvocationTargetException {
