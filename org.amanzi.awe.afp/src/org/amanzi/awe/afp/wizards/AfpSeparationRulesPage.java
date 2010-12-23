@@ -3,6 +3,7 @@ package org.amanzi.awe.afp.wizards;
 import java.util.HashMap;
 
 import org.amanzi.awe.afp.models.AfpModel;
+import org.amanzi.awe.afp.models.AfpSeparationDomainModel;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -145,6 +146,10 @@ public class AfpSeparationRulesPage extends WizardPage {
 	
 	public void refreshPage(){
 		
+		AfpSeparationDomainModel sectorDomainModel = new AfpSeparationDomainModel();
+		sectorDomainModel.setName(defaultDomainName);
+		sectorDomainModel.setSeparations(new String[]{"todo"});
+		model.addSectorSeparationDomain(sectorDomainModel);
 		Label defaultSectorDomainLabel = new Label(sectorDomainsGroup, SWT.LEFT);
 		defaultSectorDomainLabel.setText(defaultDomainName);
 		//TODO: update the TRXs by default here
@@ -154,6 +159,10 @@ public class AfpSeparationRulesPage extends WizardPage {
 	
 		sectorDomainsGroup.layout();
 		
+		AfpSeparationDomainModel siteDomainModel = new AfpSeparationDomainModel();
+		siteDomainModel.setName(defaultDomainName);
+		siteDomainModel.setSeparations(new String[]{"todo"});
+		model.addSiteSeparationDomain(siteDomainModel);
 		Label defaultSiteDomainLabel = new Label(siteDomainsGroup, SWT.LEFT);
 		defaultSiteDomainLabel.setText(defaultDomainName);
 		//TODO: update the TRXs by default here

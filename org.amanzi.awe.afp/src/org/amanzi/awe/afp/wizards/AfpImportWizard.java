@@ -21,6 +21,8 @@ import org.amanzi.awe.afp.ControlFileProperties;
 import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.loaders.AfpLoader;
 import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
+import org.amanzi.awe.afp.models.AfpHoppingMALDomainModel;
+import org.amanzi.awe.afp.models.AfpSeparationDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.services.INeoConstants;
@@ -126,10 +128,14 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
             afpNode.setProperty(INeoConstants.AFP_FREQUENCY_BAND, model.getFrequencyBands());
             afpNode.setProperty(INeoConstants.AFP_CHANNEL_TYPE, model.getChanneltypes());
             afpNode.setProperty(INeoConstants.AFP_ANALYZE_CURRENT, model.isAnalyzeCurrentFreqAllocation());
-            afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_900, model.getAvailableFreq900());
-            afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_1800, model.getAvailableFreq1800());
-            afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_850, model.getAvailableFreq850());
-            afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_1900, model.getAvailableFreq1900());
+            if (model.getAvailableFreq900() != null)
+            	afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_900, model.getAvailableFreq900());
+            if (model.getAvailableFreq1800() != null)
+            	afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_1800, model.getAvailableFreq1800());
+            if (model.getAvailableFreq850() != null)
+            	afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_850, model.getAvailableFreq850());
+            if (model.getAvailableFreq1900() != null)
+            	afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_1900, model.getAvailableFreq1900());
             afpNode.setProperty(INeoConstants.AFP_AVAILABLE_BCCS, model.getAvailableBCCs());
             afpNode.setProperty(INeoConstants.AFP_AVAILABLE_NCCS, model.getAvailableNCCs());
             //TODO create domain nodes
@@ -146,11 +152,26 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
             afpNode.setProperty(INeoConstants.AFP_ADJ_SHADOWING_VALUES, model.getAdjShadowing());
                 
             for (AfpFrequencyDomainModel frequencyModel : model.getFreqDomains()){
-            	
+            	AfpWizardUtils.createFrequencyDomainNode(afpNode, frequencyModel, servise);
+            }
+            
+            for (AfpHoppingMALDomainModel malModel : model.getMalDomains()){
+            	AfpWizardUtils.createHoppingMALDomainNode(afpNode, malModel, servise);
+            }
+            
+            for (AfpSeparationDomainModel separationsModel : model.getSectorSeparationDomains()){
+            	AfpWizardUtils.createSectorSeparationDomainNode(afpNode, separationsModel, servise);
+            }
+            
+            for (AfpSeparationDomainModel separationsModel : model.getSiteSeparationDomains()){
+            	AfpWizardUtils.createSiteSeparationDomainNode(afpNode, separationsModel, servise);
             }
                 
 	    	
-    	} finally{
+    	} catch (Exception e){
+    		AweConsolePlugin.exception(e);
+    	}
+    	finally{
     		tx.finish();
     	}
     	
@@ -186,6 +207,7 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
     	addPage(scalingPage);
     	summaryPage = new AfpSummaryPage("Summary", servise, model); 
     	addPage(summaryPage);
+//    	addPage(new AfpTableExample("Example"));
     }
     
     

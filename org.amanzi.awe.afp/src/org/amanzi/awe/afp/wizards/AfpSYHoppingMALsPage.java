@@ -2,6 +2,7 @@ package org.amanzi.awe.afp.wizards;
 
 import java.util.HashMap;
 
+import org.amanzi.awe.afp.models.AfpHoppingMALDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -88,12 +89,16 @@ public class AfpSYHoppingMALsPage extends WizardPage {
 	
 	public void refreshPage(){
 		
-			Label defaultDomainLabel = new Label(malDomainsGroup, SWT.LEFT);
-			defaultDomainLabel.setText(defaultDomainName);
-			//TODO: update the TRXs by default here
-			Label defaultTRXsLabel = new Label(malDomainsGroup, SWT.RIGHT);
-			defaultTRXsLabel.setText("todo");
-			domainLabels.put(defaultDomainName, new Label[]{defaultDomainLabel, defaultTRXsLabel});
+		AfpHoppingMALDomainModel domainModel = new AfpHoppingMALDomainModel();
+		domainModel.setName(defaultDomainName);
+		domainModel.setMALSize(new int[]{0,0});
+		model.addMALDomain(domainModel);
+		Label defaultDomainLabel = new Label(malDomainsGroup, SWT.LEFT);
+		defaultDomainLabel.setText(defaultDomainName);
+		//TODO: update the TRXs by default here
+		Label defaultTRXsLabel = new Label(malDomainsGroup, SWT.RIGHT);
+		defaultTRXsLabel.setText("todo");
+		domainLabels.put(defaultDomainName, new Label[]{defaultDomainLabel, defaultTRXsLabel});
     	
 		
 		malDomainsGroup.layout();
