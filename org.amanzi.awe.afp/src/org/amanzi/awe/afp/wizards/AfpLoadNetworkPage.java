@@ -41,8 +41,8 @@ public class AfpLoadNetworkPage extends WizardPage {
 	protected static Node datasetNode;
 	protected static Node afpNode;
 	
-	private Combo afpCombo;
-	protected static String afpName;
+	//private Combo afpCombo;
+	protected static String afpName = "afp-dataset";
 	
 	private AfpModel model;
 	
@@ -83,7 +83,7 @@ public class AfpLoadNetworkPage extends WizardPage {
             public void widgetSelected(SelectionEvent e) {
             	datasetName = networkCombo.getText().trim();
             	datasetNode = networkNodes.get(datasetName);
-            	afpCombo.setItems(getAfpDatasets(datasetNode));
+            	//afpCombo.setItems(getAfpDatasets(datasetNode));
 				setPageComplete(canFlipToNextPage());
             }
 
@@ -93,7 +93,7 @@ public class AfpLoadNetworkPage extends WizardPage {
             }
         });
 		
-		
+		/*
 		new Label(main, SWT.LEFT).setText("Afp Dataset: ");
         
 		afpCombo = new Combo(main, SWT.DROP_DOWN);
@@ -126,7 +126,7 @@ public class AfpLoadNetworkPage extends WizardPage {
                 widgetSelected(e);
             }
         });
-		
+		*/
 		setPageComplete(true);
 		setControl(main);
 	}
@@ -212,8 +212,14 @@ public class AfpLoadNetworkPage extends WizardPage {
         
         if (afpName == null || afpName.trim().equals(""))
         	return false;
-        	
         
+        // load afp nodes for the n/w dataset
+        
+        getAfpDatasets(datasetNode);
+
+        if(afpNodes != null) {
+        	afpNode = afpNodes.get(afpName);
+        }
         model.setAfpNode(afpNode);
         return true;
     }

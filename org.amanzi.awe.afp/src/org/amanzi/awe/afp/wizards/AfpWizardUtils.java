@@ -242,7 +242,9 @@ public class AfpWizardUtils {
 				}		
 			}
 		}
-		else frequenciesLeft = frequencies;
+		else {
+			frequenciesLeft = frequencies;
+		}
 		
 		final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL);
 		subShell.setText("Frequency Selector");
@@ -264,6 +266,9 @@ public class AfpWizardUtils {
 		
 		final List selectedList = createListSelector(freqGroup, frequenciesLeft, selectedRanges, selectionLabel);
 		
+		/*	selectedList.add(new SelectionAdapter() {
+			
+		});*/
 		Button selectButton = new Button(subShell, SWT.PUSH);
 		selectButton.setLayoutData(new GridData(GridData.END, GridData.BEGINNING, true, false, 2, 1));
 		selectButton.setText("Select");
@@ -275,7 +280,8 @@ public class AfpWizardUtils {
 				for (int i = 0; i< selected.length; i++){
 					if (i == selected.length - 1)
 						selectedString += selected[i];
-					else selectedString += selected[i] + ",";
+					else 
+						selectedString += selected[i] + ",";
 				}
 				frequenciesTextLocal.setText(selectedString);
 				subShell.dispose();

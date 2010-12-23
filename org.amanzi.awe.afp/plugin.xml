@@ -25,9 +25,9 @@
              <command
                    commandId="org.amanzi.awe.afp.loadControlFile"
                    icon="icons/afp.png"
-                   mnemonic="Load AFP data"
+                   mnemonic="AFP Wizard"
                    style="push"
-                   tooltip="Load AFP data">
+                   tooltip="AFP Wizard">
              </command>
           </toolbar>
        </menuContribution>

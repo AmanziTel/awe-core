@@ -32,22 +32,8 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
 	protected Text frequencies1800;
 	protected Text frequencies850;
 	protected Text frequencies1900;
-	protected Button ncc0;
-	protected Button ncc1;
-	protected Button ncc2;
-	protected Button ncc3;
-	protected Button ncc4;
-	protected Button ncc5;
-	protected Button ncc6;
-	protected Button ncc7;
-	protected Button bcc0;
-	protected Button bcc1;
-	protected Button bcc2;
-	protected Button bcc3;
-	protected Button bcc4;
-	protected Button bcc5;
-	protected Button bcc6;
-	protected Button bcc7;
+	protected Button ncc[] = new Button[8];
+	protected Button bcc[] = new Button[8];
 	
 	private Label freq900Label;
 	private Label freq1800Label;
@@ -107,7 +93,8 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
 					setErrorMessage(null);
 					model.setAvailableFreq900(frequencies900.getText());
 				}
-				
+				button900.setSelection(false);
+			
 				setPageComplete(canFlipToNextPage());
 					
 			}
@@ -152,7 +139,7 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
 					setErrorMessage(null);
 					model.setAvailableFreq1800(frequencies1800.getText());
 				}
-				
+				button1800.setSelection(false);
 				setPageComplete(canFlipToNextPage());	
 			}
     		
@@ -173,12 +160,10 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
     		
     		@Override
 			public void widgetSelected(SelectionEvent e) {
-				AfpWizardUtils.createFrequencySelector(parentShell, frequencies1800, getFrequencyArray());
-				
+				AfpWizardUtils.createFrequencySelector(parentShell, frequencies1800, getFrequencyArray());				
 			}
     		
     	});
-    	
     	
     	freq850Label = new Label (frequenciesGroup, SWT.LEFT);
     	freq850Label.setText("850: ");
@@ -194,7 +179,8 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
 					setErrorMessage(null);
 					model.setAvailableFreq850(frequencies850.getText());
 				}
-				
+				button850.setSelection(false);
+		
 				setPageComplete(canFlipToNextPage());
 					
 			}
@@ -237,6 +223,7 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
 					model.setAvailableFreq1900(frequencies1900.getText());
 				}
 				
+				button1900.setSelection(false);
 				setPageComplete(canFlipToNextPage());
 					
 			}
@@ -259,7 +246,7 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				AfpWizardUtils.createFrequencySelector(parentShell, frequencies1900, getFrequencyArray());
-				
+				button1900.setSelection(false);
 			}
     		
     	});
@@ -277,40 +264,18 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
 	    }
 		
 	    new Label(bsicGroup, GridData.BEGINNING).setText("Available NCCs: ");
-	    ncc0 = new Button (bsicGroup, SWT.CHECK);
-	    ncc0.addListener(SWT.Selection, this);
-	    ncc1 = new Button (bsicGroup, SWT.CHECK);
-	    ncc1.addListener(SWT.Selection, this);
-	    ncc2 = new Button (bsicGroup, SWT.CHECK);
-	    ncc2.addListener(SWT.Selection, this);
-	    ncc3 = new Button (bsicGroup, SWT.CHECK);
-	    ncc3.addListener(SWT.Selection, this);
-	    ncc4 = new Button (bsicGroup, SWT.CHECK);
-	    ncc4.addListener(SWT.Selection, this);
-	    ncc5 = new Button (bsicGroup, SWT.CHECK);
-	    ncc5.addListener(SWT.Selection, this);
-	    ncc6 = new Button (bsicGroup, SWT.CHECK);
-	    ncc6.addListener(SWT.Selection, this);
-	    ncc7 = new Button (bsicGroup, SWT.CHECK);
-	    ncc7.addListener(SWT.Selection, this);
+	    for(int i=0; i< ncc.length;i++) {
+		    ncc[i] = new Button (bsicGroup, SWT.CHECK);
+		    ncc[i].addListener(SWT.Selection, this);
+		    ncc[i].setSelection(true);
+	    }
 	    
 	    new Label(bsicGroup, GridData.BEGINNING).setText("Available BCCs: ");
-	    bcc0 = new Button (bsicGroup, SWT.CHECK);
-	    bcc0.addListener(SWT.Selection, this);
-	    bcc1 = new Button (bsicGroup, SWT.CHECK);
-	    bcc1.addListener(SWT.Selection, this);
-	    bcc2 = new Button (bsicGroup, SWT.CHECK);
-	    bcc2.addListener(SWT.Selection, this);
-	    bcc3 = new Button (bsicGroup, SWT.CHECK);
-	    bcc3.addListener(SWT.Selection, this);
-	    bcc4 = new Button (bsicGroup, SWT.CHECK);
-	    bcc4.addListener(SWT.Selection, this);
-	    bcc5 = new Button (bsicGroup, SWT.CHECK);
-	    bcc5.addListener(SWT.Selection, this);
-	    bcc6 = new Button (bsicGroup, SWT.CHECK);
-	    bcc6.addListener(SWT.Selection, this);
-	    bcc7 = new Button (bsicGroup, SWT.CHECK);
-	    bcc7.addListener(SWT.Selection, this);
+	    for(int i=0; i< ncc.length;i++) {
+		    bcc[i] = new Button (bsicGroup, SWT.CHECK);
+		    bcc[i].addListener(SWT.Selection, this);
+		    bcc[i].setSelection(true);
+	    }
 	    
     	
 	    setPageComplete(true);
@@ -338,7 +303,7 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
 	    	  return false;
 	      
 	      //TODO set this flag to true here only for testing purpose. Should be only done in summary page otherwise
-	      AfpImportWizard.isDone = true;
+	      //AfpImportWizard.isDone = true;
 	      return true;
 	  }
 	  
@@ -390,26 +355,15 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
 
 	@Override
 	public void handleEvent(Event event) {
-		boolean[] availableNCCs = {ncc0.getSelection(),
-					 ncc1.getSelection(),
-					 ncc2.getSelection(),
-					 ncc3.getSelection(),
-					 ncc4.getSelection(),
-					 ncc5.getSelection(),
-					 ncc6.getSelection(),
-					 ncc7.getSelection(),
-					};
-		
-		boolean[] availableBCCs = {bcc0.getSelection(),
-				 bcc1.getSelection(),
-				 bcc2.getSelection(),
-				 bcc3.getSelection(),
-				 bcc4.getSelection(),
-				 bcc5.getSelection(),
-				 bcc6.getSelection(),
-				 bcc7.getSelection(),
-				};
-		
+		boolean[] availableNCCs = new boolean[ncc.length];
+		boolean[] availableBCCs = new boolean[bcc.length];
+
+		for(int i=0;i< ncc.length;i++) {
+			availableNCCs[i] = ncc[i].getSelection();
+		}
+		for(int i=0;i< bcc.length;i++) {
+			availableBCCs[i] = bcc[i].getSelection();
+		}
 		model.setAvailableNCCs(availableNCCs);
 		model.setAvailableBCCs(availableBCCs);
 	}
@@ -435,6 +389,19 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
     		freq1900Label.setEnabled(false);
     		button1900.setEnabled(false);
     	}
+		boolean[] availableNCCs = model.getAvailableNCCs();
+		boolean[] availableBCCs = model.getAvailableBCCs();
+
+		if(availableNCCs != null) {
+			for(int i=0;i< ncc.length;i++) {
+				ncc[i].setSelection(availableNCCs[i]);
+			}
+		}
+		if(availableBCCs != null) {
+			for(int i=0;i< ncc.length;i++) {
+				ncc[i].setSelection(availableBCCs[i]);
+			}
+		}
 	}
 
 }

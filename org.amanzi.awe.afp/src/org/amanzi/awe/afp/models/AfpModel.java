@@ -37,8 +37,8 @@ public class AfpModel {
 	String availableFreq1800;
 	String availableFreq850;
 	String availableFreq1900;
-	boolean[] availableNCCs;
-	boolean[] availableBCCs;
+	boolean[] availableNCCs = new boolean[8];
+	boolean[] availableBCCs = new boolean[8];
 	
 	//Page 3 params
 	Vector<AfpFrequencyDomainModel> freqDomains;
@@ -77,6 +77,20 @@ public class AfpModel {
 	float[] coShadowing = new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0};
 	float[] adjShadowing = new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0};
 	
+	
+	public AfpModel() {
+		for(int i=0;i<this.availableBCCs.length;i++) {
+			this.availableBCCs[i] = true;
+		}
+		for(int i=0;i<this.availableNCCs.length;i++) {
+			this.availableNCCs[i] = true;
+		}
+	}
+
+
+
+
+
 	/**
 	 * Array rows: 
 	 * 0-Selected sectors
