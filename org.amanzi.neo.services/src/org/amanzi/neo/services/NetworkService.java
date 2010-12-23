@@ -15,6 +15,7 @@ package org.amanzi.neo.services;
 
 import java.util.Iterator;
 
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.utils.Utils;
 import org.neo4j.graphdb.Direction;
@@ -68,7 +69,7 @@ public class NetworkService extends AbstractService {
      * @param bscName bsc name
      * @return bsc node or null if node not found;
      */
-    private Node findBscNode(Node networkNode, String bscName) {
+    public Node findBscNode(Node networkNode, String bscName) {
         return getIndexService().getSingleNode(Utils.getLuceneIndexKeyByProperty(networkNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.BSC), bscName);
     }
 
@@ -103,7 +104,7 @@ public class NetworkService extends AbstractService {
      * @param siteName site name
      * @return site node or null if node not found;
      */
-    private Node findSiteNode(Node networkNode, String siteName) {
+    public Node findSiteNode(Node networkNode, String siteName) {
         return getIndexService().getSingleNode(Utils.getLuceneIndexKeyByProperty(networkNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteName);
     }
 
@@ -212,6 +213,46 @@ public class NetworkService extends AbstractService {
      */
     public void indexProperty(Node rootNode, Node node, String propertyName, String value) {
         getIndexService().index(node, Utils.getLuceneIndexKeyByProperty(rootNode, propertyName, NeoServiceFactory.getInstance().getDatasetService().getNodeType(node)), value);
+    }
+
+    /**
+     *
+     * @param sector
+     * @param trxId
+     * @param channelGr
+     * @return
+     */
+    public Node getTRXNode(Node sector, String trxId, Integer channelGr) {
+        Node trxNode = findTrxNode(sector, trxId,channelGr);
+        if (trxNode==null){
+            Transaction tx = databaseService.beginTx();
+            try {
+                trxNode=NeoServiceFactory.getInstance().getDatasetService().addSimpleChild(sector, NodeTypes.TRX, trxId);
+                trxNode.setProperty("group", channelGr);
+                tx.success();
+            } finally {
+                tx.finish();
+            }           
+        }
+        return trxNode;
+    }
+
+    /**
+     *
+     * @param sector
+     * @param trxId
+     * @param channelGr
+     * @return
+     */
+    private Node findTrxNode(Node sector, final String trxId,final  Integer channelGr) {
+        Iterator<Path> itr = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst().prune(Traversal.pruneAfterDepth(1)).relationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING).filter(new Predicate<Path>() {
+            
+            @Override
+            public boolean accept(Path item) {
+                return item.length()>0&&item.endNode().getProperty(INeoConstants.PROPERTY_NAME_NAME,"").equals(trxId)&&item.endNode().getProperty("group",-1).equals(channelGr);
+            }
+        }).traverse(sector).iterator();
+        return itr.hasNext()?itr.next().endNode():null;
     }
 
 

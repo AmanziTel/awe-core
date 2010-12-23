@@ -15,6 +15,7 @@ package org.amanzi.awe.afp.ericsson.parser;
 
 import java.util.Arrays;
 
+import org.amanzi.awe.afp.ericsson.parser.NetworkConfigurationParser.BSA_MODE;
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
 
 
@@ -39,6 +40,18 @@ public class NetworkConfigurationTransferData extends BaseTransferData{
     
     /** The values. */
     private String[]valuesData;
+
+    private String bsc;
+
+    private BSA_MODE mode;
+
+    private String tg;
+
+    private String fhop;
+
+    private String cell;
+
+    private Integer ch_group;
 
     /**
      * Gets the headers.
@@ -93,5 +106,88 @@ public class NetworkConfigurationTransferData extends BaseTransferData{
     public void setType(NetworkConfigurationFileTypes type) {
         this.type = type;
     }
+
+    /**
+     *
+     * @param object
+     */
+    public void setBsc(String   bsc) {
+        this.bsc = bsc;
+    }
+
+    public String getBsc() {
+        return bsc;
+    }
+
+    /**
+     *
+     * @param mode
+     */
+    public void setMode(BSA_MODE mode) {
+        this.mode = mode;
+    }
+
+    public BSA_MODE getMode() {
+        return mode;
+    }
+
+    /**
+     *
+     * @param tg
+     */
+    public void setTG(String tg) {
+        this.tg = tg;
+    }
+
+    /**
+     *
+     * @param fhop
+     */
+    public void setFhop(String fhop) {
+        this.fhop = fhop;
+    }
+
+    public String getTg() {
+        return tg;
+    }
+
+    public void setTg(String tg) {
+        this.tg = tg;
+    }
+
+    public String getFhop() {
+        return fhop;
+    }
+
+    /**
+     *
+     * @param cell
+     */
+    public void setCell(String cell) {
+        this.cell = cell;
+    }
+
+    /**
+     *
+     * @param valueOf
+     */
+    public void setGroup(Integer ch_group) {
+        this.ch_group = ch_group;
+    }
+
+    public Integer getCh_group() {
+        return ch_group;
+    }
+
+    public void setCh_group(Integer ch_group) {
+        this.ch_group = ch_group;
+    }
+
+    public String getCell() {
+        return cell;
+    }
+    
+    
+    
 
 }

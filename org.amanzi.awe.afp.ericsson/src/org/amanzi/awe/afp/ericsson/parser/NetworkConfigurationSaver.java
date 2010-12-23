@@ -14,7 +14,11 @@
 package org.amanzi.awe.afp.ericsson.parser;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
 import org.amanzi.neo.loader.core.saver.IStructuredSaver;
@@ -46,6 +50,9 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
     private NetworkService networkService;
     private Node neighbourRoot;
     private String neighName;
+    private Object bsc;
+    private Map<String,String>tgProperty=new HashMap<String, String>();
+    private Pattern trxPat=Pattern.compile("(^.*)(-)(\\d+$)",Pattern.CASE_INSENSITIVE);
 
     @Override
     public void init(NetworkConfigurationTransferData element) {
@@ -231,6 +238,34 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
      * @param element the element
      */
     private void saveBSMLine(NetworkConfigurationTransferData element) {
+        switch (element.getMode()) {
+        case TG:
+            tgProperty.put(element.getTg(), element.getFhop());
+            return;
+            
+        default:
+            //trx
+            //TODO find only for child of bsc field?
+            Node sector=networkService.findSector(rootNode, null, null, element.getCell(),true);
+            if (sector==null){
+                error(String.format("Line %s: Sector with name %s not found", element.getLine(),element.getCell()));
+                return;
+            }
+            String tgfull = element.getTg();
+            Matcher matcher = trxPat.matcher(tgfull);
+            if (!matcher.find(0)) {
+                error(String.format("Incorrect TG format: %s",tgfull));
+                return;
+            } 
+            String tg=matcher.group(1);
+            String trxId=matcher.group(3);
+            Integer channelGr=element.getCh_group();
+            Node trx=networkService.getTRXNode(sector,trxId,channelGr);
+            updateTx(1, 1);
+            //TODO fill necessary property!
+            
+            break;
+        }
     }
 
     @Override
@@ -240,10 +275,22 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
 
     @Override
     public boolean beforeSaveNewElement(NetworkConfigurationTransferData element) {
+        tgProperty.clear();
         type = element.getType();
         if (type == NetworkConfigurationFileTypes.CNA) {
             neighName = rootname + "neigh";
             neighbourRoot = service.getNeighbour(rootNode, neighName);
+        }else {
+            String bscName = element.getBsc();
+            if (StringUtils.isEmpty(bscName)){
+                return true;
+            }
+            bsc=networkService.findBscNode(rootNode, bscName);
+            if (bsc==null){
+                error(String.format("BSC with name %s not found", bscName));
+                return true;
+            }
+            
         }
         return false;
     }
@@ -263,7 +310,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
 
     @Override
     protected String getTypeIdForGisCount(GisProperties gis) {
-        return null;
+        return NodeTypes.SITE.getId();
     }
 
     public static void main(String[] args) {

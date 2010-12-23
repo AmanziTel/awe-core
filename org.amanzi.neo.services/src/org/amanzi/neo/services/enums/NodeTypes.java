@@ -744,7 +744,7 @@ public enum NodeTypes implements INodeType{
     },
     UTRAN_DATA("utran_data"), GLOBAL_PROPERTIES("global_properties"),
     ROOT_PROXY("root_proxy"),
-    PROXY("proxy");
+    PROXY("proxy"), TRX("carrier");
     
     private final String id;
     private boolean nodeReadOnly;
