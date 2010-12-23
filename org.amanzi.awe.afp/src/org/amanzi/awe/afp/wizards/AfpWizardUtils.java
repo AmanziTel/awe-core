@@ -6,6 +6,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ListIterator;
 
+import org.amanzi.awe.afp.models.AfpDomainModel;
+import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
+import org.amanzi.awe.afp.models.AfpHoppingMALDomainModel;
+import org.amanzi.awe.afp.models.AfpModel;
+import org.amanzi.awe.afp.models.AfpSeparationDomainModel;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -31,9 +40,21 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
 
 
 public class AfpWizardUtils {
+	
+	private static String domainName;
+	private static String[] selectedArray;
+	private static Button actionButton;
 	
 	protected static Group getStepsGroup(Composite parent, int stepNumber){
 		Group stepsGroup = new Group(parent, SWT.NONE);
@@ -128,10 +149,10 @@ public class AfpWizardUtils {
 		
 		return items;
 	}
-	*/
+	
 	public static int[] getStatistics(String element){
 		return new int[] {150, 150, 0, 0};
-	}
+	}*/
 	
 	protected static void makeFontBold(Control label){
 		FontData[] fD = label.getFont().getFontData();
@@ -139,6 +160,35 @@ public class AfpWizardUtils {
 		Font font = new	Font(label.getDisplay(),fD[0]);
 		label.setFont(font);
 		font.dispose();
+	}
+	
+	public static void createFrequencyDomainNode(Node afpNode, AfpFrequencyDomainModel domainModel, GraphDatabaseService service){
+		Node frequencyNode = null;
+		Traverser traverser = afpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
+
+			@Override
+			public boolean isReturnableNode(TraversalPosition currentPos) {
+				if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.AFP_DOMAIN) &&
+						currentPos.currentNode().getProperty(INeoConstants.PROPERTY_DOMAIN_NAME).equals(INeoConstants.FREQUENCY_DOMAIN_NAME))
+					return true;
+				return false;
+			}
+    		
+    	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+        for (Node domainNode : traverser) {
+        	if (domainNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(domainModel.getName()))
+        		frequencyNode = domainNode;
+        }
+        
+        if (frequencyNode == null){
+        	frequencyNode = service.createNode();
+    		NodeTypes.AFP_DOMAIN.setNodeType(frequencyNode, service);
+            NeoUtils.setNodeName(frequencyNode, domainModel.getName(), service);
+            afpNode.createRelationshipTo(frequencyNode, NetworkRelationshipTypes.CHILD);
+        }
+        
+        frequencyNode.setProperty(INeoConstants.PROPERTY_FREQUENCY_BAND_NAME, domainModel.getBand());
+        frequencyNode.setProperty(INeoConstants.PROPERTY_FREQUENCIES_NAME, domainModel.getFrequencies());
 	}
 	
 	protected static void createFrequencySelector(Shell parentShell, Text frequenciesText, String frequencies[]){
@@ -218,10 +268,10 @@ public class AfpWizardUtils {
 		
 	 }
 	
-	protected static void createFrequencyDomainShell(Shell parentShell, final String action, final Group parentGroup){
+	protected static void createFrequencyDomainShell(Shell parentShell, final String action, final Group parentGroup, final AfpModel model){
 		
 		final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL);
-		final Text nameText;
+		final AfpFrequencyDomainModel domainModel = new AfpFrequencyDomainModel();
 		
 		subShell.setText(action +  " Frequency Domain");
 		subShell.setLayout(new GridLayout(3, false));
@@ -232,21 +282,28 @@ public class AfpWizardUtils {
 		nameLabel.setText("Domain Name");
 
 		if (action.equals("Add")){
-			nameText = new Text (subShell, SWT.BORDER | SWT.SINGLE);
+			Text nameText = new Text (subShell, SWT.BORDER | SWT.SINGLE);
 			nameText.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
+			nameText.addModifyListener(new ModifyListener(){
+
+				@Override
+				public void modifyText(ModifyEvent e) {
+					domainName = ((Text)e.widget).getText();
+				}
+				
+			});
 		}
 		
 		if (action.equals("Edit") || action.equals("Delete")){
-			Combo nameCombo = new Combo(subShell, SWT.DROP_DOWN);
+			Combo nameCombo = new Combo(subShell, SWT.DROP_DOWN | SWT.READ_ONLY);
 			//TODO populate combo values
-			nameCombo.setItems(new String[]{"Dummy"});
+			nameCombo.setItems(model.getAllFrequencyDomainNames());
 			nameCombo.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
 			nameCombo.addModifyListener(new ModifyListener(){
 
 				@Override
 				public void modifyText(ModifyEvent e) {
-					// TODO Auto-generated method stub
-					
+					domainName = ((Combo)e.widget).getText();
 				}
 				
 			});
@@ -255,13 +312,12 @@ public class AfpWizardUtils {
 
 				@Override
 				public void widgetDefaultSelected(SelectionEvent e) {
-					// TODO Auto-generated method stub
-					
+					widgetSelected(e);					
 				}
 
 				@Override
 				public void widgetSelected(SelectionEvent e) {
-					widgetSelected(e);
+					domainName = ((Combo)e.widget).getText();
 				}
 				
 			});
@@ -278,9 +334,9 @@ public class AfpWizardUtils {
 		bandLabel.setText("Band");
 		bandLabel.setLayoutData(new GridData(GridData.FILL, SWT.LEFT, true, false,3 ,1));
 		
-		Combo bandCombo = new Combo(freqGroup, SWT.DROP_DOWN);
+		final Combo bandCombo = new Combo(freqGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
 		//TODO populate combo values
-		bandCombo.setItems(new String[]{"900", "1800"});
+		bandCombo.setItems(model.getAvailableBands());
 		bandCombo.setLayoutData(new GridData(GridData.FILL, SWT.LEFT, true, false,3 ,1));
 		
 		Label freqLabel = new Label (freqGroup, SWT.LEFT);
@@ -297,8 +353,7 @@ public class AfpWizardUtils {
 		for (int i = 0; i < frequencies.length; i++){
 			frequencies[i] = Integer.toString(512 + i); 
 		}
-		final List selectedList = createListSelector(freqGroup, frequencies, new String[0], selectionLabel);
-		
+		List selectedList = createListSelector(freqGroup, frequencies, new String[0], selectionLabel);
 		Button actionButton = new Button(subShell, SWT.PUSH);
 		actionButton.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
 		
@@ -306,16 +361,35 @@ public class AfpWizardUtils {
 		actionButton.addSelectionListener(new SelectionAdapter(){
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				//TODO do something here
+				
 				if (action.equals("Add")){
-//					Label newDomainLabel = new Label(parentGroup, SWT.LEFT);
-//					newDomainLabel.setText(nameText.getText().trim());
-					Label doaminFreqLabel = new Label(parentGroup, SWT.LEFT);
-					doaminFreqLabel.setText("todo");
-					Label assignedTRXLabel = new Label(parentGroup, SWT.LEFT);
-					assignedTRXLabel.setText("todo");
+					domainModel.setName(domainName);
+					domainModel.setBand(bandCombo.getText());
+					domainModel.setFrequencies(selectedArray);
+					model.addFreqDomain(domainModel);
+					Label newDomainLabel = new Label(parentGroup, SWT.LEFT);
+					newDomainLabel.setText(domainName);
+					Label domainFreqLabel = new Label(parentGroup, SWT.LEFT);
+					domainFreqLabel.setText(Integer.toString(rangeArraytoArray(selectedArray).length));
+					Label domainTRXLabel = new Label(parentGroup, SWT.LEFT);
+					//TODO Do something for TRX
+					domainTRXLabel.setText("todo");
+					AfpFrequencyTypePage.domainLabels.put(domainName, new Label[]{newDomainLabel, domainFreqLabel, domainTRXLabel});
+					parentGroup.layout();
 				}
+				//TODO add for edit and delete buttons
+				
+				if (action.equals("Delete")){
+					AfpFrequencyDomainModel domainModel = model.findFreqDomain(domainName);
 					
+					if (domainModel == null){
+						//TODO Do some error handling here;
+					}
+					model.deleteFreqDomain(domainModel);
+					AfpFrequencyTypePage.deleteDomainLabels(domainName);
+					parentGroup.layout();
+				}
+				
 				subShell.dispose();
 			}
 		});
@@ -381,6 +455,7 @@ public class AfpWizardUtils {
 					}
 					String array[] = rangeArraytoArray(selectedList.getItems());
 					String selected[] = arrayToRangeArray(array);
+					selectedArray = selected;
 					selectedList.setItems(selected);
 					thisSelectionLabel.setText("" + array.length + " Frequencies selected");
 				}
@@ -400,7 +475,8 @@ public class AfpWizardUtils {
 						freqList.add(item);
 						selectedList.remove(item);
 					}
-					String array[] = rangeArraytoArray(selectedList.getItems());
+					selectedArray = selectedList.getItems();
+					String array[] = rangeArraytoArray(selectedArray);
 					thisSelectionLabel.setText("" + array.length + " Frequencies selected");
 					String notSelected[] = rangeArraytoArray(freqList.getItems());
 					freqList.setItems(notSelected);
@@ -653,29 +729,29 @@ public class AfpWizardUtils {
 
 	}
 	
-	protected static void createButtonsGroup(final Group parentGroup, String caller){
+	protected static void createButtonsGroup(final Group parentGroup, String caller, final AfpModel model){
 
 		final Shell parentShell = parentGroup.getShell();
 		final String thisCaller = caller;
 		
 		Group buttonsGroup = new Group(parentGroup, SWT.NONE);
     	buttonsGroup.setLayout(new GridLayout(1, false));
-    	buttonsGroup.setLayoutData(new GridData(GridData.END, GridData.FILL, false, true, 1 , 3));
+    	buttonsGroup.setLayoutData(new GridData(GridData.END, GridData.FILL, false, true, 1 , 10));
     	Button addButton = new Button(buttonsGroup, GridData.BEGINNING);
-    	addButton.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, false, true, 1 , 1));
+    	addButton.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, false, false, 1 , 1));
     	addButton.setText("Add Domain");
     	addButton.addSelectionListener(new SelectionAdapter(){
     		
     		@Override
 			public void widgetSelected(SelectionEvent e) {
     			if (thisCaller.equals("FrequencyType"))
-    				AfpWizardUtils.createFrequencyDomainShell(parentShell, "Add", parentGroup);
+    				AfpWizardUtils.createFrequencyDomainShell(parentShell, "Add", parentGroup, model);
     			else if (thisCaller.equals("HoppingMAL"))
-    				AfpWizardUtils.createMalDomainShell(parentShell, "Add");
+    				AfpWizardUtils.createMalDomainShell(parentShell, "Add", parentGroup, model);
     			else if (thisCaller.equals("Sector SeparationRules"))
-    				AfpWizardUtils.createSeparationDomainShell(parentShell, "Add", true);
+    				AfpWizardUtils.createSeparationDomainShell(parentShell, "Add", true, parentGroup, model);
     			else if (thisCaller.equals("Site SeparationRules"))
-    				AfpWizardUtils.createSeparationDomainShell(parentShell, "Add", false);
+    				AfpWizardUtils.createSeparationDomainShell(parentShell, "Add", false, parentGroup, model);
 			}
     		
     	});
@@ -688,40 +764,41 @@ public class AfpWizardUtils {
     		@Override
 			public void widgetSelected(SelectionEvent e) {
     			if (thisCaller.equals("FrequencyType"))
-    				AfpWizardUtils.createFrequencyDomainShell(parentShell, "Edit", parentGroup);
+    				AfpWizardUtils.createFrequencyDomainShell(parentShell, "Edit", parentGroup, model);
     			else if (thisCaller.equals("HoppingMAL"))
-    				AfpWizardUtils.createMalDomainShell(parentShell, "Edit");
+    				AfpWizardUtils.createMalDomainShell(parentShell, "Edit", parentGroup, model);
     			else if (thisCaller.equals("Sector SeparationRules"))
-    				AfpWizardUtils.createSeparationDomainShell(parentShell, "Edit", true);
+    				AfpWizardUtils.createSeparationDomainShell(parentShell, "Edit", true, parentGroup, model);
     			else if (thisCaller.equals("Site SeparationRules"))
-    				AfpWizardUtils.createSeparationDomainShell(parentShell, "Edit", false);
+    				AfpWizardUtils.createSeparationDomainShell(parentShell, "Edit", false, parentGroup, model);
 			}
     		
     	});
     	
     	Button deleteButton = new Button(buttonsGroup, GridData.BEGINNING);
-    	deleteButton.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, false, false, 1 , 1));
+    	deleteButton.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, false, false, 1 , 1));
     	deleteButton.setText("Delete Domain");
     	deleteButton.addSelectionListener(new SelectionAdapter(){
     		
     		@Override
 			public void widgetSelected(SelectionEvent e) {
     			if (thisCaller.equals("FrequencyType"))
-    				AfpWizardUtils.createFrequencyDomainShell(parentShell, "Delete", parentGroup);
+    				AfpWizardUtils.createFrequencyDomainShell(parentShell, "Delete", parentGroup, model);
     			else if (thisCaller.equals("HoppingMAL"))
-    				AfpWizardUtils.createMalDomainShell(parentShell, "Delete");
+    				AfpWizardUtils.createMalDomainShell(parentShell, "Delete", parentGroup, model);
     			else if (thisCaller.equals("Sector SeparationRules"))
-    				AfpWizardUtils.createSeparationDomainShell(parentShell, "Delete", true);
+    				AfpWizardUtils.createSeparationDomainShell(parentShell, "Delete", true, parentGroup, model);
     			else if (thisCaller.equals("Site SeparationRules"))
-    				AfpWizardUtils.createSeparationDomainShell(parentShell, "Delete", false);
+    				AfpWizardUtils.createSeparationDomainShell(parentShell, "Delete", false, parentGroup, model);
 				
 			}
     		
     	});
 	}
 	
-	protected static void createMalDomainShell(Shell parentShell, String action){
+	protected static void createMalDomainShell(Shell parentShell, final String action, final Group parentGroup, final AfpModel model){
 		final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL);
+		final AfpHoppingMALDomainModel domainModel = new AfpHoppingMALDomainModel(); 
 		
 		subShell.setText(action +  " MAL Domain");
 		subShell.setLayout(new GridLayout(2, false));
@@ -734,19 +811,26 @@ public class AfpWizardUtils {
 		if (action.equals("Add")){
 			Text nameText = new Text (subShell, SWT.BORDER | SWT.SINGLE);
 			nameText.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 2, 1));
+			nameText.addModifyListener(new ModifyListener(){
+
+				@Override
+				public void modifyText(ModifyEvent e) {
+					domainName = ((Text)e.widget).getText();
+				}
+				
+			});
 		}
 		
 		if (action.equals("Edit") || action.equals("Delete")){
-			Combo nameCombo = new Combo(subShell, SWT.DROP_DOWN);
+			Combo nameCombo = new Combo(subShell, SWT.DROP_DOWN | SWT.READ_ONLY);
 			//TODO populate combo values
-			nameCombo.setItems(new String[]{"Dummy"});
+			nameCombo.setItems(model.getAllMALDomainNames());
 			nameCombo.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 2, 1));
 			nameCombo.addModifyListener(new ModifyListener(){
 
 				@Override
 				public void modifyText(ModifyEvent e) {
-					// TODO Auto-generated method stub
-					
+					domainName = ((Combo)e.widget).getText();
 				}
 				
 			});
@@ -755,13 +839,12 @@ public class AfpWizardUtils {
 
 				@Override
 				public void widgetDefaultSelected(SelectionEvent e) {
-					// TODO Auto-generated method stub
-					
+					widgetSelected(e);					
 				}
 
 				@Override
 				public void widgetSelected(SelectionEvent e) {
-					widgetSelected(e);
+					domainName = ((Combo)e.widget).getText();
 				}
 				
 			});
@@ -786,6 +869,18 @@ public class AfpWizardUtils {
 		Text text1 = new Text (rulesGroup, SWT.BORDER | SWT.SINGLE);
 		text1.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false));
 		text1.setText("3");
+		//TODO add some mechanism to have only one listener class for all these buttons.
+		text1.addModifyListener(new ModifyListener(){
+
+			@Override
+			public void modifyText(ModifyEvent e) {
+				int size = Integer.parseInt(((Text)e.widget).getText()); 
+				if (size < 1)
+					actionButton.setEnabled(false);
+				domainModel.setMALSize0(size);	
+			}
+			
+		});
 		
 		new Label(rulesGroup, SWT.CENTER).setText("2");
 		Text text2 = new Text (rulesGroup, SWT.BORDER | SWT.SINGLE);
@@ -847,14 +942,41 @@ public class AfpWizardUtils {
 		text13.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false));
 		text13.setText("13");
 		
-		Button actionButton = new Button(subShell, SWT.PUSH);
+		
+		
+		actionButton = new Button(subShell, SWT.PUSH);
 		actionButton.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 1, 1));
 		
 		actionButton.setText(action);
 		actionButton.addSelectionListener(new SelectionAdapter(){
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				//TODO do something here
+				if (action.equals("Add")){
+					domainModel.setName(domainName);
+					model.addMALDomain(domainModel);
+					Label newDomainLabel = new Label(parentGroup, SWT.LEFT);
+					newDomainLabel.setText(domainName);
+					Label domainTRXLabel = new Label(parentGroup, SWT.LEFT);
+					//TODO Do something for TRX
+					domainTRXLabel.setText("todo");
+					AfpSYHoppingMALsPage.domainLabels.put(domainName, new Label[]{newDomainLabel, domainTRXLabel});
+					parentGroup.layout();
+
+					
+				}
+				//TODO add for edit and delete
+				
+				if (action.equals("Delete")){
+					AfpHoppingMALDomainModel domainModel = model.findMALDomain(domainName);
+					
+					if (domainModel == null){
+						//TODO Do some error handling here;
+					}
+					model.deleteMALDomain(domainModel);
+					AfpSYHoppingMALsPage.deleteDomainLabels(domainName);
+					parentGroup.layout();
+				}
+				
 				subShell.dispose();
 			}
 		});
@@ -874,8 +996,9 @@ public class AfpWizardUtils {
 		subShell.open();
 	}
 	
-	protected static void createSeparationDomainShell(Shell parentShell, String action, boolean isSector){
+	protected static void createSeparationDomainShell(Shell parentShell, final String action, final boolean isSector, final Group parentGroup, final AfpModel model){
 		final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL);
+		final AfpSeparationDomainModel domainModel = new AfpSeparationDomainModel(); 
 		String entity = isSector? "Sector" : "Site";
 		String title = action + " " + entity + " Separation Domain";	
 		                
@@ -890,18 +1013,30 @@ public class AfpWizardUtils {
 		if (action.equals("Add")){
 			Text nameText = new Text (subShell, SWT.BORDER | SWT.SINGLE);
 			nameText.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 2, 1));
+			nameText.addModifyListener(new ModifyListener(){
+
+				@Override
+				public void modifyText(ModifyEvent e) {
+					domainName = ((Text)e.widget).getText();
+				}
+				
+			});
 		}
 		
 		if (action.equals("Edit") || action.equals("Delete")){
-			Combo nameCombo = new Combo(subShell, SWT.DROP_DOWN);
+			Combo nameCombo = new Combo(subShell, SWT.DROP_DOWN | SWT.READ_ONLY);
 			//TODO populate combo values
-			nameCombo.setItems(new String[]{"Dummy"});
+			if (isSector)
+				nameCombo.setItems(model.getAllSectorSeparationDomainNames());
+			else
+				nameCombo.setItems(model.getAllSiteSeparationDomainNames());
+			
 			nameCombo.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 2, 1));
 			nameCombo.addModifyListener(new ModifyListener(){
 
 				@Override
 				public void modifyText(ModifyEvent e) {
-					// TODO Auto-generated method stub
+					domainName = ((Combo)e.widget).getText();
 					
 				}
 				
@@ -911,13 +1046,13 @@ public class AfpWizardUtils {
 
 				@Override
 				public void widgetDefaultSelected(SelectionEvent e) {
-					// TODO Auto-generated method stub
+					widgetSelected(e);
 					
 				}
 
 				@Override
 				public void widgetSelected(SelectionEvent e) {
-					widgetSelected(e);
+					domainName = ((Combo)e.widget).getText();
 				}
 				
 			});
@@ -951,6 +1086,16 @@ public class AfpWizardUtils {
 		Text text1 = new Text (rulesGroup, SWT.BORDER | SWT.SINGLE);
 		text1.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false));
 		text1.setText("NA");
+		//TODO add some mechanism to have only one listener class for all these texts.
+		text1.addModifyListener(new ModifyListener(){
+
+			@Override
+			public void modifyText(ModifyEvent e) {
+				domainModel.setSeparation0(((Text)e.widget).getText());	
+			}
+			
+		});
+
 		
 		new Label(rulesGroup, SWT.LEFT).setText("BCCH");
 		new Label(rulesGroup, SWT.LEFT).setText("Non/BB TCH");
@@ -1008,6 +1153,57 @@ public class AfpWizardUtils {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				//TODO do something here
+				if (action.equals("Add")){
+					domainModel.setName(domainName);
+					if (isSector){
+						model.addSectorSeparationDomain(domainModel);
+						Label newDomainLabel = new Label(parentGroup, SWT.LEFT);
+						newDomainLabel.setText(domainName);
+						Label domainSectorsLabel = new Label(parentGroup, SWT.LEFT);
+						//TODO Do something for TRX
+						domainSectorsLabel.setText("todo");
+						AfpSeparationRulesPage.sectorDomainLabels.put(domainName, new Label[]{newDomainLabel, domainSectorsLabel});
+						parentGroup.layout();
+					}
+					else{
+						model.addSiteSeparationDomain(domainModel);
+						Label newDomainLabel = new Label(parentGroup, SWT.LEFT);
+						newDomainLabel.setText(domainName);
+						Label domainSiteLabel = new Label(parentGroup, SWT.LEFT);
+						//TODO Do something for TRX
+						domainSiteLabel.setText("todo");
+						AfpSeparationRulesPage.siteDomainLabels.put(domainName, new Label[]{newDomainLabel, domainSiteLabel});
+						parentGroup.layout();
+					}
+					
+				}
+				
+				//TODO add for edit and delete
+				
+				if (action.equals("Delete")){
+					if (isSector){
+						AfpSeparationDomainModel domainModel = model.findSectorSeparationDomain(domainName);
+						
+						if (domainModel == null){
+							//TODO Do some error handling here;
+						}
+						model.deleteSectorSeparationDomain(domainModel);
+						AfpSeparationRulesPage.deleteSectorDomainLabels(domainName);
+						parentGroup.layout();
+					}
+					else{
+						AfpSeparationDomainModel domainModel = model.findSiteSeparationDomain(domainName);
+						
+						if (domainModel == null){
+							//TODO Do some error handling here;
+						}
+						model.deleteSiteSeparationDomain(domainModel);
+						AfpSeparationRulesPage.deleteSiteDomainLabels(domainName);
+						parentGroup.layout();
+					}
+				}
+				
+				
 				subShell.dispose();
 			}
 		});

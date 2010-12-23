@@ -217,4 +217,18 @@ public class INeoConstants {
     public static final String AFP_AVAILABLE_FREQUENCIES_1900 = "available_frequencies_1900";
     public static final String AFP_AVAILABLE_NCCS = "available_nccs";
     public static final String AFP_AVAILABLE_BCCS = "available_bccs";
+    public static final String AFP_SECTOR_SCALING_RULES = "sector_scaling_rules";
+    public static final String AFP_SITE_SCALING_RULES = "site_scaling_rules";
+    public static final String AFP_CO_INTERFERENCE_VALUES = "co_interference";
+    public static final String AFP_ADJ_INTERFERENCE_VALUES = "adj_interference";
+    public static final String AFP_CO_NEIGHBOR_VALUES = "co_neighbor";
+    public static final String AFP_ADJ_NEIGHBOR_VALUES = "adj_neighbor";
+    public static final String AFP_CO_TRIANGULATION_VALUES = "co_triangulation";
+    public static final String AFP_ADJ_TRIANGULATION_VALUES = "adj_triangulation";
+    public static final String AFP_CO_SHADOWING_VALUES = "co_shadowing";
+    public static final String AFP_ADJ_SHADOWING_VALUES = "adj_shadowing";
+    public static final String PROPERTY_DOMAIN_NAME = "domain";
+    public static final String FREQUENCY_DOMAIN_NAME = "frequency";
+    public static final String PROPERTY_FREQUENCY_BAND_NAME = "band";
+    public static final String PROPERTY_FREQUENCIES_NAME = "frequencies";
 }

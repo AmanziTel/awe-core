@@ -1,5 +1,8 @@
 package org.amanzi.awe.afp.wizards;
 
+import java.util.HashMap;
+
+import org.amanzi.awe.afp.models.AfpModel;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -15,13 +18,20 @@ import org.neo4j.graphdb.GraphDatabaseService;
 
 public class AfpSYHoppingMALsPage extends WizardPage {
 	
+	public final static String defaultDomainName = "Default MAL";
 	private final GraphDatabaseService service;
+	private Group malDomainsGroup;
 	private Label defaultTrx;
 	public static String test = "test";
 	
-	public AfpSYHoppingMALsPage(String pageName, GraphDatabaseService servise) {
+	protected static HashMap<String, Label[]> domainLabels;
+	private AfpModel model;
+	
+	
+	public AfpSYHoppingMALsPage(String pageName, GraphDatabaseService servise, AfpModel model) {
 		super(pageName);
         this.service = servise;
+        this.model = model;
         setTitle(AfpImportWizard.title);
         setDescription(AfpImportWizard.page4Name);
         setPageComplete (false);
@@ -39,9 +49,9 @@ public class AfpSYHoppingMALsPage extends WizardPage {
 		main.setLayout(new GridLayout(1, false));
 		main.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1 ,2));
 		
-		Group malDomainsGroup = new Group(main, SWT.NONE);
+		malDomainsGroup = new Group(main, SWT.NONE);
 		malDomainsGroup.setLayout(new GridLayout(3, true));
-		malDomainsGroup.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false,1 ,3));
+		malDomainsGroup.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true,1 ,10));
 		malDomainsGroup.setText("MAL Domains");
 		
 		Label domainsLabel = new Label(malDomainsGroup, SWT.LEFT);
@@ -54,13 +64,9 @@ public class AfpSYHoppingMALsPage extends WizardPage {
     	trxsLabel.setText("Assigned TRXs");
     	AfpWizardUtils.makeFontBold(trxsLabel);
     	
-    	AfpWizardUtils.createButtonsGroup(malDomainsGroup, "HoppingMAL");
-		
+    	AfpWizardUtils.createButtonsGroup(malDomainsGroup, "HoppingMAL", model);
+    	domainLabels = new HashMap<String, Label[]>();
     	
-    	new Label(malDomainsGroup, SWT.NONE).setText("Default MAL");
-    	defaultTrx = new Label(malDomainsGroup, SWT.RIGHT);
-    	defaultTrx.setText("Edit it");
-		
     	AfpWizardUtils.getTRXFilterGroup(main);
 
     	setPageComplete(true);
@@ -68,5 +74,30 @@ public class AfpSYHoppingMALsPage extends WizardPage {
 		
 
 	}
+	
+	public static void deleteDomainLabels(String domainName){
+		if (domainLabels.containsKey(domainName)){
+			Label[] labels = domainLabels.get(domainName);
+			domainLabels.remove(domainName);
+			for (Label label : labels){
+				label.dispose();
+			}
+		}
+//		malDomainsGroup.layout();
+	}
+	
+	public void refreshPage(){
+		
+			Label defaultDomainLabel = new Label(malDomainsGroup, SWT.LEFT);
+			defaultDomainLabel.setText(defaultDomainName);
+			//TODO: update the TRXs by default here
+			Label defaultTRXsLabel = new Label(malDomainsGroup, SWT.RIGHT);
+			defaultTRXsLabel.setText("todo");
+			domainLabels.put(defaultDomainName, new Label[]{defaultDomainLabel, defaultTRXsLabel});
+    	
+		
+		malDomainsGroup.layout();
+	}
+
 
 }

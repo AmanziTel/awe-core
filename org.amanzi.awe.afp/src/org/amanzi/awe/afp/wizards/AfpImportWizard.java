@@ -20,6 +20,7 @@ import org.amanzi.awe.afp.Activator;
 import org.amanzi.awe.afp.ControlFileProperties;
 import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.loaders.AfpLoader;
+import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.services.INeoConstants;
@@ -120,19 +121,35 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
 	    		NodeTypes.AFP.setNodeType(afpNode, servise);
                 NeoUtils.setNodeName(afpNode, AfpLoadNetworkPage.afpName, servise);
                 AfpLoadNetworkPage.datasetNode.createRelationshipTo(afpNode, NetworkRelationshipTypes.CHILD);
-                
-                afpNode.setProperty(INeoConstants.AFP_OPTIMIZATION_PARAMETERS, model.getOptimizationParameters());
-                afpNode.setProperty(INeoConstants.AFP_FREQUENCY_BAND, model.getFrequencyBands());
-                afpNode.setProperty(INeoConstants.AFP_CHANNEL_TYPE, model.getChanneltypes());
-                afpNode.setProperty(INeoConstants.AFP_ANALYZE_CURRENT, model.isAnalyzeCurrentFreqAllocation());
-                afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_900, model.getAvailableFreq900());
-                afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_1800, model.getAvailableFreq1800());
-                afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_850, model.getAvailableFreq850());
-                afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_1900, model.getAvailableFreq1900());
-                afpNode.setProperty(INeoConstants.AFP_AVAILABLE_BCCS, model.getAvailableBCCs());
-                afpNode.setProperty(INeoConstants.AFP_AVAILABLE_NCCS, model.getAvailableNCCs());
-                
 	    	}
+            afpNode.setProperty(INeoConstants.AFP_OPTIMIZATION_PARAMETERS, model.getOptimizationParameters());
+            afpNode.setProperty(INeoConstants.AFP_FREQUENCY_BAND, model.getFrequencyBands());
+            afpNode.setProperty(INeoConstants.AFP_CHANNEL_TYPE, model.getChanneltypes());
+            afpNode.setProperty(INeoConstants.AFP_ANALYZE_CURRENT, model.isAnalyzeCurrentFreqAllocation());
+            afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_900, model.getAvailableFreq900());
+            afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_1800, model.getAvailableFreq1800());
+            afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_850, model.getAvailableFreq850());
+            afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_1900, model.getAvailableFreq1900());
+            afpNode.setProperty(INeoConstants.AFP_AVAILABLE_BCCS, model.getAvailableBCCs());
+            afpNode.setProperty(INeoConstants.AFP_AVAILABLE_NCCS, model.getAvailableNCCs());
+            //TODO create domain nodes
+            
+            afpNode.setProperty(INeoConstants.AFP_SECTOR_SCALING_RULES, model.getSectorSeparation());
+            afpNode.setProperty(INeoConstants.AFP_SITE_SCALING_RULES, model.getSiteSeparation());
+            afpNode.setProperty(INeoConstants.AFP_CO_INTERFERENCE_VALUES, model.getCoInterference());
+            afpNode.setProperty(INeoConstants.AFP_ADJ_INTERFERENCE_VALUES, model.getAdjInterference());
+            afpNode.setProperty(INeoConstants.AFP_CO_NEIGHBOR_VALUES, model.getCoNeighbor());
+            afpNode.setProperty(INeoConstants.AFP_ADJ_NEIGHBOR_VALUES, model.getAdjNeighbor());
+            afpNode.setProperty(INeoConstants.AFP_CO_TRIANGULATION_VALUES, model.getCoTriangulation());
+            afpNode.setProperty(INeoConstants.AFP_ADJ_TRIANGULATION_VALUES, model.getAdjTriangulation());
+            afpNode.setProperty(INeoConstants.AFP_CO_SHADOWING_VALUES, model.getCoShadowing());
+            afpNode.setProperty(INeoConstants.AFP_ADJ_SHADOWING_VALUES, model.getAdjShadowing());
+                
+            for (AfpFrequencyDomainModel frequencyModel : model.getFreqDomains()){
+            	
+            }
+                
+	    	
     	} finally{
     		tx.finish();
     	}
@@ -159,15 +176,15 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
     	addPage(goalsPage);
     	resourcesPage = new AfpAvailableResourcesPage("Available Sources", servise, model); 
     	addPage(resourcesPage);
-    	frequencyPage = new AfpFrequencyTypePage("Frequency Type", servise);
+    	frequencyPage = new AfpFrequencyTypePage("Frequency Type", servise, model);
     	addPage(frequencyPage);
-    	hoppingMALsPage = new AfpSYHoppingMALsPage("SY Hopping MALs", servise);
+    	hoppingMALsPage = new AfpSYHoppingMALsPage("SY Hopping MALs", servise, model);
     	addPage(hoppingMALsPage);
-    	separationsPage = new AfpSeparationRulesPage("Separation Rules", servise); 
+    	separationsPage = new AfpSeparationRulesPage("Separation Rules", servise, model); 
     	addPage(separationsPage);
-    	scalingPage = new AfpScalingRulesPage("Scaling Rules", servise);
+    	scalingPage = new AfpScalingRulesPage("Scaling Rules", servise, model);
     	addPage(scalingPage);
-    	summaryPage = new AfpSummaryPage("Summary", servise); 
+    	summaryPage = new AfpSummaryPage("Summary", servise, model); 
     	addPage(summaryPage);
     }
     
@@ -175,10 +192,39 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
     @Override
     public IWizardPage getNextPage(IWizardPage page) {
     	IWizardPage nextPage = super.getNextPage(page);
+    	if (nextPage == goalsPage){
+    		System.out.println("Next: Goals Page");
+    		goalsPage.refreshPage();
+    	}
+    	
     	if (nextPage == resourcesPage){
-    		System.out.println("It will work. Go ahead");
+    		System.out.println("Next: Resourcess Page");
     		resourcesPage.refreshPage();
     	}
+    	
+    	if (nextPage == frequencyPage){
+    		System.out.println("Next: Frequency Page");
+    		frequencyPage.refreshPage();
+    	}
+    	
+    	if (nextPage == hoppingMALsPage){
+    		System.out.println("Next: Hopping Page");
+    		hoppingMALsPage.refreshPage();
+    	}
+    	
+    	if (nextPage == separationsPage){
+    		System.out.println("Next: Separations Page");
+    		separationsPage.refreshPage();
+    	}
+    	
+//    	if (nextPage == scalingPage){
+//    		scalingPage.refreshPage();
+//    	}
+    	
+    	if (nextPage == summaryPage){
+    		summaryPage.refreshPage();
+    	}
+    	
     	
     	return super.getNextPage(page);
 

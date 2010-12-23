@@ -116,11 +116,6 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
 		
     	button900 = new Button(frequenciesGroup, GridData.END);
     	button900.setText("...");
-    	if (!model.getFrequencyBands()[0]){
-    		frequencies900.setEnabled(false);
-    		freq900Label.setEnabled(false);
-    		button900.setEnabled(false);
-    	}
     	button900.addSelectionListener(new SelectionAdapter(){
     		
     		public String[] getFrequencyArray(){
@@ -165,11 +160,6 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
 		
     	button1800 = new Button(frequenciesGroup, GridData.END);
     	button1800.setText("...");
-    	if (!model.getFrequencyBands()[1]){
-    		frequencies1800.setEnabled(false);
-    		freq1800Label.setEnabled(false);
-    		button1800.setEnabled(false);
-    	}
     	button1800.addSelectionListener(new SelectionAdapter(){
     		
     		public String[] getFrequencyArray(){
@@ -213,11 +203,6 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
 		
     	button850 = new Button(frequenciesGroup, GridData.END);
     	button850.setText("...");
-    	if (!model.getFrequencyBands()[2]){
-    		frequencies850.setEnabled(false);
-    		freq850Label.setEnabled(false);
-    		button850.setEnabled(false);
-    	}
     	button850.addSelectionListener(new SelectionAdapter(){
 			
     		public String[] getFrequencyArray(){
@@ -260,11 +245,6 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
 		
     	button1900 = new Button(frequenciesGroup, GridData.END);
     	button1900.setText("...");
-    	if (!model.getFrequencyBands()[3]){
-    		frequencies1900.setEnabled(false);
-    		freq1900Label.setEnabled(false);
-    		button1900.setEnabled(false);
-    	}
     	button1900.addSelectionListener(new SelectionAdapter(){
     		
     		public String[] getFrequencyArray(){
@@ -435,27 +415,22 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
 	}
 	
 	public void refreshPage(){
-		System.out.println("In refresh page");
 		if (!model.getFrequencyBands()[0]){
-			System.out.println("900 no selected");
     		frequencies900.setEnabled(false);
     		freq900Label.setEnabled(false);
     		button900.setEnabled(false);
     	}
 		if (!model.getFrequencyBands()[1]){
-			System.out.println("1800 no selected");
     		frequencies1800.setEnabled(false);
     		freq1800Label.setEnabled(false);
     		button1800.setEnabled(false);
     	}
 		if (!model.getFrequencyBands()[2]){
-			System.out.println("850 no selected");
     		frequencies850.setEnabled(false);
     		freq850Label.setEnabled(false);
     		button850.setEnabled(false);
     	}
 		if (!model.getFrequencyBands()[3]){
-			System.out.println("1900 no selected");
     		frequencies1900.setEnabled(false);
     		freq1900Label.setEnabled(false);
     		button1900.setEnabled(false);

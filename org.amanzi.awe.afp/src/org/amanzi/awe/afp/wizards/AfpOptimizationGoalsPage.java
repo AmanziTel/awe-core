@@ -293,5 +293,25 @@ public class AfpOptimizationGoalsPage extends WizardPage implements Listener {
 		
 	}
 	
+	public void refreshPage(){
+		if (!model.getFrequencyBands()[0]){
+	    	freq900Button.setSelection(false);
+	    	freq900Button.setEnabled(false);
+	    }
+	    if (!model.getFrequencyBands()[1]){
+	    	freq1800Button.setSelection(false);
+	    	freq1800Button.setEnabled(false);
+	    }
+	    if (!model.getFrequencyBands()[2]){
+	    	freq850Button.setSelection(false);
+	    	freq850Button.setEnabled(false);
+	    	
+	    }
+	    if (!model.getFrequencyBands()[3]){
+	    	freq1900Button.setSelection(false);
+	    	freq1900Button.setEnabled(false);
+	    }
+	}
+	
 
 }

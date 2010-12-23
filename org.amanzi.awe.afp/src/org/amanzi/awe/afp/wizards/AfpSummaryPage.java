@@ -1,5 +1,6 @@
 package org.amanzi.awe.afp.wizards;
 
+import org.amanzi.awe.afp.models.AfpModel;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -15,10 +16,13 @@ import org.neo4j.graphdb.GraphDatabaseService;
 public class AfpSummaryPage extends WizardPage {
 	
 	private final GraphDatabaseService service;
+	private Text summaryText;
+	private AfpModel model;
 	
-	public AfpSummaryPage(String pageName, GraphDatabaseService servise) {
+	public AfpSummaryPage(String pageName, GraphDatabaseService servise, AfpModel model) {
 		super(pageName);
         this.service = servise;
+        this.model = model;
         setTitle(AfpImportWizard.title);
         setDescription(AfpImportWizard.page7Name);
         setPageComplete (false);
@@ -36,7 +40,7 @@ public class AfpSummaryPage extends WizardPage {
 		main.setLayout(new GridLayout(1, false));
 		main.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true, 1 ,1));
 		
-		Text summaryText = new Text (main, SWT.BORDER | SWT.MULTI);
+		summaryText = new Text (main, SWT.BORDER | SWT.MULTI);
 		GridData gridData = new GridData(GridData.FILL, GridData.CENTER, true, true, 1 ,1);
 		gridData.heightHint = 300;
 		gridData.minimumWidth = 100;
@@ -59,6 +63,10 @@ public class AfpSummaryPage extends WizardPage {
     	setControl (parentLocal);
 		
 
+	}
+	
+	public void refreshPage(){
+		summaryText.setText(model.toString());
 	}
 
 }

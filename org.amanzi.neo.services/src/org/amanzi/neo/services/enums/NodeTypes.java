@@ -692,6 +692,7 @@ public enum NodeTypes implements INodeType{
     },
     AFP("afp"),
     AFP_CELL("afp_cell"),
+    AFP_DOMAIN("domain"),
     SITE_SITE_RELATIONS("site_site_relations"),
     SECTOR_SECTOR_RELATIONS("sector_sector_relations"),
     OSS("oss"), 

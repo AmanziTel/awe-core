@@ -41,10 +41,41 @@ public class AfpModel {
 	boolean[] availableBCCs;
 	
 	//Page 3 params
-	Vector freqDomains;
+	Vector<AfpFrequencyDomainModel> freqDomains;
 	Set TRXDomain;
 	
+	//Page 4 params
+	Vector<AfpHoppingMALDomainModel> malDomains;
 	
+	//Page 5 params
+	Vector<AfpSeparationDomainModel> siteSeparationDomains;
+	Vector<AfpSeparationDomainModel> sectorSeparationDomains;
+	
+	//Page 6 params
+	//Constants defining the index of Serving-Interfering pair in the scaling rules arrays
+	//NHBB: Non/BB TCH
+	//SFH: SY TCH
+	public final static int BCCHBCCH = 0;
+	public final static int BCCHNHBB = 1;
+	public final static int BCCHSFH = 2;
+	public final static int NHBBBCCH = 3;
+	public final static int NHBBNHBB = 4;
+	public final static int NHBBSFH = 5;
+	public final static int SFHBCCH = 6;
+	public final static int SFHNHBB = 7;
+	public final static int SFHSFH = 8;
+	
+	//scaling rules arrays with default values
+	float[] sectorSeparation = new float[]{100, 100, 100, 100, 100, 100, 100, 100, 100};
+	float[] siteSeparation = new float[]{100, 70, 50, 70, 50, 30, 70, 50, 20};
+	float[] coInterference = new float[]{1, 0.7f, 0.5f, 0.7f, 0.5f, 0.3f, 0.7f, 0.3f, 0.2f};
+	float[] adjInterference = new float[]{1, 0.7f, 0.5f, 0.7f, 0.5f, 0.3f, 0.7f, 0.3f, 0.2f};
+	float[] coNeighbor = new float[]{1, 0.3f, 0.2f, 0, 0, 0, 0, 0, 0};
+	float[] adjNeighbor = new float[]{1, 0.1f, 0, 0, 0, 0, 0, 0, 0};
+	float[] coTriangulation = new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0};
+	float[] adjTriangulation = new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0};
+	float[] coShadowing = new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0};
+	float[] adjShadowing = new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0};
 	
 	/**
 	 * Array rows: 
@@ -398,7 +429,7 @@ public class AfpModel {
 	/**
 	 * @return the freqDomains
 	 */
-	public Vector getFreqDomains() {
+	public Vector<AfpFrequencyDomainModel> getFreqDomains() {
 		return freqDomains;
 	}
 
@@ -409,19 +440,15 @@ public class AfpModel {
 	/**
 	 * @param freqDomains the freqDomains to set
 	 */
-	public void setFreqDomains(Vector freqDomains) {
+	public void setFreqDomains(Vector<AfpFrequencyDomainModel> freqDomains) {
 		this.freqDomains = freqDomains;
 	}
-
-
-
-
-
+	
 	/**
-	 * @return the tRXDomain
+	 * @return the malDomains
 	 */
-	public Set getTRXDomain() {
-		return TRXDomain;
+	public Vector<AfpHoppingMALDomainModel> getMalDomains() {
+		return malDomains;
 	}
 
 
@@ -429,10 +456,463 @@ public class AfpModel {
 
 
 	/**
-	 * @param domain the tRXDomain to set
+	 * @return the siteSeparationDomains
 	 */
-	public void setTRXDomain(Set domain) {
-		TRXDomain = domain;
+	public Vector<AfpSeparationDomainModel> getSiteSeparationDomains() {
+		return siteSeparationDomains;
+	}
+
+
+
+
+
+	/**
+	 * @param siteSeparationDomains the siteSeparationDomains to set
+	 */
+	public void setSiteSeparationDomains(
+			Vector<AfpSeparationDomainModel> siteSeparationDomains) {
+		this.siteSeparationDomains = siteSeparationDomains;
+	}
+
+
+
+
+
+	/**
+	 * @return the sectorSeparationDomains
+	 */
+	public Vector<AfpSeparationDomainModel> getSectorSeparationDomains() {
+		return sectorSeparationDomains;
+	}
+
+
+
+
+
+	/**
+	 * @param sectorSeparationDomains the sectorSeparationDomains to set
+	 */
+	public void setSectorSeparationDomains(
+			Vector<AfpSeparationDomainModel> sectorSeparationDomains) {
+		this.sectorSeparationDomains = sectorSeparationDomains;
+	}
+
+
+
+
+
+	/**
+	 * @param malDomains the malDomains to set
+	 */
+	public void setMalDomains(Vector<AfpHoppingMALDomainModel> malDomains) {
+		this.malDomains = malDomains;
+	}
+
+
+
+
+
+	/**
+	 * @return the sectorSeparation
+	 */
+	public float[] getSectorSeparation() {
+		return sectorSeparation;
+	}
+
+
+
+
+
+	/**
+	 * @param sectorSeparation the sectorSeparation to set
+	 */
+	public void setSectorSeparation(float[] sectorSeparation) {
+		this.sectorSeparation = sectorSeparation;
+	}
+
+
+
+
+
+	/**
+	 * @return the siteSeparation
+	 */
+	public float[] getSiteSeparation() {
+		return siteSeparation;
+	}
+
+
+
+
+
+	/**
+	 * @param siteSeparation the siteSeparation to set
+	 */
+	public void setSiteSeparation(float[] siteSeparation) {
+		this.siteSeparation = siteSeparation;
+	}
+
+
+
+
+
+	/**
+	 * @return the coInterference
+	 */
+	public float[] getCoInterference() {
+		return coInterference;
+	}
+
+
+
+
+
+	/**
+	 * @param coInterference the coInterference to set
+	 */
+	public void setCoInterference(float[] coInterference) {
+		this.coInterference = coInterference;
+	}
+
+
+
+
+
+	/**
+	 * @return the adjInterference
+	 */
+	public float[] getAdjInterference() {
+		return adjInterference;
+	}
+
+
+
+
+
+	/**
+	 * @param adjInterference the adjInterference to set
+	 */
+	public void setAdjInterference(float[] adjInterference) {
+		this.adjInterference = adjInterference;
+	}
+
+
+
+
+
+	/**
+	 * @return the coNeighbor
+	 */
+	public float[] getCoNeighbor() {
+		return coNeighbor;
+	}
+
+
+
+
+
+	/**
+	 * @param coNeighbor the coNeighbor to set
+	 */
+	public void setCoNeighbor(float[] coNeighbor) {
+		this.coNeighbor = coNeighbor;
+	}
+
+
+
+
+
+	/**
+	 * @return the adjNeighbor
+	 */
+	public float[] getAdjNeighbor() {
+		return adjNeighbor;
+	}
+
+
+
+
+
+	/**
+	 * @param adjNeighbor the adjNeighbor to set
+	 */
+	public void setAdjNeighbor(float[] adjNeighbor) {
+		this.adjNeighbor = adjNeighbor;
+	}
+
+
+
+
+
+	/**
+	 * @return the coTriangulation
+	 */
+	public float[] getCoTriangulation() {
+		return coTriangulation;
+	}
+
+
+
+
+
+	/**
+	 * @param coTriangulation the coTriangulation to set
+	 */
+	public void setCoTriangulation(float[] coTriangulation) {
+		this.coTriangulation = coTriangulation;
+	}
+
+
+
+
+
+	/**
+	 * @return the adjTriangulation
+	 */
+	public float[] getAdjTriangulation() {
+		return adjTriangulation;
+	}
+
+
+
+
+
+	/**
+	 * @param adjTriangulation the adjTriangulation to set
+	 */
+	public void setAdjTriangulation(float[] adjTriangulation) {
+		this.adjTriangulation = adjTriangulation;
+	}
+
+
+
+
+
+	/**
+	 * @return the coShadowing
+	 */
+	public float[] getCoShadowing() {
+		return coShadowing;
+	}
+
+
+
+
+
+	/**
+	 * @param coShadowing the coShadowing to set
+	 */
+	public void setCoShadowing(float[] coShadowing) {
+		this.coShadowing = coShadowing;
+	}
+
+
+
+
+
+	/**
+	 * @return the adjShadowing
+	 */
+	public float[] getAdjShadowing() {
+		return adjShadowing;
+	}
+
+
+
+
+
+	/**
+	 * @param adjShadowing the adjShadowing to set
+	 */
+	public void setAdjShadowing(float[] adjShadowing) {
+		this.adjShadowing = adjShadowing;
+	}
+
+
+
+
+
+	public void addFreqDomain(AfpFrequencyDomainModel freqDomain){
+		if (freqDomains == null){
+			freqDomains = new Vector<AfpFrequencyDomainModel>();
+		}
+		freqDomains.add(freqDomain);
+	}
+	
+	public void deleteFreqDomain(AfpFrequencyDomainModel freqDomain){
+		if (freqDomains == null){
+			return;
+		}
+		freqDomains.remove(freqDomain);
+	}
+	
+	public AfpFrequencyDomainModel findFreqDomain(String domainName){
+		for(AfpFrequencyDomainModel freqDomain : freqDomains){
+			if (freqDomain.getName().equals(domainName))
+				return freqDomain;
+		}
+		return null;
+	}
+	
+	public String[] getAllFrequencyDomainNames(){
+		String[] names = new String[freqDomains.size()];
+		int i = 0;
+		for(AfpFrequencyDomainModel freqDomain : freqDomains){
+			names[i] = freqDomain.getName();
+			i++;	
+		}
+		return names;
+	}
+	
+	public String[] getAvailableBands(){
+		int length = 0;
+		for (boolean isEnabled : frequencyBands){
+			if (isEnabled)
+				length++;
+		}
+		String[] bands = new String[length];
+		
+		int i = 0;
+		if (frequencyBands[0]) {
+			bands[i] = "900";
+			i++;
+		}
+		if (frequencyBands[1]) {
+			bands[i] = "1800";
+			i++;
+		}
+		if (frequencyBands[2]) {
+			bands[i] = "850";
+			i++;
+		}
+		if (frequencyBands[3]) {
+			bands[i] = "1900";
+		}
+		
+		return bands;
+	}
+	
+	public void addMALDomain(AfpHoppingMALDomainModel malDomain){
+		if (malDomains == null)
+			malDomains = new Vector<AfpHoppingMALDomainModel>();
+		malDomains.add(malDomain);
+	}
+	
+	public void deleteMALDomain(AfpHoppingMALDomainModel malDomain){
+		if (malDomains == null){
+			//TODO error handling
+		}
+			
+		malDomains.remove(malDomain);
+	}
+	
+	public AfpHoppingMALDomainModel findMALDomain(String domainName){
+		for(AfpHoppingMALDomainModel malDomain : malDomains){
+			if (malDomain.getName().equals(domainName))
+				return malDomain;
+		}
+		return null;
+	}
+	
+	public String[] getAllMALDomainNames(){
+		String[] names = new String[malDomains.size()];
+		int i = 0;
+		for(AfpHoppingMALDomainModel malDomain : malDomains){
+			names[i] = malDomain.getName();
+			i++;	
+		}
+		return names;
+	}
+	
+	public void addSiteSeparationDomain(AfpSeparationDomainModel separationDomain){
+		if (siteSeparationDomains == null)
+			siteSeparationDomains = new Vector<AfpSeparationDomainModel>();
+		siteSeparationDomains.add(separationDomain);
+	}
+	
+	public void deleteSiteSeparationDomain(AfpSeparationDomainModel separationDomain){
+		if (separationDomain == null){
+			//TODO error handling
+		}
+			
+		siteSeparationDomains.remove(separationDomain);
+	}
+	
+	public AfpSeparationDomainModel findSiteSeparationDomain(String domainName){
+		for(AfpSeparationDomainModel separationDomain : siteSeparationDomains){
+			if (separationDomain.getName().equals(domainName))
+				return separationDomain;
+		}
+		return null;
+	}
+	
+	public String[] getAllSiteSeparationDomainNames(){
+		String[] names = new String[siteSeparationDomains.size()];
+		int i = 0;
+		for(AfpSeparationDomainModel separationDomain : siteSeparationDomains){
+			names[i] = separationDomain.getName();
+			i++;	
+		}
+		return names;
+	}
+	
+	
+	public void addSectorSeparationDomain(AfpSeparationDomainModel separationDomain){
+		if (sectorSeparationDomains == null)
+			sectorSeparationDomains = new Vector<AfpSeparationDomainModel>();
+		sectorSeparationDomains.add(separationDomain);
+	}
+	
+	public void deleteSectorSeparationDomain(AfpSeparationDomainModel separationDomain){
+		if (separationDomain == null){
+			//TODO error handling
+		}
+			
+		sectorSeparationDomains.remove(separationDomain);
+	}
+	
+	public AfpSeparationDomainModel findSectorSeparationDomain(String domainName){
+		for(AfpSeparationDomainModel separationDomain : sectorSeparationDomains){
+			if (separationDomain.getName().equals(domainName))
+				return separationDomain;
+		}
+		return null;
+	}
+	
+	public String[] getAllSectorSeparationDomainNames(){
+		String[] names = new String[sectorSeparationDomains.size()];
+		int i = 0;
+		for(AfpSeparationDomainModel separationDomain : sectorSeparationDomains){
+			names[i] = separationDomain.getName();
+			i++;	
+		}
+		return names;
+	}
+	
+	public void setInterferenceMatrixArrays(float[][] array){
+		coInterference = array[0];
+		adjInterference = array[1];
+		coNeighbor = array[2];
+		adjNeighbor = array[3];
+		coTriangulation = array[4];
+		adjTriangulation = array[5];
+		coShadowing = array[6];
+		adjShadowing = array[7];
+	}
+	
+	
+	
+	public String toString(){
+		StringBuilder sb = new StringBuilder();
+		sb.append("Optimization Parameters:\n" );
+		sb.append("  Frequencies: ");
+		sb.append(isOptimizeFrequency() ? "Yes\n" : "No\n");
+		
+		for (float value : coNeighbor){
+			sb.append(Float.toString(value) + " ");
+		}
+		
+		return sb.toString();
 	}
  
 

@@ -1,5 +1,8 @@
 package org.amanzi.awe.afp.wizards;
 
+import java.util.HashMap;
+
+import org.amanzi.awe.afp.models.AfpModel;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -14,11 +17,20 @@ import org.neo4j.graphdb.GraphDatabaseService;
 
 public class AfpSeparationRulesPage extends WizardPage {
 	
+	public final static String defaultDomainName = "Default Separations";
+	
 	private final GraphDatabaseService service;
+	
+	private Group sectorDomainsGroup;
+	private Group siteDomainsGroup;
+	protected static HashMap<String, Label[]> sectorDomainLabels;
+	protected static HashMap<String, Label[]> siteDomainLabels;
+	private AfpModel model;
 
-	public AfpSeparationRulesPage(String pageName, GraphDatabaseService servise) {
+	public AfpSeparationRulesPage(String pageName, GraphDatabaseService servise, AfpModel model) {
 		super(pageName);
         this.service = servise;
+        this.model = model;
         setTitle(AfpImportWizard.title);
         setDescription(AfpImportWizard.page5Name);
         setPageComplete (false);
@@ -41,9 +53,9 @@ public class AfpSeparationRulesPage extends WizardPage {
 		sectorMain.setLayout(new GridLayout(1, false));
 		sectorMain.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1 ,2));
 		
-		Group sectorDomainsGroup = new Group(sectorMain, SWT.NONE);
+		sectorDomainsGroup = new Group(sectorMain, SWT.NONE);
 		sectorDomainsGroup.setLayout(new GridLayout(3, true));
-		sectorDomainsGroup.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false,1 ,3));
+		sectorDomainsGroup.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true,1 ,10));
 		
 		Label sectorDomainsLabel = new Label(sectorDomainsGroup, SWT.LEFT);
 		sectorDomainsLabel.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 1 , 1));
@@ -55,7 +67,8 @@ public class AfpSeparationRulesPage extends WizardPage {
     	sectorsLabel.setText("Assigned Sectors");
     	AfpWizardUtils.makeFontBold(sectorsLabel);
     	
-    	AfpWizardUtils.createButtonsGroup(sectorDomainsGroup, "Sector SeparationRules");
+    	AfpWizardUtils.createButtonsGroup(sectorDomainsGroup, "Sector SeparationRules", model);
+    	siteDomainLabels = new HashMap<String, Label[]>();
 		
     	
     	new Label(sectorDomainsGroup, SWT.NONE).setText("Default Separations");
@@ -77,9 +90,9 @@ public class AfpSeparationRulesPage extends WizardPage {
 		siteMain.setLayout(new GridLayout(1, false));
 		siteMain.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1 ,2));
 		
-		Group siteDomainsGroup = new Group(siteMain, SWT.NONE);
+		siteDomainsGroup = new Group(siteMain, SWT.NONE);
 		siteDomainsGroup.setLayout(new GridLayout(3, true));
-		siteDomainsGroup.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false,1 ,3));
+		siteDomainsGroup.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true,1 ,10));
 		
 		Label siteDomainsLabel = new Label(siteDomainsGroup, SWT.LEFT);
 		siteDomainsLabel.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 1 , 1));
@@ -91,8 +104,8 @@ public class AfpSeparationRulesPage extends WizardPage {
     	sitesLabel.setText("Assigned Sites");
     	AfpWizardUtils.makeFontBold(sitesLabel);
     	
-    	AfpWizardUtils.createButtonsGroup(siteDomainsGroup, "Site SeparationRules");
-		
+    	AfpWizardUtils.createButtonsGroup(siteDomainsGroup, "Site SeparationRules", model);
+    	sectorDomainLabels = new HashMap<String, Label[]>();
     	
     	new Label(siteDomainsGroup, SWT.NONE).setText("Default Separations");
     	Label siteDefaultSeparation = new Label(siteDomainsGroup, SWT.RIGHT);
@@ -105,6 +118,50 @@ public class AfpSeparationRulesPage extends WizardPage {
     	setPageComplete (true);
 		setControl(thisParent);
 
+	}
+	
+	
+	public static void deleteSectorDomainLabels(String domainName){
+		if (sectorDomainLabels.containsKey(domainName)){
+			Label[] labels = sectorDomainLabels.get(domainName);
+			sectorDomainLabels.remove(domainName);
+			for (Label label : labels){
+				label.dispose();
+			}
+		}
+//		sectorDomainsGroup.layout();
+	}
+	
+	public static void deleteSiteDomainLabels(String domainName){
+		if (siteDomainLabels.containsKey(domainName)){
+			Label[] labels = siteDomainLabels.get(domainName);
+			siteDomainLabels.remove(domainName);
+			for (Label label : labels){
+				label.dispose();
+			}
+		}
+//		siteDomainsGroup.layout();
+	}
+	
+	public void refreshPage(){
+		
+		Label defaultSectorDomainLabel = new Label(sectorDomainsGroup, SWT.LEFT);
+		defaultSectorDomainLabel.setText(defaultDomainName);
+		//TODO: update the TRXs by default here
+		Label defaultSectorsLabel = new Label(sectorDomainsGroup, SWT.RIGHT);
+		defaultSectorsLabel.setText("todo");
+		sectorDomainLabels.put(defaultDomainName, new Label[]{defaultSectorDomainLabel, defaultSectorsLabel});
+	
+		sectorDomainsGroup.layout();
+		
+		Label defaultSiteDomainLabel = new Label(siteDomainsGroup, SWT.LEFT);
+		defaultSiteDomainLabel.setText(defaultDomainName);
+		//TODO: update the TRXs by default here
+		Label defaultSitesLabel = new Label(siteDomainsGroup, SWT.RIGHT);
+		defaultSectorsLabel.setText("todo");
+		sectorDomainLabels.put(defaultDomainName, new Label[]{defaultSiteDomainLabel, defaultSitesLabel});
+	
+		siteDomainsGroup.layout();
 	}
 
 }
