@@ -66,7 +66,7 @@ public class AfpSYHoppingMALsPage extends WizardPage {
     	trxsLabel.setText("Assigned TRXs");
     	AfpWizardUtils.makeFontBold(trxsLabel);
     	
-    	AfpWizardUtils.createButtonsGroup(malDomainsGroup, "HoppingMAL", model);
+    	AfpWizardUtils.createButtonsGroup(this,malDomainsGroup, "HoppingMAL", model);
     	domainLabels = new HashMap<String, Label[]>();
     	
     	AfpWizardUtils.getTRXFilterGroup(main);

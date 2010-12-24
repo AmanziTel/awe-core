@@ -904,13 +904,20 @@ public class AfpModel {
 	}
 	
 	public String[] getAllFrequencyDomainNames(){
-		String[] names = new String[freqDomains.size()];
+		Vector<String> names = new Vector<String>();
 		int i = 0;
 		for(AfpFrequencyDomainModel freqDomain : freqDomains){
-			names[i] = freqDomain.getName();
-			i++;	
+			if(!freqDomain.isFree()) {
+				names.add(freqDomain.getName());
+				i++;
+			}
 		}
-		return names;
+		if(i >0) {
+			String ret[] = new String[names.size()];
+			names.copyInto(ret);
+			return ret;
+		}
+		return null;
 	}
 	
 	public String[] getAvailableBands(){

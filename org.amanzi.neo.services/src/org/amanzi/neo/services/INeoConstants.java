@@ -227,13 +227,13 @@ public class INeoConstants {
     public static final String AFP_ADJ_TRIANGULATION_VALUES = "adj_triangulation";
     public static final String AFP_CO_SHADOWING_VALUES = "co_shadowing";
     public static final String AFP_ADJ_SHADOWING_VALUES = "adj_shadowing";
-    public static final String PROPERTY_DOMAIN_NAME = "domain";
-    public static final String FREQUENCY_DOMAIN_NAME = "frequency";
-    public static final String MAL_DOMAIN_NAME = "MAL";
-    public static final String SITE_SEPARATION_DOMAIN_NAME = "site_separation";
-    public static final String SECTOR_SEPARATION_DOMAIN_NAME = "sector_separation";
-    public static final String PROPERTY_FREQUENCY_BAND_NAME = "band";
-    public static final String PROPERTY_FREQUENCIES_NAME = "frequencies";
-    public static final String PROPERTY_MAL_SIZE_NAME = "mal_size";
-    public static final String PROPERTY_SEPARATIONS_NAME = "separations";
+    public static final String AFP_PROPERTY_DOMAIN_NAME = "domain";
+    public static final String AFP_DOMAIN_NAME_FREQUENCY = "frequency";
+    public static final String AFP_DOMAIN_NAME_MAL = "MAL";
+    public static final String AFP_DOMAIN_NAME_SITE_SEPARATION = "site_separation";
+    public static final String AFP_DOMAIN_NAME_SECTOR_SEPARATION = "sector_separation";
+    public static final String AFP_PROPERTY_FREQUENCY_BAND_NAME = "band";
+    public static final String AFP_PROPERTY_FREQUENCIES_NAME = "frequencies";
+    public static final String AFP_PROPERTY_MAL_SIZE_NAME = "mal_size";
+    public static final String AFP_PROPERTY_SEPARATIONS_NAME = "separations";
 }

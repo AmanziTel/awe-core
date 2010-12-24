@@ -15,6 +15,7 @@ import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.ui.NeoUtils;
+import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -246,7 +247,7 @@ public class AfpWizardUtils {
 		
 	 }
 	
-	protected static void createFrequencyDomainShell(Shell parentShell, final String action, final Group parentGroup, final AfpModel model){
+	protected static void createFrequencyDomainShell(final WizardPage page, Shell parentShell, final String action, final Group parentGroup, final AfpModel model){
 		
 		final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL);
 		final AfpFrequencyDomainModel domainModel = new AfpFrequencyDomainModel();
@@ -275,7 +276,14 @@ public class AfpWizardUtils {
 		if (action.equals("Edit") || action.equals("Delete")){
 			Combo nameCombo = new Combo(subShell, SWT.DROP_DOWN | SWT.READ_ONLY);
 			//TODO populate combo values
-			nameCombo.setItems(model.getAllFrequencyDomainNames());
+			String names[] = model.getAllFrequencyDomainNames();
+			if(names == null) {
+				return;
+			}
+			if(names.length ==0) {
+				return;
+			}
+			nameCombo.setItems(names);
 			nameCombo.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
 			nameCombo.addModifyListener(new ModifyListener(){
 
@@ -300,8 +308,6 @@ public class AfpWizardUtils {
 				
 			});
 		}
-		
-		
 		
 		Group freqGroup = new Group(subShell, SWT.NONE);
 		freqGroup.setLayout(new GridLayout(3, false));
@@ -345,7 +351,8 @@ public class AfpWizardUtils {
 					domainModel.setBand(bandCombo.getText());
 					domainModel.setFrequencies(selectedArray);
 					model.addFreqDomain(domainModel);
-					parentGroup.layout();
+					((AfpFrequencyTypePage)page).refreshPage();
+					//parentGroup.layout();
 				}
 				//TODO add for edit and delete buttons
 				
@@ -699,7 +706,7 @@ public class AfpWizardUtils {
 
 	}
 	
-	protected static void createButtonsGroup(final Group parentGroup, String caller, final AfpModel model){
+	protected static void createButtonsGroup(final WizardPage page, final Group parentGroup, String caller, final AfpModel model){
 
 		final Shell parentShell = parentGroup.getShell();
 		final String thisCaller = caller;
@@ -715,7 +722,7 @@ public class AfpWizardUtils {
     		@Override
 			public void widgetSelected(SelectionEvent e) {
     			if (thisCaller.equals("FrequencyType"))
-    				AfpWizardUtils.createFrequencyDomainShell(parentShell, "Add", parentGroup, model);
+    				AfpWizardUtils.createFrequencyDomainShell(page,parentShell, "Add", parentGroup, model);
     			else if (thisCaller.equals("HoppingMAL"))
     				AfpWizardUtils.createMalDomainShell(parentShell, "Add", parentGroup, model);
     			else if (thisCaller.equals("Sector SeparationRules"))
@@ -734,7 +741,7 @@ public class AfpWizardUtils {
     		@Override
 			public void widgetSelected(SelectionEvent e) {
     			if (thisCaller.equals("FrequencyType"))
-    				AfpWizardUtils.createFrequencyDomainShell(parentShell, "Edit", parentGroup, model);
+    				AfpWizardUtils.createFrequencyDomainShell(page,parentShell, "Edit", parentGroup, model);
     			else if (thisCaller.equals("HoppingMAL"))
     				AfpWizardUtils.createMalDomainShell(parentShell, "Edit", parentGroup, model);
     			else if (thisCaller.equals("Sector SeparationRules"))
@@ -753,7 +760,7 @@ public class AfpWizardUtils {
     		@Override
 			public void widgetSelected(SelectionEvent e) {
     			if (thisCaller.equals("FrequencyType"))
-    				AfpWizardUtils.createFrequencyDomainShell(parentShell, "Delete", parentGroup, model);
+    				AfpWizardUtils.createFrequencyDomainShell(page,parentShell, "Delete", parentGroup, model);
     			else if (thisCaller.equals("HoppingMAL"))
     				AfpWizardUtils.createMalDomainShell(parentShell, "Delete", parentGroup, model);
     			else if (thisCaller.equals("Sector SeparationRules"))

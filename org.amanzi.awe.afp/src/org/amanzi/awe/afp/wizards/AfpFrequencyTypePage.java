@@ -87,7 +87,7 @@ public class AfpFrequencyTypePage extends WizardPage {
     	trxsLabel.setText("Assigned TRXs");
     	AfpWizardUtils.makeFontBold(trxsLabel);
     	
-    	AfpWizardUtils.createButtonsGroup(frequencyDomainsGroup, "FrequencyType", model);
+    	AfpWizardUtils.createButtonsGroup(this, frequencyDomainsGroup, "FrequencyType", model);
     	domainLabels = new HashMap<String, Label[]>();
     	
     	AfpWizardUtils.getTRXFilterGroup(main);		

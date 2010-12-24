@@ -66,7 +66,7 @@ public class AfpSeparationRulesPage extends WizardPage {
     	sectorsLabel.setText("Assigned Sectors");
     	AfpWizardUtils.makeFontBold(sectorsLabel);
     	
-    	AfpWizardUtils.createButtonsGroup(sectorDomainsGroup, "Sector SeparationRules", model);
+    	AfpWizardUtils.createButtonsGroup(this, sectorDomainsGroup, "Sector SeparationRules", model);
     	siteDomainLabels = new HashMap<String, Label[]>();
 		
 		
@@ -99,7 +99,7 @@ public class AfpSeparationRulesPage extends WizardPage {
     	sitesLabel.setText("Assigned Sites");
     	AfpWizardUtils.makeFontBold(sitesLabel);
     	
-    	AfpWizardUtils.createButtonsGroup(siteDomainsGroup, "Site SeparationRules", model);
+    	AfpWizardUtils.createButtonsGroup(this, siteDomainsGroup, "Site SeparationRules", model);
     	sectorDomainLabels = new HashMap<String, Label[]>();
     	
     	AfpWizardUtils.getTRXFilterGroup(siteMain);
