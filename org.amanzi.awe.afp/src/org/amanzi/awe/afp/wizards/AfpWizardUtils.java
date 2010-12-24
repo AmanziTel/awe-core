@@ -162,63 +162,6 @@ public class AfpWizardUtils {
 		font.dispose();
 	}
 	
-	public static void createFrequencyDomainNode(Node afpNode, AfpFrequencyDomainModel domainModel, GraphDatabaseService service){
-		Node frequencyNode = findOrCreateDomainNode(afpNode, INeoConstants.FREQUENCY_DOMAIN_NAME, domainModel.getName(), service);
-        
-        frequencyNode.setProperty(INeoConstants.PROPERTY_FREQUENCY_BAND_NAME, domainModel.getBand());
-        frequencyNode.setProperty(INeoConstants.PROPERTY_FREQUENCIES_NAME, domainModel.getFrequencies());
-	}
-	
-	public static void createHoppingMALDomainNode(Node afpNode, AfpHoppingMALDomainModel domainModel, GraphDatabaseService service){
-		Node malNode = findOrCreateDomainNode(afpNode, INeoConstants.MAL_DOMAIN_NAME, domainModel.getName(), service);
-		malNode.setProperty(INeoConstants.PROPERTY_MAL_SIZE_NAME, domainModel.getMALSize());
-	}
-	
-	public static void createSectorSeparationDomainNode(Node afpNode, AfpSeparationDomainModel domainModel, GraphDatabaseService service){
-		Node separationNode = findOrCreateDomainNode(afpNode, INeoConstants.SECTOR_SEPARATION_DOMAIN_NAME, domainModel.getName(), service);
-		separationNode.setProperty(INeoConstants.PROPERTY_SEPARATIONS_NAME, domainModel.getSeparations());
-	}
-	
-	public static void createSiteSeparationDomainNode(Node afpNode, AfpSeparationDomainModel domainModel, GraphDatabaseService service){
-		Node separationNode = findOrCreateDomainNode(afpNode, INeoConstants.SITE_SEPARATION_DOMAIN_NAME, domainModel.getName(), service);
-		separationNode.setProperty(INeoConstants.PROPERTY_SEPARATIONS_NAME, domainModel.getSeparations());
-	}
-	
-	public static void deleteDomainNode(Node afpNode, String domain, String name, GraphDatabaseService service){
-		//TODO implement this method
-	}
-	
-	public static Node findOrCreateDomainNode(Node afpNode, String domain, String name, GraphDatabaseService service){
-		Node domainNode = null;
-		
-		Traverser traverser = afpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
-
-			@Override
-			public boolean isReturnableNode(TraversalPosition currentPos) {
-				if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.AFP_DOMAIN))
-					return true;
-				return false;
-			}
-    		
-    	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
-		
-		for (Node node : traverser) {
-        	if (node.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(name) &&
-        			node.getProperty(INeoConstants.PROPERTY_DOMAIN_NAME).equals(domain))
-        		domainNode = node;
-        }
-		
-		if (domainNode == null){
-			domainNode = service.createNode();
-    		NodeTypes.AFP_DOMAIN.setNodeType(domainNode, service);
-            NeoUtils.setNodeName(domainNode, name, service);
-            domainNode.setProperty(INeoConstants.PROPERTY_DOMAIN_NAME, domain);
-            afpNode.createRelationshipTo(domainNode, NetworkRelationshipTypes.CHILD);
-		}
-		
-		return domainNode;
-
-	}
 	
 	protected static void createFrequencySelector(Shell parentShell, Text frequenciesText, String frequencies[]){
 		final Text frequenciesTextLocal = frequenciesText;

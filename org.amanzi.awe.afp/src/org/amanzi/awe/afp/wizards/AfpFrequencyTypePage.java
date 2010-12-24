@@ -22,7 +22,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
-import org.neo4j.graphdb.GraphDatabaseService;
 
 public class AfpFrequencyTypePage extends WizardPage {
 	
@@ -31,7 +30,6 @@ public class AfpFrequencyTypePage extends WizardPage {
 	public final static String freePlan850DomainName = "Free Plan 850";
 	public final static String freePlan1900DomainName = "Free Plan 1900";
 	
-	private final GraphDatabaseService service;
 	private Group frequencyDomainsGroup;
 	protected Label free900Freq;
 	protected Label free900Trx;
@@ -51,9 +49,8 @@ public class AfpFrequencyTypePage extends WizardPage {
 	private AfpModel model;
 	protected static HashMap<String, Label[]> domainLabels;
 	
-	public AfpFrequencyTypePage(String pageName, GraphDatabaseService servise, AfpModel model) {
+	public AfpFrequencyTypePage(String pageName, AfpModel model) {
 		super(pageName);
-        this.service = servise;
         this.model = model;
         setTitle(AfpImportWizard.title);
         setDescription(AfpImportWizard.page3Name);

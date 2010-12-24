@@ -16,11 +16,9 @@ import org.eclipse.swt.widgets.Sash;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
-import org.neo4j.graphdb.GraphDatabaseService;
 
 public class AfpScalingRulesPage extends WizardPage implements Listener{
 	
-	private final GraphDatabaseService service;
 	private static final int textWidth = 25;
 	private static final int sepTextWidth = 35;
 	// Indentation between cells in Interference Matrix
@@ -45,9 +43,8 @@ public class AfpScalingRulesPage extends WizardPage implements Listener{
 			};
 	
 	
-	public AfpScalingRulesPage(String pageName, GraphDatabaseService servise, AfpModel model) {
+	public AfpScalingRulesPage(String pageName, AfpModel model) {
 		super(pageName);
-        this.service = servise;
         this.model = model;
         setTitle(AfpImportWizard.title);
         setDescription(AfpImportWizard.page6Name);

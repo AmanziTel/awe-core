@@ -20,7 +20,6 @@ import org.neo4j.graphdb.GraphDatabaseService;
 public class AfpSYHoppingMALsPage extends WizardPage {
 	
 	public final static String defaultDomainName = "Default MAL";
-	private final GraphDatabaseService service;
 	private Group malDomainsGroup;
 	private Label defaultTrx;
 	public static String test = "test";
@@ -29,9 +28,8 @@ public class AfpSYHoppingMALsPage extends WizardPage {
 	private AfpModel model;
 	
 	
-	public AfpSYHoppingMALsPage(String pageName, GraphDatabaseService servise, AfpModel model) {
+	public AfpSYHoppingMALsPage(String pageName, AfpModel model) {
 		super(pageName);
-        this.service = servise;
         this.model = model;
         setTitle(AfpImportWizard.title);
         setDescription(AfpImportWizard.page4Name);

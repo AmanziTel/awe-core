@@ -11,17 +11,14 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
-import org.neo4j.graphdb.GraphDatabaseService;
 
 public class AfpSummaryPage extends WizardPage {
 	
-	private final GraphDatabaseService service;
 	private Text summaryText;
 	private AfpModel model;
 	
-	public AfpSummaryPage(String pageName, GraphDatabaseService servise, AfpModel model) {
+	public AfpSummaryPage(String pageName, AfpModel model) {
 		super(pageName);
-        this.service = servise;
         this.model = model;
         setTitle(AfpImportWizard.title);
         setDescription(AfpImportWizard.page7Name);
@@ -48,6 +45,15 @@ public class AfpSummaryPage extends WizardPage {
 		summaryText.setLayoutData(gridData);
 		summaryText.setText("Summary Report Content");
 		
+		summaryText.append("\nOptimization Paramters");
+		summaryText.append("\nFrequencies");
+		summaryText.append(" BSIC");
+		summaryText.append(" HSN");
+		summaryText.append(" MAIO");
+		summaryText.append("Frequency Bands");
+		summaryText.append("\nChannel Type");
+		summaryText.append("\nOptimization Paramters");
+		summaryText.append("\nOptimization Paramters");
 		Button saveButton = new Button(main, SWT.PUSH);
 		saveButton.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, false, false, 1, 1));
 		

@@ -1,21 +1,46 @@
 package org.amanzi.awe.afp.models;
 
+import java.util.HashMap;
 import java.util.Set;
 import java.util.Vector;
 
+import org.amanzi.awe.afp.wizards.AfpLoadNetworkPage;
+import org.amanzi.awe.afp.wizards.AfpWizardUtils;
+import org.amanzi.awe.console.AweConsolePlugin;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
 
 public class AfpModel {
-	
-	//Page 0 params
-	Node afpNode;
-	
-	//Page 1 params
+
+	protected Node datasetNode;
+	protected Node afpNode;
+	private final GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
+	private static final String AFP_NODE_NAME = "afp-dataset";
+
+	private HashMap<String, Node> networkNodes;
+	private HashMap<String, Node> afpNodes;
+
 	boolean optimizeFrequency = true;
 	boolean optimizeBSIC = true;
 	boolean optimizeHSN = true;
 	boolean optimizeMAIO = true;
 	
+	public static final int BAND_900=0;
+	public static final int BAND_1800=1;
+	public static final int BAND_850=2;
+	public static final int BAND_1900=3;
 	/**
 	 * 0- 900
 	 * 1- 1800
@@ -33,12 +58,9 @@ public class AfpModel {
 	boolean analyzeCurrentFreqAllocation = true;
 
 	//Page 2 params
-	String availableFreq900;
-	String availableFreq1800;
-	String availableFreq850;
-	String availableFreq1900;
-	boolean[] availableNCCs = new boolean[8];
-	boolean[] availableBCCs = new boolean[8];
+	String availableFreq[] = new String[4];
+	int availableNCCs = 0xff;
+	int availableBCCs = 0xff;
 	
 	//Page 3 params
 	Vector<AfpFrequencyDomainModel> freqDomains;
@@ -79,17 +101,8 @@ public class AfpModel {
 	
 	
 	public AfpModel() {
-		for(int i=0;i<this.availableBCCs.length;i++) {
-			this.availableBCCs[i] = true;
-		}
-		for(int i=0;i<this.availableNCCs.length;i++) {
-			this.availableNCCs[i] = true;
-		}
+		
 	}
-
-
-
-
 
 	/**
 	 * Array rows: 
@@ -117,10 +130,6 @@ public class AfpModel {
 		return selectedArray;
 	}
 
-
-
-
-
 	/**
 	 * @return the afpNode
 	 */
@@ -129,14 +138,71 @@ public class AfpModel {
 	}
 
 
+	public void setSelectNetworkDataSetName(String datasetName) {
+    	datasetNode = networkNodes.get(datasetName);
+    	if(datasetNode != null) {
+    		loadAfpDataSet();
+    	}
+	}
 
+    public String[] getNetworkDatasets() {
+        networkNodes = new HashMap<String, Node>();
+        for (Node root : NeoUtils.getAllRootTraverser(service, null)) {
+        	
+            if (NodeTypes.NETWORK.checkNode(root)) {
+                networkNodes.put(NeoUtils.getNodeName(root, service), root);
+            }
+        }
+        return networkNodes.keySet().toArray(new String[0]);
+    }
+	/**
+     * Gets the networ datasets.
+     * 
+     * @return the network datasets
+     */
+    
+    public String[] getAfpDatasets(Node networkNode) {
+        afpNodes = new HashMap<String, Node>();
+        Transaction tx = service.beginTx();
+        try {
+        	Traverser traverser = networkNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
 
+				@Override
+				public boolean isReturnableNode(TraversalPosition currentPos) {
+					if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.AFP.getId()))
+						return true;
+					return false;
+				}
+        		
+        	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+            for (Node afpNode : traverser) {
+            	
+                if (NodeTypes.AFP.checkNode(afpNode)) {
+                    afpNodes.put(NeoUtils.getNodeName(afpNode, service), afpNode);
+                }
+            }
+        } finally {
+            tx.finish();
+        }
+        return afpNodes.keySet().toArray(new String[0]);
+    }
+    public boolean hasValidNetworkDataset() {
+	    if (datasetNode == null) {
+	            return false;
+	    }
+	    return  true;
+    }
 
 	/**
 	 * @param afpNode the afpNode to set
 	 */
-	public void setAfpNode(Node afpNode) {
-		this.afpNode = afpNode;
+	public void loadAfpDataSet() {
+		getAfpDatasets(datasetNode);
+
+        if(afpNodes != null) {
+        	afpNode = afpNodes.get(AFP_NODE_NAME);
+        }
+		loadUserData();
 	}
 
 
@@ -250,6 +316,12 @@ public class AfpModel {
 	}
 
 
+	public boolean isFrequencyBandAvaliable(int band) {
+		if(band >=0 && band <=4) {
+			return frequencyBands[band];
+		}		
+		return false;
+	}
 
 
 
@@ -311,8 +383,13 @@ public class AfpModel {
 	/**
 	 * @return the availableFreq900
 	 */
-	public String getAvailableFreq900() {
-		return availableFreq900;
+	public String getAvailableFreq(int band) {
+		if(band >=0 && band <=4) {
+			if(availableFreq[band] != null) {
+				return availableFreq[band];
+			}
+		}
+		return "";
 	}
 
 
@@ -322,85 +399,22 @@ public class AfpModel {
 	/**
 	 * @param availableFreq900 the availableFreq900 to set
 	 */
-	public void setAvailableFreq900(String availableFreq900) {
-		this.availableFreq900 = availableFreq900;
+	public void setAvailableFreq(int band, String freq) {
+		if(band >=0 && band <=4) {
+			availableFreq[band] = freq;
+		}
 	}
-
-
-
-
-
-	/**
-	 * @return the availableFreq1800
-	 */
-	public String getAvailableFreq1800() {
-		return availableFreq1800;
-	}
-
-
-
-
-
-	/**
-	 * @param availableFreq1800 the availableFreq1800 to set
-	 */
-	public void setAvailableFreq1800(String availableFreq1800) {
-		this.availableFreq1800 = availableFreq1800;
-	}
-
-
-
-
-
-	/**
-	 * @return the availableFreq850
-	 */
-	public String getAvailableFreq850() {
-		return availableFreq850;
-	}
-
-
-
-
-
-	/**
-	 * @param availableFreq850 the availableFreq850 to set
-	 */
-	public void setAvailableFreq850(String availableFreq850) {
-		this.availableFreq850 = availableFreq850;
-	}
-
-
-
-
-
-	/**
-	 * @return the availableFreq1900
-	 */
-	public String getAvailableFreq1900() {
-		return availableFreq1900;
-	}
-
-
-
-
-
-	/**
-	 * @param availableFreq1900 the availableFreq1900 to set
-	 */
-	public void setAvailableFreq1900(String availableFreq1900) {
-		this.availableFreq1900 = availableFreq1900;
-	}
-
-
-
 
 
 	/**
 	 * @return the availableNCCs
 	 */
 	public boolean[] getAvailableNCCs() {
-		return availableNCCs;
+		boolean ret[] = new boolean[] { true,true,true,true,true,true,true,true};
+		for(int i=0; i<8;i++) {
+			ret[i] = ((availableNCCs & (1 << i)) >0);
+		}
+		return ret;
 	}
 
 
@@ -411,7 +425,13 @@ public class AfpModel {
 	 * @param availableNCCs the availableNCCs to set
 	 */
 	public void setAvailableNCCs(boolean[] availableNCCs) {
-		this.availableNCCs = availableNCCs;
+		int n =0;
+		for(int i=0; i< availableNCCs.length;i++) {
+			if(availableNCCs[i]) {
+				n = n | (1 << i);
+			}
+		}
+		this.availableNCCs = n;
 	}
 
 
@@ -422,7 +442,11 @@ public class AfpModel {
 	 * @return the availableBCCs
 	 */
 	public boolean[] getAvailableBCCs() {
-		return availableBCCs;
+		boolean ret[] = new boolean[] { true,true,true,true,true,true,true,true};
+		for(int i=0; i<8;i++) {
+			ret[i] = ((availableBCCs & (1 << i)) >0);
+		}
+		return ret;
 	}
 
 
@@ -433,7 +457,13 @@ public class AfpModel {
 	 * @param availableBCCs the availableBCCs to set
 	 */
 	public void setAvailableBCCs(boolean[] availableBCCs) {
-		this.availableBCCs = availableBCCs;
+		int n =0;
+		for(int i=0; i< availableBCCs.length;i++) {
+			if(availableBCCs[i]) {
+				n = n | (1 << i);
+			}
+		}
+		this.availableBCCs = n;
 	}
 
 
@@ -915,7 +945,274 @@ public class AfpModel {
 	}
 	
 	
+	/**
+	 * Write all user selected data to database
+	 */
+	public void saveUserData() {
+		
+		Transaction tx = this.service.beginTx();
+		try {
+			if (afpNode == null) {
+				afpNode = service.createNode();
+				NodeTypes.AFP.setNodeType(afpNode, service);
+				NeoUtils.setNodeName(afpNode, AFP_NODE_NAME , service);
+				datasetNode.createRelationshipTo(afpNode, NetworkRelationshipTypes.CHILD);
+			}
+			afpNode.setProperty(INeoConstants.AFP_OPTIMIZATION_PARAMETERS, getOptimizationParameters());
+			afpNode.setProperty(INeoConstants.AFP_FREQUENCY_BAND, getFrequencyBands());
+			afpNode.setProperty(INeoConstants.AFP_CHANNEL_TYPE, getChanneltypes());
+			afpNode.setProperty(INeoConstants.AFP_ANALYZE_CURRENT, isAnalyzeCurrentFreqAllocation());
+			if (getAvailableFreq(BAND_900) != null)
+				afpNode.setProperty( INeoConstants.AFP_AVAILABLE_FREQUENCIES_900, getAvailableFreq(BAND_900));
+			if (getAvailableFreq(BAND_1800) != null)
+				afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_1800, getAvailableFreq(BAND_1800));
+			
+			if (getAvailableFreq(BAND_850) != null)
+				afpNode.setProperty( INeoConstants.AFP_AVAILABLE_FREQUENCIES_850, getAvailableFreq(BAND_850));
+			if (getAvailableFreq(BAND_1900) != null)
+				afpNode.setProperty( INeoConstants.AFP_AVAILABLE_FREQUENCIES_1900, getAvailableFreq(BAND_1900));
+			afpNode.setProperty(INeoConstants.AFP_AVAILABLE_BCCS, this.availableBCCs);
+			afpNode.setProperty(INeoConstants.AFP_AVAILABLE_NCCS, this.availableNCCs);
+
+			afpNode.setProperty(INeoConstants.AFP_SECTOR_SCALING_RULES, getSectorSeparation());
+			afpNode.setProperty(INeoConstants.AFP_SITE_SCALING_RULES, getSiteSeparation());
+			afpNode.setProperty(INeoConstants.AFP_CO_INTERFERENCE_VALUES, getCoInterference());
+			afpNode.setProperty(INeoConstants.AFP_ADJ_INTERFERENCE_VALUES,getAdjInterference());
+			afpNode.setProperty(INeoConstants.AFP_CO_NEIGHBOR_VALUES, getCoNeighbor());
+			afpNode.setProperty(INeoConstants.AFP_ADJ_NEIGHBOR_VALUES, getAdjNeighbor());
+			afpNode.setProperty(INeoConstants.AFP_CO_TRIANGULATION_VALUES, getCoTriangulation());
+			afpNode.setProperty(INeoConstants.AFP_ADJ_TRIANGULATION_VALUES, getAdjTriangulation());
+			afpNode.setProperty(INeoConstants.AFP_CO_SHADOWING_VALUES, getCoShadowing());
+			afpNode.setProperty(INeoConstants.AFP_ADJ_SHADOWING_VALUES, getAdjShadowing());
+
+			for (AfpFrequencyDomainModel frequencyModel : getFreqDomains()) {
+				createFrequencyDomainNode(afpNode,
+						frequencyModel, service);
+			}
+
+			for (AfpHoppingMALDomainModel malModel : getMalDomains()) {
+				createHoppingMALDomainNode(afpNode, malModel,
+						service);
+			}
+
+			for (AfpSeparationDomainModel separationsModel : getSectorSeparationDomains()) {
+				createSectorSeparationDomainNode(afpNode,
+						separationsModel, service);
+			}
+
+			for (AfpSeparationDomainModel separationsModel : getSiteSeparationDomains()) {
+				createSiteSeparationDomainNode(afpNode,
+						separationsModel, service);
+			}
+
+		} catch (Exception e) {
+			AweConsolePlugin.exception(e);
+		} finally {
+			tx.finish();
+		}
+	}
 	
+	private void loadUserData() {
+		
+		try {
+			if (afpNode == null) {
+				return;
+			}
+			try {
+				boolean opt[] = (boolean[])afpNode.getProperty(INeoConstants.AFP_OPTIMIZATION_PARAMETERS);
+				if(opt != null) {
+					if(opt.length >=4) {
+						this.optimizeFrequency = opt[0];
+						this.optimizeBSIC = opt[1];
+						this.optimizeHSN = opt[2];
+						this.optimizeMAIO = opt[3];
+					}
+				}
+			} catch(Exception e) {
+				// no property sent 
+			}
+			try {
+				setFrequencyBands((boolean[])afpNode.getProperty(INeoConstants.AFP_FREQUENCY_BAND));
+			} catch(Exception e) {
+				// no property sent 
+			}
+			try {
+				setChanneltypes((boolean[])afpNode.getProperty(INeoConstants.AFP_CHANNEL_TYPE));
+			} catch(Exception e) {
+				// no property sent 
+			}
+			try {
+				setAnalyzeCurrentFreqAllocation((Boolean)afpNode.getProperty(INeoConstants.AFP_ANALYZE_CURRENT));
+			} catch(Exception e) {
+				// no property sent 
+			}
+			try {
+				setAvailableFreq(BAND_900, (String)afpNode.getProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_900));
+			} catch(Exception e) {
+				// no property sent 
+			}
+			try {
+				setAvailableFreq(BAND_1800,(String)afpNode.getProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_1800));
+			} catch(Exception e) {
+				// no property sent 
+			}
+			try {
+				setAvailableFreq(BAND_850,(String)afpNode.getProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_850));
+			} catch(Exception e) {
+				// no property sent 
+			}
+			try {
+				setAvailableFreq(BAND_1900,(String)afpNode.getProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_1900));
+			} catch(Exception e) {
+				// no property sent 
+			}
+			try {
+				Integer n = (Integer)afpNode.getProperty(INeoConstants.AFP_AVAILABLE_BCCS);
+				this.availableBCCs =n.intValue();				
+			} catch(Exception e) {
+				// no property sent 
+			}
+			try {
+				Integer n = (Integer)afpNode.getProperty(INeoConstants.AFP_AVAILABLE_NCCS);
+				this.availableNCCs =n.intValue();				
+			} catch(Exception e) {
+				// no property sent 
+			}
+			try {
+				setSectorSeparation((float[])afpNode.getProperty(INeoConstants.AFP_SECTOR_SCALING_RULES));
+			} catch(Exception e) {
+				// no property sent 
+			}
+			try {
+				setSiteSeparation((float[])afpNode.getProperty(INeoConstants.AFP_SITE_SCALING_RULES));
+			} catch(Exception e) {
+				// no property sent 
+			}
+			try {
+				setCoInterference((float[])afpNode.getProperty(INeoConstants.AFP_CO_INTERFERENCE_VALUES));
+			} catch(Exception e) {
+				// no property sent 
+			}
+			try {
+				setAdjInterference((float[])afpNode.getProperty(INeoConstants.AFP_ADJ_INTERFERENCE_VALUES));
+			} catch(Exception e) {
+				// no property sent 
+			}
+			try {
+				setCoNeighbor((float[])afpNode.getProperty(INeoConstants.AFP_CO_NEIGHBOR_VALUES));
+			} catch(Exception e) {
+				// no property sent 
+			}
+			try {
+				setAdjNeighbor((float[])afpNode.getProperty(INeoConstants.AFP_ADJ_NEIGHBOR_VALUES));
+			} catch(Exception e) {
+				// no property sent 
+			}
+			try {
+				setCoTriangulation((float[])afpNode.getProperty(INeoConstants.AFP_CO_TRIANGULATION_VALUES));
+			} catch(Exception e) {
+				// no property sent 
+			}
+			try {
+				setAdjTriangulation((float[])afpNode.getProperty(INeoConstants.AFP_ADJ_TRIANGULATION_VALUES));
+			} catch(Exception e) {
+				// no property sent 
+			}
+			try {
+				setCoShadowing((float[])afpNode.getProperty(INeoConstants.AFP_CO_SHADOWING_VALUES));
+			} catch(Exception e) {
+				// no property sent 
+			}
+			try {
+				setAdjShadowing((float[])afpNode.getProperty(INeoConstants.AFP_ADJ_SHADOWING_VALUES));
+			} catch(Exception e) {
+				// no property sent 
+			}
+			/*
+			for (AfpFrequencyDomainModel frequencyModel : getFreqDomains()) {
+				createFrequencyDomainNode(afpNode,
+						frequencyModel, service);
+			}
+
+			for (AfpHoppingMALDomainModel malModel : getMalDomains()) {
+				createHoppingMALDomainNode(afpNode, malModel,
+						service);
+			}
+
+			for (AfpSeparationDomainModel separationsModel : getSectorSeparationDomains()) {
+				createSectorSeparationDomainNode(afpNode,
+						separationsModel, service);
+			}
+
+			for (AfpSeparationDomainModel separationsModel : getSiteSeparationDomains()) {
+				createSiteSeparationDomainNode(afpNode,
+						separationsModel, service);
+			}*/
+
+		} catch (Exception e) {
+			AweConsolePlugin.exception(e);
+		} finally {
+		}
+	}
+	
+	public void createFrequencyDomainNode(Node afpNode, AfpFrequencyDomainModel domainModel, GraphDatabaseService service){
+		Node frequencyNode = findOrCreateDomainNode(afpNode, INeoConstants.FREQUENCY_DOMAIN_NAME, domainModel.getName(), service);
+        
+        frequencyNode.setProperty(INeoConstants.PROPERTY_FREQUENCY_BAND_NAME, domainModel.getBand());
+        frequencyNode.setProperty(INeoConstants.PROPERTY_FREQUENCIES_NAME, domainModel.getFrequencies());
+	}
+	
+	public void createHoppingMALDomainNode(Node afpNode, AfpHoppingMALDomainModel domainModel, GraphDatabaseService service){
+		Node malNode = findOrCreateDomainNode(afpNode, INeoConstants.MAL_DOMAIN_NAME, domainModel.getName(), service);
+		malNode.setProperty(INeoConstants.PROPERTY_MAL_SIZE_NAME, domainModel.getMALSize());
+	}
+	
+	public void createSectorSeparationDomainNode(Node afpNode, AfpSeparationDomainModel domainModel, GraphDatabaseService service){
+		Node separationNode = findOrCreateDomainNode(afpNode, INeoConstants.SECTOR_SEPARATION_DOMAIN_NAME, domainModel.getName(), service);
+		separationNode.setProperty(INeoConstants.PROPERTY_SEPARATIONS_NAME, domainModel.getSeparations());
+	}
+	
+	public void createSiteSeparationDomainNode(Node afpNode, AfpSeparationDomainModel domainModel, GraphDatabaseService service){
+		Node separationNode = findOrCreateDomainNode(afpNode, INeoConstants.SITE_SEPARATION_DOMAIN_NAME, domainModel.getName(), service);
+		separationNode.setProperty(INeoConstants.PROPERTY_SEPARATIONS_NAME, domainModel.getSeparations());
+	}
+	
+	public void deleteDomainNode(Node afpNode, String domain, String name, GraphDatabaseService service){
+		//TODO implement this method
+	}
+	
+	public Node findOrCreateDomainNode(Node afpNode, String domain, String name, GraphDatabaseService service){
+		Node domainNode = null;
+		
+		Traverser traverser = afpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
+
+			@Override
+			public boolean isReturnableNode(TraversalPosition currentPos) {
+				if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.AFP_DOMAIN))
+					return true;
+				return false;
+			}
+    		
+    	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+		
+		for (Node node : traverser) {
+        	if (node.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(name) &&
+        			node.getProperty(INeoConstants.PROPERTY_DOMAIN_NAME).equals(domain))
+        		domainNode = node;
+        }
+		
+		if (domainNode == null){
+			domainNode = service.createNode();
+    		NodeTypes.AFP_DOMAIN.setNodeType(domainNode, service);
+            NeoUtils.setNodeName(domainNode, name, service);
+            domainNode.setProperty(INeoConstants.PROPERTY_DOMAIN_NAME, domain);
+            afpNode.createRelationshipTo(domainNode, NetworkRelationshipTypes.CHILD);
+		}
+		
+		return domainNode;
+
+	}
+
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
 		sb.append("Optimization Parameters:\n" );

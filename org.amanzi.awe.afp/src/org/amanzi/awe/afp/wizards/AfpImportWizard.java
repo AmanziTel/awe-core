@@ -42,9 +42,6 @@ import org.eclipse.swt.widgets.Scale;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
 
 /**
  * <p>
@@ -79,103 +76,13 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
 	
 	private AfpModel model;
 	
-    private GraphDatabaseService servise;
     protected HashMap<String, String> parameters;
 
     @Override
     public boolean performFinish() {
-/*    	parameters = new HashMap<String, String>();
-    	parameters.put(ControlFileProperties.SITE_SPACING, loadPage.siteSpacing.getText().toString());
-    	parameters.put(ControlFileProperties.CELL_SPACING, loadPage.cellSpacing.getText().toString());
-    	parameters.put(ControlFileProperties.REG_NBR_SPACING, loadPage.regNbrSpacing.getText().toString());
-    	parameters.put(ControlFileProperties.MIN_NEIGBOUR_SPACING, loadPage.minNbrSpacing.getText().toString());
-    	parameters.put(ControlFileProperties.SECOND_NEIGHBOUR_SPACING, loadPage.secondNbrSpacing.getText().toString());
-    	parameters.put(ControlFileProperties.QUALITY, String.valueOf(loadPage.qualityScale.getSelection()));
-    	parameters.put(ControlFileProperties.G_MAX_RT_PER_CELL, loadPage.gMaxRTperCell.getText().toString());
-    	parameters.put(ControlFileProperties.G_MAX_RT_PER_SITE, loadPage.gMaxRTperSite.getText().toString());
-    	parameters.put(ControlFileProperties.HOPPING_TYPE, loadPage.hoppingType.getText().toString());
-    	parameters.put(ControlFileProperties.NUM_GROUPS, loadPage.nrOfGroups.getText().toString());
-    	parameters.put(ControlFileProperties.CELL_CARDINALITY, loadPage.cellCardinality.getText().toString());
-    	parameters.put(ControlFileProperties.CARRIERS, loadPage.carriers.getText().toString());
-    	parameters.put(ControlFileProperties.USE_GROUPING, loadPage.useGrouping.getSelection() ? "1" : "0");
-    	parameters.put(ControlFileProperties.EXIST_CLIQUES, loadPage.existCliques.getSelection() ? "1" : "0");
-    	parameters.put(ControlFileProperties.RECALCULATE_ALL, loadPage.recalculateAll.getSelection() ? "1" : "0");
-    	parameters.put(ControlFileProperties.USE_TRAFFIC, loadPage.useTraffic.getSelection() ? "1" : "0");
-    	parameters.put(ControlFileProperties.USE_SO_NEIGHBOURS, loadPage.useSONbrs.getSelection() ? "1" : "0");
-    	parameters.put(ControlFileProperties.DECOMPOSE_CLIQUES, loadPage.decomposeInCliques.getSelection() ? "1" : "0");
-    	  	
+
+    	model.saveUserData();
     	
-    	
-    	if (loadPage.getFileName() == null || loadPage.getFileName().trim().isEmpty()){
-    		Job job2 = new AfpProcessExecutor("Execute Afp Process", loadPage.datasetNode, servise, parameters);
-            job2.schedule();
-    	}
-*/    	
-    	/**
-    	 * Write all user selected data to database
-    	 */
-    	Node afpNode = AfpLoadNetworkPage.afpNode;
-    	servise = NeoServiceProviderUi.getProvider().getService();
-    	Transaction tx = servise.beginTx();
-    	try {
-	    	if (afpNode == null){
-	    		afpNode = servise.createNode();
-	    		NodeTypes.AFP.setNodeType(afpNode, servise);
-                NeoUtils.setNodeName(afpNode, AfpLoadNetworkPage.afpName, servise);
-                AfpLoadNetworkPage.datasetNode.createRelationshipTo(afpNode, NetworkRelationshipTypes.CHILD);
-	    	}
-            afpNode.setProperty(INeoConstants.AFP_OPTIMIZATION_PARAMETERS, model.getOptimizationParameters());
-            afpNode.setProperty(INeoConstants.AFP_FREQUENCY_BAND, model.getFrequencyBands());
-            afpNode.setProperty(INeoConstants.AFP_CHANNEL_TYPE, model.getChanneltypes());
-            afpNode.setProperty(INeoConstants.AFP_ANALYZE_CURRENT, model.isAnalyzeCurrentFreqAllocation());
-            if (model.getAvailableFreq900() != null)
-            	afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_900, model.getAvailableFreq900());
-            if (model.getAvailableFreq1800() != null)
-            	afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_1800, model.getAvailableFreq1800());
-            if (model.getAvailableFreq850() != null)
-            	afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_850, model.getAvailableFreq850());
-            if (model.getAvailableFreq1900() != null)
-            	afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_1900, model.getAvailableFreq1900());
-            afpNode.setProperty(INeoConstants.AFP_AVAILABLE_BCCS, model.getAvailableBCCs());
-            afpNode.setProperty(INeoConstants.AFP_AVAILABLE_NCCS, model.getAvailableNCCs());
-            //TODO create domain nodes
-            
-            afpNode.setProperty(INeoConstants.AFP_SECTOR_SCALING_RULES, model.getSectorSeparation());
-            afpNode.setProperty(INeoConstants.AFP_SITE_SCALING_RULES, model.getSiteSeparation());
-            afpNode.setProperty(INeoConstants.AFP_CO_INTERFERENCE_VALUES, model.getCoInterference());
-            afpNode.setProperty(INeoConstants.AFP_ADJ_INTERFERENCE_VALUES, model.getAdjInterference());
-            afpNode.setProperty(INeoConstants.AFP_CO_NEIGHBOR_VALUES, model.getCoNeighbor());
-            afpNode.setProperty(INeoConstants.AFP_ADJ_NEIGHBOR_VALUES, model.getAdjNeighbor());
-            afpNode.setProperty(INeoConstants.AFP_CO_TRIANGULATION_VALUES, model.getCoTriangulation());
-            afpNode.setProperty(INeoConstants.AFP_ADJ_TRIANGULATION_VALUES, model.getAdjTriangulation());
-            afpNode.setProperty(INeoConstants.AFP_CO_SHADOWING_VALUES, model.getCoShadowing());
-            afpNode.setProperty(INeoConstants.AFP_ADJ_SHADOWING_VALUES, model.getAdjShadowing());
-                
-            for (AfpFrequencyDomainModel frequencyModel : model.getFreqDomains()){
-            	AfpWizardUtils.createFrequencyDomainNode(afpNode, frequencyModel, servise);
-            }
-            
-            for (AfpHoppingMALDomainModel malModel : model.getMalDomains()){
-            	AfpWizardUtils.createHoppingMALDomainNode(afpNode, malModel, servise);
-            }
-            
-            for (AfpSeparationDomainModel separationsModel : model.getSectorSeparationDomains()){
-            	AfpWizardUtils.createSectorSeparationDomainNode(afpNode, separationsModel, servise);
-            }
-            
-            for (AfpSeparationDomainModel separationsModel : model.getSiteSeparationDomains()){
-            	AfpWizardUtils.createSiteSeparationDomainNode(afpNode, separationsModel, servise);
-            }
-                
-	    	
-    	} catch (Exception e){
-    		AweConsolePlugin.exception(e);
-    	}
-    	finally{
-    		tx.finish();
-    	}
-    	
-    	/*
     	parameters = new HashMap<String, String>();
     	parameters.put(ControlFileProperties.SITE_SPACING, "2");
     	parameters.put(ControlFileProperties.CELL_SPACING, "0");
@@ -196,44 +103,39 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
     	parameters.put(ControlFileProperties.USE_SO_NEIGHBOURS, "1");
     	parameters.put(ControlFileProperties.DECOMPOSE_CLIQUES, "0");
     	  	
-    	
+    	/*
     	
     	if (afpNode != null ){
     		Job job2 = new AfpProcessExecutor("Execute Afp Process", afpNode, servise, parameters);
             job2.schedule();
-    	}
-    	*/
-
-   
+    	}*/
+    	
         return true;
     }
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle(title);
-    	servise = NeoServiceProviderUi.getProvider().getService();
     	model = new AfpModel();
     }
     
     @Override
     public void addPages(){
     	super.addPages();
-//    	loadPage = new AfpLoadWizardPage("loadPage", servise);
-//    	addPage(loadPage);
-    	addPage(new AfpLoadNetworkPage("Load Network", servise, model));
-    	goalsPage = new AfpOptimizationGoalsPage("Optimization Goals", servise, model); 
+    	addPage(new AfpLoadNetworkPage("Load Network",  model));
+    	goalsPage = new AfpOptimizationGoalsPage("Optimization Goals",  model); 
     	addPage(goalsPage);
-    	resourcesPage = new AfpAvailableResourcesPage("Available Sources", servise, model); 
+    	resourcesPage = new AfpAvailableResourcesPage("Available Sources", model); 
     	addPage(resourcesPage);
-    	frequencyPage = new AfpFrequencyTypePage("Frequency Type", servise, model);
+    	frequencyPage = new AfpFrequencyTypePage("Frequency Type", model);
     	addPage(frequencyPage);
-    	hoppingMALsPage = new AfpSYHoppingMALsPage("SY Hopping MALs", servise, model);
+    	hoppingMALsPage = new AfpSYHoppingMALsPage("SY Hopping MALs", model);
     	addPage(hoppingMALsPage);
-    	separationsPage = new AfpSeparationRulesPage("Separation Rules", servise, model); 
+    	separationsPage = new AfpSeparationRulesPage("Separation Rules", model); 
     	addPage(separationsPage);
-    	scalingPage = new AfpScalingRulesPage("Scaling Rules", servise, model);
+    	scalingPage = new AfpScalingRulesPage("Scaling Rules", model);
     	addPage(scalingPage);
-    	summaryPage = new AfpSummaryPage("Summary", servise, model); 
+    	summaryPage = new AfpSummaryPage("Summary", model); 
     	addPage(summaryPage);
 //    	addPage(new AfpTableExample("Example"));
     }

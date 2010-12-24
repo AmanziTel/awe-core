@@ -14,13 +14,10 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
-import org.neo4j.graphdb.GraphDatabaseService;
 
 public class AfpSeparationRulesPage extends WizardPage {
 	
 	public final static String defaultDomainName = "Default Separations";
-	
-	private final GraphDatabaseService service;
 	
 	private Group sectorDomainsGroup;
 	private Group siteDomainsGroup;
@@ -28,9 +25,8 @@ public class AfpSeparationRulesPage extends WizardPage {
 	protected static HashMap<String, Label[]> siteDomainLabels;
 	private AfpModel model;
 
-	public AfpSeparationRulesPage(String pageName, GraphDatabaseService servise, AfpModel model) {
+	public AfpSeparationRulesPage(String pageName, AfpModel model) {
 		super(pageName);
-        this.service = servise;
         this.model = model;
         setTitle(AfpImportWizard.title);
         setDescription(AfpImportWizard.page5Name);

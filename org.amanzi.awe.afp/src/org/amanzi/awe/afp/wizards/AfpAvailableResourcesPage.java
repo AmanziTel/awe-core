@@ -23,11 +23,9 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.neo4j.graphdb.GraphDatabaseService;
 
 public class AfpAvailableResourcesPage extends WizardPage implements Listener {
 	
-	private final GraphDatabaseService service;
 	protected Text frequencies900;
 	protected Text frequencies1800;
 	protected Text frequencies850;
@@ -48,9 +46,8 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
 	private AfpModel model;
 	
 
-	public AfpAvailableResourcesPage(String pageName, GraphDatabaseService servise, AfpModel model) {
+	public AfpAvailableResourcesPage(String pageName, AfpModel model) {
 		super(pageName);
-        this.service = servise;
         this.model = model;
         setTitle(AfpImportWizard.title);
         setDescription(AfpImportWizard.page2Name);
@@ -87,11 +84,11 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
 
 			@Override
 			public void modifyText(ModifyEvent e) {
-				if (frequencies900.getText().trim().equals("") && model.getFrequencyBands()[0])
+				if (frequencies900.getText().trim().equals("") && model.isFrequencyBandAvaliable(AfpModel.BAND_900))
 					setErrorMessage("Select frequencies for 900 band");
 				else {
 					setErrorMessage(null);
-					model.setAvailableFreq900(frequencies900.getText());
+					model.setAvailableFreq(AfpModel.BAND_900,frequencies900.getText());
 				}
 				button900.setSelection(false);
 			
@@ -100,7 +97,7 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
 			}
     		
     	});
-		
+    	
     	button900 = new Button(frequenciesGroup, GridData.END);
     	button900.setText("...");
     	button900.addSelectionListener(new SelectionAdapter(){
@@ -133,11 +130,11 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
 
 			@Override
 			public void modifyText(ModifyEvent e) {
-				if (frequencies1800.getText().trim().equals("") && model.getFrequencyBands()[1])
+				if (frequencies1800.getText().trim().equals("") && model.isFrequencyBandAvaliable(AfpModel.BAND_1800))
 					setErrorMessage("Select frequencies for 1800 band");
 				else {
 					setErrorMessage(null);
-					model.setAvailableFreq1800(frequencies1800.getText());
+					model.setAvailableFreq(AfpModel.BAND_1800,frequencies1800.getText());
 				}
 				button1800.setSelection(false);
 				setPageComplete(canFlipToNextPage());	
@@ -173,11 +170,11 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
 
 			@Override
 			public void modifyText(ModifyEvent e) {
-				if (frequencies850.getText().trim().equals("") && model.getFrequencyBands()[2])
+				if (frequencies850.getText().trim().equals("") && model.isFrequencyBandAvaliable(AfpModel.BAND_850))
 					setErrorMessage("Select frequencies for 850 band");
 				else {
 					setErrorMessage(null);
-					model.setAvailableFreq850(frequencies850.getText());
+					model.setAvailableFreq(AfpModel.BAND_850,frequencies850.getText());
 				}
 				button850.setSelection(false);
 		
@@ -216,11 +213,11 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
 
 			@Override
 			public void modifyText(ModifyEvent e) {
-				if (frequencies1900.getText().trim().equals("") && model.getFrequencyBands()[0])
+				if (frequencies1900.getText().trim().equals("") && model.isFrequencyBandAvaliable(AfpModel.BAND_1900))
 					setErrorMessage("Select frequencies for 1900 band");
 				else {
 					setErrorMessage(null);
-					model.setAvailableFreq1900(frequencies1900.getText());
+					model.setAvailableFreq(AfpModel.BAND_1900, frequencies1900.getText());
 				}
 				
 				button1900.setSelection(false);
@@ -399,9 +396,13 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
 		}
 		if(availableBCCs != null) {
 			for(int i=0;i< ncc.length;i++) {
-				ncc[i].setSelection(availableBCCs[i]);
+				bcc[i].setSelection(availableBCCs[i]);
 			}
 		}
+    	frequencies900.setText(model.getAvailableFreq(AfpModel.BAND_900));
+    	frequencies1800.setText(model.getAvailableFreq(AfpModel.BAND_1800));
+    	frequencies850.setText(model.getAvailableFreq(AfpModel.BAND_850));
+    	frequencies1900.setText(model.getAvailableFreq(AfpModel.BAND_1900));
 	}
 
 }

@@ -17,12 +17,9 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
 
 public class AfpOptimizationGoalsPage extends WizardPage implements Listener {
 
-	private final GraphDatabaseService service;
 	protected GridData gridData;
 	protected Button frequenciesButton;
 	protected Button bsicButton;
@@ -40,9 +37,8 @@ public class AfpOptimizationGoalsPage extends WizardPage implements Listener {
 	private AfpModel model;
 
 	
-	public AfpOptimizationGoalsPage(String pageName, GraphDatabaseService servise, AfpModel model) {
+	public AfpOptimizationGoalsPage(String pageName,AfpModel model) {
         super(pageName);
-        this.service = servise;
         this.model = model;
         setPageComplete(false);
         setTitle(AfpImportWizard.title);
