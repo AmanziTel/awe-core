@@ -1,5 +1,14 @@
-/**
- * 
+/* AWE - Amanzi Wireless Explorer
+ * http://awe.amanzi.org
+ * (C) 2008-2009, AmanziTel AB
+ *
+ * This library is provided under the terms of the Eclipse Public License
+ * as described at http://www.eclipse.org/legal/epl-v10.html. Any use,
+ * reproduction or distribution of the library constitutes recipient's
+ * acceptance of this agreement.
+ *
+ * This library is distributed WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 package org.amanzi.neo.services.node2node;
 
@@ -20,8 +29,12 @@ import org.neo4j.helpers.Predicate;
 import org.neo4j.kernel.Traversal;
 
 /**
- * @author Kasnitskij_V
+ * TODO Purpose of 
+ * <p>
  *
+ * </p>
+ * @author Kasnitskij_V
+ * @since 1.0.0
  */
 public class NodeToNodeRelationService extends AbstractService {
 	public enum NodeToNodeRelationshipTypes implements RelationshipType {
@@ -30,10 +43,21 @@ public class NodeToNodeRelationService extends AbstractService {
 	
 	private DatasetService datasetService;
 	
+	/**
+	 * constructor
+	 */
 	public NodeToNodeRelationService() {
 		datasetService = NeoServiceFactory.getInstance().getDatasetService();
 	}
 	
+	/**
+	 * find root
+	 *
+	 * @param rootNode root node
+	 * @param type type of relation
+	 * @param nameRelation name of relation
+	 * @return finded node
+	 */
 	public Node findNodeToNodeRelationsRoot(Node rootNode, INodeToNodeRelationType type, final String nameRelation) {	
 		Traverser traverser = Traversal.description().relationships(type.getRelationType(), Direction.OUTGOING).filter(new Predicate<Path>() {
 			
@@ -57,12 +81,28 @@ public class NodeToNodeRelationService extends AbstractService {
 		return null;
 	}
 	
+	/**
+	 * method to create root
+	 *
+	 * @param rootNode root node
+	 * @param type type of relation
+	 * @param name name of created node
+	 * @return
+	 */
 	private Node createNodeToNodeRelationsRoot(Node rootNode, INodeToNodeRelationType type, String name) {
 		Node createdNode = datasetService.createNode(NodeTypes.ROOT_PROXY, name);
 		rootNode.createRelationshipTo(createdNode, type.getRelationType());
 		return createdNode;
 	}
 	
+	/**
+	 * find or create node
+	 *
+	 * @param rootNode root node
+	 * @param type type of relation
+	 * @param name name of node
+	 * @return finded or created node
+	 */
 	public Node getNodeToNodeRelationsRoot(Node rootNode, INodeToNodeRelationType type, String name) {
 		Node returnedNode = findNodeToNodeRelationsRoot(rootNode, type, name);
 		
@@ -73,10 +113,26 @@ public class NodeToNodeRelationService extends AbstractService {
 		return returnedNode;
 	}
 	
+	/**
+	 * find proxy node
+	 *
+	 * @param indexKey key of index
+	 * @param indexValue value of index
+	 * @return finded node
+	 */
 	public Node findProxy(String indexKey, String indexValue) {
 		return getIndexService().getSingleNode(indexKey, indexValue);
 	}
 	
+	/**
+	 * create proxy node
+	 *
+	 * @param index index of node
+	 * @param name name of node
+	 * @param rootNode root node
+	 * @param lastChild last child node
+	 * @return
+	 */
 	public Node createProxy(String index, String name, Node rootNode, Node lastChild) {
 		Node node = datasetService.createNode(NodeTypes.PROXY, name);
 		datasetService.addChild(rootNode, node, lastChild);
@@ -85,6 +141,13 @@ public class NodeToNodeRelationService extends AbstractService {
 		return node;
 	}
 	
+	/**
+	 * get relations to node with that type of relation
+	 *
+	 * @param rootNode node
+	 * @param type type of relation
+	 * @return all finded relations
+	 */
 	public Iterator<Relationship> getRelations(Node rootNode, final INodeToNodeRelationType type) {
 		return datasetService.getChildTraversal(null).
 			   relationships(type.getRelationType(), Direction.OUTGOING).
@@ -132,6 +195,15 @@ public class NodeToNodeRelationService extends AbstractService {
 		return new StringBuilder("Id").append(rootNode.getId()).append("@").append(relationshipType.name()).toString();
 	}
 	
+	/**
+	 * get relation
+	 *
+	 * @param servingNodeId id of serving node
+	 * @param dependentNodeId id of dependent node
+	 * @param relationType type of relation
+	 * @param proxyIndexKey key of proxy index
+	 * @return finded relation
+	 */
 	public Relationship getRelation(String servingNodeId, String dependentNodeId, INodeToNodeRelationType relationType, String proxyIndexKey) {
 		//TODO: LN: in Neo4j 1.2 more flexible indexing mechanism - we can index not only nodes, but also relationships
 		//use this since we will move to Neo4j 1.2
