@@ -5405,13 +5405,15 @@ char c='\0';
 
    
 
+    /*
    if((Protfp =fopen(PrF___,"w")) == NULL){
 
 	  printf("ERROR by open filr %s",PrF___);;
 
       return(False);
 
-	}
+	}*/
+    Protfp = stdout;
 
 	
 
