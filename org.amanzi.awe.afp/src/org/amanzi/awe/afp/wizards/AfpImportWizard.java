@@ -85,6 +85,24 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
 
     	model.saveUserData();
     	
+    	
+    	  	
+    	/*
+    	
+    	if (afpNode != null ){
+    		Job job2 = new AfpProcessExecutor("Execute Afp Process", afpNode, servise, parameters);
+            job2.schedule();
+    	}*/
+    	
+    	
+        return true;
+    }
+
+    @Override
+    public void init(IWorkbench workbench, IStructuredSelection selection) {
+        setWindowTitle(title);
+    	model = new AfpModel();
+    	
     	parameters = new HashMap<String, String>();
     	parameters.put(ControlFileProperties.SITE_SPACING, "2");
     	parameters.put(ControlFileProperties.CELL_SPACING, "0");
@@ -104,22 +122,6 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
     	parameters.put(ControlFileProperties.USE_TRAFFIC, "1");
     	parameters.put(ControlFileProperties.USE_SO_NEIGHBOURS, "1");
     	parameters.put(ControlFileProperties.DECOMPOSE_CLIQUES, "0");
-    	  	
-    	/*
-    	
-    	if (afpNode != null ){
-    		Job job2 = new AfpProcessExecutor("Execute Afp Process", afpNode, servise, parameters);
-            job2.schedule();
-    	}*/
-    	model.executeAfpEngine(parameters);
-    	
-        return true;
-    }
-
-    @Override
-    public void init(IWorkbench workbench, IStructuredSelection selection) {
-        setWindowTitle(title);
-    	model = new AfpModel();
     }
     
     @Override
@@ -174,16 +176,16 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
     		separationsPage.refreshPage();
     	}
     	
-//    	if (nextPage == scalingPage){
-//    		scalingPage.refreshPage();
-//    	}
     	
     	if (nextPage == summaryPage){
     		summaryPage.refreshPage();
     	}
     	
+    	if (page instanceof AfpProgressPage){
+    		model.executeAfpEngine(parameters);
+    	}
     	
-    	return super.getNextPage(page);
+    	return nextPage;
 
     }
     

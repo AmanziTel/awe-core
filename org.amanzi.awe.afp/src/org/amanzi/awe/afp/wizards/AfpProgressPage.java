@@ -1,6 +1,7 @@
 package org.amanzi.awe.afp.wizards;
 
 import org.amanzi.awe.afp.models.AfpModel;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
@@ -180,6 +181,11 @@ public class AfpProgressPage extends WizardPage {
 		
 		setPageComplete (true);
 		setControl(main);
+	}
+	
+	@Override
+	public IWizardPage getPreviousPage(){
+		return null;
 	}
 
 }

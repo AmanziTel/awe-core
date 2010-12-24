@@ -86,10 +86,9 @@ public class AfpExporter {
 			 BufferedWriter writer  = new BufferedWriter(new FileWriter(carrierFile));
 			 
 			 for (Node sector : afpRoot.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)){
-				 if (!sector.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals("sector")){
-				 	 System.out.println("Not a  sector: " + sector.getProperty(INeoConstants.PROPERTY_NAME_NAME, "No name"));
+				 if (!sector.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals("sector"))
 					 continue;
-				 }
+				 
 				 String sectorValues[] = parseSectorName(sector);			
 				 writer.write(sectorValues[0]);
 				 writer.write(" " + sectorValues[1]);

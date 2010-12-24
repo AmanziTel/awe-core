@@ -75,7 +75,9 @@ public class AfpSummaryPage extends WizardPage {
 	      //TODO set this flag to true here only for testing purpose. Should be only done in summary page otherwise
 	      AfpImportWizard.isDone = true;
 	      return true;
-	  }
+	}
+	
+	
 	public void refreshPage(){
 		summaryText.setText(model.toString());
 		isValidPage();
