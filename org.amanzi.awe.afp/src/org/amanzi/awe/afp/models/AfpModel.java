@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
 
+import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.wizards.AfpLoadNetworkPage;
 import org.amanzi.awe.afp.wizards.AfpWizardUtils;
 import org.amanzi.awe.console.AweConsolePlugin;
@@ -13,6 +14,7 @@ import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
+import org.eclipse.core.runtime.jobs.Job;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -1336,6 +1338,13 @@ public class AfpModel {
 		
 		return domainNode;
 
+	}
+	
+	public void executeAfpEngine(HashMap<String,String> parameters){
+		if (afpNode != null ){
+    		Job job2 = new AfpProcessExecutor("Execute Afp Process", datasetNode, service, parameters);
+            job2.schedule();
+    	}
 	}
 
 	private void loadDomainNode(Node afpNode){

@@ -86,15 +86,17 @@ public class AfpExporter {
 			 BufferedWriter writer  = new BufferedWriter(new FileWriter(carrierFile));
 			 
 			 for (Node sector : afpRoot.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)){
-				 if (!sector.getProperty("type").equals("sector"))
-				 	 continue;
+				 if (!sector.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals("sector")){
+				 	 System.out.println("Not a  sector: " + sector.getProperty(INeoConstants.PROPERTY_NAME_NAME, "No name"));
+					 continue;
+				 }
 				 String sectorValues[] = parseSectorName(sector);			
 				 writer.write(sectorValues[0]);
 				 writer.write(" " + sectorValues[1]);
-				 writer.write(" " + sector.getProperty("nonrelevant"));
-				 writer.write(" " + sector.getProperty("numberoffreqenciesrequired"));
-				 writer.write(" " + sector.getProperty("numberoffrequenciesgiven"));
-				 Object obj = sector.getProperty("frq");
+				 writer.write(" " + 1);//sector.getProperty("nonrelevant"));
+				 writer.write(" " + 1);//sector.getProperty("numberoffreqenciesrequired"));
+				 writer.write(" " + 1);//sector.getProperty("numberoffrequenciesgiven"));
+				 /*Object obj = sector.getProperty("frq");
 				 
 				 if (obj != null){
 					 Integer temp[]  = new Integer[2];
@@ -111,7 +113,8 @@ public class AfpExporter {
 						 }
 					 }
 					 
-				 }
+				 }*/
+				 writer.write(" " + 0);
 				 writer.newLine();
 			 }
 			 writer.close();
@@ -276,9 +279,20 @@ public class AfpExporter {
 		String siteName = site.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
 		String sectorValues[] = new String[2];
 		sectorValues[0] = siteName;
-		sectorValues[1] = sector.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString().substring(siteName.length());
+		String sectorName = sector.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+		if (sectorName.length() > siteName.length() && sectorName.substring(0, siteName.length()).equals(siteName)){
+			sectorValues[1] = sector.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString().substring(siteName.length());
+		}
+		else sectorValues[1] = sectorName;
+		
+		char sectorNo = sectorValues[1].charAt(sectorValues[1].length() - 1);
+		if (Character.isLetter(sectorNo))
+			sectorValues[1] = //sectorValues[1].substring(0, sectorValues[1].length() - 1) + 
+								Integer.toString(Character.getNumericValue(sectorNo) - Character.getNumericValue('A')+ 1);
+			
 		return sectorValues;
 	}
+	
 	
 	/**
 	 * Creates the interference file for input to the C++ engine

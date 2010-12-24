@@ -64,6 +64,7 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
     public final static String page5Name = "Step 5 - Separation Rules";
     public final static String page6Name = "Step 6 - Scaling Rules";
     public final static String page7Name = "Step 7 - Summary";
+    public final static String page8Name = "Step 8 - Optimization Progress";
 	
 	//private AfpLoadWizardPage loadPage;
     private AfpOptimizationGoalsPage goalsPage;
@@ -73,6 +74,7 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
 	private AfpSeparationRulesPage separationsPage;
 	private AfpScalingRulesPage scalingPage;
 	private AfpSummaryPage summaryPage;
+	private AfpProgressPage progressPage;
 	
 	private AfpModel model;
 	
@@ -109,6 +111,7 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
     		Job job2 = new AfpProcessExecutor("Execute Afp Process", afpNode, servise, parameters);
             job2.schedule();
     	}*/
+    	model.executeAfpEngine(parameters);
     	
         return true;
     }
@@ -137,6 +140,8 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
     	addPage(scalingPage);
     	summaryPage = new AfpSummaryPage("Summary", model); 
     	addPage(summaryPage);
+    	progressPage = new AfpProgressPage("Progress", model);
+    	addPage(progressPage);
 //    	addPage(new AfpTableExample("Example"));
     }
     
