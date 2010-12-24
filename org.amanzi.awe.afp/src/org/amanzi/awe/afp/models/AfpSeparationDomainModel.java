@@ -1,5 +1,8 @@
 package org.amanzi.awe.afp.models;
 
+import org.amanzi.neo.services.INeoConstants;
+import org.neo4j.graphdb.Node;
+
 public class AfpSeparationDomainModel extends AfpDomainModel {
 	
 	/**
@@ -161,5 +164,22 @@ public class AfpSeparationDomainModel extends AfpDomainModel {
 	 */
 	public void setSeparation8(String separation) {
 		this.separations[8] = separation;
+	}
+	
+	public static AfpSeparationDomainModel getModel(Node n, String type) {
+
+		try {
+			String name = (String) n.getProperty(INeoConstants.PROPERTY_NAME_NAME);
+			String[] separations = (String[]) n.getProperty(type);
+			
+			AfpSeparationDomainModel model = new AfpSeparationDomainModel();
+
+			model.setName(name);
+			model.setSeparations(separations);
+		
+			return model;
+		} catch (Exception e) {
+			return null;
+		}
 	}
 }

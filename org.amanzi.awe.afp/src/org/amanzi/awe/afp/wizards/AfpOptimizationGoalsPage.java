@@ -169,20 +169,20 @@ public class AfpOptimizationGoalsPage extends WizardPage implements Listener {
 		
 	    if (items[0][0] == 0){
 	    	freq900Button.setSelection(false);
-	    	freq900Button.setEnabled(false);
+	    	//freq900Button.setEnabled(false);
 	    }
 	    if (items[0][1] == 0){
 	    	freq1800Button.setSelection(false);
-	    	freq1800Button.setEnabled(false);
+	    	//freq1800Button.setEnabled(false);
 	    }
 	    if (items[0][2] == 0){
 	    	freq850Button.setSelection(false);
-	    	freq850Button.setEnabled(false);
+	    	//freq850Button.setEnabled(false);
 	    	
 	    }
 	    if (items[0][3] == 0){
 	    	freq1900Button.setSelection(false);
-	    	freq1900Button.setEnabled(false);
+	    	//freq1900Button.setEnabled(false);
 	    }
 	    model.setFrequencyBands(new boolean[]{freq900Button.getSelection(), freq1800Button.getSelection(), freq850Button.getSelection(), freq1900Button.getSelection()});
 	    
@@ -290,23 +290,10 @@ public class AfpOptimizationGoalsPage extends WizardPage implements Listener {
 	}
 	
 	public void refreshPage(){
-		if (!model.getFrequencyBands()[0]){
-	    	freq900Button.setSelection(false);
-	    	freq900Button.setEnabled(false);
-	    }
-	    if (!model.getFrequencyBands()[1]){
-	    	freq1800Button.setSelection(false);
-	    	freq1800Button.setEnabled(false);
-	    }
-	    if (!model.getFrequencyBands()[2]){
-	    	freq850Button.setSelection(false);
-	    	freq850Button.setEnabled(false);
-	    	
-	    }
-	    if (!model.getFrequencyBands()[3]){
-	    	freq1900Button.setSelection(false);
-	    	freq1900Button.setEnabled(false);
-	    }
+    	freq900Button.setSelection(model.getFrequencyBands()[0]);
+    	freq1800Button.setSelection(model.getFrequencyBands()[1]);
+    	freq850Button.setSelection(model.getFrequencyBands()[2]);
+    	freq1900Button.setSelection(model.getFrequencyBands()[3]);
 	}
 	
 

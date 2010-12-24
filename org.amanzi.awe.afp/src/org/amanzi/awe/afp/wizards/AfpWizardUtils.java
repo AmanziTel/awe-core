@@ -345,14 +345,6 @@ public class AfpWizardUtils {
 					domainModel.setBand(bandCombo.getText());
 					domainModel.setFrequencies(selectedArray);
 					model.addFreqDomain(domainModel);
-					Label newDomainLabel = new Label(parentGroup, SWT.LEFT);
-					newDomainLabel.setText(domainName);
-					Label domainFreqLabel = new Label(parentGroup, SWT.LEFT);
-					domainFreqLabel.setText(Integer.toString(rangeArraytoArray(selectedArray).length));
-					Label domainTRXLabel = new Label(parentGroup, SWT.LEFT);
-					//TODO Do something for TRX
-					domainTRXLabel.setText("todo");
-					AfpFrequencyTypePage.domainLabels.put(domainName, new Label[]{newDomainLabel, domainFreqLabel, domainTRXLabel});
 					parentGroup.layout();
 				}
 				//TODO add for edit and delete buttons
@@ -362,9 +354,9 @@ public class AfpWizardUtils {
 					
 					if (domainModel == null){
 						//TODO Do some error handling here;
+						return;
 					}
 					model.deleteFreqDomain(domainModel);
-					AfpFrequencyTypePage.deleteDomainLabels(domainName);
 					parentGroup.layout();
 				}
 				
@@ -951,7 +943,6 @@ public class AfpWizardUtils {
 						//TODO Do some error handling here;
 					}
 					model.deleteMALDomain(domainModel);
-					AfpSYHoppingMALsPage.deleteDomainLabels(domainName);
 					parentGroup.layout();
 				}
 				
@@ -1166,7 +1157,6 @@ public class AfpWizardUtils {
 							//TODO Do some error handling here;
 						}
 						model.deleteSectorSeparationDomain(domainModel);
-						AfpSeparationRulesPage.deleteSectorDomainLabels(domainName);
 						parentGroup.layout();
 					}
 					else{
@@ -1176,7 +1166,6 @@ public class AfpWizardUtils {
 							//TODO Do some error handling here;
 						}
 						model.deleteSiteSeparationDomain(domainModel);
-						AfpSeparationRulesPage.deleteSiteDomainLabels(domainName);
 						parentGroup.layout();
 					}
 				}

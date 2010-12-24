@@ -1,7 +1,11 @@
 package org.amanzi.awe.afp.wizards;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.Vector;
 
+import org.amanzi.awe.afp.models.AfpHoppingMALDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
 import org.amanzi.awe.afp.models.AfpSeparationDomainModel;
 import org.eclipse.jface.wizard.WizardPage;
@@ -16,8 +20,6 @@ import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 
 public class AfpSeparationRulesPage extends WizardPage {
-	
-	public final static String defaultDomainName = "Default Separations";
 	
 	private Group sectorDomainsGroup;
 	private Group siteDomainsGroup;
@@ -67,10 +69,6 @@ public class AfpSeparationRulesPage extends WizardPage {
     	AfpWizardUtils.createButtonsGroup(sectorDomainsGroup, "Sector SeparationRules", model);
     	siteDomainLabels = new HashMap<String, Label[]>();
 		
-    	
-    	new Label(sectorDomainsGroup, SWT.NONE).setText("Default Separations");
-    	Label defaultSeparation = new Label(sectorDomainsGroup, SWT.RIGHT);
-    	defaultSeparation.setText("Edit it");
 		
     	AfpWizardUtils.getTRXFilterGroup(sectorMain);
 
@@ -104,10 +102,6 @@ public class AfpSeparationRulesPage extends WizardPage {
     	AfpWizardUtils.createButtonsGroup(siteDomainsGroup, "Site SeparationRules", model);
     	sectorDomainLabels = new HashMap<String, Label[]>();
     	
-    	new Label(siteDomainsGroup, SWT.NONE).setText("Default Separations");
-    	Label siteDefaultSeparation = new Label(siteDomainsGroup, SWT.RIGHT);
-    	siteDefaultSeparation.setText("Edit it");
-		
     	AfpWizardUtils.getTRXFilterGroup(siteMain);
 		
     	item2.setControl(siteMain);
@@ -118,7 +112,7 @@ public class AfpSeparationRulesPage extends WizardPage {
 	}
 	
 	
-	public static void deleteSectorDomainLabels(String domainName){
+	public void deleteSectorDomainLabels(String domainName){
 		if (sectorDomainLabels.containsKey(domainName)){
 			Label[] labels = sectorDomainLabels.get(domainName);
 			sectorDomainLabels.remove(domainName);
@@ -129,7 +123,7 @@ public class AfpSeparationRulesPage extends WizardPage {
 //		sectorDomainsGroup.layout();
 	}
 	
-	public static void deleteSiteDomainLabels(String domainName){
+	public void deleteSiteDomainLabels(String domainName){
 		if (siteDomainLabels.containsKey(domainName)){
 			Label[] labels = siteDomainLabels.get(domainName);
 			siteDomainLabels.remove(domainName);
@@ -141,30 +135,52 @@ public class AfpSeparationRulesPage extends WizardPage {
 	}
 	
 	public void refreshPage(){
+		Set<String> keys = sectorDomainLabels.keySet();
+		if(keys != null) {
+			Iterator<String> ki = keys.iterator();
+			
+			while(ki.hasNext()) {
+				String key = (String)ki.next();
+				this.deleteSectorDomainLabels(key);
+				sectorDomainLabels.remove(key);
+			}
+			//domainLabels.clear();
+		}
+		keys = siteDomainLabels.keySet();
+		if(keys != null) {
+			Iterator<String> ki = keys.iterator();
+			
+			while(ki.hasNext()) {
+				String key = (String)ki.next();
+				this.deleteSiteDomainLabels(key);
+				siteDomainLabels.remove(key);
+			}
+			//domainLabels.clear();
+		}
 		
-		AfpSeparationDomainModel sectorDomainModel = new AfpSeparationDomainModel();
-		sectorDomainModel.setName(defaultDomainName);
-		sectorDomainModel.setSeparations(new String[]{"todo"});
-		model.addSectorSeparationDomain(sectorDomainModel);
-		Label defaultSectorDomainLabel = new Label(sectorDomainsGroup, SWT.LEFT);
-		defaultSectorDomainLabel.setText(defaultDomainName);
-		//TODO: update the TRXs by default here
-		Label defaultSectorsLabel = new Label(sectorDomainsGroup, SWT.RIGHT);
-		defaultSectorsLabel.setText("todo");
-		sectorDomainLabels.put(defaultDomainName, new Label[]{defaultSectorDomainLabel, defaultSectorsLabel});
+		Vector<AfpSeparationDomainModel> domains = model.getSectorSeparationDomains();
+		for(int i=0;i< domains.size();i++) {
+			AfpSeparationDomainModel sectorDomainModel = domains.elementAt(i);
+			Label defaultSectorDomainLabel = new Label(sectorDomainsGroup, SWT.LEFT);
+			defaultSectorDomainLabel.setText(sectorDomainModel.getName());
+			//TODO: update the TRXs by default here
+			Label defaultSectorsLabel = new Label(sectorDomainsGroup, SWT.RIGHT);
+			defaultSectorsLabel.setText("0");
+			sectorDomainLabels.put(sectorDomainModel.getName(), new Label[]{defaultSectorDomainLabel, defaultSectorsLabel});
+		}
 	
 		sectorDomainsGroup.layout();
-		
-		AfpSeparationDomainModel siteDomainModel = new AfpSeparationDomainModel();
-		siteDomainModel.setName(defaultDomainName);
-		siteDomainModel.setSeparations(new String[]{"todo"});
-		model.addSiteSeparationDomain(siteDomainModel);
-		Label defaultSiteDomainLabel = new Label(siteDomainsGroup, SWT.LEFT);
-		defaultSiteDomainLabel.setText(defaultDomainName);
-		//TODO: update the TRXs by default here
-		Label defaultSitesLabel = new Label(siteDomainsGroup, SWT.RIGHT);
-		defaultSectorsLabel.setText("todo");
-		sectorDomainLabels.put(defaultDomainName, new Label[]{defaultSiteDomainLabel, defaultSitesLabel});
+
+		Vector<AfpSeparationDomainModel> domains2 = model.getSectorSeparationDomains();
+		for(int i=0;i< domains2.size();i++) {
+			AfpSeparationDomainModel sectorDomainModel = domains2.elementAt(i);
+			Label defaultSiteDomainLabel = new Label(siteDomainsGroup, SWT.LEFT);
+			defaultSiteDomainLabel.setText(sectorDomainModel.getName());
+			//TODO: update the TRXs by default here
+			Label defaultSitesLabel = new Label(siteDomainsGroup, SWT.RIGHT);
+			defaultSitesLabel.setText("0");
+			siteDomainLabels.put(sectorDomainModel.getName(), new Label[]{defaultSiteDomainLabel, defaultSitesLabel});
+		}
 	
 		siteDomainsGroup.layout();
 	}

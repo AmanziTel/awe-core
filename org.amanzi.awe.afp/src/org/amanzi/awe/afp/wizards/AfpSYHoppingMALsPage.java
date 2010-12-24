@@ -1,7 +1,11 @@
 package org.amanzi.awe.afp.wizards;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.Vector;
 
+import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
 import org.amanzi.awe.afp.models.AfpHoppingMALDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
 import org.eclipse.jface.wizard.WizardPage;
@@ -19,7 +23,6 @@ import org.neo4j.graphdb.GraphDatabaseService;
 
 public class AfpSYHoppingMALsPage extends WizardPage {
 	
-	public final static String defaultDomainName = "Default MAL";
 	private Group malDomainsGroup;
 	private Label defaultTrx;
 	public static String test = "test";
@@ -74,7 +77,7 @@ public class AfpSYHoppingMALsPage extends WizardPage {
 
 	}
 	
-	public static void deleteDomainLabels(String domainName){
+	public void deleteDomainLabels(String domainName){
 		if (domainLabels.containsKey(domainName)){
 			Label[] labels = domainLabels.get(domainName);
 			domainLabels.remove(domainName);
@@ -86,18 +89,27 @@ public class AfpSYHoppingMALsPage extends WizardPage {
 	}
 	
 	public void refreshPage(){
-		
-		AfpHoppingMALDomainModel domainModel = new AfpHoppingMALDomainModel();
-		domainModel.setName(defaultDomainName);
-		domainModel.setMALSize(new int[]{0,0});
-		model.addMALDomain(domainModel);
-		Label defaultDomainLabel = new Label(malDomainsGroup, SWT.LEFT);
-		defaultDomainLabel.setText(defaultDomainName);
-		//TODO: update the TRXs by default here
-		Label defaultTRXsLabel = new Label(malDomainsGroup, SWT.RIGHT);
-		defaultTRXsLabel.setText("todo");
-		domainLabels.put(defaultDomainName, new Label[]{defaultDomainLabel, defaultTRXsLabel});
-    	
+		Set<String> keys = domainLabels.keySet();
+		if(keys != null) {
+			Iterator ki = keys.iterator();
+			
+			while(ki.hasNext()) {
+				String key = (String)ki.next();
+				deleteDomainLabels(key);
+				domainLabels.remove(key);
+			}
+			//domainLabels.clear();
+		}
+		Vector<AfpHoppingMALDomainModel> domains = model.getMalDomains();
+		for(int i=0;i< domains.size();i++) {
+			AfpHoppingMALDomainModel domainModel = domains.elementAt(i);
+			Label defaultDomainLabel = new Label(malDomainsGroup, SWT.LEFT);
+			defaultDomainLabel.setText(domainModel.getName());
+			//TODO: update the TRXs by default here
+			Label defaultTRXsLabel = new Label(malDomainsGroup, SWT.RIGHT);
+			defaultTRXsLabel.setText("0");
+			domainLabels.put(domainModel.getName(), new Label[]{defaultDomainLabel, defaultTRXsLabel});
+		}    	
 		
 		malDomainsGroup.layout();
 	}

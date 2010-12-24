@@ -232,7 +232,7 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
     	button1900.addSelectionListener(new SelectionAdapter(){
     		
     		public String[] getFrequencyArray(){
-    			String frequencies[] = new String[512-810+1];
+    			String frequencies[] = new String[810-512+1];
     			for (int i = 0; i < frequencies.length; i++){
     				frequencies[i] = Integer.toString(512 + i); 
     			}
@@ -366,26 +366,22 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
 	}
 	
 	public void refreshPage(){
-		if (!model.getFrequencyBands()[0]){
-    		frequencies900.setEnabled(false);
-    		freq900Label.setEnabled(false);
-    		button900.setEnabled(false);
-    	}
-		if (!model.getFrequencyBands()[1]){
-    		frequencies1800.setEnabled(false);
-    		freq1800Label.setEnabled(false);
-    		button1800.setEnabled(false);
-    	}
-		if (!model.getFrequencyBands()[2]){
-    		frequencies850.setEnabled(false);
-    		freq850Label.setEnabled(false);
-    		button850.setEnabled(false);
-    	}
-		if (!model.getFrequencyBands()[3]){
-    		frequencies1900.setEnabled(false);
-    		freq1900Label.setEnabled(false);
-    		button1900.setEnabled(false);
-    	}
+		frequencies900.setEnabled(model.getFrequencyBands()[0]);
+		freq900Label.setEnabled(model.getFrequencyBands()[0]);
+		button900.setEnabled(model.getFrequencyBands()[0]);
+
+		frequencies1800.setEnabled(model.getFrequencyBands()[1]);
+		freq1800Label.setEnabled(model.getFrequencyBands()[1]);
+		button1800.setEnabled(model.getFrequencyBands()[1]);
+
+		frequencies850.setEnabled(model.getFrequencyBands()[2]);
+		freq850Label.setEnabled(model.getFrequencyBands()[2]);
+		button850.setEnabled(model.getFrequencyBands()[2]);
+
+		frequencies1900.setEnabled(model.getFrequencyBands()[3]);
+		freq1900Label.setEnabled(model.getFrequencyBands()[3]);
+		button1900.setEnabled(model.getFrequencyBands()[3]);
+
 		boolean[] availableNCCs = model.getAvailableNCCs();
 		boolean[] availableBCCs = model.getAvailableBCCs();
 

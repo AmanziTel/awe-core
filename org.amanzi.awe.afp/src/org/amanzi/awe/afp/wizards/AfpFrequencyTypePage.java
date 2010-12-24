@@ -1,6 +1,9 @@
 package org.amanzi.awe.afp.wizards;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.Vector;
 
 import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
@@ -24,11 +27,6 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
 public class AfpFrequencyTypePage extends WizardPage {
-	
-	public final static String freePlan900DomainName = "Free Plan 900";
-	public final static String freePlan1800DomainName = "Free Plan 1800";
-	public final static String freePlan850DomainName = "Free Plan 850";
-	public final static String freePlan1900DomainName = "Free Plan 1900";
 	
 	private Group frequencyDomainsGroup;
 	protected Label free900Freq;
@@ -113,23 +111,34 @@ public class AfpFrequencyTypePage extends WizardPage {
 	}
 	
 	public void refreshPage(){
-		if (model.getFrequencyBands()[0]){
-			AfpFrequencyDomainModel domainModel = new AfpFrequencyDomainModel();
-			domainModel.setName(freePlan900DomainName);
-			domainModel.setBand("900");
-			domainModel.setFrequencies(new String[]{"todo"});
-			model.addFreqDomain(domainModel);
-			Label freePlan900Label = new Label(frequencyDomainsGroup, SWT.LEFT);
-			freePlan900Label.setText(freePlan900DomainName);
-			Label frequenciesFreePlan900Label = new Label(frequencyDomainsGroup, SWT.RIGHT);
-			//TODO: update the num frequencies and TRXs by default here
-			frequenciesFreePlan900Label.setText("todo");
-			Label TRXsFreePlan900Label = new Label(frequencyDomainsGroup, SWT.RIGHT);
-			TRXsFreePlan900Label.setText("todo");
-			domainLabels.put(freePlan900DomainName, new Label[]{freePlan900Label, frequenciesFreePlan900Label, TRXsFreePlan900Label});
-			
-    	}
 		
+		Set<String> keys = domainLabels.keySet();
+		if(keys != null) {
+			Iterator ki = keys.iterator();
+			
+			while(ki.hasNext()) {
+				String key = (String)ki.next();
+				this.deleteDomainLabels(key);
+				domainLabels.remove(key);
+			}
+			//domainLabels.clear();
+		}
+		
+		Vector<AfpFrequencyDomainModel> domains = model.getFreqDomains();
+		for(int i=0;i< domains.size();i++) {
+			AfpFrequencyDomainModel domainModel = domains.elementAt(i);
+			if(domainModel != null) {
+				Label freePlanLabel = new Label(frequencyDomainsGroup, SWT.LEFT);
+				freePlanLabel.setText(domainModel.getName());
+				Label frequenciesFreePlanLabel = new Label(frequencyDomainsGroup, SWT.RIGHT);
+				//TODO: update the num frequencies and TRXs by default here
+				frequenciesFreePlanLabel.setText("0");
+				Label TRXsFreePlanLabel = new Label(frequencyDomainsGroup, SWT.RIGHT);
+				TRXsFreePlanLabel.setText("0");
+				domainLabels.put(domainModel.getName(), new Label[]{freePlanLabel, frequenciesFreePlanLabel, TRXsFreePlanLabel});
+			}
+    	}
+		/*
 		if (model.getFrequencyBands()[1]){
 			AfpFrequencyDomainModel domainModel = new AfpFrequencyDomainModel();
 			domainModel.setName(freePlan1800DomainName);
@@ -176,7 +185,7 @@ public class AfpFrequencyTypePage extends WizardPage {
 			Label TRXsFreePlan1900Label = new Label(frequencyDomainsGroup, SWT.RIGHT);
 			TRXsFreePlan1900Label.setText("todo");
 			domainLabels.put(freePlan1900DomainName, new Label[]{freePlan1900Label, frequenciesFreePlan1900Label, TRXsFreePlan1900Label});
-    	}
+    	}*/
 		
 		frequencyDomainsGroup.layout();
 	}

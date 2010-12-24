@@ -1,5 +1,8 @@
 package org.amanzi.awe.afp.models;
 
+import org.amanzi.neo.services.INeoConstants;
+import org.neo4j.graphdb.Node;
+
 public class AfpHoppingMALDomainModel extends AfpDomainModel{
 	//Assuming max size can be 13
 	//The array index corresponds to Hopping TRXs
@@ -213,5 +216,20 @@ public class AfpHoppingMALDomainModel extends AfpDomainModel{
 		MALSize[12] = size;
 	}
 
-	
+	public static AfpHoppingMALDomainModel getModel(Node n) {
+
+		try {
+			String name = (String) n.getProperty(INeoConstants.PROPERTY_NAME_NAME);
+			int[] malsize = (int[]) n.getProperty(INeoConstants.AFP_PROPERTY_MAL_SIZE_NAME);
+			
+			AfpHoppingMALDomainModel model = new AfpHoppingMALDomainModel();
+
+			model.setName(name);
+			model.setMALSize(malsize);
+		
+			return model;
+		} catch (Exception e) {
+			return null;
+		}
+	}
 }

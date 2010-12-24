@@ -1,6 +1,7 @@
 package org.amanzi.awe.afp.models;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
 
@@ -15,6 +16,7 @@ import org.amanzi.neo.services.ui.NeoUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
@@ -37,6 +39,7 @@ public class AfpModel {
 	boolean optimizeHSN = true;
 	boolean optimizeMAIO = true;
 	
+	public static final String[] BAND_NAMES = { "900", "1800", "850", "1900" };
 	public static final int BAND_900=0;
 	public static final int BAND_1800=1;
 	public static final int BAND_850=2;
@@ -63,15 +66,15 @@ public class AfpModel {
 	int availableBCCs = 0xff;
 	
 	//Page 3 params
-	Vector<AfpFrequencyDomainModel> freqDomains;
+	Vector<AfpFrequencyDomainModel> freqDomains = new Vector<AfpFrequencyDomainModel>();
 	Set TRXDomain;
 	
 	//Page 4 params
-	Vector<AfpHoppingMALDomainModel> malDomains;
+	Vector<AfpHoppingMALDomainModel> malDomains= new Vector<AfpHoppingMALDomainModel>();
 	
 	//Page 5 params
-	Vector<AfpSeparationDomainModel> siteSeparationDomains;
-	Vector<AfpSeparationDomainModel> sectorSeparationDomains;
+	Vector<AfpSeparationDomainModel> siteSeparationDomains= new Vector<AfpSeparationDomainModel>();
+	Vector<AfpSeparationDomainModel> sectorSeparationDomains= new Vector<AfpSeparationDomainModel>();
 	
 	//Page 6 params
 	//Constants defining the index of Serving-Interfering pair in the scaling rules arrays
@@ -330,6 +333,11 @@ public class AfpModel {
 	 */
 	public void setFrequencyBands(boolean[] frequencyBands) {
 		this.frequencyBands = frequencyBands;
+		for(int i=0;i<4;i++) {
+			if(!this.frequencyBands[i]) {
+				this.availableFreq[i] ="";
+			}
+		}
 	}
 
 
@@ -466,14 +474,40 @@ public class AfpModel {
 		this.availableBCCs = n;
 	}
 
-
-
-
+	private void addFreeFrequencyDomain() {
+		if(freqDomains.size() !=0) {
+			// remove free domains
+			for(int i=0;i<freqDomains.size();i++) {
+				AfpFrequencyDomainModel d = freqDomains.elementAt(i);
+				if(d.isFree()) {
+					freqDomains.remove(i);
+				}
+			}
+		}
+		for(int i=0; i< frequencyBands.length;i++) {
+			if(frequencyBands[i]) {
+				// add free domains
+				AfpFrequencyDomainModel d = new AfpFrequencyDomainModel();
+				d.setName("Free " + BAND_NAMES[i]);
+				d.setBand(BAND_NAMES[i]);
+				d.setFree(true);
+				String f[] = new String[1];
+				f[0] = "1";
+				d.setFrequencies(f);
+				if(freqDomains.size() > i) {
+					freqDomains.insertElementAt(d, i);
+				} else {
+					freqDomains.add(d);
+				}
+			}
+		}
+	}
 
 	/**
 	 * @return the freqDomains
 	 */
 	public Vector<AfpFrequencyDomainModel> getFreqDomains() {
+		addFreeFrequencyDomain();
 		return freqDomains;
 	}
 
@@ -484,19 +518,67 @@ public class AfpModel {
 	/**
 	 * @param freqDomains the freqDomains to set
 	 */
-	public void setFreqDomains(Vector<AfpFrequencyDomainModel> freqDomains) {
+	private void setFreqDomains(Vector<AfpFrequencyDomainModel> freqDomains) {
 		this.freqDomains = freqDomains;
+	}
+	
+	private void addDefaultMalDomains() {
+		boolean add = true;
+		if(malDomains.size() !=0) {
+			// remove free domains
+			for(int i=0;i<malDomains.size();i++) {
+				AfpHoppingMALDomainModel d = malDomains.elementAt(i);
+				if(d.isFree()) {
+					add = false;
+					break;
+				} else if("Default MAL".compareTo(d.getName())==0) {
+					d.setFree(true);
+					add= false;
+				}
+			}
+		}
+		if(add) {
+			// add free domains
+			AfpHoppingMALDomainModel d = new AfpHoppingMALDomainModel();
+			d.setName("Default MAL");
+			d.setFree(true);
+			malDomains.insertElementAt(d, 0);
+		}
 	}
 	
 	/**
 	 * @return the malDomains
 	 */
 	public Vector<AfpHoppingMALDomainModel> getMalDomains() {
+		addDefaultMalDomains();
 		return malDomains;
 	}
 
 
-
+	private void addDefaultSiteSeparationDomains() {
+		boolean add = true;
+		if(siteSeparationDomains.size() !=0) {
+			// remove free domains
+			for(int i=0;i<siteSeparationDomains.size();i++) {
+				AfpSeparationDomainModel d = siteSeparationDomains.elementAt(i);
+				if(d.isFree()) {
+					add = false;
+					break;
+				} else if("Default Separations".compareTo(d.getName())==0) {
+					d.setFree(true);
+					add = false;
+					break;
+				}
+			}
+		}
+		if(add) {
+			// add free domains
+			AfpSeparationDomainModel d = new AfpSeparationDomainModel();
+			d.setName("Default Separations");
+			d.setFree(true);
+			siteSeparationDomains.insertElementAt(d, 0);
+		}
+	}
 
 
 	/**
@@ -507,25 +589,46 @@ public class AfpModel {
 	}
 
 
-
-
-
 	/**
 	 * @param siteSeparationDomains the siteSeparationDomains to set
 	 */
-	public void setSiteSeparationDomains(
-			Vector<AfpSeparationDomainModel> siteSeparationDomains) {
+	private void setSiteSeparationDomains(Vector<AfpSeparationDomainModel> siteSeparationDomains) {
 		this.siteSeparationDomains = siteSeparationDomains;
 	}
 
 
-
+	private void addDefaultSectorSeparationDomains() {
+		boolean add = true;
+		if(sectorSeparationDomains.size() !=0) {
+			// remove free domains
+			for(int i=0;i<sectorSeparationDomains.size();i++) {
+				AfpSeparationDomainModel d = sectorSeparationDomains.elementAt(i);
+				if(d.isFree()) {
+					add = false;
+					break;
+				} else if("Default Separations".compareTo(d.getName()) ==0 ) {
+					d.setFree(true);
+					add = false;
+					break;
+				}
+			}
+		}
+		if(add) {
+			// add free domains
+			AfpSeparationDomainModel d = new AfpSeparationDomainModel();
+			d.setName("Default Separations");
+			d.setFree(true);
+			sectorSeparationDomains.insertElementAt(d, 0);
+		}
+	}
+	
 
 
 	/**
 	 * @return the sectorSeparationDomains
 	 */
 	public Vector<AfpSeparationDomainModel> getSectorSeparationDomains() {
+		addDefaultSectorSeparationDomains();
 		return sectorSeparationDomains;
 	}
 
@@ -536,7 +639,7 @@ public class AfpModel {
 	/**
 	 * @param sectorSeparationDomains the sectorSeparationDomains to set
 	 */
-	public void setSectorSeparationDomains(
+	private void setSectorSeparationDomains(
 			Vector<AfpSeparationDomainModel> sectorSeparationDomains) {
 		this.sectorSeparationDomains = sectorSeparationDomains;
 	}
@@ -548,7 +651,7 @@ public class AfpModel {
 	/**
 	 * @param malDomains the malDomains to set
 	 */
-	public void setMalDomains(Vector<AfpHoppingMALDomainModel> malDomains) {
+	private void setMalDomains(Vector<AfpHoppingMALDomainModel> malDomains) {
 		this.malDomains = malDomains;
 	}
 
@@ -845,6 +948,7 @@ public class AfpModel {
 	public void deleteMALDomain(AfpHoppingMALDomainModel malDomain){
 		if (malDomains == null){
 			//TODO error handling
+			return;
 		}
 			
 		malDomains.remove(malDomain);
@@ -984,10 +1088,34 @@ public class AfpModel {
 			afpNode.setProperty(INeoConstants.AFP_ADJ_TRIANGULATION_VALUES, getAdjTriangulation());
 			afpNode.setProperty(INeoConstants.AFP_CO_SHADOWING_VALUES, getCoShadowing());
 			afpNode.setProperty(INeoConstants.AFP_ADJ_SHADOWING_VALUES, getAdjShadowing());
+			
+			// remove all chid nodes before storing new ones
+			Traverser traverser = afpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
+				@Override
+				public boolean isReturnableNode(TraversalPosition currentPos) {
+					if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.AFP_DOMAIN.getId())) 
+						return true;
+					return false;
+				}
+	    		
+	    	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+			
+
+			for (Node n : traverser) {
+				Iterable<Relationship> relationsI = n.getRelationships();
+				if(relationsI != null) {
+					Iterator<Relationship> reations = relationsI.iterator();
+					while(reations.hasNext()) {
+						Relationship r = reations.next();
+						r.delete();
+					}
+				}
+				n.delete();
+			}
 
 			for (AfpFrequencyDomainModel frequencyModel : getFreqDomains()) {
-				createFrequencyDomainNode(afpNode,
-						frequencyModel, service);
+				if(!frequencyModel.isFree())
+					createFrequencyDomainNode(afpNode, frequencyModel, service);
 			}
 
 			for (AfpHoppingMALDomainModel malModel : getMalDomains()) {
@@ -1128,12 +1256,9 @@ public class AfpModel {
 			} catch(Exception e) {
 				// no property sent 
 			}
-			/*
-			for (AfpFrequencyDomainModel frequencyModel : getFreqDomains()) {
-				createFrequencyDomainNode(afpNode,
-						frequencyModel, service);
-			}
-
+			
+			loadDomainNode(afpNode);
+/*
 			for (AfpHoppingMALDomainModel malModel : getMalDomains()) {
 				createHoppingMALDomainNode(afpNode, malModel,
 						service);
@@ -1156,31 +1281,31 @@ public class AfpModel {
 	}
 	
 	public void createFrequencyDomainNode(Node afpNode, AfpFrequencyDomainModel domainModel, GraphDatabaseService service){
-		Node frequencyNode = findOrCreateDomainNode(afpNode, INeoConstants.FREQUENCY_DOMAIN_NAME, domainModel.getName(), service);
+		Node frequencyNode = findOrCreateDomainNode(afpNode, INeoConstants.AFP_DOMAIN_NAME_FREQUENCY, domainModel.getName(), service);
         
-        frequencyNode.setProperty(INeoConstants.PROPERTY_FREQUENCY_BAND_NAME, domainModel.getBand());
-        frequencyNode.setProperty(INeoConstants.PROPERTY_FREQUENCIES_NAME, domainModel.getFrequencies());
+        frequencyNode.setProperty(INeoConstants.AFP_PROPERTY_FREQUENCY_BAND_NAME, domainModel.getBand());
+        frequencyNode.setProperty(INeoConstants.AFP_PROPERTY_FREQUENCIES_NAME, domainModel.getFrequencies());
 	}
 	
 	public void createHoppingMALDomainNode(Node afpNode, AfpHoppingMALDomainModel domainModel, GraphDatabaseService service){
-		Node malNode = findOrCreateDomainNode(afpNode, INeoConstants.MAL_DOMAIN_NAME, domainModel.getName(), service);
-		malNode.setProperty(INeoConstants.PROPERTY_MAL_SIZE_NAME, domainModel.getMALSize());
+		Node malNode = findOrCreateDomainNode(afpNode, INeoConstants.AFP_DOMAIN_NAME_MAL, domainModel.getName(), service);
+		malNode.setProperty(INeoConstants.AFP_PROPERTY_MAL_SIZE_NAME, domainModel.getMALSize());
 	}
 	
 	public void createSectorSeparationDomainNode(Node afpNode, AfpSeparationDomainModel domainModel, GraphDatabaseService service){
-		Node separationNode = findOrCreateDomainNode(afpNode, INeoConstants.SECTOR_SEPARATION_DOMAIN_NAME, domainModel.getName(), service);
-		separationNode.setProperty(INeoConstants.PROPERTY_SEPARATIONS_NAME, domainModel.getSeparations());
+		Node separationNode = findOrCreateDomainNode(afpNode, INeoConstants.AFP_DOMAIN_NAME_SECTOR_SEPARATION, domainModel.getName(), service);
+		separationNode.setProperty(INeoConstants.AFP_PROPERTY_SEPARATIONS_NAME, domainModel.getSeparations());
 	}
 	
 	public void createSiteSeparationDomainNode(Node afpNode, AfpSeparationDomainModel domainModel, GraphDatabaseService service){
-		Node separationNode = findOrCreateDomainNode(afpNode, INeoConstants.SITE_SEPARATION_DOMAIN_NAME, domainModel.getName(), service);
-		separationNode.setProperty(INeoConstants.PROPERTY_SEPARATIONS_NAME, domainModel.getSeparations());
+		Node separationNode = findOrCreateDomainNode(afpNode, INeoConstants.AFP_DOMAIN_NAME_SITE_SEPARATION, domainModel.getName(), service);
+		separationNode.setProperty(INeoConstants.AFP_PROPERTY_SEPARATIONS_NAME, domainModel.getSeparations());
 	}
 	
 	public void deleteDomainNode(Node afpNode, String domain, String name, GraphDatabaseService service){
 		//TODO implement this method
 	}
-	
+
 	public Node findOrCreateDomainNode(Node afpNode, String domain, String name, GraphDatabaseService service){
 		Node domainNode = null;
 		
@@ -1188,7 +1313,7 @@ public class AfpModel {
 
 			@Override
 			public boolean isReturnableNode(TraversalPosition currentPos) {
-				if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.AFP_DOMAIN))
+				if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.AFP_DOMAIN.getId()))
 					return true;
 				return false;
 			}
@@ -1197,7 +1322,7 @@ public class AfpModel {
 		
 		for (Node node : traverser) {
         	if (node.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(name) &&
-        			node.getProperty(INeoConstants.PROPERTY_DOMAIN_NAME).equals(domain))
+        			node.getProperty(INeoConstants.AFP_PROPERTY_DOMAIN_NAME).equals(domain))
         		domainNode = node;
         }
 		
@@ -1205,12 +1330,56 @@ public class AfpModel {
 			domainNode = service.createNode();
     		NodeTypes.AFP_DOMAIN.setNodeType(domainNode, service);
             NeoUtils.setNodeName(domainNode, name, service);
-            domainNode.setProperty(INeoConstants.PROPERTY_DOMAIN_NAME, domain);
+            domainNode.setProperty(INeoConstants.AFP_PROPERTY_DOMAIN_NAME, domain);
             afpNode.createRelationshipTo(domainNode, NetworkRelationshipTypes.CHILD);
 		}
 		
 		return domainNode;
 
+	}
+
+	private void loadDomainNode(Node afpNode){
+		Node domainNode = null;
+		
+		Traverser traverser = afpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
+
+			@Override
+			public boolean isReturnableNode(TraversalPosition currentPos) {
+				if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.AFP_DOMAIN.getId())) 
+					return true;
+				return false;
+			}
+    		
+    	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+		
+
+		for (Node node : traverser) {
+        	if (node.getProperty(INeoConstants.AFP_PROPERTY_DOMAIN_NAME,"").equals(INeoConstants.AFP_DOMAIN_NAME_FREQUENCY)) {
+        		// frequency type domain
+        		AfpFrequencyDomainModel m = AfpFrequencyDomainModel.getModel(node);
+        		if(m != null) {
+        			freqDomains.add(m);
+        		}
+        	} else  if (node.getProperty(INeoConstants.AFP_PROPERTY_DOMAIN_NAME,"").equals(INeoConstants.AFP_DOMAIN_NAME_MAL)) {
+        		// frequency type domain
+        		AfpHoppingMALDomainModel m = AfpHoppingMALDomainModel.getModel(node);
+        		if(m != null) {
+        			malDomains.add(m);
+        		}
+        	} else  if (node.getProperty(INeoConstants.AFP_PROPERTY_DOMAIN_NAME,"").equals(INeoConstants.AFP_DOMAIN_NAME_SECTOR_SEPARATION)) {
+        		// frequency type domain
+        		AfpSeparationDomainModel m = AfpSeparationDomainModel.getModel(node, INeoConstants.AFP_PROPERTY_SEPARATIONS_NAME);
+        		if(m != null) {
+        			sectorSeparationDomains.add(m);
+        		}
+        	} else  if (node.getProperty(INeoConstants.AFP_PROPERTY_DOMAIN_NAME,"").equals(INeoConstants.AFP_DOMAIN_NAME_SITE_SEPARATION)) {
+        		// frequency type domain
+        		AfpSeparationDomainModel m = AfpSeparationDomainModel.getModel(node,INeoConstants.AFP_PROPERTY_SEPARATIONS_NAME);
+        		if(m != null) {
+        			siteSeparationDomains.add(m);
+        		}
+        	}  
+        }
 	}
 
 	public String toString(){
