@@ -84,7 +84,7 @@ public class AfpProcessExecutor extends Job {
 			AfpEngine engine = AfpEngine.getAfpEngine();
 			
 			String path = engine.getAfpEngineExecutablePath();
-			String command = path + " " + afpe.controlFileName;
+			String command = path + " \"" + afpe.controlFileName + "\"";
 			AweConsolePlugin.info("Executing Cmd: " + command);
 			process = run.exec(command);
 			monitor.worked(20);
