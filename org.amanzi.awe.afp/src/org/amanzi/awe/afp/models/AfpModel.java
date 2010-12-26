@@ -104,6 +104,8 @@ public class AfpModel {
 	float[] coShadowing = new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0};
 	float[] adjShadowing = new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0};
 	
+	//Progress page params
+	String[] tableItems = new String[6];
 	
 	public AfpModel() {
 		
@@ -880,6 +882,14 @@ public class AfpModel {
 
 
 
+
+	public String[] getTableItems() {
+		return tableItems;
+	}
+
+	public void setTableItems(String[] tableItems) {
+		this.tableItems = tableItems;
+	}
 
 	public void addFreqDomain(AfpFrequencyDomainModel freqDomain){
 		if (freqDomains == null){

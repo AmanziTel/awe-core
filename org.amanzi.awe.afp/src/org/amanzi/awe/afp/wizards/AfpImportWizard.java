@@ -14,6 +14,7 @@
 package org.amanzi.awe.afp.wizards;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 
 import org.amanzi.awe.afp.Activator;
@@ -183,6 +184,17 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
     	
     	if (page instanceof AfpProgressPage){
     		model.executeAfpEngine(parameters);
+//    		for (int i = 0; i < 5; i++){
+//    			model.setTableItems(new String[]{new Date().toString(), "dummy", "dummy", "dummy", "dummy", "dummy"});
+//    			System.out.println(new Date().toString());
+//    			((AfpProgressPage) page).addProgressTableItem(model.getTableItems());
+//    			try {
+//					Thread.sleep(500);
+//				} catch (InterruptedException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//    		}
     	}
     	
     	return nextPage;
