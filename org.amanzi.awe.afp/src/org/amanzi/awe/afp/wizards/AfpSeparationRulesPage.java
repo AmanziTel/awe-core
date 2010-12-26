@@ -18,20 +18,28 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Traverser;
 
-public class AfpSeparationRulesPage extends WizardPage {
+public class AfpSeparationRulesPage extends AfpWizardPage {
 	
 	private Group sectorDomainsGroup;
 	private Group siteDomainsGroup;
 	protected static HashMap<String, Label[]> sectorDomainLabels;
 	protected static HashMap<String, Label[]> siteDomainLabels;
 	private AfpModel model;
+	private final String[] headers = { "BSC", "Site", "Sector", "Layer"};
+	private final String[] prop_name = { "BSC", "Site", "name", "Layer"};
+	private Table filterTableSector;
+	private Table filterTableSite;
 
-	public AfpSeparationRulesPage(String pageName, AfpModel model) {
+	public AfpSeparationRulesPage(String pageName, AfpModel model, String desc) {
 		super(pageName);
         this.model = model;
         setTitle(AfpImportWizard.title);
-        setDescription(AfpImportWizard.page5Name);
+        setDescription(desc);
         setPageComplete (false);
 	}
 	
@@ -70,11 +78,8 @@ public class AfpSeparationRulesPage extends WizardPage {
     	siteDomainLabels = new HashMap<String, Label[]>();
 		
 		
-    	AfpWizardUtils.getTRXFilterGroup(sectorMain);
+    	filterTableSector = addTRXFilterGroup(model, sectorMain, headers,10);
 
-		
-		
-		
 		
 		item1.setControl(sectorMain);
 		
@@ -102,7 +107,7 @@ public class AfpSeparationRulesPage extends WizardPage {
     	AfpWizardUtils.createButtonsGroup(this, siteDomainsGroup, "Site SeparationRules", model);
     	sectorDomainLabels = new HashMap<String, Label[]>();
     	
-    	AfpWizardUtils.getTRXFilterGroup(siteMain);
+    	filterTableSite = addTRXFilterGroup(model,siteMain, headers,10);
 		
     	item2.setControl(siteMain);
 		
@@ -134,6 +139,7 @@ public class AfpSeparationRulesPage extends WizardPage {
 //		siteDomainsGroup.layout();
 	}
 	
+	@Override
 	public void refreshPage(){
 		Set<String> keys = sectorDomainLabels.keySet();
 		if(keys != null) {
@@ -181,8 +187,34 @@ public class AfpSeparationRulesPage extends WizardPage {
 			defaultSitesLabel.setText("0");
 			siteDomainLabels.put(sectorDomainModel.getName(), new Label[]{defaultSiteDomainLabel, defaultSitesLabel});
 		}
-	
+		//loadData();
 		siteDomainsGroup.layout();
+	}
+	public void loadData(Table table) {
+		if(table != null) {
+			table.removeAll();
+			
+		    Traverser traverser = model.getTRXList(null);
+		    
+		    int cnt =0;
+		    for (Node node : traverser) {
+		    	if(cnt > 100) 
+		    		break;
+		    	TableItem item = new TableItem(table, SWT.NONE);
+		    	for (int j = 0; j < headers.length; j++){
+		    		try {
+		    			String val = (String)node.getProperty(prop_name[j]);
+		    			item.setText(j, val);
+		    		} catch(Exception e) {
+		    			item.setText(j, "NA");
+		    		}
+		    	}
+		    	cnt++;
+		    }
+		    for (int i = 0; i < headers.length; i++) {
+		    	table.getColumn(i).pack();
+		    }
+		}
 	}
 
 }

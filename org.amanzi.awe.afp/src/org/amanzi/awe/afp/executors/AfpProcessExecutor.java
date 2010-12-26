@@ -49,6 +49,7 @@ public class AfpProcessExecutor extends Job {
 	
 	/** Process to execute the command*/
 	private Process process;
+	private AfpProcessProgress progress;
 	
 	/** Flag whether process is completed*/
 	private boolean jobFinished = false;
@@ -69,7 +70,12 @@ public class AfpProcessExecutor extends Job {
 		this.parameters = parameters;
 	}
 
-	
+	public void setProgress(AfpProcessProgress progress) {
+		this.progress = progress;
+	}
+
+
+
 	/* (non-Javadoc)
 	 * @see org.eclipse.core.runtime.jobs.Job#run(org.eclipse.core.runtime.IProgressMonitor)
 	 */
@@ -78,6 +84,26 @@ public class AfpProcessExecutor extends Job {
 		
 		monitor.beginTask("Execute Afp", 100);
 		createFiles(monitor);
+		if(progress  != null) {
+			for(int i=100;i >0;i-=10) {
+				int p = (i*300)/100;
+				progress.onProgressUpdate(0, System.currentTimeMillis(), 
+						p, 
+						100,
+						200, 
+						10,
+						20, 
+						400, 
+						10, 
+						50);
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
 		Runtime run = Runtime.getRuntime();
 		try {
 			AfpExporter afpe = new AfpExporter(null);
@@ -88,6 +114,16 @@ public class AfpProcessExecutor extends Job {
 			AweConsolePlugin.info("Executing Cmd: " + command);
 			process = run.exec(command);
 			monitor.worked(20);
+			if(progress  != null) {
+				progress.onProgressUpdate(0, System.currentTimeMillis(), 
+						300, 100,
+						200, 
+						10,
+						20, 
+						400, 
+						10, 
+						50);
+			}
 			
 			/**
 			 * Thread to read the stderr and display it on Awe Console

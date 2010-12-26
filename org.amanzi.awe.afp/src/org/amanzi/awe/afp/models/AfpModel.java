@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.Vector;
 
 import org.amanzi.awe.afp.executors.AfpProcessExecutor;
+import org.amanzi.awe.afp.executors.AfpProcessProgress;
 import org.amanzi.awe.afp.wizards.AfpLoadNetworkPage;
 import org.amanzi.awe.afp.wizards.AfpWizardUtils;
 import org.amanzi.awe.console.AweConsolePlugin;
@@ -33,6 +34,7 @@ public class AfpModel {
 	private final GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
 	private static final String AFP_NODE_NAME = "afp-dataset";
 
+	private AfpProcessExecutor afpJob;
 	private HashMap<String, Node> networkNodes;
 	private HashMap<String, Node> afpNodes;
 
@@ -1357,10 +1359,11 @@ public class AfpModel {
 
 	}
 	
-	public void executeAfpEngine(HashMap<String,String> parameters){
+	public void executeAfpEngine(AfpProcessProgress progress, HashMap<String,String> parameters){
 		if (afpNode != null ){
-    		Job job2 = new AfpProcessExecutor("Execute Afp Process", datasetNode, service, parameters);
-            job2.schedule();
+			afpJob = new AfpProcessExecutor("Execute Afp Process", datasetNode, service, parameters);
+			afpJob.setProgress(progress);
+			afpJob.schedule();
     	}
 	}
 
@@ -1420,6 +1423,23 @@ public class AfpModel {
 		
 		return sb.toString();
 	}
- 
 
+	public AfpProcessExecutor getExecutor() {
+		return afpJob;
+	}
+
+	public Traverser getTRXList(HashMap filters) {
+    	Traverser traverser = datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
+
+			@Override
+			public boolean isReturnableNode(TraversalPosition currentPos) {
+				if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.SECTOR.getId()))
+					return true;
+				return false;
+			}
+    		
+    	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+    	
+        return traverser;
+	}
 }

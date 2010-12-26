@@ -25,8 +25,10 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Traverser;
 
-public class AfpFrequencyTypePage extends WizardPage {
+public class AfpFrequencyTypePage extends AfpWizardPage {
 	
 	private Group frequencyDomainsGroup;
 	protected Label free900Freq;
@@ -46,12 +48,16 @@ public class AfpFrequencyTypePage extends WizardPage {
 	
 	private AfpModel model;
 	protected static HashMap<String, Label[]> domainLabels;
+	private final String[] headers = { "BSC", "Site", "Sector", "Layer", "Subcell", "TRX_ID", "Band", "Extended", "Hopping Type", "BCCH"};
+	private final String[] prop_name = { "BSC", "Site", "name", "Layer", "Subcell", "TRX_ID", "Band", "Extended", "Hopping Type", "BCCH"};
 	
-	public AfpFrequencyTypePage(String pageName, AfpModel model) {
+	private Table filterTable;
+
+	public AfpFrequencyTypePage(String pageName, AfpModel model, String desc) {
 		super(pageName);
         this.model = model;
         setTitle(AfpImportWizard.title);
-        setDescription(AfpImportWizard.page3Name);
+        setDescription(desc);
         setPageComplete (false);
 	}
 	
@@ -90,15 +96,38 @@ public class AfpFrequencyTypePage extends WizardPage {
     	AfpWizardUtils.createButtonsGroup(this, frequencyDomainsGroup, "FrequencyType", model);
     	domainLabels = new HashMap<String, Label[]>();
     	
-    	AfpWizardUtils.getTRXFilterGroup(main);		
-		
+    	filterTable = this.addTRXFilterGroup(model, main, headers,10);		
 		
     	setPageComplete(true);
-    	setControl (thisParent);
-		
-    	
+    	setControl (thisParent);    	
 	}
 	
+	public void loadData() {
+		if(filterTable != null) {
+			filterTable.removeAll();
+			
+		    Traverser traverser = model.getTRXList(null);
+		    
+		    int cnt =0;
+		    for (Node node : traverser) {
+		    	if(cnt > 100) 
+		    		break;
+		    	TableItem item = new TableItem(filterTable, SWT.NONE);
+		    	for (int j = 0; j < headers.length; j++){
+		    		try {
+		    			String val = (String)node.getProperty(prop_name[j]);
+		    			item.setText(j, val);
+		    		} catch(Exception e) {
+		    			item.setText(j, "NA");
+		    		}
+		    	}
+		    	cnt++;
+		    }
+		    for (int i = 0; i < headers.length; i++) {
+		    	filterTable.getColumn(i).pack();
+		    }
+		}
+	}
 	public static void deleteDomainLabels(String domainName){
 		if (domainLabels.containsKey(domainName)){
 			Label[] labels = domainLabels.get(domainName);
@@ -187,6 +216,7 @@ public class AfpFrequencyTypePage extends WizardPage {
 			domainLabels.put(freePlan1900DomainName, new Label[]{freePlan1900Label, frequenciesFreePlan1900Label, TRXsFreePlan1900Label});
     	}*/
 		
+		loadData();
 		frequencyDomainsGroup.layout();
 	}
 

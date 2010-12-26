@@ -24,7 +24,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-public class AfpAvailableResourcesPage extends WizardPage implements Listener {
+public class AfpAvailableResourcesPage extends AfpWizardPage implements Listener {
 	
 	protected Text frequencies900;
 	protected Text frequencies1800;
@@ -46,11 +46,11 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
 	private AfpModel model;
 	
 
-	public AfpAvailableResourcesPage(String pageName, AfpModel model) {
+	public AfpAvailableResourcesPage(String pageName, AfpModel model, String desc) {
 		super(pageName);
         this.model = model;
         setTitle(AfpImportWizard.title);
-        setDescription(AfpImportWizard.page2Name);
+        setDescription(desc);
         setPageComplete (false);
 	}
 
@@ -365,6 +365,7 @@ public class AfpAvailableResourcesPage extends WizardPage implements Listener {
 		model.setAvailableBCCs(availableBCCs);
 	}
 	
+	@Override
 	public void refreshPage(){
 		frequencies900.setEnabled(model.getFrequencyBands()[0]);
 		freq900Label.setEnabled(model.getFrequencyBands()[0]);

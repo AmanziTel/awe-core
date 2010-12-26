@@ -17,7 +17,7 @@ import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 
-public class AfpScalingRulesPage extends WizardPage implements Listener{
+public class AfpScalingRulesPage extends AfpWizardPage implements Listener{
 	
 	private static final int textWidth = 25;
 	private static final int sepTextWidth = 35;
@@ -43,11 +43,11 @@ public class AfpScalingRulesPage extends WizardPage implements Listener{
 			};
 	
 	
-	public AfpScalingRulesPage(String pageName, AfpModel model) {
+	public AfpScalingRulesPage(String pageName, AfpModel model, String desc) {
 		super(pageName);
         this.model = model;
         setTitle(AfpImportWizard.title);
-        setDescription(AfpImportWizard.page6Name);
+        setDescription(desc);
         setPageComplete (false);
         
 	}

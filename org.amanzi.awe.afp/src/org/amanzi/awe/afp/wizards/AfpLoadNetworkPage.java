@@ -22,19 +22,19 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 
-public class AfpLoadNetworkPage extends WizardPage {
+public class AfpLoadNetworkPage extends AfpWizardPage {
 	
 	private Combo networkCombo;
 	protected String datasetName;
 		
 	private AfpModel model;
 	
-	public AfpLoadNetworkPage(String pageName, AfpModel model) {
+	public AfpLoadNetworkPage(String pageName, AfpModel model, String desc) {
         super(pageName);
         this.model = model;
         setPageComplete(false);
         setTitle(AfpImportWizard.title);
-        setDescription(AfpImportWizard.page0Name);
+        setDescription(desc);
     }
 	
 	@Override

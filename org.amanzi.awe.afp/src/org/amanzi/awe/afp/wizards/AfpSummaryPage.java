@@ -12,16 +12,16 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 
-public class AfpSummaryPage extends WizardPage {
+public class AfpSummaryPage extends AfpWizardPage {
 	
 	private Text summaryText;
 	private AfpModel model;
 	
-	public AfpSummaryPage(String pageName, AfpModel model) {
+	public AfpSummaryPage(String pageName, AfpModel model, String desc) {
 		super(pageName);
         this.model = model;
         setTitle(AfpImportWizard.title);
-        setDescription(AfpImportWizard.page7Name);
+        setDescription(desc);
         setPageComplete (false);
 	}
 	

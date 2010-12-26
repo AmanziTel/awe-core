@@ -38,6 +38,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Scale;
 import org.eclipse.swt.widgets.Text;
@@ -57,25 +58,20 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
 	protected static boolean isDone = false;
 	
 	public final static String title = "Automatic Frequency Planning";
-	public final static String page0Name = "Step 0 - Load Network Data";
-    public final static String page1Name = "Step 1 - Optimization Goals";
-    public final static String page2Name = "Step 2 - Available Sources";
-    public final static String page3Name = "Step 3 - Frequency Type";
-    public final static String page4Name = "Step 4 - SY Hopping MALs";
-    public final static String page5Name = "Step 5 - Separation Rules";
-    public final static String page6Name = "Step 6 - Scaling Rules";
-    public final static String page7Name = "Step 7 - Summary";
-    public final static String page8Name = "Step 8 - Optimization Progress";
+	public final static String pageName[] = new String[] 
+	      { "Load Network Data",
+		    "Optimization Goals",
+		    "Available Sources",
+		    "Frequency Type",
+		    "SY Hopping MALs",
+		    "Separation Rules",
+		    "Scaling Rules",
+		    "Summary",
+		    "Optimization Progress"
+	      };
 	
 	//private AfpLoadWizardPage loadPage;
-    private AfpOptimizationGoalsPage goalsPage;
-    AfpAvailableResourcesPage resourcesPage;
-	private AfpFrequencyTypePage frequencyPage;
-	private AfpSYHoppingMALsPage hoppingMALsPage;
-	private AfpSeparationRulesPage separationsPage;
-	private AfpScalingRulesPage scalingPage;
-	private AfpSummaryPage summaryPage;
-	private AfpProgressPage progressPage;
+    private AfpWizardPage[] pages = new AfpWizardPage[9];
 	
 	private AfpModel model;
 	
@@ -86,8 +82,6 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
 
     	model.saveUserData();
     	
-    	
-    	  	
     	/*
     	
     	if (afpNode != null ){
@@ -128,35 +122,59 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
     @Override
     public void addPages(){
     	super.addPages();
-    	addPage(new AfpLoadNetworkPage("Load Network",  model));
-    	goalsPage = new AfpOptimizationGoalsPage("Optimization Goals",  model); 
-    	addPage(goalsPage);
-    	resourcesPage = new AfpAvailableResourcesPage("Available Sources", model); 
-    	addPage(resourcesPage);
-    	frequencyPage = new AfpFrequencyTypePage("Frequency Type", model);
-    	addPage(frequencyPage);
-    	hoppingMALsPage = new AfpSYHoppingMALsPage("SY Hopping MALs", model);
-    	addPage(hoppingMALsPage);
-    	separationsPage = new AfpSeparationRulesPage("Separation Rules", model); 
-    	addPage(separationsPage);
-    	scalingPage = new AfpScalingRulesPage("Scaling Rules", model);
-    	addPage(scalingPage);
-    	summaryPage = new AfpSummaryPage("Summary", model); 
-    	addPage(summaryPage);
-    	progressPage = new AfpProgressPage("Progress", model);
-    	addPage(progressPage);
-//    	addPage(new AfpTableExample("Example"));
+    	int i=0;
+    	pages[i] = new AfpLoadNetworkPage(pageName[i],  model, "Step " + i + " -" + pageName[i]);
+    	addPage(pages[i]);
+    	i++;
+    	pages[i] = new AfpOptimizationGoalsPage(pageName[i],  model, "Step " + i + " -" + pageName[i]);
+    	addPage(pages[i]);
+    	i++;
+    	pages[i] = new AfpAvailableResourcesPage(pageName[i],  model, "Step " + i + " -" + pageName[i]);
+    	addPage(pages[i]);
+    	i++;
+    	pages[i] = new AfpFrequencyTypePage(pageName[i],  model, "Step " + i + " -" + pageName[i]);
+    	addPage(pages[i]);
+    	i++;
+    	pages[i] = new AfpSYHoppingMALsPage(pageName[i],  model, "Step " + i + " -" + pageName[i]);
+    	addPage(pages[i]);
+    	i++;
+    	pages[i] = new AfpSeparationRulesPage(pageName[i],  model, "Step " + i + " -" + pageName[i]);
+    	addPage(pages[i]);
+    	i++;
+    	pages[i] = new AfpScalingRulesPage(pageName[i],  model, "Step " + i + " -" + pageName[i]);
+    	addPage(pages[i]);
+    	i++;
+    	pages[i] = new AfpSummaryPage(pageName[i],  model, "Step " + i + " -" + pageName[i]);
+    	addPage(pages[i]);
+    	i++;
+    	pages[i] = new AfpProgressPage(pageName[i],  model, "Step " + i + " -" + pageName[i]);
+    	addPage(pages[i]);
+    	i++;
+    	
     }
     
     
     @Override
     public IWizardPage getNextPage(IWizardPage page) {
     	IWizardPage nextPage = super.getNextPage(page);
-    	if (nextPage == goalsPage){
-    		System.out.println("Next: Goals Page");
-    		goalsPage.refreshPage();
-    	}
     	
+    	if(nextPage != null) {
+    		((AfpWizardPage)nextPage).refreshPage();
+    	}
+    	/*
+    		if(page instanceof AfpLoadNetworkPage) {
+    			if(pages[1] == null) {
+    	        	pages[1] = new AfpOptimizationGoalsPage("Optimization Goals",  model, pageName[1]); 
+    	        	((AfpOptimizationGoalsPage)pages[1]).refreshPage();
+    	        	nextPage = pages[1];
+    			}
+    		} else  if(page instanceof AfpOptimizationGoalsPage) {
+    			if(pages[2] == null) {
+    	        	pages[2] = new AfpAvailableResourcesPage("Available Sources", model, pageName[2]); 
+    	        	((AfpAvailableResourcesPage)pages[1]).refreshPage();
+    	        	nextPage = pages[2];
+    			}
+    		}
     	if (nextPage == resourcesPage){
     		System.out.println("Next: Resourcess Page");
     		resourcesPage.refreshPage();
@@ -181,9 +199,10 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
     	if (nextPage == summaryPage){
     		summaryPage.refreshPage();
     	}
+    	*/
     	
     	if (page instanceof AfpProgressPage){
-    		model.executeAfpEngine(parameters);
+    		model.executeAfpEngine((AfpProgressPage)page, parameters);
 //    		for (int i = 0; i < 5; i++){
 //    			model.setTableItems(new String[]{new Date().toString(), "dummy", "dummy", "dummy", "dummy", "dummy"});
 //    			System.out.println(new Date().toString());
@@ -196,7 +215,6 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
 //				}
 //    		}
     	}
-    	
     	return nextPage;
 
     }

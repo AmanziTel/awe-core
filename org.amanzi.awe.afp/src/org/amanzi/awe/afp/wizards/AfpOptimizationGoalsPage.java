@@ -18,7 +18,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
-public class AfpOptimizationGoalsPage extends WizardPage implements Listener {
+public class AfpOptimizationGoalsPage extends AfpWizardPage implements Listener {
 
 	protected GridData gridData;
 	protected Button frequenciesButton;
@@ -37,12 +37,12 @@ public class AfpOptimizationGoalsPage extends WizardPage implements Listener {
 	private AfpModel model;
 
 	
-	public AfpOptimizationGoalsPage(String pageName,AfpModel model) {
+	public AfpOptimizationGoalsPage(String pageName,AfpModel model, String desc) {
         super(pageName);
         this.model = model;
         setPageComplete(false);
         setTitle(AfpImportWizard.title);
-        setDescription(AfpImportWizard.page1Name);
+        setDescription(desc);
     }
 	
 	@Override

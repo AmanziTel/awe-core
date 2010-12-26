@@ -6,6 +6,7 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.awe.afp.Activator
 Bundle-Vendor: amanzi.org
 Require-Bundle: org.eclipse.ui,
+ org.jfree;bundle-version="1.0.13",
  org.eclipse.core.runtime,
  org.amanzi.neo.core;bundle-version="1.0.0",
  org.neo4j;bundle-version="1.0.0",
