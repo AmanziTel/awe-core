@@ -45,7 +45,7 @@ import org.neo4j.graphdb.Transaction;
  * @author Rahul
  *
  */
-public class AfpProcessExecutor extends Job  implements AfpProcessProgress{
+public class AfpProcessExecutor extends Job {
 	
 	/** Process to execute the command*/
 	private Process process;
@@ -139,10 +139,19 @@ public class AfpProcessExecutor extends Job  implements AfpProcessProgress{
 	    						// progress line
 	    						String[] tokens = output.split(",");
 	    						if(tokens.length >=3) {
-	    							String completed = tokens[1];
+	    							try {
+	    							int completed = Integer.parseInt(tokens[1]);
 	    							AweConsolePlugin.info(" completed " + completed);
-	    							String total = tokens[2];
+	    							int total = Integer.parseInt(tokens[2]);
 		    						AweConsolePlugin.info(" total " + total);
+		    						if(completed > total) {
+		    							completed = total;
+		    						}
+		    						onProgressUpdate(0,total-completed,0,0,0,0,0,0,0);
+	    							} catch(Exception e) {
+	    								
+	    							}
+		    						
 	    						}
 	    					}
 	    				}
@@ -219,11 +228,15 @@ public class AfpProcessExecutor extends Job  implements AfpProcessProgress{
 		transaction.finish();
 	}
 
-	@Override
-	public void onProgressUpdate(int result, long time, int remaingtotal,
+	public void onProgressUpdate(int result, int remaingtotal,
 			int sectorSeperations, int siteSeperation, int freqConstraints,
 			int interference, int neighbor, int tringulation, int shadowing) {
-		// TODO Auto-generated method stub
+		
+		if(this.progress != null) {
+			this.progress.onProgressUpdate(result, System.currentTimeMillis(), remaingtotal,
+					sectorSeperations, siteSeperation, freqConstraints,
+					interference, neighbor, tringulation, shadowing);
+		}
 		
 	}
 	

@@ -2,6 +2,8 @@ package org.amanzi.awe.afp.wizards;
 
 import java.awt.Color;
 import java.lang.reflect.InvocationTargetException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -207,11 +209,11 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 	    
 	    String[][] items = new String[10][headers.length];
 	    
-	    for (int i = 0; i < 5; i++){
+	    /*for (int i = 0; i < 5; i++){
 			model.setTableItems(new String[]{new Date().toString(), "dummy", "dummy", "dummy", "dummy", "dummy"});
 			addProgressTableItem(model.getTableItems());
 			
-		}
+		}*/
 	    
 	    
 	    
@@ -291,29 +293,8 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 		return null;
 	}
 	
-	boolean flg=true;
 	@Override
 	public void refreshPage() {
-		if(flg) {
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					try {
-						Thread.sleep(10000);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					for(int j=0;j<8;j++)
-						onProgressUpdate(0, System.currentTimeMillis() , 300, 10, 10, 10, 10, 10, 10, 10);
-						//series[i].add(1.0,i);
-						//series[i].add(2.0,i);
-					for(int j=0;j<8;j++)
-						onProgressUpdate(0, System.currentTimeMillis()+1000 , 200, 10, 10, 10, 10, 10, 10, 10);
-				}
-			});
-		
-		flg=false;
-		}
 		executeAfpEngine();
 	}
 	public void addProgressTableItem (String[] itemValues){
@@ -373,9 +354,8 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 	        ValueAxis timeaxis = plot.getDomainAxis();
 	        timeaxis.setAutoRange(true);
 	        timeaxis.setFixedAutoRange(60000.0);
-	        
 	        renderer = new XYLineAndShapeRenderer();
-	        renderer.setSeriesLinesVisible(0, false);
+	        renderer.setSeriesLinesVisible(0, true);
 	        renderer.setSeriesShapesVisible(1, false);
 	        plot.setRenderer(renderer);
 	        for(int i=0;i<series.length;i++) {
@@ -385,6 +365,7 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 	        // change the auto tick unit selection to integer units only...
 	        final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 	        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+	        //rangeAxis.setLowerBound(min)
 	        // OPTIONAL CUSTOMISATION COMPLETED.
 	                
 	        return chart;
@@ -401,7 +382,8 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 		//RegularTimePeriod t = RegularTimePeriod.createInstance(Millisecond.class, new Date(time), TimeZone.getDefault());
 		RegularTimePeriod t = new Millisecond(new Date(time));
 
-		series[0].add(new TimeSeriesDataItem(t,remaingtotal));
+		series[0].add(new TimeSeriesDataItem(t,remaingtotal),false);
+		
 /*		series[1].add(new TimeSeriesDataItem(t,sectorSeperations));
 		series[2].add(new TimeSeriesDataItem(t,siteSeperation));
 		series[3].add(new TimeSeriesDataItem(t,freqConstraints));
@@ -410,6 +392,19 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 		series[6].add(new TimeSeriesDataItem(t,tringulation));
 		series[7].add(new TimeSeriesDataItem(t,shadowing));
 	*/	
+		Display.getDefault().syncExec( new Runnable() {
+			public void run() {
+				series[0].fireSeriesChanged();
+				TimeSeriesDataItem lastItem = series[0].getDataItem(series[0].getItemCount()-1);
+				//series[0].getItemCount(); 
+				//model.setTableItems(new String[]{new Date().toString(), "dummy", "dummy", "dummy", "dummy", "dummy"});
+				long t = lastItem.getPeriod().getFirstMillisecond();
+				Date d = new Date(t);
+				SimpleDateFormat df = new SimpleDateFormat();
+				df.applyPattern("H:m:s.S");
+				addProgressTableItem(new String[] {df.format(d), ""+lastItem.getValue(), "    ", "    ", "    ", "    "});
+			}
+		});
 	}
 	
 	void executeAfpEngine() {
