@@ -75,22 +75,23 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
 	
 	private AfpModel model;
 	
+	boolean executingAfpEngine = false;
+	
 
     @Override
     public boolean performFinish() {
 
-    	model.saveUserData();
+    	if(!executingAfpEngine) {
+    		model.saveUserData();
     	
-    	/*
+    		pages[8].refreshPage();
+    		getContainer().showPage(pages[8]);
+    		executingAfpEngine = true;
     	
-    	if (afpNode != null ){
-    		Job job2 = new AfpProcessExecutor("Execute Afp Process", afpNode, servise, parameters);
-            job2.schedule();
-    	}*/
-    	pages[8].refreshPage();
-    	getContainer().showPage(pages[8]);
-    	
-        return false;
+    		return false;
+    	}
+    	return true;
+        
     }
 
     @Override
@@ -141,7 +142,10 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
     	IWizardPage nextPage = super.getNextPage(page);
     	
     	isDone = false;
+    	System.out.println("Current Page -- " + page.getClass().toString());
     	if(nextPage != null) {
+        	System.out.println("Next Page -- " + nextPage.getClass().toString());
+    		model.saveUserData();
     		((AfpWizardPage)nextPage).refreshPage();
     	}
     	/*

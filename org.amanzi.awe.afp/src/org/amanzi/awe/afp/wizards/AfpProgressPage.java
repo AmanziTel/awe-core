@@ -15,6 +15,7 @@ import org.amanzi.awe.afp.models.AfpModel;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -97,7 +98,6 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
         setTitle(AfpImportWizard.title);
         setDescription(desc);
         setPageComplete (false);
-        //model.getExecutor()
 	}
 
 	
@@ -157,7 +157,7 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 			paramButtons[i].setSelection(true);
 			paramButtons[i].setText(graphParams[i]);
 			paramButtons[i].setData(new Integer(i));
-			
+			paramButtons[i].setEnabled(false);
 			paramButtons[i].addSelectionListener(new SelectionAdapter(){
 	    		@Override
 				public void widgetSelected(SelectionEvent e) {
@@ -184,6 +184,7 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 	    	});
 
 		}
+		paramButtons[0].setEnabled(true);
 		colorButtons[0].setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, false, false, 1, 4));
 		paramButtons[0].setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, false, false, 1, 4));
 		colorButtons[5].setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, false, true, 1, 2));
@@ -208,17 +209,6 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 	      column.setText(item);
 	    }
 	    
-	    String[][] items = new String[10][headers.length];
-	    
-	    /*for (int i = 0; i < 5; i++){
-			model.setTableItems(new String[]{new Date().toString(), "dummy", "dummy", "dummy", "dummy", "dummy"});
-			addProgressTableItem(model.getTableItems());
-			
-		}*/
-	    
-	    
-	    
-		
 		item2.setControl(progressTable);
 		
 		
@@ -230,6 +220,7 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 		Button pauseButton = new Button(controlGroup, SWT.PUSH);
 		pauseButton.setLayoutData(new GridData(GridData.END, GridData.BEGINNING, false, false));
 		pauseButton.setText("Pause");
+		pauseButton.setEnabled(false);
 		pauseButton.addSelectionListener(new SelectionListener(){
 
 			@Override
@@ -280,7 +271,9 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				// TODO Auto-generated method stub
-				
+				afpJob.cancel();
+				((AfpImportWizard)getContainer()).isDone = true;
+				//((WizardDialog)getContainer()).close();
 			}
 			
 		});
@@ -310,10 +303,6 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 	private XYDataset createDataset() {
 
 		series = new TimeSeries[graphParams.length];
-//		TimeSeries ts = new TimeSeries("Graph");
-//		dataset = new TimeSeriesCollection(ts);
-        //dataset = new XYSeriesCollection();
-
         
 		for(int i=0; i< graphParams.length;i++) {
 			series[i] = new TimeSeries(graphParams[i]);
@@ -415,24 +404,6 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 			model.executeAfpEngine(this);
 			afpJob = model.getExecutor();
 			afpJob.schedule();
-			/*
-			// Invoking long running operation
-		    try {
-				getContainer().run(true, true, new IRunnableWithProgress() {
-					public void run(IProgressMonitor monitor)
-						throws InvocationTargetException,
-						InterruptedException {
-					    // Some time consuming operation
-						afpJob.run(monitor);
-					}
-				    });
-			} catch (InvocationTargetException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}*/
 		}		    
 	}
 }
