@@ -115,10 +115,10 @@ public class GpehParser extends CommonFilesParser<GpehTransferData, CommonConfig
         }
 
         Calendar cl = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-        cl.clear();
+        cl.clear();        
         cl.set(Calendar.YEAR, timeWrapper.getYear());
-        cl.set(Calendar.MONTH, timeWrapper.getMonth());
-        cl.set(Calendar.DAY_OF_MONTH, timeWrapper.getDay());
+        cl.set(Calendar.MONTH, timeWrapper.getMonth() - 1);
+        cl.set(Calendar.DAY_OF_MONTH, timeWrapper.getDay());        
         long timestampOfDay = cl.getTimeInMillis();
         cl.set(Calendar.HOUR, timeWrapper.getHhStart());
         cl.set(Calendar.MINUTE, timeWrapper.getMmStart());
