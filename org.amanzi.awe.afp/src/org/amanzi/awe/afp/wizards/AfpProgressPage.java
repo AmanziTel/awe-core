@@ -1,6 +1,7 @@
 package org.amanzi.awe.afp.wizards;
 
 import java.awt.Color;
+import java.util.Date;
 
 import org.amanzi.awe.afp.executors.AfpProcessProgress;
 import org.amanzi.awe.afp.models.AfpModel;
@@ -19,6 +20,9 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -67,6 +71,7 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 	};
 	private boolean[] seriesVisible = new boolean[]{ true,true,true,true,true,true,true,true};
 	private Button[] paramButtons = new Button[8];
+	private Table progressTable;
 	
 	public AfpProgressPage(String pageName, AfpModel model, String desc) {
 		super(pageName);
@@ -175,14 +180,28 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 		tableGroup.setLayout(new GridLayout(6, false));
 		tableGroup.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true, 1, 1));
 		
-//		Text progressText = new Text (graphGroup, SWT.BORDER | SWT.MULTI);
-//		GridData gridData = new GridData(GridData.FILL, GridData.CENTER, true, true, 6 ,1);
-//		gridData.heightHint = 200;
-//		gridData.minimumWidth = 100;
-//		progressText.setLayoutData(gridData);
-//		progressText.setText("Summary Report Content");
+		progressTable = new Table(tabFolder, SWT.VIRTUAL | SWT.MULTI);
+		progressTable.setHeaderVisible(true);
+		progressTable.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, true));
 		
-		item2.setControl(tableGroup);
+		String[] headers = {"Time", "Total", "Sector Separations", "Site Separations", "Frequency Constrinats", "Interference"};
+	    for (String item : headers) {
+	      TableColumn column = new TableColumn(progressTable, SWT.NONE);
+	      column.setText(item);
+	    }
+	    
+	    String[][] items = new String[10][headers.length];
+	    
+	    for (int i = 0; i < 5; i++){
+			model.setTableItems(new String[]{new Date().toString(), "dummy", "dummy", "dummy", "dummy", "dummy"});
+			addProgressTableItem(model.getTableItems());
+			
+		}
+	    
+	    
+	    
+		
+		item2.setControl(progressTable);
 		
 		
 		Group controlGroup = new Group(main, SWT.NONE);
@@ -255,6 +274,15 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 	@Override
 	public IWizardPage getPreviousPage(){
 		return null;
+	}
+	
+	public void addProgressTableItem (String[] itemValues){
+		TableItem item = new TableItem(progressTable, SWT.NONE);
+	    
+	    for (int i = 0; i < itemValues.length; i++) {
+	    	item.setText(i, itemValues[i]);
+	    	progressTable.getColumn(i).pack();
+	    }
 	}
 
 	private XYDataset createDataset() {
