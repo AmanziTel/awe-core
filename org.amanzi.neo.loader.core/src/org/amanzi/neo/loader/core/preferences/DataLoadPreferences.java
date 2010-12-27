@@ -92,7 +92,6 @@ public class DataLoadPreferences {
     public static final String USER_IMEI = "USER_IMEI";
     public static final String USER_IMSI = "USER_IMSI";
 
-
     private DataLoadPreferences() {
 
     }

@@ -12,8 +12,10 @@ Require-Bundle: org.eclipse.ui,
  org.amanzi.neo.core;bundle-version="1.0.0",
  org.junit4;bundle-version="4.3.1",
  org.amanzi.neo.data_generator;bundle-version="1.0.0",
- org.amanzi.testing
+ org.amanzi.testing,
+ org.amanzi.neo.loader.core;bundle-version="1.0.0"
 Export-Package: 
  org.amanzi.neo.loader.testing
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Eclipse-LazyStart: true
+Import-Package: org.amanzi.awe
