@@ -5553,8 +5553,8 @@ c_coit1(_N______->_E___);
 
 PROGRESS = 0;
 
-for(p=____C;(NOLOCL < p);p--){                         
-
+for(p=____C;(NOLOCL < p);p--){
+fprintf(Protfp,"PROGRESS CoIT1Done/CoIT1,%d,%d,\n",CoIT1Done,CoIT1);
 fprintf(Protfp,"PRIO = %d, DISR = %d  >>>>>\n",p,PPar7[p].pdisr);
 
    if(!set_all(p))  

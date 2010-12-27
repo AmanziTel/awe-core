@@ -1,10 +1,17 @@
 package org.amanzi.awe.afp.wizards;
 
 import java.awt.Color;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
+import java.util.TimeZone;
 
+import javax.swing.SwingUtilities;
+
+import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.executors.AfpProcessProgress;
 import org.amanzi.awe.afp.models.AfpModel;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -28,25 +35,33 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.time.Millisecond;
+import org.jfree.data.time.RegularTimePeriod;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesDataItem;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.experimental.chart.swt.ChartComposite;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.jfree.data.time.TimeSeriesCollection;
+
 
 public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress{
 	
 	private AfpModel model;
 	JFreeChart chart;
-    XYSeries series[];
-    XYSeriesCollection dataset = new XYSeriesCollection();
+	TimeSeries series[];
+	TimeSeriesCollection dataset = new TimeSeriesCollection();
     XYLineAndShapeRenderer renderer;
+	private AfpProcessExecutor afpJob;
     //private JFreeChart chart;
     private Button[] colorButtons = new Button[8];
 	private String[] graphParams = new String[]{
@@ -276,6 +291,31 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 		return null;
 	}
 	
+	boolean flg=true;
+	@Override
+	public void refreshPage() {
+		if(flg) {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					try {
+						Thread.sleep(10000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					for(int j=0;j<8;j++)
+						onProgressUpdate(0, System.currentTimeMillis() , 300, 10, 10, 10, 10, 10, 10, 10);
+						//series[i].add(1.0,i);
+						//series[i].add(2.0,i);
+					for(int j=0;j<8;j++)
+						onProgressUpdate(0, System.currentTimeMillis()+1000 , 200, 10, 10, 10, 10, 10, 10, 10);
+				}
+			});
+		
+		flg=false;
+		}
+		executeAfpEngine();
+	}
 	public void addProgressTableItem (String[] itemValues){
 		TableItem item = new TableItem(progressTable, SWT.NONE);
 	    
@@ -287,15 +327,14 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 
 	private XYDataset createDataset() {
 
-		series = new XYSeries[graphParams.length];
-        dataset = new XYSeriesCollection();
+		series = new TimeSeries[graphParams.length];
+//		TimeSeries ts = new TimeSeries("Graph");
+//		dataset = new TimeSeriesCollection(ts);
+        //dataset = new XYSeriesCollection();
 
         
 		for(int i=0; i< graphParams.length;i++) {
-			series[i] = new XYSeries(graphParams[i]);
-			//for(int j=0;j<8;i++)
-				//series[i].add(1.0,i);
-				//series[i].add(2.0,i);
+			series[i] = new TimeSeries(graphParams[i]);
 			
 	        dataset.addSeries(series[i]);
 		}
@@ -314,12 +353,11 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 	 private JFreeChart createChart(final XYDataset dataset) {
 	        
 	        // create the chart...
-	        final JFreeChart chart = ChartFactory.createXYLineChart(
+	        final JFreeChart chart = ChartFactory.createTimeSeriesChart(
 	            null,      // chart title
-	            null,                      // x axis label
+	            "Time",                      // x axis label
 	            "Sectors",                      // y axis label
 	            dataset,                  // data
-	            PlotOrientation.VERTICAL,
 	            false,                     // include legend
 	            true,                     // tooltips
 	            false                     // urls
@@ -332,6 +370,9 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 	        plot.setBackgroundPaint(Color.lightGray);
 	        plot.setDomainGridlinePaint(Color.white);
 	        plot.setRangeGridlinePaint(Color.white);
+	        ValueAxis timeaxis = plot.getDomainAxis();
+	        timeaxis.setAutoRange(true);
+	        timeaxis.setFixedAutoRange(60000.0);
 	        
 	        renderer = new XYLineAndShapeRenderer();
 	        renderer.setSeriesLinesVisible(0, false);
@@ -354,15 +395,46 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 	public void onProgressUpdate(int result,long time, int remaingtotal,
 			int sectorSeperations, int siteSeperation, int freqConstraints,
 			int interference, int neighbor, int tringulation, int shadowing) {
-
-		series[0].add(time,remaingtotal);
-		series[1].add(time,sectorSeperations);
-		series[2].add(time,siteSeperation);
-		series[3].add(time,freqConstraints);
-		series[4].add(time,interference);
-		series[5].add(time,neighbor);
-		series[6].add(time,tringulation);
-		series[7].add(time,shadowing);
 		
+		
+		
+		//RegularTimePeriod t = RegularTimePeriod.createInstance(Millisecond.class, new Date(time), TimeZone.getDefault());
+		RegularTimePeriod t = new Millisecond(new Date(time));
+
+		series[0].add(new TimeSeriesDataItem(t,remaingtotal));
+/*		series[1].add(new TimeSeriesDataItem(t,sectorSeperations));
+		series[2].add(new TimeSeriesDataItem(t,siteSeperation));
+		series[3].add(new TimeSeriesDataItem(t,freqConstraints));
+		series[4].add(new TimeSeriesDataItem(t,interference));
+		series[5].add(new TimeSeriesDataItem(t,neighbor));
+		series[6].add(new TimeSeriesDataItem(t,tringulation));
+		series[7].add(new TimeSeriesDataItem(t,shadowing));
+	*/	
+	}
+	
+	void executeAfpEngine() {
+		if(afpJob == null) {
+			model.executeAfpEngine(this);
+			afpJob = model.getExecutor();
+			afpJob.schedule();
+			/*
+			// Invoking long running operation
+		    try {
+				getContainer().run(true, true, new IRunnableWithProgress() {
+					public void run(IProgressMonitor monitor)
+						throws InvocationTargetException,
+						InterruptedException {
+					    // Some time consuming operation
+						afpJob.run(monitor);
+					}
+				    });
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}*/
+		}		    
 	}
 }

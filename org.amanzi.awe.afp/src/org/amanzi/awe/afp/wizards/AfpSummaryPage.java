@@ -1,6 +1,7 @@
 package org.amanzi.awe.afp.wizards;
 
 import org.amanzi.awe.afp.models.AfpModel;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -73,7 +74,8 @@ public class AfpSummaryPage extends AfpWizardPage {
 	
 	protected boolean isValidPage() {
 	      //TODO set this flag to true here only for testing purpose. Should be only done in summary page otherwise
-	      AfpImportWizard.isDone = true;
+	      //AfpImportWizard.isDone = true;
+		  ((AfpImportWizard)this.getWizard()).setDone(true);
 	      return true;
 	}
 	
@@ -83,4 +85,11 @@ public class AfpSummaryPage extends AfpWizardPage {
 		isValidPage();
 	}
 
+	@Override
+	public IWizardPage getNextPage() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	
 }

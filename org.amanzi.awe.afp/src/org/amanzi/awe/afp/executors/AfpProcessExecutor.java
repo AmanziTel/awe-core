@@ -45,7 +45,7 @@ import org.neo4j.graphdb.Transaction;
  * @author Rahul
  *
  */
-public class AfpProcessExecutor extends Job {
+public class AfpProcessExecutor extends Job  implements AfpProcessProgress{
 	
 	/** Process to execute the command*/
 	private Process process;
@@ -84,26 +84,6 @@ public class AfpProcessExecutor extends Job {
 		
 		monitor.beginTask("Execute Afp", 100);
 		createFiles(monitor);
-		if(progress  != null) {
-			for(int i=100;i >0;i-=10) {
-				int p = (i*300)/100;
-				progress.onProgressUpdate(0, System.currentTimeMillis(), 
-						p, 
-						100,
-						200, 
-						10,
-						20, 
-						400, 
-						10, 
-						50);
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
 		Runtime run = Runtime.getRuntime();
 		try {
 			AfpExporter afpe = new AfpExporter(null);
@@ -114,17 +94,7 @@ public class AfpProcessExecutor extends Job {
 			AweConsolePlugin.info("Executing Cmd: " + command);
 			process = run.exec(command);
 			monitor.worked(20);
-			if(progress  != null) {
-				progress.onProgressUpdate(0, System.currentTimeMillis(), 
-						300, 100,
-						200, 
-						10,
-						20, 
-						400, 
-						10, 
-						50);
-			}
-			
+					
 			/**
 			 * Thread to read the stderr and display it on Awe Console
 			 */
@@ -163,11 +133,18 @@ public class AfpProcessExecutor extends Job {
 	    			String output = null;
 	    			try{
 	    				while ((output = input.readLine()) != null){
-	    					/** Check when the input control file is requested */
-	    					//TODO give correct string as parameter
-//	    					if (output.equals(""))
-//	    						writer.write(controlFileName);
+	    					// check the progress variable
 	    					AweConsolePlugin.info(output);
+	    					if(output.startsWith("PROGRESS CoIT1Done/CoIT1")) {
+	    						// progress line
+	    						String[] tokens = output.split(",");
+	    						if(tokens.length >=3) {
+	    							String completed = tokens[1];
+	    							AweConsolePlugin.info(" completed " + completed);
+	    							String total = tokens[2];
+		    						AweConsolePlugin.info(" total " + total);
+	    						}
+	    					}
 	    				}
 	    				input.close();
 	    				writer.close();
@@ -240,6 +217,14 @@ public class AfpProcessExecutor extends Job {
 		afpE.createParamFile();
 		
 		transaction.finish();
+	}
+
+	@Override
+	public void onProgressUpdate(int result, long time, int remaingtotal,
+			int sectorSeperations, int siteSeperation, int freqConstraints,
+			int interference, int neighbor, int tringulation, int shadowing) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 	
