@@ -53,7 +53,7 @@ public class AfpProcessExecutor extends Job {
 	
 	/** Flag whether process is completed*/
 	private boolean jobFinished = false;
-	
+	long progressTime =0;
 	
 	
 	private Node afpRoot;
@@ -135,25 +135,7 @@ public class AfpProcessExecutor extends Job {
 	    				while ((output = input.readLine()) != null){
 	    					// check the progress variable
 	    					AweConsolePlugin.info(output);
-	    					if(output.startsWith("PROGRESS CoIT1Done/CoIT1")) {
-	    						// progress line
-	    						String[] tokens = output.split(",");
-	    						if(tokens.length >=3) {
-	    							try {
-	    							int completed = Integer.parseInt(tokens[1]);
-	    							AweConsolePlugin.info(" completed " + completed);
-	    							int total = Integer.parseInt(tokens[2]);
-		    						AweConsolePlugin.info(" total " + total);
-		    						if(completed > total) {
-		    							completed = total;
-		    						}
-		    						onProgressUpdate(0,total-completed,0,0,0,0,0,0,0);
-	    							} catch(Exception e) {
-	    								
-	    							}
-		    						
-	    						}
-	    					}
+	    					checkForProgress(output);
 	    				}
 	    				input.close();
 	    				writer.close();
@@ -228,17 +210,49 @@ public class AfpProcessExecutor extends Job {
 		transaction.finish();
 	}
 
-	public void onProgressUpdate(int result, int remaingtotal,
-			int sectorSeperations, int siteSeperation, int freqConstraints,
-			int interference, int neighbor, int tringulation, int shadowing) {
+	public void onProgressUpdate(int result, long time, long remaingtotal,
+			long sectorSeperations, long siteSeperation, long freqConstraints,
+			long interference, long neighbor, long tringulation, long shadowing) {
 		
+		if(progressTime ==0) {
+			progressTime = time;
+		} else {
+			if(time == progressTime)
+				time +=10;
+		}
 		if(this.progress != null) {
-			this.progress.onProgressUpdate(result, System.currentTimeMillis(), remaingtotal,
+			this.progress.onProgressUpdate(result, time, remaingtotal,
 					sectorSeperations, siteSeperation, freqConstraints,
 					interference, neighbor, tringulation, shadowing);
 		}
 		
 	}
-	
+
+	void checkForProgress(String output) {
+		
+		if(output.startsWith("PROGRESS CoIT1Done/CoIT1")) {
+		// progress line
+		String[] tokens = output.split(",");
+		if (tokens.length >= 3) {
+			try {
+				long time =  Long.parseLong(tokens[1]);
+				long completed = Long.parseLong(tokens[2]);
+				long total = Long.parseLong(tokens[3]);
+				AweConsolePlugin
+						.info(" total " + total);
+				if (completed > total) {
+					completed = total;
+				}
+				AweConsolePlugin.info(" completed "
+						+ completed);
+				onProgressUpdate(0, time *1000, total - completed,
+						0, 0, 0, 0, 0, 0, 0);
+			} catch (Exception e) {
+
+			}
+			
+		}
+	}
+	}
 	
 }

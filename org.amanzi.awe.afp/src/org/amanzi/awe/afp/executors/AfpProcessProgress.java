@@ -6,12 +6,12 @@ public interface AfpProcessProgress {
 
 	public void onProgressUpdate(int result, 
 			long time, // time in millisecs
-			int remaingtotal, 
-			int sectorSeperations,
-			int siteSeperation,
-			int freqConstraints,
-			int interference,
-			int neighbor,
-			int tringulation,
-			int shadowing);
+			long remaingtotal, 
+			long sectorSeperations,
+			long siteSeperation,
+			long freqConstraints,
+			long interference,
+			long neighbor,
+			long tringulation,
+			long shadowing);
 }

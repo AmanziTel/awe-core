@@ -637,7 +637,17 @@ long  ol=0,nl = 2*(strlen(here)+strlen(neu));
 
 }
 
-
+void LogProgress(long lCoIT1Done,long lCoIT1 ) {
+    time_t t;
+    long tt;
+    time(&t);
+    
+    tt = (long) t;
+    if(lCoIT1Done <0 )
+        lCoIT1Done =0;
+    fprintf(Protfp,"PROGRESS CoIT1Done/CoIT1,%ld,%ld,%ld,\n",tt,lCoIT1Done,lCoIT1);
+    //printf("\n%s\n", ctime(&t));
+}
 
 
 
@@ -5554,8 +5564,9 @@ c_coit1(_N______->_E___);
 PROGRESS = 0;
 
 for(p=____C;(NOLOCL < p);p--){
-fprintf(Protfp,"PROGRESS CoIT1Done/CoIT1,%d,%d,\n",CoIT1Done,CoIT1);
-fprintf(Protfp,"PRIO = %d, DISR = %d  >>>>>\n",p,PPar7[p].pdisr);
+//fprintf(Protfp,"PROGRESS CoIT1Done/CoIT1,%d,%d,\n",CoIT1Done,CoIT1);
+    LogProgress(CoIT1Done,CoIT1);
+    fprintf(Protfp,"PRIO = %d, DISR = %d  >>>>>\n",p,PPar7[p].pdisr);
 
    if(!set_all(p))  
 

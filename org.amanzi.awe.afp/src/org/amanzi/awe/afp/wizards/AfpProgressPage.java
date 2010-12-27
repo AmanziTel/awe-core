@@ -44,6 +44,7 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.time.DateRange;
 import org.jfree.data.time.Millisecond;
 import org.jfree.data.time.RegularTimePeriod;
 import org.jfree.data.time.TimeSeries;
@@ -354,6 +355,7 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 	        ValueAxis timeaxis = plot.getDomainAxis();
 	        timeaxis.setAutoRange(true);
 	        timeaxis.setFixedAutoRange(60000.0);
+	        timeaxis.setRange(new DateRange(System.currentTimeMillis(),System.currentTimeMillis() + 1000000));
 	        renderer = new XYLineAndShapeRenderer();
 	        renderer.setSeriesLinesVisible(0, true);
 	        renderer.setSeriesShapesVisible(1, false);
@@ -365,6 +367,7 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 	        // change the auto tick unit selection to integer units only...
 	        final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 	        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+	        //rangeAxis.setRange(new DateRange(System.currentTimeMillis(),System.currentTimeMillis() + 1000000));
 	        //rangeAxis.setLowerBound(min)
 	        // OPTIONAL CUSTOMISATION COMPLETED.
 	                
@@ -373,9 +376,9 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 
 
 	@Override
-	public void onProgressUpdate(int result,long time, int remaingtotal,
-			int sectorSeperations, int siteSeperation, int freqConstraints,
-			int interference, int neighbor, int tringulation, int shadowing) {
+	public void onProgressUpdate(int result,long time, long remaingtotal,
+			long sectorSeperations, long siteSeperation, long freqConstraints,
+			long interference, long neighbor, long tringulation, long shadowing) {
 		
 		
 		
