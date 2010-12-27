@@ -16,12 +16,10 @@ package org.amanzi.awe.afp.loaders;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.net.URISyntaxException;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.StopEvaluator;
@@ -31,9 +29,6 @@ import org.neo4j.graphdb.ReturnableEvaluator;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.services.ui.NeoServiceProviderUi;
-import org.amanzi.neo.services.ui.NeoUtils;
-import org.eclipse.core.runtime.Platform;
 
 
 /**
@@ -49,8 +44,6 @@ import org.eclipse.core.runtime.Platform;
  */
 
 public class AfpExporter {
-	
-	private GraphDatabaseService service;
 	private Node afpRoot;
 	
 	protected static final String AMANZI_STR = ".amanzi";

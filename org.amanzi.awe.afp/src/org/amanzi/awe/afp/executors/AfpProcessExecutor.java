@@ -15,18 +15,15 @@ package org.amanzi.awe.afp.executors;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.HashMap;
-import java.util.ResourceBundle;
 
 import org.amanzi.awe.afp.Activator;
 import org.amanzi.awe.afp.AfpEngine;
 import org.amanzi.awe.afp.loaders.AfpExporter;
 import org.amanzi.awe.console.AweConsolePlugin;
-import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -56,6 +53,7 @@ public class AfpProcessExecutor extends Job {
 	long progressTime =0;
 	
 	
+	
 	private Node afpRoot;
 	protected GraphDatabaseService neo;
 	protected Transaction transaction;
@@ -83,14 +81,15 @@ public class AfpProcessExecutor extends Job {
 	public IStatus run(IProgressMonitor monitor){
 		
 		monitor.beginTask("Execute Afp", 100);
-		createFiles(monitor);
+        AfpExporter afpE = new AfpExporter(afpRoot);
+
+		createFiles(monitor, afpE);
 		Runtime run = Runtime.getRuntime();
 		try {
-			AfpExporter afpe = new AfpExporter(null);
 			AfpEngine engine = AfpEngine.getAfpEngine();
 			
 			String path = engine.getAfpEngineExecutablePath();
-			String command = path + " \"" + afpe.controlFileName + "\"";
+			String command = path + " \"" + afpE.controlFileName + "\"";
 			AweConsolePlugin.info("Executing Cmd: " + command);
 			process = run.exec(command);
 			monitor.worked(20);
@@ -98,10 +97,7 @@ public class AfpProcessExecutor extends Job {
 			/**
 			 * Thread to read the stderr and display it on Awe Console
 			 */
-			Thread errorThread = new Thread(){
-				/* (non-Javadoc)
-				 * @see java.lang.Thread#run()
-				 */
+			Thread errorThread = new Thread("AFP stderr"){
 				@Override
 				public void run(){
 					BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()));
@@ -112,6 +108,7 @@ public class AfpProcessExecutor extends Job {
 	    					AweConsolePlugin.error(output);
 	    				}
 	    				error.close();
+	    				AweConsolePlugin.info("AFP stderr closed");
 	    			}catch(IOException ioe){
 	    				AweConsolePlugin.debug(ioe.getLocalizedMessage());
 	    			}
@@ -122,10 +119,7 @@ public class AfpProcessExecutor extends Job {
 			/**
 			 * Thread to read the stdout and display it on Awe Console
 			 */
-			Thread outputThread = new Thread(){
-				/* (non-Javadoc)
-				 * @see java.lang.Thread#run()
-				 */
+			Thread outputThread = new Thread("AFP stdout"){
 				@Override
 				public void run(){
 					BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -139,6 +133,7 @@ public class AfpProcessExecutor extends Job {
 	    				}
 	    				input.close();
 	    				writer.close();
+	    			    AweConsolePlugin.info("AFP stdout closed");
 	    			}catch(IOException ioe){
 	    				AweConsolePlugin.debug(ioe.getLocalizedMessage());
 	    			}
@@ -153,16 +148,29 @@ public class AfpProcessExecutor extends Job {
 			 * or if the user have terminated it.
 			 */
 			while (true) {
+                if (!errorThread.isAlive()) {
+                    AweConsolePlugin.info("AFP Threads terminated, closing process...");
+                    process.destroy();
+                    break;
+                }
 				if (monitor.isCanceled()){
+                    AweConsolePlugin.info("User cancelled worker, stopping AFP...");
 					process.destroy();
 					break;
 				}
 				
 				if(jobFinished){
+                    AweConsolePlugin.info("AFP Finished, closing process...");
 					process.destroy();
 					break;
 				}
-				Thread.sleep(100);
+				//Thread.sleep(100);
+				try {
+	                errorThread.join(1000);
+	                outputThread.join(100);
+				} catch (Exception e) {
+                    AweConsolePlugin.info("Interrupted waiting for threads: " + e);
+                }
 			}
 			
 		}catch (Exception e){
@@ -179,11 +187,7 @@ public class AfpProcessExecutor extends Job {
 	 * @param monitor
 	 */
 	
-	private void createFiles(IProgressMonitor monitor){
-		transaction = neo.beginTx();
-        NeoUtils.addTransactionLog(transaction, Thread.currentThread(), "AfpExecutor");
-		AfpExporter afpE = new AfpExporter(afpRoot);
-		
+	private void createFiles(IProgressMonitor monitor, AfpExporter afpE){
 		/** Create the control file */
 		afpE.createControlFile(parameters);
 		
@@ -206,8 +210,6 @@ public class AfpProcessExecutor extends Job {
 		afpE.createExceptionFile();
 		
 		afpE.createParamFile();
-		
-		transaction.finish();
 	}
 
 	public void onProgressUpdate(int result, long time, long remaingtotal,
@@ -227,7 +229,7 @@ public class AfpProcessExecutor extends Job {
 		}
 		
 	}
-
+	
 	void checkForProgress(String output) {
 		
 		if(output.startsWith("PROGRESS CoIT1Done/CoIT1")) {
