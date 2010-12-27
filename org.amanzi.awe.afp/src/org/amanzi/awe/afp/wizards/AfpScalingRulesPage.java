@@ -30,18 +30,6 @@ public class AfpScalingRulesPage extends AfpWizardPage implements Listener{
 	private Text[][] intTexts = new Text[9][8];
 	private Text[][] sepTexts = new Text[9][2];
 	
-	private String[][] labels = {
-			{"BCCH", "BCCH"},
-			{"BCCH", "Non/BB TCH"},
-			{"BCCH", "SY TCH"},
-			{"Non/BB TCH", "BCCH"},
-			{"Non/BB TCH", "Non/BB TCH"},
-			{"Non/BB TCH", "SY TCH"},
-			{"SY TCH", "BCCH"},
-			{"SY TCH", "Non/BB TCH"},
-			{"SY TCH", "SY TCH"}
-			};
-	
 	
 	public AfpScalingRulesPage(String pageName, AfpModel model, String desc) {
 		super(pageName);
@@ -97,8 +85,8 @@ public class AfpScalingRulesPage extends AfpWizardPage implements Listener{
 				};
     	
     	for (int i = 0; i < sepTexts.length; i++){
-			new Label(separationsGroup, SWT.LEFT).setText(labels[i][0]);
-			new Label(separationsGroup, SWT.LEFT).setText(labels[i][1]);
+			new Label(separationsGroup, SWT.LEFT).setText(AfpModel.SCALING_PAGE_ROW_HEADERS[i][0]);
+			new Label(separationsGroup, SWT.LEFT).setText(AfpModel.SCALING_PAGE_ROW_HEADERS[i][1]);
 			for (int j = 0; j < sepTexts[i].length; j++){
 				GridData gridData = new GridData(GridData.BEGINNING, GridData.CENTER, false, false);
 				gridData.widthHint = sepTextWidth;
@@ -154,8 +142,8 @@ public class AfpScalingRulesPage extends AfpWizardPage implements Listener{
 				};
     	
     	for (int i = 0; i < intTexts.length; i++){
-			new Label(interferenceGroup, SWT.LEFT).setText(labels[i][0]);
-			new Label(interferenceGroup, SWT.LEFT).setText(labels[i][1]);
+			new Label(interferenceGroup, SWT.LEFT).setText(AfpModel.SCALING_PAGE_ROW_HEADERS[i][0]);
+			new Label(interferenceGroup, SWT.LEFT).setText(AfpModel.SCALING_PAGE_ROW_HEADERS[i][1]);
 			for (int j = 0; j < intTexts[i].length; j++){
 				GridData gridData = new GridData(GridData.BEGINNING, GridData.CENTER, false, false);
 				gridData.widthHint = textWidth;
@@ -187,11 +175,11 @@ public class AfpScalingRulesPage extends AfpWizardPage implements Listener{
 		
 		try{
 			for (int i = 0; i < sepTexts.length; i++){
-				siteSeparation[i] = Float.parseFloat(sepTexts[i][0].getText());
+				sectorSeparation[i] = Float.parseFloat(sepTexts[i][0].getText());
 			}
 			
 			for (int i = 0; i < sepTexts.length; i++){
-				sectorSeparation[i] = Float.parseFloat(sepTexts[i][1].getText());
+				siteSeparation[i] = Float.parseFloat(sepTexts[i][1].getText());
 			}
 			
 			

@@ -38,23 +38,13 @@ public class AfpSummaryPage extends AfpWizardPage {
 		main.setLayout(new GridLayout(1, false));
 		main.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true, 1 ,1));
 		
-		summaryText = new Text (main, SWT.BORDER | SWT.MULTI);
-		GridData gridData = new GridData(GridData.FILL, GridData.CENTER, true, true, 1 ,1);
+		summaryText = new Text (main, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
+		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true, true, 1 ,1);
 		gridData.heightHint = 300;
 		gridData.minimumWidth = 100;
 //		gridData.widthHint = 300;
 		summaryText.setLayoutData(gridData);
-		summaryText.setText("Summary Report Content");
 		
-		summaryText.append("\nOptimization Paramters");
-		summaryText.append("\nFrequencies");
-		summaryText.append(" BSIC");
-		summaryText.append(" HSN");
-		summaryText.append(" MAIO");
-		summaryText.append("Frequency Bands");
-		summaryText.append("\nChannel Type");
-		summaryText.append("\nOptimization Paramters");
-		summaryText.append("\nOptimization Paramters");
 		Button saveButton = new Button(main, SWT.PUSH);
 		saveButton.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, false, false, 1, 1));
 		

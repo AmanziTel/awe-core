@@ -17,6 +17,8 @@ import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Label;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -45,10 +47,31 @@ public class AfpModel {
 	boolean optimizeMAIO = true;
 	
 	public static final String[] BAND_NAMES = { "900", "1800", "850", "1900" };
+	public static final String[] CHANNEL_NAMES = {"BCCH", "TCH Non/BB Hopping", "TCH SY Hopping"};
+	public static final String GOALS_SUMMARY_ROW_HEADERS[] = {"Selected Sectors: ",
+			   "Selected TRXs: ",
+			   "BCCH TRXs: ",
+			   "TCH Non/BB Hopping TRXs: ",
+			   "TCH SY HoppingTRXs: "};
+	
 	public static final int BAND_900=0;
 	public static final int BAND_1800=1;
 	public static final int BAND_850=2;
 	public static final int BAND_1900=3;
+	
+	public static final String[][] SCALING_PAGE_ROW_HEADERS = {
+			{"BCCH", "BCCH"},
+			{"BCCH", "Non/BB TCH"},
+			{"BCCH", "SY TCH"},
+			{"Non/BB TCH", "BCCH"},
+			{"Non/BB TCH", "Non/BB TCH"},
+			{"Non/BB TCH", "SY TCH"},
+			{"SY TCH", "BCCH"},
+			{"SY TCH", "Non/BB TCH"},
+			{"SY TCH", "SY TCH"}
+			};
+	
+	
 	/**
 	 * 0- 900
 	 * 1- 1800
@@ -62,7 +85,7 @@ public class AfpModel {
 	 * 1- TCH Non/BB Hopping
 	 * 2- TCH SY Hopping
 	 */
-	boolean[] channeltypes = new boolean[] {true, true, true};
+	boolean[] channelTypes = new boolean[] {true, true, true};
 	boolean analyzeCurrentFreqAllocation = true;
 
 	//Page 2 params
@@ -358,7 +381,7 @@ public class AfpModel {
 	 * @return the channeltypes
 	 */
 	public boolean[] getChanneltypes() {
-		return channeltypes;
+		return channelTypes;
 	}
 
 
@@ -369,7 +392,7 @@ public class AfpModel {
 	 * @param channeltypes the channeltypes to set
 	 */
 	public void setChanneltypes(boolean[] channeltypes) {
-		this.channeltypes = channeltypes;
+		this.channelTypes = channeltypes;
 	}
 
 
@@ -1434,18 +1457,6 @@ public class AfpModel {
         }
 	}
 
-	public String toString(){
-		StringBuilder sb = new StringBuilder();
-		sb.append("Optimization Parameters:\n" );
-		sb.append("  Frequencies: ");
-		sb.append(isOptimizeFrequency() ? "Yes\n" : "No\n");
-		
-		for (float value : coNeighbor){
-			sb.append(Float.toString(value) + " ");
-		}
-		
-		return sb.toString();
-	}
 
 	public AfpProcessExecutor getExecutor() {
 		return afpJob;
@@ -1464,5 +1475,103 @@ public class AfpModel {
     	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
     	
         return traverser;
+	}
+	
+	@Override
+	public String toString(){
+		StringBuilder sb = new StringBuilder();
+		sb.append("Optimization Goals:\n" );
+		if (isOptimizeFrequency()) sb.append("Frequencies, ");
+		if (isOptimizeBSIC()) sb.append("BSIC, ");
+		if (isOptimizeHSN()) sb.append("HSN, ");
+		if (isOptimizeMAIO()) sb.append("MAIO");
+		
+		sb.append("\n\nFrequency Bands:\n");
+		for (int i = 0; i < BAND_NAMES.length; i++){
+			if (frequencyBands[i]){
+				sb.append("\t" + BAND_NAMES[i] + " : " + availableFreq[i] + "\n");
+			}
+		}
+		
+		sb.append("\nChannel Types: \n\t");
+		for (int i = 0; i < CHANNEL_NAMES.length; i++){
+			if (channelTypes[i]){
+				sb.append(CHANNEL_NAMES[i] + ", ");
+			}
+		}
+		 
+		sb.append("\n\nSummary: \n");
+		
+		int[][] selectedCount = getSelectedCount();
+		for (int i = 0; i < GOALS_SUMMARY_ROW_HEADERS.length; i++){
+	    	int total = 0;
+	    	for (int j = 0; j < selectedCount[i].length; j++){
+	    		total += selectedCount[i][j];
+	    	}
+	    	String s = String.format("\n\tTotal-%d \n\tBand 900-%d \n\tBand 1800-%d \n\tBand 50-%d \n\tBand 1900-%d", total, selectedCount[i][0], selectedCount[i][1], selectedCount[i][2], selectedCount[i][3]);
+	    	sb.append(GOALS_SUMMARY_ROW_HEADERS[i] + "  "+ s + "\n");
+	    }
+		
+		sb.append("\nAvailable BSIC: \n");
+		sb.append("\tNCCs: ");
+		for (int i  = 0; i < 8; i++){
+			if((availableNCCs & (0x01 << i)) > 0) sb.append(Integer.toString(i) + ",");
+		}
+		
+		sb.append("\n\tBCCs: ");
+		for (int i  = 0; i < 8; i++){
+			if((availableBCCs & (0x01 << i)) > 0) sb.append(Integer.toString(i) + ",");
+		}
+		
+		sb.append("\n\nFrequency Type Domains: \n");
+		for(int i=0;i< freqDomains.size();i++) {
+			AfpFrequencyDomainModel domainModel = freqDomains.elementAt(i);
+			if(domainModel != null) {
+				sb. append(domainModel.getName() + " : \n\tBand-" + domainModel.getBand() + "\n\tAssigned Frequencies- 0" + "\n\tAssignedTRXs-0" + "\n");
+			}
+		}
+		
+		sb.append("\nMAL Domains: \n");
+		for(int i=0;i< malDomains.size();i++) {
+			AfpHoppingMALDomainModel malDomainModel = malDomains.elementAt(i);
+			if(malDomainModel != null) {
+				sb. append(malDomainModel.getName() + ":  AssignedTRXs-0" + "\n");
+			}
+		}
+		
+		sb.append("\nSeparation Rules: \n");
+		sb.append("Sector Domains: \n");
+		for(int i=0;i< sectorSeparationDomains.size();i++) {
+			AfpSeparationDomainModel sectorDomainModel = sectorSeparationDomains.elementAt(i);
+			if(sectorDomainModel != null){
+				sb.append("\t" + sectorDomainModel.getName() + " : AssignedSectors- 0" + "\n");
+			}
+		}
+		
+		sb.append("Site Domains: \n");
+		for(int i=0;i< siteSeparationDomains.size();i++) {
+			AfpSeparationDomainModel siteDomainModel = siteSeparationDomains.elementAt(i);
+			if(siteDomainModel != null){
+				sb.append("\t" + siteDomainModel.getName() + " : AssignedSectors- 0" + "\n");
+			}
+		}
+		
+		sb.append("\nScaling Rules: \n");
+		sb.append("Separations: \n");
+		for (int i = 0; i < SCALING_PAGE_ROW_HEADERS.length; i++){
+			String s = String.format("\n\tSector-%3.1f \n\tSite-%3.1f",sectorSeparation[i], siteSeparation[i]);
+			sb.append(SCALING_PAGE_ROW_HEADERS[i][0] + "-" + SCALING_PAGE_ROW_HEADERS[i][1] + " : "+ s + "\n");
+		}
+		
+		sb.append("\nInterference Matrices: \n");
+		for (int i = 0; i < SCALING_PAGE_ROW_HEADERS.length; i++){
+			String s = String.format("\n\tInterference: Co-%3.1f, Adj-%3.1f \n\tNeighbor: Co-%3.1f, Adj-%3.1f " +
+					"\n\tTriangulation: Co-%3.1f, Adj-%3.1f \n\tShadowing: Co-%3.1f, Adj-%3.1f", 
+					coInterference[i], adjInterference[i], coNeighbor[i], adjNeighbor[i], 
+					coTriangulation[i], adjTriangulation[i], coShadowing[i], adjShadowing[i]);
+			sb.append(SCALING_PAGE_ROW_HEADERS[i][0] + "-" + SCALING_PAGE_ROW_HEADERS[i][1] + " : "+ s + "\n");
+		}
+		
+		return sb.toString();
 	}
 }

@@ -148,11 +148,7 @@ public class AfpOptimizationGoalsPage extends AfpWizardPage implements Listener 
 	    }
 	    
 //	    String[][] items = AfpWizardUtils.getSummaryTableItems();
-	    String rowHeaders[] = {"Selected Sectors: ",
-				   "Selected TRXs: ",
-				   "BCCH TRXs: ",
-				   "TCH Non/BB Hopping TRXs: ",
-				   "TCH SY HoppingTRXs: "};
+	    String rowHeaders[] = AfpModel.GOALS_SUMMARY_ROW_HEADERS;
 
 	    int[][] items = model.getSelectedCount();
 	    
