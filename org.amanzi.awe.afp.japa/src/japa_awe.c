@@ -5,13 +5,15 @@ FILE:   japa_awe.c
 
 AUTHOR: JPB
 
-DATE:«  2010-07-25
+DATE:ï¿½  2010-07-25
 
 ========================================= */
 
 #include <stdlib.h>
 
 #include <stdio.h>
+
+#include <errno.h>
 
 //#include <conio.h>
 
@@ -1107,7 +1109,7 @@ FILE  * cefp;
 
   if((cefp =fopen(fname,"w")) == NULL){
 
-	  printf("ERROR by open file %s",fname);;
+	  printf("ERROR opening file %s: %s",fname,strerror(errno));;
 
       return;
 
@@ -1769,7 +1771,7 @@ FILE  * bfp;
 
   if((bfp = fopen(bfname,"wb")) == NULL){
 
-	  printf("ERROR by open filr %s",bfname);;
+	  printf("ERROR opening binary file %s for writing: %s",bfname,strerror(errno));;
 
       return;
 
@@ -2657,7 +2659,7 @@ FILE *fp ;
 
   if((fp =fopen(fnet,"r")) == NULL){
 
-	  printf("ERROR by open filr %s",fnet);;
+	  printf("ERROR opening file %s for reading: %s\n",fnet,strerror(errno));;
 
       return(False);
 
@@ -2811,7 +2813,7 @@ FILE *fp;
 
   if((fp =fopen(fnet,"r")) == NULL){
 
-	  printf("ERROR by open filr %s",fnet);;
+	  printf("ERROR opening file %s for reading: %s\n",fnet,strerror(errno));;
 
       return(False);
 
@@ -2929,9 +2931,8 @@ FILE *fp;
 
   if((fp =fopen(fnet,"r")) == NULL){
 
-	  fprintf(Protfp,"ERROR by open filr %s\n",fnet);;
-
-	  printf("ERROR by open filr %s",fnet);;
+	  fprintf(Protfp,"ERROR opening file %s for reading: %s\n",fnet,strerror(errno));;
+	  printf("ERROR opening file %s for reading: %s\n",fnet,strerror(errno));;
 
       return(False);
 
@@ -3177,7 +3178,7 @@ int  xx=0,pri=0, sec=0, sno=0, nix = -1, njx = -1, d1,d2;
 
   if((fp =fopen(fname,"r")) == NULL){
 
-	  printf("ERROR by open filr %s",fname);;
+	  printf("ERROR opening file %s for reading: %s\n",fname,strerror(errno));;
 
       return(False);
 
@@ -3313,7 +3314,7 @@ double coa,cot,ada,adt,A = 0.0, T = 0.0;
 
   if((fp =fopen(fname,"r")) == NULL){
 
-	  printf("ERROR by open filr %s",fname);;
+	  printf("ERROR opening file %s for reading: %s\n",fname,strerror(errno));;
 
       return(False);
 
@@ -4933,7 +4934,7 @@ FILE * fctrp;
 
   if((fctrp =fopen(pctrfile,"r")) == NULL){
 
-	  printf("ERROR by open filr %s",pctrfile);;
+	  printf("ERROR opening file %s for reading: %s\n",pctrfile,strerror(errno));;
 
       return;
 
@@ -4979,7 +4980,7 @@ FILE * fctrp;
 
   if((fctrp =fopen(pctrfile,"r")) == NULL){
 
-	  printf("ERROR by open filr %s",pctrfile);;
+	  printf("ERROR opening file %s for reading: %s\n",pctrfile,strerror(errno));;
 
       return(False);
 
