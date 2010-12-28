@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services.network;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.neo.services.DatasetService;
@@ -89,6 +90,10 @@ public class NetworkModel {
 //	}
     
     public Node getCarrier(Node sector, Integer trxId) {
+        return null;
+    }
+    
+    public ArrayList<Node> getCarriers(Node sector) {
         return null;
     }
 
