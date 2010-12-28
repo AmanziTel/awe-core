@@ -282,7 +282,7 @@ public class GpehImportWizardPage extends LoaderPage<CommonConfigData> {
 
         @Override
         public String getText() {
-            return name;
+            return name + (eventId == null ? "" : (" (" + eventId.getId() + ")"));
         }
 
         @Override
