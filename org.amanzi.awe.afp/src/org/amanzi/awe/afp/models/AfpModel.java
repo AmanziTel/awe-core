@@ -138,6 +138,7 @@ public class AfpModel {
 	String[] tableItems = new String[6];
 	
     protected HashMap<String, String> parameters;
+    protected HashMap<String, String> filters;
 
 	
 	public AfpModel() {
@@ -889,6 +890,14 @@ public class AfpModel {
 		this.tableItems = tableItems;
 	}
 
+	public HashMap<String, String> getFilters() {
+		return filters;
+	}
+
+	public void setFilters(HashMap<String, String> filters) {
+		this.filters = filters;
+	}
+
 	public void addFreqDomain(AfpFrequencyDomainModel freqDomain){
 		if(freqDomains.containsKey(freqDomain.getName())) {
 			freqDomain.setName(freqDomain.getName() + "-1");
@@ -1428,13 +1437,21 @@ public class AfpModel {
 		return afpJob;
 	}
 
-	public Traverser getTRXList(HashMap filters) {
+	public Traverser getTRXList(final HashMap<String, String> filters) {
     	Traverser traverser = datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
 
 			@Override
 			public boolean isReturnableNode(TraversalPosition currentPos) {
-				if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.SECTOR.getId()))
+				if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.SECTOR.getId())){
+//					for (String key: (String[])filters.keySet().toArray()){
+//						if (key.equals("Equals")){
+//							if (!currentPos.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(filters.get(key)))
+//								return false;
+//						}
+//					}
 					return true;
+				}
+					
 				return false;
 			}
     		

@@ -1,6 +1,11 @@
 package org.amanzi.awe.afp.wizards;
 
+import org.amanzi.awe.afp.filters.AfpTRXFilter;
 import org.amanzi.awe.afp.models.AfpModel;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -13,12 +18,15 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
 import org.neo4j.graphdb.Node;
 
 public class AfpWizardPage extends WizardPage implements SelectionListener {
@@ -36,7 +44,7 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 	public void refreshPage() {
 		
 	}
-	protected Table addTRXFilterGroup(AfpModel model, Group main, String[] headers, int emptyrows){
+	protected Table addTRXFilterGroup(final AfpModel model, Group main, String[] headers, int emptyrows){
 		final Shell parentShell = main.getShell();
 		
 		/** Create TRXs Filters Group */
@@ -137,16 +145,71 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
     		
     	});
     	
+    	final TableViewer viewer = new TableViewer(trxFilterGroup, SWT.VIRTUAL | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+    	final AfpTRXFilter filter = new AfpTRXFilter();
+    	viewer.addFilter(filter);
+    	for (String item : headers) {
+    		TableViewerColumn viewerColumn = new TableViewerColumn(viewer, SWT.NONE);
+  	      	TableColumn column = viewerColumn.getColumn();
+  	      	column.setText(item);
+  	      	column.setResizable(true);
+  	      	column.addListener(SWT.Selection, new Listener(){
+		
+				@Override
+				public void handleEvent(Event event) {
+					final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL);
+					subShell.setLayout(new GridLayout(2, false));
+					subShell.setLocation(300, 200);
+					
+					Group filterGroup = new Group(subShell, SWT.NONE);
+					filterGroup.setLayout(new GridLayout(2, false));
+					filterGroup.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, false, false,2 ,1));
+					
+					new Label (filterGroup, SWT.LEFT).setText("Equals");
+					final Text equalsText = new Text(filterGroup, SWT.BORDER);
+					
+					new Label (filterGroup, SWT.LEFT).setText("Greater than");
+					final Text gretaerText = new Text(filterGroup, SWT.BORDER);
+					
+					Button applyButton = new Button(filterGroup, SWT.PUSH);
+					applyButton.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, true, true, 2, 1));
+					applyButton.setText("Apply");
+					applyButton.addSelectionListener(new SelectionAdapter(){
+						
+						@Override
+						public void widgetSelected(SelectionEvent e) {
+							
+							filter.setEqualityText(equalsText.getText());
+							model.getFilters().put("Equals", equalsText.getText());
+							viewer.refresh();
+							subShell.dispose();
+						}
+						
+					});
 
-		Table filterTable = new Table(trxFilterGroup, SWT.VIRTUAL | SWT.MULTI);
-		filterTable.setHeaderVisible(true);
+					
+					subShell.pack();
+					subShell.open();
+					
+				}
+		    	  
+  	      	});
+  	    }
+    	
+    	Table filterTable = viewer.getTable();
+    	filterTable.setHeaderVisible(true);
+    	filterTable.setLinesVisible(true);
+    	
+
+//		Table filterTable = new Table(trxFilterGroup, SWT.VIRTUAL | SWT.MULTI);
+//		filterTable.setHeaderVisible(true);
 		GridData tableGrid = new GridData(GridData.FILL, GridData.CENTER, false, false, 4 ,1);
 		filterTable.setLayoutData(tableGrid);
 		
-	    for (String item : headers) {
-	      TableColumn column = new TableColumn(filterTable, SWT.NONE);
-	      column.setText(item);
-	    }
+//	    for (String item : headers) {
+//	      TableColumn column = new TableColumn(filterTable, SWT.NONE);
+//	      column.setText(item);
+//	    }
 	    for (int i=0;i<emptyrows;i++) {
 	    	TableItem item = new TableItem(filterTable, SWT.NONE);
 	    	for (int j = 0; j < headers.length; j++){

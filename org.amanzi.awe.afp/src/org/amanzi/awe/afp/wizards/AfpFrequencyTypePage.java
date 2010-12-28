@@ -7,6 +7,8 @@ import java.util.Vector;
 
 import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -19,12 +21,15 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Traverser;
 
@@ -49,7 +54,8 @@ public class AfpFrequencyTypePage extends AfpWizardPage {
 	private AfpModel model;
 	protected static HashMap<String, Label[]> domainLabels;
 	private final String[] headers = { "BSC", "Site", "Sector", "Layer", "Subcell", "TRX_ID", "Band", "Extended", "Hopping Type", "BCCH"};
-	private final String[] prop_name = { "BSC", "Site", "name", "Layer", "Subcell", "TRX_ID", "Band", "Extended", "Hopping Type", "BCCH"};
+	private final String[] prop_name = { "bsc", "Site", INeoConstants.PROPERTY_NAME_NAME, "Layer", 
+			"Subcell", "TRX_ID", "band", "Extended", "Hopping Type", INeoConstants.PROPERTY_BCCH_NAME};
 	
 	private Table filterTable;
 
@@ -96,7 +102,9 @@ public class AfpFrequencyTypePage extends AfpWizardPage {
     	AfpWizardUtils.createButtonsGroup(this, frequencyDomainsGroup, "FrequencyType", model);
     	domainLabels = new HashMap<String, Label[]>();
     	
-    	filterTable = this.addTRXFilterGroup(model, main, headers,10);		
+    	filterTable = this.addTRXFilterGroup(model, main, headers,10);
+    	
+
 		
     	setPageComplete(true);
     	setControl (thisParent);    	
@@ -114,11 +122,36 @@ public class AfpFrequencyTypePage extends AfpWizardPage {
 		    		break;
 		    	TableItem item = new TableItem(filterTable, SWT.NONE);
 		    	for (int j = 0; j < headers.length; j++){
+		    		String val = "";
 		    		try {
-		    			String val = (String)node.getProperty(prop_name[j]);
+		    			if (prop_name[j].equals("bsc")){
+		    				val = (String)node.getProperty(prop_name[j], "bsc");
+		    			}
+		    			else if (prop_name[j].equals("Site")){
+		    				Node siteNode = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
+		    				if (siteNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals("site"))
+		    					val = (String)siteNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "");
+		    			}
+		    			else if (prop_name[j].equals("TRX_ID")){
+		    				val = (String)node.getProperty(prop_name[j], "0");
+		    			}
+		    			else if (prop_name[j].equals("band")){
+		    				val = (String)node.getProperty(prop_name[j], "");
+		    				if (val.equals("")) 
+		    					val = (String)node.getProperty("ant_freq_band", "");
+		    				val = val.split(" ")[val.split(" ").length - 1].trim();
+		    			}
+		    			else if (prop_name[j].equals("Extended")){
+		    				val = (String)node.getProperty(prop_name[j], "NA");
+		    			}
+		    			else if (prop_name[j].equals("Hopping Type")){
+		    				val = (String)node.getProperty(prop_name[j], "Non");
+		    			}
+		    			else 
+		    				val = (String)node.getProperty(prop_name[j], "");
 		    			item.setText(j, val);
 		    		} catch(Exception e) {
-		    			item.setText(j, "NA");
+		    			item.setText(j, "");
 		    		}
 		    	}
 		    	cnt++;
@@ -160,54 +193,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage {
 				domainLabels.put(domainModel.getName(), new Label[]{freePlanLabel, frequenciesFreePlanLabel, TRXsFreePlanLabel});
 			}
     	}
-		/*
-		if (model.getFrequencyBands()[1]){
-			AfpFrequencyDomainModel domainModel = new AfpFrequencyDomainModel();
-			domainModel.setName(freePlan1800DomainName);
-			domainModel.setBand("1800");
-			domainModel.setFrequencies(new String[]{"todo"});
-			model.addFreqDomain(domainModel);
-			Label freePlan1800Label = new Label(frequencyDomainsGroup, SWT.LEFT);
-			freePlan1800Label.setText(freePlan1800DomainName);
-			Label frequenciesFreePlan1800Label = new Label(frequencyDomainsGroup, SWT.RIGHT);
-			//TODO: update the num frequencies and TRXs by default here
-			frequenciesFreePlan1800Label.setText("todo");
-			Label TRXsFreePlan1800Label = new Label(frequencyDomainsGroup, SWT.RIGHT);
-			TRXsFreePlan1800Label.setText("todo");
-			domainLabels.put(freePlan1800DomainName, new Label[]{freePlan1800Label,frequenciesFreePlan1800Label, TRXsFreePlan1800Label});
-    	}
 		
-		if (model.getFrequencyBands()[2]){
-			AfpFrequencyDomainModel domainModel = new AfpFrequencyDomainModel();
-			domainModel.setName(freePlan850DomainName);
-			domainModel.setBand("850");
-			domainModel.setFrequencies(new String[]{"todo"});
-			model.addFreqDomain(domainModel);
-			Label freePlan850Label = new Label(frequencyDomainsGroup, SWT.LEFT);
-			freePlan850Label.setText(freePlan850DomainName);
-			Label frequenciesFreePlan850Label = new Label(frequencyDomainsGroup, SWT.RIGHT);
-			//TODO: update the num frequencies and TRXs by default here
-			frequenciesFreePlan850Label.setText("todo");
-			Label TRXsFreePlan850Label = new Label(frequencyDomainsGroup, SWT.RIGHT);
-			TRXsFreePlan850Label.setText("todo");
-			domainLabels.put(freePlan850DomainName, new Label[]{freePlan850Label, frequenciesFreePlan850Label, TRXsFreePlan850Label});
-    	}
-		
-		if (model.getFrequencyBands()[3]){
-			AfpFrequencyDomainModel domainModel = new AfpFrequencyDomainModel();
-			domainModel.setName(freePlan1900DomainName);
-			domainModel.setBand("1900");
-			domainModel.setFrequencies(new String[]{"todo"});
-			model.addFreqDomain(domainModel);
-			Label freePlan1900Label = new Label(frequencyDomainsGroup, SWT.LEFT);
-			freePlan1900Label.setText(freePlan1900DomainName);
-			Label frequenciesFreePlan1900Label = new Label(frequencyDomainsGroup, SWT.RIGHT);
-			//TODO: update the num frequencies and TRXs by default here
-			frequenciesFreePlan1900Label.setText("todo");
-			Label TRXsFreePlan1900Label = new Label(frequencyDomainsGroup, SWT.RIGHT);
-			TRXsFreePlan1900Label.setText("todo");
-			domainLabels.put(freePlan1900DomainName, new Label[]{freePlan1900Label, frequenciesFreePlan1900Label, TRXsFreePlan1900Label});
-    	}*/
 		
 		loadData();
 		frequencyDomainsGroup.layout();
