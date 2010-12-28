@@ -112,7 +112,13 @@ public class AfpFrequencyTypePage extends AfpWizardPage {
 		if(filterTable != null) {
 			filterTable.removeAll();
 			
-		    Traverser traverser = model.getTRXList(null);
+			HashMap<String, String> bandFilters = new HashMap<String, String> ();
+			for (int i = 0; i < model.getFrequencyBands().length; i++){
+				if (model.getFrequencyBands()[i])
+					bandFilters.put("band", model.BAND_NAMES[i]);
+			}
+			
+		    Traverser traverser = model.getTRXList(bandFilters);
 		    
 		    int cnt =0;
 		    for (Node node : traverser) {

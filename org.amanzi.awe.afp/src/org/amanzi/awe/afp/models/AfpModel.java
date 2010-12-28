@@ -1518,12 +1518,14 @@ public class AfpModel {
 			@Override
 			public boolean isReturnableNode(TraversalPosition currentPos) {
 				if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.SECTOR.getId())){
-//					for (String key: (String[])filters.keySet().toArray()){
-//						if (key.equals("Equals")){
-//							if (!currentPos.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(filters.get(key)))
-//								return false;
-//						}
-//					}
+					if (filters != null){
+						for (String key: filters.keySet().toArray(new String[0])){
+							if (key.equals("band")){
+								if (!((String)currentPos.currentNode().getProperty("ant_freq_band", "")).contains(filters.get(key)))
+									return false;
+							}
+						}
+					}
 					return true;
 				}
 					

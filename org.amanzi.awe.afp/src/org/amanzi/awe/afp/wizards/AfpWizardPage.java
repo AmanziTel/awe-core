@@ -95,16 +95,19 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
     	Button loadButton = new Button(trxFilterGroup, SWT.RIGHT);
     	loadButton.setLayoutData(new GridData(GridData.END, GridData.BEGINNING, true, false, 1 , 1));
     	loadButton.setText("Load");
+    	loadButton.setEnabled(false);
     	loadButton.addSelectionListener(this);
     	
     	Button clearButton = new Button(trxFilterGroup, SWT.RIGHT);
     	clearButton.setLayoutData(new GridData(GridData.END, GridData.BEGINNING, false, false, 1 , 1));
     	clearButton.setText("Clear");
+    	clearButton.setEnabled(false);
     	clearButton.addSelectionListener(this);
     	
     	Button assignButton = new Button(trxFilterGroup, SWT.RIGHT);
     	assignButton.setLayoutData(new GridData(GridData.END, GridData.BEGINNING, false, false, 1 , 1));
     	assignButton.setText("Assign");
+    	assignButton.setEnabled(false);
     	assignButton.addSelectionListener(new SelectionAdapter(){
     		
     		@Override
@@ -187,8 +190,9 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
     		TableViewerColumn viewerColumn = new TableViewerColumn(viewer, SWT.NONE);
   	      	TableColumn column = viewerColumn.getColumn();
   	      	column.setText(item);
+  	      	column.setData(item);
   	      	column.setResizable(true);
-  	      	column.addListener(SWT.Selection, new Listener(){
+  	      	/*column.addListener(SWT.Selection, new Listener(){
 		
 				@Override
 				public void handleEvent(Event event) {
@@ -199,6 +203,7 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 					Group filterGroup = new Group(subShell, SWT.NONE);
 					filterGroup.setLayout(new GridLayout(2, false));
 					filterGroup.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, false, false,2 ,1));
+					filterGroup.setText((String)event.widget.getData());
 					
 					new Label (filterGroup, SWT.LEFT).setText("Equals");
 					final Text equalsText = new Text(filterGroup, SWT.BORDER);
@@ -228,7 +233,7 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 					
 				}
 		    	  
-  	      	});
+  	      	});*/
   	    }
     	
     	Table filterTable = viewer.getTable();
