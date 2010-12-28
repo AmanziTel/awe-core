@@ -36,6 +36,13 @@ import org.neo4j.kernel.Traversal;
  * @since 1.0.0
  */
 public class NetworkService extends AbstractService {
+    
+    private DatasetService datasetService;
+    
+    public NetworkService() {
+        super();
+        datasetService = NeoServiceFactory.getInstance().getDatasetService();
+    }
 
     /**
      * Get BSC node with necessary name if bsc node not exist it will be created
@@ -121,7 +128,11 @@ public class NetworkService extends AbstractService {
      * @return the sector node or null
      */
     public Node findSector(Node rootNode, Integer ci, Integer lac, String name, boolean returnFirsElement) {
-        return NeoServiceFactory.getInstance().getDatasetService().findSector(rootNode, ci, lac, name, returnFirsElement);
+        return datasetService.findSector(rootNode, ci, lac, name, returnFirsElement);
+    }
+    
+    public Node findSector(Node rootNode, String name, boolean returnFirstElement) {
+        return datasetService.findSector(rootNode, null, null, name, returnFirstElement); 
     }
 
     /**
