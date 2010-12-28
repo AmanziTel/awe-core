@@ -60,6 +60,14 @@
             class="org.amanzi.neo.loader.core.saver.network.TrafficDataSaver"
             id="org.amanzi.neo.loader.core.saver.network.TrafficDataSaver">
       </saver>
+      <saver
+            class="org.amanzi.neo.loader.core.saver.network.FrequencyConstraintsSaver"
+            id="org.amanzi.neo.loader.core.saver.network.FrequencyConstraintsSaver">
+      </saver>
+      <saver
+            class="org.amanzi.neo.loader.core.saver.network.SeparationConstraintsSaver"
+            id="org.amanzi.neo.loader.core.saver.network.SeparationConstraintsSaver">
+      </saver>
    </extension>
 
 </plugin>

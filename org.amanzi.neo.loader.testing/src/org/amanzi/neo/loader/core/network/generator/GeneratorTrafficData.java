@@ -8,10 +8,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Random;
-
-import org.amanzi.neo.loader.core.parser.BaseTransferData;
-import org.amanzi.neo.loader.core.saver.network.*;
 
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -21,14 +17,14 @@ import au.com.bytecode.opencsv.CSVReader;
  */
 public class GeneratorTrafficData {
 	
-	private static final String SECTOR_NAME = "Name";
+	private static final String SECTOR_NAME = "SectorName";
 	/**
 	 * @param args args[0] - inputFile, args[1] - outputFile
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws IOException {
 		
-		generate(args[0], args[1]);
+		generate(args[0], args[1] + "_1");
 	}
 	
 	private static void generate(String inputFile, String outputFile) throws IOException {
@@ -68,8 +64,7 @@ public class GeneratorTrafficData {
 		Double traffic = 0.0;
 		ArrayList<String> values = new ArrayList<String>();
 		for (int i = 0; i < sectorNames.size(); i++) {
-			Random rand = new Random();
-			traffic = (double) rand.nextInt(1000);
+			traffic = MyRandom.randomDouble(0, 1000, 1);
 			values.add(iterator.next());
 			values.add(traffic.toString());
 			

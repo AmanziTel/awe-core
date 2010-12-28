@@ -10,6 +10,7 @@
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+
 package org.amanzi.neo.loader.core.saver.network;
 
 import java.util.Arrays;
@@ -30,40 +31,42 @@ import org.neo4j.graphdb.Node;
  * @author Kasnitskij_V
  * @since 1.0.0
  */
-public class TrafficDataSaver extends AbstractHeaderSaver<BaseTransferData> {
+public class SeparationConstraintsSaver extends AbstractHeaderSaver<BaseTransferData> {
 
-    private static final String TRAFFIC = "Traffic";
-	private boolean headerNotHandled;
-	private String networkName;
-	
+    private static final String SECTOR = "Sector";
+    private static final String SEPARATION = "Separation";
+    
+    private boolean headerNotHandled;
+    private String networkName;
+    
     @Override
     public void init(BaseTransferData element) {
-    	super.init(element);
+        super.init(element);
         propertyMap.clear();
         headerNotHandled = true;
     }
     
-	@Override
-	public void save(BaseTransferData element) {
+    @Override
+    public void save(BaseTransferData element) {
         if (headerNotHandled) {
-        	networkName = element.getFileName();
+            networkName = element.getFileName();
             definePropertyMap(element);
             startMainTx(1000);
             headerNotHandled = false;
         }
         saveRow(element);
-	}
-	
+    }
+    
     protected void saveRow(BaseTransferData element) {
         String sectorName = getStringValue("Sector", element);
-        Double traffic = getNumberValue(Double.class, TRAFFIC, element);
+        Integer separation = getNumberValue(Integer.class, SEPARATION, element);
         Node sector = service.findSector(rootNode, null, null, sectorName, true);
         if (sector != null) {
-        	sector.setProperty(TRAFFIC, traffic);
-        	updateProperty(networkName, NodeTypes.SECTOR.getId(), sector, TRAFFIC, traffic);
+            sector.setProperty(SEPARATION, separation);
+            updateProperty(networkName, NodeTypes.SECTOR.getId(), sector, SEPARATION, separation);
         }
         else {
-        	// TODO: need write "sector not found" to outputStream
+            // TODO: need write "sector not found" to outputStream
         }
     }
 
@@ -74,27 +77,27 @@ public class TrafficDataSaver extends AbstractHeaderSaver<BaseTransferData> {
      */
     protected void definePropertyMap(BaseTransferData element) {
         Set<String> headers = element.keySet();
-        defineHeader(headers, "Sector", new String[] {"Sector"});
-        defineHeader(headers, "Traffic", new String[] {"Traffic"});
+        defineHeader(headers, SECTOR, new String[] {"Sector"});
+        defineHeader(headers, SEPARATION, new String[] {"Separation"});
     }
-    
-	@Override
-	public Iterable<MetaData> getMetaData() {
-		return Arrays.asList(new MetaData[0]);
-	}
 
-	@Override
-	protected void fillRootNode(Node rootNode, BaseTransferData element) {
-	}
+    @Override
+    public Iterable<MetaData> getMetaData() {
+        return Arrays.asList(new MetaData[0]);
+    }
 
-	@Override
-	protected String getRootNodeType() {
-		return NodeTypes.NETWORK.getId();
-	}
+    @Override
+    protected void fillRootNode(Node rootNode, BaseTransferData element) {
+    }
 
-	@Override
-	protected String getTypeIdForGisCount(GisProperties gis) {
-		return NodeTypes.SECTOR.getId();
-	}
+    @Override
+    protected String getRootNodeType() {
+        return NodeTypes.NETWORK.getId();
+    }
+
+    @Override
+    protected String getTypeIdForGisCount(GisProperties gis) {
+        return NodeTypes.SECTOR.getId();
+    }
 
 }

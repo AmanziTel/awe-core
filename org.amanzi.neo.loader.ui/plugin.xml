@@ -157,6 +157,20 @@
              validator="org.amanzi.neo.loader.ui.validators.TrafficDataValidator"
              parser="org.amanzi.neo.loader.core.parser.CSVParser">
        </loader>
+       <loader
+             description="Frequency constraints data"
+             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
+             saver="org.amanzi.neo.loader.core.saver.network.FrequencyConstraintsSaver"
+             validator="org.amanzi.neo.loader.ui.validators.FrequencyConstraintsDataValidator"
+             parser="org.amanzi.neo.loader.core.parser.CSVParser">
+       </loader>
+	   <loader
+             description="Separation constraints data"
+             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
+             saver="org.amanzi.neo.loader.core.saver.network.SeparationConstraintsSaver"
+             validator="org.amanzi.neo.loader.ui.validators.SeparationConstraintsDataValidator"
+             parser="org.amanzi.neo.loader.core.parser.CSVParser">
+       </loader>
     </extension>
 
    <extension

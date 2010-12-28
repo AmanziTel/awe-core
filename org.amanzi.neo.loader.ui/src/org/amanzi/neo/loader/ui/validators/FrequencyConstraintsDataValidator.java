@@ -10,6 +10,7 @@
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+
 package org.amanzi.neo.loader.ui.validators;
 
 import org.amanzi.neo.loader.core.CommonConfigData;
@@ -26,18 +27,15 @@ import org.amanzi.neo.loader.core.IValidateResult.Result;
  * @author Kasnitskij_V
  * @since 1.0.0
  */
-public class TrafficDataValidator implements ILoaderInputValidator<CommonConfigData> {
+public class FrequencyConstraintsDataValidator implements ILoaderInputValidator<CommonConfigData> {
 
-	@Override
-	public IValidateResult validate(CommonConfigData data) {
-		// TODO Auto-generated method stub
-		return new ValidateResultImpl(Result.SUCCESS, "");
-	}
+    @Override
+    public IValidateResult validate(CommonConfigData data) {
+        return new ValidateResultImpl(Result.SUCCESS, "");
+    }
 
-	@Override
-	public void filter(CommonConfigData data) {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void filter(CommonConfigData data) {
+    }
 
 }
