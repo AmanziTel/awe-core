@@ -32,15 +32,13 @@ public class AfpSeparationRulesPage extends AfpWizardPage {
 	private Group siteDomainsGroup;
 	protected HashMap<String, Label[]> sectorDomainLabels;
 	protected HashMap<String, Label[]> siteDomainLabels;
-	private AfpModel model;
 	private final String[] headers = { "BSC", "Site", "Sector", "Layer"};
 	private final String[] prop_name = { "bsc", "Site", INeoConstants.PROPERTY_NAME_NAME, "Layer"};
 	private Table filterTableSector;
 	private Table filterTableSite;
 
 	public AfpSeparationRulesPage(String pageName, AfpModel model, String desc) {
-		super(pageName);
-        this.model = model;
+		super(pageName, model);
         setTitle(AfpImportWizard.title);
         setDescription(desc);
         setPageComplete (false);
@@ -81,6 +79,8 @@ public class AfpSeparationRulesPage extends AfpWizardPage {
     	siteDomainLabels = new HashMap<String, Label[]>();
 		
 		
+    	filterTableSector = addTRXFilterGroup(sectorMain, headers,10, false);
+
 		
 		item1.setControl(sectorMain);
 		
@@ -89,7 +89,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage {
 		
 		Group siteMain = new Group(tabFolder, SWT.NONE);
 		siteMain.setLayout(new GridLayout(1, false));
-		siteMain.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1 ,2));
+		siteMain.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true, 1 ,2));
 		
 		siteDomainsGroup = new Group(siteMain, SWT.NONE);
 		siteDomainsGroup.setLayout(new GridLayout(3, true));
@@ -101,16 +101,14 @@ public class AfpSeparationRulesPage extends AfpWizardPage {
     	AfpWizardUtils.makeFontBold(siteDomainsLabel);
     	
     	Label sitesLabel = new Label(siteDomainsGroup, SWT.LEFT);
-    	sitesLabel.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 1 , 1));
+    	sitesLabel.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1 , 1));
     	sitesLabel.setText("Assigned Sites");
     	AfpWizardUtils.makeFontBold(sitesLabel);
     	
     	AfpWizardUtils.createButtonsGroup(this, siteDomainsGroup, "Site SeparationRules", model);
     	sectorDomainLabels = new HashMap<String, Label[]>();
     	
-    	filterTableSector = addTRXFilterGroup(model, sectorMain, headers,5);
-
-    	filterTableSite = addTRXFilterGroup(model,siteMain, headers,5);
+    	filterTableSite = addTRXFilterGroup(siteMain, headers,10, true);
 		
     	item2.setControl(siteMain);
 		
@@ -144,6 +142,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage {
 	
 	@Override
 	public void refreshPage(){
+		super.refreshPage();
 		for(Label[] labels : sectorDomainLabels.values()) {
 			for (Label label : labels){
 				label.dispose();

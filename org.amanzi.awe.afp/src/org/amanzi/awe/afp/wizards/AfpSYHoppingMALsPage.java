@@ -35,7 +35,6 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage {
 	public String test = "test";
 	
 	protected HashMap<String, Label[]> domainLabels;
-	private AfpModel model;
 	private final String[] headers = { "BSC", "Site", "Sector", "Layer", "Subcell", "TRX_ID", "Band", "Extended", "Hopping Type"};
 	private final String[] prop_name = { "bsc", "Site", INeoConstants.PROPERTY_NAME_NAME, "Layer", 
 			"Subcell", "TRX_ID", "band", "Extended", "Hopping Type"};
@@ -43,8 +42,7 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage {
 
 	
 	public AfpSYHoppingMALsPage(String pageName, AfpModel model, String desc) {
-		super(pageName);
-        this.model = model;
+		super(pageName, model);
         setTitle(AfpImportWizard.title);
         setDescription(desc);
         setPageComplete (false);
@@ -80,7 +78,7 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage {
     	AfpWizardUtils.createButtonsGroup(this,malDomainsGroup, "HoppingMAL", model);
     	domainLabels = new HashMap<String, Label[]>();
     	
-    	filterTable = addTRXFilterGroup(model, main,headers,10);
+    	filterTable = addTRXFilterGroup(main,headers,10, false);
 
     	setPageComplete(true);
     	setControl (thisParent);
@@ -100,6 +98,7 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage {
 	}
 	
 	public void refreshPage(){
+		super.refreshPage();
 		for(Label[] labels: domainLabels.values() ){
 			for (Label label : labels){
 				label.dispose();

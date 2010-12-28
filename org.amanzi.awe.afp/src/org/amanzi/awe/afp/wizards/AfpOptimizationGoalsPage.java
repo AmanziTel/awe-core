@@ -4,6 +4,7 @@ package org.amanzi.awe.afp.wizards;
 import java.util.HashMap;
 
 import org.amanzi.awe.afp.models.AfpModel;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -33,13 +34,12 @@ public class AfpOptimizationGoalsPage extends AfpWizardPage implements Listener 
 	protected Button bbHoppingButton;
 	protected Button sYHoppingButton;
 	protected Button analyzeCurrentButton;
+	private Group summaryGroup;
 	
-	private AfpModel model;
 
 	
 	public AfpOptimizationGoalsPage(String pageName,AfpModel model, String desc) {
-        super(pageName);
-        this.model = model;
+		super(pageName, model);
         setPageComplete(false);
         setTitle(AfpImportWizard.title);
         setDescription(desc);
@@ -134,7 +134,7 @@ public class AfpOptimizationGoalsPage extends AfpWizardPage implements Listener 
 		analyzeCurrentButton.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false,3 ,1));
 		analyzeCurrentButton.setSelection(model.isAnalyzeCurrentFreqAllocation());
 		
-		Group summaryGroup = new Group(main, SWT.NONE);
+		summaryGroup = new Group(main, SWT.NONE);
 		summaryGroup.setLayout(new GridLayout(6, false));
 		summaryGroup.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true,3 ,1));
 		summaryGroup.setText("Summary");
@@ -146,41 +146,6 @@ public class AfpOptimizationGoalsPage extends AfpWizardPage implements Listener 
 	    	label.setText(headers[i]);
 	    	AfpWizardUtils.makeFontBold(label);
 	    }
-	    
-//	    String[][] items = AfpWizardUtils.getSummaryTableItems();
-	    String rowHeaders[] = AfpModel.GOALS_SUMMARY_ROW_HEADERS;
-
-	    int[][] items = model.getSelectedCount();
-	    
-	    for (int i = 0; i < rowHeaders.length; i++){
-	    	new Label(summaryGroup, SWT.LEFT).setText(rowHeaders[i]);
-	    	Label totalLabel = new Label(summaryGroup, SWT.LEFT);
-	    	int total = 0;
-	    	for (int j = 0; j < items[i].length; j++){
-	    		new Label(summaryGroup, SWT.LEFT).setText(Integer.toString(items[i][j]));
-	    		total += items[i][j];
-	    	}
-	    	totalLabel.setText(Integer.toString(total));
-	    }
-		
-	    if (items[0][0] == 0){
-	    	freq900Button.setSelection(false);
-	    	//freq900Button.setEnabled(false);
-	    }
-	    if (items[0][1] == 0){
-	    	freq1800Button.setSelection(false);
-	    	//freq1800Button.setEnabled(false);
-	    }
-	    if (items[0][2] == 0){
-	    	freq850Button.setSelection(false);
-	    	//freq850Button.setEnabled(false);
-	    	
-	    }
-	    if (items[0][3] == 0){
-	    	freq1900Button.setSelection(false);
-	    	//freq1900Button.setEnabled(false);
-	    }
-	    model.setFrequencyBands(new boolean[]{freq900Button.getSelection(), freq1800Button.getSelection(), freq850Button.getSelection(), freq1900Button.getSelection()});
 	    
 	    setPageComplete(true);
 		setControl (thisParent);
@@ -210,68 +175,6 @@ public class AfpOptimizationGoalsPage extends AfpWizardPage implements Listener 
       return true;
   }
   
-/*
-	public boolean[] getOptimizationParameters(){
-//		HashMap<String, Boolean> optimizationParameters = null;
-//		optimizationParameters.put("Frequencies", frequenciesButton.getSelection());
-//		optimizationParameters.put("BSIC", bsicButton.getSelection());
-//		optimizationParameters.put("HSN", hsnButton.getSelection());
-//		optimizationParameters.put("MAIO", maioButton.getSelection());
-//		
-//		return optimizationParameters;
-		
-		return new boolean[]{frequenciesButton.getSelection(), bsicButton.getSelection(), hsnButton.getSelection(), maioButton.getSelection()}; 
-	}
-	
-	public void setOptimizationParameters(HashMap<String, Boolean> optimizationParameters){
-		frequenciesButton.setSelection(optimizationParameters.get("Frequencies"));
-		bsicButton.setSelection(optimizationParameters.get("BSIC"));
-		hsnButton.setSelection(optimizationParameters.get("HSN"));
-		maioButton.setSelection(optimizationParameters.get("MAIO"));
-	}
-	
-	public boolean[] getFrequencyBand(){
-//		HashMap<String, Boolean> frequencyBand = null;
-//		frequencyBand.put("900", freq900Button.getSelection());
-//		frequencyBand.put("1800", freq1800Button.getSelection());
-//		frequencyBand.put("850", freq850Button.getSelection());
-//		frequencyBand.put("1900", freq1900Button.getSelection());
-//		
-//		return frequencyBand;
-		return new boolean[]{freq900Button.getSelection(), freq1800Button.getSelection(), freq850Button.getSelection(), freq1900Button.getSelection()}; 
-	}
-	
-	public void setFrequencyBand(HashMap<String, Boolean> frequencyBand){
-		freq900Button.setSelection(frequencyBand.get("900"));
-		freq1800Button.setSelection(frequencyBand.get("1800"));
-		freq850Button.setSelection(frequencyBand.get("850"));
-		freq1900Button.setSelection(frequencyBand.get("1900"));
-	}
-	
-	public boolean[] getChannelType(){
-//		HashMap<String, Boolean> channelType = null;
-//		channelType.put("BCCH", bcchButton.getSelection());
-//		channelType.put("NonBB", bbHoppingButton.getSelection());
-//		channelType.put("SY", sYHoppingButton.getSelection());
-//		
-//		return channelType;
-//		
-		return new boolean[]{bcchButton.getSelection(), bbHoppingButton.getSelection(), sYHoppingButton.getSelection()};
-	}
-	
-	public void setChannelType(HashMap<String, Boolean> channelType){
-		bcchButton.setSelection(channelType.get("BCCH"));
-		bbHoppingButton.setSelection(channelType.get("NonBB"));
-		sYHoppingButton.setSelection(channelType.get("SY"));
-	}
-	
-	public boolean isAnalyzeCurrent(){
-		return analyzeCurrentButton.getSelection();
-	}
-	
-	public void setAnalyzeCurrent(boolean value){
-		analyzeCurrentButton.setSelection(value);
-	}*/
 
 	@Override
 	public void handleEvent(Event event) {
@@ -286,11 +189,37 @@ public class AfpOptimizationGoalsPage extends AfpWizardPage implements Listener 
 	}
 	
 	public void refreshPage(){
+		
+		String rowHeaders[] = AfpModel.GOALS_SUMMARY_ROW_HEADERS;
+
+	    int[][] items = model.getSelectedCount();
+	    
+	    for (int i = 0; i < rowHeaders.length; i++){
+	    	new Label(summaryGroup, SWT.LEFT).setText(rowHeaders[i]);
+	    	Label totalLabel = new Label(summaryGroup, SWT.LEFT);
+	    	int total = 0;
+	    	for (int j = 0; j < items[i].length; j++){
+	    		new Label(summaryGroup, SWT.LEFT).setText(Integer.toString(items[i][j]));
+	    		total += items[i][j];
+	    	}
+	    	totalLabel.setText(Integer.toString(total));
+	    }
+	    
+	    summaryGroup.layout();
+	    
+		
     	freq900Button.setSelection(model.getFrequencyBands()[0]);
     	freq1800Button.setSelection(model.getFrequencyBands()[1]);
     	freq850Button.setSelection(model.getFrequencyBands()[2]);
     	freq1900Button.setSelection(model.getFrequencyBands()[3]);
 	}
+
+	@Override
+	public IWizardPage getPreviousPage() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 	
 
 }

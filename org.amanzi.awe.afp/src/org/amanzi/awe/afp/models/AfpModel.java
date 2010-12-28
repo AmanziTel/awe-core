@@ -76,6 +76,9 @@ public class AfpModel {
 			{"SY TCH", "SY TCH"}
 			};
 	
+	public int totalTRX;
+	public int totalSites;
+	public int totalSectors;
 	
 	/**
 	 * 0- 900
@@ -162,12 +165,49 @@ public class AfpModel {
 	 * @return return an array
 	 */
 	public int[][] getSelectedCount(){
+		totalTRX = 0;
+		totalSites = 0;
+		totalSectors = 0;
+		
+		int[] bandTRXs = new int[4];
+		
+		Traverser traverser = datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
+
+			@Override
+			public boolean isReturnableNode(TraversalPosition currentPos) {
+				if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.SECTOR.getId()) ||
+						currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.SITE.getId())){
+					return true;
+				}
+				return false;
+			}
+    	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+		
+		for (Node node: traverser){
+			if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.SITE.getId())){
+				totalSites++;
+			}
+			else if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.SECTOR.getId())){
+				totalSectors++;
+				totalTRX++;
+				String band = (String)node.getProperty("ant_freq_band", "");
+				if (band.contains("900"))
+					bandTRXs[BAND_900]++;
+				if (band.contains("1800"))
+					bandTRXs[BAND_1800]++;
+				if (band.contains("850"))
+					bandTRXs[BAND_850]++;
+				if (band.contains("1900"))
+					bandTRXs[BAND_1900]++;
+			}
+		}
+
+//		for (int i : bandTRXs){
+//			totalTRX += i;
+//		}
+		
 		//TODO: get the count from database based on the selected node and also update frequency band values based on that
-		int[][] selectedArray = {{150,150,0,0},
-							   {320,330,0,0},
-							   {150,150,0,0},
-							   {150,0,0,0},
-							   {0,200,0,0}
+		int[][] selectedArray = {bandTRXs, bandTRXs, bandTRXs, {0,0,0,0},{0,0,0,0}
 		};
 		return selectedArray;
 	}

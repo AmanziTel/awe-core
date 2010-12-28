@@ -16,11 +16,9 @@ import org.eclipse.swt.widgets.Text;
 public class AfpSummaryPage extends AfpWizardPage {
 	
 	private Text summaryText;
-	private AfpModel model;
 	
 	public AfpSummaryPage(String pageName, AfpModel model, String desc) {
-		super(pageName);
-        this.model = model;
+		super(pageName, model);
         setTitle(AfpImportWizard.title);
         setDescription(desc);
         setPageComplete (false);

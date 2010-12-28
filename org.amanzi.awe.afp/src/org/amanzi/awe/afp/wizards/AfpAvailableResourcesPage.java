@@ -43,12 +43,9 @@ public class AfpAvailableResourcesPage extends AfpWizardPage implements Listener
 	private Button button1900;
 	
 	
-	private AfpModel model;
-	
 
 	public AfpAvailableResourcesPage(String pageName, AfpModel model, String desc) {
-		super(pageName);
-        this.model = model;
+		super(pageName, model);
         setTitle(AfpImportWizard.title);
         setDescription(desc);
         setPageComplete (false);

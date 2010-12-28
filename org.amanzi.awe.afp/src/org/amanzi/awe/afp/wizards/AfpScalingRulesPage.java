@@ -24,16 +24,13 @@ public class AfpScalingRulesPage extends AfpWizardPage implements Listener{
 	// Indentation between cells in Interference Matrix
 	private static final int imIndent = 10;
 	
-	private AfpModel model;
-	
 	
 	private Text[][] intTexts = new Text[9][8];
 	private Text[][] sepTexts = new Text[9][2];
 	
 	
 	public AfpScalingRulesPage(String pageName, AfpModel model, String desc) {
-		super(pageName);
-        this.model = model;
+		super(pageName, model);
         setTitle(AfpImportWizard.title);
         setDescription(desc);
         setPageComplete (false);
@@ -198,6 +195,9 @@ public class AfpScalingRulesPage extends AfpWizardPage implements Listener{
 		model.setInterferenceMatrixArrays(interferenceArray);
 	}
 	
+	public void refreshPage(){
+		
+	}
 	
 
 }

@@ -51,7 +51,6 @@ public class AfpFrequencyTypePage extends AfpWizardPage {
 	protected Label tch1800Freq;
 	protected Label tch1800Trx;
 	
-	private AfpModel model;
 	protected static HashMap<String, Label[]> domainLabels;
 	private final String[] headers = { "BSC", "Site", "Sector", "Layer", "Subcell", "TRX_ID", "Band", "Extended", "Hopping Type", "BCCH"};
 	private final String[] prop_name = { "bsc", "Site", INeoConstants.PROPERTY_NAME_NAME, "Layer", 
@@ -60,8 +59,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage {
 	private Table filterTable;
 
 	public AfpFrequencyTypePage(String pageName, AfpModel model, String desc) {
-		super(pageName);
-        this.model = model;
+		super(pageName, model);
         setTitle(AfpImportWizard.title);
         setDescription(desc);
         setPageComplete (false);
@@ -102,7 +100,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage {
     	AfpWizardUtils.createButtonsGroup(this, frequencyDomainsGroup, "FrequencyType", model);
     	domainLabels = new HashMap<String, Label[]>();
     	
-    	filterTable = this.addTRXFilterGroup(model, main, headers,10);
+    	filterTable = this.addTRXFilterGroup(main, headers,10, false);
     	
 
 		
@@ -147,6 +145,9 @@ public class AfpFrequencyTypePage extends AfpWizardPage {
 		    			else if (prop_name[j].equals("Hopping Type")){
 		    				val = (String)node.getProperty(prop_name[j], "Non");
 		    			}
+		    			else if (prop_name[j].equals(INeoConstants.PROPERTY_BCCH_NAME)){
+		    				val = "1";
+		    			}
 		    			else 
 		    				val = (String)node.getProperty(prop_name[j], "");
 		    			item.setText(j, val);
@@ -173,7 +174,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage {
 	}
 	
 	public void refreshPage(){
-		
+		super.refreshPage();
 		for(Label[] labels:domainLabels.values()){
 				for (Label label : labels){
 					label.dispose();

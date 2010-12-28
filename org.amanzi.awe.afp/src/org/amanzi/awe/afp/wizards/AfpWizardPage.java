@@ -30,9 +30,20 @@ import org.eclipse.swt.widgets.Text;
 import org.neo4j.graphdb.Node;
 
 public class AfpWizardPage extends WizardPage implements SelectionListener {
+	
+	private Label filterInfoLabel;
+	private Group trxFilterGroup;
+	private Label siteFilterInfoLabel;
+	private Group siteTrxFilterGroup;
+	protected AfpModel model;
 
 	protected AfpWizardPage(String pageName) {
 		super(pageName);
+	}
+	
+	protected AfpWizardPage(String pageName, AfpModel model) {
+		super(pageName);
+		this.model = model;
 	}
 
 	@Override
@@ -42,9 +53,25 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 	}
 
 	public void refreshPage() {
+		if (this instanceof AfpSeparationRulesPage){
+			filterInfoLabel.setText(String.format("Filter Status: %d sectors selected out of %d", model.totalSectors, model.totalSectors));
+			siteFilterInfoLabel.setText(String.format("Filter Status: %d sites selected out of %d", model.totalSites, model.totalSites));
+			trxFilterGroup.layout();
+			siteTrxFilterGroup.layout();
+		}
+		else if(this instanceof AfpSYHoppingMALsPage){
+			filterInfoLabel.setText(String.format("Filter Status: %d Trxs selected out of %d", 0, model.totalTRX));
+			trxFilterGroup.layout();
+		}
+		
+		else{
+			String info = String.format("Filter Status: %d Trxs selected out of %d", model.totalTRX, model.totalTRX);
+			filterInfoLabel.setText(info);
+			trxFilterGroup.layout();
+		}
 		
 	}
-	protected Table addTRXFilterGroup(final AfpModel model, Group main, String[] headers, int emptyrows){
+	protected Table addTRXFilterGroup(Group main, String[] headers, int emptyrows, boolean isSite){
 		final Shell parentShell = main.getShell();
 		
 		/** Create TRXs Filters Group */
@@ -53,9 +80,17 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
     	trxFilterGroup.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false,1 ,2));
     	trxFilterGroup.setText("TRXs Filter");
     	
-    	//TODO: edit this label
-    	new Label(trxFilterGroup, SWT.LEFT).setText("Filter Status: x Trxs selected out of y");
+    	Label filterInfoLabel = new Label(trxFilterGroup, SWT.LEFT);
     	
+    	if (isSite){
+    		this.siteTrxFilterGroup = trxFilterGroup;
+    		this.siteFilterInfoLabel = filterInfoLabel;
+    	}
+    	else {
+    		this.trxFilterGroup = trxFilterGroup;
+    		this.filterInfoLabel = filterInfoLabel;
+    	}
+    		
     	
     	Button loadButton = new Button(trxFilterGroup, SWT.RIGHT);
     	loadButton.setLayoutData(new GridData(GridData.END, GridData.BEGINNING, true, false, 1 , 1));

@@ -60,7 +60,6 @@ import org.jfree.data.time.TimeSeriesCollection;
 
 public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress{
 	
-	private AfpModel model;
 	JFreeChart chart;
 	TimeSeries series[];
 	TimeSeriesCollection dataset = new TimeSeriesCollection();
@@ -93,8 +92,7 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 	private Table progressTable;
 	
 	public AfpProgressPage(String pageName, AfpModel model, String desc) {
-		super(pageName);
-        this.model = model;
+		super(pageName, model);
         setTitle(AfpImportWizard.title);
         setDescription(desc);
         setPageComplete (false);

@@ -27,11 +27,10 @@ public class AfpLoadNetworkPage extends AfpWizardPage {
 	private Combo networkCombo;
 	protected String datasetName;
 		
-	private AfpModel model;
 	
 	public AfpLoadNetworkPage(String pageName, AfpModel model, String desc) {
-        super(pageName);
-        this.model = model;
+        super(pageName, model);
+        
         setPageComplete(false);
         setTitle(AfpImportWizard.title);
         setDescription(desc);
