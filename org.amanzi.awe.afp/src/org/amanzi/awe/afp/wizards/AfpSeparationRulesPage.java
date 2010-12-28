@@ -27,8 +27,8 @@ public class AfpSeparationRulesPage extends AfpWizardPage {
 	
 	private Group sectorDomainsGroup;
 	private Group siteDomainsGroup;
-	protected static HashMap<String, Label[]> sectorDomainLabels;
-	protected static HashMap<String, Label[]> siteDomainLabels;
+	protected HashMap<String, Label[]> sectorDomainLabels;
+	protected HashMap<String, Label[]> siteDomainLabels;
 	private AfpModel model;
 	private final String[] headers = { "BSC", "Site", "Sector", "Layer"};
 	private final String[] prop_name = { "BSC", "Site", "name", "Layer"};
@@ -141,32 +141,21 @@ public class AfpSeparationRulesPage extends AfpWizardPage {
 	
 	@Override
 	public void refreshPage(){
-		Set<String> keys = sectorDomainLabels.keySet();
-		if(keys != null) {
-			Iterator<String> ki = keys.iterator();
-			
-			while(ki.hasNext()) {
-				String key = (String)ki.next();
-				this.deleteSectorDomainLabels(key);
-				sectorDomainLabels.remove(key);
+		for(Label[] labels : sectorDomainLabels.values()) {
+			for (Label label : labels){
+				label.dispose();
 			}
-			//domainLabels.clear();
 		}
-		keys = siteDomainLabels.keySet();
-		if(keys != null) {
-			Iterator<String> ki = keys.iterator();
-			
-			while(ki.hasNext()) {
-				String key = (String)ki.next();
-				this.deleteSiteDomainLabels(key);
-				siteDomainLabels.remove(key);
+		sectorDomainLabels.clear();
+
+		for(Label[] labels: siteDomainLabels.values()){
+			for (Label label : labels){
+				label.dispose();
 			}
-			//domainLabels.clear();
 		}
+		siteDomainLabels.clear();
 		
-		Vector<AfpSeparationDomainModel> domains = model.getSectorSeparationDomains();
-		for(int i=0;i< domains.size();i++) {
-			AfpSeparationDomainModel sectorDomainModel = domains.elementAt(i);
+		for(AfpSeparationDomainModel sectorDomainModel :model.getSectorSeparationDomains() ){
 			Label defaultSectorDomainLabel = new Label(sectorDomainsGroup, SWT.LEFT);
 			defaultSectorDomainLabel.setText(sectorDomainModel.getName());
 			//TODO: update the TRXs by default here
@@ -177,9 +166,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage {
 	
 		sectorDomainsGroup.layout();
 
-		Vector<AfpSeparationDomainModel> domains2 = model.getSectorSeparationDomains();
-		for(int i=0;i< domains2.size();i++) {
-			AfpSeparationDomainModel sectorDomainModel = domains2.elementAt(i);
+		for(AfpSeparationDomainModel sectorDomainModel : model.getSectorSeparationDomains()) {
 			Label defaultSiteDomainLabel = new Label(siteDomainsGroup, SWT.LEFT);
 			defaultSiteDomainLabel.setText(sectorDomainModel.getName());
 			//TODO: update the TRXs by default here

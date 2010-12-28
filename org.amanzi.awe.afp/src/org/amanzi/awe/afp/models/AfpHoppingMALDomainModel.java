@@ -6,7 +6,7 @@ import org.neo4j.graphdb.Node;
 public class AfpHoppingMALDomainModel extends AfpDomainModel{
 	//Assuming max size can be 13
 	//The array index corresponds to Hopping TRXs
-	private int[] MALSize = new int[] {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+	private int[] MALSize = new int[] {3, 3, 4, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
 
 	/**
 	 * @return the mALSize array
@@ -20,6 +20,16 @@ public class AfpHoppingMALDomainModel extends AfpDomainModel{
 	 */
 	public void setMALSize(int[] size) {
 		MALSize = size;
+	}
+	public int getMALSize(int index) {
+		if(index < MALSize.length)
+			return MALSize[index];
+		
+		return -1;
+	}
+	public void setMALSize(int index, int size) {
+		if(index < MALSize.length)
+			MALSize[index] = size;
 	}
 	
 	/**

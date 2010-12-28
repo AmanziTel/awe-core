@@ -29,9 +29,9 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage {
 	
 	private Group malDomainsGroup;
 	private Label defaultTrx;
-	public static String test = "test";
+	public String test = "test";
 	
-	protected static HashMap<String, Label[]> domainLabels;
+	protected HashMap<String, Label[]> domainLabels;
 	private AfpModel model;
 	private final String[] headers = { "BSC", "Site", "Sector", "Layer", "Subcell", "TRX_ID", "Band", "Extended", "Hopping Type", "BCCH"};
 	private final String[] prop_name = { "BSC", "Site", "name", "Layer", "Subcell", "TRX_ID", "Band", "Extended", "Hopping Type", "BCCH"};
@@ -96,20 +96,14 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage {
 	}
 	
 	public void refreshPage(){
-		Set<String> keys = domainLabels.keySet();
-		if(keys != null) {
-			Iterator ki = keys.iterator();
-			
-			while(ki.hasNext()) {
-				String key = (String)ki.next();
-				deleteDomainLabels(key);
-				domainLabels.remove(key);
+		for(Label[] labels: domainLabels.values() ){
+			for (Label label : labels){
+				label.dispose();
 			}
-			//domainLabels.clear();
 		}
-		Vector<AfpHoppingMALDomainModel> domains = model.getMalDomains();
-		for(int i=0;i< domains.size();i++) {
-			AfpHoppingMALDomainModel domainModel = domains.elementAt(i);
+		domainLabels.clear();
+		
+		for(AfpHoppingMALDomainModel domainModel :model.getMalDomains()) {
 			Label defaultDomainLabel = new Label(malDomainsGroup, SWT.LEFT);
 			defaultDomainLabel.setText(domainModel.getName());
 			//TODO: update the TRXs by default here

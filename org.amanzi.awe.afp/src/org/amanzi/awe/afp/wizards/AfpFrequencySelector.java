@@ -1,5 +1,6 @@
 package org.amanzi.awe.afp.wizards;
 
+import org.amanzi.awe.afp.models.AfpDomainModel;
 import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
 import org.eclipse.jface.wizard.WizardPage;
@@ -20,103 +21,32 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-public class AfpFrequencySelector {
-	final Shell subShell;
-	final AfpFrequencyDomainModel domainModel;
-	private String domainName;
+public class AfpFrequencySelector extends AfpDomainSelector{
+	AfpDomainModel domainModel;
 	Combo bandCombo;
 	List selectedList;
 	List freqList; 
-	Group freqGroup;
-	AfpModel model;
 	Label selectionLabel;
 	private static String[] selectedArray;
-	
-	boolean newDomain = true;
-	AfpFrequencyDomainModel domain2Edit = null;
 	int bandIndexes[];
 	Button leftArrowButton;
 	Button rightArrowButton;
+
 	
 	public AfpFrequencySelector(final WizardPage page, Shell parentShell, final String action, final Group parentGroup, final AfpModel model){
+		super(" Frequency Domain", page, parentShell, action, parentGroup, model, model.getAllFrequencyDomainNames());
+		bandIndexes = model.getAvailableFrequencyBandsIndexs();
 
 		int selectedBand =0;
-		bandIndexes = model.getAvailableFrequencyBandsIndexs();
-		subShell = new Shell(parentShell, SWT.PRIMARY_MODAL);
-		domainModel = new AfpFrequencyDomainModel();
-		this.model = model;
-		
-		subShell.setText(action +  " Frequency Domain");
-		subShell.setLayout(new GridLayout(3, false));
-		subShell.setLocation(200, 200);
-		
-		Label nameLabel = new Label(subShell, SWT.NONE);
-		nameLabel.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
-		nameLabel.setText("Domain Name");
 
-		if (action.equals("Add")){
-			Text nameText = new Text (subShell, SWT.BORDER | SWT.SINGLE);
-			nameText.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
-			nameText.addModifyListener(new ModifyListener(){
 
-				@Override
-				public void modifyText(ModifyEvent e) {
-					domainName = ((Text)e.widget).getText();
-				}
-			});
-		}
-		
 		if (action.equals("Edit") || action.equals("Delete")){
-			newDomain = false;
-			Combo nameCombo = new Combo(subShell, SWT.DROP_DOWN | SWT.READ_ONLY);
-			String names[] = model.getAllFrequencyDomainNames();
-			if(names == null) {
-				return;
-			}
-			if(names.length ==0) {
-				return;
-			}
-			nameCombo.setItems(names);
-			nameCombo.select(0);
-			nameCombo.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
-			nameCombo.addModifyListener(new ModifyListener(){
-
-				@Override
-				public void modifyText(ModifyEvent e) {
-					//domainName = ((Combo)e.widget).getText();
-					int i= ((Combo)e.widget).getSelectionIndex();
-					int j=0;
-					for(AfpFrequencyDomainModel d: model.getFreqDomains(false)) {
-						if(j ==i) {
-							domain2Edit = d;
-							break;
-						}
-						j++;
-					}
-					updateFreqList();
-				}
-				
-			});
-			
-			nameCombo.addSelectionListener(new SelectionListener(){
-
-				@Override
-				public void widgetDefaultSelected(SelectionEvent e) {
-					widgetSelected(e);					
-				}
-
-				@Override
-				public void widgetSelected(SelectionEvent e) {
-					domainName = ((Combo)e.widget).getText();
-				}
-				
-			});
-			
-			
 			for(AfpFrequencyDomainModel d: model.getFreqDomains(false)) {
 				this.domain2Edit = d;
 				break;
 			}
+		}else {
+			domainModel = new AfpFrequencyDomainModel();
 		}
 		
 		freqGroup = new Group(subShell, SWT.NONE);
@@ -141,8 +71,8 @@ public class AfpFrequencySelector {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
 					if(domain2Edit != null) {
-						domain2Edit.setBand(AfpModel.BAND_NAMES[bandIndexes[bandCombo.getSelectionIndex()]]);
-						domain2Edit.setFrequencies(null);
+						((AfpFrequencyDomainModel)domain2Edit).setBand(AfpModel.BAND_NAMES[bandIndexes[bandCombo.getSelectionIndex()]]);
+						((AfpFrequencyDomainModel)domain2Edit).setFrequencies(null);
 					}
 					updateFreqList();
 				}
@@ -169,57 +99,7 @@ public class AfpFrequencySelector {
 			this.rightArrowButton.setEnabled(false);
 		}
 
-		Button actionButton = new Button(subShell, SWT.PUSH);
-		actionButton.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
-		
-		actionButton.setText(action);
-		actionButton.addSelectionListener(new SelectionAdapter(){
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				
-				if (action.equals("Add")){
-					domainModel.setName(domainName);
-					domainModel.setBand(bandCombo.getText());
-					domainModel.setFrequencies(selectedArray);
-					model.addFreqDomain(domainModel);
-					((AfpFrequencyTypePage)page).refreshPage();
-					//parentGroup.layout();
-				}
-				if (action.equals("Edit")){
-					selectedArray = selectedList.getItems();
-					domain2Edit.setFrequencies(selectedArray);
-					model.editFreqDomain(domain2Edit);
-					((AfpFrequencyTypePage)page).refreshPage();
-					//parentGroup.layout();
-				}
-				
-				if (action.equals("Delete")){
-					if (domain2Edit == null){
-						//TODO Do some error handling here;
-						return;
-					}
-					model.deleteFreqDomain(domain2Edit.getName());
-					((AfpFrequencyTypePage)page).refreshPage();
-				}
-				
-				subShell.dispose();
-			}
-		});
-		
-		
-		Button cancelButton = new Button(subShell, SWT.PUSH);
-		cancelButton.setLayoutData(new GridData(GridData.END, GridData.BEGINNING, false, false, 1, 1));
-		cancelButton.setText("Cancel");
-		cancelButton.addSelectionListener(new SelectionAdapter(){
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				subShell.dispose();
-			}
-		});
-		
-		subShell.pack();
-		subShell.open();
-		
+		super.addButtons(action);
 	 }
 
 	void updateFreqList() {
@@ -232,7 +112,7 @@ public class AfpFrequencySelector {
 		} else {
 			//select the band
 			for(int i=0;i< bandIndexes.length;i++) {
-				if(AfpModel.BAND_NAMES[bandIndexes[i]].compareTo(this.domain2Edit.getBand())==0) {
+				if(AfpModel.BAND_NAMES[bandIndexes[i]].compareTo(((AfpFrequencyDomainModel)domain2Edit).getBand())==0) {
 					bandCombo.select(i);
 					break;
 				}
@@ -240,7 +120,7 @@ public class AfpFrequencySelector {
 			frequencies = AfpModel.rangeArraytoArray(model.getAvailableFreq(bandCombo.getItem(bandCombo.getSelectionIndex())).split(","));
 
 			selectedList.removeAll();
-			String[] selected = AfpModel.convertFreqString2Array(domain2Edit.getFrequenciesAsString(),frequencies);
+			String[] selected = AfpModel.convertFreqString2Array(((AfpFrequencyDomainModel)domain2Edit).getFrequenciesAsString(),frequencies);
 			if(selected.length >0) {
 				selectedList.setItems(selected);
 			}
@@ -316,5 +196,35 @@ public class AfpFrequencySelector {
 			}
 		});
 	}
+	protected void handleDomainNameSection(int selection, String name) {
+		int j=0;
+		for(AfpFrequencyDomainModel d: model.getFreqDomains(false)) {
+			if(j ==selection) {
+				domain2Edit = d;
+				break;
+			}
+			j++;
+		}
+		updateFreqList();
+	}
+	protected void handleAddDomain() {
+		((AfpFrequencyDomainModel)domainModel).setName(domainName);
+		((AfpFrequencyDomainModel)domainModel).setBand(bandCombo.getText());
+		((AfpFrequencyDomainModel)domainModel).setFrequencies(selectedArray);
+		model.addFreqDomain(((AfpFrequencyDomainModel)domainModel));
+	}
+	protected void handleEditDomain() {
+		selectedArray = selectedList.getItems();
+		((AfpFrequencyDomainModel)domain2Edit).setFrequencies(selectedArray);
+		model.editFreqDomain(((AfpFrequencyDomainModel)domain2Edit));
+	}
+	protected void handleDeleteDomain() {
+		if (domain2Edit == null){
+			//TODO Do some error handling here;
+			return;
+		}
+		model.deleteFreqDomain(domain2Edit.getName());
+	}
+
 
 }

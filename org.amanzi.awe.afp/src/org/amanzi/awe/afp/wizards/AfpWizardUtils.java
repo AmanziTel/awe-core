@@ -357,11 +357,12 @@ public class AfpWizardUtils {
     				new AfpFrequencySelector(page,parentShell, "Add", parentGroup, model);
     				//AfpWizardUtils.createFrequencyDomainShell(page,parentShell, "Add", parentGroup, model);
     			else if (thisCaller.equals("HoppingMAL"))
-    				AfpWizardUtils.createMalDomainShell(parentShell, "Add", parentGroup, model);
+    				new AfpMalSelector(page,parentShell, "Add", parentGroup, model);
+    				//AfpWizardUtils.createMalDomainShell(page,parentShell, "Add", parentGroup, model);
     			else if (thisCaller.equals("Sector SeparationRules"))
-    				AfpWizardUtils.createSeparationDomainShell(parentShell, "Add", true, parentGroup, model);
+    				AfpWizardUtils.createSeparationDomainShell(page,parentShell, "Add", true, parentGroup, model);
     			else if (thisCaller.equals("Site SeparationRules"))
-    				AfpWizardUtils.createSeparationDomainShell(parentShell, "Add", false, parentGroup, model);
+    				AfpWizardUtils.createSeparationDomainShell(page,parentShell, "Add", false, parentGroup, model);
 			}
     		
     	});
@@ -377,11 +378,12 @@ public class AfpWizardUtils {
     				new AfpFrequencySelector(page,parentShell, "Edit", parentGroup, model);
     				//AfpWizardUtils.createFrequencyDomainShell(page,parentShell, "Edit", parentGroup, model);
     			else if (thisCaller.equals("HoppingMAL"))
-    				AfpWizardUtils.createMalDomainShell(parentShell, "Edit", parentGroup, model);
+    				new AfpMalSelector(page,parentShell, "Edit", parentGroup, model);
+    				//AfpWizardUtils.createMalDomainShell(page,parentShell, "Edit", parentGroup, model);
     			else if (thisCaller.equals("Sector SeparationRules"))
-    				AfpWizardUtils.createSeparationDomainShell(parentShell, "Edit", true, parentGroup, model);
+    				AfpWizardUtils.createSeparationDomainShell(page,parentShell, "Edit", true, parentGroup, model);
     			else if (thisCaller.equals("Site SeparationRules"))
-    				AfpWizardUtils.createSeparationDomainShell(parentShell, "Edit", false, parentGroup, model);
+    				AfpWizardUtils.createSeparationDomainShell(page,parentShell, "Edit", false, parentGroup, model);
 			}
     		
     	});
@@ -397,18 +399,19 @@ public class AfpWizardUtils {
     				new AfpFrequencySelector(page,parentShell, "Delete", parentGroup, model);
     				//AfpWizardUtils.createFrequencyDomainShell(page,parentShell, "Delete", parentGroup, model);
     			else if (thisCaller.equals("HoppingMAL"))
-    				AfpWizardUtils.createMalDomainShell(parentShell, "Delete", parentGroup, model);
+    				new AfpMalSelector(page,parentShell, "Delete", parentGroup, model);
+    				//AfpWizardUtils.createMalDomainShell(page,parentShell, "Delete", parentGroup, model);
     			else if (thisCaller.equals("Sector SeparationRules"))
-    				AfpWizardUtils.createSeparationDomainShell(parentShell, "Delete", true, parentGroup, model);
+    				AfpWizardUtils.createSeparationDomainShell(page,parentShell, "Delete", true, parentGroup, model);
     			else if (thisCaller.equals("Site SeparationRules"))
-    				AfpWizardUtils.createSeparationDomainShell(parentShell, "Delete", false, parentGroup, model);
+    				AfpWizardUtils.createSeparationDomainShell(page,parentShell, "Delete", false, parentGroup, model);
 				
 			}
     		
     	});
 	}
 	
-	protected static void createMalDomainShell(Shell parentShell, final String action, final Group parentGroup, final AfpModel model){
+	protected static void createMalDomainShell(final WizardPage page,Shell parentShell, final String action, final Group parentGroup, final AfpModel model){
 		final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL);
 		final AfpHoppingMALDomainModel domainModel = new AfpHoppingMALDomainModel(); 
 		
@@ -570,11 +573,8 @@ public class AfpWizardUtils {
 					newDomainLabel.setText(domainName);
 					Label domainTRXLabel = new Label(parentGroup, SWT.LEFT);
 					//TODO Do something for TRX
-					domainTRXLabel.setText("todo");
-					AfpSYHoppingMALsPage.domainLabels.put(domainName, new Label[]{newDomainLabel, domainTRXLabel});
-					parentGroup.layout();
-
-					
+					domainTRXLabel.setText("0");
+					((AfpSYHoppingMALsPage)page).refreshPage();
 				}
 				//TODO add for edit and delete
 				
@@ -585,7 +585,7 @@ public class AfpWizardUtils {
 						//TODO Do some error handling here;
 					}
 					model.deleteMALDomain(domainModel);
-					parentGroup.layout();
+					((AfpSYHoppingMALsPage)page).refreshPage();
 				}
 				
 				subShell.dispose();
@@ -607,7 +607,7 @@ public class AfpWizardUtils {
 		subShell.open();
 	}
 	
-	protected static void createSeparationDomainShell(Shell parentShell, final String action, final boolean isSector, final Group parentGroup, final AfpModel model){
+	protected static void createSeparationDomainShell(final WizardPage page,Shell parentShell, final String action, final boolean isSector, final Group parentGroup, final AfpModel model){
 		final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL);
 		final AfpSeparationDomainModel domainModel = new AfpSeparationDomainModel(); 
 		String entity = isSector? "Sector" : "Site";
@@ -772,9 +772,8 @@ public class AfpWizardUtils {
 						newDomainLabel.setText(domainName);
 						Label domainSectorsLabel = new Label(parentGroup, SWT.LEFT);
 						//TODO Do something for TRX
-						domainSectorsLabel.setText("todo");
-						AfpSeparationRulesPage.sectorDomainLabels.put(domainName, new Label[]{newDomainLabel, domainSectorsLabel});
-						parentGroup.layout();
+						domainSectorsLabel.setText("0");
+						((AfpSeparationRulesPage)page).refreshPage();
 					}
 					else{
 						model.addSiteSeparationDomain(domainModel);
@@ -782,9 +781,8 @@ public class AfpWizardUtils {
 						newDomainLabel.setText(domainName);
 						Label domainSiteLabel = new Label(parentGroup, SWT.LEFT);
 						//TODO Do something for TRX
-						domainSiteLabel.setText("todo");
-						AfpSeparationRulesPage.siteDomainLabels.put(domainName, new Label[]{newDomainLabel, domainSiteLabel});
-						parentGroup.layout();
+						domainSiteLabel.setText("0");
+						((AfpSeparationRulesPage)page).refreshPage();
 					}
 					
 				}
@@ -798,8 +796,8 @@ public class AfpWizardUtils {
 						if (domainModel == null){
 							//TODO Do some error handling here;
 						}
-						model.deleteSectorSeparationDomain(domainModel);
-						parentGroup.layout();
+						model.deleteSectorSeparationDomain(domainModel.getName());
+						((AfpSeparationRulesPage)page).refreshPage();
 					}
 					else{
 						AfpSeparationDomainModel domainModel = model.findSiteSeparationDomain(domainName);
@@ -808,7 +806,7 @@ public class AfpWizardUtils {
 							//TODO Do some error handling here;
 						}
 						model.deleteSiteSeparationDomain(domainModel);
-						parentGroup.layout();
+						((AfpSeparationRulesPage)page).refreshPage();
 					}
 				}
 				
