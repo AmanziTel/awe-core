@@ -355,14 +355,14 @@ public class AfpWizardUtils {
 			public void widgetSelected(SelectionEvent e) {
     			if (thisCaller.equals("FrequencyType"))
     				new AfpFrequencySelector(page,parentShell, "Add", parentGroup, model);
-    				//AfpWizardUtils.createFrequencyDomainShell(page,parentShell, "Add", parentGroup, model);
     			else if (thisCaller.equals("HoppingMAL"))
     				new AfpMalSelector(page,parentShell, "Add", parentGroup, model);
-    				//AfpWizardUtils.createMalDomainShell(page,parentShell, "Add", parentGroup, model);
     			else if (thisCaller.equals("Sector SeparationRules"))
-    				AfpWizardUtils.createSeparationDomainShell(page,parentShell, "Add", true, parentGroup, model);
+    				new AfpSeperationSelector(page,parentShell, "Add", parentGroup, model,true );
+    				//AfpWizardUtils.createSeparationDomainShell(page,parentShell, "Add", true, parentGroup, model);
     			else if (thisCaller.equals("Site SeparationRules"))
-    				AfpWizardUtils.createSeparationDomainShell(page,parentShell, "Add", false, parentGroup, model);
+    				new AfpSeperationSelector(page,parentShell, "Add", parentGroup, model,false );
+    				//AfpWizardUtils.createSeparationDomainShell(page,parentShell, "Add", false, parentGroup, model);
 			}
     		
     	});
@@ -376,14 +376,14 @@ public class AfpWizardUtils {
 			public void widgetSelected(SelectionEvent e) {
     			if (thisCaller.equals("FrequencyType"))
     				new AfpFrequencySelector(page,parentShell, "Edit", parentGroup, model);
-    				//AfpWizardUtils.createFrequencyDomainShell(page,parentShell, "Edit", parentGroup, model);
     			else if (thisCaller.equals("HoppingMAL"))
     				new AfpMalSelector(page,parentShell, "Edit", parentGroup, model);
-    				//AfpWizardUtils.createMalDomainShell(page,parentShell, "Edit", parentGroup, model);
     			else if (thisCaller.equals("Sector SeparationRules"))
-    				AfpWizardUtils.createSeparationDomainShell(page,parentShell, "Edit", true, parentGroup, model);
+    				new AfpSeperationSelector(page,parentShell, "Edit", parentGroup, model,true );
+    				//AfpWizardUtils.createSeparationDomainShell(page,parentShell, "Edit", true, parentGroup, model);
     			else if (thisCaller.equals("Site SeparationRules"))
-    				AfpWizardUtils.createSeparationDomainShell(page,parentShell, "Edit", false, parentGroup, model);
+    				new AfpSeperationSelector(page,parentShell, "Edit", parentGroup, model, false);
+    				//AfpWizardUtils.createSeparationDomainShell(page,parentShell, "Edit", false, parentGroup, model);
 			}
     		
     	});
@@ -397,214 +397,18 @@ public class AfpWizardUtils {
 			public void widgetSelected(SelectionEvent e) {
     			if (thisCaller.equals("FrequencyType"))
     				new AfpFrequencySelector(page,parentShell, "Delete", parentGroup, model);
-    				//AfpWizardUtils.createFrequencyDomainShell(page,parentShell, "Delete", parentGroup, model);
     			else if (thisCaller.equals("HoppingMAL"))
     				new AfpMalSelector(page,parentShell, "Delete", parentGroup, model);
-    				//AfpWizardUtils.createMalDomainShell(page,parentShell, "Delete", parentGroup, model);
     			else if (thisCaller.equals("Sector SeparationRules"))
-    				AfpWizardUtils.createSeparationDomainShell(page,parentShell, "Delete", true, parentGroup, model);
+    				new AfpSeperationSelector(page,parentShell, "Delete", parentGroup, model, true);
+    				//AfpWizardUtils.createSeparationDomainShell(page,parentShell, "Delete", true, parentGroup, model);
     			else if (thisCaller.equals("Site SeparationRules"))
-    				AfpWizardUtils.createSeparationDomainShell(page,parentShell, "Delete", false, parentGroup, model);
+    				new AfpSeperationSelector(page,parentShell, "Delete", parentGroup, model, false);
+    				//AfpWizardUtils.createSeparationDomainShell(page,parentShell, "Delete", false, parentGroup, model);
 				
 			}
     		
     	});
-	}
-	
-	protected static void createMalDomainShell(final WizardPage page,Shell parentShell, final String action, final Group parentGroup, final AfpModel model){
-		final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL);
-		final AfpHoppingMALDomainModel domainModel = new AfpHoppingMALDomainModel(); 
-		
-		subShell.setText(action +  " MAL Domain");
-		subShell.setLayout(new GridLayout(2, false));
-		subShell.setLocation(200, 100);
-		
-		Label nameLabel = new Label(subShell, SWT.NONE);
-		nameLabel.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 2, 1));
-		nameLabel.setText("Domain Name");
-
-		if (action.equals("Add")){
-			Text nameText = new Text (subShell, SWT.BORDER | SWT.SINGLE);
-			nameText.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 2, 1));
-			nameText.addModifyListener(new ModifyListener(){
-
-				@Override
-				public void modifyText(ModifyEvent e) {
-					domainName = ((Text)e.widget).getText();
-				}
-				
-			});
-		}
-		
-		if (action.equals("Edit") || action.equals("Delete")){
-			Combo nameCombo = new Combo(subShell, SWT.DROP_DOWN | SWT.READ_ONLY);
-			//TODO populate combo values
-			nameCombo.setItems(model.getAllMALDomainNames());
-			nameCombo.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 2, 1));
-			nameCombo.addModifyListener(new ModifyListener(){
-
-				@Override
-				public void modifyText(ModifyEvent e) {
-					domainName = ((Combo)e.widget).getText();
-				}
-				
-			});
-			
-			nameCombo.addSelectionListener(new SelectionListener(){
-
-				@Override
-				public void widgetDefaultSelected(SelectionEvent e) {
-					widgetSelected(e);					
-				}
-
-				@Override
-				public void widgetSelected(SelectionEvent e) {
-					domainName = ((Combo)e.widget).getText();
-				}
-				
-			});
-		}
-		
-		
-		
-		Group rulesGroup = new Group(subShell, SWT.NONE);
-		rulesGroup.setLayout(new GridLayout(2, false));
-		rulesGroup.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, false, false,2 ,1));
-		rulesGroup.setText("MAL Size Rules");
-		
-		Label trxLabel = new Label(rulesGroup, SWT.LEFT);
-		trxLabel.setText("Hopping TRXs");
-		makeFontBold(trxLabel);
-		
-		Label sizeLabel = new Label(rulesGroup, SWT.LEFT);
-		sizeLabel.setText("MAL Size");
-		makeFontBold(sizeLabel);
-		
-		new Label(rulesGroup, SWT.CENTER).setText("1");
-		Text text1 = new Text (rulesGroup, SWT.BORDER | SWT.SINGLE);
-		text1.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false));
-		text1.setText("3");
-		//TODO add some mechanism to have only one listener class for all these buttons.
-		text1.addModifyListener(new ModifyListener(){
-
-			@Override
-			public void modifyText(ModifyEvent e) {
-				int size = Integer.parseInt(((Text)e.widget).getText()); 
-				if (size < 1)
-					actionButton.setEnabled(false);
-				domainModel.setMALSize0(size);	
-			}
-			
-		});
-		
-		new Label(rulesGroup, SWT.CENTER).setText("2");
-		Text text2 = new Text (rulesGroup, SWT.BORDER | SWT.SINGLE);
-		text2.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false));
-		text2.setText("3");
-		
-		new Label(rulesGroup, SWT.CENTER).setText("3");
-		Text text3 = new Text (rulesGroup, SWT.BORDER | SWT.SINGLE);
-		text3.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false));
-		text3.setText("4");
-		
-		new Label(rulesGroup, SWT.CENTER).setText("4");
-		Text text4 = new Text (rulesGroup, SWT.BORDER | SWT.SINGLE);
-		text4.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false));
-		text4.setText("4");
-		
-		new Label(rulesGroup, SWT.CENTER).setText("5");
-		Text text5 = new Text (rulesGroup, SWT.BORDER | SWT.SINGLE);
-		text5.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false));
-		text5.setText("5");
-		
-		new Label(rulesGroup, SWT.CENTER).setText("6");
-		Text text6 = new Text (rulesGroup, SWT.BORDER | SWT.SINGLE);
-		text6.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false));
-		text6.setText("6");
-		
-		new Label(rulesGroup, SWT.CENTER).setText("7");
-		Text text7 = new Text (rulesGroup, SWT.BORDER | SWT.SINGLE);
-		text7.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false));
-		text7.setText("7");
-		
-		new Label(rulesGroup, SWT.CENTER).setText("8");
-		Text text8 = new Text (rulesGroup, SWT.BORDER | SWT.SINGLE);
-		text8.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false));
-		text8.setText("8");
-		
-		new Label(rulesGroup, SWT.CENTER).setText("9");
-		Text text9 = new Text (rulesGroup, SWT.BORDER | SWT.SINGLE);
-		text9.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false));
-		text9.setText("9");
-		
-		new Label(rulesGroup, SWT.CENTER).setText("10");
-		Text text10 = new Text (rulesGroup, SWT.BORDER | SWT.SINGLE);
-		text10.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false));
-		text10.setText("10");
-		
-		new Label(rulesGroup, SWT.CENTER).setText("11");
-		Text text11 = new Text (rulesGroup, SWT.BORDER | SWT.SINGLE);
-		text11.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false));
-		text11.setText("11");
-		
-		new Label(rulesGroup, SWT.CENTER).setText("12");
-		Text text12 = new Text (rulesGroup, SWT.BORDER | SWT.SINGLE);
-		text12.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false));
-		text12.setText("12");
-		
-		new Label(rulesGroup, SWT.CENTER).setText("13");
-		Text text13 = new Text (rulesGroup, SWT.BORDER | SWT.SINGLE);
-		text13.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, false));
-		text13.setText("13");
-		
-		
-		
-		actionButton = new Button(subShell, SWT.PUSH);
-		actionButton.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 1, 1));
-		
-		actionButton.setText(action);
-		actionButton.addSelectionListener(new SelectionAdapter(){
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				if (action.equals("Add")){
-					domainModel.setName(domainName);
-					model.addMALDomain(domainModel);
-					Label newDomainLabel = new Label(parentGroup, SWT.LEFT);
-					newDomainLabel.setText(domainName);
-					Label domainTRXLabel = new Label(parentGroup, SWT.LEFT);
-					//TODO Do something for TRX
-					domainTRXLabel.setText("0");
-					((AfpSYHoppingMALsPage)page).refreshPage();
-				}
-				//TODO add for edit and delete
-				
-				if (action.equals("Delete")){
-					AfpHoppingMALDomainModel domainModel = model.findMALDomain(domainName);
-					
-					if (domainModel == null){
-						//TODO Do some error handling here;
-					}
-					model.deleteMALDomain(domainModel);
-					((AfpSYHoppingMALsPage)page).refreshPage();
-				}
-				
-				subShell.dispose();
-			}
-		});
-		
-		
-		Button cancelButton = new Button(subShell, SWT.PUSH);
-		cancelButton.setLayoutData(new GridData(GridData.END, GridData.BEGINNING, false, false, 1, 1));
-		cancelButton.setText("Cancel");
-		cancelButton.addSelectionListener(new SelectionAdapter(){
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				subShell.dispose();
-			}
-		});
-		
-		subShell.pack();
-		subShell.open();
 	}
 	
 	protected static void createSeparationDomainShell(final WizardPage page,Shell parentShell, final String action, final boolean isSector, final Group parentGroup, final AfpModel model){
@@ -796,7 +600,7 @@ public class AfpWizardUtils {
 						if (domainModel == null){
 							//TODO Do some error handling here;
 						}
-						model.deleteSectorSeparationDomain(domainModel.getName());
+						model.deleteSectorSeparationDomain(domainModel);
 						((AfpSeparationRulesPage)page).refreshPage();
 					}
 					else{

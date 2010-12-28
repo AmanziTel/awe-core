@@ -16,8 +16,16 @@ public class AfpSeparationDomainModel extends AfpDomainModel {
 	 * 7- SY TCH-Non/BB TCH
 	 * 8- SY TCH-SY TCH-
 	 */
-	private String[] separations = new String[]{"2", "2", "2", "2", "2", "2", "2", "2", "2"};
+	private String[] separations = new String[]{"2", "2", "2", "2", "2", "2", "2", "2", "1"};
 
+	public AfpSeparationDomainModel() {
+		
+	}
+	public AfpSeparationDomainModel(AfpSeparationDomainModel c) {
+		this.setFree(c.isFree());
+		this.setName(c.getName());
+		this.setSeparations(c.getSeparations());
+	}
 	/**
 	 * @return the separations array
 	 */
@@ -32,6 +40,15 @@ public class AfpSeparationDomainModel extends AfpDomainModel {
 		this.separations = separations;
 	}
 	
+	public String getSeparation(int index) {
+		if(index < this.separations.length)
+			return separations[index];
+		return "";
+	}
+	public void setSeparation(int index, String separation) {
+		if(index < this.separations.length)
+			this.separations[index] = separation;
+	}
 	/**
 	 * @return the separations array 0 element
 	 */

@@ -19,6 +19,7 @@ import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.utils.Pair;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Label;
@@ -560,8 +561,13 @@ public class AfpModel {
 	 * @return the freqDomains
 	 */
 	public Collection<AfpFrequencyDomainModel> getFreqDomains(boolean addFree) {
+		
 		addRemoveFreeFrequencyDomain(addFree);
-		return freqDomains.values();
+		ArrayList<AfpFrequencyDomainModel> l = new ArrayList<AfpFrequencyDomainModel>();
+		for(AfpFrequencyDomainModel d:freqDomains.values()) {
+			l.add(new AfpFrequencyDomainModel(d));
+		}
+		return l;
 	}
 
 
@@ -588,7 +594,12 @@ public class AfpModel {
 	 */
 	public Collection<AfpHoppingMALDomainModel> getMalDomains() {
 		addDefaultMalDomains();
-		return malDomains.values();
+		ArrayList<AfpHoppingMALDomainModel> l = new ArrayList<AfpHoppingMALDomainModel>();
+		for(AfpHoppingMALDomainModel d:this.malDomains.values()) {
+			l.add(new AfpHoppingMALDomainModel(d));
+		}
+		
+		return l;
 	}
 
 
@@ -605,7 +616,13 @@ public class AfpModel {
 	 * @return the siteSeparationDomains
 	 */
 	public Collection<AfpSeparationDomainModel> getSiteSeparationDomains() {
-		return siteSeparationDomains.values();
+		addDefaultSiteSeparationDomains();
+		ArrayList<AfpSeparationDomainModel> l = new ArrayList<AfpSeparationDomainModel>();
+		for(AfpSeparationDomainModel d:this.siteSeparationDomains.values()) {
+			l.add(new AfpSeparationDomainModel(d));
+		}
+		
+		return l;
 	}
 
 
@@ -632,11 +649,13 @@ public class AfpModel {
 	 */
 	public Collection<AfpSeparationDomainModel> getSectorSeparationDomains() {
 		addDefaultSectorSeparationDomains();
-		return sectorSeparationDomains.values();
+		ArrayList<AfpSeparationDomainModel> l = new ArrayList<AfpSeparationDomainModel>();
+		for(AfpSeparationDomainModel d:this.sectorSeparationDomains.values()) {
+			l.add(new AfpSeparationDomainModel(d));
+		}
+		
+		return l;
 	}
-
-
-
 
 
 	/**
@@ -1006,12 +1025,16 @@ public class AfpModel {
 		siteSeparationDomains.put(separationDomain.getName(),separationDomain);
 	}
 	
+	public void editSiteSeparationDomain(AfpSeparationDomainModel domain){
+		siteSeparationDomains.put(domain.getName(),domain);
+	}
+
 	public void deleteSiteSeparationDomain(AfpSeparationDomainModel separationDomain){
 		if (separationDomain == null){
 			//TODO error handling
 		}
-			
-		siteSeparationDomains.remove(separationDomain);
+		if(siteSeparationDomains.containsKey(separationDomain.getName()))
+			siteSeparationDomains.remove(separationDomain.getName());
 	}
 	
 	public AfpSeparationDomainModel findSiteSeparationDomain(String domainName){
@@ -1034,13 +1057,16 @@ public class AfpModel {
 	public void addSectorSeparationDomain(AfpSeparationDomainModel separationDomain){
 		sectorSeparationDomains.put(separationDomain.getName(), separationDomain);
 	}
+	public void editSectorSeparationDomain(AfpSeparationDomainModel domain){
+		sectorSeparationDomains.put(domain.getName(),domain);
+	}
 	
-	public void deleteSectorSeparationDomain(String separationDomainName){
-		if (separationDomainName == null){
+	public void deleteSectorSeparationDomain(AfpSeparationDomainModel domain){
+		if (domain == null){
 			//TODO error handling
 		}
-		if(sectorSeparationDomains.containsKey(separationDomainName))
-			sectorSeparationDomains.remove(separationDomainName);
+		if(sectorSeparationDomains.containsKey(domain.getName()))
+			sectorSeparationDomains.remove(domain.getName());
 	}
 	
 	public AfpSeparationDomainModel findSectorSeparationDomain(String domainName){
@@ -1554,7 +1580,7 @@ public class AfpModel {
 		return sb.toString();
 	}
 	
-	public static String[] convertFreqString2Array(String frequenciesText, String frequencies[]) {
+	public static Pair<String[],String[]> convertFreqString2Array(String frequenciesText, String frequencies[]) {
 		int numSelected = 0;
 		String[] frequenciesLeft = null;
 		String[] selectedRanges = new String[]{};
@@ -1584,7 +1610,7 @@ public class AfpModel {
 			frequenciesLeft = frequencies;
 		}
 		frequencies = frequenciesLeft;
-		return selectedRanges;
+		return new Pair<String[], String[]>(selectedRanges,frequencies);
 	}
 	/**
 	 * Converts string array containing integer values and ranges to string array containing int values only

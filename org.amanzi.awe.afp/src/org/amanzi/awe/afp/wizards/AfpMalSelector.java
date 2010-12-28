@@ -26,8 +26,9 @@ public class AfpMalSelector extends AfpDomainSelector {
 
 	public AfpMalSelector(WizardPage page, Shell parentShell,
 			String action, Group parentGroup, AfpModel model) {
-		super(" MAL Domain", page, parentShell, action, parentGroup, model, model.getAllMALDomainNames());
+		super( page, parentShell, parentGroup, model);
 		
+		this.createUI(action, " MAL Domain",model.getAllMALDomainNames());
 		if (action.equals("Edit") || action.equals("Delete")){
 			for(AfpHoppingMALDomainModel d: model.getMalDomains()) {
 				this.domain2Edit = d;

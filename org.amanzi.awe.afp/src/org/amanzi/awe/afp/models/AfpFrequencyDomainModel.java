@@ -29,6 +29,15 @@ public class AfpFrequencyDomainModel extends AfpDomainModel {
 		}
 	}
 	
+	public AfpFrequencyDomainModel() {
+	}
+	public AfpFrequencyDomainModel(AfpFrequencyDomainModel c) {
+		this.setBand(c.getBand());
+		this.setFree(c.isFree());
+		this.setFrequencies(c.getFrequencies());
+		this.setName(c.getName());
+	}
+	
 	
 	public int getCount() {
 		// calculate not free count

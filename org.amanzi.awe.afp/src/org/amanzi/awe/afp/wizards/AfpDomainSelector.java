@@ -30,14 +30,15 @@ public class AfpDomainSelector {
 	protected boolean newDomain = true;
 	protected AfpDomainModel domain2Edit = null;
 
-	public AfpDomainSelector(String title, final WizardPage page, Shell parentShell, final String action, final Group parentGroup, final AfpModel model,
-			String[] editNames){
+	public AfpDomainSelector(final WizardPage page, Shell parentShell, final Group parentGroup, final AfpModel model){
 
 		int selectedBand =0;
 		subShell = new Shell(parentShell, SWT.PRIMARY_MODAL);
 		this.model = model;
 		this.page = page;
-		
+	}
+	
+	public void createUI(final String action, String title,String[] editNames) {
 		subShell.setText(action +  title);
 		subShell.setLayout(new GridLayout(3, false));
 		subShell.setLocation(200, 200);

@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.amanzi.neo.services.utils.Pair;
 
 public class AfpFrequencySelector extends AfpDomainSelector{
 	AfpDomainModel domainModel;
@@ -34,7 +35,8 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 
 	
 	public AfpFrequencySelector(final WizardPage page, Shell parentShell, final String action, final Group parentGroup, final AfpModel model){
-		super(" Frequency Domain", page, parentShell, action, parentGroup, model, model.getAllFrequencyDomainNames());
+		super( page, parentShell, parentGroup, model);
+		createUI(action, " Frequency Domain", model.getAllFrequencyDomainNames());
 		bandIndexes = model.getAvailableFrequencyBandsIndexs();
 
 		int selectedBand =0;
@@ -120,7 +122,9 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 			frequencies = AfpModel.rangeArraytoArray(model.getAvailableFreq(bandCombo.getItem(bandCombo.getSelectionIndex())).split(","));
 
 			selectedList.removeAll();
-			String[] selected = AfpModel.convertFreqString2Array(((AfpFrequencyDomainModel)domain2Edit).getFrequenciesAsString(),frequencies);
+			Pair<String[], String[]> p = AfpModel.convertFreqString2Array(((AfpFrequencyDomainModel)domain2Edit).getFrequenciesAsString(),frequencies);
+			String[] selected = p.getLeft();
+			frequencies = p.getRight();
 			if(selected.length >0) {
 				selectedList.setItems(selected);
 			}

@@ -15,6 +15,14 @@ public class AfpHoppingMALDomainModel extends AfpDomainModel{
 		return MALSize;
 	}
 
+	public AfpHoppingMALDomainModel() {
+	}
+	public AfpHoppingMALDomainModel(AfpHoppingMALDomainModel c) {
+		this.setMALSize(c.getMALSize());
+		this.setFree(c.isFree());
+		this.setName(c.getName());
+	}
+
 	/**
 	 * @param size the mALSize array to set
 	 */
