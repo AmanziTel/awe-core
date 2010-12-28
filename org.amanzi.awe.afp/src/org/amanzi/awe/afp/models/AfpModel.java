@@ -984,6 +984,9 @@ public class AfpModel {
 	}
 	
 	public void addMALDomain(AfpHoppingMALDomainModel malDomain){
+		if(malDomains.containsKey(malDomain.getName())) {
+			malDomain.setName(malDomain.getName() + "-1");
+		}
 		malDomains.put(malDomain.getName(),malDomain);
 	}
 	
@@ -1022,6 +1025,9 @@ public class AfpModel {
 	}
 	
 	public void addSiteSeparationDomain(AfpSeparationDomainModel separationDomain){
+		if(siteSeparationDomains.containsKey(separationDomain.getName())) {
+			separationDomain.setName(separationDomain.getName() + "-1");
+		}
 		siteSeparationDomains.put(separationDomain.getName(),separationDomain);
 	}
 	
@@ -1055,6 +1061,9 @@ public class AfpModel {
 	
 	
 	public void addSectorSeparationDomain(AfpSeparationDomainModel separationDomain){
+		if(sectorSeparationDomains.containsKey(separationDomain.getName())) {
+			separationDomain.setName(separationDomain.getName() + "-1");
+		}
 		sectorSeparationDomains.put(separationDomain.getName(), separationDomain);
 	}
 	public void editSectorSeparationDomain(AfpSeparationDomainModel domain){
