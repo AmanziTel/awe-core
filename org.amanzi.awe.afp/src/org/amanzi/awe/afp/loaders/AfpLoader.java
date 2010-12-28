@@ -14,6 +14,7 @@ package org.amanzi.awe.afp.loaders;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -28,6 +29,8 @@ import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.core.utils.importer.CommonImporter;
 import org.amanzi.neo.loader.AbstractLoader;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
@@ -35,6 +38,7 @@ import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.neo.services.utils.RunnableWithResult;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -63,13 +67,19 @@ public class AfpLoader extends AbstractLoader {
     private final String rootName;
 
     /** The afp root. */
-    private Node afpRoot;
+    protected Node afpRoot;
 
     /** The afp cell. */
     private Node afpCell;
 
     /** The lucene ind. */
     private LuceneIndexService luceneInd;
+
+    private NetworkService networkService;
+    
+    private Node prevFreqNode = null;
+    
+    protected Node afpDataset = null;
 
     /**
      * Instantiates a new afp loader.
@@ -83,6 +93,7 @@ public class AfpLoader extends AbstractLoader {
         this.file = file;
         this.neo = service;
         luceneInd = NeoServiceProviderUi.getProvider().getIndexService();
+        networkService = NeoServiceFactory.getInstance().getNetworkService();
 
     }
 
@@ -314,10 +325,29 @@ public class AfpLoader extends AbstractLoader {
      * @param cellFile the cell file
      * @param monitor the monitor
      */
-    private void loadCellFile(File cellFile) {
+    protected void loadCellFile(File cellFile) {
         // TODO define root of cell file. If we create virtual dataset for it what we should store
         // in main part?
         afpCell = afpRoot;
+        
+        // create the virtual data set node
+        if(afpDataset != null) {
+            Transaction tx = this.neo.beginTx();
+            try {
+                Node child = this.neo.createNode();
+                child.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.FREQ);
+                child.setProperty(INeoConstants.PROPERTY_NAME_NAME, (new Date()).toString());
+                afpDataset.createRelationshipTo(child, NetworkRelationshipTypes.CHILD);
+                tx.success();
+                prevFreqNode = child;
+            } finally {
+                tx.finish();
+            }
+
+//        	prevFreqNode = networkService.addFREQNode(afpDataset, (new Date()).toString(), null);
+        	
+        	AweConsolePlugin.info("Created new Freq plan node ");
+        }
         CommonImporter importer = new CommonImporter(new CellFileHandler(afpCell, neo), new TxtFileImporter(cellFile));
         importer.process();
     }
@@ -471,7 +501,31 @@ public class AfpLoader extends AbstractLoader {
             super(rootNode, service);
             header = getHeaderMap(CELL_IND).headers;
         }
+        
+        private String getSampleSectorName(String siteName, String sectorNo) {
+            Node site = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteName);
+            if (site != null) {
+            	// find a sector under this site
+            	for(Relationship r: site.getRelationships(NetworkRelationshipTypes.CHILD,Direction.OUTGOING)) {
+            		Node n = r.getEndNode();
+            		if(n.getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.SECTOR.getId())) {
+            			// get sector name stored
+            			String name = (String)n.getProperty(INeoConstants.PROPERTY_NAME_NAME,"");
+            			
+            			return name;
+            		}
+            	}
+            }
+            return null;
+        }
 
+        private boolean checkConvertSectorNo2Char(String sectorName) {
+            if(sectorName != null){
+            	char secno = sectorName.charAt(sectorName.length()-1);
+            	return Character.isLetter(secno);
+            }
+            return false;
+        }
         /**
          * Store line.
          * 
@@ -491,13 +545,37 @@ public class AfpLoader extends AbstractLoader {
                 for (int j = 0; j < frq.length; j++) {
                     frq[j] = Integer.valueOf(field[i++]);
                 }
+                
+                boolean convertSectorNo2Char  = false;
+                boolean reduceSectorName = false;
+                int sectorNameLength =0;
+                String sampleSectorName = getSampleSectorName(siteName,field[1]);
+                if(sampleSectorName != null) {
+                	convertSectorNo2Char = checkConvertSectorNo2Char(sampleSectorName);
+                	
+                	if(sampleSectorName.length() < (siteName+field[1]).length()){
+                		reduceSectorName = true;
+                		sectorNameLength = sampleSectorName.length();
+                	}
+                }
+                
                 Transaction tx = service.beginTx();
                 try {
                     Node site = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteName);
                     if (site == null) {
                         site = addChild(afpCell, NodeTypes.SITE, siteName, siteName);
                     }
-                    String sectorName = siteName + field[1];
+                    String sectorName;
+                    if(convertSectorNo2Char) {
+                    	char c = field[1].charAt(0);
+                    	c = (char)((c- '1') + 'A');
+                    	sectorName = siteName + c;
+                    }else {
+                    	sectorName = siteName + field[1];
+                    }
+                    if(reduceSectorName) {
+                    	sectorName = sectorName.substring(sectorName.length() - sectorNameLength);
+                    }
                     Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
                     if (sector == null) {
                         sector = addChild(site, NodeTypes.SECTOR, sectorName, sectorName);
@@ -505,7 +583,11 @@ public class AfpLoader extends AbstractLoader {
                     setIndexProperty(header, sector, "nonrelevant", nonrelevant);
                     setIndexProperty(header, sector, "numberoffreqenciesrequired", numberoffreqenciesrequired);
                     setIndexProperty(header, sector, "numberoffrequenciesgiven", numberoffrequenciesgiven);
-                    sector.setProperty("frq", frq);
+                    for(int j=0; j< frq.length;j++) {
+                    	AweConsolePlugin.info("Adding TRX and FREQ for sector " + sectorName);
+                        Node trx = networkService.getTRXNode(sector, ""+j, 0);
+                        prevFreqNode = networkService.addFREQNode(trx, ""+frq[j], prevFreqNode);
+                    }
                     tx.success();
                 } finally {
                     tx.finish();

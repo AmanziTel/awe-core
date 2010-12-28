@@ -86,7 +86,7 @@ public class AfpExporter {
 				 writer.write(sectorValues[0]);
 				 writer.write(" " + sectorValues[1]);
 				 writer.write(" " + 1);//sector.getProperty("nonrelevant"));
-				 writer.write(" " + 1);//sector.getProperty("numberoffreqenciesrequired"));
+				 writer.write(" " + 2);//sector.getProperty("numberoffreqenciesrequired"));
 				 writer.write(" " + 1);//sector.getProperty("numberoffrequenciesgiven"));
 				 /*Object obj = sector.getProperty("frq");
 				 
@@ -106,7 +106,7 @@ public class AfpExporter {
 					 }
 					 
 				 }*/
-				 writer.write(" " + 0);
+				 writer.write(" " + 1);
 				 writer.newLine();
 			 }
 			 writer.close();

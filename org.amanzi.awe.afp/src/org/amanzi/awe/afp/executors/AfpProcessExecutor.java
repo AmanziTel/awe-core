@@ -23,6 +23,7 @@ import java.util.HashMap;
 import org.amanzi.awe.afp.Activator;
 import org.amanzi.awe.afp.AfpEngine;
 import org.amanzi.awe.afp.loaders.AfpExporter;
+import org.amanzi.awe.afp.loaders.AfpOutputFileLoader;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -58,14 +59,15 @@ public class AfpProcessExecutor extends Job {
 	protected GraphDatabaseService neo;
 	protected Transaction transaction;
 	private HashMap<String, String> parameters;
+	private Node afpDataset;
 	
 	
-	
-	public AfpProcessExecutor(String name, Node afpRoot, final GraphDatabaseService service, HashMap<String, String> parameters) {
+	public AfpProcessExecutor(String name, Node afpRoot,Node afpDataset, final GraphDatabaseService service, HashMap<String, String> parameters) {
 		super(name);
 		this.afpRoot = afpRoot;
 		this.neo = service;
 		this.parameters = parameters;
+		this.afpDataset = afpDataset;
 	}
 
 	public void setProgress(AfpProcessProgress progress) {
@@ -163,6 +165,7 @@ public class AfpProcessExecutor extends Job {
 				if(jobFinished){
                     AweConsolePlugin.info("AFP Finished, closing process...");
 					process.destroy();
+					// load the output file
 					break;
 				}
 				//Thread.sleep(100);
@@ -173,7 +176,9 @@ public class AfpProcessExecutor extends Job {
                     AweConsolePlugin.info("Interrupted waiting for threads: " + e);
                 }
 			}
-			
+			AfpOutputFileLoader afpOutputFileLoader = new AfpOutputFileLoader(afpRoot,afpE.outputFileName,afpDataset,neo);
+			afpOutputFileLoader.run(monitor);
+			monitor.done();
 		}catch (Exception e){
 			e.printStackTrace();
 			AweConsolePlugin.exception(e);

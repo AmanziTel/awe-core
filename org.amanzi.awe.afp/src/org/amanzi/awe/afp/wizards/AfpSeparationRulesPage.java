@@ -51,8 +51,12 @@ public class AfpSeparationRulesPage extends AfpWizardPage {
    	 	thisParent.setLayout(new GridLayout(2, false));
 		
 		Group stepsGroup = AfpWizardUtils.getStepsGroup(thisParent, 5);
-		
-		TabFolder tabFolder =new TabFolder(thisParent, SWT.NONE | SWT.BORDER);
+
+		Group main = new Group(thisParent, SWT.NONE);
+		main.setLayout(new GridLayout(1, true));
+		main.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1 ,1));
+
+		TabFolder tabFolder =new TabFolder(main, SWT.NONE);// | SWT.BORDER);
 		tabFolder.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true));
     	TabItem item1 =new TabItem(tabFolder,SWT.NONE);
 		item1.setText("Sector");
@@ -80,7 +84,6 @@ public class AfpSeparationRulesPage extends AfpWizardPage {
 		
 		
     	filterTableSector = addTRXFilterGroup(sectorMain, headers,10, false);
-
 		
 		item1.setControl(sectorMain);
 		
@@ -89,14 +92,14 @@ public class AfpSeparationRulesPage extends AfpWizardPage {
 		
 		Group siteMain = new Group(tabFolder, SWT.NONE);
 		siteMain.setLayout(new GridLayout(1, false));
-		siteMain.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true, 1 ,2));
+		siteMain.setLayoutData(new GridData(GridData.FILL, SWT.FILL, true, true, 1 ,2));
 		
 		siteDomainsGroup = new Group(siteMain, SWT.NONE);
 		siteDomainsGroup.setLayout(new GridLayout(3, true));
-		siteDomainsGroup.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true,1 ,10));
+		siteDomainsGroup.setLayoutData(new GridData(GridData.FILL, SWT.FILL, true, true,1 ,10));
 		
 		Label siteDomainsLabel = new Label(siteDomainsGroup, SWT.LEFT);
-		siteDomainsLabel.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 1 , 1));
+		siteDomainsLabel.setLayoutData(new GridData(GridData.FILL, SWT.BEGINNING, true, false, 1 , 1));
 		siteDomainsLabel.setText("Domains");
     	AfpWizardUtils.makeFontBold(siteDomainsLabel);
     	
@@ -188,7 +191,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage {
 		    
 		    int cnt =0;
 		    for (Node node : traverser) {
-		    	if(cnt > 100) 
+		    	if(cnt > 10) 
 		    		break;
 		    	TableItem item = new TableItem(table, SWT.NONE);
 		    	for (int j = 0; j < headers.length; j++){

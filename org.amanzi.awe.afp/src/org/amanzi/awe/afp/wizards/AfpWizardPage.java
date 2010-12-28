@@ -183,7 +183,7 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
     		
     	});
     	
-    	final TableViewer viewer = new TableViewer(trxFilterGroup, SWT.VIRTUAL | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+    	final TableViewer viewer = new TableViewer(trxFilterGroup, SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL);
     	final AfpTRXFilter filter = new AfpTRXFilter();
     	viewer.addFilter(filter);
     	for (String item : headers) {

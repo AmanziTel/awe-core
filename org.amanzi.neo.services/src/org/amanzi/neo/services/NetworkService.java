@@ -16,6 +16,7 @@ package org.amanzi.neo.services;
 import java.util.Iterator;
 
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.utils.Utils;
 import org.neo4j.graphdb.Direction;
@@ -266,5 +267,28 @@ public class NetworkService extends AbstractService {
         return itr.hasNext()?itr.next().endNode():null;
     }
 
+    /**
+    *
+    * @param sector
+    * @param trxId
+    * @param channelGr
+    * @return
+    */
+   public Node addFREQNode(Node trxNode, String freq, Node prevFREQNode) {
+       Node freqNode = null;
+       if (trxNode!=null){
+           Transaction tx = databaseService.beginTx();
+           try {
+        	   freqNode=NeoServiceFactory.getInstance().getDatasetService().addSimpleChild(trxNode, NodeTypes.FREQ, freq);
+        	   if(prevFREQNode != null) {
+        		   prevFREQNode.createRelationshipTo(freqNode, NetworkRelationshipTypes.NEXT);
+        	   }
+               tx.success();
+           } finally {
+               tx.finish();
+           }           
+       }
+       return freqNode;
+   }
 
 }

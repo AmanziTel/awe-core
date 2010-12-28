@@ -173,6 +173,13 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage {
 		    	}
 		    	cnt++;
 		    }
+		    for(;cnt <10;cnt++) {
+		    	TableItem item = new TableItem(filterTable, SWT.NONE);
+		    	for (int j = 0; j < headers.length; j++){
+		    		String val = "";
+	    			item.setText(j, val);
+		    	}		    	
+		    }
 		    for (int i = 0; i < headers.length; i++) {
 		    	filterTable.getColumn(i).pack();
 		    }

@@ -1497,19 +1497,39 @@ public class AfpModel {
 	    	parameters.put(ControlFileProperties.MIN_NEIGBOUR_SPACING, "0");
 	    	parameters.put(ControlFileProperties.SECOND_NEIGHBOUR_SPACING, "1");
 	    	parameters.put(ControlFileProperties.QUALITY, "100");
-	    	parameters.put(ControlFileProperties.G_MAX_RT_PER_CELL, "1");
-	    	parameters.put(ControlFileProperties.G_MAX_RT_PER_SITE, "1");
+	    	parameters.put(ControlFileProperties.G_MAX_RT_PER_CELL, "2");
+	    	parameters.put(ControlFileProperties.G_MAX_RT_PER_SITE, "2");
 	    	parameters.put(ControlFileProperties.HOPPING_TYPE, "1");
 	    	parameters.put(ControlFileProperties.NUM_GROUPS, "6");
 	    	parameters.put(ControlFileProperties.CELL_CARDINALITY, "61");
-	    	parameters.put(ControlFileProperties.CARRIERS, "6 1 2 3 4 5 6");
+	    	StringBuffer carriers = new StringBuffer();
+	    	int cnt =0;
+	    	for(int i=0; i< frequencyBands.length;i++) {
+	    		if(frequencyBands[i]) {
+	    			String freq = this.availableFreq[i];
+	    			String[] franges = freq.split(",");
+	    			
+	    			boolean first = true;
+	    			String[] freqList = rangeArraytoArray(franges);
+	    			for(String f: freqList) {
+	    				if(!first) {
+		    				carriers.append(",");
+	    				}
+	    				carriers.append(f);
+	    				cnt++;
+	    				first = false;
+	    			}
+	    		}
+	    	}
+	    	
+	    	parameters.put(ControlFileProperties.CARRIERS, carriers.toString());
 	    	parameters.put(ControlFileProperties.USE_GROUPING, "1");
 	    	parameters.put(ControlFileProperties.EXIST_CLIQUES, "0");
 	    	parameters.put(ControlFileProperties.RECALCULATE_ALL, "1" );
 	    	parameters.put(ControlFileProperties.USE_TRAFFIC, "1");
 	    	parameters.put(ControlFileProperties.USE_SO_NEIGHBOURS, "1");
 	    	parameters.put(ControlFileProperties.DECOMPOSE_CLIQUES, "0");
-			afpJob = new AfpProcessExecutor("Execute Afp Process", datasetNode, service, parameters);
+			afpJob = new AfpProcessExecutor("Execute Afp Process", datasetNode,this.afpNode, service, parameters);
 			afpJob.setProgress(progress);
 			//afpJob.schedule();
     	}
