@@ -1,5 +1,7 @@
 package org.amanzi.awe.afp.models;
 
+import java.util.Vector;
+
 import org.amanzi.neo.services.INeoConstants;
 import org.neo4j.graphdb.Node;
 
@@ -28,6 +30,14 @@ public class AfpFrequencyDomainModel extends AfpDomainModel {
 	}
 	
 	
+	public int getCount() {
+		// calculate not free count
+		String r[] = AfpModel.rangeArraytoArray(frequencies);
+		if(r != null) {
+			return r.length;
+		}
+		return 0;
+	}
 	/**
 	 * @return the band
 	 */
@@ -46,11 +56,37 @@ public class AfpFrequencyDomainModel extends AfpDomainModel {
 	public String[] getFrequencies() {
 		return frequencies;
 	}
+	public String getFrequenciesAsString() {
+		String s = new String();
+		boolean flg = false;
+		if(frequencies != null) {
+			for(String s2: frequencies) {
+				if(flg) {
+					s+=",";
+				}
+				s+=s2;
+				flg = true;
+			}
+		}
+		return s;
+	}
 	/**
 	 * @param frequencies the frequencies to set
 	 */
 	public void setFrequencies(String[] frequencies) {
-		this.frequencies = frequencies;
+		if(frequencies != null) {
+			Vector<String> v = new Vector<String>();
+			// validate and split if required.
+			for(String f: frequencies) {
+				String[] tokens = f.split(",");
+				for(String t:tokens) {
+					v.add(t);
+				}
+			}
+			this.frequencies = new String[v.size()];
+			v.copyInto(this.frequencies);
+		} else
+			this.frequencies = null;
 	}
 
 

@@ -141,27 +141,20 @@ public class AfpFrequencyTypePage extends AfpWizardPage {
 	
 	public void refreshPage(){
 		
-		Set<String> keys = domainLabels.keySet();
-		if(keys != null) {
-			Iterator ki = keys.iterator();
-			
-			while(ki.hasNext()) {
-				String key = (String)ki.next();
-				this.deleteDomainLabels(key);
-				domainLabels.remove(key);
-			}
-			//domainLabels.clear();
+		for(Label[] labels:domainLabels.values()){
+				for (Label label : labels){
+					label.dispose();
+				}
 		}
+		domainLabels.clear();
 		
-		Vector<AfpFrequencyDomainModel> domains = model.getFreqDomains();
-		for(int i=0;i< domains.size();i++) {
-			AfpFrequencyDomainModel domainModel = domains.elementAt(i);
+		for(AfpFrequencyDomainModel domainModel: model.getFreqDomains(true)) {
 			if(domainModel != null) {
 				Label freePlanLabel = new Label(frequencyDomainsGroup, SWT.LEFT);
 				freePlanLabel.setText(domainModel.getName());
 				Label frequenciesFreePlanLabel = new Label(frequencyDomainsGroup, SWT.RIGHT);
 				//TODO: update the num frequencies and TRXs by default here
-				frequenciesFreePlanLabel.setText("0");
+				frequenciesFreePlanLabel.setText("" + domainModel.getCount());
 				Label TRXsFreePlanLabel = new Label(frequencyDomainsGroup, SWT.RIGHT);
 				TRXsFreePlanLabel.setText("0");
 				domainLabels.put(domainModel.getName(), new Label[]{freePlanLabel, frequenciesFreePlanLabel, TRXsFreePlanLabel});

@@ -173,7 +173,7 @@ public class AfpWizardUtils {
 			selectedRanges = frequenciesText.getText().split(",");
 		
 		if (selectedRanges.length > 0 && selectedRanges[0] != null && !selectedRanges[0].trim().equals("")){
-			String[] selected = rangeArraytoArray(selectedRanges);
+			String[] selected = AfpModel.rangeArraytoArray(selectedRanges);
 			numSelected = selected.length;
 			frequenciesLeft = new String[frequencies.length - selected.length];
 			
@@ -247,145 +247,6 @@ public class AfpWizardUtils {
 		
 	 }
 	
-	protected static void createFrequencyDomainShell(final WizardPage page, Shell parentShell, final String action, final Group parentGroup, final AfpModel model){
-		
-		final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL);
-		final AfpFrequencyDomainModel domainModel = new AfpFrequencyDomainModel();
-		
-		subShell.setText(action +  " Frequency Domain");
-		subShell.setLayout(new GridLayout(3, false));
-		subShell.setLocation(200, 200);
-		
-		Label nameLabel = new Label(subShell, SWT.NONE);
-		nameLabel.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
-		nameLabel.setText("Domain Name");
-
-		if (action.equals("Add")){
-			Text nameText = new Text (subShell, SWT.BORDER | SWT.SINGLE);
-			nameText.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
-			nameText.addModifyListener(new ModifyListener(){
-
-				@Override
-				public void modifyText(ModifyEvent e) {
-					domainName = ((Text)e.widget).getText();
-				}
-				
-			});
-		}
-		
-		if (action.equals("Edit") || action.equals("Delete")){
-			Combo nameCombo = new Combo(subShell, SWT.DROP_DOWN | SWT.READ_ONLY);
-			//TODO populate combo values
-			String names[] = model.getAllFrequencyDomainNames();
-			if(names == null) {
-				return;
-			}
-			if(names.length ==0) {
-				return;
-			}
-			nameCombo.setItems(names);
-			nameCombo.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
-			nameCombo.addModifyListener(new ModifyListener(){
-
-				@Override
-				public void modifyText(ModifyEvent e) {
-					domainName = ((Combo)e.widget).getText();
-				}
-				
-			});
-			
-			nameCombo.addSelectionListener(new SelectionListener(){
-
-				@Override
-				public void widgetDefaultSelected(SelectionEvent e) {
-					widgetSelected(e);					
-				}
-
-				@Override
-				public void widgetSelected(SelectionEvent e) {
-					domainName = ((Combo)e.widget).getText();
-				}
-				
-			});
-		}
-		
-		Group freqGroup = new Group(subShell, SWT.NONE);
-		freqGroup.setLayout(new GridLayout(3, false));
-		freqGroup.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, false, false,3 ,1));
-		freqGroup.setText("Frequency Selector");
-		
-		Label bandLabel = new Label(freqGroup, SWT.LEFT);
-		bandLabel.setText("Band");
-		bandLabel.setLayoutData(new GridData(GridData.FILL, SWT.LEFT, true, false,3 ,1));
-		
-		final Combo bandCombo = new Combo(freqGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
-		//TODO populate combo values
-		bandCombo.setItems(model.getAvailableBands());
-		bandCombo.setLayoutData(new GridData(GridData.FILL, SWT.LEFT, true, false,3 ,1));
-		
-		Label freqLabel = new Label (freqGroup, SWT.LEFT);
-		freqLabel.setText("Frequencies");
-		freqLabel.setLayoutData(new GridData(GridData.FILL, SWT.LEFT, true, false,2 ,1));
-		
-		Label selectionLabel = new Label (freqGroup, SWT.LEFT);
-		//TODO update this label on selection and removal of frequencies
-		selectionLabel.setText("0 Frequencies Selected");
-		selectionLabel.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false,1 ,1));
-		
-		//TODO update the frequencies on basis of selection
-		String frequencies[] = new String[885-512+1];
-		for (int i = 0; i < frequencies.length; i++){
-			frequencies[i] = Integer.toString(512 + i); 
-		}
-		List selectedList = createListSelector(freqGroup, frequencies, new String[0], selectionLabel);
-		Button actionButton = new Button(subShell, SWT.PUSH);
-		actionButton.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
-		
-		actionButton.setText(action);
-		actionButton.addSelectionListener(new SelectionAdapter(){
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				
-				if (action.equals("Add")){
-					domainModel.setName(domainName);
-					domainModel.setBand(bandCombo.getText());
-					domainModel.setFrequencies(selectedArray);
-					model.addFreqDomain(domainModel);
-					((AfpFrequencyTypePage)page).refreshPage();
-					//parentGroup.layout();
-				}
-				//TODO add for edit and delete buttons
-				
-				if (action.equals("Delete")){
-					AfpFrequencyDomainModel domainModel = model.findFreqDomain(domainName);
-					
-					if (domainModel == null){
-						//TODO Do some error handling here;
-						return;
-					}
-					model.deleteFreqDomain(domainModel);
-					parentGroup.layout();
-				}
-				
-				subShell.dispose();
-			}
-		});
-		
-		
-		Button cancelButton = new Button(subShell, SWT.PUSH);
-		cancelButton.setLayoutData(new GridData(GridData.END, GridData.BEGINNING, false, false, 1, 1));
-		cancelButton.setText("Cancel");
-		cancelButton.addSelectionListener(new SelectionAdapter(){
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				subShell.dispose();
-			}
-		});
-		
-		subShell.pack();
-		subShell.open();
-		
-	 }
 	
 	
 	/**
@@ -394,7 +255,7 @@ public class AfpWizardUtils {
 	 * @param leftList
 	 * @return
 	 */
-	private static List createListSelector(Group parentGroup, String[] leftList, String[] rightList, Label selectionLabel){
+	public static List createListSelector(Group parentGroup, String[] leftList, String[] rightList, Label selectionLabel){
 		
 		int numSelected = 0;
 		final Label thisSelectionLabel = selectionLabel;
@@ -430,8 +291,8 @@ public class AfpWizardUtils {
 						selectedList.add(item);
 						freqList.remove(item);
 					}
-					String array[] = rangeArraytoArray(selectedList.getItems());
-					String selected[] = arrayToRangeArray(array);
+					String array[] = AfpModel.rangeArraytoArray(selectedList.getItems());
+					String selected[] = AfpModel.arrayToRangeArray(array);
 					selectedArray = selected;
 					selectedList.setItems(selected);
 					thisSelectionLabel.setText("" + array.length + " Frequencies selected");
@@ -453,9 +314,9 @@ public class AfpWizardUtils {
 						selectedList.remove(item);
 					}
 					selectedArray = selectedList.getItems();
-					String array[] = rangeArraytoArray(selectedArray);
+					String array[] = AfpModel.rangeArraytoArray(selectedArray);
 					thisSelectionLabel.setText("" + array.length + " Frequencies selected");
-					String notSelected[] = rangeArraytoArray(freqList.getItems());
+					String notSelected[] = AfpModel.rangeArraytoArray(freqList.getItems());
 					freqList.setItems(notSelected);
 				}
 				
@@ -465,89 +326,6 @@ public class AfpWizardUtils {
 		return selectedList;
 	}
 	
-	/**
-	 * Converts string array containing integer values to string array containing int values and/or ranges (wherever applicable)
-	 * For example {"0","2","4","8","9","10","12","13","15","16","17","18","19","20", "22"} is converted to {"0","2","4","8-10","12","13","15-20", "22"}
-	 * @param array An string array containing string representations of int values (no ranges)
-	 * @return
-	 */
-	public static String[] arrayToRangeArray(String array[]){
-
-		int lastItem = -1;
-		int rangeFirstItem = -1;
-		String range = null;
-		boolean isRange = false;
-		int[] rangeArray = new int[array.length];
-		
-		for (int i = 0; i < array.length; i++){
-			rangeArray[i] = Integer.parseInt(array[i].trim());
-		}
-		
-		Arrays.sort(rangeArray);
-		
-		ArrayList<String> list = new ArrayList<String>();
-		for (int currItem : rangeArray){
-			if (lastItem >= 0 && currItem == lastItem + 1){
-				range = "" + rangeFirstItem + "-" +  currItem;
-				isRange = true;
-				lastItem = currItem;
-			}
-			else {
-				rangeFirstItem = currItem;
-				if (isRange){
-					list.add(range);
-					isRange = false;
-				}
-				
-				else if (lastItem >= 0)
-					list.add(Integer.toString(lastItem));
-				lastItem = currItem;
-			}
-		}
-		if (isRange)
-			list.add(range);
-		else list.add(Integer.toString(lastItem));
-		
-	
-		return list.toArray(new String[0]);
-	}
-	
-	/**
-	 * Converts string array containing integer values and ranges to string array containing int values only
-	 * For example {"0","2","4","8-10","12","13","15-20", "22"} is converted to {"0","2","4","8","9","10","12","13","15","16","17","18","19","20", "22"} 
-	 * @param rangeArray string array containing string representations of int and/or ranges (eg. 9-12 implies 9,10,11,12) 
-	 * @return sorted string array containing only string representations of int and no ranges.
-	 */
-	public static String[] rangeArraytoArray(String[] rangeArray){
-		ArrayList<String> list = new ArrayList<String>();
-		for (String item : rangeArray){
-			int index = item.indexOf("-");
-			if (index == -1){
-				list.add(item);
-			}
-			else{
-				int start = Integer.parseInt(item.substring(0,index).trim());
-				int end = Integer.parseInt(item.substring(index + 1).trim());
-				for (int i = start; i<= end; i++){
-					list.add(Integer.toString(i));
-				}
-			}
-		}
-		
-		String[] stringArray = new String[list.size()];
-		int[] intArray = new int[list.size()];
-		list.toArray(stringArray);
-		for (int i = 0; i < stringArray.length; i++){
-			intArray[i] = Integer.parseInt(stringArray[i].trim());
-		}
-		
-		Arrays.sort(intArray);
-		for (int i = 0; i < intArray.length; i++){
-			stringArray[i] = Integer.toString(intArray[i]);
-		}
-		
-		return stringArray;
-	}
 
 	public static void main(String args[]){
 //		String[] array = {"0","2","4","8","9","10","12","13","15","16","17","18","19","20", "22"};
@@ -576,7 +354,8 @@ public class AfpWizardUtils {
     		@Override
 			public void widgetSelected(SelectionEvent e) {
     			if (thisCaller.equals("FrequencyType"))
-    				AfpWizardUtils.createFrequencyDomainShell(page,parentShell, "Add", parentGroup, model);
+    				new AfpFrequencySelector(page,parentShell, "Add", parentGroup, model);
+    				//AfpWizardUtils.createFrequencyDomainShell(page,parentShell, "Add", parentGroup, model);
     			else if (thisCaller.equals("HoppingMAL"))
     				AfpWizardUtils.createMalDomainShell(parentShell, "Add", parentGroup, model);
     			else if (thisCaller.equals("Sector SeparationRules"))
@@ -595,7 +374,8 @@ public class AfpWizardUtils {
     		@Override
 			public void widgetSelected(SelectionEvent e) {
     			if (thisCaller.equals("FrequencyType"))
-    				AfpWizardUtils.createFrequencyDomainShell(page,parentShell, "Edit", parentGroup, model);
+    				new AfpFrequencySelector(page,parentShell, "Edit", parentGroup, model);
+    				//AfpWizardUtils.createFrequencyDomainShell(page,parentShell, "Edit", parentGroup, model);
     			else if (thisCaller.equals("HoppingMAL"))
     				AfpWizardUtils.createMalDomainShell(parentShell, "Edit", parentGroup, model);
     			else if (thisCaller.equals("Sector SeparationRules"))
@@ -614,7 +394,8 @@ public class AfpWizardUtils {
     		@Override
 			public void widgetSelected(SelectionEvent e) {
     			if (thisCaller.equals("FrequencyType"))
-    				AfpWizardUtils.createFrequencyDomainShell(page,parentShell, "Delete", parentGroup, model);
+    				new AfpFrequencySelector(page,parentShell, "Delete", parentGroup, model);
+    				//AfpWizardUtils.createFrequencyDomainShell(page,parentShell, "Delete", parentGroup, model);
     			else if (thisCaller.equals("HoppingMAL"))
     				AfpWizardUtils.createMalDomainShell(parentShell, "Delete", parentGroup, model);
     			else if (thisCaller.equals("Sector SeparationRules"))

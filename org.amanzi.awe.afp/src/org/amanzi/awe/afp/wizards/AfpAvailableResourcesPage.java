@@ -102,21 +102,10 @@ public class AfpAvailableResourcesPage extends AfpWizardPage implements Listener
     	button900.setText("...");
     	button900.addSelectionListener(new SelectionAdapter(){
     		
-    		public String[] getFrequencyArray(){
-    			String frequencies[] = new String[(124-0+1) + (1023-955+1)];
-    			for (int i = 0; i < frequencies.length; i++){
-    				if (i <= 124)
-    					frequencies[i] = Integer.toString(i);
-    				else
-    					frequencies[i] = Integer.toString(i + 955 - 124 + 1);
-    			}
-    			
-    			return frequencies;
-    		}
     		
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				AfpWizardUtils.createFrequencySelector(parentShell, frequencies900, getFrequencyArray());
+				AfpWizardUtils.createFrequencySelector(parentShell, frequencies900, model.getFrequencyArray(AfpModel.BAND_900));
 				
 			}
     		
@@ -146,18 +135,10 @@ public class AfpAvailableResourcesPage extends AfpWizardPage implements Listener
     	button1800.setText("...");
     	button1800.addSelectionListener(new SelectionAdapter(){
     		
-    		public String[] getFrequencyArray(){
-    			String frequencies[] = new String[885-512+1];
-    			for (int i = 0; i < frequencies.length; i++){
-    				frequencies[i] = Integer.toString(512 + i); 
-    			}
-    			
-    			return frequencies;
-    		}
     		
     		@Override
 			public void widgetSelected(SelectionEvent e) {
-				AfpWizardUtils.createFrequencySelector(parentShell, frequencies1800, getFrequencyArray());				
+				AfpWizardUtils.createFrequencySelector(parentShell, frequencies1800, model.getFrequencyArray(AfpModel.BAND_1800));				
 			}
     		
     	});
@@ -188,19 +169,9 @@ public class AfpAvailableResourcesPage extends AfpWizardPage implements Listener
     	button850.setText("...");
     	button850.addSelectionListener(new SelectionAdapter(){
 			
-    		public String[] getFrequencyArray(){
-    			String frequencies[] = new String[251-128+1];
-    			for (int i = 0; i < frequencies.length; i++){
-    				frequencies[i] = Integer.toString(251 + i); 
-    			}
-    			
-    			return frequencies;
-    		}
-    		
     		@Override
 			public void widgetSelected(SelectionEvent e) {
-				AfpWizardUtils.createFrequencySelector(parentShell, frequencies850, getFrequencyArray());
-				
+				AfpWizardUtils.createFrequencySelector(parentShell, frequencies850, model.getFrequencyArray(AfpModel.BAND_850));
 			}
     		
     	});
@@ -231,18 +202,10 @@ public class AfpAvailableResourcesPage extends AfpWizardPage implements Listener
     	button1900.setText("...");
     	button1900.addSelectionListener(new SelectionAdapter(){
     		
-    		public String[] getFrequencyArray(){
-    			String frequencies[] = new String[810-512+1];
-    			for (int i = 0; i < frequencies.length; i++){
-    				frequencies[i] = Integer.toString(512 + i); 
-    			}
-    			
-    			return frequencies;
-    		}
     		
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				AfpWizardUtils.createFrequencySelector(parentShell, frequencies1900, getFrequencyArray());
+				AfpWizardUtils.createFrequencySelector(parentShell, frequencies1900, model.getFrequencyArray(AfpModel.BAND_1900));
 				button1900.setSelection(false);
 			}
     		

@@ -1,5 +1,8 @@
 package org.amanzi.awe.afp.models;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
@@ -19,6 +22,7 @@ import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -94,7 +98,7 @@ public class AfpModel {
 	int availableBCCs = 0xff;
 	
 	//Page 3 params
-	Vector<AfpFrequencyDomainModel> freqDomains = new Vector<AfpFrequencyDomainModel>();
+	HashMap<String,AfpFrequencyDomainModel> freqDomains = new HashMap<String,AfpFrequencyDomainModel>();
 	Set TRXDomain;
 	
 	//Page 4 params
@@ -351,6 +355,20 @@ public class AfpModel {
 		return frequencyBands;
 	}
 
+	public int[] getAvailableFrequencyBandsIndexs() {
+		int cnt =0;
+		for(int i=0;i<this.frequencyBands.length;i++) 
+			if(this.frequencyBands[i]) cnt++;
+		
+		int ret[] = new int[cnt];
+		for(int i=0,j=0;i<this.frequencyBands.length;i++) {
+			if(this.frequencyBands[i]) {
+				ret[j] =i;
+				j++;
+			}
+		}
+		return ret;
+	}
 
 	public boolean isFrequencyBandAvaliable(int band) {
 		if(band >=0 && band <=4) {
@@ -433,6 +451,16 @@ public class AfpModel {
 		return "";
 	}
 
+	public String getAvailableFreq(String bandName) {
+		for(int i=0;i<BAND_NAMES.length;i++) {
+			if(BAND_NAMES[i].compareTo(bandName) ==0) {
+				if(availableFreq[i] != null) {
+					return availableFreq[i];
+				}
+			}
+		}
+		return "";
+	}
 
 
 
@@ -507,30 +535,21 @@ public class AfpModel {
 		this.availableBCCs = n;
 	}
 
-	private void addFreeFrequencyDomain() {
-		if(freqDomains.size() !=0) {
-			// remove free domains
-			for(int i=0;i<freqDomains.size();i++) {
-				AfpFrequencyDomainModel d = freqDomains.elementAt(i);
-				if(d.isFree()) {
-					freqDomains.remove(i);
-				}
-			}
-		}
+	private void addRemoveFreeFrequencyDomain(boolean addFree) {
 		for(int i=0; i< frequencyBands.length;i++) {
 			if(frequencyBands[i]) {
 				// add free domains
-				AfpFrequencyDomainModel d = new AfpFrequencyDomainModel();
-				d.setName("Free " + BAND_NAMES[i]);
-				d.setBand(BAND_NAMES[i]);
-				d.setFree(true);
-				String f[] = new String[1];
-				f[0] = "1";
-				d.setFrequencies(f);
-				if(freqDomains.size() > i) {
-					freqDomains.insertElementAt(d, i);
+				if(addFree) {
+					AfpFrequencyDomainModel d = new AfpFrequencyDomainModel();
+					d.setName("Free " + BAND_NAMES[i]);
+					d.setBand(BAND_NAMES[i]);
+					d.setFree(true);
+					String f[] = new String[1];
+					f[0] = this.availableFreq[i];
+					d.setFrequencies(f);
+					freqDomains.put(d.getName(), d);
 				} else {
-					freqDomains.add(d);
+					freqDomains.remove("Free " + BAND_NAMES[i]);
 				}
 			}
 		}
@@ -539,9 +558,9 @@ public class AfpModel {
 	/**
 	 * @return the freqDomains
 	 */
-	public Vector<AfpFrequencyDomainModel> getFreqDomains() {
-		addFreeFrequencyDomain();
-		return freqDomains;
+	public Collection<AfpFrequencyDomainModel> getFreqDomains(boolean addFree) {
+		addRemoveFreeFrequencyDomain(addFree);
+		return freqDomains.values();
 	}
 
 
@@ -551,7 +570,7 @@ public class AfpModel {
 	/**
 	 * @param freqDomains the freqDomains to set
 	 */
-	private void setFreqDomains(Vector<AfpFrequencyDomainModel> freqDomains) {
+	private void setFreqDomains(HashMap<String,AfpFrequencyDomainModel> freqDomains) {
 		this.freqDomains = freqDomains;
 	}
 	
@@ -921,42 +940,41 @@ public class AfpModel {
 	}
 
 	public void addFreqDomain(AfpFrequencyDomainModel freqDomain){
-		if (freqDomains == null){
-			freqDomains = new Vector<AfpFrequencyDomainModel>();
+		if(freqDomains.containsKey(freqDomain.getName())) {
+			freqDomain.setName(freqDomain.getName() + "-1");
 		}
-		freqDomains.add(freqDomain);
+		freqDomains.put(freqDomain.getName(),freqDomain);
+	}
+	public void editFreqDomain(AfpFrequencyDomainModel freqDomain){
+		freqDomains.put(freqDomain.getName(),freqDomain);
 	}
 	
-	public void deleteFreqDomain(AfpFrequencyDomainModel freqDomain){
+	public void deleteFreqDomain(String name){
 		if (freqDomains == null){
 			return;
 		}
-		freqDomains.remove(freqDomain);
+		if(freqDomains.containsKey(name))
+			freqDomains.remove(name);
 	}
 	
 	public AfpFrequencyDomainModel findFreqDomain(String domainName){
-		for(AfpFrequencyDomainModel freqDomain : freqDomains){
-			if (freqDomain.getName().equals(domainName))
-				return freqDomain;
-		}
-		return null;
+		return freqDomains.get(domainName);
 	}
 	
 	public String[] getAllFrequencyDomainNames(){
-		Vector<String> names = new Vector<String>();
+		String[] names = new String[freqDomains.size()];
 		int i = 0;
-		for(AfpFrequencyDomainModel freqDomain : freqDomains){
+		for(AfpFrequencyDomainModel freqDomain : this.getFreqDomains(false)){
 			if(!freqDomain.isFree()) {
-				names.add(freqDomain.getName());
+				names[i] = freqDomain.getName();
 				i++;
 			}
 		}
-		if(i >0) {
-			String ret[] = new String[names.size()];
-			names.copyInto(ret);
-			return ret;
+		String[] ret = new String[i];
+		for(int j=0;j< i;j++) {
+			ret[j]  = names[j];
 		}
-		return null;
+		return ret;
 	}
 	
 	public String[] getAvailableBands(){
@@ -1161,7 +1179,7 @@ public class AfpModel {
 				n.delete();
 			}
 
-			for (AfpFrequencyDomainModel frequencyModel : getFreqDomains()) {
+			for (AfpFrequencyDomainModel frequencyModel : getFreqDomains(false)) {
 				if(!frequencyModel.isFree())
 					createFrequencyDomainNode(afpNode, frequencyModel, service);
 			}
@@ -1433,7 +1451,7 @@ public class AfpModel {
         		// frequency type domain
         		AfpFrequencyDomainModel m = AfpFrequencyDomainModel.getModel(node);
         		if(m != null) {
-        			freqDomains.add(m);
+        			this.addFreqDomain(m);
         		}
         	} else  if (node.getProperty(INeoConstants.AFP_PROPERTY_DOMAIN_NAME,"").equals(INeoConstants.AFP_DOMAIN_NAME_MAL)) {
         		// frequency type domain
@@ -1524,8 +1542,7 @@ public class AfpModel {
 		}
 		
 		sb.append("\n\nFrequency Type Domains: \n");
-		for(int i=0;i< freqDomains.size();i++) {
-			AfpFrequencyDomainModel domainModel = freqDomains.elementAt(i);
+		for(AfpFrequencyDomainModel domainModel: this.freqDomains.values()) {
 			if(domainModel != null) {
 				sb. append(domainModel.getName() + " : \n\tBand-" + domainModel.getBand() + "\n\tAssigned Frequencies- 0" + "\n\tAssignedTRXs-0" + "\n");
 			}
@@ -1574,4 +1591,150 @@ public class AfpModel {
 		
 		return sb.toString();
 	}
+	
+	public static String[] convertFreqString2Array(String frequenciesText, String frequencies[]) {
+		int numSelected = 0;
+		String[] frequenciesLeft = null;
+		String[] selectedRanges = new String[]{};
+
+		if(frequenciesText != null) {
+			if (!frequenciesText.trim().equals(""))
+				selectedRanges = frequenciesText.split(",");
+		}
+		
+		if (selectedRanges.length > 0 && selectedRanges[0] != null && !selectedRanges[0].trim().equals("")){
+			String[] selected = rangeArraytoArray(selectedRanges);
+			numSelected = selected.length;
+			frequenciesLeft = new String[frequencies.length - selected.length];
+			
+			Arrays.sort(selected);
+			int i = 0;
+			for (String item: frequencies){
+				if(i >= frequenciesLeft.length)
+					break;
+				if (Arrays.binarySearch(selected, item) < 0){
+					frequenciesLeft[i] = item;
+					i++;
+				}		
+			}
+		}
+		else {
+			frequenciesLeft = frequencies;
+		}
+		frequencies = frequenciesLeft;
+		return selectedRanges;
+	}
+	/**
+	 * Converts string array containing integer values and ranges to string array containing int values only
+	 * For example {"0","2","4","8-10","12","13","15-20", "22"} is converted to {"0","2","4","8","9","10","12","13","15","16","17","18","19","20", "22"} 
+	 * @param rangeArray string array containing string representations of int and/or ranges (eg. 9-12 implies 9,10,11,12) 
+	 * @return sorted string array containing only string representations of int and no ranges.
+	 */
+	public static String[] rangeArraytoArray(String[] rangeArray){
+		ArrayList<String> list = new ArrayList<String>();
+		for (String item : rangeArray){
+			int index = item.indexOf("-");
+			if (index == -1){
+				list.add(item);
+			}
+			else{
+				int start = Integer.parseInt(item.substring(0,index).trim());
+				int end = Integer.parseInt(item.substring(index + 1).trim());
+				for (int i = start; i<= end; i++){
+					list.add(Integer.toString(i));
+				}
+			}
+		}
+		
+		String[] stringArray = new String[list.size()];
+		int[] intArray = new int[list.size()];
+		list.toArray(stringArray);
+		for (int i = 0; i < stringArray.length; i++){
+			intArray[i] = Integer.parseInt(stringArray[i].trim());
+		}
+		
+		Arrays.sort(intArray);
+		for (int i = 0; i < intArray.length; i++){
+			stringArray[i] = Integer.toString(intArray[i]);
+		}
+		
+		return stringArray;
+	}
+
+	public String[] getFrequencyArray(int band){
+		String frequencies[] = null;
+		if (band == AfpModel.BAND_900) {
+			frequencies= new String[(124 - 0 + 1) + (1023 - 955 + 1)];
+			for (int i = 0; i < frequencies.length; i++) {
+				if (i <= 124)
+					frequencies[i] = Integer.toString(i);
+				else
+					frequencies[i] = Integer.toString(i + 955 - 124 + 1);
+			}
+		} else if(band == AfpModel.BAND_1800) {
+    			frequencies = new String[885-512+1];
+    			for (int i = 0; i < frequencies.length; i++){
+    				frequencies[i] = Integer.toString(512 + i); 
+    			}
+		}else if(band == AfpModel.BAND_850) {
+    			frequencies = new String[251-128+1];
+    			for (int i = 0; i < frequencies.length; i++){
+    				frequencies[i] = Integer.toString(251 + i); 
+    			}
+		} else if(band == AfpModel.BAND_1900) {
+    			frequencies = new String[810-512+1];
+    			for (int i = 0; i < frequencies.length; i++){
+    				frequencies[i] = Integer.toString(512 + i); 
+    			}
+    	}
+		return frequencies;
+	}
+	/**
+	 * Converts string array containing integer values to string array containing int values and/or ranges (wherever applicable)
+	 * For example {"0","2","4","8","9","10","12","13","15","16","17","18","19","20", "22"} is converted to {"0","2","4","8-10","12","13","15-20", "22"}
+	 * @param array An string array containing string representations of int values (no ranges)
+	 * @return
+	 */
+	public static String[] arrayToRangeArray(String array[]){
+
+		int lastItem = -1;
+		int rangeFirstItem = -1;
+		String range = null;
+		boolean isRange = false;
+		int[] rangeArray = new int[array.length];
+		
+		for (int i = 0; i < array.length; i++){
+			rangeArray[i] = Integer.parseInt(array[i].trim());
+		}
+		
+		Arrays.sort(rangeArray);
+		
+		ArrayList<String> list = new ArrayList<String>();
+		for (int currItem : rangeArray){
+			if (lastItem >= 0 && currItem == lastItem + 1){
+				range = "" + rangeFirstItem + "-" +  currItem;
+				isRange = true;
+				lastItem = currItem;
+			}
+			else {
+				rangeFirstItem = currItem;
+				if (isRange){
+					list.add(range);
+					isRange = false;
+				}
+				
+				else if (lastItem >= 0)
+					list.add(Integer.toString(lastItem));
+				lastItem = currItem;
+			}
+		}
+		if (isRange)
+			list.add(range);
+		else list.add(Integer.toString(lastItem));
+		
+	
+		return list.toArray(new String[0]);
+	}
+	
+
 }
