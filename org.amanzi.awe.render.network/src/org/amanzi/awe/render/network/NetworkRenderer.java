@@ -292,8 +292,11 @@ public class NetworkRenderer extends RendererImpl {
                 drawHints.setNoScaling();
             }else if (data_bounds != null && data_bounds.getHeight()>0 && data_bounds.getWidth()>0) {
                 long count = geoNeo.getCount();
-                if (NeoLoaderPlugin.getDefault().getPreferenceStore().getBoolean(DataLoadPreferences.NETWORK_COMBINED_CALCULATION)) {
-                    count = getAverageCount(monitor);
+                if (NeoLoaderPlugin.getDefault().getPreferenceStore().getBoolean(
+                        DataLoadPreferences.NETWORK_COMBINED_CALCULATION)) {
+                    double density = getAverageDensity(monitor);
+                    if (density > 0)
+                        count = (long)(density * data_bounds.getHeight() * data_bounds.getWidth());
                 }
                 drawHints.setScaling(bounds_transformed, data_bounds, monitor, count);
             }
@@ -781,18 +784,20 @@ public class NetworkRenderer extends RendererImpl {
 
     /**
      * gets average count of geoNeo.getCount() from all resources in map
+     * @param data_bounds 
      * 
      * @return average count
      */
-    private Long getAverageCount(IProgressMonitor monitor) {
-        long result = 0;
+    private double getAverageDensity(IProgressMonitor monitor) {
+        double result = 0;
         long count = 0;
         try {
             for (ILayer layer : getContext().getMap().getMapLayers()) {
                 if (layer.getGeoResource().canResolve(GeoNeo.class)) {
                     GeoNeo resource = layer.getGeoResource().resolve(GeoNeo.class, monitor);
-                    if(resource.getGisType().equals(GisTypes.NETWORK)) {
-                        result += resource.getCount();
+                    Envelope dbounds = resource.getBounds();
+                    if(dbounds != null && resource.getGisType().equals(GisTypes.NETWORK)) {
+                        result += resource.getCount() / (dbounds.getHeight() * dbounds.getWidth());
                         count++;
                     }
                 }
@@ -800,9 +805,9 @@ public class NetworkRenderer extends RendererImpl {
         } catch (IOException e) {
             // TODO Handle IOException
             NeoCorePlugin.error(e.getLocalizedMessage(), e);
-            return null;
+            return 0;
         }
-        return count == 0 ? null : result / count;
+        return result / (double)count;
     }
 
     /**
