@@ -17,9 +17,11 @@ import java.util.List;
 
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.node2node.INodeToNodeRelationType;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationTypes;
+import org.amanzi.neo.services.utils.Utils;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -35,10 +37,13 @@ public class NetworkModel {
 	
 	private final Node rootNode;
 	private final DatasetService ds;
+	
+	private final NetworkService networkService;
 
 	public NetworkModel(Node rootNode) {
 		this.rootNode = rootNode;
 		ds = NeoServiceFactory.getInstance().getDatasetService();
+		networkService = NeoServiceFactory.getInstance().getNetworkService();
 	}
 	
 	protected NodeToNodeRelationModel getNodeToNodeRelationModel(INodeToNodeRelationType type, String name) {
@@ -64,7 +69,14 @@ public class NetworkModel {
     public List<Node> findSectorByBsicAndArfcn(String bsic, String arfcn) {
         // IndexHits<Node> nodes = ds.findSectorByBsicAndArfcn(bsic, arfcn);
         return null;
-
+    }
+    
+    public Node findSector(String bsic, String arfcn) {
+        return null;
+    }
+    
+    public Node findSector(String name) {
+        return networkService.findSector(rootNode, name, true);
     }
 
 //	public List<NetworkSelectionModel> getSelectionModels() {
@@ -75,5 +87,9 @@ public class NetworkModel {
 //	public NetworkSelectionModel getSelectionModel(String selectionName) {
 //		return null;
 //	}
+    
+    public Node getCarrier(Node sector, Integer trxId) {
+        return null;
+    }
 
 }
