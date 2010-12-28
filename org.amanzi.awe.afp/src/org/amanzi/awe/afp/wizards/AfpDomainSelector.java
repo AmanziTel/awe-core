@@ -106,9 +106,9 @@ public class AfpDomainSelector {
 		actionButton.addSelectionListener(new SelectionAdapter(){
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				
+				boolean ret = true;
 				if (action.equals("Add")){
-					handleAddDomain();
+					ret = handleAddDomain();
 					((AfpWizardPage)page).refreshPage();
 				}
 				if (action.equals("Edit")){
@@ -121,7 +121,8 @@ public class AfpDomainSelector {
 					((AfpWizardPage)page).refreshPage();
 				}
 				
-				subShell.dispose();
+				if(ret)
+					subShell.dispose();
 			}
 		});
 		
@@ -144,7 +145,8 @@ public class AfpDomainSelector {
 
 	protected void handleDomainNameSection(int selection, String name) {
 	}
-	protected void handleAddDomain() {
+	protected boolean handleAddDomain() {
+		return false;
 	}
 	protected void handleEditDomain() {
 	}

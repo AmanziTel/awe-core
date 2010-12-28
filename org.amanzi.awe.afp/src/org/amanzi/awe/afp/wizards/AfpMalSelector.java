@@ -91,9 +91,16 @@ public class AfpMalSelector extends AfpDomainSelector {
 		}
 		//freqGroup.layout();
 	}
-	protected void handleAddDomain() {
+	protected boolean handleAddDomain() {
+		if(domainName == null) {
+			return false;
+		}
+		if(domainName.trim().length() == 0) {
+			return false;
+		}
 		domainModel.setName(domainName);
 		model.addMALDomain(domainModel);
+		return true;
 	}
 	protected void handleEditDomain() {
 		model.editMALDomain(domainModel);

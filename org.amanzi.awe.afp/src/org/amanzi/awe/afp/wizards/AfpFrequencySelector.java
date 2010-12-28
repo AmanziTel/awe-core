@@ -211,11 +211,19 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 		}
 		updateFreqList();
 	}
-	protected void handleAddDomain() {
+	protected boolean handleAddDomain() {
+		if(domainName == null || bandCombo.getText() == null || selectedArray == null) {
+			return false;
+		}
+		if(domainName.trim().length() == 0 || bandCombo.getText().trim().length() == 0 || selectedArray.length == 0) {
+			return false;
+		}
+		
 		((AfpFrequencyDomainModel)domainModel).setName(domainName);
 		((AfpFrequencyDomainModel)domainModel).setBand(bandCombo.getText());
 		((AfpFrequencyDomainModel)domainModel).setFrequencies(selectedArray);
 		model.addFreqDomain(((AfpFrequencyDomainModel)domainModel));
+		return true;
 	}
 	protected void handleEditDomain() {
 		selectedArray = selectedList.getItems();

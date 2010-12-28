@@ -118,7 +118,12 @@ public class AfpSeperationSelector extends AfpDomainSelector {
 			}
 		}
 	}
-	protected void handleAddDomain() {
+	protected boolean handleAddDomain() {
+		if(domainName == null)
+			return false;
+		if(domainName.trim().length() ==0)
+			return false;
+		
 		if (isSector){
 			domainModel.setName(domainName);
 			model.addSectorSeparationDomain(domainModel);
@@ -127,6 +132,7 @@ public class AfpSeperationSelector extends AfpDomainSelector {
 			domainModel.setName(domainName);
 			model.addSiteSeparationDomain(domainModel);
 		}
+		return true;
 	}
 	protected void handleEditDomain() {
 		if(isSector)

@@ -2,6 +2,7 @@ package org.amanzi.awe.afp.models;
 
 import java.util.Vector;
 
+import org.amanzi.awe.afp.filters.AfpFilter;
 import org.amanzi.neo.services.INeoConstants;
 import org.neo4j.graphdb.Node;
 
@@ -13,13 +14,13 @@ public class AfpFrequencyDomainModel extends AfpDomainModel {
 	public static AfpFrequencyDomainModel getModel(Node n) {
 
 		try {
-			String name = (String) n.getProperty(INeoConstants.PROPERTY_NAME_NAME);
+			AfpFrequencyDomainModel model = new AfpFrequencyDomainModel();
+			
+			AfpDomainModel.getModel(model, n);
+
 			String band = (String) n.getProperty(INeoConstants.AFP_PROPERTY_FREQUENCY_BAND_NAME);
 			String[] frequencies = (String[]) n.getProperty(INeoConstants.AFP_PROPERTY_FREQUENCIES_NAME);
 			
-			AfpFrequencyDomainModel model = new AfpFrequencyDomainModel();
-
-			model.setName(name);
 			model.setBand(band);
 			model.setFrequencies(frequencies);
 		
@@ -32,10 +33,9 @@ public class AfpFrequencyDomainModel extends AfpDomainModel {
 	public AfpFrequencyDomainModel() {
 	}
 	public AfpFrequencyDomainModel(AfpFrequencyDomainModel c) {
+		super(c);
 		this.setBand(c.getBand());
-		this.setFree(c.isFree());
 		this.setFrequencies(c.getFrequencies());
-		this.setName(c.getName());
 	}
 	
 	
@@ -58,6 +58,21 @@ public class AfpFrequencyDomainModel extends AfpDomainModel {
 	 */
 	public void setBand(String band) {
 		this.band = band;
+		// also add a filter for the same
+	}
+	
+	@Override
+	public String getFilters() {
+		/*String f=super.getFilters();
+		AfpFilter af = AfpFilter.getFilter(f);
+
+		for(String b: AfpModel.BAND_NAMES) {
+			af.removeFilter(AfpFilter.FILTER_LIKE, "ant_freq_band", ".*"+band+".*");
+		}
+		af.addFilter(AfpFilter.FILTER_LIKE, "ant_freq_band", ".*"+band+".*");
+
+		return af.toString();*/
+		return super.getFilters();
 	}
 	/**
 	 * @return the frequencies

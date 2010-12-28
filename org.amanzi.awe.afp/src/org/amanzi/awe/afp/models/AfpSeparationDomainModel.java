@@ -22,8 +22,7 @@ public class AfpSeparationDomainModel extends AfpDomainModel {
 		
 	}
 	public AfpSeparationDomainModel(AfpSeparationDomainModel c) {
-		this.setFree(c.isFree());
-		this.setName(c.getName());
+		super(c);
 		this.setSeparations(c.getSeparations());
 	}
 	/**
@@ -186,12 +185,12 @@ public class AfpSeparationDomainModel extends AfpDomainModel {
 	public static AfpSeparationDomainModel getModel(Node n, String type) {
 
 		try {
-			String name = (String) n.getProperty(INeoConstants.PROPERTY_NAME_NAME);
+			AfpSeparationDomainModel model = new AfpSeparationDomainModel();
+			
+			AfpDomainModel.getModel(model, n);
+
 			String[] separations = (String[]) n.getProperty(type);
 			
-			AfpSeparationDomainModel model = new AfpSeparationDomainModel();
-
-			model.setName(name);
 			model.setSeparations(separations);
 		
 			return model;

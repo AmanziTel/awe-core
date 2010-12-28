@@ -18,9 +18,8 @@ public class AfpHoppingMALDomainModel extends AfpDomainModel{
 	public AfpHoppingMALDomainModel() {
 	}
 	public AfpHoppingMALDomainModel(AfpHoppingMALDomainModel c) {
+		super(c);
 		this.setMALSize(c.getMALSize());
-		this.setFree(c.isFree());
-		this.setName(c.getName());
 	}
 
 	/**
@@ -237,12 +236,12 @@ public class AfpHoppingMALDomainModel extends AfpDomainModel{
 	public static AfpHoppingMALDomainModel getModel(Node n) {
 
 		try {
-			String name = (String) n.getProperty(INeoConstants.PROPERTY_NAME_NAME);
+			AfpHoppingMALDomainModel model = new AfpHoppingMALDomainModel();
+			
+			AfpDomainModel.getModel(model, n);
+
 			int[] malsize = (int[]) n.getProperty(INeoConstants.AFP_PROPERTY_MAL_SIZE_NAME);
 			
-			AfpHoppingMALDomainModel model = new AfpHoppingMALDomainModel();
-
-			model.setName(name);
 			model.setMALSize(malsize);
 		
 			return model;
