@@ -128,6 +128,8 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage {
 		    
 		    int cnt =0;
 		    for (Node node : traverser) {
+		    	if (!((String)node.getProperty("hopping type", "")).equals("SY"))
+		    		continue;
 		    	if(cnt > 100) 
 		    		break;
 		    	TableItem item = new TableItem(filterTable, SWT.NONE);
