@@ -13,11 +13,15 @@
 
 package org.amanzi.neo.loader.core.network.generator;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.HashMap;
 
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -31,37 +35,74 @@ import au.com.bytecode.opencsv.CSVReader;
  */
 public class GeneratorFrequencyConstraintsData {
     private static final String SECTOR_NAME = "SectorName";
+    private static final ArrayList<String> NAMES = new ArrayList<String>();
+    
+    public GeneratorFrequencyConstraintsData() {
+        NAMES.add("Name");
+        NAMES.add("BCCH");
+        for (int i = 2; i < 7; i++) {
+            NAMES.add("TRX" + i);
+        }
+    }
     /**
      * @param args args[0] - inputFile, args[1] - outputFile
      * @throws IOException 
      */
     public static void main(String[] args) throws IOException {
+        new GeneratorFrequencyConstraintsData();
         
         generate(args[0], args[1]);
     }
     
     private static void generate(String inputFile, String outputFile) throws IOException {
-        CSVReader reader = new CSVReader(new FileReader(inputFile), (char)9);
+        CSVReader reader = new CSVReader(new BufferedReader(new FileReader(inputFile)), (char)9);
         
-        int neededIndex = 0;
+        Integer[] neededIndexes = new Integer[7]; 
         ArrayList<String> sectorNames = new ArrayList<String>();
-        
+        Map<String, ArrayList<String>> datas = new HashMap<String, ArrayList<String>>();
+
         String[] data = reader.readNext();
-        
-        for (int i = 0; i < data.length; i++) {
-            if (data[i].equals(SECTOR_NAME)) {
-                neededIndex = i;
-                break;
+        int k = 0;
+        for (String name : NAMES) {
+            for (int i = 0; i < data.length; i++) {
+                if (data[i].equals(name)) {
+                    neededIndexes[k++] = i;
+                    break;
+                }
             }
         }
+        int m = 0;
         while (true) {
             data = reader.readNext();
-            System.out.println(data);
+            m++;
+            System.out.println(m);
             if (data == null) 
                 break;
             
-            sectorNames.add(data[neededIndex]);
-            System.out.println(data[neededIndex]);
+                String name = data[neededIndexes[0]];
+                
+                ArrayList<String> trxes = new ArrayList<String>();
+                for (int i = 1; i < 7; i++) {
+                    String value = data[neededIndexes[i]];
+                    if (value.equals("")) {
+                        // nothing adding
+                    } 
+                    else {
+                        trxes.add(value);
+                    }
+                }
+                if (datas.containsKey(name)) {
+                    ArrayList<String> oldTrxes = datas.get(name);
+                    oldTrxes.addAll(trxes);
+                    datas.put(name, oldTrxes);
+                }
+                else {
+                    datas.put(name, trxes);
+                    if (m > 8800)
+                        System.out.println("1");
+                }
+//            sectorNames.add(data[neededIndex]);
+//            System.out.println(data[neededIndex]);
         }
         
         CSVFile file = new CSVFile(new File(outputFile));
@@ -75,16 +116,20 @@ public class GeneratorFrequencyConstraintsData {
         
         file.writeHeaders(headers);
         
-        Iterator<String> iterator = sectorNames.iterator();
+        Iterator<String> iterator = datas.keySet().iterator();
+        ArrayList<String> trxData = new ArrayList<String>();
+        Iterator<String> trxDataIterator = trxData.iterator();
         
         ArrayList<String> values = new ArrayList<String>();
         
         String sectorName = null;
         for (int i = 0; i < sectorNames.size(); i++) {
             sectorName = iterator.next();
-            for (int j = 0; j < 3; j++) {
+            trxData = datas.get(sectorName);
+            trxDataIterator = trxData.iterator();
+            for (int j = 0; j < trxData.size(); j++) {
                 values.add(sectorName);
-                values.add(MyRandom.randomIntOrStar(1, 200));                   //trxId
+                values.add(MyRandom.randomCurrentIntOrStar(trxDataIterator.next()));                   //trxId
                 values.add(MyRandom.randomChannelType());                       //channelType
                 values.add(Long.toString(MyRandom.randomLong(0, 1023)));        //frequency
                 values.add(Byte.toString(MyRandom.randomBooleanInteger()));     //type

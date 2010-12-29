@@ -67,6 +67,16 @@ public class MyRandom {
                 }
     }
     
+    public static String randomCurrentIntOrStar(String currentInt) {
+        long randomInt = randomLong(0, 1000);
+        if (randomInt > 500 && randomInt < 600) {
+            return "*";
+        }
+        else {
+            return currentInt;
+        }
+    }
+    
     public static long randomLong(long min, long max){
         long n = max - min + 1;
         long i = random.nextInt() % n;
