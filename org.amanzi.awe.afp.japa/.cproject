@@ -8,7 +8,6 @@
 <externalSettings/>
 <extensions>
 <extension id="org.eclipse.cdt.core.MachO" point="org.eclipse.cdt.core.BinaryParser"/>
-<extension id="org.eclipse.cdt.core.Cygwin_PE" point="org.eclipse.cdt.core.BinaryParser"/>
 <extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 <extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 <extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
@@ -18,31 +17,27 @@
 <storageModule moduleId="cdtBuildSystem" version="4.0.0">
 <configuration artifactExtension="exe" artifactName="japa_awe" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.macosx.exe.debug.1720764368" name="Debug" parent="cdt.managedbuild.config.gnu.macosx.exe.debug">
 <folderInfo id="cdt.managedbuild.config.gnu.macosx.exe.debug.1720764368." name="/" resourcePath="">
-<toolChain id="cdt.managedbuild.toolchain.gnu.cygwin.base.391779503" name="Cygwin GCC" superClass="cdt.managedbuild.toolchain.gnu.cygwin.base">
-<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.Cygwin_PE;org.eclipse.cdt.core.MachO" id="cdt.managedbuild.target.gnu.platform.cygwin.base.1474256784" name="Debug Platform" osList="win32" superClass="cdt.managedbuild.target.gnu.platform.cygwin.base"/>
-<builder buildPath="${workspace_loc:/org.amanzi.awe.afp.japa/Debug}" id="cdt.managedbuild.target.gnu.builder.cygwin.base.614433726" keepEnvironmentInBuildfile="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.cygwin.base"/>
-<tool id="cdt.managedbuild.tool.gnu.assembler.cygwin.base.1262563169" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.cygwin.base">
-<option id="gnu.both.asm.option.flags.1079265237" name="Assembler flags" superClass="gnu.both.asm.option.flags"/>
-<option id="gnu.both.asm.option.include.paths.58602680" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths"/>
-<option id="gnu.both.asm.option.warnings.nowarn.153064091" name="Suppress warnings (-W)" superClass="gnu.both.asm.option.warnings.nowarn"/>
-<option id="gnu.both.asm.option.version.274489117" name="Announce version (-v)" superClass="gnu.both.asm.option.version"/>
-<inputType id="cdt.managedbuild.tool.gnu.assembler.input.24916568" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
-</tool>
-<tool id="cdt.managedbuild.tool.gnu.archiver.cygwin.base.231338606" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.cygwin.base"/>
-<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.cygwin.base.1593170322" name="Cygwin C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.cygwin.base"/>
-<tool id="cdt.managedbuild.tool.gnu.c.compiler.cygwin.base.1924102142" name="Cygwin C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.cygwin.base">
-<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin.16396033" superClass="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin"/>
-</tool>
-<tool id="cdt.managedbuild.tool.gnu.c.linker.cygwin.base.313083987" name="Cygwin C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.cygwin.base">
-<option id="gnu.c.link.option.libs.1973221029" superClass="gnu.c.link.option.libs" valueType="libs">
+<toolChain id="cdt.managedbuild.toolchain.gnu.macosx.base.12407591" name="MacOSX GCC" superClass="cdt.managedbuild.toolchain.gnu.macosx.base">
+<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.MachO" id="cdt.managedbuild.target.gnu.platform.macosx.base.1032221339" name="Debug Platform" osList="macosx" superClass="cdt.managedbuild.target.gnu.platform.macosx.base"/>
+<builder buildPath="${workspace_loc:/org.amanzi.awe.afp.japa/Debug}" id="cdt.managedbuild.target.gnu.builder.macosx.base.1922562419" name="Gnu Make Builder.Debug" superClass="cdt.managedbuild.target.gnu.builder.macosx.base"/>
+<tool id="cdt.managedbuild.tool.macosx.c.linker.macosx.base.908008880" name="MacOS X C Linker" superClass="cdt.managedbuild.tool.macosx.c.linker.macosx.base">
+<option id="macosx.c.link.option.libs.771838624" superClass="macosx.c.link.option.libs" valueType="libs">
 <listOptionValue builtIn="false" value="m"/>
 </option>
-<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.764738525" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
+<inputType id="cdt.managedbuild.tool.macosx.c.linker.input.200798133" superClass="cdt.managedbuild.tool.macosx.c.linker.input">
 <additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 <additionalInput kind="additionalinput" paths="$(LIBS)"/>
 </inputType>
 </tool>
-<tool id="cdt.managedbuild.tool.gnu.cpp.linker.cygwin.base.1427370467" name="Cygwin C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.cygwin.base"/>
+<tool id="cdt.managedbuild.tool.macosx.cpp.linker.macosx.base.615504552" name="MacOS X C++ Linker" superClass="cdt.managedbuild.tool.macosx.cpp.linker.macosx.base"/>
+<tool id="cdt.managedbuild.tool.gnu.assembler.macosx.base.964460229" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.macosx.base">
+<inputType id="cdt.managedbuild.tool.gnu.assembler.input.2054632748" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+</tool>
+<tool id="cdt.managedbuild.tool.gnu.archiver.macosx.base.636487374" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.macosx.base"/>
+<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.macosx.base.1962328713" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.macosx.base"/>
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.macosx.base.659983010" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.macosx.base">
+<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.226005629" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+</tool>
 </toolChain>
 </folderInfo>
 <sourceEntries>
