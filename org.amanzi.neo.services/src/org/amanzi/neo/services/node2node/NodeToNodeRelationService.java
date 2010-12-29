@@ -18,12 +18,14 @@ import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.traversal.Traverser;
 import org.neo4j.helpers.Predicate;
 import org.neo4j.kernel.Traversal;
@@ -90,9 +92,18 @@ public class NodeToNodeRelationService extends AbstractService {
 	 * @return
 	 */
 	private Node createNodeToNodeRelationsRoot(Node rootNode, INodeToNodeRelationType type, String name) {
-		Node createdNode = datasetService.createNode(NodeTypes.ROOT_PROXY, name);
-		rootNode.createRelationshipTo(createdNode, type.getRelationType());
-		return createdNode;
+	    Transaction tx = databaseService.beginTx();
+	    
+	    try {
+	        Node createdNode = datasetService.createNode(NodeTypes.ROOT_PROXY, name);
+	        rootNode.createRelationshipTo(createdNode, type.getRelationType());
+	        tx.success();
+	        
+	        return createdNode;
+	    }
+	    finally {
+	        tx.finish();
+	    }
 	}
 	
 	/**
@@ -133,10 +144,12 @@ public class NodeToNodeRelationService extends AbstractService {
 	 * @param lastChild last child node
 	 * @return
 	 */
-	public Node createProxy(String index, String name, Node rootNode, Node lastChild) {
+	public Node createProxy(Node originalNode, String index, String name, Node rootNode, Node lastChild) {
 		Node node = datasetService.createNode(NodeTypes.PROXY, name);
 		datasetService.addChild(rootNode, node, lastChild);
-		getIndexService().index(node, index, name);		
+		getIndexService().index(node, index, name);
+		
+		originalNode.createRelationshipTo(node, DatasetRelationshipTypes.PROXY);
 		
 		return node;
 	}

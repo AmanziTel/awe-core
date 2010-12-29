@@ -68,6 +68,10 @@
             class="org.amanzi.neo.loader.core.saver.network.SeparationConstraintsSaver"
             id="org.amanzi.neo.loader.core.saver.network.SeparationConstraintsSaver">
       </saver>
+      <saver
+            class="org.amanzi.neo.loader.core.saver.network.InterferenceMatrixSaver"
+            id="org.amanzi.neo.loader.core.saver.network.InterferenceMatrixSaver">
+      </saver>
    </extension>
 
 </plugin>

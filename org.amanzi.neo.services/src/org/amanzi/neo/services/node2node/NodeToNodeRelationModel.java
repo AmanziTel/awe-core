@@ -19,6 +19,7 @@ import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.utils.Pair;
 import org.amanzi.neo.services.utils.Utils;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -67,14 +68,27 @@ public class NodeToNodeRelationModel {
 	 * @param dependentNode
 	 * @param parameters
 	 */
-	public void addRelation(Node servingNode, Node dependentNode, Map<String, Object> parameters) {		
-		Node servingProxyNode = getProxy((String)servingNode.getProperty(INeoConstants.PROPERTY_NAME_NAME));
-		Node dependentProxyNode = getProxy((String)dependentNode.getProperty(INeoConstants.PROPERTY_NAME_NAME));
-		Relationship relationship = servingProxyNode.createRelationshipTo(dependentProxyNode, (RelationshipType) type);
+	public int addRelation(Node servingNode, Node dependentNode, Map<String, Object> parameters) {
+	    Pair<Node, Boolean> servingPair = getProxy(servingNode, (String)servingNode.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+	    Pair<Node, Boolean> dependentPair = getProxy(dependentNode, (String)dependentNode.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+	    
+		Node servingProxyNode = servingPair.getLeft();
+		Node dependentProxyNode = dependentPair.getLeft();
+		Relationship relationship = servingProxyNode.createRelationshipTo(dependentProxyNode, (RelationshipType) type.getRelationType());
+		
+		int count = 0;
+		if (servingPair.getRight()) {
+		    count++;
+		}
+		if (dependentPair.getRight()) {
+		    count++;
+		}
 		
 		for (Entry<String, Object> entry : parameters.entrySet()) {
 			relationship.setProperty(entry.getKey(), entry.getValue());
 		}
+		
+		return count;
 	}
 	
 	/**
@@ -83,13 +97,15 @@ public class NodeToNodeRelationModel {
 	 * @param name
 	 * @return
 	 */
-	private Node getProxy(String name) {
+	private Pair<Node, Boolean> getProxy(Node originalNode, String name) {
 		Node node = node2nodeRelationService.findProxy(proxyIndexKey, name);
+		boolean created = false;
 		if (node == null) {
-			node = node2nodeRelationService.createProxy(proxyIndexKey, name, rootNode, lastChildNode);
+			node = node2nodeRelationService.createProxy(originalNode, proxyIndexKey, name, rootNode, lastChildNode);
 			lastChildNode = node;
+			created = true;
 		}
-		return node;
+		return new Pair<Node, Boolean>(node, created);
 	}
 	
 	/**

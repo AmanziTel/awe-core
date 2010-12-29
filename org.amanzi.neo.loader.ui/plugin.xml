@@ -171,6 +171,13 @@
              validator="org.amanzi.neo.loader.ui.validators.SeparationConstraintsDataValidator"
              parser="org.amanzi.neo.loader.core.parser.CSVParser">
        </loader>
+       <loader
+             description="Interference Matrix"
+             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
+             parser="org.amanzi.neo.loader.core.parser.CSVParser"
+             validator="org.amanzi.neo.loader.ui.validators.InterferenceMatrixValidator"
+             saver="org.amanzi.neo.loader.core.saver.network.InterferenceMatrixSaver">
+       </loader>
     </extension>
 
    <extension

@@ -33,8 +33,12 @@ public class ValidatorUtils {
     private ValidatorUtils() {
         // hide constructor
     }
-
+    
     public static IValidateResult checkFileAndHeaders(File file, int minSize, String[] constants, String[] possibleFieldSepRegexes) {
+        return checkFileAndHeaders(file, minSize, constants, possibleFieldSepRegexes, true);
+    }
+
+    public static IValidateResult checkFileAndHeaders(File file, int minSize, String[] constants, String[] possibleFieldSepRegexes, boolean convertConstants) {
         try {
             if (file == null || !file.isFile()) {
                 return new ValidateResultImpl(Result.FAIL, "incorrect file");
@@ -45,7 +49,14 @@ public class ValidatorUtils {
                 return new ValidateResultImpl(Result.FAIL, "not found correct header row");
             }
             for (String constant : constants) {
-                int id = LoaderUtils.findHeaderId(header, LoaderUiUtils.getPossibleHeaders(constant), 0);
+                String[] possibleHeaders = null;
+                if (convertConstants) {
+                    possibleHeaders = LoaderUiUtils.getPossibleHeaders(constant);
+                }
+                else {
+                    possibleHeaders = new String[] {constant};
+                }
+                int id = LoaderUtils.findHeaderId(header, possibleHeaders, 0);
                 if (id < 0) {
                     return new ValidateResultImpl(Result.UNKNOWN, "not found all necessary headers");
                 }

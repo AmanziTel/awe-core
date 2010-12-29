@@ -93,6 +93,10 @@ public class NetworkModel {
         return null;
     }
     
+    public Node createCarrier(Node sectork, String subCell, Integer trxId, String band, Integer hoppingType, Boolean bcch) {
+        return null;
+    }
+    
     public ArrayList<Node> getCarriers(Node sector) {
         return null;
     }

@@ -265,7 +265,7 @@ public class NetworkService extends AbstractService {
             }
         }).traverse(sector).iterator();
         return itr.hasNext()?itr.next().endNode():null;
-    }
+    }    
 
     /**
     *
@@ -290,5 +290,4 @@ public class NetworkService extends AbstractService {
        }
        return freqNode;
    }
-
 }
