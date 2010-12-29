@@ -47,6 +47,7 @@ import org.amanzi.neo.services.events.UpdateViewEventType;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
+import org.amanzi.neo.services.utils.Utils;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -250,6 +251,7 @@ public class NetworkLoader extends AbstractLoader {
         // Known headers that are sector data properties
         addKnownHeader(1, "beamwidth", getPossibleHeaders(DataLoadPreferences.NH_BEAMWIDTH), false);
         addKnownHeader(1, "azimuth", getPossibleHeaders(DataLoadPreferences.NH_AZIMUTH), false);
+        addKnownHeader(1, "band", new String[] {"Ant_Freq_Band"}, false);
     }
 
     /**
@@ -781,6 +783,10 @@ public class NetworkLoader extends AbstractLoader {
             saved++;
             // header.parseLine(sector, fields);
             Map<String, Object> sectorData = networkHeader.getSectorData();
+            
+            String band = networkHeader.getString("band");
+            
+            processCarriers(sector, band, sectorData);
 
             for (Map.Entry<String, Object> entry : sectorData.entrySet()) {
                 String key = entry.getKey();
@@ -803,6 +809,41 @@ public class NetworkLoader extends AbstractLoader {
             transaction.finish();
         }
         return saved;
+    }
+    
+    private void processCarriers(Node sector, String band, Map<String, Object> propertyMap) {
+        //try to get a Band
+        int spaceIndex = band.indexOf(" ");
+        if (spaceIndex > 0) {
+            band = band.substring(spaceIndex).trim();
+        }
+        
+        //try to get BCCH frequency
+        Object frequency = propertyMap.remove("bcch");
+        if (frequency != null) {
+            Integer iFrequency = (Integer)frequency;
+            
+            Utils.createBCCHCarrier(sector, band, new int[] {iFrequency}, neo);
+        }
+        
+        //try to get other frequencies
+        ArrayList<String> propertiesToRemove = new ArrayList<String>();
+        for (String key : propertyMap.keySet()) {
+            if (key.startsWith("trx")) {
+                String trxIndex = key.substring(key.indexOf("trx") + 3);
+                Integer trxId = Integer.parseInt(trxIndex);
+                
+                Integer arfcn = (Integer)propertyMap.get(key);
+                propertiesToRemove.add(key);
+                Utils.createCarrier(sector, trxId, band, new int[] {arfcn}, neo);
+            }
+        }
+        
+        //clean up sector data from trxs
+        for (String trxKey : propertiesToRemove) {
+            propertyMap.remove(trxKey);
+        }
+        
     }
 
     /**
