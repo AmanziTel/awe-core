@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.HashMap;
 
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -34,11 +33,10 @@ import au.com.bytecode.opencsv.CSVReader;
  * @since 1.0.0
  */
 public class GeneratorFrequencyConstraintsData {
-    private static final String SECTOR_NAME = "SectorName";
     private static final ArrayList<String> NAMES = new ArrayList<String>();
     
     public GeneratorFrequencyConstraintsData() {
-        NAMES.add("Name");
+        NAMES.add("BTS_Name");
         NAMES.add("BCCH");
         for (int i = 2; i < 7; i++) {
             NAMES.add("TRX" + i);
@@ -58,7 +56,6 @@ public class GeneratorFrequencyConstraintsData {
         CSVReader reader = new CSVReader(new BufferedReader(new FileReader(inputFile)), (char)9);
         
         Integer[] neededIndexes = new Integer[7]; 
-        ArrayList<String> sectorNames = new ArrayList<String>();
         Map<String, ArrayList<String>> datas = new HashMap<String, ArrayList<String>>();
 
         String[] data = reader.readNext();
@@ -80,7 +77,7 @@ public class GeneratorFrequencyConstraintsData {
                 break;
             
                 String name = data[neededIndexes[0]];
-                
+                System.out.println(name);
                 ArrayList<String> trxes = new ArrayList<String>();
                 for (int i = 1; i < 7; i++) {
                     String value = data[neededIndexes[i]];
@@ -98,8 +95,6 @@ public class GeneratorFrequencyConstraintsData {
                 }
                 else {
                     datas.put(name, trxes);
-                    if (m > 8800)
-                        System.out.println("1");
                 }
 //            sectorNames.add(data[neededIndex]);
 //            System.out.println(data[neededIndex]);
@@ -123,7 +118,7 @@ public class GeneratorFrequencyConstraintsData {
         ArrayList<String> values = new ArrayList<String>();
         
         String sectorName = null;
-        for (int i = 0; i < sectorNames.size(); i++) {
+        for (int i = 0; i < datas.size(); i++) {
             sectorName = iterator.next();
             trxData = datas.get(sectorName);
             trxDataIterator = trxData.iterator();

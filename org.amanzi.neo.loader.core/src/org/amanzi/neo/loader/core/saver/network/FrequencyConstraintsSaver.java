@@ -21,8 +21,9 @@ import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
 import org.amanzi.neo.loader.core.saver.MetaData;
 import org.amanzi.neo.services.GisProperties;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.enums.NodeTypes;
-import org.amanzi.neo.services.network.*;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -44,14 +45,12 @@ public class FrequencyConstraintsSaver extends AbstractHeaderSaver<BaseTransferD
     
     private boolean headerNotHandled;
     private String networkName;
-    private NetworkModel networkModel;
     
     @Override
     public void init(BaseTransferData element) {
         super.init(element);
         propertyMap.clear();
         headerNotHandled = true;
-        networkModel = new NetworkModel(rootNode);
     }
     
     @Override
@@ -82,12 +81,13 @@ public class FrequencyConstraintsSaver extends AbstractHeaderSaver<BaseTransferD
         Node sector = service.findSector(rootNode, null, null, sectorName, true);
         
         if (sector != null) {
+            NetworkService networkService = NeoServiceFactory.getInstance().getNetworkService();
             // get list of trxNodes. It may contains one or some trxNodes
             if (trxId.equals("*")) {
-                listTRX = networkModel.getCarriers(sector);
+                listTRX = networkService.getAllTRXNode(sector);
             }
             else {
-                listTRX.add(networkModel.getCarrier(sector, Integer.parseInt(trxId)));
+                listTRX.add(networkService.getTRXNode(sector, trxId, null));
             }
             
             if (listTRX.size() != 0) {

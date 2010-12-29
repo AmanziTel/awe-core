@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
@@ -24,6 +25,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.traversal.PruneEvaluator;
 import org.neo4j.graphdb.traversal.Uniqueness;
 import org.neo4j.helpers.Predicate;
 import org.neo4j.kernel.Traversal;
@@ -240,13 +242,32 @@ public class NetworkService extends AbstractService {
             Transaction tx = databaseService.beginTx();
             try {
                 trxNode=NeoServiceFactory.getInstance().getDatasetService().addSimpleChild(sector, NodeTypes.TRX, trxId);
-                trxNode.setProperty("group", channelGr);
+                if (channelGr != null) {
+                    trxNode.setProperty("group", channelGr);
+                }
                 tx.success();
             } finally {
                 tx.finish();
             }           
         }
         return trxNode;
+    }
+    
+    /**
+     * 
+     *
+     * @param sector
+     * @return
+     */
+    public ArrayList<Node> getAllTRXNode(Node sector) {
+        Iterable<Node> itr = Traversal.description().uniqueness(Uniqueness.NONE).breadthFirst().prune(Traversal.pruneAfterDepth(1)).
+                relationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING).traverse(sector).nodes();
+        
+        ArrayList<Node> allTrx = new ArrayList<Node>();
+        for (Node it : itr) {
+            allTrx.add(it);
+        }
+        return allTrx;
     }
 
     /**
@@ -261,7 +282,16 @@ public class NetworkService extends AbstractService {
             
             @Override
             public boolean accept(Path item) {
-                return item.length()>0&&item.endNode().getProperty(INeoConstants.PROPERTY_NAME_NAME,"").equals(trxId)&&item.endNode().getProperty("group",-1).equals(channelGr);
+                boolean isLengthNotZero = item.length() > 0;
+                boolean isTrxId = item.endNode().getProperty(INeoConstants.PROPERTY_NAME_NAME,"").equals(trxId);
+                boolean isChannelGroup = item.endNode().getProperty("group",-1).equals(channelGr);
+                
+                if (channelGr != null) {
+                    return isLengthNotZero && isTrxId && isChannelGroup;
+                }
+                else {
+                    return isLengthNotZero && isTrxId;
+                }
             }
         }).traverse(sector).iterator();
         return itr.hasNext()?itr.next().endNode():null;
