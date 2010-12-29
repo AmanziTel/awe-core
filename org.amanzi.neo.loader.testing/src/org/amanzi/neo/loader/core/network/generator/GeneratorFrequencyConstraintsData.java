@@ -88,13 +88,15 @@ public class GeneratorFrequencyConstraintsData {
                         trxes.add(value);
                     }
                 }
-                if (datas.containsKey(name)) {
-                    ArrayList<String> oldTrxes = datas.get(name);
-                    oldTrxes.addAll(trxes);
-                    datas.put(name, oldTrxes);
-                }
-                else {
-                    datas.put(name, trxes);
+                if (!name.equals("")) {
+                    if (datas.containsKey(name)) {
+                        ArrayList<String> oldTrxes = datas.get(name);
+                        oldTrxes.addAll(trxes);
+                        datas.put(name, oldTrxes);
+                    }
+                    else {
+                        datas.put(name, trxes);
+                    }
                 }
 //            sectorNames.add(data[neededIndex]);
 //            System.out.println(data[neededIndex]);

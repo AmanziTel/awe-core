@@ -17,14 +17,14 @@ import au.com.bytecode.opencsv.CSVReader;
  */
 public class GeneratorTrafficData {
 	
-	private static final String SECTOR_NAME = "SectorName";
+	private static final String SECTOR_NAME = "BTS_Name";
 	/**
 	 * @param args args[0] - inputFile, args[1] - outputFile
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws IOException {
 		
-		generate(args[0], args[1] + "_1");
+		generate(args[0], args[1]);
 	}
 	
 	private static void generate(String inputFile, String outputFile) throws IOException {

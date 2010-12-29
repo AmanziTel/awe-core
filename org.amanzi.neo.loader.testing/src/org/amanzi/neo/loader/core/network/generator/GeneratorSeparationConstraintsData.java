@@ -30,7 +30,7 @@ import au.com.bytecode.opencsv.CSVReader;
  * @since 1.0.0
  */
 public class GeneratorSeparationConstraintsData {
-    private static final String SECTOR_NAME = "SectorName";
+    private static final String SECTOR_NAME = "BTS_Name";
     /**
      * @param args args[0] - inputFile, args[1] - outputFile
      * @throws IOException 
