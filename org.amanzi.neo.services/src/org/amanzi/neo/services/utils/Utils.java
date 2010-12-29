@@ -32,6 +32,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.xml.ws.Service;
+
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.services.GpehReportUtil;
@@ -39,6 +41,7 @@ import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.CallProperties.CallType;
 import org.amanzi.neo.services.enums.CorrelationRelationshipTypes;
+import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.DriveTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.GisTypes;
@@ -2876,4 +2879,71 @@ public class Utils {
         }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
     }
 
+    public static void createBCCHCarrier(Node sectorNode, String band, int[] arfcnArray, final GraphDatabaseService service) {
+        //create a Carrier
+        Node carrierNode = createCarrier(sectorNode, 1, band, service);
+        
+        //update hopping type
+        if (arfcnArray.length == 1) {
+            carrierNode.setProperty("hopping_type", 0);
+        }
+        
+        //update bcch
+        carrierNode.setProperty("bcch", true);
+        
+        //create a plan
+        createPlan(carrierNode, arfcnArray, service);
+    }
+    
+    public static void createCarrier(Node sectorNode, Integer trxId, String band, int[] arfcnArray, final GraphDatabaseService service) {
+      //create a Carrier
+        Node carrierNode = createCarrier(sectorNode, trxId, band, service);
+        
+        //update hopping type
+        if (arfcnArray.length == 1) {
+            carrierNode.setProperty("hopping_type", 0);
+        }
+        
+        //update bcch
+        carrierNode.setProperty("bcch", false);
+        
+        //create a plan
+        createPlan(carrierNode, arfcnArray, service);
+    }
+    
+    private static Node createPlan(Node carrierNode, int[] arfcnArray, final GraphDatabaseService service) {
+        //create a node
+        Node plan = service.createNode();
+        
+        //set main properties
+        plan.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.FREQUENCY_PLAN.getId());
+        plan.setProperty(INeoConstants.PROPERTY_NAME_NAME, "original");
+        
+        //set arfcn array
+        plan.setProperty("arfcn", arfcnArray);
+        
+        //add to carrier
+        carrierNode.createRelationshipTo(plan, DatasetRelationshipTypes.PLAN_ENTRY);
+        
+        return plan;
+    }
+    
+    private static Node createCarrier(Node sectorNode, Integer trxId, String band, final GraphDatabaseService service) {
+        //create a node
+        Node carrier = service.createNode();
+        
+        //set main properties
+        carrier.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.TRX.getId());
+        carrier.setProperty(INeoConstants.PROPERTY_NAME_NAME, trxId.toString());
+        
+        //set additional properties
+        carrier.setProperty("trx_id", trxId);
+        carrier.setProperty("band", band);
+        
+        //add to sector's children
+        
+        sectorNode.createRelationshipTo(carrier, GeoNeoRelationshipTypes.CHILD);
+        
+        return carrier;
+    }
 }
