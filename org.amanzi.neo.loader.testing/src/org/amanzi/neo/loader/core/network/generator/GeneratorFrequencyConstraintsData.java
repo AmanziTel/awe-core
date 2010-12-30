@@ -96,7 +96,7 @@ public class GeneratorFrequencyConstraintsData {
                     }
                     else {
                         datas.put(name, trxes);
-                    }
+                    } 
                 }
 //            sectorNames.add(data[neededIndex]);
 //            System.out.println(data[neededIndex]);
