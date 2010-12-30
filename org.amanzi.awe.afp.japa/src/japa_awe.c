@@ -258,6 +258,12 @@ void jprtl(char * into, int value, int len) {
 	jcpyl(into, aux);
 	free(aux);
 }
+
+/*
+ * Allocate memory for ?
+ * (This looks like the main allocation routing because it started with allocating to the main object
+ * _N_____
+ */
 T_N__ * A___N__(int dim, int bim) {
 	int i;
 	T_N__ *_N______;
@@ -281,6 +287,10 @@ T_N__ * A___N__(int dim, int bim) {
 	AllErr_(_N______->Perm,"AllocErr  by alloc _N______->Perm",exit(0);)
 	return (_N______);
 }
+
+/*
+ * Free all allocated memory
+ */
 void f___(void) {
 	int i;
 	if (_N______) {
@@ -322,6 +332,10 @@ void f___(void) {
 		fclose(Protfp);
 	unlink(C_F___);
 }
+
+/*
+ * Allocate memory for ?
+ */
 T_C___ * A___C__(int dim) {
 	int i;
 	T_C___ *xet;
@@ -335,6 +349,10 @@ T_C___ * A___C__(int dim) {
 	}
 	return (xet);
 }
+
+/*
+ * Allocate memory for ?
+ */
 T_S__ * A___S__(int card) {
 	T_S__ * M;
 	M=(T_S__ *) calloc(1, sizeof(T_S__));
@@ -344,6 +362,10 @@ T_S__ * A___S__(int card) {
 	M->Card = 0;
 	return (M);
 }
+
+/*
+ * Allocate memory for ?
+ */
 void a_____e___(int is_fix, T_N__ * xnet) {
 	int i;
 	if (is_fix)
@@ -1415,6 +1437,10 @@ BYTE read_neighbors(char *fname,int p_pri, int mind, int cadd, int aadd, ___P___
 	fprintf(Protfp,"Set neigh Prio=%d Dis=%d >>> %d \n",p_pri,mind,ALLN);
 	return(True);
 }
+
+/*
+ * Read the interference file
+ */
 BYTE read_it(int o_pri, int p_pri, char *fname, ___P____ ** CRX, int traff_m)
 {
 	char lx[MaxLineL+1], subci[MaxNameL+1], subcx[MaxNameL+1], s1[8], s2[MaxNameL+1];
@@ -2438,6 +2464,13 @@ int write_last_plan(int pmod) //(void)
 	fflush(Protfp);
 	return (1);
 }
+
+/*
+ * Free all memory
+ * TODO: How does this differ from f___?
+ * (I see no calls to free_all, but do see many calls to f___,
+ * so perhaps free_all is the old version, and f___ is the new one?)
+ */
 void free_all(void) {
 	int i;
 	if (_N______) {
