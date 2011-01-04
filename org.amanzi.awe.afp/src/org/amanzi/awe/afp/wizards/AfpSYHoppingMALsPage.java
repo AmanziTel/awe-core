@@ -155,7 +155,7 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage {
 		    			else if (prop_name[j].equals("band")){
 		    				val = (String)node.getProperty(prop_name[j], "");
 		    				if (val.equals("")) 
-		    					val = (String)node.getProperty("ant_freq_band", "");
+		    					val = (String)node.getProperty("band", "");
 		    				val = val.split(" ")[val.split(" ").length - 1].trim();
 		    			}
 		    			else if (prop_name[j].equals("Extended")){

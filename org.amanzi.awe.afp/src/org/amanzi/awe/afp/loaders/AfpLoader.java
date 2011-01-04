@@ -36,6 +36,7 @@ import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.neo.services.utils.RunnableWithResult;
+import org.amanzi.neo.services.utils.Utils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.neo4j.graphdb.Direction;
@@ -331,23 +332,23 @@ public class AfpLoader extends AbstractLoader {
         afpCell = afpRoot;
         
         // create the virtual data set node
-        if(afpDataset != null) {
-            Transaction tx = this.neo.beginTx();
-            try {
-                Node child = this.neo.createNode();
-                child.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.FREQ);
-                child.setProperty(INeoConstants.PROPERTY_NAME_NAME, (new Date()).toString());
-                afpDataset.createRelationshipTo(child, NetworkRelationshipTypes.CHILD);
-                tx.success();
-                prevFreqNode = child;
-            } finally {
-                tx.finish();
-            }
-
-//        	prevFreqNode = networkService.addFREQNode(afpDataset, (new Date()).toString(), null);
-        	
-        	AweConsolePlugin.info("Created new Freq plan node ");
-        }
+//        if(afpDataset != null) {
+//            Transaction tx = this.neo.beginTx();
+//            try {
+//                Node child = this.neo.createNode();
+//                child.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.FREQ);
+//                child.setProperty(INeoConstants.PROPERTY_NAME_NAME, (new Date()).toString());
+//                afpDataset.createRelationshipTo(child, NetworkRelationshipTypes.CHILD);
+//                tx.success();
+//                prevFreqNode = child;
+//            } finally {
+//                tx.finish();
+//            }
+//
+////        	prevFreqNode = networkService.addFREQNode(afpDataset, (new Date()).toString(), null);
+//        	
+//        	AweConsolePlugin.info("Created new Freq plan node ");
+//        }
         CommonImporter importer = new CommonImporter(new CellFileHandler(afpCell, neo), new TxtFileImporter(cellFile));
         importer.process();
     }
@@ -490,6 +491,7 @@ public class AfpLoader extends AbstractLoader {
 
         /** The header. */
         private LinkedHashMap<String, Header> header;
+        private long time;
 
         /**
          * Instantiates a new cell file handler.
@@ -500,6 +502,7 @@ public class AfpLoader extends AbstractLoader {
         public CellFileHandler(Node rootNode, GraphDatabaseService service) {
             super(rootNode, service);
             header = getHeaderMap(CELL_IND).headers;
+            time = System.currentTimeMillis();
         }
         
         private String getSampleSectorName(String siteName, String sectorNo) {
@@ -583,10 +586,18 @@ public class AfpLoader extends AbstractLoader {
                     setIndexProperty(header, sector, "nonrelevant", nonrelevant);
                     setIndexProperty(header, sector, "numberoffreqenciesrequired", numberoffreqenciesrequired);
                     setIndexProperty(header, sector, "numberoffrequenciesgiven", numberoffrequenciesgiven);
+                    String band = (String)sector.getProperty("band", "");
+                    if (band.contains(" "))
+                    	band = band.split("\\s")[1];
                     for(int j=0; j< frq.length;j++) {
                     	AweConsolePlugin.info("Adding TRX and FREQ for sector " + sectorName);
-                        Node trx = networkService.getTRXNode(sector, ""+j, 0);
-                        prevFreqNode = networkService.addFREQNode(trx, ""+frq[j], prevFreqNode);
+                        Node trx = Utils.findOrCreateCarrier(sector, j, band, service);//networkService.getTRXNode(sector, ""+j, 0);
+//                        prevFreqNode = networkService.addFREQNode(trx, ""+frq[j], prevFreqNode);
+                        Node planNode = Utils.createPlan(trx, new int[]{j}, Long.toString(time), service);
+                        if(prevFreqNode != null) {
+                        	prevFreqNode.createRelationshipTo(planNode, NetworkRelationshipTypes.NEXT);
+                 	   }
+                        prevFreqNode = planNode;
                     }
                     tx.success();
                 } finally {

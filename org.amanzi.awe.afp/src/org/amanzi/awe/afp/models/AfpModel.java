@@ -177,7 +177,8 @@ public class AfpModel {
 			@Override
 			public boolean isReturnableNode(TraversalPosition currentPos) {
 				if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.SECTOR.getId()) ||
-						currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.SITE.getId())){
+						currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.SITE.getId()) ||
+						currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.TRX.getId())){
 					return true;
 				}
 				return false;
@@ -190,8 +191,10 @@ public class AfpModel {
 			}
 			else if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.SECTOR.getId())){
 				totalSectors++;
+			}
+			else if(node.getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.TRX.getId())){
 				totalTRX++;
-				String band = (String)node.getProperty("ant_freq_band", "");
+				String band = (String)node.getProperty("band", "");
 				if (band.contains("900"))
 					bandTRXs[BAND_900]++;
 				if (band.contains("1800"))
@@ -203,9 +206,6 @@ public class AfpModel {
 			}
 		}
 
-//		for (int i : bandTRXs){
-//			totalTRX += i;
-//		}
 		
 		//TODO: get the count from database based on the selected node and also update frequency band values based on that
 		int[][] selectedArray = {bandTRXs, bandTRXs, bandTRXs, {0,0,0,0},{0,0,0,0}
@@ -1497,8 +1497,8 @@ public class AfpModel {
 	    	parameters.put(ControlFileProperties.MIN_NEIGBOUR_SPACING, "0");
 	    	parameters.put(ControlFileProperties.SECOND_NEIGHBOUR_SPACING, "1");
 	    	parameters.put(ControlFileProperties.QUALITY, "100");
-	    	parameters.put(ControlFileProperties.G_MAX_RT_PER_CELL, "2");
-	    	parameters.put(ControlFileProperties.G_MAX_RT_PER_SITE, "2");
+	    	parameters.put(ControlFileProperties.G_MAX_RT_PER_CELL, "5");
+	    	parameters.put(ControlFileProperties.G_MAX_RT_PER_SITE, "5");
 	    	parameters.put(ControlFileProperties.HOPPING_TYPE, "1");
 	    	parameters.put(ControlFileProperties.NUM_GROUPS, "6");
 	    	parameters.put(ControlFileProperties.CELL_CARDINALITY, "61");
@@ -1593,7 +1593,7 @@ public class AfpModel {
 					if (filters != null){
 						for (String key: filters.keySet().toArray(new String[0])){
 							if (key.equals("band")){
-								if (!((String)currentPos.currentNode().getProperty("ant_freq_band", "")).contains(filters.get(key)))
+								if (!((String)currentPos.currentNode().getProperty("band", "")).contains(filters.get(key)))
 									return false;
 							}
 						}

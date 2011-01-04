@@ -2,6 +2,7 @@ package org.amanzi.awe.afp.wizards;
 
 import org.amanzi.awe.afp.filters.AfpTRXFilter;
 import org.amanzi.awe.afp.models.AfpModel;
+import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
@@ -27,6 +28,9 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.swt.widgets.TreeItem;
 import org.neo4j.graphdb.Node;
 
 public class AfpWizardPage extends WizardPage implements SelectionListener {
@@ -184,6 +188,9 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
     	});
     	
     	final TableViewer viewer = new TableViewer(trxFilterGroup, SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL);
+    	Table filterTable = viewer.getTable();
+    	filterTable.setHeaderVisible(true);
+    	filterTable.setLinesVisible(true);
     	final AfpTRXFilter filter = new AfpTRXFilter();
     	viewer.addFilter(filter);
     	for (String item : headers) {
@@ -192,7 +199,7 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
   	      	column.setText(item);
   	      	column.setData(item);
   	      	column.setResizable(true);
-  	      	/*column.addListener(SWT.Selection, new Listener(){
+  	      	column.addListener(SWT.Selection, new Listener(){
 		
 				@Override
 				public void handleEvent(Event event) {
@@ -205,12 +212,34 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 					filterGroup.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, false, false,2 ,1));
 					filterGroup.setText((String)event.widget.getData());
 					
+//					final CheckboxTreeViewer treeViewer = new CheckboxTreeViewer(filterGroup);
+//				    Tree tree = treeViewer.getTree();
+				    Tree tree = new Tree(filterGroup, SWT.CHECK | SWT.BORDER);
+				    tree.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, false, false,2 ,1));
+				    for (int loopIndex1 = 0; loopIndex1 < 5; loopIndex1++) {
+				        TreeItem item0 = new TreeItem(tree, 0);
+				        item0.setText("Level 0 Item " + loopIndex1);
+				        //TODO implement listener class
+//				        item0.addListener(SWT.Selection, listener);
+				        for (int loopIndex2 = 0; loopIndex2 < 5; loopIndex2++) {
+				          TreeItem item1 = new TreeItem(item0, 0);
+				          item1.setText("Level 1 Item " + loopIndex2);
+				          for (int loopIndex3 = 0; loopIndex3 < 5; loopIndex3++) {
+				            TreeItem item2 = new TreeItem(item1, 0);
+				            item2.setText("Level 2 Item " + loopIndex3);
+				          }
+				        }
+				      }
+
+				    
+					
+					/*
 					new Label (filterGroup, SWT.LEFT).setText("Equals");
 					final Text equalsText = new Text(filterGroup, SWT.BORDER);
 					
 					new Label (filterGroup, SWT.LEFT).setText("Greater than");
 					final Text gretaerText = new Text(filterGroup, SWT.BORDER);
-					
+					*/
 					Button applyButton = new Button(filterGroup, SWT.PUSH);
 					applyButton.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, true, true, 2, 1));
 					applyButton.setText("Apply");
@@ -219,8 +248,6 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 						@Override
 						public void widgetSelected(SelectionEvent e) {
 							
-							filter.setEqualityText(equalsText.getText());
-							model.getFilters().put("Equals", equalsText.getText());
 							viewer.refresh();
 							subShell.dispose();
 						}
@@ -233,12 +260,10 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 					
 				}
 		    	  
-  	      	});*/
+  	      	});
   	    }
     	
-    	Table filterTable = viewer.getTable();
-    	filterTable.setHeaderVisible(true);
-    	filterTable.setLinesVisible(true);
+    	
     	
 
 //		Table filterTable = new Table(trxFilterGroup, SWT.VIRTUAL | SWT.MULTI);

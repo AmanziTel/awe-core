@@ -36,9 +36,9 @@ public class AfpSummaryPage extends AfpWizardPage {
 		main.setLayout(new GridLayout(1, false));
 		main.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true, 1 ,1));
 		
-		summaryText = new Text (main, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
+		summaryText = new Text (main, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.READ_ONLY);
 		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true, true, 1 ,1);
-		gridData.heightHint = 300;
+		gridData.minimumHeight = 300;
 		gridData.minimumWidth = 100;
 //		gridData.widthHint = 300;
 		summaryText.setLayoutData(gridData);

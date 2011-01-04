@@ -17,6 +17,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.neo4j.graphdb.Direction;
@@ -28,7 +29,9 @@ import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
 
 
 /**
@@ -79,6 +82,7 @@ public class AfpExporter {
 			 BufferedWriter writer  = new BufferedWriter(new FileWriter(carrierFile));
 			 
 			 for (Node sector : afpRoot.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)){
+				 ArrayList<Integer> freq = new ArrayList<Integer>();
 				 if (!sector.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals("sector"))
 					 continue;
 				 
@@ -86,8 +90,28 @@ public class AfpExporter {
 				 writer.write(sectorValues[0]);
 				 writer.write(" " + sectorValues[1]);
 				 writer.write(" " + 1);//sector.getProperty("nonrelevant"));
-				 writer.write(" " + 2);//sector.getProperty("numberoffreqenciesrequired"));
-				 writer.write(" " + 1);//sector.getProperty("numberoffrequenciesgiven"));
+				 
+				 
+				 for (Node trx : sector.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)){
+					 if (!trx.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.TRX.getId()))
+					 	continue;
+					 for (Node plan : trx.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, DatasetRelationshipTypes.PLAN_ENTRY, Direction.OUTGOING)){
+						 try{
+							 Integer[] frequencies = (Integer[])plan.getProperty("arfcn", new Integer[0]);
+							 for(Integer f : frequencies)
+								 freq.add(f);
+						 }catch (ClassCastException e){
+							 int[] frequencies = (int[])plan.getProperty("arfcn", new int[0]);
+							 for(int f : frequencies)
+								 freq.add(f);
+						 }
+						 
+						 
+					 }
+				 }
+				 Integer[] freqArray = freq.toArray(new Integer[0]);
+				 writer.write(" " + (freqArray.length + 1));//sector.getProperty("numberoffreqenciesrequired"));
+				 writer.write(" " + freqArray.length);//sector.getProperty("numberoffrequenciesgiven"));
 				 /*Object obj = sector.getProperty("frq");
 				 
 				 if (obj != null){
@@ -106,7 +130,10 @@ public class AfpExporter {
 					 }
 					 
 				 }*/
-				 writer.write(" " + 1);
+//				 writer.write(" " + 1);
+				 for (Integer frequency : freqArray){
+					 writer.write(" " + frequency);
+				 }
 				 writer.newLine();
 			 }
 			 writer.close();

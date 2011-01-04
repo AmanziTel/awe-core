@@ -67,9 +67,9 @@ public class AfpFrequencyDomainModel extends AfpDomainModel {
 		AfpFilter af = AfpFilter.getFilter(f);
 
 		for(String b: AfpModel.BAND_NAMES) {
-			af.removeFilter(AfpFilter.FILTER_LIKE, "ant_freq_band", ".*"+band+".*");
+			af.removeFilter(AfpFilter.FILTER_LIKE, "band", ".*"+band+".*");
 		}
-		af.addFilter(AfpFilter.FILTER_LIKE, "ant_freq_band", ".*"+band+".*");
+		af.addFilter(AfpFilter.FILTER_LIKE, "band", ".*"+band+".*");
 
 		return af.toString();*/
 		return super.getFilters();

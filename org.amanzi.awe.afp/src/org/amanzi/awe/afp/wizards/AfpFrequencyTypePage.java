@@ -9,6 +9,7 @@ import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -31,7 +32,11 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
 
 public class AfpFrequencyTypePage extends AfpWizardPage {
 	
@@ -54,7 +59,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage {
 	protected static HashMap<String, Label[]> domainLabels;
 	private final String[] headers = { "BSC", "Site", "Sector", "Layer", "Subcell", "TRX_ID", "Band", "Extended", "Hopping Type", "BCCH"};
 	private final String[] prop_name = { "bsc", "Site", INeoConstants.PROPERTY_NAME_NAME, "Layer", 
-			"Subcell", "TRX_ID", "band", "Extended", "Hopping Type", INeoConstants.PROPERTY_BCCH_NAME};
+			"Subcell", "trx_id", "band", "Extended", "hopping_type", INeoConstants.PROPERTY_BCCH_NAME};
 	
 	private Table filterTable;
 
@@ -118,50 +123,68 @@ public class AfpFrequencyTypePage extends AfpWizardPage {
 					bandFilters.put("band", model.BAND_NAMES[i]);
 			}
 			
-		    Traverser traverser = model.getTRXList(bandFilters);
+		    Traverser sectorTraverser = model.getTRXList(bandFilters);
 		    
 		    int cnt =0;
-		    for (Node node : traverser) {
-		    	if(cnt > 100) 
-		    		break;
-		    	TableItem item = new TableItem(filterTable, SWT.NONE);
-		    	for (int j = 0; j < headers.length; j++){
-		    		String val = "";
-		    		try {
-		    			if (prop_name[j].equals("bsc")){
-		    				val = (String)node.getProperty(prop_name[j], "bsc");
-		    			}
-		    			else if (prop_name[j].equals("Site")){
-		    				Node siteNode = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
-		    				if (siteNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals("site"))
-		    					val = (String)siteNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "");
-		    			}
-		    			else if (prop_name[j].equals("TRX_ID")){
-		    				val = (String)node.getProperty(prop_name[j], "0");
-		    			}
-		    			else if (prop_name[j].equals("band")){
-		    				val = (String)node.getProperty(prop_name[j], "");
-		    				if (val.equals("")) 
-		    					val = (String)node.getProperty("ant_freq_band", "");
-		    				val = val.split(" ")[val.split(" ").length - 1].trim();
-		    			}
-		    			else if (prop_name[j].equals("Extended")){
-		    				val = (String)node.getProperty(prop_name[j], "NA");
-		    			}
-		    			else if (prop_name[j].equals("Hopping Type")){
-		    				val = (String)node.getProperty(prop_name[j], "Non");
-		    			}
-		    			else if (prop_name[j].equals(INeoConstants.PROPERTY_BCCH_NAME)){
-		    				val = "1";
-		    			}
-		    			else 
-		    				val = (String)node.getProperty(prop_name[j], "");
-		    			item.setText(j, val);
-		    		} catch(Exception e) {
-		    			item.setText(j, "");
-		    		}
+		    for (Node node : sectorTraverser) {
+		    	Traverser trxTraverser = node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
+
+					@Override
+					public boolean isReturnableNode(TraversalPosition currentPos) {
+						if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.TRX.getId())){
+							return true;
+						}
+							
+						return false;
+					}
+		    		
+		    	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+		    	
+		    	for (Node trxNode: trxTraverser){
+			    	if(cnt > 100) 
+			    		break;
+			    	TableItem item = new TableItem(filterTable, SWT.NONE);
+			    	for (int j = 0; j < headers.length; j++){
+			    		String val = "";
+			    		try {
+			    			if (prop_name[j].equals("bsc")){
+			    				val = (String)node.getProperty(prop_name[j], "bsc");
+			    			}
+			    			else if (prop_name[j].equals("Site")){
+			    				Node siteNode = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
+			    				if (siteNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals("site"))
+			    					val = (String)siteNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "");
+			    			}
+			    			else if (prop_name[j].equals("trx_id")){
+			    				val = Integer.toString((Integer)trxNode.getProperty(prop_name[j], "0"));
+			    			}
+			    			else if (prop_name[j].equals("band")){
+//			    				val = (String)node.getProperty(prop_name[j], "");
+//			    				if (val.equals("")) 
+//			    					val = (String)node.getProperty("band", "");
+//			    				val = val.split(" ")[val.split(" ").length - 1].trim();
+			    				val = (String)trxNode.getProperty(prop_name[j], "");
+			    			}
+			    			else if (prop_name[j].equals("Extended")){
+			    				val = (String)node.getProperty(prop_name[j], "NA");
+			    			}
+			    			else if (prop_name[j].equals("hopping_type")){
+			    				int type = (Integer)trxNode.getProperty(prop_name[j], 0);
+			    				val = type == 0 ? "Non" : "SY";
+			    			}
+			    			else if (prop_name[j].equals(INeoConstants.PROPERTY_BCCH_NAME)){
+			    				boolean bcch = (Boolean)trxNode.getProperty(prop_name[j], false);
+			    				val = bcch ? "1" : "0";
+			    			}
+			    			else 
+			    				val = (String)node.getProperty(prop_name[j], "");
+			    			item.setText(j, val);
+			    		} catch(Exception e) {
+			    			item.setText(j, "");
+			    		}
+			    	}
+			    	cnt++;
 		    	}
-		    	cnt++;
 		    }
 		    for (int i = 0; i < headers.length; i++) {
 		    	filterTable.getColumn(i).pack();

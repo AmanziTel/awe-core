@@ -2928,6 +2928,23 @@ public class Utils {
         return plan;
     }
     
+    public static Node createPlan(Node carrierNode, int[] arfcnArray, String name, final GraphDatabaseService service) {
+        //create a node
+        Node plan = service.createNode();
+        
+        //set main properties
+        plan.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.FREQUENCY_PLAN.getId());
+        plan.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
+        
+        //set arfcn array
+        plan.setProperty("arfcn", arfcnArray);
+        
+        //add to carrier
+        carrierNode.createRelationshipTo(plan, DatasetRelationshipTypes.PLAN_ENTRY);
+        
+        return plan;
+    }
+    
     private static Node createCarrier(Node sectorNode, Integer trxId, String band, final GraphDatabaseService service) {
         //create a node
         Node carrier = service.createNode();
@@ -2945,5 +2962,48 @@ public class Utils {
         sectorNode.createRelationshipTo(carrier, GeoNeoRelationshipTypes.CHILD);
         
         return carrier;
+    }
+    
+    public static Node findOrCreateCarrier(Node sectorNode, Integer trxId, String band, final GraphDatabaseService service) {
+        Node carrier = findCarrierNode(sectorNode, trxId, band);
+        if (carrier == null){
+        //create a node
+            carrier = service.createNode();
+            
+            //set main properties
+            carrier.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.TRX.getId());
+            carrier.setProperty(INeoConstants.PROPERTY_NAME_NAME, trxId.toString());
+            
+            //set additional properties
+            carrier.setProperty("trx_id", trxId);
+            carrier.setProperty("band", band);
+            
+            carrier.setProperty("bcch", false);
+            carrier.setProperty("hopping_type", 0);
+            
+          //add to sector's children
+            sectorNode.createRelationshipTo(carrier, GeoNeoRelationshipTypes.CHILD);
+        }
+        
+        
+        return carrier;
+    }
+    
+    private static Node findCarrierNode(Node sectorNode, final Integer trxId, final String band) {
+        Iterator<Path> itr = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst().prune(Traversal.pruneAfterDepth(1)).relationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING).filter(new Predicate<Path>() {
+            
+            @Override
+            public boolean accept(Path item) {
+                boolean isLengthNotZero = item.length() > 0;
+                boolean isName = item.endNode().getProperty(INeoConstants.PROPERTY_NAME_NAME,"").equals(trxId.toString());
+                boolean isTrxId= item.endNode().getProperty("trx_id",-1).equals(trxId);
+                boolean isBand= item.endNode().getProperty("band","").equals(band);
+                
+                
+                return isLengthNotZero && isName && isTrxId && isBand;
+                
+            }
+        }).traverse(sectorNode).iterator();
+        return itr.hasNext()?itr.next().endNode():null;
     }
 }
