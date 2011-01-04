@@ -40,6 +40,8 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 	private Label siteFilterInfoLabel;
 	private Group siteTrxFilterGroup;
 	protected AfpModel model;
+	private TableViewer viewer;
+	private AfpTRXFilter filter;
 
 	protected AfpWizardPage(String pageName) {
 		super(pageName);
@@ -187,80 +189,19 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
     		
     	});
     	
-    	final TableViewer viewer = new TableViewer(trxFilterGroup, SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL);
+    	viewer = new TableViewer(trxFilterGroup, SWT.H_SCROLL | SWT.V_SCROLL);
     	Table filterTable = viewer.getTable();
     	filterTable.setHeaderVisible(true);
     	filterTable.setLinesVisible(true);
-    	final AfpTRXFilter filter = new AfpTRXFilter();
-    	viewer.addFilter(filter);
+//    	filter = new AfpTRXFilter();
+//    	viewer.addFilter(filter);
     	for (String item : headers) {
     		TableViewerColumn viewerColumn = new TableViewerColumn(viewer, SWT.NONE);
   	      	TableColumn column = viewerColumn.getColumn();
   	      	column.setText(item);
   	      	column.setData(item);
   	      	column.setResizable(true);
-  	      	column.addListener(SWT.Selection, new Listener(){
-		
-				@Override
-				public void handleEvent(Event event) {
-					final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL);
-					subShell.setLayout(new GridLayout(2, false));
-					subShell.setLocation(300, 200);
-					
-					Group filterGroup = new Group(subShell, SWT.NONE);
-					filterGroup.setLayout(new GridLayout(2, false));
-					filterGroup.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, false, false,2 ,1));
-					filterGroup.setText((String)event.widget.getData());
-					
-//					final CheckboxTreeViewer treeViewer = new CheckboxTreeViewer(filterGroup);
-//				    Tree tree = treeViewer.getTree();
-				    Tree tree = new Tree(filterGroup, SWT.CHECK | SWT.BORDER);
-				    tree.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, false, false,2 ,1));
-				    for (int loopIndex1 = 0; loopIndex1 < 5; loopIndex1++) {
-				        TreeItem item0 = new TreeItem(tree, 0);
-				        item0.setText("Level 0 Item " + loopIndex1);
-				        //TODO implement listener class
-//				        item0.addListener(SWT.Selection, listener);
-				        for (int loopIndex2 = 0; loopIndex2 < 5; loopIndex2++) {
-				          TreeItem item1 = new TreeItem(item0, 0);
-				          item1.setText("Level 1 Item " + loopIndex2);
-				          for (int loopIndex3 = 0; loopIndex3 < 5; loopIndex3++) {
-				            TreeItem item2 = new TreeItem(item1, 0);
-				            item2.setText("Level 2 Item " + loopIndex3);
-				          }
-				        }
-				      }
-
-				    
-					
-					/*
-					new Label (filterGroup, SWT.LEFT).setText("Equals");
-					final Text equalsText = new Text(filterGroup, SWT.BORDER);
-					
-					new Label (filterGroup, SWT.LEFT).setText("Greater than");
-					final Text gretaerText = new Text(filterGroup, SWT.BORDER);
-					*/
-					Button applyButton = new Button(filterGroup, SWT.PUSH);
-					applyButton.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, true, true, 2, 1));
-					applyButton.setText("Apply");
-					applyButton.addSelectionListener(new SelectionAdapter(){
-						
-						@Override
-						public void widgetSelected(SelectionEvent e) {
-							
-							viewer.refresh();
-							subShell.dispose();
-						}
-						
-					});
-
-					
-					subShell.pack();
-					subShell.open();
-					
-				}
-		    	  
-  	      	});
+  	      	column.addListener(SWT.Selection, new FilterListener());
   	    }
     	
     	
@@ -299,5 +240,71 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 		// TODO Auto-generated method stub
 		
 	}
+	
+	/**
+	 * 
+	 * @param colName
+	 * @return unique values for the column
+	 */
+	public String[] getUniqueValues(String colName){
+		if (colName.equals("band"))
+			return new String[]{"900", "1800", "850", "1900"};
+		
+		return new String[]{"900", "1800", "850", "1900"};
+	}
+	
+	class FilterListener implements Listener{
+		
+		
+		
+		@Override
+		public void handleEvent(Event event) {
+			final Shell subShell = new Shell(event.widget.getDisplay(), SWT.PRIMARY_MODAL);
+			subShell.setLayout(new GridLayout(2, false));
+			subShell.setLocation(300, 200);
+			
+			final String col = (String)event.widget.getData();
+			
+			Group filterGroup = new Group(subShell, SWT.NONE);
+			filterGroup.setLayout(new GridLayout(2, false));
+			filterGroup.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, false, false,2 ,1));
+			filterGroup.setText(col);
+			
+			String[] values = getUniqueValues(col);
+		    final Tree tree = new Tree(filterGroup, SWT.CHECK | SWT.BORDER);
+		    tree.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, false, false,2 ,1));
+		    
+	    	for (String value : values){
+	    		TreeItem item = new TreeItem(tree, 0);
+		        item.setText(value);
+	    	}
+
+			Button applyButton = new Button(filterGroup, SWT.PUSH);
+			applyButton.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, true, true, 2, 1));
+			applyButton.setText("Apply");
+			applyButton.addSelectionListener(new SelectionAdapter(){
+				
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					for (TreeItem item : tree.getItems()){
+						if (item.getChecked()){
+							model.getEqualFilters().put(col, item.getText());
+						}
+					}
+//					filter.setEqualityText("900");
+//					viewer.refresh(true);
+					subShell.dispose();
+				}
+				
+			});
+
+			
+			subShell.pack();
+			subShell.open();
+			
+		}//end handle event
+		
+	}
+	
 
 }

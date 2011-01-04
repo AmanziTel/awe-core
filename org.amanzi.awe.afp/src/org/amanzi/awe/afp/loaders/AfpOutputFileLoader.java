@@ -47,7 +47,7 @@ public class AfpOutputFileLoader extends AfpLoader {
             }
             commit(true);
            
-            saveProperties();
+//            saveProperties();
         } finally {
             commit(false);
         }

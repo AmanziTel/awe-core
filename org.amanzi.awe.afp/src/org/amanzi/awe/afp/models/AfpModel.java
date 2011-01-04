@@ -144,6 +144,7 @@ public class AfpModel {
 	
     protected HashMap<String, String> parameters;
     protected HashMap<String, String> filters;
+    protected HashMap<String, String> equalFilters = new HashMap<String, String>();
 
 	
 	public AfpModel() {
@@ -994,6 +995,14 @@ public class AfpModel {
 		this.filters = filters;
 	}
 
+	public HashMap<String, String> getEqualFilters() {
+		return equalFilters;
+	}
+
+	public void setEqualFilters(HashMap<String, String> equalFilters) {
+		this.equalFilters = equalFilters;
+	}
+
 	public void addFreqDomain(AfpFrequencyDomainModel freqDomain){
 		if(freqDomains.containsKey(freqDomain.getName())) {
 			freqDomain.setName(freqDomain.getName() + "-1");
@@ -1699,6 +1708,7 @@ public class AfpModel {
 					coTriangulation[i], adjTriangulation[i], coShadowing[i], adjShadowing[i]);
 			sb.append(SCALING_PAGE_ROW_HEADERS[i][0] + "-" + SCALING_PAGE_ROW_HEADERS[i][1] + " : "+ s + "\n");
 		}
+		
 		
 		return sb.toString();
 	}
