@@ -72,6 +72,10 @@
             class="org.amanzi.neo.loader.core.saver.network.InterferenceMatrixSaver"
             id="org.amanzi.neo.loader.core.saver.network.InterferenceMatrixSaver">
       </saver>
+      <saver
+            class="org.amanzi.neo.loader.core.saver.network.TrxSaver"
+            id="org.amanzi.neo.loader.core.saver.network.TrxSaver">
+      </saver>
    </extension>
 
 </plugin>

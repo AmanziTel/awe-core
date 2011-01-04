@@ -18,10 +18,8 @@ import java.math.RoundingMode;
 import java.util.Random;
 
 /**
- * TODO Purpose of 
- * <p>
- *
- * </p>
+ * Class to generate different random data
+ * 
  * @author Kasnitskij_V
  * @since 1.0.0
  */
@@ -52,6 +50,28 @@ public class MyRandom {
         return result;
     }
     
+    public static String randomExtended() {
+        String result = null;
+        int a = (int)randomLong(1, 4);
+        
+        switch (a) {
+        case 1: 
+            result = "P";
+            break;
+        case 2:
+            result = "E";
+            break;
+        case 3: 
+            result = "R";
+            break;
+        case 4: 
+            result = "N/A";
+            break;
+        }
+        
+        return result;
+    }
+    
     public static String randomIntOrStar(int min, int max) {
         Integer n = max - min + 1;
         Integer i = random.nextInt() % n;
@@ -65,6 +85,17 @@ public class MyRandom {
                 else {
                     return (new Integer(min + i)).toString();
                 }
+    }
+    
+    public static Integer randomIntOrNULL(int min, int max) {
+        long rand = randomLong(min, max);
+        
+        if (rand == min || rand == max) {
+            return null;
+        }
+        else {
+            return (int)rand;
+        }
     }
     
     public static String randomCurrentIntOrStar(String currentInt) {

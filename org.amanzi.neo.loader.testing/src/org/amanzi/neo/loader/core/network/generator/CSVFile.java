@@ -30,7 +30,6 @@ import java.util.ArrayList;
 public class CSVFile {
 
     private static final int BUFFER_SIZE = 8*1024;
-    private final static int SIZE_EVENT_PARAM = "EVENT_PARAM_".length();
     private String newline = System.getProperty("line.separator");
     private BufferedWriter writer  = null;
     private int eventId = 0;

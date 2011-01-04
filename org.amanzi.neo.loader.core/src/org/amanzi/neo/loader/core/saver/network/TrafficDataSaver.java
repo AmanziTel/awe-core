@@ -63,8 +63,10 @@ public class TrafficDataSaver extends AbstractHeaderSaver<BaseTransferData> {
         	updateProperty(networkName, NodeTypes.SECTOR.getId(), sector, TRAFFIC, traffic);
         }
         else {
-        	// TODO: need write "sector not found" to outputStream
+            getPrintStream().println("Sector with name " + sectorName + " not found!");
         }
+        
+        updateTx(1, 0);
     }
 
     /**

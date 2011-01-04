@@ -103,12 +103,14 @@ public class FrequencyConstraintsSaver extends AbstractHeaderSaver<BaseTransferD
                 }
             }
             else {
-                // TODO: need write "trxNode not found" to outputStream
+                getPrintStream().println("Sector with trxId " + trxId + " not found!");
             }
         }
         else {
-            // TODO: need write "sector not found" to outputStream
+            getPrintStream().println("Sector with name " + sectorName + " not found!");
         }
+        
+        updateTx(1, 0);
     }
 
     /**

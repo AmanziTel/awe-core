@@ -66,8 +66,10 @@ public class SeparationConstraintsSaver extends AbstractHeaderSaver<BaseTransfer
             updateProperty(networkName, NodeTypes.SECTOR.getId(), sector, SEPARATION, separation);
         }
         else {
-            // TODO: need write "sector not found" to outputStream
+            getPrintStream().println("Sector with name " + sectorName + " not found!");
         }
+        
+        updateTx(1, 0);
     }
 
     /**
