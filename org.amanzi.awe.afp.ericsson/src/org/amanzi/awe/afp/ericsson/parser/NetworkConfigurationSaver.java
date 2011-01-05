@@ -52,7 +52,8 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
     private String neighName;
     private Object bsc;
     private Map<String,String>tgProperty=new HashMap<String, String>();
-    private Pattern trxPat=Pattern.compile("(^.*)(-)(\\d+$)",Pattern.CASE_INSENSITIVE);
+    private Pattern tgPat=Pattern.compile("(^.*)(-)(\\d+$)",Pattern.CASE_INSENSITIVE);
+    private Pattern trxPat=Pattern.compile("(^.*)(-)(\\d+)(-)(\\d+$)",Pattern.CASE_INSENSITIVE);
 
     @Override
     public void init(NetworkConfigurationTransferData element) {
@@ -208,6 +209,9 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         if (StringUtils.isNotEmpty(hop)) {
             channalGr.setProperty("hop", hop);
         }
+//        for (int i=0;i<64;i++){
+//            
+//        }
         // TODO implement;
     }
 
@@ -240,7 +244,13 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
     private void saveBSMLine(NetworkConfigurationTransferData element) {
         switch (element.getMode()) {
         case TG:
-            tgProperty.put(element.getTg(), element.getFhop());
+            String tgfull = element.getTg();
+            Matcher matcher = tgPat.matcher(tgfull);
+            if (!matcher.find(0)) {
+                error(String.format("Incorrect TG format: %s",tgfull));
+                return;
+            } 
+            tgProperty.put(matcher.group(3), element.getFhop());
             return;
             
         default:
@@ -251,19 +261,42 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
                 error(String.format("Line %s: Sector with name %s not found", element.getLine(),element.getCell()));
                 return;
             }
-            String tgfull = element.getTg();
-            Matcher matcher = trxPat.matcher(tgfull);
+            tgfull = element.getTg();
+            matcher = trxPat.matcher(tgfull);
             if (!matcher.find(0)) {
                 error(String.format("Incorrect TG format: %s",tgfull));
                 return;
             } 
-            String tg=matcher.group(1);
-            String trxId=matcher.group(3);
+            String tg=matcher.group(3);
+            String trxId=matcher.group(5);
             Integer channelGr=element.getCh_group();
             Node trx=networkService.getTRXNode(sector,trxId,channelGr);
             updateTx(1, 1);
-            //TODO fill necessary property!
-            
+            Node channalGr = networkService.getChannelNode(sector, channelGr);
+            updateProperty(rootname, NodeTypes.TRX.getId(), trx, "band", channalGr.getProperty("band",null));
+            int hoptype;
+            if ("ON".equalsIgnoreCase((String)channalGr.getProperty("hop",null))){
+               String fchop = tgProperty.get(tg);
+               hoptype="BB".equalsIgnoreCase(fchop)?1:2;
+            }else{
+                hoptype=0;
+            }
+            updateProperty(rootname, NodeTypes.TRX.getId(), trx, "hopping_type",hoptype);
+            updateProperty(rootname, NodeTypes.TRX.getId(), trx, "band", channalGr.getProperty("band",null));
+            boolean isBcch = 0==channelGr&&"0".equals(trxId);
+            updateProperty(rootname, NodeTypes.TRX.getId(), trx, "bcch",isBcch );
+            Node plan = networkService.getPlanNode(trx,element.getFileName());
+            updateProperty(rootname, NodeTypes.FREQUENCY_PLAN.getId(), trx, "hsn",hoptype);
+            if (!plan.hasProperty("arfcn")) {
+                int[] arfcn;
+                if (isBcch) {
+                    Integer bcchno = (Integer)sector.getProperty("bcchno");
+                    // arfcn[0]=bcchno==null?-1:bcchno;
+                } else {
+
+                }
+//                plan.setProperty("arfcn", arfcn);
+            }
             break;
         }
     }
