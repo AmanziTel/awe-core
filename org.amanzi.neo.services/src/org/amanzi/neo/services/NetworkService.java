@@ -25,7 +25,6 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.traversal.PruneEvaluator;
 import org.neo4j.graphdb.traversal.Uniqueness;
 import org.neo4j.helpers.Predicate;
 import org.neo4j.kernel.Traversal;
@@ -320,4 +319,26 @@ public class NetworkService extends AbstractService {
        }
        return freqNode;
    }
+
+    public Node getPlanNode(Node trx, String fileName) {
+        Node planNode = findPlanNode(trx, fileName);
+        if (planNode==null){
+                planNode=NeoServiceFactory.getInstance().getDatasetService().addSimpleChild(trx, NodeTypes.FREQUENCY_PLAN, fileName);
+        }
+        return planNode;
+    }
+
+    public Node findPlanNode(Node trx, final String fileName) {
+        final DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
+
+        Iterator<Path> itr = Traversal.description().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1))
+                .filter(new Predicate<Path>() {
+
+                    @Override
+                    public boolean accept(Path item) {
+                        return item.length() > 0 && fileName.equals(ds.getNodeName(item.endNode()));
+                    }
+                }).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).traverse(trx).iterator();
+        return itr.hasNext() ? itr.next().endNode() : null;
+    }
 }
