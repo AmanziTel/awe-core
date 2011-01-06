@@ -209,9 +209,22 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         if (StringUtils.isNotEmpty(hop)) {
             channalGr.setProperty("hop", hop);
         }
-//        for (int i=0;i<64;i++){
-//            
-//        }
+        int[] dccno=new int[64];
+        int j=0;
+        for (int ind=0;ind<64;ind++){
+            String valStr = getStringValue(i, "dchno_"+ind, element);
+            if (valStr!=null){
+                try {
+                    int valInt = Integer.parseInt(valStr);
+                    dccno[j++]=valInt;
+                } catch (NumberFormatException e) {
+                    //do nothing
+                }
+                
+            }
+        }
+        int[] dccnoArr=Arrays.copyOf(dccno, j);
+        channalGr.setProperty("dchno", dccnoArr);
         // TODO implement;
     }
 
