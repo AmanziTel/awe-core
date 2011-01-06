@@ -178,12 +178,14 @@ public class AfpProcessExecutor extends Job {
 			}
 			AfpOutputFileLoader afpOutputFileLoader = new AfpOutputFileLoader(afpRoot,afpE.outputFileName,afpDataset,neo);
 			afpOutputFileLoader.run(monitor);
-			monitor.done();
 		}catch (Exception e){
 			e.printStackTrace();
 			AweConsolePlugin.exception(e);
             return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getLocalizedMessage(), e);
-		}	
+		}
+		finally{
+			monitor.done();
+		}
 		
 		return Status.OK_STATUS;
 	}

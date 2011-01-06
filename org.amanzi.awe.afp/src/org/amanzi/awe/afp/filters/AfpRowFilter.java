@@ -1,0 +1,80 @@
+package org.amanzi.awe.afp.filters;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import org.neo4j.graphdb.Node;
+
+public class AfpRowFilter {
+	
+	static final private String row_delimiter = ":";
+	
+//	private ArrayList<AfpColumnFilter> colFilters;
+	private HashMap<String, AfpColumnFilter> colFilters;
+	
+	public AfpRowFilter() {
+		this.colFilters = new HashMap<String, AfpColumnFilter>();
+	}
+	
+	public AfpRowFilter(HashMap<String, AfpColumnFilter> colFilters) {
+		this.colFilters = colFilters;
+	}
+
+	public void addColumn(AfpColumnFilter colFilter) {
+		colFilters.put(colFilter.getColName(), colFilter);
+	}
+	
+	public void removeColumn(AfpColumnFilter colFilter) {
+		colFilters.remove(colFilter.getColName());
+	}
+	
+	public static AfpRowFilter getFilter(String filterstring) {
+		String[] tokens = filterstring.split(row_delimiter);
+		AfpRowFilter ret = new AfpRowFilter();
+		
+		if(tokens.length > 0) {
+			for(int i=1; i < tokens.length; i++)
+				ret.addColumn(AfpColumnFilter.getFilter(tokens[i]));
+			return ret;
+		}
+		return null;
+	}
+	
+	public AfpColumnFilter getColFilter(String colName){
+		if (colFilters.containsKey(colName)){
+			return colFilters.get(colName);
+		}
+		
+		AfpColumnFilter colFilter = new AfpColumnFilter(colName);
+		colFilters.put(colName, colFilter);
+		return colFilter;
+	}
+	
+	/**
+	 * AND the column conditions. If any of column criterion is not met, return false
+	 * @param n
+	 * @return
+	 */
+	public boolean equal(Node n){
+		
+		for(AfpColumnFilter filter : colFilters.values()){
+			if(!filter.equal(n))
+				return false; 
+		}
+		
+		
+		return true;
+	}
+	
+	public String toString(){
+		StringBuffer sb = new StringBuffer();
+		sb.append("frow");
+		for (AfpColumnFilter filter : colFilters.values()){
+			sb.append(row_delimiter);
+			sb.append(filter.toString());
+		}
+		
+		return sb.toString();
+	}
+
+}

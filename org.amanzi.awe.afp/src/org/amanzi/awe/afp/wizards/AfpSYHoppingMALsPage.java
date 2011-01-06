@@ -1,15 +1,19 @@
 package org.amanzi.awe.afp.wizards;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
 
+import org.amanzi.awe.afp.filters.AfpColumnFilter;
+import org.amanzi.awe.afp.filters.AfpRowFilter;
 import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
 import org.amanzi.awe.afp.models.AfpHoppingMALDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -26,9 +30,13 @@ import org.eclipse.swt.widgets.TableItem;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
 
-public class AfpSYHoppingMALsPage extends AfpWizardPage {
+public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListener{
 	
 	private Group malDomainsGroup;
 	private Label defaultTrx;
@@ -36,9 +44,10 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage {
 	
 	protected HashMap<String, Label[]> domainLabels;
 	private final String[] headers = { "BSC", "Site", "Sector", "Layer", "Subcell", "TRX_ID", "Band", "Extended", "Hopping Type"};
-	private final String[] prop_name = { "bsc", "Site", INeoConstants.PROPERTY_NAME_NAME, "Layer", 
-			"Subcell", "TRX_ID", "band", "Extended", "Hopping Type"};
+	private final String[] prop_name = { "bsc", "Site", "Sector", "Layer", 
+			"Subcell", "trx_id", "band", "Extended", "hopping_type"};
 	private Table filterTable;
+	protected AfpRowFilter rowFilter;
 
 	
 	public AfpSYHoppingMALsPage(String pageName, AfpModel model, String desc) {
@@ -46,6 +55,7 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage {
         setTitle(AfpImportWizard.title);
         setDescription(desc);
         setPageComplete (false);
+        rowFilter = new AfpRowFilter();	
 	}
 
 	@Override
@@ -78,7 +88,7 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage {
     	AfpWizardUtils.createButtonsGroup(this,malDomainsGroup, "HoppingMAL", model);
     	domainLabels = new HashMap<String, Label[]>();
     	
-    	filterTable = addTRXFilterGroup(main,headers,10, false);
+    	filterTable = addTRXFilterGroup(main,headers,10, false, this);
 
     	setPageComplete(true);
     	setControl (thisParent);
@@ -126,52 +136,78 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage {
 			HashMap<String, String> bandFilters = new HashMap<String, String> ();
 			for (int i = 0; i < model.getFrequencyBands().length; i++){
 				if (model.getFrequencyBands()[i])
-					bandFilters.put("band", model.BAND_NAMES[i]);
+					if (bandFilters.get("band") == null)
+						bandFilters.put("band", model.BAND_NAMES[i]);
+					else
+						bandFilters.put("band", bandFilters.get("band") + "," + model.BAND_NAMES[i]);
 			}
 			
-		    Traverser traverser = model.getTRXList(bandFilters);
+		    Traverser sectorTraverser = model.getTRXList(bandFilters);
 		    
 		    int cnt =0;
-		    for (Node node : traverser) {
-		    	if (!((String)node.getProperty("hopping type", "")).equals("SY"))
-		    		continue;
-		    	if(cnt > 100) 
-		    		break;
-		    	TableItem item = new TableItem(filterTable, SWT.NONE);
-		    	for (int j = 0; j < headers.length; j++){
-		    		String val = "";
-		    		try {
-		    			if (prop_name[j].equals("bsc")){
-		    				val = (String)node.getProperty(prop_name[j], "bsc");
-		    			}
-		    			else if (prop_name[j].equals("Site")){
-		    				Node siteNode = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
-		    				if (siteNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals("site"))
-		    					val = (String)siteNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "");
-		    			}
-		    			else if (prop_name[j].equals("TRX_ID")){
-		    				val = (String)node.getProperty(prop_name[j], "0");
-		    			}
-		    			else if (prop_name[j].equals("band")){
-		    				val = (String)node.getProperty(prop_name[j], "");
-		    				if (val.equals("")) 
-		    					val = (String)node.getProperty("band", "");
-		    				val = val.split(" ")[val.split(" ").length - 1].trim();
-		    			}
-		    			else if (prop_name[j].equals("Extended")){
-		    				val = (String)node.getProperty(prop_name[j], "NA");
-		    			}
-		    			else if (prop_name[j].equals("Hopping Type")){
-		    				val = (String)node.getProperty(prop_name[j], "Non");
-		    			}
-		    			else 
-		    				val = (String)node.getProperty(prop_name[j], "");
-		    			item.setText(j, val);
-		    		} catch(Exception e) {
-		    			item.setText(j, "");
-		    		}
+		    for (Node node : sectorTraverser) {
+		    	Traverser trxTraverser = node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
+
+					@Override
+					public boolean isReturnableNode(TraversalPosition currentPos) {
+						if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.TRX.getId())){
+							return true;
+						}
+							
+						return false;
+					}
+		    		
+		    	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+		    	
+		    	for (Node trxNode: trxTraverser){
+			    	if(cnt > 100) 
+			    		break;
+			    	if ((Integer)trxNode.getProperty("hopping_type", 0) < 1)
+			    		continue;
+			    	
+			    	if (rowFilter != null){
+			    		if (!rowFilter.equal(trxNode)) 
+			    			continue;
+			    	}
+			    	
+		    	
+			    	TableItem item = new TableItem(filterTable, SWT.NONE);
+			    	for (int j = 0; j < headers.length; j++){
+			    		String val = "";
+			    		try {
+			    			if (prop_name[j].equals("bsc")){
+			    				val = (String)node.getProperty(prop_name[j], "bsc");
+			    			}
+			    			else if (prop_name[j].equals("Site")){
+			    				Node siteNode = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
+			    				if (siteNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals("site"))
+			    					val = (String)siteNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "");
+			    			}
+			    			else if (prop_name[j].equals("trx_id")){
+			    				val = Integer.toString((Integer)trxNode.getProperty(prop_name[j], "0"));
+			    			}
+			    			else if (prop_name[j].equals("Sector")){
+			    				val = (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "");
+			    			}
+			    			else if (prop_name[j].equals("band")){
+			    				val = (String)trxNode.getProperty(prop_name[j], "");
+			    			}
+			    			else if (prop_name[j].equals("Extended")){
+			    				val = (String)node.getProperty(prop_name[j], "NA");
+			    			}
+			    			else if (prop_name[j].equals("hopping_type")){
+			    				int type = (Integer)trxNode.getProperty(prop_name[j], 0);
+			    				val = type == 0 ? "Non" : "SY";
+			    			}
+			    			else 
+			    				val = (String)node.getProperty(prop_name[j], "");
+			    			item.setText(j, val);
+			    		} catch(Exception e) {
+			    			item.setText(j, "");
+			    		}
+			    	}
+			    	cnt++;
 		    	}
-		    	cnt++;
 		    }
 		    for(;cnt <10;cnt++) {
 		    	TableItem item = new TableItem(filterTable, SWT.NONE);
@@ -184,6 +220,22 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage {
 		    	filterTable.getColumn(i).pack();
 		    }
 		}
+	}
+
+	@Override
+	public void onFilterSelected(String columnName, ArrayList<String> selectedValues) {
+		for(int i = 0; i < headers.length; i++){
+			if (headers[i].equals(columnName)){
+				columnName = prop_name[i];
+				break;
+			}
+		}
+		AfpColumnFilter colFilter = new AfpColumnFilter(columnName);
+		for (String value: selectedValues){
+			colFilter.addValue(value);
+		}
+		rowFilter.addColumn(colFilter);
+		loadData();		
 	}
 
 }

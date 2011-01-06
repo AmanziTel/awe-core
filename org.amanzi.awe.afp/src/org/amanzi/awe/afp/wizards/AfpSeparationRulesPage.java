@@ -1,10 +1,13 @@
 package org.amanzi.awe.afp.wizards;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
 
+import org.amanzi.awe.afp.filters.AfpColumnFilter;
+import org.amanzi.awe.afp.filters.AfpRowFilter;
 import org.amanzi.awe.afp.models.AfpHoppingMALDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
 import org.amanzi.awe.afp.models.AfpSeparationDomainModel;
@@ -26,7 +29,7 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Traverser;
 
-public class AfpSeparationRulesPage extends AfpWizardPage {
+public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterListener{
 	
 	private Group sectorDomainsGroup;
 	private Group siteDomainsGroup;
@@ -36,12 +39,14 @@ public class AfpSeparationRulesPage extends AfpWizardPage {
 	private final String[] prop_name = { "bsc", "Site", INeoConstants.PROPERTY_NAME_NAME, "Layer"};
 	private Table filterTableSector;
 	private Table filterTableSite;
+	protected AfpRowFilter rowFilter;
 
 	public AfpSeparationRulesPage(String pageName, AfpModel model, String desc) {
 		super(pageName, model);
         setTitle(AfpImportWizard.title);
         setDescription(desc);
         setPageComplete (false);
+        rowFilter = new AfpRowFilter();
 	}
 	
 	@Override
@@ -83,7 +88,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage {
     	siteDomainLabels = new HashMap<String, Label[]>();
 		
 		
-    	filterTableSector = addTRXFilterGroup(sectorMain, headers,10, false);
+    	filterTableSector = addTRXFilterGroup(sectorMain, headers,10, false, this);
 		
 		item1.setControl(sectorMain);
 		
@@ -111,7 +116,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage {
     	AfpWizardUtils.createButtonsGroup(this, siteDomainsGroup, "Site SeparationRules", model);
     	sectorDomainLabels = new HashMap<String, Label[]>();
     	
-    	filterTableSite = addTRXFilterGroup(siteMain, headers,10, true);
+    	filterTableSite = addTRXFilterGroup(siteMain, headers,10, true, this);
 		
     	item2.setControl(siteMain);
 		
@@ -218,6 +223,22 @@ public class AfpSeparationRulesPage extends AfpWizardPage {
 		    	table.getColumn(i).pack();
 		    }
 		}
+	}
+
+	@Override
+	public void onFilterSelected(String columnName,	ArrayList<String> selectedValues) {
+		for(int i = 0; i < headers.length; i++){
+			if (headers[i].equals(columnName)){
+				columnName = prop_name[i];
+				break;
+			}
+		}
+		AfpColumnFilter colFilter = new AfpColumnFilter(columnName);
+		for (String value: selectedValues){
+			colFilter.addValue(value);
+		}
+		rowFilter.addColumn(colFilter);
+//		loadData();		
 	}
 
 }

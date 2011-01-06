@@ -1,12 +1,16 @@
 package org.amanzi.awe.afp.wizards;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
 
+import org.amanzi.awe.afp.filters.AfpColumnFilter;
+import org.amanzi.awe.afp.filters.AfpRowFilter;
 import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
@@ -38,7 +42,7 @@ import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 
-public class AfpFrequencyTypePage extends AfpWizardPage {
+public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListener{
 	
 	private Group frequencyDomainsGroup;
 	protected Label free900Freq;
@@ -58,16 +62,18 @@ public class AfpFrequencyTypePage extends AfpWizardPage {
 	
 	protected static HashMap<String, Label[]> domainLabels;
 	private final String[] headers = { "BSC", "Site", "Sector", "Layer", "Subcell", "TRX_ID", "Band", "Extended", "Hopping Type", "BCCH"};
-	private final String[] prop_name = { "bsc", "Site", INeoConstants.PROPERTY_NAME_NAME, "Layer", 
+	private final String[] prop_name = { "bsc", "Site", "Sector", "Layer", 
 			"Subcell", "trx_id", "band", "Extended", "hopping_type", INeoConstants.PROPERTY_BCCH_NAME};
 	
 	private Table filterTable;
+	protected AfpRowFilter rowFilter;
 
 	public AfpFrequencyTypePage(String pageName, AfpModel model, String desc) {
 		super(pageName, model);
         setTitle(AfpImportWizard.title);
         setDescription(desc);
         setPageComplete (false);
+        rowFilter = new AfpRowFilter();
 	}
 	
 	@Override
@@ -105,7 +111,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage {
     	AfpWizardUtils.createButtonsGroup(this, frequencyDomainsGroup, "FrequencyType", model);
     	domainLabels = new HashMap<String, Label[]>();
     	
-    	filterTable = this.addTRXFilterGroup(main, headers,10, false);
+    	filterTable = this.addTRXFilterGroup(main, headers,10, false, this);
     	
 
 		
@@ -120,7 +126,10 @@ public class AfpFrequencyTypePage extends AfpWizardPage {
 			HashMap<String, String> bandFilters = new HashMap<String, String> ();
 			for (int i = 0; i < model.getFrequencyBands().length; i++){
 				if (model.getFrequencyBands()[i])
-					bandFilters.put("band", model.BAND_NAMES[i]);
+					if (bandFilters.get("band") == null)
+						bandFilters.put("band", model.BAND_NAMES[i]);
+					else
+						bandFilters.put("band", bandFilters.get("band") + "," + model.BAND_NAMES[i]);
 			}
 			
 		    Traverser sectorTraverser = model.getTRXList(bandFilters);
@@ -143,6 +152,10 @@ public class AfpFrequencyTypePage extends AfpWizardPage {
 		    	for (Node trxNode: trxTraverser){
 			    	if(cnt > 100) 
 			    		break;
+			    	if (rowFilter != null){
+			    		if (!rowFilter.equal(trxNode)) 
+			    			continue;
+			    	}
 			    	TableItem item = new TableItem(filterTable, SWT.NONE);
 			    	for (int j = 0; j < headers.length; j++){
 			    		String val = "";
@@ -155,14 +168,15 @@ public class AfpFrequencyTypePage extends AfpWizardPage {
 			    				if (siteNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals("site"))
 			    					val = (String)siteNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "");
 			    			}
+			    			
+			    			else if (prop_name[j].equals("Sector")){
+			    				val = (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "");
+			    			}
+			    			
 			    			else if (prop_name[j].equals("trx_id")){
 			    				val = Integer.toString((Integer)trxNode.getProperty(prop_name[j], "0"));
 			    			}
 			    			else if (prop_name[j].equals("band")){
-//			    				val = (String)node.getProperty(prop_name[j], "");
-//			    				if (val.equals("")) 
-//			    					val = (String)node.getProperty("band", "");
-//			    				val = val.split(" ")[val.split(" ").length - 1].trim();
 			    				val = (String)trxNode.getProperty(prop_name[j], "");
 			    			}
 			    			else if (prop_name[j].equals("Extended")){
@@ -230,6 +244,23 @@ public class AfpFrequencyTypePage extends AfpWizardPage {
 		
 		loadData();
 		frequencyDomainsGroup.layout();
+	}
+
+	@Override
+	public void onFilterSelected(String columnName, ArrayList<String> selectedValues) {
+		for(int i = 0; i < headers.length; i++){
+			if (headers[i].equals(columnName)){
+				columnName = prop_name[i];
+				break;
+			}
+		}
+		AfpColumnFilter colFilter = new AfpColumnFilter(columnName);
+		for (String value: selectedValues){
+			colFilter.addValue(value);
+		}
+		rowFilter.addColumn(colFilter);
+		loadData();
+		
 	}
 
 }

@@ -1,5 +1,9 @@
 package org.amanzi.awe.afp.wizards;
 
+import java.util.ArrayList;
+
+import org.amanzi.awe.afp.filters.AfpColumnFilter;
+import org.amanzi.awe.afp.filters.AfpRowFilter;
 import org.amanzi.awe.afp.filters.AfpTRXFilter;
 import org.amanzi.awe.afp.models.AfpModel;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
@@ -42,6 +46,7 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 	protected AfpModel model;
 	private TableViewer viewer;
 	private AfpTRXFilter filter;
+	private FilterListener listener;
 
 	protected AfpWizardPage(String pageName) {
 		super(pageName);
@@ -77,8 +82,9 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 		}
 		
 	}
-	protected Table addTRXFilterGroup(Group main, String[] headers, int emptyrows, boolean isSite){
+	protected Table addTRXFilterGroup(Group main, String[] headers, int emptyrows, boolean isSite, FilterListener listener){
 		final Shell parentShell = main.getShell();
+		this.listener = listener;
 		
 		/** Create TRXs Filters Group */
     	Group trxFilterGroup = new Group(main, SWT.NONE);
@@ -201,7 +207,7 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
   	      	column.setText(item);
   	      	column.setData(item);
   	      	column.setResizable(true);
-  	      	column.addListener(SWT.Selection, new FilterListener());
+  	      	column.addListener(SWT.Selection, new ColumnFilterListener());
   	    }
     	
     	
@@ -247,18 +253,25 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 	 * @return unique values for the column
 	 */
 	public String[] getUniqueValues(String colName){
-		if (colName.equals("band"))
+		if (colName.equals("Band"))
 			return new String[]{"900", "1800", "850", "1900"};
+		if (colName.equals("TRX_ID"))
+			return new String[]{"0", "1", "2", "3"};
+		if (colName.equals("Site"))
+			return new String[]{"AMZ04345", "AMZ04343", "AMZ02652", "AMZ02653", "AMZ02570"};
+		if (colName.equals("Sector"))
+			return new String[]{"4345A", "4345B", "4345C", "4345D", "4343A", "4343B", "4343C", "4343D"};
 		
 		return new String[]{"900", "1800", "850", "1900"};
 	}
 	
-	class FilterListener implements Listener{
+	class ColumnFilterListener implements Listener{
 		
 		
 		
 		@Override
 		public void handleEvent(Event event) {
+			final ArrayList<String> selectedValues = new ArrayList<String>();
 			final Shell subShell = new Shell(event.widget.getDisplay(), SWT.PRIMARY_MODAL);
 			subShell.setLayout(new GridLayout(2, false));
 			subShell.setLocation(300, 200);
@@ -288,9 +301,10 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 				public void widgetSelected(SelectionEvent e) {
 					for (TreeItem item : tree.getItems()){
 						if (item.getChecked()){
-							model.getEqualFilters().put(col, item.getText());
+							selectedValues.add(item.getText());
 						}
 					}
+					listener.onFilterSelected(col, selectedValues);
 //					filter.setEqualityText("900");
 //					viewer.refresh(true);
 					subShell.dispose();

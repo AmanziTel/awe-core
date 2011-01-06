@@ -12,6 +12,7 @@ import org.amanzi.awe.afp.ControlFileProperties;
 import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.executors.AfpProcessProgress;
 import org.amanzi.awe.afp.filters.AfpFilter;
+import org.amanzi.awe.afp.filters.AfpRowFilter;
 import org.amanzi.awe.afp.wizards.AfpLoadNetworkPage;
 import org.amanzi.awe.afp.wizards.AfpWizardUtils;
 import org.amanzi.awe.console.AweConsolePlugin;
@@ -144,7 +145,8 @@ public class AfpModel {
 	
     protected HashMap<String, String> parameters;
     protected HashMap<String, String> filters;
-    protected HashMap<String, String> equalFilters = new HashMap<String, String>();
+//    protected HashMap<String, String> equalFilters = new HashMap<String, String>();
+    
 
 	
 	public AfpModel() {
@@ -995,14 +997,6 @@ public class AfpModel {
 		this.filters = filters;
 	}
 
-	public HashMap<String, String> getEqualFilters() {
-		return equalFilters;
-	}
-
-	public void setEqualFilters(HashMap<String, String> equalFilters) {
-		this.equalFilters = equalFilters;
-	}
-
 	public void addFreqDomain(AfpFrequencyDomainModel freqDomain){
 		if(freqDomains.containsKey(freqDomain.getName())) {
 			freqDomain.setName(freqDomain.getName() + "-1");
@@ -1598,19 +1592,23 @@ public class AfpModel {
 
 			@Override
 			public boolean isReturnableNode(TraversalPosition currentPos) {
+				boolean ret = false;
 				if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.SECTOR.getId())){
 					if (filters != null){
-						for (String key: filters.keySet().toArray(new String[0])){
+						for (String key: filters.keySet()){
 							if (key.equals("band")){
-								if (!((String)currentPos.currentNode().getProperty("band", "")).contains(filters.get(key)))
-									return false;
+								for (String band : filters.get(key).split(",")){
+									if (((String)currentPos.currentNode().getProperty("band", "")).contains(band))
+										ret = ret || true;
+								}
 							}
 						}
 					}
-					return true;
+					else 
+						ret = true;
 				}
 					
-				return false;
+				return ret;
 			}
     		
     	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
@@ -1708,6 +1706,7 @@ public class AfpModel {
 					coTriangulation[i], adjTriangulation[i], coShadowing[i], adjShadowing[i]);
 			sb.append(SCALING_PAGE_ROW_HEADERS[i][0] + "-" + SCALING_PAGE_ROW_HEADERS[i][1] + " : "+ s + "\n");
 		}
+		
 		
 		
 		return sb.toString();

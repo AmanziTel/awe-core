@@ -13,6 +13,7 @@ public class AfpTRXFilter extends ViewerFilter {
 
 	@Override
 	public boolean select(Viewer viewer, Object parentElement, Object element) {
+		System.out.println(element);
 		if (equalityString.equals((String)element))
 			return true;
 		return false;
