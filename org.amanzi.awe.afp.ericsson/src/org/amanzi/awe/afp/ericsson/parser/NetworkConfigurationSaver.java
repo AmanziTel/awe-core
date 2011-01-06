@@ -51,9 +51,9 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
     private Node neighbourRoot;
     private String neighName;
     private Object bsc;
-    private Map<String,String>tgProperty=new HashMap<String, String>();
-    private Pattern tgPat=Pattern.compile("(^.*)(-)(\\d+$)",Pattern.CASE_INSENSITIVE);
-    private Pattern trxPat=Pattern.compile("(^.*)(-)(\\d+)(-)(\\d+$)",Pattern.CASE_INSENSITIVE);
+    private Map<String, String> tgProperty = new HashMap<String, String>();
+    private Pattern tgPat = Pattern.compile("(^.*)(-)(\\d+$)", Pattern.CASE_INSENSITIVE);
+    private Pattern trxPat = Pattern.compile("(^.*)(-)(\\d+)(-)(\\d+$)", Pattern.CASE_INSENSITIVE);
 
     @Override
     public void init(NetworkConfigurationTransferData element) {
@@ -209,22 +209,34 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         if (StringUtils.isNotEmpty(hop)) {
             channalGr.setProperty("hop", hop);
         }
-        int[] dccno=new int[64];
-        int j=0;
-        for (int ind=0;ind<64;ind++){
-            String valStr = getStringValue(i, "dchno_"+ind, element);
-            if (valStr!=null){
+        int[] dccno = new int[64];
+        int j = 0;
+        for (int ind = 0; ind < 64; ind++) {
+            String valStr = getStringValue(i, "dchno_" + ind, element);
+            if (valStr != null) {
                 try {
                     int valInt = Integer.parseInt(valStr);
-                    dccno[j++]=valInt;
+                    dccno[j++] = valInt;
                 } catch (NumberFormatException e) {
-                    //do nothing
+                    // do nothing
                 }
-                
+
             }
         }
-        int[] dccnoArr=Arrays.copyOf(dccno, j);
+        int[] dccnoArr = Arrays.copyOf(dccno, j);
         channalGr.setProperty("dchno", dccnoArr);
+        for (int mId = 0; mId < 16; mId++) {
+            String propName = "maio_" + mId;
+            String strVal = getStringValue(i, propName, element);
+            if (strVal != null && !"default".equalsIgnoreCase(strVal)) {
+                try {
+                    Integer val = Integer.parseInt(strVal);
+                    channalGr.setProperty(propName, val);
+                } catch (NumberFormatException e) {
+                    // do nothing
+                }
+            }
+        }
         // TODO implement;
     }
 
@@ -260,63 +272,98 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
             String tgfull = element.getTg();
             Matcher matcher = tgPat.matcher(tgfull);
             if (!matcher.find(0)) {
-                error(String.format("Incorrect TG format: %s",tgfull));
+                error(String.format("Incorrect TG format: %s", tgfull));
                 return;
-            } 
+            }
             tgProperty.put(matcher.group(3), element.getFhop());
             return;
-            
+
         default:
-            //trx
-            //TODO find only for child of bsc field?
-            Node sector=networkService.findSector(rootNode, null, null, element.getCell(),true);
-            if (sector==null){
-                error(String.format("Line %s: Sector with name %s not found", element.getLine(),element.getCell()));
+            // trx
+            // TODO find only for child of bsc field?
+            Node sector = networkService.findSector(rootNode, null, null, element.getCell(), true);
+            if (sector == null) {
+                error(String.format("Line %s: Sector with name %s not found", element.getLine(), element.getCell()));
                 return;
             }
             tgfull = element.getTg();
             matcher = trxPat.matcher(tgfull);
             if (!matcher.find(0)) {
-                error(String.format("Incorrect TG format: %s",tgfull));
+                error(String.format("Incorrect TG format: %s", tgfull));
                 return;
-            } 
-            String tg=matcher.group(3);
-            String trxId=matcher.group(5);
-            Integer channelGr=element.getCh_group();
-            Node trx=networkService.getTRXNode(sector,trxId,channelGr);
+            }
+            String tg = matcher.group(3);
+            String trxId = matcher.group(5);
+            Integer channelGr = element.getCh_group();
+            Node trx = networkService.getTRXNode(sector, trxId, channelGr);
             updateTx(1, 1);
             Node channalGr = networkService.getChannelNode(sector, channelGr);
-            updateProperty(rootname, NodeTypes.TRX.getId(), trx, "band", channalGr.getProperty("band",null));
+            updateProperty(rootname, NodeTypes.TRX.getId(), trx, "band", channalGr.getProperty("band", null));
             int hoptype;
-            if ("ON".equalsIgnoreCase((String)channalGr.getProperty("hop",null))){
-               String fchop = tgProperty.get(tg);
-               hoptype="BB".equalsIgnoreCase(fchop)?1:2;
-            }else{
-                hoptype=0;
+            if ("ON".equalsIgnoreCase((String)channalGr.getProperty("hop", null))) {
+                String fchop = tgProperty.get(tg);
+                hoptype = "BB".equalsIgnoreCase(fchop) ? 1 : 2;
+            } else {
+                hoptype = 0;
             }
-            updateProperty(rootname, NodeTypes.TRX.getId(), trx, "hopping_type",hoptype);
-            updateProperty(rootname, NodeTypes.TRX.getId(), trx, "band", channalGr.getProperty("band",null));
-            boolean isBcch = 0==channelGr&&"0".equals(trxId);
-            updateProperty(rootname, NodeTypes.TRX.getId(), trx, "bcch",isBcch );
-            Node plan = networkService.getPlanNode(trx,element.getFileName());
-            updateProperty(rootname, NodeTypes.FREQUENCY_PLAN.getId(), trx, "hsn",hoptype);
+            updateProperty(rootname, NodeTypes.TRX.getId(), trx, "hopping_type", hoptype);
+            updateProperty(rootname, NodeTypes.TRX.getId(), trx, "band", channalGr.getProperty("band", null));
+            boolean isBcch = 0 == channelGr && "0".equals(trxId);
+            updateProperty(rootname, NodeTypes.TRX.getId(), trx, "bcch", isBcch);
+            Node plan = networkService.getPlanNode(trx, element.getFileName());
+            updateProperty(rootname, NodeTypes.FREQUENCY_PLAN.getId(), trx, "hsn", hoptype);
             Integer bcchno = (Integer)sector.getProperty("bcchno");
             if (!plan.hasProperty("arfcn")) {
-                int[] arfcn=null;
+                int[] arfcn = null;
                 if (isBcch) {
-                    if (bcchno!=null){
-                        arfcn=new int[1];
-                        arfcn[0]=bcchno;
+                    if (bcchno != null) {
+                        arfcn = new int[1];
+                        arfcn[0] = bcchno;
                     }
                 } else {
-                   int[]dchno=(int[])channalGr.getProperty("dchno",null); 
-                   if (dchno!=null){
-                       
-                   }
+                    int[] dchno = (int[])channalGr.getProperty("dchno", null);
+                    if (dchno != null) {
+                        if (hoptype < 2 && bcchno != null) {
+                            arfcn = new int[dchno.length];
+                            int j = 0;
+                            for (int i = 0; i < dchno.length; i++) {
+                                if (dchno[i] != bcchno) {
+                                    arfcn[j++] = dchno[i];
+                                }
+                            }
+                            arfcn = Arrays.copyOf(arfcn, j);
+                        } else {
+                            arfcn = dchno;
+                        }
+                    }
                 }
-                if (arfcn!=null){
+                if (arfcn != null) {
                     plan.setProperty("arfcn", arfcn);
                 }
+            }
+            if (!plan.hasProperty("maio")) {
+                String maioPr = "maio_" + trxId;
+                Integer maioInt = (Integer)channalGr.getProperty(maioPr,null);
+
+                if (maioInt == null) {
+                    int[] arfcn = (int[])plan.getProperty("arfcn", null);
+                    if (arfcn != null) {
+                        int maxVal = arfcn.length;
+                        int numTrx = Integer.valueOf(trxId);
+                        if (channelGr == 0) {
+                            numTrx++;
+                        }
+                        if (numTrx > maxVal) {
+                            error("Can't create maio property for trx with id=" + trxId);
+                        } else {
+                            maxVal--;
+                            int oddVal = (numTrx - 1) * 2;
+                            // TODO check formula
+                            maioInt = oddVal <= maxVal ? oddVal : numTrx - (maxVal + 1) / 2;
+                        }
+                    }
+                }
+                updateProperty(rootname, NodeTypes.FREQUENCY_PLAN.getId(), plan, "maio", maioInt);
             }
             break;
         }
@@ -334,17 +381,17 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         if (type == NetworkConfigurationFileTypes.CNA) {
             neighName = rootname + "neigh";
             neighbourRoot = service.getNeighbour(rootNode, neighName);
-        }else {
+        } else {
             String bscName = element.getBsc();
-            if (StringUtils.isEmpty(bscName)){
+            if (StringUtils.isEmpty(bscName)) {
                 return true;
             }
-            bsc=networkService.findBscNode(rootNode, bscName);
-            if (bsc==null){
+            bsc = networkService.findBscNode(rootNode, bscName);
+            if (bsc == null) {
                 error(String.format("BSC with name %s not found", bscName));
                 return true;
             }
-            
+
         }
         return false;
     }

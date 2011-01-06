@@ -57,7 +57,7 @@ public class NetworkConfigurationParser extends AbstractCSVParser<NetworkConfigu
         super.init(properties, saver);
         Collection<File> bsmList = (Collection<File>)properties.getAdditionalProperties().get("BSM_FILES");
         bsmFiles.clear();
-//        bsmFiles.add(new File("c:/Work/Configuration/BSM/BZBSC6_BSM.log"));
+        bsmFiles.add(new File("f:/AWE/AFP data/Configuration/BSM/BZBSC6_BSM.log"));
         if (bsmList != null) {
             bsmFiles.addAll(bsmList);
         }
