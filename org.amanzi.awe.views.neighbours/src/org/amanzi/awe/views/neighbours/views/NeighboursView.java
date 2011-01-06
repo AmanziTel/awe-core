@@ -46,6 +46,7 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITableColorProvider;
 import org.eclipse.jface.viewers.ITableFontProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
@@ -72,9 +73,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -110,6 +113,9 @@ public class NeighboursView extends ViewPart implements INeoServiceProviderListe
     /** String COMMIT field */
     private static final String COMMIT = "Commit";
 
+    /** String SEARCH field */
+    private static final String SEARCH = "Search";
+    
     /**
 	 * The ID of the view as specified by the extension.
 	 */
@@ -132,6 +138,12 @@ public class NeighboursView extends ViewPart implements INeoServiceProviderListe
     private Button rollback;
 
     private Button commit;
+    
+    private Button search;
+    private Button returnFullList;
+    
+    private Text textToSearch;
+    private String searchingSector = "";
 
     protected Point point = null;
     private RelationWrapper selectedServe;
@@ -212,14 +224,27 @@ public class NeighboursView extends ViewPart implements INeoServiceProviderListe
             // try {
             Iterator<Relationship> iterator = new InputIterator(input, neighbour);
             int count = 0;
-            while (iterator.hasNext() && ++count < MAX_FIELD) {
-                Relationship relation = iterator.next();
-                results.add(new RelationWrapper(relation));
-			}
+            if (searchingSector.isEmpty() || searchingSector == null) {
+                while (iterator.hasNext() && ++count < MAX_FIELD) {
+                    Relationship relation = iterator.next();
+                    results.add(new RelationWrapper(relation));
+    			}
+            }
+            // Kasnitskij_V:
+            else {
+                while (iterator.hasNext() && ++count < MAX_FIELD) {
+                    Relationship relation = iterator.next();
+                    RelationWrapper element = new RelationWrapper(relation);
+                    
+                    String fullName = element.getServeNode().getProperty("name").toString();
+                    int indexOf = fullName.indexOf('/');
+                    String nameOfSector = fullName.substring(indexOf + 1);
+                    if (nameOfSector.equals(searchingSector))
+                        results.add(new RelationWrapper(relation));
+                }
+            }
             return results.toArray(emptyArray);
 		}
-
-
 
         /**
          * <p>
@@ -647,6 +672,60 @@ public class NeighboursView extends ViewPart implements INeoServiceProviderListe
         });
         rollback.setToolTipText(ROLLBACK);
 
+        //Kasnitskij_V:
+
+        Label label2 = new Label(child, SWT.FLAT);
+        label2.setText("Write here what do you want to search:");
+        textToSearch = new Text(child, SWT.SINGLE | SWT.BORDER);
+        textToSearch.setSize(200, 20);
+        //textToSearch.setLayoutData(layoutData);
+        
+        search = new Button(child, SWT.PUSH);
+        search.setText(SEARCH);
+        search.addMouseListener(new MouseListener() {
+            
+            @Override
+            public void mouseUp(MouseEvent e) {
+            }
+            
+            @Override
+            public void mouseDown(MouseEvent e) {
+                try {
+                    searchingSector = textToSearch.getText();
+                }
+                catch (NullPointerException ex) {
+                    
+                }
+                setInput(input);
+            }
+            
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+            }
+        });
+        //search.setLayoutData(layoutData);
+        
+        returnFullList = new Button(child, SWT.PUSH);
+        returnFullList.setSize(200, 20);
+        returnFullList.setText("Return full list");
+        returnFullList.addMouseListener(new MouseListener() {
+            
+            @Override
+            public void mouseUp(MouseEvent e) {
+            }
+            
+            @Override
+            public void mouseDown(MouseEvent e) {
+                searchingSector = "";
+                setInput(input);
+            }
+            
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+            }
+        });
+        returnFullList.setLayoutData(layoutData);
+
         updateDirty(false);
         viewer = new TableViewer(child, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION);
         GridData data = new GridData(GridData.FILL_BOTH | GridData.GRAB_HORIZONTAL | GridData.GRAB_VERTICAL);
@@ -751,7 +830,7 @@ public class NeighboursView extends ViewPart implements INeoServiceProviderListe
         editMode = dirty;
         commit.setEnabled(editMode);
         rollback.setEnabled(editMode);
-
+        search.setEnabled(true);
     }
 
     /**
