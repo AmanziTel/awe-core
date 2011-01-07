@@ -239,7 +239,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 		    for (int i = 0; i < headers_prop.size(); i++) {
 		    	filterTable.getColumn(i).pack();
 		    }
-		    this.updateTRXFilterLabel(trxCount);
+		    this.updateTRXFilterLabel(trxCount, model.getTotalRemainingTRX());
 		}
 	}
 	public static void deleteDomainLabels(String domainName){

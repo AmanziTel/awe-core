@@ -102,16 +102,16 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 			updateSiteFilterLabel(model.getTotalSites());
 		}
 		else if(this instanceof AfpSYHoppingMALsPage){
-			updateTRXFilterLabel(0);
+			updateTRXFilterLabel(0, model.getTotalRemainingMalTRX());
 		}
 		else{
-			updateTRXFilterLabel(model.getTotalTRX());
+			updateTRXFilterLabel(model.getTotalTRX(),model.getTotalRemainingTRX());
 		}
 		
 	}
 	
-	public void updateTRXFilterLabel(int selected){
-		filterInfoLabel.setText(String.format("Filter Status: %d Trxs selected out of %d", selected, model.getTotalRemainingTRX()));
+	public void updateTRXFilterLabel(int selected, int total){
+		filterInfoLabel.setText(String.format("Filter Status: %d Trxs selected out of %d", selected, total));
 		trxFilterGroup.layout();
 	}
 	
@@ -240,15 +240,16 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 			
 			final ArrayList<String> selectedValues = new ArrayList<String>();
 		//	final Shell subShell = new Shell(event.widget.getDisplay(), SWT.PRIMARY_MODAL);
-			final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL|SWT.TITLE);
+			final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL|SWT.TITLE | SWT.SCROLL_PAGE);
 			subShell.setLayout(new GridLayout(2, false));
+//			subShell.setSize(100, 200);
+			subShell.setBounds(50, 50, 100, 200);
 			//subShell.setLocation(300, 200);
-			//event.widget.
 			subShell.setText("Filter");
 			
 			final String col = (String)event.widget.getData();
 			
-			Group filterGroup = new Group(subShell, SWT.NONE);
+			Group filterGroup = new Group(subShell, SWT.NONE | SWT.SCROLL_PAGE);
 			filterGroup.setLayout(new GridLayout(2, false));
 			filterGroup.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, false, false,2 ,1));
 			filterGroup.setText(col);

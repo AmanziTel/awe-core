@@ -106,6 +106,7 @@ public class AfpMalSelector extends AfpDomainSelector {
 		model.editMALDomain(domainModel);
 	}
 	protected void handleDeleteDomain() {
+		model.setTotalRemainingMalTRX(model.getTotalRemainingMalTRX() + domainModel.getNumTRX());
 		model.deleteMALDomain(domainModel);
 	}
 

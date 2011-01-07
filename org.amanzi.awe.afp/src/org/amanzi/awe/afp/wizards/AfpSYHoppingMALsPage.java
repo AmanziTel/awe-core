@@ -8,6 +8,7 @@ import java.util.Vector;
 
 import org.amanzi.awe.afp.filters.AfpColumnFilter;
 import org.amanzi.awe.afp.filters.AfpRowFilter;
+import org.amanzi.awe.afp.models.AfpDomainModel;
 import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
 import org.amanzi.awe.afp.models.AfpHoppingMALDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
@@ -21,6 +22,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
@@ -44,14 +46,40 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 	
 	protected HashMap<String, Label[]> domainLabels;
 	private final String[] headers = { "BSC", "Site", "Sector", "Layer", "Subcell", "TRX_ID", "Band", "Extended", "Hopping Type"};
-	private final String[] prop_name = { "bsc", "Site", "Sector", "Layer", 
-			"Subcell", "trx_id", "band", "Extended", "hopping_type"};
+	private final HashMap<String,Integer> headersNodeType = new HashMap<String,Integer>(); 
+	private final HashMap<String,String> headers_prop = new HashMap<String,String>();
 	private Table filterTable;
+	private int trxCount;
 	protected AfpRowFilter rowFilter;
+	protected  Shell parentShell;
 
 	
 	public AfpSYHoppingMALsPage(String pageName, AfpModel model, String desc) {
 		super(pageName, model);
+		
+		headers_prop.put("BSC", "bsc");
+		headers_prop.put("Site", INeoConstants.PROPERTY_NAME_NAME);
+		headers_prop.put("Sector", INeoConstants.PROPERTY_NAME_NAME);
+		headers_prop.put("Layer", "Layer");
+		headers_prop.put("Subcell", "Subcell");
+		headers_prop.put("TRX_ID", "trx_id");
+		headers_prop.put("Band", "band");
+		headers_prop.put("Extended", "Extended");
+		headers_prop.put("Hopping Type", "hopping_type");
+//		headers_prop.put("BCCH", INeoConstants.PROPERTY_BCCH_NAME);
+
+		headersNodeType.put("BSC", 0);
+		headersNodeType.put("Site", 0);
+		headersNodeType.put("Sector", 1);
+		headersNodeType.put("Layer", 2);
+		headersNodeType.put("Subcell", 1);
+		headersNodeType.put("TRX_ID", 2);
+		headersNodeType.put("Band", 2);
+		headersNodeType.put("Extended", 2);
+		headersNodeType.put("Hopping Type", 2);
+//		headersNodeType.put("BCCH", 2);
+		
+		
         setTitle(AfpImportWizard.title);
         setDescription(desc);
         setPageComplete (false);
@@ -60,7 +88,7 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 
 	@Override
 	public void createControl(Composite parent) {
-		final  Shell parentShell = parent.getShell();
+		parentShell = parent.getShell();
 		Composite thisParent = new Composite(parent, SWT.NONE);
    	 	thisParent.setLayout(new GridLayout(2, false));
 		
@@ -108,7 +136,14 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 	}
 	
 	public void refreshPage(){
-		super.refreshPage();
+//		super.refreshPage();
+		updateLabels();
+		loadData();
+		
+		malDomainsGroup.layout();
+	}
+	
+	public void updateLabels(){
 		for(Label[] labels: domainLabels.values() ){
 			for (Label label : labels){
 				label.dispose();
@@ -119,12 +154,10 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 		for(AfpHoppingMALDomainModel domainModel :model.getMalDomains()) {
 			Label defaultDomainLabel = new Label(malDomainsGroup, SWT.LEFT);
 			defaultDomainLabel.setText(domainModel.getName());
-			//TODO: update the TRXs by default here
 			Label defaultTRXsLabel = new Label(malDomainsGroup, SWT.RIGHT);
-			defaultTRXsLabel.setText("0");
+			defaultTRXsLabel.setText("" + domainModel.getNumTRX());
 			domainLabels.put(domainModel.getName(), new Label[]{defaultDomainLabel, defaultTRXsLabel});
-		}    	
-		loadData();
+		}
 		
 		malDomainsGroup.layout();
 	}
@@ -132,6 +165,8 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 	public void loadData() {
 		if(filterTable != null) {
 			filterTable.removeAll();
+			
+			this.clearAllUniqueValuesForProperty();
 			
 			HashMap<String, String> bandFilters = new HashMap<String, String> ();
 			for (int i = 0; i < model.getFrequencyBands().length; i++){
@@ -144,7 +179,7 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 			
 		    Traverser sectorTraverser = model.getTRXList(bandFilters);
 		    
-		    int cnt =0;
+		    trxCount =0;
 		    for (Node node : sectorTraverser) {
 		    	Traverser trxTraverser = node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
 
@@ -159,83 +194,172 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 		    		
 		    	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
 		    	
+		    	Node siteNode = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
+		    	this.addSectorUniqueProperties(node);
+				this.addSiteUniqueProperties(siteNode);
+				boolean includeFlag = true;
+		    	
 		    	for (Node trxNode: trxTraverser){
-			    	if(cnt > 100) 
-			    		break;
-			    	if ((Integer)trxNode.getProperty("hopping_type", 0) < 1)
+		    		
+		    		for(AfpHoppingMALDomainModel mod: model.getMalDomains()){
+			    		String filterString = mod.getFilters();
+			    		if (filterString != null && !filterString.trim().isEmpty()){
+				    		AfpRowFilter rf = AfpRowFilter.getFilter(mod.getFilters());
+				    		if (rf != null){
+					    		if (rf.equal(trxNode)){
+					    			includeFlag = false;
+					    			break;
+					    		}
+				    		}
+			    		}
+		    		}
+		    		
+		    		if (!includeFlag)
 			    		continue;
+		    		
+//			    	if ((Integer)trxNode.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) < 1)
+//			    		continue;
 			    	
 			    	if (rowFilter != null){
 			    		if (!rowFilter.equal(trxNode)) 
 			    			continue;
 			    	}
+			    	this.addTrxUniqueProperties(trxNode);
 			    	
 		    	
 			    	TableItem item = new TableItem(filterTable, SWT.NONE);
-			    	for (int j = 0; j < headers.length; j++){
-			    		String val = "";
-			    		try {
-			    			if (prop_name[j].equals("bsc")){
-			    				val = (String)node.getProperty(prop_name[j], "bsc");
-			    			}
-			    			else if (prop_name[j].equals("Site")){
-			    				Node siteNode = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
-			    				if (siteNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals("site"))
-			    					val = (String)siteNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "");
-			    			}
-			    			else if (prop_name[j].equals("trx_id")){
-			    				val = Integer.toString((Integer)trxNode.getProperty(prop_name[j], "0"));
-			    			}
-			    			else if (prop_name[j].equals("Sector")){
-			    				val = (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "");
-			    			}
-			    			else if (prop_name[j].equals("band")){
-			    				val = (String)trxNode.getProperty(prop_name[j], "");
-			    			}
-			    			else if (prop_name[j].equals("Extended")){
-			    				val = (String)node.getProperty(prop_name[j], "NA");
-			    			}
-			    			else if (prop_name[j].equals("hopping_type")){
-			    				int type = (Integer)trxNode.getProperty(prop_name[j], 0);
-			    				val = type == 0 ? "Non" : "SY";
-			    			}
-			    			else 
-			    				val = (String)node.getProperty(prop_name[j], "");
-			    			item.setText(j, val);
-			    		} catch(Exception e) {
-			    			item.setText(j, "");
-			    		}
+			    	int j=0;
+			    	if(trxCount <= 100){ 
+				    	for (String prop_name : headers){
+				    		Object val = null;
+				    		try {
+				    			Integer type = this.headersNodeType.get(prop_name);
+				    			if(type ==0) {
+				    				if (siteNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals("site"))
+				    					val = (String)siteNode.getProperty(headers_prop.get(prop_name), "");
+	
+				    			} else if( type == 1) {
+				    				val = node.getProperty(headers_prop.get(prop_name), "");
+				    			} else {
+				    				val = trxNode.getProperty(headers_prop.get(prop_name), "");
+				    			}
+	
+				    			if(val == null) val ="";
+				    			
+				    			item.setText(j, val.toString());
+				    		} catch(Exception e) {
+				    			item.setText(j, "");
+				    		}
+				    		j++;
+				    	}
 			    	}
-			    	cnt++;
+			    	trxCount++;
 		    	}
 		    }
-		    for(;cnt <10;cnt++) {
-		    	TableItem item = new TableItem(filterTable, SWT.NONE);
-		    	for (int j = 0; j < headers.length; j++){
-		    		String val = "";
-	    			item.setText(j, val);
-		    	}		    	
-		    }
+//		    for(;trxCount <10;trxCount++) {
+//		    	TableItem item = new TableItem(filterTable, SWT.NONE);
+//		    	for (int j = 0; j < headers.length; j++){
+//		    		String val = "";
+//	    			item.setText(j, val);
+//		    	}		    	
+//		    }
 		    for (int i = 0; i < headers.length; i++) {
 		    	filterTable.getColumn(i).pack();
 		    }
+		    
+		    this.updateTRXFilterLabel(trxCount, model.getTotalRemainingMalTRX());
 		}
 	}
 
 	@Override
 	public void onFilterSelected(String columnName, ArrayList<String> selectedValues) {
-		for(int i = 0; i < headers.length; i++){
-			if (headers[i].equals(columnName)){
-				columnName = prop_name[i];
-				break;
+		String val = headers_prop.get(columnName);
+		
+		if(val != null ) {
+			AfpColumnFilter colFilter = new AfpColumnFilter(val);
+			for (String value: selectedValues){
+				colFilter.addValue(value);
 			}
+			rowFilter.addColumn(colFilter);
+			loadData();
+		}	
+	}
+	
+	@Override
+	public Object[] getColumnUniqueValues(String colName){
+		
+		Integer type  = headersNodeType.get(colName);
+		if(type.intValue() ==0) {
+			return this.getSiteUniqueValuesForProperty(headers_prop.get(colName));
+		} else if(type.intValue() ==1) {
+			return this.getSectorUniqueValuesForProperty(headers_prop.get(colName));
+		} else {
+			return this.getTrxUniqueValuesForProperty(headers_prop.get(colName));
 		}
-		AfpColumnFilter colFilter = new AfpColumnFilter(columnName);
-		for (String value: selectedValues){
-			colFilter.addValue(value);
+	}
+	
+	@Override
+	public void widgetSelected(SelectionEvent e) {
+		if (e.widget.getData().equals(AfpWizardPage.ASSIGN)){
+			final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL|SWT.TITLE);
+			subShell.setText("Assign to Domain");
+			subShell.setLayout(new GridLayout(2, false));
+			subShell.setLocation(200, 200);
+			
+			Label infoLabel = new Label (subShell, SWT.LEFT);
+			//TODO update label to show correct no. of TRXs
+			infoLabel.setText("Selected " + trxCount + " TRXs will be assigned to:");
+			infoLabel.setLayoutData(new GridData(GridData.FILL, SWT.LEFT, true, false,2 ,1));
+			
+			Label domainLabel = new Label (subShell, SWT.LEFT);
+			domainLabel.setText("Select Domain");
+			domainLabel.setLayoutData(new GridData(GridData.FILL, SWT.LEFT, true, false,2 ,1));
+			
+			final Combo domainCombo = new Combo(subShell, SWT.DROP_DOWN | SWT.READ_ONLY);
+			ArrayList<String> modelNames = new ArrayList<String>();
+			for (AfpHoppingMALDomainModel dm : model.getMalDomains()){
+				modelNames.add(dm.getName());
+			}
+			domainCombo.setItems(modelNames.toArray(new String[0]));
+			domainCombo.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 2, 1));
+			
+			Button selectButton = new Button(subShell, SWT.PUSH);
+			selectButton.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, false, false, 1, 1));
+			selectButton.setText("Assign");
+			selectButton.addSelectionListener(new SelectionAdapter(){
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					String domainName = domainCombo.getText();
+					AfpDomainModel malModel = model.findDomainByName(model.DOMAIN_TYPES[1], domainName);
+					malModel.setFilters(rowFilter.toString());
+					malModel.setNumTRX(trxCount);
+					model.setTotalRemainingMalTRX(model.getTotalRemainingMalTRX() - trxCount);
+					rowFilter.clear();
+					loadData();
+					updateLabels();
+					subShell.dispose();
+				}
+			});
+			
+			Button cancelButton = new Button(subShell, SWT.PUSH);
+			cancelButton.setLayoutData(new GridData(GridData.END, GridData.BEGINNING, false, false, 1, 1));
+			cancelButton.setText("Cancel");
+			cancelButton.addSelectionListener(new SelectionAdapter(){
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					subShell.dispose();
+				}
+			});
+			
+			subShell.pack();
+			subShell.open();
 		}
-		rowFilter.addColumn(colFilter);
-		loadData();		
+		
+		else if (e.widget.getData().equals(AfpWizardPage.CLEAR)){
+			rowFilter.clear();
+			loadData();
+		}
+			
 	}
 
 }

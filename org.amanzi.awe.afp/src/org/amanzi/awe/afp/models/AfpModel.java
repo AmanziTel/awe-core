@@ -82,6 +82,7 @@ public class AfpModel {
 	
 	private int totalTRX;
 	private int totalRemainingTRX;
+	private int totalRemainingMalTRX;
 	private int totalSites;
 	private int totalSectors;
 	
@@ -224,8 +225,12 @@ public class AfpModel {
 			}
 			
 			totalRemainingTRX = totalTRX;
+			totalRemainingMalTRX = totalTRX;
 			for (AfpFrequencyDomainModel dm : getFreqDomains(false)){
 				totalRemainingTRX -= dm.getNumTRX();
+			}
+			for (AfpHoppingMALDomainModel dm : getMalDomains()){
+				totalRemainingMalTRX -= dm.getNumTRX();
 			}
 		}
 
@@ -249,6 +254,14 @@ public class AfpModel {
 
 	public void setTotalRemainingTRX(int totalSelectedTRX) {
 		this.totalRemainingTRX = totalSelectedTRX;
+	}
+
+	public int getTotalRemainingMalTRX() {
+		return totalRemainingMalTRX;
+	}
+
+	public void setTotalRemainingMalTRX(int totalRemainingMalTRX) {
+		this.totalRemainingMalTRX = totalRemainingMalTRX;
 	}
 
 	public int getTotalSites() {
@@ -663,11 +676,20 @@ public class AfpModel {
 	}*/
 	
 	public AfpDomainModel findDomainByName(String type, String name){
-		AfpFrequencyDomainModel model = null;
+		AfpDomainModel model = null;
 		if (type.equals(DOMAIN_TYPES[0])){
 			for(AfpFrequencyDomainModel freqModel : freqDomains.values()){
 				if(freqModel.getName().equals(name)){
 					model = freqModel;
+					break;
+				}
+			}
+		}
+		
+		if (type.equals(DOMAIN_TYPES[1])){
+			for(AfpHoppingMALDomainModel malModel : malDomains.values()){
+				if(malModel.getName().equals(name)){
+					model = malModel;
 					break;
 				}
 			}
@@ -722,6 +744,7 @@ public class AfpModel {
 		AfpHoppingMALDomainModel d = new AfpHoppingMALDomainModel();
 		d.setName("Default MAL");
 		d.setFree(true);
+//		d.setNumTRX(totalRemainingMalTRX);
 		malDomains.put(d.getName(),d);
 	}
 	
@@ -1492,6 +1515,7 @@ public class AfpModel {
 			malNode.setProperty(INeoConstants.AFP_PROPERTY_FILTERS_NAME, domainModel.getFilters());
 		}
 		malNode.setProperty(INeoConstants.AFP_PROPERTY_MAL_SIZE_NAME, domainModel.getMALSize());
+		malNode.setProperty(INeoConstants.AFP_PROPERTY_TRX_COUNT_NAME, domainModel.getNumTRX());
 	}
 	
 	public void createSectorSeparationDomainNode(Node afpNode, AfpSeparationDomainModel domainModel, GraphDatabaseService service){
