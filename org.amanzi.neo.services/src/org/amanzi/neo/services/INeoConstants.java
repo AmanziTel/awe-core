@@ -188,7 +188,8 @@ public class INeoConstants {
     
     public static final String SECTOR_COUNT = "sector_count";
     public static final String PROPERTY_COUNT_NAME = "count";
-    public static final String PROPERTY_BCCH_NAME = "BCCH";
+    public static final String PROPERTY_BCCH_NAME = "bcch";
+    public static final String PROPERTY_HOPPING_TYPE_NAME = "hopping_type";
     public static final String PROPERTY_TCH_NAME = "TCH";
     public static final String PROPERTY_SC_NAME = "SC";
     public static final String PROPERTY_PN_NAME = "PN";

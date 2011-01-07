@@ -2885,11 +2885,11 @@ public class Utils {
         
         //update hopping type
         if (arfcnArray.length == 1) {
-            carrierNode.setProperty("hopping_type", 0);
+            carrierNode.setProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0);
         }
         
         //update bcch
-        carrierNode.setProperty("bcch", true);
+        carrierNode.setProperty(INeoConstants.PROPERTY_BCCH_NAME, true);
         
         //create a plan
         createPlan(carrierNode, arfcnArray, service);
@@ -2901,11 +2901,11 @@ public class Utils {
         
         //update hopping type
         if (arfcnArray.length == 1) {
-            carrierNode.setProperty("hopping_type", 0);
+            carrierNode.setProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0);
         }
         
         //update bcch
-        carrierNode.setProperty("bcch", false);
+        carrierNode.setProperty(INeoConstants.PROPERTY_BCCH_NAME, false);
         
         //create a plan
         createPlan(carrierNode, arfcnArray, service);
@@ -2978,8 +2978,8 @@ public class Utils {
             carrier.setProperty("trx_id", trxId);
             carrier.setProperty("band", band);
             
-            carrier.setProperty("bcch", false);
-            carrier.setProperty("hopping_type", 0);
+            carrier.setProperty(INeoConstants.PROPERTY_BCCH_NAME, false);
+            carrier.setProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0);
             
           //add to sector's children
             sectorNode.createRelationshipTo(carrier, GeoNeoRelationshipTypes.CHILD);
