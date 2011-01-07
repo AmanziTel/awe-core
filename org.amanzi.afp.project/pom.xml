@@ -14,7 +14,7 @@
   	<generatedBuildProperties>root.properties</generatedBuildProperties>
   </properties>
   <build>
-  	<finalName>${parent.artifactId}-0.11.${BUILD_NUMBER}</finalName>
+  	<finalName>Opti-AFP-0.11.${BUILD_NUMBER}</finalName>
   	<plugins>
       <plugin>
         <groupId>org.sonatype.tycho</groupId>
