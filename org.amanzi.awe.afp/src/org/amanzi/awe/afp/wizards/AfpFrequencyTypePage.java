@@ -151,11 +151,30 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 		    		
 		    	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
 		    	
+		    	boolean includeFlag = true;
 		    	for (Node trxNode: trxTraverser){
-			    	if (rowFilter != null){
+			    	for(AfpFrequencyDomainModel mod: model.getFreqDomains(false)){
+			    		String filterString = mod.getFilters();
+			    		if (filterString != null && !filterString.trim().isEmpty()){
+				    		AfpRowFilter rf = AfpRowFilter.getFilter(mod.getFilters());
+				    		if (rf != null){
+					    		if (!rf.equal(trxNode)){
+					    			includeFlag = false;
+					    			break;
+					    		}
+				    		}
+			    		}
+			    	}
+			    	
+			    	if (!includeFlag)
+			    		continue;
+		    		
+		    		if (rowFilter != null){
 			    		if (!rowFilter.equal(trxNode)) 
 			    			continue;
 			    	}
+		    		
+		    		
 			    	if(trxCount <= 100){ 
 				    	TableItem item = new TableItem(filterTable, SWT.NONE);
 				    	for (int j = 0; j < headers.length; j++){
