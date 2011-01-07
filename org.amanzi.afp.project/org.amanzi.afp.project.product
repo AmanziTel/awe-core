@@ -24,14 +24,13 @@
       startupMessageRect="7,230,445,16"
       startupForegroundColor="FFFFFF" />
    <launcher name="afp">
-      <linux icon="/org.amanzi.afp.project/icons/awe_icon_128.xpm"/>
+      <linux icon="/org.amanzi.afp/icons/opti-test_128.xpm"/>
       <solaris/>
       <win useIco="true">
          <ico path="/org.amanzi.afp/icons/afp.ico"/>
          <bmp/>
       </win>
    </launcher>
-
 
    <vm>
       <linux type="jre">jre1.6.0_11_gdal</linux>
