@@ -101,13 +101,14 @@ public class AfpColumnFilter{
 		}
 		String val = null;
 		int intVal = -1;
-		
-		if (obj instanceof String)
-			val = (String)obj;
-		else if (obj instanceof Integer){
-			intVal = (Integer)obj;
-			val = Integer.toString(intVal);
-		}
+		if (obj != null)
+			val = obj.toString();
+//		if (obj instanceof String)
+//			val = (String)obj;
+//		else if (obj instanceof Integer){
+//			intVal = (Integer)obj;
+//			val = Integer.toString(intVal);
+//		}
 		
 		if (val != null){
 			for (String value : values){
