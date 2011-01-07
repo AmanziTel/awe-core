@@ -149,7 +149,7 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
   	      	column.setText(item);
   	      	column.setData(item);
   	      	column.setResizable(true);
-  	      	column.addListener(SWT.Selection, new ColumnFilterListener());
+  	      	column.addListener(SWT.Selection, new ColumnFilterListener(parentShell));
   	    }
     	
     	
@@ -209,14 +209,21 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 	
 	class ColumnFilterListener implements Listener{
 		
-		
+		Shell parentShell;
+		public ColumnFilterListener(final Shell subShell) {
+			super();
+			this.parentShell = subShell;
+		}
 		
 		@Override
 		public void handleEvent(Event event) {
 			final ArrayList<String> selectedValues = new ArrayList<String>();
-			final Shell subShell = new Shell(event.widget.getDisplay(), SWT.PRIMARY_MODAL);
+		//	final Shell subShell = new Shell(event.widget.getDisplay(), SWT.PRIMARY_MODAL);
+			final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL|SWT.TITLE);
 			subShell.setLayout(new GridLayout(2, false));
-			subShell.setLocation(300, 200);
+			//subShell.setLocation(300, 200);
+			//event.widget.
+			subShell.setText("Filter");
 			
 			final String col = (String)event.widget.getData();
 			

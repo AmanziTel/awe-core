@@ -33,7 +33,7 @@ public class AfpDomainSelector {
 	public AfpDomainSelector(final WizardPage page, Shell parentShell, final Group parentGroup, final AfpModel model){
 
 		int selectedBand =0;
-		subShell = new Shell(parentShell, SWT.PRIMARY_MODAL);
+		subShell = new Shell(parentShell, SWT.PRIMARY_MODAL|SWT.TITLE);
 		this.model = model;
 		this.page = page;
 	}

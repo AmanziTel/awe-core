@@ -69,6 +69,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 	private Table filterTable;
 	protected AfpRowFilter rowFilter;
 	private int trxCount;
+	protected  Shell parentShell;
 
 	public AfpFrequencyTypePage(String pageName, AfpModel model, String desc) {
 		super(pageName, model);
@@ -80,7 +81,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 	
 	@Override
 	public void createControl(Composite parent) {
-		final  Shell parentShell = parent.getShell();
+		this.parentShell = parent.getShell();
 		Composite thisParent = new Composite(parent, SWT.NONE);
    	 	thisParent.setLayout(new GridLayout(2, false));
 		
@@ -298,7 +299,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 	@Override
 	public void widgetSelected(SelectionEvent e) {
 		if (e.widget.getData().equals(AfpWizardPage.ASSIGN)){
-			final Shell subShell = new Shell(e.widget.getDisplay(), SWT.PRIMARY_MODAL);
+			final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL|SWT.TITLE);
 			subShell.setText("Assign to Domain");
 			subShell.setLayout(new GridLayout(2, false));
 			subShell.setLocation(200, 200);

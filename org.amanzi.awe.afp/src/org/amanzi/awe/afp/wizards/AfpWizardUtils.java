@@ -190,7 +190,7 @@ public class AfpWizardUtils {
 			frequenciesLeft = frequencies;
 		}
 		
-		final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL);
+		final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL|SWT.TITLE);
 		subShell.setText("Frequency Selector");
 		subShell.setLayout(new GridLayout(3, false));
 		subShell.setLocation(200, 200);
@@ -412,7 +412,7 @@ public class AfpWizardUtils {
 	}
 	
 	protected static void createSeparationDomainShell(final WizardPage page,Shell parentShell, final String action, final boolean isSector, final Group parentGroup, final AfpModel model){
-		final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL);
+		final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL|SWT.TITLE);
 		final AfpSeparationDomainModel domainModel = new AfpSeparationDomainModel(); 
 		String entity = isSector? "Sector" : "Site";
 		String title = action + " " + entity + " Separation Domain";	
