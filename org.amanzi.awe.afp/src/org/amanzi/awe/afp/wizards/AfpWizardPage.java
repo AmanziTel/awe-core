@@ -69,30 +69,30 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 
 	public void refreshPage() {
 		if (this instanceof AfpSeparationRulesPage){
-			updateSectorFilterLabel(model.totalSectors);
-			updateSiteFilterLabel(model.totalSites);
+			updateSectorFilterLabel(model.getTotalSectors());
+			updateSiteFilterLabel(model.getTotalSites());
 		}
 		else if(this instanceof AfpSYHoppingMALsPage){
 			updateTRXFilterLabel(0);
 		}
 		else{
-			updateTRXFilterLabel(model.totalTRX);
+			updateTRXFilterLabel(model.getTotalTRX());
 		}
 		
 	}
 	
 	public void updateTRXFilterLabel(int selected){
-		filterInfoLabel.setText(String.format("Filter Status: %d Trxs selected out of %d", selected, model.totalTRX));
+		filterInfoLabel.setText(String.format("Filter Status: %d Trxs selected out of %d", selected, model.getTotalRemainingTRX()));
 		trxFilterGroup.layout();
 	}
 	
 	public void updateSectorFilterLabel(int selected){
-			filterInfoLabel.setText(String.format("Filter Status: %d sectors selected out of %d", selected, model.totalSectors));
+			filterInfoLabel.setText(String.format("Filter Status: %d sectors selected out of %d", selected, model.getTotalSectors()));
 			trxFilterGroup.layout();
 	}
 	
 	public void updateSiteFilterLabel(int selected){
-		siteFilterInfoLabel.setText(String.format("Filter Status: %d sites selected out of %d", selected, model.totalSites));
+		siteFilterInfoLabel.setText(String.format("Filter Status: %d sites selected out of %d", selected, model.getTotalSites()));
 		siteTrxFilterGroup.layout();
 	}
 	

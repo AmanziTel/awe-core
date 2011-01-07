@@ -159,7 +159,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 			    		if (filterString != null && !filterString.trim().isEmpty()){
 				    		AfpRowFilter rf = AfpRowFilter.getFilter(mod.getFilters());
 				    		if (rf != null){
-					    		if (!rf.equal(trxNode)){
+					    		if (rf.equal(trxNode)){
 					    			includeFlag = false;
 					    			break;
 					    		}
@@ -255,7 +255,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 		}
 		domainLabels.clear();
 		
-		int counts[] = model.getFreqDomainsTrxCount(true);
+//		int counts[] = model.getFreqDomainsTrxCount(true);
 		int i=0;
 		for(AfpFrequencyDomainModel domainModel: model.getFreqDomains(true)) {
 			if(domainModel != null) {
@@ -331,6 +331,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 					AfpDomainModel freqModel = model.findDomainByName(model.DOMAIN_TYPES[0], domainName);
 					freqModel.setFilters(rowFilter.toString());
 					freqModel.setNumTRX(trxCount);
+					model.setTotalRemainingTRX(model.getTotalRemainingTRX() - trxCount);
 					updateLabels();
 					subShell.dispose();
 				}

@@ -79,9 +79,10 @@ public class AfpModel {
 			{"SY TCH", "SY TCH"}
 			};
 	
-	public int totalTRX;
-	public int totalSites;
-	public int totalSectors;
+	private int totalTRX;
+	private int totalRemainingTRX;
+	private int totalSites;
+	private int totalSectors;
 	
 	/**
 	 * 0- 900
@@ -208,6 +209,11 @@ public class AfpModel {
 				if (band.contains("1900"))
 					bandTRXs[BAND_1900]++;
 			}
+			
+			totalRemainingTRX = totalTRX;
+			for (AfpFrequencyDomainModel dm : getFreqDomains(false)){
+				totalRemainingTRX -= dm.getNumTRX();
+			}
 		}
 
 		
@@ -215,6 +221,38 @@ public class AfpModel {
 		int[][] selectedArray = {bandTRXs, bandTRXs, bandTRXs, {0,0,0,0},{0,0,0,0}
 		};
 		return selectedArray;
+	}
+
+	public int getTotalTRX() {
+		return totalTRX;
+	}
+
+	public void setTotalTRX(int totalTRX) {
+		this.totalTRX = totalTRX;
+	}
+
+	public int getTotalRemainingTRX() {
+		return totalRemainingTRX;
+	}
+
+	public void setTotalRemainingTRX(int totalSelectedTRX) {
+		this.totalRemainingTRX = totalSelectedTRX;
+	}
+
+	public int getTotalSites() {
+		return totalSites;
+	}
+
+	public void setTotalSites(int totalSites) {
+		this.totalSites = totalSites;
+	}
+
+	public int getTotalSectors() {
+		return totalSectors;
+	}
+
+	public void setTotalSectors(int totalSectors) {
+		this.totalSectors = totalSectors;
 	}
 
 	/**
@@ -590,6 +628,7 @@ public class AfpModel {
 					AfpFrequencyDomainModel d = new AfpFrequencyDomainModel();
 					d.setName("Free " + BAND_NAMES[i]);
 					d.setBand(BAND_NAMES[i]);
+					d.setNumTRX(totalRemainingTRX);
 					d.setFree(true);
 					String f[] = new String[1];
 					f[0] = this.availableFreq[i];
@@ -601,6 +640,15 @@ public class AfpModel {
 			}
 		}
 	}
+	
+	/*private int getTotalSelectedTRXCount(){
+		int totalSelected = 0;
+		for (AfpFrequencyDomainModel dm: freqDomains.values()){
+			totalSelected += dm.getNumTRX();
+		}
+		
+		return totalSelected;
+	}*/
 	
 	public AfpDomainModel findDomainByName(String type, String name){
 		AfpFrequencyDomainModel model = null;
@@ -627,9 +675,8 @@ public class AfpModel {
 		}
 		return l;
 	}
-	public int[] getFreqDomainsTrxCount(boolean addFree) {
+	/*public int[] getFreqDomainsTrxCount(boolean addFree) {
 		Collection<AfpFrequencyDomainModel> domains = getFreqDomains(true);
-		ArrayList<AfpFilter> filters = new ArrayList<AfpFilter>();
 		int counters[] = new int[domains.size()];
 		
 		int cnt=0;
@@ -644,25 +691,8 @@ public class AfpModel {
 			cnt++;
 		}
 
-/*		Traverser t = this.getTRXList(null);
-		for(Node n: t) {
-			for(int i =0; i< filters.size(); i++) {
-				AfpFilter f = filters.get(i);
-				if(f!= null) {
-					if(f.like(n)) {
-						// inc count
-						counters[i]++;
-						break;
-					}
-				} else {
-					counters[i]++;
-					break;
-				}
-			}
-		}
-		*/
 		return counters;
-	}
+	}*/
 
 
 
@@ -1662,7 +1692,7 @@ public class AfpModel {
 	    	for (int j = 0; j < selectedCount[i].length; j++){
 	    		total += selectedCount[i][j];
 	    	}
-	    	String s = String.format("\n\tTotal-%d \n\tBand 900-%d \n\tBand 1800-%d \n\tBand 50-%d \n\tBand 1900-%d", total, selectedCount[i][0], selectedCount[i][1], selectedCount[i][2], selectedCount[i][3]);
+	    	String s = String.format("\n\tTotal-%d \n\tBand 900-%d \n\tBand 1800-%d \n\tBand 850-%d \n\tBand 1900-%d", total, selectedCount[i][0], selectedCount[i][1], selectedCount[i][2], selectedCount[i][3]);
 	    	sb.append(GOALS_SUMMARY_ROW_HEADERS[i] + "  "+ s + "\n");
 	    }
 		
