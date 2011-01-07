@@ -235,6 +235,7 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 			//TODO Do some error handling here;
 			return;
 		}
+		model.setTotalRemainingTRX(model.getTotalRemainingTRX() + domain2Edit.getNumTRX());
 		model.deleteFreqDomain(domain2Edit.getName());
 	}
 

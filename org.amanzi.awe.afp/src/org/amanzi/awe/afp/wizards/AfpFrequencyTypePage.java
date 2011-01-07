@@ -332,6 +332,8 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 					freqModel.setFilters(rowFilter.toString());
 					freqModel.setNumTRX(trxCount);
 					model.setTotalRemainingTRX(model.getTotalRemainingTRX() - trxCount);
+					rowFilter.clear();
+					loadData();
 					updateLabels();
 					subShell.dispose();
 				}
