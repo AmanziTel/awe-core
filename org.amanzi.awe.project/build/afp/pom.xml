@@ -84,18 +84,18 @@
     </activation>
     <modules>
       <module>org.amanzi.afp.project</module>
-      <!-- module>com.lowagie.itext</module -->
+      <module>com.lowagie.itext</module>
       <module>net.refractions.udig.awe</module>
       <module>net.refractions.udig.awe-feature</module>
       <module>net.refractions.udig.catalog.mitab</module>
-      <!-- module>net.refractions.udig.printing.model</module>
+      <module>net.refractions.udig.printing.model</module>
       <module>net.refractions.udig.printing.model.edit</module>
       <module>net.refractions.udig.printing.ui</module>
       <module>net.refractions.udig.project</module>
       <module>net.refractions.udig.project.edit</module>
-      <module>net.refractions.udig.project.ui</module >
+      <module>net.refractions.udig.project.ui</module>
       <module>net.refractions.udig.style.sld</module>
-      <module>net.refractions.udig.ui</module -->
+      <module>net.refractions.udig.ui</module>
       <module>org.amanzi.afp</module>
       <module>org.amanzi.afp-feature</module>
       <module>org.amanzi.awe.catalog.neo</module>
@@ -103,8 +103,8 @@
       <module>org.amanzi.awe.filters</module>
       <module>org.amanzi.awe.l3messages</module>
       <module>org.amanzi.awe.neostyle</module>
-      <!-- module>org.amanzi.awe.render.drive</module -->
-      <!-- module>org.amanzi.awe.render.network</module -->
+      <module>org.amanzi.awe.render.drive</module>
+      <module>org.amanzi.awe.render.network</module>
       <module>org.amanzi.awe.report</module>
       <module>org.amanzi.awe.report.geoptima</module>
       <module>org.amanzi.awe.script</module>
@@ -115,15 +115,15 @@
       <module>org.amanzi.awe.ui.operation.shape_export</module>
       <module>org.amanzi.awe.views.drive</module>
       <module>org.amanzi.awe.views.kpi</module>
-      <!-- module>org.amanzi.awe.views.neighbours</module -->
+      <module>org.amanzi.awe.views.neighbours</module>
       <module>org.amanzi.awe.views.network</module>
       <module>org.amanzi.awe.views.reuse</module>
       <module>org.amanzi.awe.views.tree.drive</module>
       <module>org.amanzi.printing</module>
       <module>org.amanzi.gef</module>
       <module>org.amanzi.integrator.awe</module>
-      <!-- module>org.amanzi.integrator.rdt</module -->
-      <!-- module>org.amanzi.neo.core</module -->
+      <module>org.amanzi.integrator.rdt</module>
+      <module>org.amanzi.neo.core</module>
       <module>org.amanzi.neo.loader</module>
       <module>org.amanzi.rdt.launching</module>
       <module>org.amanzi.rdt.testing</module>
