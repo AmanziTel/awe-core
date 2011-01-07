@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
@@ -147,12 +148,21 @@ public class AfpModel {
 	
     protected HashMap<String, String> parameters;
     protected HashMap<String, String> filters;
-//    protected HashMap<String, String> equalFilters = new HashMap<String, String>();
     
+    public static final String[] sitePropertiesName = new String[] {
+    	INeoConstants.PROPERTY_NAME_NAME
+    };
+    public static final String[] sectorPropertiesName = new String[] {
+    	INeoConstants.PROPERTY_NAME_NAME
+    };
+    public static final String[] trxPropertiesName = new String[] {
+    	INeoConstants.PROPERTY_NAME_NAME, "Layer" , "Subcell", "trx_id", 
+		"band", "Extended", "hopping_type", INeoConstants.PROPERTY_BCCH_NAME,
+    };
+//    protected HashMap<String, String> equalFilters = new HashMap<String, String>();
 
 	
 	public AfpModel() {
-		
 	}
 
 	/**
@@ -191,6 +201,9 @@ public class AfpModel {
     	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
 		
 		for (Node node: traverser){
+			// add to unique properties
+			
+			
 			if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.SITE.getId())){
 				totalSites++;
 			}
@@ -218,8 +231,7 @@ public class AfpModel {
 
 		
 		//TODO: get the count from database based on the selected node and also update frequency band values based on that
-		int[][] selectedArray = {bandTRXs, bandTRXs, bandTRXs, {0,0,0,0},{0,0,0,0}
-		};
+		int[][] selectedArray = {bandTRXs, bandTRXs, bandTRXs, {0,0,0,0},{0,0,0,0}};
 		return selectedArray;
 	}
 
@@ -1855,6 +1867,8 @@ public class AfpModel {
     	}
 		return frequencies;
 	}
+	
+	
 	/**
 	 * Converts string array containing integer values to string array containing int values and/or ranges (wherever applicable)
 	 * For example {"0","2","4","8","9","10","12","13","15","16","17","18","19","20", "22"} is converted to {"0","2","4","8-10","12","13","15-20", "22"}

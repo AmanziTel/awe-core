@@ -1,6 +1,9 @@
 package org.amanzi.awe.afp.wizards;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.amanzi.awe.afp.filters.AfpColumnFilter;
 import org.amanzi.awe.afp.filters.AfpRowFilter;
@@ -51,14 +54,40 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 	private TableViewer viewer;
 	private AfpTRXFilter filter;
 	private FilterListener listener;
+	
+    protected HashMap<String,Set<Object>> uniqueSitePropertyValues = new HashMap<String,Set<Object>>();
+    protected HashMap<String,Set<Object>> uniqueSectorPropertyValues = new HashMap<String,Set<Object>>();
+    protected HashMap<String,Set<Object>> uniqueTrxPropertyValues = new HashMap<String,Set<Object>>();
+
 
 	protected AfpWizardPage(String pageName) {
 		super(pageName);
+		for(String p: AfpModel.sitePropertiesName) {
+			uniqueSitePropertyValues.put(p, new HashSet<Object>());
+		}
+		for(String p: AfpModel.sectorPropertiesName) {
+			uniqueSectorPropertyValues.put(p, new HashSet<Object>());
+		}
+		
+		for(String p: AfpModel.trxPropertiesName) {
+			uniqueTrxPropertyValues.put(p, new HashSet<Object>());
+		}
+
 	}
 	
 	protected AfpWizardPage(String pageName, AfpModel model) {
 		super(pageName);
 		this.model = model;
+		for(String p: AfpModel.sitePropertiesName) {
+			uniqueSitePropertyValues.put(p, new HashSet<Object>());
+		}
+		for(String p: AfpModel.sectorPropertiesName) {
+			uniqueSectorPropertyValues.put(p, new HashSet<Object>());
+		}
+		
+		for(String p: AfpModel.trxPropertiesName) {
+			uniqueTrxPropertyValues.put(p, new HashSet<Object>());
+		}
 	}
 
 	@Override
@@ -194,17 +223,8 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 	 * @param colName
 	 * @return unique values for the column
 	 */
-	public String[] getUniqueValues(String colName){
-		if (colName.equals("Band"))
-			return new String[]{"900", "1800", "850", "1900"};
-		if (colName.equals("TRX_ID"))
-			return new String[]{"0", "1", "2", "3", "4"};
-		if (colName.equals("Site"))
-			return new String[]{"AMZ04345", "AMZ04343", "AMZ02652", "AMZ02653", "AMZ02570"};
-		if (colName.equals("Sector"))
-			return new String[]{"4345A", "4345B", "4345C", "4345D", "4343A", "4343B", "4343C", "4343D"};
-		
-		return new String[]{"900", "1800", "850", "1900"};
+	protected Object[] getColumnUniqueValues(String colName){
+		return null;
 	}
 	
 	class ColumnFilterListener implements Listener{
@@ -217,6 +237,7 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 		
 		@Override
 		public void handleEvent(Event event) {
+			
 			final ArrayList<String> selectedValues = new ArrayList<String>();
 		//	final Shell subShell = new Shell(event.widget.getDisplay(), SWT.PRIMARY_MODAL);
 			final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL|SWT.TITLE);
@@ -232,13 +253,22 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 			filterGroup.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, false, false,2 ,1));
 			filterGroup.setText(col);
 			
-			String[] values = getUniqueValues(col);
-		    final Tree tree = new Tree(filterGroup, SWT.CHECK | SWT.BORDER);
+			Object[] values = getColumnUniqueValues(col);
+			
+			if(values == null) {
+				subShell.dispose();
+				return;
+			}
+			if(values.length == 0) {
+				subShell.dispose();
+				return;
+			}
+		    final Tree tree = new Tree(filterGroup, SWT.CHECK | SWT.BORDER|SWT.V_SCROLL);
 		    tree.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, false, false,2 ,1));
 		    
-	    	for (String value : values){
+	    	for (Object value : values){
 	    		TreeItem item = new TreeItem(tree, 0);
-		        item.setText(value);
+		        item.setText(value.toString());
 	    	}
 	    	
 	    	Button cacelButton = new Button(filterGroup, SWT.PUSH);
@@ -281,5 +311,88 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 		
 	}
 	
+	protected void addSiteUniqueProperties(Node node) {
+		// add to unique properties
+		for(String p:AfpModel.sitePropertiesName ) {
+			Object oVal = node.getProperty(p,null);
 
+			if(oVal != null) {
+				Set<Object> s = uniqueSitePropertyValues.get(p);
+				if(s != null) {
+					s.add(oVal);
+				}
+			}				
+		}
+
+	}
+	protected void addSectorUniqueProperties(Node node) {
+		// add to unique properties
+		for(String p:AfpModel.sectorPropertiesName ) {
+			Object oVal = node.getProperty(p,null);
+
+			if(oVal != null) {
+				Set<Object> s = uniqueSectorPropertyValues.get(p);
+				if(s != null) {
+					s.add(oVal);
+				}
+			}				
+		}
+	}
+	
+	protected void addTrxUniqueProperties(Node node) {
+		// add to unique properties
+		for(String p:AfpModel.trxPropertiesName ) {
+			Object oVal = node.getProperty(p,null);
+
+			if(oVal != null) {
+				Set<Object> s = uniqueTrxPropertyValues.get(p);
+				if(s != null) {
+					s.add(oVal);
+				}
+			}				
+		}
+	}
+	
+	public Object[] getSiteUniqueValuesForProperty(String prop) {
+		Set<Object> s = this.uniqueSitePropertyValues.get(prop);
+		
+		if(s!= null) {
+			if(s.size() >0) {
+				return s.toArray(new Object[0]);
+			}
+		}
+		return null;
+	}
+	public Object[] getSectorUniqueValuesForProperty(String prop) {
+		Set<Object> s = this.uniqueSectorPropertyValues.get(prop);
+		
+		if(s!= null) {
+			if(s.size() >0) {
+				return s.toArray(new Object[0]);
+			}
+		}
+		return null;
+	}
+	public Object[] getTrxUniqueValuesForProperty(String prop) {
+		Set<Object> s = this.uniqueTrxPropertyValues.get(prop);
+		
+		if(s!= null) {
+			if(s.size() >0) {
+				return s.toArray(new Object[0]);
+			}
+		}
+		return null;
+	}
+
+	protected void clearAllUniqueValuesForProperty() {
+		for(Set s: this.uniqueSectorPropertyValues.values()) {
+			s.clear();
+		}
+		for(Set s: this.uniqueSitePropertyValues.values()) {
+			s.clear();
+		}
+		for(Set s: this.uniqueTrxPropertyValues.values()) {
+			s.clear();
+		}
+	}
 }
