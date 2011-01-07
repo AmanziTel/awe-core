@@ -21,7 +21,8 @@ public class AfpRowFilter {
 	}
 
 	public void addColumn(AfpColumnFilter colFilter) {
-		colFilters.put(colFilter.getColName(), colFilter);
+		if (!(colFilter.getValues().isEmpty() || colFilter.getValues() == null))
+			colFilters.put(colFilter.getColName(), colFilter);
 	}
 	
 	public void removeColumn(AfpColumnFilter colFilter) {
@@ -48,6 +49,10 @@ public class AfpRowFilter {
 		AfpColumnFilter colFilter = new AfpColumnFilter(colName);
 		colFilters.put(colName, colFilter);
 		return colFilter;
+	}
+	
+	public void clear(){
+		colFilters.clear();
 	}
 	
 	/**

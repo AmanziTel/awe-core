@@ -234,6 +234,7 @@ public class INeoConstants {
     public static final String AFP_DOMAIN_NAME_SECTOR_SEPARATION = "sector_separation";
     public static final String AFP_PROPERTY_FREQUENCY_BAND_NAME = "band";
     public static final String AFP_PROPERTY_FREQUENCIES_NAME = "frequencies";
+    public static final String AFP_PROPERTY_TRX_COUNT_NAME = "trx_count";
     public static final String AFP_PROPERTY_MAL_SIZE_NAME = "mal_size";
     public static final String AFP_PROPERTY_SEPARATIONS_NAME = "separations";
     public static final String AFP_PROPERTY_FILTERS_NAME = "filters";

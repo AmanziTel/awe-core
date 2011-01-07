@@ -53,6 +53,7 @@ public class AfpModel {
 	boolean optimizeHSN = true;
 	boolean optimizeMAIO = true;
 	
+	public static final String[] DOMAIN_TYPES = {"frequency", "mal", "sector_separations", "site_separations"};
 	public static final String[] BAND_NAMES = { "900", "1800", "850", "1900" };
 	public static final String[] CHANNEL_NAMES = {"BCCH", "TCH Non/BB Hopping", "TCH SY Hopping"};
 	public static final String GOALS_SUMMARY_ROW_HEADERS[] = {"Selected Sectors: ",
@@ -600,12 +601,25 @@ public class AfpModel {
 			}
 		}
 	}
+	
+	public AfpDomainModel findDomainByName(String type, String name){
+		AfpFrequencyDomainModel model = null;
+		if (type.equals(DOMAIN_TYPES[0])){
+			for(AfpFrequencyDomainModel freqModel : freqDomains.values()){
+				if(freqModel.getName().equals(name)){
+					model = freqModel;
+					break;
+				}
+			}
+		}
+		
+		return model;
+	}
 
 	/**
 	 * @return the freqDomains
 	 */
 	public Collection<AfpFrequencyDomainModel> getFreqDomains(boolean addFree) {
-		
 		addRemoveFreeFrequencyDomain(addFree);
 		ArrayList<AfpFrequencyDomainModel> l = new ArrayList<AfpFrequencyDomainModel>();
 		for(AfpFrequencyDomainModel d:freqDomains.values()) {
@@ -1426,6 +1440,7 @@ public class AfpModel {
 		}
         frequencyNode.setProperty(INeoConstants.AFP_PROPERTY_FREQUENCY_BAND_NAME, domainModel.getBand());
         frequencyNode.setProperty(INeoConstants.AFP_PROPERTY_FREQUENCIES_NAME, domainModel.getFrequencies());
+        frequencyNode.setProperty(INeoConstants.AFP_PROPERTY_TRX_COUNT_NAME, domainModel.getNumTRX());
 	}
 	
 	public void createHoppingMALDomainNode(Node afpNode, AfpHoppingMALDomainModel domainModel, GraphDatabaseService service){
@@ -1665,7 +1680,8 @@ public class AfpModel {
 		sb.append("\n\nFrequency Type Domains: \n");
 		for(AfpFrequencyDomainModel domainModel: this.freqDomains.values()) {
 			if(domainModel != null) {
-				sb. append(domainModel.getName() + " : \n\tBand-" + domainModel.getBand() + "\n\tAssigned Frequencies- 0" + "\n\tAssignedTRXs-0" + "\n");
+				sb. append(domainModel.getName() + " : \n\tBand-" + domainModel.getBand() + "\n\tAssigned Frequencies-"+ domainModel.getCount() + "\n");
+				sb.append("\tAssignedTRXs-" + domainModel.getNumTRX()  + "\n\tFilters: " + domainModel.getFilters() + "\n");
 			}
 		}
 		
