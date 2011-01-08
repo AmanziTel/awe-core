@@ -166,6 +166,11 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 		    Traverser sectorTraverser = model.getTRXList(bandFilters);
 		    
 		    trxCount =0;
+		    //initialize trx of all model domains to 0
+		    for(AfpFrequencyDomainModel mod: model.getFreqDomains(false)){
+		    	mod.setNumTRX(0);
+		    }
+		    model.setTotalRemainingTRX(0);
 		    for (Node node : sectorTraverser) {
 		    	Traverser trxTraverser = AfpModelUtils.getTrxTraverser(node);
 
@@ -181,6 +186,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 				    		AfpRowFilter rf = AfpRowFilter.getFilter(mod.getFilters());
 				    		if (rf != null){
 					    		if (rf.equal(trxNode)){
+					    			mod.setNumTRX(mod.getNumTRX() + 1);
 					    			includeFlag = false;
 					    			break;
 					    		}
@@ -191,6 +197,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 			    	if (!includeFlag)
 			    		continue;
 		    		
+			    	model.setTotalRemainingTRX(model.getTotalRemainingTRX() + 1);
 		    		if (rowFilter != null){
 			    		if (!rowFilter.equal(trxNode)) 
 			    			continue;
@@ -229,6 +236,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 		    for (int i = 0; i < headers_prop.size(); i++) {
 		    	filterTable.getColumn(i).pack();
 		    }
+		    updateLabels();
 		    this.updateTRXFilterLabel(trxCount, model.getTotalRemainingTRX());
 		}
 	}
@@ -346,7 +354,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 					AfpDomainModel freqModel = model.findDomainByName(model.DOMAIN_TYPES[0], domainName);
 					freqModel.setFilters(rowFilter.toString());
 					freqModel.setNumTRX(trxCount);
-					model.setTotalRemainingTRX(model.getTotalRemainingTRX() - trxCount);
+//					model.setTotalRemainingTRX(model.getTotalRemainingTRX() - trxCount);
 					rowFilter.clear();
 					loadData();
 					updateLabels();
