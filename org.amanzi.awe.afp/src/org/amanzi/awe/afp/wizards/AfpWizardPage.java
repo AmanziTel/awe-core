@@ -242,6 +242,7 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 		//	final Shell subShell = new Shell(event.widget.getDisplay(), SWT.PRIMARY_MODAL);
 			final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL|SWT.TITLE | SWT.SCROLL_PAGE);
 			subShell.setLayout(new GridLayout(2, false));
+//			subShell.setLayoutData(gridData);
 //			subShell.setSize(100, 200);
 			subShell.setBounds(50, 50, 100, 200);
 			//subShell.setLocation(300, 200);
@@ -265,7 +266,9 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 				return;
 			}
 		    final Tree tree = new Tree(filterGroup, SWT.CHECK | SWT.BORDER|SWT.V_SCROLL);
-		    tree.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, false, false,2 ,1));
+		    GridData gridData = new GridData(GridData.FILL, GridData.FILL, true, false, 2, 1);
+			gridData.heightHint = 200;
+		    tree.setLayoutData(gridData);
 		    
 	    	for (Object value : values){
 	    		TreeItem item = new TreeItem(tree, 0);
