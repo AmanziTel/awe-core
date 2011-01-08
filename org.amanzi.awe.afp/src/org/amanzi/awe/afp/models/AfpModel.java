@@ -84,7 +84,7 @@ public class AfpModel {
 	public static final String DEFAULT_SITE_SEP_NAME = "Default Separations";
 	private int totalTRX;
 	private int totalRemainingTRX;
-	private int totalRemainingMalTRX;
+//	private int totalRemainingMalTRX;
 	private int totalSites;
 	private int totalSectors;
 	
@@ -226,14 +226,14 @@ public class AfpModel {
 					bandTRXs[BAND_1900]++;
 			}
 			
-			totalRemainingTRX = totalTRX;
-			totalRemainingMalTRX = totalTRX;
-			for (AfpFrequencyDomainModel dm : getFreqDomains(false)){
-				totalRemainingTRX -= dm.getNumTRX();
-			}
-			for (AfpHoppingMALDomainModel dm : getMalDomains(false)){
-				totalRemainingMalTRX -= dm.getNumTRX();
-			}
+//			totalRemainingTRX = totalTRX;
+//			totalRemainingMalTRX = totalTRX;
+//			for (AfpFrequencyDomainModel dm : getFreqDomains(false)){
+//				totalRemainingTRX -= dm.getNumTRX();
+//			}
+//			for (AfpHoppingMALDomainModel dm : getMalDomains(false)){
+//				totalRemainingMalTRX -= dm.getNumTRX();
+//			}
 		}
 
 		
@@ -258,13 +258,13 @@ public class AfpModel {
 		this.totalRemainingTRX = totalSelectedTRX;
 	}
 
-	public int getTotalRemainingMalTRX() {
-		return totalRemainingMalTRX;
-	}
-
-	public void setTotalRemainingMalTRX(int totalRemainingMalTRX) {
-		this.totalRemainingMalTRX = totalRemainingMalTRX;
-	}
+//	public int getTotalRemainingMalTRX() {
+//		return totalRemainingMalTRX;
+//	}
+//
+//	public void setTotalRemainingMalTRX(int totalRemainingMalTRX) {
+//		this.totalRemainingMalTRX = totalRemainingMalTRX;
+//	}
 
 	public int getTotalSites() {
 		return totalSites;
@@ -762,7 +762,7 @@ public class AfpModel {
 		AfpHoppingMALDomainModel d = new AfpHoppingMALDomainModel();
 		d.setName(DEFAULT_MAL_NAME);
 		d.setFree(true);
-		d.setNumTRX(totalRemainingMalTRX);
+//		d.setNumTRX(totalRemainingMalTRX);
 		malDomains.put(d.getName(),d);
 	}
 	
@@ -852,6 +852,43 @@ public class AfpModel {
 	private void setSectorSeparationDomains(
 			HashMap<String,AfpSeparationDomainModel> sectorSeparationDomains) {
 		this.sectorSeparationDomains = sectorSeparationDomains;
+	}
+	
+	
+	public void updateFreqDomain(AfpDomainModel model){
+		for(AfpDomainModel dm : freqDomains.values()){
+			if (dm.getName().equals(model.getName())){
+				dm = model;
+				break;
+			}
+		}
+	}
+	
+	public void updateMalDomain(AfpDomainModel model){
+		for(AfpDomainModel dm : malDomains.values()){
+			if (dm.getName().equals(model.getName())){
+				dm = model;
+				break;
+			}
+		}
+	}
+	
+	public void updateSectorSepDomain(AfpDomainModel model){
+		for(AfpDomainModel dm : sectorSeparationDomains.values()){
+			if (dm.getName().equals(model.getName())){
+				dm = model;
+				break;
+			}
+		}
+	}
+	
+	public void updateSiteDomain(AfpDomainModel model){
+		for(AfpDomainModel dm : siteSeparationDomains.values()){
+			if (dm.getName().equals(model.getName())){
+				dm = model;
+				break;
+			}
+		}
 	}
 
 

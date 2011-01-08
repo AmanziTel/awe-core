@@ -102,7 +102,7 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 			updateSiteFilterLabel(model.getTotalSites());
 		}
 		else if(this instanceof AfpSYHoppingMALsPage){
-			updateTRXFilterLabel(0, model.getTotalRemainingMalTRX());
+//			updateTRXFilterLabel(0, model.getTotalRemainingMalTRX());
 		}
 		else{
 			updateTRXFilterLabel(model.getTotalTRX(),model.getTotalRemainingTRX());

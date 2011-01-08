@@ -52,6 +52,7 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 	private int trxCount;
 	protected AfpRowFilter rowFilter;
 	protected  Shell parentShell;
+	private int remainingTRX;
 
 	
 	public AfpSYHoppingMALsPage(String pageName, AfpModel model, String desc) {
@@ -156,6 +157,8 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 			defaultDomainLabel.setText(domainModel.getName());
 			Label defaultTRXsLabel = new Label(malDomainsGroup, SWT.RIGHT);
 			defaultTRXsLabel.setText("" + domainModel.getNumTRX());
+			if (domainModel.getName().equals(AfpModel.DEFAULT_MAL_NAME))
+				defaultTRXsLabel.setText("" + remainingTRX);
 			domainLabels.put(domainModel.getName(), new Label[]{defaultDomainLabel, defaultTRXsLabel});
 		}
 		
@@ -180,6 +183,10 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 		    Traverser sectorTraverser = model.getTRXList(bandFilters);
 		    
 		    trxCount =0;
+		    for(AfpDomainModel mod: model.getMalDomains(false)){
+		    	mod.setNumTRX(0);
+		    }
+		    remainingTRX = 0;
 		    for (Node node : sectorTraverser) {
 		    	Traverser trxTraverser = node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
 
@@ -205,6 +212,8 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 				    		AfpRowFilter rf = AfpRowFilter.getFilter(mod.getFilters());
 				    		if (rf != null){
 					    		if (rf.equal(trxNode)){
+					    			mod.setNumTRX(mod.getNumTRX() + 1);
+					    			model.updateMalDomain(mod);
 					    			includeFlag = false;
 					    			break;
 					    		}
@@ -215,6 +224,7 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 		    		if (!includeFlag)
 			    		continue;
 		    		
+		    		remainingTRX++;
 //			    	if ((Integer)trxNode.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) < 1)
 //			    		continue;
 			    	
@@ -267,7 +277,7 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 		    	filterTable.getColumn(i).pack();
 		    }
 		    
-		    this.updateTRXFilterLabel(trxCount, model.getTotalRemainingMalTRX());
+		    this.updateTRXFilterLabel(trxCount, remainingTRX);
 		}
 	}
 
@@ -333,7 +343,7 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 					AfpDomainModel malModel = model.findDomainByName(model.DOMAIN_TYPES[1], domainName);
 					malModel.setFilters(rowFilter.toString());
 					malModel.setNumTRX(trxCount);
-					model.setTotalRemainingMalTRX(model.getTotalRemainingMalTRX() - trxCount);
+//					model.setTotalRemainingMalTRX(model.getTotalRemainingMalTRX() - trxCount);
 					rowFilter.clear();
 					loadData();
 					updateLabels();

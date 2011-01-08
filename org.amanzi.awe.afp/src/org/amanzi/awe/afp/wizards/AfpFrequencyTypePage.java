@@ -185,6 +185,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 				    		if (rf != null){
 					    		if (rf.equal(trxNode)){
 					    			mod.setNumTRX(mod.getNumTRX() + 1);
+					    			model.updateFreqDomain(mod);
 					    			includeFlag = false;
 					    			break;
 					    		}
