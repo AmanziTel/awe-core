@@ -318,7 +318,7 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 			Object oVal = node.getProperty(p,null);
 
 			if(oVal != null) {
-				Set<Object> s = uniqueSitePropertyValues.get(p);
+				Set<Object> s =  uniqueSitePropertyValues.get(p);
 				if(s != null) {
 					s.add(oVal);
 				}
@@ -346,7 +346,7 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 			Object oVal = node.getProperty(p,null);
 
 			if(oVal != null) {
-				Set<Object> s = uniqueTrxPropertyValues.get(p);
+				Set<Object> s= uniqueTrxPropertyValues.get(p);
 				if(s != null) {
 					s.add(oVal);
 				}

@@ -46,7 +46,7 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 	
 	protected HashMap<String, Label[]> domainLabels;
 	private final String[] headers = { "BSC", "Site", "Sector", "Layer", "Subcell", "TRX_ID", "Band", "Extended", "Hopping Type"};
-	private final HashMap<String,Integer> headersNodeType = new HashMap<String,Integer>(); 
+	private final HashMap<String,String> headersNodeType = new HashMap<String,String>(); 
 	private final HashMap<String,String> headers_prop = new HashMap<String,String>();
 	private Table filterTable;
 	private int trxCount;
@@ -68,15 +68,15 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 		headers_prop.put("Hopping Type", "hopping_type");
 //		headers_prop.put("BCCH", INeoConstants.PROPERTY_BCCH_NAME);
 
-		headersNodeType.put("BSC", 0);
-		headersNodeType.put("Site", 0);
-		headersNodeType.put("Sector", 1);
-		headersNodeType.put("Layer", 2);
-		headersNodeType.put("Subcell", 1);
-		headersNodeType.put("TRX_ID", 2);
-		headersNodeType.put("Band", 2);
-		headersNodeType.put("Extended", 2);
-		headersNodeType.put("Hopping Type", 2);
+		headersNodeType.put("BSC", NodeTypes.SITE.getId());
+		headersNodeType.put("Site", NodeTypes.SITE.getId());
+		headersNodeType.put("Sector", NodeTypes.SECTOR.getId());
+		headersNodeType.put("Layer", NodeTypes.TRX.getId());
+		headersNodeType.put("Subcell", NodeTypes.SECTOR.getId());
+		headersNodeType.put("TRX_ID", NodeTypes.TRX.getId());
+		headersNodeType.put("Band", NodeTypes.TRX.getId());
+		headersNodeType.put("Extended", NodeTypes.TRX.getId());
+		headersNodeType.put("Hopping Type", NodeTypes.TRX.getId());
 //		headersNodeType.put("BCCH", 2);
 		
 		
@@ -233,12 +233,12 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 				    	for (String prop_name : headers){
 				    		Object val = null;
 				    		try {
-				    			Integer type = this.headersNodeType.get(prop_name);
-				    			if(type ==0) {
+				    			String type = this.headersNodeType.get(prop_name);
+				    			if(NodeTypes.SITE.getId().equals(type)) {
 				    				if (siteNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals("site"))
 				    					val = (String)siteNode.getProperty(headers_prop.get(prop_name), "");
-	
-				    			} else if( type == 1) {
+
+				    			} else if( NodeTypes.SECTOR.getId().equals(type)) {
 				    				val = node.getProperty(headers_prop.get(prop_name), "");
 				    			} else {
 				    				val = trxNode.getProperty(headers_prop.get(prop_name), "");
@@ -276,7 +276,7 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 		String val = headers_prop.get(columnName);
 		
 		if(val != null ) {
-			AfpColumnFilter colFilter = new AfpColumnFilter(val);
+			AfpColumnFilter colFilter = new AfpColumnFilter(val, this.headersNodeType.get(columnName));
 			for (String value: selectedValues){
 				colFilter.addValue(value);
 			}
@@ -288,10 +288,10 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 	@Override
 	public Object[] getColumnUniqueValues(String colName){
 		
-		Integer type  = headersNodeType.get(colName);
-		if(type.intValue() ==0) {
+		String type  = headersNodeType.get(colName);
+		if(NodeTypes.SITE.getId().equals(type)) {
 			return this.getSiteUniqueValuesForProperty(headers_prop.get(colName));
-		} else if(type.intValue() ==1) {
+		} else if(NodeTypes.SECTOR.getId().equals(type)) {
 			return this.getSectorUniqueValuesForProperty(headers_prop.get(colName));
 		} else {
 			return this.getTrxUniqueValuesForProperty(headers_prop.get(colName));

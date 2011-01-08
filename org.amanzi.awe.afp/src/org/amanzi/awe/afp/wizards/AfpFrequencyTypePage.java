@@ -11,6 +11,7 @@ import org.amanzi.awe.afp.filters.AfpRowFilter;
 import org.amanzi.awe.afp.models.AfpDomainModel;
 import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
+import org.amanzi.awe.afp.models.AfpModelUtils;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
@@ -64,7 +65,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 	protected static HashMap<String, Label[]> domainLabels;
 	
 	private final String[] headers =  {"BSC", "Site", "Sector", "Layer", "Subcell","TRX_ID", "Band", "Extended", "Hopping Type", "BCCH" };
-	private final HashMap<String,Integer> headersNodeType = new HashMap<String,Integer>(); 
+	private final HashMap<String,String> headersNodeType = new HashMap<String,String>(); 
 	private final HashMap<String,String> headers_prop = new HashMap<String,String>();
 	
 	private Table filterTable;
@@ -86,16 +87,16 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 		headers_prop.put("Hopping Type", "hopping_type");
 		headers_prop.put("BCCH", INeoConstants.PROPERTY_BCCH_NAME);
 
-		headersNodeType.put("BSC", 0);
-		headersNodeType.put("Site", 0);
-		headersNodeType.put("Sector", 1);
-		headersNodeType.put("Layer", 2);
-		headersNodeType.put("Subcell", 1);
-		headersNodeType.put("TRX_ID", 2);
-		headersNodeType.put("Band", 2);
-		headersNodeType.put("Extended", 2);
-		headersNodeType.put("Hopping Type", 2);
-		headersNodeType.put("BCCH", 2);
+		headersNodeType.put("BSC", NodeTypes.SITE.getId());
+		headersNodeType.put("Site", NodeTypes.SITE.getId());
+		headersNodeType.put("Sector", NodeTypes.SECTOR.getId());
+		headersNodeType.put("Layer", NodeTypes.TRX.getId());
+		headersNodeType.put("Subcell", NodeTypes.SECTOR.getId());
+		headersNodeType.put("TRX_ID", NodeTypes.TRX.getId());
+		headersNodeType.put("Band", NodeTypes.TRX.getId());
+		headersNodeType.put("Extended", NodeTypes.TRX.getId());
+		headersNodeType.put("Hopping Type", NodeTypes.TRX.getId());
+		headersNodeType.put("BCCH", NodeTypes.TRX.getId());
 		
 		
         setTitle(AfpImportWizard.title);
@@ -166,18 +167,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 		    
 		    trxCount =0;
 		    for (Node node : sectorTraverser) {
-		    	Traverser trxTraverser = node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
-
-					@Override
-					public boolean isReturnableNode(TraversalPosition currentPos) {
-						if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.TRX.getId())){
-							return true;
-						}
-							
-						return false;
-					}
-		    		
-		    	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+		    	Traverser trxTraverser = AfpModelUtils.getTrxTraverser(node);
 
 		    	Node siteNode = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
 		    	
@@ -213,12 +203,12 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 				    	for (String prop_name : headers){
 				    		Object val = null;
 				    		try {
-				    			Integer type = this.headersNodeType.get(prop_name);
-				    			if(type ==0) {
+				    			String type = this.headersNodeType.get(prop_name);
+				    			if(NodeTypes.SITE.getId().equals(type)) {
 				    				if (siteNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals("site"))
 				    					val = (String)siteNode.getProperty(headers_prop.get(prop_name), "");
 
-				    			} else if( type == 1) {
+				    			} else if( NodeTypes.SECTOR.getId().equals(type)) {
 				    				val = node.getProperty(headers_prop.get(prop_name), "");
 				    			} else {
 				    				val = trxNode.getProperty(headers_prop.get(prop_name), "");
@@ -292,7 +282,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 		String val = headers_prop.get(columnName);
 		
 		if(val != null ) {
-			AfpColumnFilter colFilter = new AfpColumnFilter(val);
+			AfpColumnFilter colFilter = new AfpColumnFilter(val, this.headersNodeType.get(columnName));
 			for (String value: selectedValues){
 				colFilter.addValue(value);
 			}
@@ -310,24 +300,14 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 	@Override
 	public Object[] getColumnUniqueValues(String colName){
 		
-		Integer type  = headersNodeType.get(colName);
-		if(type.intValue() ==0) {
+		String type  = headersNodeType.get(colName);
+		if(NodeTypes.SITE.getId().equals(type)) {
 			return this.getSiteUniqueValuesForProperty(headers_prop.get(colName));
-		} else if(type.intValue() ==1) {
+		} else if(NodeTypes.SECTOR.getId().equals(type)) {
 			return this.getSectorUniqueValuesForProperty(headers_prop.get(colName));
 		} else {
 			return this.getTrxUniqueValuesForProperty(headers_prop.get(colName));
 		}
-/*		if (colName.equals("Band"))
-			return new String[]{"900", "1800", "850", "1900"};
-		if (colName.equals("TRX_ID"))
-			return new String[]{"0", "1", "2", "3", "4"};
-		if (colName.equals("Site"))
-			return new String[]{"AMZ04345", "AMZ04343", "AMZ02652", "AMZ02653", "AMZ02570"};
-		if (colName.equals("Sector"))
-			return new String[]{"4345A", "4345B", "4345C", "4345D", "4343A", "4343B", "4343C", "4343D"};
-		
-		return new String[]{"900", "1800", "850", "1900"};*/
 	}
 
 

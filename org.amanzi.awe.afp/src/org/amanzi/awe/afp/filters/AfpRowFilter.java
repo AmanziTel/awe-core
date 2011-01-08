@@ -22,11 +22,11 @@ public class AfpRowFilter {
 
 	public void addColumn(AfpColumnFilter colFilter) {
 		if (!(colFilter.getValues().isEmpty() || colFilter.getValues() == null))
-			colFilters.put(colFilter.getColName(), colFilter);
+			colFilters.put(colFilter.getFilterName(), colFilter);
 	}
 	
 	public void removeColumn(AfpColumnFilter colFilter) {
-		colFilters.remove(colFilter.getColName());
+		colFilters.remove(colFilter.getFilterName());
 	}
 	
 	public static AfpRowFilter getFilter(String filterstring) {
@@ -41,12 +41,12 @@ public class AfpRowFilter {
 		return null;
 	}
 	
-	public AfpColumnFilter getColFilter(String colName){
-		if (colFilters.containsKey(colName)){
-			return colFilters.get(colName);
+	public AfpColumnFilter getColFilter(String colName, String nodeType){
+		if (colFilters.containsKey(nodeType + AfpColumnFilter.col_delimiter + colName)){
+			return colFilters.get(nodeType + AfpColumnFilter.col_delimiter + colName);
 		}
 		
-		AfpColumnFilter colFilter = new AfpColumnFilter(colName);
+		AfpColumnFilter colFilter = new AfpColumnFilter(colName, nodeType);
 		colFilters.put(colName, colFilter);
 		return colFilter;
 	}

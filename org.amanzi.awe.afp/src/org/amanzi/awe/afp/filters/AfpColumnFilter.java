@@ -11,29 +11,39 @@ import org.neo4j.graphdb.Node;
 
 public class AfpColumnFilter{
 	
-	static final private String col_delimiter = "--";
+	static final public String col_delimiter = "--";
 	
 	private String colName;
+	private String nodeType;
 	private ArrayList<String> values;
 	
 	
-	public AfpColumnFilter(String colName) {
+	public AfpColumnFilter(String colName, String nodeType) {
 		this.colName = colName;
+		this.nodeType = nodeType;
 		this.values = new ArrayList<String>();
 	}
 	
-	public AfpColumnFilter(String colName, ArrayList<String> values) {
+	public AfpColumnFilter(String colName, String nodeType, ArrayList<String> values) {
 		this.colName = colName;
+		this.nodeType = nodeType;
 		this.values = values;
 	}
 	
+	public String getNodeType() {
+		return this.nodeType;
+	}
 	
-	public String getColName() {
+	public String getFilterName() {
+		return nodeType + col_delimiter + colName;
+	}
+/*	public String getColName() {
 		return colName;
 	}
-
-	public void setColName(String colName) {
+*/
+	public void setColName(String colName, String nodeType) {
 		this.colName = colName;
+		this.nodeType = nodeType;
 	}
 
 	public ArrayList<String> getValues() {
@@ -55,6 +65,8 @@ public class AfpColumnFilter{
 	public String toString(){
 		StringBuffer sb = new StringBuffer();
 		sb.append(colName);
+		sb.append(col_delimiter);
+		sb.append(nodeType);
 		for (String val : values){
 			sb.append(col_delimiter);
 			sb.append(val);
@@ -66,10 +78,11 @@ public class AfpColumnFilter{
 	public static AfpColumnFilter getFilter(String filterstring) {
 		String[] tokens = filterstring.split(col_delimiter);
 		String colName = tokens[0];
-		AfpColumnFilter ret = new AfpColumnFilter(colName);
+		String nodeName = tokens[1];
+		AfpColumnFilter ret = new AfpColumnFilter(colName, nodeName);
 		
-		if(tokens.length > 0) {
-			for(int i=1; i < tokens.length; i++)
+		if(tokens.length > 1) {
+			for(int i=2; i < tokens.length; i++)
 				ret.addValue(tokens[i]);
 			return ret;
 		}
@@ -83,14 +96,14 @@ public class AfpColumnFilter{
 	 */
 	public boolean equal(Node n){
 		Object obj = null;
-		if (colName.equals("Site") || colName.equals("site")){
+		if (nodeType.compareTo(NodeTypes.SITE.getId()) ==0){
 			Node sectorNode = n.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
 			Node siteNode = sectorNode.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
 			if (siteNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.SITE.getId()))
 				obj = siteNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
 		}
 		
-		else if (colName.equals("Sector") || colName.equals("sector")){
+		else if (nodeType.compareTo(NodeTypes.SECTOR.getId()) ==0){
 			Node sectorNode = n.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
 			if (sectorNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.SECTOR.getId()))
 				obj = sectorNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
