@@ -195,8 +195,6 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 		    	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
 		    	
 		    	Node siteNode = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
-		    	this.addSectorUniqueProperties(node);
-				this.addSiteUniqueProperties(siteNode);
 				boolean includeFlag = true;
 		    	
 		    	for (Node trxNode: trxTraverser){
@@ -225,6 +223,8 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 			    			continue;
 			    	}
 			    	this.addTrxUniqueProperties(trxNode);
+			    	this.addSectorUniqueProperties(node);
+					this.addSiteUniqueProperties(siteNode);
 			    	
 		    	
 			    	TableItem item = new TableItem(filterTable, SWT.NONE);

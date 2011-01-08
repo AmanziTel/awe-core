@@ -176,8 +176,6 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 
 		    	Node siteNode = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
 		    	
-		    	this.addSectorUniqueProperties(node);
-				this.addSiteUniqueProperties(siteNode);
 		    	boolean includeFlag = true;
 		    	for (Node trxNode: trxTraverser){
 			    	for(AfpFrequencyDomainModel mod: model.getFreqDomains(false)){
@@ -202,6 +200,8 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 			    		if (!rowFilter.equal(trxNode)) 
 			    			continue;
 			    	}
+			    	this.addSectorUniqueProperties(node);
+					this.addSiteUniqueProperties(siteNode);
     		    	this.addTrxUniqueProperties(trxNode);
 		    		
 			    	if(trxCount <= 100){ 

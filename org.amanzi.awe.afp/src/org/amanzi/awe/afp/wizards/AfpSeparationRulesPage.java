@@ -9,6 +9,7 @@ import java.util.Vector;
 
 import org.amanzi.awe.afp.filters.AfpColumnFilter;
 import org.amanzi.awe.afp.filters.AfpRowFilter;
+import org.amanzi.awe.afp.models.AfpDomainModel;
 import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
 import org.amanzi.awe.afp.models.AfpHoppingMALDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
@@ -20,8 +21,11 @@ import org.amanzi.neo.services.enums.NodeTypes;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
@@ -52,6 +56,9 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 	private Table filterTableSite;
 	protected AfpRowFilter siteRowFilter;
 	protected AfpRowFilter sectorRowFilter;
+	protected  Shell parentShell;
+	private int sectorSepNodeCount;
+	private int siteSepNodeCount;
 	
 	TabFolder tabFolder;
 	
@@ -103,6 +110,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 	@Override
 	public void createControl(Composite parent) {
 		
+		parentShell = parent.getShell();
 		Composite thisParent = new Composite(parent, SWT.NONE);
    	 	thisParent.setLayout(new GridLayout(2, false));
 		
@@ -241,7 +249,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 		}
 		siteDomainLabels.clear();
 		
-		for(AfpSeparationDomainModel sectorDomainModel :model.getSectorSeparationDomains() ){
+		for(AfpSeparationDomainModel sectorDomainModel :model.getSectorSeparationDomains(true) ){
 			Label defaultSectorDomainLabel = new Label(sectorDomainsGroup, SWT.LEFT);
 			defaultSectorDomainLabel.setText(sectorDomainModel.getName());
 			//TODO: update the TRXs by default here
@@ -252,13 +260,13 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 	
 		sectorDomainsGroup.layout();
 
-		for(AfpSeparationDomainModel sectorDomainModel : model.getSectorSeparationDomains()) {
+		for(AfpSeparationDomainModel siteDomainModel : model.getSiteSeparationDomains(true)) {
 			Label defaultSiteDomainLabel = new Label(siteDomainsGroup, SWT.LEFT);
-			defaultSiteDomainLabel.setText(sectorDomainModel.getName());
+			defaultSiteDomainLabel.setText(siteDomainModel.getName());
 			//TODO: update the TRXs by default here
 			Label defaultSitesLabel = new Label(siteDomainsGroup, SWT.RIGHT);
 			defaultSitesLabel.setText("0");
-			siteDomainLabels.put(sectorDomainModel.getName(), new Label[]{defaultSiteDomainLabel, defaultSitesLabel});
+			siteDomainLabels.put(siteDomainModel.getName(), new Label[]{defaultSiteDomainLabel, defaultSitesLabel});
 		}
 		this.interChangeUniquePropertySet(false);
 		loadData(filterTableSite, siteRowFilter);
@@ -388,4 +396,123 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 			return this.getTrxUniqueValuesForProperty(headers_prop.get(colName));
 		}
 	}
+	@Override
+	public void widgetSelected(SelectionEvent e) {
+		if (e.widget.getData().equals(AfpWizardPage.ASSIGN)){
+			final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL|SWT.TITLE);
+			subShell.setText("Assign to Domain");
+			subShell.setLayout(new GridLayout(2, false));
+			subShell.setLocation(200, 200);
+			
+			Label infoLabel = new Label (subShell, SWT.LEFT);
+			//TODO update label to show correct no. of TRXs
+			//infoLabel.setText("Selected " + trxCount + " TRXs will be assigned to:");
+			//infoLabel.setLayoutData(new GridData(GridData.FILL, SWT.LEFT, true, false,2 ,1));
+			
+			Label domainLabel = new Label (subShell, SWT.LEFT);
+			domainLabel.setText("Select Domain");
+			domainLabel.setLayoutData(new GridData(GridData.FILL, SWT.LEFT, true, false,2 ,1));
+			
+			final Combo domainCombo = new Combo(subShell, SWT.DROP_DOWN | SWT.READ_ONLY);
+			ArrayList<String> modelNames = new ArrayList<String>();
+			if(tabFolder.getSelectionIndex() ==0) {
+				for (AfpSeparationDomainModel dm : model.getSectorSeparationDomains(false)){
+					modelNames.add(dm.getName());
+				}
+			} else {
+				for (AfpSeparationDomainModel dm : model.getSiteSeparationDomains(false)){
+					modelNames.add(dm.getName());
+				}
+			}
+			domainCombo.setItems(modelNames.toArray(new String[0]));
+			domainCombo.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 2, 1));
+			
+			Button selectButton = new Button(subShell, SWT.PUSH);
+			selectButton.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, false, false, 1, 1));
+			selectButton.setText("Assign");
+			selectButton.addSelectionListener(new SelectionAdapter(){
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					String domainName = domainCombo.getText();
+					if(tabFolder.getSelectionIndex() ==0) {
+						AfpDomainModel malModel = model.findDomainByName(model.DOMAIN_TYPES[2], domainName);
+						malModel.setFilters(sectorRowFilter.toString());
+						//malModel.setNumTRX(trxCount);
+						//model.setTotalRemainingMalTRX(model.getTotalRemainingMalTRX() - trxCount);
+						sectorRowFilter.clear();
+						loadData(filterTableSector, sectorRowFilter);
+					} else {
+						AfpDomainModel malModel = model.findDomainByName(model.DOMAIN_TYPES[3], domainName);
+						malModel.setFilters(siteRowFilter.toString());
+						//malModel.setNumTRX(trxCount);
+						//model.setTotalRemainingMalTRX(model.getTotalRemainingMalTRX() - trxCount);
+						siteRowFilter.clear();
+						loadData(filterTableSite, siteRowFilter);
+						
+					}
+					updateLabels();
+					subShell.dispose();
+				}
+			});
+			
+			Button cancelButton = new Button(subShell, SWT.PUSH);
+			cancelButton.setLayoutData(new GridData(GridData.END, GridData.BEGINNING, false, false, 1, 1));
+			cancelButton.setText("Cancel");
+			cancelButton.addSelectionListener(new SelectionAdapter(){
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					subShell.dispose();
+				}
+			});
+			
+			subShell.pack();
+			subShell.open();
+		}
+		
+		else if (e.widget.getData().equals(AfpWizardPage.CLEAR)){
+			sectorRowFilter.clear();
+			loadData(filterTableSector, sectorRowFilter);
+		}
+			
+	}
+	
+	public void updateLabels(){
+		if(tabFolder.getSelectionIndex() ==0) {
+			for(Label[] labels: sectorDomainLabels.values() ){
+				for (Label label : labels){
+					label.dispose();
+				}
+			}
+			sectorDomainLabels.clear();
+			
+			for(AfpSeparationDomainModel domainModel :model.getSectorSeparationDomains(true)) {
+				Label defaultDomainLabel = new Label(sectorDomainsGroup, SWT.LEFT);
+				defaultDomainLabel.setText(domainModel.getName());
+				Label defaultTRXsLabel = new Label(sectorDomainsGroup, SWT.RIGHT);
+				defaultTRXsLabel.setText("" + domainModel.getNumTRX());
+				sectorDomainLabels.put(domainModel.getName(), new Label[]{defaultDomainLabel, defaultTRXsLabel});
+			}
+			
+			sectorDomainsGroup.layout();
+		} else {
+			for(Label[] labels: siteDomainLabels.values() ){
+				for (Label label : labels){
+					label.dispose();
+				}
+			}
+			siteDomainLabels.clear();
+			
+			for(AfpSeparationDomainModel domainModel :model.getSiteSeparationDomains(true)) {
+				Label defaultDomainLabel = new Label(siteDomainsGroup, SWT.LEFT);
+				defaultDomainLabel.setText(domainModel.getName());
+				Label defaultTRXsLabel = new Label(siteDomainsGroup, SWT.RIGHT);
+				defaultTRXsLabel.setText("" + domainModel.getNumTRX());
+				siteDomainLabels.put(domainModel.getName(), new Label[]{defaultDomainLabel, defaultTRXsLabel});
+			}
+			
+			siteDomainsGroup.layout();
+
+		}
+	}
+
 }

@@ -80,7 +80,8 @@ public class AfpModel {
 			{"SY TCH", "SY TCH"}
 			};
 	public static final String DEFAULT_MAL_NAME = "Default MAL";
-	
+	public static final String DEFAULT_SECTOR_SEP_NAME = "Default Separations";
+	public static final String DEFAULT_SITE_SEP_NAME = "Default Separations";
 	private int totalTRX;
 	private int totalRemainingTRX;
 	private int totalRemainingMalTRX;
@@ -695,6 +696,22 @@ public class AfpModel {
 				}
 			}
 		}
+		if (type.equals(DOMAIN_TYPES[2])){
+			for(AfpSeparationDomainModel malModel : this.sectorSeparationDomains.values()){
+				if(malModel.getName().equals(name)){
+					model = malModel;
+					break;
+				}
+			}
+		}
+		if (type.equals(DOMAIN_TYPES[3])){
+			for(AfpSeparationDomainModel malModel : this.siteSeparationDomains.values()){
+				if(malModel.getName().equals(name)){
+					model = malModel;
+					break;
+				}
+			}
+		}
 		
 		return model;
 	}
@@ -769,7 +786,7 @@ public class AfpModel {
 	private void addDefaultSiteSeparationDomains() {
 		// add free domains
 		AfpSeparationDomainModel d = new AfpSeparationDomainModel();
-		d.setName("Default Separations");
+		d.setName(DEFAULT_SITE_SEP_NAME);
 		d.setFree(true);
 		siteSeparationDomains.put(d.getName(),d);
 	}
@@ -778,10 +795,14 @@ public class AfpModel {
 	/**
 	 * @return the siteSeparationDomains
 	 */
-	public Collection<AfpSeparationDomainModel> getSiteSeparationDomains() {
+	public Collection<AfpSeparationDomainModel> getSiteSeparationDomains(boolean getFree) {
 		addDefaultSiteSeparationDomains();
 		ArrayList<AfpSeparationDomainModel> l = new ArrayList<AfpSeparationDomainModel>();
 		for(AfpSeparationDomainModel d:this.siteSeparationDomains.values()) {
+			if(!getFree) {
+				if(d.getName().equals(DEFAULT_SECTOR_SEP_NAME))
+					continue;
+			}
 			l.add(new AfpSeparationDomainModel(d));
 		}
 		
@@ -800,7 +821,7 @@ public class AfpModel {
 	private void addDefaultSectorSeparationDomains() {
 		// add free domains
 		AfpSeparationDomainModel d = new AfpSeparationDomainModel();
-		d.setName("Default Separations");
+		d.setName(DEFAULT_SECTOR_SEP_NAME);
 		d.setFree(true);
 		sectorSeparationDomains.put(d.getName(), d);
 	}
@@ -810,10 +831,14 @@ public class AfpModel {
 	/**
 	 * @return the sectorSeparationDomains
 	 */
-	public Collection<AfpSeparationDomainModel> getSectorSeparationDomains() {
+	public Collection<AfpSeparationDomainModel> getSectorSeparationDomains(boolean getFree) {
 		addDefaultSectorSeparationDomains();
 		ArrayList<AfpSeparationDomainModel> l = new ArrayList<AfpSeparationDomainModel>();
 		for(AfpSeparationDomainModel d:this.sectorSeparationDomains.values()) {
+			if(!getFree)
+				if(d.getName().equals(DEFAULT_SITE_SEP_NAME))
+					continue;
+
 			l.add(new AfpSeparationDomainModel(d));
 		}
 		
@@ -1344,12 +1369,12 @@ public class AfpModel {
 						service);
 			}
 
-			for (AfpSeparationDomainModel separationsModel : getSectorSeparationDomains()) {
+			for (AfpSeparationDomainModel separationsModel : getSectorSeparationDomains(true)) {
 				createSectorSeparationDomainNode(afpNode,
 						separationsModel, service);
 			}
 
-			for (AfpSeparationDomainModel separationsModel : getSiteSeparationDomains()) {
+			for (AfpSeparationDomainModel separationsModel : getSiteSeparationDomains(true)) {
 				createSiteSeparationDomainNode(afpNode,
 						separationsModel, service);
 			}
