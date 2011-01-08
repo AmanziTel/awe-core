@@ -30,7 +30,7 @@ public class AfpMalSelector extends AfpDomainSelector {
 		
 		this.createUI(action, " MAL Domain",model.getAllMALDomainNames());
 		if (action.equals("Edit") || action.equals("Delete")){
-			for(AfpHoppingMALDomainModel d: model.getMalDomains()) {
+			for(AfpHoppingMALDomainModel d: model.getMalDomains(true)) {
 				this.domain2Edit = d;
 				domainModel =d;
 				break;

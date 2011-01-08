@@ -79,6 +79,7 @@ public class AfpModel {
 			{"SY TCH", "Non/BB TCH"},
 			{"SY TCH", "SY TCH"}
 			};
+	public static final String DEFAULT_MAL_NAME = "Default MAL";
 	
 	private int totalTRX;
 	private int totalRemainingTRX;
@@ -229,7 +230,7 @@ public class AfpModel {
 			for (AfpFrequencyDomainModel dm : getFreqDomains(false)){
 				totalRemainingTRX -= dm.getNumTRX();
 			}
-			for (AfpHoppingMALDomainModel dm : getMalDomains()){
+			for (AfpHoppingMALDomainModel dm : getMalDomains(false)){
 				totalRemainingMalTRX -= dm.getNumTRX();
 			}
 		}
@@ -742,19 +743,22 @@ public class AfpModel {
 	private void addDefaultMalDomains() {
 		// add free domains
 		AfpHoppingMALDomainModel d = new AfpHoppingMALDomainModel();
-		d.setName("Default MAL");
+		d.setName(DEFAULT_MAL_NAME);
 		d.setFree(true);
-//		d.setNumTRX(totalRemainingMalTRX);
+		d.setNumTRX(totalRemainingMalTRX);
 		malDomains.put(d.getName(),d);
 	}
 	
 	/**
 	 * @return the malDomains
 	 */
-	public Collection<AfpHoppingMALDomainModel> getMalDomains() {
+	public Collection<AfpHoppingMALDomainModel> getMalDomains(boolean getFree) {
 		addDefaultMalDomains();
 		ArrayList<AfpHoppingMALDomainModel> l = new ArrayList<AfpHoppingMALDomainModel>();
 		for(AfpHoppingMALDomainModel d:this.malDomains.values()) {
+			if (!getFree)
+				if(d.getName().equals(DEFAULT_MAL_NAME))
+					continue;
 			l.add(new AfpHoppingMALDomainModel(d));
 		}
 		
@@ -1176,7 +1180,7 @@ public class AfpModel {
 	public String[] getAllMALDomainNames(){
 		String[] names = new String[malDomains.size()];
 		int i = 0;
-		for(AfpHoppingMALDomainModel malDomain : getMalDomains()){
+		for(AfpHoppingMALDomainModel malDomain : getMalDomains(true)){
 			names[i] = malDomain.getName();
 			i++;	
 		}
@@ -1335,7 +1339,7 @@ public class AfpModel {
 					createFrequencyDomainNode(afpNode, frequencyModel, service);
 			}
 
-			for (AfpHoppingMALDomainModel malModel : getMalDomains()) {
+			for (AfpHoppingMALDomainModel malModel : getMalDomains(true)) {
 				createHoppingMALDomainNode(afpNode, malModel,
 						service);
 			}
@@ -1752,9 +1756,9 @@ public class AfpModel {
 		}
 		
 		sb.append("\nMAL Domains: \n");
-		for(AfpHoppingMALDomainModel malDomainModel :malDomains.values()) {
+		for(AfpHoppingMALDomainModel malDomainModel :getMalDomains(true)) {
 			if(malDomainModel != null) {
-				sb. append(malDomainModel.getName() + ":  AssignedTRXs-0" + "\n");
+				sb. append(malDomainModel.getName() + ":  AssignedTRXs-" + malDomainModel.getNumTRX() + "\n\tFilters: " + malDomainModel.getFilters() + "\n");
 			}
 		}
 		

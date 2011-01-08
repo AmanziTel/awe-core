@@ -151,7 +151,7 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 		}
 		domainLabels.clear();
 		
-		for(AfpHoppingMALDomainModel domainModel :model.getMalDomains()) {
+		for(AfpHoppingMALDomainModel domainModel :model.getMalDomains(true)) {
 			Label defaultDomainLabel = new Label(malDomainsGroup, SWT.LEFT);
 			defaultDomainLabel.setText(domainModel.getName());
 			Label defaultTRXsLabel = new Label(malDomainsGroup, SWT.RIGHT);
@@ -201,7 +201,7 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 		    	
 		    	for (Node trxNode: trxTraverser){
 		    		
-		    		for(AfpHoppingMALDomainModel mod: model.getMalDomains()){
+		    		for(AfpHoppingMALDomainModel mod: model.getMalDomains(false)){
 			    		String filterString = mod.getFilters();
 			    		if (filterString != null && !filterString.trim().isEmpty()){
 				    		AfpRowFilter rf = AfpRowFilter.getFilter(mod.getFilters());
@@ -317,7 +317,7 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 			
 			final Combo domainCombo = new Combo(subShell, SWT.DROP_DOWN | SWT.READ_ONLY);
 			ArrayList<String> modelNames = new ArrayList<String>();
-			for (AfpHoppingMALDomainModel dm : model.getMalDomains()){
+			for (AfpHoppingMALDomainModel dm : model.getMalDomains(false)){
 				modelNames.add(dm.getName());
 			}
 			domainCombo.setItems(modelNames.toArray(new String[0]));
