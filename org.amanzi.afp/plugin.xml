@@ -13,9 +13,9 @@
    <extension point="org.eclipse.ui.perspectives">
       <perspective
             class="org.amanzi.afp.PerspectiveFactory"
-            icon="icons/obj16/awe_icon_16.png"
+            icon="icons/obj16/afp_16.png"
             id="org.amanzi.afp.perspective"
-            name="Amanzi Wireless Explorer">
+            name="Amanzi Wireless Explorer - AFP">
       </perspective>
    </extension>
    <extension point="org.eclipse.ui.perspectiveExtensions">
@@ -134,7 +134,7 @@
          </property>
          <property
                name="aboutText"
-               value="Amanzi Wireless Explorer&#x0A;&#x0A;This is an open source platform for data management, planning and optimization&#x0A;in cellular radio networks. It is distributed for free and without warranty. It is based&#x0A;on software written by AmanziTel AB, Refractions Research, Neotechnology, the&#x0A;Eclipse Foundation and others.&#x0A;&#x0A;Please refer to the http://awe.amanzi.org/license.html  for complete licensing&#x0A;information.&#x0A;&#x0A;For more information and support visit http://www.amanzitel.com/page/AWE">
+               value="Opti-Test AFP&#x0A;&#x0A;This automatic frequency planning application is developed by Triangulum and&#x0A;AmanziTel, and has been developed on AWE, the Amanzi Wireless Explorer&#x0A;open source platform for data management, planning and optimization in&#x0A;cellular radio networks. It is distributed for free and without warranty. It is based&#x0A;on software written by AmanziTel AB, Refractions Research, Neotechnology, the&#x0A;Eclipse Foundation and others.&#x0A;&#x0A;Please refer to the http://awe.amanzi.org/license.html  for complete licensing&#x0A;information for the AWE platform.&#x0A;&#x0A;For more information and support visit http://www.amanzitel.com/page/AWE">
          </property>
          <property
                name="startupForegroundColor"

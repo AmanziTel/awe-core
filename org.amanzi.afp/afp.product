@@ -6,15 +6,17 @@
    <aboutInfo>
       <image path="/org.amanzi.afp/nl/en/about.gif"/>
       <text>
-         Amanzi Wireless Explorer
+         Opti-Test AFP
 
-This is an open source platform for data management, planning and optimization
-in cellular radio networks. It is distributed for free and without warranty. It is based
+This automatic frequency planning application is developed by Triangulum and
+AmanziTel, and has been developed on AWE, the Amanzi Wireless Explorer
+open source platform for data management, planning and optimization in
+cellular radio networks. It is distributed for free and without warranty. It is based
 on software written by AmanziTel AB, Refractions Research, Neotechnology, the
 Eclipse Foundation and others.
 
 Please refer to the http://awe.amanzi.org/license.html  for complete licensing
-information.
+information for the AWE platform.
 
 For more information and support visit http://www.amanzitel.com/page/AWE
       </text>
@@ -34,13 +36,14 @@ For more information and support visit http://www.amanzitel.com/page/AWE
       startupMessageRect="7,230,445,16"
       startupForegroundColor="FFFFFF" />
    <launcher name="afp">
-      <linux icon="/org.amanzi.afp/icons/opti-test_128.xpm"/>
+      <linux icon="/org.amanzi.afp/icons/afp_128.xpm"/>
       <solaris/>
       <win useIco="true">
          <ico path="/org.amanzi.afp/icons/afp.ico"/>
          <bmp/>
       </win>
    </launcher>
+
 
    <vm>
       <linux type="jre">jre1.6.0_11_gdal</linux>
@@ -53,6 +56,7 @@ For more information and support visit http://www.amanzitel.com/page/AWE
    <features>
       <feature id="org.amanzi.afp" version="1.0.0"/>
       <feature id="org.eclipse.rcp" version="3.3.3.r33x_r20080129-8y8eE9UEUWI6qujeED0xT7bc"/>
+      <feature id="org.eclipse.rcp.nls1" version="3.2.0.v200606220026"/>
       <feature id="org.amanzi.splash.extras_feature" version="1.0.0.qualifier"/>
       <feature id="org.amanzi.splash" version="1.0.0"/>
       <feature id="org.neo4j.neoclipse" version="0.4.1"/>
