@@ -1654,12 +1654,12 @@ public class AfpModel {
 	    	parameters.put(ControlFileProperties.CELL_CARDINALITY, "61");
 	    	StringBuffer carriers = new StringBuffer();
 	    	int cnt =0;
+			boolean first = true;
 	    	for(int i=0; i< frequencyBands.length;i++) {
 	    		if(frequencyBands[i]) {
 	    			String freq = this.availableFreq[i];
 	    			String[] franges = freq.split(",");
 	    			
-	    			boolean first = true;
 	    			String[] freqList = rangeArraytoArray(franges);
 	    			for(String f: freqList) {
 	    				if(!first) {
