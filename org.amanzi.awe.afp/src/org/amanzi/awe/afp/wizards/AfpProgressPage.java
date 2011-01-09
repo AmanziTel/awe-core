@@ -90,6 +90,8 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 	private boolean[] seriesVisible = new boolean[]{ true,true,true,true,true,true,true,true};
 	private Button[] paramButtons = new Button[8];
 	private Table progressTable;
+	Group summaryGroup;
+	Label[] summaryData = new Label[5];
 	
 	public AfpProgressPage(String pageName, AfpModel model, String desc) {
 		super(pageName, model);
@@ -105,23 +107,24 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
    	 	main.setLayout(new GridLayout(2, false));
    	 	main.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 2, 2));
    	 	
-   	 	Group summaryGroup = new Group(main, SWT.NONE);
+   	 	summaryGroup = new Group(main, SWT.NONE);
    	 	summaryGroup.setLayout(new GridLayout(2, false));
    	 	summaryGroup.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true, 1, 1));
    	 	summaryGroup.setText("Summary");
    	 	
    	 	new Label(summaryGroup, SWT.LEFT).setText("Selected Sectors:");
-   	 	new Label(summaryGroup, SWT.LEFT).setText("0");
+   	 	summaryData[0] = new Label(summaryGroup, SWT.LEFT);
 	   	new Label(summaryGroup, SWT.LEFT).setText("Selected TRXs:");
-	   	new Label(summaryGroup, SWT.LEFT).setText("0");
+	   	summaryData[1] = new Label(summaryGroup, SWT.LEFT);
 	   	new Label(summaryGroup, SWT.LEFT).setText("BCCH TRXs:");
-	   	new Label(summaryGroup, SWT.LEFT).setText("0");
+	   	summaryData[2] = new Label(summaryGroup, SWT.LEFT);
 	   	new Label(summaryGroup, SWT.LEFT).setText("TCH Non/BB Hopping TRXs");
-	   	new Label(summaryGroup, SWT.LEFT).setText("0");
+	   	summaryData[3] = new Label(summaryGroup, SWT.LEFT);
 	   	new Label(summaryGroup, SWT.LEFT).setText("TCH SY Hopping TRXs");
-	   	new Label(summaryGroup, SWT.LEFT).setText("0");
-   	 	
-   	 	
+	   	summaryData[4] = new Label(summaryGroup, SWT.LEFT);
+	   	for(Label l: summaryData) {
+	   		l.setText("0");
+	   	}
    	 	
 	   	TabFolder tabFolder =new TabFolder(main, SWT.NONE | SWT.BORDER);
 		tabFolder.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1, 2));
@@ -287,6 +290,22 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 	
 	@Override
 	public void refreshPage() {
+	    int[][] items = model.getSelectedCount();
+	    int[] totals = new int[items.length];
+
+	    for(int i=0;i< items.length;i++) {
+	    	totals[i] =0;
+	    	for(int item: items[i]) {
+	    		totals[i]+= item;
+	    	}
+	    }
+	    int i=0;
+	    for(Label l: summaryData) {
+	   		l.setText(""+totals[i]);
+	   		i++;
+	   	}
+	    summaryGroup.layout();
+
 		executeAfpEngine();
 	}
 	public void addProgressTableItem (String[] itemValues){

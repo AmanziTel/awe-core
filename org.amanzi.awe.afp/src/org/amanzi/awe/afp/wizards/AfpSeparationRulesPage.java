@@ -59,6 +59,8 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 	protected  Shell parentShell;
 	private int siteCount;
     private int sectorCount;
+    int remainingSectors = 0;
+    int remainingSites =0;
 	
 	TabFolder tabFolder;
 	
@@ -184,8 +186,10 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
     		public void widgetSelected(org.eclipse.swt.events.SelectionEvent event) {
     			// interchange the unique value cache
     			if(tabFolder.getSelectionIndex() == 0) {
+    				updateLabels();
     				interChangeUniquePropertySet(true);
     			} else {
+    				updateLabels();
     				interChangeUniquePropertySet(false);
     			}
     			
@@ -314,7 +318,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 //		    	mod.setNumTRX(0);
 //		    }
 //		    int remainingSites = 0;
-		    int remainingSectors = 0;
+		    remainingSectors = 0;
 
 		    for (Node sectorNode : sectorTraverser) {
 		    	// temp fix.
@@ -410,7 +414,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 		    for(AfpSeparationDomainModel mod: model.getSiteSeparationDomains(false)){
 		    	mod.setNumTRX(0);
 		    }
-		    int remainingSites = 0;
+		    remainingSites = 0;
 
 		    for (Node sectorNode : sectorTraverser) {
 		    	// temp fix.
@@ -624,6 +628,8 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 				defaultDomainLabel.setText(domainModel.getName());
 				Label defaultTRXsLabel = new Label(sectorDomainsGroup, SWT.RIGHT);
 				defaultTRXsLabel.setText("" + domainModel.getNumTRX());
+				if (domainModel.getName().equals(AfpModel.DEFAULT_SECTOR_SEP_NAME))
+					defaultTRXsLabel.setText("" + remainingSectors);
 				sectorDomainLabels.put(domainModel.getName(), new Label[]{defaultDomainLabel, defaultTRXsLabel});
 			}
 			
@@ -641,6 +647,8 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 				defaultDomainLabel.setText(domainModel.getName());
 				Label defaultTRXsLabel = new Label(siteDomainsGroup, SWT.RIGHT);
 				defaultTRXsLabel.setText("" + domainModel.getNumTRX());
+				if (domainModel.getName().equals(AfpModel.DEFAULT_SITE_SEP_NAME))
+					defaultTRXsLabel.setText("" + remainingSites);
 				siteDomainLabels.put(domainModel.getName(), new Label[]{defaultDomainLabel, defaultTRXsLabel});
 			}
 			
