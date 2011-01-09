@@ -44,6 +44,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
@@ -162,11 +163,7 @@ public class NeighbourLoader {
 //            lastSector = neighbour;
             int commit = 0;
             while ((line = reader.readLine()) != null) {
-            	if(this.isInterferenceLoader) {
-            		header.parseInterferenceLine(line, network, baseName, neighbour);
-            	} else {
-            		header.parseNeighborLine(line, network, baseName, neighbour);
-            	}
+                header.parseLine(line, network, baseName, neighbour, isInterferenceLoader);
                 if (monitor.isCanceled())
                     break;
                 perc = stream.percentage();
@@ -372,9 +369,15 @@ public class NeighbourLoader {
          * @param fileName - neighbour name
          * @param network - network node
          */
-        public void parseNeighborLine(String line, Node network, String fileName, Node neighbour) {
+        public void parseLine(String line, Node network, String fileName, Node neighbour, boolean isInterference) {
             String fields[] = line.split("\\t");
             lineNumber++;
+            RelationshipType relType2Proxy = NetworkRelationshipTypes.NEIGHBOURS;
+            RelationshipType relTypeProxy2Proxy = NetworkRelationshipTypes.NEIGHBOUR;
+            if(isInterference) {
+                relType2Proxy = NetworkRelationshipTypes.INTERFERENCE;
+                relTypeProxy2Proxy = NetworkRelationshipTypes.INTERFERS;
+            }
             Transaction tx = neo.beginTx();
         	try {
                 String servCounName = NeoUtils.getNeighbourPropertyName(fileName);
@@ -400,12 +403,12 @@ public class NeighbourLoader {
                             Node node = currentPos.currentNode();
                             return node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString().equals(proxySectorName);
                         }
-                    }, NetworkRelationshipTypes.NEIGHBOURS, Direction.OUTGOING)){
+                    }, relType2Proxy, Direction.OUTGOING)){
                     		proxyServer = node;
                     		break;
                     }
                     if (proxyServer == null) {
-                    	proxyServer = NeoUtils.createProxySector(serverNode, fileName, neighbour, lastSector, NetworkRelationshipTypes.NEIGHBOURS, neo);
+                    	proxyServer = NeoUtils.createProxySector(serverNode, fileName, neighbour, lastSector, relType2Proxy, neo);
                     	index.index(proxyServer, NeoUtils.getLuceneIndexKeyByProperty(neighbour, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS), proxySectorName);
                     	lastSector = proxyServer;
                     }
@@ -419,12 +422,12 @@ public class NeighbourLoader {
                             Node node = currentPos.currentNode();
                             return node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString().equals(proxyNeighbourName);
                         }
-                	}, NetworkRelationshipTypes.NEIGHBOURS, Direction.OUTGOING)){
+                	}, relType2Proxy, Direction.OUTGOING)){
                     		proxyNeighbour = node;
                     		break;
                     }
                     if (proxyNeighbour == null) {
-                    	proxyNeighbour = NeoUtils.createProxySector(neighbourNode, fileName, neighbour, lastSector, NetworkRelationshipTypes.NEIGHBOURS, neo);
+                    	proxyNeighbour = NeoUtils.createProxySector(neighbourNode, fileName, neighbour, lastSector, relType2Proxy, neo);
                     	index.index(proxyNeighbour, NeoUtils.getLuceneIndexKeyByProperty(neighbour, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS), proxyNeighbourName);
                     	lastSector = proxyNeighbour;
                     }
@@ -434,7 +437,7 @@ public class NeighbourLoader {
                     return;
                 }
 
-                Relationship relation = proxyServer.createRelationshipTo(proxyNeighbour, NetworkRelationshipTypes.NEIGHBOUR);
+                Relationship relation = proxyServer.createRelationshipTo(proxyNeighbour, relTypeProxy2Proxy);
 //                relation.setProperty(INeoConstants.NEIGHBOUR_NAME, fileName);
                 for (Integer index : indexMap.keySet()) {
                     String value = fields[index];
@@ -453,88 +456,7 @@ public class NeighbourLoader {
             }
 
         }
-        public void parseInterferenceLine(String line, Node network, String fileName, Node neighbour) {
-            String fields[] = line.split("\\t");
-            lineNumber++;
-            Transaction tx = neo.beginTx();
-        	try {
-                String servCounName = NeoUtils.getNeighbourPropertyName(fileName);
-                serverNodeName.setFieldValues(fields);
-                neighbourNodeName.setFieldValues(fields);
-                Node serverNode = getSectorNodeById(serverNodeName);
-                if (serverNode == null) {
-                    if (addMissing(missingServers, serverNodeName) < 2)
-                        NeoLoaderPlugin.error("Could not find server from line: " + line);
-                    return;
-                }
 
-                Node neighbourNode = null;
-                Node proxyServer = null;
-                Node proxyNeighbour = null;
-
-                if (serverNode != null) {
-                	proxySectorName = fileName + PROXY_NAME_SEPARATOR + serverNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-                    neighbourNode = getSectorNodeById(neighbourNodeName);
-                    for (Node node: serverNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-                    	@Override
-                        public boolean isReturnableNode(TraversalPosition currentPos) {
-                            Node node = currentPos.currentNode();
-                            return node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString().equals(proxySectorName);
-                        }
-                    }, NetworkRelationshipTypes.INTERFERENCE, Direction.OUTGOING)){
-                    		proxyServer = node;
-                    		break;
-                    }
-                    if (proxyServer == null) {
-                    	proxyServer = NeoUtils.createProxySector(serverNode, fileName, neighbour, lastSector, NetworkRelationshipTypes.INTERFERENCE, neo);
-                    	index.index(proxyServer, NeoUtils.getLuceneIndexKeyByProperty(neighbour, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS), proxySectorName);
-                    	lastSector = proxyServer;
-                    }
-                }
-                
-                if (neighbourNode != null){
-                	proxyNeighbourName = fileName + PROXY_NAME_SEPARATOR + neighbourNode.getProperty(INeoConstants.PROPERTY_NAME_NAME);
-                	for (Node node: neighbourNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
-                		@Override
-                        public boolean isReturnableNode(TraversalPosition currentPos) {
-                            Node node = currentPos.currentNode();
-                            return node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString().equals(proxyNeighbourName);
-                        }
-                	}, NetworkRelationshipTypes.INTERFERENCE, Direction.OUTGOING)){
-                    		proxyNeighbour = node;
-                    		break;
-                    }
-                    if (proxyNeighbour == null) {
-                    	proxyNeighbour = NeoUtils.createProxySector(neighbourNode, fileName, neighbour, lastSector, NetworkRelationshipTypes.INTERFERENCE, neo);
-                    	index.index(proxyNeighbour, NeoUtils.getLuceneIndexKeyByProperty(neighbour, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS), proxyNeighbourName);
-                    	lastSector = proxyNeighbour;
-                    }
-                } else {
-                    if (addMissing(missingNeighbours, neighbourNodeName) < 2)
-                        NeoLoaderPlugin.error("Could not find neighbour from line: " + line);
-                    return;
-                }
-
-                Relationship relation = proxyServer.createRelationshipTo(proxyNeighbour, NetworkRelationshipTypes.INTERFERS);
-//                relation.setProperty(INeoConstants.NEIGHBOUR_NAME, fileName);
-                for (Integer index : indexMap.keySet()) {
-                    String value = fields[index];
-                    if (value.length() > 0) {
-                        saveValue(relation, index, value);
-                    }
-                }
-                // count++;
-                // pairServ.setRight(count);
-                updateCount(serverNode, servCounName);
-                tx.success();
-            } catch (Exception e) {
-                NeoLoaderPlugin.error(line + "\n" + e.getLocalizedMessage());
-            } finally {
-                tx.finish();
-            }
-
-        }
-        
         private int addMissing(HashMap<String, Integer> missing, NodeName nodeName) {
             String name = nodeName.getName();
             Integer count = missing.get(name);
