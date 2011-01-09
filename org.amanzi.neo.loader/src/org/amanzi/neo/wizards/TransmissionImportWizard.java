@@ -51,7 +51,7 @@ public class TransmissionImportWizard extends Wizard implements IImportWizard {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 TransmissionLoader transmissionLoader;
-                transmissionLoader = new TransmissionLoader(NeoUtils.getSimpleNodeName(mainPage.getNetworkNode(),""), mainPage.getFileName(), NeoServiceProviderUi
+                transmissionLoader = new TransmissionLoader(NeoUtils.getNodeName(mainPage.getNetworkNode()), mainPage.getFileName(), NeoServiceProviderUi
                         .getProvider().getService());
                 try {
                     transmissionLoader.run(monitor);

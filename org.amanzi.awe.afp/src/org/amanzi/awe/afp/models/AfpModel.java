@@ -4,18 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
-import java.util.Vector;
 
 import org.amanzi.awe.afp.ControlFileProperties;
 import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.executors.AfpProcessProgress;
-import org.amanzi.awe.afp.filters.AfpFilter;
-import org.amanzi.awe.afp.filters.AfpRowFilter;
-import org.amanzi.awe.afp.wizards.AfpLoadNetworkPage;
-import org.amanzi.awe.afp.wizards.AfpWizardUtils;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
@@ -23,10 +16,6 @@ import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.neo.services.utils.Pair;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -42,7 +31,6 @@ public class AfpModel {
 
 	protected Node datasetNode;
 	protected Node afpNode;
-	private final GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
 	private static final String AFP_NODE_NAME = "afp-dataset";
 
 	private AfpProcessExecutor afpJob;
@@ -111,7 +99,6 @@ public class AfpModel {
 	
 	//Page 3 params
 	HashMap<String,AfpFrequencyDomainModel> freqDomains = new HashMap<String,AfpFrequencyDomainModel>();
-	Set TRXDomain;
 	
 	//Page 4 params
 	HashMap<String,AfpHoppingMALDomainModel> malDomains= new HashMap<String,AfpHoppingMALDomainModel>();
@@ -299,10 +286,10 @@ public class AfpModel {
 
     public String[] getNetworkDatasets() {
         networkNodes = new HashMap<String, Node>();
-        for (Node root : NeoUtils.getAllRootTraverser(service, null)) {
+        for (Node root : NeoUtils.getAllRootTraverser(NeoServiceProviderUi.getProvider().getService(), null)) {
         	
             if (NodeTypes.NETWORK.checkNode(root)) {
-                networkNodes.put(NeoUtils.getNodeName(root, service), root);
+                networkNodes.put(NeoUtils.getNodeName(root), root);
             }
         }
         return networkNodes.keySet().toArray(new String[0]);
@@ -315,29 +302,25 @@ public class AfpModel {
     
     public String[] getAfpDatasets(Node networkNode) {
         afpNodes = new HashMap<String, Node>();
-        Transaction tx = service.beginTx();
-        try {
-        	Traverser traverser = networkNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
+    	Traverser traverser = networkNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
 
-				@Override
-				public boolean isReturnableNode(TraversalPosition currentPos) {
-					if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.AFP.getId()))
-						return true;
-					return false;
-				}
-        		
-        	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
-            for (Node afpNode : traverser) {
-            	
-                if (NodeTypes.AFP.checkNode(afpNode)) {
-                    afpNodes.put(NeoUtils.getNodeName(afpNode, service), afpNode);
-                }
+			@Override
+			public boolean isReturnableNode(TraversalPosition currentPos) {
+				if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.AFP.getId()))
+					return true;
+				return false;
+			}
+    		
+    	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+        for (Node afpNode : traverser) {
+        	
+            if (NodeTypes.AFP.checkNode(afpNode)) {
+                afpNodes.put(NeoUtils.getNodeName(afpNode), afpNode);
             }
-        } finally {
-            tx.finish();
         }
         return afpNodes.keySet().toArray(new String[0]);
     }
+
     public boolean hasValidNetworkDataset() {
 	    if (datasetNode == null) {
 	            return false;
@@ -1336,8 +1319,8 @@ public class AfpModel {
 	 * Write all user selected data to database
 	 */
 	public void saveUserData() {
-		
-		Transaction tx = this.service.beginTx();
+		GraphDatabaseService service = datasetNode.getGraphDatabase();
+		Transaction tx = service.beginTx();
 		try {
 			if (afpNode == null) {
 				afpNode = service.createNode();
@@ -1679,7 +1662,7 @@ public class AfpModel {
 	    	parameters.put(ControlFileProperties.USE_TRAFFIC, "1");
 	    	parameters.put(ControlFileProperties.USE_SO_NEIGHBOURS, "1");
 	    	parameters.put(ControlFileProperties.DECOMPOSE_CLIQUES, "0");
-			afpJob = new AfpProcessExecutor("Execute Afp Process", datasetNode,this.afpNode, service, parameters);
+			afpJob = new AfpProcessExecutor("Execute Afp Process", datasetNode, this.afpNode, parameters);
 			afpJob.setProgress(progress);
 			//afpJob.schedule();
     	}

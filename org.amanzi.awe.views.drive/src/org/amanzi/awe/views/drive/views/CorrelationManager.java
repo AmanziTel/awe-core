@@ -576,9 +576,9 @@ public class CorrelationManager extends ViewPart implements INeoServiceProviderL
             this.count = count;
             this.startTime = startTime;
             this.endTime = endTime;
-            networkName = NeoUtils.getSimpleNodeName(networkNode, "");
+            networkName = NeoUtils.getNodeName(networkNode);
             driveNode = dataset;
-            driveName = NeoUtils.getSimpleNodeName(driveNode, "");
+            driveName = NeoUtils.getNodeName(driveNode);
         }
 
         /**

@@ -354,10 +354,10 @@ public class TransmissionView extends ViewPart {
             // try {
             RelationWrapper relation = (RelationWrapper)obj;
             if (index == 0) {
-            	return NeoUtils.getSimpleNodeName(NeoUtils.getNodeFromProxy(relation.getServeNode(), NetworkRelationshipTypes.TRANSMISSIONS, graphDatabaseService), "");
+            	return NeoUtils.getNodeName(NeoUtils.getNodeFromProxy(relation.getServeNode(), NetworkRelationshipTypes.TRANSMISSIONS, graphDatabaseService));
 //                return NeoUtils.getSimpleNodeName(relation.getServeNode(), "");
             } else if (index == 1) {
-            	return NeoUtils.getSimpleNodeName(NeoUtils.getNodeFromProxy(relation.getNeighbourNode(), NetworkRelationshipTypes.TRANSMISSIONS, graphDatabaseService), "");
+            	return NeoUtils.getNodeName(NeoUtils.getNodeFromProxy(relation.getNeighbourNode(), NetworkRelationshipTypes.TRANSMISSIONS, graphDatabaseService));
 //                return NeoUtils.getSimpleNodeName(relation.getNeighbourNode(), "");
             } else {
                 return relation.getRelation().getProperty(columns.get(index), "").toString();
@@ -559,12 +559,12 @@ public class TransmissionView extends ViewPart {
             public int compare(RelationWrapper o1, RelationWrapper o2) {
                 if (sortOrder == 0) {
                     // TODO cache node name in RelationWrapper?
-                    String nameE1 = NeoUtils.getSimpleNodeName(o1.getServeNode(), "");
-                    String nameE2 = NeoUtils.getSimpleNodeName(o2.getServeNode(), "");
+                    String nameE1 = NeoUtils.getNodeName(o1.getServeNode());
+                    String nameE2 = NeoUtils.getNodeName(o2.getServeNode());
                     return nameE1.compareTo(nameE2);
                 } else {
-                    String nameE1 = NeoUtils.getSimpleNodeName(o1.getNeighbourNode(), "");
-                    String nameE2 = NeoUtils.getSimpleNodeName(o2.getNeighbourNode(), "");
+                    String nameE1 = NeoUtils.getNodeName(o1.getNeighbourNode());
+                    String nameE2 = NeoUtils.getNodeName(o2.getNeighbourNode());
                     return nameE1.compareTo(nameE2);
                 }
             }
@@ -796,8 +796,7 @@ public class TransmissionView extends ViewPart {
         if (gis == null || neighbour.getSelectionIndex() < 0) {
             return null;
         }
-        GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
-        return NeoUtils.findTransmission(NeoUtils.findRoot(gis, service), neighbour.getText(), service);
+        return NeoUtils.findTransmission(NeoUtils.findRoot(gis), neighbour.getText());
     }
 
     /**

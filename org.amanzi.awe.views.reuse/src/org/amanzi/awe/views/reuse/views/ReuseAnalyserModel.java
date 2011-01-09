@@ -651,7 +651,7 @@ public class ReuseAnalyserModel {
          */
         private boolean computeTransmissionStatistics(Node neighbour, Node aggrNode, String propertyName, Distribute distribute, Select select, IProgressMonitor monitor) {
             Node rootNode = neighbour.getSingleRelationship(NetworkRelationshipTypes.TRANSMISSION_DATA, Direction.INCOMING).getOtherNode(neighbour);
-            final String transmissionName = NeoUtils.getSimpleNodeName(neighbour, "");
+            final String transmissionName = NeoUtils.getNodeName(neighbour);
             GeoNeo geoNode = new GeoNeo(service, NeoUtils.findGisNodeByChild(rootNode,service));
             int totalWork = (int)geoNode.getCount() * 2;
             LOGGER.debug("Starting to compute statistics for " + propertyName + " with estimated work size of " + totalWork);

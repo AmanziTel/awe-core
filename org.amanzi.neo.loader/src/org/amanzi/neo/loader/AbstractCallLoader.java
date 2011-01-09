@@ -303,7 +303,7 @@ public abstract class AbstractCallLoader extends DriveLoader {
             result = neo.createNode();
             result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.CALL.getId());
             result.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
-            String probeName = NeoUtils.getNodeName(probeCalls,neo);
+            String probeName = NeoUtils.getNodeName(probeCalls);
             result.setProperty(INeoConstants.PROPERTY_NAME_NAME, getCallName(probeName, timestamp));
             updateTimestampMinMax(CALL_DATASET_HEADER_INDEX, timestamp);
             index(result);

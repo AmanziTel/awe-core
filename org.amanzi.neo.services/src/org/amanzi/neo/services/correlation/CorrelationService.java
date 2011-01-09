@@ -91,7 +91,7 @@ public class CorrelationService extends AbstractService {
 
         ArrayList<String> datasetNames = new ArrayList<String>();
         for (Node datasetNode : dataNodes) {
-            datasetNames.add(Utils.getNodeName(datasetNode, databaseService));
+            datasetNames.add(Utils.getNodeName(datasetNode));
         }
         
       RelationshipType[] types = new RelationshipType[] {CorrelationRelationshipTypes.CORRELATED/*, NetworkRelationshipTypes.DRIVE*/};
@@ -169,7 +169,7 @@ public class CorrelationService extends AbstractService {
                 statistic.put(dataNode, rel);
             }
             int counter = 0;
-            String networkName = Utils.getNodeName(networkNode, databaseService);
+            String networkName = Utils.getNodeName(networkNode);
             if(!model.getDatasets().isEmpty())
             for (Node sector : getNetworkIterator(networkNode)) {
                 Node correlationNode = null;
@@ -201,7 +201,7 @@ public class CorrelationService extends AbstractService {
 
                     while (nodes.hasNext()) {
                         Node mNode = nodes.next();
-                        correlateNodes(sector, correlationNode, mNode, Utils.getNodeName(driveNode, databaseService), networkName);
+                        correlateNodes(sector, correlationNode, mNode, Utils.getNodeName(driveNode), networkName);
                         counter++;
                         Relationship rel = statistic.get(driveNode);
                         rel.setProperty(INeoConstants.PROPERTY_COUNT_NAME, (Integer)rel.getProperty(INeoConstants.PROPERTY_COUNT_NAME, 0) + 1);
@@ -290,7 +290,7 @@ public class CorrelationService extends AbstractService {
      * @return the correlation node
      */
     private Node getCorrelationNode(Node networkNode, Node rootCorrelationNode, String sectorId) {
-        String networkName = Utils.getNodeName(networkNode, databaseService);
+        String networkName = Utils.getNodeName(networkNode);
         String luceneIndexKey = networkName + "@Correlation";
         Node node = luceneService.getSingleNode(luceneIndexKey, sectorId);
 

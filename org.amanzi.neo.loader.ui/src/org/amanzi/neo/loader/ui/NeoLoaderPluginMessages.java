@@ -86,12 +86,12 @@ public class NeoLoaderPluginMessages extends NLS {
     public static String PrefNeighbour_title;
     public static String PrefNeighbour_title_server;
     public static String PrefNeighbour_title_neighbour;
-    public static String PrefNeighbour_field_ci;
-    public static String PrefNeighbour_field_bts;
-    public static String PrefNeighbour_field_lac;
-    public static String PrefNeighbour_field_adj_ci;
-    public static String PrefNeighbour_field_adj_bts;
-    public static String PrefNeighbour_field_adj_lac;
+    public static String PrefNeighbour_field_srv_name;
+    public static String PrefNeighbour_field_srv_ci;
+    public static String PrefNeighbour_field_srv_lac;
+    public static String PrefNeighbour_field_nbr_name;
+    public static String PrefNeighbour_field_nbr_ci;
+    public static String PrefNeighbour_field_nbr_lac;
     
     public static String PrefTransmission_title;
     public static String PrefTransmission_title_server;

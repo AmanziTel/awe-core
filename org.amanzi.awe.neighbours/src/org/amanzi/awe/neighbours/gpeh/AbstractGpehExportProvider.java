@@ -59,7 +59,7 @@ public abstract class AbstractGpehExportProvider implements IExportProvider {
             this.period = period;
             this.service = service;
             this.luceneService = luceneService;
-            minMax = NeoUtils.getMinMaxTimeOfDataset(dataset, service);
+            minMax = NeoUtils.getMinMaxTimeOfDataset(dataset);
             init();
         } finally {
             NeoUtils.finishTx(tx);
@@ -72,7 +72,6 @@ public abstract class AbstractGpehExportProvider implements IExportProvider {
     protected void init() {
         startTime = period.getFirstTime(minMax.getLeft());
         statRoot = defineStatRoot();
-
     }
 
     /**
@@ -81,14 +80,9 @@ public abstract class AbstractGpehExportProvider implements IExportProvider {
      * @return the node
      */
     protected Node defineStatRoot() {// TODO check on existing statistics
-        Transaction tx = NeoUtils.beginTx(service);
-        try {
-            Node statMain = dataset.getSingleRelationship(GpehRelationshipType.GPEH_STATISTICS, Direction.OUTGOING).getOtherNode(dataset);
-            Relationship rel = statMain.getSingleRelationship(statRelation, Direction.OUTGOING);
-            return rel == null ? null : rel.getOtherNode(statMain);
-        } finally {
-            tx.finish();
-        }
+        Node statMain = dataset.getSingleRelationship(GpehRelationshipType.GPEH_STATISTICS, Direction.OUTGOING).getOtherNode(dataset);
+        Relationship rel = statMain.getSingleRelationship(statRelation, Direction.OUTGOING);
+        return rel == null ? null : rel.getOtherNode(statMain);
     }
 
     @Override

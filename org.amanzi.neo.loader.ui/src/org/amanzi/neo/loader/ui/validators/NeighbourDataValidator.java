@@ -30,7 +30,7 @@ public class NeighbourDataValidator implements ILoaderInputValidator<CommonConfi
     
     @Override
     public IValidateResult validate(CommonConfigData data) {
-        return ValidatorUtils.checkFileAndHeaders(data.getRoot(), 3, new String[]{DataLoadPreferences.NE_CI,DataLoadPreferences.NE_ADJ_CI}, possibleFieldSepRegexes);
+        return ValidatorUtils.checkFileAndHeaders(data.getRoot(), 3, new String[]{DataLoadPreferences.NE_SRV_CI,DataLoadPreferences.NE_NBR_CI}, possibleFieldSepRegexes);
 
     }
 

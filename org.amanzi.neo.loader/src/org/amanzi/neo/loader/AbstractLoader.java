@@ -1396,7 +1396,7 @@ public abstract class AbstractLoader {
                     Relationship propRel = storingRootNode.getSingleRelationship(GeoNeoRelationshipTypes.PROPERTIES, Direction.OUTGOING);
                     if (propRel == null) {
                         propNode = neo.createNode();
-                        propNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, NeoUtils.getNodeName(storingRootNode, neo));
+                        propNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, NeoUtils.getNodeName(storingRootNode));
                         propNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.GIS_PROPERTIES.getId());
                         storingRootNode.createRelationshipTo(propNode, GeoNeoRelationshipTypes.PROPERTIES);
                     } else {

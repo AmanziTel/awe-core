@@ -14,11 +14,9 @@
 package org.amanzi.awe.afp.wizards;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
-import org.amanzi.awe.afp.Activator;
 import org.amanzi.awe.afp.ControlFileProperties;
 import org.amanzi.awe.afp.files.ControlFile;
 import org.amanzi.awe.afp.loaders.AfpLoader;
@@ -32,7 +30,6 @@ import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -503,7 +500,7 @@ public class AfpLoadWizardPage extends WizardPage {
             for (Node root : NeoUtils.getAllRootTraverser(service, null)) {
             	
                 if (NodeTypes.NETWORK.checkNode(root)) {
-                    members.put(NeoUtils.getNodeName(root, service), root);
+                    members.put(NeoUtils.getNodeName(root), root);
                 }
             }
         } finally {
@@ -558,13 +555,13 @@ public class AfpLoadWizardPage extends WizardPage {
     	interferenceLists = new HashMap<String, Node>();
     	
     	for (Node neighbour : datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING))
-    		neighbourLists.put(NeoUtils.getNodeName(neighbour, service), neighbour);
+    		neighbourLists.put(NeoUtils.getNodeName(neighbour), neighbour);
     	
     	for (Node exception : datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.EXCEPTION_DATA, Direction.OUTGOING))
-    		exceptionLists.put(NeoUtils.getNodeName(exception, service), exception);
+    		exceptionLists.put(NeoUtils.getNodeName(exception), exception);
     	
     	for (Node interferer : datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.INTERFERENCE_DATA, Direction.OUTGOING))
-    		interferenceLists.put(NeoUtils.getNodeName(interferer, service), interferer);
+    		interferenceLists.put(NeoUtils.getNodeName(interferer), interferer);
     }
     
     private void setDefaultValues(){

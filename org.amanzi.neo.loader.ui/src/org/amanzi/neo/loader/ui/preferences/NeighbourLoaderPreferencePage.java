@@ -36,9 +36,9 @@ public class NeighbourLoaderPreferencePage extends FieldEditorPreferencePage imp
         marginPanel.setLayout(layout);
 
         int width = 55;
-		addField(new StringFieldEditor(DataLoadPreferences.NE_BTS, NeoLoaderPluginMessages.PrefNeighbour_field_bts, width,marginPanel));
-        addField(new StringFieldEditor(DataLoadPreferences.NE_CI, NeoLoaderPluginMessages.PrefNeighbour_field_ci,width, marginPanel));
-        addField(new StringFieldEditor(DataLoadPreferences.NE_LAC, NeoLoaderPluginMessages.PrefNeighbour_field_lac,width, marginPanel));
+		addField(new StringFieldEditor(DataLoadPreferences.NE_SRV_NAME, NeoLoaderPluginMessages.PrefNeighbour_field_srv_name, width,marginPanel));
+        addField(new StringFieldEditor(DataLoadPreferences.NE_SRV_CI, NeoLoaderPluginMessages.PrefNeighbour_field_srv_ci,width, marginPanel));
+        addField(new StringFieldEditor(DataLoadPreferences.NE_SRV_LAC, NeoLoaderPluginMessages.PrefNeighbour_field_srv_lac,width, marginPanel));
         
         attributeGroup = new Group(mainAttributeGroup, mainAttributeGroup.getStyle());
         attributeGroup.setText(NeoLoaderPluginMessages.PrefNeighbour_title_neighbour);
@@ -50,9 +50,9 @@ public class NeighbourLoaderPreferencePage extends FieldEditorPreferencePage imp
         marginPanel.setLayout(layout);
 
         width = 51;
-        addField(new StringFieldEditor(DataLoadPreferences.NE_ADJ_BTS, NeoLoaderPluginMessages.PrefNeighbour_field_adj_bts, width,marginPanel));
-        addField(new StringFieldEditor(DataLoadPreferences.NE_ADJ_CI, NeoLoaderPluginMessages.PrefNeighbour_field_adj_ci,width, marginPanel));
-        addField(new StringFieldEditor(DataLoadPreferences.NE_ADJ_LAC, NeoLoaderPluginMessages.PrefNeighbour_field_adj_lac,width, marginPanel));
+        addField(new StringFieldEditor(DataLoadPreferences.NE_NBR_NAME, NeoLoaderPluginMessages.PrefNeighbour_field_nbr_name, width,marginPanel));
+        addField(new StringFieldEditor(DataLoadPreferences.NE_NBR_CI, NeoLoaderPluginMessages.PrefNeighbour_field_nbr_ci,width, marginPanel));
+        addField(new StringFieldEditor(DataLoadPreferences.NE_NBR_LAC, NeoLoaderPluginMessages.PrefNeighbour_field_nbr_lac,width, marginPanel));
     
     }
 

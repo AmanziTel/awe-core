@@ -61,12 +61,6 @@ import org.neo4j.index.lucene.LuceneIndexService;
  */
 public class NeighbourLoader {
 
-    private static final String CI_HEADER = "CI";
-    private static final String LAC_HEADER = "LAC";
-    private static final String BTS_HEADER = "BTS_NAME";
-    private static final String ADJ_CI_HEADER = "ADJ_CI";
-    private static final String ADJ_LAC_HEADER = "ADJ_LAC";
-    private static final String ADJ_BTS_HEADER = "ADJ_BTS_NAME";
     private static final String PROXY_NAME_SEPARATOR = "/";
 
     // private static String directory = null;
@@ -89,11 +83,11 @@ public class NeighbourLoader {
      * @param fileName Neighbour file Name
      */
     public NeighbourLoader(Node networkNode, String fileName, GraphDatabaseService neo) {
-        network = NeoUtils.findRoot(networkNode,neo);
+        network = NeoUtils.findRoot(networkNode);
         this.fileName = fileName;
         this.neo = neo;
         this.baseName = new File(fileName).getName();
-        gisName = NeoUtils.getSimpleNodeName(networkNode, "", neo);
+        gisName = NeoUtils.getNodeName(networkNode);
         index = NeoServiceProviderUi.getProvider().getIndexService();
     }
     
@@ -104,11 +98,11 @@ public class NeighbourLoader {
      * @param fileName Neighbour file Name
      */
     public NeighbourLoader(Node networkNode, String fileName, GraphDatabaseService neo, LuceneIndexService indexService, boolean isTesting) {
-        network = NeoUtils.findRoot(networkNode,neo);
+        network = NeoUtils.findRoot(networkNode);
         this.fileName = fileName;
         this.neo = neo;
         this.baseName = new File(fileName).getName();
-        gisName = NeoUtils.getSimpleNodeName(networkNode, "", neo);
+        gisName = NeoUtils.getNodeName(networkNode);
         index = indexService;
         isTest = isTesting;
     }
@@ -248,6 +242,9 @@ public class NeighbourLoader {
         private Node lastSector;
         private String proxySectorName;
         private String proxyNeighbourName;
+        private HashMap<String,Integer> missingServers;
+        private HashMap<String,Integer> missingNeighbours;
+        private int lineNumber;
 
         /**
          * Constructor
@@ -260,14 +257,17 @@ public class NeighbourLoader {
             this.neo = neo;
             headers = line.split("\\t");
             IPreferenceStore preferenceStore = NeoLoaderPlugin.getDefault().getPreferenceStore();
-            String ciString = CI_HEADER + ", " + preferenceStore.getString(DataLoadPreferences.NE_CI);
-            String lacString = LAC_HEADER + ", " + preferenceStore.getString(DataLoadPreferences.NE_LAC);
-            String btsString = BTS_HEADER + ", " + preferenceStore.getString(DataLoadPreferences.NE_BTS);
+            String ciString = preferenceStore.getString(DataLoadPreferences.NE_SRV_CI);
+            String lacString = preferenceStore.getString(DataLoadPreferences.NE_SRV_LAC);
+            String btsString = preferenceStore.getString(DataLoadPreferences.NE_SRV_NAME);
             serverNodeName = new NodeName(ciString, lacString, btsString);
-            ciString = ADJ_CI_HEADER + ", " + preferenceStore.getString(DataLoadPreferences.NE_ADJ_CI);
-            lacString = ADJ_LAC_HEADER + ", " + preferenceStore.getString(DataLoadPreferences.NE_ADJ_LAC);
-            btsString = ADJ_BTS_HEADER + ", " + preferenceStore.getString(DataLoadPreferences.NE_ADJ_BTS);
+            ciString = preferenceStore.getString(DataLoadPreferences.NE_NBR_CI);
+            lacString = preferenceStore.getString(DataLoadPreferences.NE_NBR_LAC);
+            btsString = preferenceStore.getString(DataLoadPreferences.NE_NBR_NAME);
             neighbourNodeName = new NodeName(ciString, lacString, btsString);
+            missingServers = new HashMap<String,Integer>();
+            missingNeighbours = new HashMap<String,Integer>();
+            lineNumber = 0;
             for (int i = 0; i < headers.length; i++) {
                 String fieldHeader = headers[i];
                 if (serverNodeName.setFieldIndex(fieldHeader, i)) {
@@ -294,7 +294,7 @@ public class NeighbourLoader {
          * finish work with header
          */
         public void finish() {
-
+            logMissing();
         }
 
         /**
@@ -361,18 +361,23 @@ public class NeighbourLoader {
          */
         public void parseLine(String line, Node network, String fileName, Node neighbour) {
             String fields[] = line.split("\\t");
+            lineNumber++;
             Transaction tx = neo.beginTx();
-            
-        	
-            try {
+        	try {
                 String servCounName = NeoUtils.getNeighbourPropertyName(fileName);
                 serverNodeName.setFieldValues(fields);
                 neighbourNodeName.setFieldValues(fields);
                 Node serverNode = getSectorNodeById(serverNodeName);
+                if (serverNode == null) {
+                    if (addMissing(missingServers, serverNodeName) < 2)
+                        NeoLoaderPlugin.error("Could not find server from line: " + line);
+                    return;
+                }
 
                 Node neighbourNode = null;
                 Node proxyServer = null;
                 Node proxyNeighbour = null;
+
                 if (serverNode != null) {
                 	proxySectorName = fileName + PROXY_NAME_SEPARATOR + serverNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
                     neighbourNode = getSectorNodeById(neighbourNodeName);
@@ -410,10 +415,9 @@ public class NeighbourLoader {
                     	index.index(proxyNeighbour, NeoUtils.getLuceneIndexKeyByProperty(neighbour, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS), proxyNeighbourName);
                     	lastSector = proxyNeighbour;
                     }
-                }
-                
-                if (serverNode == null || neighbourNode == null) {
-                    NeoLoaderPlugin.error("Not found sectors for line:\n" + line);
+                } else {
+                    if (addMissing(missingNeighbours, neighbourNodeName) < 2)
+                        NeoLoaderPlugin.error("Could not find neighbour from line: " + line);
                     return;
                 }
 
@@ -437,7 +441,41 @@ public class NeighbourLoader {
 
         }
         
+        private int addMissing(HashMap<String, Integer> missing, NodeName nodeName) {
+            String name = nodeName.getName();
+            Integer count = missing.get(name);
+            if (count == null)
+                count = 1;
+            else
+                count++;
+            missing.put(name, count);
+            return count;
+        }
         
+        private void logMissing() {
+            logMissing("server", missingServers);
+            logMissing("neighbour", missingNeighbours);
+        }
+
+        private void logMissing(String type, HashMap<String, Integer> missing) {
+            if (missing.size() > 0) {
+                StringBuffer sb = new StringBuffer();
+                for (String name : missing.keySet()) {
+                    if (sb.length() < 1) {
+                        sb.append("Could not find " + missing.size() + " " + type);
+                        if (missing.size() == 1)
+                            sb.append(": ");
+                        else
+                            sb.append("s: ");
+                    } else {
+                        sb.append(", ");
+                    }
+                    sb.append(name);
+                }
+                NeoLoaderPlugin.notify(sb.toString());
+            }
+        }
+
         /**
          * find node by id
          * 
@@ -446,12 +484,12 @@ public class NeighbourLoader {
          */
         private Node getSectorNodeById(NodeName nodeName) {
             Node result = null;
-            String idByName = nodeName.getId2();
+            String idByName = nodeName.getName();
             if (idByName != null) {
                 result = index.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(network, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), idByName);
             }
             if (result == null) {
-                Pair<String, String> idByCiLac = nodeName.getId1();
+                Pair<String, String> idByCiLac = nodeName.getCiLac();
                 if (idByCiLac != null) {
                     Iterable<Node> serverNodeIter = index.getNodes(NeoUtils.getLuceneIndexKeyByProperty(network, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR),
                             idByCiLac.getLeft());
@@ -533,33 +571,39 @@ public class NeighbourLoader {
 
     /**
      * <p>
-     * Class that contains information about sectors name
+     * Class that contains information about sectors name and optional LAC/CI identities. Two
+     * instances of this class are used, one for each of the server and the neighbour (interferer)
+     * in the relationship.
      * </p>
      * 
      * @author Cinkel_A
      * @since 1.0.0
      */
     private static class NodeName {
+        private static final String NAME = "NAME";
+        private static final String LAC = "LAC";
+        private static final String CI = "CI";
         Map<String, String> nameMap = new HashMap<String, String>();
         Map<String, Integer> indexMap = new HashMap<String, Integer>();
         Map<String, String> valuesMap = new HashMap<String, String>();
 
         /**
-         * Constructor
+         * Construct with the user configured or default regular expressions to match to find the
+         * appropriate headers.
          * 
-         * @param ci name of "CI" properties
-         * @param lac name of "LAC" properties
-         * @param btsName name of "BTS_NAME" properties
+         * @param Regex for "CI" properties
+         * @param Regex for "LAC" properties
+         * @param Regex for "NAME" properties (server, interferer, neighbour)
          */
-        public NodeName(String ciString, String lacString, String btsNameString) {
+        public NodeName(String ciString, String lacString, String nameString) {
             for (String ci : getPossibleHeaders(ciString)) {
-                nameMap.put(ci, CI_HEADER);
+                nameMap.put(ci, CI);
             }
             for (String lac : getPossibleHeaders(lacString)) {
-                nameMap.put(lac, LAC_HEADER);
+                nameMap.put(lac, LAC);
             }
-            for (String btsName : getPossibleHeaders(btsNameString)) {
-                nameMap.put(btsName, BTS_HEADER);
+            for (String name : getPossibleHeaders(nameString)) {
+                nameMap.put(name, NAME);
             }
         }
 
@@ -580,16 +624,16 @@ public class NeighbourLoader {
         }
 
         /**
-         * get Id1 (CI+LAC)
+         * Get the current value of the CI and LAC fields as a pair.
          * 
-         * @return id
+         * @return Pair of strings for CI and LAC
          */
-        public Pair<String, String> getId1() {
-            String ci = valuesMap.get(CI_HEADER);
+        public Pair<String, String> getCiLac() {
+            String ci = valuesMap.get(CI);
             if (ci == null || ci.isEmpty()) {
                 return null;
             }
-            String lac = valuesMap.get(LAC_HEADER);
+            String lac = valuesMap.get(LAC);
             if (lac == null || lac.isEmpty()) {
                 return null;
             }
@@ -597,17 +641,16 @@ public class NeighbourLoader {
         }
 
         /**
-         * get Id2 (BTS_NAME)
+         * Get the current value of the Name field (BTS_NAME, Server, Neighbour)
          * 
-         * @return id
+         * @return String name
          */
-        public String getId2() {
-
-            String bts = valuesMap.get(BTS_HEADER);
-            if (bts == null || bts.isEmpty()) {
+        public String getName() {
+            String name = valuesMap.get(NAME);
+            if (name == null || name.isEmpty()) {
                 return null;
             }
-            return bts;
+            return name;
         }
 
         /**

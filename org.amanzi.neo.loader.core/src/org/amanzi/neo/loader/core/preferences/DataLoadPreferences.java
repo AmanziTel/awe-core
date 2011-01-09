@@ -64,13 +64,13 @@ public class DataLoadPreferences {
     public static final String NH_AZIMUTH = "NS_AZIMUTH";
     
     // neighbour loader headers
-    public static final String NE_CI = "NE_CI";
-    public static final String NE_LAC = "NE_LAC";
-    public static final String NE_BTS = "NE_BTS";
+    public static final String NE_SRV_CI = "NE_SRV_CI";
+    public static final String NE_SRV_LAC = "NE_SRV_LAC";
+    public static final String NE_SRV_NAME = "NE_SRV_NAME";
     
-    public static final String NE_ADJ_CI = "NE_ADJ_CI";
-    public static final String NE_ADJ_LAC = "NE_ADJ_LAC";
-    public static final String NE_ADJ_BTS = "NE_ADJ_BTS";
+    public static final String NE_NBR_CI = "NE_NBR_CI";
+    public static final String NE_NBR_LAC = "NE_NBR_LAC";
+    public static final String NE_NBR_NAME = "NE_NBR_NAME";
     
     // transmission loader headers
     public static final String TR_SITE_ID_SERV = "TR_SITE_ID_SERV";

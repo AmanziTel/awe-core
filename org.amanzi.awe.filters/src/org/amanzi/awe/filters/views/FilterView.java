@@ -727,7 +727,7 @@ public class FilterView extends ViewPart  implements INeoServiceProviderListener
         rootTree = element;
         Transaction tx = NeoUtils.beginTx(graphDatabaseService);
         try {
-            tFilterChainName.setText(NeoUtils.getSimpleNodeName(rootTree.getNode(), "")); //$NON-NLS-1$)
+            tFilterChainName.setText(NeoUtils.getNodeName(rootTree.getNode())); //$NON-NLS-1$)
             cRule.setText((String)element.getNode().getProperty(FilterUtil.PROPERTY_ORDER, "")); //$NON-NLS-1$
             final TreeNeoNode parent = element.getParent(graphDatabaseService);
             if (parent != null && parent.getType() == NodeTypes.FILTER_GROUP) {
@@ -921,7 +921,7 @@ public class FilterView extends ViewPart  implements INeoServiceProviderListener
         rootTree = element;
         Transaction tx = NeoUtils.beginTx(graphDatabaseService);
         try {
-            tGroupName.setText(NeoUtils.getSimpleNodeName(rootTree.getNode(), "")); //$NON-NLS-1$
+            tGroupName.setText(NeoUtils.getNodeName(rootTree.getNode()));
             cGroupProperty.setText(FilterUtil.getGroupProperty(rootTree.getNode(), "", graphDatabaseService)); //$NON-NLS-1$
         } finally {
             NeoUtils.finishTx(tx);

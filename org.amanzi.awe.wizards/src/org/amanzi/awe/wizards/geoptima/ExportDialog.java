@@ -1096,7 +1096,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
             model = new NeoExportModelImpl(service, 1);
             model.addPropertyList(0, results);
             final Node node = ((TreeElem)root.getData()).getNode();
-            dataname = NeoUtils.getNodeName(node, service);
+            dataname = NeoUtils.getNodeName(node);
             mainNodeIterator = NeoUtils.getPrimaryElemTraverser(node, service).iterator();
             valid = true;
         }
@@ -1301,7 +1301,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
                 setCorrelatetraverser();
                 name=formCorName();
             } else {
-                name=NeoUtils.getNodeName(mainNode, service);
+                name=NeoUtils.getNodeName(mainNode);
                 if (haveSector){
                     traverser = mainNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,new ReturnableEvaluator() {
                         
@@ -1423,7 +1423,7 @@ public class ExportDialog extends Dialog implements IPropertyChangeListener {
          * @return the string
          */
         private String formCorName() {
-            return String.format("Network: %s, dataset %s", NeoUtils.getNodeName(mainNode, service), NeoUtils.getNodeName(corEntry.getKey(), service));
+            return String.format("Network: %s, dataset %s", NeoUtils.getNodeName(mainNode), NeoUtils.getNodeName(corEntry.getKey()));
         }
 
         /**

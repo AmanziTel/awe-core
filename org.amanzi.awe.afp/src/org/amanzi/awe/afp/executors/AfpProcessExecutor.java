@@ -29,10 +29,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
-
 
 
 /**
@@ -53,19 +51,15 @@ public class AfpProcessExecutor extends Job {
 	private boolean jobFinished = false;
 	long progressTime =0;
 	
-	
-	
 	private Node afpRoot;
-	protected GraphDatabaseService neo;
 	protected Transaction transaction;
 	private HashMap<String, String> parameters;
 	private Node afpDataset;
 	
 	
-	public AfpProcessExecutor(String name, Node afpRoot,Node afpDataset, final GraphDatabaseService service, HashMap<String, String> parameters) {
+	public AfpProcessExecutor(String name, Node afpRoot,Node afpDataset, HashMap<String, String> parameters) {
 		super(name);
 		this.afpRoot = afpRoot;
-		this.neo = service;
 		this.parameters = parameters;
 		this.afpDataset = afpDataset;
 	}
@@ -176,7 +170,7 @@ public class AfpProcessExecutor extends Job {
                     AweConsolePlugin.info("Interrupted waiting for threads: " + e);
                 }
 			}
-			AfpOutputFileLoader afpOutputFileLoader = new AfpOutputFileLoader(afpRoot,afpE.outputFileName,afpDataset,neo);
+			AfpOutputFileLoader afpOutputFileLoader = new AfpOutputFileLoader(afpRoot, afpE.outputFileName, afpDataset);
 			afpOutputFileLoader.run(monitor);
 		}catch (Exception e){
 			e.printStackTrace();

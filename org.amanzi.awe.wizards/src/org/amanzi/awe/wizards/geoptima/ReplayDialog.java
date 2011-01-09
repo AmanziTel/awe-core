@@ -107,7 +107,7 @@ public class ReplayDialog extends ProcessDialog {
         try {
             for (Node node : storedData) {
                 // have gis node
-                Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(node, service);
+                Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(node);
 
                 if (node.hasRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING) && minMax != null && minMax.l() != null && minMax.r() != null) {
                     datamap.put(NeoUtils.getNodeName(node), node);
@@ -356,7 +356,7 @@ public class ReplayDialog extends ProcessDialog {
     protected void formCorrelateData() {
         final Node dataNode = datamap.get(cData.getText());
         if (dataNode != null) {
-            minMaxTime = NeoUtils.getMinMaxTimeOfDataset(dataNode, service);
+            minMaxTime = NeoUtils.getMinMaxTimeOfDataset(dataNode);
             setTime(sStartDate, sStartTime, minMaxTime.getLeft());
             setTime(sEndDate, sEndTime, minMaxTime.getRight());
         }

@@ -138,7 +138,7 @@ public class PropertyHeader implements IPropertyHeader {
         if (isGis) {
             return getDataVault().getTransmissionAllFields(neighbourName);
         }
-        Node neighbour = Utils.findTransmission(node, neighbourName, NeoServiceProvider.getProvider().getService());
+        Node neighbour = Utils.findTransmission(node, neighbourName);
         if (neighbour == null) {
             return null;
         }
@@ -281,7 +281,7 @@ public class PropertyHeader implements IPropertyHeader {
         }
         Iterable<Relationship> neighb = node.getRelationships(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING);
         for (Relationship relationship : neighb) {
-            result.add(Utils.getNeighbourPropertyName(Utils.getSimpleNodeName(relationship.getOtherNode(node), "")));
+            result.add(Utils.getNeighbourPropertyName(Utils.getNodeName(relationship.getOtherNode(node))));
         }
         return result;
     }
@@ -312,7 +312,7 @@ public class PropertyHeader implements IPropertyHeader {
         if (isGis) {
             return getDataVault().getTransmissionIntegerFields(neighbourName);
         }
-        Node neighbour = Utils.findTransmission(node, neighbourName, NeoServiceProvider.getProvider().getService());
+        Node neighbour = Utils.findTransmission(node, neighbourName);
         if (neighbour == null) {
             return null;
         }
@@ -346,7 +346,7 @@ public class PropertyHeader implements IPropertyHeader {
         if (isGis) {
             return getDataVault().getTransmissionDoubleFields(neighbourName);
         }
-        Node neighbour = Utils.findTransmission(node, neighbourName, NeoServiceProvider.getProvider().getService());
+        Node neighbour = Utils.findTransmission(node, neighbourName);
         if (neighbour == null) {
             return null;
         }
@@ -416,7 +416,7 @@ public class PropertyHeader implements IPropertyHeader {
             this.statisticsRelation = statisticsRelation;
             this.typeNode = typeNode;
             this.valueNode = valueNode;
-            name = Utils.getSimpleNodeName(typeNode, "");
+            name = Utils.getNodeName(typeNode);
         }
 
         /**

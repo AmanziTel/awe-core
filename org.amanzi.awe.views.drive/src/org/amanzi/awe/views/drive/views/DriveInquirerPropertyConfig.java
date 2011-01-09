@@ -24,10 +24,9 @@ import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.statistic.PropertyHeader;
-import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
 import org.amanzi.neo.services.ui.NeoUtils;
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -48,7 +47,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
@@ -66,7 +64,7 @@ import org.neo4j.graphdb.Traverser.Order;
  * @since 1.0.0
  */
 public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
-    private static final Logger LOGGER = Logger.getLogger(DriveInquirerPropertyConfig.class);
+    //private static final Logger LOGGER = Logger.getLogger(DriveInquirerPropertyConfig.class);
 
     private final Node dataset;
     private Shell shell;
@@ -82,8 +80,6 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
     private final Set<String> propertySet = new TreeSet<String>();
     private final Set<String> propertySlip = new TreeSet<String>();
 
-    private final GraphDatabaseService service;
-
     /**
      * Constructor
      * 
@@ -94,7 +90,6 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
         super(parent, "Dataset properties configura\tion", SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.CENTER);
         this.dataset = dataset;
         status = SWT.CANCEL;
-        service = NeoServiceProviderUi.getProvider().getService();
     }
 
     @Override
@@ -267,14 +262,8 @@ public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
      */
     private void init() {
         propertySet.clear();
-
-        Transaction tx = NeoUtils.beginTransaction();
         String nodeName = "";
-        try {
-            nodeName = NeoUtils.getSimpleNodeName(dataset, "");
-        } finally {
-            NeoUtils.finishTx(tx);
-        }
+        nodeName = NeoUtils.getNodeName(dataset);
         propertySet.addAll(new PropertyFilterModel().filerProperties(nodeName, Arrays.asList(PropertyHeader.getPropertyStatistic(dataset).getNumericFields("-main-type-"))));
     }
 

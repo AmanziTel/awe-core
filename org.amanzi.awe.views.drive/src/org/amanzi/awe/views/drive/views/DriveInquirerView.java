@@ -203,7 +203,6 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
     private Long dateStartTimestamp;
     private Long oldStartTime;
     private Integer oldTimeLength;
-    private String propertyListsConstantValue;
     private Button bAddPropertyList;
     private boolean validDrive;
 
@@ -466,7 +465,7 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
             cEvent.select(0);
 
             initializeIndex(cDrive.getText());
-            Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(gis, null);
+            Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(gis);
             beginGisTime = minMax.getLeft();
             endGisTime = minMax.getRight();
             if (beginGisTime == null || endGisTime == null) {
@@ -1481,7 +1480,7 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
 
             initializeIndex(cDrive.getText());
             Node root = NeoUtils.isGisNode(gis) ? gis.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(gis) : gis;
-            Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(root, null);
+            Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(root);
             beginGisTime = minMax.getLeft();
             endGisTime = minMax.getRight();
 

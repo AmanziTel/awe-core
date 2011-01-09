@@ -77,7 +77,7 @@ public class VisualiseMenuHandler extends CompoundContributionItem {
                     }
                     Map parms = new HashMap();
                     parms.put("nodeId", String.valueOf(node.getId()));
-                    String name=NeoUtils.getNodeName(node, service);
+                    String name=NeoUtils.getNodeName(node);
                     CommandContributionItem com = new CommandContributionItem(PlatformUI.getWorkbench(),
                             "org.amanzi.awe.wizards.geoptima.visualise"+i++,
                             "org.amanzi.awe.wizards.geoptima.visualise", 

@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
@@ -84,7 +83,7 @@ public class PropertyHeaderImpl implements IPropertyHeader {
 
     @Override
     public String[] getTransmissionAllFields(String neighbourName) {
-        Node neighbour = Utils.findTransmission(node, neighbourName, NeoServiceProvider.getProvider().getService());
+        Node neighbour = Utils.findTransmission(node, neighbourName);
         if (neighbour == null) {
             return null;
         }
@@ -145,7 +144,7 @@ public class PropertyHeaderImpl implements IPropertyHeader {
         List<String> result = new ArrayList<String>();
         Iterable<Relationship> neighb = node.getRelationships(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING);
         for (Relationship relationship : neighb) {
-            result.add(Utils.getNeighbourPropertyName(Utils.getSimpleNodeName(relationship.getOtherNode(node), "")));
+            result.add(Utils.getNeighbourPropertyName(Utils.getNodeName(relationship.getOtherNode(node))));
         }
         return result;
     }
@@ -162,7 +161,7 @@ public class PropertyHeaderImpl implements IPropertyHeader {
 
     @Override
     public String[] getTransmissionIntegerFields(String neighbourName) {
-        Node neighbour = Utils.findTransmission(node, neighbourName, NeoServiceProvider.getProvider().getService());
+        Node neighbour = Utils.findTransmission(node, neighbourName);
         if (neighbour == null) {
             return null;
         }
@@ -194,7 +193,7 @@ public class PropertyHeaderImpl implements IPropertyHeader {
 
     @Override
     public String[] getTransmissionDoubleFields(String neighbourName) {
-        Node neighbour = Utils.findTransmission(node, neighbourName, NeoServiceProvider.getProvider().getService());
+        Node neighbour = Utils.findTransmission(node, neighbourName);
         if (neighbour == null) {
             return null;
         }

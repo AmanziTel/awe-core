@@ -95,7 +95,7 @@ public class GpehReportCreator {
         if (maxRange == 0) {
             maxRange = 30000;
         }
-        minMax = NeoUtils.getMinMaxTimeOfDataset(gpeh, service);
+        minMax = NeoUtils.getMinMaxTimeOfDataset(gpeh);
         extension=".txt";
     }
 

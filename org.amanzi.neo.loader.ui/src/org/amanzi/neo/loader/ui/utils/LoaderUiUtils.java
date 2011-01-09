@@ -124,7 +124,7 @@ public class LoaderUiUtils extends LoaderUtils{
                     return new Pair<NetworkFileType, Exception>(NetworkFileType.PROBE, null);
                 }
             }
-            for (String header : getPossibleHeaders(DataLoadPreferences.NE_ADJ_BTS)) {
+            for (String header : getPossibleHeaders(DataLoadPreferences.NE_NBR_NAME)) {
                 if (headers.contains(header)) {
                     return new Pair<NetworkFileType, Exception>(NetworkFileType.NEIGHBOUR, null);
                 }

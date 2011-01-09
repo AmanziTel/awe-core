@@ -75,7 +75,7 @@ public class CallAnalyzisNeoNode extends DriveNeoNode {
     
     private String getSCellTime(Node cell){
         Node row = NeoUtils.getParent(null, cell);
-        return NeoUtils.getNodeName(row,null);
+        return NeoUtils.getNodeName(row);
     }
     
     protected CallAnalyzisNeoNode(Node probeNode, Node statisticsNode, int number) {

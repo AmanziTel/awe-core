@@ -360,7 +360,7 @@ public class NokiaTopologyLoaderTest extends AbstractLoaderTest{
      */
     private Node getNodeByName(List<Node> nodes, String name){
         for(Node node : nodes){
-            String currName = NeoUtils.getNodeName(node, getNeo());
+            String currName = NeoUtils.getNodeName(node);
             if(name.equals(currName)){
                 return node;
             }

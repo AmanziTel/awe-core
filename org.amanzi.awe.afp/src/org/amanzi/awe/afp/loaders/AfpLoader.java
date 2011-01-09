@@ -14,7 +14,6 @@ package org.amanzi.awe.afp.loaders;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -456,7 +455,7 @@ public class AfpLoader extends AbstractLoader {
             try {
             	proxySector = neo.createNode();
             	String sectorName = sector.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-            	String proxySectorName = NeoUtils.getNodeName(rootNode, neo) + "/" + sectorName;
+            	String proxySectorName = NeoUtils.getNodeName(rootNode) + "/" + sectorName;
             	proxySector.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS.getId());                    	
             	proxySector.setProperty(INeoConstants.PROPERTY_NAME_NAME, proxySectorName);
             	
@@ -704,7 +703,7 @@ public class AfpLoader extends AbstractLoader {
          */
         public NeighbourFileHandler(Node rootNode, GraphDatabaseService service) {
             super(rootNode, service);
-            neighName = NeoUtils.getNodeName(rootNode, service);
+            neighName = NeoUtils.getNodeName(rootNode);
         }
 
         /**
@@ -834,7 +833,7 @@ public class AfpLoader extends AbstractLoader {
      */
      public InterferenceFileHandler(Node rootNode, GraphDatabaseService service) {
      super(rootNode, service);
-     interferenceName = NeoUtils.getNodeName(rootNode, service);
+     interferenceName = NeoUtils.getNodeName(rootNode);
      }
     
      /**
@@ -985,7 +984,7 @@ public class AfpLoader extends AbstractLoader {
          */
         public ExceptionFileHandler(Node rootNode, GraphDatabaseService service) {
             super(rootNode, service);
-            exceptionName = NeoUtils.getNodeName(rootNode, service);
+            exceptionName = NeoUtils.getNodeName(rootNode);
         }
 
         /**

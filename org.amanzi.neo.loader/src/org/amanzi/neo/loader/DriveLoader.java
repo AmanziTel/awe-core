@@ -103,7 +103,7 @@ public abstract class DriveLoader extends AbstractLoader {
      * @return gis node for mainNode
      */
     protected final Node findOrCreateGISNode(Node mainNode, String gisType) {
-        String gisName = NeoUtils.getNodeName(mainNode, neo);
+        String gisName = NeoUtils.getNodeName(mainNode);
         GisProperties gisProperties = gisNodes.get(gisName);
 
         if (gisProperties == null) {

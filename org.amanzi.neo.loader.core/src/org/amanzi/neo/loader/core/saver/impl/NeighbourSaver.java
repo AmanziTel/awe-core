@@ -137,12 +137,12 @@ public class NeighbourSaver extends AbstractHeaderSaver<BaseTransferData> {
      */
     protected void definePropertyMap(BaseTransferData element) {
         Set<String> headers = element.keySet();
-        defineHeader(headers, "serv_sector_ci", getPossibleHeaders(DataLoadPreferences.NE_CI));
-        defineHeader(headers, "serv_sector_lac", getPossibleHeaders(DataLoadPreferences.NE_LAC));
-        defineHeader(headers, "serv_sector_name", getPossibleHeaders(DataLoadPreferences.NE_BTS));
-        defineHeader(headers, "neigh_sector_ci", getPossibleHeaders(DataLoadPreferences.NE_ADJ_CI));
-        defineHeader(headers, "neigh_sector_lac", getPossibleHeaders(DataLoadPreferences.NE_ADJ_LAC));
-        defineHeader(headers, "neigh_sector_name", getPossibleHeaders(DataLoadPreferences.NE_ADJ_BTS));
+        defineHeader(headers, "serv_sector_ci", getPossibleHeaders(DataLoadPreferences.NE_SRV_CI));
+        defineHeader(headers, "serv_sector_lac", getPossibleHeaders(DataLoadPreferences.NE_SRV_LAC));
+        defineHeader(headers, "serv_sector_name", getPossibleHeaders(DataLoadPreferences.NE_SRV_NAME));
+        defineHeader(headers, "neigh_sector_ci", getPossibleHeaders(DataLoadPreferences.NE_NBR_CI));
+        defineHeader(headers, "neigh_sector_lac", getPossibleHeaders(DataLoadPreferences.NE_NBR_LAC));
+        defineHeader(headers, "neigh_sector_name", getPossibleHeaders(DataLoadPreferences.NE_NBR_NAME));
     }
 
     @Override

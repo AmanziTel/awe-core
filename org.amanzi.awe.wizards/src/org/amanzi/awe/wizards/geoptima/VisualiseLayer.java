@@ -159,10 +159,10 @@ public class VisualiseLayer implements MapGraphic, MapInterceptor {
             for (ILayer layer : context.getMapLayers()) {
                 if (layer.getGeoResource().canResolve(Node.class)) {
                     Node nodeGis = layer.getGeoResource().resolve(Node.class, null);
-                    Node node = NeoUtils.findRoot(nodeGis, service);
+                    Node node = NeoUtils.findRoot(nodeGis);
                     if (NeoUtils.isDatasetNode(node) || NodeTypes.OSS.checkNode(node)) {
                         if (datasetParam == null) {
-                            Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(node, service);
+                            Pair<Long, Long> minMax = NeoUtils.getMinMaxTimeOfDataset(node);
                             datasetParam = new VisualiseParam(minMax.getLeft(), minMax.getRight(), true, 1000);
                         }
                         result = layer;
@@ -245,8 +245,8 @@ public class VisualiseLayer implements MapGraphic, MapInterceptor {
             try {
                 Node node = datasetLayer.getGeoResource().resolve(Node.class, null);
                 cRSDataset = datasetLayer.getGeoResource().getInfo(new NullProgressMonitor()).getCRS();
-                rootNode = NeoUtils.findRoot(node, service);
-                String datasetName = NeoUtils.getNodeName(node, service);
+                rootNode = NeoUtils.findRoot(node);
+                String datasetName = NeoUtils.getNodeName(node);
                 timestampIndex = Utils.getTimeIndexProperty(datasetName);
                 timestampIndex.initialize(NeoServiceProviderUi.getProvider().getService(), null);
                 param = (VisualiseParam)layer.getBlackboard().get(DATASET_PARAM);

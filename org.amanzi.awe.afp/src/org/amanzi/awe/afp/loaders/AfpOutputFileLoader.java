@@ -13,14 +13,12 @@ public class AfpOutputFileLoader extends AfpLoader {
 	
 	String outputFileName;
 
-	public AfpOutputFileLoader(Node networkRoot,String outputFileName,Node afpDataset,  GraphDatabaseService service) {
-		super("", null,service);
-		
-		this.afpRoot = networkRoot;
-		this.afpDataset = afpDataset;
-		this.outputFileName = outputFileName;
-		
-	}
+	public AfpOutputFileLoader(Node networkRoot, String outputFileName, Node afpDataset) {
+        super("", null, networkRoot.getGraphDatabase());
+        this.afpRoot = networkRoot;
+        this.afpDataset = afpDataset;
+        this.outputFileName = outputFileName;
+    }
 	
     /**
      * Run.

@@ -327,7 +327,7 @@ public class GpehReportDialog extends Dialog {
     private void formGPEH() {
         gpeh = new LinkedHashMap<String, Node>();
         for (Node node : NeoUtils.getAllGpeh(neo)) {
-            gpeh.put(NeoUtils.getSimpleNodeName(node, ""), node);
+            gpeh.put(NeoUtils.getNodeName(node), node);
         }
         String[] result = gpeh.keySet().toArray(new String[0]);
         Arrays.sort(result);

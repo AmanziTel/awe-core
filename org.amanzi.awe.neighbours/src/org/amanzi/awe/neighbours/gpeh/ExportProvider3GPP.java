@@ -203,7 +203,7 @@ public class ExportProvider3GPP extends AbstractGpehExportProvider {
         List<Object> result = new LinkedList<Object>();
         String name = (String)values.getLeft().getProperty("userLabel", "");
         if (StringUtil.isEmpty(name)) {
-            name = NeoUtils.getNodeName(values.getLeft(), service);
+            name = NeoUtils.getNodeName(values.getLeft());
         }
         result.add(name);
         Calendar calendar = Calendar.getInstance();

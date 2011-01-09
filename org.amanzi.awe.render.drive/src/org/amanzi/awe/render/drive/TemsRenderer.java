@@ -550,7 +550,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
         try {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
-            String gisName = NeoUtils.getSimpleNodeName(geoNeo.getMainGisNode(), "");
+            String gisName = NeoUtils.getNodeName(geoNeo.getMainGisNode());
             
             filterMp = FilterUtil.getFilterOfData(geoNeo.getMainGisNode(), neo);
             // String selectedProp = geoNeo.getPropertyName();
@@ -1141,7 +1141,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             this.networkLayer = layer;
             this.networkGis = geoNeo;
             this.networkGeoResource = networkLayer.getGeoResource();
-            this.name = NeoUtils.getSimpleNodeName(networkGis.getMainGisNode(), "");
+            this.name = NeoUtils.getNodeName(networkGis.getMainGisNode());
         }
         private void setCrs(CoordinateReferenceSystem dataCrs) throws FactoryException, TransformException {
             this.networkCRS = dataCrs;

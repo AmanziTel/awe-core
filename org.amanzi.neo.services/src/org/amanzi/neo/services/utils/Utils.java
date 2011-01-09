@@ -370,9 +370,7 @@ public class Utils {
      * 
      * @param node node
      * @return node name or empty string
-     * @deprecated
      */
-    @Deprecated
 	public static String getNodeName(Node node) {
         return getSimpleNodeName(node, "");
     }
@@ -381,33 +379,11 @@ public class Utils {
      * Gets node name.
      * 
      * @param node node
-     * @param service the service
-     * @return node name or empty string
-     */
-    public static String getNodeName(Node node, GraphDatabaseService service) {
-        return getSimpleNodeName(node, "", service);
-    }
-
-    /**
-     * Gets node name.
-     * 
-     * @param node node
      * @param defValue default value
+     * @param service the service
      * @return node name or empty string
      */
     public static String getSimpleNodeName(PropertyContainer node, String defValue) {
-        return (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, defValue);
-    }
-
-    /**
-     * Gets node name.
-     * 
-     * @param node node
-     * @param defValue default value
-     * @param service the service
-     * @return node name or empty string
-     */
-    public static String getSimpleNodeName(PropertyContainer node, String defValue, GraphDatabaseService service) {
         return node.getProperty(INeoConstants.PROPERTY_NAME_NAME, defValue).toString();
     }
 
@@ -584,7 +560,7 @@ public class Utils {
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
                 Node node = currentPos.currentNode();
-                return isGisNode(node) && getNodeName(node, service).equals(gisName);
+                return isGisNode(node) && getNodeName(node).equals(gisName);
             }
         }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
         return gisIterator.hasNext() ? gisIterator.next() : null;
@@ -610,7 +586,7 @@ public class Utils {
                     return false;
                 }
                 Node node = currentPos.currentNode();
-                return getNodeName(node, service).equals(nodeName);
+                return getNodeName(node).equals(nodeName);
             }
         }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
         while (gisIterator.hasNext()) {
@@ -1041,7 +1017,7 @@ public class Utils {
      * @param neo - NeoService
      * @return Transmission node or null;
      */
-    public static Node findTransmission(Node network, final String name, GraphDatabaseService neo) {
+    public static Node findTransmission(Node network, final String name) {
         if (network == null || name == null) {
             return null;
         }
@@ -1099,7 +1075,7 @@ public class Utils {
             Traverser fileNodeTraverser = getChildTraverser(parentNode);
             Node lastChild = null;
             for (Node node : fileNodeTraverser) {
-                if (getNodeName(node, service).equals(nodeName)) {
+                if (getNodeName(node).equals(nodeName)) {
                     return new Pair<Boolean, Node>(false, node);
                 }
                 lastChild = node;
@@ -1261,7 +1237,7 @@ public class Utils {
      * @param service neoservice if null then transaction do not created
      * @return pair of min and max timestamps
      */
-    public static Pair<Long, Long> getMinMaxTimeOfDataset(Node driveGisNode, GraphDatabaseService service) {
+    public static Pair<Long, Long> getMinMaxTimeOfDataset(Node driveGisNode) {
         // TODO only for fast fix - remove code after testing
         if (isGisNode(driveGisNode)) {
             StringBuilder st = new StringBuilder("should be fixed - gets this property from root node instead gis node!\n");
@@ -1270,7 +1246,7 @@ public class Utils {
             }
             LOGGER.error(st.toString());
             return getMinMaxTimeOfDataset(driveGisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)
-                    .getOtherNode(driveGisNode), service);
+                    .getOtherNode(driveGisNode));
         }
         // --
         Pair<Long, Long> pair = new Pair<Long, Long>((Long)driveGisNode.getProperty(INeoConstants.MIN_TIMESTAMP, null),
@@ -1307,7 +1283,7 @@ public class Utils {
 
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
-                    return isProbeNode(currentPos.currentNode()) && probeName.equals(getNodeName(currentPos.currentNode(), service));
+                    return isProbeNode(currentPos.currentNode()) && probeName.equals(getNodeName(currentPos.currentNode()));
                 }
             }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
 
@@ -1356,7 +1332,7 @@ public class Utils {
         Transaction tx = beginTx(service);
         Node callsNode = null;
         try {
-            final String datasetName = getNodeName(datasetNode, service);
+            final String datasetName = getNodeName(datasetNode);
             Iterator<Node> callsIterator = probesNode.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
 
                 @Override
@@ -1443,7 +1419,7 @@ public class Utils {
             }
         }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING);
         for (Node node : traverser) {
-            result.put(getNodeName(node, service), node);
+            result.put(getNodeName(node), node);
         }
         return result;
     }
@@ -1464,7 +1440,7 @@ public class Utils {
 
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
-                    return virtualDatasetName.equals(getNodeName(currentPos.currentNode(), neo));
+                    return virtualDatasetName.equals(getNodeName(currentPos.currentNode()));
                 }
             }, GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).iterator();
 
@@ -1499,7 +1475,7 @@ public class Utils {
      */
     public static Node findOrCreateVirtualDatasetNode(Node realDatasetNode, DriveTypes driveType, final GraphDatabaseService neo) {
 
-        String realDatasetName = getNodeName(realDatasetNode, neo);
+        String realDatasetName = getNodeName(realDatasetNode);
         final String virtualDatasetName = driveType.getFullDatasetName(realDatasetName);
         Node node = findOrCreateVirtualDatasetNode(realDatasetNode, virtualDatasetName, neo);
         DriveTypes nodeType = DriveTypes.getNodeType(node, neo);
@@ -1993,7 +1969,7 @@ public class Utils {
 
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
-                return indexName.equals(getNodeName(currentPos.currentNode(), neoService));
+                return indexName.equals(getNodeName(currentPos.currentNode()));
             }
         }, PropertyIndex.NeoIndexRelationshipTypes.INDEX, Direction.OUTGOING).iterator();
 
@@ -2399,8 +2375,8 @@ public class Utils {
      * @param service the service
      * @return the node
      */
-    public static Node findRoot(Node node, GraphDatabaseService service) {
-        Transaction tx = beginTx(service);
+    public static Node findRoot(Node node) {
+        Transaction tx = beginTx(node.getGraphDatabase());
         try {
             if (isRoootNode(node)) {
                 return node;
@@ -2695,10 +2671,10 @@ public class Utils {
     private static String getFullName(Node parent, Node root, GraphDatabaseService service) {
         StringBuilder result = new StringBuilder();
         if (parent != null) {
-            result.append("(").append(getNodeName(parent, service)).append(")");
+            result.append("(").append(getNodeName(parent)).append(")");
         }
         if (root != null) {
-            result.append(getNodeName(root, service));
+            result.append(getNodeName(root));
         }
         return result.toString();
     }
@@ -2715,7 +2691,7 @@ public class Utils {
     public static String getGpehCellName(Node bestCell, GraphDatabaseService service) {
         String result = (String)bestCell.getProperty("userLabel", "");
         if (StringUtil.isEmpty(result)) {
-            result = getNodeName(bestCell, service);
+            result = getNodeName(bestCell);
         }
         return result;
     }
@@ -2847,7 +2823,7 @@ public class Utils {
                 if (currentPos.isStartNode()) {
                     return false;
                 }
-                return rootName.equals(getNodeName(currentPos.currentNode(), service));
+                return rootName.equals(getNodeName(currentPos.currentNode()));
             }
         }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
         if (it.hasNext()) {

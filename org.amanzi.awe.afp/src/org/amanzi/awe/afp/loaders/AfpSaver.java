@@ -316,7 +316,7 @@ public class AfpSaver extends AbstractHeaderSaver<LineTransferData> implements I
 
         proxySector = getService().createNode();
         String sectorName = sector.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-        String proxySectorName = NeoUtils.getNodeName(rootNode, getService()) + "/" + sectorName;
+        String proxySectorName = NeoUtils.getNodeName(rootNode) + "/" + sectorName;
         proxySector.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS.getId());
         proxySector.setProperty(INeoConstants.PROPERTY_NAME_NAME, proxySectorName);
 

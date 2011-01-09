@@ -36,9 +36,6 @@ public class StatisticByPeriodStructure {
     /** The root. */
     private final Node root;
     
-    /** The service. */
-    private final GraphDatabaseService service;
-    
     /** The period. */
     private final CallTimePeriods period;
     
@@ -55,25 +52,23 @@ public class StatisticByPeriodStructure {
 
     /**
      * Instantiates a new statistic by period structure.
-     *
+     * 
      * @param root the root
      * @param service the service
      */
-    public StatisticByPeriodStructure(Node root,GraphDatabaseService service){
-        createdNodes=0;
+    public StatisticByPeriodStructure(Node root) {
+        createdNodes = 0;
         this.root = root;
-        this.service = service;
-        minMax=NeoUtils.getMinMaxTimeOfDataset(root, service);
-        Transaction tx = service.beginTx();
-        useCache=false;
-        try{
-            period=CallTimePeriods.findById((String)root.getProperty(StatisticNeoService.STATISTIC_PERIOD));
-        }finally{
+        minMax = NeoUtils.getMinMaxTimeOfDataset(root);
+        useCache = false;
+        Transaction tx = root.getGraphDatabase().beginTx();
+        try {
+            period = CallTimePeriods.findById((String)root.getProperty(StatisticNeoService.STATISTIC_PERIOD));
+        } finally {
             tx.finish();
         }
     }
 
-    
     /**
      * Gets the created nodes.
      *
@@ -111,10 +106,10 @@ public class StatisticByPeriodStructure {
                 return result;
             }
         }
-       Transaction tx = service.beginTx();
+       Transaction tx = root.getGraphDatabase().beginTx();
        try{
            for (Node statNode:NeoUtils.getChildTraverser(root)){
-               Pair<Long, Long> timePeriod = NeoUtils.getMinMaxTimeOfDataset(statNode, service);
+               Pair<Long, Long> timePeriod = NeoUtils.getMinMaxTimeOfDataset(statNode);
                if (useCache){
                    //timePeriod.getLeft() contains start time of period
                   cache.put(timePeriod.getLeft(),new StatisticElementNodeImpl(statNode,period,timePeriod.getLeft(),timePeriod.getRight())); 
@@ -132,10 +127,10 @@ public class StatisticByPeriodStructure {
 
     public Set<IStatisticElementNode> getStatNedes(Long from, Long to) {
         LinkedHashSet<IStatisticElementNode> result = new LinkedHashSet<IStatisticElementNode>();
-        Transaction tx = service.beginTx();
+        Transaction tx = root.getGraphDatabase().beginTx();
         try {
             for (Node statNode : NeoUtils.getChildTraverser(root)) {
-                Pair<Long, Long> timePeriod = NeoUtils.getMinMaxTimeOfDataset(statNode, service);
+                Pair<Long, Long> timePeriod = NeoUtils.getMinMaxTimeOfDataset(statNode);
                 if (Math.max(from, timePeriod.getLeft()) <= Math.min(to, timePeriod.getRight())) {
                     result.add(new StatisticElementNodeImpl(statNode, period, timePeriod.getLeft(), timePeriod.getRight()));
                 }

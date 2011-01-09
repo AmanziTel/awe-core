@@ -315,7 +315,7 @@ public class NewElementAction extends Action {
 
     protected void multiPropertyIndex(Node newElement) {
         try {
-            MultiPropertyIndex<Double> index = NeoUtils.getLocationIndexProperty(NeoUtils.getNodeName(networkNode, service));
+            MultiPropertyIndex<Double> index = NeoUtils.getLocationIndexProperty(NeoUtils.getNodeName(networkNode));
             index.initialize(service, null);
 
             index.add(newElement);

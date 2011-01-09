@@ -35,17 +35,15 @@ public class TimePeriodStructureCreator {
     private final Long endTime;
     private final CallTimePeriods period;
     private final IStatisticHandler sourceHandler;
-    private final GraphDatabaseService service;
     private final String structureId;
     private final Node parent;
     private final IStatisticStore statStore;
 
     public TimePeriodStructureCreator(Node parent, String structureId, Long startTime, Long endTime, CallTimePeriods period,
-            IStatisticHandler sourceHandler, IStatisticStore statStore, GraphDatabaseService service) {
+            IStatisticHandler sourceHandler, IStatisticStore statStore) {
         this.parent = parent;
         this.structureId = structureId;
         this.statStore = statStore;
-        this.service = service;
         this.startTime = period.getFirstTime(startTime);
         this.endTime = period.getLastTime(endTime);
         this.period = period;
@@ -56,8 +54,9 @@ public class TimePeriodStructureCreator {
 
     public StatisticByPeriodStructure createStructure() {
         if (rootNode != null) {
-            return new StatisticByPeriodStructure(rootNode, service);
+            return new StatisticByPeriodStructure(rootNode);
         }
+        GraphDatabaseService service = rootNode.getGraphDatabase();
         Transaction tx = service.beginTx();
         try {
             rootNode = StatisticNeoService.createRootNode(parent, structureId, service);
@@ -82,7 +81,7 @@ public class TimePeriodStructureCreator {
                 }
             } while ((periodTime = period.addPeriod(periodTime)) < endTime);
             tx.success();
-            StatisticByPeriodStructure statisticByPeriodStructure = new StatisticByPeriodStructure(rootNode, service);
+            StatisticByPeriodStructure statisticByPeriodStructure = new StatisticByPeriodStructure(rootNode);
             statisticByPeriodStructure.setCreatedNodes(createdNodes);
             return statisticByPeriodStructure;
         } finally {

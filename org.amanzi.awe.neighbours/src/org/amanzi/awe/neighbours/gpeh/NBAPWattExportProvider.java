@@ -77,7 +77,7 @@ public class NBAPWattExportProvider extends ExportProvider3GPP {
         List<Object> result=new LinkedList<Object>();
         String name = (String)values.getLeft().getProperty("userLabel", "");
         if (StringUtil.isEmpty(name)) {
-            name = NeoUtils.getNodeName(values.getLeft(), service);
+            name = NeoUtils.getNodeName(values.getLeft());
         }
         result.add(name);
         power = (Integer)values.getLeft().getProperty("maximumTransmissionPower", null);

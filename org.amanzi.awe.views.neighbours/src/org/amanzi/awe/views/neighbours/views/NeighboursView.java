@@ -369,12 +369,12 @@ public class NeighboursView extends ViewPart implements INeoServiceProviderListe
             // try {
             RelationWrapper relation = (RelationWrapper)obj;
             if (index == 0) {
-                return NeoUtils.getSimpleNodeName(NeoUtils.getNodeFromProxy(relation.getServeNode(), NetworkRelationshipTypes.NEIGHBOURS, graphDatabaseService), "");
+                return NeoUtils.getNodeName(NeoUtils.getNodeFromProxy(relation.getServeNode(), NetworkRelationshipTypes.NEIGHBOURS, graphDatabaseService));
             } else if (index == 1) {
                 NetworkSiteType networkSiteType = NetworkSiteType.getNetworkSiteType(NeoUtils.getParent(graphDatabaseService, NeoUtils.getNodeFromProxy(relation.getServeNode(), NetworkRelationshipTypes.NEIGHBOURS, graphDatabaseService)), graphDatabaseService);
                 return networkSiteType==null?"":networkSiteType.getId();
             } else if (index == 2) {
-            	return NeoUtils.getSimpleNodeName(NeoUtils.getNodeFromProxy(relation.getNeighbourNode(), NetworkRelationshipTypes.NEIGHBOURS, graphDatabaseService), "");
+            	return NeoUtils.getNodeName(NeoUtils.getNodeFromProxy(relation.getNeighbourNode(), NetworkRelationshipTypes.NEIGHBOURS, graphDatabaseService));
             } else if (index == 3) {
                 NetworkSiteType networkSiteType = NetworkSiteType.getNetworkSiteType(NeoUtils.getParent(graphDatabaseService, NeoUtils.getNodeFromProxy(relation.getNeighbourNode(), NetworkRelationshipTypes.NEIGHBOURS, graphDatabaseService)), graphDatabaseService);
                 return networkSiteType==null?"":networkSiteType.getId();
@@ -598,12 +598,12 @@ public class NeighboursView extends ViewPart implements INeoServiceProviderListe
             public int compare(RelationWrapper o1, RelationWrapper o2) {
                 if (sortOrder == 0) {
                     // TODO cache node name in RelationWrapper?
-                    String nameE1 = NeoUtils.getSimpleNodeName(o1.getServeNode(), "");
-                    String nameE2 = NeoUtils.getSimpleNodeName(o2.getServeNode(), "");
+                    String nameE1 = NeoUtils.getNodeName(o1.getServeNode());
+                    String nameE2 = NeoUtils.getNodeName(o2.getServeNode());
                     return nameE1.compareTo(nameE2);
                 } else {
-                    String nameE1 = NeoUtils.getSimpleNodeName(o1.getNeighbourNode(), "");
-                    String nameE2 = NeoUtils.getSimpleNodeName(o2.getNeighbourNode(), "");
+                    String nameE1 = NeoUtils.getNodeName(o1.getNeighbourNode());
+                    String nameE2 = NeoUtils.getNodeName(o2.getNeighbourNode());
                     return nameE1.compareTo(nameE2);
                 }
             }
@@ -874,7 +874,7 @@ public class NeighboursView extends ViewPart implements INeoServiceProviderListe
         if (gis == null || neighbour.getSelectionIndex() < 0) {
             return null;
         }
-        return NeoUtils.findNeighbour(NeoUtils.findRoot(gis, NeoServiceProviderUi.getProvider().getService()), neighbour.getText());
+        return NeoUtils.findNeighbour(NeoUtils.findRoot(gis), neighbour.getText());
     }
 
     /**

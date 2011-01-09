@@ -275,7 +275,7 @@ public class OSSImportWizardPage extends WizardPage {
         Collection<Node> allOss = NeoUtils.getAllOss(service);
         ossMap = new HashMap<String, Node>();
         for (Node node : allOss) {
-            ossMap.put(NeoUtils.getNodeName(node, service), node);
+            ossMap.put(NeoUtils.getNodeName(node), node);
         }
         final String[] result = ossMap.keySet().toArray(new String[0]);
         Arrays.sort(result);

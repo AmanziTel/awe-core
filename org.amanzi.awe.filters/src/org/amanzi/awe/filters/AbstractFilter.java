@@ -62,7 +62,7 @@ public abstract class AbstractFilter  extends NeoServiceProviderListener{
     protected AbstractFilter(Node node, GraphDatabaseService service) {
         this.node = node;
         this.graphDatabaseService = service;
-        name = NeoUtils.getSimpleNodeName(node, "", service);
+        name = NeoUtils.getNodeName(node);
     }
 
     /**

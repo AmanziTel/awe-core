@@ -70,7 +70,6 @@ public class TransmissionLoader {
     private Node neighbour;
     private final String baseName;
     private final GraphDatabaseService neo;
-    private final String gisName;
     private final Node gis;
     private Node lastSector;
     private static final String PROXY_NAME_SEPARATOR = "/";
@@ -82,7 +81,6 @@ public class TransmissionLoader {
      * @param fileName Neighbour file Name
      */
     public TransmissionLoader(String gisName, String fileName, GraphDatabaseService neo) {
-        this.gisName=gisName;
         this.neo = neo;
         this.fileName = fileName;
         this.baseName = new File(fileName).getName();
@@ -180,7 +178,7 @@ public class TransmissionLoader {
      * @return neighbour node
      */
     private Node getTransmission(Node network, String fileName) {
-        Node result = NeoUtils.findTransmission(network, fileName, neo);
+        Node result = NeoUtils.findTransmission(network, fileName);
         if (result != null) {
             return result;
         }
