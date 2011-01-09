@@ -865,7 +865,7 @@ public class AfpModel {
 		}
 	}
 	
-	public void updateSiteDomain(AfpDomainModel model){
+	public void updateSiteSepDomain(AfpDomainModel model){
 		for(AfpDomainModel dm : siteSeparationDomains.values()){
 			if (dm.getName().equals(model.getName())){
 				dm = model;

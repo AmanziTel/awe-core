@@ -51,7 +51,7 @@ public class AfpSeperationSelector extends AfpDomainSelector {
 		else {
 			this.createUI(action, title, model.getAllSiteSeparationDomainNames());
 			if (action.equals("Edit") || action.equals("Delete")){
-				for(AfpSeparationDomainModel d: model.getSectorSeparationDomains(true)) {
+				for(AfpSeparationDomainModel d: model.getSiteSeparationDomains(true)) {
 					this.domain2Edit = d;
 					domainModel =d;
 					break;
