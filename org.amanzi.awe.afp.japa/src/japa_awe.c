@@ -10,6 +10,7 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#include <stdarg.h>
 ///?UNIX #include <syscalls.h>
 #define PTEST      if(ptest){
 #define ETEST      }
@@ -208,6 +209,15 @@ char C_F___[MaxFileName+1], N_F___[MaxFileName+1], I_F___[MaxFileName+1],
 #define IsCut_L(p1x,p1y,q1x,q1y,p2x,p2y,q2x,q2y)  ISCUT(A_L(p1x,p1y,q1x,q1y),B_L(p1x,p1y,q1x,q1y), A_L(p2x,p2y,q2x,q2y),B_L(p2x,p2y,q2x,q2y)) 
 #define Cut_x(p1x,p1y,q1x,q1y,p2x,p2y,q2x,q2y)  LCut_x(A_L(p1x,p1y,q1x,q1y),B_L(p1x,p1y,q1x,q1y),C_L(p1x,p1y,q1x,q1y), A_L(p2x,p2y,q2x,q2y),B_L(p2x,p2y,q2x,q2y),C_L(p2x,p2y,q2x,q2y))  
 #define Cut_y(p1x,p1y,q1x,q1y,p2x,p2y,q2x,q2y)   LCut_y(A_L(p1x,p1y,q1x,q1y),B_L(p1x,p1y,q1x,q1y),C_L(p1x,p1y,q1x,q1y), A_L(p2x,p2y,q2x,q2y),B_L(p2x,p2y,q2x,q2y),C_L(p2x,p2y,q2x,q2y))  
+
+void logInfo(char * format, ...)
+{
+  va_list args;
+  va_start (args, format);
+  vfprintf (Protfp, format, args);
+  va_end (args);
+  fflush(Protfp);
+}
 void jpb_strAsubst(char * here, char * old, char * neu) {
 	char *fo, *aux;
 	long ol=0, nl = 2*(strlen(here)+strlen(neu));
@@ -468,18 +478,18 @@ BOOL is_fixed
 }
 void w_____P_____(T_C___ *xN) {
 	int i, j, k;
-	fprintf(Protfp,
+	logInfo(
 			"\nJPB-FA======================================================\n");
 	for (i=0; i<_N______->Card; i++) {
 		_N______->_N___[i]->AxF = _N______->_N___[i]->FxF;
 	}
-	fprintf(Protfp, "\n============== %d::\n", 1);
+	logInfo( "\n============== %d::\n", 1);
 	for (i= -1; i<_N______->ub+1; i++) {
 		k=0;
-		fprintf(Protfp, "\nF:=%3d::> ", i);
+		logInfo( "\nF:=%3d::> ", i);
 		for (j=0; j<NOFC; j++) {
 			if (i==xN[j].Fn) {
-				fprintf(Protfp, "%s.%d.%d| ", _N______->_N___[xN[j].Nix]->S, 
+				logInfo( "%s.%d.%d| ", _N______->_N___[xN[j].Nix]->S, 
 				_N______->_N___[xN[j].Nix]->TSS, xN[j].Cid);
 				if (!is_fixed(xN[j].Nix, i)) {
 					if (_N______->_N___[xN[j].Nix]->AxF < _N______->_N___[xN[j].Nix]->NC) {
@@ -489,23 +499,23 @@ void w_____P_____(T_C___ *xN) {
 				}
 				k++;
 				if (!(k%10))
-					fprintf(Protfp, "\n          ");
+					logInfo( "\n          ");
 			}
 		}
 	}
-	fprintf(Protfp,
+	logInfo(
 			"\n---------------------------------------------------------------\n");
 	if (j<NOFC) {
-		fprintf(Protfp, "!%4d RTs out: ", coX->Card);
+		logInfo( "!%4d RTs out: ", coX->Card);
 		for (j=0; j<coX->Card; j++) {
-			fprintf(Protfp, "%s.%d.%d| ", _N______->_N___[NIX(coX->Chain[j])]->S, 
+			logInfo( "%s.%d.%d| ", _N______->_N___[NIX(coX->Chain[j])]->S, 
 			_N______->_N___[NIX(coX->Chain[j])]->SS, 
 			CID(coX->Chain[j]));
 			if (j && !(j%6))
-				fprintf(Protfp, "\n              ");
+				logInfo( "\n              ");
 		}
 	}
-	fprintf(Protfp, "\nCard=%d\n", NOFC);
+	logInfo( "\nCard=%d\n", NOFC);
 	fprintf(
 			Protfp,
 			"=========================================================================================\n");
@@ -665,10 +675,10 @@ int get_MLB(int Minprio, int Ncar, int Mindist, int Ldis, ___P____ ** rel,
 			ClNo, _N______->LB0, CARD_(Qx0));
 	for (i=0; i<CARD_(Qx0); i++) {
 		_N__E__(i,Qx0)->Clno = ClNo;
-		fprintf(Protfp, "%d:%s.%dx%d;", 
+		logInfo( "%d:%s.%dx%d;", 
 		_N__E__(i,Qx0)->Clno, _N__E__(i,Qx0)->S, _N__E__(i,Qx0)->TSS, LC__(i,Qx0));
 	}
-	fprintf(Protfp, "}\n");
+	logInfo( "}\n");
 	return (_N______->LB0);
 }
 void perm_net(void) {
@@ -833,7 +843,9 @@ __inline int GFBNCC(int a, int b, int ix, int lf) {
 		FFLX = fx1;
 		return (d1);
 	}
+    // RJ changed
 	for (i= lf; (i != (1-DD)*a + DD*b + 2*DD - 1)&&!done1; i = i+ 2*DD - 1) {
+//	for (i= lf; (i != (1-DD)*a + DD*b + 2*DD - 1)&&!done1 && (i< _N______->B+1); i = i+ 2*DD - 1) {
 		switch (_N______->ENAB[NIX(ix)][i+1]) {
 		case -1:
 			d1++;
@@ -855,7 +867,9 @@ __inline int GFBNCC(int a, int b, int ix, int lf) {
 	}
 	DD = cos_B(DD);
 	done2 = 0;
-	for (i= lf; (i != (1-DD)*a + DD*b + 2*DD - 1)&& !done2; i = i+ 2*DD - 1) {
+    // RJ changed
+	for (i= lf; (i != (1-DD)*a + DD*b + 2*DD - 1)&& !done2 ; i = i+ 2*DD - 1) {
+//	for (i= lf; (i != (1-DD)*a + DD*b + 2*DD - 1)&& !done2 && (i< _N______->B+1); i = i+ 2*DD - 1) {
 		switch (_N______->ENAB[NIX(ix)][i+1]) {
 		case -1:
 			d2++;
@@ -1151,7 +1165,7 @@ BYTE read_net_new(char *fnet)
 		sscanf(aux,"%d",&NC(_N______->Card));
 		_N__E(_N______->Card)->FxF=0; _N__E(_N______->Card)->AxF=0;
 		if(!(NC(_N______->Card)> 0)) {
-			fprintf(Protfp,"!!!ERROR reading file %s in line: wrong RT-demand > %s\n",fnet,lx);
+			logInfo("!!!ERROR reading file %s in line: wrong RT-demand > %s\n",fnet,lx);
 			continue;
 		}
 		FDemand += NC(_N______->Card);
@@ -1163,7 +1177,7 @@ BYTE read_net_new(char *fnet)
 					for(i=0;i<_N__E(_N______->Card)->FxF;i++)
 					{
 						if(1 != sscanf(xx,"%s",aux)) {
-							fprintf(Protfp,"!!!ERROR reading file %s in line %s\n",fnet,lx);
+							logInfo("!!!ERROR reading file %s in line %s\n",fnet,lx);
 							return(0);
 						}
 						xx = xx + strlen(aux)+1;
@@ -1219,7 +1233,7 @@ BYTE read_forbidden(char *fnet)
 		}
 		for(i=0;i<nof;i++) {
 			if(1 != sscanf(xx,"%s",aux)) {
-				fprintf(Protfp,"!!!ERROR reading file %s in line %s\n",fnet,lx);
+				logInfo("!!!ERROR reading file %s in line %s\n",fnet,lx);
 				free(lx);
 				fclose(fp);
 				return(0);
@@ -1240,7 +1254,7 @@ BYTE read_exceptions(char *fnet, int pri, ___P____ ** CRX)
 	FILE *fp;
 	lx = (char*) calloc(MaxNameL+1,sizeof(char));
 	if((fp =fopen(fnet,"r")) == NULL) {
-		fprintf(Protfp,"ERROR opening file %s for reading: %s\n",fnet,strerror(errno));;
+		logInfo("ERROR opening file %s for reading: %s\n",fnet,strerror(errno));;
 		printf("ERROR opening file %s for reading: %s\n",fnet,strerror(errno));;
 		return(False);
 	}
@@ -1251,7 +1265,7 @@ BYTE read_exceptions(char *fnet, int pri, ___P____ ** CRX)
 		sscanf(lx,"%s %d %s %d %d",site1,&cno1,site2,&cno2,&dexc);
 		cid1 = g___n___(site1, cno1); cid2 = g___n___(site2, cno2);
 		if((cid1<0)||(cid2<0)) {
-			fprintf(Protfp,"!!ERROR in file %s: on of cells %s %d, %s %d not found\n",
+			logInfo("!!ERROR in file %s: on of cells %s %d, %s %d not found\n",
 					fnet,site1,cno1,site2,cno2);
 			printf("!!ERROR in file %s: on of cells %s %d, %s %d not found",
 					fnet,site1,cno1,site2,cno2);
@@ -1312,7 +1326,7 @@ void son_closure_it(int p_prio, int n_prio, int dis, int tresh, int itr,
 			}
 		}
 	}
-	fprintf(Protfp, "ADD so-neighbours  %ld\n", xx);
+	logInfo( "ADD so-neighbours  %ld\n", xx);
 }
 void set_cr_CC_it(int o_pri, int pri, int dis, int ctre, int atre,
 		___P____ ** CRX) {
@@ -1393,7 +1407,7 @@ BYTE read_neighbors(char *fname,int p_pri, int mind, int cadd, int aadd, ___P___
 			njx = -1; njx = g___n___(snx,sno);
 			if(njx<0)
 			{
-				fprintf(Protfp,"!!ERROR in file %s: cell %s %d not found\n",fname,snx,sno);
+				logInfo("!!ERROR in file %s: cell %s %d not found\n",fname,snx,sno);
 				printf("!!ERROR in file %s: cell %s %d not found\n",fname,snx,sno);
 				return(False);
 			}
@@ -1409,13 +1423,13 @@ BYTE read_neighbors(char *fname,int p_pri, int mind, int cadd, int aadd, ___P___
 				ALLN++;
 			} else
 			{
-				fprintf(Protfp,"!!ERROR: reflexive neighborhood sector: %s.%d.Check the neighbour file.\n",six,sno);
+				logInfo("!!ERROR: reflexive neighborhood sector: %s.%d.Check the neighbour file.\n",six,sno);
 			}
 		}
 		else
 		{
 			if(nc[0] != 'C') {
-				fprintf(Protfp,"!!ERROR in file %s\n",fname);
+				logInfo("!!ERROR in file %s\n",fname);
 				printf("!!ERROR in file %s\n",fname);
 				return(False);
 			}
@@ -1426,7 +1440,7 @@ BYTE read_neighbors(char *fname,int p_pri, int mind, int cadd, int aadd, ___P___
 				nix = -1; nix = g___n___(six,sec);
 				if(nix<0)
 				{
-					fprintf(Protfp,"!!ERROR in file %s: cell %s %d not found\n",fname,six,sec);
+					logInfo("!!ERROR in file %s: cell %s %d not found\n",fname,six,sec);
 					printf("!!ERROR in file %s: cell %s %d not found\n",fname,six,sec);
 					return(False);
 				}
@@ -1434,7 +1448,7 @@ BYTE read_neighbors(char *fname,int p_pri, int mind, int cadd, int aadd, ___P___
 		}
 	}
 	fclose(fp);
-	fprintf(Protfp,"Set neigh Prio=%d Dis=%d >>> %d \n",p_pri,mind,ALLN);
+	logInfo("Set neigh Prio=%d Dis=%d >>> %d \n",p_pri,mind,ALLN);
 	return(True);
 }
 
@@ -1460,7 +1474,7 @@ BYTE read_it(int o_pri, int p_pri, char *fname, ___P____ ** CRX, int traff_m)
 			subci[strlen(subci)-1] = '\0';
 			nix = -1; nix = g___n___(subci,isno);
 			if(nix<0) {
-				fprintf(Protfp,"WARNING: Invalid INT %s %d in the line %s in file %s\n",
+				logInfo("WARNING: Invalid INT %s %d in the line %s in file %s\n",
 						subci,isno,lx,fname);
 				continue;
 			}
@@ -1493,15 +1507,15 @@ BYTE read_it(int o_pri, int p_pri, char *fname, ___P____ ** CRX, int traff_m)
 				subcx[strlen(subcx)-1] = '\0';
 				njx = -1; njx = g___n___(subcx,ssno);
 				if(njx<0) {
-					fprintf(Protfp,"ERROR: Invalid SUBCELL %s %d in the file %s in line:\n",subcx,ssno,fname);
-					fprintf(Protfp,"       %s\n",lx);
+					logInfo("ERROR: Invalid SUBCELL %s %d in the file %s in line:\n",subcx,ssno,fname);
+					logInfo("       %s\n",lx);
 					fclose(fp);
 					return(False);
 				}
 			}
 			else {
-				fprintf(Protfp,"ERROR: AREA/TRAFFIC value %lf not valid in the file %s in line:\n",T,fname);
-				fprintf(Protfp,"       %s\n",lx);
+				logInfo("ERROR: AREA/TRAFFIC value %lf not valid in the file %s in line:\n",T,fname);
+				logInfo("       %s\n",lx);
 				printf("ERROR: AREA/TRAFFIC value %lf not valid in the file %s in line:\n",T,fname);
 				printf("       %s\n",lx);
 				fclose(fp); return(False);
@@ -1567,7 +1581,7 @@ void c_coit1(___P____ ** rel) {
 		}
 	MAX_SET = 1 + CoIT1 / 100;
 	MIN_SET = 1 + (CoIT1 / (100*(1+QUALITY)));
-	fprintf(Protfp, "CoIT1 = %d, MAX_SET = %d, MIN_SET = %d\n", CoIT1, MAX_SET,
+	logInfo( "CoIT1 = %d, MAX_SET = %d, MIN_SET = %d\n", CoIT1, MAX_SET,
 			MIN_SET);
 }
 int set_t_it(int ncl, int pri, int tresh, ___P____ ** rel) {
@@ -1648,7 +1662,7 @@ int extract_pair(int ncl, int nprio, int dis, ___P____ ** rel) {
 			D__(rel,j,i,dis);
 			P__(rel,i,j,nprio);
 			P__(rel,j,i,nprio);
-			fprintf(Protfp, "!!EXTRACT pair %d, %d = %s von %d\n", i, j, 
+			logInfo( "!!EXTRACT pair %d, %d = %s von %d\n", i, j, 
 			_N______->_N___[i]->S, CARD_(_N______));
 			card++;
 		}
@@ -2010,7 +2024,7 @@ int F1_FxCompFa1(T_C___ * xN, T_S__ * Qxx, T_S__ * cQ) {
 	if (!_N______->FXF) {
 		enab_net(_N______, cQ->Chain[0]);
 		if ((i = F1_get_last_enab(xN[cQ->Chain[0]].Nix)) < 0) {
-			fprintf(Protfp, "!!!!!!!!ERROR whole band unabled for cell %d\n",
+			logInfo( "!!!!!!!!ERROR whole band unabled for cell %d\n",
 					xN[cQ->Chain[0]].Nix);
 			return (1);
 		}
@@ -2062,15 +2076,15 @@ int opt_all_it(int ncl, int iprio, int sprio, int oprio, int odis, int ndis,
 	QC = set_t_it(ncl, iprio, tresh, rel);
 	if (!QC)
 		return (0);
-	fprintf(Protfp, ">>>>>>>T_S__ %d for TR=%d\n", QC, tresh);
+	logInfo( ">>>>>>>T_S__ %d for TR=%d\n", QC, tresh);
 	if (!F1_analyze_FACC(cet, Q0, coX)) {
 		LASTQC = QC;
 		set_ex(QC, sprio, rel);
-		fprintf(Protfp, ">>>>>>>!!!!SET %d to %d for TR=%d\n", QC, odis, tresh);
+		logInfo( ">>>>>>>!!!!SET %d to %d for TR=%d\n", QC, odis, tresh);
 		return (1);
 	}
 	if (QC < MIN_SET+1) {
-		fprintf(Protfp, "--NOT SET %5d-Prio%d with TR=%3d\n", QC, iprio, tresh);
+		logInfo( "--NOT SET %5d-Prio%d with TR=%3d\n", QC, iprio, tresh);
 		extract_pair(QC, oprio, MAX_(1,ndis), rel);
 		return (2);
 	} else
@@ -2130,7 +2144,7 @@ int opt_all(int ncl, int iprio, int sprio, int oprio, int odis, int ndis,
 		return (1);
 	}
 	if (QC < MIN_SET+1) {
-		fprintf(Protfp, "!!!!!!!!!!!Not set are:>>>>>\n");
+		logInfo( "!!!!!!!!!!!Not set are:>>>>>\n");
 		reset_ex(1, 0, QC, iprio, oprio, odis, ___C__, rel);
 		return (2);
 	} else
@@ -2146,7 +2160,7 @@ BYTE set_all
 	int noass=0;
 	PLOW = prio;
 	if((noass=F1_analyze_FACC(cet, Q0, coX))) {
-		fprintf(Protfp,"ERROR:check failed\n");
+		logInfo("ERROR:check failed\n");
 		w_____P_____(cet);
 		fflush(Protfp);
 		return(False);
@@ -2166,11 +2180,11 @@ void write_ctrl(char * pctrfile) {
 				strerror(errno));;
 		return;
 	}
-	fprintf(Protfp, "CONTROL FILE:::>\n");
+	logInfo( "CONTROL FILE:::>\n");
 	while ((i<26 )&& (fgets(lx, MaxLineL, fctrp) != NULL)) {
-		fprintf(Protfp, lx);
+		logInfo( lx);
 	}
-	fprintf(Protfp, "CONTROL FILE:::<\n\n\n");
+	logInfo( "CONTROL FILE:::<\n\n\n");
 	fclose(fctrp);
 }
 BOOL set_data
@@ -2338,6 +2352,7 @@ int japa_awe
 	char c='\0';
 	PlExist = 0;
 	fflush(stdin);
+	Protfp = stdout;
 	///?	if(getch() > 0) printf("HALLO"); 
 	if (!set_data(pctrfile)) {
 		f___();
@@ -2375,31 +2390,31 @@ int japa_awe
 	if (strlen(E_F___)) {
 		EXCEPF = 1;
 		if (!read_exceptions(E_F___, ____X, _N______->_E___)) {
-			fprintf(Protfp, "ERROR by reading Exception-File\n\n");
+			logInfo( "ERROR by reading Exception-File\n\n");
 			f___();
 			return (1);
 		}
 	}
 	CoIT1 = 0;
 	CoIT1Done = 0;
-	fprintf(Protfp, "\nJPB-FA IT read ???======================\n");
+	logInfo( "\nJPB-FA IT read ???======================\n");
 	if (!uit && !read_IT(____X,____CI,I_F___,_N______->_E___,UTraf)) {
-		fprintf(Protfp, "\nJPB-FA IT read ======================\n");
+		logInfo( "\nJPB-FA IT read ======================\n");
 		f___();
 		return (NR_E);
 	}
 	uit = 1;
 	if (_C____) {
-		fprintf(Protfp, "??CCC-check:\n\n");
+		logInfo( "??CCC-check:\n\n");
 		set_cr_CC_it(____X,____C,_C____,___C__,0,_N______->_E___);
 	}
 	if (_S____) {
-		fprintf(Protfp, "??SCC-check:\n\n");
+		logInfo( "??SCC-check:\n\n");
 		set_cr_SCC_it(____C,____S,_S___,___C__,0,_N______->_E___);
 	}
 	if (unb) {
 		if (!read_neighbors(N_F___, ____2N, 1, NMIN, 33, _N______->_E___)) {
-			fprintf(Protfp, "ERROR by reading Neighbour-File\n\n");
+			logInfo( "ERROR by reading Neighbour-File\n\n");
 			f___();
 			return (NR_E);
 		}
@@ -2417,12 +2432,12 @@ int japa_awe
 	c_coit1(_N______->_E___);
 	PROGRESS = 0;
 	for (p=____C; (NOLOCL < p); p--) {
-		//fprintf(Protfp,"PROGRESS CoIT1Done/CoIT1,%d,%d,\n",CoIT1Done,CoIT1);
+		//logInfo("PROGRESS CoIT1Done/CoIT1,%d,%d,\n",CoIT1Done,CoIT1);
 		LogProgress(CoIT1Done, CoIT1);
-		fprintf(Protfp, "PRIO = %d, DISR = %d  >>>>>\n", p, PPar7[p].pdisr);
+		logInfo( "PRIO = %d, DISR = %d  >>>>>\n", p, PPar7[p].pdisr);
 		if (!set_all(p))
 			set_step(p);
-		fprintf(Protfp, "<<<<<<<<<<<<<<<PRIO = %d, DISR = %d\n", p,
+		logInfo( "<<<<<<<<<<<<<<<PRIO = %d, DISR = %d\n", p,
 				PPar7[p].pdisr);
 		lim = (int)((100.0*((float)CoIT1Done) / CoIT1));
 		if (lim>PROGRESS) {
@@ -2435,7 +2450,7 @@ int japa_awe
 		///?if(UBreak = getc(stdin)) > 0;
 		///?	 UBreak = getc(stdin);
 		///?	 UBreak++;
-		///?fprintf(Protfp,"DANACH   UBREAK = %d>>>>\n",UBreak);
+		///?logInfo("DANACH   UBREAK = %d>>>>\n",UBreak);
 		///?	 UBreak=kbhit();
 		///?UserBreak;
 	}

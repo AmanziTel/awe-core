@@ -55,7 +55,7 @@ public class AfpProcessExecutor extends Job {
 	protected Transaction transaction;
 	private HashMap<String, String> parameters;
 	private Node afpDataset;
-	
+	private IProgressMonitor progressMonitor;
 	
 	public AfpProcessExecutor(String name, Node afpRoot,Node afpDataset, HashMap<String, String> parameters) {
 		super(name);
@@ -75,12 +75,13 @@ public class AfpProcessExecutor extends Job {
 	 */
 	@Override
 	public IStatus run(IProgressMonitor monitor){
-		
+		progressMonitor = monitor;
 		monitor.beginTask("Execute Afp", 100);
         AfpExporter afpE = new AfpExporter(afpRoot);
 
 		createFiles(monitor, afpE);
 		Runtime run = Runtime.getRuntime();
+		AweConsolePlugin.info("AFP Engine .... starting");
 		try {
 			AfpEngine engine = AfpEngine.getAfpEngine();
 			
@@ -89,7 +90,8 @@ public class AfpProcessExecutor extends Job {
 			//AweConsolePlugin.info("Executing Cmd: " + command);
 			//process = run.exec(command);
 			process = run.exec(new String[]{path,afpE.controlFileName});
-			monitor.worked(20);
+			monitor.worked(0);
+			AweConsolePlugin.info("AFP Engine .... started");
 					
 			/**
 			 * Thread to read the stderr and display it on Awe Console
@@ -126,7 +128,7 @@ public class AfpProcessExecutor extends Job {
 	    				while ((output = input.readLine()) != null){
 	    					// check the progress variable
 	    					AweConsolePlugin.info(output);
-	    					checkForProgress(output);
+	    					checkForProgress(progressMonitor, output);
 	    				}
 	    				input.close();
 	    				writer.close();
@@ -170,6 +172,7 @@ public class AfpProcessExecutor extends Job {
                     AweConsolePlugin.info("Interrupted waiting for threads: " + e);
                 }
 			}
+			AweConsolePlugin.info("AFP Engine .... finished");
 			AfpOutputFileLoader afpOutputFileLoader = new AfpOutputFileLoader(afpRoot, afpE.outputFileName, afpDataset);
 			afpOutputFileLoader.run(monitor);
 		}catch (Exception e){
@@ -232,7 +235,7 @@ public class AfpProcessExecutor extends Job {
 		
 	}
 	
-	void checkForProgress(String output) {
+	void checkForProgress(IProgressMonitor monitor, String output) {
 		
 		if(output.startsWith("PROGRESS CoIT1Done/CoIT1")) {
 		// progress line
@@ -249,6 +252,11 @@ public class AfpProcessExecutor extends Job {
 				}
 				AweConsolePlugin.info(" completed "
 						+ completed);
+				
+				if(monitor != null) {
+					long per = (completed *100) /total;
+					monitor.worked((int)per);
+				}
 				onProgressUpdate(0, time *1000, total - completed,
 						0, 0, 0, 0, 0, 0, 0);
 			} catch (Exception e) {
