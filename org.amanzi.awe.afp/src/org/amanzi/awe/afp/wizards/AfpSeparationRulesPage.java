@@ -22,6 +22,7 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -124,62 +125,17 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 
 		tabFolder =new TabFolder(main, SWT.NONE);// | SWT.BORDER);
 		tabFolder.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true));
-    	TabItem item1 =new TabItem(tabFolder,SWT.NONE);
-		item1.setText("Sector");
-		
-		Group sectorMain = new Group(tabFolder, SWT.NONE);
-		sectorMain.setLayout(new GridLayout(1, false));
-		sectorMain.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1 ,2));
-		
-		sectorDomainsGroup = new Group(sectorMain, SWT.NONE);
-		sectorDomainsGroup.setLayout(new GridLayout(3, true));
-		sectorDomainsGroup.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true,1 ,10));
-		
-		Label sectorDomainsLabel = new Label(sectorDomainsGroup, SWT.LEFT);
-		sectorDomainsLabel.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 1 , 1));
-		sectorDomainsLabel.setText("Domains");
-    	AfpWizardUtils.makeFontBold(sectorDomainsLabel);
-    	
-    	Label sectorsLabel = new Label(sectorDomainsGroup, SWT.LEFT);
-    	sectorsLabel.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1 , 1));
-    	sectorsLabel.setText("Assigned Sectors");
-    	AfpWizardUtils.makeFontBold(sectorsLabel);
-    	
-    	AfpWizardUtils.createButtonsGroup(this, sectorDomainsGroup, "Sector SeparationRules", model);
-    	siteDomainLabels = new HashMap<String, Label[]>();
-		
-		
-    	filterTableSector = addTRXFilterGroup(sectorMain, headers,10, false, this);
-		
-		item1.setControl(sectorMain);
-		
 		TabItem item2 =new TabItem(tabFolder,SWT.NONE);
 		item2.setText("Site");
 		
-		Group siteMain = new Group(tabFolder, SWT.NONE);
-		siteMain.setLayout(new GridLayout(1, false));
-		siteMain.setLayoutData(new GridData(GridData.FILL, SWT.FILL, true, true, 1 ,2));
+    	item2.setControl(new SiteGroup(tabFolder, this));
+
+    	TabItem item1 =new TabItem(tabFolder,SWT.NONE);
+		item1.setText("Sector");
 		
-		siteDomainsGroup = new Group(siteMain, SWT.NONE);
-		siteDomainsGroup.setLayout(new GridLayout(3, true));
-		siteDomainsGroup.setLayoutData(new GridData(GridData.FILL, SWT.FILL, true, true,1 ,10));
 		
-		Label siteDomainsLabel = new Label(siteDomainsGroup, SWT.LEFT);
-		siteDomainsLabel.setLayoutData(new GridData(GridData.FILL, SWT.BEGINNING, true, false, 1 , 1));
-		siteDomainsLabel.setText("Domains");
-    	AfpWizardUtils.makeFontBold(siteDomainsLabel);
-    	
-    	Label sitesLabel = new Label(siteDomainsGroup, SWT.LEFT);
-    	sitesLabel.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1 , 1));
-    	sitesLabel.setText("Assigned Sites");
-    	AfpWizardUtils.makeFontBold(sitesLabel);
-    	
-    	AfpWizardUtils.createButtonsGroup(this, siteDomainsGroup, "Site SeparationRules", model);
-    	sectorDomainLabels = new HashMap<String, Label[]>();
-    	
-    	filterTableSite = addTRXFilterGroup(siteMain, headers,10, true, this);
+		item1.setControl(new SectorGroup(tabFolder, this));
 		
-    	item2.setControl(siteMain);
 		
     	
     	this.tabFolder.addSelectionListener(new SelectionAdapter() {
@@ -200,6 +156,66 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
     	setPageComplete (true);
 		setControl(thisParent);
 
+	}
+	
+	class SectorGroup extends Composite {
+		public SectorGroup(Composite parent, AfpSeparationRulesPage pPage) {
+			super(parent, SWT.NONE);
+			this.setLayout(new GridLayout(1, true)); 
+
+			Group sectorMain = new Group(this, SWT.NONE);
+			sectorMain.setLayout(new GridLayout(1, false));
+			sectorMain.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1 ,2));
+			
+			sectorDomainsGroup = new Group(sectorMain, SWT.NONE);
+			sectorDomainsGroup.setLayout(new GridLayout(3, true));
+			sectorDomainsGroup.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true,1 ,10));
+			
+			Label sectorDomainsLabel = new Label(sectorDomainsGroup, SWT.LEFT);
+			sectorDomainsLabel.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 1 , 1));
+			sectorDomainsLabel.setText("Domains");
+	    	AfpWizardUtils.makeFontBold(sectorDomainsLabel);
+	    	
+	    	Label sectorsLabel = new Label(sectorDomainsGroup, SWT.LEFT);
+	    	sectorsLabel.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1 , 1));
+	    	sectorsLabel.setText("Assigned Sectors");
+	    	AfpWizardUtils.makeFontBold(sectorsLabel);
+	    	
+	    	AfpWizardUtils.createButtonsGroup(pPage, sectorDomainsGroup, "Sector SeparationRules", model);
+	    	sectorDomainLabels = new HashMap<String, Label[]>();
+			
+	    	filterTableSector = addTRXFilterGroup(sectorMain, headers,10, false, pPage);
+		}
+	}
+	class SiteGroup extends Composite {
+		public SiteGroup(Composite parent, AfpSeparationRulesPage pPage) {
+			super(parent, SWT.NONE);
+			this.setLayout(new GridLayout(1, true)); 
+			Group siteMain = new Group(this, SWT.NONE);
+			siteMain.setLayout(new GridLayout(1, false));
+			siteMain.setLayoutData(new GridData(GridData.FILL, SWT.FILL, true, true, 1 ,2));
+			
+			siteDomainsGroup = new Group(siteMain, SWT.NONE);
+			siteDomainsGroup.setLayout(new GridLayout(3, true));
+			siteDomainsGroup.setLayoutData(new GridData(GridData.FILL, SWT.FILL, true, true,1 ,10));
+			
+			Label siteDomainsLabel = new Label(siteDomainsGroup, SWT.LEFT);
+			siteDomainsLabel.setLayoutData(new GridData(GridData.FILL, SWT.BEGINNING, true, false, 1 , 1));
+			siteDomainsLabel.setText("Domains");
+	    	AfpWizardUtils.makeFontBold(siteDomainsLabel);
+	    	
+	    	Label sitesLabel = new Label(siteDomainsGroup, SWT.LEFT);
+	    	sitesLabel.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1 , 1));
+	    	sitesLabel.setText("Assigned Sites");
+	    	AfpWizardUtils.makeFontBold(sitesLabel);
+	    	
+	    	AfpWizardUtils.createButtonsGroup(pPage, siteDomainsGroup, "Site SeparationRules", model);
+	    	siteDomainLabels = new HashMap<String, Label[]>();
+	    	
+	    	filterTableSite = addTRXFilterGroup(siteMain, headers,10, true, pPage);
+			
+
+		}
 	}
 	
 	private void interChangeUniquePropertySet(boolean sector) {

@@ -108,6 +108,7 @@ public class NetworkSiteImportWizard extends Wizard implements IImportWizard {
                     {
                         NeighbourLoader neighbourLoader;
                         neighbourLoader = new NeighbourLoader(mainPage.getNetworkNode(), mainPage.getFileName(), NeoServiceProviderUi.getProvider().getService());
+                        neighbourLoader.setInterferenceLoader(true);
                         neighbourLoader.run(monitor);
                         NeoServiceProviderUi.getProvider().commit();
                     	break;
