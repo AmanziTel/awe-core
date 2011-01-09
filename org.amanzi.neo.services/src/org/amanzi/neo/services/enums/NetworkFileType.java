@@ -35,7 +35,8 @@ public enum NetworkFileType {
     NEIGHBOUR("Neighbours (sector to sector)",15),
     PROBE("Probes (measurement devices)",20),
     UTRAN("Ericsson Topology Data",25),
-    NOKIA_TOPOLOGY("Nokia Topology Data",30);
+    NOKIA_TOPOLOGY("Nokia Topology Data",30),
+    INTERFERENCE("Interference (sector to sector)",35);
     private String id;
     private Integer order;
 

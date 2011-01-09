@@ -33,7 +33,7 @@ public enum NetworkTypes {
         @Override
         public boolean isCorrectFileType(NetworkFileType fileType) {
             return fileType != null
-                    && (fileType == NetworkFileType.NEIGHBOUR || fileType == NetworkFileType.RADIO_SECTOR || fileType == NetworkFileType.RADIO_SITE || fileType == NetworkFileType.TRANSMISSION||fileType==NetworkFileType.UTRAN||fileType==NetworkFileType.NOKIA_TOPOLOGY);
+                    && (fileType == NetworkFileType.NEIGHBOUR || fileType == NetworkFileType.INTERFERENCE || fileType == NetworkFileType.RADIO_SECTOR || fileType == NetworkFileType.RADIO_SITE || fileType == NetworkFileType.TRANSMISSION||fileType==NetworkFileType.UTRAN||fileType==NetworkFileType.NOKIA_TOPOLOGY);
         }
     },
     PROBE("probe") {

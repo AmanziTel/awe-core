@@ -104,12 +104,22 @@ public class NetworkSiteImportWizard extends Wizard implements IImportWizard {
                         loader.addLayersToMap();      
                         handleSelect(monitor,loader.getRootNodes());
                         break;
+                    case INTERFERENCE:
+                    {
+                        NeighbourLoader neighbourLoader;
+                        neighbourLoader = new NeighbourLoader(mainPage.getNetworkNode(), mainPage.getFileName(), NeoServiceProviderUi.getProvider().getService());
+                        neighbourLoader.run(monitor);
+                        NeoServiceProviderUi.getProvider().commit();
+                    	break;
+                    }
                     case NEIGHBOUR:
+                    {
                         NeighbourLoader neighbourLoader;
                         neighbourLoader = new NeighbourLoader(mainPage.getNetworkNode(), mainPage.getFileName(), NeoServiceProviderUi.getProvider().getService());
                         neighbourLoader.run(monitor);
                         NeoServiceProviderUi.getProvider().commit();
                         break;
+                    }
                     case TRANSMISSION:
                         TransmissionLoader transmissionLoader;
                         transmissionLoader = new TransmissionLoader(mainPage.getNetworkName(), mainPage.getFileName(), NeoServiceProviderUi.getProvider().getService());

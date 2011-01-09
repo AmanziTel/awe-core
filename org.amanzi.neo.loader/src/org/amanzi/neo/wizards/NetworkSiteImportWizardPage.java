@@ -117,7 +117,7 @@ public class NetworkSiteImportWizardPage extends WizardPage {
         }
 
         if (networkNode==null){
-            if (type == NetworkFileType.NEIGHBOUR) {
+            if (type == NetworkFileType.NEIGHBOUR || type == NetworkFileType.INTERFERENCE ) {
                 setDescription(String.format(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NETWORK_MUST_EXIST,type.getId()));  
                 return false;
             }
@@ -178,7 +178,7 @@ public class NetworkSiteImportWizardPage extends WizardPage {
                 needCheckFilds = true;
                 updateLabelFileDescr();
                 if (netwFile.getLeft()!=null){
-                    if (netwFile.getLeft()==NetworkFileType.NEIGHBOUR){
+                    if (netwFile.getLeft()==NetworkFileType.NEIGHBOUR || netwFile.getLeft()==NetworkFileType.INTERFERENCE ){
                         if (members.get(networkName)!=null||members.isEmpty()){
                             return;
                         }
