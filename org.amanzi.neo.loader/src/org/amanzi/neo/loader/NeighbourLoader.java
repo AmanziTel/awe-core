@@ -71,12 +71,11 @@ public class NeighbourLoader {
     private Header header;
     private Node neighbour;
     private final String baseName;
-    private final GraphDatabaseService neo;
     private final LuceneIndexService index;
     private final String gisName;
     
     private boolean isTest = false;
-    private boolean isInterferenceLoader = false;
+    private boolean isInterference = false;
 
     /**
      * Constructor
@@ -84,11 +83,11 @@ public class NeighbourLoader {
      * @param networkNode network Node
      * @param fileName Neighbour file Name
      */
-    public NeighbourLoader(Node networkNode, String fileName, GraphDatabaseService neo) {
+    public NeighbourLoader(Node networkNode, String fileName, boolean isInterference) {
         network = NeoUtils.findRoot(networkNode);
         this.fileName = fileName;
-        this.neo = neo;
         this.baseName = new File(fileName).getName();
+        this.isInterference = isInterference;
         gisName = NeoUtils.getNodeName(networkNode);
         index = NeoServiceProviderUi.getProvider().getIndexService();
     }
@@ -99,18 +98,13 @@ public class NeighbourLoader {
      * @param networkNode network Node
      * @param fileName Neighbour file Name
      */
-    public NeighbourLoader(Node networkNode, String fileName, GraphDatabaseService neo, LuceneIndexService indexService, boolean isTesting) {
+    public NeighbourLoader(Node networkNode, String fileName, LuceneIndexService indexService, boolean isTesting) {
         network = NeoUtils.findRoot(networkNode);
         this.fileName = fileName;
-        this.neo = neo;
         this.baseName = new File(fileName).getName();
         gisName = NeoUtils.getNodeName(networkNode);
         index = indexService;
         isTest = isTesting;
-    }
-    
-    public void setInterferenceLoader(boolean interferenceLoader) {
-    	this.isInterferenceLoader = interferenceLoader;
     }
 
     /**
@@ -142,7 +136,7 @@ public class NeighbourLoader {
     public void run(IProgressMonitor monitor) throws IOException {
         CountingFileInputStream stream = null;
         BufferedReader reader = null;
-        Transaction tx = neo.beginTx();
+        Transaction tx = network.getGraphDatabase().beginTx();
         try {
             if (monitor == null) {
                 monitor = new NullProgressMonitor();
@@ -158,12 +152,12 @@ public class NeighbourLoader {
                 monitor.setCanceled(true);
                 return;
             }
-            header = new Header(line, neo, index, gisName);
+            header = new Header(line, network.getGraphDatabase(), index, gisName);
             neighbour = getNeighbour(network, baseName);
 //            lastSector = neighbour;
             int commit = 0;
             while ((line = reader.readLine()) != null) {
-                header.parseLine(line, network, baseName, neighbour, isInterferenceLoader);
+                header.parseLine(line, network, baseName, neighbour, isInterference);
                 if (monitor.isCanceled())
                     break;
                 perc = stream.percentage();
@@ -174,7 +168,7 @@ public class NeighbourLoader {
                 if (++commit > COMMIT_MAX) {
                     tx.success();
                     tx.finish();
-                    tx = neo.beginTx();
+                    tx = network.getGraphDatabase().beginTx();
                     commit = 0;
                 }
             }
@@ -206,6 +200,7 @@ public class NeighbourLoader {
      * @return neighbour node
      */
     private Node getNeighbour(Node network, String fileName) {
+        GraphDatabaseService neo = network.getGraphDatabase();
         Node result = NeoUtils.findNeighbour(network, fileName, neo);
         if (result != null) {
             return result;
@@ -215,7 +210,7 @@ public class NeighbourLoader {
             result = neo.createNode();
             result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.NEIGHBOUR.getId());
             result.setProperty(INeoConstants.PROPERTY_NAME_NAME, fileName);
-            if(this.isInterferenceLoader) {
+            if(this.isInterference) {
             	network.createRelationshipTo(result, NetworkRelationshipTypes.INTERFERENCE_DATA);
             } else {
             	network.createRelationshipTo(result, NetworkRelationshipTypes.NEIGHBOUR_DATA);

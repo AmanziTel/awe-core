@@ -48,9 +48,9 @@ public class NeighbourImportWizard extends Wizard implements IImportWizard {
         Job job = new Job("Load Neighbour '" + (new File(mainPage.getFileName())).getName() + "'") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
+                //TODO: Support interference here like we do in the NetworkSiteImportWizard
                 NeighbourLoader neighbourLoader;
-                neighbourLoader = new NeighbourLoader(mainPage.getNetworkNode(), mainPage.getFileName(), NeoServiceProviderUi
-                        .getProvider().getService());
+                neighbourLoader = new NeighbourLoader(mainPage.getNetworkNode(), mainPage.getFileName(), false);
                 try {
                     neighbourLoader.run(monitor);
                     NeoServiceProviderUi.getProvider().commit();
