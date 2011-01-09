@@ -728,7 +728,7 @@ public class Utils {
     }
 
     /**
-     * Finds Neighbour of network.
+     * Finds Neighbours or Inteferers within a specific network and specified list name.
      * 
      * @param network - network GIS node
      * @param name - Neighbour name
@@ -747,30 +747,8 @@ public class Utils {
                 Node node = currentPos.currentNode();
                 return isNeighbourNode(node) && name.equals(node.getProperty(INeoConstants.PROPERTY_NAME_NAME, ""));
             }
-        }, NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING).iterator();
-        return iterator.hasNext() ? iterator.next() : null;
-    }
-    /**
-     * Finds Neighbour of network.
-     * 
-     * @param network - network GIS node
-     * @param name - Neighbour name
-     * @param neo the neo
-     * @return Neighbour node or null;
-     */
-    public static Node findInterferor(Node network, final String name, GraphDatabaseService neo) {
-        if (network == null || name == null) {
-            return null;
-        }
-        assert !isGisNode(network);
-        Iterator<Node> iterator = network.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-
-            @Override
-            public boolean isReturnableNode(TraversalPosition currentPos) {
-                Node node = currentPos.currentNode();
-                return isNeighbourNode(node) && name.equals(node.getProperty(INeoConstants.PROPERTY_NAME_NAME, ""));
-            }
-        }, NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING).iterator();
+        }, NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING, NetworkRelationshipTypes.INTERFERENCE_DATA,
+                Direction.OUTGOING).iterator();
         return iterator.hasNext() ? iterator.next() : null;
     }
 
