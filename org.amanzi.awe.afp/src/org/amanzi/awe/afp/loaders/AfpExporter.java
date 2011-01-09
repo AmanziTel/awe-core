@@ -32,6 +32,7 @@ import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 
 /**
@@ -311,12 +312,26 @@ public class AfpExporter {
 			
 		return sectorValues;
 	}
+	public String getSectorNameForInterList(Node sector){
+		Node site = sector.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(sector);
+		String siteName = site.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+
+		String sectorName = sector.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+		if (sectorName.length() > siteName.length() && sectorName.substring(0, siteName.length()).equals(siteName)){
+			sectorName = sector.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString().substring(siteName.length());
+		}
+		char sectorNo = sectorName.charAt(sectorName.length() - 1);
+		if (Character.isLetter(sectorNo))
+			sectorName = siteName + sectorNo;
+		
+		return sectorName;
+	}
 	
 	
 	/**
 	 * Creates the interference file for input to the C++ engine
 	 */
-	public void createInterferenceFile(){
+	public void createInterferenceFile(IProgressMonitor monitor){
 		File interferenceFile = getFile(this.inputInterferenceFileName);
 		Node startSector = null;
 
@@ -334,32 +349,79 @@ public class AfpExporter {
 			
 			if (startSector != null){			
 				for (Node proxySector : startSector.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, NetworkRelationshipTypes.NEXT, Direction.OUTGOING)){
+					
+					if(monitor != null ) {
+						if(monitor.isCanceled())
+							return;
+					}
 					if (!proxySector.getProperty("type").equals("sector_sector_relations"))
 						 continue;
+					StringBuilder sbCell = new StringBuilder();
 					Node sector = proxySector.getSingleRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.INCOMING).getOtherNode(proxySector);		
-					String sectorName = sector.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-					char sectorNoChar = (char) (Integer.parseInt(sectorName.substring(sectorName.length() - 1)) + 65 - 1);
-					writer.write("SUBCELL " + proxySector.getProperty("nonrelevant1") + " " +
-								 proxySector.getProperty("nonrelevant2") + " " +
-								 proxySector.getProperty("total-cell-area") + " " +
-								 proxySector.getProperty("total-cell-traffic") + " " +
-								 proxySector.getProperty("numberofinterferers") + " " +
-								 sectorName.substring(0, sectorName.length() - 1) + sectorNoChar);
-					writer.newLine();
+					//String sectorName = sector.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+					//char sectorNoChar = (char) (Integer.parseInt(sectorName.substring(sectorName.length() - 1)) + 65 - 1);
+					String sectorName = getSectorNameForInterList(sector);
+					sbCell.append("SUBCELL 0 0 1 1 "); 
+					int numberofinterferers =0;
+					StringBuilder sbSubCell = new StringBuilder();
+					
 					for (Relationship relation : proxySector.getRelationships(NetworkRelationshipTypes.INTERFERS, Direction.OUTGOING)){
 						Node interferenceProxySector = relation.getEndNode();
 						Node interferenceSector = interferenceProxySector.getSingleRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.INCOMING).getOtherNode(interferenceProxySector);
-						sectorName = interferenceSector.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-						sectorNoChar = (char) (Integer.parseInt(sectorName.substring(sectorName.length() - 1)) + 65 - 1);
+						//String subSectorName = interferenceSector.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+						//sectorNoChar = (char) (Integer.parseInt(sectorName.substring(sectorName.length() - 1)) + 65 - 1);
+						//String[] sectorVals1 = parseSectorName(interferenceSector);
+						String subSectorName = getSectorNameForInterList(interferenceSector);
+
 						DecimalFormat df = new DecimalFormat("0.0000000000");
-						writer.write("INT " + proxySector.getProperty("nonrelevant1") + "\t" +
-								relation.getProperty("nonrelevant2").toString() + "\t" +
-								df.format(relation.getProperty("co-channel-interf-area")).toString() + " " +
-								df.format(relation.getProperty("co-channel-interf-traffic")).toString() + " " +
-								df.format(relation.getProperty("adj-channel-interf-area")).toString() + " " +
-								df.format(relation.getProperty("adj-channel-interf-traffic")).toString() + " " +
-								sectorName.substring(0, sectorName.length() - 1) + sectorNoChar);
-						writer.newLine();
+						sbSubCell.append("INT 0\t0\t"); 
+						try {
+							sbSubCell.append(df.format(relation.getProperty("CoA")).toString());
+						} catch (Exception e) {
+							sbSubCell.append((String)relation.getProperty("CoA"));
+							//AweConsolePlugin.error(e.toString());
+							//AweConsolePlugin.error("CELL -- " + subSectorName);
+							//sbSubCell.append("0.0");
+						}
+						sbSubCell.append(" ");
+						try {
+							sbSubCell.append(df.format(relation.getProperty("CoT")).toString());
+						} catch (Exception e) {
+							sbSubCell.append((String)relation.getProperty("CoT"));
+							//AweConsolePlugin.error(e.toString());
+							//AweConsolePlugin.error("CELL -- " + subSectorName);
+							//sbSubCell.append("0.0");
+						}
+						sbSubCell.append(" ");
+						try {
+							sbSubCell.append(df.format(relation.getProperty("AdA")).toString());
+						} catch (Exception e) {
+							sbSubCell.append((String)relation.getProperty("AdA"));
+							//AweConsolePlugin.error(e.toString());
+							//AweConsolePlugin.error("CELL -- " + subSectorName);
+							//sbSubCell.append("0.0");
+						}
+						sbSubCell.append(" ");
+						try {
+							sbSubCell.append(df.format(relation.getProperty("AdT")).toString());
+						} catch (Exception e) {
+							sbSubCell.append((String)relation.getProperty("AdT"));
+							//AweConsolePlugin.error(e.toString());
+							//AweConsolePlugin.error("CELL -- " + subSectorName);
+							//sbSubCell.append("0.0");
+						}
+						sbSubCell.append(" ");
+						sbSubCell.append(subSectorName);
+						sbSubCell.append("\n");
+						numberofinterferers++;
+					}
+					sbCell.append(numberofinterferers);
+					sbCell.append(" ");
+					sbCell.append(sectorName);
+					sbCell.append("\n");
+					if(numberofinterferers >0) {
+						writer.write(sbCell.toString());
+						writer.write(sbSubCell.toString());
 					}
 				}
 			}

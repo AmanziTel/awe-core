@@ -203,7 +203,7 @@ public class AfpProcessExecutor extends Job {
 		afpE.createNeighboursFile();
 		
 		/** Create the interference file */
-		afpE.createInterferenceFile();
+		afpE.createInterferenceFile(monitor);
 		
 		/** Create the cliques file */
 		afpE.createCliquesFile();
