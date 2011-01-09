@@ -124,14 +124,10 @@ public class LoaderUiUtils extends LoaderUtils{
                     return new Pair<NetworkFileType, Exception>(NetworkFileType.PROBE, null);
                 }
             }
-            for (String header : getPossibleHeaders(DataLoadPreferences.NH_INT)) {
-                if (headers.contains(header)) {
-                    return new Pair<NetworkFileType, Exception>(NetworkFileType.INTERFERENCE, null);
-                }
-            }
             for (String header : getPossibleHeaders(DataLoadPreferences.NE_NBR_NAME)) {
                 if (headers.contains(header)) {
-                    return new Pair<NetworkFileType, Exception>(NetworkFileType.NEIGHBOUR, null);
+                    return new Pair<NetworkFileType, Exception>(header.matches(".*nterfer.*") ? NetworkFileType.INTERFERENCE
+                            : NetworkFileType.NEIGHBOUR, null);
                 }
             }
             for (String header : getPossibleHeaders(DataLoadPreferences.NH_SECTOR)) {
@@ -167,9 +163,6 @@ public class LoaderUiUtils extends LoaderUtils{
      * @return array of possible headers
      */
     public static String[] getPossibleHeaders(String key) {
-        if(DataLoadPreferences.NH_INT.compareTo(key) ==0) {
-            return new String[] {"Server", "Interferer" , "CoA", "AdA" ,"CoT","AdT" };
-        }
         String text = NeoLoaderPlugin.getDefault().getPreferenceStore().getString(key);
         if (text == null) {
             return new String[0];

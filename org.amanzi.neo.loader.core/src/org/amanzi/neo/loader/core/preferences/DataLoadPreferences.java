@@ -42,7 +42,6 @@ public class DataLoadPreferences {
     public static final String NH_LATITUDE = "NH_LATITUDE";
     public static final String NH_LONGITUDE = "NH_LONGITUDE";
     public static final String DEFAULT_CHARSET = "DEFAULT_CHARSET";
-    public static final String NH_INT = "NH_INT";
     // drive loader headers
     public static final String DR_LATITUDE = "DR_LATITUDE";
     public static final String DR_LONGITUDE = "DR_LONGITUDE";

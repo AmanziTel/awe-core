@@ -32,8 +32,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.ws.Service;
-
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.services.GpehReportUtil;
