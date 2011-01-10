@@ -3,6 +3,7 @@
  AUTHOR: JPB
  DATE:�  2010-07-25
  ========================================= */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
@@ -12,6 +13,7 @@
 #include <time.h>
 #include <stdarg.h>
 ///?UNIX #include <syscalls.h>
+
 #define PTEST      if(ptest){
 #define ETEST      }
 #define PTR(t)    t*
@@ -117,10 +119,13 @@
 #define NO_E       0
 #define SCC_E      3
 #define NR_E       4
+
 #include <ctype.h>
+
 __inline void _my_sscanf1(char* p, int* r) {
 	*r = *p -'0';
 }
+
 /*
  #define _P__(R,i,j,r)      r=0;_my_sscanf1(R[i][j],&r)
  #define _D__(R,i,j,r)      r=0;_my_sscanf1(R[i][j]+PRIL,&r)
@@ -137,25 +142,31 @@ __inline void _my_sscanf1(char* p, int* r) {
 #define _A__(R,i,j,r)      r=0;sscanf(R[i][j]+(PRIL+DISL+COL+1),"%2d",&r)
 #define _P___(R,i,j,r)  _my_sscanf1(REL_(R,i,j),&r)
 #define _D___(R,i,j,r)  _my_sscanf1(REL_(R,i,j)+PRIL,&r)
+
 FILE *Protfp; //,*fp;
 typedef char ___P____[L__P____];
+
 typedef struct cell {
 	int Nix, Cid, Fn;
 	short fxd;
 } T_C___;
+
 typedef struct freqob {
 	int frno, frdis;
 } FREQOB_T;
+
 typedef struct set {
 	int * Chain;
 	int Card;
 } T_S__;
+
 typedef struct node {
 	long COI, ADI, Clno;
 	char S[MaxNameL], SCL;
 	int TSS, SS, Id;
 	int *ff, NC, LC, XC, AxF, FxF;
 } _N__E_T;
+
 typedef struct netstruct {
 	int B, lb, ub, FXF, Card, LB0, LB[3];
 	_N__E_T ** _N___;
@@ -163,12 +174,15 @@ typedef struct netstruct {
 	short ** ENAB;
 	BYTE * Perm;
 } T_N__;
+
 typedef struct priopar {
 	int pdisr, pdism, pcmax, pclb, pamax, palb, pcoit1;
 } PPAR_T;
 PPAR_T PPar7[ParCARD];
+
 /*typedef struct pair  {int   Left, Right;  } PAIR_T;
  typedef struct intvset  { int Card;   PAIR_T  * IChain;} INVT_S__;*/
+
 FREQOB_T FROL, FROR;
 T_N__ *_n______;
 T_C___ * cet, * XCET;
@@ -218,7 +232,9 @@ void logInfo(char * format, ...)
   va_end (args);
   fflush(Protfp);
 }
-void jpb_strAsubst(char * here, char * old, char * neu) {
+
+void jpb_strAsubst(char * here, char * old, char * neu)
+{
 	char *fo, *aux;
 	long ol=0, nl = 2*(strlen(here)+strlen(neu));
 	aux = (char *) calloc(nl, sizeof(char));
@@ -232,6 +248,7 @@ void jpb_strAsubst(char * here, char * old, char * neu) {
 	}
 	free(aux);
 }
+
 void LogProgress(long lCoIT1Done, long lCoIT1) {
 	time_t t;
 	long tt;
@@ -243,6 +260,7 @@ void LogProgress(long lCoIT1Done, long lCoIT1) {
 			lCoIT1);
 	//printf("\n%s\n", ctime(&t));
 }
+
 void jcpyl(char * into, char * str) {
 	char * aux=(char*)calloc(strlen(into)+1, sizeof(char));
 	strcpy(aux,into+strlen(str));
@@ -250,6 +268,7 @@ void jcpyl(char * into, char * str) {
 	strcat(into,aux);
 	free(aux);
 }
+
 void jprtl(char * into, int value, int len) {
 	char * aux=(char*)calloc(len+1, sizeof(char));
 	switch (len) {
@@ -389,11 +408,13 @@ void a_____e___(int is_fix, T_N__ * xnet) {
 		AllErr_(xnet->ENAB[i],"AllocErr by alloc _N______->ENAB[]",exit(0);)
 	}
 }
+
 void LayerCard(int Cmax) {
 	int i;
 	for (i=0; i<NETCARD; i++)
 		LC(i) = MIN_(Cmax,NC(i));
 }
+
 int In_SET(int e, T_S__ * S) {
 	int i=0, a=0;
 	while (!(a) && (i<S->Card)) {
@@ -402,6 +423,7 @@ int In_SET(int e, T_S__ * S) {
 	}
 	return (i-sin_B(a));
 }
+
 void SkipEl(int ix, T_S__ * xX) {
 	int i=0;
 	if (ix == (xX->Card - 1)) {
@@ -415,6 +437,7 @@ void SkipEl(int ix, T_S__ * xX) {
 	}
 	xX->Card--;
 }
+
 void Copy_SET(T_S__ * Ax, T_S__ * Bx) {
 	Ax->Card=0;
 	while (Ax->Card<Bx->Card) {
@@ -422,6 +445,7 @@ void Copy_SET(T_S__ * Ax, T_S__ * Bx) {
 		Ax->Card++;
 	}
 }
+
 void Diff_SET(T_S__ * Ax, T_S__ * Bx) {
 	int i, ix;
 	for (i=0; i<Bx->Card; i++) {
@@ -430,12 +454,14 @@ void Diff_SET(T_S__ * Ax, T_S__ * Bx) {
 			SkipEl(ix, Ax);
 	}
 }
+
 void IDform_Set(int scard, T_S__ * Bx) {
 	int i;
 	for (i=0; i<scard; i++)
 		Bx->Chain[i] = i;
 	Bx->Card = scard;
 }
+
 int g___n___(char *snxx, int ssx) {
 	int i;
 	for (i=0; i<_N______->Card; i++)
@@ -444,6 +470,7 @@ int g___n___(char *snxx, int ssx) {
 			return (_N______->_N___[i]->Id);
 	return (-1);
 }
+
 void w_____c_______(char * fname, T_C___ * xN) {
 	int x, i, j=0;
 	FILE * cefp;
@@ -464,6 +491,7 @@ void w_____c_______(char * fname, T_C___ * xN) {
 	}
 	fclose(cefp);
 }
+
 BOOL is_fixed
 (
 		int nix,
@@ -520,6 +548,7 @@ void w_____P_____(T_C___ *xN) {
 			Protfp,
 			"=========================================================================================\n");
 }
+
 int wpc___(int pmod) {
 	if (!PlExist)
 		return (0);
@@ -529,6 +558,7 @@ int wpc___(int pmod) {
 	fflush(Protfp);
 	return (1);
 }
+
 __inline Permis_net(int pos, int dx, ___P____ ** E) {
 	int i, r=0;
 	if (!(pos<0) && (PERM(pos) != 2))
@@ -539,6 +569,7 @@ __inline Permis_net(int pos, int dx, ___P____ ** E) {
 			PERM(i) = cos_B(r<dx) * PERM(i);
 	}
 }
+
 __inline void UpdatePerm(int pos) {
 	int i;
 	if (!(pos<0))
@@ -546,6 +577,7 @@ __inline void UpdatePerm(int pos) {
 	for (i=pos+1; i<CARD_(_N______); i++)
 		PERM(i) = MAX_(1,PERM(i));
 }
+
 void Invalid_set(T_S__ * Q0p) {
 	int i;
 	for (i=0; i<CARD_(Q0p); i++) {
@@ -553,6 +585,7 @@ void Invalid_set(T_S__ * Q0p) {
 		NotEmpty--;
 	}
 }
+
 __inline int CompCurLB(int di, T_S__ * xS) {
 	int i, C=0;
 	for (i=0; i<CARD_(xS); i++)
@@ -560,6 +593,7 @@ __inline int CompCurLB(int di, T_S__ * xS) {
 	C = 1 + (di*(C-1));
 	return (C);
 }
+
 __inline int CompCurLBs(int di, int from, T_S__ * xS) {
 	int i, lx=0, C=0;
 	lx = CompCurLB(di, xS);
@@ -570,9 +604,11 @@ __inline int CompCurLBs(int di, int from, T_S__ * xS) {
 	C += lx;
 	return (C);
 }
+
 __inline int WeightOfSET(T_S__ * xX) {
 	return (CARD_(xX));
 }
+
 int LBfilter(int oi, int ni, int from, int * olb, T_S__ * oQ, T_S__ * nQ) {
 	int nlb, xlb = *olb;
 	nlb=CompCurLBs(ni, from, nQ);
@@ -582,6 +618,7 @@ int LBfilter(int oi, int ni, int from, int * olb, T_S__ * oQ, T_S__ * nQ) {
 	nlb=WeightOfSET(nQ) + (CARD_(_S____) - from);
 	return (xlb < nlb );
 }
+
 __inline int Admiss4Set(int prio, int ix, int dx, ___P____ ** E, T_S__ * Q) {
 	int i=0, r=0;
 	while (i < CARD_(Q)) {
@@ -595,6 +632,7 @@ __inline int Admiss4Set(int prio, int ix, int dx, ___P____ ** E, T_S__ * Q) {
 	}
 	return (True);
 }
+
 void Extend_clqset(BOOL * foundp, int priop, int ubp, int * rankp, int * xlbp,
 		int card_xQ, int disp, ___P____ ** Rel, T_S__ * xQ, T_S__ * Qx0) {
 	int p, q=disp, nofmax=0, ylb = CompCurLB(disp, xQ);
@@ -632,6 +670,7 @@ void Extend_clqset(BOOL * foundp, int priop, int ubp, int * rankp, int * xlbp,
 		CARD_(xQ)--;
 	}
 }
+
 void get_Q(int prio, int ub_p, int * rank, int dis, ___P____ ** Rel,
 		T_S__ * Qxp, T_S__ * Qx0) {
 	BOOL *found= (BOOL*) calloc(1,sizeof(BOOL));
@@ -645,6 +684,7 @@ void get_Q(int prio, int ub_p, int * rank, int dis, ___P____ ** Rel,
 	free(xlb);
 	free(found);
 }
+
 int get_MLB(int Minprio, int Ncar, int Mindist, int Ldis, ___P____ ** rel,
 		T_S__ * Qxp, T_S__ * Qx0) {
 	int ra=1, i;
@@ -681,11 +721,13 @@ int get_MLB(int Minprio, int Ncar, int Mindist, int Ldis, ___P____ ** rel,
 	logInfo( "}\n");
 	return (_N______->LB0);
 }
+
 void perm_net(void) {
 	int i;
 	for (i=0; i<NETCARD; i++)
 		PERM(i) = 1;
 }
+
 void ShiftSpaceLeft_LC(void) {
 	int i=0, j;
 	for (j=0; j<NETCARD; j++)
@@ -695,6 +737,7 @@ void ShiftSpaceLeft_LC(void) {
 		}
 	CARD_(_S____) = i;
 }
+
 void write_cet(char * bfname) {
 	int nofc=NOFC;
 	FILE * bfp;
@@ -707,6 +750,7 @@ void write_cet(char * bfname) {
 	fwrite(cet, sizeof(T_C___), NOFC, bfp);
 	fclose(bfp);
 }
+
 void Sect_cet(T_S__ *xQ0) {
 	int i=0, j=0, k=0, l=0;
 	T_S__ * aux;
@@ -739,6 +783,7 @@ void Sect_cet(T_S__ *xQ0) {
 	}
 	Free_SET(aux);
 }
+
 void partition_net(int Min_prio, int Noofcar, int Min_dis, int Lim_dis,
 		int Max_cell_demand, char * filna) {
 	int celonf=0;
@@ -754,6 +799,7 @@ void partition_net(int Min_prio, int Noofcar, int Min_dis, int Lim_dis,
 	}
 	write_cet(filna);
 }
+
 void NatOrd(int c, T_S__ *S) {
 	int i=0;
 	S->Card=c;
@@ -762,6 +808,7 @@ void NatOrd(int c, T_S__ *S) {
 		i++;
 	}
 }
+
 void OrderNet(void) {
 	int i, j;
 	_N__E_T * x0;
@@ -776,6 +823,7 @@ void OrderNet(void) {
 		ID(i) = i;
 	}
 }
+
 __inline int NDIS(int i, int j) {
 	int p=0, a=0;
 	_P__(_N______->_E___,NIX(i),NIX(j),p)
@@ -786,6 +834,7 @@ __inline int NDIS(int i, int j) {
 	;
 	return (a);
 }
+
 void ShiftB(T_C___ * xN) {
 	int i;
 	for (i=0; i<NOFC; i++)
@@ -794,12 +843,14 @@ void ShiftB(T_C___ * xN) {
 	_N______->ub -= _N______->lb;
 	_N______->lb = 0;
 }
+
 __inline void enab_net(T_N__ *xN, int ix) {
 	int k;
 	for (k=1; k<xN->B+1; k++)
 		if (!xN->ENAB[NIX(ix)][k])
 			xN->ENAB[NIX(ix)][k]=1;
 }
+
 __inline int GFBNCC(int a, int b, int ix, int lf) {
 	int i=0, d1=0, d2=0, fx1= -1, fx2= -1, done1=0, done2=0;
 	FFLX = -1;
@@ -899,6 +950,7 @@ __inline int GFBNCC(int a, int b, int ix, int lf) {
 	FFLX = fx2;
 	return (d2);
 }
+
 __inline void GFB(int a, int b, int ix) {
 	int i;
 	FROL.frno = -1;
@@ -918,6 +970,7 @@ __inline void GFB(int a, int b, int ix) {
 			break;
 		}
 }
+
 __inline void GFL(int a, int ix) {
 	int i;
 	FROL.frno = _N______->B;
@@ -935,6 +988,7 @@ __inline void GFL(int a, int ix) {
 			break;
 		}
 }
+
 __inline void GFU(int a, int ix) {
 	int i;
 	FROR.frno = -1;
@@ -952,16 +1006,19 @@ __inline void GFU(int a, int ix) {
 			break;
 		}
 }
+
 __inline int l_D(int ix, int n) {
 	int a = NDIS(ix, n);
 	a = FREQ(n) - a;
 	return (a);
 }
+
 __inline int r_D(int ix, int n) {
 	int a = NDIS(ix, n);
 	a = FREQ(n) + a;
 	return (a);
 }
+
 __inline void GLEGO(int a, int b, int ix) {
 	int i;
 	for (i=a+1; i<b; i++) {
@@ -977,6 +1034,7 @@ __inline void GLEGO(int a, int b, int ix) {
 			_N______->ENAB[NIX(ix)][i+1-NOFF] * (1 - _N______->ENAB[NIX(ix)][i+1-NOFF]) / 2;
 	}
 }
+
 __inline void LEGO(int a, int b, int ix) {
 	int i;
 	for (i=a+1; i<b; i++) {
@@ -986,6 +1044,7 @@ __inline void LEGO(int a, int b, int ix) {
 		_N______->ENAB[NIX(ix)][i+1] * (1 - _N______->ENAB[NIX(ix)][i+1]) / 2;
 	}
 }
+
 __inline void VV(int ix, T_S__ * xX) {
 	int i=0, l, r, esac=GROUPING;
 	while (i<xX->Card) {
@@ -998,6 +1057,7 @@ __inline void VV(int ix, T_S__ * xX) {
 		i++;
 	}
 }
+
 int RhoCC(int ix, T_S__ * xX) {
 	int a, b, x;
 	enab_net(_N______,ix);
@@ -1039,6 +1099,7 @@ int RhoCC(int ix, T_S__ * xX) {
 		}
 	}
 }
+
 int RhoLL(int ix, T_S__ * xX) {
 	int x;
 	FREQ(ix) = -1;
@@ -1050,6 +1111,7 @@ int RhoLL(int ix, T_S__ * xX) {
 	x = GFBNCC(_N______->lb,_N______->ub,ix,x);
 	return (x);
 }
+
 int RRRX(int nix, T_S__ * xX) {
 	enab_net(_N______,nix);
 	FREQ(nix) = -1;
@@ -1061,6 +1123,7 @@ int RRRX(int nix, T_S__ * xX) {
 	XC(NIX(nix))--;
 	return (1);
 }
+
 void RR(int nix, T_S__ * xX) {
 	enab_net(_N______,nix);
 	FREQ(nix) = -1;
@@ -1095,6 +1158,7 @@ void RR(int nix, T_S__ * xX) {
 	XC(NIX(nix))--;
 	FBAND = True && ((FROR.frno - _N______->lb + 1) < FBANDL); //??JPB zu scharff!!! 
 }
+
 void init_cr(T_N__ *xN, ___P____ **CRX) {
 	int nix = -1, njx = -1;
 	for (nix=0; nix<xN->Card; nix++)
@@ -1103,6 +1167,7 @@ void init_cr(T_N__ *xN, ___P____ **CRX) {
 			strcpy(CRX[njx][nix],CRINITVAL);
 		}
 }
+
 void init_graph(T_N__ *xN, ___P____ **CRX) {
 	int nix = -1, k;
 	ALLN = 0;
@@ -1120,6 +1185,7 @@ void init_graph(T_N__ *xN, ___P____ **CRX) {
 			xN->ENAB[nix][k+1] = 0;
 	}
 }
+
 void disab_carriers(void) {
 	int cid, f;
 	for (cid=0; cid<_N______->Card; cid++)
@@ -1129,6 +1195,7 @@ void disab_carriers(void) {
 		for (f=0; f<_N______->B; f++)
 			_N______->ENAB[cid][f+1] -= 1;
 }
+
 BYTE read_net_new(char *fnet)
 {
 	int i, card=0, CNo = -9999;
@@ -1196,6 +1263,7 @@ BYTE read_net_new(char *fnet)
 	fclose(fp);
 	return(True);
 }
+
 BYTE read_forbidden(char *fnet)
 {
 	int i, cno=0, nof=0, cid= -1, forb = -1;
@@ -1247,6 +1315,7 @@ BYTE read_forbidden(char *fnet)
 	fclose(fp);
 	return(True);
 }
+
 BYTE read_exceptions(char *fnet, int pri, ___P____ ** CRX)
 {
 	int cno1=0,cno2=0, cid1= -1,cid2= -1, dexc = 0;
@@ -1280,6 +1349,7 @@ BYTE read_exceptions(char *fnet, int pri, ___P____ ** CRX)
 	fclose(fp);
 	return(True);
 }
+
 void son_closure_it(int p_prio, int n_prio, int dis, int tresh, int itr,
 		___P____ ** rel) {
 	int od=0, i, j, k, adj1=100, adj2=100, co1=0, co2=0;
@@ -1328,6 +1398,7 @@ void son_closure_it(int p_prio, int n_prio, int dis, int tresh, int itr,
 	}
 	logInfo( "ADD so-neighbours  %ld\n", xx);
 }
+
 void set_cr_CC_it(int o_pri, int pri, int dis, int ctre, int atre,
 		___P____ ** CRX) {
 	int d1=0, nix = -1;
@@ -1350,6 +1421,7 @@ void set_cr_CC_it(int o_pri, int pri, int dis, int ctre, int atre,
 		}
 	}
 }
+
 void set_cr_SCC_it(int o_pri, int pri, int dis, int ctre, int atre,
 		___P____ ** CRX) {
 	int d1=0, d2=0, nix = -1, njx = -1;
@@ -1388,6 +1460,7 @@ void set_cr_SCC_it(int o_pri, int pri, int dis, int ctre, int atre,
 			}
 		}
 }
+
 BYTE read_neighbors(char *fname,int p_pri, int mind, int cadd, int aadd, ___P____ ** CRX)
 {
 	char lx[MaxLineL+1], nc[5], six[MaxNameL+1], snx[MaxNameL+1];
@@ -1525,6 +1598,7 @@ BYTE read_it(int o_pri, int p_pri, char *fname, ___P____ ** CRX, int traff_m)
 	fclose(fp);
 	return(True);
 }
+
 void coit_sym(___P____ ** CRX) {
 	int d1=0, d2=0, nix = -1, njx = -1;
 	for (nix=0; nix<_N______->Card; nix++)
@@ -1543,6 +1617,7 @@ void coit_sym(___P____ ** CRX) {
 				C_(CRX,njx,nix,d1);
 		}
 }
+
 BOOL read_IT
 (
 		int o_pri,
@@ -1556,6 +1631,7 @@ BOOL read_IT
 	coit_sym(rel);
 	return(True);
 }
+
 void FA_fixed(T_C___ * cetx, T_S__ * Qxx, T_S__ * cQ) {
 	int i=0, j=0;
 	while ((i<_N______->FXF)&&(j<NOFC)) {
@@ -1567,6 +1643,7 @@ void FA_fixed(T_C___ * cetx, T_S__ * Qxx, T_S__ * cQ) {
 			j++;
 	}
 }
+
 void c_coit1(___P____ ** rel) {
 	int i, j, a1, a2;
 	for (i=0; i<CARD_(_N______); i++)
@@ -1584,6 +1661,7 @@ void c_coit1(___P____ ** rel) {
 	logInfo( "CoIT1 = %d, MAX_SET = %d, MIN_SET = %d\n", CoIT1, MAX_SET,
 			MIN_SET);
 }
+
 int set_t_it(int ncl, int pri, int tresh, ___P____ ** rel) {
 	int x, od=0, i, j, adj1=100, adj2=100, amin=tresh, card=0;
 	;
@@ -1607,6 +1685,7 @@ int set_t_it(int ncl, int pri, int tresh, ___P____ ** rel) {
 	}
 	return (card);
 }
+
 int set_t_ex(int ncl, int pri, int odis, int ndis, ___P____ ** rel) {
 	int x, od=0, i, j, adj1=100, adj2=100, done=0, card=0;
 	;
@@ -1633,6 +1712,7 @@ int set_t_ex(int ncl, int pri, int odis, int ndis, ___P____ ** rel) {
 	}
 	return (card);
 }
+
 void set_ex(int ncl, int nprio, ___P____ ** rel) {
 	int i, j, adj1=100, adj2=100, done=0, card=0;
 	;
@@ -1649,6 +1729,7 @@ void set_ex(int ncl, int nprio, ___P____ ** rel) {
 		}
 	}
 }
+
 int extract_pair(int ncl, int nprio, int dis, ___P____ ** rel) {
 	int i, j, adj1=100, card=0;
 	;
@@ -1669,6 +1750,7 @@ int extract_pair(int ncl, int nprio, int dis, ___P____ ** rel) {
 	}
 	return (card);
 }
+
 int reset_ex_back(int ncl, int oprio, int dis, ___P____ ** rel) {
 	int od=0, i, j, adj1=100, adj2=100, card=0;
 	;
@@ -1686,6 +1768,7 @@ int reset_ex_back(int ncl, int oprio, int dis, ___P____ ** rel) {
 	}
 	return (card);
 }
+
 int reset_ex(int lev, int mod, int ncl, int oprio, int nprio, int dis,
 		int tresh, ___P____ ** rel) {
 	int od=0, i, j, adj1=100, adj2=100, card=0;
@@ -1720,6 +1803,7 @@ int reset_ex(int lev, int mod, int ncl, int oprio, int nprio, int dis,
 	}
 	return (card);
 }
+
 double DET(double A, double B, double a, double b) {
 	return ((A*b)-(B*a));
 }
@@ -1769,6 +1853,7 @@ double JDIS_(double p0x, double p0y, double p1x, double p1y, double p2x,
 	D = MAX_(DIS_(p0x,p0y,p1x,p1y),DIS_(p0x,p0y,p2x,p2y));
 	return (D / al );
 }
+
 BYTE IsCut_HL
 (
 		double az1,
@@ -1796,6 +1881,7 @@ BYTE IsCut_HL
 	return(0);
 	return(1);
 }
+
 double sec_point_x(double lx, double ly, double az) {
 	if (!QEQ(az,0.0) && !QEQ(az,jpbPI)) {
 		if (az < jpbPI) {
@@ -1806,6 +1892,7 @@ double sec_point_x(double lx, double ly, double az) {
 	} else
 		return (lx);
 }
+
 double sec_point_y(double lx, double ly, double az) {
 	if (QEQ(az,0.0))
 		return (ly + 1.0);
@@ -1822,6 +1909,7 @@ double sec_point_y(double lx, double ly, double az) {
 	} else
 		return (ly);
 }
+
 double direct_distance(double long1, double lat1, double azimuth1,
 		double long2, double lat2, double azimuth2) {
 	double p1x=sec_point_x(long1, lat1, azimuth1), p1y=sec_point_y(long1, lat1,
@@ -1877,6 +1965,7 @@ double direct_distance(double long1, double lat1, double azimuth1,
 	return (MIN_(MDIS,5.0*D));
 	return (10.0*D);
 }
+
 int F1_Next2Last1(T_S__ * Xx, T_S__ * Xc) {
 	int i=0, n, n0, f, ix = -1;
 	///?    if(UBreak) return(ix);
@@ -1910,6 +1999,7 @@ int F1_Next2Last1(T_S__ * Xx, T_S__ * Xc) {
 	}
 	return (ix);
 }
+
 int F1_Next2Set1(T_S__ * Xx, T_S__ * Xc) {
 	int i=0, n, n0, f, ix = -1;
 	///?   if(UBreak) return(ix);
@@ -1932,6 +2022,7 @@ int F1_Next2Set1(T_S__ * Xx, T_S__ * Xc) {
 	}
 	return (ix);
 }
+
 BYTE F1_ExtendB1
 (
 		T_S__ * xQ,
@@ -1955,6 +2046,7 @@ BYTE F1_ExtendB1
 	}
 	return(ext);
 }
+
 BYTE F1_EFInB1
 (
 		T_S__ * xQ,
@@ -1978,6 +2070,7 @@ BYTE F1_EFInB1
 	}
 	return(ext);
 }
+
 BYTE F1_FillInB1
 (
 		T_S__ * xQ,
@@ -1999,6 +2092,7 @@ BYTE F1_FillInB1
 	}
 	return(fill);
 }
+
 int F1_XOrderNet1(T_S__ * xQ, T_S__ * cQ) {
 	int ddo=DD;
 	BYTE proc=True, p1=True, p2=True;
@@ -2010,6 +2104,7 @@ int F1_XOrderNet1(T_S__ * xQ, T_S__ * cQ) {
 	}
 	return (cQ->Card);
 }
+
 int F1_get_last_enab(int cid) {
 	int i;
 	for (i=_N______->B; 0<i; i--)
@@ -2017,6 +2112,7 @@ int F1_get_last_enab(int cid) {
 			return (i-1);
 	return (-1);
 }
+
 int F1_FxCompFa1(T_C___ * xN, T_S__ * Qxx, T_S__ * cQ) {
 	int i=0;
 	if (!cQ->Card)
@@ -2035,6 +2131,7 @@ int F1_FxCompFa1(T_C___ * xN, T_S__ * Qxx, T_S__ * cQ) {
 	}
 	return (F1_XOrderNet1(Qxx, cQ));
 }
+
 int F1_CompFa1(T_C___ * xN, T_S__ * Qxx, T_S__ * cQ) {
 	int val=0;
 	Qxx->Chain[0]=0;
@@ -2048,6 +2145,7 @@ int F1_CompFa1(T_C___ * xN, T_S__ * Qxx, T_S__ * cQ) {
 	ShiftB(xN);
 	return (val);
 }
+
 int F1_analyze_FACC(T_C___ * cetx, T_S__ * Qxx, T_S__ * cQ) {
 	int i, j;
 	for (i=0; i<_N______->Card; i++)
@@ -2070,6 +2168,7 @@ int F1_analyze_FACC(T_C___ * cetx, T_S__ * Qxx, T_S__ * cQ) {
 		strcpy(XSITE,_N______->_N___[NIX(cQ->Chain[0])]->S);
 	return (i);
 }
+
 int opt_all_it(int ncl, int iprio, int sprio, int oprio, int odis, int ndis,
 		int tresh, ___P____ ** rel) {
 	int QC=0, bt=tresh, lev=1;
@@ -2093,6 +2192,7 @@ int opt_all_it(int ncl, int iprio, int sprio, int oprio, int odis, int ndis,
 	LASTQC = QC;
 	return (3);
 }
+
 void set_step(int prio) {
 	int QC = MIN_SET, AT = 0, AT1, lim, bt;
 	PLOW = prio + 1;
@@ -2130,6 +2230,7 @@ void set_step(int prio) {
 	}
 	fflush(Protfp);
 }
+
 int opt_all(int ncl, int iprio, int sprio, int oprio, int odis, int ndis,
 		___P____ ** rel) {
 	int QC;
@@ -2152,6 +2253,7 @@ int opt_all(int ncl, int iprio, int sprio, int oprio, int odis, int ndis,
 	fflush(Protfp);
 	return (3);
 }
+
 BYTE set_all
 (
 		int prio
@@ -2171,6 +2273,7 @@ BYTE set_all
 	///?UserBreak();
 	return(True);
 }
+
 void write_ctrl(char * pctrfile) {
 	int i=0;
 	char lx[MaxLineL+1];
@@ -2187,6 +2290,7 @@ void write_ctrl(char * pctrfile) {
 	logInfo( "CONTROL FILE:::<\n\n\n");
 	fclose(fctrp);
 }
+
 BOOL set_data
 (
 		char * pctrfile
@@ -2343,6 +2447,7 @@ BOOL set_data
 	fclose(fctrp);
 	return(True);
 }
+
 int japa_awe
 ///?japa1
 (char * pctrfile) {
@@ -2460,6 +2565,7 @@ int japa_awe
 	///?	 f___();
 	return (NO_E);
 }
+
 /*int main()
  {
  char TrialName[MaxNameL+1];
@@ -2470,6 +2576,7 @@ int japa_awe
  getch();
  }
  */
+
 int write_last_plan(int pmod) //(void)
 {
 	if (!PlExist)
