@@ -28,12 +28,14 @@ import org.eclipse.ui.IWorkbench;
 
 /**
  * <p>
- *Ericsson network import wizard
+ * Ericsson network import wizard
  * </p>
+ * 
  * @author tsinkel_a
  * @since 1.0.0
  */
 public class EricssonNetworkImportWizard extends AbstractLoaderWizard<CommonConfigData> {
+
 
     private CommonConfigData data;
 
@@ -51,11 +53,13 @@ public class EricssonNetworkImportWizard extends AbstractLoaderWizard<CommonConf
         }
         return data;
     }
-@Override
-public void init(IWorkbench workbench, IStructuredSelection selection) {
-    super.init(workbench, selection);
-    setWindowTitle(NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_TITLE);
-}
+
+    @Override
+    public void init(IWorkbench workbench, IStructuredSelection selection) {
+        super.init(workbench, selection);
+        setWindowTitle(NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_TITLE);
+    }
+
     @Override
     public boolean performFinish() {
         if (super.performFinish()) {

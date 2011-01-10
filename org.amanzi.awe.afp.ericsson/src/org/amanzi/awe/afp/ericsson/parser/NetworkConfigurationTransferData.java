@@ -175,7 +175,7 @@ public class NetworkConfigurationTransferData extends BaseTransferData{
         this.ch_group = ch_group;
     }
 
-    public Integer getCh_group() {
+    public Integer getChGroup() {
         return ch_group;
     }
 

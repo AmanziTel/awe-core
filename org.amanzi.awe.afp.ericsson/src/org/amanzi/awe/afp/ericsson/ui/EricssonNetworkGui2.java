@@ -22,11 +22,14 @@ import org.amanzi.neo.loader.core.IValidateResult;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.FileSelection;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.loader.ui.wizards.LoaderPage;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -52,7 +55,7 @@ public class EricssonNetworkGui2 extends LoaderPage<CommonConfigData> {
         super("additionalEricssonNetworkGuiPage");
         setTitle("Import a files containing network BSN data");
     }
-
+    
     @Override
     public void createControl(Composite parent) {
         main = new Group(parent, SWT.NULL);
@@ -72,7 +75,18 @@ public class EricssonNetworkGui2 extends LoaderPage<CommonConfigData> {
         update();
     }
 
-
+@Override
+public void setVisible(boolean visible) {
+    if (visible){
+        if (TreeSelection.EMPTY.equals(viewer.getTreeViewer().getSelection())){
+            String defDir = LoaderUiUtils.getDefaultDirectory();
+            if (StringUtils.isNotEmpty(defDir)){
+                viewer.getTreeViewer().reveal(new File(defDir));
+            }
+        }
+    }
+    super.setVisible(visible);
+}
     /**
      * File selection changed.
      *
@@ -94,11 +108,12 @@ public class EricssonNetworkGui2 extends LoaderPage<CommonConfigData> {
          configurationData.getAdditionalProperties().put("BSM_FILES", files);
          ILoaderInputValidator<CommonConfigData> validator = new EricssonBSMValidator();
          validator.filter(configurationData);
-         if (files.size()!=configurationData.getAllLoadedFiles().size()){
-             viewer.getTreeViewer().setSelection(new StructuredSelection(configurationData.getAllLoadedFiles().toArray()), false);
+         Collection<File> allLoadedFiles = (Collection<File>)configurationData.getAdditionalProperties().get("BSM_FILES");
+        if (files.size()!=allLoadedFiles.size()){
+             viewer.getTreeViewer().setSelection(new StructuredSelection(allLoadedFiles.toArray()), false);
              return validateConfigData(configurationData);
          }
-         if (configurationData.getAllLoadedFiles().isEmpty()){
+         if (allLoadedFiles.isEmpty()){
              setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE,DialogPage.ERROR); 
              return false;            
          }

@@ -42,7 +42,7 @@ public class EricssonBSMValidator implements ILoaderInputValidator<CommonConfigD
                 if (file.isFile()) {
                     String fileName = file.getName();
                     Matcher matcher = bscPattern.matcher(fileName);
-                    if (!matcher.find(0)) {
+                    if (matcher.find(0)) {
                         newResult.add(file);
                     }
                 }

@@ -294,7 +294,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
             }
             String tg = matcher.group(3);
             String trxId = matcher.group(5);
-            Integer channelGr = element.getCh_group();
+            Integer channelGr = element.getChGroup();
             Node trx = networkService.getTRXNode(sector, trxId, channelGr);
             updateTx(1, 1);
             Node channalGr = networkService.getChannelNode(sector, channelGr);
