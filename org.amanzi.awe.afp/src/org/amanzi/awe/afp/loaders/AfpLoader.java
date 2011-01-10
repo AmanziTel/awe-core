@@ -43,6 +43,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.Traverser;
 import org.neo4j.index.lucene.LuceneIndexService;
 
 // TODO: Auto-generated Javadoc
@@ -588,16 +589,29 @@ public class AfpLoader extends AbstractLoader {
                     String band = (String)sector.getProperty("band", "");
                     if (band.contains(" "))
                     	band = band.split("\\s")[1];
-                    for(int j=0; j< frq.length;j++) {
-                    	AweConsolePlugin.info("Adding TRX and FREQ for sector " + sectorName);
-                        Node trx = Utils.findOrCreateCarrier(sector, j, band, service);//networkService.getTRXNode(sector, ""+j, 0);
-//                        prevFreqNode = networkService.addFREQNode(trx, ""+frq[j], prevFreqNode);
-                        Node planNode = Utils.createPlan(trx, new int[]{j}, Long.toString(time), service);
+                    AweConsolePlugin.info("Adding TRX and FREQ for sector " + sectorName);
+                	Traverser traverser = Utils.getTrxTraverser(sector);
+                	int j = 0;
+                	for (Node trx: traverser){
+                		if(j >= frq.length)
+                			break;
+                		Node planNode = Utils.createPlan(trx, new int[]{j}, Long.toString(time), service);
                         if(prevFreqNode != null) {
                         	prevFreqNode.createRelationshipTo(planNode, NetworkRelationshipTypes.NEXT);
                  	   }
                         prevFreqNode = planNode;
-                    }
+                        j++;
+                	}
+//                    for(int j=0; j< frq.length;j++) {
+//                    	
+//                        Node trx = Utils.findOrCreateCarrier(sector, j, band, service);//networkService.getTRXNode(sector, ""+j, 0);
+////                        prevFreqNode = networkService.addFREQNode(trx, ""+frq[j], prevFreqNode);
+//                        Node planNode = Utils.createPlan(trx, new int[]{j}, Long.toString(time), service);
+//                        if(prevFreqNode != null) {
+//                        	prevFreqNode.createRelationshipTo(planNode, NetworkRelationshipTypes.NEXT);
+//                 	   }
+//                        prevFreqNode = planNode;
+//                    }
                     tx.success();
                 } finally {
                     tx.finish();

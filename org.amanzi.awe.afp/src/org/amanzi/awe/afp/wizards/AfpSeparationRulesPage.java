@@ -272,49 +272,6 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 		sectorDomainsGroup.layout();
 		siteDomainsGroup.layout();
 	}
-	/*
-	public void updateSectorDomainLabels(){
-		for(Label[] labels : sectorDomainLabels.values()) {
-			for (Label label : labels){
-				label.dispose();
-			}
-		}
-		sectorDomainLabels.clear();
-		
-		for(AfpSeparationDomainModel sectorDomainModel :model.getSectorSeparationDomains(true) ){
-			Label defaultSectorDomainLabel = new Label(sectorDomainsGroup, SWT.LEFT);
-			defaultSectorDomainLabel.setText(sectorDomainModel.getName());
-			//TODO: update the TRXs by default here
-			Label defaultSectorsLabel = new Label(sectorDomainsGroup, SWT.RIGHT);
-			defaultSectorsLabel.setText("" + sectorDomainModel.getNumTRX());
-			sectorDomainLabels.put(sectorDomainModel.getName(), new Label[]{defaultSectorDomainLabel, defaultSectorsLabel});
-		}
-		
-		sectorDomainsGroup.layout();
-	
-	}
-	
-	public void updateSiteDomainLabels(){
-		for(Label[] labels: siteDomainLabels.values()){
-			for (Label label : labels){
-				label.dispose();
-			}
-		}
-		siteDomainLabels.clear();
-		
-
-		for(AfpSeparationDomainModel siteDomainModel : model.getSiteSeparationDomains(true)) {
-			Label defaultSiteDomainLabel = new Label(siteDomainsGroup, SWT.LEFT);
-			defaultSiteDomainLabel.setText(siteDomainModel.getName());
-			//TODO: update the TRXs by default here
-			Label defaultSitesLabel = new Label(siteDomainsGroup, SWT.RIGHT);
-			defaultSitesLabel.setText("" + siteDomainModel.getNumTRX());
-			siteDomainLabels.put(siteDomainModel.getName(), new Label[]{defaultSiteDomainLabel, defaultSitesLabel});
-		}
-
-		
-		siteDomainsGroup.layout();
-	}*/
 
 	
 	public void loadData(Table table, AfpRowFilter rowFilter) {
@@ -325,15 +282,10 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 		    
 		    this.clearAllUniqueValuesForProperty();
 		    
-//		    siteCount = 0;
 		    sectorCount = 0;
 		    for(AfpSeparationDomainModel mod: model.getSectorSeparationDomains(false)){
 		    	mod.setNumTRX(0);
 		    }
-//		    for(AfpSeparationDomainModel mod: model.getSiteSeparationDomains(false)){
-//		    	mod.setNumTRX(0);
-//		    }
-//		    int remainingSites = 0;
 		    remainingSectors = 0;
 
 		    for (Node sectorNode : sectorTraverser) {
@@ -371,8 +323,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 		    		continue;
 		    	
 		    	remainingSectors++;
-//		    	remainingSites++;
-		    		
+		    			
 	    		if (rowFilter != null){
 		    		if (!rowFilter.equal(trxNode)) 
 		    			continue;

@@ -2939,6 +2939,10 @@ public class Utils {
         return carrier;
     }
     
+    public static Traverser getTrxTraverser(Node sectorNode){
+        return sectorNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+    }
+    
     public static Node findOrCreateCarrier(Node sectorNode, Integer trxId, String band, final GraphDatabaseService service) {
         Node carrier = findCarrierNode(sectorNode, trxId, band);
         if (carrier == null){
