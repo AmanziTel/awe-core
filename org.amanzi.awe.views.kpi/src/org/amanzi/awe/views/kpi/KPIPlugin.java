@@ -18,9 +18,7 @@ import java.net.URL;
 
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
-import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.scripting.jruby.ScriptUtils;
-import org.amanzi.splash.utilities.NeoSplashUtil;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
@@ -36,7 +34,6 @@ import org.jruby.RubyInstanceConfig;
 import org.jruby.internal.runtime.ValueAccessor;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.neo4j.graphdb.Transaction;
 import org.osgi.framework.BundleContext;
 import org.rubypeople.rdt.core.IRubyProject;
 import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
@@ -127,7 +124,7 @@ public class KPIPlugin extends AbstractUIPlugin {
                 } catch (IOException e) {
                     scriptURL = null;
                 }
-                String script = NeoSplashUtil.getScriptContent(scriptURL.getPath());
+                String script = ScriptUtils.getScriptContent(scriptURL.getPath());
                 try {
                     runtime.evalScriptlet(script);
                     LOGGER.debug("INIT OK!");

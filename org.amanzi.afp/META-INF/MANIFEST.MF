@@ -15,7 +15,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.amanzi.integrator.awe,
  org.amanzi.awe.views.network,
  org.amanzi.neo.core,
- org.amanzi.splash;bundle-version="1.0.0",
  net.refractions.udig.catalog
 Eclipse-LazyStart: true
 Export-Package: org.amanzi.afp

@@ -48,6 +48,30 @@
                id="org.amanzi.awe.views.neighbours.views.TransmissionView">
          </viewShortcut>
       </perspectiveExtension>
+      <perspectiveExtension
+            targetID="org.amanzi.afp.perspective">
+         <view
+               id="org.amanzi.awe.views.neighbours.views.NeighboursView"
+               relationship="stack"
+               relative="net.refractions.udig.catalog.ui.CatalogView"
+               visible="true">
+         </view>
+         <viewShortcut
+               id="org.amanzi.awe.views.neighbours.views.NeighboursView">
+         </viewShortcut>
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="org.amanzi.afp.perspective">
+         <view
+               id="org.amanzi.awe.views.neighbours.views.TransmissionView"
+               relationship="stack"
+               relative="net.refractions.udig.catalog.ui.CatalogView"
+               visible="true">
+         </view>
+         <viewShortcut
+               id="org.amanzi.awe.views.neighbours.views.TransmissionView">
+         </viewShortcut>
+      </perspectiveExtension>
    </extension>
 
 </plugin>

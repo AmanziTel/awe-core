@@ -18,18 +18,17 @@ All code is copyright their respective owners.
    </copyright>
 
    <license url="http://www.triangulum-telecom.com">
-     Opti-AFP 6.0 lite beta
+      Opti-AFP 6.0 lite beta
 
 This software is the commercial property of Triangulum , and contains both 
 commercial and open source components developed by Amanzitel,
 Refractions Research, Neotechnology, the Eclipse foundation, Geotools et al.
-	</license>
+   </license>
 
    <includes
          id="org.amanzi.awe.afp_feature"
          version="0.0.0"
          name="afp"/>
-
 
    <requires>
       <import feature="net.refractions.udig_base" version="1.1.0" match="greaterOrEqual"/>
@@ -350,13 +349,6 @@ Refractions Research, Neotechnology, the Eclipse foundation, Geotools et al.
 
    <plugin
          id="org.amanzi.awe.wizards"
-         download-size="0"
-         install-size="0"
-         version="1.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.awe.report.o2"
          download-size="0"
          install-size="0"
          version="1.0.0"

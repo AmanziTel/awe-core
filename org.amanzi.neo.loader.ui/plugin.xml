@@ -43,19 +43,9 @@
                 id="org.amanzi.neo.loader.toolbar2">             
              <command
                    commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader"
-                   icon="icons/16/delta_network.png"
-                   id="org.amanzi.neo.loader.ui.LoadLauncher"
-                   tooltip="Load OSS Data">
-                <parameter
-                      name="org.amanzi.neo.loader.ui.commands.guiId"
-                      value="org.amanzi.neo.loader.ui.wizards.OssImportWizard">
-                </parameter>
-             </command>
-             <command
-                   commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader"
                    icon="icons/16/network.png"
                    id="org.amanzi.neo.loader.ui.LoadLauncher"
-                   tooltip="Load Network  Data">
+                   tooltip="Load Network Data">
                 <parameter
                       name="org.amanzi.neo.loader.ui.commands.guiId"
                       value="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard">
@@ -65,12 +55,22 @@
                    commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader"
                    icon="icons/16/dataset.png"
                    id="org.amanzi.neo.loader.ui.LoadLauncher"
-                   tooltip="Load dataset data">
+                   tooltip="Load Dataset">
                 <parameter
                       name="org.amanzi.neo.loader.ui.commands.guiId"
                       value="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard">
                 </parameter>
              </command>            
+             <command
+                   commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader"
+                   icon="icons/16/oss.png"
+                   id="org.amanzi.neo.loader.ui.LoadLauncher"
+                   tooltip="Load OSS Data">
+                <parameter
+                      name="org.amanzi.neo.loader.ui.commands.guiId"
+                      value="org.amanzi.neo.loader.ui.wizards.OssImportWizard">
+                </parameter>
+             </command>
           </toolbar>
        </menuContribution>
     </extension>

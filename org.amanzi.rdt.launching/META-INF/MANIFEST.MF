@@ -21,7 +21,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jface.text,
  net.refractions.udig.project;bundle-version="1.1.1",
  org.neo4j;bundle-version="1.0.0",
- org.amanzi.splash;bundle-version="1.0.0",
  org.amanzi.neo.services;bundle-version="1.0.0"
 Eclipse-LazyStart: true
 Export-Package: org.amanzi.rdt.internal.launching,

@@ -24,7 +24,7 @@ import net.refractions.udig.internal.ui.UDIGWorkbenchAdvisor;
 
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
-import org.amanzi.splash.ui.SplashPlugin;
+
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
@@ -36,6 +36,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.eclipse.ui.internal.ide.model.WorkbenchAdapterBuilder;
 import org.osgi.framework.Bundle;
+
 /**
  * This is the default application for the Amanzi Wireless Explorer.
  * It is based directly on uDIG, and uses its advisor.
@@ -82,7 +83,7 @@ public class Application extends UDIGApplication implements IApplication {
         public void postStartup() {
             super.postStartup();
             // initialize splash plugin
-            SplashPlugin.getDefault();
+            //SplashPlugin.getDefault();
         }
 		//Lagutko, 30.06.2009, add some icons
 		@Override

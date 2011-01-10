@@ -101,9 +101,9 @@
              </command>
              <command
                    commandId="org.amanzi.neo.loader.commands.LoadDrive"
-            icon="icons/16/drive.png"
+            icon="icons/16/calls.png"
             id="org.amanzi.neo.loader.LoadDrive"
-                   tooltip="Load Drive Data from URL">
+                   tooltip="Load Geoptima Data">
                    <parameter name="org.amanzi.neo.loader.commands.loadfromurl" value="true"></parameter>
              </command>
           </toolbar>

@@ -14,8 +14,13 @@ package org.amanzi.scripting.jruby;
 
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +30,9 @@ import java.util.List;
 import net.refractions.udig.catalog.URLUtils;
 
 import org.apache.log4j.Logger;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 
@@ -234,4 +242,78 @@ public class ScriptUtils {
         
         return rubyLocation;
 	}
+	
+	   /**
+     * Returns content of script
+     * 
+     * @param scriptURI URI of script
+     * @return string with content of file
+     * @author Lagutko_N
+     */
+    public static String getScriptContent(URI scriptURI) {
+        if (scriptURI == null) {
+            //TODO: handle this situation
+            return null;
+        }
+        IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(scriptURI);
+        if (files.length != 1) {
+            //TODO: handle this situation
+            return null;
+        }
+        String content = null;
+        try {
+            content = inputStreamToString(files[0].getContents());
+        }
+        catch (CoreException e) {
+            //TODO: handle exception
+        }
+        catch (IOException e) {
+            //TODO: handle exception
+        }
+
+        return content;
+    }
+    
+    /**
+     * Returns content of script
+     * 
+     * @param scriptPath Path of script
+     * @return string with content of file
+     * @author Lagutko_N
+     */
+    public static String getScriptContent(String scriptPath) {
+        if (scriptPath == null) {
+            //TODO: handle this situation
+            return null;
+        }                
+        String content = null;
+        try {
+            content = inputStreamToString(new FileInputStream(scriptPath));
+        }        
+        catch (IOException e) {
+            //TODO: handle exception
+        }
+
+        return content;
+    }
+    
+    /**
+     * Utility function that converts input stream to String
+     * 
+     * @param stream InputStream
+     * @return String
+     * @throws IOException 
+     * @author Lagutko_N
+     */
+
+    private static String inputStreamToString(InputStream stream) throws IOException {
+        StringBuffer buffer = new StringBuffer();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            buffer.append(line).append("\n");
+        }
+        reader.close();
+        return buffer.toString();
+    }
 }

@@ -33,7 +33,7 @@ import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.neo.services.utils.Pair;
-import org.amanzi.splash.utilities.NeoSplashUtil;
+import org.amanzi.scripting.jruby.ScriptUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -570,7 +570,7 @@ public class KpiView extends ViewPart {
         dlg.setFilterPath(KPIPlugin.getDefault().getDirectory());
         final String filename = dlg.open();
         if (filename != null) {
-            String script = NeoSplashUtil.getScriptContent(filename);
+            String script = ScriptUtils.getScriptContent(filename);
             testInitScriptAndRun(script);
         }
     }

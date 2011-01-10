@@ -293,7 +293,7 @@ public class SplashTableModel extends DefaultTableModel {
 			path = "D:/projects/AWE from SVN/org.amanzi.splash/jruby.rb";
 		}
 
-		String input = NeoSplashUtil.getScriptContent(path);
+		String input = ScriptUtils.getScriptContent(path);
 
 		HashMap<String, Object> globals = new HashMap<String, Object>();
 		globals.put(TABLE_MODEL_RUBY_NAME, this);
@@ -346,7 +346,7 @@ public class SplashTableModel extends DefaultTableModel {
 	 */
 
 	public void updateDefinitionFromScript(Cell cell) {
-		String content = NeoSplashUtil.getScriptContent(cell.getScriptURI());
+		String content = ScriptUtils.getScriptContent(cell.getScriptURI());
 		cell.setDefinition(content);
 	}
 
