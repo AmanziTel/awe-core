@@ -15,6 +15,7 @@ package org.amanzi.awe.afp.executors;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -111,7 +112,6 @@ public class AfpProcessExecutor extends Job {
 	    			}catch(IOException ioe){
 	    				AweConsolePlugin.debug(ioe.getLocalizedMessage());
 	    			}
-	    			jobFinished = true;
 				}
 			};
 			
@@ -136,6 +136,7 @@ public class AfpProcessExecutor extends Job {
 	    			}catch(IOException ioe){
 	    				AweConsolePlugin.debug(ioe.getLocalizedMessage());
 	    			}
+	    			jobFinished = true;
 				}
 			};
 			
@@ -173,8 +174,12 @@ public class AfpProcessExecutor extends Job {
                 }
 			}
 			AweConsolePlugin.info("AFP Engine .... finished");
+			monitor.worked(100);
 			AfpOutputFileLoader afpOutputFileLoader = new AfpOutputFileLoader(afpRoot, afpE.outputFileName, afpDataset);
 			afpOutputFileLoader.run(monitor);
+			if(progress != null) {
+				progress.onProgressUpdate(1, 0, 0,0, 0, 0,0, 0, 0, 0);
+			}
 		}catch (Exception e){
 			e.printStackTrace();
 			AweConsolePlugin.exception(e);
@@ -193,6 +198,18 @@ public class AfpProcessExecutor extends Job {
 	 */
 	
 	private void createFiles(IProgressMonitor monitor, AfpExporter afpE){
+		
+		// delete output file if exist
+		File outputFile = new File(afpE.outputFileName);
+		
+		if(outputFile.exists()) {
+			try {
+				outputFile.delete();
+			} catch(Exception e) {
+				AweConsolePlugin.error("AFP Unable to delete output file");
+			}
+		}
+		
 		/** Create the control file */
 		afpE.createControlFile(parameters);
 		

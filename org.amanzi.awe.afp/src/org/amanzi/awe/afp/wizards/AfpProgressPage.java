@@ -28,6 +28,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
@@ -64,6 +66,7 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 	TimeSeries series[];
 	TimeSeriesCollection dataset = new TimeSeriesCollection();
     XYLineAndShapeRenderer renderer;
+    Shell parentShell;
 	private AfpProcessExecutor afpJob;
     //private JFreeChart chart;
     private Button[] colorButtons = new Button[8];
@@ -87,6 +90,7 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 			Color.GRAY,
 			Color.CYAN			
 	};
+	Button stopButton;
 	private boolean[] seriesVisible = new boolean[]{ true,true,true,true,true,true,true,true};
 	private Button[] paramButtons = new Button[8];
 	private Table progressTable;
@@ -103,6 +107,7 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 	
 	@Override
 	public void createControl(Composite parent) {
+		this.parentShell = parent.getShell();
 		Composite main = new Composite(parent, SWT.NONE);
    	 	main.setLayout(new GridLayout(2, false));
    	 	main.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 2, 2));
@@ -258,7 +263,7 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 			
 		});
 		
-		Button stopButton = new Button(controlGroup, SWT.PUSH);
+		stopButton = new Button(controlGroup, SWT.PUSH);
 		stopButton.setLayoutData(new GridData(GridData.END, GridData.BEGINNING, true, true));
 		stopButton.setText("Stop");
 		stopButton.addSelectionListener(new SelectionListener(){
@@ -273,7 +278,7 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 			public void widgetSelected(SelectionEvent e) {
 				// TODO Auto-generated method stub
 				afpJob.cancel();
-				((AfpImportWizard)getContainer()).isDone = true;
+				//((AfpImportWizard)getContainer()).isDone = true;
 				//((WizardDialog)getContainer()).close();
 			}
 			
@@ -306,7 +311,9 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 	   	}
 	    summaryGroup.layout();
 
+		((AfpImportWizard)this.getWizard()).setDone(false);
 		executeAfpEngine();
+
 	}
 	public void addProgressTableItem (String[] itemValues){
 		TableItem item = new TableItem(progressTable, SWT.NONE);
@@ -387,33 +394,35 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 			long interference, long neighbor, long tringulation, long shadowing) {
 		
 		
-		
-		//RegularTimePeriod t = RegularTimePeriod.createInstance(Millisecond.class, new Date(time), TimeZone.getDefault());
-		RegularTimePeriod t = new Millisecond(new Date(time));
-
-		series[0].add(new TimeSeriesDataItem(t,remaingtotal),false);
-		
-/*		series[1].add(new TimeSeriesDataItem(t,sectorSeperations));
-		series[2].add(new TimeSeriesDataItem(t,siteSeperation));
-		series[3].add(new TimeSeriesDataItem(t,freqConstraints));
-		series[4].add(new TimeSeriesDataItem(t,interference));
-		series[5].add(new TimeSeriesDataItem(t,neighbor));
-		series[6].add(new TimeSeriesDataItem(t,tringulation));
-		series[7].add(new TimeSeriesDataItem(t,shadowing));
-	*/	
-		Display.getDefault().syncExec( new Runnable() {
-			public void run() {
-				series[0].fireSeriesChanged();
-				TimeSeriesDataItem lastItem = series[0].getDataItem(series[0].getItemCount()-1);
-				//series[0].getItemCount(); 
-				//model.setTableItems(new String[]{new Date().toString(), "dummy", "dummy", "dummy", "dummy", "dummy"});
-				long t = lastItem.getPeriod().getFirstMillisecond();
-				Date d = new Date(t);
-				SimpleDateFormat df = new SimpleDateFormat();
-				df.applyPattern("H:m:s.S");
-				addProgressTableItem(new String[] {df.format(d), ""+lastItem.getValue(), "    ", "    ", "    ", "    "});
-			}
-		});
+		if(result == 0) {
+			RegularTimePeriod t = new Millisecond(new Date(time));
+	
+			series[0].add(new TimeSeriesDataItem(t,remaingtotal),false);
+			
+			Display.getDefault().syncExec( new Runnable() {
+				public void run() {
+					series[0].fireSeriesChanged();
+					TimeSeriesDataItem lastItem = series[0].getDataItem(series[0].getItemCount()-1);
+					//series[0].getItemCount(); 
+					//model.setTableItems(new String[]{new Date().toString(), "dummy", "dummy", "dummy", "dummy", "dummy"});
+					long t = lastItem.getPeriod().getFirstMillisecond();
+					Date d = new Date(t);
+					SimpleDateFormat df = new SimpleDateFormat();
+					df.applyPattern("H:m:s.S");
+					addProgressTableItem(new String[] {df.format(d), ""+lastItem.getValue(), "    ", "    ", "    ", "    "});
+				}
+			});
+		} else {
+			Display.getDefault().syncExec( new Runnable() {
+				public void run() {
+					stopButton.setEnabled(false);
+					MessageBox messageBox = new MessageBox(parentShell,SWT.OK| SWT.ICON_INFORMATION); 
+					messageBox.setMessage("AFP Engine: Execution finished"); 
+					messageBox.open();
+				}
+			});
+			((AfpImportWizard)this.getWizard()).setDone(true);
+		}
 	}
 	
 	void executeAfpEngine() {
