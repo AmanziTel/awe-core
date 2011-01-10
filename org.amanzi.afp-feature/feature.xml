@@ -3,32 +3,33 @@
       id="org.amanzi.afp"
       label="Feature for branding Opti-AFP 6.0 lite"
       version="1.0.0"
-      provider-name="amanzi.org"
+      provider-name="triangulum-telecom.com/"
       plugin="org.amanzi.afp">
 
-   <description url="http://www.amanzi.org/awe">
+   <description url="http://www.triangulum-telecom.com/">
       Opti-AFP 6.0 lite - Automated Frequency Planner for mobile radio network planning and optimization
    </description>
 
-   <copyright url="http://www.amanzi.org/awe/copyright">
+   <copyright url="http://www.triangulum-telecom.com">
       Opti-AFP 6.0 lite contains code written by Amanzi
 HB, AmanziTel AB, Refractions Research, Neotechnology,
 Geotools, the Eclipse Foundation and others.
 All code is copyright their respective owners.
    </copyright>
 
-   <license url="http://awe.amanzi.org/license.html">
-      Opti-AFP 6.0 lite beta
+   <license url="http://www.triangulum-telecom.com">
+     Opti-AFP 6.0 lite beta
 
 This software is the commercial property of Triangulum , and contains both 
 commercial and open source components developed by Amanzitel,
 Refractions Research, Neotechnology, the Eclipse foundation, Geotools et al.
-   </license>
+	</license>
 
    <includes
          id="org.amanzi.awe.afp_feature"
          version="0.0.0"
          name="afp"/>
+
 
    <requires>
       <import feature="net.refractions.udig_base" version="1.1.0" match="greaterOrEqual"/>
@@ -91,6 +92,13 @@ Refractions Research, Neotechnology, the Eclipse foundation, Geotools et al.
          unpack="false"/>
 
    <plugin
+         id="org.amanzi.awe.render.network"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.qualifier"
+         unpack="false"/>
+
+   <plugin
          id="org.amanzi.integrator.awe"
          download-size="0"
          install-size="0"
@@ -126,7 +134,42 @@ Refractions Research, Neotechnology, the Eclipse foundation, Geotools et al.
          unpack="false"/>
 
    <plugin
+         id="net.refractions.udig.project"
+         download-size="0"
+         install-size="0"
+         version="1.1.1.awe"
+         unpack="false"/>
+
+   <plugin
+         id="net.refractions.udig.project.edit"
+         download-size="0"
+         install-size="0"
+         version="1.1.1.awe"
+         unpack="false"/>
+
+   <plugin
+         id="net.refractions.udig.project.ui"
+         download-size="0"
+         install-size="0"
+         version="1.1.1.awe"
+         unpack="false"/>
+
+   <plugin
          id="org.amanzi.awe.views.network"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.qualifier"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.neo.core"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.qualifier"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.awe.render.drive"
          download-size="0"
          install-size="0"
          version="1.0.0.qualifier"
@@ -180,6 +223,26 @@ Refractions Research, Neotechnology, the Eclipse foundation, Geotools et al.
          version="1.0.0.qualifier"
          unpack="false"/>
 
+   <plugin
+         id="net.refractions.udig.style.sld"
+         download-size="0"
+         install-size="0"
+         version="1.1.1.awe"
+         unpack="false"/>
+
+   <plugin
+         id="net.refractions.udig.ui"
+         download-size="0"
+         install-size="0"
+         version="1.1.1.awe"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.awe.views.neighbours"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.qualifier"
+         unpack="false"/>
 
    <plugin
          id="org.amanzi.awe.startup.splash"
@@ -200,6 +263,33 @@ Refractions Research, Neotechnology, the Eclipse foundation, Geotools et al.
          download-size="0"
          install-size="0"
          version="1.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="com.lowagie.itext"
+         download-size="0"
+         install-size="0"
+         version="1.1.1.awe"/>
+
+   <plugin
+         id="net.refractions.udig.printing.model"
+         download-size="0"
+         install-size="0"
+         version="1.1.0.awe"
+         unpack="false"/>
+
+   <plugin
+         id="net.refractions.udig.printing.model.edit"
+         download-size="0"
+         install-size="0"
+         version="1.1.0.awe"
+         unpack="false"/>
+
+   <plugin
+         id="net.refractions.udig.printing.ui"
+         download-size="0"
+         install-size="0"
+         version="1.1.0.awe"
          unpack="false"/>
 
    <plugin
@@ -224,6 +314,13 @@ Refractions Research, Neotechnology, the Eclipse foundation, Geotools et al.
          unpack="false"/>
 
    <plugin
+         id="org.amanzi.awe.neighbours"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.qualifier"
+         unpack="false"/>
+
+   <plugin
          id="org.apache.log4j"
          download-size="0"
          install-size="0"
@@ -235,13 +332,6 @@ Refractions Research, Neotechnology, the Eclipse foundation, Geotools et al.
          download-size="0"
          install-size="0"
          version="1.1.1"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.awe.views.neighbours"
-         download-size="0"
-         install-size="0"
-         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
@@ -259,6 +349,20 @@ Refractions Research, Neotechnology, the Eclipse foundation, Geotools et al.
          unpack="false"/>
 
    <plugin
+         id="org.amanzi.awe.wizards"
+         download-size="0"
+         install-size="0"
+         version="1.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.awe.report.o2"
+         download-size="0"
+         install-size="0"
+         version="1.0.0"
+         unpack="false"/>
+
+   <plugin
          id="org.amanzi.awe.console"
          download-size="0"
          install-size="0"
@@ -269,7 +373,7 @@ Refractions Research, Neotechnology, the Eclipse foundation, Geotools et al.
          id="org.amanzi.neo.db"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
    <plugin
@@ -297,28 +401,7 @@ Refractions Research, Neotechnology, the Eclipse foundation, Geotools et al.
          id="org.amanzi.neo.services.ui"
          download-size="0"
          install-size="0"
-         version="1.0.0.qualifier"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.awe.render.drive"
-         download-size="0"
-         install-size="0"
-         version="1.0.0.qualifier"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.awe.render.network"
-         download-size="0"
-         install-size="0"
-         version="1.0.0.qualifier"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.neo.core"
-         download-size="0"
-         install-size="0"
-         version="1.0.0.qualifier"
+         version="0.0.0"
          unpack="false"/>
 
    <plugin
@@ -326,13 +409,6 @@ Refractions Research, Neotechnology, the Eclipse foundation, Geotools et al.
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.awe.report.geoptima"
-         download-size="0"
-         install-size="0"
-         version="1.0.0.qualifier"
          unpack="false"/>
 
 </feature>
