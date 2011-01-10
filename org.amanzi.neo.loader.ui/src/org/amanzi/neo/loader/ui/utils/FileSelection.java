@@ -14,19 +14,26 @@
 package org.amanzi.neo.loader.ui.utils;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 /**
  * <p>
@@ -36,26 +43,18 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
  * @since 1.0.0
  */
 public class FileSelection extends ViewPart {
-    private class FileLabelProvider extends LabelProvider {
-        
-        //TODO: LN: instead of writing plugin ID, please add constant to GpehPlugin class and use it
-        //TODO: LN: move image names to constants
-        private  final Image folderImage = AbstractUIPlugin
-                                                .imageDescriptorFromPlugin("org.amanzi.awe.gpeh",
-                                                "icons/filebrowser/folder.png").createImage();
-        private  final Image driveImage = AbstractUIPlugin
-                                                .imageDescriptorFromPlugin("org.amanzi.awe.gpeh",
-                                                "icons/filebrowser/filenav_nav.png").createImage();
-        private  final Image fileImage = AbstractUIPlugin
-                                                .imageDescriptorFromPlugin("org.amanzi.awe.gpeh",
-                                                "icons/filebrowser/file_obj.png").createImage();
+    
+    private static class FileLabelProvider extends LabelProvider {
+
+        private static final Image folderImage = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
+        private static final Image fileImage = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FILE);
         
         @Override
         public Image getImage(Object element) {
             File file = (File) element;
-            if (file.isDirectory())
-                return file.getParent() != null ? folderImage : driveImage;
-            return fileImage;
+            if (file.isFile())
+                return fileImage;
+            return folderImage;
         }
         
         @Override
@@ -137,29 +136,9 @@ public class FileSelection extends ViewPart {
         viewer.setLabelProvider(new FileLabelProvider());
         viewer.setInput(File.listRoots());
         String defDir = LoaderUiUtils.getDefaultDirectory();
-        if (defDir!=null){
-            viewer.reveal(defDir);
+        if (StringUtils.isNotEmpty(defDir)){
+            viewer.reveal(new File(defDir));
         }
-//        viewer.addOpenListener(new IOpenListener() {
-//
-//            @Override
-//            public void open(OpenEvent event) {
-//                IStructuredSelection selection = (IStructuredSelection) event
-//                        .getSelection();
-//
-//                File file = (File) selection.getFirstElement();
-//                if (Desktop.isDesktopSupported()) {
-//                    Desktop desktop = Desktop.getDesktop();
-//                    if (desktop.isSupported(Desktop.Action.OPEN)) {
-//                        try {
-//                            desktop.open(file);
-//                        } catch (IOException e) {
-//                            // DO NOTHING
-//                        }
-//                    }
-//                }
-//            }
-//        });
     }
     
     public void setFocus() {
@@ -169,9 +148,25 @@ public class FileSelection extends ViewPart {
     public TreeViewer getTreeViewer() {
         return viewer;
     }
-@Override
-public void dispose() {
-    super.dispose();
-}
+    public Collection<File>getSelectedFiles(FileFilter filter){
+        ITreeSelection treeSelection = (ITreeSelection) viewer.getSelection();
+        LinkedHashSet<File> results = new LinkedHashSet<File>();
+        for (TreePath path : treeSelection.getPaths()) {
+            File file = new File(path.getLastSegment().toString());
+            if (filter==null||filter.accept(file)){
+                results.add(file);
+            }
+        } 
+        return results;
+    }
+    public void storeDefSelection(File defSelection){
+        if (defSelection==null){
+            ITreeSelection treeSelection = (ITreeSelection) viewer.getSelection();
+            defSelection=(File)treeSelection.getFirstElement();
+        }
+        if (defSelection!=null){
+            LoaderUiUtils.setDefaultDirectory(defSelection.getAbsolutePath());
+        }
+    }
    
 }

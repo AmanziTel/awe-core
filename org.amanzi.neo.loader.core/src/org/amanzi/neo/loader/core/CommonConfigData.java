@@ -1,7 +1,10 @@
 package org.amanzi.neo.loader.core;
 import java.io.File;
 import java.io.FileFilter;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -139,8 +142,8 @@ public class CommonConfigData implements IConfigurationData {
      *
      * @param fileToLoad the new file to load
      */
-    public void setFileToLoad(List<File> fileToLoad) {
-        this.fileToLoad = fileToLoad;
+    public void setFileToLoad(Collection<File> fileToLoad) {
+        this.fileToLoad = new ArrayList<File>(fileToLoad);
     }
     
     /**
@@ -177,6 +180,24 @@ public class CommonConfigData implements IConfigurationData {
      */
     public void setDbRootName(String dbRootName) {
         this.dbRootName = dbRootName;
+    }
+
+
+    /**
+     * Gets the all loaded files.
+     *
+     * @return the all loaded files
+     */
+    public Collection<File> getAllLoadedFiles() {
+        Collection<File> result = getFileToLoad();
+       if (result!=null){
+           return result;
+       }
+       result=new LinkedHashSet<File>();
+       if (getRoot()!=null){
+           result.add(getRoot());
+       }
+       return result;
     }
     
 

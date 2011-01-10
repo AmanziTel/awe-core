@@ -18,11 +18,42 @@
    <extension
          point="org.amanzi.neo.loader.ui.loaders">
       <loader
-            description="Network Ericsson(Test only!)"
-            gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
+            description="Ericsson Network config loader"
+            gui="org.amanzi.awe.afp.ericsson.ui.EricssonNetworkImportWizard"
             parser="org.amanzi.awe.afp.ericsson.parser.NetworkConfigurationParser"
-            saver="org.amanzi.awe.afp.ericsson.parser.NetworkConfigurationSaver">
+            saver="org.amanzi.awe.afp.ericsson.parser.NetworkConfigurationSaver"
+            validator="org.amanzi.awe.afp.ericsson.ui.EricssonValidator">
+         <pages
+               class="org.amanzi.awe.afp.ericsson.ui.EricssonNetworkGui2">
+         </pages>
       </loader>
+   </extension>
+   <extension
+         point="org.amanzi.neo.loader.ui.gui">
+      <GUI
+            class="org.amanzi.awe.afp.ericsson.ui.EricssonNetworkImportWizard"
+            id="org.amanzi.awe.afp.ericsson.ui.EricssonNetworkImportWizard">
+      </GUI>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+         <toolbar
+               id="org.amanzi.neo.loader.toolbar2">
+            <command
+                  commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader"
+                  icon="icons/logo.gif"
+                  id="org.amanzi.neo.loader.ui.commands.LaunchLoader"
+                  style="push"
+                  tooltip="Load Ericsson Network Data">
+               <parameter
+                     name="org.amanzi.neo.loader.ui.commands.guiId"
+                     value="org.amanzi.awe.afp.ericsson.ui.EricssonNetworkImportWizard">
+               </parameter>
+            </command>
+         </toolbar>
+      </menuContribution>
    </extension>
 
 </plugin>
