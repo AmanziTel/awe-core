@@ -17,7 +17,7 @@
 </extensions>
 </storageModule>
 <storageModule moduleId="cdtBuildSystem" version="4.0.0">
-<configuration artifactExtension="exe" artifactName="japa_awe" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.macosx.exe.debug.1720764368" name="Debug" parent="cdt.managedbuild.config.gnu.macosx.exe.debug" postannouncebuildStep="" postbuildStep="" preannouncebuildStep="" prebuildStep="">
+<configuration artifactExtension="exe" artifactName="japa_awe" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.macosx.exe.debug.1720764368" name="Debug" parent="cdt.managedbuild.config.gnu.macosx.exe.debug" postannouncebuildStep="Copy the compiled binary to the OS-specific fragment" postbuildStep="cp japa_awe.exe ../../org.amanzi.awe.afp.linux/bin/" preannouncebuildStep="" prebuildStep="">
 <folderInfo id="cdt.managedbuild.config.gnu.macosx.exe.debug.1720764368." name="/" resourcePath="">
 <toolChain id="cdt.managedbuild.toolchain.gnu.macosx.base.12407591" name="MacOSX GCC" superClass="cdt.managedbuild.toolchain.gnu.macosx.base">
 <targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.MachO;org.eclipse.cdt.core.Cygwin_PE;org.eclipse.cdt.core.ELF" id="cdt.managedbuild.target.gnu.platform.macosx.base.1032221339" name="Debug Platform" osList="macosx" superClass="cdt.managedbuild.target.gnu.platform.macosx.base"/>
@@ -26,16 +26,16 @@
 <option id="macosx.c.link.option.libs.771838624" name="Libraries (-l)" superClass="macosx.c.link.option.libs" valueType="libs">
 <listOptionValue builtIn="false" value="m"/>
 </option>
-<option id="macosx.c.link.option.nostart.124704699" superClass="macosx.c.link.option.nostart"/>
-<option id="macosx.c.link.option.nodeflibs.1445567712" superClass="macosx.c.link.option.nodeflibs"/>
-<option id="macosx.c.link.option.nostdlibs.163497794" superClass="macosx.c.link.option.nostdlibs"/>
-<option id="macosx.c.link.option.strip.415989240" superClass="macosx.c.link.option.strip"/>
-<option id="macosx.c.link.option.noshared.486239898" superClass="macosx.c.link.option.noshared"/>
-<option id="macosx.c.link.option.paths.340818668" superClass="macosx.c.link.option.paths"/>
-<option id="macosx.c.link.option.ldflags.1428686343" superClass="macosx.c.link.option.ldflags"/>
-<option id="macosx.c.link.option.other.1108479976" superClass="macosx.c.link.option.other"/>
-<option id="macosx.c.link.option.userobjs.452711922" superClass="macosx.c.link.option.userobjs"/>
-<option id="macosx.c.link.option.shared.769184846" superClass="macosx.c.link.option.shared"/>
+<option id="macosx.c.link.option.nostart.124704699" name="Do not use standard start files (-nostartfiles)" superClass="macosx.c.link.option.nostart"/>
+<option id="macosx.c.link.option.nodeflibs.1445567712" name="Do not use default libraries (-nodefaultlibs)" superClass="macosx.c.link.option.nodeflibs"/>
+<option id="macosx.c.link.option.nostdlibs.163497794" name="No startup or default libs (-nostdlib)" superClass="macosx.c.link.option.nostdlibs"/>
+<option id="macosx.c.link.option.strip.415989240" name="Omit all symbol information (-s)" superClass="macosx.c.link.option.strip"/>
+<option id="macosx.c.link.option.noshared.486239898" name="No shared libraries (-static)" superClass="macosx.c.link.option.noshared"/>
+<option id="macosx.c.link.option.paths.340818668" name="Library search path (-L)" superClass="macosx.c.link.option.paths"/>
+<option id="macosx.c.link.option.ldflags.1428686343" name="Linker flags" superClass="macosx.c.link.option.ldflags"/>
+<option id="macosx.c.link.option.other.1108479976" name="Other options (-Xlinker [option])" superClass="macosx.c.link.option.other"/>
+<option id="macosx.c.link.option.userobjs.452711922" name="Other objects" superClass="macosx.c.link.option.userobjs"/>
+<option id="macosx.c.link.option.shared.769184846" name="Shared (-dynamiclib)" superClass="macosx.c.link.option.shared"/>
 <inputType id="cdt.managedbuild.tool.macosx.c.linker.input.200798133" superClass="cdt.managedbuild.tool.macosx.c.linker.input">
 <additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 <additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -48,26 +48,26 @@
 <tool id="cdt.managedbuild.tool.gnu.archiver.macosx.base.636487374" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.macosx.base"/>
 <tool id="cdt.managedbuild.tool.gnu.cpp.compiler.macosx.base.1962328713" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.macosx.base"/>
 <tool id="cdt.managedbuild.tool.gnu.c.compiler.macosx.base.659983010" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.macosx.base">
-<option id="gnu.c.compiler.option.preprocessor.nostdinc.503400658" superClass="gnu.c.compiler.option.preprocessor.nostdinc"/>
-<option id="gnu.c.compiler.option.preprocessor.preprocess.1998445534" superClass="gnu.c.compiler.option.preprocessor.preprocess"/>
-<option id="gnu.c.compiler.option.preprocessor.def.symbols.1456291588" superClass="gnu.c.compiler.option.preprocessor.def.symbols"/>
-<option id="gnu.c.compiler.option.preprocessor.undef.symbol.1220629895" superClass="gnu.c.compiler.option.preprocessor.undef.symbol"/>
-<option id="gnu.c.compiler.option.include.paths.575899322" superClass="gnu.c.compiler.option.include.paths"/>
-<option id="gnu.c.compiler.option.optimization.level.401040254" superClass="gnu.c.compiler.option.optimization.level"/>
-<option id="gnu.c.compiler.option.optimization.flags.1207178616" superClass="gnu.c.compiler.option.optimization.flags"/>
-<option id="gnu.c.compiler.option.debugging.level.1084799478" superClass="gnu.c.compiler.option.debugging.level"/>
-<option id="gnu.c.compiler.option.debugging.other.1087093224" superClass="gnu.c.compiler.option.debugging.other"/>
-<option id="gnu.c.compiler.option.debugging.gprof.1005459900" superClass="gnu.c.compiler.option.debugging.gprof"/>
-<option id="gnu.c.compiler.option.debugging.prof.819252360" superClass="gnu.c.compiler.option.debugging.prof"/>
-<option id="gnu.c.compiler.option.warnings.syntax.1611624895" superClass="gnu.c.compiler.option.warnings.syntax"/>
-<option id="gnu.c.compiler.option.warnings.pedantic.661502589" superClass="gnu.c.compiler.option.warnings.pedantic"/>
-<option id="gnu.c.compiler.option.warnings.pedantic.error.220648386" superClass="gnu.c.compiler.option.warnings.pedantic.error"/>
-<option id="gnu.c.compiler.option.warnings.nowarn.761713799" superClass="gnu.c.compiler.option.warnings.nowarn"/>
-<option id="gnu.c.compiler.option.warnings.allwarn.1939126219" superClass="gnu.c.compiler.option.warnings.allwarn"/>
-<option id="gnu.c.compiler.option.warnings.toerrors.1595766306" superClass="gnu.c.compiler.option.warnings.toerrors"/>
-<option id="gnu.c.compiler.option.misc.other.525684988" superClass="gnu.c.compiler.option.misc.other"/>
-<option id="gnu.c.compiler.option.misc.verbose.1322684483" superClass="gnu.c.compiler.option.misc.verbose"/>
-<option id="gnu.c.compiler.option.misc.ansi.322980239" superClass="gnu.c.compiler.option.misc.ansi"/>
+<option id="gnu.c.compiler.option.preprocessor.nostdinc.503400658" name="Do not search system directories (-nostdinc)" superClass="gnu.c.compiler.option.preprocessor.nostdinc"/>
+<option id="gnu.c.compiler.option.preprocessor.preprocess.1998445534" name="Preprocess only (-E)" superClass="gnu.c.compiler.option.preprocessor.preprocess"/>
+<option id="gnu.c.compiler.option.preprocessor.def.symbols.1456291588" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols"/>
+<option id="gnu.c.compiler.option.preprocessor.undef.symbol.1220629895" name="Undefined symbols (-U)" superClass="gnu.c.compiler.option.preprocessor.undef.symbol"/>
+<option id="gnu.c.compiler.option.include.paths.575899322" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths"/>
+<option id="gnu.c.compiler.option.optimization.level.401040254" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level"/>
+<option id="gnu.c.compiler.option.optimization.flags.1207178616" name="Other optimization flags" superClass="gnu.c.compiler.option.optimization.flags"/>
+<option id="gnu.c.compiler.option.debugging.level.1084799478" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level"/>
+<option id="gnu.c.compiler.option.debugging.other.1087093224" name="Other debugging flags" superClass="gnu.c.compiler.option.debugging.other"/>
+<option id="gnu.c.compiler.option.debugging.gprof.1005459900" name="Generate gprof information (-pg)" superClass="gnu.c.compiler.option.debugging.gprof"/>
+<option id="gnu.c.compiler.option.debugging.prof.819252360" name="Generate prof information (-p)" superClass="gnu.c.compiler.option.debugging.prof"/>
+<option id="gnu.c.compiler.option.warnings.syntax.1611624895" name="Check syntax only (-fsyntax-only)" superClass="gnu.c.compiler.option.warnings.syntax"/>
+<option id="gnu.c.compiler.option.warnings.pedantic.661502589" name="Pedantic (-pedantic)" superClass="gnu.c.compiler.option.warnings.pedantic"/>
+<option id="gnu.c.compiler.option.warnings.pedantic.error.220648386" name="Pedantic warnings as errors (-pedantic-errors)" superClass="gnu.c.compiler.option.warnings.pedantic.error"/>
+<option id="gnu.c.compiler.option.warnings.nowarn.761713799" name="Inhibit all warnings (-w)" superClass="gnu.c.compiler.option.warnings.nowarn"/>
+<option id="gnu.c.compiler.option.warnings.allwarn.1939126219" name="All warnings (-Wall)" superClass="gnu.c.compiler.option.warnings.allwarn"/>
+<option id="gnu.c.compiler.option.warnings.toerrors.1595766306" name="Warnings as errors (-Werror)" superClass="gnu.c.compiler.option.warnings.toerrors"/>
+<option id="gnu.c.compiler.option.misc.other.525684988" name="Other flags" superClass="gnu.c.compiler.option.misc.other"/>
+<option id="gnu.c.compiler.option.misc.verbose.1322684483" name="Verbose (-v)" superClass="gnu.c.compiler.option.misc.verbose"/>
+<option id="gnu.c.compiler.option.misc.ansi.322980239" name="Support ANSI programs (-ansi)" superClass="gnu.c.compiler.option.misc.ansi"/>
 <inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.226005629" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 </tool>
 </toolChain>
