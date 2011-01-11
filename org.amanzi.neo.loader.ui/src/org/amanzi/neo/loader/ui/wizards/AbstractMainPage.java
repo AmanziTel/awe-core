@@ -122,7 +122,7 @@ public abstract class AbstractMainPage<T extends IConfigurationData> extends Loa
         GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 3, 1);
         viewer.getTreeViewer().getTree().setLayoutData(gridData);
         viewer.getTreeViewer().addSelectionChangedListener(new ISelectionChangedListener() {
-            
+
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 fileSelectionChanged(event);
@@ -169,10 +169,9 @@ public abstract class AbstractMainPage<T extends IConfigurationData> extends Loa
         update();
     }
 
-
     /**
      * File selection changed.
-     *
+     * 
      * @param event the event
      */
     protected void fileSelectionChanged(SelectionChangedEvent event) {
@@ -201,35 +200,37 @@ public abstract class AbstractMainPage<T extends IConfigurationData> extends Loa
      * @return the loader label
      */
     protected abstract String getLoaderLabel();
-@Override
-protected void update() {
-    if (isCRSpresent){
-        CoordinateReferenceSystem crs = getSelectedCRS();
-        selectCRS.setText(String.format("CRS: %s", crs.getName().toString()));
+
+    @Override
+    protected void update() {
+        if (isCRSpresent) {
+            CoordinateReferenceSystem crs = getSelectedCRS();
+            selectCRS.setText(String.format("CRS: %s", crs.getName().toString()));
+        }
+        super.update();
     }
-    super.update();
-}
+
     /**
      * Change root name.
      */
     protected void changeRootName() {
         rootName = root.getText();
         rootNode = rootList.get(rootName);
-        if (rootNode != null) {
-            if (isCRSpresent) {
+        if (isCRSpresent) {
+            if (rootNode!=null){
                 Node gis = NeoServiceFactory.getInstance().getDatasetService().findGisNode(rootNode);
-                if (gis != null) {
+                if (gis!=null){
                     CoordinateReferenceSystem crs = NeoUtils.getCRS(gis, null);
-                    if (crs != null) {
+                    if (crs!=null){
                         selectCRS.setEnabled(false);
                         setSelectedCRS(crs);
-                    } else {
+                    }else{
                         selectCRS.setEnabled(true);
                     }
-                } else {
+                }else{
                     selectCRS.setEnabled(true);
                 }
-            } else {
+            }else{
                 selectCRS.setEnabled(true);
             }
         }

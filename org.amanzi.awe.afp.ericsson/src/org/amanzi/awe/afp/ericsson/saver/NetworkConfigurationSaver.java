@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.afp.ericsson.parser;
+package org.amanzi.awe.afp.ericsson.saver;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.amanzi.awe.afp.ericsson.parser.NetworkConfigurationFileTypes;
+import org.amanzi.awe.afp.ericsson.parser.NetworkConfigurationTransferData;
 import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
 import org.amanzi.neo.loader.core.saver.IStructuredSaver;
 import org.amanzi.neo.loader.core.saver.MetaData;

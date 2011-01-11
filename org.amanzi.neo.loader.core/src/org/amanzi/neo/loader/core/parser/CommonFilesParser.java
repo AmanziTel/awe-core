@@ -18,11 +18,14 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.parser.CommonFilesParser.FileElement;
+import org.apache.log4j.Logger;
 
 /**
  * <p>
@@ -42,9 +45,15 @@ public abstract class CommonFilesParser<T extends IDataElement, C extends Common
             List<File> fileToLoad = getAllFiles(prop.getRoot());
             prop.setFileToLoad(fileToLoad);
         }
+        Set<File>files=new HashSet<File>();
+        files.addAll(getAllFilesMulti(prop.getFileToLoad()));
         List<FileElement> result = new LinkedList<FileElement>();
-        for (File file : prop.getFileToLoad()) {
-            result.add(new FileElement(file, descr));
+        for (File file : files) {
+            if (file.isFile()){
+                result.add(new FileElement(file, descr));
+            }else{
+                Logger.getLogger(this.getClass()).warn(String.format("File %s was skipped", file.getPath()));  
+            }
         }
         return result;
     }

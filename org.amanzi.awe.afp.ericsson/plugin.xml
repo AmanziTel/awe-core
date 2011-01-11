@@ -7,12 +7,24 @@
             class="org.amanzi.awe.afp.ericsson.parser.NetworkConfigurationParser"
             id="org.amanzi.awe.afp.ericsson.parser.NetworkConfigurationParser">
       </parser>
+      <parser
+            class="org.amanzi.awe.afp.ericsson.parser.BarParcer"
+            id="org.amanzi.awe.afp.ericsson.parser.BarParcer">
+      </parser>
+      <parser
+            class="org.amanzi.awe.afp.ericsson.parser.RirParser"
+            id="org.amanzi.awe.afp.ericsson.parser.RirParser">
+      </parser>
    </extension>
    <extension
          point="org.amanzi.loader.core.saver">
       <saver
-            class="org.amanzi.awe.afp.ericsson.parser.NetworkConfigurationSaver"
-            id="org.amanzi.awe.afp.ericsson.parser.NetworkConfigurationSaver">
+            class="org.amanzi.awe.afp.ericsson.saver.NetworkConfigurationSaver"
+            id="org.amanzi.awe.afp.ericsson.saver.NetworkConfigurationSaver">
+      </saver>
+      <saver
+            class="org.amanzi.awe.afp.ericsson.saver.RecordSaver"
+            id="org.amanzi.awe.afp.ericsson.saver.RecordSaver">
       </saver>
    </extension>
    <extension
@@ -21,11 +33,25 @@
             description="Ericsson Network config loader"
             gui="org.amanzi.awe.afp.ericsson.ui.EricssonNetworkImportWizard"
             parser="org.amanzi.awe.afp.ericsson.parser.NetworkConfigurationParser"
-            saver="org.amanzi.awe.afp.ericsson.parser.NetworkConfigurationSaver"
+            saver="org.amanzi.awe.afp.ericsson.saver.NetworkConfigurationSaver"
             validator="org.amanzi.awe.afp.ericsson.ui.EricssonValidator">
          <pages
                class="org.amanzi.awe.afp.ericsson.ui.EricssonNetworkGui2">
          </pages>
+      </loader>
+      <loader
+            description="Ericsson Network BAR loader"
+            gui="org.amanzi.awe.afp.ericsson.ui.EricssonNetworkImportWizard"
+            parser="org.amanzi.awe.afp.ericsson.parser.BarParcer"
+            saver="org.amanzi.awe.afp.ericsson.saver.RecordSaver"
+            validator="org.amanzi.awe.afp.ericsson.parser.RirValidator">
+      </loader>
+      <loader
+            description="Ericsson Network RIR loader"
+            gui="org.amanzi.awe.afp.ericsson.ui.EricssonNetworkImportWizard"
+            parser="org.amanzi.awe.afp.ericsson.parser.RirParser"
+            saver="org.amanzi.awe.afp.ericsson.saver.RecordSaver"
+            validator="org.amanzi.awe.afp.ericsson.parser.RirValidator">
       </loader>
    </extension>
    <extension
@@ -43,7 +69,7 @@
                id="org.amanzi.neo.loader.toolbar2">
             <command
                   commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader"
-                  icon="icons/logo.gif"
+                  icon="icons/logo.png"
                   id="org.amanzi.neo.loader.ui.commands.LaunchLoader"
                   style="push"
                   tooltip="Load Ericsson Network Data">

@@ -19,9 +19,8 @@ import java.util.LinkedHashMap;
 import org.amanzi.neo.loader.core.IMapBasedDataElement;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ *Map Based transfer data contains base information about stricture
  * </p>
  * @author TsAr
  * @since 1.0.0

@@ -165,7 +165,7 @@ public class NetworkConfigurationParser extends AbstractCSVParser<NetworkConfigu
                             case TG: {
                                 StringTokenizer st = new StringTokenizer(nextLine, " ");
                                 if (st.countTokens() < 4) {
-                                    error(String.format("Line %s: incorrect TG information structure", line));
+                                    error(String.format("File '%s'\tLine %s: incorrect TG information structure",element.getFile().getName(), line));
                                     continue;
                                 }
                                 String tg = st.nextToken();
@@ -179,12 +179,16 @@ public class NetworkConfigurationParser extends AbstractCSVParser<NetworkConfigu
                             case TRX: {
                                 StringTokenizer st = new StringTokenizer(nextLine, " ");
                                 if (st.countTokens() < 3) {
-                                    error(String.format("Line %s: incorrect TRX information structure", line));
+                                    error(String.format("File '%s'\tLine %s: incorrect TRX information structure",element.getFile().getName(), line));
                                     continue;
                                 }
                                 String tg = st.nextToken();
                                 String cell= st.nextToken();
                                 String group= st.nextToken();
+                                if ("ALL".equalsIgnoreCase(cell)||"ALL".equalsIgnoreCase(group)) {
+                                    error(String.format("File '%s'\tLine %s: incorrect TRX information structure",element.getFile().getName(), line));
+                                    continue;
+                                }                              
                                 data.setTG(tg);
                                 data.setCell(cell);
                                 data.setGroup(Integer.valueOf(group));
