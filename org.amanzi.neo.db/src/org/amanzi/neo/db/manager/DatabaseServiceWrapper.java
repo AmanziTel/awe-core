@@ -29,6 +29,7 @@ import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.event.KernelEventHandler;
 import org.neo4j.graphdb.event.TransactionEventHandler;
+import org.neo4j.graphdb.index.IndexManager;
 
 /**
  * <p>
@@ -262,6 +263,16 @@ public class DatabaseServiceWrapper implements INeoDbService {
             } else {
                 nodesTodelete.add(node.getId());
             }
+        } finally {
+            r.unlock();
+        }
+    }
+
+    @Override
+    public IndexManager index() {
+        r.lock();
+        try {
+            return realService.index();
         } finally {
             r.unlock();
         }

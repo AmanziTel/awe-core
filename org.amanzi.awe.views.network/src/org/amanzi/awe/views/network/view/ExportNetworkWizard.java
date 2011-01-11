@@ -43,9 +43,9 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.traversal.TraversalDescription;
-import org.neo4j.graphdb.traversal.Uniqueness;
 import org.neo4j.helpers.Predicate;
 import org.neo4j.kernel.Traversal;
+import org.neo4j.kernel.Uniqueness;
 
 import au.com.bytecode.opencsv.CSVWriter;
 
