@@ -162,6 +162,14 @@ public class GpehImportWizardPage extends LoaderPage<CommonConfigData> {
             event = Events.findById(i);
             eventGroup.addSupportedEvent(event);
         }
+        
+        for (int i = 458; i < 460; i++) {
+            event = Events.findById(i);
+            eventGroup.addSupportedEvent(event);
+        }
+        
+        event = Events.findById(475);
+        eventGroup.addSupportedEvent(event);
       
         eventConfig.addEventGroup(eventGroup);
         

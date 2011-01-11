@@ -127,31 +127,33 @@ public class GpehCsvParserWizardPage extends LoaderPage<CommonConfigData> {
             HashSet<Events> selectedEvents = new HashSet<Events>();
             
             Events event = null;
-            int count = 0;
             for (int i = 384; i < 396; i++) {
                 event = Events.findById(i);
                 selectedEvents.add(event);
-                count++;
             }
             
             for (int i = 397; i < 409; i++) {
                 event = Events.findById(i);
                 selectedEvents.add(event);
-                count++;
             }
             selectedEvents.add(Events.findById(410));
             
             for (int i = 413; i < 424; i++) {
                 event = Events.findById(i);
                 selectedEvents.add(event);
-                count++;
             }
             
             for (int i = 425; i < 457; i++) {
                 event = Events.findById(i);
                 selectedEvents.add(event);
-                count++;
             }
+            
+            for (int i = 458; i < 460; i++) {
+                event = Events.findById(i);
+                selectedEvents.add(event);
+            }
+            selectedEvents.add(Events.findById(475));
+            
             configurationData.getAdditionalProperties().put(SELECTED_EVENT, new HashSet<Events>(selectedEvents));
             configurationData.getAdditionalProperties().put(GpehTransferData.OUTPUT_DIRECTORY, outputDir.getStringValue());
             return true;
