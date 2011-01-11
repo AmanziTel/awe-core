@@ -69,6 +69,8 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
     private int countOfLoadedFiles = 0;
     // count of events
     private long count = 0;
+    // true if file to write is new
+    private boolean isNewFile = false;
     
     @Override
     public void init(GpehTransferData element) {
@@ -88,6 +90,7 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
             	startTimestamp = timestamp;
             
             globalTimestamp = timestamp;
+            isNewFile = true;
         }
         
         // read id of event
@@ -142,7 +145,8 @@ public class GpehCSVSaver implements ISaver<GpehTransferData> {
         }
         
         // get headers from csvfile
-        if (globalEventId != eventId) {
+        if (globalEventId != eventId || isNewFile) {
+            isNewFile = false;
             globalEventId = eventId;
             csvFileToWork = openedFiles.get(eventId);
             headers = csvFileToWork.getHeaders();
