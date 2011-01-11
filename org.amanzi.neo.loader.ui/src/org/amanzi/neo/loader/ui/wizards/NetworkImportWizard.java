@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.neo.loader.core.CommonConfigData;
+import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.services.events.UpdateViewEventType;
@@ -58,6 +59,15 @@ public void init(IWorkbench workbench, IStructuredSelection selection) {
 }
     @Override
     public boolean performFinish() {
+        if (getConfigurationData().getCharsetName()==null){
+            String characterSet = null;
+            try {
+                characterSet = org.amanzi.neo.loader.ui.NeoLoaderPlugin.getDefault().getPreferenceStore().getString(DataLoadPreferences.DEFAULT_CHARSET);
+            } catch (Exception e) {
+                characterSet=null;
+            }
+            getConfigurationData().setCharsetName(characterSet);
+        }
         if (super.performFinish()) {
             NeoServicesUiPlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDatabaseEvent(UpdateViewEventType.GIS));
             return true;

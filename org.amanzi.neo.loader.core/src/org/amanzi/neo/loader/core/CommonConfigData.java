@@ -36,6 +36,8 @@ public class CommonConfigData implements IConfigurationData {
     
     /** The root. */
     private File root;
+    private String charsetName;
+    private Character quoteChar;
     /** The root. */
     private List<File> roots;
     
@@ -56,6 +58,14 @@ public class CommonConfigData implements IConfigurationData {
 
     public void setCrs(CoordinateReferenceSystem crs) {
         this.crs = crs;
+    }
+
+    public String getCharsetName() {
+        return charsetName;
+    }
+
+    public void setCharsetName(String charsetName) {
+        this.charsetName = charsetName;
     }
 
     private final Map<String,Object>additionalProperties=new HashMap<String, Object>();
@@ -198,6 +208,15 @@ public class CommonConfigData implements IConfigurationData {
            result.add(getRoot());
        }
        return result;
+    }
+
+
+    public void setQuoteChar(Character quoteChar) {
+        this.quoteChar = quoteChar;
+    }
+
+    public Character getQuoteChar() {
+        return quoteChar;
     }
     
 

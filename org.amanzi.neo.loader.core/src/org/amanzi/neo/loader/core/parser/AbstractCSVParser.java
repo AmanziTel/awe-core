@@ -13,9 +13,11 @@
 
 package org.amanzi.neo.loader.core.parser;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.Calendar;
 import java.util.Map;
 
@@ -23,9 +25,10 @@ import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.CountingFileInputStream;
 import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.loader.core.ProgressEventImpl;
+import org.amanzi.neo.loader.core.saver.ISaver;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import au.com.bytecode.opencsv.CSVReader;
+import au.com.bytecode.opencsv.CSVParser;
 
 /**
  * <p>
@@ -36,11 +39,13 @@ import au.com.bytecode.opencsv.CSVReader;
  * @since 1.0.0
  */
 public abstract class AbstractCSVParser<T extends BaseTransferData> extends CommonFilesParser<T, CommonConfigData> {
-    
+
     protected String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
     protected Character delimeters;
     private T initdata;
-    private int minSize=2;
+    private int minSize = 2;
+    protected String charSetName;
+    private Character quoteCharacter;
 
     @Override
     protected T getFinishData() {
@@ -48,41 +53,62 @@ public abstract class AbstractCSVParser<T extends BaseTransferData> extends Comm
     }
 
     @Override
+    public void init(CommonConfigData properties, ISaver<T> saver) {
+        super.init(properties, saver);
+        charSetName = properties.getCharsetName();
+        if (charSetName == null) {
+            charSetName = Charset.defaultCharset().name();
+        }
+        quoteCharacter=properties.getQuoteChar();
+        if (quoteCharacter==null){
+            quoteCharacter=0;
+        }
+    }
+
+    @Override
     protected boolean parseElement(FileElement element) {
-        CSVReader reader = null;
+        BufferedReader reader = null;
         char delim = getDelimiters(element.getFile());
+        long line = 0;
         try {
             CountingFileInputStream is = new CountingFileInputStream(element.getFile());
-            reader = new CSVReader(new InputStreamReader(is), delim);
+            reader = new BufferedReader(new InputStreamReader(is, charSetName));
+            String lineStr;
             String[] nextLine;
             String[] header = null;
             int persentageOld = 0;
-            long line = 0;
-            while ((nextLine = reader.readNext()) != null) {
+
+            // TODO define all necessary parameters?
+
+            CSVParser parser = new CSVParser(delim,quoteCharacter , '\\',false,true);
+            
+            while ((lineStr = reader.readLine()) != null) {
                 try {
+                    nextLine = parser.parseLine(lineStr);
                     line++;
                     if (header == null) {
-                        if (nextLine.length<minSize){
-                           continue; 
+                        if (nextLine.length < minSize) {
+                            continue;
                         }
                         header = nextLine;
-                        if ("true".equals(initdata.get("cleanHeaders"))){
+                        if ("true".equals(initdata.get("cleanHeaders"))) {
                             cleanHeader(header);
                         }
                         continue;
                     }
 
                     if (header.length != nextLine.length) {
-                        error(String.format("File %s, line %s:incorrect data: Header length=%s,data length=%s. Data was skipped", element.getFile().getName(), line, header.length, nextLine.length));
+                        error(String.format("File %s, line %s:incorrect data: Header length=%s,data length=%s. Data was skipped", element.getFile().getName(), line, header.length,
+                                nextLine.length));
                         continue;
                     }
-                    T data = createTransferData(element, header,nextLine , line);
+                    T data = createTransferData(element, header, nextLine, line);
                     getSaver().save(data);
                 } finally {
                     int persentage = is.percentage();
                     if (persentage - persentageOld > PERCENTAGE_FIRE) {
                         persentageOld = persentage;
-                        if (fireSubProgressEvent(element, new ProgressEventImpl(String.format(getDescriptionFormat(), element.getFile().getName()), persentage/100d))) {
+                        if (fireSubProgressEvent(element, new ProgressEventImpl(String.format(getDescriptionFormat(), element.getFile().getName()), persentage / 100d))) {
                             return true;
                         }
                     }
@@ -90,7 +116,7 @@ public abstract class AbstractCSVParser<T extends BaseTransferData> extends Comm
             }
 
         } catch (IOException e) {
-            exception(e);
+            exception(String.format("File: %s; line %s",element.getFile().getName(),line),e);
         } finally {
             closeStream(reader);
         }
@@ -98,15 +124,16 @@ public abstract class AbstractCSVParser<T extends BaseTransferData> extends Comm
     }
 
     /**
-     *Create transfer data
+     * Create transfer data
+     * 
      * @param element file element
      * @param header- header array
      * @param nextLine line array
      * @param line - line number
      * @return
      */
-    protected T createTransferData(FileElement element,  String[] header,String[] nextLine, long line) {
-        T data =createEmptyTransferData();
+    protected T createTransferData(FileElement element, String[] header, String[] nextLine, long line) {
+        T data = createEmptyTransferData();
         data.setLine(line);
         data.setFileName(element.getFile().getName());
         for (int i = 0; i < header.length; i++) {
@@ -115,83 +142,80 @@ public abstract class AbstractCSVParser<T extends BaseTransferData> extends Comm
         return data;
     }
 
-
-
     protected void cleanHeader(String[] header) {
-        if (header!=null){
+        if (header != null) {
             for (int i = 0; i < header.length; i++) {
-                header[i]=cleanHeader(header[i]); 
+                header[i] = cleanHeader(header[i]);
             }
         }
     }
+
     private final static String cleanHeader(String header) {
         return header.replaceAll("[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+", "_").replaceAll("[^\\w]+", "_").replaceAll("_+", "_").replaceAll("\\_$", "").toLowerCase();
     }
+
     /**
      * Gets the delimiters.
-     *
+     * 
      * @param file the file
      * @return the delimiters
      */
     private char getDelimiters(File file) {
         if (delimeters == null) {
-            
-            String fieldSepRegex = LoaderUtils.defineDelimeters(file,minSize,possibleFieldSepRegexes);
+
+            String fieldSepRegex = LoaderUtils.defineDelimeters(file, minSize, possibleFieldSepRegexes);
             delimeters = fieldSepRegex.charAt(0);
         }
         return delimeters;
     }
-
-
 
     @Override
     protected T getInitData(CommonConfigData properties) {
         initdata = createEmptyTransferData();
         initdata.setProjectName(properties.getProjectName());
         initdata.setRootName(properties.getDbRootName());
-        for (Map.Entry<String, Object> entry:properties.getAdditionalProperties().entrySet()){
-            if ("workdate".equals(entry.getKey())){
+        for (Map.Entry<String, Object> entry : properties.getAdditionalProperties().entrySet()) {
+            if ("workdate".equals(entry.getKey())) {
                 initdata.setWorkDate((Calendar)entry.getValue());
-            }else if (entry.getValue()!=null){
+            } else if (entry.getValue() != null) {
                 initdata.put(entry.getKey(), entry.getValue().toString());
             }
         }
         CoordinateReferenceSystem crs = properties.getCrs();
-        setCrs(initdata,crs);
+        setCrs(initdata, crs);
         return initdata;
     }
 
-
     /**
-     * Sets the crs.
-     *TODO move no utility
+     * Sets the crs. TODO move no utility
+     * 
      * @param data the data
      * @param crs the crs
      */
     protected void setCrs(BaseTransferData data, CoordinateReferenceSystem crs) {
-        if (crs!=null){
+        if (crs != null) {
             data.put("CRS", crs.toWKT());
-        }else{
+        } else {
             data.remove("CRS");
         }
     }
 
     @Override
     protected T getStartupElement(FileElement element) {
-        T result= createEmptyTransferData();
+        T result = createEmptyTransferData();
         result.setFileName(element.getFile().getName());
-        Calendar cl=Calendar.getInstance();
+        Calendar cl = Calendar.getInstance();
         cl.setTimeInMillis(element.getFile().lastModified());
-//        result.put("timestamp", String.valueOf(element.getFile().lastModified()));
+        // result.put("timestamp", String.valueOf(element.getFile().lastModified()));
         result.setWorkDate(cl);
-         return result;
+        return result;
     }
 
     /**
-     *
      * @return
      */
-    protected abstract T createEmptyTransferData() ;
+    protected abstract T createEmptyTransferData();
+
     @Override
     protected T getFinishElement(FileElement element) {
         return null;
