@@ -66,6 +66,8 @@ public class AfpExporter {
 	public final String logFileName = tmpAfpFolder + "logfile.awe";
 	public final String outputFileName = tmpAfpFolder + "outputFile.awe";
 	
+	private int maxTRX = -1;
+	
 	public AfpExporter(Node afpRoot){
 		this.afpRoot = afpRoot;
 	}
@@ -111,8 +113,14 @@ public class AfpExporter {
 					 }
 				 }
 				 Integer[] freqArray = freq.toArray(new Integer[0]);
-				 writer.write(" " + (freqArray.length + 1));//sector.getProperty("numberoffreqenciesrequired"));
+				 if (freqArray.length == 0)
+					 writer.write(" " + 1);
+				 else
+					 writer.write(" " + freqArray.length);//sector.getProperty("numberoffreqenciesrequired"));
 				 writer.write(" " + freqArray.length);//sector.getProperty("numberoffrequenciesgiven"));
+				 if (freqArray.length > maxTRX){
+					 maxTRX = freqArray.length; 
+				 }
 				 /*Object obj = sector.getProperty("frq");
 				 
 				 if (obj != null){
@@ -148,6 +156,8 @@ public class AfpExporter {
 	 */
 	public void createControlFile(HashMap<String, String> parameters){
 		File controlFile = getFile(this.controlFileName);
+		if (maxTRX < 0)
+			maxTRX = Integer.parseInt(parameters.get("GMaxRTperCell"));
 		
 		try {
 			controlFile.createNewFile();
@@ -187,10 +197,10 @@ public class AfpExporter {
 			writer.write("ExistCliques " + parameters.get("ExistCliques"));
 			writer.newLine();
 
-			writer.write("GMaxRTperCell " + parameters.get("GMaxRTperCell"));
+			writer.write("GMaxRTperCell " + maxTRX);
 			writer.newLine();
 
-			writer.write("GMaxRTperSite " + parameters.get("GMaxRTperSite"));
+			writer.write("GMaxRTperSite " + maxTRX);
 			writer.newLine();
 
 			writer.write("HoppingType " + parameters.get("HoppingType"));

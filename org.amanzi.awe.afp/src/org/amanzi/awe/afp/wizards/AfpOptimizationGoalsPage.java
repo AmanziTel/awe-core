@@ -207,16 +207,23 @@ public class AfpOptimizationGoalsPage extends AfpWizardPage implements Listener 
 	    
 	    summaryGroup.layout();
 	    
-		
-    	freq900Button.setSelection(model.getFrequencyBands()[0]);
-    	freq1800Button.setSelection(model.getFrequencyBands()[1]);
-    	freq850Button.setSelection(model.getFrequencyBands()[2]);
-    	freq1900Button.setSelection(model.getFrequencyBands()[3]);
+	    frequenciesButton.setSelection(model.isOptimizeFrequency());
+	    bsicButton.setSelection(model.isOptimizeBSIC());
+	    hsnButton.setSelection(model.isOptimizeHSN());
+	    maioButton.setSelection(model.isOptimizeMAIO());
+	    freq900Button.setSelection(model.getFrequencyBands()[0]);
+	    freq1800Button.setSelection(model.getFrequencyBands()[1]);
+	    freq850Button.setSelection(model.getFrequencyBands()[2]);
+	    freq1900Button.setSelection(model.getFrequencyBands()[3]);
+	    bcchButton.setSelection(model.getChanneltypes()[0]);
+	    bbHoppingButton.setSelection(model.getChanneltypes()[1]);
+	    sYHoppingButton.setSelection(model.getChanneltypes()[2]);
+	    analyzeCurrentButton.setSelection(model.isAnalyzeCurrentFreqAllocation());
+	    
 	}
 
 	@Override
 	public IWizardPage getPreviousPage() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 	

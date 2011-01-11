@@ -210,9 +210,6 @@ public class AfpProcessExecutor extends Job {
 			}
 		}
 		
-		/** Create the control file */
-		afpE.createControlFile(parameters);
-		
 		/** Create the carrier file */
 		afpE.createCarrierFile(); 
 			
@@ -230,6 +227,9 @@ public class AfpProcessExecutor extends Job {
 		
 		/** Create the exception file */
 		afpE.createExceptionFile();
+		
+		/** Create the control file */
+		afpE.createControlFile(parameters);
 		
 		afpE.createParamFile();
 	}
