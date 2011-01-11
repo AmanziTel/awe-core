@@ -82,7 +82,7 @@ public class AfpModel {
 	 * 2- 850
 	 * 3- 1900
 	 */
-	boolean[] frequencyBands = new boolean[] {true, true, true, true};
+	boolean[] frequencyBands = new boolean[] {true, true, false, false};
 	
 	/**
 	 * 0- BCCH

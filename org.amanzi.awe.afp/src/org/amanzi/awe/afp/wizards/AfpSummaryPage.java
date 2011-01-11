@@ -53,6 +53,7 @@ public class AfpSummaryPage extends AfpWizardPage {
 				//TODO do something here
 			}
 		});
+		saveButton.setEnabled(false);
 		
 		setPageComplete(true);
     	setControl (parentLocal);
