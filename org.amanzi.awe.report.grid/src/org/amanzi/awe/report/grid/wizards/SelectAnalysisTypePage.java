@@ -175,7 +175,7 @@ public class SelectAnalysisTypePage extends WizardPage {
         System.out.println("oss: "+allOss);
         if (!allOss.isEmpty()){
             Node node = allOss.iterator().next();
-            Pair<Long, Long> time = Utils.getMinMaxTimeOfDataset(node, service);
+            Pair<Long, Long> time = Utils.getMinMaxTimeOfDataset(node);
             System.out.println("time: "+time.l()+" - "+time.r());
         }
         super.setVisible(visible);

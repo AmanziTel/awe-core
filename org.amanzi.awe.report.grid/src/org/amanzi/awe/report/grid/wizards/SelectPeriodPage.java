@@ -121,7 +121,7 @@ public class SelectPeriodPage extends WizardPage {
             GridReportWizard gridReportWizard = ((GridReportWizard)getWizard());
             gridReportWizard.loadData();
 
-            Pair<Long, Long> dsTime = Utils.getMinMaxTimeOfDataset(gridReportWizard.getDatasetNode(), NeoServiceProvider.getProvider().getService());
+            Pair<Long, Long> dsTime = Utils.getMinMaxTimeOfDataset(gridReportWizard.getDatasetNode());
             Long start = dsTime.l();
             Long end = dsTime.r();
             GregorianCalendar cal = new GregorianCalendar();
