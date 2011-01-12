@@ -1920,7 +1920,7 @@ public class AfpModel {
 				if (i <= 124)
 					frequencies[i] = Integer.toString(i);
 				else
-					frequencies[i] = Integer.toString(i + 955 - 124 + 1);
+					frequencies[i] = Integer.toString(i + 955 - (124 + 1));
 			}
 		} else if(band == AfpModel.BAND_1800) {
     			frequencies = new String[885-512+1];
@@ -1930,7 +1930,7 @@ public class AfpModel {
 		}else if(band == AfpModel.BAND_850) {
     			frequencies = new String[251-128+1];
     			for (int i = 0; i < frequencies.length; i++){
-    				frequencies[i] = Integer.toString(251 + i); 
+    				frequencies[i] = Integer.toString(128 + i); 
     			}
 		} else if(band == AfpModel.BAND_1900) {
     			frequencies = new String[810-512+1];

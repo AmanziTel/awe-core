@@ -139,7 +139,7 @@ public class AfpOptimizationGoalsPage extends AfpWizardPage implements Listener 
 		summaryGroup.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true,3 ,1));
 		summaryGroup.setText("Summary");
 		
-		String[] headers = { " ", "Total", "900", "1800", "850", "900"};
+		String[] headers = { " ", "Total", "900", "1800", "850", "1900"};
 	    for (int i = 0; i < headers.length; i++) {
 	    	Label label = new Label(summaryGroup, SWT.LEFT);
 	    	label.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 1 , 1));
