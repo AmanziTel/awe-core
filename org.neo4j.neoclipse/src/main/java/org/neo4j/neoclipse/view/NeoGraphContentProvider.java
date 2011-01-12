@@ -108,7 +108,7 @@ public class NeoGraphContentProvider implements
     {
         int maximumNode=Activator.getDefault().getPreferenceStore().getInt(Preferences.MAXIMUM_NODES_RETURNED);
         if (maximumNode<1){
-            maximumNode=500;
+            maximumNode=10;
         }
         Node node = (Node) inputElement;
         final GraphDatabaseService neoService = Activator.getDefault().getGraphDbServiceSafely();

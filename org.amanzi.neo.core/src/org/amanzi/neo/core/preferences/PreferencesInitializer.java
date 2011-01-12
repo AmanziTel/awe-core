@@ -51,7 +51,7 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer
 		NeoPreferenceHelper neoPreferenceHelper = new NeoPreferenceHelper();
 		IPreferenceStore pref = neoclipsePlugin.getPreferenceStore();
 		pref.setDefault(DecoratorPreferences.NODE_PROPERTY_NAMES, "name,value,time,code,call_type");
-        pref.setDefault(Preferences.MAXIMUM_NODES_RETURNED, 200);
+        pref.setDefault(Preferences.MAXIMUM_NODES_RETURNED, 100);
         pref.setDefault(DecoratorPreferences.NODE_ICON_PROPERTY_NAMES, "type");
         pref.setDefault(Preferences.DATABASE_LOCATION, checkDirs(
                 new String[] {System.getProperty("user.home"), ".amanzi", databaseName}).getPath());
