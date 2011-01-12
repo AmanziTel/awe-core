@@ -104,17 +104,17 @@ public class Application extends UDIGApplication implements IApplication {
 			//GraphDbServiceChangeLocation.createCompositeDatabaseLocation("");
 		}
 		
-		@Override
-		public void postWindowCreate(IWorkbenchWindowConfigurer configurer) {
-		    super.postWindowCreate(configurer);
-		    GraphDbServiceChangeLocation.createCompositeDatabaseLocation("");
-		}
-		
-        @Override
-        public void postWindowOpen(IWorkbenchWindowConfigurer configurer) {
-            super.postWindowOpen(configurer);
-            GraphDbServiceChangeLocation.createCompositeDatabaseLocation("");
-        }
+//		@Override
+//		public void postWindowCreate(IWorkbenchWindowConfigurer configurer) {
+//		    super.postWindowCreate(configurer);
+//		    GraphDbServiceChangeLocation.createCompositeDatabaseLocation("");
+//		}
+//		
+//        @Override
+//        public void postWindowOpen(IWorkbenchWindowConfigurer configurer) {
+//            super.postWindowOpen(configurer);
+//            GraphDbServiceChangeLocation.createCompositeDatabaseLocation("");
+//        }
 		
         /**
          * create service on Catalog
