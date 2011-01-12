@@ -31,6 +31,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
+import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
@@ -99,7 +100,21 @@ public class Application extends UDIGApplication implements IApplication {
 			    PATH_OBJECT + "prj_obj.gif", true);
 			declareWorkbenchImage(configurer, ideBundle, IDE.SharedImages.IMG_OBJ_PROJECT_CLOSED,
 			    PATH_OBJECT + "cprj_obj.gif", true);
+			
+			//GraphDbServiceChangeLocation.createCompositeDatabaseLocation("");
 		}
+		
+		@Override
+		public void postWindowCreate(IWorkbenchWindowConfigurer configurer) {
+		    super.postWindowCreate(configurer);
+		    GraphDbServiceChangeLocation.createCompositeDatabaseLocation("");
+		}
+		
+        @Override
+        public void postWindowOpen(IWorkbenchWindowConfigurer configurer) {
+            super.postWindowOpen(configurer);
+            GraphDbServiceChangeLocation.createCompositeDatabaseLocation("");
+        }
 		
         /**
          * create service on Catalog
