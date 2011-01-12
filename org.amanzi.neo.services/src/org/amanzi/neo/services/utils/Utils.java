@@ -819,23 +819,34 @@ public class Utils {
      *        of this node)
      * @return neighbour relations of selected neighbour list
      */
-    public static Iterable<Relationship> getNeighbourRelations(Node node, String neighbourName) {
-        Iterable<Relationship> relationships = node.getRelationships(NetworkRelationshipTypes.NEIGHBOUR, Direction.OUTGOING);
+    public static Iterable<Relationship> getNeighbourRelations(Node node, String neighbourName, RelationshipType relType) {
         if (neighbourName == null) {
-            return relationships;
+            return null;
         }
         ArrayList<Relationship> result = new ArrayList<Relationship>();
-        for (Relationship relation : relationships) {
-            // if (neighbourName.equals(getNeighbourName(relation, null))) {
-            if (neighbourName.equals(getNeighbourName(relation, "").equals("") ? getNeighbourName(relation.getStartNode()) : getNeighbourName(relation, null))) {
-                result.add(relation);
-            }
-        }
+        getNeighbourRelations(result, node, relType, neighbourName);
         return result;
     }
 
     /**
      * Return neighbour relations of selected neighbour list.
+     * 
+     * @param node node
+     * @param neighbourName neighbour list name (if null then will returns all neighbour relations
+     *        of this node)
+     * @return neighbour relations of selected neighbour list
+     */
+    private static void getNeighbourRelations(ArrayList<Relationship> result, Node node, RelationshipType relType, String neighbourName) {
+        Iterable<Relationship> relationships = node.getRelationships(relType, Direction.OUTGOING);
+        for (Relationship relation : relationships) {
+            if (neighbourName.equals(getNeighbourName(relation, "").equals("") ? getNeighbourName(relation.getStartNode()) : getNeighbourName(relation, null))) {
+                result.add(relation);
+            }
+        }
+    }
+
+    /**
+     * Return transmisson relations of selected transmission list.
      * 
      * @param node node
      * @param neighbourName neighbour list name (if null then will returns all neighbour relations
@@ -2764,17 +2775,16 @@ public class Utils {
     /**
      * @param proxyNode the proxy node
      * @param type Relationship type between proxy node and parent
-     * @param service the service
      * @return the parent node
      */
-    public static Node getNodeFromProxy(Node proxyNode, RelationshipType type, GraphDatabaseService service) {
+    public static Node getNodeFromProxy(Node proxyNode, RelationshipType type) {
         return proxyNode.getSingleRelationship(type, Direction.INCOMING).getOtherNode(proxyNode);
     }
 
     public static Node getProxySector(Node sector, String fileName) {
         String proxySectorName = fileName + PROXY_NAME_SEPARATOR + sector.getProperty(INeoConstants.PROPERTY_NAME_NAME);
-        for (Node node : sector.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.NEIGHBOURS,
-                Direction.OUTGOING)) {
+        for (Node node : sector.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE,
+                NetworkRelationshipTypes.NEIGHBOURS, Direction.OUTGOING, NetworkRelationshipTypes.INTERFERENCE, Direction.OUTGOING)) {
             if (node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString().equals(proxySectorName))
                 return node;
         }

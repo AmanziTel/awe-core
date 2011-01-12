@@ -328,7 +328,7 @@ public class NeighbourAnalyser extends ViewPart  implements INeoServiceProviderL
                     if (StringUtil.isEmpty(result)) {
                         result = NeoUtils.getNodeName(servNode);
                     }
-                    for (Relationship rel : NeoUtils.getNeighbourRelations(servNode, "utran relation")) {
+                    for (Relationship rel : NeoUtils.getNeighbourRelations(servNode, "utran relation", NetworkRelationshipTypes.NEIGHBOUR)) {
                         Node neigh = rel.getOtherNode(servNode);
                         outList.clear();
                         outList.add(result);

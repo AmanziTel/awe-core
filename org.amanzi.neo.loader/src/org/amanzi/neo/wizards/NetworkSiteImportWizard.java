@@ -74,7 +74,7 @@ public class NetworkSiteImportWizard extends Wizard implements IImportWizard {
      */
     @Override
     public boolean performFinish() {
-        Job job = new Job("Load Network Site'" + (new File(mainPage.getFileName())).getName() + "'") {
+        Job job = new Job("Load '" + (new File(mainPage.getFileName())).getName() + "'") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 NetworkFileType fileType = mainPage.getFileType();

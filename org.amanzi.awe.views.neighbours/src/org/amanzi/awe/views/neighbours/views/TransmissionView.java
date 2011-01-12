@@ -354,10 +354,10 @@ public class TransmissionView extends ViewPart {
             // try {
             RelationWrapper relation = (RelationWrapper)obj;
             if (index == 0) {
-            	return NeoUtils.getNodeName(NeoUtils.getNodeFromProxy(relation.getServeNode(), NetworkRelationshipTypes.TRANSMISSIONS, graphDatabaseService));
+            	return NeoUtils.getNodeName(NeoUtils.getNodeFromProxy(relation.getServeNode(), NetworkRelationshipTypes.TRANSMISSIONS));
 //                return NeoUtils.getSimpleNodeName(relation.getServeNode(), "");
             } else if (index == 1) {
-            	return NeoUtils.getNodeName(NeoUtils.getNodeFromProxy(relation.getNeighbourNode(), NetworkRelationshipTypes.TRANSMISSIONS, graphDatabaseService));
+            	return NeoUtils.getNodeName(NeoUtils.getNodeFromProxy(relation.getNeighbourNode(), NetworkRelationshipTypes.TRANSMISSIONS));
 //                return NeoUtils.getSimpleNodeName(relation.getNeighbourNode(), "");
             } else {
                 return relation.getRelation().getProperty(columns.get(index), "").toString();
@@ -726,7 +726,7 @@ public class TransmissionView extends ViewPart {
      */
     protected void showServe(RelationWrapper relationWrapper) {
         setServeSelection(relationWrapper);
-        Node serveNode = NeoUtils.getNodeFromProxy(relationWrapper.getServeNode(), NetworkRelationshipTypes.TRANSMISSIONS, graphDatabaseService);
+        Node serveNode = NeoUtils.getNodeFromProxy(relationWrapper.getServeNode(), NetworkRelationshipTypes.TRANSMISSIONS);
         HashMap<String, Object> properties = new HashMap<String, Object>();
         properties.put(GeoNeo.NEIGH_MAIN_NODE, null);
         properties.put(GeoNeo.NEIGH_NAME, relationWrapper.toString());

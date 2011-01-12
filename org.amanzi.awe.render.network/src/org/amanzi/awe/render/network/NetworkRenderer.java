@@ -66,6 +66,7 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
@@ -598,12 +599,12 @@ public class NetworkRenderer extends RendererImpl {
             if (neiName != null) {
                 Object properties = geoNeo.getProperties(GeoNeo.NEIGH_RELATION);
                 if (properties != null) {
-                    drawRelation(g, (Relationship)properties, drawHints.lineColor, nodesMap, neo);
+                    drawRelation(g, (Relationship)properties, drawHints.lineColor, nodesMap);
                 }
                 properties = geoNeo.getProperties(GeoNeo.NEIGH_MAIN_NODE);
-                Object type=geoNeo.getProperties(GeoNeo.NEIGH_TYPE);
+                Object type = geoNeo.getProperties(GeoNeo.NEIGH_TYPE);
                 if (properties != null) {
-                    drawNeighbour(g, neiName, (Node)properties, drawHints.lineColor, nodesMap,type, neo);
+                    drawNeighbour(g, neiName, (Node)properties, drawHints.lineColor, nodesMap, type);
                 }
             }
             LOGGER.debug("Network renderer took " + ((System.currentTimeMillis() - startTime) / 1000.0) + "s to draw " + count + " sites from "+neoGeoResource.getIdentifier());
@@ -726,28 +727,32 @@ public class NetworkRenderer extends RendererImpl {
      * @param nodesMap map of nodes
      * @param type 
      */
-    private void drawNeighbour(Graphics2D g, String neiName, Node node, Color lineColor, Map<Node, Point> nodesMap, Object type, GraphDatabaseService neo) {
+    private void drawNeighbour(Graphics2D g, String neiName, Node node, Color lineColor, Map<Node, Point> nodesMap, Object type) {
         g.setColor(lineColor);
         Point point1 = nodesMap.get(node);
         Node proxyServeNode = NeoUtils.getProxySector(node, neiName);
         NetworkSiteType siteType=(NetworkSiteType)type;
-        if (point1 != null) {
-            for (Relationship relation : NeoUtils.getNeighbourRelations(proxyServeNode, neiName)) {
-                Node proxyNeighNode = relation.getOtherNode(proxyServeNode);
-            	final Node neighNode = NeoUtils.getNodeFromProxy(proxyNeighNode, NetworkRelationshipTypes.NEIGHBOURS, neo);
-                if (siteType!=null){
-                    if (!siteType.checkNode(NeoUtils.getParent(null, neighNode),null)){
-                        continue;
+        if (point1 != null && proxyServeNode != null) {
+            for (RelationshipType relType : new RelationshipType[] {NetworkRelationshipTypes.NEIGHBOUR,
+                    NetworkRelationshipTypes.INTERFERS}) {
+                RelationshipType listRelType = relType == NetworkRelationshipTypes.NEIGHBOUR ? NetworkRelationshipTypes.NEIGHBOURS : NetworkRelationshipTypes.INTERFERENCE;
+                for (Relationship relation : NeoUtils.getNeighbourRelations(proxyServeNode, neiName, relType)) {
+                    Node proxyNeighNode = relation.getOtherNode(proxyServeNode);
+                    final Node neighNode = NeoUtils.getNodeFromProxy(proxyNeighNode, listRelType);
+                    if (siteType != null) {
+                        if (!siteType.checkNode(NeoUtils.getParent(null, neighNode), null)) {
+                            continue;
+                        }
                     }
-                }
-                Point point2 = nodesMap.get(neighNode);
-                if (point2 != null) {
-                    g.drawLine(point1.x, point1.y, point2.x, point2.y);
+                    Point point2 = nodesMap.get(neighNode);
+                    if (point2 != null) {
+                        g.drawLine(point1.x, point1.y, point2.x, point2.y);
+                    }
                 }
             }
             for (Relationship relation : NeoUtils.getTransmissionRelations(proxyServeNode, neiName)) {
             	Node proxyTransNode = relation.getOtherNode(proxyServeNode);
-            	final Node transNode = NeoUtils.getNodeFromProxy(proxyTransNode, NetworkRelationshipTypes.TRANSMISSIONS, neo);
+            	final Node transNode = NeoUtils.getNodeFromProxy(proxyTransNode, NetworkRelationshipTypes.TRANSMISSIONS);
                 Point point2 = nodesMap.get(transNode);
                 if (point2 != null) {
                     g.drawLine(point1.x, point1.y, point2.x, point2.y);
@@ -764,17 +769,17 @@ public class NetworkRenderer extends RendererImpl {
      * @param lineColor - line color
      * @param nodesMap map of nodes
      */
-    private void drawRelation(Graphics2D g, Relationship relation, Color lineColor, Map<Node, Point> nodesMap, GraphDatabaseService neo) {
+    private void drawRelation(Graphics2D g, Relationship relation, Color lineColor, Map<Node, Point> nodesMap) {
         g.setColor(lineColor);
         Point point1 = nodesMap.get(relation.getStartNode());
         NetworkRelationshipTypes proxyRelation = relation.isType(NetworkRelationshipTypes.TRANSMISSION)?NetworkRelationshipTypes.TRANSMISSIONS:NetworkRelationshipTypes.NEIGHBOURS;
         if (point1 == null){
-        	Node servNode = NeoUtils.getNodeFromProxy(relation.getStartNode(), proxyRelation, neo);
+        	Node servNode = NeoUtils.getNodeFromProxy(relation.getStartNode(), proxyRelation);
         	point1 = nodesMap.get(servNode);
         }
         Point point2 = nodesMap.get(relation.getEndNode());
         if (point2 == null){
-        	Node transNode = NeoUtils.getNodeFromProxy(relation.getEndNode(), proxyRelation, neo);
+        	Node transNode = NeoUtils.getNodeFromProxy(relation.getEndNode(), proxyRelation);
         	point2 = nodesMap.get(transNode);
         }
         if (point1 != null && point2 != null) {
