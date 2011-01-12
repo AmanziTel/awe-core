@@ -176,6 +176,8 @@ public class AfpModel {
 		totalSectors = 0;
 		
 		int[] bandTRXs = new int[4];
+		int[] bandSectors = new int[4];
+		int[] bcchTRXs = new int[4];
 		
 		Traverser traverser = datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
 
@@ -199,18 +201,43 @@ public class AfpModel {
 			}
 			else if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.SECTOR.getId())){
 				totalSectors++;
+				String band = (String)node.getProperty("band", "");
+				if (band.contains("900")){
+					bandSectors[BAND_900]++;
+				}
+				if (band.contains("1800")){
+					bandSectors[BAND_1800]++;
+				}
+				if (band.contains("850")){
+					bandSectors[BAND_850]++;
+				}
+				if (band.contains("1900")){
+					bandSectors[BAND_1900]++;
+				}
 			}
 			else if(node.getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.TRX.getId())){
 				totalTRX++;
 				String band = (String)node.getProperty("band", "");
-				if (band.contains("900"))
+				if (band.contains("900")){
 					bandTRXs[BAND_900]++;
-				if (band.contains("1800"))
+					if ((Boolean)node.getProperty(INeoConstants.PROPERTY_BCCH_NAME, false))
+						bcchTRXs[BAND_900]++;
+				}
+				if (band.contains("1800")){
 					bandTRXs[BAND_1800]++;
-				if (band.contains("850"))
+					if ((Boolean)node.getProperty(INeoConstants.PROPERTY_BCCH_NAME, false))
+						bcchTRXs[BAND_1800]++;
+				}
+				if (band.contains("850")){
 					bandTRXs[BAND_850]++;
-				if (band.contains("1900"))
+					if ((Boolean)node.getProperty(INeoConstants.PROPERTY_BCCH_NAME, false))
+						bcchTRXs[BAND_850]++;
+				}
+				if (band.contains("1900")){
 					bandTRXs[BAND_1900]++;
+					if ((Boolean)node.getProperty(INeoConstants.PROPERTY_BCCH_NAME, false))
+						bcchTRXs[BAND_1900]++;
+				}
 			}
 			
 //			totalRemainingTRX = totalTRX;
@@ -225,7 +252,7 @@ public class AfpModel {
 
 		
 		//TODO: get the count from database based on the selected node and also update frequency band values based on that
-		int[][] selectedArray = {bandTRXs, bandTRXs, bandTRXs, {0,0,0,0},{0,0,0,0}};
+		int[][] selectedArray = {bandSectors, bandTRXs, bcchTRXs, {0,0,0,0},{0,0,0,0}};
 		return selectedArray;
 	}
 
