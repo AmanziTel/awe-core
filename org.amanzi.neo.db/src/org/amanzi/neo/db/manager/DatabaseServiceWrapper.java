@@ -268,7 +268,6 @@ public class DatabaseServiceWrapper implements INeoDbService {
         }
     }
 
-    @Override
     public IndexManager index() {
         r.lock();
         try {
