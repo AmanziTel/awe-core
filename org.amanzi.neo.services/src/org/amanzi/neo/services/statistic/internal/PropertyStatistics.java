@@ -95,6 +95,8 @@ public class PropertyStatistics implements ISinglePropertyStat {
             }
         }
         count = (Long)propNode.getProperty(StatisticProperties.COUNT, 0l);
+        minValue=propNode.getProperty(StatisticProperties.MIN_VALUE, null);
+        maxValue=propNode.getProperty(StatisticProperties.MAX_VALUE, null);
         int statCount = (Integer)propNode.getProperty(StatisticProperties.STAT_SIZE, 0);
         for (int i = 0; i < statCount; i++) {
             long coun = (Long)propNode.getProperty(StatisticProperties.VALUE_COUNT + i, 0l);
