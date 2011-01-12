@@ -178,6 +178,8 @@ public class AfpModel {
 		int[] bandTRXs = new int[4];
 		int[] bandSectors = new int[4];
 		int[] bcchTRXs = new int[4];
+		int[] hoppingTRXs = new int[4];
+		int[] nonHoppingTRXs = new int[4];
 		
 		Traverser traverser = datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
 
@@ -194,7 +196,6 @@ public class AfpModel {
 		
 		for (Node node: traverser){
 			// add to unique properties
-			
 			
 			if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.SITE.getId())){
 				totalSites++;
@@ -222,21 +223,37 @@ public class AfpModel {
 					bandTRXs[BAND_900]++;
 					if ((Boolean)node.getProperty(INeoConstants.PROPERTY_BCCH_NAME, false))
 						bcchTRXs[BAND_900]++;
+					if ((Integer)node.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) < 1)
+						nonHoppingTRXs[BAND_900]++;
+					else 
+						hoppingTRXs[BAND_900]++;
 				}
 				if (band.contains("1800")){
 					bandTRXs[BAND_1800]++;
 					if ((Boolean)node.getProperty(INeoConstants.PROPERTY_BCCH_NAME, false))
 						bcchTRXs[BAND_1800]++;
+					if ((Integer)node.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) < 1)
+						nonHoppingTRXs[BAND_1800]++;
+					else 
+						hoppingTRXs[BAND_1800]++;
 				}
 				if (band.contains("850")){
 					bandTRXs[BAND_850]++;
 					if ((Boolean)node.getProperty(INeoConstants.PROPERTY_BCCH_NAME, false))
 						bcchTRXs[BAND_850]++;
+					if ((Integer)node.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) < 1)
+						nonHoppingTRXs[BAND_850]++;
+					else 
+						hoppingTRXs[BAND_850]++;
 				}
 				if (band.contains("1900")){
 					bandTRXs[BAND_1900]++;
 					if ((Boolean)node.getProperty(INeoConstants.PROPERTY_BCCH_NAME, false))
 						bcchTRXs[BAND_1900]++;
+					if ((Integer)node.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) < 1)
+						nonHoppingTRXs[BAND_1900]++;
+					else 
+						hoppingTRXs[BAND_1900]++;
 				}
 			}
 			
@@ -252,7 +269,7 @@ public class AfpModel {
 
 		
 		//TODO: get the count from database based on the selected node and also update frequency band values based on that
-		int[][] selectedArray = {bandSectors, bandTRXs, bcchTRXs, {0,0,0,0},{0,0,0,0}};
+		int[][] selectedArray = {bandSectors, bandTRXs, bcchTRXs, nonHoppingTRXs,hoppingTRXs};
 		return selectedArray;
 	}
 
