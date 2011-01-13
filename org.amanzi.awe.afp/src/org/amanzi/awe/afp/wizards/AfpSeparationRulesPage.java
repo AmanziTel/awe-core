@@ -141,7 +141,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
     	this.tabFolder.addSelectionListener(new SelectionAdapter() {
     		public void widgetSelected(org.eclipse.swt.events.SelectionEvent event) {
     			// interchange the unique value cache
-    			if(tabFolder.getSelectionIndex() == 0) {
+    			if(tabFolder.getSelectionIndex() == 1) {
     				updateLabels();
     				interChangeUniquePropertySet(true);
     			} else {
@@ -264,7 +264,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 		loadSiteData(filterTableSite, siteRowFilter);
 		this.interChangeUniquePropertySet(true);
 		loadData(filterTableSector, sectorRowFilter);
-		if(tabFolder.getSelectionIndex() ==0) {
+		if(tabFolder.getSelectionIndex() ==1) {
 			this.interChangeUniquePropertySet(true);
 		} else {
 			this.interChangeUniquePropertySet(false);
@@ -474,7 +474,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 			for (String value: selectedValues){
 				colFilter.addValue(value);
 			}
-			if(tabFolder.getSelectionIndex() ==1) {
+			if(tabFolder.getSelectionIndex() ==0) {
 				siteRowFilter.addColumn(colFilter);
 				loadSiteData(filterTableSite, siteRowFilter);
 			} else {
@@ -516,7 +516,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 			
 			final Combo domainCombo = new Combo(subShell, SWT.DROP_DOWN | SWT.READ_ONLY);
 			ArrayList<String> modelNames = new ArrayList<String>();
-			if(tabFolder.getSelectionIndex() ==0) {
+			if(tabFolder.getSelectionIndex() ==1) {
 				for (AfpSeparationDomainModel dm : model.getSectorSeparationDomains(false)){
 					modelNames.add(dm.getName());
 				}
@@ -535,7 +535,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 				@Override
 				public void widgetSelected(SelectionEvent e) {
 					String domainName = domainCombo.getText();
-					if(tabFolder.getSelectionIndex() ==0) {
+					if(tabFolder.getSelectionIndex() ==1) {
 						AfpDomainModel sepModel = model.findDomainByName(model.DOMAIN_TYPES[2], domainName);
 						sepModel.setFilters(sectorRowFilter.toString());
 						sepModel.setNumTRX(sectorCount);
@@ -569,7 +569,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 		}
 		
 		else if (e.widget.getData().equals(AfpWizardPage.CLEAR)){
-			if(tabFolder.getSelectionIndex() ==0) {
+			if(tabFolder.getSelectionIndex() ==1) {
 				sectorRowFilter.clear();
 				loadData(filterTableSector, sectorRowFilter);
 			}
@@ -582,7 +582,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 	}
 	
 	public void updateLabels(){
-		if(tabFolder.getSelectionIndex() ==0) {
+		if(tabFolder.getSelectionIndex() ==1) {
 			for(Label[] labels: sectorDomainLabels.values() ){
 				for (Label label : labels){
 					label.dispose();

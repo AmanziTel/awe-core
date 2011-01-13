@@ -3,6 +3,8 @@ package org.amanzi.awe.afp.models;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -67,6 +69,7 @@ public class AfpModel {
 			{"SY TCH", "Non/BB TCH"},
 			{"SY TCH", "SY TCH"}
 			};
+	public static final String[] DEFAULT_BAND_NAMES = {"Free 900", "Free 1800", "Free 850", "Free 1900"};
 	public static final String DEFAULT_MAL_NAME = "Default MAL";
 	public static final String DEFAULT_SECTOR_SEP_NAME = "Default Separations";
 	public static final String DEFAULT_SITE_SEP_NAME = "Default Separations";
@@ -680,7 +683,7 @@ public class AfpModel {
 				// add free domains
 				if(addFree) {
 					AfpFrequencyDomainModel d = new AfpFrequencyDomainModel();
-					d.setName("Free " + BAND_NAMES[i]);
+					d.setName(DEFAULT_BAND_NAMES[i]);
 					d.setBand(BAND_NAMES[i]);
 					d.setNumTRX(totalRemainingTRX);
 					d.setFree(true);
@@ -752,6 +755,21 @@ public class AfpModel {
 		for(AfpFrequencyDomainModel d:freqDomains.values()) {
 			l.add(new AfpFrequencyDomainModel(d));
 		}
+		
+		Collections.sort(l, new Comparator<AfpDomainModel>(){
+
+			@Override
+			public int compare(AfpDomainModel arg0, AfpDomainModel arg1) {
+				for (String name: DEFAULT_BAND_NAMES){
+					if (arg0.getName().equals(name))
+						return -1;
+					else if (arg1.getName().equals(name))
+						return 1;
+				}
+				return arg0.getName().compareTo(arg1.getName());
+			}
+			
+		});
 		return l;
 	}
 	/*public int[] getFreqDomainsTrxCount(boolean addFree) {
@@ -806,6 +824,18 @@ public class AfpModel {
 			l.add(new AfpHoppingMALDomainModel(d));
 		}
 		
+		Collections.sort(l, new Comparator<AfpDomainModel>(){
+
+			@Override
+			public int compare(AfpDomainModel arg0, AfpDomainModel arg1) {
+				if (arg0.getName().equals(DEFAULT_MAL_NAME))
+					return -1;
+				else if (arg1.getName().equals(DEFAULT_MAL_NAME))
+					return 1;
+				return arg0.getName().compareTo(arg1.getName());
+			}
+			
+		});
 		return l;
 	}
 
@@ -833,6 +863,18 @@ public class AfpModel {
 			l.add(new AfpSeparationDomainModel(d));
 		}
 		
+		Collections.sort(l, new Comparator<AfpDomainModel>(){
+
+			@Override
+			public int compare(AfpDomainModel arg0, AfpDomainModel arg1) {
+				if (arg0.getName().equals(DEFAULT_SITE_SEP_NAME))
+					return -1;
+				else if (arg1.getName().equals(DEFAULT_SITE_SEP_NAME))
+					return 1;
+				return arg0.getName().compareTo(arg1.getName());
+			}
+			
+		});
 		return l;
 	}
 
@@ -863,14 +905,39 @@ public class AfpModel {
 		ArrayList<AfpSeparationDomainModel> l = new ArrayList<AfpSeparationDomainModel>();
 		for(AfpSeparationDomainModel d:this.sectorSeparationDomains.values()) {
 			if(!getFree)
-				if(d.getName().equals(DEFAULT_SITE_SEP_NAME))
+				if(d.getName().equals(DEFAULT_SECTOR_SEP_NAME))
 					continue;
 
 			l.add(new AfpSeparationDomainModel(d));
 		}
 		
+		Collections.sort(l, new Comparator<AfpDomainModel>(){
+
+			@Override
+			public int compare(AfpDomainModel arg0, AfpDomainModel arg1) {
+				if (arg0.getName().equals(DEFAULT_SECTOR_SEP_NAME))
+					return -1;
+				else if (arg1.getName().equals(DEFAULT_SECTOR_SEP_NAME))
+					return 1;
+				return arg0.getName().compareTo(arg1.getName());
+			}
+			
+		});
+		
 		return l;
 	}
+	
+	/*public Collection<AfpDomainModel> sortDomainModelsByName(ArrayList<AfpDomainModel> modelList){
+		Collections.sort(modelList, new Comparator<AfpDomainModel>(){
+
+			@Override
+			public int compare(AfpDomainModel arg0, AfpDomainModel arg1) {
+				return arg0.getName().compareTo(arg1.getName());
+			}
+			
+		});
+		return modelList;
+	}*/
 
 
 	/**

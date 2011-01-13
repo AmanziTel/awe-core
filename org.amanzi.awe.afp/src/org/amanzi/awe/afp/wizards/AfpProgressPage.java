@@ -419,9 +419,13 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 					MessageBox messageBox = new MessageBox(parentShell,SWT.OK| SWT.ICON_INFORMATION); 
 					messageBox.setMessage("AFP Engine: Execution finished"); 
 					messageBox.open();
+					AfpImportWizard wizard = (AfpImportWizard)getWizard();
+					wizard.setDone(true);
+					setPageComplete(true);
+					
 				}
 			});
-			((AfpImportWizard)this.getWizard()).setDone(true);
+			
 		}
 	}
 	
