@@ -14,7 +14,6 @@ package org.amanzi.awe;
 
 import java.io.File;
 
-import org.eclipse.core.internal.jobs.Worker;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -60,7 +59,7 @@ public class GraphDbServiceChangeLocation {
      * @return
      */
     public static String createCompositeDatabaseLocation(final String defaultPath) {
-        Display display = new Display();
+        final Display display = new Display();
         Shell shell = new Shell(display);
         shell.setSize(550, 100);
         shell.setLayout(new RowLayout());
@@ -98,7 +97,7 @@ public class GraphDbServiceChangeLocation {
         outputDir.setStringValue(defaultPath);
         
         button = new Button(composite, SWT.BUTTON1);
-        button.setText("Choose way");
+        button.setText("It's right way");
         button.setEnabled(false);
         button.addMouseListener(new MouseListener() {
             
@@ -108,6 +107,7 @@ public class GraphDbServiceChangeLocation {
             
             @Override
             public void mouseDown(MouseEvent e) {
+                display.dispose();
             }
             
             @Override
