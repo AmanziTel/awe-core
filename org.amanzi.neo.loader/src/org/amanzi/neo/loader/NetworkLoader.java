@@ -819,7 +819,7 @@ public class NetworkLoader extends AbstractLoader {
         }
         
         //try to get BCCH frequency
-        Object frequency = propertyMap.remove("bcch");
+        Object frequency = propertyMap.get("bcch");
         if (frequency != null) {
             Integer iFrequency = (Integer)frequency;
             
