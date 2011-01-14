@@ -1829,11 +1829,15 @@ public abstract class AbstractLoader {
             if (storeNode != null) {
                 if (timeStampMin != null) {
                     storeNode.setProperty(INeoConstants.MIN_TIMESTAMP, timeStampMin);
-                    storeNode.setProperty(INeoConstants.MIN_TIMESTAMP_STRING_FORMAT, start);
+                    // Kasnitskij_V:
+                    storeNode.setProperty(INeoConstants.MIN_TIMESTAMP_STRING_FORMAT, 
+                            simpleDateFormat.format(new Date(timeStampMin)));
                 }
                 if (timeStampMax != null) {
                     storeNode.setProperty(INeoConstants.MAX_TIMESTAMP, timeStampMax);
-                    storeNode.setProperty(INeoConstants.MAX_TIMESTAMP_STRING_FORMAT, end);
+                    // Kasnitskij_V:
+                    storeNode.setProperty(INeoConstants.MAX_TIMESTAMP_STRING_FORMAT, 
+                            simpleDateFormat.format(new Date(timeStampMax)));
                 }
             }
         }
