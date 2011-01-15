@@ -86,7 +86,10 @@ public class DatasetStatistic implements IStatistic {
     public void updateTypeCount(String rootKey, String nodeType, long count) {
         handler.increaseTypeCount(rootKey, nodeType, count);
     }
-
+@Override
+public void setTypeCount(String rootKey, String nodeType, long count) {
+    handler.setTypeCount(rootKey, nodeType, count);
+}
     @Override
     public long getTotalCount(String rootKey, String nodeType) {
         return handler.getTotalCount(rootKey, nodeType);

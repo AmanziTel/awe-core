@@ -12,17 +12,20 @@
  */
 package org.amanzi.neo.services.node2node;
 
-import org.neo4j.graphdb.RelationshipType;
 
 /**
- * Interface to represent type of node to node relation
- * <p>
- *
- * </p>
+ * enum to represent type of relation
  * @author Kasnitskij_V
  * @since 1.0.0
  */
-public interface INodeToNodeRelationType {
-	public RelationshipType getRelationType();
-	public String getName();
+public enum NodeToNodeTypes implements INodeToNodeType {
+	INTERFERENCE_MATRIX,
+	SHADOWING,
+	NEIGHBOURS,
+	TRIANGULATION;
+
+	@Override
+	public String getName() {
+		return this.getName();
+	}
 }

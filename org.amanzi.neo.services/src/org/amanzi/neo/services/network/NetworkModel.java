@@ -23,9 +23,9 @@ import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
-import org.amanzi.neo.services.node2node.INodeToNodeRelationType;
+import org.amanzi.neo.services.node2node.INodeToNodeType;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
-import org.amanzi.neo.services.node2node.NodeToNodeRelationTypes;
+import org.amanzi.neo.services.node2node.NodeToNodeTypes;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 
@@ -51,24 +51,24 @@ public class NetworkModel {
 		networkService = NeoServiceFactory.getInstance().getNetworkService();
 	}
 	
-	protected NodeToNodeRelationModel getNodeToNodeRelationModel(INodeToNodeRelationType type, String name) {
+	protected NodeToNodeRelationModel getNodeToNodeRelationModel(INodeToNodeType type, String name) {
 		return new NodeToNodeRelationModel(rootNode, type, name);
 	}
 	
 	public NodeToNodeRelationModel getInterferenceMatrix(String name) {
-		return getNodeToNodeRelationModel(NodeToNodeRelationTypes.INTERFERENCE_MATRIX, name);
+		return getNodeToNodeRelationModel(NodeToNodeTypes.INTERFERENCE_MATRIX, name);
 	}
 	
 	public NodeToNodeRelationModel getShadowing(String name) {
-		return getNodeToNodeRelationModel(NodeToNodeRelationTypes.SHADOWING, name);
+		return getNodeToNodeRelationModel(NodeToNodeTypes.SHADOWING, name);
 	}
 	
 	public NodeToNodeRelationModel getNeighbours(String name) {
-		return getNodeToNodeRelationModel(NodeToNodeRelationTypes.NEIGHBOURS, name);
+		return getNodeToNodeRelationModel(NodeToNodeTypes.NEIGHBOURS, name);
 	}
 	
 	public NodeToNodeRelationModel getTriangulation(String name) {
-		return getNodeToNodeRelationModel(NodeToNodeRelationTypes.TRIANGULATION, name);
+		return getNodeToNodeRelationModel(NodeToNodeTypes.TRIANGULATION, name);
 	}
 
     public List<Node> findSectorByBsicAndArfcn(String bsic, String arfcn) {

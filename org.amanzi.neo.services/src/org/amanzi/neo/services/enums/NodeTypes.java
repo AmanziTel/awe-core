@@ -695,6 +695,7 @@ public enum NodeTypes implements INodeType{
     AFP_DOMAIN("domain"),
     SITE_SITE_RELATIONS("site_site_relations"),
     SECTOR_SECTOR_RELATIONS("sector_sector_relations"),
+    NODE_NODE_RELATIONS("node_node_relations"),
     OSS("oss"), 
     GPEH_EVENT("gpeh_event"), 
     OSS_MAIN("oss_main"),

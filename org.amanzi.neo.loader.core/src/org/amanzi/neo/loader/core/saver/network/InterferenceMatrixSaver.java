@@ -15,6 +15,7 @@ package org.amanzi.neo.loader.core.saver.network;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
@@ -26,6 +27,7 @@ import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.hsqldb.lib.StringUtil;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 
 /**
  * <p>
@@ -98,11 +100,13 @@ public class InterferenceMatrixSaver extends AbstractHeaderSaver<BaseTransferDat
     private void createNeighbour(Node serSector, Node neighSector, BaseTransferData element) {
         Map<String, Object> sectorData = getNotHandledData(element, neighbourName, NodeTypes.PROXY.getId());
         
-        int proxyCount = imModel.addRelation(serSector, neighSector, sectorData);
-        
+         Relationship relationship = imModel.getRelation(serSector, neighSector);
+        for (Entry<String, Object> entry : sectorData.entrySet()) {
+            relationship.setProperty(entry.getKey(), entry.getValue());
+        } 
         //update statistics for proxy nodes
-        updateTx(proxyCount, proxyCount);
-        statistic.updateTypeCount(neighbourName, NodeTypes.PROXY.getId(), proxyCount);
+        updateTx(2, 2);
+        statistic.setTypeCount(neighbourName, NodeTypes.PROXY.getId(), imModel.getProxyCount());
 
         //update statistics for values
         for (Map.Entry<String, Object> entry : sectorData.entrySet()) {

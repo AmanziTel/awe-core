@@ -263,6 +263,14 @@ public class StatisticHandler {
         return vault.getPropertyNameCollection(nodeTypeId,comparable);
     }
 
+    public void setTypeCount(String rootKey, String nodeType, long count) {
+        if (totalCount!=count){
+            isChanged=true;
+            totalCount=count;
+            getVault(rootKey).increaseTypeCount(nodeType,count-totalCount);
+        }
+    }
+
 
 
 

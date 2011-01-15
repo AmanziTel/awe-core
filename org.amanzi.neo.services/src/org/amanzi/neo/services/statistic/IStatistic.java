@@ -32,6 +32,7 @@ public interface IStatistic {
     Object parseValue(String rootKey, String nodeType, String key, String value);
 
     void updateTypeCount(String rootKey, String nodeType, long count);
+    void setTypeCount(String rootKey, String nodeType, long count);
 
     long getTotalCount(String rootKey, String nodeType);
 
