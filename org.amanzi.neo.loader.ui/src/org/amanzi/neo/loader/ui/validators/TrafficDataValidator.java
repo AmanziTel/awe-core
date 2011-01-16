@@ -34,7 +34,7 @@ public class TrafficDataValidator implements ILoaderInputValidator<CommonConfigD
        if (result.getResult()!=Result.SUCCESS){
            return result;
        }
-        return ValidatorUtils.checkFileAndHeaders(data.getRoot(), 3, 
+        return ValidatorUtils.checkFileAndHeaders(data.getRoot(), 2, 
                 new String[]{"Sector", "Traffic"}, 
                 possibleFieldSepRegexes, false);
 

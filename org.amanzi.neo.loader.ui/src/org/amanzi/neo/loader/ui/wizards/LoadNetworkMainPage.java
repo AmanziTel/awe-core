@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.IValidateResult;
@@ -372,6 +371,8 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         }else{
             selectCRS.setEnabled(true);
         }
+        getConfigurationData().setProjectName(LoaderUiUtils.getAweProjectName());
+        getConfigurationData().setDbRootName(networkName);
         updateLabelNetwDescr();
         update();
     }

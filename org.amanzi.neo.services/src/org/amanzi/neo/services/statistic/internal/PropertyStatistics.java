@@ -1,5 +1,6 @@
 package org.amanzi.neo.services.statistic.internal;
 
+import java.lang.reflect.Array;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -90,8 +91,19 @@ public class PropertyStatistics implements ISinglePropertyStat {
                 classValue = Class.forName(klassName);
                 setClass(classValue);
             } catch (ClassNotFoundException e) {
-                // TODO Handle ClassNotFoundException
-                e.printStackTrace();
+                try {
+                    classValue=Array.newInstance(Class.forName(klassName.substring(0,klassName.indexOf("["))),0).getClass();
+                    setClass(classValue);
+                } catch (NegativeArraySizeException e1) {
+                    e.printStackTrace();
+                    klass=null;
+                    isComparable=false;
+                } catch (ClassNotFoundException e1) {
+                    e.printStackTrace();
+                    klass=null;
+                    isComparable=false;
+                }
+
             }
         }
         count = (Long)propNode.getProperty(StatisticProperties.COUNT, 0l);
@@ -500,5 +512,14 @@ public class PropertyStatistics implements ISinglePropertyStat {
             }
 
         }
+    }
+    public static void main(String[] args) throws ClassNotFoundException {
+        Object k=new Integer[0];
+        System.out.println(k.getClass().getCanonicalName());
+        System.out.println(k.getClass().getSimpleName());
+        Class< ? extends Object> classValue = Array.newInstance(Class.forName(k.getClass().getCanonicalName().substring(0,k.getClass().getCanonicalName().indexOf("["))),0).getClass();
+
+        System.out.println(classValue);
+        System.out.println(classValue==k.getClass());
     }
 }

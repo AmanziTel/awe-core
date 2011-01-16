@@ -16,8 +16,8 @@ package org.amanzi.neo.loader.ui.validators;
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.ILoaderInputValidator;
 import org.amanzi.neo.loader.core.IValidateResult;
-import org.amanzi.neo.loader.core.ValidateResultImpl;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
+import org.amanzi.neo.loader.core.ValidateResultImpl;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.NodeTypes;
@@ -46,7 +46,7 @@ public class ExistNetworkValidator implements ILoaderInputValidator<CommonConfig
         if (root == null || datasetService.getNodeType(root) != NodeTypes.NETWORK) {
             return new ValidateResultImpl(Result.FAIL, String.format("Network '%s' is not found. ", data.getDbRootName()) + "For loader '%s' network should exist.");
         }
-        return new ValidateResultImpl(Result.SUCCESS, "");
+        return new ValidateResultImpl(Result.UNKNOWN, "");
     }
 
 }
