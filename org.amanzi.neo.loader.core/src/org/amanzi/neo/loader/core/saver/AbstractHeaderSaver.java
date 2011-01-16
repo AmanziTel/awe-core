@@ -93,23 +93,23 @@ public abstract  class AbstractHeaderSaver<T extends BaseTransferData> extends A
         return property;
     }
 
-    /**
-     * Sets the property to node.
-     *
-     * @param key the key
-     * @param nodeType the node type
-     * @param node the node
-     * @param propertyName the property name
-     * @param propertyValue the property value
-     * @return true, if successful
-     */
-    protected boolean setPropertyToNode(String key,String nodeType,Node node,String propertyName,Object propertyValue){
-        if (propertyValue==null){
-            return false;
-        }
-        node.setProperty(propertyName, propertyValue);
-        return statistic.indexValue(key, nodeType, propertyName, propertyValue);
-    }
+//    /**
+//     * Sets the property to node.
+//     *
+//     * @param key the key
+//     * @param nodeType the node type
+//     * @param node the node
+//     * @param propertyName the property name
+//     * @param propertyValue the property value
+//     * @return true, if successful
+//     */
+//    protected boolean setPropertyToNode(String key,String nodeType,Node node,String propertyName,Object propertyValue){
+//        if (propertyValue==null){
+//            return false;
+//        }
+//        node.setProperty(propertyName, propertyValue);
+//        return statistic.indexValue(key, nodeType, propertyName, propertyValue);
+//    }
     
     /**
      * Fill root node.

@@ -62,8 +62,7 @@ public class SeparationConstraintsSaver extends AbstractHeaderSaver<BaseTransfer
         Integer separation = getNumberValue(Integer.class, SEPARATION, element);
         Node sector = service.findSector(rootNode, null, null, sectorName, true);
         if (sector != null) {
-            sector.setProperty(SEPARATION, separation);
-            updateProperty(networkName, NodeTypes.SECTOR.getId(), sector, SEPARATION, separation);
+            setProperty(networkName, NodeTypes.SECTOR.getId(), sector, SEPARATION, separation);
         }
         else {
             getPrintStream().println("Sector with name " + sectorName + " not found!");

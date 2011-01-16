@@ -15,24 +15,30 @@ package org.amanzi.neo.loader.ui.validators;
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.ILoaderInputValidator;
 import org.amanzi.neo.loader.core.IValidateResult;
-import org.amanzi.neo.loader.core.ValidateResultImpl;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ *TrafficDataValidator
  * </p>
  * @author Kasnitskij_V
  * @since 1.0.0
  */
 public class TrafficDataValidator implements ILoaderInputValidator<CommonConfigData> {
 
-	@Override
-	public IValidateResult validate(CommonConfigData data) {
-		// TODO Auto-generated method stub
-		return new ValidateResultImpl(Result.SUCCESS, "");
-	}
+    private String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
+    
+    @Override
+    public IValidateResult validate(CommonConfigData data) {
+       IValidateResult result = ValidatorUtils.checkRootExist(data);
+       if (result.getResult()!=Result.SUCCESS){
+           return result;
+       }
+        return ValidatorUtils.checkFileAndHeaders(data.getRoot(), 3, 
+                new String[]{"Sector", "Traffic"}, 
+                possibleFieldSepRegexes, false);
+
+    }
 
 	@Override
 	public void filter(CommonConfigData data) {

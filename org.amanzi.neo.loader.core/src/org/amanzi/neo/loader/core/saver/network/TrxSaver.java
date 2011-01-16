@@ -19,6 +19,7 @@ import java.util.Set;
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
 import org.amanzi.neo.loader.core.saver.MetaData;
+import org.amanzi.neo.services.DatasetService.NodeResult;
 import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.network.NetworkModel;
@@ -111,17 +112,22 @@ public class TrxSaver extends AbstractHeaderSaver<BaseTransferData> {
         Node sector = service.findSector(rootNode, null, null, sectorName, true);
         
         if (sector != null) {
-            sector.setProperty(SUBCELL, subcell);
             updateProperty(networkName, NodeTypes.SECTOR.getId(), sector, SUBCELL, subcell);
             
-            Node carrierNode = networkModel.createCarrier(sector, trxId, band, extended, hoppingType, bcch, getService());
+            NodeResult carrierNode = networkModel.getCarrier(sector, String.valueOf(trxId), null);
+            if (carrierNode.isCreated()){
+                statistic.updateTypeCount(rootname, NodeTypes.TRX.getId(), 1);
+            }
             updateProperty(networkName, NodeTypes.TRX.getId(), carrierNode, TRX_ID, trxId);
             updateProperty(networkName, NodeTypes.TRX.getId(), carrierNode, BAND, band);
             updateProperty(networkName, NodeTypes.TRX.getId(), carrierNode, EXTENDED, extended);
             updateProperty(networkName, NodeTypes.TRX.getId(), carrierNode, HOPPING_TYPE, hoppingType);
             updateProperty(networkName, NodeTypes.TRX.getId(), carrierNode, BCCH, bcch);
             
-            Node planNode = networkModel.createPlan(carrierNode, hsn, maio, arfcnArray, getService());
+            NodeResult planNode = networkModel.getPlan(carrierNode, networkName);
+            if (planNode.isCreated()){
+                statistic.updateTypeCount(networkName, NodeTypes.FREQUENCY_PLAN.getId(), 1);
+            }
             updateProperty(networkName, NodeTypes.FREQUENCY_PLAN.getId(), planNode, HSN, hsn);
             updateProperty(networkName, NodeTypes.FREQUENCY_PLAN.getId(), planNode, MAIO, maio);
             updateProperty(networkName, NodeTypes.FREQUENCY_PLAN.getId(), planNode, ARFCN, arfcnArray);
@@ -133,7 +139,6 @@ public class TrxSaver extends AbstractHeaderSaver<BaseTransferData> {
         
         updateTx(2, 2);
     }
-
     /**
      * Define property map.
      * 

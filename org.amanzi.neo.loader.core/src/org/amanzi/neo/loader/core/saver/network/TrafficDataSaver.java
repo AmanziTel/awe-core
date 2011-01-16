@@ -59,7 +59,6 @@ public class TrafficDataSaver extends AbstractHeaderSaver<BaseTransferData> {
         Double traffic = getNumberValue(Double.class, TRAFFIC, element);
         Node sector = service.findSector(rootNode, null, null, sectorName, true);
         if (sector != null) {
-        	sector.setProperty(TRAFFIC, traffic);
         	updateProperty(networkName, NodeTypes.SECTOR.getId(), sector, TRAFFIC, traffic);
         }
         else {

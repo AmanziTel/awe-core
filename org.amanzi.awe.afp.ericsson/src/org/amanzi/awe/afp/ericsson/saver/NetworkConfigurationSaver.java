@@ -297,7 +297,10 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
             String tg = matcher.group(3);
             String trxId = matcher.group(5);
             Integer channelGr = element.getChGroup();
-            Node trx = networkService.getTRXNode(sector, trxId, channelGr);
+            NodeResult trx = networkService.getTRXNode(sector, trxId, channelGr);
+            if (trx.isCreated()){
+                statistic.updateTypeCount(rootname, NodeTypes.TRX.getId(), 1);
+            }
             updateTx(1, 1);
             Node channalGr = networkService.getChannelNode(sector, channelGr);
             updateProperty(rootname, NodeTypes.TRX.getId(), trx, "band", channalGr.getProperty("band", null));
@@ -312,7 +315,10 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
             updateProperty(rootname, NodeTypes.TRX.getId(), trx, "band", channalGr.getProperty("band", null));
             boolean isBcch = 0 == channelGr && "0".equals(trxId);
             updateProperty(rootname, NodeTypes.TRX.getId(), trx, "bcch", isBcch);
-            Node plan = networkService.getPlanNode(trx, element.getFileName());
+            NodeResult plan = networkService.getPlanNode(trx, element.getFileName());
+            if (plan.isCreated()){
+                statistic.updateTypeCount(rootname, NodeTypes.FREQUENCY_PLAN.getId(), 1);
+            }
             updateProperty(rootname, NodeTypes.FREQUENCY_PLAN.getId(), trx, "hsn", hoptype);
             Integer bcchno = (Integer)sector.getProperty("bcchno");
             if (!plan.hasProperty("arfcn")) {

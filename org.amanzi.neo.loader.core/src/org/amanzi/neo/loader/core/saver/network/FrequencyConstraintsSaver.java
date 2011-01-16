@@ -92,14 +92,10 @@ public class FrequencyConstraintsSaver extends AbstractHeaderSaver<BaseTransferD
             
             if (listTRX.size() != 0) {
                 for (Node trx : listTRX){
-                    trx.setProperty(CHANNEL_TYPE, channelType);
-                    trx.setProperty(FREQUENCY, frequency);
-                    trx.setProperty(TYPE, type);
-                    trx.setProperty(PENALTY, penalty);
-                    updateProperty(networkName, NodeTypes.TRX.getId(), trx, CHANNEL_TYPE, channelType);
-                    updateProperty(networkName, NodeTypes.TRX.getId(), trx, FREQUENCY, frequency);
-                    updateProperty(networkName, NodeTypes.TRX.getId(), trx, TYPE, type);
-                    updateProperty(networkName, NodeTypes.TRX.getId(), trx, PENALTY, penalty);
+                    setProperty(networkName, NodeTypes.TRX.getId(), trx, CHANNEL_TYPE, channelType);
+                    setProperty(networkName, NodeTypes.TRX.getId(), trx, FREQUENCY, frequency);
+                    setProperty(networkName, NodeTypes.TRX.getId(), trx, TYPE, type);
+                    setProperty(networkName, NodeTypes.TRX.getId(), trx, PENALTY, penalty);
                 }
             }
             else {

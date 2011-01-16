@@ -1259,7 +1259,7 @@ public class DatasetService extends AbstractService {
      * @author tsinkel_a
      * @since 1.0.0
      */
-    private static class NodeResultImpl extends NodeWrapper implements NodeResult {
+    public static class NodeResultImpl extends NodeWrapper implements NodeResult {
 
         /** The is created. */
         private final boolean isCreated;

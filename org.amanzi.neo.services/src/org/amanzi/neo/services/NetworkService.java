@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.amanzi.neo.services.DatasetService.NodeResult;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
@@ -28,6 +29,8 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.traversal.Evaluation;
+import org.neo4j.graphdb.traversal.Evaluator;
 import org.neo4j.graphdb.traversal.PruneEvaluator;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.helpers.Predicate;
@@ -240,9 +243,10 @@ public class NetworkService extends AbstractService {
      * @param channelGr
      * @return
      */
-    public Node getTRXNode(Node sector, String trxId, Integer channelGr) {
+    public NodeResult getTRXNode(Node sector, String trxId, Integer channelGr) {
         Node trxNode = findTrxNode(sector, trxId,channelGr);
-        if (trxNode==null){
+        boolean isCreated=trxNode==null;
+        if (isCreated){
             Transaction tx = databaseService.beginTx();
             try {
                 trxNode=NeoServiceFactory.getInstance().getDatasetService().addSimpleChild(sector, NodeTypes.TRX, trxId);
@@ -254,7 +258,7 @@ public class NetworkService extends AbstractService {
                 tx.finish();
             }           
         }
-        return trxNode;
+        return new DatasetService.NodeResultImpl(trxNode, isCreated);
     }
     
     /**
@@ -282,20 +286,13 @@ public class NetworkService extends AbstractService {
      * @return
      */
     public Node findTrxNode(Node sector, final String trxId,final  Integer channelGr) {
-        Iterator<Path> itr = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst().prune(Traversal.pruneAfterDepth(1)).relationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING).filter(new Predicate<Path>() {
+        Iterator<Path> itr = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst().relationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING).evaluator(new Evaluator() {
             
             @Override
-            public boolean accept(Path item) {
-                boolean isLengthNotZero = item.length() > 0;
-                boolean isTrxId = item.endNode().getProperty(INeoConstants.PROPERTY_NAME_NAME,"").equals(trxId);
-                boolean isChannelGroup = item.endNode().getProperty("group",-1).equals(channelGr);
-                
-                if (channelGr != null) {
-                    return isLengthNotZero && isTrxId && isChannelGroup;
-                }
-                else {
-                    return isLengthNotZero && isTrxId;
-                }
+            public Evaluation evaluate(Path arg0) {
+                boolean continues=arg0.length() == 0;
+                boolean includes=!continues&& arg0.endNode().getProperty(INeoConstants.PROPERTY_NAME_NAME,"").equals(trxId)&&( channelGr==null||arg0.endNode().getProperty("group",-1).equals(channelGr));
+                return Evaluation.of(includes, continues);
             }
         }).traverse(sector).iterator();
         return itr.hasNext()?itr.next().endNode():null;
@@ -332,12 +329,13 @@ public class NetworkService extends AbstractService {
      * @param fileName the file name
      * @return the plan node
      */
-    public Node getPlanNode(Node trx, String fileName) {
+    public NodeResult getPlanNode(Node trx, String fileName) {
         Node planNode = findPlanNode(trx, fileName);
-        if (planNode==null){
+        boolean isCreated=planNode==null;
+        if (isCreated){
                 planNode=NeoServiceFactory.getInstance().getDatasetService().addSimpleChild(trx, NodeTypes.FREQUENCY_PLAN, fileName);
         }
-        return planNode;
+        return new DatasetService.NodeResultImpl(planNode, isCreated);
     }
 
     /**
