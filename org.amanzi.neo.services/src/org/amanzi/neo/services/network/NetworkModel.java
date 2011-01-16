@@ -52,7 +52,8 @@ public class NetworkModel {
 	}
 	
 	protected NodeToNodeRelationModel getNodeToNodeRelationModel(INodeToNodeType type, String name) {
-		return new NodeToNodeRelationModel(rootNode, type, name);
+		//TODO define - should we always create new instance?
+	    return new NodeToNodeRelationModel(rootNode, type, name);
 	}
 	
 	public NodeToNodeRelationModel getInterferenceMatrix(String name) {

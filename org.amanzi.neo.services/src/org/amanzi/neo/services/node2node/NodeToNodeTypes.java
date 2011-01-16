@@ -24,8 +24,4 @@ public enum NodeToNodeTypes implements INodeToNodeType {
 	NEIGHBOURS,
 	TRIANGULATION;
 
-	@Override
-	public String getName() {
-		return this.getName();
-	}
 }

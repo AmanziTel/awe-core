@@ -22,5 +22,5 @@ package org.amanzi.neo.services.node2node;
  * @since 1.0.0
  */
 public interface INodeToNodeType {
-	public String getName();
+	public String name();
 }

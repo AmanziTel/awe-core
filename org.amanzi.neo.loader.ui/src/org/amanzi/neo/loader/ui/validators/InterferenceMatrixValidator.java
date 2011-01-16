@@ -16,11 +16,11 @@ package org.amanzi.neo.loader.ui.validators;
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.ILoaderInputValidator;
 import org.amanzi.neo.loader.core.IValidateResult;
+import org.amanzi.neo.loader.core.IValidateResult.Result;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ *InterferenceMatrixValidator
  * </p>
  * @author Lagutko_N
  * @since 1.0.0
@@ -30,8 +30,12 @@ public class InterferenceMatrixValidator implements ILoaderInputValidator<Common
     
     @Override
     public IValidateResult validate(CommonConfigData data) {
+       IValidateResult result = ValidatorUtils.checkRootExist(data);
+       if (result.getResult()!=Result.SUCCESS){
+           return result;
+       }
         return ValidatorUtils.checkFileAndHeaders(data.getRoot(), 3, 
-                new String[]{"Serving Sector", "Interfering Sector", "Source", "Co", "Adj"}, 
+                new String[]{"Serving Sector", "Interfering Sector"}, 
                 possibleFieldSepRegexes, false);
 
     }

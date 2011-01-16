@@ -69,6 +69,10 @@ public abstract class Node2NodeSaver extends AbstractHeaderSaver<BaseTransferDat
      */
     @Override
     public void save(BaseTransferData element) {
+        if (headerNotHandled){
+            definePropertyMap(element);
+            headerNotHandled=false;
+        }
         saveRow(element);
     }
 
@@ -212,8 +216,8 @@ public abstract class Node2NodeSaver extends AbstractHeaderSaver<BaseTransferDat
     public boolean beforeSaveNewElement(BaseTransferData element) {
         neighbourName = element.getFileName();
         model=getModel(neighbourName);
-        headerNotHandled = false;
-        definePropertyMap(element);
+        headerNotHandled = true;
+
         return false;
     }
 

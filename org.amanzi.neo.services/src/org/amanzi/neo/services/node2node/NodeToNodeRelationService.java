@@ -68,7 +68,7 @@ public class NodeToNodeRelationService extends AbstractService {
      * @return finded node
      */
     public Node findNodeToNodeRelationsRoot(Node rootNode, INodeToNodeType type, final String nameRelation) {
-        final String typename = type.getName();
+        final String typename = type.name();
         Traverser traverser = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst()
                 .relationships(NodeToNodeRelationshipTypes.SET_TO_ROOT, Direction.OUTGOING).evaluator(new Evaluator() {
 

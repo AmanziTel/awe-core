@@ -14,18 +14,13 @@
 package org.amanzi.neo.loader.core.saver.network;
 
 import java.util.Arrays;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
-import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
 import org.amanzi.neo.loader.core.saver.MetaData;
-import org.amanzi.neo.services.GisProperties;
-import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.loader.core.saver.impl.Node2NodeSaver;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
-import org.hsqldb.lib.StringUtil;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
@@ -33,97 +28,35 @@ import org.neo4j.graphdb.Relationship;
  * <p>
  * Interference Matrix saver
  * </p>
- * .
- * 
- * @author Lagutko_N
+ * @author TsAr
  * @since 1.0.0
  */
-public class InterferenceMatrixSaver extends AbstractHeaderSaver<BaseTransferData> {
+public class InterferenceMatrixSaver extends Node2NodeSaver {
 
-    /** The header not handled. */
-    private boolean headerNotHandled;
-    private NodeToNodeRelationModel imModel;
     private NetworkModel networkModel;
-    private String neighbourName;
 
     @Override
     public void init(BaseTransferData element) {
         super.init(element);
-        propertyMap.clear();
-        headerNotHandled = true;
+        networkModel = new NetworkModel(rootNode);
+    }
+    @Override
+    protected Node defineNeigh(BaseTransferData element) {
+        String name = getStringValue("neigh_sector_name", element);
+        return networkModel.findSector(name);
     }
 
     @Override
-    public void save(BaseTransferData element) {
-        if (headerNotHandled) {
-            networkModel = new NetworkModel(rootNode);
-            neighbourName = element.getFileName();
-            imModel = networkModel.getInterferenceMatrix(neighbourName);
-
-            definePropertyMap(element);
-            startMainTx(1000);
-            headerNotHandled = false;
-        }
-        saveRow(element);
-    }
-
-    /**
-     * Save row.
-     * 
-     * @param element the element
-     */
-    protected void saveRow(BaseTransferData element) {
+    protected Node defineServ(BaseTransferData element) {
         String name = getStringValue("serv_sector_name", element);
-        
-        Node serSector = networkModel.findSector(name);
-        if (serSector == null) {
-            error(String.format("Line %s not saved. Not found serve sector.", element.getLine()));
-            return;
-        }
-        name = getStringValue("neigh_sector_name", element);
-        Node neighSector = networkModel.findSector(name);
-        if (neighSector == null) {
-            error(String.format("Line %s not saved. Not found neighbour sector.", element.getLine()));
-            return;
-        }
-        createNeighbour(serSector, neighSector, element);
-
+        return networkModel.findSector(name);
     }
 
-    /**
-     * Creates the neighbour.
-     * 
-     * @param serSector the ser sector
-     * @param neighSector the neigh sector
-     * @param element the element
-     */
-    private void createNeighbour(Node serSector, Node neighSector, BaseTransferData element) {
-        Map<String, Object> sectorData = getNotHandledData(element, neighbourName, NodeTypes.PROXY.getId());
-        
-         Relationship relationship = imModel.getRelation(serSector, neighSector);
-        for (Entry<String, Object> entry : sectorData.entrySet()) {
-            relationship.setProperty(entry.getKey(), entry.getValue());
-        } 
-        //update statistics for proxy nodes
-        updateTx(2, 2);
-        statistic.setTypeCount(neighbourName, NodeTypes.PROXY.getId(), imModel.getProxyCount());
-
-        //update statistics for values
-        for (Map.Entry<String, Object> entry : sectorData.entrySet()) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
-            if (value == null || (value instanceof String && StringUtil.isEmpty((String)value))) {
-                continue;
-            }
-            statistic.indexValue(key, NodeTypes.PROXY.getId(), key, entry.getValue());
-        }
+    @Override
+    protected void storeHandledData(Relationship rel, BaseTransferData element) {
     }
 
-    /**
-     * Define property map.
-     * 
-     * @param element the element
-     */
+    @Override
     protected void definePropertyMap(BaseTransferData element) {
         Set<String> headers = element.keySet();
         defineHeader(headers, "serv_sector_name", new String[] {"Serving Sector"});
@@ -131,22 +64,13 @@ public class InterferenceMatrixSaver extends AbstractHeaderSaver<BaseTransferDat
     }
 
     @Override
-    protected void fillRootNode(Node rootNode, BaseTransferData element) {
-    }
-
-    @Override
-    protected String getRootNodeType() {
-        return NodeTypes.NETWORK.getId();
-    }
-
-    @Override
-    protected String getTypeIdForGisCount(GisProperties gis) {
-        return NodeTypes.SECTOR.getId();
-    }
-
-    @Override
     public Iterable<MetaData> getMetaData() {
+        //TODO define correct metadata
         return Arrays.asList(new MetaData[0]);
+    }
+    @Override
+    public NodeToNodeRelationModel getModel(String neighbourName) {
+        return networkModel.getInterferenceMatrix(neighbourName);
     }
 
 }
