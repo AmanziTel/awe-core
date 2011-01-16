@@ -214,6 +214,13 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
             Node sector = service.findSector(rootNode, ci, lac, sectorIndexName, true);
             if (sector != null) {
                 // TODO check
+                String nodeName = service.getNodeName(sector);
+                if (!sectorField.equals(nodeName)){
+                    error(String.format("File: %s, line %s sector %s have same CI(=%s) and LAC(=%s) like sector %s. Sector storing without storing of CI and LAC", element.getFileName(),element.getLine(),sectorField,ci,lac,nodeName));
+                    sector = addSimpleChild(site, NodeTypes.SECTOR, sectorField);
+                    sector.setProperty("sector_id", sectorIndexName);
+                    service.indexByProperty(rootNode.getId(), sector, "sector_id");                  
+                }
             } else {
                 sector = addSimpleChild(site, NodeTypes.SECTOR, sectorField);
                 sector.setProperty("sector_id", sectorIndexName);
