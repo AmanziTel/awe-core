@@ -16,7 +16,6 @@ package org.amanzi.neo.loader.ui.validators;
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.ILoaderInputValidator;
 import org.amanzi.neo.loader.core.IValidateResult;
-import org.amanzi.neo.loader.core.ValidateResultImpl;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
 
 /**
@@ -28,10 +27,18 @@ import org.amanzi.neo.loader.core.IValidateResult.Result;
  * @since 1.0.0
  */
 public class TrxDataValidator implements ILoaderInputValidator<CommonConfigData> {
-
+    private String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
+    
     @Override
     public IValidateResult validate(CommonConfigData data) {
-        return new ValidateResultImpl(Result.SUCCESS, "");
+       IValidateResult result = ValidatorUtils.checkRootExist(data);
+       if (result.getResult()!=Result.SUCCESS){
+           return result;
+       }
+        return ValidatorUtils.checkFileAndHeaders(data.getRoot(), 3, 
+                new String[]{"Sector", "Subcell","TRX_ID","Band","Extended"}, 
+                possibleFieldSepRegexes, false);
+
     }
 
     @Override
