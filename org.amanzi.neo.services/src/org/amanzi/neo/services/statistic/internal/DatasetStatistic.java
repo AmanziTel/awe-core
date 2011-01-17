@@ -14,6 +14,7 @@
 package org.amanzi.neo.services.statistic.internal;
 
 import java.util.Collection;
+import java.util.Set;
 
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.services.statistic.ChangeClassRule;
@@ -155,5 +156,15 @@ public void setTypeCount(String rootKey, String nodeType, long count) {
             return false;
         }
         return stat.updateNotNullValues(newValue,oldValue);
+    }
+
+    @Override
+    public Set<String> getRootKey() {
+        return handler.getRootKey();
+    }
+
+    @Override
+    public Set<String> getNodeTypeKey(String rootKey) {
+        return  handler.getNodeTypeKey(rootKey);
     }
 }

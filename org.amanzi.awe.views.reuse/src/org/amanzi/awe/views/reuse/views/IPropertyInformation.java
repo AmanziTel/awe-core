@@ -13,16 +13,19 @@
 
 package org.amanzi.awe.views.reuse.views;
 
-import org.neo4j.graphdb.Node;
+import org.amanzi.awe.views.reuse.Select;
+import org.amanzi.neo.services.statistic.ISinglePropertyStat;
 
 /**
+ * TODO Purpose of 
  * <p>
- *Wrapper of selection information of user
+ *
  * </p>
  * @author TsAr
  * @since 1.0.0
  */
-public class SelectionInformation {
-    Node rootNode;
-    
+public interface IPropertyInformation{
+    ISinglePropertyStat getStatistic();
+    String getPropertyName();
+    Iterable<ISource> getValueIterable(Select rules);
 }

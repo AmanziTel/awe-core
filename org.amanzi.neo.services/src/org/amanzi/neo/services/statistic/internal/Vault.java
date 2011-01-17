@@ -2,10 +2,12 @@ package org.amanzi.neo.services.statistic.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.neo.db.manager.INeoDbService;
 import org.amanzi.neo.services.NeoServiceFactory;
@@ -302,6 +304,10 @@ public class Vault {
             return new ArrayList<String>();
         }
         return vault.getPropertyNameCollection(comparable);
+    }
+
+    public Set<String> getNodeTypeKey() {
+        return Collections.unmodifiableSet(propertyMap.keySet());
     }
 
 

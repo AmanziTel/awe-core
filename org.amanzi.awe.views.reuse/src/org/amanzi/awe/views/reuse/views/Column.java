@@ -321,5 +321,23 @@ public class Column implements Comparable<Column> {
         this.propertyValue = propertyValue;
     }
 
+    /**
+     *
+     * @param value
+     * @return
+     */
+    public boolean containsValue(Object value) {
+        if (value==null){
+            return false;
+        }
+        if ( propertyValue instanceof String){
+            return propertyValue.equals(value);
+        }else if (propertyValue instanceof Number){
+            return containsValue(((Number)value).doubleValue());
+        }else{
+            return false;
+        }
+    }
+
 }
 

@@ -15,8 +15,10 @@ package org.amanzi.neo.services.statistic.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 
 import org.amanzi.neo.db.manager.INeoDbService;
 import org.amanzi.neo.services.NeoServiceFactory;
@@ -269,6 +271,16 @@ public class StatisticHandler {
             totalCount=count;
             getVault(rootKey).increaseTypeCount(nodeType,count-totalCount);
         }
+    }
+
+    public Set<String> getRootKey() {
+        return Collections.unmodifiableSet(vaults.keySet());
+    }
+
+    public Set<String> getNodeTypeKey(String rootKey) {
+        Vault res = vaults.get(rootKey);
+        Set<String> resl=Collections.emptySet();
+        return res==null?resl:res.getNodeTypeKey();
     }
 
 

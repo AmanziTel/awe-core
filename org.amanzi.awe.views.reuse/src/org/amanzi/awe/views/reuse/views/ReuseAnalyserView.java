@@ -175,7 +175,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
     private Combo cSelect;
     private Label lDistribute;
     private Combo cDistribute;
-    private HashMap<String, Node> members;
+    private HashMap<String, Object> members;
     protected List<String> propertyList;
     private Spinner spinAdj;
     private Label spinLabel;
@@ -467,8 +467,14 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
                     setVisibleForChart(false);
                     tSelectedInformation.setText("");
                 } else {
-                    Node rootNode = members.get(gisCombo.getText());
-                    cSelect.setEnabled(isAggregatedDataset(rootNode));
+                    Object rootNode = members.get(gisCombo.getText());
+                    boolean isAggregated;
+                    if (rootNode instanceof Node){
+                        isAggregated = isAggregatedDataset((Node)rootNode);
+                    }else{
+                        isAggregated=((ISelectionInformation)rootNode).isAggregated();
+                    }
+                    cSelect.setEnabled(isAggregated);
                     formPropertyList(rootNode);
                 }
                 Collections.sort(propertyList);
@@ -486,17 +492,19 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
                 if (propertyCombo.getSelectionIndex() < 0) {
                     setVisibleForChart(false);
                 } else {
-                    final Node gisNode = members.get(gisCombo.getText());
+                    Object gisNode = members.get(gisCombo.getText());
                     propertyName = propertyCombo.getText();
-                    if (isStringProperty(propertyName)) {
+                    
+                    boolean isStr = isStringProperty(gisNode,propertyName);
+                    if (isStr) {
                         cDistribute.setEnabled(false);
                         cDistribute.select(0);
                         cSelect.setEnabled(false);
                         cSelect.select(0);
                     } else {
                         cDistribute.setEnabled(true);
-                        boolean isAggregated = isAggregatedDataset(gisNode);
-                        boolean isAggrProp = aggregatedProperties.keySet().contains(propertyName);
+                        boolean isAggregated = isAggregated(gisNode);
+                        boolean isAggrProp = gisNode instanceof Node&& aggregatedProperties.keySet().contains(propertyName);
                         if (!isAggrProp) {
                             cSelect.select(0);
                         }
@@ -585,6 +593,19 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
         axisLog.setAllowNegativesFlag(true);
         axisLog.setAutoRange(true);
         setColorThema(false);
+    }
+
+    /**
+     *
+     * @param gisNode
+     * @param propertyName2
+     * @return
+     */
+    protected boolean isStringProperty(Object gisNode, String propertyName) {
+        if (gisNode==null){
+            return false;
+        }
+        return gisNode instanceof Node?isStringProperty(propertyName):String.class==(((ISelectionInformation)gisNode).getPropertyInformation(propertyName).getStatistic().getType());
     }
 
     /**
@@ -1059,7 +1080,8 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
      * @param aggrNode - new node
      */
     protected void chartUpdate() {
-        Node gisNode = members.get(gisCombo.getText());
+        Object root=members.get(gisCombo.getText());
+        Node gisNode =(root instanceof Node)?(Node)root:((ISelectionInformation)root).getRootNode(); 
         Node aggrNode = dataset.getAggrNode();
         changeBarColor();
         chart.fireChartChanged();
@@ -1165,7 +1187,8 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
      */
     private void setSelection(ChartNode columnKey) {
 
-        Node node = members.get(gisCombo.getText());
+        Object root=members.get(gisCombo.getText());
+        Node node =(root instanceof Node)?(Node)root:((ISelectionInformation)root).getRootNode(); 
         Node realGis = NeoUtils.findGisNodeByChild(node);
         List<Node> correlated = new ArrayList<Node>();
         if (node != null) {
@@ -1256,11 +1279,11 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
     /**
      * Finds aggregate node or creates if node does not exist
      * 
-     * @param rootNode GIS node
+     * @param object GIS node
      * @param propertyName name of property
      * @return necessary aggregates node
      */
-    protected void findOrCreateAggregateNodeInNewThread(final Node rootNode, final String propertyName) {
+    protected void findOrCreateAggregateNodeInNewThread(final Object object, final String propertyName) {
         // TODO restore focus after job execute or not necessary?
         String select = cSelect.getText();
         // TODO Pechko_E: during refactoring of the following code
@@ -1269,21 +1292,21 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
             select = Select.EXISTS.toString();
         }
         mainView.setEnabled(false);
-        ComputeStatisticsJob job = new ComputeStatisticsJob(rootNode, propertyName, cDistribute.getText(), select);
+        ComputeStatisticsJob job = new ComputeStatisticsJob(object, propertyName, cDistribute.getText(), select);
         job.schedule();
     }
 
     private class ComputeStatisticsJob extends Job {
 
-        private final Node gisNode;
+        private final Object gisNode;
         private final String propertyName;
         private Node node;
         private String distribute;
         private final String select;
 
-        public ComputeStatisticsJob(Node gisNode, String propertyName, String distribute, String select) {
+        public ComputeStatisticsJob(Object object, String propertyName, String distribute, String select) {
             super("calculating statistics");
-            this.gisNode = gisNode;
+            this.gisNode = object;
             this.propertyName = propertyName;
             this.distribute = distribute;
             this.select = select;
@@ -1339,8 +1362,12 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
             NeoUtils.addTransactionLog(tx, Thread.currentThread(), "ComputeStatisticsJob");
             try {
                 model.setCurrenTransaction(tx);
-                node = model.findOrCreateAggregateNode(gisNode, propertyName, isStringProperty(propertyName), distribute, select,
+                if (gisNode instanceof Node){
+                node = model.findOrCreateAggregateNode((Node)gisNode, propertyName, isStringProperty(propertyName), distribute, select,
                         monitor);
+                }else{
+                    node = model.findOrCreateAggregateNode((ISelectionInformation)gisNode, propertyName, distribute, select,                            monitor);
+                }
                 tx = model.getCurrenTransaction();
                 Boolean haveError = (Boolean)node.getProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME, false);
                 if (haveError) {
@@ -1373,15 +1400,16 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
     /**
      * Creation list of property by selected node
      * 
-     * @param node - selected node
+     * @param root - selected node
      */
-    private void formPropertyList(Node node) {
-
+    private void formPropertyList(Object root) {
+        if (root instanceof Node){
+            Node rootNode=(Node)root;
         aggregatedProperties.clear();
         propertyList = new ArrayList<String>();
-        IPropertyHeader propertyHeader = PropertyHeader.getPropertyStatistic(node);
+        IPropertyHeader propertyHeader = PropertyHeader.getPropertyStatistic(rootNode);
         allFields = Arrays.asList(propertyHeader.getAllFields("-main-type-"));
-        final String nodeTypeId = getNodeTypeId(node);
+        final String nodeTypeId = getNodeTypeId(rootNode);
         numericFields = Arrays.asList(propertyHeader.getNumericFields(nodeTypeId));
         propertyList.addAll(allFields);
         propertyList.addAll(propertyHeader.getNeighbourList());
@@ -1390,7 +1418,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
             aggregatedProperties.put(INeoConstants.PROPERTY_ALL_CHANNELS_NAME, channels);
             propertyList.add(INeoConstants.PROPERTY_ALL_CHANNELS_NAME);
         }
-        setVisibleForChart(false);
+        
         Predicate<org.neo4j.graphdb.Path> propertyReturnableEvalvator = new Predicate<org.neo4j.graphdb.Path>() {
 
             @Override
@@ -1402,7 +1430,15 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
         propertyList = new PropertyFilterModel().filerProperties(gisCombo.getText(), propertyList);
         model = new ReuseAnalyserModel(aggregatedProperties, propertyReturnableEvalvator, NeoServiceProviderUi.getProvider()
                 .getService());
-
+        }else{
+            ISelectionInformation inf=(ISelectionInformation)root;
+            propertyList = new ArrayList<String>();
+            propertyList.addAll(inf.getPropertySet());
+            propertyList = new PropertyFilterModel().filerProperties(gisCombo.getText(), propertyList);
+            Collections.sort(propertyList);
+            model = new ReuseAnalyserModel(inf);         
+        }
+        setVisibleForChart(false);
     }
 
     /**
@@ -1430,21 +1466,26 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
      */
     private String[] getRootItems() {
         GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
-        members = new LinkedHashMap<String, Node>();
+        members = new LinkedHashMap<String, Object>();
         for (Node node : NeoUtils.getAllRootTraverser(service, null)) {
-            String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-            members.put(id, node);
-            for (Relationship ret : node.getRelationships(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING)) {
-                Node neigh = ret.getOtherNode(node);
-                members.put((String)neigh.getProperty(INeoConstants.PROPERTY_NAME_NAME), neigh);
-            }
-            for (Relationship ret : node.getRelationships(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING)) {
-                Node neigh = ret.getOtherNode(node);
-                members.put(id + ": " + neigh.getProperty(INeoConstants.PROPERTY_NAME_NAME), neigh);
-            }
-            for (Relationship ret : node.getRelationships(NetworkRelationshipTypes.TRANSMISSION_DATA, Direction.OUTGOING)) {
-                Node neigh = ret.getOtherNode(node);
-                members.put(id + "-> " + neigh.getProperty(INeoConstants.PROPERTY_NAME_NAME), neigh);
+            Map<String, ISelectionInformation> mapSt = new InformationProvider(node).getStatisticMap();
+            if (!mapSt.isEmpty()) {
+                members.putAll(mapSt);
+            } else {
+                String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+                members.put(id, node);
+                for (Relationship ret : node.getRelationships(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING)) {
+                    Node neigh = ret.getOtherNode(node);
+                    members.put((String)neigh.getProperty(INeoConstants.PROPERTY_NAME_NAME), neigh);
+                }
+                for (Relationship ret : node.getRelationships(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING)) {
+                    Node neigh = ret.getOtherNode(node);
+                    members.put(id + ": " + neigh.getProperty(INeoConstants.PROPERTY_NAME_NAME), neigh);
+                }
+                for (Relationship ret : node.getRelationships(NetworkRelationshipTypes.TRANSMISSION_DATA, Direction.OUTGOING)) {
+                    Node neigh = ret.getOtherNode(node);
+                    members.put(id + "-> " + neigh.getProperty(INeoConstants.PROPERTY_NAME_NAME), neigh);
+                }
             }
         }
         List<String> result = new ArrayList<String>(members.keySet());
@@ -2115,13 +2156,21 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
                 setVisibleForChart(false);
                 tSelectedInformation.setText("");
             } else {
-                Node rootNode = members.get(gisCombo.getText());
-                cSelect.setEnabled(isAggregatedDataset(rootNode));
-                formPropertyList(rootNode);
+                Object root=members.get(gisCombo.getText());
+                cSelect.setEnabled(isAggregated(root));
+                formPropertyList(root);
             }
             Collections.sort(propertyList);
             propertyCombo.setItems(propertyList.toArray(new String[] {}));
         }
+    }
+
+
+    private boolean isAggregated(Object root) {
+        if (root==null){
+            return false;
+        }
+        return root instanceof Node?isAggregatedDataset((Node)root):((ISelectionInformation)root).isAggregated();
     }
 
     @Override

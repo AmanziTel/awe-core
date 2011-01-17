@@ -14,6 +14,7 @@
 package org.amanzi.neo.services.statistic;
 
 import java.util.Collection;
+import java.util.Set;
 
 
 /**
@@ -38,8 +39,9 @@ public interface IStatistic {
 
     void registerProperty(String networkName, String id, String name, @SuppressWarnings("rawtypes") Class klass, String defValue);
 
-
+    Set<String>getRootKey();
     Collection<String> getPropertyNameCollection(String key, String nodeTypeId, Comparable<Class> comparable);
 
     ISinglePropertyStat findPropertyStatistic(String key, String nodeTypeId, String propertyName);
+    Set<String> getNodeTypeKey(String rootKey);
 }
