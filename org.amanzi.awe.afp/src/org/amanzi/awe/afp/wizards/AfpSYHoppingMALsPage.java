@@ -53,6 +53,7 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 	protected AfpRowFilter rowFilter;
 	protected  Shell parentShell;
 	private int remainingTRX;
+	private Group main;
 
 	
 	public AfpSYHoppingMALsPage(String pageName, AfpModel model, String desc) {
@@ -95,9 +96,10 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 		
 		Group stepsGroup = AfpWizardUtils.getStepsGroup(thisParent, 4);
 		
-		Group main = new Group(thisParent, SWT.NONE);
+		main = new Group(thisParent, SWT.NONE);
 		main.setLayout(new GridLayout(1, false));
 		main.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1 ,2));
+		main.setEnabled(false);
 		
 		malDomainsGroup = new Group(main, SWT.NONE);
 		malDomainsGroup.setLayout(new GridLayout(3, true));
@@ -138,8 +140,20 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 	
 	public void refreshPage(){
 //		super.refreshPage();
-		updateLabels();
+		if (!(model.getChanneltypes()[AfpModel.CHANNEL_HOPPING]))
+			model.setTotalHoppingTRX(0);
+		
+		if (model.getTotalHoppingTRX() == 0){
+			main.setEnabled(false);
+			model.setMalDomains(new HashMap<String,AfpHoppingMALDomainModel>());
+			remainingTRX = 0;
+		}
+		else {
+			main.setEnabled(true);
+		}
 		loadData();
+		updateLabels();
+		
 		
 		malDomainsGroup.layout();
 	}
@@ -168,117 +182,123 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 	public void loadData() {
 		if(filterTable != null) {
 			filterTable.removeAll();
-			
-			this.clearAllUniqueValuesForProperty();
-			
-			HashMap<String, String> bandFilters = new HashMap<String, String> ();
-			for (int i = 0; i < model.getFrequencyBands().length; i++){
-				if (model.getFrequencyBands()[i])
-					if (bandFilters.get("band") == null)
-						bandFilters.put("band", model.BAND_NAMES[i]);
-					else
-						bandFilters.put("band", bandFilters.get("band") + "," + model.BAND_NAMES[i]);
+			if (model.getTotalHoppingTRX() == 0){
+				filterTable.removeAll();
+				this.updateTRXFilterLabel(0, 0);
 			}
+			else{
 			
-		    Traverser sectorTraverser = model.getTRXList(bandFilters);
-		    
-		    trxCount =0;
-		    for(AfpDomainModel mod: model.getMalDomains(false)){
-		    	mod.setNumTRX(0);
-		    }
-		    remainingTRX = 0;
-		    for (Node node : sectorTraverser) {
-		    	Traverser trxTraverser = node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
-
-					@Override
-					public boolean isReturnableNode(TraversalPosition currentPos) {
-						if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.TRX.getId())){
-							return true;
+				this.clearAllUniqueValuesForProperty();
+				
+				HashMap<String, String> bandFilters = new HashMap<String, String> ();
+				for (int i = 0; i < model.getFrequencyBands().length; i++){
+					if (model.getFrequencyBands()[i])
+						if (bandFilters.get("band") == null)
+							bandFilters.put("band", model.BAND_NAMES[i]);
+						else
+							bandFilters.put("band", bandFilters.get("band") + "," + model.BAND_NAMES[i]);
+				}
+				
+			    Traverser sectorTraverser = model.getTRXList(bandFilters);
+			    
+			    trxCount =0;
+			    for(AfpDomainModel mod: model.getMalDomains(false)){
+			    	mod.setNumTRX(0);
+			    }
+			    remainingTRX = 0;
+			    for (Node node : sectorTraverser) {
+			    	Traverser trxTraverser = node.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
+	
+						@Override
+						public boolean isReturnableNode(TraversalPosition currentPos) {
+							if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.TRX.getId())){
+								return true;
+							}
+								
+							return false;
 						}
-							
-						return false;
-					}
-		    		
-		    	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
-		    	
-		    	Node siteNode = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
-				boolean includeFlag = true;
-		    	
-		    	for (Node trxNode: trxTraverser){
-		    		
-		    		for(AfpHoppingMALDomainModel mod: model.getMalDomains(false)){
-			    		String filterString = mod.getFilters();
-			    		if (filterString != null && !filterString.trim().isEmpty()){
-				    		AfpRowFilter rf = AfpRowFilter.getFilter(mod.getFilters());
-				    		if (rf != null){
-					    		if (rf.equal(trxNode)){
-					    			mod.setNumTRX(mod.getNumTRX() + 1);
-					    			model.updateMalDomain(mod);
-					    			includeFlag = false;
-					    			break;
+			    		
+			    	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+			    	
+			    	Node siteNode = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
+					boolean includeFlag = true;
+			    	
+			    	for (Node trxNode: trxTraverser){
+			    		
+			    		for(AfpHoppingMALDomainModel mod: model.getMalDomains(false)){
+				    		String filterString = mod.getFilters();
+				    		if (filterString != null && !filterString.trim().isEmpty()){
+					    		AfpRowFilter rf = AfpRowFilter.getFilter(mod.getFilters());
+					    		if (rf != null){
+						    		if (rf.equal(trxNode)){
+						    			mod.setNumTRX(mod.getNumTRX() + 1);
+						    			model.updateMalDomain(mod);
+						    			includeFlag = false;
+						    			break;
+						    		}
 					    		}
 				    		}
 			    		}
-		    		}
-		    		
-		    		if (!includeFlag)
-			    		continue;
-		    		
-		    		
-			    	if ((Integer)trxNode.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) < 1)
-			    		continue;
-			    	remainingTRX++;
-			    	
-			    	if (rowFilter != null){
-			    		if (!rowFilter.equal(trxNode)) 
-			    			continue;
-			    	}
-			    	this.addTrxUniqueProperties(trxNode);
-			    	this.addSectorUniqueProperties(node);
-					this.addSiteUniqueProperties(siteNode);
-			    	
-		    	
-			    	TableItem item = new TableItem(filterTable, SWT.NONE);
-			    	int j=0;
-			    	if(trxCount <= 100){ 
-				    	for (String prop_name : headers){
-				    		Object val = null;
-				    		try {
-				    			String type = this.headersNodeType.get(prop_name);
-				    			if(NodeTypes.SITE.getId().equals(type)) {
-				    				if (siteNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals("site"))
-				    					val = (String)siteNode.getProperty(headers_prop.get(prop_name), "");
-
-				    			} else if( NodeTypes.SECTOR.getId().equals(type)) {
-				    				val = node.getProperty(headers_prop.get(prop_name), "");
-				    			} else {
-				    				val = trxNode.getProperty(headers_prop.get(prop_name), "");
-				    			}
-	
-				    			if(val == null) val ="";
-				    			
-				    			item.setText(j, val.toString());
-				    		} catch(Exception e) {
-				    			item.setText(j, "");
-				    		}
-				    		j++;
+			    		
+			    		if (!includeFlag)
+				    		continue;
+			    		
+			    		
+				    	if ((Integer)trxNode.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) < 1)
+				    		continue;
+				    	remainingTRX++;
+				    	
+				    	if (rowFilter != null){
+				    		if (!rowFilter.equal(trxNode)) 
+				    			continue;
 				    	}
+				    	this.addTrxUniqueProperties(trxNode);
+				    	this.addSectorUniqueProperties(node);
+						this.addSiteUniqueProperties(siteNode);
+				    	
+			    	
+				    	TableItem item = new TableItem(filterTable, SWT.NONE);
+				    	int j=0;
+				    	if(trxCount <= 100){ 
+					    	for (String prop_name : headers){
+					    		Object val = null;
+					    		try {
+					    			String type = this.headersNodeType.get(prop_name);
+					    			if(NodeTypes.SITE.getId().equals(type)) {
+					    				if (siteNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals("site"))
+					    					val = (String)siteNode.getProperty(headers_prop.get(prop_name), "");
+	
+					    			} else if( NodeTypes.SECTOR.getId().equals(type)) {
+					    				val = node.getProperty(headers_prop.get(prop_name), "");
+					    			} else {
+					    				val = trxNode.getProperty(headers_prop.get(prop_name), "");
+					    			}
+		
+					    			if(val == null) val ="";
+					    			
+					    			item.setText(j, val.toString());
+					    		} catch(Exception e) {
+					    			item.setText(j, "");
+					    		}
+					    		j++;
+					    	}
+				    	}
+				    	trxCount++;
 			    	}
-			    	trxCount++;
-		    	}
-		    }
-//		    for(;trxCount <10;trxCount++) {
-//		    	TableItem item = new TableItem(filterTable, SWT.NONE);
-//		    	for (int j = 0; j < headers.length; j++){
-//		    		String val = "";
-//	    			item.setText(j, val);
-//		    	}		    	
-//		    }
-		    for (int i = 0; i < headers.length; i++) {
-		    	filterTable.getColumn(i).pack();
-		    }
-		    
-		    this.updateTRXFilterLabel(trxCount, remainingTRX);
+			    }
+	//		    for(;trxCount <10;trxCount++) {
+	//		    	TableItem item = new TableItem(filterTable, SWT.NONE);
+	//		    	for (int j = 0; j < headers.length; j++){
+	//		    		String val = "";
+	//	    			item.setText(j, val);
+	//		    	}		    	
+	//		    }
+			    for (int i = 0; i < headers.length; i++) {
+			    	filterTable.getColumn(i).pack();
+			    }
+			    
+			    this.updateTRXFilterLabel(trxCount, remainingTRX);
+			}
 		}
 	}
 

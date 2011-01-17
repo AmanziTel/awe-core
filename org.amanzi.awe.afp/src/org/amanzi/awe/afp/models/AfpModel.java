@@ -53,6 +53,10 @@ public class AfpModel {
 			   "TCH Non/BB Hopping TRXs: ",
 			   "TCH SY HoppingTRXs: "};
 	
+	public static final int CHANNEL_BCCH=0;
+	public static final int CHANNEL_NON_HOPIING=0;
+	public static final int CHANNEL_HOPPING=0;
+	
 	public static final int BAND_900=0;
 	public static final int BAND_1800=1;
 	public static final int BAND_850=2;
@@ -78,6 +82,7 @@ public class AfpModel {
 //	private int totalRemainingMalTRX;
 	private int totalSites;
 	private int totalSectors;
+	private int totalHoppingTRX;
 	
 	/**
 	 * 0- 900
@@ -177,6 +182,7 @@ public class AfpModel {
 		totalTRX = 0;
 		totalSites = 0;
 		totalSectors = 0;
+		totalHoppingTRX = 0;
 		
 		int[] bandTRXs = new int[4];
 		int[] bandSectors = new int[4];
@@ -228,8 +234,10 @@ public class AfpModel {
 						bcchTRXs[BAND_900]++;
 					if ((Integer)node.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) < 1)
 						nonHoppingTRXs[BAND_900]++;
-					else 
+					else {
 						hoppingTRXs[BAND_900]++;
+						totalHoppingTRX++;
+					}
 				}
 				if (band.contains("1800")){
 					bandTRXs[BAND_1800]++;
@@ -237,8 +245,10 @@ public class AfpModel {
 						bcchTRXs[BAND_1800]++;
 					if ((Integer)node.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) < 1)
 						nonHoppingTRXs[BAND_1800]++;
-					else 
+					else {
 						hoppingTRXs[BAND_1800]++;
+						totalHoppingTRX++;
+					}
 				}
 				if (band.contains("850")){
 					bandTRXs[BAND_850]++;
@@ -246,8 +256,10 @@ public class AfpModel {
 						bcchTRXs[BAND_850]++;
 					if ((Integer)node.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) < 1)
 						nonHoppingTRXs[BAND_850]++;
-					else 
+					else {
 						hoppingTRXs[BAND_850]++;
+						totalHoppingTRX++;
+					}
 				}
 				if (band.contains("1900")){
 					bandTRXs[BAND_1900]++;
@@ -255,8 +267,10 @@ public class AfpModel {
 						bcchTRXs[BAND_1900]++;
 					if ((Integer)node.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) < 1)
 						nonHoppingTRXs[BAND_1900]++;
-					else 
+					else{ 
 						hoppingTRXs[BAND_1900]++;
+						totalHoppingTRX++;
+					}
 				}
 			}
 			
@@ -314,6 +328,14 @@ public class AfpModel {
 
 	public void setTotalSectors(int totalSectors) {
 		this.totalSectors = totalSectors;
+	}
+
+	public int getTotalHoppingTRX() {
+		return totalHoppingTRX;
+	}
+
+	public void setTotalHoppingTRX(int totalHoppingTRX) {
+		this.totalHoppingTRX = totalHoppingTRX;
 	}
 
 	/**
@@ -992,7 +1014,7 @@ public class AfpModel {
 	/**
 	 * @param malDomains the malDomains to set
 	 */
-	private void setMalDomains(HashMap<String,AfpHoppingMALDomainModel> malDomains) {
+	public void setMalDomains(HashMap<String,AfpHoppingMALDomainModel> malDomains) {
 		this.malDomains = malDomains;
 	}
 
