@@ -56,7 +56,7 @@ public class FrequencyConstraintsSaver extends AbstractHeaderSaver<BaseTransferD
     @Override
     public void save(BaseTransferData element) {
         if (headerNotHandled) {
-            networkName = element.getFileName();
+            networkName =rootname;// element.getFileName();
             definePropertyMap(element);
             startMainTx(1000);
             headerNotHandled = false;

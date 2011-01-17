@@ -1188,7 +1188,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
     private void setSelection(ChartNode columnKey) {
 
         Object root=members.get(gisCombo.getText());
-        Node node =(root instanceof Node)?(Node)root:((ISelectionInformation)root).getRootNode(); 
+        Node node =root==null?null:(root instanceof Node)?(Node)root:((ISelectionInformation)root).getRootNode(); 
         Node realGis = NeoUtils.findGisNodeByChild(node);
         List<Node> correlated = new ArrayList<Node>();
         if (node != null) {

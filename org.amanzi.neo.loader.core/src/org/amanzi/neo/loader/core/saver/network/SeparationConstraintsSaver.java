@@ -49,7 +49,7 @@ public class SeparationConstraintsSaver extends AbstractHeaderSaver<BaseTransfer
     @Override
     public void save(BaseTransferData element) {
         if (headerNotHandled) {
-            networkName = element.getFileName();
+            networkName = rootname;//element.getFileName();
             definePropertyMap(element);
             startMainTx(1000);
             headerNotHandled = false;

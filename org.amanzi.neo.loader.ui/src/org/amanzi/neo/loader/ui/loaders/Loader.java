@@ -124,6 +124,7 @@ public class Loader<T extends IDataElement, T2 extends IConfigurationData> imple
      */
     protected void finishup() {
         updateCatalog();
+        NeoServicesUiPlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDatabaseEvent(UpdateViewEventType.GIS));
         // DatabaseManager.getInstance().setDatabaseAccessType(DatabaseAccessType.DEFAULT);
 
     }
