@@ -238,6 +238,11 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 		    	filterTable.getColumn(i).pack();
 		    }
 		    updateLabels();
+		    if(model.getTotalRemainingTRX() ==0) {
+		    	this.assignButton.setEnabled(false);
+		    }else {
+		    	this.assignButton.setEnabled(true);
+		    }
 		    this.updateTRXFilterLabel(trxCount, model.getTotalRemainingTRX());
 		}
 	}

@@ -50,6 +50,7 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 	private TableViewer viewer;
 	private AfpTRXFilter filter;
 	private FilterListener listener;
+	protected Button assignButton;
 	
     protected HashMap<String,Set<Object>> uniqueSitePropertyValues = new HashMap<String,Set<Object>>();
     protected HashMap<String,Set<Object>> uniqueSectorPropertyValues = new HashMap<String,Set<Object>>();
@@ -179,7 +180,7 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
     	clearButton.setData(CLEAR);
     	clearButton.addSelectionListener(this);
     	
-    	Button assignButton = new Button(trxFilterGroup, SWT.RIGHT);
+    	assignButton = new Button(trxFilterGroup, SWT.RIGHT);
     	assignButton.setLayoutData(new GridData(GridData.END, GridData.BEGINNING, false, false, 1 , 1));
     	assignButton.setText("Assign");
     	assignButton.setData(ASSIGN);

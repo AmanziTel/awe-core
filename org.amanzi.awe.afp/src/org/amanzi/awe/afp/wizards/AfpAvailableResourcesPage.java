@@ -346,14 +346,25 @@ public class AfpAvailableResourcesPage extends AfpWizardPage implements Listener
 		boolean[] availableNCCs = model.getAvailableNCCs();
 		boolean[] availableBCCs = model.getAvailableBCCs();
 
+		boolean bsicEnable = model.isOptimizeBSIC();
 		if(availableNCCs != null) {
 			for(int i=0;i< ncc.length;i++) {
-				ncc[i].setSelection(availableNCCs[i]);
+				if(bsicEnable) {
+					ncc[i].setEnabled(true);
+					ncc[i].setSelection(availableNCCs[i]);
+				} else {
+					ncc[i].setEnabled(false);
+				}
 			}
 		}
 		if(availableBCCs != null) {
 			for(int i=0;i< ncc.length;i++) {
-				bcc[i].setSelection(availableBCCs[i]);
+				if(bsicEnable) {
+					bcc[i].setEnabled(true);
+					bcc[i].setSelection(availableBCCs[i]);
+				} else {
+					bcc[i].setEnabled(false);
+				}
 			}
 		}
     	frequencies900.setText(model.getAvailableFreq(AfpModel.BAND_900));
