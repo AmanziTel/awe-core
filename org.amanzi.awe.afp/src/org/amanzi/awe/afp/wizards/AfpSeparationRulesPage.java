@@ -50,6 +50,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 	protected HashMap<String, Label[]> sectorDomainLabels;
 	protected HashMap<String, Label[]> siteDomainLabels;
 	private final String[] headers = { "BSC", "Site", "Sector", "Layer"};
+	private final String[] noListenerHeadersSite = { "Sector"};
 	private final HashMap<String,String> headersNodeType = new HashMap<String,String>(); 
 	private final HashMap<String,String> headers_prop = new HashMap<String,String>();
 
@@ -184,7 +185,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 	    	AfpWizardUtils.createButtonsGroup(pPage, sectorDomainsGroup, "Sector SeparationRules", model);
 	    	sectorDomainLabels = new HashMap<String, Label[]>();
 			
-	    	filterTableSector = addTRXFilterGroup(sectorMain, headers,10, false, pPage);
+	    	filterTableSector = addTRXFilterGroup(sectorMain, headers,10, false, pPage, new String[0]);
 		}
 	}
 	class SiteGroup extends Composite {
@@ -212,7 +213,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 	    	AfpWizardUtils.createButtonsGroup(pPage, siteDomainsGroup, "Site SeparationRules", model);
 	    	siteDomainLabels = new HashMap<String, Label[]>();
 	    	
-	    	filterTableSite = addTRXFilterGroup(siteMain, headers,10, true, pPage);
+	    	filterTableSite = addTRXFilterGroup(siteMain, headers,10, true, pPage, noListenerHeadersSite);
 			
 
 		}

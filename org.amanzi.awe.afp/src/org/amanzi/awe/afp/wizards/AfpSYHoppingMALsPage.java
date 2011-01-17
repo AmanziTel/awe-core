@@ -117,7 +117,7 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
     	AfpWizardUtils.createButtonsGroup(this,malDomainsGroup, "HoppingMAL", model);
     	domainLabels = new HashMap<String, Label[]>();
     	
-    	filterTable = addTRXFilterGroup(main,headers,10, false, this);
+    	filterTable = addTRXFilterGroup(main,headers,10, false, this,new String[0]);
 
     	setPageComplete(true);
     	setControl (thisParent);

@@ -1,6 +1,7 @@
 package org.amanzi.awe.afp.wizards;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -120,9 +121,10 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 		siteTrxFilterGroup.layout();
 	}
 	
-	protected Table addTRXFilterGroup(Group main, String[] headers, int emptyrows, boolean isSite, FilterListener listener){
+	protected Table addTRXFilterGroup(Group main, String[] headers, int emptyrows, boolean isSite, FilterListener listener, String[] noListenerHeaders){
 		final Shell parentShell = main.getShell();
 		this.listener = listener;
+		Arrays.sort(noListenerHeaders);
 		
 		parentShell.addMouseListener(new MouseListener(){
 
@@ -195,7 +197,8 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
   	      	column.setText(item);
   	      	column.setData(item);
   	      	column.setResizable(true);
-  	      	column.addListener(SWT.Selection, new ColumnFilterListener(parentShell));
+  	      	if (Arrays.binarySearch(noListenerHeaders, item) < 0)
+  	      		column.addListener(SWT.Selection, new ColumnFilterListener(parentShell));
   	    }
     	
     	

@@ -140,7 +140,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
     	AfpWizardUtils.createButtonsGroup(this, frequencyDomainsGroup, "FrequencyType", model);
     	domainLabels = new HashMap<String, Label[]>();
     	
-    	filterTable = this.addTRXFilterGroup(main, headers,10, false, this);
+    	filterTable = this.addTRXFilterGroup(main, headers,10, false, this, new String[0]);
     	
 
 		
