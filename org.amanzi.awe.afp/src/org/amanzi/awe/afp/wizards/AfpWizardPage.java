@@ -5,26 +5,23 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.amanzi.awe.afp.filters.AfpColumnFilter;
-import org.amanzi.awe.afp.filters.AfpRowFilter;
 import org.amanzi.awe.afp.filters.AfpTRXFilter;
 import org.amanzi.awe.afp.models.AfpModel;
-import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
@@ -34,9 +31,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 import org.neo4j.graphdb.Node;
 
@@ -128,6 +123,28 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 	protected Table addTRXFilterGroup(Group main, String[] headers, int emptyrows, boolean isSite, FilterListener listener){
 		final Shell parentShell = main.getShell();
 		this.listener = listener;
+		
+		parentShell.addMouseListener(new MouseListener(){
+
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mouseDown(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mouseUp(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+		});
 		
 		/** Create TRXs Filters Group */
     	Group trxFilterGroup = new Group(main, SWT.NONE);
@@ -239,21 +256,67 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 		public void handleEvent(Event event) {
 			
 			final ArrayList<String> selectedValues = new ArrayList<String>();
-		//	final Shell subShell = new Shell(event.widget.getDisplay(), SWT.PRIMARY_MODAL);
-			final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL|SWT.TITLE | SWT.SCROLL_PAGE);
+			final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL);
 			subShell.setLayout(new GridLayout(2, false));
+			Point location = subShell.getDisplay().getCursorLocation();
+			subShell.setLocation(location);
+			/*subShell.addMouseListener(new MouseAdapter(){
+
+				@Override
+				public void mouseDown(MouseEvent e) {
+					// TODO Auto-generated method stub
+					System.out.println("Yeah, I can listen it");
+					super.mouseDown(e);
+					System.out.println("Yeah, I can listen it");
+				}
+
+				@Override
+				public void mouseUp(MouseEvent e) {
+					// TODO Auto-generated method stub
+					System.out.println("Yeah, I can listen it");
+					super.mouseUp(e);
+					System.out.println("Yeah, I can listen it");
+				}
+				
+			}
+					
+					new MouseListener(){
+
+				@Override
+				public void mouseDoubleClick(MouseEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				@Override
+				public void mouseDown(MouseEvent e) {
+					Point location = subShell.getDisplay().getCursorLocation();
+					Rectangle bounds = subShell.getBounds();
+					if (!(bounds.contains(location)))
+						subShell.dispose();
+				}
+
+				@Override
+				public void mouseUp(MouseEvent e) {
+					Point location = subShell.getDisplay().getCursorLocation();
+					Rectangle bounds = subShell.getBounds();
+					if (!(bounds.contains(location)))
+						subShell.dispose();
+					
+				}
+				
+			});*/
 //			subShell.setLayoutData(gridData);
 //			subShell.setSize(100, 200);
-			subShell.setBounds(50, 50, 100, 200);
+//			subShell.setBounds(50, 50, 100, 200);
 			//subShell.setLocation(300, 200);
-			subShell.setText("Filter");
+//			subShell.setText("Filter");
 			
 			final String col = (String)event.widget.getData();
 			
 			Group filterGroup = new Group(subShell, SWT.NONE | SWT.SCROLL_PAGE);
 			filterGroup.setLayout(new GridLayout(2, false));
 			filterGroup.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, false, false,2 ,1));
-			filterGroup.setText(col);
 			
 			Object[] values = getColumnUniqueValues(col);
 			
@@ -267,7 +330,7 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 			}
 		    final Tree tree = new Tree(filterGroup, SWT.CHECK | SWT.BORDER|SWT.V_SCROLL);
 		    GridData gridData = new GridData(GridData.FILL, GridData.FILL, true, false, 2, 1);
-			gridData.heightHint = 200;
+		    gridData.heightHint = 200;
 		    tree.setLayoutData(gridData);
 		    
 	    	for (Object value : values){
