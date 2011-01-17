@@ -224,9 +224,10 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 		    		if (!includeFlag)
 			    		continue;
 		    		
-		    		remainingTRX++;
-//			    	if ((Integer)trxNode.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) < 1)
-//			    		continue;
+		    		
+			    	if ((Integer)trxNode.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) < 1)
+			    		continue;
+			    	remainingTRX++;
 			    	
 			    	if (rowFilter != null){
 			    		if (!rowFilter.equal(trxNode)) 
