@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
+import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
@@ -380,6 +382,30 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
             }
         }
 
+        // Kasnitskij_V:
+        // Create table content
+        boolean isCreatedFromNode = createTableContentFromNode(datasetService, propertyMap);
+        if (isCreatedFromNode == false) {
+            createTableContentWithCasualHeaders(datasetService, propertyMap);
+        }
+        
+        validate();
+        if (viewer != null)
+            viewer.setInput("");
+
+    }
+    
+    /**
+     * Kasnitskij_V:
+     *
+     * method create table with headers from saving node
+     *
+     * @param datasetService DatasetService
+     * @param propertyMap PropertyMap
+     */
+    private boolean createTableContentFromNode(DatasetService datasetService, HashMap<String, Collection<String>> propertyMap) {
+        boolean isExistColumnName = false;
+        
         // Create table content
         Map<String, String> originalHeaders = datasetService.getOriginalFileHeaders(rootNode);
         List<RowWr> rows = new ArrayList<RowWr>();
@@ -390,16 +416,100 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
                 String origHeader = originalHeaders.get(type + INeoConstants.PROPERTY_NAME_PREFIX + propertyName);
                 if (origHeader != null) {
                     columnName = origHeader;
+                    isExistColumnName = true;
                 }
                 rows.add(new RowWr(type, propertyName, columnName));
             }
         }
         propertyList.clear();
         propertyList.addAll(rows);
-        validate();
-        if (viewer != null)
-            viewer.setInput("");
+        
+        return isExistColumnName;
+    }
+    
+    /**
+     * Kasnitskij_V:
+     *
+     * method create table with casual headers
+     *
+     * @param datasetService DatasetService
+     * @param propertyMap PropertyMap
+     */
+    private void createTableContentWithCasualHeaders(DatasetService datasetService, HashMap<String, Collection<String>> propertyMap) {
+        
+        // Create table content
+        List<RowWr> rows = new ArrayList<RowWr>();
+        for (Map.Entry<String, Collection<String>> entry : propertyMap.entrySet()) {
+            String type = entry.getKey();
+            for (String propertyName : entry.getValue()) {
+                String columnName = "";
+                String headerName = null;
+                if (propertyName.equals("name")) {
+                    headerName = getMapPropertyNameHeader().get(propertyName + "_" + type);
+                }
+                else {
+                    headerName = getMapPropertyNameHeader().get(propertyName);
+                }
+                
+                String[] headers = null;
+                if (headerName != null) {
+                     headers = getPossibleHeaders(headerName);
+                }
 
+                if (headers != null) {
+                    columnName = headers[0];
+                }
+                rows.add(new RowWr(type, propertyName, columnName));
+            }
+        }
+        propertyList.clear();
+        propertyList.addAll(rows);
+    }
+    
+    /**
+     * Kasnitskij_V:
+     *
+     * @return return map in which key = propertyName and value = name of header
+     */
+    private HashMap<String, String> getMapPropertyNameHeader() {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("name_site", DataLoadPreferences.NH_SITE);
+        map.put("name_sector", DataLoadPreferences.NH_SECTOR);
+        map.put("lat", DataLoadPreferences.NH_LATITUDE);
+        map.put("lon", DataLoadPreferences.NH_LONGITUDE);
+        map.put("ci", DataLoadPreferences.NH_SECTOR_CI);
+        map.put("lac", DataLoadPreferences.NH_SECTOR_LAC);
+        map.put("beamwidth", DataLoadPreferences.NH_BEAMWIDTH);
+        map.put("azimuth", DataLoadPreferences.NH_AZIMUTH);
+        map.put("city", DataLoadPreferences.NH_CITY);
+        map.put("msc", DataLoadPreferences.NH_MSC);
+        map.put("bsc", DataLoadPreferences.NH_BSC);
+        
+        return (HashMap<String, String>)map;
+    }
+    
+    /**
+     * Kasnitskij_V:
+     * 
+     * Get synonyms to header
+     * 
+     * @param header -header of value from preference store
+     * @return array of possible headers
+     */
+    private String[] getPossibleHeaders(String header) {
+        String text = NeoLoaderPlugin.getDefault().getPreferenceStore().getString(header);
+        if (text == null) {
+            return new String[0];
+        }
+        String[] array = text.split(",");
+        List<String> result = new ArrayList<String>();
+        for (String string : array) {
+            String value = string.trim();
+            if (!value.isEmpty()) {
+                result.add(value);
+            }
+        }
+        return result.toArray(new String[0]);
     }
 
     /**
