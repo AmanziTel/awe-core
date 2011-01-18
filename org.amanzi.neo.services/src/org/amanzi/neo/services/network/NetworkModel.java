@@ -13,12 +13,15 @@
 
 package org.amanzi.neo.services.network;
 
+import java.util.Set;
+
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.DatasetService.NodeResult;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.node2node.INodeToNodeType;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
+import org.amanzi.neo.services.node2node.NodeToNodeRelationService;
 import org.amanzi.neo.services.node2node.NodeToNodeTypes;
 import org.neo4j.graphdb.Node;
 
@@ -37,11 +40,13 @@ public class NetworkModel {
 	private final DatasetService ds;
 	
 	private final NetworkService networkService;
+    private NodeToNodeRelationService n2nserrvice;
 
 	public NetworkModel(Node rootNode) {
 		this.rootNode = rootNode;
 		ds = NeoServiceFactory.getInstance().getDatasetService();
 		networkService = NeoServiceFactory.getInstance().getNetworkService();
+		n2nserrvice=NeoServiceFactory.getInstance().getNodeToNodeRelationService();
 	}
 	
 	protected NodeToNodeRelationModel getNodeToNodeRelationModel(INodeToNodeType type, String name) {
@@ -74,6 +79,10 @@ public class NetworkModel {
     
     public NodeResult getCarrier(Node sector, String trxId, Integer channelGr) {
         return networkService.getTRXNode(sector, trxId, channelGr);
+    }
+
+    public Set<NodeToNodeRelationModel> findAllNode2NodeRoot() {
+        return n2nserrvice.findAllNode2NodeRoot(rootNode);
     }
 
     

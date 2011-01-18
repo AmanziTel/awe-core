@@ -12,6 +12,7 @@
  */
 package org.amanzi.neo.services.node2node;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -19,6 +20,7 @@ import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.utils.Utils;
 import org.neo4j.graphdb.Direction;
@@ -29,6 +31,7 @@ import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
+import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Traverser;
 import org.neo4j.kernel.Traversal;
 import org.neo4j.kernel.Uniqueness;
@@ -75,7 +78,7 @@ public class NodeToNodeRelationService extends AbstractService {
                     @Override
                     public Evaluation evaluate(Path arg0) {
                         boolean continues = arg0.length() == 0;
-                        boolean includes = !continues && typename.equals(getINodeToNodeType(arg0.endNode()));
+                        boolean includes = !continues && nameRelation.equals(datasetService.getNodeName(arg0.endNode()))&&typename.equals(getINodeToNodeType(arg0.endNode()));
                         return Evaluation.of(includes, continues);
                     }
                 }).traverse(rootNode);
@@ -101,6 +104,7 @@ public class NodeToNodeRelationService extends AbstractService {
 
         try {
             Node createdNode = datasetService.createNode(NodeTypes.ROOT_PROXY, name);
+            createdNode.setProperty(N2N_TYPE, type.name());
             rootNode.createRelationshipTo(createdNode, NodeToNodeRelationshipTypes.SET_TO_ROOT);
             tx.success();
 
@@ -230,5 +234,44 @@ public class NodeToNodeRelationService extends AbstractService {
         }else{
             return relations.iterator().next();
         }
+    }
+
+    public Set<NodeToNodeRelationModel> findAllNode2NodeRoot(Node network) {
+        Set<NodeToNodeRelationModel> result=new HashSet<NodeToNodeRelationModel>();
+        for (Node root:getAllNode2NodeRoots(network, null).nodes()){
+            result.add(new NodeToNodeRelationModel(root)); 
+        }
+        return result;
+    }
+    public Traverser getAllNode2NodeRoots(Node network,Evaluator additionalEvaluator){
+       TraversalDescription td = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst().relationships(NodeToNodeRelationshipTypes.SET_TO_ROOT,Direction.OUTGOING).evaluator(new Evaluator() {
+        
+        @Override
+        public Evaluation evaluate(Path arg0) {
+            boolean continues=arg0.length()==0;
+            boolean includes=!continues;
+            return Evaluation.of(includes, continues);
+        }
+    });
+       if (additionalEvaluator!=null){
+           td.evaluator(additionalEvaluator);
+       }
+       return td.traverse(network);
+    }
+
+    public Traverser getNeighTraverser(Node rootNode, Evaluator additionalEvaluator) {
+        TraversalDescription td = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst().relationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING).relationships(GeoNeoRelationshipTypes.NEXT,Direction.OUTGOING).relationships(NodeToNodeRelationshipTypes.PROXYS,Direction.OUTGOING).evaluator(new Evaluator() {
+            
+            @Override
+            public Evaluation evaluate(Path arg0) {
+                boolean includes=arg0.lastRelationship()!=null&&arg0.lastRelationship().isType(NodeToNodeRelationshipTypes.PROXYS);
+                boolean prune=includes||(arg0.length()==1&&!arg0.lastRelationship().isType(GeoNeoRelationshipTypes.CHILD))||(arg0.length()>1&&!arg0.lastRelationship().isType(GeoNeoRelationshipTypes.NEXT));
+                return Evaluation.of(includes, !prune);
+            }
+        });
+           if (additionalEvaluator!=null){
+               td.evaluator(additionalEvaluator);
+           }
+           return td.traverse(rootNode);
     }
 }

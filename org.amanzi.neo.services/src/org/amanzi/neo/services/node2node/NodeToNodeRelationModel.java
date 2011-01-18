@@ -19,6 +19,8 @@ import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.utils.Utils;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.traversal.Evaluator;
+import org.neo4j.graphdb.traversal.Traverser;
 
 /**
  * Model of node to node relation
@@ -28,62 +30,90 @@ import org.neo4j.graphdb.Relationship;
  */
 public class NodeToNodeRelationModel {
     // node-root
-	private Node rootNode;
-	// type of node to node relation
-	private INodeToNodeType type;
-	// node to node relation service
-	private NodeToNodeRelationService node2nodeRelationService;
-	// dataset service
-	private DatasetService datasetService;
-	private long countProxy;
-	private long countRelation;
-	private String proxyIndexKey;
-	
-	/**
-	 * constructor of this class
-	 * @param rootModelNode rootModel-node
-	 * @param type type of relation
-	 * @param name name of model
-	 */
-	public NodeToNodeRelationModel(Node rootModelNode, INodeToNodeType type, String name) {
-		datasetService = NeoServiceFactory.getInstance().getDatasetService();
-		node2nodeRelationService = NeoServiceFactory.getInstance().getNodeToNodeRelationService();
-		
-		this.type = type;
-		this.rootNode = node2nodeRelationService.getNodeToNodeRelationsRoot(rootModelNode, type, name);
-		countProxy=node2nodeRelationService.getCountProxy(rootNode);
-		countRelation=node2nodeRelationService.getCountRelation(rootNode);
-		proxyIndexKey = Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.PROXY);
-	}
-	
-	/**
-	 * method to add relation between serving node and dependent node
-	 * with some parameters to relation
-	 *
-	 * @param servingNode
-	 * @param dependentNode
-	 * @param parameters
-	 */
-	public Relationship getRelation(Node servingNode, Node dependentNode) {
-	    Relationship result = node2nodeRelationService.getRelation(rootNode,proxyIndexKey,servingNode,dependentNode);
-	    countProxy=node2nodeRelationService.getCountProxy(rootNode);
-	    countRelation=node2nodeRelationService.getCountRelation(rootNode);
-	    return result;
-	}
-	
-	/**
-	 * Cleares Model
-	 * 
-	 * @param deleteRootNode is Root Node should be deleted
-	 */
-	public void clear(boolean deleteRootNode) {
-		node2nodeRelationService.clearNodeToNodeStructure(rootNode, new String[] {proxyIndexKey}, deleteRootNode);
-	}
+    private Node rootNode;
+    // type of node to node relation
+    private INodeToNodeType type;
+    // node to node relation service
+    private NodeToNodeRelationService node2nodeRelationService;
+    // dataset service
+    private DatasetService datasetService;
+    private long countProxy;
+    private long countRelation;
+    private String proxyIndexKey;
+    private final String name;
 
-	public long getProxyCount() {
-	    return countProxy;
-	}
+    /**
+     * constructor of this class
+     * 
+     * @param rootModelNode rootModel-node
+     * @param type type of relation
+     * @param name name of model
+     */
+    public NodeToNodeRelationModel(Node rootModelNode, INodeToNodeType type, final String name) {
+        this.name = name;
+        datasetService = NeoServiceFactory.getInstance().getDatasetService();
+        node2nodeRelationService = NeoServiceFactory.getInstance().getNodeToNodeRelationService();
+
+        this.type = type;
+        this.rootNode = node2nodeRelationService.getNodeToNodeRelationsRoot(rootModelNode, type, name);
+        countProxy = node2nodeRelationService.getCountProxy(rootNode);
+        countRelation = node2nodeRelationService.getCountRelation(rootNode);
+        proxyIndexKey = Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.PROXY);
+    }
+
+    public NodeToNodeRelationModel(Node node2noderoot) {
+        rootNode = node2noderoot;
+        datasetService = NeoServiceFactory.getInstance().getDatasetService();
+        name=datasetService.getNodeName(rootNode);
+        node2nodeRelationService = NeoServiceFactory.getInstance().getNodeToNodeRelationService();
+        type = NodeToNodeTypes.valueOf(node2nodeRelationService.getINodeToNodeType(rootNode));
+        countProxy = node2nodeRelationService.getCountProxy(rootNode);
+        countRelation = node2nodeRelationService.getCountRelation(rootNode);
+        proxyIndexKey = Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.PROXY);
+
+    }
+
+    /**
+     * method to add relation between serving node and dependent node with some parameters to
+     * relation
+     * 
+     * @param servingNode
+     * @param dependentNode
+     * @param parameters
+     */
+    public Relationship getRelation(Node servingNode, Node dependentNode) {
+        Relationship result = node2nodeRelationService.getRelation(rootNode, proxyIndexKey, servingNode, dependentNode);
+        countProxy = node2nodeRelationService.getCountProxy(rootNode);
+        countRelation = node2nodeRelationService.getCountRelation(rootNode);
+        return result;
+    }
+
+    /**
+     * Cleares Model
+     * 
+     * @param deleteRootNode is Root Node should be deleted
+     */
+    public void clear(boolean deleteRootNode) {
+        node2nodeRelationService.clearNodeToNodeStructure(rootNode, new String[] {proxyIndexKey}, deleteRootNode);
+    }
+
+    public long getProxyCount() {
+        return countProxy;
+    }
+
     public long getRelationCount() {
         return countRelation;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public INodeToNodeType getType() {
+        return type;
+    }
+
+    public Traverser getNeighTraverser(Evaluator evaluator) {
+        return node2nodeRelationService.getNeighTraverser(rootNode,evaluator);
     }
 }

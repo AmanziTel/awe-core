@@ -20,6 +20,8 @@ import java.util.Set;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.network.NetworkModel;
+import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.amanzi.neo.services.statistic.IStatistic;
 import org.amanzi.neo.services.statistic.StatisticManager;
 import org.neo4j.graphdb.Node;
@@ -49,6 +51,7 @@ public class InformationProvider {
        ds=NeoServiceFactory.getInstance().getDatasetService();
        name=ds.getNodeName(root);
        
+       
     }
 
     /**
@@ -74,10 +77,35 @@ public class InformationProvider {
                     result.put(inf.getDescription(), inf);
                 }
             }
+            NetworkModel networkModel = new NetworkModel(root);
+            Set<NodeToNodeRelationModel>models=networkModel.findAllNode2NodeRoot();
+            for (NodeToNodeRelationModel model:models){
+                String key=model.getName();
+                nodeTypeKey=statistic.getNodeTypeKey(key);
+                if (!nodeTypeKey.isEmpty()){
+                    for (String nodeType:nodeTypeKey){
+                        ISelectionInformation inf=new Node2NodeelectionInformation(root,statistic,model,nodeType,getNode2NodeDescripttion(name,model));
+                        if (!inf.getPropertySet().isEmpty()){
+                            result.put(inf.getDescription(), inf);
+                        }
+                    }                  
+                } 
+            }
+            
         }else{
           //TODO implement
         }
         return result;
+    }
+
+    /**
+     *
+     * @param name2
+     * @param model
+     * @return
+     */
+    private String getNode2NodeDescripttion(String networkName, NodeToNodeRelationModel model) {
+        return String.format("Network %s %s %s", networkName,model.getName(),model.getType().name());
     }
 
 }
