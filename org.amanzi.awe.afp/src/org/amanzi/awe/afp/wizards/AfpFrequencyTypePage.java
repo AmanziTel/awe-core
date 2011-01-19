@@ -10,6 +10,7 @@ import org.amanzi.awe.afp.filters.AfpColumnFilter;
 import org.amanzi.awe.afp.filters.AfpRowFilter;
 import org.amanzi.awe.afp.models.AfpDomainModel;
 import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
+import org.amanzi.awe.afp.models.AfpHoppingMALDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
 import org.amanzi.awe.afp.models.AfpModelUtils;
 import org.amanzi.awe.console.AweConsolePlugin;
@@ -71,7 +72,9 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 	private Table filterTable;
 	protected AfpRowFilter rowFilter;
 	private int trxCount;
+	private boolean disablePage;
 	protected  Shell parentShell;
+	private Group main;
 
 	public AfpFrequencyTypePage(String pageName, AfpModel model, String desc) {
 		super(pageName, model);
@@ -113,7 +116,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 		
 		Group stepsGroup = AfpWizardUtils.getStepsGroup(thisParent, 3);
 		
-		Group main = new Group(thisParent, SWT.NONE);
+		main = new Group(thisParent, SWT.NONE);
 		main.setLayout(new GridLayout(1, true));
 		main.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1 ,2));
 		
@@ -152,98 +155,122 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 		if(filterTable != null) {
 			filterTable.removeAll();
 			
-			this.clearAllUniqueValuesForProperty();
-			
-			HashMap<String, String> bandFilters = new HashMap<String, String> ();
-			for (int i = 0; i < model.getFrequencyBands().length; i++){
-				if (model.getFrequencyBands()[i])
-					if (bandFilters.get("band") == null)
-						bandFilters.put("band", model.BAND_NAMES[i]);
-					else
-						bandFilters.put("band", bandFilters.get("band") + "," + model.BAND_NAMES[i]);
+			if (disablePage){
+				this.updateTRXFilterLabel(0, 0);
+				updateLabels();
 			}
+			else{
 			
-		    Traverser sectorTraverser = model.getTRXList(bandFilters);
-		    
-		    trxCount =0;
-		    //initialize trx of all model domains to 0
-		    for(AfpFrequencyDomainModel mod: model.getFreqDomains(false)){
-		    	mod.setNumTRX(0);
-		    }
-		    model.setTotalRemainingTRX(0);
-		    for (Node node : sectorTraverser) {
-		    	Traverser trxTraverser = AfpModelUtils.getTrxTraverser(node);
-
-		    	Node siteNode = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
-		    	
-		    	boolean includeFlag = true;
-		    	for (Node trxNode: trxTraverser){
-			    	for(AfpFrequencyDomainModel mod: model.getFreqDomains(false)){
-			    		String filterString = mod.getFilters();
-			    		if (filterString != null && !filterString.trim().isEmpty()){
-				    		AfpRowFilter rf = AfpRowFilter.getFilter(mod.getFilters());
-				    		if (rf != null){
-					    		if (rf.equal(trxNode)){
-					    			mod.setNumTRX(mod.getNumTRX() + 1);
-					    			model.updateFreqDomain(mod);
-					    			includeFlag = false;
-					    			break;
+				this.clearAllUniqueValuesForProperty();
+				
+				HashMap<String, String> bandFilters = new HashMap<String, String> ();
+				for (int i = 0; i < model.getFrequencyBands().length; i++){
+					if (model.getFrequencyBands()[i])
+						if (bandFilters.get("band") == null)
+							bandFilters.put("band", model.BAND_NAMES[i]);
+						else
+							bandFilters.put("band", bandFilters.get("band") + "," + model.BAND_NAMES[i]);
+				}
+				
+			    Traverser sectorTraverser = model.getTRXList(bandFilters);
+			    
+			    trxCount =0;
+			    //initialize trx of all model domains to 0
+			    for(AfpFrequencyDomainModel mod: model.getFreqDomains(false)){
+			    	mod.setNumTRX(0);
+			    }
+			    model.setTotalRemainingTRX(0);
+			    for (Node node : sectorTraverser) {
+			    	Traverser trxTraverser = AfpModelUtils.getTrxTraverser(node);
+	
+			    	Node siteNode = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
+			    	
+			    	boolean includeFlag = true;
+			    	for (Node trxNode: trxTraverser){
+				    	for(AfpFrequencyDomainModel mod: model.getFreqDomains(false)){
+				    		String filterString = mod.getFilters();
+				    		if (filterString != null && !filterString.trim().isEmpty()){
+					    		AfpRowFilter rf = AfpRowFilter.getFilter(mod.getFilters());
+					    		if (rf != null){
+						    		if (rf.equal(trxNode)){
+						    			mod.setNumTRX(mod.getNumTRX() + 1);
+						    			model.updateFreqDomain(mod);
+						    			includeFlag = false;
+						    			break;
+						    		}
 					    		}
 				    		}
-			    		}
-			    	}
-			    	
-			    	if (!includeFlag)
-			    		continue;
-		    		
-			    	model.setTotalRemainingTRX(model.getTotalRemainingTRX() + 1);
-		    		if (rowFilter != null){
-			    		if (!rowFilter.equal(trxNode)) 
-			    			continue;
-			    	}
-			    	this.addSectorUniqueProperties(node);
-					this.addSiteUniqueProperties(siteNode);
-    		    	this.addTrxUniqueProperties(trxNode);
-		    		
-			    	if(trxCount <= 100){ 
-				    	TableItem item = new TableItem(filterTable, SWT.NONE);
-				    	int j=0;
-				    	for (String prop_name : headers){
-				    		Object val = null;
-				    		try {
-				    			String type = this.headersNodeType.get(prop_name);
-				    			if(NodeTypes.SITE.getId().equals(type)) {
-				    				if (siteNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals("site"))
-				    					val = (String)siteNode.getProperty(headers_prop.get(prop_name), "");
-
-				    			} else if( NodeTypes.SECTOR.getId().equals(type)) {
-				    				val = node.getProperty(headers_prop.get(prop_name), "");
-				    			} else {
-				    				val = trxNode.getProperty(headers_prop.get(prop_name), "");
-				    			}
-
-				    			if(val == null) val ="";
-				    			
-				    			item.setText(j, val.toString());
-				    		} catch(Exception e) {
-				    			item.setText(j, "");
-				    		}
-				    		j++;
 				    	}
+				    	
+				    	if (!includeFlag)
+				    		continue;
+			    		
+				    	if (!model.getChanneltypes()[AfpModel.CHANNEL_BCCH]){
+				    		if ((Boolean)trxNode.getProperty(INeoConstants.PROPERTY_BCCH_NAME, false))
+				    			continue;
+				    	}
+				    	
+				    	int hoppingType = (Integer)node.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0);
+				    	
+				    	if (!model.getChanneltypes()[AfpModel.CHANNEL_NON_HOPIING]){
+				    		if (hoppingType < 1)
+				    			continue;
+				    	}
+				    	
+				    	if (!model.getChanneltypes()[AfpModel.CHANNEL_HOPPING]){
+				    		if (hoppingType > 0)
+				    			continue;
+				    	}
+				    	
+				    	model.setTotalRemainingTRX(model.getTotalRemainingTRX() + 1);
+			    		if (rowFilter != null){
+				    		if (!rowFilter.equal(trxNode)) 
+				    			continue;
+				    	}
+				    	this.addSectorUniqueProperties(node);
+						this.addSiteUniqueProperties(siteNode);
+	    		    	this.addTrxUniqueProperties(trxNode);
+			    		
+				    	if(trxCount <= 100){ 
+					    	TableItem item = new TableItem(filterTable, SWT.NONE);
+					    	int j=0;
+					    	for (String prop_name : headers){
+					    		Object val = null;
+					    		try {
+					    			String type = this.headersNodeType.get(prop_name);
+					    			if(NodeTypes.SITE.getId().equals(type)) {
+					    				if (siteNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals("site"))
+					    					val = (String)siteNode.getProperty(headers_prop.get(prop_name), "");
+	
+					    			} else if( NodeTypes.SECTOR.getId().equals(type)) {
+					    				val = node.getProperty(headers_prop.get(prop_name), "");
+					    			} else {
+					    				val = trxNode.getProperty(headers_prop.get(prop_name), "");
+					    			}
+	
+					    			if(val == null) val ="";
+					    			
+					    			item.setText(j, val.toString());
+					    		} catch(Exception e) {
+					    			item.setText(j, "");
+					    		}
+					    		j++;
+					    	}
+				    	}
+				    	trxCount++;
 			    	}
-			    	trxCount++;
-		    	}
-		    }
-		    for (int i = 0; i < headers_prop.size(); i++) {
-		    	filterTable.getColumn(i).pack();
-		    }
-		    updateLabels();
-		    if(model.getTotalRemainingTRX() ==0) {
-		    	this.assignButton.setEnabled(false);
-		    }else {
-		    	this.assignButton.setEnabled(true);
-		    }
-		    this.updateTRXFilterLabel(trxCount, model.getTotalRemainingTRX());
+			    }
+			    for (int i = 0; i < headers_prop.size(); i++) {
+			    	filterTable.getColumn(i).pack();
+			    }
+			    updateLabels();
+			    if(model.getTotalRemainingTRX() ==0) {
+			    	this.assignButton.setEnabled(false);
+			    }else {
+			    	this.assignButton.setEnabled(true);
+			    }
+			    this.updateTRXFilterLabel(trxCount, model.getTotalRemainingTRX());
+			}
 		}
 	}
 	public static void deleteDomainLabels(String domainName){
@@ -259,6 +286,22 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 	
 	public void refreshPage(){
 //		super.refreshPage();
+		disablePage = true;
+		for (boolean b : model.getChanneltypes()){
+			if (b){
+				disablePage = false;
+				break;
+			}
+		}
+		
+		if (disablePage){
+			main.setEnabled(false);
+			model.setFreqDomains(new HashMap<String,AfpFrequencyDomainModel>());
+			model.setTotalRemainingTRX(0);
+		}
+		else{
+			main.setEnabled(true);
+		}
 		
 		updateLabels();
 		loadData();

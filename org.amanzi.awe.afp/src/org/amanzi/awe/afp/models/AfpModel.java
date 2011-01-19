@@ -54,8 +54,8 @@ public class AfpModel {
 			   "TCH SY HoppingTRXs: "};
 	
 	public static final int CHANNEL_BCCH=0;
-	public static final int CHANNEL_NON_HOPIING=0;
-	public static final int CHANNEL_HOPPING=0;
+	public static final int CHANNEL_NON_HOPIING=1;
+	public static final int CHANNEL_HOPPING=2;
 	
 	public static final int BAND_900=0;
 	public static final int BAND_1800=1;
@@ -820,7 +820,7 @@ public class AfpModel {
 	/**
 	 * @param freqDomains the freqDomains to set
 	 */
-	private void setFreqDomains(HashMap<String,AfpFrequencyDomainModel> freqDomains) {
+	public void setFreqDomains(HashMap<String,AfpFrequencyDomainModel> freqDomains) {
 		this.freqDomains = freqDomains;
 	}
 	

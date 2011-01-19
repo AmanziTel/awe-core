@@ -23,7 +23,7 @@ import java.util.HashMap;
 
 import org.amanzi.awe.afp.Activator;
 import org.amanzi.awe.afp.AfpEngine;
-import org.amanzi.awe.afp.loaders.AfpExporter;
+import org.amanzi.awe.afp.exporters.AfpExporter;
 import org.amanzi.awe.afp.loaders.AfpOutputFileLoader;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -78,7 +78,7 @@ public class AfpProcessExecutor extends Job {
 	public IStatus run(IProgressMonitor monitor){
 		progressMonitor = monitor;
 		monitor.beginTask("Execute Afp", 100);
-        AfpExporter afpE = new AfpExporter(afpRoot);
+        AfpExporter afpE = new AfpExporter(afpRoot, afpDataset);
 
 		createFiles(monitor, afpE);
 		Runtime run = Runtime.getRuntime();
@@ -90,7 +90,7 @@ public class AfpProcessExecutor extends Job {
 			//String command = path + " \"" + afpE.controlFileName + "\"";
 			//AweConsolePlugin.info("Executing Cmd: " + command);
 			//process = run.exec(command);
-			process = run.exec(new String[]{path,afpE.controlFileName});
+			process = run.exec(new String[]{path,afpE.fileNames[AfpExporter.CONTROL]});
 			monitor.worked(0);
 			AweConsolePlugin.info("AFP Engine .... started");
 					
@@ -214,7 +214,7 @@ public class AfpProcessExecutor extends Job {
 		afpE.createCarrierFile(); 
 			
 		/** Create the neighbours file */
-		afpE.createNeighboursFile();
+//		afpE.createNeighboursFile();
 		
 		/** Create the interference file */
 		afpE.createInterferenceFile(monitor);
@@ -231,7 +231,7 @@ public class AfpProcessExecutor extends Job {
 		/** Create the control file */
 		afpE.createControlFile(parameters);
 		
-		afpE.createParamFile();
+//		afpE.createParamFile();
 	}
 
 	public void onProgressUpdate(int result, long time, long remaingtotal,

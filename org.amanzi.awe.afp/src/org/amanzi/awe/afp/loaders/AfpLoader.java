@@ -539,8 +539,10 @@ public class AfpLoader extends AbstractLoader {
             try {
                 String[] field = line.split("\\s");
                 int i = 0;
-                String siteName = field[i++];
-                Integer sectorNo = Integer.valueOf(field[i++]);
+                String sectorFullName = field[i++];
+                String siteName = sectorFullName.substring(0, sectorFullName.length() -1);
+                String sectorNo = sectorFullName.substring(sectorFullName.length() - 1);
+                String trxName = field[i++];
                 Integer nonrelevant = Integer.valueOf(field[i++]);
                 Integer numberoffreqenciesrequired = Integer.valueOf(field[i++]);
                 Integer numberoffrequenciesgiven = Integer.valueOf(field[i++]);
@@ -552,11 +554,11 @@ public class AfpLoader extends AbstractLoader {
                 boolean convertSectorNo2Char  = false;
                 boolean reduceSectorName = false;
                 int sectorNameLength =0;
-                String sampleSectorName = getSampleSectorName(siteName,field[1]);
+                String sampleSectorName = getSampleSectorName(siteName,sectorNo);
                 if(sampleSectorName != null) {
                 	convertSectorNo2Char = checkConvertSectorNo2Char(sampleSectorName);
                 	
-                	if(sampleSectorName.length() < (siteName+field[1]).length()){
+                	if(sampleSectorName.length() < (siteName+sectorNo).length()){
                 		reduceSectorName = true;
                 		sectorNameLength = sampleSectorName.length();
                 	}
@@ -570,11 +572,11 @@ public class AfpLoader extends AbstractLoader {
                     }
                     String sectorName;
                     if(convertSectorNo2Char) {
-                    	char c = field[1].charAt(0);
+                    	char c = field[0].charAt(sectorFullName.length() - 1);
                     	c = (char)((c- '1') + 'A');
                     	sectorName = siteName + c;
                     }else {
-                    	sectorName = siteName + field[1];
+                    	sectorName = sectorFullName;//siteName + field[1];
                     }
                     if(reduceSectorName) {
                     	sectorName = sectorName.substring(sectorName.length() - sectorNameLength);
@@ -583,25 +585,47 @@ public class AfpLoader extends AbstractLoader {
                     if (sector == null) {
                         sector = addChild(site, NodeTypes.SECTOR, sectorName, sectorName);
                     }
-                    setIndexProperty(header, sector, "nonrelevant", nonrelevant);
-                    setIndexProperty(header, sector, "numberoffreqenciesrequired", numberoffreqenciesrequired);
-                    setIndexProperty(header, sector, "numberoffrequenciesgiven", numberoffrequenciesgiven);
+                    
+                    Node trxNode = null;
+                    Traverser traverser = Utils.getTrxTraverser(sector);
+                    for (Node trx: traverser){
+                    	if (trx.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(trxName)){
+                    		trxNode = trx;
+                    		break;
+                    	}
+                    }
+                    
+                    if (trxNode == null){
+                    	trxNode = addChild(sector, NodeTypes.TRX, trxName, trxName);
+                    }
+                    
+                    setIndexProperty(header, trxNode, "nonrelevant", nonrelevant);
+                    setIndexProperty(header, trxNode, "numberoffreqenciesrequired", numberoffreqenciesrequired);
+                    setIndexProperty(header, trxNode, "numberoffrequenciesgiven", numberoffrequenciesgiven);
                     String band = (String)sector.getProperty("band", "");
                     if (band.contains(" "))
                     	band = band.split("\\s")[1];
                     AweConsolePlugin.info("Adding TRX and FREQ for sector " + sectorName);
-                	Traverser traverser = Utils.getTrxTraverser(sector);
-                	int j = 0;
-                	for (Node trx: traverser){
-                		if(j >= frq.length)
-                			break;
-                		Node planNode = Utils.createPlan(trx, new int[]{j}, Long.toString(time), service);
-                        if(prevFreqNode != null) {
-                        	prevFreqNode.createRelationshipTo(planNode, NetworkRelationshipTypes.NEXT);
-                 	   }
-                        prevFreqNode = planNode;
-                        j++;
-                	}
+                    
+                    for (int j = 0; j < frq.length; j++){
+                    	Node planNode = Utils.createPlan(trxNode, new int[]{j}, Long.toString(time), service);
+                      if(prevFreqNode != null) {
+                      	prevFreqNode.createRelationshipTo(planNode, NetworkRelationshipTypes.NEXT);
+               	   }
+                      prevFreqNode = planNode;
+                    }
+//                	Traverser traverser = Utils.getTrxTraverser(sector);
+//                	int j = 0;
+//                	for (Node trx: traverser){
+//                		if(j >= frq.length)
+//                			break;
+//                		Node planNode = Utils.createPlan(trx, new int[]{j}, Long.toString(time), service);
+//                        if(prevFreqNode != null) {
+//                        	prevFreqNode.createRelationshipTo(planNode, NetworkRelationshipTypes.NEXT);
+//                 	   }
+//                        prevFreqNode = planNode;
+//                        j++;
+//                	}
 //                    for(int j=0; j< frq.length;j++) {
 //                    	
 //                        Node trx = Utils.findOrCreateCarrier(sector, j, band, service);//networkService.getTRXNode(sector, ""+j, 0);

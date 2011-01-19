@@ -183,7 +183,6 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 		if(filterTable != null) {
 			filterTable.removeAll();
 			if (model.getTotalHoppingTRX() == 0){
-				filterTable.removeAll();
 				this.updateTRXFilterLabel(0, 0);
 			}
 			else{
