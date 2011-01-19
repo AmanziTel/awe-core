@@ -12,8 +12,10 @@
  */
 package org.amanzi.neo.services.node2node;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.amanzi.neo.services.AbstractService;
@@ -22,6 +24,7 @@ import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.utils.AggregateRules;
 import org.amanzi.neo.services.utils.Utils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
@@ -259,19 +262,108 @@ public class NodeToNodeRelationService extends AbstractService {
        return td.traverse(network);
     }
 
+    /**
+     * Gets the neighbhur traverser.
+     *
+     * @param rootNode the n2n root node
+     * @param additionalEvaluator the additional evaluator
+     * @return the neigh traverser
+     */
     public Traverser getNeighTraverser(Node rootNode, Evaluator additionalEvaluator) {
-        TraversalDescription td = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst().relationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING).relationships(GeoNeoRelationshipTypes.NEXT,Direction.OUTGOING).relationships(NodeToNodeRelationshipTypes.PROXYS,Direction.OUTGOING).evaluator(new Evaluator() {
+        TraversalDescription td = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst()
+                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
+                .relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)
+                .relationships(NodeToNodeRelationshipTypes.PROXYS, Direction.OUTGOING).evaluator(new Evaluator() {
+
+                    @Override
+                    public Evaluation evaluate(Path arg0) {
+                        boolean includes = arg0.lastRelationship() != null
+                                && arg0.lastRelationship().isType(NodeToNodeRelationshipTypes.PROXYS);
+                        boolean prune = includes
+                                || (arg0.length() == 1 && !arg0.lastRelationship().isType(GeoNeoRelationshipTypes.CHILD))
+                                || (arg0.length() > 1 && !arg0.lastRelationship().isType(GeoNeoRelationshipTypes.NEXT));
+                        return Evaluation.of(includes, !prune);
+                    }
+                });
+        if (additionalEvaluator != null) {
+            td.evaluator(additionalEvaluator);
+        }
+        return td.traverse(rootNode);
+    }
+
+    /**
+     * Gets the serv traverser.
+     *
+     * @param rootNode the n2n root node
+     * @param evaluator the evaluator
+     * @return the serv traverser
+     */
+    public Traverser getServTraverser(Node rootNode, Evaluator additionalEvaluator) {
+        TraversalDescription td = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst()
+                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
+                .relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).evaluator(new Evaluator() {
+
+                    @Override
+                    public Evaluation evaluate(Path arg0) {
+                         boolean prune =  (arg0.length() == 1 && !arg0.lastRelationship().isType(GeoNeoRelationshipTypes.CHILD))
+                                || (arg0.length() > 1 && !arg0.lastRelationship().isType(GeoNeoRelationshipTypes.NEXT));
+                         boolean includes = !prune&&arg0.length()>0&&arg0.endNode().hasRelationship(NodeToNodeRelationshipTypes.PROXYS,Direction.OUTGOING);
+                        return Evaluation.of(includes, !prune);
+                    }
+                });
+        if (additionalEvaluator != null) {
+            td.evaluator(additionalEvaluator);
+        }
+        return td.traverse(rootNode);
+
+    }
+
+    /**
+     * Gets the serv exist property evaluator.
+     *
+     * @param propName the prop name
+     * @return the serv exist property evaluator
+     */
+    public static Evaluator getServExistPropertyEvaluator(final String propName) {
+        return new Evaluator() {
             
             @Override
             public Evaluation evaluate(Path arg0) {
-                boolean includes=arg0.lastRelationship()!=null&&arg0.lastRelationship().isType(NodeToNodeRelationshipTypes.PROXYS);
-                boolean prune=includes||(arg0.length()==1&&!arg0.lastRelationship().isType(GeoNeoRelationshipTypes.CHILD))||(arg0.length()>1&&!arg0.lastRelationship().isType(GeoNeoRelationshipTypes.NEXT));
-                return Evaluation.of(includes, !prune);
+                for (Relationship rel:arg0.endNode().getRelationships(NodeToNodeRelationshipTypes.PROXYS,Direction.OUTGOING)){
+                    if (rel.hasProperty(propName)){
+                        return Evaluation.of(true, true);
+                    }
+                }
+                return Evaluation.of(false, true);
             }
-        });
-           if (additionalEvaluator!=null){
-               td.evaluator(additionalEvaluator);
-           }
-           return td.traverse(rootNode);
+        };
+    }
+
+    /**
+     * Gets the serv aggregated values.
+     *
+     * @param <T> the generic type
+     * @param klass the klass
+     * @param rule the rule
+     * @param serv the serv
+     * @param propertyName the property name
+     * @return the serv aggregated values
+     */
+    @SuppressWarnings("unchecked")
+    public <T>T getServAggregatedValues(Class<T> klass, AggregateRules rule, Node serv, String propertyName) {
+        List<T> values=new ArrayList<T>();
+        for (Relationship rel:serv.getRelationships(NodeToNodeRelationshipTypes.PROXYS,Direction.OUTGOING)){
+            try {
+                T value=(T)rel.getProperty(propertyName,null);
+                if (value!=null){
+                    values.add(value);
+                }
+            } catch (ClassCastException e) {
+                //TODO handle exception
+                e.printStackTrace();
+                continue;
+            }
+        }
+        return Utils.getAggregatedValue(klass,rule,values);
     }
 }

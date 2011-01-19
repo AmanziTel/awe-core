@@ -67,7 +67,10 @@ public class NetworkModel {
 	}
 	
 	public NodeToNodeRelationModel getTriangulation(String name) {
-		return getNodeToNodeRelationModel(NodeToNodeTypes.TRIANGULATION, name);
+	    return getNodeToNodeRelationModel(NodeToNodeTypes.TRIANGULATION, name);
+	}
+	public NodeToNodeRelationModel getTransmission(String name) {
+		return getNodeToNodeRelationModel(NodeToNodeTypes.TRANSMISSION, name);
 	}
     
     public Node findSector(String name) {

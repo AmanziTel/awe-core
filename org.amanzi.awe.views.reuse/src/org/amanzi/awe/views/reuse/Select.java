@@ -12,6 +12,8 @@
  */
 package org.amanzi.awe.views.reuse;
 
+import org.amanzi.neo.services.utils.AggregateRules;
+
 /**
  * <p>
  * Selection type of 'ms' node
@@ -23,26 +25,37 @@ package org.amanzi.awe.views.reuse;
 public enum Select {
 
     /** Select node with max value */
-    MAX("max","maximum value"),
+    MAX("max","maximum value",AggregateRules.MAX),
     /** Select node with min value */
-    MIN("min","minimum value"),
+    MIN("min","minimum value",AggregateRules.MIN),
     /** Select AVERAGE value of nodes */
-    AVERAGE("average","average value"),
+    AVERAGE("average","average value",AggregateRules.AVERAGE),
     /** Select EXISTS algorithm */
-    EXISTS("exists","existance"),
+    EXISTS("exists","existance",AggregateRules.EXIST),
     /** Select FIRST value of nodes */
-    FIRST("first","first value");
+    FIRST("first","first value",AggregateRules.FIRST);
     private final String value;
     private final String description;
+    private final AggregateRules rule;
 
     /**
      * Constructor
      * 
      * @param value - string value
      */
-    private Select(String value,String description) {
+    private Select(String value,String description,AggregateRules rule) {
         this.value = value;
         this.description = description;
+        this.rule = rule;
+    }
+
+    /**
+     * Gets the rule.
+     *
+     * @return the rule
+     */
+    public AggregateRules getRule() {
+        return rule;
     }
 
     /**

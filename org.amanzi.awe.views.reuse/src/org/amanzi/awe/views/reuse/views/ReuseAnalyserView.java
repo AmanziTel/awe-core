@@ -1403,40 +1403,39 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
      * @param root - selected node
      */
     private void formPropertyList(Object root) {
-        if (root instanceof Node){
-            Node rootNode=(Node)root;
-        aggregatedProperties.clear();
-        propertyList = new ArrayList<String>();
-        IPropertyHeader propertyHeader = PropertyHeader.getPropertyStatistic(rootNode);
-        allFields = Arrays.asList(propertyHeader.getAllFields("-main-type-"));
-        final String nodeTypeId = getNodeTypeId(rootNode);
-        numericFields = Arrays.asList(propertyHeader.getNumericFields(nodeTypeId));
-        propertyList.addAll(allFields);
-        propertyList.addAll(propertyHeader.getNeighbourList());
-        String[] channels = propertyHeader.getAllChannels();
-        if (channels != null && channels.length > 0) {
-            aggregatedProperties.put(INeoConstants.PROPERTY_ALL_CHANNELS_NAME, channels);
-            propertyList.add(INeoConstants.PROPERTY_ALL_CHANNELS_NAME);
-        }
-        
-        Predicate<org.neo4j.graphdb.Path> propertyReturnableEvalvator = new Predicate<org.neo4j.graphdb.Path>() {
-
-            @Override
-            public boolean accept(org.neo4j.graphdb.Path item) {
-                return item.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(nodeTypeId);
+        if (root instanceof Node) {
+            Node rootNode = (Node)root;
+            aggregatedProperties.clear();
+            propertyList = new ArrayList<String>();
+            IPropertyHeader propertyHeader = PropertyHeader.getPropertyStatistic(rootNode);
+            allFields = Arrays.asList(propertyHeader.getAllFields("-main-type-"));
+            final String nodeTypeId = getNodeTypeId(rootNode);
+            numericFields = Arrays.asList(propertyHeader.getNumericFields(nodeTypeId));
+            propertyList.addAll(allFields);
+            propertyList.addAll(propertyHeader.getNeighbourList());
+            String[] channels = propertyHeader.getAllChannels();
+            if (channels != null && channels.length > 0) {
+                aggregatedProperties.put(INeoConstants.PROPERTY_ALL_CHANNELS_NAME, channels);
+                propertyList.add(INeoConstants.PROPERTY_ALL_CHANNELS_NAME);
             }
-        };
 
-        propertyList = new PropertyFilterModel().filerProperties(gisCombo.getText(), propertyList);
-        model = new ReuseAnalyserModel(aggregatedProperties, propertyReturnableEvalvator, NeoServiceProviderUi.getProvider()
-                .getService());
-        }else{
-            ISelectionInformation inf=(ISelectionInformation)root;
+            Predicate<org.neo4j.graphdb.Path> propertyReturnableEvalvator = new Predicate<org.neo4j.graphdb.Path>() {
+
+                @Override
+                public boolean accept(org.neo4j.graphdb.Path item) {
+                    return item.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(nodeTypeId);
+                }
+            };
+
+            propertyList = new PropertyFilterModel().filerProperties(gisCombo.getText(), propertyList);
+            model = new ReuseAnalyserModel(aggregatedProperties, propertyReturnableEvalvator, NeoServiceProviderUi.getProvider().getService());
+        } else {
+            ISelectionInformation inf = (ISelectionInformation)root;
             propertyList = new ArrayList<String>();
             propertyList.addAll(inf.getPropertySet());
             propertyList = new PropertyFilterModel().filerProperties(gisCombo.getText(), propertyList);
             Collections.sort(propertyList);
-            model = new ReuseAnalyserModel(inf);         
+            model = new ReuseAnalyserModel(inf);
         }
         setVisibleForChart(false);
     }

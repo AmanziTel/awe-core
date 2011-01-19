@@ -25,14 +25,13 @@ import org.amanzi.neo.services.statistic.IStatistic;
 import org.neo4j.graphdb.Node;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ *Provide works with node2node models
  * </p>
  * @author TsAr
  * @since 1.0.0
  */
-public class Node2NodeelectionInformation implements ISelectionInformation {
+public class Node2NodeSelectionInformation implements ISelectionInformation {
 
     private final String node2NodeDescripttion;
     private Node root;
@@ -40,15 +39,19 @@ public class Node2NodeelectionInformation implements ISelectionInformation {
     private Map<String,IPropertyInformation> propertyMap=new HashMap<String,IPropertyInformation>();
     private String name;
     private final NodeToNodeRelationModel model;
+    private boolean isAggregated;
+
 
     /**
-     * @param root 
-     * @param statistic
-     * @param model
-     * @param nodeType
-     * @param node2NodeDescripttion
+     * Instantiates a new node2 node selection information.
+     *
+     * @param root the root
+     * @param statistic the statistic
+     * @param model the model
+     * @param nodeType the node type
+     * @param node2NodeDescripttion the node2 node descripttion
      */
-    public Node2NodeelectionInformation(Node root, IStatistic statistic, NodeToNodeRelationModel model, String nodeType, String node2NodeDescripttion) {
+    public Node2NodeSelectionInformation(Node root, IStatistic statistic, NodeToNodeRelationModel model, String nodeType, String node2NodeDescripttion) {
         this.model = model;
         this.node2NodeDescripttion = node2NodeDescripttion;
         this.name=model.getName();
@@ -87,7 +90,7 @@ public class Node2NodeelectionInformation implements ISelectionInformation {
 
     @Override
     public boolean isAggregated() {
-        return false;
+        return true;
     }
 
     @Override

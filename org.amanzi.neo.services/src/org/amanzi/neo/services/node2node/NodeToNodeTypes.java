@@ -19,9 +19,10 @@ package org.amanzi.neo.services.node2node;
  * @since 1.0.0
  */
 public enum NodeToNodeTypes implements INodeToNodeType {
+    //TODO add serv/neigh node type id 
 	INTERFERENCE_MATRIX,
 	SHADOWING,
 	NEIGHBOURS,
-	TRIANGULATION;
+	TRIANGULATION,TRANSMISSION;
 
 }

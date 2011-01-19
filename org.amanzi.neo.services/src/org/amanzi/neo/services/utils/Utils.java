@@ -112,7 +112,93 @@ public class Utils {
     public static String getTimeIndexName(String datasetName) {
         return TIMESTAMP_INDEX_NAME + datasetName;
     }
-
+     
+     /**
+      * Gets the aggregated value.
+      *
+      * @param <T> the generic type
+      * @param klass the klass
+      * @param rule the rule
+      * @param values the values
+      * @return the aggregated value
+      */
+     public static <T> T getAggregatedValue(Class<T> klass, AggregateRules rule,List<T> values){
+         if (values.isEmpty()){
+             return null;
+         }
+         switch (rule) {
+        case FIRST:
+            return values.get(0);
+        case EXIST:
+            return values.get(0);
+        default:
+            if (Comparable.class.isAssignableFrom(klass)){
+                switch (rule) {
+                case MAX:
+                    T max=null;
+                    for (T value:values){
+                        if (max==null||((Comparable)max).compareTo((Comparable)value)<0){
+                            max=value;
+                        }
+                    }
+                    return max;
+                case MIN:
+                    T min=null;
+                    for (T value:values){
+                        if (min==null||((Comparable)min).compareTo((Comparable)value)>0){
+                            min=value;
+                        }
+                    }
+                    return min;
+                //AVERAGE
+                default:
+                    if (Number.class.isAssignableFrom(klass)){
+                        double sum=0;
+                        for (T value:values){
+                            sum+=((Number)value).doubleValue();
+                        }
+                        double average=sum/values.size();
+                        return convertDoubleToClass(klass,average);
+                    }else{
+                        //TODO throw exceptions?
+                        return getAggregatedValue(klass, AggregateRules.FIRST,values);  
+                    }
+                }
+                
+            }else{
+              //TODO throw exceptions?
+                return getAggregatedValue(klass, AggregateRules.FIRST,values);
+            }
+        }
+     }
+     
+     /**
+      * Convert double to class.
+      *
+      * @param <T> the generic type
+      * @param klass the klass
+      * @param value the value
+      * @return the t
+      */
+     public static <T> T convertDoubleToClass(Class<T> klass,Double value){
+         if (klass==Double.class||value==null){
+             return (T)value;
+         }else if (klass==Integer.class){
+             return (T)new Integer(value.intValue());
+         }else if (klass==Long.class){
+             return (T)new Long(value.longValue());
+         }else if (klass==Float.class){
+             return (T)new Float(value.floatValue());
+         }else if (klass==Byte.class){
+             return (T)new Byte(value.byteValue());
+         }else if (klass==Short.class){
+             return (T)new Short(value.shortValue());
+         }else if (klass==String.class){
+             return (T)value.toString();
+         }else{
+             throw new UnsupportedOperationException();
+         }
+     }
     /**
      * gets name of location index.
      * 

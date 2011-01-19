@@ -116,4 +116,8 @@ public class NodeToNodeRelationModel {
     public Traverser getNeighTraverser(Evaluator evaluator) {
         return node2nodeRelationService.getNeighTraverser(rootNode,evaluator);
     }
+
+    public Traverser getServTraverser(Evaluator evaluator) {
+        return node2nodeRelationService.getServTraverser(rootNode,evaluator);
+    }
 }
