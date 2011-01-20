@@ -184,6 +184,7 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 			filterTable.removeAll();
 			if (model.getTotalHoppingTRX() == 0){
 				this.updateTRXFilterLabel(0, 0);
+				updateLabels();
 			}
 			else{
 			
@@ -241,6 +242,11 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 			    		
 			    		if (!includeFlag)
 				    		continue;
+			    		
+			    		if (!model.getChanneltypes()[AfpModel.CHANNEL_BCCH]){
+				    		if ((Boolean)trxNode.getProperty(INeoConstants.PROPERTY_BCCH_NAME, false))
+				    			continue;
+				    	}
 			    		
 			    		
 				    	if ((Integer)trxNode.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) < 1)

@@ -904,7 +904,7 @@ public class AfpModel {
 	/**
 	 * @param siteSeparationDomains the siteSeparationDomains to set
 	 */
-	private void setSiteSeparationDomains(HashMap<String,AfpSeparationDomainModel> siteSeparationDomains) {
+	public void setSiteSeparationDomains(HashMap<String,AfpSeparationDomainModel> siteSeparationDomains) {
 		this.siteSeparationDomains = siteSeparationDomains;
 	}
 
@@ -965,7 +965,7 @@ public class AfpModel {
 	/**
 	 * @param sectorSeparationDomains the sectorSeparationDomains to set
 	 */
-	private void setSectorSeparationDomains(
+	public void setSectorSeparationDomains(
 			HashMap<String,AfpSeparationDomainModel> sectorSeparationDomains) {
 		this.sectorSeparationDomains = sectorSeparationDomains;
 	}
