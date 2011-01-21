@@ -445,15 +445,15 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
                 String columnName = "";
                 String headerName = null;
                 if (propertyName.equals("name")) {
-                    headerName = getMapPropertyNameHeader().get(propertyName + "_" + type);
+                    headerName = ExportNetworkWizard.getMapPropertyNameHeader().get(propertyName + "_" + type);
                 }
                 else {
-                    headerName = getMapPropertyNameHeader().get(propertyName);
+                    headerName = ExportNetworkWizard.getMapPropertyNameHeader().get(propertyName);
                 }
                 
                 String[] headers = null;
                 if (headerName != null) {
-                     headers = getPossibleHeaders(headerName);
+                     headers = ExportNetworkWizard.getPossibleHeaders(headerName);
                 }
 
                 if (headers != null) {
@@ -464,52 +464,6 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
         }
         propertyList.clear();
         propertyList.addAll(rows);
-    }
-    
-    /**
-     * Kasnitskij_V:
-     *
-     * @return return map in which key = propertyName and value = name of header
-     */
-    private HashMap<String, String> getMapPropertyNameHeader() {
-        Map<String, String> map = new HashMap<String, String>();
-        map.put("name_site", DataLoadPreferences.NH_SITE);
-        map.put("name_sector", DataLoadPreferences.NH_SECTOR);
-        map.put("lat", DataLoadPreferences.NH_LATITUDE);
-        map.put("lon", DataLoadPreferences.NH_LONGITUDE);
-        map.put("ci", DataLoadPreferences.NH_SECTOR_CI);
-        map.put("lac", DataLoadPreferences.NH_SECTOR_LAC);
-        map.put("beamwidth", DataLoadPreferences.NH_BEAMWIDTH);
-        map.put("azimuth", DataLoadPreferences.NH_AZIMUTH);
-        map.put("city", DataLoadPreferences.NH_CITY);
-        map.put("msc", DataLoadPreferences.NH_MSC);
-        map.put("bsc", DataLoadPreferences.NH_BSC);
-        
-        return (HashMap<String, String>)map;
-    }
-    
-    /**
-     * Kasnitskij_V:
-     * 
-     * Get synonyms to header
-     * 
-     * @param header -header of value from preference store
-     * @return array of possible headers
-     */
-    private String[] getPossibleHeaders(String header) {
-        String text = NeoLoaderPlugin.getDefault().getPreferenceStore().getString(header);
-        if (text == null) {
-            return new String[0];
-        }
-        String[] array = text.split(",");
-        List<String> result = new ArrayList<String>();
-        for (String string : array) {
-            String value = string.trim();
-            if (!value.isEmpty()) {
-                result.add(value);
-            }
-        }
-        return result.toArray(new String[0]);
     }
 
     /**

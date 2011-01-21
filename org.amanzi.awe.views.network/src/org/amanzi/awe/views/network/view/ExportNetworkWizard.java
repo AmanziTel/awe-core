@@ -17,12 +17,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.neo.loader.core.LoaderUtils;
+import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
@@ -217,7 +221,7 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                 for (String headerType : headers) {
                     Map<String, String> propertyCol = propertyMap.get(headerType);
                     if(propertyCol == null)
-                    	continue;
+                        continue;
                     for (String col : propertyCol.values()) {
                         fields.add(col);
                     }
@@ -227,15 +231,31 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                 while (iter.hasNext()) {
                     fields.clear();
                     Path path = iter.next();
+                    int currentIndex = 1;
                     for (Node node : path.nodes()) {
                         INodeType nodeType = datasetService.getNodeType(node);
                         if (nodeType == NodeTypes.NETWORK) {
                             continue;
                         }
                         Map<String, String> propertyCol = propertyMap.get(nodeType.getId());
+                        int i = 0, index = 0;
+                        while (!nodeType.getId().equals(strtypes[i])) {
+                            if (propertyMap.get(strtypes[i]) == null)
+                                index++;
+                            else
+                                index += propertyMap.get(strtypes[i]).keySet().size();
+                            i++;
+                        }
                         if (propertyCol != null) {
+                            if (currentIndex != index) {
+                                for (int j = 0; j < index - currentIndex; j++) {
+                                    fields.add("");
+                                }
+                                currentIndex += (index - currentIndex);
+                            }
                             for (String propertyName : propertyCol.keySet()) {
                                 fields.add(String.valueOf(node.getProperty(propertyName, "")));
+                                currentIndex++;
                             }
                         }
                     }
@@ -246,5 +266,54 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
             }
 
         }
+    }
+    
+    /**
+     * Kasnitskij_V:
+     * 
+     * Get synonyms to header
+     * 
+     * @param header -header of value from preference store
+     * @return array of possible headers
+     */
+    protected static String[] getPossibleHeaders(String header) {
+        if (header == null) {
+            return new String[0];
+        }
+        String text = NeoLoaderPlugin.getDefault().getPreferenceStore().getString(header);
+        if (text == null) {
+            return new String[0];
+        }
+        String[] array = text.split(",");
+        List<String> result = new ArrayList<String>();
+        for (String string : array) {
+            String value = string.trim();
+            if (!value.isEmpty()) {
+                result.add(value);
+            }
+        }
+        return result.toArray(new String[0]);
+    }
+    
+    /**
+     * Kasnitskij_V:
+     *
+     * @return return map in which key = propertyName and value = name of header
+     */
+    protected static HashMap<String, String> getMapPropertyNameHeader() {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("name_site", DataLoadPreferences.NH_SITE);
+        map.put("name_sector", DataLoadPreferences.NH_SECTOR);
+        map.put("lat", DataLoadPreferences.NH_LATITUDE);
+        map.put("lon", DataLoadPreferences.NH_LONGITUDE);
+        map.put("ci", DataLoadPreferences.NH_SECTOR_CI);
+        map.put("lac", DataLoadPreferences.NH_SECTOR_LAC);
+        map.put("beamwidth", DataLoadPreferences.NH_BEAMWIDTH);
+        map.put("azimuth", DataLoadPreferences.NH_AZIMUTH);
+        map.put("city", DataLoadPreferences.NH_CITY);
+        map.put("msc", DataLoadPreferences.NH_MSC);
+        map.put("bsc", DataLoadPreferences.NH_BSC);
+        
+        return (HashMap<String, String>)map;
     }
 }
