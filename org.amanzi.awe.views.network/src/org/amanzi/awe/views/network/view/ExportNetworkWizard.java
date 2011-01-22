@@ -186,7 +186,8 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
         String[] strtypes = datasetService.getSructureTypesId(rootNode);
         List<String> headers = new ArrayList<String>();
-
+        List<String> usingHeadersFromStructure = new ArrayList<String>();
+        
         for (int i = 1; i < strtypes.length; i++) {
             headers.add(strtypes[i]);
         }
@@ -220,11 +221,25 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
             try {
                 for (String headerType : headers) {
                     Map<String, String> propertyCol = propertyMap.get(headerType);
-                    if(propertyCol == null)
+                    if(propertyCol == null) {
                         continue;
+                    }
+                    else {
+                        // save using headers from newtwork structure
+                        usingHeadersFromStructure.add(headerType);
+                    }
                     for (String col : propertyCol.values()) {
                         fields.add(col);
                     }
+                }
+                
+                // choose which types we write
+                int k = 1;
+                strtypes = new String[usingHeadersFromStructure.size() + 1];
+                strtypes[0] = "network";
+                for (String headerType : usingHeadersFromStructure) {
+                    strtypes[k] = headerType;
+                    k++;
                 }
 
                 writer.writeNext(fields.toArray(new String[0]));
@@ -238,6 +253,10 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                             continue;
                         }
                         Map<String, String> propertyCol = propertyMap.get(nodeType.getId());
+                        // if property exist, but not need write
+                        if (propertyCol == null) {
+                            continue;
+                        }
                         int i = 0, index = 0;
                         while (!nodeType.getId().equals(strtypes[i])) {
                             if (propertyMap.get(strtypes[i]) == null)
@@ -246,20 +265,30 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                                 index += propertyMap.get(strtypes[i]).keySet().size();
                             i++;
                         }
-                        if (propertyCol != null) {
-                            if (currentIndex != index) {
-                                for (int j = 0; j < index - currentIndex; j++) {
-                                    fields.add("");
-                                }
+                        
+                        if (currentIndex != index && propertyCol != null) {
+                            for (int j = 0; j < index - currentIndex; j++) {
+                                fields.add("");
+                            }
+                            currentIndex += (index - currentIndex);
+                        }
+                        else if (propertyCol == null) {
+                            if (index == currentIndex) {
+                                currentIndex++;
+                            }
+                            else {
                                 currentIndex += (index - currentIndex);
                             }
+                        }
+                        if (propertyCol != null) {
                             for (String propertyName : propertyCol.keySet()) {
                                 fields.add(String.valueOf(node.getProperty(propertyName, "")));
                                 currentIndex++;
-                            }
+                            }   
                         }
                     }
-                    writer.writeNext(fields.toArray(new String[0]));
+                    if (fields.size() != 0)
+                        writer.writeNext(fields.toArray(new String[0]));
                 }
             } finally {
                 writer.close();
