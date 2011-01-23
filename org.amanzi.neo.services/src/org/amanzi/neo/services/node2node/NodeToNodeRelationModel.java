@@ -124,6 +124,6 @@ public class NodeToNodeRelationModel {
         return node2nodeRelationService.getNetworkNode(rootNode);
     }
     public String getDescription() {
-        return String.format("Network $s %s %s", datasetService.getNodeName(getNetworkNode()),getType().name(),getName());
+        return String.format("Network %s %s %s", datasetService.getNodeName(getNetworkNode()),getType().name(),getName());
     }
 }

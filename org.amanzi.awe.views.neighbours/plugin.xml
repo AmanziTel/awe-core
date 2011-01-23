@@ -11,6 +11,13 @@
             class="org.amanzi.awe.views.neighbours.views.NeighboursView"
             id="org.amanzi.awe.views.neighbours.views.NeighboursView">
       </view>
+      <view
+            category="org.amanzi.awe.script"
+            class="org.amanzi.awe.views.neighbours.views.Node2NodeViews"
+            icon="icons/neighbour.png"
+            id="org.amanzi.awe.views.neighbours.views.Node2NodeViews"
+            name="n2n">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.views">

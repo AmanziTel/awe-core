@@ -372,19 +372,17 @@ public class NodeToNodeRelationService extends AbstractService {
         return rel==null?null:rel.getOtherNode(rootNode);
     }
 
-    /**
-     * Gets the relation traverser by serv node.
-     *
-     * @param filteredServNodes the filtered serv nodes
-     * @return the relation traverser by serv node
-     */
+    public Iterable<Relationship> getOutgoingRelation(Node servNode) {
+        return servNode.getRelationships(NodeToNodeRelationshipTypes.PROXYS,Direction.OUTGOING);
+    }
+//TODO why do not work with 2 traverser?
     public Iterable<Relationship> getRelationTraverserByServNode(final Iterable<Node> filteredServNodes) {
         return new Iterable<Relationship>() {
             
             @Override
             public Iterator<Relationship> iterator() {
                 return new Iterator<Relationship>() {
-                    Iterator<Node> itr = filteredServNodes.iterator();
+                    Iterator<Node> itr1 = null;
                     Iterator<Relationship> itr2 = null;
                     private Relationship next=null;
                     @Override
@@ -407,9 +405,13 @@ public class NodeToNodeRelationService extends AbstractService {
                         if (next!=null){
                             return true;
                         }
+                        if (itr1==null){
+                            itr1=filteredServNodes.iterator();
+                        }
                         while(itr2==null||!itr2.hasNext()){
-                            if (itr.hasNext()){
-                                itr2=itr.next().getRelationships(NodeToNodeRelationshipTypes.PROXYS,Direction.OUTGOING).iterator();
+                            if (itr1.hasNext()){
+                                Node next2 = itr1.next();
+                                itr2=next2.getRelationships(NodeToNodeRelationshipTypes.PROXYS,Direction.OUTGOING).iterator();
                             }else{
                                 break;
                             }

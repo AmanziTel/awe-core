@@ -472,8 +472,13 @@ public class NetworkService extends AbstractService {
 
             @Override
             public Iterable<Node> getFilteredServNodes(NodeToNodeRelationModel models) {
+                //2 traverser not work!
                 //this is get ALL modeks filter - not necessary check exist models in  getModels()!
-                return models.getServTraverser(null).nodes();
+                List<Node> result=new LinkedList<Node>();
+                for (Node node:models.getServTraverser(null).nodes()){
+                    result.add(node);
+                }
+                return result;
             }
         };
     }

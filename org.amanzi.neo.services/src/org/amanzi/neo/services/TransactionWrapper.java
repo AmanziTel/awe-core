@@ -1,3 +1,15 @@
+/* AWE - Amanzi Wireless Explorer
+ * http://awe.amanzi.org
+ * (C) 2008-2009, AmanziTel AB
+ *
+ * This library is provided under the terms of the Eclipse Public License
+ * as described at http://www.eclipse.org/legal/epl-v10.html. Any use,
+ * reproduction or distribution of the library constitutes recipient's
+ * acceptance of this agreement.
+ *
+ * This library is distributed WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ */
 package org.amanzi.neo.services;
 
 import java.util.concurrent.Callable;
@@ -9,8 +21,18 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.neo4j.graphdb.Transaction;
-
+/**
+ * 
+ * <p>
+ *Wrapper for working code in one thread
+ * </p>
+ * @author TsAr
+ * @since 1.0.0
+ */
 public class TransactionWrapper {
+    public void setChanged(boolean isChanged) {
+        this.isChanged = isChanged;
+    }
     private ExecutorService executor;
     private Thread thread;
     private org.neo4j.graphdb.Transaction tx;
@@ -98,11 +120,11 @@ public class TransactionWrapper {
         super.finalize();
     }
     public <T> Future<T>  submit(Callable<T> task){
-        isChanged=true;
+//        isChanged=true;
         return executor.submit(task);
     }
     public Future<?> submit(Runnable task){
-        isChanged=true;
+//        isChanged=true;
         return executor.submit(task);
     }
     public  void stop(boolean isCommit) {

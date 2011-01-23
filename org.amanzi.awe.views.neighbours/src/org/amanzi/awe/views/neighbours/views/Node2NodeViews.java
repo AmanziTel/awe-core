@@ -20,12 +20,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 import org.amanzi.awe.ui.AweUiPlugin;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.TransactionWrapper;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.node2node.INode2NodeFilter;
 import org.amanzi.neo.services.node2node.Node2NodeSelectionInformation;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
@@ -36,9 +39,13 @@ import org.amanzi.neo.services.statistic.StatisticManager;
 import org.amanzi.neo.services.ui.IconManager;
 import org.amanzi.neo.services.utils.RunnableWithResult;
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -53,6 +60,7 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -70,7 +78,7 @@ import org.neo4j.graphdb.Relationship;
  * @since 1.0.0
  */
 public class Node2NodeViews extends ViewPart {
-    private static final int PAGE_SIZE =64;
+    private static final int PAGE_SIZE = 64;
     private IStatistic statistic;
     private Table table;
     private NodeToNodeRelationModel n2nModel;
@@ -129,7 +137,7 @@ public class Node2NodeViews extends ViewPart {
         });
         commit.setToolTipText("Commit");
         commit.setImage(IconManager.getIconManager().getCommitImage());
-
+        commit.setEnabled(false);
         rollback = new Button(main, SWT.BORDER | SWT.PUSH);
         rollback.setImage(IconManager.getIconManager().getRollbackImage());
         rollback.addSelectionListener(new SelectionListener() {
@@ -145,6 +153,7 @@ public class Node2NodeViews extends ViewPart {
             }
         });
         rollback.setToolTipText("Rollback");
+        rollback.setEnabled(false);
         table = new Table(main, SWT.VIRTUAL | SWT.BORDER);
         table.addListener(SWT.SetData, new Listener() {
 
@@ -153,10 +162,70 @@ public class Node2NodeViews extends ViewPart {
                 setData(event);
             }
         });
+        table.setHeaderVisible(true);
+        table.setLinesVisible(true);
         table.setItemCount(0);
         layoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1);
         table.setLayoutData(layoutData);
         setFilter(networks.getAllNode2NodeFilter(AweUiPlugin.getDefault().getUiService().getActiveProjectNode()));
+        final TableEditor editor = new TableEditor(table);
+        // The editor must have the same size as the cell and must
+        // not be any smaller than 50 pixels.
+        editor.horizontalAlignment = SWT.LEFT;
+        editor.grabHorizontal = true;
+        editor.minimumWidth = 50;
+        // editing the second column
+        table.addListener(SWT.MouseDown, new Listener() {
+            public void handleEvent(Event event) {
+                Rectangle clientArea = table.getClientArea();
+                Point pt = new Point(event.x, event.y);
+                int index = table.getTopIndex();
+                while (index < table.getItemCount()) {
+                    boolean visible = false;
+                    final TableItem item = table.getItem(index);
+                    for (int i = 2; i < table.getColumnCount(); i++) {
+                        Rectangle rect = item.getBounds(i);
+                        if (rect.contains(pt)) {
+                            final int column = i;
+                            final Text text = new Text(table, SWT.NONE);
+                            Listener textListener = new Listener() {
+                                public void handleEvent(final Event e) {
+                                    switch (e.type) {
+                                    case SWT.FocusOut:
+                                        setData(item, column, text);
+                                        text.dispose();
+                                        break;
+                                    case SWT.Traverse:
+                                        switch (e.detail) {
+                                        case SWT.TRAVERSE_RETURN:
+                                            setData(item, column, text);
+                                            // FALL THROUGH
+                                        case SWT.TRAVERSE_ESCAPE:
+                                            text.dispose();
+                                            e.doit = false;
+                                        }
+                                        break;
+                                    }
+                                }
+                            };
+                            text.addListener(SWT.FocusOut, textListener);
+                            text.addListener(SWT.Traverse, textListener);
+                            editor.setEditor(text, item, i);
+                            text.setText(item.getText(i));
+                            text.selectAll();
+                            text.setFocus();
+                            return;
+                        }
+                        if (!visible && rect.intersects(clientArea)) {
+                            visible = true;
+                        }
+                    }
+                    if (!visible)
+                        return;
+                    index++;
+                }
+            }
+        });
     }
 
     /**
@@ -166,12 +235,48 @@ public class Node2NodeViews extends ViewPart {
         TableItem item = (TableItem)event.item;
         int index = event.index;
         int start = index / PAGE_SIZE * PAGE_SIZE;
-        int end = Math.min (start + PAGE_SIZE, table.getItemCount ());
+        int end = Math.min(start + PAGE_SIZE, table.getItemCount());
         for (int i = start; i < end; i++) {
-            item = table.getItem (i);
-            item.setText ("Item " + i);
+            PropertyContainer cont = getElement(i);
+            item = table.getItem(i);
+            item.setData(cont);
+            item.setText(0, ds.getNodeName(((Relationship)cont).getStartNode()));
+            item.setText(1, ds.getNodeName(((Relationship)cont).getEndNode()));
+            for (int j = 2; j < colColut; j++) {
+                item.setText(j, String.valueOf(cont.getProperty(propertys.get(j - 2), "")));
+            }
         }
 
+    }
+
+    private PropertyContainer getElement(final int i) {
+        Callable<PropertyContainer> cl = new Callable<PropertyContainer>() {
+
+            @Override
+            public PropertyContainer call() {
+                if (createdIter.getIndex() - 1 > i) {
+                    createdIter = new CountedIteratorWr(n2ns.getRelationTraverserByServNode(filter.getFilteredServNodes(n2nModel)).iterator());
+                }
+                PropertyContainer res = null;
+                while (createdIter.hasNext()) {
+                    res = createdIter.next();
+                    if (createdIter.getIndex() - 1 == i) {
+                        return res;
+                    }
+                }
+                return null;
+            }
+
+        };
+        try {
+            return tx.submit(cl).get();
+        } catch (InterruptedException e) {
+            // TODO Handle InterruptedException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } catch (ExecutionException e) {
+            // TODO Handle ExecutionException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
     }
 
     /**
@@ -271,6 +376,8 @@ public class Node2NodeViews extends ViewPart {
      */
     protected void rollback() {
         tx.rollback();
+        table.clearAll();
+        transactionChange(false);
     }
 
     /**
@@ -278,6 +385,7 @@ public class Node2NodeViews extends ViewPart {
      */
     protected void commit() {
         tx.commit();
+        transactionChange(false);
     }
 
     /**
@@ -293,7 +401,7 @@ public class Node2NodeViews extends ViewPart {
     }
 
     private void formCollumns() {
-        int countRelation=0;
+        int countRelation = 0;
         table.clearAll();
         if (n2nModel == null) {
             colColut = 0;
@@ -302,45 +410,63 @@ public class Node2NodeViews extends ViewPart {
             Node networkNode = n2nModel.getNetworkNode();
             statistic = StatisticManager.getStatistic(networkNode);
             String key = n2nModel.getName();
-            Set<String> nodeTypeKey = statistic.getNodeTypeKey(key);
-            // expected nodeTypeKey.size()==1;
-            if (nodeTypeKey.isEmpty()) {
-                colColut = 0;
-            } else {
-                String nodeTypeId = nodeTypeKey.iterator().next();
-                information = new Node2NodeSelectionInformation(networkNode, statistic, n2nModel, nodeTypeId, n2nModel.getDescription());
-                Set<String> propertyNames = information.getPropertySet();
-                propertys = new ArrayList<String>();
-                propertys.addAll(propertyNames);
-                colColut = propertyNames.size() + 2;
-                while (columns.size() < colColut) {
-                    TableColumn col = new TableColumn(table, SWT.NONE);
-                    columns.add(col);
-                }
-                columns.get(0).setText("Serv node name");
-                columns.get(1).setText("Neigh node name");
-                for (int i = 2; i < colColut; i++) {
-                    String propertyName = propertys.get(i - 2);
-                    TableColumn tableColumn = columns.get(i);
-                    tableColumn.setText(propertyName);
-                    tableColumn.setToolTipText("Type " + information.getPropertyInformation(propertyName).getStatistic().getType().getName());
-                }
-                for (Relationship rel:n2ns.getRelationTraverserByServNode(filter.getFilteredServNodes(n2nModel))){
-                    countRelation++; 
-                }
-                createdIter = createCountedIter();
+            String nodeTypeId = NodeTypes.NODE_NODE_RELATIONS.getId();
+            information = new Node2NodeSelectionInformation(networkNode, statistic, n2nModel, nodeTypeId, n2nModel.getDescription());
+            Set<String> propertyNames = information.getPropertySet();
+            propertys = new ArrayList<String>();
+            propertys.addAll(propertyNames);
+            colColut = propertyNames.size() + 2;
+            while (columns.size() < colColut) {
+                TableColumn col = new TableColumn(table, SWT.NONE);
+                columns.add(col);
             }
+            columns.get(0).setText("Serv node name");
+            columns.get(1).setText("Neigh node name");
+            for (int i = 2; i < colColut; i++) {
+                String propertyName = propertys.get(i - 2);
+                TableColumn tableColumn = columns.get(i);
+                tableColumn.setText(propertyName);
+                tableColumn.setToolTipText("Type " + information.getPropertyInformation(propertyName).getStatistic().getType().getName());
+
+            }
+//            for (Node n:filter.getFilteredServNodes(n2nModel)){
+//                System.out.println(ds.getNodeName(n));
+//            }
+//            System.out.println("____");
+            
+            for (Relationship rel : n2ns.getRelationTraverserByServNode(filter.getFilteredServNodes(n2nModel))) {
+                countRelation++;
+            }
+            System.out.println(countRelation);
+            createdIter = createCountedIter();
+
         }
         resizecolumns();
         table.setItemCount(countRelation);
+        table.setVisible(countRelation > 0);
     }
 
     /**
-     *
      * @return
      */
     protected CountedIteratorWr createCountedIter() {
-        return new CountedIteratorWr(n2ns.getRelationTraverserByServNode(filter.getFilteredServNodes(n2nModel)).iterator());
+
+        try {
+            return tx.submit(new Callable<CountedIteratorWr>() {
+
+                @Override
+                public CountedIteratorWr call() {
+                    return new CountedIteratorWr(n2ns.getRelationTraverserByServNode(filter.getFilteredServNodes(n2nModel)).iterator());
+                }
+
+            }).get();
+        } catch (InterruptedException e) {
+            // TODO Handle InterruptedException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } catch (ExecutionException e) {
+            // TODO Handle ExecutionException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
     }
 
     /**
@@ -369,15 +495,56 @@ public class Node2NodeViews extends ViewPart {
     public void setFocus() {
         n2nSelection.setFocus();
     }
-    private static class CountedIteratorWr implements Iterator<PropertyContainer>{
-        private final Iterator<? extends PropertyContainer> baseIterator;
+
+    /**
+     * @param item
+     * @param column
+     * @param text
+     */
+    protected void setData(final TableItem item, final int column, final Text text) {
+        if(StringUtils.equals(item.getText(column),text.getText())){
+            return;
+        }
+        final String propertyName = propertys.get(column - 2);
+        final PropertyContainer cont = (PropertyContainer)item.getData();
+        String key = n2nModel.getName();
+        String nodeTypeId = NodeTypes.NODE_NODE_RELATIONS.getId();
+        final Object newValue = statistic.parseValue(key, nodeTypeId, propertyName, text.getText());
+        if (statistic.updateValue(key, nodeTypeId, propertyName, newValue, cont.getProperty(propertyName, null))) {
+            Runnable task=new Runnable() {
+                @Override
+                public void run() {
+                    if (newValue == null) {
+                        cont.removeProperty(propertyName);
+                    } else {
+                        cont.setProperty(propertyName, newValue);
+                    }
+                    statistic.save();
+                }
+            };
+            tx.submit(task);
+            transactionChange(true);
+            item.setText(column, text.getText());
+        }
+    }
+
+
+    private void transactionChange(boolean isChange) {
+        tx.setChanged(isChange);
+        commit.setEnabled(isChange);
+        rollback.setEnabled(isChange);
+    }
+
+    private static class CountedIteratorWr implements Iterator<PropertyContainer> {
+        private final Iterator< ? extends PropertyContainer> baseIterator;
         private int index;
 
-        CountedIteratorWr(Iterator<? extends PropertyContainer> baseIterator){
+        CountedIteratorWr(Iterator< ? extends PropertyContainer> baseIterator) {
             this.baseIterator = baseIterator;
-            index=0;
-            
+            index = 0;
+
         }
+
         @Override
         public boolean hasNext() {
             return baseIterator.hasNext();
@@ -393,10 +560,10 @@ public class Node2NodeViews extends ViewPart {
         public void remove() {
             baseIterator.remove();
         }
+
         public int getIndex() {
             return index;
         }
-        
-        
+
     }
 }
