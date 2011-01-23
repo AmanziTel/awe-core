@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.reuse.views;
+package org.amanzi.neo.services.node2node;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -19,7 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
+import org.amanzi.neo.services.statistic.IPropertyInformation;
+import org.amanzi.neo.services.statistic.ISelectionInformation;
 import org.amanzi.neo.services.statistic.ISinglePropertyStat;
 import org.amanzi.neo.services.statistic.IStatistic;
 import org.neo4j.graphdb.Node;

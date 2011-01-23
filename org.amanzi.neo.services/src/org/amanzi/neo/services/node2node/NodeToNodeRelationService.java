@@ -371,4 +371,57 @@ public class NodeToNodeRelationService extends AbstractService {
         Relationship rel = rootNode.getSingleRelationship(NodeToNodeRelationshipTypes.SET_TO_ROOT, Direction.INCOMING);
         return rel==null?null:rel.getOtherNode(rootNode);
     }
+
+    /**
+     * Gets the relation traverser by serv node.
+     *
+     * @param filteredServNodes the filtered serv nodes
+     * @return the relation traverser by serv node
+     */
+    public Iterable<Relationship> getRelationTraverserByServNode(final Iterable<Node> filteredServNodes) {
+        return new Iterable<Relationship>() {
+            
+            @Override
+            public Iterator<Relationship> iterator() {
+                return new Iterator<Relationship>() {
+                    Iterator<Node> itr = filteredServNodes.iterator();
+                    Iterator<Relationship> itr2 = null;
+                    private Relationship next=null;
+                    @Override
+                    public void remove() {
+                        throw new UnsupportedOperationException();
+                    }
+                    
+                    @Override
+                    public Relationship next() {
+                        Relationship result=null;
+                        if (hasNext()){
+                            result=next;
+                            next=null;
+                        }
+                        return result;
+                    }
+                    
+                    @Override
+                    public boolean hasNext() {
+                        if (next!=null){
+                            return true;
+                        }
+                        while(itr2==null||!itr2.hasNext()){
+                            if (itr.hasNext()){
+                                itr2=itr.next().getRelationships(NodeToNodeRelationshipTypes.PROXYS,Direction.OUTGOING).iterator();
+                            }else{
+                                break;
+                            }
+                        }
+                        if (itr2==null||!itr2.hasNext()){
+                            return false;
+                        }
+                        next=itr2.next();
+                        return true;
+                    }
+                };
+            }
+        };
+    }
 }

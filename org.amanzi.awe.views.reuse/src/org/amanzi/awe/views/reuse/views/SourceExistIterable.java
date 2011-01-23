@@ -15,6 +15,8 @@ package org.amanzi.awe.views.reuse.views;
 
 import java.util.Iterator;
 
+import org.amanzi.neo.services.statistic.ISource;
+import org.amanzi.neo.services.statistic.SourceImpl;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.traversal.Traverser;
 

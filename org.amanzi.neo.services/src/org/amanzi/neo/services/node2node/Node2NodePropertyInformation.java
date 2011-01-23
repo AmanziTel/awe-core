@@ -11,15 +11,16 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.reuse.views;
+package org.amanzi.neo.services.node2node;
 
 import java.util.Iterator;
 
-import org.amanzi.awe.views.reuse.Select;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
-import org.amanzi.neo.services.node2node.NodeToNodeRelationService;
+import org.amanzi.neo.services.statistic.IPropertyInformation;
 import org.amanzi.neo.services.statistic.ISinglePropertyStat;
+import org.amanzi.neo.services.statistic.ISource;
+import org.amanzi.neo.services.statistic.SourceImpl;
+import org.amanzi.neo.services.utils.AggregateRules;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Relationship;
@@ -65,9 +66,9 @@ public class Node2NodePropertyInformation implements IPropertyInformation {
     }
 
     @Override
-    public Iterable<ISource> getValueIterable(Select rules) {
+    public Iterable<ISource> getValueIterable(AggregateRules rules) {
         switch (rules) {
-        case EXISTS:
+        case EXIST:
             Traverser td = model.getNeighTraverser(new Evaluator() {
                 
                 @Override
@@ -98,7 +99,7 @@ public class Node2NodePropertyInformation implements IPropertyInformation {
         private NodeToNodeRelationService n2n;
         @SuppressWarnings("rawtypes")
         private final Class klass;
-        private final Select rules;
+        private final AggregateRules rules;
 
         /**
          * @param td
@@ -106,7 +107,7 @@ public class Node2NodePropertyInformation implements IPropertyInformation {
          * @param rules 
          * @param klass 
          */
-        public AggregatedIterable(Traverser td, String propName, Select rules, @SuppressWarnings("rawtypes") Class klass) {
+        public AggregatedIterable(Traverser td, String propName, AggregateRules rules, @SuppressWarnings("rawtypes") Class klass) {
             this.td = td;
             name = propName;
             this.rules = rules;
@@ -127,7 +128,7 @@ public class Node2NodePropertyInformation implements IPropertyInformation {
                 @Override
                 public ISource next() {
                     Node serv=it.next();
-                    return new SourceImpl(serv, n2n.getServAggregatedValues(klass,rules.getRule(),serv,name));
+                    return new SourceImpl(serv, n2n.getServAggregatedValues(klass,rules,serv,name));
                 }
 
                 @Override

@@ -11,24 +11,20 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.reuse.views;
+package org.amanzi.neo.services.statistic;
 
-import java.util.Set;
-
-import org.neo4j.graphdb.Node;
+import org.amanzi.neo.services.utils.AggregateRules;
 
 /**
+ * TODO Purpose of 
  * <p>
- *Wrapper of selection information of user
+ *
  * </p>
  * @author TsAr
  * @since 1.0.0
  */
-public interface ISelectionInformation {
-    String getDescription();
-    Set<String>getPropertySet();
-    IPropertyInformation getPropertyInformation(String propertyName);
-    boolean isAggregated();
-    Node getRootNode();
-    
+public interface IPropertyInformation{
+    ISinglePropertyStat getStatistic();
+    String getPropertyName();
+    Iterable<ISource> getValueIterable(AggregateRules rules);
 }

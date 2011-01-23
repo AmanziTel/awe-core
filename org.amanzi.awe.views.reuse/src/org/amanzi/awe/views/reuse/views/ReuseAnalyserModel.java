@@ -33,7 +33,10 @@ import org.amanzi.neo.services.enums.GisTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
+import org.amanzi.neo.services.statistic.IPropertyInformation;
+import org.amanzi.neo.services.statistic.ISelectionInformation;
 import org.amanzi.neo.services.statistic.ISinglePropertyStat;
+import org.amanzi.neo.services.statistic.ISource;
 import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.neo.services.utils.Pair;
@@ -1384,7 +1387,7 @@ public class ReuseAnalyserModel {
             }
         }
         monitor.beginTask("Searching database",totalWork);
-        for (ISource source:inf.getValueIterable(rules)){
+        for (ISource source:inf.getValueIterable(rules.getRule())){
             monitor.worked(1);
             if (monitor.isCanceled())
                 break;

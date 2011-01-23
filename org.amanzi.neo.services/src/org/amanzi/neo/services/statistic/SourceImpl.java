@@ -11,14 +11,13 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.reuse.views;
+package org.amanzi.neo.services.statistic;
 
 import org.neo4j.graphdb.Node;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ *Implementation of ISource
  * </p>
  * @author TsAr
  * @since 1.0.0

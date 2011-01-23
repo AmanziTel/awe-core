@@ -19,12 +19,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.amanzi.awe.views.reuse.Select;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.statistic.IPropertyInformation;
+import org.amanzi.neo.services.statistic.ISelectionInformation;
 import org.amanzi.neo.services.statistic.ISinglePropertyStat;
+import org.amanzi.neo.services.statistic.ISource;
 import org.amanzi.neo.services.statistic.IStatistic;
+import org.amanzi.neo.services.utils.AggregateRules;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
@@ -126,7 +129,7 @@ public class BaseNetworkSelectionInformation implements ISelectionInformation {
         }
 
         @Override
-        public Iterable<ISource> getValueIterable(Select rules) {
+        public Iterable<ISource> getValueIterable(AggregateRules rules) {
             //ignore selection rules in network
              Traverser td = Traversal.description().depthFirst().relationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING).relationships(GeoNeoRelationshipTypes.NEXT,Direction.OUTGOING).evaluator(new Evaluator() {
                 
