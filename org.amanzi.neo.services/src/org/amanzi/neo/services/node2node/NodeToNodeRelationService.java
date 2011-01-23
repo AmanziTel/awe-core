@@ -366,4 +366,9 @@ public class NodeToNodeRelationService extends AbstractService {
         }
         return Utils.getAggregatedValue(klass,rule,values);
     }
+
+    public Node getNetworkNode(Node rootNode) {
+        Relationship rel = rootNode.getSingleRelationship(NodeToNodeRelationshipTypes.SET_TO_ROOT, Direction.INCOMING);
+        return rel==null?null:rel.getOtherNode(rootNode);
+    }
 }

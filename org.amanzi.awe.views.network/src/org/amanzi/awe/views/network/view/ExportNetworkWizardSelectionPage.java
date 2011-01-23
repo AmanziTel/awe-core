@@ -246,7 +246,7 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
          */
         public TreeNeoNode[] getChildren(final DatasetService service) {
 
-            Iterable<Node> networks = service.getRoots(node, new Predicate<Path>() {
+            Iterable<Node> networks = service.getRootsDepr(node, new Predicate<Path>() {
 
                 @Override
                 public boolean accept(Path item) {
@@ -302,7 +302,7 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
          * @return true, if successful
          */
         public boolean hasChildren(final DatasetService service) {
-            Iterable<Node> networks = service.getRoots(node, new Predicate<Path>() {
+            Iterable<Node> networks = service.getRootsDepr(node, new Predicate<Path>() {
 
                 @Override
                 public boolean accept(Path item) {

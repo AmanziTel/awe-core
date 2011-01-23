@@ -16,6 +16,10 @@ package org.amanzi.awe.ui;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.nodes.AweProjectNode;
+import org.neo4j.graphdb.Node;
+
 
 /**
  * TODO Purpose of 
@@ -34,5 +38,15 @@ public class UiService  {
     public String getActiveProjectName() {
         IMap map = ApplicationGIS.getActiveMap();
         return map == ApplicationGIS.NO_MAP ? ApplicationGIS.getActiveProject().getName() : map.getProject().getName();
+    }
+    /**
+     * Gets the active project name.
+     *
+     * @return the active project name
+     */
+
+    public Node getActiveProjectNode() {
+        AweProjectNode nodeWr = NeoServiceFactory.getInstance().getProjectService().findAweProject(getActiveProjectName());
+        return nodeWr==null?null:nodeWr.getUnderlyingNode();
     }
 }

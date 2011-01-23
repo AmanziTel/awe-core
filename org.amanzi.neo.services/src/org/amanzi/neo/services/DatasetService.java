@@ -46,6 +46,8 @@ import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.traversal.Evaluation;
+import org.neo4j.graphdb.traversal.Evaluator;
 import org.neo4j.graphdb.traversal.PruneEvaluator;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Traverser;
@@ -828,16 +830,39 @@ public class DatasetService extends AbstractService {
      * @param projectName the project name
      * @return the traverser
      */
-    public org.neo4j.graphdb.traversal.Traverser getRoots(final Node projectNode, Predicate<Path> additionalFilter) {
-        FilterAND filter = new FilterAND();
-        filter.addFilter(Traversal.returnAllButStartNode());
-        filter.addFilter(additionalFilter);
-
-        TraversalDescription td = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1)).filter(filter).relationships(
+    @Deprecated
+    public org.neo4j.graphdb.traversal.Traverser getRootsDepr(final Node projectNode, final Predicate<Path> additionalFilter) {
+        Evaluator ev=additionalFilter==null?null:new Evaluator() {
+            
+            @Override
+            public Evaluation evaluate(Path paramPath) {
+                return Evaluation.of(additionalFilter.accept(paramPath), true);
+            }
+        };
+        return getRoots(projectNode,ev);
+    }
+    /**
+     * Gets the traverser by all child of necessary project
+     * 
+     * @param projectName the project name
+     * @return the traverser
+     */
+    public org.neo4j.graphdb.traversal.Traverser getRoots(final Node projectNode, Evaluator additionalFilter) {
+        TraversalDescription td = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).evaluator(new Evaluator() {
+            
+            @Override
+            public Evaluation evaluate(Path paramPath) {
+                boolean includes=paramPath.length()==1;
+                boolean continues=paramPath.length()<1;
+                return Evaluation.of(includes, continues);
+            }
+        }).relationships(
                 GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING);
+        if (additionalFilter!=null){
+            td.evaluator(additionalFilter);
+        }
         return td.traverse(projectNode);
     }
-
     /**
      * Gets the node type.
      * 
@@ -1522,5 +1547,4 @@ public class DatasetService extends AbstractService {
 
         return null;
     }
-
 }

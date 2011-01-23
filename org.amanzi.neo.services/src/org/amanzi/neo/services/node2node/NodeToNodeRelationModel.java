@@ -120,4 +120,10 @@ public class NodeToNodeRelationModel {
     public Traverser getServTraverser(Evaluator evaluator) {
         return node2nodeRelationService.getServTraverser(rootNode,evaluator);
     }
+    public Node getNetworkNode(){
+        return node2nodeRelationService.getNetworkNode(rootNode);
+    }
+    public String getDescription() {
+        return String.format("Network $s %s %s", datasetService.getNodeName(getNetworkNode()),getType().name(),getName());
+    }
 }

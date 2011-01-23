@@ -109,7 +109,8 @@ public class InformationProvider {
      * @return the node2 node descripttion
      */
     private String getNode2NodeDescripttion(String networkName, NodeToNodeRelationModel model) {
-        return String.format("Network %s %s %s", networkName, model.getName(), model.getType().name());
+        return model.getDescription();
+//        return String.format("Network %s %s %s", networkName, model.getName(), model.getType().name());
     }
 
 }
