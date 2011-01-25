@@ -17,6 +17,7 @@ import java.util.Set;
 
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.core.saver.Node2NodeSaver;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.apache.commons.lang.StringUtils;
@@ -30,7 +31,7 @@ import org.neo4j.graphdb.Relationship;
  * @author tsinkel_a
  * @since 1.0.0
  */
-public class TransmissionSaver extends Node2NodeSaver {
+public class TransmissionSaver extends Node2NodeSaver<BaseTransferData> {
 
     @Override
     protected Node defineNeigh(BaseTransferData element) {

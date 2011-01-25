@@ -320,7 +320,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
                 statistic.updateTypeCount(rootname, NodeTypes.FREQUENCY_PLAN.getId(), 1);
             }
             updateProperty(rootname, NodeTypes.FREQUENCY_PLAN.getId(), trx, "hsn", hoptype);
-            Integer bcchno = (Integer)sector.getProperty("bcchno");
+            Integer bcchno = (Integer)sector.getProperty("bcchno",null);
             if (!plan.hasProperty("arfcn")) {
                 int[] arfcn = null;
                 if (isBcch) {

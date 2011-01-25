@@ -18,7 +18,7 @@ import java.util.Set;
 
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.saver.MetaData;
-import org.amanzi.neo.loader.core.saver.impl.Node2NodeSaver;
+import org.amanzi.neo.loader.core.saver.Node2NodeSaver;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.neo4j.graphdb.Node;
@@ -31,7 +31,7 @@ import org.neo4j.graphdb.Relationship;
  * @author TsAr
  * @since 1.0.0
  */
-public class InterferenceMatrixSaver extends Node2NodeSaver {
+public class InterferenceMatrixSaver extends Node2NodeSaver<BaseTransferData> {
 
     private NetworkModel networkModel;
 

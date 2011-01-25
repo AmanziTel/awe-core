@@ -11,22 +11,18 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.core.saver.impl;
+package org.amanzi.neo.loader.core.saver;
 
 import java.util.Arrays;
 import java.util.Map;
 
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
-import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
-import org.amanzi.neo.loader.core.saver.IStructuredSaver;
-import org.amanzi.neo.loader.core.saver.MetaData;
 import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
-// TODO: Auto-generated Javadoc
 /**
  * <p>
  * Abstract implementation of Node2Node saver
@@ -35,7 +31,7 @@ import org.neo4j.graphdb.Relationship;
  * @author TsAr
  * @since 1.0.0
  */
-public abstract class Node2NodeSaver extends AbstractHeaderSaver<BaseTransferData> implements IStructuredSaver<BaseTransferData>{
+public abstract class Node2NodeSaver<T extends BaseTransferData> extends AbstractHeaderSaver<T> implements IStructuredSaver<T>{
 
     /** The header not handled. */
     private boolean headerNotHandled;
@@ -55,7 +51,7 @@ public abstract class Node2NodeSaver extends AbstractHeaderSaver<BaseTransferDat
      * @param element the element
      */
     @Override
-    public void init(BaseTransferData element) {
+    public void init(T element) {
         super.init(element);
         propertyMap.clear();
         headerNotHandled = true;
@@ -68,7 +64,7 @@ public abstract class Node2NodeSaver extends AbstractHeaderSaver<BaseTransferDat
      * @param element the element
      */
     @Override
-    public void save(BaseTransferData element) {
+    public void save(T element) {
         if (headerNotHandled){
             definePropertyMap(element);
             headerNotHandled=false;
@@ -81,7 +77,7 @@ public abstract class Node2NodeSaver extends AbstractHeaderSaver<BaseTransferDat
      * 
      * @param element the element
      */
-    protected void saveRow(BaseTransferData element) {
+    protected void saveRow(T element) {
         Node serSector = defineServ(element);
         if (serSector == null) {
             error(String.format("Line %s not saved. Not found serve sector.", element.getLine()));
@@ -102,7 +98,7 @@ public abstract class Node2NodeSaver extends AbstractHeaderSaver<BaseTransferDat
      * @param element the element
      * @return the node
      */
-    protected abstract Node defineNeigh(BaseTransferData element);
+    protected abstract Node defineNeigh(T element);
 
     /**
      * Define serv.
@@ -110,7 +106,7 @@ public abstract class Node2NodeSaver extends AbstractHeaderSaver<BaseTransferDat
      * @param element the element
      * @return the node
      */
-    protected abstract  Node defineServ(BaseTransferData element);
+    protected abstract  Node defineServ(T element);
 
     /**
      * Creates the neighbour.
@@ -119,7 +115,7 @@ public abstract class Node2NodeSaver extends AbstractHeaderSaver<BaseTransferDat
      * @param neighSector the neigh sector
      * @param element the element
      */
-    private void createNeighbour(Node serSector, Node neighSector, BaseTransferData element) {
+    private void createNeighbour(Node serSector, Node neighSector, T element) {
         Relationship rel=model.getRelation(serSector, neighSector);
         updateTx(3, 3);
         storeHandledData(rel,element);
@@ -132,7 +128,7 @@ public abstract class Node2NodeSaver extends AbstractHeaderSaver<BaseTransferDat
      * @param rel the rel
      * @param element the element
      */
-    protected  void storeNonHandledData(Relationship rel, BaseTransferData element) {
+    protected  void storeNonHandledData(Relationship rel, T element) {
         Map<String, Object> sectorData = getNotHandledData(element, neighbourName, NodeTypes.NODE_NODE_RELATIONS.getId());
 
         for (Map.Entry<String, Object> entry : sectorData.entrySet()) {
@@ -148,14 +144,14 @@ public abstract class Node2NodeSaver extends AbstractHeaderSaver<BaseTransferDat
      * @param rel the rel
      * @param element the element
      */
-    protected abstract void storeHandledData(Relationship rel, BaseTransferData element) ;
+    protected abstract void storeHandledData(Relationship rel, T element) ;
 
     /**
      * Define property map.
      * 
      * @param element the element
      */
-    protected abstract void definePropertyMap(BaseTransferData element);
+    protected abstract void definePropertyMap(T element);
 
     /**
      * Fill root node.
@@ -164,7 +160,7 @@ public abstract class Node2NodeSaver extends AbstractHeaderSaver<BaseTransferDat
      * @param element the element
      */
     @Override
-    protected void fillRootNode(Node rootNode, BaseTransferData element) {
+    protected void fillRootNode(Node rootNode, T element) {
     }
 
     /**
@@ -213,7 +209,7 @@ public abstract class Node2NodeSaver extends AbstractHeaderSaver<BaseTransferDat
      * @return true, if successful
      */
     @Override
-    public boolean beforeSaveNewElement(BaseTransferData element) {
+    public boolean beforeSaveNewElement(T element) {
         neighbourName = element.getFileName();
         model=getModel(neighbourName);
         headerNotHandled = true;
@@ -227,7 +223,7 @@ public abstract class Node2NodeSaver extends AbstractHeaderSaver<BaseTransferDat
      * @param element the element
      */
     @Override
-    public void finishSaveNewElement(BaseTransferData element) {
+    public void finishSaveNewElement(T element) {
         statistic.setTypeCount(neighbourName, NodeTypes.PROXY.getId(), model.getProxyCount());
         statistic.setTypeCount(neighbourName, NodeTypes.NODE_NODE_RELATIONS.getId(), model.getRelationCount());
     }
