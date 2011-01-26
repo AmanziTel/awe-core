@@ -28,7 +28,6 @@ import org.amanzi.neo.loader.core.saver.MetaData;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.DatasetService.NodeResult;
 import org.amanzi.neo.services.GisProperties;
-import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
@@ -84,7 +83,10 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
             info(String.format("Line N%s not parsed - field '%s' is empty", element.getLine(), "BSC"));
             return;
         }
-        Node bscNode = networkService.getBscNode(rootNode, bscName, rootNode);
+        NodeResult bscNode = networkService.getBscNode(rootNode, bscName, rootNode);
+        if (bscNode.isCreated()){
+            statistic.updateTypeCount(rootname, NodeTypes.BSC.getId(), 1);
+        }
         String sectorName = getStringValue("CELL", element);
         if (StringUtils.isEmpty(sectorName)) {
             info(String.format("Line N%s - field '%s' is empty", element.getLine(), "cell"));
@@ -98,20 +100,29 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
             info(String.format("Line N%s - field '%s' is empty", element.getLine(), "SITE"));
             return;
         }
-        Node site = networkService.getSite(rootNode, siteName, bscNode);
+        NodeResult site = networkService.getSite(rootNode, siteName, bscNode);
+        if (site.isCreated()){
+            statistic.updateTypeCount(rootname, NodeTypes.SITE.getId(), 1);
+        }
         Integer ci = getNumberValue(Integer.class, "ci", element);
         Integer lac = getNumberValue(Integer.class, "lac", element);
 
         Node sector = networkService.findSector(rootNode, ci, lac, sectorName, true);
         if (sector == null) {
-            sector = networkService.createSector(rootNode, site, sectorName, ci, lac);
-            updateTx(1, 1);
-            if (ci != null) {
-                statistic.indexValue(rootname, NodeTypes.SECTOR.getId(), INeoConstants.PROPERTY_SECTOR_CI, ci);
-            }
-            if (lac != null) {
-                statistic.indexValue(rootname, NodeTypes.SECTOR.getId(), INeoConstants.PROPERTY_SECTOR_LAC, lac);
-            }
+           //not store sector without physics data
+            error(String.format("Sector '%s' not saved. Reason: sector do not found in physical data.", sectorName));
+            return;
+//            sector = networkService.createSector(rootNode, site, sectorName, ci, lac);
+//            statistic.updateTypeCount(rootname, NodeTypes.SECTOR.getId(), 1);
+//            updateTx(1, 1);
+//            if (ci != null) {
+//                statistic.indexValue(rootname, NodeTypes.SECTOR.getId(), INeoConstants.PROPERTY_SECTOR_CI, ci);
+//            }
+//            if (lac != null) {
+//                statistic.indexValue(rootname, NodeTypes.SECTOR.getId(), INeoConstants.PROPERTY_SECTOR_LAC, lac);
+//            }
+        }else{
+            networkService.moveSectorToCorrectSite(site,sector);
         }
         String bcc = getStringValue("bcc", element);
         boolean notEmptyBcc = StringUtils.isNotEmpty(bcc);

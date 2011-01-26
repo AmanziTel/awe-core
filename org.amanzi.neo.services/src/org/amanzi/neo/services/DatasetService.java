@@ -1072,8 +1072,14 @@ public class DatasetService extends AbstractService {
             return null;
         }
         assert rootNode != null && (ci != null || name != null) && index != null;
-        if (ci == null) {
-            String indexName = Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR);
+        String indexName = null;
+        IndexHits<Node> nodesCi =null;
+        if (ci!=null){
+             indexName = Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR);
+             nodesCi = index.getNodes(indexName, ci);
+        }
+        if (ci == null||nodesCi.size()==0) {
+            indexName = Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR);
             IndexHits<Node> nodesName = index.getNodes(indexName, name);
             Node sector = nodesName.size() > 0 ? nodesName.next() : null;
             if (nodesName.size() == 1) {
@@ -1084,8 +1090,7 @@ public class DatasetService extends AbstractService {
                 return returnFirsElement ? sector : null;
             }
         }
-        String indexName = Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR);
-        IndexHits<Node> nodesCi = index.getNodes(indexName, ci);
+
         if (lac == null && name == null) {
             Node sector = nodesCi.size() > 0 ? nodesCi.next() : null;
             if (nodesCi.size() == 1) {

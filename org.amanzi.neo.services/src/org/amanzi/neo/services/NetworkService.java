@@ -22,6 +22,7 @@ import org.amanzi.neo.services.DatasetService.NodeResult;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.indexes.PropertyIndex.NeoIndexRelationshipTypes;
 import org.amanzi.neo.services.node2node.INode2NodeFilter;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationService;
@@ -30,6 +31,7 @@ import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.traversal.Evaluation;
@@ -66,8 +68,9 @@ public class NetworkService extends AbstractService {
      * @param parentNode - parent node
      * @return
      */
-    public Node getBscNode(Node networkNode, String bscName, Node parentNode) {
+    public NodeResult getBscNode(Node networkNode, String bscName, Node parentNode) {
         Node result = findBscNode(networkNode, bscName);
+        boolean isCreated = result == null;
         if (result == null) {
             Transaction tx = databaseService.beginTx();
             try {
@@ -81,7 +84,7 @@ public class NetworkService extends AbstractService {
             }
 
         }
-        return result;
+        return new DatasetService.NodeResultImpl(result, isCreated);
     }
 
     /**
@@ -104,9 +107,10 @@ public class NetworkService extends AbstractService {
      * @param parentNode - parent node
      * @return
      */
-    public Node getSite(Node networkNode, String siteName, Node parentNode) {
+    public NodeResult getSite(Node networkNode, String siteName, Node parentNode) {
         Node result = findSiteNode(networkNode, siteName);
-        if (result == null) {
+        boolean isCreated = result == null;
+        if (isCreated) {
             Transaction tx = databaseService.beginTx();
             try {
                 result = NeoServiceFactory.getInstance().getDatasetService().addSimpleChild(parentNode, NodeTypes.SITE, siteName);
@@ -118,7 +122,7 @@ public class NetworkService extends AbstractService {
             }
 
         }
-        return result;
+        return new DatasetService.NodeResultImpl(result, isCreated);
     }
 
     /**
@@ -446,7 +450,7 @@ public class NetworkService extends AbstractService {
     }
 
     public INode2NodeFilter getAllNode2NodeFilter(final Node projecNode) {
-        
+
         return new INode2NodeFilter() {
 
             @Override
@@ -472,15 +476,75 @@ public class NetworkService extends AbstractService {
 
             @Override
             public Iterable<Node> getFilteredServNodes(NodeToNodeRelationModel models) {
-                //2 traverser not work!
-                //this is get ALL modeks filter - not necessary check exist models in  getModels()!
-                List<Node> result=new LinkedList<Node>();
-                for (Node node:models.getServTraverser(null).nodes()){
+                // 2 traverser not work!
+                // this is get ALL modeks filter - not necessary check exist models in getModels()!
+                List<Node> result = new LinkedList<Node>();
+                for (Node node : models.getServTraverser(null).nodes()) {
                     result.add(node);
                 }
                 return result;
             }
         };
+    }
+
+    /**
+     * Move sector to correct site.
+     * 
+     * @param site the site
+     * @param sector the sector
+//     * @return true, if old site was deleted (do not have others sectors)
+     */
+    public void moveSectorToCorrectSite(Node site, Node sector) {
+        Relationship rel = sector.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING);
+        Node parent = rel == null ? null : rel.getOtherNode(sector);
+        if (parent != null && site.equals(parent)) {
+            return;
+        }
+        Transaction tx = databaseService.beginTx();
+        try {
+            if (parent != null) {
+                updateLocation(parent,site);
+                rel.delete();
+            }
+            site.createRelationshipTo(sector, GeoNeoRelationshipTypes.CHILD);
+            tx.success();
+            return;
+        } finally {
+            tx.finish();
+        }
+    }
+
+    private boolean updateLocation(Node parent, Node site) {
+        try {
+            //TODO debug
+            if (site.hasRelationship(NeoIndexRelationshipTypes.IND_CHILD,Direction.INCOMING)){
+                return false;
+            }
+            if (!site.hasProperty(INeoConstants.PROPERTY_LAT_NAME)&&!site.hasProperty(INeoConstants.PROPERTY_LON_NAME)&&parent.hasProperty(INeoConstants.PROPERTY_LAT_NAME)&&parent.hasProperty(INeoConstants.PROPERTY_LON_NAME)){
+                site.setProperty(INeoConstants.PROPERTY_LAT_NAME, parent.getProperty(INeoConstants.PROPERTY_LAT_NAME));
+                site.setProperty(INeoConstants.PROPERTY_LON_NAME, parent.getProperty(INeoConstants.PROPERTY_LON_NAME));
+                 Iterator<Relationship> rel = parent.getRelationships(NeoIndexRelationshipTypes.IND_CHILD,Direction.INCOMING).iterator();
+                if (rel.hasNext()){
+                    rel.next().getOtherNode(parent).createRelationshipTo(site, NeoIndexRelationshipTypes.IND_CHILD);
+                }
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            // TODO Handle Exception
+            throw (RuntimeException) new RuntimeException( ).initCause( e );
+        }
+    }
+
+    /**
+     * Find site from sector.
+     * 
+     * @param sector the sector
+     * @return the node
+     */
+    public Node findSiteFromSector(Node sector) {
+        Relationship rel = sector.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING);
+        return rel == null ? null : rel.getOtherNode(sector);
     }
 
 }
