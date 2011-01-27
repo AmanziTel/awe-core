@@ -154,6 +154,7 @@ public enum BARRecords implements IRecords {
 		return parameters7version;
 	}
 	
+	
     /**
      * get all parameters of record
      * 

@@ -13,57 +13,98 @@
 
 package org.amanzi.awe.afp.ericsson.saver;
 
+import org.amanzi.awe.afp.ericsson.BARRecords;
+import org.amanzi.awe.afp.ericsson.IRecords;
 import org.amanzi.awe.afp.ericsson.parser.RecordTransferData;
-import org.amanzi.neo.loader.core.saver.Node2NodeSaver;
-import org.amanzi.neo.services.network.NetworkModel;
-import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
+import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
+import org.amanzi.neo.loader.core.saver.MetaData;
+import org.amanzi.neo.services.GisProperties;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
 
 /**
  * <p>
- *Bar saver
+ * Bar saver
  * </p>
+ * 
  * @author tsinkel_a
  * @since 1.0.0
  */
-public class BarSaver extends Node2NodeSaver<RecordTransferData>{
-
-    private NetworkModel networkModel;
+public class BarSaver extends AbstractHeaderSaver<RecordTransferData> {
 
     @Override
-    public void init(RecordTransferData element) {
-        super.init(element);
-        networkModel = new NetworkModel(rootNode);
+    public void save(RecordTransferData element) {
+        IRecords type = element.getRecord().getEvent().getType();
+        if (type instanceof BARRecords) {
+            switch ((BARRecords)type) {
+            case ADMINISTRATIVE:
+                storeAdminValues(element);
+                return;
+                case ACTIVE_BALIST_RECORDING_CELL_DATA:
+                    handleCellData(element);
+                    return;
+                case ACTIVE_BALIST_RECORDING_NEIGHBOURING_CELL_DATA:
+                    handleNeighbour(element);
+                    return;
+            default:
+                return;
+            }
+        }
     }
+
+    /**
+     *
+     * @param element
+     */
+    private void handleNeighbour(RecordTransferData element) {
+    }
+
+    /**
+     *
+     * @param element
+     */
+    private void handleCellData(RecordTransferData element) {
+    }
+
+    /**
+     * @param element
+     */
+    private void storeAdminValues(RecordTransferData element) {
+    }
+
     @Override
-    protected Node defineNeigh(RecordTransferData element) {
+    public Iterable<MetaData> getMetaData() {
         return null;
     }
 
     @Override
-    protected Node defineServ(RecordTransferData element) {
-         System.out.println(element.getRecord().getEvent().getProperties().keySet());
-        return null;
+    protected void fillRootNode(Node rootNode, RecordTransferData element) {
     }
 
     @Override
-    protected void storeHandledData(Relationship rel, RecordTransferData element) {
-        
-    }
-    @Override
-    protected void storeNonHandledData(Relationship rel, RecordTransferData element) {
-       //do nothing;
+    protected String getRootNodeType() {
+        return NodeTypes.NETWORK.getId();
     }
 
     @Override
-    protected void definePropertyMap(RecordTransferData element) {
-        
+    protected String getTypeIdForGisCount(GisProperties gis) {
+        return NodeTypes.SECTOR.getId();
     }
-
-    @Override
-    public NodeToNodeRelationModel getModel(String neighbourName) {
-        return networkModel.getInterferenceMatrix(neighbourName);
+    /**
+     * @param object
+     * @return
+     */
+    private String getString(byte[] data) {
+        if (data == null) {
+            return null;
+        }
+        int len=0;
+        for (int i = 0; i < data.length; i++) {
+            if (data[i]!=0){
+                data[len]=data[i];
+                len++;
+            }
+        }
+        return new String(data,0,len);
     }
-    
 }
