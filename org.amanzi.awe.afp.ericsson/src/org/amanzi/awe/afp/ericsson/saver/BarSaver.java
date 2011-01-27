@@ -13,6 +13,9 @@
 
 package org.amanzi.awe.afp.ericsson.saver;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.amanzi.awe.afp.ericsson.BARRecords;
 import org.amanzi.awe.afp.ericsson.IRecords;
 import org.amanzi.awe.afp.ericsson.parser.RecordTransferData;
@@ -31,7 +34,7 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class BarSaver extends AbstractHeaderSaver<RecordTransferData> {
-
+    Map<String,ServCell>servCells=new HashMap<String, ServCell>();
     @Override
     public void save(RecordTransferData element) {
         IRecords type = element.getRecord().getEvent().getType();
@@ -106,5 +109,12 @@ public class BarSaver extends AbstractHeaderSaver<RecordTransferData> {
             }
         }
         return new String(data,0,len);
+    }
+    private static class ServCell{
+        String cellName;
+        Integer chgr;
+        Integer rep;
+        
+
     }
 }
