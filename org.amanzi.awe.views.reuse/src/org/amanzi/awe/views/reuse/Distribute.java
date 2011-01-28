@@ -30,7 +30,9 @@ public enum Distribute {
     /** group by 20 columns */
     I20("20","in 20 categories"),
     /** group by 50 columns */
-    I50("50","in 50 categories");
+    I50("50","in 50 categories"),
+    /** group by some columns */
+    CUSTOM("custom", "in some categories");
     private final String value;
     private final String description;
 

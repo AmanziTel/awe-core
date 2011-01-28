@@ -23,6 +23,7 @@ import java.util.TreeSet;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.views.reuse.Distribute;
+import org.amanzi.awe.views.reuse.Properties;
 import org.amanzi.awe.views.reuse.Select;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.db.manager.DatabaseManager;
@@ -392,6 +393,9 @@ public class ReuseAnalyserModel {
             }
         }
         double range = 0;
+        //Kasnitskij_V:
+        double[] varyingRange = null;
+        
         if (min == null || max == null) {
             // error calculation
             throw new StatisticCalculationException(ERROR_MSG_NULL);
@@ -425,6 +429,18 @@ public class ReuseAnalyserModel {
             max = Math.rint(max) + 0.5;
             range = 1;
             break;
+        // Kasnitskij_V:
+        case CUSTOM:
+            if (Properties.fingEnumByValue(propertyName) == Properties.ALL_RXLEV_FULL_DBM ||
+                    Properties.fingEnumByValue(propertyName) == Properties.ALL_RXLEV_SUB_DBM) {
+                min = -120.0;
+                max = -10.0;
+            }
+            min = Math.rint(min) - 0.5;
+            max = Math.rint(max) + 0.5;
+            
+            varyingRange = Properties.fingEnumByValue(propertyName).getRanges();
+            break;
         default:
             break;
         }
@@ -438,7 +454,12 @@ public class ReuseAnalyserModel {
         ArrayList<Column> keySet = new ArrayList<Column>();
         double curValue = min;
         Node parentNode = aggrNode;
-        while (curValue <= max) {
+        //Kasnitskij_V:
+        int k = 0;
+        while (Math.abs(curValue - max) >= 0.0001 ) {
+            if (distribute == Distribute.CUSTOM) {
+                range = varyingRange[k++];
+            }
             Column col = new Column(aggrNode, parentNode, curValue, range, distribute, propertyValue, service);
             parentNode = col.getNode();
             keySet.add(col);

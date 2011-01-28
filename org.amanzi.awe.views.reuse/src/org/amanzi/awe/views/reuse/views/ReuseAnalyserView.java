@@ -37,6 +37,7 @@ import org.amanzi.awe.catalog.neo.upd_layers.events.RefreshPropertiesEvent;
 import org.amanzi.awe.report.editor.ReportEditor;
 import org.amanzi.awe.views.reuse.Distribute;
 import org.amanzi.awe.views.reuse.Messages;
+import org.amanzi.awe.views.reuse.Properties;
 import org.amanzi.awe.views.reuse.ReusePlugin;
 import org.amanzi.awe.views.reuse.Select;
 import org.amanzi.integrator.awe.AWEProjectManager;
@@ -167,6 +168,9 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
     private static final String COLOR_LABEL = Messages.ReuseAnalayserView_COLOR_LABEL;
     private static final String REPORT_LABEL = Messages.ReuseAnalayserView_REPORT_LABEL;
 
+    private static final String RXLEV = Messages.ReuseAnalayserView_RXLEV;
+    private static final String RXQUAL = Messages.ReuseAnalayserView_RXQUAL;
+    
     private final Map<String, String[]> aggregatedProperties = new HashMap<String, String[]>();
     private Label gisSelected;
     private Combo gisCombo;
@@ -229,7 +233,8 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
     private static final String THIRD_BLEND = "third color";
     ReuseAnalyserModel model = null;
     private static final String ERROR_CHART = "Error Chart";
-
+    private String globalDistribute = null;
+    
     @Override
     public void createPartControl(Composite parent) {
         aggregatedProperties.clear();
@@ -510,6 +515,26 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
                             cSelect.select(0);
                         }
                         cSelect.setEnabled(isAggregated || isAggrProp);
+                    }
+                    // Kasnitskij_V:
+                    if (propertyName.indexOf(RXLEV) == -1 &&
+                            propertyName.indexOf(RXQUAL) == -1) {
+                        for (String item : cDistribute.getItems()) {
+                            if (item.equals(Distribute.CUSTOM.toString())) {
+                                cDistribute.remove(Distribute.CUSTOM.toString());
+                                cDistribute.select(0);
+                            }
+                        }
+                    }
+                    else {
+                        boolean isInside = false;
+                        for (String item : cDistribute.getItems()) {
+                            if (item.equals(Distribute.CUSTOM.toString())) {
+                                isInside = true;
+                            }
+                        }
+                        if (!isInside)
+                            cDistribute.add(Distribute.CUSTOM.toString());
                     }
                     findOrCreateAggregateNodeInNewThread(gisNode, propertyName);
                     // chartUpdate(aggrNode);
@@ -1160,6 +1185,11 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
                     }
                 }
 
+            } else if (Distribute.findEnumByValue(globalDistribute) ==
+                        Distribute.CUSTOM) {
+                chart.saveColor(Properties.
+                        fingEnumByValue(propertyName).getColors()[i]);
+                
             } else {
                 if (selColumn == null || columnIndex < 0) {
                     // we must clear color of node
@@ -1355,6 +1385,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
                     }
                 }, true);
             }
+            globalDistribute = distribute;
             return Status.OK_STATUS;
         }
 

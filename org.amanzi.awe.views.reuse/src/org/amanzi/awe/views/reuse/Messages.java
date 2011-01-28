@@ -69,6 +69,8 @@ public class Messages extends NLS {
     public static String ReuseAnalayserView_ROW_KEY;
     public static String ReuseAnalayserView_COLOR_LABEL;
     public static String ReuseAnalayserView_REPORT_LABEL;
+    public static String ReuseAnalayserView_RXLEV;
+    public static String ReuseAnalayserView_RXQUAL;
     
     private Messages() {
     }
