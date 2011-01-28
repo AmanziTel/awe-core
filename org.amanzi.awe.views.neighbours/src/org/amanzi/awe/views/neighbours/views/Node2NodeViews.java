@@ -42,6 +42,8 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableEditor;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
@@ -88,6 +90,14 @@ public class Node2NodeViews extends ViewPart {
     private Combo n2nSelection;
     private Button commit;
     private Button rollback;
+    
+    private Button search;
+    private Button returnFullList;
+    private Text textToSearch;
+    private String searchingSector = "";
+    /** String SEARCH field */
+    private static final String SEARCH = "Search";
+    
     protected DatasetService ds;
     protected NodeToNodeRelationService n2ns;
     private NetworkService networks;
@@ -154,6 +164,61 @@ public class Node2NodeViews extends ViewPart {
         });
         rollback.setToolTipText("Rollback");
         rollback.setEnabled(false);
+        
+        //Kasnitskij_V:
+
+        Label label2 = new Label(main, SWT.FLAT);
+        label2.setText("Write here what do you want to search:");
+        textToSearch = new Text(main, SWT.SINGLE | SWT.BORDER);
+        textToSearch.setSize(200, 20);
+        //textToSearch.setLayoutData(layoutData);
+        
+        search = new Button(main, SWT.PUSH);
+        search.setText(SEARCH);
+        search.addMouseListener(new MouseListener() {
+            
+            @Override
+            public void mouseUp(MouseEvent e) {
+            }
+            
+            @Override
+            public void mouseDown(MouseEvent e) {
+                try {
+                    searchingSector = textToSearch.getText();
+                }
+                catch (NullPointerException ex) {
+                    
+                }
+                formCollumns();
+            }
+            
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+            }
+        });
+        //search.setLayoutData(layoutData);
+        
+        returnFullList = new Button(main, SWT.PUSH);
+        returnFullList.setSize(200, 20);
+        returnFullList.setText("Return full list");
+        returnFullList.addMouseListener(new MouseListener() {
+            
+            @Override
+            public void mouseUp(MouseEvent e) {
+            }
+            
+            @Override
+            public void mouseDown(MouseEvent e) {
+                searchingSector = "";
+                formCollumns();
+            }
+            
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+            }
+        });
+        returnFullList.setLayoutData(layoutData);
+        
         table = new Table(main, SWT.VIRTUAL | SWT.BORDER);
         table.addListener(SWT.SetData, new Listener() {
 
@@ -236,17 +301,39 @@ public class Node2NodeViews extends ViewPart {
         int index = event.index;
         int start = index / PAGE_SIZE * PAGE_SIZE;
         int end = Math.min(start + PAGE_SIZE, table.getItemCount());
+        
+        int k = 0;
         for (int i = start; i < end; i++) {
             PropertyContainer cont = getElement(i);
+            String servingNodeName = ds.getNodeName(((Relationship)cont).getStartNode());
+
             item = table.getItem(i);
+            // Kasnitskij_V:
+            // search need sector
+            if (!searchingSector.equals("")) {
+                if (servingNodeName.equals(searchingSector)) {
+                    item = table.getItem(k++);
+                }
+            }
+            
             item.setData(cont);
-            item.setText(0, ds.getNodeName(((Relationship)cont).getStartNode()));
+            item.setText(0, servingNodeName);
             item.setText(1, ds.getNodeName(((Relationship)cont).getEndNode()));
             for (int j = 2; j < colColut; j++) {
                 item.setText(j, String.valueOf(cont.getProperty(propertys.get(j - 2), "")));
             }
         }
-
+        if (k != 0) {
+            table.setItemCount(k);
+        }
+        else {
+            if (!searchingSector.equals("")) {
+                textToSearch.setText("not found");
+            }
+            else {
+                textToSearch.setText("");
+            }
+        }
     }
 
     private PropertyContainer getElement(final int i) {
