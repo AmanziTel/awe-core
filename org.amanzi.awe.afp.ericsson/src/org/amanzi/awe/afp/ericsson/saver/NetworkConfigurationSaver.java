@@ -134,10 +134,9 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         if (notEmptyNcc) {
             updateProperty(rootname, NodeTypes.SECTOR.getId(), sector, "ncc", ncc);
         }
-        if (notEmptyBcc && notEmptyNcc) {
-            String bsic = bcc.matches("0+") ? ncc : bcc + ncc;
-            networkService.indexProperty(rootNode, sector, "BSIC", bsic);
-        }
+        int bccInt=notEmptyBcc?Integer.valueOf(bcc):0;
+        int nccint=notEmptyNcc?Integer.valueOf(ncc):0;
+        networkService.indexProperty(rootNode, sector, "BSIC", nccint*10+bccInt);
         Integer bcchno = getNumberValue(Integer.class, "bcchno", element);
         updateProperty(rootname, NodeTypes.SECTOR.getId(), sector, "bcchno", bcchno);
         for (int i = 0; i < 16; i++) {

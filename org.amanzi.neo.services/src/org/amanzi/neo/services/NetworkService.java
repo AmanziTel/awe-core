@@ -249,7 +249,7 @@ public class NetworkService extends AbstractService {
      * @param propertyName the property name
      * @param value the value
      */
-    public void indexProperty(Node rootNode, Node node, String propertyName, String value) {
+    public void indexProperty(Node rootNode, Node node, String propertyName, Object value) {
         getIndexService().index(
                 node,
                 Utils.getLuceneIndexKeyByProperty(rootNode, propertyName, NeoServiceFactory.getInstance().getDatasetService()
