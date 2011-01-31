@@ -786,7 +786,10 @@ public class NetworkLoader extends AbstractLoader {
             
             String band = networkHeader.getString("band");
             
-            processCarriers(sector, band, sectorData);
+            // Kasnitskij_V:
+            if (band != null) {
+                processCarriers(sector, band, sectorData);
+            }
 
             for (Map.Entry<String, Object> entry : sectorData.entrySet()) {
                 String key = entry.getKey();
