@@ -37,6 +37,7 @@ public interface ILoader<T extends IDataElement,T2 extends IConfigurationData> {
     void removeProgressListener(ILoaderProgressListener listener);
     void setValidator(ILoaderInputValidator<T2>validator);
     ILoaderInputValidator<T2> getValidator();
+    void setDescription(String description);
     void load();
     String getDescription();
     PrintStream getPrintStream();

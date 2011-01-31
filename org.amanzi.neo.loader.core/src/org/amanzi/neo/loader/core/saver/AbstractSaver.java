@@ -562,5 +562,7 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
         }
         return result.toArray(new String[0]);
     }
-    
+    public Node getRootNode(){
+        return rootNode;
+    }
 }

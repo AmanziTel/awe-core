@@ -102,6 +102,16 @@
                </appInfo>
             </annotation>
          </attribute>
+         <attribute name="loader_class" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":org.amanzi.neo.loader.core.ILoader"/>
+               </appInfo>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 

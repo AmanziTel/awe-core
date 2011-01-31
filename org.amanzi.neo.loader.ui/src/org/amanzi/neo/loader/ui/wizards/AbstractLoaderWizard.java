@@ -73,7 +73,9 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
      * @return the access type
      */
     public DatabaseAccessType getAccessType() {
-        return accessType;
+//        return accessType;
+        //NOW BATCH DATABASE ACCESS DO NOT SUPPORT 
+        return DatabaseAccessType.EMBEDDED;
     }
 
     /**

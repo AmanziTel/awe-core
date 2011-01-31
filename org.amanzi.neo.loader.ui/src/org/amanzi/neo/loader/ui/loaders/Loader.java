@@ -33,13 +33,18 @@ import org.amanzi.neo.loader.core.ValidateResultImpl;
 import org.amanzi.neo.loader.core.parser.IConfigurationData;
 import org.amanzi.neo.loader.core.parser.IDataElement;
 import org.amanzi.neo.loader.core.parser.IParser;
+import org.amanzi.neo.loader.core.saver.AbstractSaver;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
+import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.services.events.UpdateViewEventType;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.neo4j.graphdb.Node;
 
 /**
  * <p>
@@ -73,6 +78,7 @@ public class Loader<T extends IDataElement, T2 extends IConfigurationData> imple
     private ILoaderInputValidator<T2> validator;
     private PrintStream outputStream;
 
+    @Override
     public void setDescription(String description) {
         this.description = description;
     }
@@ -124,7 +130,19 @@ public class Loader<T extends IDataElement, T2 extends IConfigurationData> imple
      */
     protected void finishup() {
         updateCatalog();
-        NeoServicesUiPlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDatabaseEvent(UpdateViewEventType.GIS));
+        sendUpdateEvent(UpdateViewEventType.GIS);
+        if (saver instanceof AbstractSaver) {
+            Node root = ((AbstractSaver)saver).getRootNode();
+            if (root != null) {
+                DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
+                String name = datasetService.getNodeName(root);
+                Node gis = datasetService.findGisNode(root);
+                if (gis != null) {
+                    LoaderUiUtils.addGisNodeToMap(name, new Node[] {gis});
+                }
+            }
+
+        }
         // DatabaseManager.getInstance().setDatabaseAccessType(DatabaseAccessType.DEFAULT);
 
     }
@@ -143,8 +161,8 @@ public class Loader<T extends IDataElement, T2 extends IConfigurationData> imple
                 for (IService service : services) {
                     NeoService serviceold = catalog.getById(NeoService.class, service.getIdentifier(), new NullProgressMonitor());
                     if (serviceold != null) {
-                        //TODO refactor for working in 2 database modes
-//                        serviceold.updateResource();
+                        // TODO refactor for working in 2 database modes
+                        // serviceold.updateResource();
                         catalog.replace(service.getIdentifier(), service);
                     } else {
                         catalog.add(service);
@@ -153,7 +171,7 @@ public class Loader<T extends IDataElement, T2 extends IConfigurationData> imple
 
             }
         } catch (MalformedURLException e) {
-            //TODO handle exception
+            // TODO handle exception
             e.printStackTrace();
         }
     }
