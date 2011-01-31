@@ -282,6 +282,9 @@ public class BarSaver extends AbstractHeaderSaver<RecordTransferData> {
     }
 
     private void createMatrix() {
+        if (adminValues==null){
+            return;
+        }
         interfModel=networkModel.getInterferenceMatrix(getInterfMatrixName());
         shadowModel=networkModel.getShadowing(getShadowingMatrixName());
         
@@ -292,7 +295,7 @@ public class BarSaver extends AbstractHeaderSaver<RecordTransferData> {
 
 
     private String getShadowingMatrixName() {
-        return firstFileName;
+        return "shadowing "+firstFileName;
     }
 
     /**
@@ -300,7 +303,7 @@ public class BarSaver extends AbstractHeaderSaver<RecordTransferData> {
      * @return
      */
     private String getInterfMatrixName() {
-        return firstFileName;
+        return "interference "+firstFileName;
     }
 
     private void handleServCell(ServCell cell) {
@@ -320,9 +323,61 @@ public class BarSaver extends AbstractHeaderSaver<RecordTransferData> {
             error(String.format("Sector (bsic=%s;arfcn=%s) not found", neigh.bsic, neigh.arfcn));
             return;
         }
+        Double factorCo=getFactorCo(adminValues.relss);
+        if (factorCo==null){
+          error("Incorreect relss="+String.valueOf(adminValues.relss));
+          return;
+        }
+        if (neigh.reparfcn==0){
+            error("Incorreect reparfcn=0");
+            return;
+          }
+        double impactCO=100*neigh.timesrelss/neigh.reparfcn*factorCo;
+        Double factorAdj=getFactorAdj(adminValues.relss);
+        if (factorAdj==null){
+            error("Incorreect relss="+String.valueOf(adminValues.relss));
+            return;
+          }
+
+          double impactAdj=100*neigh.timesrelss2/neigh.reparfcn*factorAdj;
         Relationship rel = interfModel.getRelation(servSector, neighSector);
-        
-        
+        updateProperty(getInterfMatrixName(), NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "source", "IM source - Interference");
+        updateProperty(getInterfMatrixName(), NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "co", impactCO);
+        updateProperty(getInterfMatrixName(), NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "adj", impactAdj);
+    }
+
+    /**
+     *
+     * @param relss
+     * @return
+     */
+    private Double getFactorAdj(Integer relss) {
+        if (relss==null){
+            return null;
+        }
+        return 16d/(2^(relss/3));
+//        else if (relss==18){
+//            return 0.25d;
+//        }else if (relss==15){
+//            return 0.5d;
+//        }else if (relss==12){
+//            return 1d;
+//        }else if (relss==9){
+//            return 2d;
+//        }else if (relss==6){
+//            return 4d;
+//        }else if (relss==3){
+//            return 8d;
+//        }else{
+//            return null;
+//        }
+    }
+
+    private Double getFactorCo(Integer relss) {
+        if (relss==null){
+            return null;
+        }
+        return 0.25d/(2^(relss/3));
     }
 
     private Node findNode(Node servSector, InterfCell neigh) {

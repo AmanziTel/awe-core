@@ -110,7 +110,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         Node sector = networkService.findSector(rootNode, ci, lac, sectorName, true);
         if (sector == null) {
            //not store sector without physics data
-            error(String.format("Sector '%s' not saved. Reason: sector do not found in physical data.", sectorName));
+//            error(String./format("Sector '%s' not saved. Reason: sector do not found in physical data.", sectorName));
             return;
 //            sector = networkService.createSector(rootNode, site, sectorName, ci, lac);
 //            statistic.updateTypeCount(rootname, NodeTypes.SECTOR.getId(), 1);
