@@ -66,6 +66,10 @@ public class ReuseAnalyserTest {
             
             for (String property: PropertyHeader.getPropertyStatistic(root).getNumericFields("-main-type-")){
                 for (Distribute distribute:Distribute.values()){
+                    if (distribute==Distribute.CUSTOM){
+                        //need additional requirements - this case do not work for all properties.
+                        continue;
+                    }
                     model.findOrCreateAggregateNode(root, property, false, distribute.toString(), Select.EXISTS.toString(), new NullProgressMonitor());
                 }
             }
