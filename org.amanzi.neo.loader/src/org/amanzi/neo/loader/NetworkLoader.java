@@ -812,6 +812,9 @@ public class NetworkLoader extends AbstractLoader {
     }
     
     private void processCarriers(Node sector, String band, Map<String, Object> propertyMap) {
+        if (band==null){
+            return;
+        }
         //try to get a Band
         int spaceIndex = band.indexOf(" ");
         if (spaceIndex > 0) {
