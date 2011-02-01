@@ -260,9 +260,9 @@ public class DatasetImportUrlWizardPage extends WizardPage {
     	}
     	
     	int startMonth =  startTimeWidget.getMonth() + 1;
-    	int endMonth =  startTimeWidget.getMonth() + 1;
-    	startTime = startTimeWidget.getYear() + "-" + startMonth + "-" + startTimeWidget.getDay();
-		endTime = endTimeWidget.getYear() + "-" + endMonth + "-" + endTimeWidget.getDay();
+    	int endMonth =  endTimeWidget.getMonth() + 1;
+    	startTime = startTimeWidget.getYear() + "-" + (startMonth<10?"0"+startMonth:startMonth) + "-" + startTimeWidget.getDay();
+		endTime = endTimeWidget.getYear() + "-" + (endMonth<10?"0"+endMonth:endMonth) + "-" + endTimeWidget.getDay();
 		
 		final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 
