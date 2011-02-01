@@ -9,6 +9,7 @@ import java.net.URLConnection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -336,6 +337,11 @@ public class TemsRemoteUrlLoader extends DriveLoader {
 			System.out.println(lineData.get("time"));
 		}
 		Object timest = lineData.get("timestamp");
+		//Pechko_E: DriveLoader doesn't take into account year, month and day of the month
+		//so it's necessary to change the workdate accordingly 
+		if (timest!=null){
+		    _workDate.setTime((Date) timest);
+		}
 		this.timestamp = getTimeStamp(1, (Date) timest);
 		String ms = (String) lineData.get("ms");
 		event = (String) lineData.get("event"); // currently only getting this

@@ -248,8 +248,8 @@ public class DatasetImportUrlWizardPage extends WizardPage {
     		MessageDialog.openInformation(shell, "Imei/Imsi not set", "Please set your imei and imsi in the preferences");
     		return false;
     	}
-    	
-    	if (cDataset.getText() == null)
+    	String datasetName=cDataset.getText();
+    	if (datasetName == null || datasetName.length()==0 )
     		return false;
     	
     	if (startTimeWidget.getYear() > endTimeWidget.getYear() ||
