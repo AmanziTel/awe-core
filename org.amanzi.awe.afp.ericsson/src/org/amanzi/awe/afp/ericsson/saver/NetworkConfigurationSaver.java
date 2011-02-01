@@ -138,7 +138,10 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         int nccint=notEmptyNcc?Integer.valueOf(ncc):0;
         networkService.indexProperty(rootNode, sector, "BSIC", nccint*10+bccInt);
         Integer bcchno = getNumberValue(Integer.class, "bcchno", element);
-        updateProperty(rootname, NodeTypes.SECTOR.getId(), sector, "bcchno", bcchno);
+        if (bcchno!=null){
+            networkService.indexProperty(rootNode, sector, "bcch",bcchno);
+        }
+        updateProperty(rootname, NodeTypes.SECTOR.getId(), sector, "bcch", bcchno);
         for (int i = 0; i < 16; i++) {
             if (getStringValue("ch_group_" + i, element) != null) {
                 storeChannalInfo(sector, i, element);
@@ -330,7 +333,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
                 statistic.updateTypeCount(rootname, NodeTypes.FREQUENCY_PLAN.getId(), 1);
             }
             updateProperty(rootname, NodeTypes.FREQUENCY_PLAN.getId(), trx, "hsn", hoptype);
-            Integer bcchno = (Integer)sector.getProperty("bcchno",null);
+            Integer bcchno = (Integer)sector.getProperty("bcch",null);
             if (!plan.hasProperty("arfcn")) {
                 int[] arfcn = null;
                 if (isBcch) {

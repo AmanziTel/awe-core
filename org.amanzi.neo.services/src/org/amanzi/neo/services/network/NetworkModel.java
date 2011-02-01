@@ -136,7 +136,7 @@ public class NetworkModel {
         String indexName = Utils.getLuceneIndexKeyByProperty(rootNode, "BSIC", NodeTypes.SECTOR);
 
         for (Node node : networkService.getIndexService().getNodes(indexName, bsic)) {
-            Integer bcchno = (Integer)node.getProperty("bcchno", null);
+            Integer bcchno = (Integer)node.getProperty("bcch", null);
             if (ObjectUtils.equals(bcch, bcchno)) {
                 result.add(node);
             }
