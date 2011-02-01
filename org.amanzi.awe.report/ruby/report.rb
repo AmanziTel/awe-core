@@ -310,10 +310,8 @@ class Report
   end
 
   def setup(&block)
-    Neo4j::Transaction.run{
       self.instance_eval &block
       self
-    }
   end
 
   def author (new_author)
