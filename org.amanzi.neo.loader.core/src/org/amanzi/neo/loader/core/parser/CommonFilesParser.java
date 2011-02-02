@@ -49,10 +49,12 @@ public abstract class CommonFilesParser<T extends IDataElement, C extends Common
         return formFileElements(fileToLoad);
     }
 
+
     /**
+     * Form file elements.
      *
-     * @param fileToLoad
-     * @return
+     * @param fileToLoad the file to load
+     * @return the list
      */
     protected List<FileElement> formFileElements(Collection<File> fileToLoad) {
         Set<File>files=new HashSet<File>();
