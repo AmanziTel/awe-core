@@ -8,12 +8,8 @@
             id="org.amanzi.awe.afp.ericsson.parser.NetworkConfigurationParser">
       </parser>
       <parser
-            class="org.amanzi.awe.afp.ericsson.parser.BarParcer"
-            id="org.amanzi.awe.afp.ericsson.parser.BarParcer">
-      </parser>
-      <parser
-            class="org.amanzi.awe.afp.ericsson.parser.RirParser"
-            id="org.amanzi.awe.afp.ericsson.parser.RirParser">
+            class="org.amanzi.awe.afp.ericsson.parser.BarRirParser"
+            id="org.amanzi.awe.afp.ericsson.parser.BarRirParser">
       </parser>
    </extension>
    <extension
@@ -27,8 +23,8 @@
             id="org.amanzi.awe.afp.ericsson.saver.RecordSaver">
       </saver>
       <saver
-            class="org.amanzi.awe.afp.ericsson.saver.BarSaver"
-            id="org.amanzi.awe.afp.ericsson.saver.BarSaver">
+            class="org.amanzi.awe.afp.ericsson.saver.BarRirSaver"
+            id="org.amanzi.awe.afp.ericsson.saver.BarRirSaver">
       </saver>
    </extension>
    <extension
@@ -44,18 +40,14 @@
          </pages>
       </loader>
       <loader
-            description="Ericsson Network BAR loader"
+            description="Ericsson Network BAR-RIR loader"
             gui="org.amanzi.awe.afp.ericsson.ui.EricssonNetworkImportWizard"
-            parser="org.amanzi.awe.afp.ericsson.parser.BarParcer"
-            saver="org.amanzi.awe.afp.ericsson.saver.BarSaver"
+            parser="org.amanzi.awe.afp.ericsson.parser.BarRirParser"
+            saver="org.amanzi.awe.afp.ericsson.saver.BarRirSaver"
             validator="org.amanzi.awe.afp.ericsson.parser.RirValidator">
-      </loader>
-      <loader
-            description="Ericsson Network RIR loader"
-            gui="org.amanzi.awe.afp.ericsson.ui.EricssonNetworkImportWizard"
-            parser="org.amanzi.awe.afp.ericsson.parser.RirParser"
-            saver="org.amanzi.awe.afp.ericsson.saver.RecordSaver"
-            validator="org.amanzi.awe.afp.ericsson.parser.RirValidator">
+         <pages
+               class="org.amanzi.awe.afp.ericsson.ui.RirSelectionGui">
+         </pages>
       </loader>
    </extension>
    <extension

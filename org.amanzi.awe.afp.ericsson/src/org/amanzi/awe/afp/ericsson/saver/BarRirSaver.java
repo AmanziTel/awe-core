@@ -19,6 +19,7 @@ import java.util.Map;
 import org.amanzi.awe.afp.ericsson.BARRecords;
 import org.amanzi.awe.afp.ericsson.IRecords;
 import org.amanzi.awe.afp.ericsson.Parameters;
+import org.amanzi.awe.afp.ericsson.RIRRecords;
 import org.amanzi.awe.afp.ericsson.parser.MainRecord.Record;
 import org.amanzi.awe.afp.ericsson.parser.RecordTransferData;
 import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
@@ -35,30 +36,41 @@ import org.neo4j.graphdb.Relationship;
 // TODO: Auto-generated Javadoc
 /**
  * <p>
- * Bar saver
- * </p>
- * .
- * 
+ * BAR RIR saver
+ * </p>.
+ *
  * @author tsinkel_a
  * @since 1.0.0
  */
-public class BarSaver extends AbstractHeaderSaver<RecordTransferData> {
+public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData>  {
 
     /** The admin values. */
     AdminValues adminValues = null;
+    
+    /** The percentile value. */
+    Integer percentileValue=null;
 
     /** The serv cells. */
     Map<String, ServCell> servCells = new HashMap<String, ServCell>();
+    
+    /** The rir cells. */
+    Map<String, CellRirData> rirCells = new HashMap<String, CellRirData>();
 
+    /** The network model. */
     private NetworkModel networkModel;
 
+    /** The interf model. */
     private NodeToNodeRelationModel interfModel;
 
+    /** The shadow model. */
     private NodeToNodeRelationModel shadowModel;
+    
+    /** The first file name. */
     private String firstFileName;
+    
     /**
      * Save.
-     * 
+     *
      * @param element the element
      */
     @Override
@@ -81,8 +93,42 @@ public class BarSaver extends AbstractHeaderSaver<RecordTransferData> {
             default:
                 return;
             }
+        }else if(type instanceof RIRRecords){
+            switch ((RIRRecords)type) {
+            case ADMINISTRATIVE:
+                storeRirAdminValues(element);
+                return;
+            case RADIO_INTERFERENCE_RECORDING_CELL_DATA:
+                handleRirCellData(element);
+                return;
+            default:
+                return;
+            }       
         }
     }
+
+    /**
+     * Store rir admin values.
+     *
+     * @param element the element
+     */
+    private void storeRirAdminValues(RecordTransferData element) {
+       if (percentileValue==null){
+           percentileValue=getInteger(element.getRecord().getEvent(), Parameters.PERCENTILE_VALUE);
+       }
+    }
+
+
+    /**
+     * Handle rir cell data.
+     *
+     * @param element the element
+     */
+    private void handleRirCellData(RecordTransferData element) {
+    }
+
+
+
 
     /**
      * Handle neighbour.
@@ -275,12 +321,20 @@ public class BarSaver extends AbstractHeaderSaver<RecordTransferData> {
     protected void fillRootNode(Node rootNode, RecordTransferData element) {
     }
 
+    /**
+     * Finish up.
+     *
+     * @param element the element
+     */
     @Override
     public void finishUp(RecordTransferData element) {
         createMatrix();
         super.finishUp(element);
     }
 
+    /**
+     * Creates the matrix.
+     */
     private void createMatrix() {
         if (adminValues==null){
             return;
@@ -294,18 +348,30 @@ public class BarSaver extends AbstractHeaderSaver<RecordTransferData> {
     }
 
 
+    /**
+     * Gets the shadowing matrix name.
+     *
+     * @return the shadowing matrix name
+     */
     private String getShadowingMatrixName() {
         return "shadowing "+firstFileName;
     }
 
+
     /**
+     * Gets the interf matrix name.
      *
-     * @return
+     * @return the interf matrix name
      */
     private String getInterfMatrixName() {
         return "interference "+firstFileName;
     }
 
+    /**
+     * Handle serv cell.
+     *
+     * @param cell the cell
+     */
     private void handleServCell(ServCell cell) {
         Node servSector = findNode(cell);
         if (servSector == null) {
@@ -317,6 +383,13 @@ public class BarSaver extends AbstractHeaderSaver<RecordTransferData> {
         }
     }
 
+    /**
+     * Handle neighbohur.
+     *
+     * @param cell the cell
+     * @param servSector the serv sector
+     * @param neigh the neigh
+     */
     private void handleNeighbohur(ServCell cell, Node servSector, InterfCell neigh) {
         Node neighSector = findNode(servSector,neigh);
         if (neighSector == null) {
@@ -333,9 +406,9 @@ public class BarSaver extends AbstractHeaderSaver<RecordTransferData> {
             return;
           }
         double impactCO=100*neigh.timesrelss/neigh.reparfcn*factorCo;
-        Double factorAdj=getFactorAdj(adminValues.relss);
+        Double factorAdj=getFactorAdj(adminValues.relss2);
         if (factorAdj==null){
-            error("Incorreect relss="+String.valueOf(adminValues.relss));
+            error("Incorreect relss2="+String.valueOf(adminValues.relss));
             return;
           }
 
@@ -347,43 +420,68 @@ public class BarSaver extends AbstractHeaderSaver<RecordTransferData> {
     }
 
     /**
+     * Gets the factor adj.
      *
-     * @param relss
-     * @return
+     * @param relss2 the relss2
+     * @return the factor adj
      */
-    private Double getFactorAdj(Integer relss) {
-        if (relss==null){
+    private Double getFactorAdj(Integer relss2) {
+        if (relss2==null){
+            return null;
+        }else if (relss2==6){
+            return 0.06d;
+        }else if (relss2==3){
+            return 0.125d;
+        }else if (relss2==0){
+            return 0.25d;
+        }else{
             return null;
         }
-        return 16d/(2^(relss/3));
-//        else if (relss==18){
-//            return 0.25d;
-//        }else if (relss==15){
-//            return 0.5d;
-//        }else if (relss==12){
-//            return 1d;
-//        }else if (relss==9){
-//            return 2d;
-//        }else if (relss==6){
-//            return 4d;
-//        }else if (relss==3){
-//            return 8d;
-//        }else{
-//            return null;
-//        }
     }
 
+    /**
+     * Gets the factor co.
+     *
+     * @param relss the relss
+     * @return the factor co
+     */
     private Double getFactorCo(Integer relss) {
         if (relss==null){
             return null;
+        }else if (relss==18){
+            return 0.25d;
+        }else if (relss==15){
+            return 0.5d;
+        }else if (relss==12){
+            return 1d;
+        }else if (relss==9){
+            return 2d;
+        }else if (relss==6){
+            return 4d;
+        }else if (relss==3){
+            return 8d;
+        }else{
+            return null;
         }
-        return 0.25d/(2^(relss/3));
     }
 
+    /**
+     * Find node.
+     *
+     * @param servSector the serv sector
+     * @param neigh the neigh
+     * @return the node
+     */
     private Node findNode(Node servSector, InterfCell neigh) {
        return networkModel.getClosestSector(servSector,neigh.bsic,neigh.arfcn);
     }
 
+    /**
+     * Find node.
+     *
+     * @param cell the cell
+     * @return the node
+     */
     private Node findNode(ServCell cell) {
         return networkModel.findSector(cell.cellName);
     }
@@ -428,9 +526,19 @@ public class BarSaver extends AbstractHeaderSaver<RecordTransferData> {
         }
         return new String(data, 0, len);
     }
+
+/**
+ * Inits the.
+ *
+ * @param element the element
+ */
 @Override
 public void init(RecordTransferData element) {
     super.init(element);
+    adminValues = null;
+    percentileValue=null;
+    servCells.clear();
+    firstFileName=null;
     networkModel=new NetworkModel(rootNode);
 }
     /**
@@ -515,6 +623,13 @@ public void init(RecordTransferData element) {
             chgr = chGr;
         }
 
+        /**
+         * Gets the interf cell.
+         *
+         * @param bsic the bsic
+         * @param arfcn the arfcn
+         * @return the interf cell
+         */
         public InterfCell getInterfCell(Integer bsic, Integer arfcn) {
             if (bsic == null || arfcn == null) {
                 return null;
@@ -550,15 +665,15 @@ public void init(RecordTransferData element) {
         int rep = 0;
 
         /** The cells. */
-        Map<Pair<Integer, Integer>, InterfCell> cells = new HashMap<Pair<Integer, Integer>, BarSaver.InterfCell>();
+        Map<Pair<Integer, Integer>, InterfCell> cells = new HashMap<Pair<Integer, Integer>, BarRirSaver.InterfCell>();
 
     }
 
     /**
      * <p>
      * Wrapper for interference cell
-     * </p>
-     * 
+     * </p>.
+     *
      * @author TsAr
      * @since 1.0.0
      */
@@ -568,9 +683,17 @@ public void init(RecordTransferData element) {
 
         /** The arfcn. */
         Integer arfcn;
+        
+        /** The reparfcn. */
         int reparfcn;
+        
+        /** The timesrelss. */
         int timesrelss;
+        
+        /** The timesrelss2. */
         int timesrelss2;
+        
+        /** The timesabss. */
         int timesabss;
 
         /**
@@ -584,28 +707,108 @@ public void init(RecordTransferData element) {
             this.arfcn = arfcn;
         }
 
+        /**
+         * Adds the timesabss.
+         *
+         * @param timesabss the timesabss
+         */
         public void addTimesabss(Integer timesabss) {
             if (timesabss != null) {
                 this.timesabss += timesabss;
             }
         }
 
+        /**
+         * Adds the timesrelss2.
+         *
+         * @param timesrelss2 the timesrelss2
+         */
         public void addTimesrelss2(Integer timesrelss2) {
             if (timesrelss2 != null) {
                 this.timesrelss2 += timesrelss2;
             }
         }
 
+        /**
+         * Adds the timesrelss.
+         *
+         * @param timesrelss the timesrelss
+         */
         public void addTimesrelss(Integer timesrelss) {
             if (timesrelss != null) {
                 this.timesrelss += timesrelss;
             }
         }
 
+        /**
+         * Adds the reparfcn.
+         *
+         * @param reparfcn the reparfcn
+         */
         public void addReparfcn(Integer reparfcn) {
             if (reparfcn != null) {
                 this.reparfcn += reparfcn;
             }
+        }
+    }
+    
+    /**
+     * The Class CellRirData.
+     */
+    private static class CellRirData{
+        
+        /** The cell name. */
+        final String cellName;
+        
+        /** The data. */
+        Map<Integer,RirsData>data=new HashMap<Integer, BarRirSaver.RirsData>();
+
+        /**
+         * Instantiates a new cell rir data.
+         *
+         * @param cellName the cell name
+         */
+        public CellRirData(String cellName) {
+            super();
+            this.cellName = cellName;
+        }
+        
+    }
+    
+    /**
+     * The Class RirsData.
+     */
+    private static class RirsData{
+        
+        /** The arfcn. */
+        int arfcn;
+        
+        /** The avmedian. */
+        double avmedian;
+        
+        /** The avpercentile. */
+        double avpercentile;
+        
+        /** The noofmeas. */
+        int noofmeas;
+        
+        /** The num. */
+        int num;
+
+        /**
+         * Instantiates a new rirs data.
+         *
+         * @param arfcn the arfcn
+         * @param avmedian the avmedian
+         * @param avpercentile the avpercentile
+         * @param noofmeas the noofmeas
+         */
+        public RirsData(int arfcn,int avmedian, int avpercentile,int noofmeas) {
+            this.arfcn = arfcn;
+            this.avmedian = avmedian;
+            this.avpercentile = avpercentile;
+            this.noofmeas = noofmeas;
+            num=1;
         }
     }
 }

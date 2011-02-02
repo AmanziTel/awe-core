@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -40,13 +41,23 @@ public abstract class CommonFilesParser<T extends IDataElement, C extends Common
     @Override
     protected List<FileElement> getElementList() {
         C prop = getProperties();
-        String descr = getDescriptionFormat();
         if (prop.getFileToLoad() == null) {
             List<File> fileToLoad = getAllFiles(prop.getRoot());
             prop.setFileToLoad(fileToLoad);
         }
+        List<File> fileToLoad = prop.getFileToLoad();
+        return formFileElements(fileToLoad);
+    }
+
+    /**
+     *
+     * @param fileToLoad
+     * @return
+     */
+    protected List<FileElement> formFileElements(Collection<File> fileToLoad) {
         Set<File>files=new HashSet<File>();
-        files.addAll(getAllFilesMulti(prop.getFileToLoad()));
+        String descr = getDescriptionFormat();
+        files.addAll(getAllFilesMulti(fileToLoad));
         List<FileElement> result = new LinkedList<FileElement>();
         for (File file : files) {
             if (file.isFile()){
@@ -97,7 +108,7 @@ public abstract class CommonFilesParser<T extends IDataElement, C extends Common
      * @param root the root
      * @return the all files
      */
-    protected List<File> getAllFilesMulti(List<File> roots) {
+    protected List<File> getAllFilesMulti(Collection<File> roots) {
     	List<File> result = new ArrayList<File>();
     	List<File> tmp = new ArrayList<File>();
     	

@@ -14,8 +14,12 @@
 package org.amanzi.awe.afp.ericsson.parser;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.amanzi.awe.afp.ericsson.BARRecords;
 import org.amanzi.awe.afp.ericsson.BlockParameters;
@@ -29,21 +33,40 @@ import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.CountingFileInputStream;
 import org.amanzi.neo.loader.core.ProgressEventImpl;
 import org.amanzi.neo.loader.core.parser.CommonFilesParser;
+import org.amanzi.neo.loader.core.saver.ISaver;
 
 /**
  * @author Kasnitskij_V Class to parsing of RAR- or BAR- data
  */
 public class BarRirParser extends CommonFilesParser<RecordTransferData, CommonConfigData> {
 
-    protected DataType dataType;
-
+    List<FileElement>barFiles=new LinkedList<FileElement>();
+    List<FileElement>rirFiles=new LinkedList<FileElement>();
     @Override
     protected RecordTransferData getFinishData() {
         return null;
     }
-
+    @Override
+    public void init(CommonConfigData properties, ISaver<RecordTransferData> saver) {
+        super.init(properties, saver);
+        barFiles.clear();
+        rirFiles.clear();
+    }
+@Override
+protected List<org.amanzi.neo.loader.core.parser.CommonFilesParser.FileElement> getElementList() {
+    barFiles.addAll(super.getElementList());
+    Collection<File> fileToLoad=(Collection<File>)getProperties().getAdditionalProperties().get("RIR_FILES");
+    if (fileToLoad!=null){
+        rirFiles.addAll(formFileElements(fileToLoad));
+    }
+    List<FileElement> result=new LinkedList<FileElement>(); 
+    result.addAll(barFiles);
+    result.addAll(rirFiles);
+    return result;
+}
     @Override
     protected boolean parseElement(FileElement element) {
+        DataType dataType = getDataType(element);
         // stream of data from file
         CountingFileInputStream input = null;
         try {
@@ -83,7 +106,7 @@ public class BarRirParser extends CommonFilesParser<RecordTransferData, CommonCo
                     mainRecord.record.addProperty(Parameters.RECORD_LENGTH, recordLength);
 
                     // get type of record
-                    recordType = findById(idRecordType);
+                    recordType = findById(dataType,idRecordType);
 
                     if (recordType.toString().equals(BARRecords.ADMINISTRATIVE.toString())) {
                         if (recordLength == 49 || recordLength == 23) {
@@ -128,6 +151,7 @@ public class BarRirParser extends CommonFilesParser<RecordTransferData, CommonCo
                     }
                     RecordTransferData record = new RecordTransferData();
                     record.setFileName(element.getFile().getName());
+
                     record.setType(dataType);
                     record.setRecord(mainRecord);
                     // add read data
@@ -156,11 +180,21 @@ public class BarRirParser extends CommonFilesParser<RecordTransferData, CommonCo
 
     }
 
+
+    /**
+     * Gets the data type.
+     *
+     * @param element the element
+     * @return the data type
+     */
+    private DataType getDataType(FileElement element) {
+        return barFiles.contains(element)?DataType.BAR_DATA:DataType.RIR_DATA;
+    }
     @Override
-    protected RecordTransferData getStartupElement(org.amanzi.neo.loader.core.parser.CommonFilesParser.FileElement element) {
+    protected RecordTransferData getStartupElement(FileElement element) {
         RecordTransferData record = new RecordTransferData();
         record.setFileName(element.getFile().getName());
-        record.setType(dataType);
+        record.setType(getDataType(element));
         return record;
     }
 
@@ -169,7 +203,6 @@ public class BarRirParser extends CommonFilesParser<RecordTransferData, CommonCo
         RecordTransferData initdata = new RecordTransferData();
         initdata.setProjectName(properties.getProjectName());
         initdata.setRootName(properties.getDbRootName());
-        initdata.setType(dataType);
         return initdata;
     }
 
@@ -179,7 +212,7 @@ public class BarRirParser extends CommonFilesParser<RecordTransferData, CommonCo
      * @param idRecordType
      * @return bar or rir record
      */
-    private IRecords findById(int idRecordType) {
+    private IRecords findById(DataType dataType,int idRecordType) {
         IRecords record = null;
         switch (dataType) {
         case BAR_DATA:
