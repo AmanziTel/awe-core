@@ -176,6 +176,9 @@ public class NetworkModel {
     }
 
     public Coordinate getCoordinateOfSite(Node site) {
+        if (site==null){
+            return null;
+        }
         Double lat = (Double)site.getProperty(INeoConstants.PROPERTY_LAT_NAME, null);
         Double lon = (Double)site.getProperty(INeoConstants.PROPERTY_LON_NAME, null);
         if (lat == null || lon == null) {
@@ -187,6 +190,11 @@ public class NetworkModel {
     public Node getSiteOfSector(Node sector) {
         Relationship rel = sector.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING);
         return rel != null ? rel.getOtherNode(sector) : null;
+    }
+
+    public Set<NodeToNodeRelationModel> findAllN2nModels(NodeToNodeTypes type) {
+        return n2nserrvice.findAllN2nModels(rootNode,type);
+
     }
 
 }

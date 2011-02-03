@@ -66,7 +66,7 @@ public class NodeToNodeRelationModel {
         datasetService = NeoServiceFactory.getInstance().getDatasetService();
         name=datasetService.getNodeName(rootNode);
         node2nodeRelationService = NeoServiceFactory.getInstance().getNodeToNodeRelationService();
-        type = NodeToNodeTypes.valueOf(node2nodeRelationService.getINodeToNodeType(rootNode));
+        type = NodeToNodeTypes.valueOf(node2nodeRelationService.getNodeToNodeType(rootNode));
         countProxy = node2nodeRelationService.getCountProxy(rootNode);
         countRelation = node2nodeRelationService.getCountRelation(rootNode);
         proxyIndexKey = Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.PROXY);
@@ -125,5 +125,13 @@ public class NodeToNodeRelationModel {
     }
     public String getDescription() {
         return String.format("Network %s %s %s", datasetService.getNodeName(getNetworkNode()),getType().name(),getName());
+    }
+
+    public Node findNodeFromProxy(Node proxyServ) {
+        return node2nodeRelationService.findNodeFromProxy(proxyServ);
+    }
+
+    public Iterable<Relationship> getOutgoingRelations(Node proxyServ) {
+        return node2nodeRelationService.getOutgoingRelations(proxyServ);
     }
 }

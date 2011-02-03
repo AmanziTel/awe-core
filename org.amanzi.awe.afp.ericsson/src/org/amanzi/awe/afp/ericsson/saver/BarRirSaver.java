@@ -13,8 +13,12 @@
 
 package org.amanzi.awe.afp.ericsson.saver;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,11 +32,13 @@ import org.amanzi.awe.afp.ericsson.parser.MainRecord.Record;
 import org.amanzi.awe.afp.ericsson.parser.RecordTransferData;
 import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
 import org.amanzi.neo.loader.core.saver.MetaData;
+import org.amanzi.neo.services.CoordinatedNode;
 import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
+import org.amanzi.neo.services.node2node.NodeToNodeTypes;
 import org.amanzi.neo.services.utils.Pair;
 import org.amanzi.neo.services.utils.Utils;
 import org.apache.commons.lang.ObjectUtils;
@@ -382,9 +388,122 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
         try {
             createMatrix();
             createShadow();
+            createTriangulation();
         } finally {
             super.finishUp(element);
         }
+    }
+
+    /**
+     *
+     */
+    private void createTriangulation() {
+        Set<NodeToNodeRelationModel> models = networkModel.findAllN2nModels(NodeToNodeTypes.NEIGHBOURS);
+        for (NodeToNodeRelationModel model : models) {
+            createTriangulation(model);
+        }
+
+    }
+
+    private void createTriangulation(NodeToNodeRelationModel model) {
+        NodeToNodeRelationModel trModel = networkModel.getTriangulation(getTriangulationName(model));
+        for (Node proxyServ : model.getServTraverser(null).nodes()) {
+            Node sector = model.findNodeFromProxy(proxyServ);
+            Coordinate c1 = networkModel.getCoordinateOfSector(sector);
+            if (c1 == null) {
+                continue;
+            }
+            List<CoordinatedNode> nodes = new ArrayList<CoordinatedNode>();
+            for (Relationship rel : model.getOutgoingRelations(proxyServ)) {
+                Node node = rel.getOtherNode(proxyServ);
+                Coordinate c = networkModel.getCoordinateOfSector(model.findNodeFromProxy(node));
+                if (c == null) {
+                    continue;
+                }
+                nodes.add(new CoordinatedNode(node, c));
+            }
+            if (nodes.size() < 3) {
+                continue;
+            }
+            sortTriangl(nodes);
+            Node lastNode = nodes.get(nodes.size() - 1).getNode();
+            for (CoordinatedNode node : nodes) {
+                if (lastNode != null) {
+                    Relationship rel = trModel.getRelation(lastNode, node.getNode());
+                    updateProperty(trModel.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "co", new Double(1d));
+                    updateProperty(trModel.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "adj", new Double(0d));
+                    updateTx(2, 4);
+                }
+                lastNode = node.getNode();
+            }
+        }
+        statistic.setTypeCount(trModel.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), trModel.getRelationCount());
+        statistic.setTypeCount(trModel.getName(), NodeTypes.PROXY.getId(), trModel.getProxyCount());
+        info(String.format("Created triangulation, number relations: %s", trModel.getRelationCount()));
+    }
+
+    /**
+     * @param nodes
+     */
+    private void sortTriangl(List<CoordinatedNode> nodes) {
+        final Comparator<CoordinatedNode> comp = new Comparator<CoordinatedNode>() {
+
+            @Override
+            public int compare(CoordinatedNode o1, CoordinatedNode o2) {
+                int cp = new Double(o1.getCoord().x).compareTo(o2.getCoord().x);
+                if (cp == 0) {
+                    return new Double(o1.getCoord().y).compareTo(o2.getCoord().y);
+                }
+                return cp;
+            }
+
+        };
+        Collections.sort(nodes, comp);
+        final Coordinate c1 = nodes.get(0).getCoord();
+        final Coordinate c2 = nodes.get(nodes.size() - 1).getCoord();
+        final Double k = c2.x - c1.x == 0 ? Double.NaN : (c2.y - c1.y) / (c2.x - c1.x);
+        final double b = k == Double.NaN ? Double.NaN : (c2.x * c1.y - c1.x * c2.y) / (c2.x - c1.x);
+        Collections.sort(nodes, new Comparator<CoordinatedNode>() {
+
+            @Override
+            public int compare(CoordinatedNode o1, CoordinatedNode o2) {
+                if (o1.getCoord().equals(c1)) {
+                    return -1;
+                }
+                boolean isUpO1 = k == Double.NaN || o1.getCoord().y > k * o1.getCoord().x + b;
+                boolean isUpO2 = k == Double.NaN || o2.getCoord().y > k * o2.getCoord().x + b;
+                if (isUpO1) {
+                    if (isUpO2) {
+                        int cp = new Double(o1.getCoord().x).compareTo(o2.getCoord().x);
+                        if (cp == 0) {
+                            return new Double(o2.getCoord().y).compareTo(o1.getCoord().y);
+                        }
+                        return cp;
+                    } else {
+                        return -1;
+                    }
+                } else {
+                    if (isUpO2) {
+                        return 1;
+                    } else {
+                        int cp = new Double(o2.getCoord().x).compareTo(o1.getCoord().x);
+                        if (cp == 0) {
+                            return new Double(o1.getCoord().y).compareTo(o2.getCoord().y);
+                        }
+                        return cp;
+                    }
+                }
+            }
+
+        });
+    }
+
+    /**
+     * @param model
+     * @return
+     */
+    private String getTriangulationName(NodeToNodeRelationModel model) {
+        return model.getName() + "triang";
     }
 
     /**
@@ -397,7 +516,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
 
                     @Override
                     public Evaluation evaluate(Path arg0) {
-                        boolean continues = arg0.length()<1|| NodeTypes.SECTOR != service.getNodeType(arg0.endNode());
+                        boolean continues = arg0.length() < 1 || NodeTypes.SECTOR != service.getNodeType(arg0.endNode());
                         boolean includes = !continues && arg0.endNode().hasProperty("bcch");
                         return Evaluation.of(includes, continues);
                     }

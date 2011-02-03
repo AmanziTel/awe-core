@@ -81,7 +81,7 @@ public class NodeToNodeRelationService extends AbstractService {
                     @Override
                     public Evaluation evaluate(Path arg0) {
                         boolean continues = arg0.length() == 0;
-                        boolean includes = !continues && nameRelation.equals(datasetService.getNodeName(arg0.endNode()))&&typename.equals(getINodeToNodeType(arg0.endNode()));
+                        boolean includes = !continues && nameRelation.equals(datasetService.getNodeName(arg0.endNode()))&&typename.equals(getNodeToNodeType(arg0.endNode()));
                         return Evaluation.of(includes, continues);
                     }
                 }).traverse(rootNode);
@@ -90,7 +90,7 @@ public class NodeToNodeRelationService extends AbstractService {
         return nodes.hasNext() ? nodes.next() : null;
     }
 
-    public String getINodeToNodeType(Node node) {
+    public String getNodeToNodeType(Node node) {
         return (String)node.getProperty(N2N_TYPE, null);
     }
 
@@ -425,5 +425,30 @@ public class NodeToNodeRelationService extends AbstractService {
                 };
             }
         };
+    }
+
+    public Set<NodeToNodeRelationModel> findAllN2nModels(Node rootNode, final NodeToNodeTypes type) {
+        TraversalDescription td = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(NodeToNodeRelationshipTypes.SET_TO_ROOT,Direction.OUTGOING).evaluator(new Evaluator() {
+            
+            @Override
+            public Evaluation evaluate(Path arg0) {
+                boolean continues=arg0.length()<1;
+                boolean includes=!continues&&type.name().equals(getNodeToNodeType(arg0.endNode()));
+                return Evaluation.of(includes, continues);
+            }
+        });
+        Set<NodeToNodeRelationModel> result=new HashSet<NodeToNodeRelationModel>();
+        for (Node node:td.traverse(rootNode).nodes()){
+            result.add(new NodeToNodeRelationModel(node));
+        }
+        return result;
+    }
+
+    public Node findNodeFromProxy(Node proxyServ) {
+        return proxyServ.getSingleRelationship(DatasetRelationshipTypes.PROXY, Direction.INCOMING).getOtherNode(proxyServ);
+    }
+
+    public Iterable<Relationship> getOutgoingRelations(Node proxyServ) {
+        return proxyServ.getRelationships(NodeToNodeRelationshipTypes.PROXYS,Direction.OUTGOING);
     }
 }
