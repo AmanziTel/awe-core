@@ -37,4 +37,38 @@ public class CountableParameters implements IParameters {
 		return false;
 	}
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + index;
+        result = prime * result + ((mainParameter == null) ? 0 : mainParameter.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof CountableParameters)) {
+            return false;
+        }
+        CountableParameters other = (CountableParameters)obj;
+        if (index != other.index) {
+            return false;
+        }
+        if (mainParameter == null) {
+            if (other.mainParameter != null) {
+                return false;
+            }
+        } else if (!mainParameter.equals(other.mainParameter)) {
+            return false;
+        }
+        return true;
+    }
+
 }

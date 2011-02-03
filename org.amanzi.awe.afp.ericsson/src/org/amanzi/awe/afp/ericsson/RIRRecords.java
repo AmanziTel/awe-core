@@ -12,14 +12,32 @@
  */
 package org.amanzi.awe.afp.ericsson;
 
-import static org.amanzi.awe.afp.ericsson.Parameters.*;
+import static org.amanzi.awe.afp.ericsson.Parameters.ARFCN;
+import static org.amanzi.awe.afp.ericsson.Parameters.AVMEDIAN;
+import static org.amanzi.awe.afp.ericsson.Parameters.AVPERCENTILE;
+import static org.amanzi.awe.afp.ericsson.Parameters.CELL_NAME;
+import static org.amanzi.awe.afp.ericsson.Parameters.DAY;
+import static org.amanzi.awe.afp.ericsson.Parameters.FILE_FORMAT;
+import static org.amanzi.awe.afp.ericsson.Parameters.HOUR;
+import static org.amanzi.awe.afp.ericsson.Parameters.MINUTE;
+import static org.amanzi.awe.afp.ericsson.Parameters.MONTH;
+import static org.amanzi.awe.afp.ericsson.Parameters.NOOFMEAS;
+import static org.amanzi.awe.afp.ericsson.Parameters.NUMBER_OF_FREQUENCIES;
+import static org.amanzi.awe.afp.ericsson.Parameters.PERCENTILE_VALUE;
+import static org.amanzi.awe.afp.ericsson.Parameters.RECORD_INFORMATION_RIR;
+import static org.amanzi.awe.afp.ericsson.Parameters.RECORD_LENGTH;
+import static org.amanzi.awe.afp.ericsson.Parameters.RECORD_TYPE;
+import static org.amanzi.awe.afp.ericsson.Parameters.RID;
+import static org.amanzi.awe.afp.ericsson.Parameters.SECOND;
+import static org.amanzi.awe.afp.ericsson.Parameters.TTIME;
+import static org.amanzi.awe.afp.ericsson.Parameters.YEAR;
 
 /**
  * @author Kasnitskij_V
  * class to represent of RIR- records
  */
 public enum RIRRecords implements IRecords {
-	ADMINISTRATIVE(40, FILE_FORMAT, YEAR, MONTH, DAY, HOUR, MINUTE, SECOND, RECORD_INFORMATION, RID, TTIME, PERCENTILE_VALUE),
+	ADMINISTRATIVE(40, FILE_FORMAT, YEAR, MONTH, DAY, HOUR, MINUTE, SECOND, RECORD_INFORMATION_RIR, RID, TTIME, PERCENTILE_VALUE),
 	RADIO_INTERFERENCE_RECORDING_CELL_DATA(41, CELL_NAME, NUMBER_OF_FREQUENCIES, new BlockParameters(150, ARFCN, AVMEDIAN, AVPERCENTILE, NOOFMEAS));
 	
 	// record id

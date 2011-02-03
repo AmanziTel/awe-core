@@ -28,6 +28,7 @@ public enum Parameters implements IParameters {
     MINUTE(1),
     SECOND(1),
     RECORD_INFORMATION(4),
+    RECORD_INFORMATION_RIR(2),
     RID(7),
     START_DATE_YEAR(1),
     START_DATE_MONTH(1),

@@ -34,7 +34,6 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
@@ -111,12 +110,21 @@ public class NetworkModel {
         Node candidateNode = null;
         Set<Node> nodes = findSectorsByBsicBcch(bsic, bcch);
         for (Node candidate : nodes) {
+            if (servSector.equals(candidate)){
+                continue;
+            }
             Coordinate c1 = getCoordinateOfSector(candidate);
             if (c1 == null) {
                 continue;
             }
-            try {
-                double distance = JTS.orthodromicDistance(c, c1, crs);
+                double distance;
+                try {
+                    distance = JTS.orthodromicDistance(c, c1, crs);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    distance= Math.sqrt(Math.pow(c.x - c1.x, 2) + Math.pow(c.y - c1.y, 2));
+
+                }
                 if (distance > 30000) {
                     continue;
                 }
@@ -124,9 +132,6 @@ public class NetworkModel {
                     dist = distance;
                     candidateNode = candidate;
                 }
-            } catch (TransformException e) {
-                e.printStackTrace();
-            }
         }
         return candidateNode;
     }

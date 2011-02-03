@@ -101,13 +101,16 @@ protected List<org.amanzi.neo.loader.core.parser.CommonFilesParser.FileElement> 
                     // id of record
                     int idRecordType = inputStream.read();
                     // length of record
-                    int recordLength = inputStream.read() + inputStream.read();
+                    int recordLength = inputStream.read() + inputStream.read()*256;
                     mainRecord.record.addProperty(Parameters.RECORD_TYPE, idRecordType);
                     mainRecord.record.addProperty(Parameters.RECORD_LENGTH, recordLength);
 
                     // get type of record
                     recordType = findById(dataType,idRecordType);
-
+                    if (recordType==null){
+                        System.err.println("incorrect type");
+                        break;
+                    }
                     if (recordType.toString().equals(BARRecords.ADMINISTRATIVE.toString())) {
                         if (recordLength == 49 || recordLength == 23) {
                             parameters = recordType.getAllParameters();
@@ -133,12 +136,13 @@ protected List<org.amanzi.neo.loader.core.parser.CommonFilesParser.FileElement> 
 
                             if (parameter.isBlock()) {
                                 BlockParameters block = (BlockParameters)parameter;
-                                for (int i = 0; i < block.getCount(); i++) {
+                                byte[]count=(byte[])mainRecord.record.getProperties().get(Parameters.NUMBER_OF_FREQUENCIES);
+                                int c=(0x000000FF & ((int)count[0]));
+                                for (int i = 1; i <= c; i++) {
                                     for (int j = 0; j < block.getParameters().length; j++) {
-                                        byte data[] = new byte[parameter.getBytesLen()];
-                                        inputStream.read(data, 0, parameter.getBytesLen());
-
-                                        mainRecord.record.addProperty(new CountableParameters(parameter, i), data);
+                                        byte data[] = new byte[block.getParameters()[j].getBytesLen()];
+                                        inputStream.read(data, 0, block.getParameters()[j].getBytesLen());
+                                        mainRecord.record.addProperty(new CountableParameters(block.getParameters()[j], i), data);
                                     }
                                 }
                             } else {
