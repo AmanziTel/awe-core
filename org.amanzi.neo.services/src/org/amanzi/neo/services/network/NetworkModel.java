@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services.network;
 
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -101,6 +102,17 @@ public class NetworkModel {
     }
 
     public Node getClosestSector(Node servSector, Integer bsic, Integer bcch) {
+        Set<Node> nodes = findSectorsByBsicBcch(bsic, bcch);
+        return getClosestNode(servSector, nodes,30000);
+    }
+
+    /**
+     *
+     * @param servSector
+     * @param candidates
+     * @return
+     */
+    public Node getClosestNode(Node servSector, Collection<Node> candidates,double maxDistance) {
         Coordinate c = getCoordinateOfSector(servSector);
         CoordinateReferenceSystem crs = getCrs();
         if (c == null || crs == null) {
@@ -108,8 +120,7 @@ public class NetworkModel {
         }
         Double dist = null;
         Node candidateNode = null;
-        Set<Node> nodes = findSectorsByBsicBcch(bsic, bcch);
-        for (Node candidate : nodes) {
+        for (Node candidate : candidates) {
             if (servSector.equals(candidate)){
                 continue;
             }
@@ -125,7 +136,7 @@ public class NetworkModel {
                     distance= Math.sqrt(Math.pow(c.x - c1.x, 2) + Math.pow(c.y - c1.y, 2));
 
                 }
-                if (distance > 30000) {
+                if (distance > maxDistance) {
                     continue;
                 }
                 if (candidateNode == null || distance < dist) {

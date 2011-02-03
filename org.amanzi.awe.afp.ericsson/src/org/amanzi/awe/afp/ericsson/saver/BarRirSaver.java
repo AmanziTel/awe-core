@@ -14,7 +14,9 @@
 package org.amanzi.awe.afp.ericsson.saver;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.awe.afp.ericsson.BARRecords;
 import org.amanzi.awe.afp.ericsson.CountableParameters;
@@ -27,13 +29,24 @@ import org.amanzi.awe.afp.ericsson.parser.RecordTransferData;
 import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
 import org.amanzi.neo.loader.core.saver.MetaData;
 import org.amanzi.neo.services.GisProperties;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.amanzi.neo.services.utils.Pair;
+import org.amanzi.neo.services.utils.Utils;
 import org.apache.commons.lang.ObjectUtils;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.traversal.Evaluation;
+import org.neo4j.graphdb.traversal.Evaluator;
+import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.kernel.Traversal;
+import org.neo4j.kernel.Uniqueness;
+
+import com.vividsolutions.jts.geom.Coordinate;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -331,10 +344,10 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             return null;
         }
         int res = 0;
-        for (int i = val.length-1; i >=0; i--) {
-            int c=(0x000000FF & ((int)val[i]));
-            res=(res<<8)+c;
-//            res += c * (Math.pow(256, i));
+        for (int i = val.length - 1; i >= 0; i--) {
+            int c = (0x000000FF & ((int)val[i]));
+            res = (res << 8) + c;
+            // res += c * (Math.pow(256, i));
         }
         return res;
     }
@@ -367,10 +380,61 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
     @Override
     public void finishUp(RecordTransferData element) {
         try {
-//            createMatrix();
+            createMatrix();
+            createShadow();
         } finally {
             super.finishUp(element);
         }
+    }
+
+    /**
+     *
+     */
+    private void createShadow() {
+        shadowModel = networkModel.getShadowing(getShadowingMatrixName());
+        TraversalDescription td = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
+                .evaluator(new Evaluator() {
+
+                    @Override
+                    public Evaluation evaluate(Path arg0) {
+                        boolean continues = arg0.length()<1|| NodeTypes.SECTOR != service.getNodeType(arg0.endNode());
+                        boolean includes = !continues && arg0.endNode().hasProperty("bcch");
+                        return Evaluation.of(includes, continues);
+                    }
+                });
+        String indexName = Utils.getLuceneIndexKeyByProperty(rootNode, "bcch", NodeTypes.SECTOR);
+        for (Node serv : td.traverse(rootNode).nodes()) {
+            Coordinate c1 = networkModel.getCoordinateOfSector(serv);
+            if (c1 == null) {
+                continue;
+            }
+            Integer bcch = (Integer)serv.getProperty("bcch");
+            Set<Node> candidates = new HashSet<Node>();
+
+            for (Node candidate : service.getIndexService().getNodes(indexName, bcch)) {
+                candidates.add(candidate);
+            };
+            // TODO optimize
+            Node cnd1 = networkModel.getClosestNode(serv, candidates, 20000);
+            if (cnd1 == null) {
+                continue;
+            }
+            Relationship rel = shadowModel.getRelation(serv, cnd1);
+            updateProperty(getShadowingMatrixName(), NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "co", new Double(50d));
+            updateProperty(getShadowingMatrixName(), NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "adj", new Double(0d));
+            candidates.remove(cnd1);
+            Node cnd2 = networkModel.getClosestNode(serv, candidates, 20000);
+            if (cnd2 != null) {
+                rel = shadowModel.getRelation(serv, cnd2);
+                updateProperty(getShadowingMatrixName(), NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "co", new Double(25d));
+                updateProperty(getShadowingMatrixName(), NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "adj", new Double(0d));
+
+            }
+            updateTx(2, 2);
+        }
+        statistic.setTypeCount(getShadowingMatrixName(), NodeTypes.NODE_NODE_RELATIONS.getId(), shadowModel.getRelationCount());
+        statistic.setTypeCount(getShadowingMatrixName(), NodeTypes.PROXY.getId(), shadowModel.getProxyCount());
+        info(String.format("Created shadow, number relations: %s", shadowModel.getRelationCount()));
     }
 
     /**
@@ -381,11 +445,13 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             return;
         }
         interfModel = networkModel.getInterferenceMatrix(getInterfMatrixName());
-        shadowModel = networkModel.getShadowing(getShadowingMatrixName());
 
         for (ServCell cell : servCells.values()) {
             handleServCell(cell);
         }
+        statistic.setTypeCount(getInterfMatrixName(), NodeTypes.NODE_NODE_RELATIONS.getId(), interfModel.getRelationCount());
+        statistic.setTypeCount(getInterfMatrixName(), NodeTypes.PROXY.getId(), interfModel.getProxyCount());
+        info(String.format("Created IM, number relations: %s", interfModel.getRelationCount()));
     }
 
     /**
@@ -579,6 +645,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
         servCells.clear();
         firstFileName = null;
         networkModel = new NetworkModel(rootNode);
+
     }
 
     /**
