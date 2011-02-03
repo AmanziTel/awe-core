@@ -60,7 +60,7 @@ public class NodeToNodeRelationModelTesting {
 	}
 	
 	@Test
-	public void getRelationTest() {
+	public void getRelationIsFixedRelationTest() {
 	    Relationship relation = null;
 	    
         Transaction tx = graphDatabaseService.beginTx();
@@ -78,7 +78,7 @@ public class NodeToNodeRelationModelTesting {
 	}
 	
 	@Test
-    public void clear1Test() {
+    public void clear1IsProxyCountIsZeroTest() {
 	    Transaction tx = graphDatabaseService.beginTx();
         try{ 
             model.clear(true);
@@ -91,7 +91,7 @@ public class NodeToNodeRelationModelTesting {
     }
 	
 	@Test
-    public void clear2Test() {
+    public void clear2IsProxyCountIsZeroTest() {
         Transaction tx = graphDatabaseService.beginTx();
         try{ 
             model.clear(false);
@@ -104,7 +104,7 @@ public class NodeToNodeRelationModelTesting {
     }
 
 	@Test
-    public void getProxyCountTest() {	    
+    public void getProxyCountIsFixedCountTest() {	    
         Transaction tx = graphDatabaseService.beginTx();
         try{        
             servingNode.createRelationshipTo(dependentNode, GeoNeoRelationshipTypes.CHILD);
@@ -118,7 +118,7 @@ public class NodeToNodeRelationModelTesting {
     }
 
 	@Test
-    public void getNameAndGetNetworkNodeTest() {
+    public void getNameIsDefaultNameAndGetNetworkNodeIsNullTest() {
 	    assertTrue(model.getName() != null);
 	    assertTrue(model.getName().equals("rootNode"));
 	    
@@ -127,14 +127,14 @@ public class NodeToNodeRelationModelTesting {
     }
 
 	@Test
-    public void getTypeTest() {
+    public void getTypeNeighboursTypeTest() {
 	    
 	    assertTrue(model.getType() != null);
 	    assertTrue(model.getType().toString().equals(NodeToNodeTypes.NEIGHBOURS.toString()));
     }
 
 	@Test
-    public void getNeighTraverserTest() {
+    public void getNeighTraverserFixedCountNodesAndRelationsTestTest() {
 	    Node servingNode2 = null, dependentNode2 = null;
         Transaction tx = graphDatabaseService.beginTx();
         try{        
@@ -166,7 +166,7 @@ public class NodeToNodeRelationModelTesting {
     }
 
 	@Test
-    public void getServTraverserTest() {
+    public void getServTraverserFixedCountNodesAndRelationsTest() {
 	    Node servingNode2 = null, dependentNode2 = null;
 	    Transaction tx = graphDatabaseService.beginTx();
 	    try{        
