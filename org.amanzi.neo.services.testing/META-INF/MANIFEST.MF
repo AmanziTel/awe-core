@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Testing
+Bundle-SymbolicName: org.amanzi.neo.services.testing
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: org.amanzi.neo.services;bundle-version="1.0.0",
+ org.amanzi.neo.services.ui;bundle-version="1.0.0",
+ org.junit4
