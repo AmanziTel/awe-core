@@ -57,12 +57,12 @@ public class DatabaseManager {
     /*
      * Current Database Service
      */
-    private GraphDatabaseService databaseService;
+    private static GraphDatabaseService databaseService;
     
     /*
      * Current Index Service
      */
-    private IndexService indexService; 
+    private static IndexService indexService; 
     
     /*
      * Batch Inserter
@@ -72,7 +72,7 @@ public class DatabaseManager {
     /*
      * Current type of Access
      */
-    private DatabaseAccessType currentAccessType;
+    private static DatabaseAccessType currentAccessType;
     
     /*
      * Instance of Manager
@@ -85,7 +85,7 @@ public class DatabaseManager {
      * Listeners for Database Access Type changes 
      */
     private ArrayList<IDatabaseChangeListener> listeners = new ArrayList<IDatabaseChangeListener>();
-    private final DatabaseServiceWrapper databaseWrapper=new DatabaseServiceWrapper(null);
+    private final static DatabaseServiceWrapper databaseWrapper=new DatabaseServiceWrapper(null);
     
     /**
      * Return instance of manager 
@@ -102,6 +102,17 @@ public class DatabaseManager {
             }
         }
         return instance;
+    }
+    
+    // Kasnitskij_V:
+    // also need delete all static modifiers from such field as
+    // databaseService, indexService, currentAccessType and databaseWrapper
+    @Deprecated
+    public static void setDatabaseAndIndexServices(GraphDatabaseService ds, IndexService is) {
+        databaseService = ds;
+        indexService = is;
+        currentAccessType = DatabaseAccessType.EMBEDDED;
+        databaseWrapper.setRealService(currentAccessType, databaseService);
     }
     
     /**

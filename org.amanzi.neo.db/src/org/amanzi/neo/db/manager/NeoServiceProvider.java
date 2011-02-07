@@ -70,9 +70,9 @@ import org.neo4j.index.lucene.LuceneIndexService;
 
         this.databaseLocation = databaseLocation;
         neoService = service;
-        if (indexService==null){
+//        if (indexService==null){
             indexService = new LuceneIndexService(neoService);
-        }
+//        }
     }
     public LuceneIndexService getIndexService() {
         return indexService;
