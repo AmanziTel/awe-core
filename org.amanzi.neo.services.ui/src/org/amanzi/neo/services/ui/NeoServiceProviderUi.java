@@ -81,6 +81,14 @@ public class NeoServiceProviderUi implements INeoManager{
     private void init(GraphDatabaseService service) {
         NeoServiceProvider.getProvider().init(service,getDefaultDatabaseLocation(),this);
     } 
+    
+    // Kasnitskij_V:
+    public static void initProvider(GraphDatabaseService service, String pathToDatabase) {
+        getProvider().init(service, pathToDatabase);
+    }
+    private void init(GraphDatabaseService service, String pathToDatabase) {
+        NeoServiceProvider.getProvider().init(service, pathToDatabase,this);
+    }
     /**
      * Protected constructor
      */
