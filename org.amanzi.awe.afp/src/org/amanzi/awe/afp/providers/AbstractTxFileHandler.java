@@ -13,7 +13,6 @@
 
 package org.amanzi.awe.afp.providers;
 
-import org.amanzi.awe.afp.loaders.TxtFileImporter;
 import org.amanzi.awe.afp.loaders.TxtFileImporter.TxtLineParameter;
 import org.amanzi.neo.core.utils.importer.IImportHandler;
 import org.amanzi.neo.core.utils.importer.IImportParameter;

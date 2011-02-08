@@ -8,15 +8,22 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.amanzi.awe.afp.filters.AfpRowFilter;
+import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
+import org.amanzi.awe.afp.models.AfpModel;
+import org.amanzi.awe.afp.models.AfpModelUtils;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.TableItem;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.TraversalPosition;
@@ -63,16 +70,36 @@ public class AfpExporter {
 	
 	private int maxTRX = -1;
 	private File[] files;
+	private AfpModel model;
 	
-	public AfpExporter(Node afpRoot, Node afpDataset){
+	public File[] cellFilesArray;
+	private ArrayList<File> cellFiles = new ArrayList<File>();
+	public File[] interferenceFiles;
+	public File[] outputFiles;
+	
+	public static final int NEIGH = 0;
+	public static final int INTERFER = 1;
+	public static final int TRIANGULATION = 2;
+	public static final int SHADOWING = 3;
+	
+	public static final int CoA = 0;
+	public static final int AdA = 1;
+	public static final int CoT = 2;
+	public static final int AdT = 3;
+	
+	static int count;
+	
+	public AfpExporter(Node afpRoot, Node afpDataset, AfpModel model){
 		this.afpRoot = afpRoot;
 		this.afpDataset = afpDataset;
+		this.model = model;
 		createFiles();
 	}
 	
 	public void createFiles(){
 		createTmpFolder();
 		files = new File[fileNames.length];
+		
 		for (int i = 0; i < files.length; i++){
 			files[i] = new File(fileNames[i]);
 			try {
@@ -165,6 +192,513 @@ public class AfpExporter {
 	
 	
 	
+	
+	public void writeFilesNew(){
+		
+		
+		Traverser sectorTraverser = model.getTRXList(null);
+//		BufferedWriter writer;
+		
+		try {
+			
+			AfpFrequencyDomainModel models[] = model.getFreqDomains(false).toArray(new AfpFrequencyDomainModel[0]);
+			cellFilesArray = new File[models.length];
+			interferenceFiles = new File[models.length];
+			outputFiles = new File[models.length];
+			BufferedWriter[] writers = new BufferedWriter[models.length];
+			BufferedWriter[] intWriters = new BufferedWriter[models.length];
+			BufferedWriter[] outWriters = new BufferedWriter[models.length];
+			
+			for(int i = 0; i < models.length; i++){
+				cellFilesArray[i] = new File(tmpAfpFolder + "Cell_" + models[i].getName() + ".awe");
+				interferenceFiles[i] = new File(tmpAfpFolder + "Int_" + models[i].getName() + ".awe");
+				writers[i] = new BufferedWriter(new FileWriter(cellFilesArray[i]));
+				intWriters[i] = new BufferedWriter(new FileWriter(interferenceFiles[i]));
+//				outWriters[i] = new BufferedWriter(new FileWriter(outputFiles[i]));
+			}
+	    
+		    for (Node sectorNode : sectorTraverser) {
+		    	HashMap<Node,String[][]> sectorIntValues = getSectorInterferenceValues(sectorNode);
+		    	Traverser trxTraverser = AfpModelUtils.getTrxTraverser(sectorNode);
+	
+		    	for (Node trxNode: trxTraverser){
+		    		count++;
+		    		if (count %100 == 0)
+		    			AweConsolePlugin.info(count + " trxs processed");
+		    		for (int i = 0; i < models.length; i++){
+		    			AfpFrequencyDomainModel mod = models[i];
+			    		String filterString = mod.getFilters();
+			    		if (filterString != null && !filterString.trim().isEmpty()){
+				    		AfpRowFilter rf = AfpRowFilter.getFilter(mod.getFilters());
+				    		if (rf != null){
+					    		if (rf.equal(trxNode)){
+					    			ArrayList<Integer> freq = new ArrayList<Integer>();
+					    			StringBuilder sb = new StringBuilder();
+					    			sb.append(Long.toString(sectorNode.getId()));
+					    			sb.append(" ");
+					    			
+					    			String trxNo = (String)trxNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "0");
+									 if (Character.isLetter(trxNo.charAt(0))){
+										 trxNo = Integer.toString(Character.getNumericValue(trxNo.charAt(0)) - Character.getNumericValue('A')+ 1);
+									 }
+					    			
+					    			
+					    			
+					    			for (Node plan : trxNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
+
+										@Override
+										public boolean isReturnableNode(TraversalPosition pos) {
+											if (pos.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, "").equals("original"))
+												return true;
+											return false;
+										}
+					    				
+					    			}, DatasetRelationshipTypes.PLAN_ENTRY, Direction.OUTGOING)){
+										 try{
+											 Integer[] frequencies = (Integer[])plan.getProperty("arfcn", new Integer[0]);
+											 for(Integer f : frequencies)
+												 freq.add(f);
+										 }catch (ClassCastException e){
+											 int[] frequencies = (int[])plan.getProperty("arfcn", new int[0]);
+											 for(int f : frequencies)
+												 freq.add(f);
+										 }
+										 
+										 
+									}
+					    			
+					    			Integer[] freqArray = freq.toArray(new Integer[0]);
+					    			if (freqArray.length > 1){
+					    				for (int j = 0; j < freqArray.length; j++){
+					    					sb.append(trxNo + "-");
+					    					sb.append(j);
+							    			sb.append(" ");
+							    			sb.append(1);//non-relevant
+							    			sb.append(" ");
+							    			sb.append(1);//required
+							    			sb.append(" ");
+							    			sb.append(1);//given
+											sb.append(" " + freqArray[i]);//required frequencies
+											sb.append("\n");
+							    			writers[i].write(sb.toString());
+										}	
+					    			}
+					    			
+					    			else{
+					    				sb.append(trxNo);
+						    			sb.append(" ");
+						    			sb.append(1);//non-relevant
+						    			sb.append(" ");
+						    			sb.append(1);//required
+						    			sb.append(" ");
+						    			sb.append(1);//given
+										sb.append(" " + freqArray[0]);//required frequencies
+										sb.append("\n");
+						    			writers[i].write(sb.toString());
+									}
+					    			
+					    			writeInterferenceForTrx(sectorNode, trxNode, intWriters[i], sectorIntValues);
+					    			
+					    			
+					    		}
+				    		}
+			    		}
+			    	}
+			    	
+		    	
+		    	}
+		    
+		    }
+		    
+		    for (int i = 0; i < writers.length; i++){
+		    	writers[i].close();
+		    	intWriters[i].close();
+		    }
+		
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		
+		
+		
+	}
+	
+	private void writeInterferenceForTrx(Node sector, Node trx, BufferedWriter intWriter, HashMap<Node,String[][]> sectorIntValues) throws IOException{
+		
+		StringBuilder trxSb = new StringBuilder();
+		trxSb.append("SUBCELL 0 0 1 1 ");
+		int numberofinterferers = 0;
+		StringBuilder sbAllInt = new StringBuilder();
+		
+		for(Node intSector : sectorIntValues.keySet()){
+			
+			for (Node intTrx : sector.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
+
+				@Override
+				public boolean isReturnableNode(TraversalPosition pos) {
+					if (pos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.TRX.getId()))
+						return true;
+					
+					return false;
+				}
+			}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)){
+				String trxId = (String)trx.getProperty(INeoConstants.PROPERTY_NAME_NAME, "0");
+				char c = trxId.charAt(0);
+				 if (Character.isDigit(c)){
+					 c = (char)((c- '1') + 'A');
+				 }
+				StringBuilder sbSubCell = new StringBuilder();
+				sbSubCell.append("INT 0\t0\t");
+//				String[] values = sectorIntValues.get(intSector)[1];
+				float[] trxValues = calculateInterference(trx, intTrx, sectorIntValues.get(intSector));
+				for (int i = 0; i < trxValues.length; i++)
+					sbSubCell.append(trxValues[i] + " ");
+				sbSubCell.append(intSector.getId());
+				sbSubCell.append(c);
+				sbAllInt.append(sbSubCell);
+				sbAllInt.append("\n");
+				numberofinterferers++;
+			}
+			
+		}
+		
+		String trxId = (String)trx.getProperty(INeoConstants.PROPERTY_NAME_NAME, "0");
+		char c = trxId.charAt(0);
+		 if (Character.isDigit(c)){
+			 c = (char)((c- '1') + 'A');
+		 }
+
+		trxSb.append(numberofinterferers);
+		trxSb.append(" ");
+		trxSb.append(sector.getId());
+		trxSb.append(c);
+		trxSb.append("\n");
+		if(numberofinterferers >0) {
+			intWriter.write(trxSb.toString());
+			intWriter.write(sbAllInt.toString());
+		}
+		
+		
+	}
+	
+
+	private float[] calculateInterference(Node trx1, Node trx2, String[][] values){
+		float[] calculatedValues = new float[4];
+		boolean isBCCH1 = false;
+		boolean isHopping1 = false;
+		boolean isBCCH2 = false;
+		boolean isHopping2 = false;
+		int index = 0;
+		if ((Boolean)trx1.getProperty(INeoConstants.PROPERTY_BCCH_NAME))
+			isBCCH1 = true;
+		if ((Integer)trx1.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME) >= 1)
+			isHopping1 = true;
+		
+		if ((Boolean)trx2.getProperty(INeoConstants.PROPERTY_BCCH_NAME))
+			isBCCH2 = true;
+		if ((Integer)trx2.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME) >= 1)
+			isHopping2 = true;
+		
+		if (isBCCH1){
+			if (isBCCH2)
+				index = AfpModel.BCCHBCCH;
+			else index = isHopping2 ? AfpModel.BCCHSFH : AfpModel.BCCHNHBB; 
+		}
+		else if (isHopping1){
+			if (isBCCH2)
+				index = AfpModel.SFHBCCH;
+			else index = isHopping2 ? AfpModel.SFHSFH : AfpModel.SFHNHBB; 
+		}
+		else{
+			if (isBCCH2)
+				index = AfpModel.NHBBBCCH;
+			else index = isHopping2 ? AfpModel.NHBBSFH : AfpModel.NHBBNHBB; 
+		}
+		
+		for (int j = 0; j < values[0].length; j++){
+			//CoA
+			float val = 0;
+			for (int i = 0; i < values.length; i++){
+				try{
+					val = Float.parseFloat(values[i][j]);
+				}
+				catch(Exception e){
+					val = 0;
+				}
+				float scalingFactor = model.coNeighbor[index];
+				calculatedValues[j] += val*scalingFactor;
+			}
+		}
+		
+		
+		return calculatedValues;
+		
+		
+	}
+	
+	
+	public HashMap<Node,String[][]> getSectorInterferenceValues(Node sector){
+		
+		
+		DecimalFormat df = new DecimalFormat("0.0000000000");
+		
+		//values in 2-D array for each interfering node
+		//array[neighbourArray, intArray, TriArray, shadowArray]
+		//neighbourArray[CoA, AdjA, CoT, AdjT]
+		HashMap<Node, String[][]> intValues = new HashMap<Node, String[][]>();
+		for (Node proxySector : sector.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
+
+			@Override
+			public boolean isReturnableNode(TraversalPosition pos) {
+				if (pos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.SECTOR_SECTOR_RELATIONS.getId()))
+					return true;
+				
+				return false;
+			}
+		}, NetworkRelationshipTypes.INTERFERENCE, Direction.OUTGOING, NetworkRelationshipTypes.NEIGHBOURS, Direction.OUTGOING)){
+			for (Relationship relation : proxySector.getRelationships(NetworkRelationshipTypes.INTERFERS, NetworkRelationshipTypes.NEIGHBOURS)){
+				if (relation.getEndNode().equals(proxySector))
+					continue;
+				Node intSector;
+				Node intProxySector = relation.getEndNode();
+				if (intProxySector.hasRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.INCOMING)){
+					intSector = intProxySector.getSingleRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.INCOMING).getStartNode();
+				}
+				else {
+					intSector = intProxySector.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOURS, Direction.INCOMING).getStartNode();
+				}
+				RelationshipType type = relation.getType();
+				int typeIndex = NEIGH;
+				if (type.equals(NetworkRelationshipTypes.INTERFERS))
+					typeIndex = INTERFER;
+				
+				String[][] prevValue = new String[4][4];
+				if (intValues.containsKey(intSector))
+					prevValue = intValues.get(intSector);
+				
+				String[] value = new String[4]; 
+				if (typeIndex == INTERFER){
+					try {
+						value[CoA] = df.format(relation.getProperty("CoA")).toString();
+					} catch (Exception e) {
+						value[CoA] = (String)relation.getProperty("CoA");
+					}
+					
+					try {
+						value[AdA] = df.format(relation.getProperty("AdA")).toString();
+					} catch (Exception e) {
+						value[AdA] = (String)relation.getProperty("AdA");
+					}
+					
+					try {
+						value[CoT] = df.format(relation.getProperty("CoT")).toString();
+					} catch (Exception e) {
+						value[CoT] = (String)relation.getProperty("CoT");
+					}
+					
+					try {
+						value[AdT] = df.format(relation.getProperty("AdT")).toString();
+					} catch (Exception e) {
+						value[AdT] = (String)relation.getProperty("AdT");
+					}
+				}//end if
+				else if(typeIndex == NEIGH){
+					value[CoA] = Double.toString(0.5);
+					value[AdA] = Double.toString(0.05);
+					value[CoT] = Double.toString(0.5);
+					value[AdT] = Double.toString(0.05);
+				}
+				
+				prevValue[typeIndex] = value;
+				
+				intValues.put(intSector, prevValue);
+				
+			}
+		}
+		return intValues;
+			
+	}
+	
+	
+	
+	
+	
+	public void writeFiles(){
+		
+		try{
+			BufferedWriter carrierWriter  = new BufferedWriter(new FileWriter(files[CELL]));
+			BufferedWriter intWriter  = new BufferedWriter(new FileWriter(files[INTERFERENCE]));
+			StringBuilder carrierSB = new StringBuilder();
+			StringBuilder intSB = new StringBuilder();
+			for (Node sector : afpRoot.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
+
+				@Override
+				public boolean isReturnableNode(TraversalPosition pos) {
+					if (pos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.SECTOR.getId()))
+						return true;
+					
+					return false;
+				}
+			}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)){
+				String sectorValues[] = parseSectorName(sector);
+				carrierSB.append(sectorValues[0]);
+				carrierSB.append(sectorValues[1]);
+				String sectorName = getSectorNameForInterList(sector);
+				
+								
+				
+				
+				for (Node trx : sector.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
+
+					@Override
+					public boolean isReturnableNode(TraversalPosition pos) {
+						if (pos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.TRX.getId()))
+							return true;
+						
+						return false;
+					}
+				}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)){
+					
+					StringBuilder sbCell = new StringBuilder();
+					sbCell.append("SUBCELL 0 0 1 1 ");
+					int numberofinterferers =0;
+					StringBuilder sbAllInt = new StringBuilder();
+					
+					ArrayList<Integer> freq = new ArrayList<Integer>();
+					String trxNo = (String)trx.getProperty(INeoConstants.PROPERTY_NAME_NAME, "0");
+					String trxName = trxNo;
+					 if (Character.isLetter(trxNo.charAt(0))){
+						 trxNo = Integer.toString(Character.getNumericValue(trxNo.charAt(0)) - Character.getNumericValue('A')+ 1);
+					 }
+					 else{
+						 trxName = Character.toString((char)(trxNo.charAt(0) + 'A' - '1'));
+					 }
+					 carrierSB.append(" " + trxNo);
+					 carrierSB.append(" " + 1);//non-relevant
+					 
+					 for (Node plan : trx.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, DatasetRelationshipTypes.PLAN_ENTRY, Direction.OUTGOING)){
+						 try{
+							 Integer[] frequencies = (Integer[])plan.getProperty("arfcn", new Integer[0]);
+							 for(Integer f : frequencies)
+								 freq.add(f);
+						 }catch (ClassCastException e){
+							 int[] frequencies = (int[])plan.getProperty("arfcn", new int[0]);
+							 for(int f : frequencies)
+								 freq.add(f);
+						 }
+						 
+						 
+					 }
+					 
+					 Integer[] freqArray = freq.toArray(new Integer[0]);
+					 
+					 if (freqArray.length > maxTRX){
+						 maxTRX = freqArray.length; 
+					 }
+					
+					if (freqArray.length == 0)
+						carrierSB.append(" " + 1);//number of frequencies required
+					else
+						carrierSB.append(" " + freqArray.length);//number of frequencies required
+					carrierSB.append(" " + freqArray.length);//number of frequencies given
+					 for (Integer frequency : freqArray){
+						 carrierSB.append(" " + frequency);//required frequencies
+					 }
+					 carrierSB.append("\n");
+					 
+					 /*for (Node proxySector : sector.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
+
+							@Override
+							public boolean isReturnableNode(TraversalPosition pos) {
+								if (pos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.SECTOR_SECTOR_RELATIONS.getId()))
+									return true;
+								
+								return false;
+							}
+						}, NetworkRelationshipTypes.INTERFERENCE, Direction.OUTGOING)){
+						 for (Relationship relation : proxySector.getRelationships(NetworkRelationshipTypes.INTERFERS, Direction.OUTGOING)){
+								Node interferenceProxySector = relation.getEndNode();
+								Node interferenceSector = interferenceProxySector.getSingleRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.INCOMING).getOtherNode(interferenceProxySector);
+								String subSectorName = getSectorNameForInterList(interferenceSector);	
+								
+								StringBuilder sbSubCell = new StringBuilder();
+								DecimalFormat df = new DecimalFormat("0.0000000000");
+								sbSubCell.append("INT 0\t0\t"); 
+								
+								try {
+									sbSubCell.append(df.format(relation.getProperty("CoA")).toString());
+								} catch (Exception e) {
+									sbSubCell.append((String)relation.getProperty("CoA"));
+								}
+								sbSubCell.append(" ");
+								
+								try {
+									sbSubCell.append(df.format(relation.getProperty("CoT")).toString());
+								} catch (Exception e) {
+									sbSubCell.append((String)relation.getProperty("CoT"));
+								}
+								sbSubCell.append(" ");
+								
+								try {
+									sbSubCell.append(df.format(relation.getProperty("AdA")).toString());
+								} catch (Exception e) {
+									sbSubCell.append((String)relation.getProperty("AdA"));
+								}
+								sbSubCell.append(" ");
+								
+								try {
+									sbSubCell.append(df.format(relation.getProperty("AdT")).toString());
+								} catch (Exception e) {
+									sbSubCell.append((String)relation.getProperty("AdT"));
+								}
+								sbSubCell.append(" ");
+								sbSubCell.append(subSectorName);
+								String[] intTrxNames = getAllTrxNames(interferenceSector);
+								for(String intName: intTrxNames){
+									sbAllInt.append(sbSubCell);
+									sbAllInt.append(intName);
+									sbAllInt.append("\n");
+									numberofinterferers++;
+								}
+								
+							}
+						 	
+					 	}
+
+
+					 	sbCell.append(numberofinterferers);
+						sbCell.append(" ");
+						sbCell.append(sectorName);
+						sbCell.append(trxName);
+						sbCell.append("\n");
+						if(numberofinterferers >0) {
+							intWriter.write(sbCell.toString());
+							intWriter.write(sbAllInt.toString());
+						}*/
+					 
+					
+					 
+						carrierWriter.write(carrierSB.toString());
+					 
+				}
+				
+				
+			}
+			
+			carrierWriter.close();
+		}
+		catch(Exception e){
+			AweConsolePlugin.exception(e);
+		}
+	}
+	
+	
+	
+	
+	
+	
 	/**
 	 * Creates the Control file to be given as input to the C++ engine
 	 */
@@ -230,13 +764,13 @@ public class AfpExporter {
 			writer.write("CellCardinality " + parameters.get("CellCardinality"));
 			writer.newLine();
 			
-			writer.write("CellFile " + "\"" + this.fileNames[CELL] + "\"");
+			writer.write("CellFile " + "\"" + this.cellFilesArray[0] + "\"");
 			writer.newLine();
 			
 			writer.write("NeighboursFile " + "\"" + this.fileNames[NEIGHBOUR] + "\"");
 			writer.newLine();
 			
-			writer.write("InterferenceFile " + "\"" + this.fileNames[INTERFERENCE] + "\"");
+			writer.write("InterferenceFile " + "\"" + this.interferenceFiles[0] + "\"");
 			writer.newLine();
 
 			writer.write("OutputFile " + "\"" + this.outputFileName + "\"");
@@ -347,6 +881,25 @@ public class AfpExporter {
 			sectorName = siteName + (Character.getNumericValue(sectorNo) - Character.getNumericValue('A')+ 1);
 		
 		return sectorName;
+	}
+	
+	public Long[] getAllTrxIds(Node sector){
+		ArrayList<Long> ids = new ArrayList<Long>();
+		for (Node trx : sector.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
+
+			@Override
+			public boolean isReturnableNode(TraversalPosition pos) {
+				if (pos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.TRX.getId()))
+					return true;
+				
+				return false;
+			}
+		}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)){
+			long id = trx.getId();
+			ids.add(id);
+			
+		}
+		return ids.toArray(new Long[0]);
 	}
 	
 	public String[] getAllTrxNames(Node sector){

@@ -173,7 +173,7 @@ public class AfpLoader extends AbstractLoader {
             if (file.getCellFile() != null) {
             	if (isMonitorCancelled(monitor))
             		return; 	
-                loadCellFile(file.getCellFile());
+                loadCellFile(file.getCellFile(), false);
             }
             commit(true);
             monitor.worked(1);
@@ -326,7 +326,7 @@ public class AfpLoader extends AbstractLoader {
      * @param cellFile the cell file
      * @param monitor the monitor
      */
-    protected void loadCellFile(File cellFile) {
+    protected void loadCellFile(File cellFile, boolean isNodeIdBased) {
         // TODO define root of cell file. If we create virtual dataset for it what we should store
         // in main part?
         afpCell = afpRoot;
@@ -349,7 +349,7 @@ public class AfpLoader extends AbstractLoader {
 //        	
 //        	AweConsolePlugin.info("Created new Freq plan node ");
 //        }
-        CommonImporter importer = new CommonImporter(new CellFileHandler(afpCell, neo), new TxtFileImporter(cellFile));
+        CommonImporter importer = new CommonImporter(new CellFileHandler(afpCell, neo, isNodeIdBased), new TxtFileImporter(cellFile));
         importer.process();
     }
 
@@ -492,6 +492,7 @@ public class AfpLoader extends AbstractLoader {
         /** The header. */
         private LinkedHashMap<String, Header> header;
         private long time;
+        boolean isNodeIdBased;
 
         /**
          * Instantiates a new cell file handler.
@@ -499,10 +500,11 @@ public class AfpLoader extends AbstractLoader {
          * @param rootNode the root node
          * @param service the service
          */
-        public CellFileHandler(Node rootNode, GraphDatabaseService service) {
+        public CellFileHandler(Node rootNode, GraphDatabaseService service, boolean isNodeIdBased) {
             super(rootNode, service);
             header = getHeaderMap(CELL_IND).headers;
             time = System.currentTimeMillis();
+            this.isNodeIdBased = isNodeIdBased;
         }
         
         private String getSampleSectorName(String siteName, String sectorNo) {
@@ -539,106 +541,161 @@ public class AfpLoader extends AbstractLoader {
             try {
                 String[] field = line.split("\\s");
                 int i = 0;
-                String sectorFullName = field[i++];
-                String siteName = sectorFullName.substring(0, sectorFullName.length() -1);
-                String sectorNo = sectorFullName.substring(sectorFullName.length() - 1);
-                String trxName = field[i++];
-                Integer nonrelevant = Integer.valueOf(field[i++]);
-                Integer numberoffreqenciesrequired = Integer.valueOf(field[i++]);
-                Integer numberoffrequenciesgiven = Integer.valueOf(field[i++]);
-                Integer[] frq = new Integer[numberoffrequenciesgiven];
-                for (int j = 0; j < frq.length; j++) {
-                    frq[j] = Integer.valueOf(field[i++]);
-                }
-                
-                boolean convertSectorNo2Char  = false;
-                boolean reduceSectorName = false;
-                int sectorNameLength =0;
-                String sampleSectorName = getSampleSectorName(siteName,sectorNo);
-                if(sampleSectorName != null) {
-                	convertSectorNo2Char = checkConvertSectorNo2Char(sampleSectorName);
-                	
-                	if(sampleSectorName.length() < (siteName+sectorNo).length()){
-                		reduceSectorName = true;
-                		sectorNameLength = sampleSectorName.length();
-                	}
-                }
-                
-                Transaction tx = service.beginTx();
-                try {
-                    Node site = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteName);
-                    if (site == null) {
-                        site = addChild(afpCell, NodeTypes.SITE, siteName, siteName);
-                    }
-                    String sectorName;
-                    if(convertSectorNo2Char) {
-                    	char c = field[0].charAt(sectorFullName.length() - 1);
-                    	c = (char)((c- '1') + 'A');
-                    	sectorName = siteName + c;
-                    }else {
-                    	sectorName = sectorFullName;//siteName + field[1];
-                    }
-                    if(reduceSectorName) {
-                    	sectorName = sectorName.substring(sectorName.length() - sectorNameLength);
-                    }
-                    Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
-                    if (sector == null) {
-                        sector = addChild(site, NodeTypes.SECTOR, sectorName, sectorName);
-                    }
+                if (isNodeIdBased){
+                	long nodeId = Long.parseLong(field[i++]);
+                	Node sector = service.getNodeById(nodeId);
+                	String trxName = field[i++];
+                	if (trxName.contains("-"))
+                		trxName = trxName.split("-")[0];
+                	Integer nonrelevant = Integer.valueOf(field[i++]);
+                    Integer numberoffreqenciesrequired = Integer.valueOf(field[i++]);
+                    Integer numberoffrequenciesgiven = Integer.valueOf(field[i++]);
+                    int frq = 0;
+//                    for (int j = 0; j < frq.length; j++) {
+                        frq = Integer.valueOf(field[i++]);
+//                    }
                     
                     Node trxNode = null;
                     Traverser traverser = Utils.getTrxTraverser(sector);
-                    for (Node trx: traverser){
-                    	if (trx.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(trxName)){
-                    		trxNode = trx;
-                    		break;
-                    	}
-                    }
-                    
-                    if (trxNode == null){
-                    	trxNode = addChild(sector, NodeTypes.TRX, trxName, trxName);
-                    }
-                    
-                    setIndexProperty(header, trxNode, "nonrelevant", nonrelevant);
-                    setIndexProperty(header, trxNode, "numberoffreqenciesrequired", numberoffreqenciesrequired);
-                    setIndexProperty(header, trxNode, "numberoffrequenciesgiven", numberoffrequenciesgiven);
-                    String band = (String)sector.getProperty("band", "");
-                    if (band.contains(" "))
-                    	band = band.split("\\s")[1];
-                    AweConsolePlugin.info("Adding TRX and FREQ for sector " + sectorName);
-                    
-                    for (int j = 0; j < frq.length; j++){
-                    	Node planNode = Utils.createPlan(trxNode, new int[]{j}, Long.toString(time), service);
-                      if(prevFreqNode != null) {
-                      	prevFreqNode.createRelationshipTo(planNode, NetworkRelationshipTypes.NEXT);
-               	   }
-                      prevFreqNode = planNode;
-                    }
-//                	Traverser traverser = Utils.getTrxTraverser(sector);
-//                	int j = 0;
-//                	for (Node trx: traverser){
-//                		if(j >= frq.length)
-//                			break;
-//                		Node planNode = Utils.createPlan(trx, new int[]{j}, Long.toString(time), service);
-//                        if(prevFreqNode != null) {
-//                        	prevFreqNode.createRelationshipTo(planNode, NetworkRelationshipTypes.NEXT);
-//                 	   }
-//                        prevFreqNode = planNode;
-//                        j++;
-//                	}
-//                    for(int j=0; j< frq.length;j++) {
-//                    	
-//                        Node trx = Utils.findOrCreateCarrier(sector, j, band, service);//networkService.getTRXNode(sector, ""+j, 0);
-////                        prevFreqNode = networkService.addFREQNode(trx, ""+frq[j], prevFreqNode);
-//                        Node planNode = Utils.createPlan(trx, new int[]{j}, Long.toString(time), service);
-//                        if(prevFreqNode != null) {
-//                        	prevFreqNode.createRelationshipTo(planNode, NetworkRelationshipTypes.NEXT);
-//                 	   }
-//                        prevFreqNode = planNode;
-//                    }
-                    tx.success();
-                } finally {
-                    tx.finish();
+                    Transaction tx = service.beginTx();
+                    try {
+	                    for (Node trx: traverser){
+	                    	if (trx.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(trxName)){
+	                    		trxNode = trx;
+	                    		break;
+	                    	}
+	                    }
+	                    
+	                    if (trxNode == null){
+	                    	trxNode = addChild(sector, NodeTypes.TRX, trxName, trxName);
+	                    }
+	                    
+	                    setIndexProperty(header, trxNode, "nonrelevant", nonrelevant);
+	                    setIndexProperty(header, trxNode, "numberoffreqenciesrequired", numberoffreqenciesrequired);
+	                    setIndexProperty(header, trxNode, "numberoffrequenciesgiven", numberoffrequenciesgiven);
+	                    String band = (String)sector.getProperty("band", "");
+	                    if (band.contains(" "))
+	                    	band = band.split("\\s")[1];
+	                    AweConsolePlugin.info("Adding TRX and FREQ for sector node id " + nodeId);
+	                    
+//	                    for (int j = 0; j < frq.length; j++){
+	                    	Node planNode = Utils.createPlan(trxNode, new int[]{frq}, Long.toString(time), service);
+	                    	if(prevFreqNode != null) {
+	                    		prevFreqNode.createRelationshipTo(planNode, NetworkRelationshipTypes.NEXT);
+	               	   		}
+	                    	prevFreqNode = planNode;
+//	                    }
+	                    
+	                    tx.success();
+                	} finally {
+                		tx.finish();
+                	}
+                	
+            		
+            	}
+                
+                else{
+	                String sectorFullName = field[i++];
+	                String siteName = sectorFullName.substring(0, sectorFullName.length() -1);
+	                String sectorNo = sectorFullName.substring(sectorFullName.length() - 1);
+	                String trxName = field[i++];
+	                Integer nonrelevant = Integer.valueOf(field[i++]);
+	                Integer numberoffreqenciesrequired = Integer.valueOf(field[i++]);
+	                Integer numberoffrequenciesgiven = Integer.valueOf(field[i++]);
+	                Integer[] frq = new Integer[numberoffrequenciesgiven];
+	                for (int j = 0; j < frq.length; j++) {
+	                    frq[j] = Integer.valueOf(field[i++]);
+	                }
+	                
+	                boolean convertSectorNo2Char  = false;
+	                boolean reduceSectorName = false;
+	                int sectorNameLength =0;
+	                String sampleSectorName = getSampleSectorName(siteName,sectorNo);
+	                if(sampleSectorName != null) {
+	                	convertSectorNo2Char = checkConvertSectorNo2Char(sampleSectorName);
+	                	
+	                	if(sampleSectorName.length() < (siteName+sectorNo).length()){
+	                		reduceSectorName = true;
+	                		sectorNameLength = sampleSectorName.length();
+	                	}
+	                }
+	                
+	                Transaction tx = service.beginTx();
+	                try {
+	                    Node site = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteName);
+	                    if (site == null) {
+	                        site = addChild(afpCell, NodeTypes.SITE, siteName, siteName);
+	                    }
+	                    String sectorName;
+	                    if(convertSectorNo2Char) {
+	                    	char c = field[0].charAt(sectorFullName.length() - 1);
+	                    	c = (char)((c- '1') + 'A');
+	                    	sectorName = siteName + c;
+	                    }else {
+	                    	sectorName = sectorFullName;//siteName + field[1];
+	                    }
+	                    if(reduceSectorName) {
+	                    	sectorName = sectorName.substring(sectorName.length() - sectorNameLength);
+	                    }
+	                    Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
+	                    if (sector == null) {
+	                        sector = addChild(site, NodeTypes.SECTOR, sectorName, sectorName);
+	                    }
+	                    
+	                    Node trxNode = null;
+	                    Traverser traverser = Utils.getTrxTraverser(sector);
+	                    for (Node trx: traverser){
+	                    	if (trx.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(trxName)){
+	                    		trxNode = trx;
+	                    		break;
+	                    	}
+	                    }
+	                    
+	                    if (trxNode == null){
+	                    	trxNode = addChild(sector, NodeTypes.TRX, trxName, trxName);
+	                    }
+	                    
+	                    setIndexProperty(header, trxNode, "nonrelevant", nonrelevant);
+	                    setIndexProperty(header, trxNode, "numberoffreqenciesrequired", numberoffreqenciesrequired);
+	                    setIndexProperty(header, trxNode, "numberoffrequenciesgiven", numberoffrequenciesgiven);
+	                    String band = (String)sector.getProperty("band", "");
+	                    if (band.contains(" "))
+	                    	band = band.split("\\s")[1];
+	                    AweConsolePlugin.info("Adding TRX and FREQ for sector " + sectorName);
+	                    
+	                    for (int j = 0; j < frq.length; j++){
+	                    	Node planNode = Utils.createPlan(trxNode, new int[]{j}, Long.toString(time), service);
+	                      if(prevFreqNode != null) {
+	                      	prevFreqNode.createRelationshipTo(planNode, NetworkRelationshipTypes.NEXT);
+	               	   		}
+	                      prevFreqNode = planNode;
+	                    }
+	//                	Traverser traverser = Utils.getTrxTraverser(sector);
+	//                	int j = 0;
+	//                	for (Node trx: traverser){
+	//                		if(j >= frq.length)
+	//                			break;
+	//                		Node planNode = Utils.createPlan(trx, new int[]{j}, Long.toString(time), service);
+	//                        if(prevFreqNode != null) {
+	//                        	prevFreqNode.createRelationshipTo(planNode, NetworkRelationshipTypes.NEXT);
+	//                 	   }
+	//                        prevFreqNode = planNode;
+	//                        j++;
+	//                	}
+	//                    for(int j=0; j< frq.length;j++) {
+	//                    	
+	//                        Node trx = Utils.findOrCreateCarrier(sector, j, band, service);//networkService.getTRXNode(sector, ""+j, 0);
+	////                        prevFreqNode = networkService.addFREQNode(trx, ""+frq[j], prevFreqNode);
+	//                        Node planNode = Utils.createPlan(trx, new int[]{j}, Long.toString(time), service);
+	//                        if(prevFreqNode != null) {
+	//                        	prevFreqNode.createRelationshipTo(planNode, NetworkRelationshipTypes.NEXT);
+	//                 	   }
+	//                        prevFreqNode = planNode;
+	//                    }
+	                    tx.success();
+	                } finally {
+	                    tx.finish();
+	                }
                 }
             } catch (Exception e) {
                 String errStr = String.format("Can't parse line: %s", line);

@@ -1,6 +1,5 @@
 package org.amanzi.awe.afp.executors;
 
-import java.sql.Date;
 
 public interface AfpProcessProgress {
 

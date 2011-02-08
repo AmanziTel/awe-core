@@ -130,16 +130,16 @@ public class AfpModel {
 	public final static int SFHSFH = 8;
 	
 	//scaling rules arrays with default values
-	float[] sectorSeparation = new float[]{100, 100, 100, 100, 100, 100, 100, 100, 100};
-	float[] siteSeparation = new float[]{100, 70, 50, 70, 50, 30, 70, 50, 20};
-	float[] coInterference = new float[]{1, 0.7f, 0.5f, 0.7f, 0.5f, 0.3f, 0.7f, 0.3f, 0.2f};
-	float[] adjInterference = new float[]{1, 0.7f, 0.5f, 0.7f, 0.5f, 0.3f, 0.7f, 0.3f, 0.2f};
-	float[] coNeighbor = new float[]{1, 0.3f, 0.2f, 0, 0, 0, 0, 0, 0};
-	float[] adjNeighbor = new float[]{1, 0.1f, 0, 0, 0, 0, 0, 0, 0};
-	float[] coTriangulation = new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0};
-	float[] adjTriangulation = new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0};
-	float[] coShadowing = new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0};
-	float[] adjShadowing = new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0};
+	public float[] sectorSeparation = new float[]{100, 100, 100, 100, 100, 100, 100, 100, 100};
+	public float[] siteSeparation = new float[]{100, 70, 50, 70, 50, 30, 70, 50, 20};
+	public float[] coInterference = new float[]{1, 0.7f, 0.5f, 0.7f, 0.5f, 0.3f, 0.7f, 0.3f, 0.2f};
+	public float[] adjInterference = new float[]{1, 0.7f, 0.5f, 0.7f, 0.5f, 0.3f, 0.7f, 0.3f, 0.2f};
+	public float[] coNeighbor = new float[]{1, 0.3f, 0.2f, 0, 0, 0, 0, 0, 0};
+	public float[] adjNeighbor = new float[]{1, 0.1f, 0, 0, 0, 0, 0, 0, 0};
+	public float[] coTriangulation = new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0};
+	public float[] adjTriangulation = new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0};
+	public float[] coShadowing = new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0};
+	public float[] adjShadowing = new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0};
 	
 	//Progress page params
 	String[] tableItems = new String[6];
@@ -1795,7 +1795,7 @@ public class AfpModel {
 	    	parameters.put(ControlFileProperties.USE_TRAFFIC, "1");
 	    	parameters.put(ControlFileProperties.USE_SO_NEIGHBOURS, "1");
 	    	parameters.put(ControlFileProperties.DECOMPOSE_CLIQUES, "0");
-			afpJob = new AfpProcessExecutor("Execute Afp Process", datasetNode, this.afpNode, parameters);
+			afpJob = new AfpProcessExecutor("Execute Afp Process", datasetNode, this.afpNode, parameters, this);
 			afpJob.setProgress(progress);
 			//afpJob.schedule();
     	}

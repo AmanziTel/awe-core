@@ -1,6 +1,5 @@
 package org.amanzi.awe.afp.filters;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.neo4j.graphdb.Node;

@@ -1,7 +1,6 @@
 package org.amanzi.awe.afp.filters;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;

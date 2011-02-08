@@ -3,11 +3,9 @@ package org.amanzi.awe.afp.loaders;
 import java.io.File;
 import java.io.IOException;
 
-import org.amanzi.awe.afp.files.ControlFile;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 
 public class AfpOutputFileLoader extends AfpLoader {
@@ -43,7 +41,7 @@ public class AfpOutputFileLoader extends AfpLoader {
             //defineRoot(projectName);
             if (outputFile != null) {
             	if(outputFile.exists())
-            		loadCellFile(outputFile);
+            		loadCellFile(outputFile, true);
             	else {
             		AweConsolePlugin.error("Error:: No output File generated");
             	}

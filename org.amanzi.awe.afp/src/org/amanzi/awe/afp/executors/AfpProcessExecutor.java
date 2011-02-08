@@ -25,6 +25,7 @@ import org.amanzi.awe.afp.Activator;
 import org.amanzi.awe.afp.AfpEngine;
 import org.amanzi.awe.afp.exporters.AfpExporter;
 import org.amanzi.awe.afp.loaders.AfpOutputFileLoader;
+import org.amanzi.awe.afp.models.AfpModel;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -57,12 +58,14 @@ public class AfpProcessExecutor extends Job {
 	private HashMap<String, String> parameters;
 	private Node afpDataset;
 	private IProgressMonitor progressMonitor;
+	private AfpModel model;
 	
-	public AfpProcessExecutor(String name, Node afpRoot,Node afpDataset, HashMap<String, String> parameters) {
+	public AfpProcessExecutor(String name, Node afpRoot,Node afpDataset, HashMap<String, String> parameters, AfpModel model) {
 		super(name);
 		this.afpRoot = afpRoot;
 		this.parameters = parameters;
 		this.afpDataset = afpDataset;
+		this.model = model;
 	}
 
 	public void setProgress(AfpProcessProgress progress) {
@@ -78,7 +81,7 @@ public class AfpProcessExecutor extends Job {
 	public IStatus run(IProgressMonitor monitor){
 		progressMonitor = monitor;
 		monitor.beginTask("Execute Afp", 100);
-        AfpExporter afpE = new AfpExporter(afpRoot, afpDataset);
+        AfpExporter afpE = new AfpExporter(afpRoot, afpDataset, model);
 
 		createFiles(monitor, afpE);
 		Runtime run = Runtime.getRuntime();
@@ -211,13 +214,14 @@ public class AfpProcessExecutor extends Job {
 		}
 		
 		/** Create the carrier file */
-		afpE.createCarrierFile(); 
+		afpE.writeFilesNew();
+//		afpE.createCarrierFile(); 
 			
 		/** Create the neighbours file */
 //		afpE.createNeighboursFile();
 		
 		/** Create the interference file */
-		afpE.createInterferenceFile(monitor);
+//		afpE.createInterferenceFile(monitor);
 		
 		/** Create the cliques file */
 		afpE.createCliquesFile();
