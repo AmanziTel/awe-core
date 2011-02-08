@@ -427,7 +427,40 @@ public class AfpExporter {
 				catch(Exception e){
 					val = 0;
 				}
-				float scalingFactor = model.coNeighbor[index];
+				float scalingFactor = 0;
+				
+				if (j ==CoA || j == CoT){
+					if (i == NEIGH){
+						scalingFactor = model.coNeighbor[index];
+					}
+					else if (i == INTERFER){
+						scalingFactor = model.coInterference[index];
+					}
+					else if (i == TRIANGULATION){
+						scalingFactor = model.coTriangulation[index];
+					}
+					else if (i == SHADOWING){
+						scalingFactor = model.coShadowing[index];
+					}
+				}
+				else if (j ==AdA || j == AdT){
+					if (i == NEIGH){
+						scalingFactor = model.adjNeighbor[index];
+					}
+					else if (i == INTERFER){
+						scalingFactor = model.adjInterference[index];
+					}
+					else if (i == TRIANGULATION){
+						scalingFactor = model.adjTriangulation[index];
+					}
+					else if (i == SHADOWING){
+						scalingFactor = model.adjShadowing[index];
+					}
+				}
+				
+				
+					
+				scalingFactor = model.coNeighbor[index];
 				calculatedValues[j] += val*scalingFactor;
 			}
 		}
