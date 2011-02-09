@@ -15,22 +15,27 @@ package org.amanzi.awe.views.reuse.mess_table.view;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.amanzi.awe.views.reuse.Messages;
 import org.amanzi.awe.views.reuse.mess_table.DataTypes;
+import org.amanzi.awe.views.reuse.views.InformationProvider;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.events.ShowViewEvent;
 import org.amanzi.neo.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
+import org.amanzi.neo.services.statistic.ISelectionInformation;
 import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
@@ -739,8 +744,8 @@ public class MessageAndEventTableView extends ViewPart {
             IPropertyHeader header = PropertyHeader.getPropertyStatistic(propRoot);
             
             // Kasnitskij_V:
-            String[] propNames = header.getNumericFields("-main-type-");
-            if(propNames==null){
+            String[] propNames = header.getAllFields("-main-type-");
+            if (propNames == null){
                 return;
             }
             for(String property : propNames){
