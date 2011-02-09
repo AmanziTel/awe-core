@@ -87,6 +87,9 @@ public class AfpExporter {
 	public static final int CoT = 2;
 	public static final int AdT = 3;
 	
+	public static final float CO_SITE_SCALING_FACTOR = 1;
+	public static final float CO_SECTOR_SCALING_FACTOR = 1;
+	
 	static int count;
 	
 	public AfpExporter(Node afpRoot, Node afpDataset, AfpModel model){
@@ -328,6 +331,7 @@ public class AfpExporter {
 	
 	private void writeInterferenceForTrx(Node sector, Node trx, BufferedWriter intWriter, HashMap<Node,String[][]> sectorIntValues, AfpRowFilter rf) throws IOException{
 		
+		DecimalFormat df = new DecimalFormat("0.0000000000");
 		StringBuilder trxSb = new StringBuilder();
 		trxSb.append("SUBCELL 0 0 1 1 ");
 		int numberofinterferers = 0;
@@ -345,13 +349,16 @@ public class AfpExporter {
 					return false;
 				}
 			}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)){
+				String trxId = (String)trx.getProperty(INeoConstants.PROPERTY_NAME_NAME, "0");
+				if (sector.equals(intSector) && trxId.equals((String)trx.getProperty(INeoConstants.PROPERTY_NAME_NAME, "0")))
+					continue;
 	    		if (rf != null){
 		    		if (!(rf.equal(intTrx))){
 		    			continue;
 		    		}
 	    		}
 				
-				String trxId = (String)trx.getProperty(INeoConstants.PROPERTY_NAME_NAME, "0");
+				
 				char c = trxId.charAt(0);
 				 if (Character.isDigit(c)){
 					 c = (char)((c- '1') + 'A');
@@ -360,8 +367,9 @@ public class AfpExporter {
 				sbSubCell.append("INT 0\t0\t");
 //				String[] values = sectorIntValues.get(intSector)[1];
 				float[] trxValues = calculateInterference(trx, intTrx, sectorIntValues.get(intSector));
-				for (int i = 0; i < trxValues.length; i++)
-					sbSubCell.append(trxValues[i] + " ");
+				for (int i = 0; i < trxValues.length; i++){
+					sbSubCell.append(df.format(trxValues[i]) + " ");
+				}
 				sbSubCell.append(intSector.getId());
 				sbSubCell.append(c);
 				sbAllInt.append(sbSubCell);
@@ -392,6 +400,10 @@ public class AfpExporter {
 	
 
 	private float[] calculateInterference(Node trx1, Node trx2, String[][] values){
+		Node sector1 = trx1.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
+		Node sector2 = trx2.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
+		Node site1 = sector1.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
+		Node site2 = sector2.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
 		float[] calculatedValues = new float[4];
 		boolean isBCCH1 = false;
 		boolean isHopping1 = false;
@@ -464,11 +476,17 @@ public class AfpExporter {
 						scalingFactor = model.adjShadowing[index];
 					}
 				}
-				
-				
 					
-				scalingFactor = model.coNeighbor[index];
 				calculatedValues[j] += val*scalingFactor;
+			}
+			
+			
+			//co-site
+			if (site1.equals(site2)){
+				calculatedValues[j] += CO_SITE_SCALING_FACTOR * model.siteSeparation[index] / 100; 
+			}
+			if (sector1.equals(sector2)){
+				calculatedValues[j] += CO_SECTOR_SCALING_FACTOR * model.sectorSeparation[index] / 100; 
 			}
 		}
 		
@@ -488,6 +506,13 @@ public class AfpExporter {
 		//array[neighbourArray, intArray, TriArray, shadowArray]
 		//neighbourArray[CoA, AdjA, CoT, AdjT]
 		HashMap<Node, String[][]> intValues = new HashMap<Node, String[][]>();
+		
+		//Add this sector to calculate co-sector TRXs
+		String[][] coSectorTrxValues = new String[][]{
+				{Float.toString(1),Float.toString(1),Float.toString(1),Float.toString(1)},
+				{},{},{}};
+		intValues.put(sector, coSectorTrxValues);
+		
 		for (Node proxySector : sector.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
 
 			@Override
@@ -557,6 +582,10 @@ public class AfpExporter {
 				
 			}
 		}
+		
+		
+
+		
 		return intValues;
 			
 	}
