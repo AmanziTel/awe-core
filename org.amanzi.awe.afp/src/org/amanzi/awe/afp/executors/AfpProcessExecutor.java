@@ -94,7 +94,9 @@ public class AfpProcessExecutor extends Job {
 			//String command = path + " \"" + afpE.controlFileName + "\"";
 			//AweConsolePlugin.info("Executing Cmd: " + command);
 			//process = run.exec(command);
-			process = run.exec(new String[]{path,afpE.fileNames[AfpExporter.CONTROL]});
+			String controlFileName = afpE.domainDirPaths[0] + afpE.fileNames[AfpExporter.CONTROL];
+			System.out.println("COntrolFIle: " + controlFileName);
+			process = run.exec(new String[]{path,controlFileName});
 			monitor.worked(0);
 			AweConsolePlugin.info("AFP Engine .... started");
 					
@@ -179,7 +181,9 @@ public class AfpProcessExecutor extends Job {
 			}
 			AweConsolePlugin.info("AFP Engine .... finished");
 			monitor.worked(100);
-			AfpOutputFileLoader afpOutputFileLoader = new AfpOutputFileLoader(afpRoot, afpE.outputFileName, afpDataset);
+			String outFileName = afpE.domainDirPaths[0] + afpE.outputFileName;
+			System.out.println("Output file: " + outFileName);
+			AfpOutputFileLoader afpOutputFileLoader = new AfpOutputFileLoader(afpRoot, outFileName, afpDataset);
 			afpOutputFileLoader.run(monitor);
 			if(progress != null) {
 				progress.onProgressUpdate(1, 0, 0,0, 0, 0,0, 0, 0, 0);
@@ -225,13 +229,13 @@ public class AfpProcessExecutor extends Job {
 //		afpE.createInterferenceFile(monitor);
 		
 		/** Create the cliques file */
-		afpE.createCliquesFile();
+//		afpE.createCliquesFile();
 		
 		/** Create the forbidden file */
-		afpE.createForbiddenFile();
+//		afpE.createForbiddenFile();
 		
 		/** Create the exception file */
-		afpE.createExceptionFile();
+//		afpE.createExceptionFile();
 		
 		/** Create the control file */
 		afpE.createControlFile(parameters);
