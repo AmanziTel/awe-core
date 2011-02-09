@@ -193,9 +193,9 @@ public class AfpExporter {
 	
 	
 	
-	public void writeFilesNew(){
+	public void writeFilesNew(IProgressMonitor monitor){
 		
-		
+		monitor.beginTask("Write Files", model.getTotalTRX());
 		Traverser sectorTraverser = model.getTRXList(null);
 //		BufferedWriter writer;
 		
@@ -223,6 +223,7 @@ public class AfpExporter {
 	
 		    	for (Node trxNode: trxTraverser){
 		    		count++;
+		    		monitor.worked(1);
 		    		if (count %100 == 0)
 		    			AweConsolePlugin.info(count + " trxs processed");
 		    		for (int i = 0; i < models.length; i++){
@@ -297,7 +298,7 @@ public class AfpExporter {
 						    			writers[i].write(sb.toString());
 									}
 					    			
-					    			writeInterferenceForTrx(sectorNode, trxNode, intWriters[i], sectorIntValues);
+					    			writeInterferenceForTrx(sectorNode, trxNode, intWriters[i], sectorIntValues, rf);
 					    			
 					    			
 					    		}
@@ -325,7 +326,7 @@ public class AfpExporter {
 		
 	}
 	
-	private void writeInterferenceForTrx(Node sector, Node trx, BufferedWriter intWriter, HashMap<Node,String[][]> sectorIntValues) throws IOException{
+	private void writeInterferenceForTrx(Node sector, Node trx, BufferedWriter intWriter, HashMap<Node,String[][]> sectorIntValues, AfpRowFilter rf) throws IOException{
 		
 		StringBuilder trxSb = new StringBuilder();
 		trxSb.append("SUBCELL 0 0 1 1 ");
@@ -334,7 +335,7 @@ public class AfpExporter {
 		
 		for(Node intSector : sectorIntValues.keySet()){
 			
-			for (Node intTrx : sector.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
+			for (Node intTrx : intSector.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
 
 				@Override
 				public boolean isReturnableNode(TraversalPosition pos) {
@@ -344,6 +345,12 @@ public class AfpExporter {
 					return false;
 				}
 			}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)){
+	    		if (rf != null){
+		    		if (!(rf.equal(intTrx))){
+		    			continue;
+		    		}
+	    		}
+				
 				String trxId = (String)trx.getProperty(INeoConstants.PROPERTY_NAME_NAME, "0");
 				char c = trxId.charAt(0);
 				 if (Character.isDigit(c)){

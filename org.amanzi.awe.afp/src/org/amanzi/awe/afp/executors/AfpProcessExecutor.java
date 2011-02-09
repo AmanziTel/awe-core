@@ -30,6 +30,7 @@ import org.amanzi.awe.console.AweConsolePlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -214,7 +215,7 @@ public class AfpProcessExecutor extends Job {
 		}
 		
 		/** Create the carrier file */
-		afpE.writeFilesNew();
+		afpE.writeFilesNew(new SubProgressMonitor(monitor, 30));
 //		afpE.createCarrierFile(); 
 			
 		/** Create the neighbours file */
