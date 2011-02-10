@@ -864,7 +864,7 @@ public class AfpExporter extends Job{
 			writer.write("CellFile " + "\"" + this.inputFiles[domainIndex][CELL].getAbsolutePath() + "\"");
 			writer.newLine();
 			
-			writer.write("NeighboursFile " + "\"\"");
+			writer.write("NeighboursFile " + "\"" + this.inputFiles[domainIndex][NEIGHBOUR].getAbsolutePath() + "\"");
 			writer.newLine();
 			
 			writer.write("InterferenceFile " + "\"" + this.inputFiles[domainIndex][INTERFERENCE].getAbsolutePath() + "\"");
@@ -873,13 +873,13 @@ public class AfpExporter extends Job{
 			writer.write("OutputFile " + "\"" + this.domainDirPaths[domainIndex] + this.outputFileName + "\"");
 			writer.newLine();
 			
-			writer.write("CliquesFile " + "\"\"");
+			writer.write("CliquesFile " + "\"" + this.inputFiles[domainIndex][CLIQUES].getAbsolutePath() + "\"");
 			writer.newLine();
 
-			writer.write("ForbiddenFile " + "\"\"");
+			writer.write("ForbiddenFile " + "\"" + this.inputFiles[domainIndex][FORBIDDEN].getAbsolutePath() + "\"");
 			writer.newLine();
 			
-			writer.write("ExceptionFile " + "\"\"");
+			writer.write("ExceptionFile " + "\"" + this.inputFiles[domainIndex][EXCEPTION].getAbsolutePath() + "\"");
 			writer.newLine();
 			
 			writer.write("Carriers " + parseCarriers(getFrequencies(domainIndex)));
