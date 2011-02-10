@@ -11,6 +11,7 @@ import java.util.Iterator;
 import org.amanzi.awe.afp.ControlFileProperties;
 import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.executors.AfpProcessProgress;
+import org.amanzi.awe.afp.exporters.AfpExporter;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
@@ -18,6 +19,7 @@ import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.neo.services.utils.Pair;
+import org.eclipse.core.runtime.jobs.Job;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -1754,48 +1756,65 @@ public class AfpModel {
 
 	}
 	
-	public void executeAfpEngine(AfpProcessProgress progress){
+	public void setParameters(){
+		parameters = new HashMap<String, String>();
+    	parameters.put(ControlFileProperties.SITE_SPACING, "2");
+    	parameters.put(ControlFileProperties.CELL_SPACING, "0");
+    	parameters.put(ControlFileProperties.REG_NBR_SPACING, "1");
+    	parameters.put(ControlFileProperties.MIN_NEIGBOUR_SPACING, "0");
+    	parameters.put(ControlFileProperties.SECOND_NEIGHBOUR_SPACING, "1");
+    	parameters.put(ControlFileProperties.QUALITY, "100");
+    	parameters.put(ControlFileProperties.G_MAX_RT_PER_CELL, "5");
+    	parameters.put(ControlFileProperties.G_MAX_RT_PER_SITE, "5");
+    	parameters.put(ControlFileProperties.HOPPING_TYPE, "1");
+    	parameters.put(ControlFileProperties.NUM_GROUPS, "6");
+    	parameters.put(ControlFileProperties.CELL_CARDINALITY, "61");
+    	StringBuffer carriers = new StringBuffer();
+    	int cnt =0;
+		boolean first = true;
+    	for(int i=0; i< frequencyBands.length;i++) {
+    		if(frequencyBands[i]) {
+    			String freq = this.availableFreq[i];
+    			String[] franges = freq.split(",");
+    			
+    			String[] freqList = rangeArraytoArray(franges);
+    			for(String f: freqList) {
+    				if(!first) {
+	    				carriers.append(",");
+    				}
+    				carriers.append(f);
+    				cnt++;
+    				first = false;
+    			}
+    		}
+    	}
+    	
+    	parameters.put(ControlFileProperties.CARRIERS, carriers.toString());
+    	parameters.put(ControlFileProperties.USE_GROUPING, "1");
+    	parameters.put(ControlFileProperties.EXIST_CLIQUES, "0");
+    	parameters.put(ControlFileProperties.RECALCULATE_ALL, "1" );
+    	parameters.put(ControlFileProperties.USE_TRAFFIC, "1");
+    	parameters.put(ControlFileProperties.USE_SO_NEIGHBOURS, "1");
+    	parameters.put(ControlFileProperties.DECOMPOSE_CLIQUES, "0");
+	}
+	
+	public HashMap<String,String> getParameters(){
+		if (parameters == null)
+			setParameters();
+		return parameters;
+	}
+	
+	public AfpExporter getExporter(){
+		AfpExporter exportJob = new AfpExporter(datasetNode, this.afpNode, this);
+		return exportJob;
+	}
+	
+	public void executeAfpEngine(AfpProcessProgress progress, AfpExporter exportJob){
 		if (afpNode != null ){
-	    	parameters = new HashMap<String, String>();
-	    	parameters.put(ControlFileProperties.SITE_SPACING, "2");
-	    	parameters.put(ControlFileProperties.CELL_SPACING, "0");
-	    	parameters.put(ControlFileProperties.REG_NBR_SPACING, "1");
-	    	parameters.put(ControlFileProperties.MIN_NEIGBOUR_SPACING, "0");
-	    	parameters.put(ControlFileProperties.SECOND_NEIGHBOUR_SPACING, "1");
-	    	parameters.put(ControlFileProperties.QUALITY, "100");
-	    	parameters.put(ControlFileProperties.G_MAX_RT_PER_CELL, "5");
-	    	parameters.put(ControlFileProperties.G_MAX_RT_PER_SITE, "5");
-	    	parameters.put(ControlFileProperties.HOPPING_TYPE, "1");
-	    	parameters.put(ControlFileProperties.NUM_GROUPS, "6");
-	    	parameters.put(ControlFileProperties.CELL_CARDINALITY, "61");
-	    	StringBuffer carriers = new StringBuffer();
-	    	int cnt =0;
-			boolean first = true;
-	    	for(int i=0; i< frequencyBands.length;i++) {
-	    		if(frequencyBands[i]) {
-	    			String freq = this.availableFreq[i];
-	    			String[] franges = freq.split(",");
-	    			
-	    			String[] freqList = rangeArraytoArray(franges);
-	    			for(String f: freqList) {
-	    				if(!first) {
-		    				carriers.append(",");
-	    				}
-	    				carriers.append(f);
-	    				cnt++;
-	    				first = false;
-	    			}
-	    		}
+	    	if (parameters == null){
+	    		setParameters();
 	    	}
-	    	
-	    	parameters.put(ControlFileProperties.CARRIERS, carriers.toString());
-	    	parameters.put(ControlFileProperties.USE_GROUPING, "1");
-	    	parameters.put(ControlFileProperties.EXIST_CLIQUES, "0");
-	    	parameters.put(ControlFileProperties.RECALCULATE_ALL, "1" );
-	    	parameters.put(ControlFileProperties.USE_TRAFFIC, "1");
-	    	parameters.put(ControlFileProperties.USE_SO_NEIGHBOURS, "1");
-	    	parameters.put(ControlFileProperties.DECOMPOSE_CLIQUES, "0");
-			afpJob = new AfpProcessExecutor("Execute Afp Process", datasetNode, this.afpNode, parameters, this);
+			afpJob = new AfpProcessExecutor("Execute Afp Process", datasetNode, this.afpNode, parameters, this, exportJob);
 			afpJob.setProgress(progress);
 			//afpJob.schedule();
     	}

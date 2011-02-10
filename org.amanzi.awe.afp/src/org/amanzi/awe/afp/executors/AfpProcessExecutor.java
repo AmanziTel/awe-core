@@ -47,7 +47,8 @@ import org.neo4j.graphdb.Transaction;
 public class AfpProcessExecutor extends Job {
 	
 	/** Process to execute the command*/
-	private Process process;
+	private Process process[];
+	int processIndex;
 	private AfpProcessProgress progress;
 	
 	/** Flag whether process is completed*/
@@ -60,13 +61,15 @@ public class AfpProcessExecutor extends Job {
 	private Node afpDataset;
 	private IProgressMonitor progressMonitor;
 	private AfpModel model;
+	AfpExporter afpE;
 	
-	public AfpProcessExecutor(String name, Node afpRoot,Node afpDataset, HashMap<String, String> parameters, AfpModel model) {
+	public AfpProcessExecutor(String name, Node afpRoot,Node afpDataset, HashMap<String, String> parameters, AfpModel model, AfpExporter afpE) {
 		super(name);
 		this.afpRoot = afpRoot;
 		this.parameters = parameters;
 		this.afpDataset = afpDataset;
 		this.model = model;
+		this.afpE = afpE;
 	}
 
 	public void setProgress(AfpProcessProgress progress) {
@@ -82,8 +85,9 @@ public class AfpProcessExecutor extends Job {
 	public IStatus run(IProgressMonitor monitor){
 		progressMonitor = monitor;
 		monitor.beginTask("Execute Afp", 100);
-        AfpExporter afpE = new AfpExporter(afpRoot, afpDataset, model);
-
+//        AfpExporter afpE = new AfpExporter(afpRoot, afpDataset, model);
+        
+        
 		createFiles(monitor, afpE);
 		Runtime run = Runtime.getRuntime();
 		AweConsolePlugin.info("AFP Engine .... starting");
@@ -94,97 +98,105 @@ public class AfpProcessExecutor extends Job {
 			//String command = path + " \"" + afpE.controlFileName + "\"";
 			//AweConsolePlugin.info("Executing Cmd: " + command);
 			//process = run.exec(command);
-			String controlFileName = afpE.domainDirPaths[0] + afpE.fileNames[AfpExporter.CONTROL];
-			System.out.println("COntrolFIle: " + controlFileName);
-			process = run.exec(new String[]{path,controlFileName});
-			monitor.worked(0);
-			AweConsolePlugin.info("AFP Engine .... started");
-					
-			/**
-			 * Thread to read the stderr and display it on Awe Console
-			 */
-			Thread errorThread = new Thread("AFP stderr"){
-				@Override
-				public void run(){
-					BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-	    			String output = null;
-	    			try{
-	    				while ((output = error.readLine()) != null){
-	    					//TODO have to make it red
-	    					AweConsolePlugin.error(output);
-	    				}
-	    				error.close();
-	    				AweConsolePlugin.info("AFP stderr closed");
-	    			}catch(IOException ioe){
-	    				AweConsolePlugin.debug(ioe.getLocalizedMessage());
-	    			}
-				}
-			};
-			
-			/**
-			 * Thread to read the stdout and display it on Awe Console
-			 */
-			Thread outputThread = new Thread("AFP stdout"){
-				@Override
-				public void run(){
-					BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
-					BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
-	    			String output = null;
-	    			try{
-	    				while ((output = input.readLine()) != null){
-	    					// check the progress variable
-	    					AweConsolePlugin.info(output);
-	    					checkForProgress(progressMonitor, output);
-	    				}
-	    				input.close();
-	    				writer.close();
-	    			    AweConsolePlugin.info("AFP stdout closed");
-	    			}catch(IOException ioe){
-	    				AweConsolePlugin.debug(ioe.getLocalizedMessage());
-	    			}
-	    			jobFinished = true;
-				}
-			};
-			
-			errorThread.start();
-			outputThread.start();
-			
-			/**
-			 * poll the monitor to check if the process is over
-			 * or if the user have terminated it.
-			 */
-			while (true) {
-                if (!errorThread.isAlive()) {
-                    AweConsolePlugin.info("AFP Threads terminated, closing process...");
-                    process.destroy();
-                    break;
-                }
-				if (monitor.isCanceled()){
-                    AweConsolePlugin.info("User cancelled worker, stopping AFP...");
-					process.destroy();
-					break;
-				}
+			int numDomains = afpE.domainDirPaths.length;
+			process = new Process[numDomains];
+			for (processIndex = 0; processIndex < numDomains; processIndex++){
+				jobFinished = false;
+				String dirPath = afpE.domainDirPaths[processIndex];
 				
-				if(jobFinished){
-                    AweConsolePlugin.info("AFP Finished, closing process...");
-					process.destroy();
-					// load the output file
-					break;
+				String controlFileName = dirPath + afpE.fileNames[AfpExporter.CONTROL];
+				process[processIndex] = run.exec(new String[]{path,controlFileName});
+				AweConsolePlugin.info("Executing: " + processIndex);
+				monitor.worked(0);
+				AweConsolePlugin.info("AFP Engine .... started");
+						
+				/**
+				 * Thread to read the stderr and display it on Awe Console
+				 */
+				Thread errorThread = new Thread("AFP stderr" + processIndex){
+					@Override
+					public void run(){
+						BufferedReader error = new BufferedReader(new InputStreamReader(process[processIndex].getErrorStream()));
+		    			String output = null;
+		    			try{
+		    				while ((output = error.readLine()) != null){
+		    					//TODO have to make it red
+		    					AweConsolePlugin.error("Error " + output);
+		    				}
+		    				error.close();
+		    				AweConsolePlugin.info("AFP stderr closed");
+		    			}catch(IOException ioe){
+		    				AweConsolePlugin.debug(ioe.getLocalizedMessage());
+		    			}
+					}
+				};
+				
+				/**
+				 * Thread to read the stdout and display it on Awe Console
+				 */
+				Thread outputThread = new Thread("AFP stdout" + processIndex){
+					@Override
+					public void run(){
+						BufferedReader input = new BufferedReader(new InputStreamReader(process[processIndex].getInputStream()));
+						BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process[processIndex].getOutputStream()));
+		    			String output = null;
+		    			try{
+		    				while ((output = input.readLine()) != null){
+		    					// check the progress variable
+		    					AweConsolePlugin.info("Output: " + output);
+		    					checkForProgress(progressMonitor, output);
+		    				}
+		    				input.close();
+		    				writer.close();
+		    			    AweConsolePlugin.info("AFP stdout closed");
+		    			}catch(IOException ioe){
+		    				AweConsolePlugin.debug(ioe.getLocalizedMessage());
+		    			}
+		    			jobFinished = true;
+					}
+				};
+				
+				errorThread.start();
+				outputThread.start();
+				
+				
+				/**
+				 * poll the monitor to check if the process is over
+				 * or if the user have terminated it.
+				 */
+				while (true) {
+//	                if (!errorThread.isAlive() && processIndex >= afpE.domainDirPaths.length - 1) {
+					if (!errorThread.isAlive() && !outputThread.isAlive()) {
+	                    AweConsolePlugin.info("AFP Threads terminated, closing process...");
+	                    process[processIndex].destroy();
+	                    break;
+	                }
+					if (monitor.isCanceled()){
+	                    AweConsolePlugin.info("User cancelled worker, stopping AFP...");
+						process[processIndex].destroy();
+						break;
+					}
+					
+					if(jobFinished){
+	                    AweConsolePlugin.info("AFP Finished, closing process...");
+						process[processIndex].destroy();
+						// load the output file
+						break;
+					}
+					//Thread.sleep(100);
+					try {
+		                errorThread.join(1000);
+		                outputThread.join(100);
+					} catch (Exception e) {
+	                    AweConsolePlugin.info("Interrupted waiting for threads: " + e);
+	                }
 				}
-				//Thread.sleep(100);
-				try {
-	                errorThread.join(1000);
-	                outputThread.join(100);
-				} catch (Exception e) {
-                    AweConsolePlugin.info("Interrupted waiting for threads: " + e);
-                }
 			}
 			AweConsolePlugin.info("AFP Engine .... finished");
 			monitor.worked(100);
-			String outFileName = afpE.domainDirPaths[0] + afpE.outputFileName;
-			System.out.println("Output file: " + outFileName);
-			AfpOutputFileLoader afpOutputFileLoader = new AfpOutputFileLoader(afpRoot, outFileName, afpDataset);
-			afpOutputFileLoader.run(monitor);
+//			String outFileName = afpE.domainDirPaths[0] + afpE.outputFileName;
+//			AfpOutputFileLoader afpOutputFileLoader = new AfpOutputFileLoader(afpRoot, outFileName, afpDataset);
+//			afpOutputFileLoader.run(monitor);
 			if(progress != null) {
 				progress.onProgressUpdate(1, 0, 0,0, 0, 0,0, 0, 0, 0);
 			}
@@ -219,7 +231,7 @@ public class AfpProcessExecutor extends Job {
 		}
 		
 		/** Create the carrier file */
-		afpE.writeFilesNew(new SubProgressMonitor(monitor, 30));
+//		afpE.writeFilesNew(new SubProgressMonitor(monitor, 30), parameters);
 //		afpE.createCarrierFile(); 
 			
 		/** Create the neighbours file */
@@ -238,7 +250,7 @@ public class AfpProcessExecutor extends Job {
 //		afpE.createExceptionFile();
 		
 		/** Create the control file */
-		afpE.createControlFile(parameters);
+//		afpE.createControlFile(parameters);
 		
 //		afpE.createParamFile();
 	}

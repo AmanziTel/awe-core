@@ -11,8 +11,10 @@ import javax.swing.SwingUtilities;
 
 import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.executors.AfpProcessProgress;
+import org.amanzi.awe.afp.exporters.AfpExporter;
 import org.amanzi.awe.afp.models.AfpModel;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -68,6 +70,7 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
     XYLineAndShapeRenderer renderer;
     Shell parentShell;
 	private AfpProcessExecutor afpJob;
+	private AfpExporter exportJob;
     //private JFreeChart chart;
     private Button[] colorButtons = new Button[8];
 	private String[] graphParams = new String[]{
@@ -312,7 +315,16 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 	    summaryGroup.layout();
 
 		((AfpImportWizard)this.getWizard()).setDone(false);
-		executeAfpEngine();
+		exportJob = model.getExporter();
+		exportJob.schedule();
+		try {
+			exportJob.join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if (exportJob.getState() == Job.NONE)
+			executeAfpEngine();
 
 	}
 	public void addProgressTableItem (String[] itemValues){
@@ -431,7 +443,7 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 	
 	void executeAfpEngine() {
 		if(afpJob == null) {
-			model.executeAfpEngine(this);
+			model.executeAfpEngine(this, exportJob);
 			afpJob = model.getExecutor();
 			afpJob.schedule();
 		}		    

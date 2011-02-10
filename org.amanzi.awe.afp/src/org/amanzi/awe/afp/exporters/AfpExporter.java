@@ -18,6 +18,9 @@ import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.TableItem;
 import org.neo4j.graphdb.Direction;
@@ -38,7 +41,7 @@ import org.neo4j.graphdb.Traverser.Order;
  */
 
 
-public class AfpExporter {
+public class AfpExporter extends Job{
 	private Node afpRoot;
 	private Node afpDataset;
 	
@@ -98,10 +101,19 @@ public class AfpExporter {
 	static int count;
 	
 	public AfpExporter(Node afpRoot, Node afpDataset, AfpModel model){
+		super("Write Input files");
 		this.afpRoot = afpRoot;
 		this.afpDataset = afpDataset;
 		this.model = model;
+		
+	}
+	
+
+	@Override
+	protected IStatus run(IProgressMonitor monitor) {
 		createFiles();
+		writeFilesNew(monitor);
+		return Status.OK_STATUS;
 	}
 	
 	public void createFiles(){
@@ -222,6 +234,7 @@ public class AfpExporter {
 	
 	public void writeFilesNew(IProgressMonitor monitor){
 		
+		HashMap<String, String> parameters = model.getParameters();
 		monitor.beginTask("Write Files", model.getTotalTRX());
 		Traverser sectorTraverser = model.getTRXList(null);
 //		BufferedWriter writer;
@@ -234,7 +247,7 @@ public class AfpExporter {
 //			outputFiles = new File[models.length];
 			BufferedWriter[] cellWriters = new BufferedWriter[models.length];
 			BufferedWriter[] intWriters = new BufferedWriter[models.length];
-			BufferedWriter[] outWriters = new BufferedWriter[models.length];
+//			BufferedWriter[] outWriters = new BufferedWriter[models.length];
 			
 			for(int i = 0; i < models.length; i++){
 //				cellFilesArray[i] = new File(tmpAfpFolder + "Cell_" + models[i].getName() + ".awe");
@@ -338,10 +351,13 @@ public class AfpExporter {
 		    
 		    }
 		    
-		    for (int i = 0; i < cellWriters.length; i++){
+		    //close the writers and create control files
+		    for (int i = 0; i < models.length; i++){
 		    	cellWriters[i].close();
 		    	intWriters[i].close();
+		    	createControlFile(parameters, i);
 		    }
+		    
 		
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
@@ -795,12 +811,12 @@ public class AfpExporter {
 	/**
 	 * Creates the Control file to be given as input to the C++ engine
 	 */
-	public void createControlFile(HashMap<String, String> parameters){
+	public void createControlFile(HashMap<String, String> parameters, int i){
 		if (maxTRX < 0)
 			maxTRX = Integer.parseInt(parameters.get("GMaxRTperCell"));
 		
 		try {
-			BufferedWriter writer  = new BufferedWriter(new FileWriter(inputFiles[0][CONTROL]));
+			BufferedWriter writer  = new BufferedWriter(new FileWriter( inputFiles[i][CONTROL]));
 			
 			
 			writer.write("SiteSpacing " + parameters.get("SiteSpacing"));
@@ -851,31 +867,31 @@ public class AfpExporter {
 			writer.write("NrOfGroups " + parameters.get("NrOfGroups"));
 			writer.newLine();
 			
-			writer.write("LogFile " + "\"" + this.domainDirPaths[0] + this.logFileName + "\"");
+			writer.write("LogFile " + "\"" + this.domainDirPaths[i] + this.logFileName + "\"");
 			writer.newLine();
 
 			writer.write("CellCardinality " + parameters.get("CellCardinality"));
 			writer.newLine();
 			
-			writer.write("CellFile " + "\"" + this.inputFiles[0][CELL].getAbsolutePath() + "\"");
+			writer.write("CellFile " + "\"" + this.inputFiles[i][CELL].getAbsolutePath() + "\"");
 			writer.newLine();
 			
-			writer.write("NeighboursFile " + "\"" + this.inputFiles[0][NEIGHBOUR].getAbsolutePath() + "\"");
+			writer.write("NeighboursFile " + "\"" + this.inputFiles[i][NEIGHBOUR].getAbsolutePath() + "\"");
 			writer.newLine();
 			
-			writer.write("InterferenceFile " + "\"" + this.inputFiles[0][INTERFERENCE].getAbsolutePath() + "\"");
+			writer.write("InterferenceFile " + "\"" + this.inputFiles[i][INTERFERENCE].getAbsolutePath() + "\"");
 			writer.newLine();
 
-			writer.write("OutputFile " + "\"" + this.domainDirPaths[0] + this.outputFileName + "\"");
+			writer.write("OutputFile " + "\"" + this.domainDirPaths[i] + this.outputFileName + "\"");
 			writer.newLine();
 			
-			writer.write("CliquesFile " + "\"" + this.inputFiles[0][CLIQUES].getAbsolutePath() + "\"");
+			writer.write("CliquesFile " + "\"" + this.inputFiles[i][CLIQUES].getAbsolutePath() + "\"");
 			writer.newLine();
 
-			writer.write("ForbiddenFile " + "\"" + this.inputFiles[0][FORBIDDEN].getAbsolutePath() + "\"");
+			writer.write("ForbiddenFile " + "\"" + this.inputFiles[i][FORBIDDEN].getAbsolutePath() + "\"");
 			writer.newLine();
 			
-			writer.write("ExceptionFile " + "\"" + this.inputFiles[0][EXCEPTION].getAbsolutePath() + "\"");
+			writer.write("ExceptionFile " + "\"" + this.inputFiles[i][EXCEPTION].getAbsolutePath() + "\"");
 			writer.newLine();
 			
 			writer.write("Carriers " + parseCarriers(parameters.get("Carriers")));
@@ -1288,5 +1304,6 @@ public class AfpExporter {
 		
 		return dir.getPath() + PATH_SEPARATOR;
 	}
+
 
 }
