@@ -47,29 +47,30 @@ public class AfpExporter extends Job{
 	
 	protected static final String AMANZI_STR = ".amanzi";
 	private static final String DATA_SAVER_DIR = "AfpTemp";
-	public final String tmpAfpFolder = getTmpFolderPath();
+	public static final String tmpAfpFolder = getTmpFolderPath();
 	public static final String PATH_SEPARATOR = "/";
 	
 	public static final int CONTROL = 0;
 	public static final int CELL = 1;
-	public static final int NEIGHBOUR = 2;
-	public static final int INTERFERENCE = 3;
+	public static final int INTERFERENCE = 2;
+	public static final int NEIGHBOUR = 3;
 	public static final int FORBIDDEN = 4;
 	public static final int EXCEPTION = 5;
 	public static final int CLIQUES = 6;
 	
 	/** The Control File*/
-	public final String[] fileNames = {"InputControlFile.awe",
-			"InputCellFile.awe",
-			"InputNeighboursFile.awe",
-			"InputInterferenceFile.awe",
-			"InputForbiddenFile.awe",
-			"InputExceptionFile.awe",
-			"InputCliquesFile.awe"};
+	public final String[] fileNames = {
+			"InputControlFile.awe"
+			, "InputCellFile.awe"
+			,"InputInterferenceFile.awe"
+			,"InputNeighboursFile.awe"
+			,"InputForbiddenFile.awe"
+			,"InputExceptionFile.awe"
+			,"InputCliquesFile.awe"
+	};
 	
 	public String[] domainDirPaths;	
 	
-//	public final String paramFileName = tmpAfpFolder + "param.awe";
 	public final String logFileName = "logfile.awe";
 	public final String outputFileName = "outputFile.awe";
 	
@@ -78,12 +79,6 @@ public class AfpExporter extends Job{
 	private File[][] inputFiles;
 	private AfpModel model;
 	AfpFrequencyDomainModel models[];
-	
-//	public File[] cellFiles;
-//	public File[] controlFiles;
-//	private ArrayList<File> cellFiles = new ArrayList<File>();
-//	public File[] interferenceFiles;
-//	public File[] outputFiles;
 	
 	public static final int NEIGH = 0;
 	public static final int INTERFER = 1;
@@ -98,6 +93,23 @@ public class AfpExporter extends Job{
 	public static final float CO_SITE_SCALING_FACTOR = 1;
 	public static final float CO_SECTOR_SCALING_FACTOR = 1;
 	
+	// default values of the Control file 
+	int defaultGMaxRTperCell = 1;
+	int defaultSiteSpacing = 2;
+	int defaultCellSpacing = 0;
+	int defaultRegNbrSpacing=1;
+	int defaultMinNbrSpacing =0;
+	int defaultSecondNbrSpacing = 1;
+	int defaultRecalculateAll=1;
+	int defaultUseTraffic=1;
+	int defaultUseSONbrs=0;
+	int defaultQuality=100;
+	int defaultDecomposeInCliques=0;
+	int defaultExistCliques=0;
+	int defaultHoppingType=0;
+	int defaultUseGrouping=0;
+	int defaultNrOfGroups=1;
+	
 	static int count;
 	
 	public AfpExporter(Node afpRoot, Node afpDataset, AfpModel model){
@@ -110,13 +122,13 @@ public class AfpExporter extends Job{
 	
 
 	@Override
-	protected IStatus run(IProgressMonitor monitor) {
+	public IStatus run(IProgressMonitor monitor) {
 		createFiles();
 		writeFilesNew(monitor);
 		return Status.OK_STATUS;
 	}
 	
-	public void createFiles(){
+	private void createFiles(){
 		createTmpFolder();
 		
 		
@@ -136,12 +148,6 @@ public class AfpExporter extends Job{
 					inputFiles[i][j] = new File(tmpAfpFolder + dirName + PATH_SEPARATOR + fileNames[j]);
 					inputFiles[i][j].createNewFile();
 				}
-//				inputFiles[CELL][i] = new File(tmpAfpFolder + dirName + PATH_SEPARATOR + fileNames[CELL]);
-//				cellFiles[i] = new File(tmpAfpFolder + dirName + PATH_SEPARATOR + fileNames[CELL]);
-//				interferenceFiles[i] = new File(tmpAfpFolder + dirName + PATH_SEPARATOR + fileNames[INTERFERENCE]);
-//				outputFiles[i] = new File(tmpAfpFolder + dirName + PATH_SEPARATOR + fileNames[OUTPUT]);
-//				cellFiles[i].createNewFile();
-					
 			} catch (IOException e) {
 				AweConsolePlugin.exception(e);
 			}
@@ -234,27 +240,17 @@ public class AfpExporter extends Job{
 	
 	public void writeFilesNew(IProgressMonitor monitor){
 		
-		HashMap<String, String> parameters = model.getParameters();
 		monitor.beginTask("Write Files", model.getTotalTRX());
 		Traverser sectorTraverser = model.getTRXList(null);
-//		BufferedWriter writer;
 		
 		try {
 			
-//			AfpFrequencyDomainModel models[] = model.getFreqDomains(false).toArray(new AfpFrequencyDomainModel[0]);
-//			cellFilesArray = new File[models.length];
-//			interferenceFiles = new File[models.length];
-//			outputFiles = new File[models.length];
 			BufferedWriter[] cellWriters = new BufferedWriter[models.length];
 			BufferedWriter[] intWriters = new BufferedWriter[models.length];
-//			BufferedWriter[] outWriters = new BufferedWriter[models.length];
 			
 			for(int i = 0; i < models.length; i++){
-//				cellFilesArray[i] = new File(tmpAfpFolder + "Cell_" + models[i].getName() + ".awe");
-//				interferenceFiles[i] = new File(tmpAfpFolder + "Int_" + models[i].getName() + ".awe");
 				cellWriters[i] = new BufferedWriter(new FileWriter(inputFiles[i][CELL]));
 				intWriters[i] = new BufferedWriter(new FileWriter(inputFiles[i][INTERFERENCE]));
-//				outWriters[i] = new BufferedWriter(new FileWriter(inputFiles[i][OUTPUT]));
 			}
 	    
 		    for (Node sectorNode : sectorTraverser) {
@@ -355,18 +351,12 @@ public class AfpExporter extends Job{
 		    for (int i = 0; i < models.length; i++){
 		    	cellWriters[i].close();
 		    	intWriters[i].close();
-		    	createControlFile(parameters, i);
+		    	createControlFile(i);
 		    }
-		    
-		
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
-		
-		
-		
 	}
 	
 	private void writeInterferenceForTrx(Node sector, Node trx, BufferedWriter intWriter, HashMap<Node,String[][]> sectorIntValues, AfpRowFilter rf) throws IOException{
@@ -563,7 +553,7 @@ public class AfpExporter extends Job{
 				return false;
 			}
 		}, NetworkRelationshipTypes.INTERFERENCE, Direction.OUTGOING, NetworkRelationshipTypes.NEIGHBOURS, Direction.OUTGOING)){
-			for (Relationship relation : proxySector.getRelationships(NetworkRelationshipTypes.INTERFERS, NetworkRelationshipTypes.NEIGHBOURS)){
+			for (Relationship relation : proxySector.getRelationships(NetworkRelationshipTypes.INTERFERS, NetworkRelationshipTypes.NEIGHBOUR)){
 				if (relation.getEndNode().equals(proxySector))
 					continue;
 				Node intSector;
@@ -629,10 +619,6 @@ public class AfpExporter extends Job{
 		return intValues;
 			
 	}
-	
-	
-	
-	
 	
 	public void writeFiles(){
 		
@@ -811,45 +797,46 @@ public class AfpExporter extends Job{
 	/**
 	 * Creates the Control file to be given as input to the C++ engine
 	 */
-	public void createControlFile(HashMap<String, String> parameters, int i){
-		if (maxTRX < 0)
-			maxTRX = Integer.parseInt(parameters.get("GMaxRTperCell"));
+	public void createControlFile(int domainIndex){
+		if (maxTRX < 0) {
+			maxTRX = defaultGMaxRTperCell;
+		}
 		
 		try {
-			BufferedWriter writer  = new BufferedWriter(new FileWriter( inputFiles[i][CONTROL]));
+			BufferedWriter writer  = new BufferedWriter(new FileWriter( inputFiles[domainIndex][CONTROL]));
 			
 			
-			writer.write("SiteSpacing " + parameters.get("SiteSpacing"));
+			writer.write("SiteSpacing " + defaultSiteSpacing);
 			writer.newLine();
 			
-			writer.write("CellSpacing " + parameters.get("CellSpacing"));
+			writer.write("CellSpacing " + defaultCellSpacing);
 			writer.newLine();
 			
-			writer.write("RegNbrSpacing " + parameters.get("RegNbrSpacing"));
+			writer.write("RegNbrSpacing " + defaultRegNbrSpacing);
 			writer.newLine();
 
-			writer.write("MinNbrSpacing " + parameters.get("MinNbrSpacing"));
+			writer.write("MinNbrSpacing " + defaultMinNbrSpacing);
 			writer.newLine();
 
-			writer.write("SecondNbrSpacing " + parameters.get("SecondNbrSpacing"));
+			writer.write("SecondNbrSpacing " + defaultSecondNbrSpacing);
 			writer.newLine();
 
-			writer.write("RecalculateAll " + parameters.get("RecalculateAll"));
+			writer.write("RecalculateAll " + defaultRecalculateAll);
 			writer.newLine();
 
-			writer.write("UseTraffic " + parameters.get("UseTraffic"));
+			writer.write("UseTraffic " + defaultUseTraffic);
 			writer.newLine();
 
-			writer.write("UseSONbrs " + parameters.get("UseSONbrs"));
+			writer.write("UseSONbrs " + defaultUseSONbrs);
 			writer.newLine();
 
-			writer.write("Quality " + parameters.get("Quality"));
+			writer.write("Quality " + defaultQuality);
 			writer.newLine();
 
-			writer.write("DecomposeInCliques " + parameters.get("DecomposeInCliques"));
+			writer.write("DecomposeInCliques " + defaultDecomposeInCliques);
 			writer.newLine();
 
-			writer.write("ExistCliques " + parameters.get("ExistCliques"));
+			writer.write("ExistCliques " + defaultExistCliques);
 			writer.newLine();
 
 			writer.write("GMaxRTperCell " + maxTRX);
@@ -858,49 +845,68 @@ public class AfpExporter extends Job{
 			writer.write("GMaxRTperSite " + maxTRX);
 			writer.newLine();
 
-			writer.write("HoppingType " + parameters.get("HoppingType"));
+			writer.write("HoppingType " + defaultHoppingType);
 			writer.newLine();
 			
-			writer.write("UseGrouping " + parameters.get("UseGrouping"));
+			writer.write("UseGrouping " + defaultUseGrouping);
 			writer.newLine();
 
-			writer.write("NrOfGroups " + parameters.get("NrOfGroups"));
+			writer.write("NrOfGroups " + defaultNrOfGroups);
 			writer.newLine();
 			
-			writer.write("LogFile " + "\"" + this.domainDirPaths[i] + this.logFileName + "\"");
+			writer.write("LogFile " + "\"" + this.domainDirPaths[domainIndex] + this.logFileName + "\"");
+			writer.newLine();
+			
+			// TBD count TRXs
+			writer.write("CellCardinality " + "0");
+			writer.newLine();
+			
+			writer.write("CellFile " + "\"" + this.inputFiles[domainIndex][CELL].getAbsolutePath() + "\"");
+			writer.newLine();
+			
+			writer.write("NeighboursFile " + "\"\"");
+			writer.newLine();
+			
+			writer.write("InterferenceFile " + "\"" + this.inputFiles[domainIndex][INTERFERENCE].getAbsolutePath() + "\"");
 			writer.newLine();
 
-			writer.write("CellCardinality " + parameters.get("CellCardinality"));
+			writer.write("OutputFile " + "\"" + this.domainDirPaths[domainIndex] + this.outputFileName + "\"");
 			writer.newLine();
 			
-			writer.write("CellFile " + "\"" + this.inputFiles[i][CELL].getAbsolutePath() + "\"");
-			writer.newLine();
-			
-			writer.write("NeighboursFile " + "\"" + this.inputFiles[i][NEIGHBOUR].getAbsolutePath() + "\"");
-			writer.newLine();
-			
-			writer.write("InterferenceFile " + "\"" + this.inputFiles[i][INTERFERENCE].getAbsolutePath() + "\"");
+			writer.write("CliquesFile " + "\"\"");
 			writer.newLine();
 
-			writer.write("OutputFile " + "\"" + this.domainDirPaths[i] + this.outputFileName + "\"");
+			writer.write("ForbiddenFile " + "\"\"");
 			writer.newLine();
 			
-			writer.write("CliquesFile " + "\"" + this.inputFiles[i][CLIQUES].getAbsolutePath() + "\"");
-			writer.newLine();
-
-			writer.write("ForbiddenFile " + "\"" + this.inputFiles[i][FORBIDDEN].getAbsolutePath() + "\"");
+			writer.write("ExceptionFile " + "\"\"");
 			writer.newLine();
 			
-			writer.write("ExceptionFile " + "\"" + this.inputFiles[i][EXCEPTION].getAbsolutePath() + "\"");
-			writer.newLine();
-			
-			writer.write("Carriers " + parseCarriers(parameters.get("Carriers")));
+			writer.write("Carriers " + parseCarriers(getFrequencies(domainIndex)));
 			writer.newLine();
 
 			writer.close();
 		}catch (Exception e){
 			AweConsolePlugin.exception(e);
 		}
+	}
+	
+	private String getFrequencies(int domainIndex) {
+    	StringBuffer carriers = new StringBuffer();
+    	int cnt =0;
+		boolean first = true;
+		String[] franges = models[domainIndex].getFrequencies();
+    			
+		String[] freqList = AfpModel.rangeArraytoArray(franges);
+		for(String f: freqList) {
+			if(!first) {
+				carriers.append(",");
+			}
+			carriers.append(f);
+			cnt++;
+			first = false;
+		}
+		return carriers.toString();
 	}
 	
 	private String parseCarriers(String commaSeparated){
@@ -1287,7 +1293,7 @@ public class AfpExporter extends Job{
 		return file; 
 	}*/
 	
-	public String getTmpFolderPath(){
+	public static String getTmpFolderPath(){
 		
 		File dir = new File(System.getProperty("user.home"));
         if (!dir.exists()) {

@@ -347,8 +347,17 @@ public class AfpModel {
 		return afpNode;
 	}
 
+	/*
+	 * set the network root mode for test purpose
+	 */
+	public void setDatasetNode(Node network) {
+		this.datasetNode = network;
+	}
 
 	public void setSelectNetworkDataSetName(String datasetName) {
+		if(networkNodes == null) {
+			getNetworkDatasets();
+		}
     	datasetNode = networkNodes.get(datasetName);
     	if(datasetNode != null) {
     		loadAfpDataSet();

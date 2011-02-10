@@ -194,9 +194,9 @@ public class AfpProcessExecutor extends Job {
 			}
 			AweConsolePlugin.info("AFP Engine .... finished");
 			monitor.worked(100);
-//			String outFileName = afpE.domainDirPaths[0] + afpE.outputFileName;
-//			AfpOutputFileLoader afpOutputFileLoader = new AfpOutputFileLoader(afpRoot, outFileName, afpDataset);
-//			afpOutputFileLoader.run(monitor);
+			String outFileName = afpE.domainDirPaths[0] + afpE.outputFileName;
+			AfpOutputFileLoader afpOutputFileLoader = new AfpOutputFileLoader(afpRoot, outFileName, afpDataset);
+			afpOutputFileLoader.run(monitor);
 			if(progress != null) {
 				progress.onProgressUpdate(1, 0, 0,0, 0, 0,0, 0, 0, 0);
 			}

@@ -17,5 +17,8 @@ Require-Bundle: org.eclipse.ui,
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Eclipse-LazyStart: true
 Export-Package: org.amanzi.awe.afp,
+ org.amanzi.awe.afp.models,
  org.amanzi.awe.afp.files,
+ org.amanzi.awe.afp.filters,
+ org.amanzi.awe.afp.exporters,
  org.amanzi.awe.afp.loaders
