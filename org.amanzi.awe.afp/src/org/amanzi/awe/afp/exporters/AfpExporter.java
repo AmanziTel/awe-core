@@ -271,13 +271,13 @@ public class AfpExporter extends Job{
 					    		if (rf.equal(trxNode)){
 					    			ArrayList<Integer> freq = new ArrayList<Integer>();
 					    			StringBuilder sb = new StringBuilder();
-					    			sb.append(Long.toString(sectorNode.getId()));
+					    			sb.append(Long.toString(trxNode.getId()));
 					    			sb.append(" ");
 					    			
-					    			String trxNo = (String)trxNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "0");
-									 if (Character.isLetter(trxNo.charAt(0))){
-										 trxNo = Integer.toString(Character.getNumericValue(trxNo.charAt(0)) - Character.getNumericValue('A')+ 1);
-									 }
+//					    			String trxNo = (String)trxNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "0");
+//									 if (Character.isLetter(trxNo.charAt(0))){
+//										 trxNo = Integer.toString(Character.getNumericValue(trxNo.charAt(0)) - Character.getNumericValue('A')+ 1);
+//									 }
 					    			
 					    			
 					    			
@@ -307,7 +307,7 @@ public class AfpExporter extends Job{
 					    			Integer[] freqArray = freq.toArray(new Integer[0]);
 					    			if (freqArray.length > 1){
 					    				for (int j = 0; j < freqArray.length; j++){
-					    					sb.append(trxNo + "-");
+					    					sb.append(1 + "-");//add trxid as 1 always
 					    					sb.append(j);
 							    			sb.append(" ");
 							    			sb.append(1);//non-relevant
@@ -322,7 +322,7 @@ public class AfpExporter extends Job{
 					    			}
 					    			
 					    			else{
-					    				sb.append(trxNo);
+					    				sb.append(1);
 						    			sb.append(" ");
 						    			sb.append(1);//non-relevant
 						    			sb.append(" ");
@@ -389,10 +389,10 @@ public class AfpExporter extends Job{
 	    		}
 				
 				
-				char c = trxId.charAt(0);
-				 if (Character.isDigit(c)){
-					 c = (char)((c- '1') + 'A');
-				 }
+//				char c = trxId.charAt(0);
+//				 if (Character.isDigit(c)){
+//					 c = (char)((c- '1') + 'A');
+//				 }
 				StringBuilder sbSubCell = new StringBuilder();
 				sbSubCell.append("INT 0\t0\t");
 //				String[] values = sectorIntValues.get(intSector)[1];
@@ -401,7 +401,7 @@ public class AfpExporter extends Job{
 					sbSubCell.append(df.format(trxValues[i]) + " ");
 				}
 				sbSubCell.append(intSector.getId());
-				sbSubCell.append(c);
+				sbSubCell.append("A");
 				sbAllInt.append(sbSubCell);
 				sbAllInt.append("\n");
 				numberofinterferers++;
@@ -410,15 +410,15 @@ public class AfpExporter extends Job{
 		}
 		
 		String trxId = (String)trx.getProperty(INeoConstants.PROPERTY_NAME_NAME, "0");
-		char c = trxId.charAt(0);
-		 if (Character.isDigit(c)){
-			 c = (char)((c- '1') + 'A');
-		 }
+//		char c = trxId.charAt(0);
+//		 if (Character.isDigit(c)){
+//			 c = (char)((c- '1') + 'A');
+//		 }
 
 		trxSb.append(numberofinterferers);
 		trxSb.append(" ");
 		trxSb.append(sector.getId());
-		trxSb.append(c);
+		trxSb.append("A");
 		trxSb.append("\n");
 		if(numberofinterferers >0) {
 			intWriter.write(trxSb.toString());

@@ -13,7 +13,9 @@ import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.executors.AfpProcessProgress;
 import org.amanzi.awe.afp.exporters.AfpExporter;
 import org.amanzi.awe.afp.models.AfpModel;
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -315,16 +317,8 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 	    summaryGroup.layout();
 
 		((AfpImportWizard)this.getWizard()).setDone(false);
-		exportJob = model.getExporter();
-		exportJob.schedule();
-		try {
-			exportJob.join();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		if (exportJob.getState() == Job.NONE)
-			executeAfpEngine();
+		
+		executeAfpEngine();
 
 	}
 	public void addProgressTableItem (String[] itemValues){
@@ -442,9 +436,23 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 	}
 	
 	void executeAfpEngine() {
+		class SchedulingRule implements ISchedulingRule {
+		      public boolean isConflicting(ISchedulingRule rule) {
+		         return rule == this;
+		      }
+		      public boolean contains(ISchedulingRule rule) {
+		         return rule == this;
+		      }
+		}
+		SchedulingRule rule = new SchedulingRule();
+		exportJob = model.getExporter();
+		exportJob.setRule(rule);
+		
 		if(afpJob == null) {
 			model.executeAfpEngine(this, exportJob);
 			afpJob = model.getExecutor();
+			afpJob.setRule(rule);
+			exportJob.schedule();
 			afpJob.schedule();
 		}		    
 	}

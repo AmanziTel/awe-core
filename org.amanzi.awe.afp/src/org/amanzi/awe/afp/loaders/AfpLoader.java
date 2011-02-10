@@ -543,7 +543,8 @@ public class AfpLoader extends AbstractLoader {
                 int i = 0;
                 if (isNodeIdBased){
                 	long nodeId = Long.parseLong(field[i++]);
-                	Node sector = service.getNodeById(nodeId);
+                	Node trxNode = service.getNodeById(nodeId);
+//                	Node sector = service.getNodeById(nodeId);
                 	String trxName = field[i++];
                 	if (trxName.contains("-"))
                 		trxName = trxName.split("-")[0];
@@ -555,27 +556,27 @@ public class AfpLoader extends AbstractLoader {
                         frq = Integer.valueOf(field[i++]);
 //                    }
                     
-                    Node trxNode = null;
-                    Traverser traverser = Utils.getTrxTraverser(sector);
+                    
+//                    Traverser traverser = Utils.getTrxTraverser(sector);
                     Transaction tx = service.beginTx();
                     try {
-	                    for (Node trx: traverser){
-	                    	if (trx.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(trxName)){
-	                    		trxNode = trx;
-	                    		break;
-	                    	}
-	                    }
+//	                    for (Node trx: traverser){
+//	                    	if (trx.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(trxName)){
+//	                    		trxNode = trx;
+//	                    		break;
+//	                    	}
+//	                    }
 	                    
-	                    if (trxNode == null){
-	                    	trxNode = addChild(sector, NodeTypes.TRX, trxName, trxName);
-	                    }
+//	                    if (trxNode == null){
+//	                    	trxNode = addChild(sector, NodeTypes.TRX, trxName, trxName);
+//	                    }
 	                    
 	                    setIndexProperty(header, trxNode, "nonrelevant", nonrelevant);
 	                    setIndexProperty(header, trxNode, "numberoffreqenciesrequired", numberoffreqenciesrequired);
 	                    setIndexProperty(header, trxNode, "numberoffrequenciesgiven", numberoffrequenciesgiven);
-	                    String band = (String)sector.getProperty("band", "");
-	                    if (band.contains(" "))
-	                    	band = band.split("\\s")[1];
+//	                    String band = (String)sector.getProperty("band", "");
+//	                    if (band.contains(" "))
+//	                    	band = band.split("\\s")[1];
 	                    AweConsolePlugin.info("Adding TRX and FREQ for sector node id " + nodeId);
 	                    
 //	                    for (int j = 0; j < frq.length; j++){
