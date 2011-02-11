@@ -52,7 +52,7 @@ public class NodeToNodeRelationService extends AbstractService {
     private static final String COUNT_PROXY = "count_proxy";
     private static final String COUNT_RELATION = "count_rel";
 
-    private enum NodeToNodeRelationshipTypes implements RelationshipType {
+    public enum NodeToNodeRelationshipTypes implements RelationshipType {
         SET_TO_ROOT, PROXYS;
     }
 
