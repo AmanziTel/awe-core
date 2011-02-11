@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Testing
+Bundle-SymbolicName: org.amanzi.neo.loader.core.testing
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: org.junit4;bundle-version="4.3.1",
+ org.amanzi.neo.services;bundle-version="1.0.0",
+ org.amanzi.neo.loader.core,
+ org.amanzi.neo.loader.ui
+Import-Package: org.amanzi.neo.loader.core,
+ org.amanzi.neo.loader.ui,
+ org.amanzi.neo.services.ui
