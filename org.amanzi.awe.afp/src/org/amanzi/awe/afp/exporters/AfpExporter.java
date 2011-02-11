@@ -17,7 +17,6 @@ import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
-import org.amanzi.neo.services.node2node.NodeToNodeRelationService.NodeToNodeRelationshipTypes;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -470,31 +469,27 @@ public class AfpExporter extends Job{
 
 			@Override
 			public boolean isReturnableNode(TraversalPosition pos) {
-				if (pos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.SECTOR_SECTOR_RELATIONS.getId()) ||
-						pos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.PROXY.getId()))
+				if (pos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.SECTOR_SECTOR_RELATIONS.getId()))
 					return true;
 				
 				return false;
 			}
-		}, NetworkRelationshipTypes.INTERFERENCE, Direction.OUTGOING, NetworkRelationshipTypes.NEIGHBOURS, Direction.OUTGOING, 
-			DatasetRelationshipTypes.PROXY, Direction.OUTGOING)){
-			for (Relationship relation : proxySector.getRelationships(NetworkRelationshipTypes.INTERFERS, NetworkRelationshipTypes.NEIGHBOUR, NodeToNodeRelationshipTypes.PROXYS)){
+		}, NetworkRelationshipTypes.INTERFERENCE, Direction.OUTGOING, NetworkRelationshipTypes.NEIGHBOURS, Direction.OUTGOING)){
+			for (Relationship relation : proxySector.getRelationships(NetworkRelationshipTypes.INTERFERS, NetworkRelationshipTypes.NEIGHBOUR)){
 				if (relation.getEndNode().equals(proxySector))
 					continue;
-				Node intSector = null;
+				Node intSector;
 				Node intProxySector = relation.getEndNode();
-				intSector = intProxySector.getSingleRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.INCOMING).getStartNode();
-				if (intSector == null)
+				if (intProxySector.hasRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.INCOMING)){
+					intSector = intProxySector.getSingleRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.INCOMING).getStartNode();
+				}
+				else {
 					intSector = intProxySector.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOURS, Direction.INCOMING).getStartNode();
-				if (intSector == null)
-					intSector = intProxySector.getSingleRelationship(DatasetRelationshipTypes.PROXY, Direction.INCOMING).getStartNode();
-				
+				}
 				RelationshipType type = relation.getType();
-				//Assume relation to be of type INTERFERE for PROXY relationship
-				//TODO fix it
-				int typeIndex = INTERFER;
-				if (type.equals(NetworkRelationshipTypes.NEIGHBOUR))
-					typeIndex = NEIGH;
+				int typeIndex = NEIGH;
+				if (type.equals(NetworkRelationshipTypes.INTERFERS))
+					typeIndex = INTERFER;
 				
 				String[][] prevValue = new String[4][4];
 				if (intValues.containsKey(intSector))
@@ -683,7 +678,7 @@ public class AfpExporter extends Job{
 	 * @param sector the sector node
 	 * @return string array containg site name and sector no
 	 */
-	private String[] parseSectorName(Node sector){
+	public String[] parseSectorName(Node sector){
 		Node site = sector.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(sector);
 		String siteName = site.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
 		String sectorValues[] = new String[2];
@@ -701,7 +696,7 @@ public class AfpExporter extends Job{
 			
 		return sectorValues;
 	}
-	private String getSectorNameForInterList(Node sector){
+	public String getSectorNameForInterList(Node sector){
 		Node site = sector.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(sector);
 		String siteName = site.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
 
@@ -719,7 +714,7 @@ public class AfpExporter extends Job{
 	}
 	
 	
-	private String[] getAllTrxNames(Node sector){
+	public String[] getAllTrxNames(Node sector){
 		ArrayList<String> names = new ArrayList<String>();
 		for (Node trx : sector.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
 
