@@ -17,6 +17,7 @@ import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.node2node.NodeToNodeRelationService.NodeToNodeRelationshipTypes;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -155,85 +156,7 @@ public class AfpExporter extends Job{
 		
 	}	
 	
-	public void createCarrierFile(){
-		
-		try{
-			BufferedWriter writer  = new BufferedWriter(new FileWriter(files[CELL]));
-			
-			for (Node sector : afpRoot.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
-
-				@Override
-				public boolean isReturnableNode(TraversalPosition pos) {
-					if (pos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.SECTOR.getId()))
-						return true;
-					
-					return false;
-				}
-			}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)){
-				String sectorValues[] = parseSectorName(sector);
-				
-				for (Node trx : sector.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
-
-					@Override
-					public boolean isReturnableNode(TraversalPosition pos) {
-						if (pos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.TRX.getId()))
-							return true;
-						
-						return false;
-					}
-				}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)){
-					ArrayList<Integer> freq = new ArrayList<Integer>();
-					String trxNo = (String)trx.getProperty(INeoConstants.PROPERTY_NAME_NAME, "0");
-					 if (Character.isLetter(trxNo.charAt(0))){
-						 trxNo = Integer.toString(Character.getNumericValue(trxNo.charAt(0)) - Character.getNumericValue('A')+ 1);
-					 }
-					 
-					 for (Node plan : trx.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, DatasetRelationshipTypes.PLAN_ENTRY, Direction.OUTGOING)){
-						 try{
-							 Integer[] frequencies = (Integer[])plan.getProperty("arfcn", new Integer[0]);
-							 for(Integer f : frequencies)
-								 freq.add(f);
-						 }catch (ClassCastException e){
-							 int[] frequencies = (int[])plan.getProperty("arfcn", new int[0]);
-							 for(int f : frequencies)
-								 freq.add(f);
-						 }
-						 
-						 
-					 }
-					 
-					 Integer[] freqArray = freq.toArray(new Integer[0]);
-					 
-					 if (freqArray.length > maxTRX){
-						 maxTRX = freqArray.length; 
-					 }
-					
-					
-					//write values to cell file
-					writer.write(sectorValues[0]);//siteNmae
-					writer.write(sectorValues[1]);//sectorNo
-					writer.write(" " + trxNo);//trxNo
-					writer.write(" " + 1);//non-relevant
-					if (freqArray.length == 0)
-						 writer.write(" " + 1);//number of frequencies required
-					 else
-						 writer.write(" " + freqArray.length);//number of frequencies required
-					 writer.write(" " + freqArray.length);//number of frequencies given
-					 for (Integer frequency : freqArray){
-						 writer.write(" " + frequency);//required frequencies
-					 }
-					 writer.newLine();
-				}
-				
-				
-			}
-			
-			writer.close();
-		}
-		catch(Exception e){
-			AweConsolePlugin.exception(e);
-		}
-	}
+	
 	
 	
 	
@@ -547,27 +470,31 @@ public class AfpExporter extends Job{
 
 			@Override
 			public boolean isReturnableNode(TraversalPosition pos) {
-				if (pos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.SECTOR_SECTOR_RELATIONS.getId()))
+				if (pos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.SECTOR_SECTOR_RELATIONS.getId()) ||
+						pos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.PROXY.getId()))
 					return true;
 				
 				return false;
 			}
-		}, NetworkRelationshipTypes.INTERFERENCE, Direction.OUTGOING, NetworkRelationshipTypes.NEIGHBOURS, Direction.OUTGOING)){
-			for (Relationship relation : proxySector.getRelationships(NetworkRelationshipTypes.INTERFERS, NetworkRelationshipTypes.NEIGHBOUR)){
+		}, NetworkRelationshipTypes.INTERFERENCE, Direction.OUTGOING, NetworkRelationshipTypes.NEIGHBOURS, Direction.OUTGOING, 
+			DatasetRelationshipTypes.PROXY, Direction.OUTGOING)){
+			for (Relationship relation : proxySector.getRelationships(NetworkRelationshipTypes.INTERFERS, NetworkRelationshipTypes.NEIGHBOUR, NodeToNodeRelationshipTypes.PROXYS)){
 				if (relation.getEndNode().equals(proxySector))
 					continue;
-				Node intSector;
+				Node intSector = null;
 				Node intProxySector = relation.getEndNode();
-				if (intProxySector.hasRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.INCOMING)){
-					intSector = intProxySector.getSingleRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.INCOMING).getStartNode();
-				}
-				else {
+				intSector = intProxySector.getSingleRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.INCOMING).getStartNode();
+				if (intSector == null)
 					intSector = intProxySector.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOURS, Direction.INCOMING).getStartNode();
-				}
+				if (intSector == null)
+					intSector = intProxySector.getSingleRelationship(DatasetRelationshipTypes.PROXY, Direction.INCOMING).getStartNode();
+				
 				RelationshipType type = relation.getType();
-				int typeIndex = NEIGH;
-				if (type.equals(NetworkRelationshipTypes.INTERFERS))
-					typeIndex = INTERFER;
+				//Assume relation to be of type INTERFERE for PROXY relationship
+				//TODO fix it
+				int typeIndex = INTERFER;
+				if (type.equals(NetworkRelationshipTypes.NEIGHBOUR))
+					typeIndex = NEIGH;
 				
 				String[][] prevValue = new String[4][4];
 				if (intValues.containsKey(intSector))
@@ -620,174 +547,6 @@ public class AfpExporter extends Job{
 			
 	}
 	
-	public void writeFiles(){
-		
-		try{
-			BufferedWriter carrierWriter  = new BufferedWriter(new FileWriter(files[CELL]));
-			BufferedWriter intWriter  = new BufferedWriter(new FileWriter(files[INTERFERENCE]));
-			StringBuilder carrierSB = new StringBuilder();
-			StringBuilder intSB = new StringBuilder();
-			for (Node sector : afpRoot.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
-
-				@Override
-				public boolean isReturnableNode(TraversalPosition pos) {
-					if (pos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.SECTOR.getId()))
-						return true;
-					
-					return false;
-				}
-			}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)){
-				String sectorValues[] = parseSectorName(sector);
-				carrierSB.append(sectorValues[0]);
-				carrierSB.append(sectorValues[1]);
-				String sectorName = getSectorNameForInterList(sector);
-				
-								
-				
-				
-				for (Node trx : sector.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
-
-					@Override
-					public boolean isReturnableNode(TraversalPosition pos) {
-						if (pos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.TRX.getId()))
-							return true;
-						
-						return false;
-					}
-				}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)){
-					
-					StringBuilder sbCell = new StringBuilder();
-					sbCell.append("SUBCELL 0 0 1 1 ");
-					int numberofinterferers =0;
-					StringBuilder sbAllInt = new StringBuilder();
-					
-					ArrayList<Integer> freq = new ArrayList<Integer>();
-					String trxNo = (String)trx.getProperty(INeoConstants.PROPERTY_NAME_NAME, "0");
-					String trxName = trxNo;
-					 if (Character.isLetter(trxNo.charAt(0))){
-						 trxNo = Integer.toString(Character.getNumericValue(trxNo.charAt(0)) - Character.getNumericValue('A')+ 1);
-					 }
-					 else{
-						 trxName = Character.toString((char)(trxNo.charAt(0) + 'A' - '1'));
-					 }
-					 carrierSB.append(" " + trxNo);
-					 carrierSB.append(" " + 1);//non-relevant
-					 
-					 for (Node plan : trx.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, DatasetRelationshipTypes.PLAN_ENTRY, Direction.OUTGOING)){
-						 try{
-							 Integer[] frequencies = (Integer[])plan.getProperty("arfcn", new Integer[0]);
-							 for(Integer f : frequencies)
-								 freq.add(f);
-						 }catch (ClassCastException e){
-							 int[] frequencies = (int[])plan.getProperty("arfcn", new int[0]);
-							 for(int f : frequencies)
-								 freq.add(f);
-						 }
-						 
-						 
-					 }
-					 
-					 Integer[] freqArray = freq.toArray(new Integer[0]);
-					 
-					 if (freqArray.length > maxTRX){
-						 maxTRX = freqArray.length; 
-					 }
-					
-					if (freqArray.length == 0)
-						carrierSB.append(" " + 1);//number of frequencies required
-					else
-						carrierSB.append(" " + freqArray.length);//number of frequencies required
-					carrierSB.append(" " + freqArray.length);//number of frequencies given
-					 for (Integer frequency : freqArray){
-						 carrierSB.append(" " + frequency);//required frequencies
-					 }
-					 carrierSB.append("\n");
-					 
-					 /*for (Node proxySector : sector.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
-
-							@Override
-							public boolean isReturnableNode(TraversalPosition pos) {
-								if (pos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.SECTOR_SECTOR_RELATIONS.getId()))
-									return true;
-								
-								return false;
-							}
-						}, NetworkRelationshipTypes.INTERFERENCE, Direction.OUTGOING)){
-						 for (Relationship relation : proxySector.getRelationships(NetworkRelationshipTypes.INTERFERS, Direction.OUTGOING)){
-								Node interferenceProxySector = relation.getEndNode();
-								Node interferenceSector = interferenceProxySector.getSingleRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.INCOMING).getOtherNode(interferenceProxySector);
-								String subSectorName = getSectorNameForInterList(interferenceSector);	
-								
-								StringBuilder sbSubCell = new StringBuilder();
-								DecimalFormat df = new DecimalFormat("0.0000000000");
-								sbSubCell.append("INT 0\t0\t"); 
-								
-								try {
-									sbSubCell.append(df.format(relation.getProperty("CoA")).toString());
-								} catch (Exception e) {
-									sbSubCell.append((String)relation.getProperty("CoA"));
-								}
-								sbSubCell.append(" ");
-								
-								try {
-									sbSubCell.append(df.format(relation.getProperty("CoT")).toString());
-								} catch (Exception e) {
-									sbSubCell.append((String)relation.getProperty("CoT"));
-								}
-								sbSubCell.append(" ");
-								
-								try {
-									sbSubCell.append(df.format(relation.getProperty("AdA")).toString());
-								} catch (Exception e) {
-									sbSubCell.append((String)relation.getProperty("AdA"));
-								}
-								sbSubCell.append(" ");
-								
-								try {
-									sbSubCell.append(df.format(relation.getProperty("AdT")).toString());
-								} catch (Exception e) {
-									sbSubCell.append((String)relation.getProperty("AdT"));
-								}
-								sbSubCell.append(" ");
-								sbSubCell.append(subSectorName);
-								String[] intTrxNames = getAllTrxNames(interferenceSector);
-								for(String intName: intTrxNames){
-									sbAllInt.append(sbSubCell);
-									sbAllInt.append(intName);
-									sbAllInt.append("\n");
-									numberofinterferers++;
-								}
-								
-							}
-						 	
-					 	}
-
-
-					 	sbCell.append(numberofinterferers);
-						sbCell.append(" ");
-						sbCell.append(sectorName);
-						sbCell.append(trxName);
-						sbCell.append("\n");
-						if(numberofinterferers >0) {
-							intWriter.write(sbCell.toString());
-							intWriter.write(sbAllInt.toString());
-						}*/
-					 
-					
-					 
-						carrierWriter.write(carrierSB.toString());
-					 
-				}
-				
-				
-			}
-			
-			carrierWriter.close();
-		}
-		catch(Exception e){
-			AweConsolePlugin.exception(e);
-		}
-	}
 	
 	
 	
@@ -917,53 +676,14 @@ public class AfpExporter extends Job{
 		return spaceSeparated;
 	}
 	
-	/**
-	 * Creates the neighbors file for input to the C++ engine
-	 */
-	public void createNeighboursFile(){
-		Node startSector = null;
-		
-		try {
-			BufferedWriter writer  = new BufferedWriter(new FileWriter(files[NEIGHBOUR]));
-			
-			for (Node neighbour : afpRoot.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING)){
-				//TODO: put condition here to get the desired neighbour list in case of multiple neighbour list
-				startSector = neighbour.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).getEndNode();
-				break;				
-			}
-			
-			if (startSector != null){			
-				for (Node proxySector : startSector.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, NetworkRelationshipTypes.NEXT, Direction.OUTGOING)){
-					if (!proxySector.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.SECTOR_SECTOR_RELATIONS.getId()))
-						 continue;
-					Node sector = proxySector.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOURS, Direction.INCOMING).getOtherNode(proxySector);
-					String sectorValues[] = parseSectorName(sector);			
-					writer.write("CELL " + sectorValues[0] + " " + sectorValues[1]);
-					writer.newLine();
-					for (Node neighbourProxySector: proxySector.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.NEIGHBOUR, Direction.OUTGOING)){
-						Node neighbourSector = neighbourProxySector.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOURS, Direction.INCOMING).getOtherNode(neighbourProxySector);
-						sectorValues = parseSectorName(neighbourSector);
-						writer.write("NBR " + sectorValues[0] + " " + sectorValues[1]);
-						writer.newLine();
-					}
-				}
-			}
-			else {
-				AweConsolePlugin.info("No Neighbours data stored in the database");
-			}
-			
-			writer.close();
-		}catch (Exception e){
-			AweConsolePlugin.exception(e);
-		}
-	}
+	
 	
 	/**
 	 * Gets the site name and sector no of the sector
 	 * @param sector the sector node
 	 * @return string array containg site name and sector no
 	 */
-	public String[] parseSectorName(Node sector){
+	private String[] parseSectorName(Node sector){
 		Node site = sector.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(sector);
 		String siteName = site.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
 		String sectorValues[] = new String[2];
@@ -981,7 +701,7 @@ public class AfpExporter extends Job{
 			
 		return sectorValues;
 	}
-	public String getSectorNameForInterList(Node sector){
+	private String getSectorNameForInterList(Node sector){
 		Node site = sector.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(sector);
 		String siteName = site.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
 
@@ -998,26 +718,8 @@ public class AfpExporter extends Job{
 		return sectorName;
 	}
 	
-	public Long[] getAllTrxIds(Node sector){
-		ArrayList<Long> ids = new ArrayList<Long>();
-		for (Node trx : sector.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
-
-			@Override
-			public boolean isReturnableNode(TraversalPosition pos) {
-				if (pos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.TRX.getId()))
-					return true;
-				
-				return false;
-			}
-		}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)){
-			long id = trx.getId();
-			ids.add(id);
-			
-		}
-		return ids.toArray(new Long[0]);
-	}
 	
-	public String[] getAllTrxNames(Node sector){
+	private String[] getAllTrxNames(Node sector){
 		ArrayList<String> names = new ArrayList<String>();
 		for (Node trx : sector.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
 
@@ -1042,256 +744,13 @@ public class AfpExporter extends Job{
 	}
 	
 	
-	/**
-	 * Creates the interference file for input to the C++ engine
-	 */
-	public void createInterferenceFile(IProgressMonitor monitor){
-		Node startSector = null;
-
-		try {
-			BufferedWriter writer  = new BufferedWriter(new FileWriter(files[INTERFERENCE]));
-//			writer.write("ASSET like Site Interference Table");
-			writer.newLine();
-			
-			for (Node interferer : afpRoot.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.INTERFERENCE_DATA, Direction.OUTGOING)){
-				//TODO: put condition here to get the desired interference list in case of multiple interference list
-				startSector = interferer.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).getEndNode();
-				break;				
-			}
-			
-			if (startSector != null){			
-				for (Node proxySector : startSector.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, NetworkRelationshipTypes.NEXT, Direction.OUTGOING)){
-					
-					if(monitor != null ) {
-						if(monitor.isCanceled())
-							return;
-					}
-					if (!proxySector.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.SECTOR_SECTOR_RELATIONS.getId()))
-						 continue;
-					
-					Node sector = proxySector.getSingleRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.INCOMING).getOtherNode(proxySector);
-					String sectorName = getSectorNameForInterList(sector);
-					
-					
-					
-					String[] trxNames = getAllTrxNames(sector);
-					for(String name: trxNames){
-						StringBuilder sbCell = new StringBuilder();
-						sbCell.append("SUBCELL 0 0 1 1 ");
-						int numberofinterferers =0;
-						
-						
-						StringBuilder sbAllInt = new StringBuilder();
-						for (Relationship relation : proxySector.getRelationships(NetworkRelationshipTypes.INTERFERS, Direction.OUTGOING)){
-							Node interferenceProxySector = relation.getEndNode();
-							Node interferenceSector = interferenceProxySector.getSingleRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.INCOMING).getOtherNode(interferenceProxySector);
-							String subSectorName = getSectorNameForInterList(interferenceSector);	
-							
-							StringBuilder sbSubCell = new StringBuilder();
-							DecimalFormat df = new DecimalFormat("0.0000000000");
-							sbSubCell.append("INT 0\t0\t"); 
-							
-							try {
-								sbSubCell.append(df.format(relation.getProperty("CoA")).toString());
-							} catch (Exception e) {
-								sbSubCell.append((String)relation.getProperty("CoA"));
-							}
-							sbSubCell.append(" ");
-							
-							try {
-								sbSubCell.append(df.format(relation.getProperty("CoT")).toString());
-							} catch (Exception e) {
-								sbSubCell.append((String)relation.getProperty("CoT"));
-							}
-							sbSubCell.append(" ");
-							
-							try {
-								sbSubCell.append(df.format(relation.getProperty("AdA")).toString());
-							} catch (Exception e) {
-								sbSubCell.append((String)relation.getProperty("AdA"));
-							}
-							sbSubCell.append(" ");
-							
-							try {
-								sbSubCell.append(df.format(relation.getProperty("AdT")).toString());
-							} catch (Exception e) {
-								sbSubCell.append((String)relation.getProperty("AdT"));
-							}
-							sbSubCell.append(" ");
-							sbSubCell.append(subSectorName);
-							String[] intTrxNames = getAllTrxNames(interferenceSector);
-							for(String intName: intTrxNames){
-								sbAllInt.append(sbSubCell);
-								sbAllInt.append(intName);
-								sbAllInt.append("\n");
-								numberofinterferers++;
-							}
-							
-						}
-						
-						sbCell.append(numberofinterferers);
-						sbCell.append(" ");
-						sbCell.append(sectorName);
-						sbCell.append(name);
-						sbCell.append("\n");
-						if(numberofinterferers >0) {
-							writer.write(sbCell.toString());
-							writer.write(sbAllInt.toString());
-						}
-						
-					}
-				}
-			}
-			else {
-				AweConsolePlugin.info("No Interference data stored");
-			}
-			writer.close();
-		}catch (Exception e){
-			AweConsolePlugin.exception(e);
-		}
-	}
 	
-	/**
-	 * Creates the exception file for input to the C++ engine
-	 */
-	public void createExceptionFile(){
-		Node startSector = null;
-		try {
-			BufferedWriter writer  = new BufferedWriter(new FileWriter(files[EXCEPTION]));
-			Traverser exceptionList = afpRoot.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.EXCEPTION_DATA, Direction.OUTGOING);
-			
-			for (Node exception : exceptionList){
-				//TODO: put condition here to get the desired exception list in case of multiple interference list
-				startSector = exception.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).getEndNode();
-				break;				
-			}
-			
-			if (startSector != null){	
-				for (Node proxySector : startSector.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, NetworkRelationshipTypes.NEXT, Direction.OUTGOING)){
-					if (!proxySector.getProperty("type").equals("sector_sector_relations"))
-						 continue;
-					Node sector = proxySector.getSingleRelationship(NetworkRelationshipTypes.EXCEPTIONS, Direction.INCOMING).getOtherNode(proxySector);		
-					String sectorValues[] = parseSectorName(sector);
-					for (Relationship relation : proxySector.getRelationships(NetworkRelationshipTypes.EXCEPTION, Direction.OUTGOING)){
-						Node exceptionProxySector = relation.getEndNode();
-						Node exceptionSector = exceptionProxySector.getSingleRelationship(NetworkRelationshipTypes.EXCEPTIONS, Direction.INCOMING).getOtherNode(exceptionProxySector);
-						String exceptionSectorValues[] = parseSectorName(exceptionSector);
-						writer.write(sectorValues[0] + " " + sectorValues[1] + " " + exceptionSectorValues[0] + " " + exceptionSectorValues[1] + " " +
-									relation.getProperty("new_spacing"));
-						writer.newLine();
-					}
-				}
-			}
-			else {
-				AweConsolePlugin.info("No Exception data stored");
-			}
-			writer.close();
-		}catch (Exception e){
-			AweConsolePlugin.exception(e);
-		}
-	}
-	
-	/**
-	 * Creates the forbidden file for input to the C++ engine
-	 */
-	public void createForbiddenFile(){
-		try {
-			BufferedWriter writer  = new BufferedWriter(new FileWriter(files[FORBIDDEN]));
-			
-			 for (Node sector : afpRoot.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)){
-				 if (!sector.getProperty("type").equals("sector"))
-				 	 continue;
-				 String sectorValues[] = parseSectorName(sector);			
-				 
-				 Object obj = sector.getProperty("numberofforbidden", null);
-				 if (!(obj == null)){
-					 String numForbidden = obj.toString();
-					 writer.write(sectorValues[0]);
-					 writer.write(" " + sectorValues[1]);
-					 writer.write(" " + numForbidden);
-					 obj = sector.getProperty("forb_fr_list");
-					 
-					 if (obj != null){
-						 Integer temp[]  = new Integer[2];
-						 if (obj.getClass() == temp.getClass()){
-							 Integer forbiddenFrequencies[] = (Integer[]) obj;
-							 for (Integer frequency : forbiddenFrequencies){
-								 writer.write(" " + frequency);
-							 }
-						 }
-						 else{
-							 int forbiddenFrequencies[] = (int[])obj;
-							 for (int frequency : forbiddenFrequencies){
-								 writer.write(" " + frequency);
-							 }
-						 }
-						 
-					 }
-					 writer.newLine();
-				 }
-			 }
-
-			
-			writer.close();
-		}catch (Exception e){
-			AweConsolePlugin.exception(e);
-		}
-	}
-	
-	/**
-	 * Creates the cliques file for input to the C++ engine
-	 */
-	public void createCliquesFile(){
-
-		try {
-			BufferedWriter writer  = new BufferedWriter(new FileWriter(files[CLIQUES]));
-			
-			/**
-			 *Write code here to write the file
-			 */
-			
-			writer.close();
-		}catch (Exception e){
-			AweConsolePlugin.exception(e);
-		}
-	}
-	
-	
-	
-	
-/*	public void createParamFile(){
-		File file = getFile(this.paramFileName);
-		try {
-			file.createNewFile();
-			BufferedWriter writer  = new BufferedWriter(new FileWriter(file));
-			writer.write(fileNames[CONTROL] + "\n\r");
-			writer.close();
-		}catch (Exception e){
-			AweConsolePlugin.exception(e);
-		}
-	}
-*/	
 	private void createTmpFolder(){
 		File file = new File(this.tmpAfpFolder);
 		if (!file.exists())
 			file.mkdir();
 	}
 	
-	/**
-	 * Gets the file instance for the specified file name
-	 * @param name the name for that file
-	 * @return returns the file instance
-	 */
-	
-	/*private File getFile(String name){
-		
-		File file = new File(this.tmpAfpFolder);
-		if (!file.exists())
-			file.mkdir();
-		
-		file = new File(name);
-		return file; 
-	}*/
 	
 	public static String getTmpFolderPath(){
 		
