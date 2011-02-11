@@ -167,15 +167,26 @@ public class ExporterTesting {
 						Node sector = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
 						// check if the secotr has proxy sectors
 						if(sector != null) {
-							if(sector.hasRelationship(NetworkRelationshipTypes.NEIGHBOURS, Direction.OUTGOING)) {
-								System.out.println(""+ node.getId());
-								cnt++;
-								continue;
-							}
-							if(sector.hasRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.OUTGOING)) {
-								System.out.println(""+ node.getId());
-								cnt++;
-								continue;
+							String secName = (String)sector.getProperty(INeoConstants.PROPERTY_NAME_NAME, "");
+
+							Traverser tr = sector.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
+
+								@Override
+								public boolean isReturnableNode(TraversalPosition currentPos) {
+									if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.SECTOR_SECTOR_RELATIONS.getId())){
+										return true;
+									}
+									return false;
+								}
+					    	}, NetworkRelationshipTypes.NEIGHBOURS, Direction.OUTGOING,NetworkRelationshipTypes.INTERFERENCE, Direction.OUTGOING);
+							
+							for(Node pSector:tr) {
+								
+								if(pSector.hasRelationship(Direction.OUTGOING)) {
+									System.out.println(secName + "-"+node.getId());
+									cnt++;
+									break;
+								}
 							}
 						}
 					} else {
