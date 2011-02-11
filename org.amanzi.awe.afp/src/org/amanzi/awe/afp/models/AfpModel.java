@@ -12,6 +12,7 @@ import org.amanzi.awe.afp.ControlFileProperties;
 import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.executors.AfpProcessProgress;
 import org.amanzi.awe.afp.exporters.AfpExporter;
+import org.amanzi.awe.afp.loaders.AfpOutputFileLoaderJob;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
@@ -352,6 +353,10 @@ public class AfpModel {
 	 */
 	public void setDatasetNode(Node network) {
 		this.datasetNode = network;
+	}
+	
+	public Node getDatasetNode() {
+		return datasetNode;
 	}
 
 	public void setSelectNetworkDataSetName(String datasetName) {
@@ -1817,6 +1822,12 @@ public class AfpModel {
 		AfpExporter exportJob = new AfpExporter(datasetNode, this.afpNode, this);
 		return exportJob;
 	}
+	
+//	public void getLoader(){
+//		String outFileName = exportJob.domainDirPaths[0] + exportJob.outputFileName;
+//		AfpOutputFileLoaderJob loadJob = new AfpOutputFileLoaderJob("Load generated Network", datasetNode, null, afpNode);
+//		
+//	}
 	
 	public void executeAfpEngine(AfpProcessProgress progress, AfpExporter exportJob){
 		if (afpNode != null ){

@@ -16,7 +16,7 @@ public class AfpEngineImpl extends org.amanzi.awe.afp.AfpEngine{
 			URL url = org.eclipse.core.runtime.FileLocator.find(Activator.getDefault().getBundle(), 
 				new Path("exe/japa_awe.exe"), null);
 			path = org.eclipse.core.runtime.FileLocator.toFileURL(url).toString();
-			path = path.substring(6);
+			path = path.substring(5);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

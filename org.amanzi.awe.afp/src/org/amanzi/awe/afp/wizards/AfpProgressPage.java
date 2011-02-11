@@ -12,6 +12,7 @@ import javax.swing.SwingUtilities;
 import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.executors.AfpProcessProgress;
 import org.amanzi.awe.afp.exporters.AfpExporter;
+import org.amanzi.awe.afp.loaders.AfpOutputFileLoaderJob;
 import org.amanzi.awe.afp.models.AfpModel;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -73,6 +74,7 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
     Shell parentShell;
 	private AfpProcessExecutor afpJob;
 	private AfpExporter exportJob;
+	private AfpOutputFileLoaderJob loadJob;
     //private JFreeChart chart;
     private Button[] colorButtons = new Button[8];
 	private String[] graphParams = new String[]{
@@ -448,12 +450,16 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 		exportJob = model.getExporter();
 		exportJob.setRule(rule);
 		
+		loadJob = new AfpOutputFileLoaderJob("Load generated Network", model.getDatasetNode(), model.getAfpNode(), exportJob);
+		loadJob.setRule(rule);
+		
 		if(afpJob == null) {
 			model.executeAfpEngine(this, exportJob);
 			afpJob = model.getExecutor();
 			afpJob.setRule(rule);
 			exportJob.schedule();
 			afpJob.schedule();
+			loadJob.schedule();
 		}		    
 	}
 }
