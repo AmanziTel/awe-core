@@ -98,9 +98,10 @@ public class NeighbourLoader {
      * @param networkNode network Node
      * @param fileName Neighbour file Name
      */
-    public NeighbourLoader(Node networkNode, String fileName, LuceneIndexService indexService, boolean isTesting) {
+    public NeighbourLoader(Node networkNode, String fileName, LuceneIndexService indexService, boolean isInterference, boolean isTesting) {
         network = NeoUtils.findRoot(networkNode);
         this.fileName = fileName;
+        this.isInterference = isInterference;
         this.baseName = new File(fileName).getName();
         gisName = NeoUtils.getNodeName(networkNode);
         index = indexService;

@@ -118,7 +118,7 @@ public class NeighbourLoaderTest extends AbstractLoaderTest{
         networkLoader.setCommitSize(1000);
         networkLoader.run(null);
         gis = findGisNode(filename);
-        NeighbourLoader loader = new NeighbourLoader(gis, fileDirectory + getDbName(aTestKey),index, true);
+        NeighbourLoader loader = new NeighbourLoader(gis, fileDirectory + getDbName(aTestKey),index, false, true);
         IProgressMonitor monitor = new NullProgressMonitor();
         loader.run(monitor);
 		return loader;

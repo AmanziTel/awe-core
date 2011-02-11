@@ -5,10 +5,16 @@ Bundle-SymbolicName: org.amanzi.awe.afp.testing;singleton:=true
 Bundle-Version: 1.0.0
 Bundle-Activator: org.amanzi.awe.afp.testing.Activator
 Require-Bundle: org.eclipse.ui,
+ org.junit4;bundle-version="4.3.1",
  org.eclipse.core.runtime,
  org.amanzi.awe.afp,
  org.amanzi.neo.core,
  org.jruby,
+ org.amanzi.neo.loader;bundle-version="1.0.0",
+ org.amanzi.neo.loader.testing;bundle-version="1.0.0",
  org.neo4j,
- org.amanzi.scripting.jruby
+ org.amanzi.scripting.jruby,
+ org.amanzi.testing,
+ org.eclipse.swt;bundle-version="3.3.2",
+ org.amanzi.neo.services;bundle-version="1.0.0"
 Eclipse-LazyStart: true

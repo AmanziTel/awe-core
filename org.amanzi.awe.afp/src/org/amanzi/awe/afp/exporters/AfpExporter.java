@@ -400,7 +400,7 @@ public class AfpExporter extends Job{
 				for (int i = 0; i < trxValues.length; i++){
 					sbSubCell.append(df.format(trxValues[i]) + " ");
 				}
-				sbSubCell.append(intSector.getId());
+				sbSubCell.append(intTrx.getId());
 				sbSubCell.append("A");
 				sbAllInt.append(sbSubCell);
 				sbAllInt.append("\n");
@@ -417,7 +417,7 @@ public class AfpExporter extends Job{
 
 		trxSb.append(numberofinterferers);
 		trxSb.append(" ");
-		trxSb.append(sector.getId());
+		trxSb.append(trx.getId());
 		trxSb.append("A");
 		trxSb.append("\n");
 		if(numberofinterferers >0) {
