@@ -12,28 +12,43 @@
  */
 package org.amanzi.awe.views.network.property;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.refractions.udig.internal.ui.UiPlugin;
+
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEvent;
+import org.amanzi.awe.ui.AweUiPlugin;
+import org.amanzi.awe.ui.UiService;
 import org.amanzi.awe.views.network.proxy.NeoNode;
+import org.amanzi.neo.core.database.entity.NeoDataService;
+import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.IndexManager;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
+import org.amanzi.neo.services.statistic.ISinglePropertyStat;
 import org.amanzi.neo.services.statistic.PropertyHeader;
+import org.amanzi.neo.services.statistic.StatisticManager;
+import org.amanzi.neo.services.statistic.internal.PropertyHeaderImpl;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.utils.Utils;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.ui.internal.UIPlugin;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.traversal.Traverser;
 import org.neo4j.neoclipse.property.NodePropertySource;
 import org.neo4j.neoclipse.property.PropertyDescriptor;
 import org.neo4j.neoclipse.property.PropertyTransform;
@@ -54,7 +69,7 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
     
     /** The pattern. */
     Pattern pattern = Pattern.compile("Delta (\\w+)\\s+(.*)");
-
+    
     /**
      * Instantiates a new network property source.
      *
@@ -73,8 +88,63 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
     public IPropertyDescriptor[] getPropertyDescriptors() {
         List<IPropertyDescriptor> descs = new ArrayList<IPropertyDescriptor>();
         descs.addAll(getHeadPropertyDescriptors());
+        
+        // Kasnitskij_V:
+        IPropertyHeader propertyHeader = null;
+        DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
+        String currentNetworkName = datasetService.findRootByChild((Node)container)
+                                            .getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+        Iterable<Node> rootNodes = datasetService.getAllRootNodes().nodes();
+        for (Node node : rootNodes) {
+            String networkName = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+            if (networkName.equals(currentNetworkName)) {
+                propertyHeader = new PropertyHeaderImpl(node, datasetService.getNodeName(node));
+                break;
+            }
+        }
+   
+        NodeTypes nodeType = NodeTypes.getEnumById(container.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString());
+        Map<String, Object> propertiesWithValues = propertyHeader.getStatisticParams(nodeType);
+        Set<String> keysFromProperties = propertiesWithValues.keySet();
+        
         Iterable<String> keys = container.getPropertyKeys();
+        
         for (String key : keys) {
+            if (keysFromProperties.contains(key))
+            {
+                keysFromProperties.remove(key);
+            }
+        }
+        
+        int countOfFullValues = 0;
+        for (@SuppressWarnings("unused") String key : keys) {
+            countOfFullValues++;
+        }
+        
+        int countOfEmptyValues = keysFromProperties.size();
+        String[] allKeys = new String[countOfEmptyValues + countOfFullValues];
+        
+        int index = 0;
+        for (String key : keys) {
+            allKeys[index++] = key;
+        }
+        for (String keyFromProperties : keysFromProperties) {
+            allKeys[index++] = keyFromProperties;
+        }
+        
+        for (String keyFromProperties : keysFromProperties) {
+            ISinglePropertyStat singlePropertyStat = propertyHeader.getPropertyStatistic(nodeType.getId(), keyFromProperties);
+            if (singlePropertyStat == null) {
+                container.setProperty(keyFromProperties, ""); 
+                continue;
+            }
+            // TODO: Maybe need save default value with need type
+            // now all empty values saving with type of String
+            Class klass = singlePropertyStat.getType();
+            container.setProperty(keyFromProperties, "");
+        }
+
+        for (String key : allKeys) {
             Object value = container.getProperty((String)key);
             Class< ? > c = value.getClass();
             if(isDeltaNode && key.startsWith("Delta ")) {

@@ -16,6 +16,10 @@ import java.io.IOException;
 
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEvent;
+import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.statistic.IPropertyHeader;
+import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.jface.action.Action;
@@ -127,8 +131,9 @@ public class NewAction extends Action
                                                     + e.getMessage() );
             e.printStackTrace();
         }
+        // Kasnitskij_V:
+        updateStatistics(container, key, value);
         page.refresh();
-        
         NeoServiceProviderUi.getProvider().commit();
         updateLayer(container);
     }
@@ -139,5 +144,24 @@ public class NewAction extends Action
     private void updateLayer(PropertyContainer container) {
         Node gisNode = NeoUtils.findGisNodeByChild((Node)container);
         NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(new UpdateLayerEvent(gisNode));
+    }
+    
+    /**
+     * Update statistics.
+     *
+     * @param container the container
+     * @param container 
+     * @param id the id
+     * @param oldValue the old value
+     */
+    private void updateStatistics(PropertyContainer container, String id, Object oldValue) {
+        if (container instanceof Node){
+            DatasetService service = NeoServiceFactory.getInstance().getDatasetService();
+            Node root = service.findRootByChild((Node)container);
+            if (root!=null){
+                IPropertyHeader stat = PropertyHeader.getPropertyStatistic(root);
+                stat.updateStatistic(service.getNodeType((Node)container).getId(), id, container.getProperty(id, null), null);
+            }
+        }
     }
 }
