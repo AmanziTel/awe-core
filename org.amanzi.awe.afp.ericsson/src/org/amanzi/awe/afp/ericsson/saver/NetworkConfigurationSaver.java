@@ -162,8 +162,8 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
                     continue;
                 }
                 Relationship rel = neighbourModel.getRelation(sector, neighbourSector);
-                updateProperty(neighName,  NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "co", new Double(50d));
-                updateProperty(neighName,  NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "adj", new Double(5));
+                updateProperty(neighName,  NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "co", new Double(0.5d));
+                updateProperty(neighName,  NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "adj", new Double(0.05));
             }
         }
         statistic.setTypeCount(neighName, NodeTypes.NODE_NODE_RELATIONS.getId(), neighbourModel.getRelationCount());
