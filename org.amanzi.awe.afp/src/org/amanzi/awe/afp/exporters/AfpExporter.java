@@ -399,30 +399,30 @@ public class AfpExporter extends Job{
 				
 				if (j ==CoA || j == CoT){
 					if (i == NEIGH){
-						scalingFactor = model.coNeighbor[index];
+						scalingFactor = model.coNeighbor[index] / 100;
 					}
 					else if (i == INTERFER){
-						scalingFactor = model.coInterference[index];
+						scalingFactor = model.coInterference[index] / 100;
 					}
 					else if (i == TRIANGULATION){
-						scalingFactor = model.coTriangulation[index];
+						scalingFactor = model.coTriangulation[index] / 100;
 					}
 					else if (i == SHADOWING){
-						scalingFactor = model.coShadowing[index];
+						scalingFactor = model.coShadowing[index] / 100;
 					}
 				}
 				else if (j ==AdA || j == AdT){
 					if (i == NEIGH){
-						scalingFactor = model.adjNeighbor[index];
+						scalingFactor = model.adjNeighbor[index] / 100;
 					}
 					else if (i == INTERFER){
-						scalingFactor = model.adjInterference[index];
+						scalingFactor = model.adjInterference[index] / 100;
 					}
 					else if (i == TRIANGULATION){
-						scalingFactor = model.adjTriangulation[index];
+						scalingFactor = model.adjTriangulation[index] / 100;
 					}
 					else if (i == SHADOWING){
-						scalingFactor = model.adjShadowing[index];
+						scalingFactor = model.adjShadowing[index] / 100;
 					}
 				}
 					
