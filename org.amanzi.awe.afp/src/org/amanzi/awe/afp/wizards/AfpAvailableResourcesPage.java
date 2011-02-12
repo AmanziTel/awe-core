@@ -81,12 +81,8 @@ public class AfpAvailableResourcesPage extends AfpWizardPage implements Listener
 
 			@Override
 			public void modifyText(ModifyEvent e) {
-				if (frequencies900.getText().trim().equals("") && model.isFrequencyBandAvaliable(AfpModel.BAND_900))
-					setErrorMessage("Select frequencies for 900 band");
-				else {
-					setErrorMessage(null);
-					model.setAvailableFreq(AfpModel.BAND_900,frequencies900.getText());
-				}
+
+				model.setAvailableFreq(AfpModel.BAND_900,frequencies900.getText());
 				button900.setSelection(false);
 			
 				setPageComplete(canFlipToNextPage());
@@ -116,12 +112,7 @@ public class AfpAvailableResourcesPage extends AfpWizardPage implements Listener
 
 			@Override
 			public void modifyText(ModifyEvent e) {
-				if (frequencies1800.getText().trim().equals("") && model.isFrequencyBandAvaliable(AfpModel.BAND_1800))
-					setErrorMessage("Select frequencies for 1800 band");
-				else {
-					setErrorMessage(null);
 					model.setAvailableFreq(AfpModel.BAND_1800,frequencies1800.getText());
-				}
 				button1800.setSelection(false);
 				setPageComplete(canFlipToNextPage());	
 			}
@@ -148,12 +139,7 @@ public class AfpAvailableResourcesPage extends AfpWizardPage implements Listener
 
 			@Override
 			public void modifyText(ModifyEvent e) {
-				if (frequencies850.getText().trim().equals("") && model.isFrequencyBandAvaliable(AfpModel.BAND_850))
-					setErrorMessage("Select frequencies for 850 band");
-				else {
-					setErrorMessage(null);
 					model.setAvailableFreq(AfpModel.BAND_850,frequencies850.getText());
-				}
 				button850.setSelection(false);
 		
 				setPageComplete(canFlipToNextPage());
@@ -181,12 +167,7 @@ public class AfpAvailableResourcesPage extends AfpWizardPage implements Listener
 
 			@Override
 			public void modifyText(ModifyEvent e) {
-				if (frequencies1900.getText().trim().equals("") && model.isFrequencyBandAvaliable(AfpModel.BAND_1900))
-					setErrorMessage("Select frequencies for 1900 band");
-				else {
-					setErrorMessage(null);
-					model.setAvailableFreq(AfpModel.BAND_1900, frequencies1900.getText());
-				}
+				model.setAvailableFreq(AfpModel.BAND_1900, frequencies1900.getText());
 				
 				button1900.setSelection(false);
 				setPageComplete(canFlipToNextPage());
@@ -253,62 +234,44 @@ public class AfpAvailableResourcesPage extends AfpWizardPage implements Listener
 	   * @return true, if is valid page
 	   */
 	  protected boolean isValidPage() {
-	      if ((frequencies900.isEnabled() && frequencies900.getText().trim().equals("")) 
-	    		  || (frequencies1800.isEnabled() && frequencies1800.getText().trim().equals("")) 
-	    		  || (frequencies850.isEnabled() && frequencies850.getText().trim().equals(""))
-	    		  || (frequencies1900.isEnabled() && frequencies1900.getText().trim().equals("")))
-	    	  return false;
+	      for(String band : AfpModel.BAND_NAMES) {
+	    	  Text txt = null;
+	    	  if(band.equals("900"))
+	    		  txt = frequencies900;
+	    	  if(band.equals("1800"))
+	    		  txt = frequencies1800;
+	    	  if(band.equals("850"))
+	    		  txt = frequencies850;
+	    	  if(band.equals("1900"))
+	    		  txt = frequencies1900;
+	    	  if (txt != null){
+	    		  if (txt.isEnabled()){
+	    		
+			    	  String text = model.getAvailableFreq(band);
+			    	  if (text.trim().equals("")){
+						setErrorMessage("Select frequencies for " + band + " band");
+						return false;
+			    	  }
+			    	  for(String frequencyGroups : text.split(",")){
+			    		  for (String frequencies : frequencyGroups.split("-")){
+			    			  try{
+			    				  Integer.parseInt(frequencies);
+			    			  }catch(NumberFormatException nfe){
+			    				  setErrorMessage("Only Numeric frequencies are allowed");
+			    				  return false;
+			    			  }
+			    		  }
+			    	  }
+			    	  
+	    		  }
+	    	  }
+	      }
 	      
-	      //TODO set this flag to true here only for testing purpose. Should be only done in summary page otherwise
-	      //AfpImportWizard.isDone = true;
+	      
+	      setErrorMessage(null);
 	      return true;
 	  }
 	  
-	 /* public HashMap<String, String> getFrequencies(){
-		  HashMap<String, String>  bandFrequencies = null;
-		  bandFrequencies.put("900", frequencies900.getText());
-		  bandFrequencies.put("1800", frequencies1800.getText());
-		  bandFrequencies.put("850", frequencies850.getText());
-		  bandFrequencies.put("1900", frequencies1900.getText());
-		  
-		  return bandFrequencies;
-	  }
-	  
-	  public void setFrequencies(HashMap<String, String>  bandFrequencies){
-		  frequencies900.setText(bandFrequencies.get("900"));
-		  frequencies1800.setText(bandFrequencies.get("1800"));
-		  frequencies850.setText(bandFrequencies.get("850"));
-		  frequencies1900.setText(bandFrequencies.get("1900"));
-		  
-	  }
-	  
-	  public HashMap<String, boolean[]> getBSIC(){
-		  HashMap<String, boolean[]> bsics = null;
-		  boolean[] availableNCCs = {ncc0.getSelection(),
-				  					 ncc1.getSelection(),
-				  					 ncc2.getSelection(),
-				  					 ncc3.getSelection(),
-				  					 ncc4.getSelection(),
-				  					 ncc5.getSelection(),
-				  					 ncc6.getSelection(),
-				  					 ncc7.getSelection(),
-				  					};
-		  
-		  boolean[] availableBCCs = {bcc0.getSelection(),
-					 				 bcc1.getSelection(),
-					 				 bcc2.getSelection(),
-					 				 bcc3.getSelection(),
-					 				 bcc4.getSelection(),
-					 				 bcc5.getSelection(),
-					 				 bcc6.getSelection(),
-					 				 bcc7.getSelection(),
-									};
-		  
-		  bsics.put("NCCs", availableNCCs);
-		  bsics.put("BCCs", availableBCCs);
-		  
-		  return bsics;
-	  }*/
 
 	@Override
 	public void handleEvent(Event event) {

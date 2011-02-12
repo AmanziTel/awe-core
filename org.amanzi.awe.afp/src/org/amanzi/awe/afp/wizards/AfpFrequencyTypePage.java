@@ -17,6 +17,7 @@ import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -152,6 +153,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 	}
 	
 	public void loadData() {
+		setPageComplete(canFlipToNextPage());
 		if(filterTable != null) {
 			filterTable.removeAll();
 			
@@ -283,6 +285,39 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 		}
 //		frequencyDomainsGroup.layout();
 	}
+	
+	 @Override
+    public boolean canFlipToNextPage(){
+	   if (isValidPage()) {
+		   return true;
+	   }
+	    return false;
+	}
+
+    /**
+     * Checks if is valid page.
+     * 
+     * @return true, if is valid page
+     */
+    protected boolean isValidPage() {
+        
+        if (model.getFreqDomains(false).isEmpty()) {
+        	setErrorMessage("No domains created");
+            return false;
+        }
+        
+        for (AfpFrequencyDomainModel frDomain : model.getFreqDomains(false)){
+        	if (frDomain.getNumTRX() > 0){
+        		setErrorMessage(null);
+        		return true;
+        	}
+        	setErrorMessage("No Trx in any any domain. Please assign the trxs to a domain");
+        	return false;
+        }
+              
+        setErrorMessage(null);
+        return true;
+    }
 	
 	public void refreshPage(){
 //		super.refreshPage();

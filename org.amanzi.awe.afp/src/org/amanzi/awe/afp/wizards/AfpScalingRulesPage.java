@@ -46,7 +46,7 @@ public class AfpScalingRulesPage extends AfpWizardPage implements Listener{
 		Group stepsGroup = AfpWizardUtils.getStepsGroup(thisParent, 6);
 		
 		TabFolder tabFolder =new TabFolder(thisParent, SWT.NONE | SWT.BORDER);
-		tabFolder.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false));
+		tabFolder.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true));
     	TabItem item1 =new TabItem(tabFolder,SWT.NONE);
 		item1.setText("Separations");
 		
@@ -165,6 +165,7 @@ public class AfpScalingRulesPage extends AfpWizardPage implements Listener{
 	@Override
 	public void handleEvent(Event event) {
 		setErrorMessage(null);
+		setPageComplete(true);
 		float[] siteSeparation = new float[sepTexts.length];
 		float[] sectorSeparation = new float[sepTexts.length];
 		//Construct an array of all interference matrix arrays
@@ -172,17 +173,26 @@ public class AfpScalingRulesPage extends AfpWizardPage implements Listener{
 		
 		try{
 			for (int i = 0; i < sepTexts.length; i++){
-				sectorSeparation[i] = Float.parseFloat(sepTexts[i][0].getText());
+				float val = Float.parseFloat(sepTexts[i][0].getText());
+				if (val < 0 || val > 100)
+					showError();
+				sectorSeparation[i] = val;
 			}
 			
 			for (int i = 0; i < sepTexts.length; i++){
-				siteSeparation[i] = Float.parseFloat(sepTexts[i][1].getText());
+				float val = Float.parseFloat(sepTexts[i][1].getText());
+				if (val < 0 || val > 100)
+					showError();
+				siteSeparation[i] = val;
 			}
 			
 			
 			for (int i = 0; i < interferenceArray.length; i++){
 				for (int j = 0; j < interferenceArray[i].length; j++){
-					interferenceArray[i][j] = Float.parseFloat(intTexts[j][i].getText());
+					float val = Float.parseFloat(intTexts[j][i].getText());
+					if (val < 0 || val > 100)
+						showError();
+					interferenceArray[i][j] = val;
 				}
 			}
 		}
@@ -194,6 +204,13 @@ public class AfpScalingRulesPage extends AfpWizardPage implements Listener{
 		model.setSectorSeparation(sectorSeparation);
 		model.setInterferenceMatrixArrays(interferenceArray);
 	}
+	
+	public void showError(){
+		setErrorMessage("Only numeric values between 1 and 100 with step size of 0.1 are allowed");
+		setPageComplete(false);
+	}
+	
+	
 	
 	public void refreshPage(){
 		
