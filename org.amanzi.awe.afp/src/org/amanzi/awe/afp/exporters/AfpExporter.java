@@ -141,7 +141,6 @@ public class AfpExporter extends Job{
 				if (!modelDir.exists())
 					modelDir.mkdir();
 				domainDirPaths[i] = modelDir.getAbsolutePath() + PATH_SEPARATOR;
-				System.out.println("Absolute path: " + domainDirPaths[i]);
 				for (int j = 0; j < fileNames.length; j++){
 					inputFiles[i][j] = new File(tmpAfpFolder + dirName + PATH_SEPARATOR + fileNames[j]);
 					inputFiles[i][j].createNewFile();
@@ -496,27 +495,27 @@ public class AfpExporter extends Job{
 				String[] value = new String[4]; 
 				if (typeIndex == INTERFER){
 					try {
-						value[CoA] = df.format(relation.getProperty("CoA")).toString();
+						value[CoA] = df.format(relation.getProperty("CoA", "0")).toString();
 					} catch (Exception e) {
-						value[CoA] = (String)relation.getProperty("CoA");
+						value[CoA] = (String)relation.getProperty("CoA", "0");
 					}
 					
 					try {
-						value[AdA] = df.format(relation.getProperty("AdA")).toString();
+						value[AdA] = df.format(relation.getProperty("AdA", "0")).toString();
 					} catch (Exception e) {
-						value[AdA] = (String)relation.getProperty("AdA");
+						value[AdA] = (String)relation.getProperty("AdA", "0");
 					}
 					
 					try {
-						value[CoT] = df.format(relation.getProperty("CoT")).toString();
+						value[CoT] = df.format(relation.getProperty("CoT", "0")).toString();
 					} catch (Exception e) {
-						value[CoT] = (String)relation.getProperty("CoT");
+						value[CoT] = (String)relation.getProperty("CoT", "0");
 					}
 					
 					try {
-						value[AdT] = df.format(relation.getProperty("AdT")).toString();
+						value[AdT] = df.format(relation.getProperty("AdT", "0")).toString();
 					} catch (Exception e) {
-						value[AdT] = (String)relation.getProperty("AdT");
+						value[AdT] = (String)relation.getProperty("AdT", "0");
 					}
 				}//end if
 				else if(typeIndex == NEIGH){

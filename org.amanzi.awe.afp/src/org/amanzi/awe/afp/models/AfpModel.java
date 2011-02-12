@@ -551,7 +551,7 @@ public class AfpModel {
 	}
 
 	public boolean isFrequencyBandAvaliable(int band) {
-		if(band >=0 && band <=4) {
+		if(band >=0 && band <4) {
 			return frequencyBands[band];
 		}		
 		return false;
@@ -649,7 +649,7 @@ public class AfpModel {
 	 * @param availableFreq900 the availableFreq900 to set
 	 */
 	public void setAvailableFreq(int band, String freq) {
-		if(band >=0 && band <=4) {
+		if(band >=0 && band <4) {
 			availableFreq[band] = freq;
 		}
 	}

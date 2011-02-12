@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 
 import org.amanzi.awe.afp.exporters.AfpExporter;
@@ -124,6 +125,43 @@ public class ExporterTesting {
     	
     }
     
+    private static AfpModel add1800DomainToModel() throws IOException {
+    	if(model == null) 
+    		initalizeAfpModel();
+    	
+		// avaliable bands
+		model.setFrequencyBands(new boolean[]{true, true, false, false});
+    	
+		// avaliable resorces
+		model.setAvailableFreq(AfpModel.BAND_1800, "512-520");
+		
+		// add Frequency domains
+		AfpFrequencyDomainModel fd = new AfpFrequencyDomainModel();
+		fd.setName("Band_1800");
+		fd.setFree(false);
+		fd.setBand("1800");
+		fd.setFrequencies(new String[] {"512-520"});
+		AfpRowFilter rowFilter = new AfpRowFilter();
+		AfpColumnFilter colFilter = new AfpColumnFilter("band", NodeTypes.TRX.getId());
+		colFilter.addValue("1800");
+		rowFilter.addColumn(colFilter);
+		colFilter = new AfpColumnFilter("bcch", NodeTypes.TRX.getId());
+		colFilter.addValue("true");
+		//rowFilter.addColumn(colFilter);
+		fd.setFilters(rowFilter.toString());
+		HashMap<String,AfpFrequencyDomainModel> freqDomains = new HashMap<String,AfpFrequencyDomainModel>();
+		for (AfpFrequencyDomainModel fdModels : model.getFreqDomains(false))
+			freqDomains.put(fdModels.getBand(), fdModels);
+
+		freqDomains.put("1800", fd);
+		model.setFreqDomains(freqDomains);
+		
+		model.saveUserData();
+
+		return model;
+    	
+    }
+    
     private int getLineCnt(String filePath, String matchwith) throws Exception {
     	BufferedReader reader = new BufferedReader(new FileReader(filePath));
     	int lineCnt =0;
@@ -131,7 +169,6 @@ public class ExporterTesting {
     	while((line = reader.readLine()) != null) {
     		if(matchwith != null) {
     			if(line.matches(matchwith)) {
-					System.out.println(""+ line);
         			lineCnt++;
     			}
     		} else {
@@ -165,7 +202,7 @@ public class ExporterTesting {
 					if(filterInterferers) {
 						// find the sector node
 						Node sector = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
-						// check if the secotr has proxy sectors
+						// check if the sector has proxy sectors
 						if(sector != null) {
 							String secName = (String)sector.getProperty(INeoConstants.PROPERTY_NAME_NAME, "");
 
@@ -183,7 +220,7 @@ public class ExporterTesting {
 							for(Node pSector:tr) {
 								
 								if(pSector.hasRelationship(Direction.OUTGOING)) {
-									System.out.println(secName + "-"+node.getId());
+//									System.out.println(secName + "-"+node.getId());
 									cnt++;
 									break;
 								}
@@ -197,16 +234,16 @@ public class ExporterTesting {
 		}
     	return cnt;
     }
-    private void validateCELLFile(Node root,String domain) throws Exception {
+    private void validateCELLFile(Node root,String domain, String band) throws Exception {
     	int lineCnt = getLineCnt(AfpExporter.tmpAfpFolder + "/" + domain + "/InputCellFile.awe", null);
-    	int trxCnt = getTrxCountForBand(root, "900", false);
+    	int trxCnt = getTrxCountForBand(root, band, false);
     	// check count of TRX
     	assertTrue("Cell File TRX Count do not match <"+lineCnt+","+trxCnt+ ">",(lineCnt == trxCnt));
     }
     
-    private void validateINTFile(Node root,String domain) throws Exception {
+    private void validateINTFile(Node root,String domain, String band) throws Exception {
     	int lineCnt = getLineCnt(AfpExporter.tmpAfpFolder + "/" + domain + "/InputInterferenceFile.awe", "^SUBCELL.*$");
-    	int trxCnt = getTrxCountForBand(root, "900", true);
+    	int trxCnt = getTrxCountForBand(root, band, true);
     	// check count of TRX
     	assertTrue("Int File SUBCELL TRX Count do not match <"+lineCnt+","+trxCnt+ ">",(lineCnt == trxCnt));
     }
@@ -247,7 +284,7 @@ public class ExporterTesting {
     	exporter.run(new NullProgressMonitor());
     	
     	// validate CELL File
-    	validateCELLFile(this.rootNode,"Band_900");
+    	validateCELLFile(this.rootNode,"Band_900", "900");
     	//validate that interference file should not be generated
     	int lineCnt = getLineCnt(AfpExporter.tmpAfpFolder + "/Band_900/InputInterferenceFile.awe", "SUBCELL*");
     	assertTrue("Int File SUBCELL TRX Count do not match <"+lineCnt+","+0+ ">",(lineCnt == 0));
@@ -264,10 +301,120 @@ public class ExporterTesting {
     	exporter.run(new NullProgressMonitor());
     	
     	// validate CELL File
-    	validateCELLFile(this.rootNode,"Band_900");
-    	//validate that interference file should not be generated
-    	validateINTFile(this.rootNode,"Band_900");
+    	validateCELLFile(this.rootNode,"Band_900", "900");
+    	//validate interference file
+    	validateINTFile(this.rootNode,"Band_900", "900");
     }
+    
+    @Test
+    public void testIntFileExport() throws Exception{
+    	// import the test data
+    	loadInterference(this.rootNode,"../org.amanzi.awe.afp.testing/files/exporter/distance2.txt");
+    	// run exporter
+    	AfpExporter exporter = new AfpExporter(this.rootNode, model.getAfpNode(), model);
+    	
+    	exporter.run(new NullProgressMonitor());
+    	
+    	// validate CELL File
+    	validateCELLFile(this.rootNode,"Band_900", "900");
+    	//validate interference file
+    	validateINTFile(this.rootNode,"Band_900", "900");
+    }
+    
+    @Test
+    public void testNbrAndIntFileExport() throws Exception{
+    	// import the test data
+    	loadNeighbors(this.rootNode,"../org.amanzi.awe.afp.testing/files/exporter/Neighbours.txt");
+    	loadInterference(this.rootNode,"../org.amanzi.awe.afp.testing/files/exporter/distance2.txt");
+    	// run exporter
+    	AfpExporter exporter = new AfpExporter(this.rootNode, model.getAfpNode(), model);
+    	
+    	exporter.run(new NullProgressMonitor());
+    	
+    	// validate CELL File
+    	validateCELLFile(this.rootNode,"Band_900", "900");
+    	//validate interference file
+    	validateINTFile(this.rootNode,"Band_900", "900");
+    }
+    
+    @Test
+    public void testCellFileExportTwoDomains() throws Exception{
+    	add1800DomainToModel();
+    	// run exporter
+    	AfpExporter exporter = new AfpExporter(this.rootNode, model.getAfpNode(), model);
+    	
+    	exporter.run(new NullProgressMonitor());
+    	
+    	// validate CELL File
+    	validateCELLFile(this.rootNode,"Band_900", "900");
+    	validateCELLFile(this.rootNode,"Band_1800", "1800");
+    	//validate that interference file should not be generated
+    	int lineCnt = getLineCnt(AfpExporter.tmpAfpFolder + "/Band_900/InputInterferenceFile.awe", "SUBCELL*");
+    	assertTrue("Int File SUBCELL TRX Count do not match <"+lineCnt+","+0+ ">",(lineCnt == 0));
+    	
+    	lineCnt = getLineCnt(AfpExporter.tmpAfpFolder + "/Band_1800/InputInterferenceFile.awe", "SUBCELL*");
+    	assertTrue("Int File SUBCELL TRX Count do not match <"+lineCnt+","+0+ ">",(lineCnt == 0));
+    	
+    }
+    
+    @Test
+    public void testNbrFileExportTwoDomains() throws Exception{
+    	add1800DomainToModel();
+    	// import the test data
+    	loadNeighbors(this.rootNode,"../org.amanzi.awe.afp.testing/files/exporter/Neighbours.txt");
+    	// run exporter
+    	AfpExporter exporter = new AfpExporter(this.rootNode, model.getAfpNode(), model);
+    	
+    	exporter.run(new NullProgressMonitor());
+    	
+    	// validate CELL File
+    	validateCELLFile(this.rootNode,"Band_900", "900");
+    	validateCELLFile(this.rootNode,"Band_1800", "1800");
+    	//validate interference file
+    	validateINTFile(this.rootNode,"Band_900", "900");
+    	validateINTFile(this.rootNode,"Band_1800", "1800");
+    	
+    }
+    
+    @Test
+    public void testIntFileExportTwoDomains() throws Exception{
+    	add1800DomainToModel();
+    	// import the test data
+    	loadNeighbors(this.rootNode,"../org.amanzi.awe.afp.testing/files/exporter/distance2.txt");
+    	// run exporter
+    	AfpExporter exporter = new AfpExporter(this.rootNode, model.getAfpNode(), model);
+    	
+    	exporter.run(new NullProgressMonitor());
+    	
+    	// validate CELL File
+    	validateCELLFile(this.rootNode,"Band_900", "900");
+    	validateCELLFile(this.rootNode,"Band_1800", "1800");
+    	//validate interference file
+    	validateINTFile(this.rootNode,"Band_900", "900");
+    	validateINTFile(this.rootNode,"Band_1800", "1800");
+    	
+    }
+    
+    @Test
+    public void testNbrAndIntFileExportTwoDomains() throws Exception{
+    	add1800DomainToModel();
+    	// import the test data
+    	loadNeighbors(this.rootNode,"../org.amanzi.awe.afp.testing/files/exporter/Neighbours.txt");
+    	loadNeighbors(this.rootNode,"../org.amanzi.awe.afp.testing/files/exporter/distance2.txt");
+    	// run exporter
+    	AfpExporter exporter = new AfpExporter(this.rootNode, model.getAfpNode(), model);
+    	
+    	exporter.run(new NullProgressMonitor());
+    	
+    	// validate CELL File
+    	validateCELLFile(this.rootNode,"Band_900", "900");
+    	validateCELLFile(this.rootNode,"Band_1800", "1800");
+    	//validate interference file
+    	validateINTFile(this.rootNode,"Band_900", "900");
+    	validateINTFile(this.rootNode,"Band_1800", "1800");
+    	
+    }
+
 
     /**
      * Creates the structure.
@@ -287,7 +434,7 @@ public class ExporterTesting {
         loader.run(new NullProgressMonitor());
         return;
     }
-    private void loadInterference(Node networkNode, String fileName) throws Exception {
+    private static void loadInterference(Node networkNode, String fileName) throws Exception {
     	
     	NeighbourLoader loader = new NeighbourLoader(networkNode, fileName, util.getIndex(), true, true);
         loader.run(new NullProgressMonitor());
