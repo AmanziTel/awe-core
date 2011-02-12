@@ -430,7 +430,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             for (CoordinatedNode node : nodes) {
                 if (lastNode != null) {
                     Relationship rel = trModel.getRelation(lastNode, node.getNode());
-                    updateProperty(trModel.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "co", new Double(1d));
+                    updateProperty(trModel.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "co", new Double(0.01d));
                     updateProperty(trModel.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "adj", new Double(0d));
                     updateTx(2, 4);
                 }
