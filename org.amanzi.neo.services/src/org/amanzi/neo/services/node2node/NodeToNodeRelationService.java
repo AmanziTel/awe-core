@@ -81,7 +81,8 @@ public class NodeToNodeRelationService extends AbstractService {
                     @Override
                     public Evaluation evaluate(Path arg0) {
                         boolean continues = arg0.length() == 0;
-                        boolean includes = !continues && nameRelation.equals(datasetService.getNodeName(arg0.endNode()))&&typename.equals(getNodeToNodeType(arg0.endNode()));
+                        boolean includes = !continues && nameRelation.equals(datasetService.getNodeName(arg0.endNode()))
+                                && typename.equals(getNodeToNodeType(arg0.endNode()));
                         return Evaluation.of(includes, continues);
                     }
                 }).traverse(rootNode);
@@ -167,8 +168,10 @@ public class NodeToNodeRelationService extends AbstractService {
     public Node createProxy(Node originalNode, String index, String name, Node rootNode) {
         Transaction tx = databaseService.beginTx();
         try {
-            Node node = datasetService.createNode(NodeTypes.PROXY, datasetService.getNodeName(originalNode));
-            datasetService.addChild(rootNode, node, null);
+            Node node = datasetService.addSimpleChild(rootNode, NodeTypes.PROXY, datasetService.getNodeName(originalNode));
+            // Node node = datasetService.createNode(NodeTypes.PROXY,
+            // datasetService.getNodeName(originalNode));
+            // datasetService.addSimpleChild(rootNode, node);
             rootNode.setProperty(COUNT_PROXY, getCountProxy(rootNode) + 1);
             getIndexService().index(node, index, name);
             originalNode.createRelationshipTo(node, DatasetRelationshipTypes.PROXY);
@@ -187,7 +190,16 @@ public class NodeToNodeRelationService extends AbstractService {
      * @param deleteRootNode is it need to delete root node of model
      */
     public void clearNodeToNodeStructure(Node rootNode, String[] indexKeys, boolean deleteRootNode) {
-        Iterator<Node> proxyNodes = datasetService.getChildTraversal(null).traverse(rootNode).nodes().iterator();
+        Iterator<Node> proxyNodes = Traversal.description().depthFirst()
+                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).evaluator(new Evaluator() {
+
+                    @Override
+                    public Evaluation evaluate(Path arg0) {
+                        boolean includes = arg0.length() > 0;
+                        boolean continues = !includes;
+                        return Evaluation.of(includes, continues);
+                    }
+                }).traverse(rootNode).nodes().iterator();
         while (proxyNodes.hasNext()) {
             Node proxy = proxyNodes.next();
 
@@ -221,67 +233,66 @@ public class NodeToNodeRelationService extends AbstractService {
     }
 
     public Relationship getRelation(Node rootNode, String proxyIndexKey, Node servingNode, Node dependentNode) {
-        Node proxyServ=getProxy(rootNode, proxyIndexKey, servingNode);
-        Node neigh=getProxy(rootNode, proxyIndexKey, dependentNode);
+        Node proxyServ = getProxy(rootNode, proxyIndexKey, servingNode);
+        Node neigh = getProxy(rootNode, proxyIndexKey, dependentNode);
         Set<Relationship> relations = Utils.getRelations(proxyServ, neigh, NodeToNodeRelationshipTypes.PROXYS);
-        if (relations.isEmpty()){
+        if (relations.isEmpty()) {
             Transaction tx = databaseService.beginTx();
-            try{
+            try {
                 Relationship rel = proxyServ.createRelationshipTo(neigh, NodeToNodeRelationshipTypes.PROXYS);
-                rootNode.setProperty(COUNT_RELATION, getCountRelation(rootNode)+1);
+                rootNode.setProperty(COUNT_RELATION, getCountRelation(rootNode) + 1);
                 tx.success();
                 return rel;
-            }finally{
+            } finally {
                 tx.finish();
             }
-        }else{
+        } else {
             return relations.iterator().next();
         }
     }
 
     public Set<NodeToNodeRelationModel> findAllNode2NodeRoot(Node network) {
-        Set<NodeToNodeRelationModel> result=new HashSet<NodeToNodeRelationModel>();
-        for (Node root:getAllNode2NodeRoots(network, null).nodes()){
-            result.add(new NodeToNodeRelationModel(root)); 
+        Set<NodeToNodeRelationModel> result = new HashSet<NodeToNodeRelationModel>();
+        for (Node root : getAllNode2NodeRoots(network, null).nodes()) {
+            result.add(new NodeToNodeRelationModel(root));
         }
         return result;
     }
-    public Traverser getAllNode2NodeRoots(Node network,Evaluator additionalEvaluator){
-       TraversalDescription td = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst().relationships(NodeToNodeRelationshipTypes.SET_TO_ROOT,Direction.OUTGOING).evaluator(new Evaluator() {
-        
-        @Override
-        public Evaluation evaluate(Path arg0) {
-            boolean continues=arg0.length()==0;
-            boolean includes=!continues;
-            return Evaluation.of(includes, continues);
+
+    public Traverser getAllNode2NodeRoots(Node network, Evaluator additionalEvaluator) {
+        TraversalDescription td = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst()
+                .relationships(NodeToNodeRelationshipTypes.SET_TO_ROOT, Direction.OUTGOING).evaluator(new Evaluator() {
+
+                    @Override
+                    public Evaluation evaluate(Path arg0) {
+                        boolean continues = arg0.length() == 0;
+                        boolean includes = !continues;
+                        return Evaluation.of(includes, continues);
+                    }
+                });
+        if (additionalEvaluator != null) {
+            td.evaluator(additionalEvaluator);
         }
-    });
-       if (additionalEvaluator!=null){
-           td.evaluator(additionalEvaluator);
-       }
-       return td.traverse(network);
+        return td.traverse(network);
     }
 
     /**
      * Gets the neighbhur traverser.
-     *
+     * 
      * @param rootNode the n2n root node
      * @param additionalEvaluator the additional evaluator
      * @return the neigh traverser
      */
     public Traverser getNeighTraverser(Node rootNode, Evaluator additionalEvaluator) {
-        TraversalDescription td = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst()
+        TraversalDescription td = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).depthFirst()
                 .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
-                .relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)
                 .relationships(NodeToNodeRelationshipTypes.PROXYS, Direction.OUTGOING).evaluator(new Evaluator() {
 
                     @Override
                     public Evaluation evaluate(Path arg0) {
                         boolean includes = arg0.lastRelationship() != null
                                 && arg0.lastRelationship().isType(NodeToNodeRelationshipTypes.PROXYS);
-                        boolean prune = includes
-                                || (arg0.length() == 1 && !arg0.lastRelationship().isType(GeoNeoRelationshipTypes.CHILD))
-                                || (arg0.length() > 1 && !arg0.lastRelationship().isType(GeoNeoRelationshipTypes.NEXT));
+                        boolean prune = includes;
                         return Evaluation.of(includes, !prune);
                     }
                 });
@@ -293,22 +304,20 @@ public class NodeToNodeRelationService extends AbstractService {
 
     /**
      * Gets the serv traverser.
-     *
+     * 
      * @param rootNode the n2n root node
      * @param evaluator the evaluator
      * @return the serv traverser
      */
     public Traverser getServTraverser(Node rootNode, Evaluator additionalEvaluator) {
-        TraversalDescription td = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst()
-                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
-                .relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).evaluator(new Evaluator() {
+        TraversalDescription td = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).depthFirst()
+                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).evaluator(new Evaluator() {
 
                     @Override
                     public Evaluation evaluate(Path arg0) {
-                         boolean prune =  (arg0.length() == 1 && !arg0.lastRelationship().isType(GeoNeoRelationshipTypes.CHILD))
-                                || (arg0.length() > 1 && !arg0.lastRelationship().isType(GeoNeoRelationshipTypes.NEXT));
-                         boolean includes = !prune&&arg0.length()>0&&arg0.endNode().hasRelationship(NodeToNodeRelationshipTypes.PROXYS,Direction.OUTGOING);
-                        return Evaluation.of(includes, !prune);
+                        boolean includes = arg0.length() > 0
+                                && arg0.endNode().hasRelationship(NodeToNodeRelationshipTypes.PROXYS, Direction.OUTGOING);
+                        return Evaluation.of(includes, !includes);
                     }
                 });
         if (additionalEvaluator != null) {
@@ -320,17 +329,17 @@ public class NodeToNodeRelationService extends AbstractService {
 
     /**
      * Gets the serv exist property evaluator.
-     *
+     * 
      * @param propName the prop name
      * @return the serv exist property evaluator
      */
     public static Evaluator getServExistPropertyEvaluator(final String propName) {
         return new Evaluator() {
-            
+
             @Override
             public Evaluation evaluate(Path arg0) {
-                for (Relationship rel:arg0.endNode().getRelationships(NodeToNodeRelationshipTypes.PROXYS,Direction.OUTGOING)){
-                    if (rel.hasProperty(propName)){
+                for (Relationship rel : arg0.endNode().getRelationships(NodeToNodeRelationshipTypes.PROXYS, Direction.OUTGOING)) {
+                    if (rel.hasProperty(propName)) {
                         return Evaluation.of(true, true);
                     }
                 }
@@ -341,7 +350,7 @@ public class NodeToNodeRelationService extends AbstractService {
 
     /**
      * Gets the serv aggregated values.
-     *
+     * 
      * @param <T> the generic type
      * @param klass the klass
      * @param rule the rule
@@ -350,76 +359,78 @@ public class NodeToNodeRelationService extends AbstractService {
      * @return the serv aggregated values
      */
     @SuppressWarnings("unchecked")
-    public <T>T getServAggregatedValues(Class<T> klass, AggregateRules rule, Node serv, String propertyName) {
-        List<T> values=new ArrayList<T>();
-        for (Relationship rel:serv.getRelationships(NodeToNodeRelationshipTypes.PROXYS,Direction.OUTGOING)){
+    public <T> T getServAggregatedValues(Class<T> klass, AggregateRules rule, Node serv, String propertyName) {
+        List<T> values = new ArrayList<T>();
+        for (Relationship rel : serv.getRelationships(NodeToNodeRelationshipTypes.PROXYS, Direction.OUTGOING)) {
             try {
-                T value=(T)rel.getProperty(propertyName,null);
-                if (value!=null){
+                T value = (T)rel.getProperty(propertyName, null);
+                if (value != null) {
                     values.add(value);
                 }
             } catch (ClassCastException e) {
-                //TODO handle exception
+                // TODO handle exception
                 e.printStackTrace();
                 continue;
             }
         }
-        return Utils.getAggregatedValue(klass,rule,values);
+        return Utils.getAggregatedValue(klass, rule, values);
     }
 
     public Node getNetworkNode(Node rootNode) {
         Relationship rel = rootNode.getSingleRelationship(NodeToNodeRelationshipTypes.SET_TO_ROOT, Direction.INCOMING);
-        return rel==null?null:rel.getOtherNode(rootNode);
+        return rel == null ? null : rel.getOtherNode(rootNode);
     }
 
     public Iterable<Relationship> getOutgoingRelation(Node servNode) {
-        return servNode.getRelationships(NodeToNodeRelationshipTypes.PROXYS,Direction.OUTGOING);
+        return servNode.getRelationships(NodeToNodeRelationshipTypes.PROXYS, Direction.OUTGOING);
     }
-//TODO why do not work with 2 traverser?
+
+    // TODO why do not work with 2 traverser?
     public Iterable<Relationship> getRelationTraverserByServNode(final Iterable<Node> filteredServNodes) {
         return new Iterable<Relationship>() {
-            
+
             @Override
             public Iterator<Relationship> iterator() {
                 return new Iterator<Relationship>() {
                     Iterator<Node> itr1 = null;
                     Iterator<Relationship> itr2 = null;
-                    private Relationship next=null;
+                    private Relationship next = null;
+
                     @Override
                     public void remove() {
                         throw new UnsupportedOperationException();
                     }
-                    
+
                     @Override
                     public Relationship next() {
-                        Relationship result=null;
-                        if (hasNext()){
-                            result=next;
-                            next=null;
+                        Relationship result = null;
+                        if (hasNext()) {
+                            result = next;
+                            next = null;
                         }
                         return result;
                     }
-                    
+
                     @Override
                     public boolean hasNext() {
-                        if (next!=null){
+                        if (next != null) {
                             return true;
                         }
-                        if (itr1==null){
-                            itr1=filteredServNodes.iterator();
+                        if (itr1 == null) {
+                            itr1 = filteredServNodes.iterator();
                         }
-                        while(itr2==null||!itr2.hasNext()){
-                            if (itr1.hasNext()){
+                        while (itr2 == null || !itr2.hasNext()) {
+                            if (itr1.hasNext()) {
                                 Node next2 = itr1.next();
-                                itr2=next2.getRelationships(NodeToNodeRelationshipTypes.PROXYS,Direction.OUTGOING).iterator();
-                            }else{
+                                itr2 = next2.getRelationships(NodeToNodeRelationshipTypes.PROXYS, Direction.OUTGOING).iterator();
+                            } else {
                                 break;
                             }
                         }
-                        if (itr2==null||!itr2.hasNext()){
+                        if (itr2 == null || !itr2.hasNext()) {
                             return false;
                         }
-                        next=itr2.next();
+                        next = itr2.next();
                         return true;
                     }
                 };
@@ -428,17 +439,18 @@ public class NodeToNodeRelationService extends AbstractService {
     }
 
     public Set<NodeToNodeRelationModel> findAllN2nModels(Node rootNode, final NodeToNodeTypes type) {
-        TraversalDescription td = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(NodeToNodeRelationshipTypes.SET_TO_ROOT,Direction.OUTGOING).evaluator(new Evaluator() {
-            
-            @Override
-            public Evaluation evaluate(Path arg0) {
-                boolean continues=arg0.length()<1;
-                boolean includes=!continues&&type.name().equals(getNodeToNodeType(arg0.endNode()));
-                return Evaluation.of(includes, continues);
-            }
-        });
-        Set<NodeToNodeRelationModel> result=new HashSet<NodeToNodeRelationModel>();
-        for (Node node:td.traverse(rootNode).nodes()){
+        TraversalDescription td = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE)
+                .relationships(NodeToNodeRelationshipTypes.SET_TO_ROOT, Direction.OUTGOING).evaluator(new Evaluator() {
+
+                    @Override
+                    public Evaluation evaluate(Path arg0) {
+                        boolean continues = arg0.length() < 1;
+                        boolean includes = !continues && type.name().equals(getNodeToNodeType(arg0.endNode()));
+                        return Evaluation.of(includes, continues);
+                    }
+                });
+        Set<NodeToNodeRelationModel> result = new HashSet<NodeToNodeRelationModel>();
+        for (Node node : td.traverse(rootNode).nodes()) {
             result.add(new NodeToNodeRelationModel(node));
         }
         return result;
@@ -449,6 +461,6 @@ public class NodeToNodeRelationService extends AbstractService {
     }
 
     public Iterable<Relationship> getOutgoingRelations(Node proxyServ) {
-        return proxyServ.getRelationships(NodeToNodeRelationshipTypes.PROXYS,Direction.OUTGOING);
+        return proxyServ.getRelationships(NodeToNodeRelationshipTypes.PROXYS, Direction.OUTGOING);
     }
 }
