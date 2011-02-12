@@ -13,23 +13,31 @@
 
 package org.amanzi.awe.catalog.neo.upd_layers.events;
 
+import org.amanzi.awe.ui.IGraphModel;
+import org.neo4j.graphdb.Node;
+
 /**
- * TODO Purpose of 
  * <p>
- *
+ *Change Graph Model
  * </p>
- * @author Shcharbatsevich_A
+ * @author TsAr
  * @since 1.0.0
  */
-public enum UpdateLayerEventTypes {
-    
-    REFRESH,
-    CHANGE_SELECTION,
-    ADD_SELECTION,
-    PROPERTY_UPDATE,
-    PROPERTY_REFRESH,
-    CHANGE_GRAPH_MODEL,
-    ZOOM,
-    PROPERTY_AND_MAP_UPDATE;
+public class ChangeModelEvent extends UpdateLayerEvent {
+
+    private final IGraphModel model;
+
+    /**
+     * @param aType
+     * @param aGisNode
+     */
+    public ChangeModelEvent(Node aGisNode, IGraphModel model) {
+        super(UpdateLayerEventTypes.CHANGE_GRAPH_MODEL, aGisNode);
+        this.model = model;
+    }
+
+    public IGraphModel getModel() {
+        return model;
+    }
 
 }

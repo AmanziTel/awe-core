@@ -23,13 +23,17 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
+import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
+import org.amanzi.awe.catalog.neo.upd_layers.events.ChangeModelEvent;
 import org.amanzi.awe.ui.AweUiPlugin;
+import org.amanzi.awe.ui.IGraphModel;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.TransactionWrapper;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.node2node.INode2NodeFilter;
+import org.amanzi.neo.services.node2node.INodeToNodeType;
 import org.amanzi.neo.services.node2node.Node2NodeSelectionInformation;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationService;
@@ -40,12 +44,25 @@ import org.amanzi.neo.services.ui.IconManager;
 import org.amanzi.neo.services.utils.RunnableWithResult;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.viewers.ILazyContentProvider;
+import org.eclipse.jface.viewers.ITableFontProvider;
+import org.eclipse.jface.viewers.ITableLabelProvider;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -58,6 +75,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -80,6 +98,10 @@ import org.neo4j.graphdb.Relationship;
  * @since 1.0.0
  */
 public class Node2NodeViews extends ViewPart {
+    private static final String SHOW_NEIGHBOUR = "show relation '%s' > '%s' on map";
+    private static final String SHOW_SERVE = "show all '%s' relations on map";
+    
+    public static final String ID="org.amanzi.awe.views.neighbours.views.Node2NodeViews";
     private static final int PAGE_SIZE = 64;
     private IStatistic statistic;
     private Table table;
@@ -107,11 +129,18 @@ public class Node2NodeViews extends ViewPart {
     private ArrayList<String> propertys;
     private INode2NodeFilter filter;
     private CountedIteratorWr createdIter;
-
+    protected boolean drawLines;
+    private IGraphModel model=null;
+    private String selectedServ=null;
+    private Font fontNormal;
+    private Font fontSelected;
+    private TableViewer view;
+    protected int column=-1;
+    private Wrapper data;
     @Override
     public void createPartControl(Composite parent) {
         Composite main = new Composite(parent, SWT.FILL);
-        Layout mainLayout = new GridLayout(4, false);
+        Layout mainLayout = new GridLayout(5, false);
         main.setLayout(mainLayout);
         Label label = new Label(main, SWT.LEFT);
         label.setText(getListTxt());
@@ -132,6 +161,23 @@ public class Node2NodeViews extends ViewPart {
         GridData layoutData = new GridData();
         layoutData.widthHint = 150;
         n2nSelection.setLayoutData(layoutData);
+        Button drawArrow = new Button(main,SWT.CHECK);
+        drawArrow.setText("Draw lines");
+        drawArrow.addSelectionListener(new SelectionListener() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                drawLines=((Button)e.getSource()).getSelection();
+                updateCurrentModel();
+            }
+            
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+        drawLines=true;
+        drawArrow.setSelection(drawLines);
         commit = new Button(main, SWT.BORDER | SWT.PUSH);
         commit.addSelectionListener(new SelectionListener() {
 
@@ -170,7 +216,7 @@ public class Node2NodeViews extends ViewPart {
         Label label2 = new Label(main, SWT.FLAT);
         label2.setText("Write here what do you want to search:");
         textToSearch = new Text(main, SWT.SINGLE | SWT.BORDER);
-        textToSearch.setSize(200, 20);
+//        textToSearch.setSize(200, 20);
         //textToSearch.setLayoutData(layoutData);
         
         search = new Button(main, SWT.PUSH);
@@ -199,7 +245,10 @@ public class Node2NodeViews extends ViewPart {
         //search.setLayoutData(layoutData);
         
         returnFullList = new Button(main, SWT.PUSH);
-        returnFullList.setSize(200, 20);
+//        returnFullList.setSize(200, 20);
+        layoutData=new GridData();
+        layoutData.horizontalSpan=2;
+        returnFullList.setLayoutData(layoutData);
         returnFullList.setText("Return full list");
         returnFullList.addMouseListener(new MouseListener() {
             
@@ -220,18 +269,28 @@ public class Node2NodeViews extends ViewPart {
         returnFullList.setLayoutData(layoutData);
         
         table = new Table(main, SWT.VIRTUAL | SWT.BORDER);
-        table.addListener(SWT.SetData, new Listener() {
-
-            @Override
-            public void handleEvent(Event event) {
-                setData(event);
-            }
-        });
+        view=new TableViewer(table);
+        view.setContentProvider(new VirtualContentProvider());
+        view.setLabelProvider(new VirtualLabelProvider());
+//        table.addListener(SWT.SetData, new Listener() {
+//
+//            @Override
+//            public void handleEvent(Event event) {
+//                setData(event);
+//            }
+//        });
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
-        table.setItemCount(0);
-        layoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1);
-        table.setLayoutData(layoutData);
+        table.addListener(SWT.EraseItem, new Listener() {
+            public void handleEvent(Event event) {
+                if((event.detail & SWT.SELECTED) != 0 ){
+                    event.detail &= ~SWT.SELECTED;
+                }
+            }
+        });
+        view.setItemCount(0);
+        layoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 5, 1);
+        view.getControl().setLayoutData(layoutData);
         setFilter(networks.getAllNode2NodeFilter(AweUiPlugin.getDefault().getUiService().getActiveProjectNode()));
         final TableEditor editor = new TableEditor(table);
         // The editor must have the same size as the cell and must
@@ -291,6 +350,124 @@ public class Node2NodeViews extends ViewPart {
                 }
             }
         });
+
+        table.addListener(SWT.MouseDoubleClick, new Listener() {
+
+
+            public void handleEvent(Event event) {
+                Rectangle clientArea = table.getClientArea();
+                Point pt = new Point(event.x, event.y);
+                int index = table.getTopIndex();
+                while (index < table.getItemCount()) {
+                    boolean visible = false;
+                    final TableItem item = table.getItem(index);
+                    for (int i = 0; i < 2; i++) {
+                        Rectangle rect = item.getBounds(i);
+                        if (rect.contains(pt)) {
+                             column = i;
+
+                             data = (Wrapper)item.getData();
+                            createAndFireModel((Relationship)data.cont,i);
+                            if (column<2){
+                                selectedServ=data.getText(column);
+                                view.refresh();
+                            }
+                            return;
+                        }
+                        if (!visible && rect.intersects(clientArea)) {
+                            visible = true;
+                        }
+                    }
+                    if (!visible)
+                        return;
+                    index++;
+                }
+            }
+        });
+        fontNormal = table.getFont();
+        FontData[] fd = fontNormal.getFontData();
+        fd[0].setStyle(SWT.BOLD);
+        // TODO dispose font resources in plugin stop()?
+        fontSelected = new Font(fontNormal.getDevice(), fd);
+        hookContextMenu();
+    }
+    private void hookContextMenu() {
+        MenuManager menuMgr = new MenuManager("#PopupMenu");
+        menuMgr.setRemoveAllWhenShown(true);
+        menuMgr.addMenuListener(new IMenuListener() {
+            public void menuAboutToShow(IMenuManager manager) {
+                fillContextMenu(manager);
+            }
+        });
+        Menu menu = menuMgr.createContextMenu(table);
+        table.setMenu(menu);
+    }
+    /**
+     *
+     * @param manager
+     */
+    protected void fillContextMenu(IMenuManager manager) {
+        if (data==null||n2nModel==null){
+            return;
+        }
+        if (column==0){
+            fillServMenu(manager,data);
+        }else if (column==1){
+            fillNeighMenu(manager,data);
+        }
+    }
+    /**
+     *
+     * @param manager
+     * @param data2
+     */
+    private void fillNeighMenu(IMenuManager manager, final Wrapper data) {
+        manager.add(new Action(String.format(SHOW_NEIGHBOUR, data.getText(0), data.getText(1))) {
+            @Override
+            public void run() {
+                model=new N2NGraphModel((Relationship)data.cont, false, drawLines);
+                fireModel(model);
+            }
+        });
+    }
+    /**
+     *
+     * @param manager
+     * @param data2
+     */
+    private void fillServMenu(IMenuManager manager,final  Wrapper data) {
+        manager.add(new Action(String.format(SHOW_SERVE, data.getText(0))) {
+            @Override
+            public void run() {
+                model=new N2NGraphModel((Relationship)data.cont, false, drawLines);
+                fireModel(model);
+            }
+        });
+    }
+    /**
+     *
+     */
+    protected void updateCurrentModel() {
+        if (model instanceof N2NGraphModel){
+            ((N2NGraphModel)model).setDrawLines(drawLines);
+            fireModel(model);
+        }
+    }
+
+    /**
+     *
+     * @param data
+     * @param i
+     */
+    protected void createAndFireModel(Relationship data, int i) {
+        IGraphModel model;
+        if (data==null||i<0||i>2||n2nModel==null){
+            model=null;
+        }else{
+            INodeToNodeType type = n2nModel.getType();
+            model=new N2NGraphModel(data, i==0, drawLines);
+        }
+        fireModel(model);
     }
 
     /**
@@ -317,14 +494,20 @@ public class Node2NodeViews extends ViewPart {
             }
             
             item.setData(cont);
+
             item.setText(0, servingNodeName);
+            if (servingNodeName.equals(selectedServ)){
+                item.setFont(0,fontSelected);
+            }else{
+                item.setFont(0,fontNormal);  
+            }
             item.setText(1, ds.getNodeName(((Relationship)cont).getEndNode()));
             for (int j = 2; j < colColut; j++) {
                 item.setText(j, String.valueOf(cont.getProperty(propertys.get(j - 2), "")));
             }
         }
         if (k != 0) {
-            table.setItemCount(k);
+            view.setItemCount(k);
         }
         else {
             if (!searchingSector.equals("")) {
@@ -384,7 +567,7 @@ public class Node2NodeViews extends ViewPart {
             }
             this.filter = allNode2NodeFilter;
             setSelectionModel(allNode2NodeFilter);
-            table.setItemCount(0);
+            view.setItemCount(0);
             table.clearAll();
             Display.getDefault().asyncExec(new Runnable() {
 
@@ -443,6 +626,7 @@ public class Node2NodeViews extends ViewPart {
 
     @Override
     public void dispose() {
+        fireModel(null);
         isDisposed = true;
         tx.stop(false);
         super.dispose();
@@ -483,10 +667,19 @@ public class Node2NodeViews extends ViewPart {
         if (ObjectUtils.equals(model, n2nModel)) {
             return;
         }
+        fireModel(null);
         n2nModel = model;
         formCollumns();
     }
-
+    protected void fireModel(IGraphModel model){
+        this.model=model;
+        if (n2nModel!=null){
+            Node networkRoot=n2nModel.getNetworkNode();
+            Node gisNode = ds.findGisNode(networkRoot);
+            ChangeModelEvent event = new ChangeModelEvent(gisNode,model);
+            NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(event);            
+        }
+    }
     private void formCollumns() {
         int countRelation = 0;
         table.clearAll();
@@ -529,7 +722,7 @@ public class Node2NodeViews extends ViewPart {
 
         }
         resizecolumns();
-        table.setItemCount(countRelation);
+        view.setItemCount(countRelation);
         table.setVisible(countRelation > 0);
     }
 
@@ -593,7 +786,7 @@ public class Node2NodeViews extends ViewPart {
             return;
         }
         final String propertyName = propertys.get(column - 2);
-        final PropertyContainer cont = (PropertyContainer)item.getData();
+        final PropertyContainer cont = (PropertyContainer)((Wrapper)item.getData()).cont;
         String key = n2nModel.getName();
         String nodeTypeId = NodeTypes.NODE_NODE_RELATIONS.getId();
         final Object newValue = statistic.parseValue(key, nodeTypeId, propertyName, text.getText());
@@ -652,5 +845,104 @@ public class Node2NodeViews extends ViewPart {
             return index;
         }
 
+    }
+    public class VirtualContentProvider implements ILazyContentProvider{
+
+        @Override
+        public void dispose() {
+        }
+
+        @Override
+        public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+        }
+
+        @Override
+        public void updateElement(int index) {
+                int start = index / PAGE_SIZE * PAGE_SIZE;
+                int end = Math.min(start + PAGE_SIZE, table.getItemCount());
+                
+                int k = 0;
+                int ind;
+                for (int i = start; i < end; i++) {
+                    PropertyContainer cont = getElement(i);
+                    String servingNodeName = ds.getNodeName(((Relationship)cont).getStartNode());
+
+                    ind=i;
+                    // Kasnitskij_V:
+                    // search need sector
+                    if (!searchingSector.equals("")) {
+                        if (servingNodeName.equals(searchingSector)) {
+                            ind=k++;
+                        }
+                    }
+                    Wrapper wr = new Wrapper(cont,ind);
+                    wr.addProperty(servingNodeName);
+                    wr.addProperty( ds.getNodeName(((Relationship)cont).getEndNode()));
+                    for (int j = 2; j < colColut; j++) {
+                        wr.addProperty( String.valueOf(cont.getProperty(propertys.get(j - 2), "")));
+                    }
+                    view.replace(wr, ind);
+                }
+                if (k != 0) {
+                    view.setItemCount(k);
+                }
+                else {
+                    if (!searchingSector.equals("")) {
+                        textToSearch.setText("not found");
+                    }
+                    else {
+                        textToSearch.setText("");
+                    }
+                }
+        }
+        
+    }
+    public class VirtualLabelProvider extends LabelProvider implements ITableLabelProvider, ITableFontProvider{
+
+        @Override
+        public Font getFont(Object element, int columnIndex) {
+            Wrapper wr = (Wrapper)element;
+            return columnIndex<2?wr.getText(columnIndex).equals(selectedServ)?fontSelected:fontNormal:fontNormal;
+        }
+
+        @Override
+        public Image getColumnImage(Object element, int columnIndex) {
+            return null;
+        }
+
+        @Override
+        public String getColumnText(Object element, int columnIndex) {
+            Wrapper wr = (Wrapper)element;
+            return wr.getText(columnIndex);
+        }
+
+
+        
+    }
+    private static class Wrapper{
+
+        private final PropertyContainer cont;
+        private final int index;
+        private final ArrayList<String>values=new ArrayList<String>();
+
+        /**
+         * @param cont
+         * @param index
+         */
+        public Wrapper(PropertyContainer cont, int index) {
+            this.cont = cont;
+            this.index = index;
+        }
+        /**
+         *
+         * @param columnIndex
+         * @return
+         */
+        public String getText(int columnIndex) {
+            return values.get(columnIndex);
+        }
+        public void addProperty(String val){
+            values.add( val);
+        }
     }
 }

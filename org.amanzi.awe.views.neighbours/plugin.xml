@@ -79,6 +79,19 @@
                id="org.amanzi.awe.views.neighbours.views.TransmissionView">
          </viewShortcut>
       </perspectiveExtension>
+      <perspectiveExtension
+            targetID="org.amanzi.awe.perspective">
+         <view
+               id="org.amanzi.awe.views.neighbours.views.Node2NodeViews"
+               minimized="false"
+               relationship="stack"
+               relative="net.refractions.udig.catalog.ui.CatalogView"
+               visible="true">
+         </view>
+         <viewShortcut
+               id="org.amanzi.awe.views.neighbours.views.Node2NodeViews">
+         </viewShortcut>
+      </perspectiveExtension>
    </extension>
 
 </plugin>

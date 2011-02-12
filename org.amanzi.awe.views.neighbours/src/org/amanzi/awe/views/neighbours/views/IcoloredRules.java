@@ -11,25 +11,25 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.catalog.neo.upd_layers.events;
+package org.amanzi.awe.views.neighbours.views;
+
+import org.eclipse.swt.graphics.RGB;
+import org.neo4j.graphdb.Node;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * colored rules 
  * </p>
- * @author Shcharbatsevich_A
+ * @author TsAr
  * @since 1.0.0
  */
-public enum UpdateLayerEventTypes {
-    
-    REFRESH,
-    CHANGE_SELECTION,
-    ADD_SELECTION,
-    PROPERTY_UPDATE,
-    PROPERTY_REFRESH,
-    CHANGE_GRAPH_MODEL,
-    ZOOM,
-    PROPERTY_AND_MAP_UPDATE;
-
+public interface IcoloredRules {
+    public static final RGB RGB_MAIN=new RGB(0,0,255);  
+    /**
+     * Gets the color of node
+     *
+     * @param visualNode the visual node
+     * @return the color or null if this node not handled by current rule
+     */
+    RGB getColor(Node visualNode);
 }

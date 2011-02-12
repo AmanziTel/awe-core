@@ -1835,19 +1835,13 @@ public class Utils {
      * Get location pair.
      * 
      * @param locationNode - location node
-     * @param service neoservice if null then transaction do not created
      * @return Pair
      */
-    public static Pair<Double, Double> getLocationPair(Node locationNode, GraphDatabaseService service) {
-        Transaction tx = beginTx(service);
-        try {
+    public static Pair<Double, Double> getLocationPair(Node locationNode) {
             Double lat = (Double)locationNode.getProperty(INeoConstants.PROPERTY_LAT_NAME, null);
             Double lon = (Double)locationNode.getProperty(INeoConstants.PROPERTY_LON_NAME, null);
             Pair<Double, Double> result = new Pair<Double, Double>(lat, lon);
             return result;
-        } finally {
-            finishTx(tx);
-        }
     }
 
     /**

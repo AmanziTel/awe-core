@@ -11,25 +11,27 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.catalog.neo.upd_layers.events;
+package org.amanzi.awe.ui;
+
+import java.util.Map;
+import java.util.Set;
+
+import org.eclipse.swt.graphics.RGB;
+import org.neo4j.graphdb.Node;
 
 /**
- * TODO Purpose of 
  * <p>
  *
  * </p>
- * @author Shcharbatsevich_A
+ * @author TsAr
  * @since 1.0.0
  */
-public enum UpdateLayerEventTypes {
-    
-    REFRESH,
-    CHANGE_SELECTION,
-    ADD_SELECTION,
-    PROPERTY_UPDATE,
-    PROPERTY_REFRESH,
-    CHANGE_GRAPH_MODEL,
-    ZOOM,
-    PROPERTY_AND_MAP_UPDATE;
-
+public interface IGraphModel {
+    RGB getColor(Node visualNode);
+    Set<Node> getOutgoingRelation(Node visualNode);
+    /**
+     *
+     * @return
+     */
+    Map<Node, Set<Node>> getOutgoingRelationMap();
 }

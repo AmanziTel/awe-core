@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import net.refractions.udig.catalog.IGeoResource;
@@ -43,6 +44,7 @@ import org.amanzi.awe.filters.AbstractFilter;
 import org.amanzi.awe.filters.FilterUtil;
 import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
+import org.amanzi.awe.ui.IGraphModel;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
@@ -59,6 +61,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.swt.graphics.RGB;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
@@ -97,6 +100,7 @@ public class NetworkRenderer extends RendererImpl {
     private AbstractFilter filterSectors;
     private AbstractFilter filterSites;
     private DrawHints drawHints = new DrawHints();
+    private IGraphModel graphModel;
     private void setCrsTransforms(CoordinateReferenceSystem dataCrs) throws FactoryException{
         boolean lenient = true; // needs to be lenient to work on uDIG 1.1 (otherwise we get error: bursa wolf parameters required
         CoordinateReferenceSystem worldCrs = context.getCRS();
@@ -275,6 +279,7 @@ public class NetworkRenderer extends RendererImpl {
         try {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
+            graphModel=geoNeo.getGraphModel();
             LOGGER.debug("NetworkRenderer resolved geoNeo '"+geoNeo.getName()+"' from resource: "+neoGeoResource.getIdentifier());
             filterSectors = FilterUtil.getFilterOfData(geoNeo.getMainGisNode(), neo);
             filterSites = FilterUtil.getFilterOfData(geoNeo.getMainGisNode().getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(geoNeo.getMainGisNode()), neo);
@@ -595,17 +600,22 @@ public class NetworkRenderer extends RendererImpl {
             if (starNode != null && starProperty != null) {
                 drawAnalyser(g, starNode, starPoint.left(), starProperty, nodesMap);
             }
-            String neiName = (String)geoNeo.getProperties(GeoNeo.NEIGH_NAME);
-            if (neiName != null) {
-                Object properties = geoNeo.getProperties(GeoNeo.NEIGH_RELATION);
-                if (properties != null) {
-                    drawRelation(g, (Relationship)properties, drawHints.lineColor, nodesMap);
+            
+            if (graphModel == null) {
+                String neiName = (String)geoNeo.getProperties(GeoNeo.NEIGH_NAME);
+                if (neiName != null) {
+                    Object properties = geoNeo.getProperties(GeoNeo.NEIGH_RELATION);
+                    if (properties != null) {
+                        drawRelation(g, (Relationship)properties, drawHints.lineColor, nodesMap);
+                    }
+                    properties = geoNeo.getProperties(GeoNeo.NEIGH_MAIN_NODE);
+                    Object type = geoNeo.getProperties(GeoNeo.NEIGH_TYPE);
+                    if (properties != null) {
+                        drawNeighbour(g, neiName, (Node)properties, drawHints.lineColor, nodesMap, type);
+                    }
                 }
-                properties = geoNeo.getProperties(GeoNeo.NEIGH_MAIN_NODE);
-                Object type = geoNeo.getProperties(GeoNeo.NEIGH_TYPE);
-                if (properties != null) {
-                    drawNeighbour(g, neiName, (Node)properties, drawHints.lineColor, nodesMap, type);
-                }
+            } else {
+                drawRelations(g,graphModel,nodesMap,drawHints.lineColor);
             }
             LOGGER.debug("Network renderer took " + ((System.currentTimeMillis() - startTime) / 1000.0) + "s to draw " + count + " sites from "+neoGeoResource.getIdentifier());
             tx.success();
@@ -627,6 +637,30 @@ public class NetworkRenderer extends RendererImpl {
             // geoNeo.close();
             monitor.done();
             tx.finish();
+        }
+    }
+
+    /**
+     *
+     * @param g
+     * @param graphModel2
+     * @param nodesMap
+     * @param lineColor
+     */
+    private void drawRelations(Graphics2D g, IGraphModel graphModel, Map<Node, Point> nodesMap, Color lineColor) {
+        g.setColor(lineColor);
+        for (Entry<Node,Set<Node>> entry:graphModel.getOutgoingRelationMap().entrySet()){
+           Point from=nodesMap.get(entry.getKey());
+           if (from==null){
+               continue;
+           }
+           for (Node neighNode:entry.getValue()){
+               Point to =nodesMap.get(neighNode);
+               if (to!=null){
+//                   g.drawLine(from.x, from.y, to.x, to.y);
+                   drawArrow(g, from.x, from.y, to.x, to.y);
+               }
+           }
         }
     }
 
@@ -760,6 +794,23 @@ public class NetworkRenderer extends RendererImpl {
             }
         }
     }
+    private final int ARR_SIZE = 4;
+
+    void drawArrow(Graphics2D g, int x1, int y1, int x2, int y2) {
+
+        double dx = x2 - x1, dy = y2 - y1;
+        double angle = Math.atan2(dy, dx);
+        int len = (int) Math.sqrt(dx*dx + dy*dy);
+        AffineTransform oldTr = g.getTransform();
+        
+        g.translate(x1, y1);
+        g.rotate(angle);
+        // Draw horizontal arrow starting in (0, 0)
+        g.drawLine(0, 0, (int) len, 0);
+        g.fillPolygon(new int[] {len, len-ARR_SIZE, len-ARR_SIZE, len},
+                      new int[] {0, -ARR_SIZE, ARR_SIZE, 0}, 4);
+        g.setTransform(oldTr);
+    }
 
     /**
      * draws neighbour relation
@@ -823,6 +874,12 @@ public class NetworkRenderer extends RendererImpl {
      * @return color
      */
     private Color getSectorColor(Node node, Color defColor) {
+        if (graphModel!=null){
+            RGB result =graphModel.getColor(node);
+            if (result!=null){
+                return new Color(result.red,result.green,result.blue,drawHints.alpha);
+            }
+        }
         Transaction tx = NeoUtils.beginTransaction();
         try {
             if (aggNode == null) {

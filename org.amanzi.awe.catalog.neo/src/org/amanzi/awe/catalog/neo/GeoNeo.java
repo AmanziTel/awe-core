@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.amanzi.awe.ui.IGraphModel;
 import org.amanzi.neo.core.service.listener.NeoServiceProviderListener;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.CorrelationRelationshipTypes;
@@ -91,6 +92,7 @@ public class GeoNeo extends NeoServiceProviderListener {
     Map<String, Object> properties = Collections.synchronizedMap(new HashMap<String, Object>());
 
     private Node aggrNode = null;
+    private IGraphModel graphModel;
 
     /**
      * A class representing a located Node in the database. By convention all GeoNodes are expected
@@ -636,6 +638,18 @@ public class GeoNeo extends NeoServiceProviderListener {
      */
     public void setAggrNode(Node aggrNode) {
         this.aggrNode = aggrNode;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public IGraphModel getGraphModel() {
+        return graphModel;
+    }
+
+    public void setGraphModel(IGraphModel graphModel) {
+        this.graphModel = graphModel;
     }
 
 
