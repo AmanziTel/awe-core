@@ -13,6 +13,9 @@
 
 package org.amanzi.awe.views.neighbours.views;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.swt.graphics.RGB;
 import org.neo4j.graphdb.Node;
 
@@ -25,10 +28,19 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class ColoredRulesByPercProp implements IcoloredRules {
+    
+    private final Map<Node, RGB>colorMap=new HashMap<Node, RGB>();
+    /**
+     * @param colorMap
+     */
+    public ColoredRulesByPercProp(Map<Node, RGB> colorMap) {
+        this.colorMap.putAll(colorMap);
+    }
 
     @Override
     public RGB getColor(Node visualNode) {
-        return null;
+        RGB result=colorMap.get(visualNode);
+        return result==null?DefaultColoredRules.RGB_OTHERS:result;
     }
 
 }

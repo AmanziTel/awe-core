@@ -72,6 +72,8 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
+import org.neo4j.graphdb.traversal.Evaluation;
+import org.neo4j.graphdb.traversal.Evaluator;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.helpers.Predicate;
 import org.neo4j.index.IndexHits;
@@ -3074,5 +3076,16 @@ public class Utils {
             }
         }).traverse(sectorNode).iterator();
         return itr.hasNext()?itr.next().endNode():null;
+    }
+
+    public static boolean hasParents(Node node,final List<Node> nodes) {
+       return Traversal.description().depthFirst().relationships(GeoNeoRelationshipTypes.CHILD,Direction.INCOMING).evaluator(new Evaluator() {
+        
+        @Override
+        public Evaluation evaluate(Path paramPath) {
+            boolean includes=nodes.contains(paramPath.endNode());
+            return Evaluation.of(includes, !includes);
+        }
+    }).traverse(node).nodes().iterator().hasNext();
     }
 }

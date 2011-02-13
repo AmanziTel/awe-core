@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,7 @@ import org.amanzi.neo.services.node2node.INodeToNodeType;
 import org.amanzi.neo.services.node2node.Node2NodeSelectionInformation;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationService;
+import org.amanzi.neo.services.node2node.NodeToNodeTypes;
 import org.amanzi.neo.services.statistic.ISelectionInformation;
 import org.amanzi.neo.services.statistic.IStatistic;
 import org.amanzi.neo.services.statistic.StatisticManager;
@@ -68,6 +70,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -103,6 +106,14 @@ import org.neo4j.graphdb.Relationship;
  * @since 1.0.0
  */
 public class Node2NodeViews extends ViewPart {
+    private static final RGB main=new RGB(0,0,255);
+    private static final RGB more50=new RGB(112,48,160);
+    private static final RGB more30=new RGB(255,0,0);
+    private static final RGB more15=new RGB(255,153,0);
+    private static final RGB more5=new RGB(255,255,0);
+    private static final RGB more1=new RGB(0,128,0);
+    private static final RGB more0_2=new RGB(146,208,80);
+    private static final RGB others=new RGB(255,255,255);
     private static final String SHOW_NEIGHBOUR = "show relation '%s' > '%s' on map";
     private static final String SHOW_SERVE = "show all '%s' relations on map";
     
@@ -438,6 +449,9 @@ public class Node2NodeViews extends ViewPart {
                 fireModel(model);
             }
         });
+        if (n2nModel.getType().equals(NodeToNodeTypes.INTERFERENCE_MATRIX)){
+            addInterferenceAnalysis(manager,((Relationship)data.cont).getEndNode());
+        }
         manager.add(new Action(String.format("Zoom to %s (x8)", data.getText(1))) {
             @Override
             public void run() {
@@ -457,6 +471,108 @@ public class Node2NodeViews extends ViewPart {
     /**
      *
      * @param manager
+     * @param endNode
+     */
+    private void addInterferenceAnalysis(IMenuManager manager,final  Node node) {
+        MenuManager subMenu=new MenuManager("Outgoing interference analyse");
+        manager.add(subMenu);
+        manager.add(subMenu);
+        subMenu.add(new Action("by 'Co'") {
+            @Override
+            public void run() {
+                model=createOutgoingInterferenceModel(node,"co");
+                fireModel(model);
+            }
+        });
+        subMenu.add(new Action("by 'Adj'") {
+            @Override
+            public void run() {
+                model=createOutgoingInterferenceModel(node,"adj");
+                fireModel(model);
+            }
+        });
+         subMenu=new MenuManager("Incoming interference analyse");
+        manager.add(subMenu);
+        subMenu.add(new Action("by 'Co'") {
+            @Override
+            public void run() {
+                model=createIncomigInterferenceModel(node,"co");
+                fireModel(model);
+            }
+        });
+        subMenu.add(new Action("by 'Adj'") {
+            @Override
+            public void run() {
+                model=createIncomigInterferenceModel(node,"adj");
+                fireModel(model);
+            }
+        });
+
+    }
+
+    protected IGraphModel createOutgoingInterferenceModel(Node proxyNode, String propertyName) {
+        Map<Node,RGB>colorMap=new HashMap<Node, RGB>();
+        
+        Map<Node,Set<Node>>outgoingMap=new HashMap<Node,Set<Node>>();
+        Set<Node> outgoing=new HashSet<Node>();   
+        Node mainNode=n2ns.findNodeFromProxy(proxyNode);
+        colorMap.put(mainNode, main);
+        for (Relationship rel:n2ns.getOutgoingRelations(proxyNode)){
+            Double propertyVal=(Double)rel.getProperty(propertyName,null);
+            RGB color=getInterferenceColor(propertyVal);
+            Node neighNode=n2ns.findNodeFromProxy(rel.getOtherNode(proxyNode));
+            colorMap.put(neighNode, color);
+            outgoing.add(neighNode);
+        }
+        outgoingMap.put(mainNode, outgoing);
+        return new N2NGraphModel(new ColoredRulesByPercProp(colorMap), outgoingMap, drawLines);
+    }
+
+    protected IGraphModel createIncomigInterferenceModel(Node proxyNode, String propertyName) {
+        Map<Node,RGB>colorMap=new HashMap<Node, RGB>();
+        
+        Map<Node,Set<Node>>outgoingMap=new HashMap<Node,Set<Node>>();
+        
+        Node mainNode=n2ns.findNodeFromProxy(proxyNode);
+        colorMap.put(mainNode, main);
+        for (Relationship rel:n2ns.getIncomingRelations(proxyNode)){
+            Double propertyVal=(Double)rel.getProperty(propertyName,null);
+            RGB color=getInterferenceColor(propertyVal);
+            Node servNode=n2ns.findNodeFromProxy(rel.getOtherNode(proxyNode));
+            colorMap.put(servNode, color);
+            Set<Node> outgoing=new HashSet<Node>();
+            outgoing.add(mainNode);
+            outgoingMap.put(servNode, outgoing);
+        }
+        return new N2NGraphModel(new ColoredRulesByPercProp(colorMap), outgoingMap, drawLines);
+    }
+
+    /**
+     * Gets the interference color.
+     *
+     * @param propertyVal the property val
+     * @return the interference color
+     */
+    private RGB getInterferenceColor(Double propertyVal) {
+        if (propertyVal==null||propertyVal<=0.002){
+            return others;
+        }else if (propertyVal<=0.01){
+            return more0_2;
+        }else if (propertyVal<=0.05){
+            return more1;
+        }else if (propertyVal<=0.11){
+            return more5;
+        }else if (propertyVal<=0.30){
+            return more15;
+        }else if (propertyVal<=0.50){
+            return more30;
+        }else {
+            return more50;
+        }
+    }
+    /**
+     *
+     * @param manager
      * @param data2
      */
     private void fillServMenu(IMenuManager manager,final  Wrapper data) {
@@ -467,6 +583,9 @@ public class Node2NodeViews extends ViewPart {
                 fireModel(model);
             }
         });
+        if (true||n2nModel.getType().equals(NodeToNodeTypes.INTERFERENCE_MATRIX)){
+            addInterferenceAnalysis(manager,((Relationship)data.cont).getStartNode());
+        }
         manager.add(new Action(String.format("Zoom to %s (x8)", data.getText(0))) {
             @Override
             public void run() {

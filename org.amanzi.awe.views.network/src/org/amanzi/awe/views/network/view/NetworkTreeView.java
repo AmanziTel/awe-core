@@ -492,10 +492,12 @@ public class NetworkTreeView extends ViewPart {
                 return ((IStructuredSelection)viewer.getSelection()).size() == 1 && ApplicationGIS.getActiveMap() != ApplicationGIS.NO_MAP;
             }
         });
-        NeighbourAction neighb = new NeighbourAction((IStructuredSelection)viewer.getSelection());
+//        NeighbourAction neighb = new NeighbourAction((IStructuredSelection)viewer.getSelection());
+//        manager.add(neighb);
+//        TransmissionAction transmission = new TransmissionAction((IStructuredSelection)viewer.getSelection());
+//        manager.add(transmission);
+        N2NAction neighb = new N2NAction((IStructuredSelection)viewer.getSelection());
         manager.add(neighb);
-        TransmissionAction transmission = new TransmissionAction((IStructuredSelection)viewer.getSelection());
-        manager.add(transmission);
         manager.add(new DeleteAction((IStructuredSelection)viewer.getSelection()));
         manager.add(new Action("Open in text editor") {
             @Override
@@ -1043,7 +1045,30 @@ public class NetworkTreeView extends ViewPart {
         }
 
     }
+    private class N2NAction extends NeighbourAction {
 
+        /**
+         * @param selection
+         */
+        public N2NAction(IStructuredSelection selection) {
+            super(selection);
+            text = "Analyse relation structure";
+        }
+
+        @Override
+        public void run() {
+            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent(N2N_VIEW_ID, getInputNodes(selection)));
+            /*
+             * IViewPart transmissionView; try { transmissionView =
+             * PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(
+             * TransmissionView.ID); } catch (PartInitException e) {
+             * NeoCorePlugin.error(e.getLocalizedMessage(), e); transmissionView = null; } if
+             * (transmissionView != null) {
+             * ((TransmissionView)transmissionView).setInput(getInputNodes(selection)); }
+             */
+        }
+
+    }
     /**
      * <p>
      * Action for start neighbour analyser

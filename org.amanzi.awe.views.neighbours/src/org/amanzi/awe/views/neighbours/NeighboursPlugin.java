@@ -12,19 +12,30 @@
  */
 package org.amanzi.awe.views.neighbours;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 import org.amanzi.awe.views.neighbours.views.NeighboursView;
+import org.amanzi.awe.views.neighbours.views.Node2NodeViews;
 import org.amanzi.awe.views.neighbours.views.TransmissionView;
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.events.ShowPreparedViewEvent;
 import org.amanzi.neo.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.services.events.UpdateViewEvent;
 import org.amanzi.neo.services.events.UpdateViewEventType;
+import org.amanzi.neo.services.node2node.INode2NodeFilter;
+import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
+import org.amanzi.neo.services.node2node.NodeToNodeRelationService;
 import org.amanzi.neo.services.ui.IUpdateViewListener;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IViewPart;
@@ -51,7 +62,7 @@ public class NeighboursPlugin extends AbstractUIPlugin implements IUpdateViewLis
     // The plug-in ID
     public static final String PLUGIN_ID = "org.amanzi.awe.views.neighbours";
 
-	// The shared instance
+    // The shared instance
     private static NeighboursPlugin plugin;
 
     /**
@@ -60,7 +71,7 @@ public class NeighboursPlugin extends AbstractUIPlugin implements IUpdateViewLis
     public NeighboursPlugin() {
     }
 
-	/*
+    /*
      * (non-Javadoc)
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
      */
@@ -70,19 +81,19 @@ public class NeighboursPlugin extends AbstractUIPlugin implements IUpdateViewLis
         NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
     }
 
-	/*
+    /*
      * (non-Javadoc)
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
      */
     public void stop(BundleContext context) throws Exception {
-        //Lagutko, 9.10.2009, use NeoServiceProvider instead NeoManager
+        // Lagutko, 9.10.2009, use NeoServiceProvider instead NeoManager
         NeoServiceProviderUi.getProvider().rollback();
         plugin = null;
         super.stop(context);
         NeoCorePlugin.getDefault().getUpdateViewManager().removeListener(this);
     }
 
-	/**
+    /**
      * Returns the shared instance
      * 
      * @return the shared instance
@@ -91,7 +102,7 @@ public class NeighboursPlugin extends AbstractUIPlugin implements IUpdateViewLis
         return plugin;
     }
 
-	/**
+    /**
      * Returns an image descriptor for the image file at the given plug-in relative path
      * 
      * @param path the path
@@ -102,25 +113,24 @@ public class NeighboursPlugin extends AbstractUIPlugin implements IUpdateViewLis
     }
 
     public void commit() {
-        //Lagutko, 9.10.2009, use NeoServiceProvider instead NeoManager
-        NeoServiceProviderUi.getProvider().commit();      
+        // Lagutko, 9.10.2009, use NeoServiceProvider instead NeoManager
+        NeoServiceProviderUi.getProvider().commit();
     }
 
     public void rollback() {
-        //Lagutko, 9.10.2009, use NeoServiceProvider instead NeoManager
+        // Lagutko, 9.10.2009, use NeoServiceProvider instead NeoManager
         NeoServiceProviderUi.getProvider().rollback();
     }
 
     /**
-     *updates ReuseAnalyserView
+     * updates ReuseAnalyserView
      */
     private void updateView() {
         ActionUtil.getInstance().runTask(new Runnable() {
 
             @Override
             public void run() {
-                IViewPart neighbourView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(
-                        NeighboursView.ID);
+                IViewPart neighbourView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(NeighboursView.ID);
                 if (neighbourView != null) {
                     ((NeighboursView)neighbourView).updateView();
                 }
@@ -129,21 +139,21 @@ public class NeighboursPlugin extends AbstractUIPlugin implements IUpdateViewLis
     }
 
     /**
-     *updates ReuseAnalyserView
+     * updates ReuseAnalyserView
      */
     private void updateTransmissionView() {
         ActionUtil.getInstance().runTask(new Runnable() {
 
             @Override
             public void run() {
-                IViewPart neighbourView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(
-                        TransmissionView.ID);
+                IViewPart neighbourView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(TransmissionView.ID);
                 if (neighbourView != null) {
                     ((TransmissionView)neighbourView).updateView();
                 }
             }
         }, true);
     }
+
     @Override
     public void updateView(UpdateViewEvent event) {
         switch (event.getType()) {
@@ -164,6 +174,9 @@ public class NeighboursPlugin extends AbstractUIPlugin implements IUpdateViewLis
             if (spvEvent.isViewNeedUpdate(TransmissionView.ID)) {
                 inputNodesToTransmissionAndShow(spvEvent.getNodes());
             }
+            if (spvEvent.isViewNeedUpdate(Node2NodeViews.ID)) {
+                inputNodesToN2NAndShow(spvEvent.getNodes());
+            }
             break;
         default:
             updateTransmissionView();
@@ -171,34 +184,89 @@ public class NeighboursPlugin extends AbstractUIPlugin implements IUpdateViewLis
         }
     }
 
+    /**
+     * @param nodes
+     */
+    private void inputNodesToN2NAndShow(final List<Node> nodes) {
+        // TODO move creation in own class or methods!
+        final NodeToNodeRelationService n2ns = NeoServiceFactory.getInstance().getNodeToNodeRelationService();
+
+        ActionUtil.getInstance().runTask(new Runnable() {
+
+            @Override
+            public void run() {
+                IViewPart neighbourView;
+                try {
+                    neighbourView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(Node2NodeViews.ID);
+                } catch (PartInitException e) {
+                    NeoCorePlugin.error(e.getLocalizedMessage(), e);
+                    neighbourView = null;
+                }
+                if (neighbourView != null && nodes != null) {
+                    final Node network = nodes.iterator().hasNext() ? NeoUtils.findNodeByChild(nodes.iterator().next(), NodeTypes.NETWORK.getId()) : null;
+                    final boolean all = nodes.contains(network);
+                    final Set<Node> allNodes=new HashSet<Node>();
+                    if (!all){
+                        for (Node node:nodes){
+                            allNodes.addAll(n2ns.findAllChildWithProxy(node));
+                        }
+                    }
+                    ((Node2NodeViews)neighbourView).setFilter(new INode2NodeFilter() {
+
+                        @Override
+                        public Iterable<NodeToNodeRelationModel> getModels() {
+
+                            List<NodeToNodeRelationModel> result = new ArrayList<NodeToNodeRelationModel>();
+                            if (network != null) {
+                                result.addAll(n2ns.findAllNode2NodeRoot(network));
+                            }
+                            return result;
+                        }
+
+                        @Override
+                        public Iterable<Node> getFilteredServNodes(NodeToNodeRelationModel models) {
+                                LinkedList<Node> result = new LinkedList<Node>();
+
+                                for (Node proxy : models.getServTraverser(null).nodes()) {
+                                    Node node=n2ns.findNodeFromProxy(proxy);
+                                    if (all||allNodes.contains(node)) {
+                                        result.add(proxy);
+                                    }
+                                }
+                            return result;
+                        }
+                    });
+                }
+            }
+        }, true);
+    }
+
     private void inputNodesToView(final Collection<Node> nodes) {
         ActionUtil.getInstance().runTask(new Runnable() {
 
             @Override
             public void run() {
-                IViewPart neighbourView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(
-                        NeighboursView.ID);
+                IViewPart neighbourView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(NeighboursView.ID);
                 if (neighbourView != null) {
                     ((NeighboursView)neighbourView).setInput(nodes);
                 }
             }
         }, true);
     }
-    
+
     private void inputNodesToTransmissionView(final Collection<Node> nodes) {
         ActionUtil.getInstance().runTask(new Runnable() {
 
             @Override
             public void run() {
-                IViewPart neighbourView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(
-                        TransmissionView.ID);
+                IViewPart neighbourView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(TransmissionView.ID);
                 if (neighbourView != null) {
                     ((TransmissionView)neighbourView).setInput(nodes);
                 }
             }
         }, true);
     }
-    
+
     private void inputNodesToViewAndShow(final Collection<Node> nodes) {
         ActionUtil.getInstance().runTask(new Runnable() {
 
@@ -206,19 +274,18 @@ public class NeighboursPlugin extends AbstractUIPlugin implements IUpdateViewLis
             public void run() {
                 IViewPart neighbourView;
                 try {
-                    neighbourView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-                                        .showView(NeighboursView.ID);
+                    neighbourView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(NeighboursView.ID);
                 } catch (PartInitException e) {
                     NeoCorePlugin.error(e.getLocalizedMessage(), e);
                     neighbourView = null;
                 }
-                if (neighbourView != null && nodes!=null) {
+                if (neighbourView != null && nodes != null) {
                     ((NeighboursView)neighbourView).setInput(nodes);
                 }
             }
         }, true);
     }
-    
+
     private void inputNodesToTransmissionAndShow(final Collection<Node> nodes) {
         ActionUtil.getInstance().runTask(new Runnable() {
 
@@ -226,19 +293,17 @@ public class NeighboursPlugin extends AbstractUIPlugin implements IUpdateViewLis
             public void run() {
                 IViewPart neighbourView;
                 try {
-                    neighbourView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-                                                .showView(TransmissionView.ID);
+                    neighbourView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(TransmissionView.ID);
                 } catch (PartInitException e) {
                     NeoCorePlugin.error(e.getLocalizedMessage(), e);
                     neighbourView = null;
                 }
-                if (neighbourView != null && nodes!=null) {
+                if (neighbourView != null && nodes != null) {
                     ((TransmissionView)neighbourView).setInput(nodes);
                 }
             }
         }, true);
     }
-    
 
     @Override
     public Collection<UpdateViewEventType> getType() {

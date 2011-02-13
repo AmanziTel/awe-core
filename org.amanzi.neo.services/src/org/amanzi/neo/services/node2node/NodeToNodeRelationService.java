@@ -13,6 +13,7 @@
 package org.amanzi.neo.services.node2node;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -462,5 +463,26 @@ public class NodeToNodeRelationService extends AbstractService {
 
     public Iterable<Relationship> getOutgoingRelations(Node proxyServ) {
         return proxyServ.getRelationships(NodeToNodeRelationshipTypes.PROXYS, Direction.OUTGOING);
+    }
+
+    public Iterable<Relationship> getIncomingRelations(Node proxyNode) {
+        return proxyNode.getRelationships(NodeToNodeRelationshipTypes.PROXYS, Direction.INCOMING);
+    }
+
+    public Collection< Node> findAllChildWithProxy(Node node) {
+        
+        Collection<Node> result=new HashSet<Node>();
+        Iterable<Node> tr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING).evaluator(new Evaluator() {
+            
+            @Override
+            public Evaluation evaluate(Path paramPath) {
+                boolean includes=paramPath.endNode().hasRelationship(DatasetRelationshipTypes.PROXY);
+                return Evaluation.ofIncludes(includes);
+            }
+        }).traverse(node).nodes();
+        for (Node singleNode:tr){
+            result.add(singleNode);
+        }
+        return result;
     }
 }

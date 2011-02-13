@@ -41,12 +41,6 @@ public class N2NGraphModel implements IGraphModel {
     private Map<Node, Set<Node>> relMap = new HashMap<Node, Set<Node>>();
     
     public N2NGraphModel(Relationship relation, boolean showAllOutgoing, boolean drawLines) {
-        this(null,relation,showAllOutgoing,drawLines);
-        Entry<Node, Set<Node>> entry = relMap.entrySet().iterator().next();
-        setColorRules(new DefaultColoredRules(entry.getKey(), entry.getValue()));
-    }
-    public N2NGraphModel(IcoloredRules colorRules, Relationship relation, boolean showAllOutgoing, boolean drawLines) {
-        this.colorRules = colorRules;
         this.drawLines = drawLines;
         NodeToNodeRelationService n2nService = NeoServiceFactory.getInstance().getNodeToNodeRelationService();
         Set<Node> outgoingNode = new HashSet<Node>();
@@ -58,6 +52,13 @@ public class N2NGraphModel implements IGraphModel {
             outgoingNode.add(n2nService.findNodeFromProxy(relation.getEndNode()));
         }
         relMap.put(n2nService.findNodeFromProxy(relation.getStartNode()), outgoingNode);
+        Entry<Node, Set<Node>> entry = relMap.entrySet().iterator().next();
+        setColorRules(new DefaultColoredRules(entry.getKey(), entry.getValue()));
+    }
+    public N2NGraphModel(IcoloredRules colorRules, Map<Node,Set<Node> >maps,boolean drawLines) {
+        this.colorRules = colorRules;
+        this.drawLines = drawLines;
+        relMap.putAll(maps);
     }
 
     @Override
