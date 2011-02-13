@@ -579,7 +579,7 @@ public class Node2NodeViews extends ViewPart {
         manager.add(new Action(String.format(SHOW_SERVE, data.getText(0))) {
             @Override
             public void run() {
-                model=new N2NGraphModel((Relationship)data.cont, false, drawLines);
+                model=new N2NGraphModel((Relationship)data.cont, true, drawLines);
                 fireModel(model);
             }
         });
