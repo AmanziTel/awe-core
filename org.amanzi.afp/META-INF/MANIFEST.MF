@@ -4,7 +4,7 @@ Bundle-Name: Opti-AFP 6.0 lite
 Bundle-SymbolicName: org.amanzi.afp;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.afp.Activator
-Bundle-Vendor: triangulum.com
+Bundle-Vendor: triangulum-telecom.com
 Require-Bundle: org.eclipse.core.runtime,
  net.refractions.udig.ui,
  net.refractions.udig.browser,

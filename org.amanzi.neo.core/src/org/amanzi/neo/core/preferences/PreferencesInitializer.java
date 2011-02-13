@@ -62,7 +62,6 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer
                 URL dir = (URL)found;
                 if (!dir.getPath().contains("svn") && (dir.getPath().endsWith("/") || dir.getPath().endsWith("\\"))) {
                     String[] comps = dir.getPath().split("/");
-                    System.out.println("Found directory: " + comps[2]);
                     try {
                         URL fileDir = FileLocator.toFileURL(dir);
                         iconDirs.add(fileDir);

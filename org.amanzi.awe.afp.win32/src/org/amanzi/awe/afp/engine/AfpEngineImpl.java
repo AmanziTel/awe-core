@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.URL;
 
 import org.amanzi.awe.afp.Activator;
-import org.amanzi.awe.afp.engine.*;
 import org.eclipse.core.runtime.Path;
 
 public class AfpEngineImpl extends org.amanzi.awe.afp.AfpEngine{

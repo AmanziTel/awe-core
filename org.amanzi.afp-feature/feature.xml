@@ -7,22 +7,21 @@
       plugin="org.amanzi.afp">
 
    <description url="http://www.triangulum-telecom.com/">
-      Opti-AFP 6.0 lite - Automated Frequency Planner for mobile radio network planning and optimization
+      Opti-AFP 6.0 lite - Automated Frequency Planner for GSM mobile radio network planning and optimization
    </description>
 
    <copyright url="http://www.triangulum-telecom.com">
-      Opti-AFP 6.0 lite contains code written by Amanzi
-HB, AmanziTel AB, Refractions Research, Neotechnology,
-Geotools, the Eclipse Foundation and others.
+Opti-AFP 6.0 lite contains code written by Triangulum, AmanziTel AB, Amanzi HB,
+Refractions Research, Neotechnology, Geotools, the Eclipse Foundation and others.
 All code is copyright their respective owners.
    </copyright>
 
-   <license url="http://www.triangulum-telecom.com">
+   <license url="http://www.triangulum-telecom.com/afp_license.html">
       Opti-AFP 6.0 lite beta
 
-This software is the commercial property of Triangulum , and contains both 
-commercial and open source components developed by Amanzitel,
-Refractions Research, Neotechnology, the Eclipse foundation, Geotools et al.
+This software is the commercial property of Triangulum, and contains both
+commercial and open source components developed by Amanzitel, Refractions
+Research, Neotechnology, the Eclipse foundation, Geotools et al.
    </license>
 
    <includes
