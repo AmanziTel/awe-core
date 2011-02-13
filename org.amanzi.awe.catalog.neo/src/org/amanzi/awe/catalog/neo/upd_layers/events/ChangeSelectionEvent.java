@@ -44,7 +44,7 @@ public class ChangeSelectionEvent extends UpdateLayerEvent {
      * @param aGisNode
      * @param selectedNodes
      */
-    protected ChangeSelectionEvent(UpdateLayerEventTypes aType, Node aGisNode, Collection<Node> selectedNodes){
+    public ChangeSelectionEvent(UpdateLayerEventTypes aType, Node aGisNode, Collection<Node> selectedNodes){
         super(aType,aGisNode);
         selected = selectedNodes;
     }

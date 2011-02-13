@@ -14,6 +14,7 @@
 package org.amanzi.awe.views.neighbours.views;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -25,12 +26,15 @@ import java.util.concurrent.ExecutionException;
 
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.ChangeModelEvent;
+import org.amanzi.awe.catalog.neo.upd_layers.events.ChangeSelectionEvent;
+import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEventTypes;
 import org.amanzi.awe.ui.AweUiPlugin;
 import org.amanzi.awe.ui.IGraphModel;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.TransactionWrapper;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.node2node.INode2NodeFilter;
 import org.amanzi.neo.services.node2node.INodeToNodeType;
@@ -85,6 +89,7 @@ import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
@@ -307,10 +312,14 @@ public class Node2NodeViews extends ViewPart {
                 while (index < table.getItemCount()) {
                     boolean visible = false;
                     final TableItem item = table.getItem(index);
-                    for (int i = 2; i < table.getColumnCount(); i++) {
+                    for (int i = 0; i < table.getColumnCount(); i++) {
                         Rectangle rect = item.getBounds(i);
                         if (rect.contains(pt)) {
-                            final int column = i;
+                            column = i;
+                            data=(Wrapper)item.getData();
+                            if (i<2){
+                                return;
+                            }
                             final Text text = new Text(table, SWT.NONE);
                             Listener textListener = new Listener() {
                                 public void handleEvent(final Event e) {
@@ -429,6 +438,21 @@ public class Node2NodeViews extends ViewPart {
                 fireModel(model);
             }
         });
+        manager.add(new Action(String.format("Zoom to %s (x8)", data.getText(1))) {
+            @Override
+            public void run() {
+                if (n2nModel!=null){
+                    Node networkRoot=n2nModel.getNetworkNode();
+                    Node gisNode = ds.findGisNode(networkRoot);
+                    Collection<Node> sites=new ArrayList<Node>();
+                    Node sector=n2ns.findNodeFromProxy(((Relationship)data.cont).getEndNode());
+                    Node site=sector.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(sector);
+                    sites.add(site);
+                    ChangeSelectionEvent event = new ChangeSelectionEvent(UpdateLayerEventTypes.ZOOM,gisNode,sites);
+                    NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(event);            
+                }    
+            }
+        });
     }
     /**
      *
@@ -441,6 +465,21 @@ public class Node2NodeViews extends ViewPart {
             public void run() {
                 model=new N2NGraphModel((Relationship)data.cont, false, drawLines);
                 fireModel(model);
+            }
+        });
+        manager.add(new Action(String.format("Zoom to %s (x8)", data.getText(0))) {
+            @Override
+            public void run() {
+                if (n2nModel!=null){
+                    Node networkRoot=n2nModel.getNetworkNode();
+                    Node gisNode = ds.findGisNode(networkRoot);
+                    Collection<Node> sites=new ArrayList<Node>();
+                    Node sector=n2ns.findNodeFromProxy(((Relationship)data.cont).getStartNode());
+                    Node site=sector.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(sector);
+                    sites.add(site);
+                    ChangeSelectionEvent event = new ChangeSelectionEvent(UpdateLayerEventTypes.ZOOM,gisNode,sites);
+                    NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(event);            
+                }    
             }
         });
     }

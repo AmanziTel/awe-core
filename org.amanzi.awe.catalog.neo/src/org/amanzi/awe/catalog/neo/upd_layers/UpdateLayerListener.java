@@ -136,7 +136,7 @@ public class UpdateLayerListener {
         if (loc.l() == null || loc.r() == null) {
             return;
         }
-        Coordinate cr = new Coordinate(loc.l(), loc.r());
+        Coordinate cr = new Coordinate(loc.r(), loc.l());
 
         try {
             NavigationCommandFactory factory = NavigationCommandFactory.getInstance();
@@ -147,7 +147,7 @@ public class UpdateLayerListener {
             Coordinate cr2=new Coordinate();
             JTS.transform(cr,cr2, transform_d2w);
             NavCommand[] commands = new NavCommand[] {
-            factory.createSetViewportCenterCommand(cr2), factory.createZoomCommand(4d)};
+            factory.createSetViewportCenterCommand(cr2), factory.createZoomCommand(8d)};
 
             ((Map)m).sendCommandASync(factory.createCompositeCommand(commands));
 
