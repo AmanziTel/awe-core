@@ -175,7 +175,7 @@ public class Node2NodeViews extends ViewPart {
             }
         });
         GridData layoutData = new GridData();
-        layoutData.widthHint = 150;
+        layoutData.widthHint = 300;
         n2nSelection.setLayoutData(layoutData);
         Button drawArrow = new Button(main,SWT.CHECK);
         drawArrow.setText("Draw lines");
