@@ -416,11 +416,12 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             List<CoordinatedNode> nodes = new ArrayList<CoordinatedNode>();
             for (Relationship rel : model.getOutgoingRelations(proxyServ)) {
                 Node node = rel.getOtherNode(proxyServ);
-                Coordinate c = networkModel.getCoordinateOfSector(model.findNodeFromProxy(node));
+                Node nd = model.findNodeFromProxy(node);
+                Coordinate c = networkModel.getCoordinateOfSector(nd);
                 if (c == null) {
                     continue;
                 }
-                nodes.add(new CoordinatedNode(node, c));
+                nodes.add(new CoordinatedNode(nd, c));
             }
             if (nodes.size() < 3) {
                 continue;

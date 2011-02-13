@@ -583,7 +583,7 @@ public class Node2NodeViews extends ViewPart {
                 fireModel(model);
             }
         });
-        if (true||n2nModel.getType().equals(NodeToNodeTypes.INTERFERENCE_MATRIX)){
+        if (n2nModel.getType().equals(NodeToNodeTypes.INTERFERENCE_MATRIX)){
             addInterferenceAnalysis(manager,((Relationship)data.cont).getStartNode());
         }
         manager.add(new Action(String.format("Zoom to %s (x8)", data.getText(0))) {
