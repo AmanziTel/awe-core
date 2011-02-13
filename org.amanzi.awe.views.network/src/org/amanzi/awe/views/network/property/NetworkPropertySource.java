@@ -91,57 +91,72 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
         
         // Kasnitskij_V:
         IPropertyHeader propertyHeader = null;
+        String currentNetworkName = null;
+        boolean isNetworkName = true;
+        String[] allKeys; 
         DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
-        String currentNetworkName = datasetService.findRootByChild((Node)container)
+        try {
+            currentNetworkName = datasetService.findRootByChild((Node)container)
                                             .getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-        Iterable<Node> rootNodes = datasetService.getAllRootNodes().nodes();
-        for (Node node : rootNodes) {
-            String networkName = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-            if (networkName.equals(currentNetworkName)) {
-                propertyHeader = new PropertyHeaderImpl(node, datasetService.getNodeName(node));
-                break;
+        }
+        catch (NullPointerException e) {
+            isNetworkName = false;
+        }
+        
+        if (isNetworkName) {
+            Iterable<Node> rootNodes = datasetService.getAllRootNodes().nodes();
+            for (Node node : rootNodes) {
+                String networkName = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+                if (networkName.equals(currentNetworkName)) {
+                    propertyHeader = new PropertyHeaderImpl(node, datasetService.getNodeName(node));
+                    break;
+                }
+            }
+       
+            NodeTypes nodeType = NodeTypes.getEnumById(container.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString());
+            Map<String, Object> propertiesWithValues = propertyHeader.getStatisticParams(nodeType);
+            Set<String> keysFromProperties = propertiesWithValues.keySet();
+        
+            Iterable<String> keys = container.getPropertyKeys();
+            
+            for (String key : keys) {
+                if (keysFromProperties.contains(key))
+                {
+                    keysFromProperties.remove(key);
+                }
+            }
+            
+            int countOfFullValues = 0;
+            for (@SuppressWarnings("unused") String key : keys) {
+                countOfFullValues++;
+            }
+            
+            int countOfEmptyValues = keysFromProperties.size();
+            allKeys = new String[countOfEmptyValues + countOfFullValues];
+            
+            int index = 0;
+            for (String key : keys) {
+                allKeys[index++] = key;
+            }
+            for (String keyFromProperties : keysFromProperties) {
+                allKeys[index++] = keyFromProperties;
+            }
+            
+            for (String keyFromProperties : keysFromProperties) {
+                ISinglePropertyStat singlePropertyStat = propertyHeader.getPropertyStatistic(nodeType.getId(), keyFromProperties);
+                if (singlePropertyStat == null) {
+                    container.setProperty(keyFromProperties, ""); 
+                    continue;
+                }
+                // TODO: Maybe need save default value with need type
+                // now all empty values saving with type of String
+                Class klass = singlePropertyStat.getType();
+                container.setProperty(keyFromProperties, "");
             }
         }
-   
-        NodeTypes nodeType = NodeTypes.getEnumById(container.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString());
-        Map<String, Object> propertiesWithValues = propertyHeader.getStatisticParams(nodeType);
-        Set<String> keysFromProperties = propertiesWithValues.keySet();
-        
-        Iterable<String> keys = container.getPropertyKeys();
-        
-        for (String key : keys) {
-            if (keysFromProperties.contains(key))
-            {
-                keysFromProperties.remove(key);
-            }
-        }
-        
-        int countOfFullValues = 0;
-        for (@SuppressWarnings("unused") String key : keys) {
-            countOfFullValues++;
-        }
-        
-        int countOfEmptyValues = keysFromProperties.size();
-        String[] allKeys = new String[countOfEmptyValues + countOfFullValues];
-        
-        int index = 0;
-        for (String key : keys) {
-            allKeys[index++] = key;
-        }
-        for (String keyFromProperties : keysFromProperties) {
-            allKeys[index++] = keyFromProperties;
-        }
-        
-        for (String keyFromProperties : keysFromProperties) {
-            ISinglePropertyStat singlePropertyStat = propertyHeader.getPropertyStatistic(nodeType.getId(), keyFromProperties);
-            if (singlePropertyStat == null) {
-                container.setProperty(keyFromProperties, ""); 
-                continue;
-            }
-            // TODO: Maybe need save default value with need type
-            // now all empty values saving with type of String
-            Class klass = singlePropertyStat.getType();
-            container.setProperty(keyFromProperties, "");
+        else
+        {
+            allKeys = new String[0];
         }
 
         for (String key : allKeys) {
