@@ -91,6 +91,9 @@
           </source>
         </sources>
       <!-- for libs as so files -->
+	  <compilerStartOptions>
+          <compilerStartOption>-m32</compilerStartOption>
+	  </compilerStartOptions>
       <linkerStartOptions>
           <linkerStartOption>-lm -m32</linkerStartOption>
       </linkerStartOptions>
