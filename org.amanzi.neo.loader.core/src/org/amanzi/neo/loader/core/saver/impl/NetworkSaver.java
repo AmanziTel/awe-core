@@ -17,9 +17,12 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
+import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.core.preferences.PreferenceStore;
@@ -96,13 +99,76 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
     @Override
     public void save(BaseTransferData element) {
         if (headerNotHandled) {
+//            Iterator<Entry<String, String>> iterator = element.entrySet().iterator();
+//            while (iterator.hasNext()) {
+//                String name = iterator.next().getKey();
+//                String[] headers = getPossibleHeaders(name);
+//                propertyMap.put(name, headers[0]);
+//            }
             definePropertyMap(element);
             startMainTx(1000);
             initializeIndexes();
             headerNotHandled = false;
-
+            // Kasnitskij_V:
+            rootNode.setProperty(INeoConstants.PROPERTY_STRUCTURE_NAME, getLevelsFound());
+            saveFileStructure();
         }
+        
         saveRow(element);
+    }
+    
+    /**
+     * Kasnitskij_V:
+     * Gets all found network levels.
+     *
+     * @return levels found as an array of Strings
+     */
+    private String[] getLevelsFound() {
+        levels.iterator().next();
+        String[] levelsFound = new String[NetworkLevels.values().length];
+        Iterator<NetworkLevels> iterator = levels.iterator();
+        int i = 0;
+        iterator.next();
+        for (NetworkLevels networkLevel : NetworkLevels.values()) {
+            String name = networkLevel.name().toLowerCase();
+            levelsFound[i++] = name;
+        }
+        return levelsFound;
+    }
+    
+    /**
+     * Kasnitskij_V:
+     * Save file structure.
+     */
+    private void saveFileStructure() {
+        Map<String,String> headers = new HashMap<String, String>();
+        for(Entry<String, String> prop : propertyMap.entrySet()){
+
+            String prefix = INeoConstants.SECTOR_PROPERTY_NAME_PREFIX;
+            String propertyKey = prop.getKey();
+            String propOriginalName = prop.getValue();
+
+            if (propertyKey.endsWith(INeoConstants.PROPERTY_LAT_NAME) || 
+                propertyKey.endsWith(INeoConstants.PROPERTY_LON_NAME)) {
+                prefix = INeoConstants.SITE_PROPERTY_NAME_PREFIX;
+            } else if (propertyKey.endsWith("sector")) {
+                propertyKey = INeoConstants.PROPERTY_NAME_NAME;
+            } else if (propertyKey.endsWith(NodeTypes.BSC.getId())) {
+                propertyKey = INeoConstants.PROPERTY_NAME_NAME;
+                prefix = INeoConstants.BSC_PROPERTY_NAME_PREFIX;
+            } else if (propertyKey.endsWith("site")) {
+                propertyKey = INeoConstants.PROPERTY_NAME_NAME;
+                prefix = INeoConstants.SITE_PROPERTY_NAME_PREFIX;
+            }
+            else if (propertyKey.endsWith("city")) {
+                propertyKey = INeoConstants.PROPERTY_NAME_NAME;
+                prefix = INeoConstants.CITY_PROPERTY_NAME_PREFIX;
+            }
+
+            headers.put(prefix + propertyKey, propOriginalName);
+        }
+        
+        service.addOriginalHeaders(rootNode, headers);
     }
     
     /**

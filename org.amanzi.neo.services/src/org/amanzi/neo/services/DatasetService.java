@@ -1491,7 +1491,7 @@ public class DatasetService extends AbstractService {
      * @param headersMap the headers map
      */
     public void addOriginalHeaders(Node sourceNode, Map<String,String> headersMap) {
-		Node networkNode = Utils.getParentNode(sourceNode, NodeTypes.NETWORK.getId());
+        Node networkNode = Utils.getParentNode(sourceNode, NodeTypes.NETWORK.getId());
 		Relationship singleRelationship = networkNode.getSingleRelationship(NetworkRelationshipTypes.FILE_PROPERTIES, Direction.OUTGOING);
         Node filePropertiesNode = null;
         if (singleRelationship == null){
