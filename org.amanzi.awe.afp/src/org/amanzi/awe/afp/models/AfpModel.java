@@ -215,16 +215,17 @@ public class AfpModel {
 			else if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.SECTOR.getId())){
 				totalSectors++;
 				String band = (String)node.getProperty("band", "");
-				if (band.contains("900")){
+				String layer = (String)node.getProperty("layer", "");
+				if (band.contains("900") || layer.contains("900")){
 					bandSectors[BAND_900]++;
 				}
-				if (band.contains("1800")){
+				if (band.contains("1800") || layer.contains("1800")){
 					bandSectors[BAND_1800]++;
 				}
-				if (band.contains("850")){
+				if (band.contains("850") || layer.contains("850")){
 					bandSectors[BAND_850]++;
 				}
-				if (band.contains("1900")){
+				if (band.contains("1900") || layer.contains("1900")){
 					bandSectors[BAND_1900]++;
 				}
 			}
@@ -1900,7 +1901,8 @@ public class AfpModel {
 						for (String key: filters.keySet()){
 							if (key.equals("band")){
 								for (String band : filters.get(key).split(",")){
-									if (((String)currentPos.currentNode().getProperty("band", "")).contains(band))
+									if (((String)currentPos.currentNode().getProperty("band", "")).contains(band) ||
+											((String)currentPos.currentNode().getProperty("layer", "")).contains(band))
 										ret = ret || true;
 								}
 							}

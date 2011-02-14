@@ -109,7 +109,7 @@ public class AfpColumnFilter{
 		}
 		
 		else{
-			obj = n.getProperty(colName);
+			obj = n.getProperty(colName,null);
 		}
 		String val = null;
 		int intVal = -1;
