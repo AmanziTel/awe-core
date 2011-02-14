@@ -292,6 +292,7 @@
 	  <module>org.amanzi.splash.testing</module>
 	  <module>org.amanzi.neo.data-generator</module>
 	  <module>org.amanzi.neo.loader.testing</module>
+	  <module>org.amanzi.awe.afp.testing</module>
 	  <module>org.amanzi.testing.sanity</module>
 	  <module>org.amanzi.testing</module>
 	  <module>org.amanzi.awe.views.reuse.testing</module>

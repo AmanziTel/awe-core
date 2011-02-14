@@ -49,6 +49,7 @@ import org.neo4j.graphdb.Traverser.Order;
 import org.amanzi.neo.loader.NeighbourLoader;
 import org.amanzi.neo.loader.NetworkLoader;
 import org.amanzi.testing.CommonTestUtil;
+import org.amanzi.testing.LongRunning;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
 
@@ -292,6 +293,7 @@ public class ExporterTesting {
     }
 
     @Test
+    @LongRunning
     public void testNbrFileExport() throws Exception{
     	// import the test data
     	loadNeighbors(this.rootNode,"../org.amanzi.awe.afp.testing/files/exporter/Neighbours.txt");
@@ -307,6 +309,7 @@ public class ExporterTesting {
     }
     
     @Test
+    @LongRunning
     public void testIntFileExport() throws Exception{
     	// import the test data
     	loadInterference(this.rootNode,"../org.amanzi.awe.afp.testing/files/exporter/distance2.txt");
@@ -322,6 +325,7 @@ public class ExporterTesting {
     }
     
     @Test
+    @LongRunning
     public void testNbrAndIntFileExport() throws Exception{
     	// import the test data
     	loadNeighbors(this.rootNode,"../org.amanzi.awe.afp.testing/files/exporter/Neighbours.txt");
@@ -358,6 +362,7 @@ public class ExporterTesting {
     }
     
     @Test
+    @LongRunning
     public void testNbrFileExportTwoDomains() throws Exception{
     	add1800DomainToModel();
     	// import the test data
@@ -377,6 +382,7 @@ public class ExporterTesting {
     }
     
     @Test
+    @LongRunning
     public void testIntFileExportTwoDomains() throws Exception{
     	add1800DomainToModel();
     	// import the test data
@@ -396,6 +402,7 @@ public class ExporterTesting {
     }
     
     @Test
+    @LongRunning
     public void testNbrAndIntFileExportTwoDomains() throws Exception{
     	add1800DomainToModel();
     	// import the test data
