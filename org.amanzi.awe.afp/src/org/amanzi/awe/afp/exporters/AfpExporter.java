@@ -481,16 +481,21 @@ public class AfpExporter extends Job{
 			for (Relationship relation : proxySector.getRelationships(NetworkRelationshipTypes.INTERFERS, NetworkRelationshipTypes.NEIGHBOUR, NodeToNodeRelationshipTypes.PROXYS)){
 				if (relation.getEndNode().equals(proxySector))
 					continue;
-				Node intSector = null;
 				Node intProxySector = relation.getEndNode();
 				
-				intSector = intProxySector.getSingleRelationship(DatasetRelationshipTypes.PROXY, Direction.INCOMING).getStartNode();
-				if(intSector == null){
-					intSector = intProxySector.getSingleRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.INCOMING).getStartNode();
+				Relationship relationship = null;
+				relationship = intProxySector.getSingleRelationship(DatasetRelationshipTypes.PROXY, Direction.INCOMING);
+				if(relationship == null){
+					relationship = intProxySector.getSingleRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.INCOMING);
 				}
-				if(intSector == null){
-					intSector = intProxySector.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOURS, Direction.INCOMING).getStartNode();
+				if(relationship == null){
+					relationship = intProxySector.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOURS, Direction.INCOMING);
 				}
+				if(relationship == null) {
+					continue;
+				}
+				Node intSector = null;
+				intSector = relationship.getStartNode();
 				RelationshipType type = relation.getType();
 				boolean isProxy = false;
 				int typeIndex = NEIGH;
