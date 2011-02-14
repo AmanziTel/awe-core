@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Testing Plug-in
 Bundle-SymbolicName: org.amanzi.awe.afp.testing;singleton:=true
-Bundle-Version: 1.0.0
+Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.awe.afp.testing.Activator
 Require-Bundle: org.eclipse.ui,
  org.junit4;bundle-version="4.3.1",
