@@ -251,8 +251,12 @@ public class AfpExporter extends Job{
 						    			sb.append(" ");
 						    			sb.append(1);//required
 						    			sb.append(" ");
-						    			sb.append(1);//given
-										sb.append(" " + freqArray[0]);//required frequencies
+						    			if (freqArray == null || freqArray.length<1)
+						    				sb.append(0);//given
+						    			else{	
+						    				sb.append(1);//given
+						    				sb.append(" " + freqArray[0]);//required frequencies
+						    			}
 										sb.append("\n");
 						    			cellWriters[i].write(sb.toString());
 									}
@@ -320,13 +324,18 @@ public class AfpExporter extends Job{
 				sbSubCell.append("INT 0\t0\t");
 //				String[] values = sectorIntValues.get(intSector)[1];
 				float[] trxValues = calculateInterference(trx, intTrx, sectorIntValues.get(intSector));
+				boolean includeSubcell = false;
 				for (int i = 0; i < trxValues.length; i++){
+					if (trxValues[i] > 0.2)
+						includeSubcell = true;
 					sbSubCell.append(df.format(trxValues[i]) + " ");
 				}
 				sbSubCell.append(intTrx.getId());
 				sbSubCell.append("A");
-				sbAllInt.append(sbSubCell);
-				sbAllInt.append("\n");
+				if (includeSubcell){
+					sbAllInt.append(sbSubCell);
+					sbAllInt.append("\n");
+				}
 				numberofinterferers++;
 			}
 			
