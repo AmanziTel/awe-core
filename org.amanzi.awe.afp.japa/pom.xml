@@ -92,7 +92,7 @@
         </sources>
       <!-- for libs as so files -->
       <linkerStartOptions>
-          <linkerStartOption>-lm</linkerStartOption>
+          <linkerStartOption>-lm -m32</linkerStartOption>
       </linkerStartOptions>
       </configuration>
     </plugin>
