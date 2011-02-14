@@ -67,6 +67,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
     private NetworkModel networkModel;
     private NodeToNodeRelationModel neighbourModel;
     private DatasetService ds;
+    private String planName;
 
     @Override
     public void init(NetworkConfigurationTransferData element) {
@@ -76,6 +77,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         networkModel = new NetworkModel(rootNode);
         neighName = rootname + "neigh";
         neighbourModel = networkModel.getNeighbours(neighName);
+        planName=null;
         startMainTx(2000);
     }
 
@@ -301,11 +303,11 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
             updateProperty(rootname, NodeTypes.TRX.getId(), trx, "band", channalGr.getProperty("band", null));
             boolean isBcch = 0 == channelGr && "0".equals(trxId);
             updateProperty(rootname, NodeTypes.TRX.getId(), trx, "bcch", isBcch);
-            NodeResult plan = networkService.getPlanNode(trx, element.getFileName());
+            NodeResult plan = networkService.getPlanNode(trx, getPlanName(element));
             if (plan.isCreated()) {
-                statistic.updateTypeCount(rootname, NodeTypes.FREQUENCY_PLAN.getId(), 1);
+                statistic.updateTypeCount(getPlanName(element), NodeTypes.FREQUENCY_PLAN.getId(), 1);
             }
-            updateProperty(rootname, NodeTypes.FREQUENCY_PLAN.getId(), trx, "hsn", hoptype);
+            updateProperty(getPlanName(element), NodeTypes.FREQUENCY_PLAN.getId(), trx, "hsn", hoptype);
             Integer bcchno = (Integer)sector.getProperty("bcch", null);
             if (!plan.hasProperty("arfcn")) {
                 int[] arfcn = null;
@@ -357,10 +359,25 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
                         }
                     }
                 }
-                updateProperty(rootname, NodeTypes.FREQUENCY_PLAN.getId(), plan, "maio", maioInt);
+                updateProperty(getPlanName(element), NodeTypes.FREQUENCY_PLAN.getId(), plan, "maio", maioInt);
             }
             break;
         }
+    }
+
+
+    /**
+     * Gets the frequency plan name.
+     *
+     * @param element the element
+     * @return the plan name
+     */
+    private String getPlanName(NetworkConfigurationTransferData element) {
+        if (planName==null){
+            //TODO check - is it correct use name of first file like name of frequency plan?
+            planName=element.getFileName();
+        }
+        return planName;
     }
 
     @Override

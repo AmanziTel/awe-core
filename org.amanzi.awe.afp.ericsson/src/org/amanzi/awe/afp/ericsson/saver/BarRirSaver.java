@@ -54,7 +54,6 @@ import org.neo4j.kernel.Uniqueness;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
-// TODO: Auto-generated Javadoc
 /**
  * <p>
  * BAR RIR saver
@@ -389,9 +388,25 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             createMatrix();
             createShadow();
             createTriangulation();
+            storeRirData();
         } finally {
             super.finishUp(element);
         }
+    }
+
+    /**
+     *
+     */
+    private void storeRirData() {
+//        for (Entry<String,CellRirData>entry:rirCells.entrySet()){
+//            Node sector=networkModel.findSector(entry.getKey());
+//            if (sector == null) {
+//                error(String.format("Sector %s not found", entry.getKey()));
+//                return;
+//            }
+//            CellRirData data = entry.getValue();
+//            }
+        //TODO implement
     }
 
     /**
@@ -602,6 +617,10 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
         if (servSector == null) {
             error(String.format("Sector %s not found", cell.cellName));
             return;
+        }
+        if (adminValues.rectime!=null){
+            double traffic = (double)cell.rep*60d/(7500*adminValues.rectime);
+            updateProperty(rootname, NodeTypes.SECTOR.getId(), servSector, "traffic", traffic);
         }
         for (InterfCell neigh : cell.cells.values()) {
             handleNeighbohur(cell, servSector, neigh);
