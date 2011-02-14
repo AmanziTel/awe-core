@@ -581,6 +581,7 @@ public class AfpLoader extends AbstractLoader {
 	                    
 //	                    for (int j = 0; j < frq.length; j++){
 	                    	Node planNode = Utils.createPlan(trxNode, new int[]{frq}, Long.toString(time), service);
+	                    	planNode.setProperty(INeoConstants.AFP_PROPERTY_ORIGINAL_NAME, false);
 	                    	if(prevFreqNode != null) {
 	                    		prevFreqNode.createRelationshipTo(planNode, NetworkRelationshipTypes.NEXT);
 	               	   		}

@@ -17,6 +17,8 @@ import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.node2node.NodeToNodeTypes;
+import org.amanzi.neo.services.node2node.NodeToNodeRelationService.NodeToNodeRelationshipTypes;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -205,6 +207,8 @@ public class AfpExporter extends Job{
 										@Override
 										public boolean isReturnableNode(TraversalPosition pos) {
 											if (pos.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, "").equals("original"))
+												return true;
+											if(pos.currentNode().getProperty(INeoConstants.AFP_PROPERTY_ORIGINAL_NAME, true).equals(true))
 												return true;
 											return false;
 										}
@@ -466,34 +470,79 @@ public class AfpExporter extends Job{
 
 			@Override
 			public boolean isReturnableNode(TraversalPosition pos) {
-				if (pos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.SECTOR_SECTOR_RELATIONS.getId()))
+				if (pos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.SECTOR_SECTOR_RELATIONS.getId()) ||
+						pos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.PROXY.getId()))
 					return true;
 				
 				return false;
 			}
-		}, NetworkRelationshipTypes.INTERFERENCE, Direction.OUTGOING, NetworkRelationshipTypes.NEIGHBOURS, Direction.OUTGOING)){
-			for (Relationship relation : proxySector.getRelationships(NetworkRelationshipTypes.INTERFERS, NetworkRelationshipTypes.NEIGHBOUR)){
+		}, NetworkRelationshipTypes.INTERFERENCE, Direction.OUTGOING, NetworkRelationshipTypes.NEIGHBOURS, Direction.OUTGOING,
+		DatasetRelationshipTypes.PROXY, Direction.OUTGOING)){
+			for (Relationship relation : proxySector.getRelationships(NetworkRelationshipTypes.INTERFERS, NetworkRelationshipTypes.NEIGHBOUR, NodeToNodeRelationshipTypes.PROXYS)){
 				if (relation.getEndNode().equals(proxySector))
 					continue;
-				Node intSector;
+				Node intSector = null;
 				Node intProxySector = relation.getEndNode();
-				if (intProxySector.hasRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.INCOMING)){
-				intSector = intProxySector.getSingleRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.INCOMING).getStartNode();
+				
+				intSector = intProxySector.getSingleRelationship(DatasetRelationshipTypes.PROXY, Direction.INCOMING).getStartNode();
+				if(intSector == null){
+					intSector = intProxySector.getSingleRelationship(NetworkRelationshipTypes.INTERFERENCE, Direction.INCOMING).getStartNode();
 				}
-				else {
+				if(intSector == null){
 					intSector = intProxySector.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOURS, Direction.INCOMING).getStartNode();
 				}
 				RelationshipType type = relation.getType();
+				boolean isProxy = false;
 				int typeIndex = NEIGH;
-				if (type.equals(NetworkRelationshipTypes.INTERFERS))
+				if (type.equals(NodeToNodeRelationshipTypes.PROXYS)){
+					isProxy = true;
+					Node fileNode = intProxySector.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
+					if (fileNode.getProperty("node2node", "").equals(NodeToNodeTypes.NEIGHBOURS))
+						typeIndex = NEIGH;
+					else if (fileNode.getProperty("node2node", "").equals(NodeToNodeTypes.INTERFERENCE_MATRIX))
+						typeIndex = INTERFER;
+					else if (fileNode.getProperty("node2node", "").equals(NodeToNodeTypes.TRIANGULATION))
+						typeIndex = TRIANGULATION;
+					else if (fileNode.getProperty("node2node", "").equals(NodeToNodeTypes.SHADOWING))
+						typeIndex = SHADOWING;
+				}
+				else if (type.equals(NetworkRelationshipTypes.NEIGHBOUR))
+					typeIndex = NEIGH;
+				else if (type.equals(NetworkRelationshipTypes.INTERFERS))
 					typeIndex = INTERFER;
 				
 				String[][] prevValue = new String[4][4];
 				if (intValues.containsKey(intSector))
 					prevValue = intValues.get(intSector);
 				
-				String[] value = new String[4]; 
-				if (typeIndex == INTERFER){
+				String[] value = new String[4];
+				
+				if (isProxy){
+					try {
+						value[CoA] = df.format(relation.getProperty("co", "0")).toString();
+					} catch (Exception e) {
+						value[CoA] = (String)relation.getProperty("co", "0");
+					}
+					
+					try {
+						value[AdA] = df.format(relation.getProperty("adj", "0")).toString();
+					} catch (Exception e) {
+						value[AdA] = (String)relation.getProperty("adj", "0");
+					}
+					
+					try {
+						value[CoT] = df.format(relation.getProperty("coT", "0")).toString();
+					} catch (Exception e) {
+						value[CoT] = (String)relation.getProperty("coT", "0");
+					}
+					
+					try {
+						value[AdT] = df.format(relation.getProperty("adjT", "0")).toString();
+					} catch (Exception e) {
+						value[AdT] = (String)relation.getProperty("adjT", "0");
+					}
+				}
+				else if (typeIndex == INTERFER){
 					try {
 						value[CoA] = df.format(relation.getProperty("CoA", "0")).toString();
 					} catch (Exception e) {
