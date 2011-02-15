@@ -163,7 +163,8 @@
 	  <module>org.amanzi.neo.loader.ui</module>
 	  <module>org.amanzi.neo.services</module>
 	  <module>org.amanzi.neo.services.ui</module>	  	  
-	  <module>org.amanzi.awe.ui</module>	  	  
+	  <module>org.amanzi.awe.ui</module>	 
+	  <module>org.amanzi.awe.afp.ericsson</module> 	  
     </modules>
     <build>
       <plugins>	  
