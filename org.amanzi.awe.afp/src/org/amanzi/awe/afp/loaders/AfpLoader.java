@@ -580,7 +580,7 @@ public class AfpLoader extends AbstractLoader {
 	                    AweConsolePlugin.info("Adding TRX and FREQ for sector node id " + nodeId);
 	                    
 //	                    for (int j = 0; j < frq.length; j++){
-	                    	Node planNode = Utils.createPlan(trxNode, new int[]{frq}, Long.toString(time), service);
+	                    	Node planNode = Utils.createPlan(trxNode, frq, Long.toString(time), service);
 	                    	planNode.setProperty(INeoConstants.AFP_PROPERTY_ORIGINAL_NAME, false);
 	                    	if(prevFreqNode != null) {
 	                    		prevFreqNode.createRelationshipTo(planNode, NetworkRelationshipTypes.NEXT);
