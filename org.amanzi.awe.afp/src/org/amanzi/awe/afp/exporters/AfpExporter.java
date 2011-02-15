@@ -78,7 +78,9 @@ public class AfpExporter extends Job{
 	private File[] files;
 	private File[][] inputFiles;
 	private AfpModel model;
-	AfpFrequencyDomainModel models[];
+	private AfpFrequencyDomainModel models[];
+	private boolean useTraffic[];
+	int currentDomainIndex;
 	
 	public static final int NEIGH = 0;
 	public static final int INTERFER = 1;
@@ -92,6 +94,7 @@ public class AfpExporter extends Job{
 	
 	public static final float CO_SITE_SCALING_FACTOR = 1;
 	public static final float CO_SECTOR_SCALING_FACTOR = 1;
+	
 	
 	// default values of the Control file 
 	int defaultGMaxRTperCell = 1;
@@ -135,9 +138,10 @@ public class AfpExporter extends Job{
 		models = model.getFreqDomains(false).toArray(new AfpFrequencyDomainModel[0]);
 		inputFiles = new File[models.length][fileNames.length];
 		domainDirPaths = new String[models.length];
+		useTraffic = new boolean[models.length];
 		for(int i = 0; i < models.length; i++){
 			String dirName = models[i].getName();
-			
+			useTraffic[i] = true;
 			try {
 				File modelDir = new File(tmpAfpFolder + dirName);
 				if (!modelDir.exists())
@@ -190,6 +194,7 @@ public class AfpExporter extends Job{
 				    		AfpRowFilter rf = AfpRowFilter.getFilter(mod.getFilters());
 				    		if (rf != null){
 					    		if (rf.equal(trxNode)){
+					    			currentDomainIndex = i;
 					    			ArrayList<Integer> freq = new ArrayList<Integer>();
 					    			StringBuilder sb = new StringBuilder();
 					    			sb.append(Long.toString(trxNode.getId()));
@@ -342,10 +347,6 @@ public class AfpExporter extends Job{
 		}
 		
 		String trxId = (String)trx.getProperty(INeoConstants.PROPERTY_NAME_NAME, "0");
-//		char c = trxId.charAt(0);
-//		 if (Character.isDigit(c)){
-//			 c = (char)((c- '1') + 'A');
-//		 }
 
 		trxSb.append(numberofinterferers);
 		trxSb.append(" ");
@@ -400,6 +401,7 @@ public class AfpExporter extends Job{
 		
 		for (int j = 0; j < values[0].length; j++){
 			//CoA
+			
 			float val = 0;
 			for (int i = 0; i < values.length; i++){
 				try{
@@ -407,6 +409,14 @@ public class AfpExporter extends Job{
 				}
 				catch(Exception e){
 					val = 0;
+				}
+				if (j == CoT || j== AdT){
+					if (!useTraffic[currentDomainIndex])
+						val = 0;
+					else if (val < 0){
+						useTraffic[currentDomainIndex] = false;
+						val = 0;
+					}
 				}
 				float scalingFactor = 0;
 				
@@ -532,6 +542,12 @@ public class AfpExporter extends Job{
 				String[] value = new String[4];
 				
 				if (isProxy){
+					String traffic  = null;
+					try {
+						traffic = df.format(intSector.getProperty("traffic", -1)).toString();
+					} catch (Exception e) {
+						traffic = (String)sector.getProperty("traffic", -1);
+					}
 					try {
 						value[CoA] = df.format(relation.getProperty("co", "0")).toString();
 					} catch (Exception e) {
@@ -544,17 +560,9 @@ public class AfpExporter extends Job{
 						value[AdA] = (String)relation.getProperty("adj", "0");
 					}
 					
-					try {
-						value[CoT] = df.format(relation.getProperty("coT", "0")).toString();
-					} catch (Exception e) {
-						value[CoT] = (String)relation.getProperty("coT", "0");
-					}
+					value[CoT] = traffic;
+					value[AdT] = traffic;
 					
-					try {
-						value[AdT] = df.format(relation.getProperty("adjT", "0")).toString();
-					} catch (Exception e) {
-						value[AdT] = (String)relation.getProperty("adjT", "0");
-					}
 				}
 				else if (typeIndex == INTERFER){
 					try {
@@ -638,7 +646,7 @@ public class AfpExporter extends Job{
 			writer.write("RecalculateAll " + defaultRecalculateAll);
 			writer.newLine();
 
-			writer.write("UseTraffic " + defaultUseTraffic);
+			writer.write("UseTraffic " + (useTraffic[domainIndex] ? "1" : "0"));
 			writer.newLine();
 
 			writer.write("UseSONbrs " + defaultUseSONbrs);
