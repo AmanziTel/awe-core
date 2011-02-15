@@ -2945,7 +2945,7 @@ public class Utils {
             }
         }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
     }
-
+    @Deprecated
     public static void createBCCHCarrier(Node sectorNode, String band, int[] arfcnArray, final GraphDatabaseService service) {
         //create a Carrier
         Node carrierNode = createCarrier(sectorNode, 1, band, service);
@@ -2961,7 +2961,7 @@ public class Utils {
         //create a plan
         createPlan(carrierNode, arfcnArray, service);
     }
-    
+    @Deprecated
     public static void createCarrier(Node sectorNode, Integer trxId, String band, int[] arfcnArray, final GraphDatabaseService service) {
       //create a Carrier
         Node carrierNode = createCarrier(sectorNode, trxId, band, service);
@@ -2977,7 +2977,7 @@ public class Utils {
         //create a plan
         createPlan(carrierNode, arfcnArray, service);
     }
-    
+    @Deprecated
     private static Node createPlan(Node carrierNode, int[] arfcnArray, final GraphDatabaseService service) {
         //create a node
         Node plan = service.createNode();
@@ -2994,8 +2994,8 @@ public class Utils {
         
         return plan;
     }
-    
-    public static Node createPlan(Node carrierNode, int[] arfcnArray, String name, final GraphDatabaseService service) {
+    @Deprecated
+    public static Node createPlan(Node carrierNode, int arfcnArray, String name, final GraphDatabaseService service) {
         //create a node
         Node plan = service.createNode();
         
