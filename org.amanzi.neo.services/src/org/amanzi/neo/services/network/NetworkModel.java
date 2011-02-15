@@ -14,6 +14,7 @@
 package org.amanzi.neo.services.network;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -23,6 +24,7 @@ import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.node2node.INodeToNodeType;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
@@ -90,7 +92,7 @@ public class NetworkModel {
     }
 
     public NodeResult getPlan(Node carrierNode, String fileName) {
-        return networkService.getPlanNode(carrierNode, fileName);
+        return networkService.getPlanNode(rootNode,carrierNode, fileName);
     }
 
     public NodeResult getCarrier(Node sector, String trxId, Integer channelGr) {
@@ -105,7 +107,9 @@ public class NetworkModel {
         Set<Node> nodes = findSectorsByBsicBcch(bsic, bcch);
         return getClosestNode(servSector, nodes,30000);
     }
-
+    public FrequencyPlanModel getFrequencyModel(String modelName){
+        return FrequencyPlanModel.getModel(rootNode, modelName);
+    }
     /**
      *
      * @param servSector
@@ -195,6 +199,18 @@ public class NetworkModel {
     public Set<NodeToNodeRelationModel> findAllN2nModels(NodeToNodeTypes type) {
         return n2nserrvice.findAllN2nModels(rootNode,type);
 
+    }
+
+    public Set<FrequencyPlanModel> findAllFrqModel() {
+        Set<FrequencyPlanModel> result=new HashSet<FrequencyPlanModel>();
+        for (Node root:networkService.findAllFrqRoot(rootNode, null).nodes()){
+            result.add(new FrequencyPlanModel(root));
+        }
+        return result;
+    }
+
+    public Iterable<Node> findAllNodeByType(INodeType type) {
+        return networkService.findAllNodeByType(rootNode,type);
     }
 
 }

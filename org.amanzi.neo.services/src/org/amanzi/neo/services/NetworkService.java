@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.amanzi.neo.services.DatasetService.NodeResult;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.indexes.PropertyIndex.NeoIndexRelationshipTypes;
@@ -238,7 +239,7 @@ public class NetworkService extends AbstractService {
     }
 
     private enum Relations implements RelationshipType {
-        CHANNEL;
+        CHANNEL,FREQUENCY_ROOT,FREQUENCY_CHILD;
     }
 
     /**
@@ -344,14 +345,22 @@ public class NetworkService extends AbstractService {
      * Gets the plan node.
      * 
      * @param trx the trx
+     * @param trx 
      * @param fileName the file name
      * @return the plan node
      */
-    public NodeResult getPlanNode(Node trx, String fileName) {
+    public NodeResult getPlanNode(Node networkRoot, Node trx, String fileName) {
         Node planNode = findPlanNode(trx, fileName);
         boolean isCreated = planNode == null;
         if (isCreated) {
-            planNode = NeoServiceFactory.getInstance().getDatasetService().addSimpleChild(trx, NodeTypes.FREQUENCY_PLAN, fileName);
+            Transaction tx = databaseService.beginTx();
+            try{
+                planNode = NeoServiceFactory.getInstance().getDatasetService().addSimpleChild(trx, NodeTypes.FREQUENCY_PLAN, "");
+                getFrequencyRootNode(networkRoot, fileName).createRelationshipTo(planNode, Relations.FREQUENCY_CHILD);
+            tx.success();
+            }finally{
+                tx.finish();
+            }
         }
         return new DatasetService.NodeResultImpl(planNode, isCreated);
     }
@@ -364,16 +373,54 @@ public class NetworkService extends AbstractService {
      * @return the node
      */
     public Node findPlanNode(Node trx, final String fileName) {
+        //TODO use lucene index if too slow
         final DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
 
-        Iterator<Path> itr = Traversal.description().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1))
-                .filter(new Predicate<Path>() {
-
-                    @Override
-                    public boolean accept(Path item) {
-                        return item.length() > 0 && fileName.equals(ds.getNodeName(item.endNode()));
+        Iterator<Path> itr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).evaluator(new Evaluator() {
+            
+            @Override
+            public Evaluation evaluate(Path arg0) {
+                boolean includes=arg0.length()==1;
+                if (includes){
+                    Relationship rel = arg0.endNode().getSingleRelationship(Relations.FREQUENCY_CHILD, Direction.INCOMING);
+                    if (rel==null){
+                        includes=false;
+                    }else{
+                        includes=fileName.equals(datasetService.getNodeName(rel.getOtherNode(arg0.endNode())));
                     }
-                }).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).traverse(trx).iterator();
+                }
+                return Evaluation.of(includes, arg0.length()==0);
+            }
+        }).traverse(trx).iterator();
+        return itr.hasNext() ? itr.next().endNode() : null;
+    }
+    /**
+     * Find plan node.
+     * 
+     * @param trx the trx
+     * @param fileName the file name
+     * @return the node
+     */
+    public Node findPlanNode(Node trx, final Node frModelRoot) {
+        //TODO use lucene index if too slow
+        final DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
+
+        Iterator<Path> itr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).evaluator(new Evaluator() {
+            
+            @Override
+            public Evaluation evaluate(Path arg0) {
+                boolean includes=arg0.length()==1;
+                if (includes){
+                    Relationship rel = arg0.endNode().getSingleRelationship(Relations.FREQUENCY_CHILD, Direction.INCOMING);
+                    if (rel==null){
+                        includes=false;
+                    }else{
+                        includes=frModelRoot.equals(rel.getOtherNode(arg0.endNode()));
+                    }
+                }
+                return Evaluation.of(includes, arg0.length()==0);
+            }
+        }).traverse(trx).iterator();
         return itr.hasNext() ? itr.next().endNode() : null;
     }
 
@@ -535,7 +582,19 @@ public class NetworkService extends AbstractService {
             throw (RuntimeException) new RuntimeException( ).initCause( e );
         }
     }
-
+    public Traverser findAllFrqRoot(Node networkNode, Evaluator additionalEvaluation){
+        TraversalDescription tr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(Relations.FREQUENCY_ROOT,Direction.OUTGOING).evaluator(new Evaluator() {
+            
+            @Override
+            public Evaluation evaluate(Path arg0) {
+                return Evaluation.of(arg0.length()==1, arg0.length()==0);
+            }
+        });
+        if (additionalEvaluation!=null){
+            tr.evaluator(additionalEvaluation);
+        }
+        return tr.traverse(networkNode);
+    }
     /**
      * Find site from sector.
      * 
@@ -545,6 +604,66 @@ public class NetworkService extends AbstractService {
     public Node findSiteFromSector(Node sector) {
         Relationship rel = sector.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING);
         return rel == null ? null : rel.getOtherNode(sector);
+    }
+
+    public Node findFrequencyRootNode(Node networkRoot, final String modelName) {
+        Iterator<Node> iter = findAllFrqRoot(networkRoot, new Evaluator() {
+            
+            @Override
+            public Evaluation evaluate(Path arg0) {
+                return Evaluation.ofIncludes(modelName.equals(datasetService.getNodeName(arg0.endNode())));
+            }
+        }).nodes().iterator();
+        return iter.hasNext()?iter.next():null;
+        
+    }
+
+    public Node getFrequencyRootNode(Node networkRoot, String modelName) {
+        Node result=findFrequencyRootNode(networkRoot, modelName);
+        if (result==null){
+            result=createFrequencyRootNode(networkRoot,modelName);
+        }
+        return result;
+    }
+
+    private Node createFrequencyRootNode(Node networkRoot, String modelName) {
+        Transaction tx = databaseService.beginTx();
+        try {
+            Node result=datasetService.createNode(NodeTypes.FREQUENCY_ROOT, modelName);
+            networkRoot.createRelationshipTo(result, Relations.FREQUENCY_ROOT);
+            tx.success();
+            return result;
+        } finally {
+            tx.finish();
+        }
+   
+    }
+
+    public NodeResult getPlanNode(Node rootNode, NodeResult trx) {
+        Node planNode = findPlanNode(trx, rootNode);
+        boolean isCreated = planNode == null;
+        if (isCreated) {
+            Transaction tx = databaseService.beginTx();
+            try{
+                planNode = NeoServiceFactory.getInstance().getDatasetService().addSimpleChild(trx, NodeTypes.FREQUENCY_PLAN, "");
+                rootNode.createRelationshipTo(planNode, Relations.FREQUENCY_CHILD);
+            tx.success();
+            }finally{
+                tx.finish();
+            }
+        }
+        return new DatasetService.NodeResultImpl(planNode, isCreated);
+    }
+
+    public Iterable<Node> findAllNodeByType(Node network,final INodeType type) {
+        return Traversal.description().depthFirst().relationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING).uniqueness(Uniqueness.NONE).evaluator(new Evaluator() {
+            
+            @Override
+            public Evaluation evaluate(Path arg0) {
+                boolean includes=type.equals(datasetService.getNodeType(arg0.endNode()));
+                return Evaluation.of(includes, !includes);
+            }
+        }).traverse(network).nodes();
     }
 
 }

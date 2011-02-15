@@ -747,7 +747,7 @@ public enum NodeTypes implements INodeType{
     UTRAN_DATA("utran_data"), GLOBAL_PROPERTIES("global_properties"),
     ROOT_PROXY("root_proxy"),
     PROXY("proxy"), TRX("carrier"), FREQ("freq"),
-    FREQUENCY_PLAN("frequency_plan");
+    FREQUENCY_PLAN("frequency_plan"),FREQUENCY_ROOT("frq_root");
     
     
     private final String id;

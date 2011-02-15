@@ -33,6 +33,7 @@ import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.network.FrequencyPlanModel;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.apache.commons.lang.StringUtils;
@@ -68,6 +69,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
     private NodeToNodeRelationModel neighbourModel;
     private DatasetService ds;
     private String planName;
+    private FrequencyPlanModel freqPlan;
 
     @Override
     public void init(NetworkConfigurationTransferData element) {
@@ -78,6 +80,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         neighName = rootname + "neigh";
         neighbourModel = networkModel.getNeighbours(neighName);
         planName=null;
+        freqPlan=null;
         startMainTx(2000);
     }
 
@@ -303,7 +306,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
             updateProperty(rootname, NodeTypes.TRX.getId(), trx, "band", channalGr.getProperty("band", null));
             boolean isBcch = 0 == channelGr && "0".equals(trxId);
             updateProperty(rootname, NodeTypes.TRX.getId(), trx, "bcch", isBcch);
-            NodeResult plan = networkService.getPlanNode(trx, getPlanName(element));
+            NodeResult plan = getFreqPlan( getPlanName(element)).getPlanNode(trx);
             if (plan.isCreated()) {
                 statistic.updateTypeCount(getPlanName(element), NodeTypes.FREQUENCY_PLAN.getId(), 1);
             }
@@ -365,6 +368,20 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         }
     }
 
+
+
+    /**
+     * Gets the freq plan.
+     *
+     * @param planName the plan name
+     * @return the freq plan
+     */
+    private FrequencyPlanModel getFreqPlan(String planName) {
+        if (freqPlan==null){
+            freqPlan=networkModel.getFrequencyModel(planName);
+        }
+        return freqPlan;
+    }
 
     /**
      * Gets the frequency plan name.
