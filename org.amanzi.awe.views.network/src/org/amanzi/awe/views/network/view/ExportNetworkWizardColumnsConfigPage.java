@@ -412,8 +412,9 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
         for (Map.Entry<String, Collection<String>> entry : propertyMap.entrySet()) {
             String type = entry.getKey();
             for (String propertyName : entry.getValue()) {
+                propertyName = propertyName.toLowerCase();
                 String columnName = "";
-                String origHeader = originalHeaders.get(type + INeoConstants.PROPERTY_NAME_PREFIX + propertyName);
+                String origHeader = originalHeaders.get(type + INeoConstants.PROPERTY_NAME_PREFIX + cleanHeader(propertyName));
                 if (origHeader != null) {
                     columnName = origHeader;
                     isExistColumnName = true;
@@ -425,6 +426,10 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
         propertyList.addAll(rows);
         
         return isExistColumnName;
+    }
+    
+    private String cleanHeader(String header) {
+        return header.replaceAll("[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+", "_").replaceAll("[^\\w]+", "_").replaceAll("_+", "_").replaceAll("\\_$", "").toLowerCase();
     }
     
     /**

@@ -14,10 +14,14 @@
 package org.amanzi.neo.loader.core.saver;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,7 +55,10 @@ public abstract  class AbstractHeaderSaver<T extends BaseTransferData> extends A
     /** The gis nodes. */
     protected LinkedHashMap<Node, GisProperties> gisNodes=new LinkedHashMap<Node, GisProperties>();
 
-
+    protected LinkedHashMap<String, List<String>> knownHeaders = new LinkedHashMap<String, List<String>>();
+    protected TreeSet<String> identityHeaders = new TreeSet<String>();
+    private final ArrayList<String> mainHeaders = new ArrayList<String>();
+    public LinkedHashMap<String, String> headers = new LinkedHashMap<String, String>();
     /** The rootname. */
     protected String rootname;
 
@@ -254,5 +261,113 @@ public abstract  class AbstractHeaderSaver<T extends BaseTransferData> extends A
         return false;
     }
     
+    /**
+     * Add a property name and list of regular expressions for a single known header. This is used
+     * if we want the property name in the database to be some specific text, not the header text in
+     * the file. The regular expressions are used to find the header in the file to associate with
+     * the new property name. Note that the original property will not be saved using its original
+     * name. It will be saved with the specified name provided. For example, if you want the first
+     * field found that starts with either 'lat' or 'y_wert' to be saved in a property called 'y',
+     * then you would call this using:
+     * 
+     * <pre>
+     * addKnownHeader(&quot;y&quot;, new String[] {&quot;lat.*&quot;, &quot;y_wert.*&quot;}, true);
+     * </pre>
+     * 
+     * @param key the name to use for the property
+     * @param isIdentityHeader true if the property is an identity property
+     * @param array of regular expressions to use to find the single property
+     */
+    protected void addKnownHeader(String key, String[] regexes, boolean isIdentityHeader) {
+        if (knownHeaders.containsKey(key)) {
+            List<String> value = knownHeaders.get(key);
+            value.addAll(Arrays.asList(regexes));
+            knownHeaders.put(key, value);
+        } else {
+            knownHeaders.put(key, Arrays.asList(regexes));
+        }
+        if (isIdentityHeader) {
+            identityHeaders.add(key);
+        }
+    }
     
+    /**
+     * Add a known header entry as well as mark it as a main header and identity header. All other
+     * fields will be assumed to be sector properties.
+     *
+     * @param key the key
+     * @param regexes the regexes
+     */
+    protected void addMainIdentityHeader(String key, String[] regexes) {
+        addKnownHeader(key, regexes, true);
+        mainHeaders.add(key);
+    }
+    
+    /**
+     * Add a known header entry as well as mark it as a main header. All other fields will be
+     * assumed to be sector properties.
+     *
+     * @param key the key
+     * @param regexes the regexes
+     */
+    protected void addMainHeader(String key, String[] regexes) {
+        addKnownHeader(key, regexes, false);
+        mainHeaders.add(key);
+    }
+    
+    /**
+     * Converts to lower case and replaces all illegal characters with '_' and removes trailing '_'.
+     * This is useful for creating a version of a header or property name that can be used as a
+     * variable or method name in programming code, notably in Ruby DSL code.
+     * 
+     * @param original header String
+     * @return edited String
+     */
+    protected final static String cleanHeader(String header) {
+        return header.replaceAll("[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+", "_").replaceAll("[^\\w]+", "_").replaceAll("_+", "_").replaceAll("\\_$", "").toLowerCase();
+    }
+    
+    /**
+     * Parse possible header lines and build a set of header objects to be used to parse all data
+     * lines later. This allows us to deal with several requirements:
+     * <ul>
+     * <li>Know when we have passed the header and are in the data body of the file</li>
+     * <li>Have objects that automatically learn the type of the data as the data is parsed</li>
+     * <li>Support mapping headers to known specific names</li>
+     * <li>Support mapping values to different values using pre-defined mapper code</li>
+     * </ul>
+     * 
+     * @param line to parse as the header line
+     */
+    protected final void parseHeader(ArrayList<String> line) {
+        List<String> fields = line;
+        if (fields.size() < 2)
+            return;
+        int index = 0;
+        for (String headerName : fields) {
+            String header = cleanHeader(headerName);
+                boolean added = false;
+                KNOWN: for (String key : knownHeaders.keySet()) {
+                    if (!headers.containsKey(key)) {
+                        for (String regex : knownHeaders.get(key)) {
+                            for (String testString : new String[] {header, headerName}) {
+                                if (testString.toLowerCase().matches(regex.toLowerCase())) {
+                                    if (!identityHeaders.contains(key)){
+                                        headers.put(key, headerName);
+                                    }
+                                    added = true;
+                                    break KNOWN;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (!added) {
+                    if (!identityHeaders.contains(header)){
+                        headers.put(header, headerName);
+                    }
+                }
+            index++;
+        }
+    }
 }

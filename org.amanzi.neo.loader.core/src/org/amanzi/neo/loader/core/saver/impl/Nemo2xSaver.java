@@ -403,18 +403,6 @@ public class Nemo2xSaver extends DatasetSaver<LineTransferData> implements IStru
         }
     }
 
-    /**
-     * Converts to lower case and replaces all illegal characters with '_' and removes trailing '_'.
-     * This is useful for creating a version of a header or property name that can be used as a
-     * variable or method name in programming code, notably in Ruby DSL code.
-     * 
-     * @param original header String
-     * @return edited String
-     */
-    protected final static String cleanHeader(String header) {
-        return header.replaceAll("[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+", "_").replaceAll("[^\\w]+", "_").replaceAll("_+", "_").replaceAll("\\_$", "").toLowerCase();
-    }
-
     @Override
     public Iterable<MetaData> getMetaData() {
         return Arrays.asList(new MetaData[]{metadata});

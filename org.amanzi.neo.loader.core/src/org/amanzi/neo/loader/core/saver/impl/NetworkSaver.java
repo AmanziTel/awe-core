@@ -14,6 +14,7 @@
 package org.amanzi.neo.loader.core.saver.impl;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -22,7 +23,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.core.preferences.PreferenceStore;
@@ -60,6 +60,7 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
     private final HashMap<String, Node> bsc_s = new HashMap<String, Node>();
     private final HashMap<String, Node> city_s = new HashMap<String, Node>();
     private final MetaData metadata=new MetaData("network", MetaData.SUB_TYPE,"radio"); 
+    
     private enum NetworkLevels {
         NETWORK, CITY, BSC, SITE, SECTOR;
     }
@@ -105,12 +106,20 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
 //                String[] headers = getPossibleHeaders(name);
 //                propertyMap.put(name, headers[0]);
 //            }
+            initializeKnownHeaders();
+            ArrayList<String> headers = new ArrayList<String>();
+            Set<Entry<String, String>> set = element.entrySet();
+            Iterator<Entry<String, String>> iterator = set.iterator();
+            while (iterator.hasNext()) {
+                headers.add(iterator.next().getKey());
+            }
             definePropertyMap(element);
             startMainTx(1000);
             initializeIndexes();
             headerNotHandled = false;
             // Kasnitskij_V:
             rootNode.setProperty(INeoConstants.PROPERTY_STRUCTURE_NAME, getLevelsFound());
+            parseHeader(headers);
             saveFileStructure();
         }
         
@@ -141,8 +150,8 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
      * Save file structure.
      */
     private void saveFileStructure() {
-        Map<String,String> headers = new HashMap<String, String>();
-        for(Entry<String, String> prop : propertyMap.entrySet()){
+        Map<String,String> localHeaders = new HashMap<String, String>();
+        for(Entry<String, String> prop : headers.entrySet()){
 
             String prefix = INeoConstants.SECTOR_PROPERTY_NAME_PREFIX;
             String propertyKey = prop.getKey();
@@ -165,10 +174,31 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
                 prefix = INeoConstants.CITY_PROPERTY_NAME_PREFIX;
             }
 
-            headers.put(prefix + propertyKey, propOriginalName);
+            localHeaders.put(prefix + propertyKey, propOriginalName);
         }
         
-        service.addOriginalHeaders(rootNode, headers);
+        service.addOriginalHeaders(rootNode, localHeaders);
+    }
+    
+    /**
+     * Build a map of internal header names to format specific names for types that need to be known
+     * in the algorithms later.
+     */
+    private void initializeKnownHeaders() {
+        addMainHeader("city", getPossibleHeaders(DataLoadPreferences.NH_CITY));
+        addMainHeader("msc", getPossibleHeaders(DataLoadPreferences.NH_MSC));
+        addMainHeader("bsc", getPossibleHeaders(DataLoadPreferences.NH_BSC));
+        addMainIdentityHeader("site", getPossibleHeaders(DataLoadPreferences.NH_SITE));
+        addMainIdentityHeader("sector", getPossibleHeaders(DataLoadPreferences.NH_SECTOR));
+        addMainHeader(INeoConstants.PROPERTY_SECTOR_CI, getPossibleHeaders(DataLoadPreferences.NH_SECTOR_CI));
+        addMainHeader(INeoConstants.PROPERTY_SECTOR_LAC, getPossibleHeaders(DataLoadPreferences.NH_SECTOR_LAC));
+        addMainHeader(INeoConstants.PROPERTY_LAT_NAME, getPossibleHeaders(DataLoadPreferences.NH_LATITUDE));
+        addMainHeader(INeoConstants.PROPERTY_LON_NAME, getPossibleHeaders(DataLoadPreferences.NH_LONGITUDE));
+
+        // Known headers that are sector data properties
+        addKnownHeader("beamwidth", getPossibleHeaders(DataLoadPreferences.NH_BEAMWIDTH), false);
+        addKnownHeader("azimuth", getPossibleHeaders(DataLoadPreferences.NH_AZIMUTH), false);
+        addKnownHeader("band", new String[] {"Ant_Freq_Band"}, false);
     }
     
     /**
