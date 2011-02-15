@@ -25,6 +25,7 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public interface ISelectionInformation {
+    String getFullDescription();
     String getDescription();
     Set<String>getPropertySet();
     IPropertyInformation getPropertyInformation(String propertyName);

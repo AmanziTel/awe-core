@@ -99,5 +99,10 @@ public class Node2NodeSelectionInformation implements ISelectionInformation {
         return root;
     }
 
+    @Override
+    public String getFullDescription() {
+        return getDescription();
+    }
+
 
 }

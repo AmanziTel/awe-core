@@ -1249,7 +1249,7 @@ public class ReuseAnalyserModel {
     public Node findOrCreateAggregateNode(ISelectionInformation information, final String propertyName, final String distribute, final String select, IProgressMonitor monitor) {
         correlationUpdate.clear();
         Transaction tx = service.beginTx();
-        final String descr = information.getDescription();
+        final String descr = information.getFullDescription();
         Node rootNode = information.getRootNode();
         try {
             rootNode.setProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION, propertyName);

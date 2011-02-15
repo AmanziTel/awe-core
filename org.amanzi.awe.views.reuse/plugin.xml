@@ -18,6 +18,13 @@
             class="org.amanzi.awe.views.reuse.mess_table.view.MessageAndEventTableView"
             id="org.amanzi.awe.views.reuse.views.MessageAndEventTableView">
       </view>
+      <view
+            category="org.amanzi.awe.script"
+            class="org.amanzi.awe.views.reuse.views.FrequencyPlanAnalyser"
+            icon="icons/distribution.png"
+            id="org.amanzi.awe.views.reuse.views.FrequencyPlanAnalyser"
+            name="Frequency Distribution">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
@@ -41,6 +48,16 @@
          <viewShortcut
                id="org.amanzi.awe.views.reuse.views.MessageAndEventTableView">
          </viewShortcut>
+         <view
+               id="org.amanzi.awe.views.reuse.views.FrequencyPlanAnalyser"
+               minimized="false"
+               relationship="stack"
+               relative="net.refractions.udig.catalog.ui.CatalogView"
+               visible="true">
+         </view>
+         <viewShortcut
+               id="org.amanzi.awe.views.reuse.views.FrequencyPlanAnalyser">
+         </viewShortcut>
       </perspectiveExtension>
       <perspectiveExtension
             targetID="org.amanzi.afp.perspective">
@@ -61,6 +78,16 @@
          </view>
          <viewShortcut
                id="org.amanzi.awe.views.reuse.views.MessageAndEventTableView">
+         </viewShortcut>
+         <view
+               id="org.amanzi.awe.views.reuse.views.FrequencyPlanAnalyser"
+               minimized="false"
+               relationship="stack"
+               relative="net.refractions.udig.catalog.ui.CatalogView"
+               visible="true">
+         </view>
+         <viewShortcut
+               id="org.amanzi.awe.views.reuse.views.FrequencyPlanAnalyser">
          </viewShortcut>
       </perspectiveExtension>
    </extension>

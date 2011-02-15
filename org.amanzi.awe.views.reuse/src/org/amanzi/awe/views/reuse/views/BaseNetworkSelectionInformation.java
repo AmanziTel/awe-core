@@ -146,4 +146,8 @@ public class BaseNetworkSelectionInformation implements ISelectionInformation {
         }
 
     }
+    @Override
+    public String getFullDescription() {
+        return getDescription();
+    }
 }

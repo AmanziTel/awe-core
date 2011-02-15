@@ -20,6 +20,7 @@ import java.util.Set;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.network.FrequencyPlanModel;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.node2node.Node2NodeSelectionInformation;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
@@ -113,6 +114,29 @@ public class InformationProvider {
     private String getNode2NodeDescripttion(String networkName, NodeToNodeRelationModel model) {
         return model.getDescription();
 //        return String.format("Network %s %s %s", networkName, model.getName(), model.getType().name());
+    }
+
+
+    /**
+     *
+     * @return
+     */
+    public Map<String, ISelectionInformation> getFrequencyStatisticMap() {
+        HashMap<String, ISelectionInformation> result = new HashMap<String, ISelectionInformation>();
+        Set<String> rootKey = statistic.getRootKey();
+        if (rootKey.isEmpty()) {
+            return result;
+        }
+        if (NodeTypes.NETWORK.checkNode(root)) {
+            NetworkModel networkModel = new NetworkModel(root);
+            for (FrequencyPlanModel model:networkModel.findAllFrqModel()){
+                ISelectionInformation inf = new FreqPlanSelectionInformation(statistic,root, model);
+                if (!inf.getPropertySet().isEmpty()) {
+                    result.put(inf.getDescription(), inf);
+                }
+            }
+        } 
+        return result;
     }
 
 }
