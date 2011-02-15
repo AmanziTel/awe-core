@@ -11,8 +11,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.amanzi.neo.loader.ui;bundle-version="1.0.0"
 Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Import-Package: org.amanzi.awe.gpeh,
- org.amanzi.neo.loader,
+Import-Package: org.amanzi.neo.loader,
  org.amanzi.neo.loader.core,
  org.amanzi.neo.loader.core.parser,
  org.amanzi.neo.loader.core.saver
