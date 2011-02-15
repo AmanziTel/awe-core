@@ -239,7 +239,7 @@ public class NetworkService extends AbstractService {
     }
 
     private enum Relations implements RelationshipType {
-        CHANNEL,FREQUENCY_ROOT,FREQUENCY_CHILD;
+        CHANNEL,FREQUENCY_ROOT,FREQUENCY_CHILD,PLAN_ENTRY;
     }
 
     /**
