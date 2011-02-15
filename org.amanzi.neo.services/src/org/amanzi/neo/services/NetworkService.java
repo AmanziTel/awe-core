@@ -19,6 +19,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.amanzi.neo.services.DatasetService.NodeResult;
+import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
@@ -239,7 +240,7 @@ public class NetworkService extends AbstractService {
     }
 
     private enum Relations implements RelationshipType {
-        CHANNEL,FREQUENCY_ROOT,FREQUENCY_CHILD,PLAN_ENTRY;
+        CHANNEL,FREQUENCY_ROOT;
     }
 
     /**
@@ -355,8 +356,9 @@ public class NetworkService extends AbstractService {
         if (isCreated) {
             Transaction tx = databaseService.beginTx();
             try{
-                planNode = NeoServiceFactory.getInstance().getDatasetService().addSimpleChild(trx, NodeTypes.FREQUENCY_PLAN, "");
-                getFrequencyRootNode(networkRoot, fileName).createRelationshipTo(planNode, Relations.FREQUENCY_CHILD);
+                planNode = NeoServiceFactory.getInstance().getDatasetService().createNode(NodeTypes.FREQUENCY_PLAN, "");
+                trx.createRelationshipTo(planNode,DatasetRelationshipTypes.PLAN_ENTRY);
+                getFrequencyRootNode(networkRoot, fileName).createRelationshipTo(planNode, GeoNeoRelationshipTypes.CHILD);
             tx.success();
             }finally{
                 tx.finish();
@@ -376,13 +378,13 @@ public class NetworkService extends AbstractService {
         //TODO use lucene index if too slow
         final DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
 
-        Iterator<Path> itr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).evaluator(new Evaluator() {
+        Iterator<Path> itr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(DatasetRelationshipTypes.PLAN_ENTRY, Direction.OUTGOING).evaluator(new Evaluator() {
             
             @Override
             public Evaluation evaluate(Path arg0) {
                 boolean includes=arg0.length()==1;
                 if (includes){
-                    Relationship rel = arg0.endNode().getSingleRelationship(Relations.FREQUENCY_CHILD, Direction.INCOMING);
+                    Relationship rel = arg0.endNode().getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING);
                     if (rel==null){
                         includes=false;
                     }else{
@@ -411,7 +413,7 @@ public class NetworkService extends AbstractService {
             public Evaluation evaluate(Path arg0) {
                 boolean includes=arg0.length()==1;
                 if (includes){
-                    Relationship rel = arg0.endNode().getSingleRelationship(Relations.FREQUENCY_CHILD, Direction.INCOMING);
+                    Relationship rel = arg0.endNode().getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING);
                     if (rel==null){
                         includes=false;
                     }else{
@@ -645,8 +647,9 @@ public class NetworkService extends AbstractService {
         if (isCreated) {
             Transaction tx = databaseService.beginTx();
             try{
-                planNode = NeoServiceFactory.getInstance().getDatasetService().addSimpleChild(trx, NodeTypes.FREQUENCY_PLAN, "");
-                rootNode.createRelationshipTo(planNode, Relations.FREQUENCY_CHILD);
+                planNode = NeoServiceFactory.getInstance().getDatasetService().createNode(NodeTypes.FREQUENCY_PLAN, "");
+                trx.createRelationshipTo(planNode,DatasetRelationshipTypes.PLAN_ENTRY);
+                rootNode.createRelationshipTo(planNode, GeoNeoRelationshipTypes.CHILD);
             tx.success();
             }finally{
                 tx.finish();
