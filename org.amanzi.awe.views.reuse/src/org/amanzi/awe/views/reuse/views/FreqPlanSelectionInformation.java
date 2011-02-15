@@ -142,6 +142,6 @@ public void setTrxType(String text) {
 
 @Override
 public String getFullDescription() {
-    return String.format("descr %s sector %s ncc %s bcc %s ",getDescription(),getSectorName(),getNcc(),getBcc()) ;
+    return String.format("descr %s sector %s ncc %s bcc %s carrier type %s",getDescription(),getSectorName(),getNcc(),getBcc(),getTrxType()) ;
 }
 }
