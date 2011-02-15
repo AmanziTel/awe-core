@@ -555,13 +555,13 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
                 continue;
             }
             Relationship rel = shadowModel.getRelation(serv, cnd1);
-            updateProperty(getShadowingMatrixName(), NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "co", new Double(50d));
+            updateProperty(getShadowingMatrixName(), NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "co", new Double(0.50d));
             updateProperty(getShadowingMatrixName(), NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "adj", new Double(0d));
             candidates.remove(cnd1);
             Node cnd2 = networkModel.getClosestNode(serv, candidates, 20000);
             if (cnd2 != null) {
                 rel = shadowModel.getRelation(serv, cnd2);
-                updateProperty(getShadowingMatrixName(), NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "co", new Double(25d));
+                updateProperty(getShadowingMatrixName(), NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "co", new Double(0.25d));
                 updateProperty(getShadowingMatrixName(), NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "adj", new Double(0d));
 
             }
