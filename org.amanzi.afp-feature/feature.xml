@@ -11,7 +11,7 @@
    </description>
 
    <copyright url="http://www.triangulum-telecom.com">
-Opti-AFP 6.0 lite contains code written by Triangulum, AmanziTel AB, Amanzi HB,
+      Opti-AFP 6.0 lite contains code written by Triangulum, AmanziTel AB, Amanzi HB,
 Refractions Research, Neotechnology, Geotools, the Eclipse Foundation and others.
 All code is copyright their respective owners.
    </copyright>
@@ -344,13 +344,6 @@ Research, Neotechnology, the Eclipse foundation, Geotools et al.
          download-size="0"
          install-size="0"
          version="1.0.0.qualifier"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.awe.wizards"
-         download-size="0"
-         install-size="0"
-         version="1.0.0"
          unpack="false"/>
 
    <plugin
