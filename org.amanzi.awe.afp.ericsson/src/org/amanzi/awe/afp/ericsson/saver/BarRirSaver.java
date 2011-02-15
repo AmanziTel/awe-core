@@ -649,13 +649,13 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             error("Incorreect reparfcn=0");
             return;
         }
-        double impactCO = 100 * neigh.timesrelss / neigh.reparfcn * factorCo;
+        double impactCO =neigh.timesrelss / neigh.reparfcn * factorCo;
         Double factorAdj = getFactorAdj(adminValues.relss2);
         if (factorAdj == null) {
             error("Incorreect relss2=" + String.valueOf(adminValues.relss));
             return;
         }
-        double impactAdj = 100 * neigh.timesrelss2 / neigh.reparfcn * factorAdj;
+        double impactAdj = neigh.timesrelss2 / neigh.reparfcn * factorAdj;
         Relationship rel = interfModel.getRelation(servSector, neighSector);
         updateProperty(getInterfMatrixName(), NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "source", "IM source - Interference");
         updateProperty(getInterfMatrixName(), NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "co", impactCO);
