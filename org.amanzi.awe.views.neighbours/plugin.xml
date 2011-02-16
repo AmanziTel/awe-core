@@ -16,7 +16,7 @@
             class="org.amanzi.awe.views.neighbours.views.Node2NodeViews"
             icon="icons/neighbour.png"
             id="org.amanzi.awe.views.neighbours.views.Node2NodeViews"
-            name="n2n">
+            name="Relations">
       </view>
    </extension>
    <extension
@@ -31,54 +31,6 @@
    </extension>   
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
-      <perspectiveExtension
-            targetID="org.amanzi.awe.perspective">
-         <view
-               id="org.amanzi.awe.views.neighbours.views.NeighboursView"
-               relationship="stack"
-               relative="net.refractions.udig.catalog.ui.CatalogView"
-               visible="true">
-         </view>
-         <viewShortcut
-               id="org.amanzi.awe.views.neighbours.views.NeighboursView">
-         </viewShortcut>
-      </perspectiveExtension>
-      <perspectiveExtension
-            targetID="org.amanzi.awe.perspective">
-         <view
-               id="org.amanzi.awe.views.neighbours.views.TransmissionView"
-               relationship="stack"
-               relative="net.refractions.udig.catalog.ui.CatalogView"
-               visible="true">
-         </view>
-         <viewShortcut
-               id="org.amanzi.awe.views.neighbours.views.TransmissionView">
-         </viewShortcut>
-      </perspectiveExtension>
-      <perspectiveExtension
-            targetID="org.amanzi.afp.perspective">
-         <view
-               id="org.amanzi.awe.views.neighbours.views.NeighboursView"
-               relationship="stack"
-               relative="net.refractions.udig.catalog.ui.CatalogView"
-               visible="true">
-         </view>
-         <viewShortcut
-               id="org.amanzi.awe.views.neighbours.views.NeighboursView">
-         </viewShortcut>
-      </perspectiveExtension>
-      <perspectiveExtension
-            targetID="org.amanzi.afp.perspective">
-         <view
-               id="org.amanzi.awe.views.neighbours.views.TransmissionView"
-               relationship="stack"
-               relative="net.refractions.udig.catalog.ui.CatalogView"
-               visible="true">
-         </view>
-         <viewShortcut
-               id="org.amanzi.awe.views.neighbours.views.TransmissionView">
-         </viewShortcut>
-      </perspectiveExtension>
       <perspectiveExtension
             targetID="org.amanzi.awe.perspective">
          <view
