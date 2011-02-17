@@ -144,7 +144,7 @@ public class AfpImportWizard extends Wizard implements IImportWizard {
     	isDone = false;
     	System.out.println("Current Page -- " + page.getClass().toString());
     	if(nextPage != null) {
-        	System.out.println("Next Page -- " + nextPage.getClass().toString());
+//        	System.out.println("Next Page -- " + nextPage.getClass().toString());
     		model.saveUserData();
     		((AfpWizardPage)nextPage).refreshPage();
     	}

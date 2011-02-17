@@ -1506,7 +1506,7 @@ public class AfpModel {
 			afpNode.setProperty(INeoConstants.AFP_ADJ_SHADOWING_VALUES, getAdjShadowing());
 			
 			// remove all chid nodes before storing new ones
-			Traverser traverser = afpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
+	/*		Traverser traverser = afpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
 				@Override
 				public boolean isReturnableNode(TraversalPosition currentPos) {
 					if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.AFP_DOMAIN.getId())) 
@@ -1528,28 +1528,55 @@ public class AfpModel {
 				}
 				n.delete();
 			}
-
+*/
+			HashMap<String,ArrayList<String>> domainNames = getDomainNodeNames(afpNode);
 			for (AfpFrequencyDomainModel frequencyModel : getFreqDomains(false)) {
-				if(!frequencyModel.isFree())
+				if(!frequencyModel.isFree()){
+					ArrayList<String> nameList = domainNames.get(INeoConstants.AFP_DOMAIN_NAME_FREQUENCY);
+					if (nameList != null){
+						nameList.remove(frequencyModel.getName());
+						domainNames.put(INeoConstants.AFP_DOMAIN_NAME_FREQUENCY, nameList);
+					}
 					createFrequencyDomainNode(afpNode, frequencyModel, service);
+				}
 			}
 
 			for (AfpHoppingMALDomainModel malModel : getMalDomains(true)) {
-				createHoppingMALDomainNode(afpNode, malModel,
-						service);
+				ArrayList<String> nameList = domainNames.get(INeoConstants.AFP_DOMAIN_NAME_MAL);
+				if (nameList != null){
+					nameList.remove(malModel.getName());
+					domainNames.put(INeoConstants.AFP_DOMAIN_NAME_MAL, nameList);
+				}
+				createHoppingMALDomainNode(afpNode, malModel, service);
 			}
 
 			for (AfpSeparationDomainModel separationsModel : getSectorSeparationDomains(true)) {
-				createSectorSeparationDomainNode(afpNode,
-						separationsModel, service);
+				ArrayList<String> nameList = domainNames.get(INeoConstants.AFP_DOMAIN_NAME_SECTOR_SEPARATION);
+				if (nameList != null){
+					nameList.remove(separationsModel.getName());
+					domainNames.put(INeoConstants.AFP_DOMAIN_NAME_SECTOR_SEPARATION, nameList);
+				}
+				createSectorSeparationDomainNode(afpNode, separationsModel, service);
 			}
 
 			for (AfpSeparationDomainModel separationsModel : getSiteSeparationDomains(true)) {
-				createSiteSeparationDomainNode(afpNode,
-						separationsModel, service);
+				ArrayList<String> nameList = domainNames.get(INeoConstants.AFP_DOMAIN_NAME_SITE_SEPARATION);
+				if (nameList != null){
+					nameList.remove(separationsModel.getName());
+					domainNames.put(INeoConstants.AFP_DOMAIN_NAME_SITE_SEPARATION, nameList);
+				}
+				createSiteSeparationDomainNode(afpNode, separationsModel, service);
 			}
-
+			
+			//delete domains which are not present now
+			for (String type : domainNames.keySet()){
+				for (String name : domainNames.get(type)){
+					deleteDomainNode(afpNode, type, name, service);
+				}
+			}
+			
 		} catch (Exception e) {
+			e.printStackTrace();
 			AweConsolePlugin.exception(e);
 		} finally {
 			tx.finish();
@@ -1735,8 +1762,30 @@ public class AfpModel {
 		separationNode.setProperty(INeoConstants.AFP_PROPERTY_SEPARATIONS_NAME, domainModel.getSeparations());
 	}
 	
-	public void deleteDomainNode(Node afpNode, String domain, String name, GraphDatabaseService service){
-		//TODO implement this method
+	public void deleteDomainNode(Node afpNode, final String domain, final String name, GraphDatabaseService service){
+		Traverser traverser = afpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
+
+			@Override
+			public boolean isReturnableNode(TraversalPosition currentPos) {
+				if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.AFP_DOMAIN.getId()) && 
+						currentPos.currentNode().getProperty(INeoConstants.AFP_PROPERTY_DOMAIN_NAME).equals(domain) &&
+						currentPos.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(name))
+					return true;
+				return false;
+			}
+    		
+    	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+		for (Node n : traverser) {
+			Iterable<Relationship> relationsI = n.getRelationships();
+			if(relationsI != null) {
+				Iterator<Relationship> relations = relationsI.iterator();
+				while(relations.hasNext()) {
+					Relationship r = relations.next();
+					r.delete();
+				}
+			}
+			n.delete();
+		}
 	}
 
 	public Node findOrCreateDomainNode(Node afpNode, String domain, String name, GraphDatabaseService service){
@@ -1769,6 +1818,30 @@ public class AfpModel {
 		
 		return domainNode;
 
+	}
+	
+	public HashMap<String,ArrayList<String>> getDomainNodeNames(Node afpNode){
+		HashMap<String, ArrayList<String>> domainNames = new HashMap<String, ArrayList<String>>();
+		Traverser traverser = afpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
+
+			@Override
+			public boolean isReturnableNode(TraversalPosition currentPos) {
+				if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.AFP_DOMAIN.getId()))
+					return true;
+				return false;
+			}
+    		
+    	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+		
+		for (Node node: traverser){
+			ArrayList<String> list = domainNames.get(node.getProperty(INeoConstants.AFP_PROPERTY_DOMAIN_NAME));
+			if (list == null)
+				list = new ArrayList<String>();
+			list.add((String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME, ""));
+			domainNames.put((String)node.getProperty(INeoConstants.AFP_PROPERTY_DOMAIN_NAME), list);
+		}
+		return domainNames;
+		
 	}
 	
 	public void setParameters(){
