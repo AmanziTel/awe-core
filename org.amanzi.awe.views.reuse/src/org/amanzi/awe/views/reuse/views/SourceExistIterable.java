@@ -32,6 +32,7 @@ public class SourceExistIterable implements Iterable<ISource> {
 
     private final Traverser td;
     private final String name;
+    private final ISourceFinder finder;
 
     /**
      * @param td
@@ -39,8 +40,13 @@ public class SourceExistIterable implements Iterable<ISource> {
     public SourceExistIterable(Traverser td,String name) {
         this.td = td;
         this.name = name;
+        finder=null;
     }
-
+    public SourceExistIterable(Traverser td,String name,ISourceFinder source) {
+        this.td = td;
+        this.name = name;
+        finder=source;
+    }
     @Override
     public Iterator<ISource> iterator() {
         final Iterator<Node> it=td.nodes().iterator();
@@ -54,7 +60,7 @@ public class SourceExistIterable implements Iterable<ISource> {
             @Override
             public ISource next() {
                 Node node=it.next();
-                return new SourceImpl(node, node.getProperty(name,null));
+                return new SourceImpl(finder==null?node:finder.getSource(node), node.getProperty(name,null));
             }
 
             @Override

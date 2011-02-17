@@ -28,10 +28,10 @@ import org.hsqldb.lib.StringUtil;
 import org.neo4j.graphdb.Node;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * Model for frequency plan analyse
  * </p>
+ * 
  * @author TsAr
  * @since 1.0.0
  */
@@ -46,27 +46,31 @@ public class FreqPlanSelectionInformation implements ISelectionInformation {
     private String ncc;
     private String bcc;
     private TRXTYPE trxType;
+
+
     /**
-     * @param statistic
-     * @param networkModel
-     * @param model
+     * Instantiates a new freq plan selection information.
+     *
+     * @param statistic the statistic
+     * @param networkNode the network node
+     * @param model the model
      */
-    public FreqPlanSelectionInformation(IStatistic statistic, Node networkNode , FrequencyPlanModel model) {
+    public FreqPlanSelectionInformation(IStatistic statistic, Node networkNode, FrequencyPlanModel model) {
         this.statistic = statistic;
         this.networkNode = networkNode;
         this.model = model;
-        propertySet=new HashSet<String>();
+        propertySet = new HashSet<String>();
         ISinglePropertyStat propStat = statistic.findPropertyStatistic(model.getName(), NodeTypes.FREQUENCY_PLAN.getId(), "arfcn");
-        if (propStat!=null){
+        if (propStat != null) {
             propertySet.add("arfcn");
         }
         DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
-        
-        descr=String.format("Network %s plan %s", ds.getNodeName(networkNode),model.getName());
+
+        descr = String.format("Network %s plan %s", ds.getNodeName(networkNode), model.getName());
     }
 
     public String getSectorName() {
-        return StringUtil.isEmpty(sectorName)?null:sectorName;
+        return StringUtil.isEmpty(sectorName) ? null : sectorName;
     }
 
     public IStatistic getStatistic() {
@@ -78,7 +82,7 @@ public class FreqPlanSelectionInformation implements ISelectionInformation {
     }
 
     public String getNcc() {
-        return StringUtil.isEmpty(ncc)?null:ncc;
+        return StringUtil.isEmpty(ncc) ? null : ncc;
     }
 
     public void setNcc(String ncc) {
@@ -86,7 +90,7 @@ public class FreqPlanSelectionInformation implements ISelectionInformation {
     }
 
     public String getBcc() {
-        return StringUtil.isEmpty(bcc)?null:bcc;
+        return StringUtil.isEmpty(bcc) ? null : bcc;
     }
 
     public void setBcc(String bcc) {
@@ -113,7 +117,7 @@ public class FreqPlanSelectionInformation implements ISelectionInformation {
 
     @Override
     public IPropertyInformation getPropertyInformation(String propertyName) {
-        return new FrPlanPropertyInf(statistic,networkNode,model,propertyName,getSectorName(),getNcc(),getBcc(),getTrxType()) ;
+        return new FrPlanPropertyInf(statistic, networkNode, model, propertyName, getSectorName(), getNcc(), getBcc(), getTrxType());
     }
 
     @Override
@@ -125,23 +129,24 @@ public class FreqPlanSelectionInformation implements ISelectionInformation {
     public Node getRootNode() {
         return networkNode;
     }
-public enum TRXTYPE{
-    ALL,BCCH,TCH
-}
-/**
- *
- * @param text
- */
-public void setTrxType(String text) {
-    try {
-        trxType=TRXTYPE.valueOf(text);
-    } catch (Exception e) {
-        trxType=null;
-    }
-}
 
-@Override
-public String getFullDescription() {
-    return String.format("descr %s sector %s ncc %s bcc %s carrier type %s",getDescription(),getSectorName(),getNcc(),getBcc(),getTrxType()) ;
-}
+    public enum TRXTYPE {
+        ALL, BCCH, TCH
+    }
+
+    /**
+     * @param text
+     */
+    public void setTrxType(String text) {
+        try {
+            trxType = TRXTYPE.valueOf(text);
+        } catch (Exception e) {
+            trxType = null;
+        }
+    }
+
+    @Override
+    public String getFullDescription() {
+        return String.format("descr %s sector %s ncc %s bcc %s carrier type %s", getDescription(), getSectorName(), getNcc(), getBcc(), getTrxType());
+    }
 }

@@ -39,8 +39,8 @@ import org.neo4j.kernel.Traversal;
 import org.neo4j.kernel.Uniqueness;
 
 /**
- * TODO Purpose of
  * <p>
+ * Provide work with fr. plan property
  * </p>
  * 
  * @author TsAr
@@ -59,6 +59,18 @@ public class FrPlanPropertyInf implements IPropertyInformation {
     private final String bcc;
     private final TRXTYPE trxtype;
 
+    /**
+     * Instantiates a new fr plan property inf.
+     *
+     * @param statistic the statistic
+     * @param networkNode the network node
+     * @param model the model
+     * @param propertyName the property name
+     * @param sector the sector
+     * @param ncc the ncc
+     * @param bcc the bcc
+     * @param trxtype the trxtype
+     */
     public FrPlanPropertyInf(IStatistic statistic, Node networkNode, FrequencyPlanModel model, String propertyName, String sector, String ncc, String bcc, TRXTYPE trxtype) {
         this.statistic = statistic;
         this.networkNode = networkNode;
@@ -129,7 +141,13 @@ public class FrPlanPropertyInf implements IPropertyInformation {
                         return Evaluation.EXCLUDE_AND_CONTINUE;
                     }
                 }).traverse(rootNode);
-        return new SourceExistIterable(traverser, propertyName);
+        return new SourceExistIterable(traverser, propertyName,new ISourceFinder() {
+            
+            @Override
+            public Node getSource(Node node) {
+                    return node==null?null:node.getSingleRelationship(DatasetRelationshipTypes.PLAN_ENTRY, Direction.INCOMING).getStartNode().getSingleRelationship(GeoNeoRelationshipTypes.CHILD,Direction.INCOMING).getStartNode();
+            }
+        });
     }
 
 }
