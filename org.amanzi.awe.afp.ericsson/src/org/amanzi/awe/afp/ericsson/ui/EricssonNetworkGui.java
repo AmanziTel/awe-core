@@ -85,13 +85,7 @@ public class EricssonNetworkGui extends AbstractMainPage<CommonConfigData> {
 
     @Override
     protected boolean validateConfigData(CommonConfigData configurationData) {
-        //TODO must be refactoring after change loaders
-       Collection<File> files = viewer.getSelectedFiles(null);
-       
-        if (files.isEmpty()){
-            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE,DialogPage.ERROR); 
-            return false;
-        }
+
 //        File file = new File(fileName);
 //        if (!(file.isAbsolute() && file.exists())){
 //            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE,DialogPage.ERROR); 
@@ -109,12 +103,28 @@ public class EricssonNetworkGui extends AbstractMainPage<CommonConfigData> {
             setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_TYPE,DialogPage.ERROR); 
             return false;           
         }
-        viewer.storeDefSelection(null);
+        //TODO must be refactoring after change loaders
+        Collection<File> files = viewer.getSelectedFiles(null);
         configurationData.setProjectName(LoaderUiUtils.getAweProjectName());
         configurationData.setCrs(getSelectedCRS());
         configurationData.setDbRootName(rootName);
-        configurationData.setFileToLoad(files);
-        configurationData.setRoot(files.iterator().next());
+        configurationData.setFileToLoad(files);     
+        if (files.isEmpty()) {
+            configurationData.setRoot(null);
+            try {
+                if (getSelectedLoader().getValidator().validate(configurationData).getResult() == Result.SUCCESS) {
+                    setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE, DialogPage.WARNING);
+                    return true;
+                }
+            } catch (Exception e) {
+                //not handled
+            }
+            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE, DialogPage.ERROR);
+            return false;
+        }
+        viewer.storeDefSelection(null);
+
+        configurationData.setRoot(files.iterator().next());  
         getSelectedLoader().getValidator().filter(configurationData);
         if (files.size()!=configurationData.getAllLoadedFiles().size()){
             viewer.getTreeViewer().setSelection(new StructuredSelection(configurationData.getAllLoadedFiles().toArray()), false);
