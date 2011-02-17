@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.amanzi.awe.afp.ericsson.BARRecords;
@@ -398,15 +399,35 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
      *
      */
     private void storeRirData() {
-//        for (Entry<String,CellRirData>entry:rirCells.entrySet()){
-//            Node sector=networkModel.findSector(entry.getKey());
-//            if (sector == null) {
-//                error(String.format("Sector %s not found", entry.getKey()));
-//                return;
-//            }
-//            CellRirData data = entry.getValue();
-//            }
-        //TODO implement
+        if (percentileValue==null||percentileValue<0||percentileValue>100){
+            error(String.format("Wrong Percentile value %s", percentileValue));
+            return;
+        }
+        double nspv=NORMSINV(percentileValue/100d);
+        for (Entry<String, CellRirData> entry : rirCells.entrySet()) {
+            Node sector = networkModel.findSector(entry.getKey());
+            if (sector == null) {
+                error(String.format("Sector %s not found", entry.getKey()));
+                continue;
+            }
+            CellRirData data = entry.getValue();
+
+//            Map<Integer, RirsData> filteredData = new HashMap<Integer, BarRirSaver.RirsData>();
+            for (Entry<Integer, RirsData> entryData : data.data.entrySet()) {
+                if (entryData.getValue().avpercentile < 5 || (entryData.getValue().avemedian < 4 && entryData.getValue().avpercentile < 10)) {
+//                    filteredData.put(entryData.getKey(), entryData.getValue());
+                    double frequensy=(double)entryData.getValue().arfcn;
+                    double penalty;
+                    if (entryData.getValue().avemedian>10){
+                        penalty=1;//=100
+                    }else{
+                        //TODO implement
+                    }
+                }
+            }
+
+        }
+        // TODO implement
     }
 
     /**
@@ -618,8 +639,8 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             error(String.format("Sector %s not found", cell.cellName));
             return;
         }
-        if (adminValues.rectime!=null){
-            double traffic = (double)cell.rep*60d/(7500*adminValues.rectime);
+        if (adminValues.rectime != null) {
+            double traffic = (double)cell.rep * 60d / (7500 * adminValues.rectime);
             updateProperty(rootname, NodeTypes.SECTOR.getId(), servSector, "traffic", traffic);
         }
         for (InterfCell neigh : cell.cells.values()) {
@@ -649,7 +670,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             error("Incorreect reparfcn=0");
             return;
         }
-        double impactCO =neigh.timesrelss / neigh.reparfcn * factorCo;
+        double impactCO = neigh.timesrelss / neigh.reparfcn * factorCo;
         Double factorAdj = getFactorAdj(adminValues.relss2);
         if (factorAdj == null) {
             error("Incorreect relss2=" + String.valueOf(adminValues.relss));
@@ -1095,5 +1116,114 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             num++;
         }
 
+    }
+
+    // TODO check formulas
+    public double NORMSINV(double p) {
+
+        if (p <= 0 || p >= 1) {
+            throw new IllegalArgumentException("Number should be betweeb 0 and 1");
+        }
+        /**
+         * Coefficients in rational approximations
+         */
+        double[] a = {-3.969683028665376e+01, 2.209460984245205e+02, -2.759285104469687e+02, 1.383577518672690e+02, -3.066479806614716e+01, 2.506628277459239e+00};
+
+        double[] b = {-5.447609879822406e+01, 1.615858368580409e+02, -1.556989798598866e+02, 6.680131188771972e+01, -1.328068155288572e+01};
+
+        double[] c = {-7.784894002430293e-03, -3.223964580411365e-01, -2.400758277161838e+00, -2.549732539343734e+00, 4.374664141464968e+00, 2.938163982698783e+00};
+
+        double[] d = {7.784695709041462e-03, 3.224671290700398e-01, 2.445134137142996e+00, 3.754408661907416e+00};
+
+        /**
+         * Define break-points.
+         */
+        double plow = 0.02425;
+        double phigh = 1 - plow;
+
+        /**
+         * Rational approximation for lower region:
+         */
+        if (p < plow) {
+            double q = Math.sqrt(-2 * Math.log(p));
+            return (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1);
+        }
+
+        /**
+         * Rational approximation for upper region:
+         */
+        if (phigh < p) {
+            double q = Math.sqrt(-2 * Math.log(1 - p));
+            return -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1);
+        }
+
+        /**
+         * Rational approximation for central region:
+         */
+        double q = p - 0.5;
+        double r = q * q;
+        return (((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * q / (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1);
+    }
+
+    public static double NORMDIST(double x, double mean, double std, boolean cumulative) {
+        if (cumulative) {
+            return Phi(x, mean, std);
+        } else {
+            double tmp = 1 / ((Math.sqrt(2 * Math.PI) * std));
+            return tmp * Math.exp(-.5 * Math.pow((x - mean) / std, 2));
+        }
+    }
+
+    // from http://www.cs.princeton.edu/introcs/...Math.java.html
+    // fractional error less than 1.2 * 10 ^ -7.
+    static double erf(double z) {
+        double t = 1.0 / (1.0 + 0.5 * Math.abs(z));
+
+        // use Horner's method
+        double ans = 1
+                - t
+                * Math.exp(-z
+                        * z
+                        - 1.26551223
+                        + t
+                        * (1.00002368 + t
+                                * (0.37409196 + t
+                                        * (0.09678418 + t * (-0.18628806 + t * (0.27886807 + t * (-1.13520398 + t * (1.48851587 + t * (-0.82215223 + t * (0.17087277))))))))));
+        if (z >= 0)
+            return ans;
+        else
+            return -ans;
+    }
+
+    // cumulative normal distribution
+    static double Phi(double z) {
+        return 0.5 * (1.0 + erf(z / (Math.sqrt(2.0))));
+    }
+
+    // cumulative normal distribution with mean mu and std deviation sigma
+    static double Phi(double z, double mu, double sigma) {
+        return Phi((z - mu) / sigma);
+    }
+
+    private double normDist2(double X, double mean, double sigma) {
+        // Berechnungsformel wurde von Hans Benz COMIT AG ermittelt
+        double res = 0;
+
+        final double x = (X - mean) / sigma;
+
+        if (x == 0) {
+            res = 0.5;
+        } else {
+            final double oor2pi = 1 / (Math.sqrt(2 * Math.PI));
+            double t = 1 / (1 + 0.2316419 * Math.abs(x));
+            t *= oor2pi * Math.exp(-0.5 * x * x) * (0.31938153 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429))));
+
+            if (x >= 0) {
+                res = 1 - t;
+            } else {
+                res = t;
+            }
+        }
+        return res;
     }
 }
