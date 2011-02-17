@@ -12,7 +12,6 @@ import org.amanzi.awe.afp.ControlFileProperties;
 import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.executors.AfpProcessProgress;
 import org.amanzi.awe.afp.exporters.AfpExporter;
-import org.amanzi.awe.afp.loaders.AfpOutputFileLoaderJob;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
@@ -20,7 +19,6 @@ import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.neo.services.utils.Pair;
-import org.eclipse.core.runtime.jobs.Job;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -1973,9 +1971,12 @@ public class AfpModel {
 					if (filters != null){
 						for (String key: filters.keySet()){
 							if (key.equals("band")){
+							    //TODO check correct
 								for (String band : filters.get(key).split(",")){
-									if (((String)currentPos.currentNode().getProperty("band", "")).contains(band) ||
-											((String)currentPos.currentNode().getProperty("layer", "")).contains(band))
+									String bandStr = (String)currentPos.currentNode().getProperty("band", "");
+                                    String layerStr = (String)currentPos.currentNode().getProperty("layer", "");
+                                    if (bandStr.contains(band)||(bandStr.isEmpty()&&layerStr.isEmpty()) ||
+											layerStr.contains(band))
 										ret = ret || true;
 								}
 							}
@@ -1991,6 +1992,8 @@ public class AfpModel {
     	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
     	
         return traverser;
+        
+        
 	}
 	
 	@Override
