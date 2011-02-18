@@ -1073,7 +1073,7 @@ public class Node2NodeViews extends ViewPart {
         public void updateElement(int index) {
             int start = index / PAGE_SIZE * PAGE_SIZE;
             int end = Math.min(start + PAGE_SIZE, table.getItemCount());
-
+            // TODO not correct search- need refactor.
             int k = 0;
             int ind;
             for (int i = start; i < end; i++) {
