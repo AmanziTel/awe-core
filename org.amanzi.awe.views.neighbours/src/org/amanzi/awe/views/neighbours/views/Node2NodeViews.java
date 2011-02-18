@@ -106,18 +106,18 @@ import org.neo4j.graphdb.Relationship;
  * @since 1.0.0
  */
 public class Node2NodeViews extends ViewPart {
-    private static final RGB main=new RGB(0,0,255);
-    private static final RGB more50=new RGB(112,48,160);
-    private static final RGB more30=new RGB(255,0,0);
-    private static final RGB more15=new RGB(255,153,0);
-    private static final RGB more5=new RGB(255,255,0);
-    private static final RGB more1=new RGB(0,128,0);
-    private static final RGB more0_2=new RGB(146,208,80);
-    private static final RGB others=new RGB(255,255,255);
+    private static final RGB main = new RGB(0, 0, 255);
+    private static final RGB more50 = new RGB(112, 48, 160);
+    private static final RGB more30 = new RGB(255, 0, 0);
+    private static final RGB more15 = new RGB(255, 153, 0);
+    private static final RGB more5 = new RGB(255, 255, 0);
+    private static final RGB more1 = new RGB(0, 128, 0);
+    private static final RGB more0_2 = new RGB(146, 208, 80);
+    private static final RGB others = new RGB(255, 255, 255);
     private static final String SHOW_NEIGHBOUR = "show relation '%s' > '%s' on map";
     private static final String SHOW_SERVE = "show all '%s' relations on map";
-    
-    public static final String ID="org.amanzi.awe.views.neighbours.views.Node2NodeViews";
+    private String previousModelDescr;
+    public static final String ID = "org.amanzi.awe.views.neighbours.views.Node2NodeViews";
     private static final int PAGE_SIZE = 64;
     private IStatistic statistic;
     private Table table;
@@ -128,14 +128,14 @@ public class Node2NodeViews extends ViewPart {
     private Combo n2nSelection;
     private Button commit;
     private Button rollback;
-    
+
     private Button search;
     private Button returnFullList;
     private Text textToSearch;
     private String searchingSector = "";
     /** String SEARCH field */
     private static final String SEARCH = "Search";
-    
+
     protected DatasetService ds;
     protected NodeToNodeRelationService n2ns;
     private NetworkService networks;
@@ -146,17 +146,18 @@ public class Node2NodeViews extends ViewPart {
     private INode2NodeFilter filter;
     private CountedIteratorWr createdIter;
     protected boolean drawLines;
-    private IGraphModel model=null;
-    private String selectedServ=null;
+    private IGraphModel model = null;
+    private String selectedServ = null;
     private Font fontNormal;
     private Font fontSelected;
     private TableViewer view;
-    protected int column=-1;
+    protected int column = -1;
     private Wrapper data;
+
     @Override
     public void createPartControl(Composite parent) {
         Composite main = new Composite(parent, SWT.FILL);
-        Layout mainLayout = new GridLayout(5, false);
+        Layout mainLayout = new GridLayout(6, false);
         main.setLayout(mainLayout);
         Label label = new Label(main, SWT.LEFT);
         label.setText(getListTxt());
@@ -175,24 +176,25 @@ public class Node2NodeViews extends ViewPart {
             }
         });
         GridData layoutData = new GridData();
+        layoutData.horizontalSpan = 2;
         layoutData.widthHint = 300;
         n2nSelection.setLayoutData(layoutData);
-        Button drawArrow = new Button(main,SWT.CHECK);
+        Button drawArrow = new Button(main, SWT.CHECK);
         drawArrow.setText("Draw lines");
         drawArrow.addSelectionListener(new SelectionListener() {
-            
+
             @Override
             public void widgetSelected(SelectionEvent e) {
-                drawLines=((Button)e.getSource()).getSelection();
+                drawLines = ((Button)e.getSource()).getSelection();
                 updateCurrentModel();
             }
-            
+
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
             }
         });
-        drawLines=true;
+        drawLines = true;
         drawArrow.setSelection(drawLines);
         commit = new Button(main, SWT.BORDER | SWT.PUSH);
         commit.addSelectionListener(new SelectionListener() {
@@ -226,86 +228,90 @@ public class Node2NodeViews extends ViewPart {
         });
         rollback.setToolTipText("Rollback");
         rollback.setEnabled(false);
-        
-        //Kasnitskij_V:
+
+        // Kasnitskij_V:
 
         Label label2 = new Label(main, SWT.FLAT);
-        label2.setText("Write here what do you want to search:");
+        label2.setText("Search:");
+        label2.setToolTipText("Search for sectors containing this text");
         textToSearch = new Text(main, SWT.SINGLE | SWT.BORDER);
-//        textToSearch.setSize(200, 20);
-        //textToSearch.setLayoutData(layoutData);
-        
+        // textToSearch.setSize(200, 20);
+        // textToSearch.setLayoutData(layoutData);
+        layoutData = new GridData();
+
+        layoutData.widthHint = 150;
+        textToSearch.setLayoutData(layoutData);
         search = new Button(main, SWT.PUSH);
-        search.setText(SEARCH);
+        search.setText("Search:");
         search.addMouseListener(new MouseListener() {
-            
+
             @Override
             public void mouseUp(MouseEvent e) {
             }
-            
+
             @Override
             public void mouseDown(MouseEvent e) {
                 try {
                     searchingSector = textToSearch.getText();
-                }
-                catch (NullPointerException ex) {
-                    
+                } catch (NullPointerException ex) {
+
                 }
                 formCollumns();
             }
-            
+
             @Override
             public void mouseDoubleClick(MouseEvent e) {
             }
         });
-        //search.setLayoutData(layoutData);
-        
+        // search.setLayoutData(layoutData);
+
         returnFullList = new Button(main, SWT.PUSH);
-//        returnFullList.setSize(200, 20);
-        layoutData=new GridData();
-        layoutData.horizontalSpan=2;
+        // returnFullList.setSize(200, 20);
+        layoutData = new GridData();
+
+        layoutData.horizontalSpan = 3;
         returnFullList.setLayoutData(layoutData);
         returnFullList.setText("Return full list");
         returnFullList.addMouseListener(new MouseListener() {
-            
+
             @Override
             public void mouseUp(MouseEvent e) {
             }
-            
+
             @Override
             public void mouseDown(MouseEvent e) {
                 searchingSector = "";
                 formCollumns();
             }
-            
+
             @Override
             public void mouseDoubleClick(MouseEvent e) {
             }
         });
         returnFullList.setLayoutData(layoutData);
-        
+
         table = new Table(main, SWT.VIRTUAL | SWT.BORDER);
-        view=new TableViewer(table);
+        view = new TableViewer(table);
         view.setContentProvider(new VirtualContentProvider());
         view.setLabelProvider(new VirtualLabelProvider());
-//        table.addListener(SWT.SetData, new Listener() {
-//
-//            @Override
-//            public void handleEvent(Event event) {
-//                setData(event);
-//            }
-//        });
+        // table.addListener(SWT.SetData, new Listener() {
+        //
+        // @Override
+        // public void handleEvent(Event event) {
+        // setData(event);
+        // }
+        // });
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
         table.addListener(SWT.EraseItem, new Listener() {
             public void handleEvent(Event event) {
-                if((event.detail & SWT.SELECTED) != 0 ){
+                if ((event.detail & SWT.SELECTED) != 0) {
                     event.detail &= ~SWT.SELECTED;
                 }
             }
         });
         view.setItemCount(0);
-        layoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 5, 1);
+        layoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 6, 1);
         view.getControl().setLayoutData(layoutData);
         setFilter(networks.getAllNode2NodeFilter(AweUiPlugin.getDefault().getUiService().getActiveProjectNode()));
         final TableEditor editor = new TableEditor(table);
@@ -327,8 +333,8 @@ public class Node2NodeViews extends ViewPart {
                         Rectangle rect = item.getBounds(i);
                         if (rect.contains(pt)) {
                             column = i;
-                            data=(Wrapper)item.getData();
-                            if (i<2){
+                            data = (Wrapper)item.getData();
+                            if (i < 2) {
                                 return;
                             }
                             final Text text = new Text(table, SWT.NONE);
@@ -373,7 +379,6 @@ public class Node2NodeViews extends ViewPart {
 
         table.addListener(SWT.MouseDoubleClick, new Listener() {
 
-
             public void handleEvent(Event event) {
                 Rectangle clientArea = table.getClientArea();
                 Point pt = new Point(event.x, event.y);
@@ -384,12 +389,12 @@ public class Node2NodeViews extends ViewPart {
                     for (int i = 0; i < 2; i++) {
                         Rectangle rect = item.getBounds(i);
                         if (rect.contains(pt)) {
-                             column = i;
+                            column = i;
 
-                             data = (Wrapper)item.getData();
-                            createAndFireModel((Relationship)data.cont,i);
-                            if (column<2){
-                                selectedServ=data.getText(column);
+                            data = (Wrapper)item.getData();
+                            createAndFireModel((Relationship)data.cont, i);
+                            if (column < 2) {
+                                selectedServ = data.getText(column);
                                 view.refresh();
                             }
                             return;
@@ -411,6 +416,7 @@ public class Node2NodeViews extends ViewPart {
         fontSelected = new Font(fontNormal.getDevice(), fd);
         hookContextMenu();
     }
+
     private void hookContextMenu() {
         MenuManager menuMgr = new MenuManager("#PopupMenu");
         menuMgr.setRemoveAllWhenShown(true);
@@ -422,22 +428,22 @@ public class Node2NodeViews extends ViewPart {
         Menu menu = menuMgr.createContextMenu(table);
         table.setMenu(menu);
     }
+
     /**
-     *
      * @param manager
      */
     protected void fillContextMenu(IMenuManager manager) {
-        if (data==null||n2nModel==null){
+        if (data == null || n2nModel == null) {
             return;
         }
-        if (column==0){
-            fillServMenu(manager,data);
-        }else if (column==1){
-            fillNeighMenu(manager,data);
+        if (column == 0) {
+            fillServMenu(manager, data);
+        } else if (column == 1) {
+            fillNeighMenu(manager, data);
         }
     }
+
     /**
-     *
      * @param manager
      * @param data2
      */
@@ -445,65 +451,65 @@ public class Node2NodeViews extends ViewPart {
         manager.add(new Action(String.format(SHOW_NEIGHBOUR, data.getText(0), data.getText(1))) {
             @Override
             public void run() {
-                model=new N2NGraphModel((Relationship)data.cont, false, drawLines);
+                model = new N2NGraphModel((Relationship)data.cont, false, drawLines);
                 fireModel(model);
             }
         });
-        if (n2nModel.getType().equals(NodeToNodeTypes.INTERFERENCE_MATRIX)){
-            addInterferenceAnalysis(manager,((Relationship)data.cont).getEndNode());
+        if (n2nModel.getType().equals(NodeToNodeTypes.INTERFERENCE_MATRIX)) {
+            addInterferenceAnalysis(manager, ((Relationship)data.cont).getEndNode());
         }
         manager.add(new Action(String.format("Zoom to %s (x8)", data.getText(1))) {
             @Override
             public void run() {
-                if (n2nModel!=null){
-                    Node networkRoot=n2nModel.getNetworkNode();
+                if (n2nModel != null) {
+                    Node networkRoot = n2nModel.getNetworkNode();
                     Node gisNode = ds.findGisNode(networkRoot);
-                    Collection<Node> sites=new ArrayList<Node>();
-                    Node sector=n2ns.findNodeFromProxy(((Relationship)data.cont).getEndNode());
-                    Node site=sector.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(sector);
+                    Collection<Node> sites = new ArrayList<Node>();
+                    Node sector = n2ns.findNodeFromProxy(((Relationship)data.cont).getEndNode());
+                    Node site = sector.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(sector);
                     sites.add(site);
-                    ChangeSelectionEvent event = new ChangeSelectionEvent(UpdateLayerEventTypes.ZOOM,gisNode,sites);
-                    NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(event);            
-                }    
+                    ChangeSelectionEvent event = new ChangeSelectionEvent(UpdateLayerEventTypes.ZOOM, gisNode, sites);
+                    NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(event);
+                }
             }
         });
     }
+
     /**
-     *
      * @param manager
      * @param endNode
      */
-    private void addInterferenceAnalysis(IMenuManager manager,final  Node node) {
-        MenuManager subMenu=new MenuManager("Outgoing interference analyse");
+    private void addInterferenceAnalysis(IMenuManager manager, final Node node) {
+        MenuManager subMenu = new MenuManager("Outgoing interference analyse");
         manager.add(subMenu);
         manager.add(subMenu);
         subMenu.add(new Action("by 'Co'") {
             @Override
             public void run() {
-                model=createOutgoingInterferenceModel(node,"co");
+                model = createOutgoingInterferenceModel(node, "co");
                 fireModel(model);
             }
         });
         subMenu.add(new Action("by 'Adj'") {
             @Override
             public void run() {
-                model=createOutgoingInterferenceModel(node,"adj");
+                model = createOutgoingInterferenceModel(node, "adj");
                 fireModel(model);
             }
         });
-         subMenu=new MenuManager("Incoming interference analyse");
+        subMenu = new MenuManager("Incoming interference analyse");
         manager.add(subMenu);
         subMenu.add(new Action("by 'Co'") {
             @Override
             public void run() {
-                model=createIncomigInterferenceModel(node,"co");
+                model = createIncomigInterferenceModel(node, "co");
                 fireModel(model);
             }
         });
         subMenu.add(new Action("by 'Adj'") {
             @Override
             public void run() {
-                model=createIncomigInterferenceModel(node,"adj");
+                model = createIncomigInterferenceModel(node, "adj");
                 fireModel(model);
             }
         });
@@ -511,16 +517,16 @@ public class Node2NodeViews extends ViewPart {
     }
 
     protected IGraphModel createOutgoingInterferenceModel(Node proxyNode, String propertyName) {
-        Map<Node,RGB>colorMap=new HashMap<Node, RGB>();
-        
-        Map<Node,Set<Node>>outgoingMap=new HashMap<Node,Set<Node>>();
-        Set<Node> outgoing=new HashSet<Node>();   
-        Node mainNode=n2ns.findNodeFromProxy(proxyNode);
+        Map<Node, RGB> colorMap = new HashMap<Node, RGB>();
+
+        Map<Node, Set<Node>> outgoingMap = new HashMap<Node, Set<Node>>();
+        Set<Node> outgoing = new HashSet<Node>();
+        Node mainNode = n2ns.findNodeFromProxy(proxyNode);
         colorMap.put(mainNode, main);
-        for (Relationship rel:n2ns.getOutgoingRelations(proxyNode)){
-            Double propertyVal=(Double)rel.getProperty(propertyName,null);
-            RGB color=getInterferenceColor(propertyVal);
-            Node neighNode=n2ns.findNodeFromProxy(rel.getOtherNode(proxyNode));
+        for (Relationship rel : n2ns.getOutgoingRelations(proxyNode)) {
+            Double propertyVal = (Double)rel.getProperty(propertyName, null);
+            RGB color = getInterferenceColor(propertyVal);
+            Node neighNode = n2ns.findNodeFromProxy(rel.getOtherNode(proxyNode));
             colorMap.put(neighNode, color);
             outgoing.add(neighNode);
         }
@@ -529,18 +535,18 @@ public class Node2NodeViews extends ViewPart {
     }
 
     protected IGraphModel createIncomigInterferenceModel(Node proxyNode, String propertyName) {
-        Map<Node,RGB>colorMap=new HashMap<Node, RGB>();
-        
-        Map<Node,Set<Node>>outgoingMap=new HashMap<Node,Set<Node>>();
-        
-        Node mainNode=n2ns.findNodeFromProxy(proxyNode);
+        Map<Node, RGB> colorMap = new HashMap<Node, RGB>();
+
+        Map<Node, Set<Node>> outgoingMap = new HashMap<Node, Set<Node>>();
+
+        Node mainNode = n2ns.findNodeFromProxy(proxyNode);
         colorMap.put(mainNode, main);
-        for (Relationship rel:n2ns.getIncomingRelations(proxyNode)){
-            Double propertyVal=(Double)rel.getProperty(propertyName,null);
-            RGB color=getInterferenceColor(propertyVal);
-            Node servNode=n2ns.findNodeFromProxy(rel.getOtherNode(proxyNode));
+        for (Relationship rel : n2ns.getIncomingRelations(proxyNode)) {
+            Double propertyVal = (Double)rel.getProperty(propertyName, null);
+            RGB color = getInterferenceColor(propertyVal);
+            Node servNode = n2ns.findNodeFromProxy(rel.getOtherNode(proxyNode));
             colorMap.put(servNode, color);
-            Set<Node> outgoing=new HashSet<Node>();
+            Set<Node> outgoing = new HashSet<Node>();
             outgoing.add(mainNode);
             outgoingMap.put(servNode, outgoing);
         }
@@ -549,94 +555,94 @@ public class Node2NodeViews extends ViewPart {
 
     /**
      * Gets the interference color.
-     *
+     * 
      * @param propertyVal the property val
      * @return the interference color
      */
     private RGB getInterferenceColor(Double propertyVal) {
-        if (propertyVal==null||propertyVal<=0.002){
+        if (propertyVal == null || propertyVal <= 0.002) {
             return others;
-        }else if (propertyVal<=0.01){
+        } else if (propertyVal <= 0.01) {
             return more0_2;
-        }else if (propertyVal<=0.05){
+        } else if (propertyVal <= 0.05) {
             return more1;
-        }else if (propertyVal<=0.11){
+        } else if (propertyVal <= 0.11) {
             return more5;
-        }else if (propertyVal<=0.30){
+        } else if (propertyVal <= 0.30) {
             return more15;
-        }else if (propertyVal<=0.50){
+        } else if (propertyVal <= 0.50) {
             return more30;
-        }else {
+        } else {
             return more50;
         }
     }
+
     /**
-     *
      * @param manager
      * @param data2
      */
-    private void fillServMenu(IMenuManager manager,final  Wrapper data) {
+    private void fillServMenu(IMenuManager manager, final Wrapper data) {
         manager.add(new Action(String.format(SHOW_SERVE, data.getText(0))) {
             @Override
             public void run() {
-                model=new N2NGraphModel((Relationship)data.cont, true, drawLines);
+                model = new N2NGraphModel((Relationship)data.cont, true, drawLines);
                 fireModel(model);
             }
         });
-        if (n2nModel.getType().equals(NodeToNodeTypes.INTERFERENCE_MATRIX)){
-            addInterferenceAnalysis(manager,((Relationship)data.cont).getStartNode());
+        if (n2nModel.getType().equals(NodeToNodeTypes.INTERFERENCE_MATRIX)) {
+            addInterferenceAnalysis(manager, ((Relationship)data.cont).getStartNode());
         }
         manager.add(new Action(String.format("Zoom to %s (x8)", data.getText(0))) {
             @Override
             public void run() {
-                if (n2nModel!=null){
-                    Node networkRoot=n2nModel.getNetworkNode();
+                if (n2nModel != null) {
+                    Node networkRoot = n2nModel.getNetworkNode();
                     Node gisNode = ds.findGisNode(networkRoot);
-                    Collection<Node> sites=new ArrayList<Node>();
-                    Node sector=n2ns.findNodeFromProxy(((Relationship)data.cont).getStartNode());
-                    Node site=sector.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(sector);
+                    Collection<Node> sites = new ArrayList<Node>();
+                    Node sector = n2ns.findNodeFromProxy(((Relationship)data.cont).getStartNode());
+                    Node site = sector.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(sector);
                     sites.add(site);
-                    ChangeSelectionEvent event = new ChangeSelectionEvent(UpdateLayerEventTypes.ZOOM,gisNode,sites);
-                    NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(event);            
-                }    
+                    ChangeSelectionEvent event = new ChangeSelectionEvent(UpdateLayerEventTypes.ZOOM, gisNode, sites);
+                    NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(event);
+                }
             }
         });
     }
+
     /**
      *
      */
     protected void updateCurrentModel() {
-        if (model instanceof N2NGraphModel){
+        if (model instanceof N2NGraphModel) {
             ((N2NGraphModel)model).setDrawLines(drawLines);
             fireModel(model);
         }
     }
 
     /**
-     *
      * @param data
      * @param i
      */
     protected void createAndFireModel(Relationship data, int i) {
         IGraphModel model;
-        if (data==null||i<0||i>2||n2nModel==null){
-            model=null;
-        }else{
+        if (data == null || i < 0 || i > 2 || n2nModel == null) {
+            model = null;
+        } else {
             INodeToNodeType type = n2nModel.getType();
-            model=new N2NGraphModel(data, i==0, drawLines);
+            model = new N2NGraphModel(data, i == 0, drawLines);
         }
         fireModel(model);
     }
 
     /**
-     * @param event
+     * @param event REMOVE METHOD
      */
     protected void setData(Event event) {
         TableItem item = (TableItem)event.item;
         int index = event.index;
         int start = index / PAGE_SIZE * PAGE_SIZE;
         int end = Math.min(start + PAGE_SIZE, table.getItemCount());
-        
+
         int k = 0;
         for (int i = start; i < end; i++) {
             PropertyContainer cont = getElement(i);
@@ -650,14 +656,14 @@ public class Node2NodeViews extends ViewPart {
                     item = table.getItem(k++);
                 }
             }
-            
+
             item.setData(cont);
 
             item.setText(0, servingNodeName);
-            if (servingNodeName.equals(selectedServ)){
-                item.setFont(0,fontSelected);
-            }else{
-                item.setFont(0,fontNormal);  
+            if (servingNodeName.equals(selectedServ)) {
+                item.setFont(0, fontSelected);
+            } else {
+                item.setFont(0, fontNormal);
             }
             item.setText(1, ds.getNodeName(((Relationship)cont).getEndNode()));
             for (int j = 2; j < colColut; j++) {
@@ -666,12 +672,10 @@ public class Node2NodeViews extends ViewPart {
         }
         if (k != 0) {
             view.setItemCount(k);
-        }
-        else {
+        } else {
             if (!searchingSector.equals("")) {
                 textToSearch.setText("not found");
-            }
-            else {
+            } else {
                 textToSearch.setText("");
             }
         }
@@ -727,6 +731,7 @@ public class Node2NodeViews extends ViewPart {
             setSelectionModel(allNode2NodeFilter);
             view.setItemCount(0);
             table.clearAll();
+            n2nModel = null;
             Display.getDefault().asyncExec(new Runnable() {
 
                 @Override
@@ -766,8 +771,21 @@ public class Node2NodeViews extends ViewPart {
         List<String> items = new ArrayList<String>();
         items.addAll(modelMap.keySet());
         Collections.sort(items);
+
         n2nSelection.setItems(items.toArray(new String[0]));
-        table.setVisible(false);
+        if (previousModelDescr != null) {
+            if (items.contains(previousModelDescr)) {
+                n2nSelection.setText(previousModelDescr);
+            }
+        }
+        if (StringUtils.isEmpty(n2nSelection.getText()) && items.size() > 0) {
+            n2nSelection.setText(items.get(0));
+        }
+        if (!StringUtils.isEmpty(n2nSelection.getText())) {
+            n2nSelectionChange();
+        } else {
+            table.setVisible(false);
+        }
     }
 
     /**
@@ -798,6 +816,7 @@ public class Node2NodeViews extends ViewPart {
         networks = NeoServiceFactory.getInstance().getNetworkService();
         n2nModel = null;
         tx = new TransactionWrapper();
+        previousModelDescr = null;
     }
 
     /**
@@ -821,7 +840,8 @@ public class Node2NodeViews extends ViewPart {
      *
      */
     protected void n2nSelectionChange() {
-        NodeToNodeRelationModel model = modelMap.get(n2nSelection.getText());
+        previousModelDescr = n2nSelection.getText();
+        NodeToNodeRelationModel model = modelMap.get(previousModelDescr);
         if (ObjectUtils.equals(model, n2nModel)) {
             return;
         }
@@ -829,15 +849,17 @@ public class Node2NodeViews extends ViewPart {
         n2nModel = model;
         formCollumns();
     }
-    protected void fireModel(IGraphModel model){
-        this.model=model;
-        if (n2nModel!=null){
-            Node networkRoot=n2nModel.getNetworkNode();
+
+    protected void fireModel(IGraphModel model) {
+        this.model = model;
+        if (n2nModel != null) {
+            Node networkRoot = n2nModel.getNetworkNode();
             Node gisNode = ds.findGisNode(networkRoot);
-            ChangeModelEvent event = new ChangeModelEvent(gisNode,model);
-            NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(event);            
+            ChangeModelEvent event = new ChangeModelEvent(gisNode, model);
+            NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(event);
         }
     }
+
     private void formCollumns() {
         int countRelation = 0;
         table.clearAll();
@@ -858,8 +880,14 @@ public class Node2NodeViews extends ViewPart {
                 TableColumn col = new TableColumn(table, SWT.NONE);
                 columns.add(col);
             }
-            columns.get(0).setText("Serv node name");
-            columns.get(1).setText("Neigh node name");
+            columns.get(0).setText("Server ");
+            String neighName;
+            if (n2nModel.getType().equals(NodeToNodeTypes.INTERFERENCE_MATRIX)) {
+                neighName = "Interferer";
+            } else {
+                neighName = "Neighbour";
+            }
+            columns.get(1).setText(neighName);
             for (int i = 2; i < colColut; i++) {
                 String propertyName = propertys.get(i - 2);
                 TableColumn tableColumn = columns.get(i);
@@ -867,11 +895,11 @@ public class Node2NodeViews extends ViewPart {
                 tableColumn.setToolTipText("Type " + information.getPropertyInformation(propertyName).getStatistic().getType().getName());
 
             }
-//            for (Node n:filter.getFilteredServNodes(n2nModel)){
-//                System.out.println(ds.getNodeName(n));
-//            }
-//            System.out.println("____");
-            
+            // for (Node n:filter.getFilteredServNodes(n2nModel)){
+            // System.out.println(ds.getNodeName(n));
+            // }
+            // System.out.println("____");
+
             for (Relationship rel : n2ns.getRelationTraverserByServNode(filter.getFilteredServNodes(n2nModel))) {
                 countRelation++;
             }
@@ -926,7 +954,7 @@ public class Node2NodeViews extends ViewPart {
     }
 
     protected String getListTxt() {
-        return "Lists:";
+        return "List:";
     }
 
     @Override
@@ -940,7 +968,7 @@ public class Node2NodeViews extends ViewPart {
      * @param text
      */
     protected void setData(final TableItem item, final int column, final Text text) {
-        if(StringUtils.equals(item.getText(column),text.getText())){
+        if (StringUtils.equals(item.getText(column), text.getText())) {
             return;
         }
         final String propertyName = propertys.get(column - 2);
@@ -949,7 +977,7 @@ public class Node2NodeViews extends ViewPart {
         String nodeTypeId = NodeTypes.NODE_NODE_RELATIONS.getId();
         final Object newValue = statistic.parseValue(key, nodeTypeId, propertyName, text.getText());
         if (statistic.updateValue(key, nodeTypeId, propertyName, newValue, cont.getProperty(propertyName, null))) {
-            Runnable task=new Runnable() {
+            Runnable task = new Runnable() {
                 @Override
                 public void run() {
                     if (newValue == null) {
@@ -966,11 +994,37 @@ public class Node2NodeViews extends ViewPart {
         }
     }
 
-
     private void transactionChange(boolean isChange) {
         tx.setChanged(isChange);
         commit.setEnabled(isChange);
         rollback.setEnabled(isChange);
+    }
+
+    /**
+     * @param cont
+     * @param wr
+     */
+    public void fillProrerty(final PropertyContainer cont, final Wrapper wr) {
+        Runnable cl = new Runnable() {
+
+            @Override
+            public void run() {
+                for (int j = 2; j < colColut; j++) {
+                    wr.addProperty(String.valueOf(cont.getProperty(propertys.get(j - 2), "")));
+                }
+            }
+        };
+
+        try {
+            tx.submit(cl).get();
+        } catch (InterruptedException e) {
+            // TODO Handle InterruptedException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } catch (ExecutionException e) {
+            // TODO Handle ExecutionException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+
     }
 
     private static class CountedIteratorWr implements Iterator<PropertyContainer> {
@@ -1004,7 +1058,8 @@ public class Node2NodeViews extends ViewPart {
         }
 
     }
-    public class VirtualContentProvider implements ILazyContentProvider{
+
+    public class VirtualContentProvider implements ILazyContentProvider {
 
         @Override
         public void dispose() {
@@ -1016,51 +1071,53 @@ public class Node2NodeViews extends ViewPart {
 
         @Override
         public void updateElement(int index) {
-                int start = index / PAGE_SIZE * PAGE_SIZE;
-                int end = Math.min(start + PAGE_SIZE, table.getItemCount());
-                
-                int k = 0;
-                int ind;
-                for (int i = start; i < end; i++) {
-                    PropertyContainer cont = getElement(i);
-                    String servingNodeName = ds.getNodeName(((Relationship)cont).getStartNode());
+            int start = index / PAGE_SIZE * PAGE_SIZE;
+            int end = Math.min(start + PAGE_SIZE, table.getItemCount());
 
-                    ind=i;
-                    // Kasnitskij_V:
-                    // search need sector
-                    if (!searchingSector.equals("")) {
-                        if (servingNodeName.equals(searchingSector)) {
-                            ind=k++;
+            int k = 0;
+            int ind;
+            for (int i = start; i < end; i++) {
+                PropertyContainer cont = getElement(i);
+                String servingNodeName = ds.getNodeName(((Relationship)cont).getStartNode());
+
+                ind = i;
+                // Kasnitskij_V:
+                // search need sector
+                if (!searchingSector.equals("")) {
+                    if (servingNodeName.equals(searchingSector)) {
+                        ind = k++;
+                    } else {
+                        if (end < table.getItemCount()) {
+                            end++;
                         }
-                    }
-                    Wrapper wr = new Wrapper(cont,ind);
-                    wr.addProperty(servingNodeName);
-                    wr.addProperty( ds.getNodeName(((Relationship)cont).getEndNode()));
-                    for (int j = 2; j < colColut; j++) {
-                        wr.addProperty( String.valueOf(cont.getProperty(propertys.get(j - 2), "")));
-                    }
-                    view.replace(wr, ind);
-                }
-                if (k != 0) {
-                    view.setItemCount(k);
-                }
-                else {
-                    if (!searchingSector.equals("")) {
-                        textToSearch.setText("not found");
-                    }
-                    else {
-                        textToSearch.setText("");
+                        continue;
                     }
                 }
+                Wrapper wr = new Wrapper(cont, ind);
+                wr.addProperty(servingNodeName);
+                wr.addProperty(ds.getNodeName(((Relationship)cont).getEndNode()));
+                fillProrerty(cont, wr);
+                view.replace(wr, ind);
+            }
+            if (k != 0) {
+                view.setItemCount(k);
+            } else {
+                if (!searchingSector.equals("")) {
+                    textToSearch.setText("not found");
+                } else {
+                    textToSearch.setText("");
+                }
+            }
         }
-        
+
     }
-    public class VirtualLabelProvider extends LabelProvider implements ITableLabelProvider, ITableFontProvider{
+
+    public class VirtualLabelProvider extends LabelProvider implements ITableLabelProvider, ITableFontProvider {
 
         @Override
         public Font getFont(Object element, int columnIndex) {
             Wrapper wr = (Wrapper)element;
-            return columnIndex<2?wr.getText(columnIndex).equals(selectedServ)?fontSelected:fontNormal:fontNormal;
+            return columnIndex < 2 ? wr.getText(columnIndex).equals(selectedServ) ? fontSelected : fontNormal : fontNormal;
         }
 
         @Override
@@ -1074,14 +1131,13 @@ public class Node2NodeViews extends ViewPart {
             return wr.getText(columnIndex);
         }
 
-
-        
     }
-    private static class Wrapper{
+
+    private static class Wrapper {
 
         private final PropertyContainer cont;
         private final int index;
-        private final ArrayList<String>values=new ArrayList<String>();
+        private final ArrayList<String> values = new ArrayList<String>();
 
         /**
          * @param cont
@@ -1091,16 +1147,17 @@ public class Node2NodeViews extends ViewPart {
             this.cont = cont;
             this.index = index;
         }
+
         /**
-         *
          * @param columnIndex
          * @return
          */
         public String getText(int columnIndex) {
-            return values.get(columnIndex);
+            return columnIndex < values.size() ? values.get(columnIndex) : null;
         }
-        public void addProperty(String val){
-            values.add( val);
+
+        public void addProperty(String val) {
+            values.add(val);
         }
     }
 }

@@ -451,11 +451,8 @@ public class PropertyStatistics implements ISinglePropertyStat {
         if (klass != newValue.getClass()) {
             return false;
         }
-        if (deleteValue(oldValue)) {
-            addNewValue(newValue, 1);
-            return true;
-        }
-        return false;
+        deleteValue(oldValue);
+        return   addNewValue(newValue, 1);
     }
 
     /**
