@@ -737,10 +737,8 @@ public class MessageAndEventTableView extends ViewPart {
         private void initProperties(){
             allProperties = new HashMap<String, Boolean>();
             filteredProperties = new ArrayList<String>();
-            Node propRoot = NeoUtils.findGisNodeByChild(dataset);
-            if(propRoot == null){
-                propRoot = dataset;
-            }
+            
+            Node propRoot = NeoUtils.findRoot(dataset);
             IPropertyHeader header = PropertyHeader.getPropertyStatistic(propRoot);
             
             // Kasnitskij_V:
