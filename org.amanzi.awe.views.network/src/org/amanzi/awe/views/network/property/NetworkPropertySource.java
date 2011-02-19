@@ -105,16 +105,22 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
         
         if (isNetworkName) {
             Iterable<Node> rootNodes = datasetService.getAllRootNodes().nodes();
+            Node rootNode = null;
             for (Node node : rootNodes) {
                 String networkName = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
                 if (networkName.equals(currentNetworkName)) {
                     propertyHeader = new PropertyHeaderImpl(node, datasetService.getNodeName(node));
+                    rootNode = node;
                     break;
                 }
             }
        
             NodeTypes nodeType = NodeTypes.getEnumById(container.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString());
             Map<String, Object> propertiesWithValues = propertyHeader.getStatisticParams(nodeType);
+            if (propertiesWithValues.size() == 0) {
+                propertyHeader = PropertyHeader.getPropertyStatistic(rootNode);
+                propertiesWithValues = propertyHeader.getStatisticParams(nodeType);
+            }
             Set<String> keysFromProperties = propertiesWithValues.keySet();
         
             Iterable<String> keys = container.getPropertyKeys();
