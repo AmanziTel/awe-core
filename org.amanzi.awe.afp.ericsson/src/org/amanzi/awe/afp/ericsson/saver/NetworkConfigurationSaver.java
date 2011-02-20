@@ -148,7 +148,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
             setProperty(rootname, NodeTypes.SECTOR.getId(), sector, INeoConstants.PROPERTY_SECTOR_LAC, lac);
             getIndexService().index(sector, Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_SECTOR_LAC, NodeTypes.SECTOR), lac);
         }
-//        updateProperty(rootname, NodeTypes.SECTOR.getId(), sector,"vendor","Ericsson");
+        updateProperty(rootname, NodeTypes.SECTOR.getId(), sector,"vendor","Ericsson");
         String bcc = getStringValue("bcc", element);
         boolean notEmptyBcc = StringUtils.isNotEmpty(bcc);
         String ncc = getStringValue("ncc", element);
@@ -525,8 +525,13 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
             }
         }).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).traverse(rootNode);
         Set<Node> fakeSites = new HashSet<Node>();
+        Set<Node> removedSites = new HashSet<Node>();
         for (Node site : tr.nodes()) {
-            fakeSites.add(site);
+            if (site.hasRelationship(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING)){
+                fakeSites.add(site);
+            }else{
+                removedSites.add(site);  
+            }
         }
         if (!fakeSites.isEmpty()) {
             NodeResult fakeBSC = networkService.getBscNode(rootNode, "Fake BSC", rootNode);
@@ -536,6 +541,11 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
                 fakeBSC.createRelationshipTo(site, GeoNeoRelationshipTypes.CHILD);
             }
 
+        }
+        if (!removedSites.isEmpty()){
+            for (Node site : removedSites) {
+                ds.deleteNode(site);
+            }
         }
 
     }

@@ -1552,4 +1552,17 @@ public class DatasetService extends AbstractService {
 
         return null;
     }
+
+    public void deleteNode(Node node) {
+        Transaction tx = databaseService.beginTx();
+        try {
+            for (Relationship relation : node.getRelationships()) {
+                relation.delete();
+            }
+            node.delete();
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+    }
 }
