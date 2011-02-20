@@ -294,6 +294,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
         }
         if (adminValues == null) {
             adminValues = new AdminValues(abss, relssPM, relss, relss2pm, relss2, rectime);
+            return;
         }
         if (!ObjectUtils.equals(abss, adminValues.abss)) {
             error(String.format("Parameter %s=%s is differ then stored values(=%s)", Parameters.ABSS, abss, adminValues.abss));
@@ -315,7 +316,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             error(String.format("Parameter %s=%s is differ then stored values(=%s)", Parameters.RELSS2, relss2, adminValues.relss2));
             return;
         }
-        adminValues.addRecTime(rectime);
+//        adminValues.addRecTime(rectime);
 
     }
 
@@ -670,13 +671,13 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             error("Incorreect reparfcn=0");
             return;
         }
-        double impactCO = neigh.timesrelss / neigh.reparfcn * factorCo;
+        double impactCO = (double)neigh.timesrelss / neigh.reparfcn * factorCo;
         Double factorAdj = getFactorAdj(adminValues.relss2);
         if (factorAdj == null) {
             error("Incorreect relss2=" + String.valueOf(adminValues.relss));
             return;
         }
-        double impactAdj = neigh.timesrelss2 / neigh.reparfcn * factorAdj;
+        double impactAdj = (double)neigh.timesrelss2 / neigh.reparfcn * factorAdj;
         Relationship rel = interfModel.getRelation(servSector, neighSector);
         updateProperty(getInterfMatrixName(), NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "source", "IM source - Interference");
         updateProperty(getInterfMatrixName(), NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "co", impactCO);
