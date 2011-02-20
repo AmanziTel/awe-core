@@ -31,6 +31,7 @@ import org.amanzi.neo.loader.core.saver.MetaData;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.DatasetService.NodeResult;
 import org.amanzi.neo.services.GisProperties;
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
@@ -39,6 +40,7 @@ import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.network.FrequencyPlanModel;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
+import org.amanzi.neo.services.utils.Utils;
 import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
@@ -82,8 +84,8 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         networkModel = new NetworkModel(rootNode);
         neighName = rootname + "neigh";
         neighbourModel = networkModel.getNeighbours(neighName);
-        planName=null;
-        freqPlan=null;
+        planName = null;
+        freqPlan = null;
         startMainTx(2000);
     }
 
@@ -138,6 +140,15 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         } else {
             networkService.moveSectorToCorrectSite(site, sector);
         }
+        if (ci != null && !sector.hasProperty(INeoConstants.PROPERTY_SECTOR_CI)) {
+            setProperty(rootname, NodeTypes.SECTOR.getId(), sector, INeoConstants.PROPERTY_SECTOR_CI, ci);
+            getIndexService().index(sector, Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR), ci);
+        }
+        if (lac != null && !sector.hasProperty(INeoConstants.PROPERTY_SECTOR_LAC)) {
+            setProperty(rootname, NodeTypes.SECTOR.getId(), sector, INeoConstants.PROPERTY_SECTOR_LAC, lac);
+            getIndexService().index(sector, Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_SECTOR_LAC, NodeTypes.SECTOR), lac);
+        }
+//        updateProperty(rootname, NodeTypes.SECTOR.getId(), sector,"vendor","Ericsson");
         String bcc = getStringValue("bcc", element);
         boolean notEmptyBcc = StringUtils.isNotEmpty(bcc);
         String ncc = getStringValue("ncc", element);
@@ -170,8 +181,8 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
                     continue;
                 }
                 Relationship rel = neighbourModel.getRelation(sector, neighbourSector);
-                updateProperty(neighName,  NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "co", new Double(0.5d));
-                updateProperty(neighName,  NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "adj", new Double(0.05));
+                updateProperty(neighName, NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "co", new Double(0.5d));
+                updateProperty(neighName, NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "adj", new Double(0.05));
             }
         }
         statistic.setTypeCount(neighName, NodeTypes.NODE_NODE_RELATIONS.getId(), neighbourModel.getRelationCount());
@@ -320,14 +331,14 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
             updateProperty(rootname, NodeTypes.TRX.getId(), trx, "band", channalGr.getProperty("band", null));
             boolean isBcch = 0 == channelGr && "0".equals(trxId);
             updateProperty(rootname, NodeTypes.TRX.getId(), trx, "bcch", isBcch);
-            NodeResult plan = getFreqPlan( getPlanName(element)).getPlanNode(trx);
+            NodeResult plan = getFreqPlan(getPlanName(element)).getPlanNode(trx);
             if (plan.isCreated()) {
                 statistic.updateTypeCount(getPlanName(element), NodeTypes.FREQUENCY_PLAN.getId(), 1);
             }
             updateProperty(rootname, NodeTypes.TRX.getId(), trx, "hsn", channalGr.getProperty("hsn", null));
             Integer bcchno = (Integer)sector.getProperty("bcch", null);
             if (!plan.hasProperty("arfcn")) {
-                Integer arfcn=null;
+                Integer arfcn = null;
                 if (isBcch) {
                     if (bcchno != null) {
 
@@ -338,48 +349,48 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
                     if (dchno != null) {
                         if (hoptype < 2 && bcchno != null) {
                             int j = -1;
-                            for (Relationship rel:sector.getRelationships(DatasetRelationshipTypes.PLAN_ENTRY,Direction.OUTGOING)){
+                            for (Relationship rel : sector.getRelationships(DatasetRelationshipTypes.PLAN_ENTRY, Direction.OUTGOING)) {
                                 final Node trxOth = rel.getOtherNode(sector);
-                                if (trx.equals(trxOth)){
+                                if (trx.equals(trxOth)) {
                                     continue;
                                 }
-                                if(channelGr.equals(trxOth.getProperty("group",null))){
+                                if (channelGr.equals(trxOth.getProperty("group", null))) {
                                     j++;
                                 }
                             }
                             j++;
-                            int k=-1;
+                            int k = -1;
                             for (int i = 0; i < dchno.length; i++) {
                                 if (dchno[i] != bcchno) {
                                     k++;
-                                    if (k==j){
-                                        arfcn=dchno[i];
+                                    if (k == j) {
+                                        arfcn = dchno[i];
                                         break;
                                     }
                                 }
                             }
                         } else {
                             int j = -1;
-                            int[] arfcnArr =null;
-                            Set<Integer>removedArfcn=new HashSet<Integer>();
-                            for (Relationship rel:sector.getRelationships(DatasetRelationshipTypes.PLAN_ENTRY,Direction.OUTGOING)){
+                            int[] arfcnArr = null;
+                            Set<Integer> removedArfcn = new HashSet<Integer>();
+                            for (Relationship rel : sector.getRelationships(DatasetRelationshipTypes.PLAN_ENTRY, Direction.OUTGOING)) {
                                 final Node trxOth = rel.getOtherNode(sector);
-                                if (trx.equals(trxOth)){
+                                if (trx.equals(trxOth)) {
                                     continue;
                                 }
-                                if(channelGr.equals(trxOth.getProperty("group",null))){
-                                    if (hoptype!=(Integer)trxOth.getProperty("hopping_type",null)){
-                                       Integer arfcnOth= (Integer)trxOth.getProperty("arfcn",null);
-                                       if (arfcnOth!=null){
-                                           removedArfcn.add(arfcnOth); 
-                                       }
+                                if (channelGr.equals(trxOth.getProperty("group", null))) {
+                                    if (hoptype != (Integer)trxOth.getProperty("hopping_type", null)) {
+                                        Integer arfcnOth = (Integer)trxOth.getProperty("arfcn", null);
+                                        if (arfcnOth != null) {
+                                            removedArfcn.add(arfcnOth);
+                                        }
                                     }
                                     j++;
                                 }
                             }
                             j++;
-                            if (arfcnArr==null){
-                                arfcnArr=exluded(dchno,removedArfcn);
+                            if (arfcnArr == null) {
+                                arfcnArr = exluded(dchno, removedArfcn);
                                 for (int i = 0; i < arfcnArr.length; i++) {
                                     statistic.indexValue(getPlanName(element), NodeTypes.FREQUENCY_PLAN.getId(), "arfcn", arfcnArr[i]);
                                 }
@@ -392,7 +403,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
                     updateProperty(getPlanName(element), NodeTypes.FREQUENCY_PLAN.getId(), plan, "arfcn", arfcn);
                 }
             }
-            if (!plan.hasProperty("maio")&&hoptype==2) {
+            if (!plan.hasProperty("maio") && hoptype == 2) {
                 String maioPr = "maio_" + trxId;
                 Integer maioInt = (Integer)channalGr.getProperty(maioPr, null);
 
@@ -420,55 +431,52 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         }
     }
 
-
-
     /**
-     *
      * @param dchno
      * @param removedArfcn
      * @return
      */
     private int[] exluded(int[] dchno, Set<Integer> removedArfcn) {
-        if (removedArfcn.isEmpty()||dchno.length==0){
+        if (removedArfcn.isEmpty() || dchno.length == 0) {
             return dchno;
         }
-        List<Integer>result=new ArrayList<Integer>();
+        List<Integer> result = new ArrayList<Integer>();
         for (int i = 0; i < dchno.length; i++) {
-            if (removedArfcn.contains(dchno[i])){
+            if (removedArfcn.contains(dchno[i])) {
                 continue;
             }
             result.add(dchno[i]);
         }
-        int []res=new int[result.size()];
+        int[] res = new int[result.size()];
         for (int i = 0; i < res.length; i++) {
-            res[i]=result.get(i);
+            res[i] = result.get(i);
         }
         return res;
     }
 
     /**
      * Gets the freq plan.
-     *
+     * 
      * @param planName the plan name
      * @return the freq plan
      */
     private FrequencyPlanModel getFreqPlan(String planName) {
-        if (freqPlan==null){
-            freqPlan=networkModel.getFrequencyModel(planName);
+        if (freqPlan == null) {
+            freqPlan = networkModel.getFrequencyModel(planName);
         }
         return freqPlan;
     }
 
     /**
      * Gets the frequency plan name.
-     *
+     * 
      * @param element the element
      * @return the plan name
      */
     private String getPlanName(NetworkConfigurationTransferData element) {
-        if (planName==null){
-            //TODO check - is it correct use name of first file like name of frequency plan?
-            planName=element.getFileName();
+        if (planName == null) {
+            // TODO check - is it correct use name of first file like name of frequency plan?
+            planName = element.getFileName();
         }
         return planName;
     }
@@ -502,7 +510,6 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         createFakeBSC();
         super.finishUp(element);
     }
-
 
     /**
      * Creates the fake bsc.
