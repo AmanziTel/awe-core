@@ -11,14 +11,12 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.afp.ericsson.ui;
+package org.amanzi.neo.loader.ui.wizards;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.neo.loader.core.CommonConfigData;
-import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
-import org.amanzi.neo.loader.ui.wizards.AbstractLoaderWizard;
 import org.amanzi.neo.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.services.events.UpdateViewEventType;
 import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
@@ -34,7 +32,7 @@ import org.eclipse.ui.IWorkbench;
  * @author tsinkel_a
  * @since 1.0.0
  */
-public class EricssonNetworkImportWizard extends AbstractLoaderWizard<CommonConfigData> {
+public class NetworkConfigurationImportWizard extends AbstractLoaderWizard<CommonConfigData> {
 
 
     private CommonConfigData data;
@@ -42,7 +40,7 @@ public class EricssonNetworkImportWizard extends AbstractLoaderWizard<CommonConf
     @Override
     protected List<IWizardPage> getMainPagesList() {
         List<IWizardPage> result = new ArrayList<IWizardPage>();
-        result.add(new EricssonNetworkGui());
+        result.add(new NetworkGui1());
         return result;
     }
 
@@ -57,7 +55,7 @@ public class EricssonNetworkImportWizard extends AbstractLoaderWizard<CommonConf
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         super.init(workbench, selection);
-        setWindowTitle(NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_TITLE);
+        setWindowTitle("Import network configuration data");
     }
 
     @Override

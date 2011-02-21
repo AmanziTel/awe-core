@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.afp.ericsson.ui;
+package org.amanzi.neo.loader.ui.wizards;
 
 import java.io.File;
 import java.util.Arrays;
@@ -22,7 +22,6 @@ import org.amanzi.neo.loader.core.IValidateResult;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
-import org.amanzi.neo.loader.ui.wizards.AbstractMainPage;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
@@ -40,15 +39,15 @@ import org.neo4j.graphdb.traversal.TraversalDescription;
  * @author tsinkel_a
  * @since 1.0.0
  */
-public class EricssonNetworkGui extends AbstractMainPage<CommonConfigData> {
+public class NetworkGui1 extends AbstractMainPage<CommonConfigData> {
 
     
     /**
      * Instantiates a new ericsson network gui.
      */
-    public EricssonNetworkGui() {
-        super("ericssonMainPage", false);
-        setTitle("Import a files containing network CNA data");
+    public NetworkGui1() {
+        super("configMainPage", false);
+        setTitle(NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_DESCR);
         
     }
 

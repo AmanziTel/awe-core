@@ -71,6 +71,28 @@
                       value="org.amanzi.neo.loader.ui.wizards.OssImportWizard">
                 </parameter>
              </command>
+             <command
+                   commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader"
+                   icon="icons/16/call.png"
+                   id="org.amanzi.neo.loader.ui.commands.LaunchLoader"
+                   style="push"
+                   tooltip="Load Network Configuration Data">
+                <parameter
+                      name="org.amanzi.neo.loader.ui.commands.guiId"
+                      value="org.amanzi.neo.loader.ui.wizards.NetworkConfigurationImportWizard">
+                </parameter>
+             </command>
+             <command
+                   commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader"
+                   icon="icons/16/site.png"
+                   id="org.amanzi.neo.loader.ui.commands.LaunchLoader"
+                   style="push"
+                   tooltip="Load Network Measurements Data">
+                <parameter
+                      name="org.amanzi.neo.loader.ui.commands.guiId"
+                      value="org.amanzi.neo.loader.ui.wizards.NetworkMeasurementImportWizard">
+                </parameter>
+             </command>
           </toolbar>
        </menuContribution>
     </extension>
@@ -87,6 +109,14 @@
        <GUI
              class="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
              id="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard">
+       </GUI>
+       <GUI
+             class="org.amanzi.neo.loader.ui.wizards.NetworkConfigurationImportWizard"
+             id="org.amanzi.neo.loader.ui.wizards.NetworkConfigurationImportWizard">
+       </GUI>
+       <GUI
+             class="org.amanzi.neo.loader.ui.wizards.NetworkMeasurementImportWizard"
+             id="org.amanzi.neo.loader.ui.wizards.NetworkMeasurementImportWizard">
        </GUI>
     </extension>
     <extension

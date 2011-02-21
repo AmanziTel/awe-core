@@ -31,7 +31,7 @@
          point="org.amanzi.neo.loader.ui.loaders">
       <loader
             description="Ericsson Network config loader"
-            gui="org.amanzi.awe.afp.ericsson.ui.EricssonNetworkImportWizard"
+            gui="org.amanzi.neo.loader.ui.wizards.NetworkConfigurationImportWizard"
             parser="org.amanzi.awe.afp.ericsson.parser.NetworkConfigurationParser"
             saver="org.amanzi.awe.afp.ericsson.saver.NetworkConfigurationSaver"
             validator="org.amanzi.awe.afp.ericsson.ui.EricssonValidator">
@@ -41,7 +41,7 @@
       </loader>
       <loader
             description="Ericsson Network BAR-RIR loader"
-            gui="org.amanzi.awe.afp.ericsson.ui.EricssonNetworkImportWizard"
+            gui="org.amanzi.neo.loader.ui.wizards.NetworkMeasurementImportWizard"
             parser="org.amanzi.awe.afp.ericsson.parser.BarRirParser"
             saver="org.amanzi.awe.afp.ericsson.saver.BarRirSaver"
             validator="org.amanzi.awe.afp.ericsson.parser.RirValidator">
@@ -49,33 +49,6 @@
                class="org.amanzi.awe.afp.ericsson.ui.RirSelectionGui">
          </pages>
       </loader>
-   </extension>
-   <extension
-         point="org.amanzi.neo.loader.ui.gui">
-      <GUI
-            class="org.amanzi.awe.afp.ericsson.ui.EricssonNetworkImportWizard"
-            id="org.amanzi.awe.afp.ericsson.ui.EricssonNetworkImportWizard">
-      </GUI>
-   </extension>
-   <extension
-         point="org.eclipse.ui.menus">
-      <menuContribution
-            locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
-         <toolbar
-               id="org.amanzi.neo.loader.toolbar2">
-            <command
-                  commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader"
-                  icon="icons/logo.png"
-                  id="org.amanzi.neo.loader.ui.commands.LaunchLoader"
-                  style="push"
-                  tooltip="Load Ericsson Network Data">
-               <parameter
-                     name="org.amanzi.neo.loader.ui.commands.guiId"
-                     value="org.amanzi.awe.afp.ericsson.ui.EricssonNetworkImportWizard">
-               </parameter>
-            </command>
-         </toolbar>
-      </menuContribution>
    </extension>
 
 </plugin>
