@@ -65,18 +65,18 @@ import com.vividsolutions.jts.geom.Coordinate;
  * @since 1.0.0
  */
 public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
-
+    private int barAdminRecNum = 0;
     /** The admin values. */
-    AdminValues adminValues = null;
+    private AdminValues adminValues = null;
 
     /** The percentile value. */
-    Integer percentileValue = null;
+    private Integer percentileValue = null;
 
     /** The serv cells. */
-    Map<String, ServCell> servCells = new HashMap<String, ServCell>();
+    private Map<String, ServCell> servCells = new HashMap<String, ServCell>();
 
     /** The rir cells. */
-    Map<String, CellRirData> rirCells = new HashMap<String, CellRirData>();
+    private Map<String, CellRirData> rirCells = new HashMap<String, CellRirData>();
 
     /** The network model. */
     private NetworkModel networkModel;
@@ -232,6 +232,10 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
         }
         ServCell cell = getServCell(cellName, chGr);
         cell.addRep(getInteger(rec, Parameters.REP));
+        if (barAdminRecNum!=cell.adminNum){
+            cell.adminNum=barAdminRecNum;
+            cell.rectime+=adminValues.rectime;
+        }
     }
 
     /**
@@ -246,6 +250,8 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
         ServCell result = servCells.get(cellName);
         if (result == null) {
             result = new ServCell(cellName, chGr);
+            result.adminNum = barAdminRecNum;
+            result.rectime=adminValues.rectime;
             servCells.put(cellName, result);
         }
         if (!ObjectUtils.equals(chGr, result.chgr)) {
@@ -281,6 +287,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
      * @param element the element
      */
     private void storeAdminValues(RecordTransferData element) {
+        barAdminRecNum++;
         Record rec = element.getRecord().getEvent();
         Integer abss = getInteger(rec, Parameters.ABSS);
         Integer relssPM = getInteger(rec, Parameters.RELSS_PLUS_MINUS);
@@ -316,7 +323,8 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             error(String.format("Parameter %s=%s is differ then stored values(=%s)", Parameters.RELSS2, relss2, adminValues.relss2));
             return;
         }
-//        adminValues.addRecTime(rectime);
+        adminValues.rectime = rectime;
+        // adminValues.addRecTime(rectime);
 
     }
 
@@ -400,11 +408,11 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
      *
      */
     private void storeRirData() {
-        if (percentileValue==null||percentileValue<0||percentileValue>100){
+        if (percentileValue == null || percentileValue < 0 || percentileValue > 100) {
             error(String.format("Wrong Percentile value %s", percentileValue));
             return;
         }
-        double nspv=NORMSINV(percentileValue/100d);
+        double nspv = NORMSINV(percentileValue / 100d);
         for (Entry<String, CellRirData> entry : rirCells.entrySet()) {
             Node sector = networkModel.findSector(entry.getKey());
             if (sector == null) {
@@ -413,16 +421,16 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             }
             CellRirData data = entry.getValue();
 
-//            Map<Integer, RirsData> filteredData = new HashMap<Integer, BarRirSaver.RirsData>();
+            // Map<Integer, RirsData> filteredData = new HashMap<Integer, BarRirSaver.RirsData>();
             for (Entry<Integer, RirsData> entryData : data.data.entrySet()) {
                 if (entryData.getValue().avpercentile < 5 || (entryData.getValue().avemedian < 4 && entryData.getValue().avpercentile < 10)) {
-//                    filteredData.put(entryData.getKey(), entryData.getValue());
-                    double frequensy=(double)entryData.getValue().arfcn;
+                    // filteredData.put(entryData.getKey(), entryData.getValue());
+                    double frequensy = (double)entryData.getValue().arfcn;
                     double penalty;
-                    if (entryData.getValue().avemedian>10){
-                        penalty=1;//=100
-                    }else{
-                        //TODO implement
+                    if (entryData.getValue().avemedian > 10) {
+                        penalty = 1;// =100
+                    } else {
+                        // TODO implement
                     }
                 }
             }
@@ -640,8 +648,8 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             error(String.format("Sector %s not found", cell.cellName));
             return;
         }
-        if (adminValues.rectime != null) {
-            double traffic = (double)cell.rep * 60d / (7500 * adminValues.rectime);
+        if (cell.rectime != null) {
+            double traffic = (double)cell.rep * 60d / (7500 * cell.rectime);
             updateProperty(rootname, NodeTypes.SECTOR.getId(), servSector, "traffic", traffic);
         }
         for (InterfCell neigh : cell.cells.values()) {
@@ -806,6 +814,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
         servCells.clear();
         firstFileName = null;
         networkModel = new NetworkModel(rootNode);
+        barAdminRecNum = 0;
 
     }
 
@@ -879,6 +888,8 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
      */
     private static class ServCell {
 
+        public Integer rectime;
+
         /**
          * Instantiates a new serv cell.
          * 
@@ -927,6 +938,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
 
         /** The chgr. */
         Integer chgr;
+        int adminNum;
 
         /** The rep. */
         int rep = 0;
