@@ -17,67 +17,6 @@
   
   <profiles>
     <profile>
-    <id>japa_src_build</id>
-    <activation>
-      <activeByDefault>true</activeByDefault>
-    </activation>
-    <modules>
-      <module>org.amanzi.awe.afp.japa</module>
-    </modules>
-    <build>
-      <plugins>	  
-        <plugin>
-          <groupId>org.sonatype.tycho</groupId>
-          <artifactId>tycho-maven-plugin</artifactId>
-          <version>0.9.0-SNAPSHOT</version>
-          <extensions>true</extensions>
-        </plugin>
-        <plugin>        
-          <groupId>org.sonatype.tycho</groupId>
-          <artifactId>maven-osgi-compiler-plugin</artifactId>
-          <version>0.9.0-SNAPSHOT</version>
-          <configuration>
-            <source>1.6</source>
-            <target>1.6</target>
-          </configuration>
-        </plugin>          
-        <plugin>
-      	  <groupId>org.sonatype.tycho</groupId>
-      	  <artifactId>target-platform-configuration</artifactId>
-      	  <version>0.9.0-SNAPSHOT</version>
-		  <configuration>
-            <environments>
-              <environment>
-                <os>linux</os>
-                <ws>gtk</ws>
-                <arch>x86</arch>
-              </environment>
-              <environment>
-                <os>win32</os>
-                <ws>win32</ws>
-                <arch>x86</arch>
-              </environment>
-              <environment>
-                <os>macosx</os>
-                <ws>carbon</ws>
-                <arch>x86</arch>
-              </environment>
-            </environments>                 
-          </configuration>
-        </plugin>
-      </plugins>
-      <resources>
-        <resource>
-          <directory>src</directory>
-          <includes>
-            <include>**/*.properties</include>
-          </includes>
-        </resource>
-      </resources>
-    </build>
-    </profile>
-
-    <profile>
     <id>all_src_build</id>
     <activation>
       <activeByDefault>true</activeByDefault>
@@ -152,12 +91,6 @@
       <module>org.amanzi.awe.neighbours</module>
       <module>org.amanzi.awe.wizards</module>
       <module>org.amanzi.awe.report.o2</module>
-      <module>org.amanzi.awe.afp-site</module>
-      <module>org.amanzi.awe.afp-feature</module>
-      <module>org.amanzi.awe.afp</module>
-      <module>org.amanzi.awe.afp.win32</module>
-      <module>org.amanzi.awe.afp.linux</module>
-      <module>org.amanzi.awe.afp.macosx</module>
       <module>org.amanzi.neo.db</module>
 	  <module>org.amanzi.neo.loader.core</module>
 	  <module>org.amanzi.neo.loader.ui</module>
@@ -292,17 +225,10 @@
 	  <module>org.amanzi.splash.testing</module>
 	  <module>org.amanzi.neo.data-generator</module>
 	  <module>org.amanzi.neo.loader.testing</module>
-	  <module>org.amanzi.awe.afp.testing</module>
 	  <module>org.amanzi.testing.sanity</module>
 	  <module>org.amanzi.testing</module>
 	  <module>org.amanzi.awe.views.reuse.testing</module>
-      <module>org.amanzi.awe.afp-site</module>
-      <module>org.amanzi.awe.afp-feature</module>
-      <module>org.amanzi.awe.afp</module>
-      <module>org.amanzi.awe.afp.win32</module>
-      <module>org.amanzi.awe.afp.linux</module>
-      <module>org.amanzi.awe.afp.macosx</module>
-	  <module>org.amanzi.neo.db</module>
+      <module>org.amanzi.neo.db</module>
 	  <module>org.amanzi.neo.loader.core</module>
 	  <module>org.amanzi.neo.loader.ui</module>
 	  <module>org.amanzi.neo.services</module>
@@ -437,12 +363,6 @@
       <module>org.amanzi.awe.neighbours</module>
       <module>org.amanzi.awe.wizards</module>
       <module>org.amanzi.awe.report.o2</module>
-      <module>org.amanzi.awe.afp-site</module>
-      <module>org.amanzi.awe.afp-feature</module>
-      <module>org.amanzi.awe.afp</module>
-      <module>org.amanzi.awe.afp.win32</module>
-      <module>org.amanzi.awe.afp.linux</module>
-      <module>org.amanzi.awe.afp.macosx</module>
       <module>org.amanzi.neo.db</module>
 	  <module>org.amanzi.neo.loader.core</module>
 	  <module>org.amanzi.neo.loader.ui</module>
