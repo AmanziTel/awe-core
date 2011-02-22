@@ -17,7 +17,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -73,6 +72,9 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
     /** The file property page. */
     ExportNetworkWizardFilePropertyPage filePropertyPage = null;
 
+    /** The saving data selection page. */
+    ExportNetworkWizardSavingDataSelectionPage savingDataSelectionPage = null;
+    
     private IStructuredSelection selection;
 
     @Override
@@ -83,13 +85,15 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         final String charSet = filePropertyPage.getCharsetValue();
         final Node rootNode = selectionPage.getSelectedNode();
         final Map<String, Map<String, String>> propertyMap = columnConfigPage.getPropertyMap();
-
+        final HashMap<String, Boolean> checkBoxStates = savingDataSelectionPage.getCheckBoxesState();
+        final String fileWithPrefix = savingDataSelectionPage.getFileWithPrefixName();
+        
         Job exportJob = new Job("Network export") {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-                    runExport(fileSelected, propertyMap, rootNode, separator, quoteChar, charSet);
+                    runExport(fileSelected, propertyMap, rootNode, checkBoxStates, fileWithPrefix, separator, quoteChar, charSet);
                     return Status.OK_STATUS;
                 } catch (IOException e) {
                     return new Status(Status.ERROR, NetworkTreePlugin.PLUGIN_ID, e.getLocalizedMessage(), e);
@@ -140,8 +144,12 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
             // NeoLoaderPlugin.getDefault().getPreferenceStore().getString(DataLoadPreferences.DEFAULT_CHARSET);
             filePropertyPage = new ExportNetworkWizardFilePropertyPage("propertyCSV", "windows-1251", "\t", "\"");
         }
+        if (savingDataSelectionPage == null) {
+            savingDataSelectionPage = new ExportNetworkWizardSavingDataSelectionPage("savingDataSelectionPage");
+        }
         addPage(selectionPage);
         addPage(columnConfigPage);
+        addPage(savingDataSelectionPage);
         addPage(filePropertyPage);
     }
 
@@ -180,8 +188,8 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
      * @param charSet the char set
      * @throws IOException
      */
-    private void runExport(final String fileSelected, final Map<String, Map<String, String>> propertyMap, Node rootNode, String separator, String quoteChar,
-            String charSet) throws IOException {
+    private void runExport(final String fileSelected, final Map<String, Map<String, String>> propertyMap, Node rootNode, HashMap<String, Boolean> checkboxStates, String fileWithPrefix,
+            String separator, String quoteChar, String charSet) throws IOException {
 
         DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
         String[] strtypes = datasetService.getSructureTypesId(rootNode);
