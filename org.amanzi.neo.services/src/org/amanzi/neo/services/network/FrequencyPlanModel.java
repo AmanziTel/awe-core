@@ -44,8 +44,11 @@ public class FrequencyPlanModel {
         Node rootNode= ns.findFrequencyRootNode(networkRoot,modelName);
         return rootNode==null?null:new FrequencyPlanModel(rootNode);
     }
-    public NodeResult getPlanNode(NodeResult trx) {
+    public NodeResult getPlanNode(Node trx) {
         return networkService.getPlanNode(rootNode, trx);
+    }
+    public Node findPlanNode(Node trx) {
+        return networkService.findPlanNode(trx,rootNode);
     }
     public String getName() {
         return ds.getNodeName(rootNode);

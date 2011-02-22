@@ -15,28 +15,30 @@ package org.amanzi.awe.views.reuse.mess_table.view;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.amanzi.awe.views.reuse.Messages;
 import org.amanzi.awe.views.reuse.mess_table.DataTypes;
-import org.amanzi.awe.views.reuse.views.InformationProvider;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.services.enums.GisTypes;
-import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.events.ShowViewEvent;
 import org.amanzi.neo.services.events.UpdateDrillDownEvent;
+import org.amanzi.neo.services.network.FrequencyPlanModel;
+import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
-import org.amanzi.neo.services.statistic.ISelectionInformation;
+import org.amanzi.neo.services.statistic.IStatistic;
 import org.amanzi.neo.services.statistic.PropertyHeader;
+import org.amanzi.neo.services.statistic.StatisticManager;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -89,7 +91,6 @@ import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
@@ -145,6 +146,7 @@ public class MessageAndEventTableView extends ViewPart {
     private String initProperty;
     private String initExpression;
     private HashMap<String,List<String>> initDatasets;
+    private DatasetService ds;
 
     @Override
     public void createPartControl(Composite parent) {
@@ -540,7 +542,7 @@ public class MessageAndEventTableView extends ViewPart {
     private boolean isNetworkNode(Node node){
         GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
         NodeTypes type = NodeTypes.getNodeType(node, service);
-        return type!=null&&type.equals(NodeTypes.SECTOR);
+        return type!=null&&(type.equals(NodeTypes.SECTOR)||type.equals(NodeTypes.TRX));
     }
     
     /**
@@ -640,36 +642,32 @@ public class MessageAndEventTableView extends ViewPart {
     private HashMap<String, DatasetInfo> initDatasetsInfo(){
         GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
         Transaction tx = service.beginTx();
-        LinkedHashMap<String, Node> allDatasetNodes = getAllDatasetNodes(service);
-        HashMap<String, DatasetInfo> result = new HashMap<String, DatasetInfo>(allDatasetNodes.size());
-        try{
-            for(String key : allDatasetNodes.keySet()){
-                result.put(key, new DatasetInfo(allDatasetNodes.get(key),service));
-            }
-        }finally{
-            tx.finish();
-        }        
+        HashMap<String, DatasetInfo> result = new HashMap<String, DatasetInfo>();
+        for (Node root:ds.getAllRootNodes().nodes()){
+            result.putAll(formDatasetInfo(root));
+        }
         return result;
     }
     
-    /**
-     * Returns all dataset Nodes.
-     *
-     * @param service GraphDatabaseService service
-     * @return LinkedHashMap<String, Node>
-     */
-    private LinkedHashMap<String, Node> getAllDatasetNodes(GraphDatabaseService service){
-        LinkedHashMap<String, Node> result = NeoUtils.getAllDatasetNodes(service);
-        Node refNode = service.getReferenceNode();
-        for (Relationship relationship : refNode.getRelationships(Direction.OUTGOING)) {
-            Node node = relationship.getEndNode();
-            Object type = node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").toString(); //$NON-NLS-1$
-            if (NeoUtils.isGisNode(node) && type.equals(GisTypes.NETWORK.getHeader()) || NodeTypes.OSS.checkNode(node)) {
-                String id = NeoUtils.getSimpleNodeName(node, null);
-                result.put(id, node);
+/**
+ * Forms all dataset info based on root node
+ *
+ * @param root
+ * @return
+ */
+    private Map< String,DatasetInfo> formDatasetInfo(Node root) {
+        Map<String, DatasetInfo> result=new HashMap<String, DatasetInfo>();
+        final String nodeName = ds.getNodeName(root);
+        result.put(nodeName,new DatasetInfo(root));
+        if (NodeTypes.NETWORK.checkNode(root)){
+            Set<FrequencyPlanModel> models = new NetworkModel(root).findAllFrqModel();
+            if (!models.isEmpty()){
+                for (FrequencyPlanModel model:models){
+                    String name=String.format("%s:plan %s", nodeName,model.getName());
+                    result.put(name, new DatasetInfo(root,model));
+                }
             }
         }
-
         return result;
     }
 
@@ -719,18 +717,53 @@ public class MessageAndEventTableView extends ViewPart {
         private DataTypes type;
         private HashMap<String, Boolean> allProperties;
         private List<String> filteredProperties;
+        private FrequencyPlanModel model;
+        private HashSet<String> trxProp;
         
         /**
          * Constructor.
          * @param aDataset
          * @param service
          */
-        public DatasetInfo(Node aDataset, GraphDatabaseService service) {
+        public DatasetInfo(Node aDataset) {
             dataset = aDataset;
-            type = DataTypes.getTypeByNode(dataset,service);
+            type = DataTypes.getTypeByNode(dataset);
             initProperties();
         }
         
+        /**
+         * @param root
+         * @param model
+         */
+        public DatasetInfo(Node networkRoot, FrequencyPlanModel model) {
+            dataset = networkRoot;
+            this.model = model;
+            type = DataTypes.NETWORK_PLAN;
+            allProperties = new HashMap<String, Boolean>();
+            filteredProperties = new ArrayList<String>();
+            trxProp = new HashSet<String>();
+            String name = ds.getNodeName(networkRoot);
+            IStatistic stat = StatisticManager.getStatistic(networkRoot);
+            final Comparable<Class> comparable = new Comparable<Class>() {
+
+                @Override
+                public int compareTo(Class o) {
+                    return 0;
+                }
+            };
+            Collection<String> result = stat.getPropertyNameCollection(name, NodeTypes.TRX.getId(), comparable);
+            for(String property : result){
+                allProperties.put(property, true);
+                filteredProperties.add(property);
+                trxProp.add(property);
+            }
+            result = stat.getPropertyNameCollection(model.getName(), NodeTypes.FREQUENCY_PLAN.getId(), comparable);
+            for(String property : result){
+                allProperties.put(property, true);
+                filteredProperties.add(property);
+            }
+        }
+
         /**
          * Initilize properties.
          */
@@ -1045,9 +1078,23 @@ public class MessageAndEventTableView extends ViewPart {
         private TableRowWrapper parseRow(Node node, String[] properties){
             TableRowWrapper row = new TableRowWrapper();
             List<String> values = new ArrayList<String>(properties.length);
-            for(String property : properties){
-                String value = node.getProperty(property, "").toString();
-                values.add(value);
+            DatasetInfo datasetInfo = datasets.get(dataset);
+            if (datasetInfo.model != null) {
+                for (String property : properties) {
+                    String value;
+                    if (datasetInfo.trxProp.contains(property)){
+                        value = node.getProperty(property, "").toString();
+                    }else{
+                        Node plan=datasetInfo.model.findPlanNode(node);
+                        value=plan==null?"":plan.getProperty(property, "").toString();
+                    }
+                    values.add(value);
+                }
+            } else {
+                for (String property : properties) {
+                    String value = node.getProperty(property, "").toString();
+                    values.add(value);
+                }
             }
             row.setValues(values);
             row.setNode(node);
@@ -1088,7 +1135,8 @@ public class MessageAndEventTableView extends ViewPart {
          * @return Iterator
          */
         private Iterator<Node> getNodesByFilter(final GraphDatabaseService service, final NodeTypes childType){
-            Node datasetNode = datasets.get(dataset).getDataset();
+            final DatasetInfo datasetInfo = datasets.get(dataset);
+            Node datasetNode = datasetInfo.getDataset();
             Iterator<Node> result = datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
                 
                 @Override
@@ -1101,7 +1149,17 @@ public class MessageAndEventTableView extends ViewPart {
                     if(property==null){
                         return true;
                     }
-                    Object objValue = currentNode.getProperty(property, null);
+                    Object objValue;
+                    if (datasetInfo.model!=null){
+                        if (datasetInfo.trxProp.contains(property)){
+                            objValue= currentNode.getProperty(property, null);
+                        }else{
+                            Node node = datasetInfo.model.findPlanNode(currentNode);
+                            objValue=node==null?null:node.getProperty(property, null);
+                        }
+                    }else{
+                        objValue= currentNode.getProperty(property, null);
+                    }
                     String realValue = objValue==null?null:objValue.toString();
                     if(expression.equals(EXPRESSION_EMPTY)){
                         return realValue==null;
@@ -1240,6 +1298,7 @@ public class MessageAndEventTableView extends ViewPart {
     @Override
     public void init(IViewSite site, IMemento memento) throws PartInitException {
         super.init(site, memento);
+        ds=NeoServiceFactory.getInstance().getDatasetService();
         if (memento == null) {
             return;
         }

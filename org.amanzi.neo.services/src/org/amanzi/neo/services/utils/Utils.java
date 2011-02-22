@@ -1482,10 +1482,9 @@ public class Utils {
      * Return type of dataset.
      * 
      * @param datasetNode dataset node
-     * @param service neoservice if null then transaction do not created
      * @return DriveTypes or null
      */
-    public static DriveTypes getDatasetType(Node datasetNode, GraphDatabaseService service) {
+    public static DriveTypes getDatasetType(Node datasetNode) {
         String typeId = (String)datasetNode.getProperty(INeoConstants.DRIVE_TYPE, null);
         return DriveTypes.findById(typeId);
     }
@@ -1633,7 +1632,7 @@ public class Utils {
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     Node node = currentPos.currentNode();
-                    return isDatasetNode(node) && getDatasetType(node, null) == datasetType;
+                    return isDatasetNode(node) && getDatasetType(node) == datasetType;
                 }
             }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING);
             for (Node node : traverser) {

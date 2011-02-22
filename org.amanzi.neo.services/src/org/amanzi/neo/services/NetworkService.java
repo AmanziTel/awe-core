@@ -408,7 +408,7 @@ public class NetworkService extends AbstractService {
         //TODO use lucene index if too slow
         final DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
 
-        Iterator<Path> itr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).evaluator(new Evaluator() {
+        Iterator<Path> itr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(DatasetRelationshipTypes.PLAN_ENTRY, Direction.OUTGOING).evaluator(new Evaluator() {
             
             @Override
             public Evaluation evaluate(Path arg0) {
@@ -642,7 +642,7 @@ public class NetworkService extends AbstractService {
    
     }
 
-    public NodeResult getPlanNode(Node rootNode, NodeResult trx) {
+    public NodeResult getPlanNode(Node rootNode, Node trx) {
         Node planNode = findPlanNode(trx, rootNode);
         boolean isCreated = planNode == null;
         if (isCreated) {

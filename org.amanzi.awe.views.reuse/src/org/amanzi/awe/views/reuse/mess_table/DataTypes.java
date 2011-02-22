@@ -15,11 +15,9 @@ package org.amanzi.awe.views.reuse.mess_table;
 
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.DriveTypes;
-import org.amanzi.neo.services.enums.GisTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.log4j.Logger;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -40,6 +38,7 @@ public enum DataTypes {
     TEMS(DriveTypes.TEMS,NodeTypes.M),
     MS(DriveTypes.MS,NodeTypes.M),
     OSS(null,NodeTypes.GPEH_EVENT),
+    NETWORK_PLAN(null,NodeTypes.TRX),
     NETWORK(null,NodeTypes.SECTOR);
     
     private DriveTypes type;
@@ -64,14 +63,14 @@ public enum DataTypes {
         return childType;
     }
     
-    public static DataTypes getTypeByNode(Node aNode, GraphDatabaseService service){
-        DriveTypes key = NeoUtils.getDatasetType(aNode, service);
+    public static DataTypes getTypeByNode(Node aNode){
+        DriveTypes key = NeoUtils.getDatasetType(aNode);
         if(key==null){
             if(NodeTypes.OSS.checkNode(aNode)){
                 return OSS;
             }
             Object type = aNode.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME, "").toString();
-            if(type.equals(GisTypes.NETWORK.getHeader())){
+            if(NodeTypes.NETWORK.checkNode(aNode)){
                 return NETWORK;
             }
             Logger.getLogger(DataTypes.class).error("DriveTypes not found for node "+aNode);

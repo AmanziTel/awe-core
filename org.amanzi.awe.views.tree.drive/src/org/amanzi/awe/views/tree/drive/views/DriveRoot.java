@@ -90,7 +90,7 @@ public class DriveRoot extends Root {
                 driveNodes.add(new DriveNeoNode(node,nextNum++));
                 
                 //Lagutko, 3.02.2010, if we have a AMS Call Dataset than we should add Analyzis to tree
-                if (NeoUtils.getDatasetType(node, service) == DriveTypes.AMS_CALLS) {
+                if (NeoUtils.getDatasetType(node) == DriveTypes.AMS_CALLS) {
                     Iterator<Relationship> analyzis = node.getRelationships(ProbeCallRelationshipType.CALL_ANALYSIS, Direction.OUTGOING).iterator();
                     
                     while (analyzis.hasNext()) {

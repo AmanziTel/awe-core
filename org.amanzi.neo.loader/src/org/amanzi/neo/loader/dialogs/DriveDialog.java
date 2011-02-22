@@ -647,7 +647,7 @@ public class DriveDialog {
             String file = loadedFiles.values().iterator().next();
             return extension.equals(getFileExt(file));
         } else {
-            return NeoUtils.getDatasetType(datasetNode, null).getExtension().equalsIgnoreCase(extension);
+            return NeoUtils.getDatasetType(datasetNode).getExtension().equalsIgnoreCase(extension);
         }
     }
 
@@ -670,7 +670,7 @@ public class DriveDialog {
             String[] result = fel.toArray(new String[0]);
             return result;
         } else {
-            return DriveTypes.getFileExtensions(NeoUtils.getDatasetType(datasetNode, null));
+            return DriveTypes.getFileExtensions(NeoUtils.getDatasetType(datasetNode));
         }
     }
 
@@ -689,7 +689,7 @@ public class DriveDialog {
             String[] result = fdl.toArray(new String[0]);
             return result;
         } else {
-            return DriveTypes.getFileDescriptions(NeoUtils.getDatasetType(datasetNode, null));
+            return DriveTypes.getFileDescriptions(NeoUtils.getDatasetType(datasetNode));
         }
     }
     
