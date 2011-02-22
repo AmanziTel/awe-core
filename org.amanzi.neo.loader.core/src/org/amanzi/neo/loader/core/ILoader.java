@@ -42,4 +42,8 @@ public interface ILoader<T extends IDataElement,T2 extends IConfigurationData> {
     String getDescription();
     PrintStream getPrintStream();
     void setPrintStream(PrintStream outputStream);
+    
+    void setRenderable(boolean renderable);
+    
+    boolean isRenderable();
 }

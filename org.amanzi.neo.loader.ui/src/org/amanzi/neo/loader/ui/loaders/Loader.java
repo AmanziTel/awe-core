@@ -78,6 +78,8 @@ public class Loader<T extends IDataElement, T2 extends IConfigurationData> imple
     private ILoaderInputValidator<T2> validator;
     private PrintStream outputStream;
 
+    private boolean isRenderable;
+    
     @Override
     public void setDescription(String description) {
         this.description = description;
@@ -137,7 +139,7 @@ public class Loader<T extends IDataElement, T2 extends IConfigurationData> imple
                 DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
                 String name = datasetService.getNodeName(root);
                 Node gis = datasetService.findGisNode(root);
-                if (gis != null) {
+                if (isRenderable && (gis != null)) {
                     LoaderUiUtils.addGisNodeToMap(name, new Node[] {gis});
                 }
             }
@@ -208,5 +210,15 @@ public class Loader<T extends IDataElement, T2 extends IConfigurationData> imple
     public void setPrintStream(PrintStream outputStream) {
         this.outputStream = outputStream;
 
+    }
+
+    @Override
+    public void setRenderable(boolean renderable) {
+        this.isRenderable = renderable;
+    }
+
+    @Override
+    public boolean isRenderable() {
+        return isRenderable;
     }
 }

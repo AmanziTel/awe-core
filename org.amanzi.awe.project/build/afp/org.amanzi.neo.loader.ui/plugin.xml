@@ -99,63 +99,56 @@
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
              saver="org.amanzi.neo.loader.core.saver.impl.NetworkSaver"
              validator="org.amanzi.neo.loader.ui.validators.NetworkSectorDataValidator"
-             allowCreate="true">
+             renderable="true">
        </loader>
        <loader
              description="Neighbour Loader"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
              saver="org.amanzi.neo.loader.core.saver.impl.NeighbourSaver"
-             validator="org.amanzi.neo.loader.ui.validators.NeighbourDataValidator"
-             allowCreate="true">
+             validator="org.amanzi.neo.loader.ui.validators.NeighbourDataValidator">
        </loader>
        <loader
              description="Network Selection"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              parser="org.amanzi.neo.loader.core.parser.LineParser"
              saver="org.amanzi.neo.loader.core.saver.impl.NetworkSelectionSaver"
-             validator="org.amanzi.neo.loader.ui.validators.ExistNetworkValidator"
-             allowCreate="true">
+             validator="org.amanzi.neo.loader.ui.validators.ExistNetworkValidator">
        </loader>
        <loader
              description="Traffic data"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              saver="org.amanzi.neo.loader.core.saver.network.TrafficDataSaver"
              validator="org.amanzi.neo.loader.ui.validators.TrafficDataValidator"
-             parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             allowCreate="true">
+             parser="org.amanzi.neo.loader.core.parser.CSVParser">
        </loader>
        <loader
              description="Frequency constraints data"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              saver="org.amanzi.neo.loader.core.saver.network.FrequencyConstraintsSaver"
              validator="org.amanzi.neo.loader.ui.validators.FrequencyConstraintsDataValidator"
-             parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             allowCreate="true">
+             parser="org.amanzi.neo.loader.core.parser.CSVParser">
        </loader>
 	   <loader
              description="Separation constraints data"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              saver="org.amanzi.neo.loader.core.saver.network.SeparationConstraintsSaver"
              validator="org.amanzi.neo.loader.ui.validators.SeparationConstraintsDataValidator"
-             parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             allowCreate="true">
+             parser="org.amanzi.neo.loader.core.parser.CSVParser">
        </loader>
        <loader
              description="Interference Matrix"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
              validator="org.amanzi.neo.loader.ui.validators.InterferenceMatrixValidator"
-             saver="org.amanzi.neo.loader.core.saver.network.InterferenceMatrixSaver"
-             allowCreate="true">
+             saver="org.amanzi.neo.loader.core.saver.network.InterferenceMatrixSaver">
        </loader>
  	   <loader
              description="Trx data"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              saver="org.amanzi.neo.loader.core.saver.network.TrxSaver"
              validator="org.amanzi.neo.loader.ui.validators.TrxDataValidator"
-             parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             allowCreate="true">
+             parser="org.amanzi.neo.loader.core.parser.CSVParser">
        </loader>
     </extension>
 

@@ -142,6 +142,7 @@ public class LaunchLoader extends AbstractHandler {
             ISaver< ? extends IDataElement> saver = defineSaver(element);
             if (parser != null && saver != null) {
                 loader.setDescription(element.getAttribute("description"));
+                loader.setRenderable(Boolean.getBoolean(element.getAttribute("renderable")));
                 // TODO define additional pages for loaders!
                 loader.setParser(parser);
                 loader.setSaver(saver);

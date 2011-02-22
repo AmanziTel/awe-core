@@ -112,6 +112,13 @@
                </appInfo>
             </annotation>
          </attribute>
+         <attribute name="renderable" type="boolean" use="default" value="false">
+            <annotation>
+               <documentation>
+                  should this data be rendered on a map
+               </documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 
