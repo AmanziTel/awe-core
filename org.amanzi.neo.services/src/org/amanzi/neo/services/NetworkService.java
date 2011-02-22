@@ -55,6 +55,7 @@ import org.neo4j.kernel.Uniqueness;
  */
 public class NetworkService extends AbstractService {
 
+    public static final String FREQUENCY = "frequency";
     private DatasetService datasetService;
 
     public NetworkService() {
@@ -240,7 +241,7 @@ public class NetworkService extends AbstractService {
     }
 
     private enum Relations implements RelationshipType {
-        CHANNEL,FREQUENCY_ROOT;
+        CHANNEL,FREQUENCY_ROOT, FR_SPECTRUM;
     }
 
     /**
@@ -667,6 +668,35 @@ public class NetworkService extends AbstractService {
                 return Evaluation.of(includes, !includes);
             }
         }).traverse(network).nodes();
+    }
+
+    public Node getFrequencySpectrumRootNode(Node rootNode) {
+       Relationship rel=rootNode.getSingleRelationship(Relations.FR_SPECTRUM, Direction.OUTGOING);
+       if (rel!=null){
+           return rel.getOtherNode(rootNode);
+       }
+       Transaction tx = databaseService.beginTx();
+       try{
+           Node result=datasetService.createNode(NodeTypes.FR_SPECTRUM, "illegal frequency");
+           rootNode.createRelationshipTo(result, Relations.FR_SPECTRUM);
+           tx.success();
+           return result;
+       }finally{
+           tx.finish();
+       }
+    }
+
+    public Node createFrSpectrimNode(Node rootNode, int frequency) {
+        Transaction tx = databaseService.beginTx();
+        try{
+            Node result=datasetService.createNode(NodeTypes.FREQ, String.valueOf(frequency));
+            result.setProperty(FREQUENCY, frequency);
+            rootNode.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
+            tx.success();
+            return result;
+        }finally{
+            tx.finish();
+        }
     }
 
 }

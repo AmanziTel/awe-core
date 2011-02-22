@@ -24,13 +24,17 @@ import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.network.IllegalFrequencySpectrumModel;
+import org.amanzi.neo.services.network.NetworkModel;
+import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Kasnitskij_V
  * @since 1.0.0
  */
@@ -42,71 +46,83 @@ public class FrequencyConstraintsSaver extends AbstractHeaderSaver<BaseTransferD
     private static final String FREQUENCY = "Frequency";
     private static final String TYPE = "Type";
     private static final String PENALTY = "Penalty";
-    
+
     private boolean headerNotHandled;
     private String networkName;
-    
+    private NetworkModel networkModel;
+    private IllegalFrequencySpectrumModel frModel;
+    private NodeToNodeRelationModel n2n;
+
     @Override
     public void init(BaseTransferData element) {
         super.init(element);
         propertyMap.clear();
         headerNotHandled = true;
     }
-    
+
     @Override
     public void save(BaseTransferData element) {
         if (headerNotHandled) {
-            networkName =rootname;// element.getFileName();
+            networkName = rootname;// element.getFileName();
+            networkModel = new NetworkModel(rootNode);
+            frModel = networkModel.getFrequencySpectrum();
+            n2n = networkModel.getIllegalFrequency();
             definePropertyMap(element);
             startMainTx(1000);
             headerNotHandled = false;
         }
         saveRow(element);
     }
-    
+
     protected void saveRow(BaseTransferData element) {
         // list of trxNode
         ArrayList<Node> listTRX = new ArrayList<Node>();
-        
+
         String sectorName = getStringValue(SECTOR, element);
         String trxId = getStringValue(TRX_ID, element);
-        
+
         // properties to trxNode
         String channelType = getStringValue(CHANNEL_TYPE, element);
         Integer frequency = getNumberValue(Integer.class, FREQUENCY, element);
         Byte type = getNumberValue(Byte.class, TYPE, element);
         Double penalty = getNumberValue(Double.class, PENALTY, element);
-        
-        //find sector
+
+        // find sector
         Node sector = service.findSector(rootNode, null, null, sectorName, true);
-        
+
         if (sector != null) {
             NetworkService networkService = NeoServiceFactory.getInstance().getNetworkService();
             // get list of trxNodes. It may contains one or some trxNodes
             if (trxId.equals("*")) {
                 listTRX = networkService.getAllTRXNode(sector);
-            }
-            else {
+            } else {
                 listTRX.add(networkService.getTRXNode(sector, trxId, null));
             }
-            
+
             if (listTRX.size() != 0) {
-                for (Node trx : listTRX){
-                    setProperty(networkName, NodeTypes.TRX.getId(), trx, CHANNEL_TYPE, channelType);
-                    setProperty(networkName, NodeTypes.TRX.getId(), trx, FREQUENCY, frequency);
-                    setProperty(networkName, NodeTypes.TRX.getId(), trx, TYPE, type);
-                    setProperty(networkName, NodeTypes.TRX.getId(), trx, PENALTY, penalty);
+                for (Node trx : listTRX) {
+                    Node frNode = frModel.getFrequencyNode(frequency);
+                    Relationship rel=n2n.getRelation(trx, frNode);
+                    setProperty(n2n.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "channel_type", channelType);
+                    setProperty(n2n.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "type", type);
+                    setProperty(n2n.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "penalty", penalty);
                 }
-            }
-            else {
+            } else {
                 getPrintStream().println("Sector with trxId " + trxId + " not found!");
             }
-        }
-        else {
+        } else {
             getPrintStream().println("Sector with name " + sectorName + " not found!");
         }
-        
+
         updateTx(1, 0);
+    }
+
+    @Override
+    public void finishUp(BaseTransferData element) {
+        statistic.setTypeCount(n2n.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), n2n.getRelationCount());
+        statistic.setTypeCount(n2n.getName(), NodeTypes.PROXY.getId(), n2n.getProxyCount());
+        info(String.format("Created illegal frequency, number relations: %s", n2n.getRelationCount()));
+        super.finishUp(element);
     }
 
     /**

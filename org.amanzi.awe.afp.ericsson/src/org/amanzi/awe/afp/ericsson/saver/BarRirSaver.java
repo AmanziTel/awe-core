@@ -37,6 +37,7 @@ import org.amanzi.neo.services.CoordinatedNode;
 import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.network.IllegalFrequencySpectrumModel;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.amanzi.neo.services.node2node.NodeToNodeTypes;
@@ -408,11 +409,18 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
      *
      */
     private void storeRirData() {
-        if (percentileValue == null || percentileValue < 0 || percentileValue > 100) {
+        IllegalFrequencySpectrumModel fs = networkModel.getFrequencySpectrum();
+        NodeToNodeRelationModel n2n = networkModel.getIllegalFrequency();
+        
+        if (percentileValue == null || percentileValue < 0 || percentileValue > 1000) {
             error(String.format("Wrong Percentile value %s", percentileValue));
             return;
         }
-        double nspv = NORMSINV(percentileValue / 100d);
+        double nspv = NORMSINV(1d*percentileValue/1000d)-NORMSINV(0.5d);
+        if (nspv==0) {
+            error(String.format("Wrong nspv value %s", 0));
+            return;
+        }
         for (Entry<String, CellRirData> entry : rirCells.entrySet()) {
             Node sector = networkModel.findSector(entry.getKey());
             if (sector == null) {
@@ -420,23 +428,31 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
                 continue;
             }
             CellRirData data = entry.getValue();
-
             // Map<Integer, RirsData> filteredData = new HashMap<Integer, BarRirSaver.RirsData>();
             for (Entry<Integer, RirsData> entryData : data.data.entrySet()) {
-                if (entryData.getValue().avpercentile < 5 || (entryData.getValue().avemedian < 4 && entryData.getValue().avpercentile < 10)) {
-                    // filteredData.put(entryData.getKey(), entryData.getValue());
-                    double frequensy = (double)entryData.getValue().arfcn;
-                    double penalty;
-                    if (entryData.getValue().avemedian > 10) {
-                        penalty = 1;// =100
-                    } else {
-                        // TODO implement
-                    }
+                if (entryData.getValue().avpercentile < 5 || entryData.getValue().avemedian < 4 ) {
+                    continue;
+                }
+                // filteredData.put(entryData.getKey(), entryData.getValue());
+                double penalty;
+                if ((entryData.getValue().avemedian>10)){
+                    penalty=1d;
+                }else{
+                    double std=entryData.getValue().avpercentile==entryData.getValue().avemedian?5:(entryData.getValue().avpercentile-entryData.getValue().avemedian)/nspv;
+                    penalty=(double)(100-NORMDIST(10, entryData.getValue().avemedian, std, true))/100d;
+                }
+                Node frNode=fs.getFrequencyNode(entryData.getValue().arfcn);
+                for (Relationship rel:sector.getRelationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING)){
+                    Node trx=rel.getOtherNode(sector);
+                    Relationship relation = n2n.getRelation(trx, frNode);
+                    setProperty(n2n.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), relation, "penalty", penalty);
+                    setProperty(n2n.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), relation, "channel_type", "ALL");
                 }
             }
-
         }
-        // TODO implement
+        statistic.setTypeCount(n2n.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), n2n.getRelationCount());
+        statistic.setTypeCount(n2n.getName(), NodeTypes.PROXY.getId(), n2n.getProxyCount());
+        info(String.format("Created illegal frequency, number relations: %s", n2n.getRelationCount()));
     }
 
     /**

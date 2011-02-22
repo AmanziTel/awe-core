@@ -41,8 +41,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import com.vividsolutions.jts.geom.Coordinate;
 
 /**
- * TODO Purpose of
  * <p>
+ * Network Model
  * </p>
  * 
  * @author Saelenchits_N
@@ -66,7 +66,9 @@ public class NetworkModel {
         // TODO define - should we always create new instance?
         return new NodeToNodeRelationModel(rootNode, type, name);
     }
-
+    public NodeToNodeRelationModel getIllegalFrequency() {
+        return getNodeToNodeRelationModel(NodeToNodeTypes.ILLEGAL_FREQUENCY, "illegal frequency");
+    }
     public NodeToNodeRelationModel getInterferenceMatrix(String name) {
         return getNodeToNodeRelationModel(NodeToNodeTypes.INTERFERENCE_MATRIX, name);
     }
@@ -178,7 +180,9 @@ public class NetworkModel {
         }
         return getCoordinateOfSite(getSiteOfSector(servSector));
     }
-
+    public IllegalFrequencySpectrumModel getFrequencySpectrum(){
+        return new IllegalFrequencySpectrumModel(networkService.getFrequencySpectrumRootNode(rootNode));
+    }
     public Coordinate getCoordinateOfSite(Node site) {
         if (site==null){
             return null;

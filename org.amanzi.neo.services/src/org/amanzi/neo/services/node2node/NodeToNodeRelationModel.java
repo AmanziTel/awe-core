@@ -88,14 +88,14 @@ public class NodeToNodeRelationModel {
         return result;
     }
 
-    /**
-     * Cleares Model
-     * 
-     * @param deleteRootNode is Root Node should be deleted
-     */
-    public void clear(boolean deleteRootNode) {
-        node2nodeRelationService.clearNodeToNodeStructure(rootNode, new String[] {proxyIndexKey}, deleteRootNode);
-    }
+//    /**
+//     * Cleares Model
+//     * 
+//     * @param deleteRootNode is Root Node should be deleted
+//     */
+//    public void clear(boolean deleteRootNode) {
+//        node2nodeRelationService.clearNodeToNodeStructure(rootNode, new String[] {proxyIndexKey}, deleteRootNode);
+//    }
 
     public long getProxyCount() {
         return countProxy;
