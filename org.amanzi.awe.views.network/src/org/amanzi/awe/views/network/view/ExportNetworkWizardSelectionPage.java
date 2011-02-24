@@ -117,7 +117,7 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
                     return;
                 }
                 TreeNeoNode element = (TreeNeoNode)selection.getFirstElement();
-                ExportNetworkWizardColumnsConfigPage nextPage = (ExportNetworkWizardColumnsConfigPage)getNextPage();
+                ExportNetworkWizardColumnsConfigPage nextPage = (ExportNetworkWizardColumnsConfigPage)getNextPage().getNextPage();
                 if (element.getType() == NodeTypes.NETWORK) {
                     selectedNode = element.getNode();
                     nextPage.changeNodeSelection(selectedNode);

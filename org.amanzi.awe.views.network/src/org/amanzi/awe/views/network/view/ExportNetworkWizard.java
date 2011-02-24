@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.neo.core.utils.EditPropertiesPage;
@@ -79,7 +80,9 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
     ExportNetworkWizardSavingDataSelectionPage savingDataSelectionPage = null;
     
     private IStructuredSelection selection;
-
+    
+    public static ArrayList<ExportNetworkWizardColumnsConfigPage> list = new ArrayList<ExportNetworkWizardColumnsConfigPage>();
+    
     @Override
     public boolean performFinish() {
         final String fileSelected = selectionPage.getFileName();
@@ -90,7 +93,7 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         final Map<String, Map<String, String>> propertyMap = columnConfigPage.getPropertyMap();
         final HashMap<String, Boolean> checkBoxStates = savingDataSelectionPage.getCheckBoxesState();
         final String fileWithPrefix = savingDataSelectionPage.getFileWithPrefixName();
-        
+
         Job exportJob = new Job("Network export") {
 
             @Override
@@ -140,19 +143,31 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         if (selectionPage == null) {
             selectionPage = new ExportNetworkWizardSelectionPage("mainPage", selection);
         }
-        if (columnConfigPage == null) {
-            columnConfigPage = new ExportNetworkWizardColumnsConfigPage("columnConfigPage");
-        }
+        
         if (savingDataSelectionPage == null) {
             savingDataSelectionPage = new ExportNetworkWizardSavingDataSelectionPage("savingDataSelectionPage");
+        }
+        if (columnConfigPage == null) {
+            columnConfigPage = new ExportNetworkWizardColumnsConfigPage("columnConfigPage");
         }
         if (filePropertyPage == null) {
             // NeoLoaderPlugin.getDefault().getPreferenceStore().getString(DataLoadPreferences.DEFAULT_CHARSET);
             filePropertyPage = new ExportNetworkWizardFilePropertyPage("propertyCSV", "windows-1251", "\t", "\"");
         }
+
+        HashMap<String, Boolean> checkBoxStates = savingDataSelectionPage.getDefaultCheckBoxesState();
+        for (String checkbox : checkBoxStates.keySet()) {
+            Boolean value = checkBoxStates.get(checkbox);
+            if (value == true) {
+                list.add(new ExportNetworkWizardColumnsConfigPage("column config page" + checkbox));
+            }
+        }
         addPage(selectionPage);
-        addPage(columnConfigPage);
         addPage(savingDataSelectionPage);
+        addPage(columnConfigPage);
+        for (ExportNetworkWizardColumnsConfigPage page : list) {
+            addPage(page);
+        }
         addPage(filePropertyPage);
     }
 

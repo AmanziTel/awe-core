@@ -21,10 +21,14 @@ import org.amanzi.neo.core.utils.EditPropertiesPage;
 import org.amanzi.neo.services.enums.INodeType;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.preference.FileFieldEditor;
+import org.eclipse.jface.wizard.IWizard;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -91,55 +95,57 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
         checkboxNetworkSectorData = new Button(main, SWT.CHECK);
         checkboxNetworkSectorData.setText(NETWORK_SECTOR_DATA);
         checkboxNetworkSectorData.setLayoutData(checkboxLayoutData);
+        checkboxNetworkSectorData.setSelection(true);
         
         checkboxNeigboursData = new Button(main, SWT.CHECK);
         checkboxNeigboursData.setText(NEIGBOURS_DATA);
         checkboxNeigboursData.setLayoutData(checkboxLayoutData);
+        checkboxNeigboursData.setSelection(true);
         
         checkboxFrequencyConstraintData = new Button(main, SWT.CHECK);
         checkboxFrequencyConstraintData.setText(FREQUENCY_CONSTRAINT_DATA);
         checkboxFrequencyConstraintData.setLayoutData(checkboxLayoutData);
+        checkboxFrequencyConstraintData.setSelection(true);
         
         checkboxInterferenceMatrix = new Button(main, SWT.CHECK);
         checkboxInterferenceMatrix.setText(INTERFERENCE_MATRIX);
         checkboxInterferenceMatrix.setLayoutData(checkboxLayoutData);
+        checkboxInterferenceMatrix.setSelection(true);
         
         checkboxSeparationConstraintData = new Button(main, SWT.CHECK);
         checkboxSeparationConstraintData.setText(SEPARATION_CONSTRAINT_DATA);
         checkboxSeparationConstraintData.setLayoutData(checkboxLayoutData);
+        checkboxSeparationConstraintData.setSelection(true);
         
         checkboxTrafficData = new Button(main, SWT.CHECK);
         checkboxTrafficData.setText(TRAFFIC_DATA);
         checkboxTrafficData.setLayoutData(checkboxLayoutData);
+        checkboxTrafficData.setSelection(true);
         
         checkboxTrxData = new Button(main, SWT.CHECK);
         checkboxTrxData.setText(TRX_DATA);
         checkboxTrxData.setLayoutData(checkboxLayoutData);
-        
+        checkboxTrxData.setSelection(true);
         
         setControl(main);
     }
     
-//    /**
-//     * @param type
-//     */
-//    public void createPage(INodeType type) {
-//        if (pages.containsKey(type)) {
-//            return;
-//        }
-//        EditPropertiesPage page = new EditPropertiesPage(type.getId(),String.format("Configure type '%s'", type.getId()), type);
-//        page.initProperty();
-//        pages.put(type, page);
-//        page.setWizard(this);
-//    }
-//    
-//    public void removePage(INodeType type) {
-//        IWizardPage page = pages.remove(type);
-//        if (page != null) {
-//            page.dispose();
-//        }
-//    }
-
+    @Override
+    public IWizardPage getNextPage() {
+        for (ExportNetworkWizardColumnsConfigPage page : ExportNetworkWizard.list) {
+            if (page != null) {
+                String name = page.getName();
+                page.dispose();
+                System.out.println("OK");
+            }
+        }
+        IWizard wizard = getWizard();
+        if (wizard == null) {
+            return null;
+        }
+        return wizard.getNextPage(this);
+    }
+    
     /**
      * Sets the file name.
      * 
@@ -174,6 +180,25 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
         checkboxesState.put(SEPARATION_CONSTRAINT_DATA, checkboxSeparationConstraintData.getSelection());
         checkboxesState.put(TRAFFIC_DATA, checkboxTrafficData.getSelection());
         checkboxesState.put(TRX_DATA, checkboxTrxData.getSelection());
+        
+        return checkboxesState;
+    }
+    
+    /**
+     * Gets checkboxes state.
+     *
+     * @return the hashmap with checkboxes state
+     */
+    public HashMap<String, Boolean> getDefaultCheckBoxesState() {
+        HashMap<String, Boolean> checkboxesState = new HashMap<String, Boolean>();
+        
+        checkboxesState.put(NETWORK_SECTOR_DATA, true);
+        checkboxesState.put(NEIGBOURS_DATA, true);
+        checkboxesState.put(FREQUENCY_CONSTRAINT_DATA, true);
+        checkboxesState.put(INTERFERENCE_MATRIX, true);
+        checkboxesState.put(SEPARATION_CONSTRAINT_DATA, true);
+        checkboxesState.put(TRAFFIC_DATA, true);
+        checkboxesState.put(TRX_DATA, true);
         
         return checkboxesState;
     }
