@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.awe.views.network.NetworkTreePlugin;
+import org.amanzi.neo.core.utils.EditPropertiesPage;
 import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
@@ -37,6 +38,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IExportWizard;
@@ -46,6 +48,7 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.graphdb.traversal.Traverser;
 import org.neo4j.helpers.Predicate;
 import org.neo4j.kernel.Traversal;
 import org.neo4j.kernel.Uniqueness;
@@ -140,12 +143,12 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         if (columnConfigPage == null) {
             columnConfigPage = new ExportNetworkWizardColumnsConfigPage("columnConfigPage");
         }
+        if (savingDataSelectionPage == null) {
+            savingDataSelectionPage = new ExportNetworkWizardSavingDataSelectionPage("savingDataSelectionPage");
+        }
         if (filePropertyPage == null) {
             // NeoLoaderPlugin.getDefault().getPreferenceStore().getString(DataLoadPreferences.DEFAULT_CHARSET);
             filePropertyPage = new ExportNetworkWizardFilePropertyPage("propertyCSV", "windows-1251", "\t", "\"");
-        }
-        if (savingDataSelectionPage == null) {
-            savingDataSelectionPage = new ExportNetworkWizardSavingDataSelectionPage("savingDataSelectionPage");
         }
         addPage(selectionPage);
         addPage(columnConfigPage);
@@ -159,7 +162,7 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         this.selection = selection;
         setWindowTitle("Export Network");
     }
-
+    
     /**
      * Displays error message instead of throwing an exception.
      * 
@@ -192,6 +195,7 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
             String separator, String quoteChar, String charSet) throws IOException {
 
         DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
+        
         String[] strtypes = datasetService.getSructureTypesId(rootNode);
         List<String> headers = new ArrayList<String>();
         List<String> usingHeadersFromStructure = new ArrayList<String>();

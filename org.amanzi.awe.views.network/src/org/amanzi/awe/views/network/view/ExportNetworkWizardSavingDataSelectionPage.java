@@ -15,7 +15,10 @@ package org.amanzi.awe.views.network.view;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Map;
 
+import org.amanzi.neo.core.utils.EditPropertiesPage;
+import org.amanzi.neo.services.enums.INodeType;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.wizard.WizardPage;
@@ -39,6 +42,8 @@ import org.eclipse.swt.widgets.Label;
  */
 public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
 
+    private static final String NETWORK_SECTOR_DATA = "Network sector data";
+    private static final String NEIGBOURS_DATA = "Neighbours data";
     private static final String FREQUENCY_CONSTRAINT_DATA = "Frequency constraint data";
     private static final String SEPARATION_CONSTRAINT_DATA = "Separation constraint data";
     private static final String TRAFFIC_DATA = "Traffic data";
@@ -53,6 +58,10 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
     private Button checkboxTrafficData;
     private Button checkboxTrxData;
     private Button checkboxInterferenceMatrix;
+    private Button checkboxNeigboursData;
+    private Button checkboxNetworkSectorData;
+    
+    private Map<INodeType, EditPropertiesPage> pages = new HashMap<INodeType, EditPropertiesPage>();
     
     protected ExportNetworkWizardSavingDataSelectionPage(String pageName) {
         super(pageName);
@@ -79,6 +88,14 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
         
         GridData checkboxLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
         
+        checkboxNetworkSectorData = new Button(main, SWT.CHECK);
+        checkboxNetworkSectorData.setText(NETWORK_SECTOR_DATA);
+        checkboxNetworkSectorData.setLayoutData(checkboxLayoutData);
+        
+        checkboxNeigboursData = new Button(main, SWT.CHECK);
+        checkboxNeigboursData.setText(NEIGBOURS_DATA);
+        checkboxNeigboursData.setLayoutData(checkboxLayoutData);
+        
         checkboxFrequencyConstraintData = new Button(main, SWT.CHECK);
         checkboxFrequencyConstraintData.setText(FREQUENCY_CONSTRAINT_DATA);
         checkboxFrequencyConstraintData.setLayoutData(checkboxLayoutData);
@@ -102,6 +119,26 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
         
         setControl(main);
     }
+    
+//    /**
+//     * @param type
+//     */
+//    public void createPage(INodeType type) {
+//        if (pages.containsKey(type)) {
+//            return;
+//        }
+//        EditPropertiesPage page = new EditPropertiesPage(type.getId(),String.format("Configure type '%s'", type.getId()), type);
+//        page.initProperty();
+//        pages.put(type, page);
+//        page.setWizard(this);
+//    }
+//    
+//    public void removePage(INodeType type) {
+//        IWizardPage page = pages.remove(type);
+//        if (page != null) {
+//            page.dispose();
+//        }
+//    }
 
     /**
      * Sets the file name.
@@ -129,11 +166,14 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
      */
     public HashMap<String, Boolean> getCheckBoxesState() {
         HashMap<String, Boolean> checkboxesState = new HashMap<String, Boolean>();
+        
+        checkboxesState.put(NETWORK_SECTOR_DATA, checkboxNetworkSectorData.getSelection());
+        checkboxesState.put(NEIGBOURS_DATA, checkboxNeigboursData.getSelection());
         checkboxesState.put(FREQUENCY_CONSTRAINT_DATA, checkboxFrequencyConstraintData.getSelection());
+        checkboxesState.put(INTERFERENCE_MATRIX, checkboxInterferenceMatrix.getSelection());
         checkboxesState.put(SEPARATION_CONSTRAINT_DATA, checkboxSeparationConstraintData.getSelection());
         checkboxesState.put(TRAFFIC_DATA, checkboxTrafficData.getSelection());
         checkboxesState.put(TRX_DATA, checkboxTrxData.getSelection());
-        checkboxesState.put(INTERFERENCE_MATRIX, checkboxInterferenceMatrix.getSelection());
         
         return checkboxesState;
     }
