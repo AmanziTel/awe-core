@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+      <extension
+          point="org.eclipse.ui.commands">
+       <category
+             id="org.amanzi.neo.loader.commands.category"
+             name="Amanzi Loading Commands">
+       </category>
+       <command
+             categoryId="org.amanzi.neo.loader.commands.category"
+             id="org.amanzi.neo.loader.commands.LoadNetwork"
+             name="Load Network Data">
+       </command>
+       <command
+             categoryId="org.amanzi.neo.loader.commands.category"
+             id="org.amanzi.neo.loader.commands.LoadNetworkSite"
+             name="Add Site Data">
+          <commandParameter id="org.amanzi.neo.loader.commands.addtoselect" name="add to select" optional="true">
+        </commandParameter>
+             
+       </command>
+       <command
+             categoryId="org.amanzi.neo.loader.commands.category"
+             id="org.amanzi.neo.loader.commands.LoadDrive"
+             name="Load Drive Data">
+                       <commandParameter id="org.amanzi.neo.loader.commands.addtoselect" name="add to select" optional="true">
+        </commandParameter>
+        <commandParameter id="org.amanzi.neo.loader.commands.loadfromurl" name="load from url" optional="true">
+        </commandParameter>
+       </command>
+       <command
+             categoryId="org.amanzi.neo.loader.commands.category"
+             id="org.amanzi.neo.loader.commands.LoadNeighbour"
+             name="Load Neighbour Data">
+       </command>
+      <command
+             categoryId="org.amanzi.neo.loader.commands.category"
+             id="org.amanzi.neo.loader.commands.LoadTransmission"
+             name="Load Transmission Data">
+       </command>    
+      
+    </extension>
+    <extension
+          point="org.eclipse.ui.handlers">
+       <handler
+             class="org.amanzi.neo.loader.handlers.LoadNetworkHandler"
+             commandId="org.amanzi.neo.loader.commands.LoadNetwork">
+       </handler>
+       <handler
+             class="org.amanzi.neo.loader.handlers.LoadNetworkSiteHandler"
+             commandId="org.amanzi.neo.loader.commands.LoadNetworkSite">
+       </handler>
+       <handler
+             class="org.amanzi.neo.loader.handlers.LoadDriveHandler"
+             commandId="org.amanzi.neo.loader.commands.LoadDrive">
+       </handler>
+       <handler
+             class="org.amanzi.neo.loader.handlers.LoadNeighbourHandler"
+             commandId="org.amanzi.neo.loader.commands.LoadNeighbour">
+       </handler>
+       <handler
+             class="org.amanzi.neo.loader.handlers.LoadTransmissionHandler"
+             commandId="org.amanzi.neo.loader.commands.LoadTransmission">
+       </handler>
+    </extension>
+   
+    <extension
+          point="org.eclipse.ui.menus">
+       <menuContribution
+             locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+          <toolbar
+                id="org.amanzi.neo.loader.toolbar">
+             <command
+                   commandId="org.amanzi.neo.loader.commands.LoadNetworkSite"
+            icon="icons/16/network_site.png"
+            id="org.amanzi.neo.loader.LoadNetworkSite"
+                   tooltip="Load Network Data">
+             </command>
+             <command
+                   commandId="org.amanzi.neo.loader.commands.LoadDrive"
+            icon="icons/16/drive.png"
+            id="org.amanzi.neo.loader.LoadDrive"
+                   tooltip="Load Drive Data">
+             </command>            
+          </toolbar>
+       </menuContribution>
+    </extension>
+    
+   <extension
+          point="org.eclipse.ui.importWizards">
+       <wizard  
+             category="org.amanzi.load"
+             class="org.amanzi.neo.wizards.NetworkSiteImportWizard"
+             icon="icons/16/network.png"
+             id="org.amanzi.neo.wizards.NetworkSiteImportWizard"
+             name="Import Network Site data">
+          <description>
+ 				Import one or more drive data log files into the project database
+          </description>
+       </wizard>  
+        <wizard
+             category="org.amanzi.load"
+             class="org.amanzi.neo.wizards.TemsImportWizard"
+             icon="icons/16/drive.png"
+             id="org.amanzi.neo.wizards.TemsImportWizard"
+             name="Import Drive data">
+          <description>
+ 				Import one or more drive data log files into the project database
+          </description>
+       </wizard>
+        <wizard
+             category="org.amanzi.load"
+             class="org.amanzi.neo.wizards.GPEHImportWizard"
+             icon="icons/16/delta_network.png"
+             id="org.amanzi.neo.wizards.GPEHImportWizard"
+             name="Import Drive data">
+          <description>
+ 				Import one or more drive data log files into the project database
+          </description>
+       </wizard>
+          
+       <category
+             id="org.amanzi.load"
+             name="Amanzi Data">
+       </category>
+
+    </extension>
+
+   <extension
+         point="net.refractions.udig.ui.newObjectAction">
+      <action
+            class="org.amanzi.neo.loader.actions.NewNetworkAction"
+            icon="icons/16/network.png"
+            id="org.amanzi.neo.loader.newNetworkAction"
+            label="New network">
+      </action>
+      <action
+            class="org.amanzi.neo.loader.actions.NewDriveAction"
+            icon="icons/16/drive.png"
+            id="org.amanzi.neo.loader.newDriveAction"
+            label="New drive">
+      </action>
+      <action
+            class="org.amanzi.neo.loader.actions.NewNeighbourAction"
+            icon="icons/16/neighbour.png"
+            id="org.amanzi.neo.loader.newNeighbour"
+            label="New neighbours">
+      </action>
+      <action
+            class="org.amanzi.neo.loader.actions.CreateNetworkAction"
+            icon="icons/16/network.png"
+            id="org.amanzi.neo.loader.actions.CreateNetworkAction"
+            label="Create new network">
+      </action>
+   </extension>
+   <extension
+         point="org.eclipse.ui.viewActions">
+      <viewContribution
+            id="org.amanzi.awe.views.network.view.NewTypeAction0"
+            targetID="org.amanzi.awe.views.network.views.NetworkTreeView">
+         <action
+               class="org.amanzi.neo.loader.actions.CreateNetworkAction"
+               icon="icons/16/network.png"
+               id="org.amanzi.neo.loader.actions.CreateNetworkAction"
+               label="createNetwork"
+               style="push"
+               toolbarPath="additions"
+               tooltip="Create New Network">
+         </action>
+      </viewContribution>
+   </extension>
+</plugin>

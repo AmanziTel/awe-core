@@ -99,7 +99,8 @@
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
              saver="org.amanzi.neo.loader.core.saver.impl.NetworkSaver"
              validator="org.amanzi.neo.loader.ui.validators.NetworkSectorDataValidator"
-             renderable="true">
+             renderable="true"
+             allowCreate="true">
        </loader>
        <loader
              description="Neighbour Loader"
