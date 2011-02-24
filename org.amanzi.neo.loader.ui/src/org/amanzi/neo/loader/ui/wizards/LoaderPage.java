@@ -82,7 +82,7 @@ public abstract class LoaderPage<T extends IConfigurationData> extends WizardPag
         ILoader< ? extends IDataElement, T> loader = getSelectedLoader();
         ILoader< ? extends IDataElement, T> candidate=null;
         if (loader != null) {
-            IValidateResult validateResult = loader.getValidator().validate(data);
+            IValidateResult validateResult = loader.getValidator().accept(data);
             if (validateResult.getResult() == Result.SUCCESS ) {
                 return loader;
             }else if (validateResult.getResult()==Result.UNKNOWN){
@@ -94,7 +94,7 @@ public abstract class LoaderPage<T extends IConfigurationData> extends WizardPag
             loaders.addAll(wizard.getLoaders());
         }
         for (ILoader< ? extends IDataElement, T> loadr:loaders){
-            Result result = loadr.getValidator().validate(data).getResult();
+            Result result = loadr.getValidator().accept(data).getResult();
             if (result==Result.SUCCESS){
                 return loadr;
             }else if (candidate==null&&result==Result.UNKNOWN){

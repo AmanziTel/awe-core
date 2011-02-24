@@ -69,6 +69,11 @@ public class Loader<T extends IDataElement, T2 extends IConfigurationData> imple
             // do nothing
         }
 
+        @Override
+        public IValidateResult accept(T2 data) {
+            return new ValidateResultImpl(Result.UNKNOWN, NeoLoaderPluginMessages.Loader_fake_validator);
+        }
+
     };
     private IParser<T, T2> parser;
     private ISaver<T> saver;
@@ -79,6 +84,8 @@ public class Loader<T extends IDataElement, T2 extends IConfigurationData> imple
     private PrintStream outputStream;
 
     private boolean isRenderable;
+    
+    private boolean allowCreate;
     
     @Override
     public void setDescription(String description) {
@@ -220,5 +227,15 @@ public class Loader<T extends IDataElement, T2 extends IConfigurationData> imple
     @Override
     public boolean isRenderable() {
         return isRenderable;
+    }
+
+    @Override
+    public void setAllowCreate(boolean allowCreate) {
+        this.allowCreate = allowCreate;
+    }
+
+    @Override
+    public boolean isAllowCreate() {
+        return allowCreate;
     }
 }

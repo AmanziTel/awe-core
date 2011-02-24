@@ -112,7 +112,7 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
         network = new Combo(main, SWT.DROP_DOWN);
         network.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        network.setItems(getRootItems());
+        network.setItems(getRootItems());        
         network.addModifyListener(new ModifyListener() {
 
             @Override
@@ -155,12 +155,21 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
 
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                setFileName(editor.getStringValue());
-                if (networkName==null||networkName.trim().isEmpty()){
-                    networkName=new java.io.File(getFileName()).getName(); 
-                    network.setText(networkName);
-                    changeNetworkName();
-                    return;
+                ILoader<? extends IDataElement, CommonConfigData> loader = setFileName(editor.getStringValue());
+                
+                if (loader.isAllowCreate()) {
+                    if (networkName==null ||networkName.trim().isEmpty()) {
+                        networkName=new java.io.File(getFileName()).getName(); 
+                        network.setText(networkName);
+                        changeNetworkName();
+                        return;
+                    }                 
+                }
+                else {
+                    if (network.getItemCount() > 0) {
+                        network.select(0);
+                        changeNetworkName();
+                    }
                 }
                 update();
             }
@@ -242,10 +251,11 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
      * Sets file name
      * 
      * @param fileName file name
+     * @return configured loader or null if there was an error
      */
-    protected void setFileName(String fileName) {
+    protected ILoader<? extends IDataElement, CommonConfigData> setFileName(String fileName) {
         if (this.fileName!=null&&this.fileName.equals(fileName)){
-            return;
+            return null;
         }
         this.fileName = fileName;
         CommonConfigData configurationData = getConfigurationData();
@@ -258,6 +268,8 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         update();
         // editor.store();
         LoaderUiUtils.setDefaultDirectory(editor.getDefaulDirectory());
+        
+        return loader;
     }
 
 

@@ -46,4 +46,8 @@ public interface ILoader<T extends IDataElement,T2 extends IConfigurationData> {
     void setRenderable(boolean renderable);
     
     boolean isRenderable();
+    
+    void setAllowCreate(boolean allowCreate);
+    
+    boolean isAllowCreate();
 }

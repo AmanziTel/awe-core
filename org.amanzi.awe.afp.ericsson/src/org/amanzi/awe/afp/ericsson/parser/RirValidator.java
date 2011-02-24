@@ -8,6 +8,8 @@ import java.util.List;
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.ILoaderInputValidator;
 import org.amanzi.neo.loader.core.IValidateResult;
+import org.amanzi.neo.loader.core.IValidateResult.Result;
+import org.amanzi.neo.loader.core.ValidateResultImpl;
 import org.amanzi.neo.loader.ui.validators.ValidatorUtils;
 
 /**
@@ -60,6 +62,11 @@ public class RirValidator implements ILoaderInputValidator<CommonConfigData> {
                 configurationData.getAdditionalProperties().put("RIR_FILES", files);
             }
         }
+    }
+
+    @Override
+    public IValidateResult accept(CommonConfigData data) {
+        return new ValidateResultImpl(Result.SUCCESS, "");
     }
 
 }

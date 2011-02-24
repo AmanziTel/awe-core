@@ -127,7 +127,8 @@
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
              saver="org.amanzi.neo.loader.core.saver.impl.NetworkSaver"
              validator="org.amanzi.neo.loader.ui.validators.NetworkSectorDataValidator"
-             renderable="true">
+             renderable="true"
+             allowCreate="true">
        </loader>
        <loader
              description="Network Site Data"
@@ -136,10 +137,10 @@
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
              saver="org.amanzi.neo.loader.core.saver.impl.NetworkSiteSaver"
              validator="org.amanzi.neo.loader.ui.validators.NetworkSiteDataValidator"
-             renderable="true">
+             renderable="true"
+             allowCreate="true">
        </loader>
        <loader
-             allowCreate="true"
              description="Neighbour Loader"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
@@ -160,28 +161,32 @@
              gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
              saver="org.amanzi.neo.loader.core.saver.impl.TemsSaver"
-             renderable="true">
+             renderable="true"
+             allowCreate="true">
        </loader>
        <loader
              description="Romes Data"
              gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
              saver="org.amanzi.neo.loader.core.saver.impl.RomesSaver"
-             renderable="true">
+             renderable="true"
+             allowCreate="true">
        </loader>
        <loader
              description="Nemo data v1.86"
              gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
              parser="org.amanzi.neo.loader.core.parser.LineParser"
              saver="org.amanzi.neo.loader.core.saver.impl.Nemo1xSaver"
-             renderable="true">
+             renderable="true"
+             allowCreate="true">
        </loader>
        <loader
              description="Nemo data v2.01"
              gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
              parser="org.amanzi.neo.loader.core.parser.LineParser"
              saver="org.amanzi.neo.loader.core.saver.impl.Nemo2xSaver"
-             renderable="true">
+             renderable="true"
+             allowCreate="true">
        </loader>
        <loader
              description="Network Selection"
@@ -224,7 +229,7 @@
              validator="org.amanzi.neo.loader.ui.validators.InterferenceMatrixValidator">
        </loader>
  	   <loader
-           description="Trx data"
+           description="TRX data"
            gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
            loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
            parser="org.amanzi.neo.loader.core.parser.CSVParser"

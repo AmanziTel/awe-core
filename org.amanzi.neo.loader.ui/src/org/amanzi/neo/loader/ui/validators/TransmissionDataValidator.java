@@ -37,5 +37,10 @@ public class TransmissionDataValidator implements ILoaderInputValidator<CommonCo
     public void filter(CommonConfigData data) {
     }
 
+    @Override
+    public IValidateResult accept(CommonConfigData data) {
+        return validate(data);
+    }
+
 }
 

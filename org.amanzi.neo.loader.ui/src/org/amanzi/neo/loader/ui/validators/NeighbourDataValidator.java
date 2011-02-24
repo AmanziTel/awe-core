@@ -38,4 +38,9 @@ public class NeighbourDataValidator implements ILoaderInputValidator<CommonConfi
     public void filter(CommonConfigData data) {
     }
 
+    @Override
+    public IValidateResult accept(CommonConfigData data) {
+        return validate(data);
+    }
+
 }

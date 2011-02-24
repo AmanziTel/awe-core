@@ -22,6 +22,8 @@ import java.util.regex.Pattern;
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.ILoaderInputValidator;
 import org.amanzi.neo.loader.core.IValidateResult;
+import org.amanzi.neo.loader.core.ValidateResultImpl;
+import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.ui.validators.ValidatorUtils;
 
 /**
@@ -56,6 +58,11 @@ public class EricssonBSMValidator implements ILoaderInputValidator<CommonConfigD
     @Override
     public IValidateResult validate(final CommonConfigData data) {
         return ValidatorUtils.checkRootExist(data);
+    }
+
+    @Override
+    public IValidateResult accept(CommonConfigData data) {
+        return new ValidateResultImpl(Result.SUCCESS, "");
     }
 
 }

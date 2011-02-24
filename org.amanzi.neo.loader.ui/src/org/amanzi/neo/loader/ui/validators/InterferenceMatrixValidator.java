@@ -20,28 +20,34 @@ import org.amanzi.neo.loader.core.IValidateResult.Result;
 
 /**
  * <p>
- *InterferenceMatrixValidator
+ * InterferenceMatrixValidator
  * </p>
+ * 
  * @author Lagutko_N
  * @since 1.0.0
  */
 public class InterferenceMatrixValidator implements ILoaderInputValidator<CommonConfigData> {
     private String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
-    
+
     @Override
     public IValidateResult validate(CommonConfigData data) {
-       IValidateResult result = ValidatorUtils.checkRootExist(data);
-       if (result.getResult()!=Result.SUCCESS){
-           return result;
-       }
-        return ValidatorUtils.checkFileAndHeaders(data.getRoot(), 3, 
-                new String[]{"Serving Sector", "Interfering Sector"}, 
-                possibleFieldSepRegexes, false);
+        IValidateResult result = ValidatorUtils.checkRootExist(data);
+        if (result.getResult() != Result.SUCCESS) {
+            return result;
+        }
+        return accept(data);
 
     }
 
     @Override
     public void filter(CommonConfigData data) {
+    }
+
+    @Override
+    public IValidateResult accept(CommonConfigData data) {
+        return ValidatorUtils.checkFileAndHeaders(data.getRoot(), 3, 
+                new String[] {"Serving Sector", "Interfering Sector"},
+                possibleFieldSepRegexes, false);
     }
 
 }

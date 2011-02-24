@@ -119,6 +119,13 @@
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="allowCreate" type="boolean" use="default" value="false">
+            <annotation>
+               <documentation>
+                  Is this loader able to create new Datasets
+               </documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 

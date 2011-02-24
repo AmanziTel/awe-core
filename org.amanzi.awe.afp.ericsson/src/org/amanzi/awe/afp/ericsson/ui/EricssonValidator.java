@@ -60,6 +60,11 @@ public class EricssonValidator implements ILoaderInputValidator<CommonConfigData
         if (result.getResult()==Result.FAIL){
             return new ValidateResultImpl(result.getResult(), "Network"+result.getMessages());
         }
+        return accept(data);
+    }
+
+    @Override
+    public IValidateResult accept(CommonConfigData data) {
         return ValidatorUtils.checkFileAndHeaders(data.getRoot(), 3, new String[]{"dchno_0"}, new String[]{" "},false);
     }
 

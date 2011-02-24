@@ -39,5 +39,10 @@ public class NetworkSectorDataValidator implements ILoaderInputValidator<CommonC
     public void filter(CommonConfigData data) {
     }
 
+    @Override
+    public IValidateResult accept(CommonConfigData data) {
+        return validate(data);
+    }
+
 
 }

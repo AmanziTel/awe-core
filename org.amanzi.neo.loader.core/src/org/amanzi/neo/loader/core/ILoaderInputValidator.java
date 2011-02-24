@@ -42,4 +42,12 @@ public interface ILoaderInputValidator<T extends IConfigurationData> {
      * @param data the data
      */
     void filter(T data);
+    
+    /**
+     * Is this data can be handled by this Loader
+     *
+     * @param data
+     * @return
+     */
+    IValidateResult accept(T data);
 }

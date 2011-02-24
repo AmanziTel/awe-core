@@ -39,4 +39,9 @@ public class NetworkSiteDataValidator implements ILoaderInputValidator<CommonCon
     public void filter(CommonConfigData data) {
     }
 
+    @Override
+    public IValidateResult accept(CommonConfigData data) {
+        return validate(data);
+    }
+
 }

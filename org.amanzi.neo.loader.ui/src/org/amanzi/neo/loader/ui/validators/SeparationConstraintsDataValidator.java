@@ -19,31 +19,35 @@ import org.amanzi.neo.loader.core.IValidateResult;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Kasnitskij_V
  * @since 1.0.0
  */
 public class SeparationConstraintsDataValidator implements ILoaderInputValidator<CommonConfigData> {
 
     private String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
-    
+
     @Override
     public IValidateResult validate(CommonConfigData data) {
-       IValidateResult result = ValidatorUtils.checkRootExist(data);
-       if (result.getResult()!=Result.SUCCESS){
-           return result;
-       }
-        return ValidatorUtils.checkFileAndHeaders(data.getRoot(), 2, 
-                new String[]{"Sector", "Separation"}, 
-                possibleFieldSepRegexes, false);
-
+        IValidateResult result = ValidatorUtils.checkRootExist(data);
+        if (result.getResult() != Result.SUCCESS) {
+            return result;
+        }
+        return accept(data);
     }
 
     @Override
     public void filter(CommonConfigData data) {
+    }
+
+    @Override
+    public IValidateResult accept(CommonConfigData data) {
+        return ValidatorUtils.checkFileAndHeaders(data.getRoot(), 2, 
+                new String[] {"Sector", "Separation"},
+                possibleFieldSepRegexes, false);
     }
 
 }

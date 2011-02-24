@@ -35,14 +35,19 @@ public class FrequencyConstraintsDataValidator implements ILoaderInputValidator<
        if (result.getResult()!=Result.SUCCESS){
            return result;
        }
-        return ValidatorUtils.checkFileAndHeaders(data.getRoot(), 3, 
-                new String[]{"Sector", "TRX_ID","ChannelType","Frequency","Type","Penalty"}, 
-                possibleFieldSepRegexes, false);
+       return accept(data);
 
     }
 
     @Override
     public void filter(CommonConfigData data) {
+    }
+
+    @Override
+    public IValidateResult accept(CommonConfigData data) {
+        return ValidatorUtils.checkFileAndHeaders(data.getRoot(), 3, 
+                new String[]{"Sector", "TRX_ID","ChannelType","Frequency","Type","Penalty"}, 
+                possibleFieldSepRegexes, false);
     }
 
 }
