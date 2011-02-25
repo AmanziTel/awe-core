@@ -14,6 +14,7 @@
 package org.amanzi.awe.views.network.view;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,14 +22,11 @@ import org.amanzi.neo.core.utils.EditPropertiesPage;
 import org.amanzi.neo.services.enums.INodeType;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.preference.FileFieldEditor;
-import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -130,22 +128,6 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
         setControl(main);
     }
     
-    @Override
-    public IWizardPage getNextPage() {
-        for (ExportNetworkWizardColumnsConfigPage page : ExportNetworkWizard.list) {
-            if (page != null) {
-                String name = page.getName();
-                page.dispose();
-                System.out.println("OK");
-            }
-        }
-        IWizard wizard = getWizard();
-        if (wizard == null) {
-            return null;
-        }
-        return wizard.getNextPage(this);
-    }
-    
     /**
      * Sets the file name.
      * 
@@ -170,16 +152,15 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
      *
      * @return the hashmap with checkboxes state
      */
-    public HashMap<String, Boolean> getCheckBoxesState() {
-        HashMap<String, Boolean> checkboxesState = new HashMap<String, Boolean>();
+    public ArrayList<Boolean> getCheckBoxesState() {
+        ArrayList<Boolean> checkboxesState = new ArrayList<Boolean>();
         
-        checkboxesState.put(NETWORK_SECTOR_DATA, checkboxNetworkSectorData.getSelection());
-        checkboxesState.put(NEIGBOURS_DATA, checkboxNeigboursData.getSelection());
-        checkboxesState.put(FREQUENCY_CONSTRAINT_DATA, checkboxFrequencyConstraintData.getSelection());
-        checkboxesState.put(INTERFERENCE_MATRIX, checkboxInterferenceMatrix.getSelection());
-        checkboxesState.put(SEPARATION_CONSTRAINT_DATA, checkboxSeparationConstraintData.getSelection());
-        checkboxesState.put(TRAFFIC_DATA, checkboxTrafficData.getSelection());
-        checkboxesState.put(TRX_DATA, checkboxTrxData.getSelection());
+        checkboxesState.add(checkboxNeigboursData.getSelection());
+        checkboxesState.add(checkboxFrequencyConstraintData.getSelection());
+        checkboxesState.add(checkboxInterferenceMatrix.getSelection());
+        checkboxesState.add(checkboxSeparationConstraintData.getSelection());
+        checkboxesState.add(checkboxTrafficData.getSelection());
+        checkboxesState.add(checkboxTrxData.getSelection());
         
         return checkboxesState;
     }
@@ -189,16 +170,24 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
      *
      * @return the hashmap with checkboxes state
      */
-    public HashMap<String, Boolean> getDefaultCheckBoxesState() {
-        HashMap<String, Boolean> checkboxesState = new HashMap<String, Boolean>();
+    public ArrayList<Boolean> getDefaultCheckBoxesState() {
+        ArrayList<Boolean> checkboxesState = new ArrayList<Boolean>();
+        for (int i = 0; i < 6; i++) {
+            checkboxesState.add(true);
+        }
         
-        checkboxesState.put(NETWORK_SECTOR_DATA, true);
-        checkboxesState.put(NEIGBOURS_DATA, true);
-        checkboxesState.put(FREQUENCY_CONSTRAINT_DATA, true);
-        checkboxesState.put(INTERFERENCE_MATRIX, true);
-        checkboxesState.put(SEPARATION_CONSTRAINT_DATA, true);
-        checkboxesState.put(TRAFFIC_DATA, true);
-        checkboxesState.put(TRX_DATA, true);
+        return checkboxesState;
+    }
+    
+    public ArrayList<String> getNameOfPages() {
+        ArrayList<String> checkboxesState = new ArrayList<String>();
+
+        checkboxesState.add(NEIGBOURS_DATA);
+        checkboxesState.add(FREQUENCY_CONSTRAINT_DATA);
+        checkboxesState.add(INTERFERENCE_MATRIX);
+        checkboxesState.add(SEPARATION_CONSTRAINT_DATA);
+        checkboxesState.add(TRAFFIC_DATA);
+        checkboxesState.add(TRX_DATA);
         
         return checkboxesState;
     }

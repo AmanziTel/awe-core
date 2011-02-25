@@ -20,8 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
-import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
-import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
@@ -36,7 +34,6 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -80,8 +77,8 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
      * 
      * @param pageName the page name
      */
-    protected ExportNetworkWizardColumnsConfigPage(String pageName) {
-        super(pageName, "Export network", null);
+    protected ExportNetworkWizardColumnsConfigPage(String pageName, String title) {
+        super(pageName, title, null);
         setDescription(getNormalDescription());
         validate();
     }
@@ -144,6 +141,36 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
 
         viewer.refresh();
 
+    }
+    
+    @Override
+    public IWizardPage getNextPage() {
+        ExportNetworkWizardColumnsConfigPage currentPage = null;
+        ArrayList<Boolean> checkboxStates = ExportNetworkWizard.getSavingDataPage().getCheckBoxesState();
+        ArrayList<Integer> indexes = new ArrayList<Integer>();
+        int index = 0;
+        for (Boolean state : checkboxStates) {
+            if (state == true) {
+                indexes.add(index);
+            }
+            index++;
+        }
+        if (ExportNetworkWizard.currentIndex > indexes.size() - 1) {
+            return getWizard().getPage("propertyCSV");
+        }
+        if (ExportNetworkWizard.currentIndex < 0) {
+            ExportNetworkWizard.currentIndex = 0;
+        }
+        currentPage = ExportNetworkWizard.list.get(indexes.get(ExportNetworkWizard.currentIndex));
+        ExportNetworkWizard.currentIndex += 2;
+        
+        return currentPage;
+    }
+    
+    @Override
+    public IWizardPage getPreviousPage() {
+        ExportNetworkWizard.currentIndex--;
+        return super.getPreviousPage();
     }
 
     /*

@@ -21,10 +21,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.amanzi.awe.views.network.NetworkTreePlugin;
-import org.amanzi.neo.core.utils.EditPropertiesPage;
 import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
@@ -39,7 +37,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IExportWizard;
@@ -49,7 +46,6 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.traversal.TraversalDescription;
-import org.neo4j.graphdb.traversal.Traverser;
 import org.neo4j.helpers.Predicate;
 import org.neo4j.kernel.Traversal;
 import org.neo4j.kernel.Uniqueness;
@@ -77,11 +73,12 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
     ExportNetworkWizardFilePropertyPage filePropertyPage = null;
 
     /** The saving data selection page. */
-    ExportNetworkWizardSavingDataSelectionPage savingDataSelectionPage = null;
+    private static ExportNetworkWizardSavingDataSelectionPage savingDataSelectionPage = null;
     
     private IStructuredSelection selection;
     
     public static ArrayList<ExportNetworkWizardColumnsConfigPage> list = new ArrayList<ExportNetworkWizardColumnsConfigPage>();
+    public static int currentIndex;
     
     @Override
     public boolean performFinish() {
@@ -91,7 +88,7 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         final String charSet = filePropertyPage.getCharsetValue();
         final Node rootNode = selectionPage.getSelectedNode();
         final Map<String, Map<String, String>> propertyMap = columnConfigPage.getPropertyMap();
-        final HashMap<String, Boolean> checkBoxStates = savingDataSelectionPage.getCheckBoxesState();
+        final ArrayList<Boolean> checkBoxStates = savingDataSelectionPage.getCheckBoxesState();
         final String fileWithPrefix = savingDataSelectionPage.getFileWithPrefixName();
 
         Job exportJob = new Job("Network export") {
@@ -148,18 +145,21 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
             savingDataSelectionPage = new ExportNetworkWizardSavingDataSelectionPage("savingDataSelectionPage");
         }
         if (columnConfigPage == null) {
-            columnConfigPage = new ExportNetworkWizardColumnsConfigPage("columnConfigPage");
+            columnConfigPage = new ExportNetworkWizardColumnsConfigPage("columnConfigPage", "Export network");
         }
         if (filePropertyPage == null) {
             // NeoLoaderPlugin.getDefault().getPreferenceStore().getString(DataLoadPreferences.DEFAULT_CHARSET);
             filePropertyPage = new ExportNetworkWizardFilePropertyPage("propertyCSV", "windows-1251", "\t", "\"");
         }
 
-        HashMap<String, Boolean> checkBoxStates = savingDataSelectionPage.getDefaultCheckBoxesState();
-        for (String checkbox : checkBoxStates.keySet()) {
-            Boolean value = checkBoxStates.get(checkbox);
-            if (value == true) {
-                list.add(new ExportNetworkWizardColumnsConfigPage("column config page" + checkbox));
+        ArrayList<Boolean> checkBoxStates = savingDataSelectionPage.getDefaultCheckBoxesState();
+        ArrayList<String> nameOfPages = savingDataSelectionPage.getNameOfPages();
+        Iterator<String> iterator = nameOfPages.iterator();
+        //list.add(columnConfigPage);
+        for (Boolean checkbox : checkBoxStates) {
+            String nameOfPage = iterator.next();
+            if (checkbox == true) {
+                list.add(new ExportNetworkWizardColumnsConfigPage("column config page" + nameOfPage, nameOfPage));
             }
         }
         addPage(selectionPage);
@@ -176,6 +176,10 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         setNeedsProgressMonitor(false);
         this.selection = selection;
         setWindowTitle("Export Network");
+    }
+    
+    public static ExportNetworkWizardSavingDataSelectionPage getSavingDataPage() {
+        return savingDataSelectionPage;
     }
     
     /**
@@ -206,7 +210,7 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
      * @param charSet the char set
      * @throws IOException
      */
-    private void runExport(final String fileSelected, final Map<String, Map<String, String>> propertyMap, Node rootNode, HashMap<String, Boolean> checkboxStates, String fileWithPrefix,
+    private void runExport(final String fileSelected, final Map<String, Map<String, String>> propertyMap, Node rootNode, ArrayList<Boolean> checkBoxStates, String fileWithPrefix,
             String separator, String quoteChar, String charSet) throws IOException {
 
         DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
