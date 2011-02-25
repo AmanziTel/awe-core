@@ -8,16 +8,23 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.amanzi.awe.afp.filters.AfpRowFilter;
 import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
+import org.amanzi.awe.afp.models.AfpModel.ScalingFactors;
 import org.amanzi.awe.afp.models.AfpModelUtils;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.node2node.INodeToNodeType;
+import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationService.NodeToNodeRelationshipTypes;
 import org.amanzi.neo.services.node2node.NodeToNodeTypes;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -26,6 +33,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.ReturnableEvaluator;
@@ -33,6 +41,9 @@ import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
+import org.neo4j.graphdb.traversal.Evaluation;
+import org.neo4j.graphdb.traversal.Evaluator;
+import org.neo4j.kernel.Traversal;
 
 /**
  * Writes the data from the neo4j database to external file
@@ -163,7 +174,7 @@ public class AfpExporter extends Job {
             }
 
             for (Node sectorNode : sectorTraverser) {
-                HashMap<Node, String[][]> sectorIntValues = getSectorInterferenceValues(sectorNode);
+                HashMap<Node, SectorValues> sectorIntValues = getSectorIntValues(sectorNode);
                 Traverser trxTraverser = AfpModelUtils.getTrxTraverser(sectorNode);
 
                 for (Node trxNode : trxTraverser) {
@@ -278,7 +289,7 @@ public class AfpExporter extends Job {
         }
     }
 
-    private void writeInterferenceForTrx(Node sector, Node trx, BufferedWriter intWriter, HashMap<Node, String[][]> sectorIntValues, AfpRowFilter rf) throws IOException {
+    private void writeInterferenceForTrx(Node sector, Node trx, BufferedWriter intWriter, HashMap<Node, SectorValues> sectorIntValues, AfpRowFilter rf) throws IOException {
 
         DecimalFormat df = new DecimalFormat("0.0000000000");
         StringBuilder trxSb = new StringBuilder();
@@ -298,8 +309,11 @@ public class AfpExporter extends Job {
                     return false;
                 }
             }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
-                String trxId = (String)trx.getProperty(INeoConstants.PROPERTY_NAME_NAME, "0");
-                if (sector.equals(intSector) && trxId.equals((String)trx.getProperty(INeoConstants.PROPERTY_NAME_NAME, "0")))
+                // TODO debug (2nd part of old condition do not necessary...)
+                // String trxId = (String)trx.getProperty(INeoConstants.PROPERTY_NAME_NAME, "0");
+                // if (sector.equals(intSector) &&
+                // trxId.equals((String)trx.getProperty(INeoConstants.PROPERTY_NAME_NAME, "0")))
+                if (trx.equals(intTrx))
                     continue;
                 if (rf != null) {
                     if (!(rf.equal(intTrx))) {
@@ -346,7 +360,7 @@ public class AfpExporter extends Job {
 
     }
 
-    private float[] calculateInterference(Node trx1, Node trx2, String[][] values) {
+    private float[] calculateInterference(Node trx1, Node trx2, SectorValues sectorValues) {
         Node sector1 = trx1.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
         Node sector2 = trx2.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
         Node site1 = sector1.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
@@ -384,49 +398,38 @@ public class AfpExporter extends Job {
                 index = isHopping2 ? AfpModel.NHBBSFH : AfpModel.NHBBNHBB;
         }
 
-        for (int j = 0; j < values[0].length; j++) {
+        for (int j = 0; j < 4; j++) {
             // CoA
 
             float val = 0;
-            for (int i = 0; i < values.length; i++) {
-                try {
-                    val = Float.parseFloat(values[i][j]);
-                } catch (Exception e) {
-                    val = 0;
-                }
-                if (j == CoT || j == AdT) {
-                    if (!useTraffic[currentDomainIndex])
-                        val = 0;
-                    else if (val < 0) {
-                        useTraffic[currentDomainIndex] = false;
-                        val = 0;
-                    }
-                }
-                float scalingFactor = 0;
+            for (Entry<NodeToNodeTypes, Map<String, List<String[]>>> entry : sectorValues.map.entrySet()) {
+                for (Entry<String, List<String[]>> entryList : entry.getValue().entrySet()) {
+                    ScalingFactors sf = model.findScalingFactor(entry.getKey(), entryList.getKey());
+                    for (String[] values : entryList.getValue()) {
+                        try {
+                            val = Float.parseFloat(values[j]);
+                        } catch (Exception e) {
+                            val = 0;
+                        }
+                        if (j == CoT || j == AdT) {
+                            if (!useTraffic[currentDomainIndex])
+                                val = 0;
+                            else if (val < 0) {
+                                useTraffic[currentDomainIndex] = false;
+                                val = 0;
+                            }
+                        }
+                        float scalingFactor = 0;
 
-                if (j == CoA || j == CoT) {
-                    if (i == NEIGH) {
-                        scalingFactor = model.coNeighbor[index] / 100;
-                    } else if (i == INTERFER) {
-                        scalingFactor = model.coInterference[index] / 100;
-                    } else if (i == TRIANGULATION) {
-                        scalingFactor = model.coTriangulation[index] / 100;
-                    } else if (i == SHADOWING) {
-                        scalingFactor = model.coShadowing[index] / 100;
+                        if (j == CoA || j == CoT) {
+                            scalingFactor = sf.getCo()[index] / 100;
+                        } else if (j == AdA || j == AdT) {
+                            scalingFactor = sf.getAdj()[index] / 100;
+                        }
+                        calculatedValues[j] += val * scalingFactor;
                     }
-                } else if (j == AdA || j == AdT) {
-                    if (i == NEIGH) {
-                        scalingFactor = model.adjNeighbor[index] / 100;
-                    } else if (i == INTERFER) {
-                        scalingFactor = model.adjInterference[index] / 100;
-                    } else if (i == TRIANGULATION) {
-                        scalingFactor = model.adjTriangulation[index] / 100;
-                    } else if (i == SHADOWING) {
-                        scalingFactor = model.adjShadowing[index] / 100;
-                    }
-                }
 
-                calculatedValues[j] += val * scalingFactor;
+                }
             }
 
             // co-site
@@ -566,6 +569,114 @@ public class AfpExporter extends Job {
                 prevValue[typeIndex] = value;
 
                 intValues.put(intSector, prevValue);
+
+            }
+        }
+
+        return intValues;
+
+    }
+
+    public HashMap<Node, SectorValues> getSectorIntValues(Node sector) {
+
+        DecimalFormat df = new DecimalFormat("0.0000000000");
+
+        // values in 2-D array for each interfering node
+        // array[neighbourArray, intArray, TriArray, shadowArray]
+        // neighbourArray[CoA, AdjA, CoT, AdjT]
+        HashMap<Node, SectorValues> intValues = new HashMap<Node, SectorValues>();
+
+        // Add this sector to calculate co-sector TRXs
+        // as I understand - not necessary
+        // String[][] coSectorTrxValues = new String[][] { {Float.toString(1), Float.toString(1),
+        // Float.toString(1), Float.toString(1)}, {}, {}, {}};
+        // intValues.put(sector, coSectorTrxValues);
+
+        for (Node proxySector : Traversal.description().depthFirst().relationships(DatasetRelationshipTypes.PROXY, Direction.OUTGOING).evaluator(new Evaluator() {
+
+            @Override
+            public Evaluation evaluate(Path arg0) {
+
+                boolean includes = arg0.length() == 1;
+                return Evaluation.of(includes, arg0.length() == 0);
+            }
+        }).traverse(sector).nodes()) {
+
+            Node proxyRoot = proxySector.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(proxySector);
+            NodeToNodeRelationModel prModel = new NodeToNodeRelationModel(proxyRoot);
+            final INodeToNodeType proxytype = prModel.getType();
+            final String prName = prModel.getName();
+            if (proxytype != NodeToNodeTypes.INTERFERENCE_MATRIX && prModel.getType() != NodeToNodeTypes.SHADOWING && prModel.getType() != NodeToNodeTypes.TRIANGULATION
+                    && prModel.getType() != NodeToNodeTypes.NEIGHBOURS) {
+                continue;
+            }
+
+            for (Relationship relation : proxySector.getRelationships(NodeToNodeRelationshipTypes.PROXYS, Direction.OUTGOING)) {
+                Node intProxySector = relation.getOtherNode(proxySector);
+
+                Relationship relationship = null;
+                relationship = intProxySector.getSingleRelationship(DatasetRelationshipTypes.PROXY, Direction.INCOMING);
+                if (relationship == null) {
+                    continue;
+                }
+                Node intSector = null;
+                intSector = relationship.getStartNode();
+                String[][] prevValue = new String[4][4];
+                SectorValues data = intValues.get(intSector);
+                if (data == null) {
+                    data = new SectorValues();
+                    intValues.put(intSector, data);
+                }
+
+                String[] value = new String[4];
+                String traffic = null;
+                try {
+                    traffic = df.format(intSector.getProperty("traffic", -1)).toString();
+                } catch (Exception e) {
+                    traffic = (String)sector.getProperty("traffic", -1);
+                }
+                String propName;
+                if (relation.hasProperty("CoA")) {
+                    propName = "CoA";
+                } else {
+                    propName = "co";
+                }
+                try {
+                    value[CoA] = df.format(relation.getProperty(propName, "0")).toString();
+                } catch (Exception e) {
+                    value[CoA] = (String)relation.getProperty(propName, "0");
+                }
+                if (relation.hasProperty("AdA")) {
+                    propName = "AdA";
+                } else {
+                    propName = "adj";
+                }
+                try {
+                    value[AdA] = df.format(relation.getProperty(propName, "0")).toString();
+                } catch (Exception e) {
+                    value[AdA] = (String)relation.getProperty(propName, "0");
+                }
+                if (relation.hasProperty("CoT")) {
+                    try {
+                        value[CoT] = df.format(relation.getProperty("CoT", "0")).toString();
+                    } catch (Exception e) {
+                        value[CoT] = (String)relation.getProperty("CoT", "0");
+                    }
+                } else {
+                    value[CoT] = traffic;
+                }
+
+                if (relation.hasProperty("AdT")) {
+                    try {
+                        value[AdT] = df.format(relation.getProperty("AdT", "0")).toString();
+                    } catch (Exception e) {
+                        value[AdT] = (String)relation.getProperty("AdT", "0");
+                    }
+                } else {
+                    value[AdT] = traffic;
+                }
+
+                data.addValues((NodeToNodeTypes)proxytype, prName, value);
 
             }
         }
@@ -787,4 +898,24 @@ public class AfpExporter extends Job {
         return dir.getPath() + PATH_SEPARATOR;
     }
 
+    public static class SectorValues {
+
+        Map<NodeToNodeTypes, Map<String, List<String[]>>> map = new HashMap<NodeToNodeTypes, Map<String, List<String[]>>>();
+
+        public void addValues(NodeToNodeTypes proxytype, String listName, String[] value) {
+            Map<String, List<String[]>> maps = map.get(proxytype);
+            if (maps == null) {
+                maps = new HashMap<String, List<String[]>>();
+                map.put(proxytype, maps);
+            }
+            List<String[]> list = maps.get(listName);
+            if (list == null) {
+                list = new ArrayList<String[]>();
+                maps.put(listName, list);
+            }
+            list.add(value);
+
+        }
+
+    }
 }

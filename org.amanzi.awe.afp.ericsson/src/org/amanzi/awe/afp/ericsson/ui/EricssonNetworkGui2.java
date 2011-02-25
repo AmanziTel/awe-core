@@ -129,5 +129,8 @@ public void setVisible(boolean visible) {
          return true;
     }
     
-
+@Override
+protected boolean isControlCreated() {
+    return false;
+}
 }

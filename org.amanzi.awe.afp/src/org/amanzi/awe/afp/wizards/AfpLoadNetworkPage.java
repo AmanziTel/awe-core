@@ -1,18 +1,8 @@
 package org.amanzi.awe.afp.wizards;
 
-import java.util.HashMap;
-
 import org.amanzi.awe.afp.models.AfpModel;
-import org.amanzi.awe.console.AweConsolePlugin;
-import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.services.enums.NodeTypes;
-import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;

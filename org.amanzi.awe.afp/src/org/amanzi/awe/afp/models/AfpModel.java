@@ -1,3 +1,15 @@
+/* AWE - Amanzi Wireless Explorer
+ * http://awe.amanzi.org
+ * (C) 2008-2009, AmanziTel AB
+ *
+ * This library is provided under the terms of the Eclipse Public License
+ * as described at http://www.eclipse.org/legal/epl-v10.html. Any use,
+ * reproduction or distribution of the library constitutes recipient's
+ * acceptance of this agreement.
+ *
+ * This library is distributed WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ */
 package org.amanzi.awe.afp.models;
 
 import java.util.ArrayList;
@@ -7,21 +19,31 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.amanzi.awe.afp.ControlFileProperties;
 import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.executors.AfpProcessProgress;
 import org.amanzi.awe.afp.exporters.AfpExporter;
 import org.amanzi.awe.console.AweConsolePlugin;
+import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.network.NetworkModel;
+import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
+import org.amanzi.neo.services.node2node.NodeToNodeTypes;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.neo.services.utils.Pair;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
@@ -29,9 +51,43 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
-
+import org.neo4j.graphdb.traversal.Evaluation;
+import org.neo4j.graphdb.traversal.Evaluator;
+import org.neo4j.kernel.Traversal;
+/**
+ * 
+ * <p>
+ *AFP model
+ * </p>
+ * @since 1.0.0
+ */
 public class AfpModel {
+    /**
+     * 
+     * <p>
+     *Scaling factor wrapper
+     * </p>
+     * @author tsinkel_a
+     * @since 1.0.0
+     */
+    public static class ScalingFactors{
 
+        private float[]co;
+        private float[]adj;
+        public float[] getCo() {
+            return co;
+        }
+        public void setCo(float[] co) {
+            this.co = co;
+        }
+        public float[] getAdj() {
+            return adj;
+        }
+        public void setAdj(float[] adj) {
+            this.adj = adj;
+        }
+        
+    }
 	protected Node datasetNode;
 	protected Node afpNode;
 	private static final String AFP_NODE_NAME = "afp-dataset";
@@ -131,17 +187,18 @@ public class AfpModel {
 	public final static int SFHSFH = 8;
 	
 	//scaling rules arrays with default values
+	public Map<NodeToNodeTypes,Map<String,ScalingFactors>>scaling=new HashMap<NodeToNodeTypes, Map<String,ScalingFactors>>();
 	public float[] sectorSeparation = new float[]{100, 100, 100, 100, 100, 100, 100, 100, 100};
 	public float[] siteSeparation = new float[]{100, 70, 50, 70, 50, 30, 70, 50, 20};
-	public float[] coInterference = new float[]{1, 0.7f, 0.5f, 0.7f, 0.5f, 0.3f, 0.7f, 0.3f, 0.2f};
-	public float[] adjInterference = new float[]{1, 0.7f, 0.5f, 0.7f, 0.5f, 0.3f, 0.7f, 0.3f, 0.2f};
-	public float[] coNeighbor = new float[]{1, 0.3f, 0.2f, 0, 0, 0, 0, 0, 0};
-	public float[] adjNeighbor = new float[]{1, 0.1f, 0, 0, 0, 0, 0, 0, 0};
-	public float[] coTriangulation = new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0};
-	public float[] adjTriangulation = new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0};
-	public float[] coShadowing = new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0};
-	public float[] adjShadowing = new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0};
-	
+	public static float[] coInterferenceDef = new float[]{1, 0.7f, 0.5f, 0.7f, 0.5f, 0.3f, 0.7f, 0.3f, 0.2f};
+	public static float[] adjInterferenceDef = new float[]{1, 0.7f, 0.5f, 0.7f, 0.5f, 0.3f, 0.7f, 0.3f, 0.2f};
+	public static float[] coNeighborDef = new float[]{1, 0.3f, 0.2f, 0, 0, 0, 0, 0, 0};
+	public static float[] adjNeighborDef = new float[]{1, 0.1f, 0, 0, 0, 0, 0, 0, 0};
+	public static float[] coTriangulationDef = new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0};
+	public static float[] adjTriangulationDef = new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0};
+	public static float[] coShadowingDef = new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0};
+	public static float[] adjShadowingDef = new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0};
+	private final DatasetService ds=NeoServiceFactory.getInstance().getDatasetService();
 	//Progress page params
 	String[] tableItems = new String[6];
 	
@@ -1084,30 +1141,54 @@ public class AfpModel {
 	/**
 	 * @return the coInterference
 	 */
-	public float[] getCoInterference() {
-		return coInterference;
+	public float[] getCoInterference(String interferenceList) {
+		ScalingFactors result = findScalingFactor(NodeToNodeTypes.INTERFERENCE_MATRIX,interferenceList);
+		return result==null||result.getCo()==null?coInterferenceDef:result.getCo();
 	}
 
 
 
 
 
-	/**
+
+    public ScalingFactors findScalingFactor(NodeToNodeTypes type, String listName) {
+        Map<String, ScalingFactors> map = scaling.get(type);
+        return map==null?null:map.get(listName);
+    }
+
+    /**
 	 * @param coInterference the coInterference to set
 	 */
-	public void setCoInterference(float[] coInterference) {
-		this.coInterference = coInterference;
+	public void setCoInterference(String interferenceList,float[] coInterference) {
+	    ScalingFactors result=getScalingFactor(NodeToNodeTypes.INTERFERENCE_MATRIX, interferenceList);
+	    result.setCo(coInterference);
 	}
 
 
 
 
 
-	/**
+
+	private ScalingFactors getScalingFactor(NodeToNodeTypes type,String listName) {
+	    Map<String, ScalingFactors> map = scaling.get(type);
+	    if (map==null){
+	        map=new HashMap<String, AfpModel.ScalingFactors>();
+	        scaling.put(type, map);
+	    }
+	    ScalingFactors result = map.get(listName);
+	    if (result==null){
+	        result=new  ScalingFactors();
+	        map.put(listName, result);
+	    }
+	    return result;
+	}
+
+    /**
 	 * @return the adjInterference
 	 */
-	public float[] getAdjInterference() {
-		return adjInterference;
+	public float[] getAdjInterference(String interferenceList) {
+        ScalingFactors result = findScalingFactor(NodeToNodeTypes.INTERFERENCE_MATRIX,interferenceList);
+        return result==null||result.getAdj()==null?adjInterferenceDef:result.getAdj();
 	}
 
 
@@ -1117,8 +1198,9 @@ public class AfpModel {
 	/**
 	 * @param adjInterference the adjInterference to set
 	 */
-	public void setAdjInterference(float[] adjInterference) {
-		this.adjInterference = adjInterference;
+	public void setAdjInterference(String interferenceList,float[] adjInterference) {
+        ScalingFactors result=getScalingFactor(NodeToNodeTypes.INTERFERENCE_MATRIX,interferenceList);
+        result.setAdj(adjInterference);
 	}
 
 
@@ -1128,8 +1210,9 @@ public class AfpModel {
 	/**
 	 * @return the coNeighbor
 	 */
-	public float[] getCoNeighbor() {
-		return coNeighbor;
+	public float[] getCoNeighbor(String neighbourList) {
+        ScalingFactors result = findScalingFactor(NodeToNodeTypes.NEIGHBOURS,neighbourList);
+        return result==null||result.getCo()==null?coNeighborDef:result.getCo();
 	}
 
 
@@ -1139,8 +1222,9 @@ public class AfpModel {
 	/**
 	 * @param coNeighbor the coNeighbor to set
 	 */
-	public void setCoNeighbor(float[] coNeighbor) {
-		this.coNeighbor = coNeighbor;
+	public void setCoNeighbor(String neighbourList,float[] coNeighbor) {
+        ScalingFactors result=getScalingFactor(NodeToNodeTypes.NEIGHBOURS, neighbourList);
+        result.setCo(coNeighbor);
 	}
 
 
@@ -1150,8 +1234,9 @@ public class AfpModel {
 	/**
 	 * @return the adjNeighbor
 	 */
-	public float[] getAdjNeighbor() {
-		return adjNeighbor;
+	public float[] getAdjNeighbor(String neighbourList) {
+        ScalingFactors result = findScalingFactor(NodeToNodeTypes.NEIGHBOURS,neighbourList);
+        return result==null||result.getAdj()==null?adjNeighborDef:result.getAdj();
 	}
 
 
@@ -1161,8 +1246,9 @@ public class AfpModel {
 	/**
 	 * @param adjNeighbor the adjNeighbor to set
 	 */
-	public void setAdjNeighbor(float[] adjNeighbor) {
-		this.adjNeighbor = adjNeighbor;
+	public void setAdjNeighbor(String neighbourList,float[] adjNeighbor) {
+        ScalingFactors result=getScalingFactor(NodeToNodeTypes.NEIGHBOURS, neighbourList);
+        result.setAdj(adjNeighbor);
 	}
 
 
@@ -1172,8 +1258,9 @@ public class AfpModel {
 	/**
 	 * @return the coTriangulation
 	 */
-	public float[] getCoTriangulation() {
-		return coTriangulation;
+	public float[] getCoTriangulation(String triangList) {
+        ScalingFactors result = findScalingFactor(NodeToNodeTypes.TRIANGULATION,triangList);
+        return result==null||result.getCo()==null?coTriangulationDef:result.getCo();
 	}
 
 
@@ -1183,8 +1270,9 @@ public class AfpModel {
 	/**
 	 * @param coTriangulation the coTriangulation to set
 	 */
-	public void setCoTriangulation(float[] coTriangulation) {
-		this.coTriangulation = coTriangulation;
+	public void setCoTriangulation(String triangList,float[] coTriangulation) {
+        ScalingFactors result=getScalingFactor(NodeToNodeTypes.TRIANGULATION, triangList);
+        result.setCo(coTriangulation);
 	}
 
 
@@ -1194,8 +1282,9 @@ public class AfpModel {
 	/**
 	 * @return the adjTriangulation
 	 */
-	public float[] getAdjTriangulation() {
-		return adjTriangulation;
+	public float[] getAdjTriangulation(String triangList) {
+        ScalingFactors result = findScalingFactor(NodeToNodeTypes.TRIANGULATION,triangList);
+        return result==null||result.getAdj()==null?adjTriangulationDef:result.getAdj();
 	}
 
 
@@ -1205,8 +1294,9 @@ public class AfpModel {
 	/**
 	 * @param adjTriangulation the adjTriangulation to set
 	 */
-	public void setAdjTriangulation(float[] adjTriangulation) {
-		this.adjTriangulation = adjTriangulation;
+	public void setAdjTriangulation(String triangList,float[] adjTriangulation) {
+        ScalingFactors result=getScalingFactor(NodeToNodeTypes.TRIANGULATION, triangList);
+        result.setAdj(adjTriangulation);
 	}
 
 
@@ -1216,8 +1306,9 @@ public class AfpModel {
 	/**
 	 * @return the coShadowing
 	 */
-	public float[] getCoShadowing() {
-		return coShadowing;
+	public float[] getCoShadowing(String shadowList) {
+        ScalingFactors result = findScalingFactor(NodeToNodeTypes.SHADOWING,shadowList);
+        return result==null||result.getCo()==null?coShadowingDef:result.getCo();
 	}
 
 
@@ -1227,8 +1318,9 @@ public class AfpModel {
 	/**
 	 * @param coShadowing the coShadowing to set
 	 */
-	public void setCoShadowing(float[] coShadowing) {
-		this.coShadowing = coShadowing;
+	public void setCoShadowing(String shadowList,float[] coShadowing) {
+        ScalingFactors result=getScalingFactor(NodeToNodeTypes.SHADOWING, shadowList);
+        result.setCo(coShadowing);
 	}
 
 
@@ -1238,8 +1330,9 @@ public class AfpModel {
 	/**
 	 * @return the adjShadowing
 	 */
-	public float[] getAdjShadowing() {
-		return adjShadowing;
+	public float[] getAdjShadowing(String shadowList) {
+        ScalingFactors result = findScalingFactor(NodeToNodeTypes.SHADOWING,shadowList);
+        return result==null||result.getAdj()==null?adjShadowingDef:result.getAdj();
 	}
 
 
@@ -1249,8 +1342,9 @@ public class AfpModel {
 	/**
 	 * @param adjShadowing the adjShadowing to set
 	 */
-	public void setAdjShadowing(float[] adjShadowing) {
-		this.adjShadowing = adjShadowing;
+	public void setAdjShadowing(String shadowList,float[] adjShadowing) {
+        ScalingFactors result=getScalingFactor(NodeToNodeTypes.SHADOWING, shadowList);
+        result.setAdj(adjShadowing);
 	}
 
 
@@ -1451,16 +1545,6 @@ public class AfpModel {
 		return names;
 	}
 	
-	public void setInterferenceMatrixArrays(float[][] array){
-		coInterference = array[0];
-		adjInterference = array[1];
-		coNeighbor = array[2];
-		adjNeighbor = array[3];
-		coTriangulation = array[4];
-		adjTriangulation = array[5];
-		coShadowing = array[6];
-		adjShadowing = array[7];
-	}
 	
 	
 	/**
@@ -1494,14 +1578,9 @@ public class AfpModel {
 
 			afpNode.setProperty(INeoConstants.AFP_SECTOR_SCALING_RULES, getSectorSeparation());
 			afpNode.setProperty(INeoConstants.AFP_SITE_SCALING_RULES, getSiteSeparation());
-			afpNode.setProperty(INeoConstants.AFP_CO_INTERFERENCE_VALUES, getCoInterference());
-			afpNode.setProperty(INeoConstants.AFP_ADJ_INTERFERENCE_VALUES,getAdjInterference());
-			afpNode.setProperty(INeoConstants.AFP_CO_NEIGHBOR_VALUES, getCoNeighbor());
-			afpNode.setProperty(INeoConstants.AFP_ADJ_NEIGHBOR_VALUES, getAdjNeighbor());
-			afpNode.setProperty(INeoConstants.AFP_CO_TRIANGULATION_VALUES, getCoTriangulation());
-			afpNode.setProperty(INeoConstants.AFP_ADJ_TRIANGULATION_VALUES, getAdjTriangulation());
-			afpNode.setProperty(INeoConstants.AFP_CO_SHADOWING_VALUES, getCoShadowing());
-			afpNode.setProperty(INeoConstants.AFP_ADJ_SHADOWING_VALUES, getAdjShadowing());
+			
+			storeScalingFactor(datasetNode,afpNode);
+
 			
 			// remove all chid nodes before storing new ones
 	/*		Traverser traverser = afpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
@@ -1581,7 +1660,40 @@ public class AfpModel {
 		}
 	}
 	
-	private void loadUserData() {
+	/**
+     *
+     * @param datasetNode2
+     * @param afpNode2
+     */
+    private void storeScalingFactor(Node datasetNode, Node afpNode) {
+        for (NodeToNodeTypes type : scaling.keySet()) {
+            final Map<String, ScalingFactors> map = scaling.get(type);
+            if (map==null){
+                continue;
+            }
+            for (Entry<String,ScalingFactors> entry :map.entrySet()){
+                saveScalingFactor(afpNode,type,entry.getKey(),entry.getValue());
+            }
+        }
+    }
+
+
+    private void saveScalingFactor(Node afpNode, NodeToNodeTypes type, String listName, ScalingFactors factors) {
+        if (type==null||listName==null||factors==null){
+            return;
+        }
+        Transaction tx = afpNode.getGraphDatabase().beginTx();
+        try{
+            Node fcNode=getScalingNode(afpNode, listName, type);
+            fcNode.setProperty("coArr",factors.getCo());
+            fcNode.setProperty("adjArr",factors.getAdj());
+            tx.success();
+        }finally{
+            tx.finish();
+        }
+    }
+
+    private void loadUserData() {
 		
 		try {
 			if (afpNode == null) {
@@ -1657,46 +1769,7 @@ public class AfpModel {
 			} catch(Exception e) {
 				// no property sent 
 			}
-			try {
-				setCoInterference((float[])afpNode.getProperty(INeoConstants.AFP_CO_INTERFERENCE_VALUES));
-			} catch(Exception e) {
-				// no property sent 
-			}
-			try {
-				setAdjInterference((float[])afpNode.getProperty(INeoConstants.AFP_ADJ_INTERFERENCE_VALUES));
-			} catch(Exception e) {
-				// no property sent 
-			}
-			try {
-				setCoNeighbor((float[])afpNode.getProperty(INeoConstants.AFP_CO_NEIGHBOR_VALUES));
-			} catch(Exception e) {
-				// no property sent 
-			}
-			try {
-				setAdjNeighbor((float[])afpNode.getProperty(INeoConstants.AFP_ADJ_NEIGHBOR_VALUES));
-			} catch(Exception e) {
-				// no property sent 
-			}
-			try {
-				setCoTriangulation((float[])afpNode.getProperty(INeoConstants.AFP_CO_TRIANGULATION_VALUES));
-			} catch(Exception e) {
-				// no property sent 
-			}
-			try {
-				setAdjTriangulation((float[])afpNode.getProperty(INeoConstants.AFP_ADJ_TRIANGULATION_VALUES));
-			} catch(Exception e) {
-				// no property sent 
-			}
-			try {
-				setCoShadowing((float[])afpNode.getProperty(INeoConstants.AFP_CO_SHADOWING_VALUES));
-			} catch(Exception e) {
-				// no property sent 
-			}
-			try {
-				setAdjShadowing((float[])afpNode.getProperty(INeoConstants.AFP_ADJ_SHADOWING_VALUES));
-			} catch(Exception e) {
-				// no property sent 
-			}
+			loadScalingFactors(datasetNode,afpNode);
 			
 			loadDomainNode(afpNode);
 /*
@@ -1721,7 +1794,98 @@ public class AfpModel {
 		}
 	}
 	
-	public void createFrequencyDomainNode(Node afpNode, AfpFrequencyDomainModel domainModel, GraphDatabaseService service){
+	/**
+     *
+     * @param datasetNode2
+     * @param afpNode2
+     */
+    private void loadScalingFactors(Node datasetNode, Node afpNode) {
+        scaling.clear();
+        NetworkModel model = new NetworkModel(datasetNode);
+        NodeToNodeTypes[] types = new NodeToNodeTypes[] {NodeToNodeTypes.INTERFERENCE_MATRIX, NodeToNodeTypes.NEIGHBOURS, NodeToNodeTypes.SHADOWING, NodeToNodeTypes.TRIANGULATION};
+        for (NodeToNodeTypes type : types) {
+            for (NodeToNodeRelationModel md : model.findAllN2nModels(type)) {
+                loadscaling(afpNode, md);
+            }
+        }
+        
+    }
+
+    /**
+     *
+     * @param afpNode2
+     * @param md
+     */
+    private void loadscaling(Node afpNode, NodeToNodeRelationModel md) {
+        String name=md.getName();
+        NodeToNodeTypes type=(NodeToNodeTypes)md.getType();
+        Node scalList=findScalingNode(afpNode,name,type);
+        float[]co;
+        float[]adj;
+        if (scalList==null){
+            switch (type) {
+            case INTERFERENCE_MATRIX:
+                co=coInterferenceDef.clone();
+                adj=adjInterferenceDef.clone();
+                break;
+            case NEIGHBOURS:
+                co=coNeighborDef.clone();
+                adj=adjNeighborDef.clone();
+                break;
+            case TRIANGULATION:
+                co=coTriangulationDef.clone();
+                adj=adjTriangulationDef.clone();
+                break;
+            case SHADOWING:
+                co=coShadowingDef.clone();
+                adj=adjShadowingDef.clone();
+                break;
+            default:
+                throw new IllegalArgumentException("Wrong type "+type);
+            }
+        }else{
+            co=(float[])scalList.getProperty("coArr");
+            adj=(float[])scalList.getProperty("adjArr");
+        }
+        ScalingFactors fc = getScalingFactor(type, name);
+        fc.setCo(co);
+        fc.setAdj(adj);
+    }
+
+    /**
+     *
+     * @param afpNode2
+     * @param name
+     * @param type
+     * @return
+     */
+    private Node findScalingNode(Node afpNode,final String name,final  NodeToNodeTypes type) {
+        Iterator<Node> it = Traversal.description().depthFirst().relationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING).evaluator(new Evaluator() {
+            
+            @Override
+            public Evaluation evaluate(Path arg0) {
+                Node node=arg0.endNode();
+                boolean includes=arg0.length()==1&&NodeTypes.AFP_SF.checkNode(node)&&name.equals(ds.getNodeName(node))&&type.name().equals(node.getProperty("n2n"));
+                return Evaluation.of(includes, arg0.length()<1);
+            }
+        }).traverse(afpNode).nodes().iterator();
+        return it.hasNext()?it.next():null;
+    }
+    private Node getScalingNode(Node afpNode,final String name,final  NodeToNodeTypes type) {
+        Node result=findScalingNode(afpNode, name, type);
+        if (result==null){
+            Transaction tx = afpNode.getGraphDatabase().beginTx();
+            try{
+                result=ds.addSimpleChild(afpNode, NodeTypes.AFP_SF, name);
+                result.setProperty("n2n", type.name());
+            tx.success();
+            }finally{
+                tx.finish();
+            }
+        }
+        return result;
+    }
+    public void createFrequencyDomainNode(Node afpNode, AfpFrequencyDomainModel domainModel, GraphDatabaseService service){
 		Node frequencyNode = findOrCreateDomainNode(afpNode, INeoConstants.AFP_DOMAIN_NAME_FREQUENCY, domainModel.getName(), service);
         
 		if(domainModel.getFilters() != null) {
@@ -2077,17 +2241,22 @@ public class AfpModel {
 		for (int i = 0; i < SCALING_PAGE_ROW_HEADERS.length; i++){
 			String s = String.format("\n\tSector-%3.1f \n\tSite-%3.1f",sectorSeparation[i], siteSeparation[i]);
 			sb.append(SCALING_PAGE_ROW_HEADERS[i][0] + "-" + SCALING_PAGE_ROW_HEADERS[i][1] + " : "+ s + "\n");
-		}
-		
-		sb.append("\nInterference Matrices: \n");
-		for (int i = 0; i < SCALING_PAGE_ROW_HEADERS.length; i++){
-			String s = String.format("\n\tInterference: Co-%3.1f, Adj-%3.1f \n\tNeighbor: Co-%3.1f, Adj-%3.1f " +
-					"\n\tTriangulation: Co-%3.1f, Adj-%3.1f \n\tShadowing: Co-%3.1f, Adj-%3.1f", 
-					coInterference[i], adjInterference[i], coNeighbor[i], adjNeighbor[i], 
-					coTriangulation[i], adjTriangulation[i], coShadowing[i], adjShadowing[i]);
-			sb.append(SCALING_PAGE_ROW_HEADERS[i][0] + "-" + SCALING_PAGE_ROW_HEADERS[i][1] + " : "+ s + "\n");
-		}
-		
+        }
+
+        sb.append("\nInterference Matrices: \n");
+        for (Entry<NodeToNodeTypes, Map<String, ScalingFactors>> entry : scaling.entrySet()) {
+            if (entry.getValue() == null || entry.getValue().isEmpty()) {
+                continue;
+            }
+            sb.append("Type ").append(entry.getKey()).append('\n');
+            for (Entry<String, ScalingFactors> scentry : entry.getValue().entrySet()) {
+                sb.append("List name: ").append(scentry.getKey()).append('\n');
+                for (int i = 0; i < SCALING_PAGE_ROW_HEADERS.length; i++) {
+                    String s = String.format("\n\tCo-%3.1f, Adj-%3.1f", scentry.getValue().getCo()[i], scentry.getValue().getAdj()[i]);
+                    sb.append(SCALING_PAGE_ROW_HEADERS[i][0] + "-" + SCALING_PAGE_ROW_HEADERS[i][1] + " : " + s + "\n");
+                }
+            }
+        }
 		
 		
 		return sb.toString();
@@ -2238,6 +2407,16 @@ public class AfpModel {
 	
 		return list.toArray(new String[0]);
 	}
+
+    /**
+     *
+     * @param interferenceMatrix
+     * @return
+     */
+    public Set<String> getLists(NodeToNodeTypes types) {
+        Map<String, ScalingFactors> map = scaling.get(types);
+        return map==null?Collections.<String>emptySet():map.keySet();
+    }
 	
 
 }

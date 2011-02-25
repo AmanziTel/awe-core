@@ -13,35 +13,10 @@
 
 package org.amanzi.awe.afp.wizards;
 
-import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-
-import org.amanzi.awe.afp.Activator;
-import org.amanzi.awe.afp.ControlFileProperties;
-import org.amanzi.awe.afp.executors.AfpProcessExecutor;
-import org.amanzi.awe.afp.loaders.AfpLoader;
-import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
-import org.amanzi.awe.afp.models.AfpHoppingMALDomainModel;
-import org.amanzi.awe.afp.models.AfpSeparationDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
-import org.amanzi.awe.console.AweConsolePlugin;
-import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.services.enums.NodeTypes;
-import org.amanzi.neo.services.ui.NeoServiceProviderUi;
-import org.amanzi.neo.services.ui.NeoUtils;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.jface.wizard.WizardPage;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Scale;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 
