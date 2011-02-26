@@ -42,7 +42,10 @@ import org.junit.runners.Suite.SuiteClasses;
 				org.amanzi.neo.loader.testing.NeighbourLoaderTest.class,
 				org.amanzi.neo.loader.testing.NokiaTopologyLoaderTest.class,
 				org.amanzi.neo.loader.testing.RomesLoaderTest.class,
-				org.amanzi.neo.loader.testing.TemsLoaderTest.class} )
+				org.amanzi.neo.loader.testing.TemsLoaderTest.class,
+				org.amanzi.neo.loader.core.saver.impl.testing.NetworkSaverTesting.class,
+				org.amanzi.neo.loader.core.saver.impl.testing.StatisticTesting.class,
+				org.amanzi.neo.services.node2node.testing.NodeToNodeRelationModelTesting.class} )
 // Note that Categories is a kind of Suite
 public class AllTest {
 	

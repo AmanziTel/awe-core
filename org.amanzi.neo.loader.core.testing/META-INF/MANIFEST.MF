@@ -11,3 +11,4 @@ Require-Bundle: org.junit4;bundle-version="4.3.1",
 Import-Package: org.amanzi.neo.loader.core,
  org.amanzi.neo.loader.ui,
  org.amanzi.neo.services.ui
+Export-Package: org.amanzi.neo.loader.core.saver.impl.testing
