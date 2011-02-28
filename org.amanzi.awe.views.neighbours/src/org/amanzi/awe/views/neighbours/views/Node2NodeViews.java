@@ -329,7 +329,7 @@ public class Node2NodeViews extends ViewPart {
         // }
         // });
         view.setItemCount(0);
-        layoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 6, 1);
+        layoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 7, 1);
         view.getControl().setLayoutData(layoutData);
         setFilter(networks.getAllNode2NodeFilter(AweUiPlugin.getDefault().getUiService().getActiveProjectNode()));
         final TableEditor editor = new TableEditor(table);
