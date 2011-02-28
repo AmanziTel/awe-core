@@ -36,11 +36,8 @@ public abstract class Node2NodeSaver<T extends BaseTransferData> extends Abstrac
     /** The header not handled. */
     private boolean headerNotHandled;
     
-    /** The neighbour root. */
-    private Node neighbourRoot;
-    
     /** The neighbour name. */
-    private String neighbourName;
+    protected String neighbourName;
     
     /** The model. */
     protected NodeToNodeRelationModel model;

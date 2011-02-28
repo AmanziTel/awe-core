@@ -17,8 +17,10 @@ import java.util.Arrays;
 import java.util.Set;
 
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
+import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.core.saver.MetaData;
 import org.amanzi.neo.loader.core.saver.Node2NodeSaver;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.neo4j.graphdb.Node;
@@ -40,6 +42,7 @@ public class InterferenceMatrixSaver extends Node2NodeSaver<BaseTransferData> {
         super.init(element);
         networkModel = new NetworkModel(rootNode);
     }
+    
     @Override
     protected Node defineNeigh(BaseTransferData element) {
         String name = getStringValue("neigh_sector_name", element);
@@ -54,13 +57,20 @@ public class InterferenceMatrixSaver extends Node2NodeSaver<BaseTransferData> {
 
     @Override
     protected void storeHandledData(Relationship rel, BaseTransferData element) {
+        Double co =  getNumberValue(Double.class, "co", element);
+        updateProperty(neighbourName, NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "co", co);
+        
+        Double adj =  getNumberValue(Double.class, "adj", element);
+        updateProperty(neighbourName, NodeTypes.NODE_NODE_RELATIONS.getId(), rel, "adj", adj);
     }
 
     @Override
     protected void definePropertyMap(BaseTransferData element) {
         Set<String> headers = element.keySet();
-        defineHeader(headers, "serv_sector_name", new String[] {"Serving Sector"});
-        defineHeader(headers, "neigh_sector_name", new String[] {"Interfering Sector"});
+        defineHeader(headers, "neigh_sector_name", getPossibleHeaders(DataLoadPreferences.NE_SRV_NAME));
+        defineHeader(headers, "serv_sector_name",  getPossibleHeaders(DataLoadPreferences.NE_NBR_NAME));
+        defineHeader(headers, "co", getPossibleHeaders(DataLoadPreferences.NE_SRV_CO));
+        defineHeader(headers, "adj", getPossibleHeaders(DataLoadPreferences.NE_SRV_ADJ));
     }
 
     @Override
@@ -71,6 +81,5 @@ public class InterferenceMatrixSaver extends Node2NodeSaver<BaseTransferData> {
     @Override
     public NodeToNodeRelationModel getModel(String neighbourName) {
         return networkModel.getInterferenceMatrix(neighbourName);
-    }
-
+    }    
 }

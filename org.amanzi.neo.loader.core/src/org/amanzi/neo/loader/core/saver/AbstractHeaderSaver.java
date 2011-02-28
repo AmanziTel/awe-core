@@ -189,6 +189,14 @@ public abstract  class AbstractHeaderSaver<T extends BaseTransferData> extends A
         }
         return element.get(header);
     }
+    
+    protected String removeStringValue(String key, BaseTransferData element) {
+        String header = propertyMap.remove(key);
+        if (header == null) {
+            header = key;
+        }
+        return element.get(header);
+    }
 
     /**
      * Gets the number value.
@@ -203,7 +211,11 @@ public abstract  class AbstractHeaderSaver<T extends BaseTransferData> extends A
     protected <T2 extends Number> T2 getNumberValue(Class<T2> klass, String key, BaseTransferData element) {
         String value = getStringValue(key, element);
         return getNumberValue(klass,value);
-        
+    }
+    
+    protected <T2 extends Number> T2 removeNumberValue(Class<T2> klass, String key, BaseTransferData element) {
+        String value = removeStringValue(key, element);
+        return getNumberValue(klass, value);
     }
     
     /**
@@ -246,7 +258,7 @@ public abstract  class AbstractHeaderSaver<T extends BaseTransferData> extends A
             if (!propertyMap.values().contains(key)) {
                 Object value=statistic.parseValue(keyId,typeId,key,element.get(key));
                 if(value!=null){
-                    result.put(key, value);
+                    result.put(key.toLowerCase(), value);
                 }
                 continue;
             }

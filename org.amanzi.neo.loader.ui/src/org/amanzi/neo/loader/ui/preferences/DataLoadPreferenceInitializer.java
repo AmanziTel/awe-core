@@ -199,11 +199,13 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.NH_BEAMWIDTH, ".*beamwidth.*, beam, hbw");
         
         pref.setDefault(DataLoadPreferences.NE_SRV_CI, "CI, CI_s");
-        pref.setDefault(DataLoadPreferences.NE_SRV_NAME, "Server, BTS_NAME, BTS_Name_s");
+        pref.setDefault(DataLoadPreferences.NE_SRV_NAME, "Server, BTS_NAME, BTS_Name_s, Serving Sector");
         pref.setDefault(DataLoadPreferences.NE_SRV_LAC, "LAC, LAC_s");
+        pref.setDefault(DataLoadPreferences.NE_SRV_CO, "Co, CoA");
+        pref.setDefault(DataLoadPreferences.NE_SRV_ADJ, "Adj, AdA");
         
         pref.setDefault(DataLoadPreferences.NE_NBR_CI, "ADJ_CI, CI_t");
-        pref.setDefault(DataLoadPreferences.NE_NBR_NAME, "Neighbour, Interferer, ADJ_BTS_NAME, BTS_Name_t");
+        pref.setDefault(DataLoadPreferences.NE_NBR_NAME, "Neighbour, Interferer, ADJ_BTS_NAME, BTS_Name_t, Interfering Sector ");
         pref.setDefault(DataLoadPreferences.NE_NBR_LAC, "ADJ_LAC, LAC_t");
         
         pref.setDefault(DataLoadPreferences.TR_SITE_ID_SERV, "Site ID, Near end Name");

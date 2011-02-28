@@ -67,6 +67,8 @@ public class DataLoadPreferences {
     public static final String NE_SRV_CI = "NE_SRV_CI";
     public static final String NE_SRV_LAC = "NE_SRV_LAC";
     public static final String NE_SRV_NAME = "NE_SRV_NAME";
+    public static final String NE_SRV_CO = "NE_SRV_CO";
+    public static final String NE_SRV_ADJ = "NE_SRV_ADJ";
     
     public static final String NE_NBR_CI = "NE_NBR_CI";
     public static final String NE_NBR_LAC = "NE_NBR_LAC";

@@ -17,6 +17,8 @@ import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.ILoaderInputValidator;
 import org.amanzi.neo.loader.core.IValidateResult;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
+import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.ui.preferences.DataLoadPreferencePage;
 
 /**
  * <p>
@@ -46,8 +48,8 @@ public class InterferenceMatrixValidator implements ILoaderInputValidator<Common
     @Override
     public IValidateResult accept(CommonConfigData data) {
         return ValidatorUtils.checkFileAndHeaders(data.getRoot(), 3, 
-                new String[] {"Serving Sector", "Interfering Sector"},
-                possibleFieldSepRegexes, false);
+                new String[]{DataLoadPreferences.NE_NBR_NAME, DataLoadPreferences.NE_SRV_NAME,
+                             DataLoadPreferences.NE_SRV_CO,   DataLoadPreferences.NE_SRV_ADJ}, possibleFieldSepRegexes);        
     }
 
 }

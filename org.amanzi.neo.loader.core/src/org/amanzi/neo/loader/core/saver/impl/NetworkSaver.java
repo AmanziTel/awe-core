@@ -340,6 +340,10 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
             }
             // header.parseLine(sector, fields);
             Map<String, Object> sectorData = getNotHandledData(element,rootname,NodeTypes.SECTOR.getId());
+            
+            String band = getStringValue("band", element);
+            
+            processCarriers(sector, band, sectorData);
 
             for (Map.Entry<String, Object> entry : sectorData.entrySet()) {
                 String key = entry.getKey();
@@ -354,7 +358,43 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
         }
     }
 
-
+    private void processCarriers(Node sector, String band, Map<String, Object> propertyMap) {
+        if (band==null){
+            return;
+        }
+        //try to get a Band
+        int spaceIndex = band.indexOf(" ");
+        if (spaceIndex > 0) {
+            band = band.substring(spaceIndex).trim();
+        }
+        
+        //try to get BCCH frequency
+        Object frequency = propertyMap.get("bcch");
+        if (frequency != null) {
+            Integer iFrequency = (Integer)frequency;
+            
+            Utils.createBCCHCarrier(sector, band, new int[] {iFrequency}, getService());
+        }
+        
+        //try to get other frequencies
+        ArrayList<String> propertiesToRemove = new ArrayList<String>();
+        for (String key : propertyMap.keySet()) {
+            if (key.startsWith("trx")) {
+                String trxIndex = key.substring(key.indexOf("trx") + 3);
+                Integer trxId = Integer.parseInt(trxIndex);
+                
+                Integer arfcn = (Integer)propertyMap.get(key);
+                propertiesToRemove.add(key);
+                Utils.createCarrier(sector, trxId, band, new int[] {arfcn}, getService());
+            }
+        }
+        
+        //clean up sector data from trxs
+        for (String trxKey : propertiesToRemove) {
+            propertyMap.remove(trxKey);
+        }
+        
+    }
 
 
 
@@ -377,6 +417,8 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
         defineHeader(headers, INeoConstants.PROPERTY_LON_NAME, getPossibleHeaders(DataLoadPreferences.NH_LONGITUDE));
         defineHeader(headers, "beamwidth", getPossibleHeaders(DataLoadPreferences.NH_BEAMWIDTH));
         defineHeader(headers, "azimuth", getPossibleHeaders(DataLoadPreferences.NH_AZIMUTH));
+        
+        defineHeader(headers, "band",  new String[] {"Ant_Freq_Band"});
 //        is3G = element.keySet().contains("gsm_ne");
     }
 
