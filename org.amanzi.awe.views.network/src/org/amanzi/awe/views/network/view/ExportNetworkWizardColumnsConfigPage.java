@@ -156,12 +156,12 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
             index++;
         }
         if (ExportNetworkWizard.currentIndex > indexes.size() - 1) {
-            return getWizard().getPage("propertyCSV");
+            return getWizard().getPage(ExportNetworkWizard.PROPERTY_CSV);
         }
         if (ExportNetworkWizard.currentIndex < 0) {
             ExportNetworkWizard.currentIndex = 0;
         }
-        currentPage = ExportNetworkWizard.list.get(indexes.get(ExportNetworkWizard.currentIndex));
+        currentPage = ExportNetworkWizard.availablePages.get(indexes.get(ExportNetworkWizard.currentIndex));
         ExportNetworkWizard.currentIndex += 2;
         
         return currentPage;

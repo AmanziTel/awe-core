@@ -77,8 +77,9 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
     
     private IStructuredSelection selection;
     
-    public static ArrayList<ExportNetworkWizardColumnsConfigPage> list = new ArrayList<ExportNetworkWizardColumnsConfigPage>();
+    public static ArrayList<ExportNetworkWizardColumnsConfigPage> availablePages = new ArrayList<ExportNetworkWizardColumnsConfigPage>();
     public static int currentIndex;
+    public static final String PROPERTY_CSV = "propertyCSV";
     
     @Override
     public boolean performFinish() {
@@ -149,7 +150,7 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         }
         if (filePropertyPage == null) {
             // NeoLoaderPlugin.getDefault().getPreferenceStore().getString(DataLoadPreferences.DEFAULT_CHARSET);
-            filePropertyPage = new ExportNetworkWizardFilePropertyPage("propertyCSV", "windows-1251", "\t", "\"");
+            filePropertyPage = new ExportNetworkWizardFilePropertyPage(PROPERTY_CSV, "windows-1251", "\t", "\"");
         }
 
         ArrayList<Boolean> checkBoxStates = savingDataSelectionPage.getDefaultCheckBoxesState();
@@ -159,13 +160,13 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         for (Boolean checkbox : checkBoxStates) {
             String nameOfPage = iterator.next();
             if (checkbox == true) {
-                list.add(new ExportNetworkWizardColumnsConfigPage("column config page" + nameOfPage, nameOfPage));
+                availablePages.add(new ExportNetworkWizardColumnsConfigPage("column config page" + nameOfPage, nameOfPage));
             }
         }
         addPage(selectionPage);
         addPage(savingDataSelectionPage);
         addPage(columnConfigPage);
-        for (ExportNetworkWizardColumnsConfigPage page : list) {
+        for (ExportNetworkWizardColumnsConfigPage page : availablePages) {
             addPage(page);
         }
         addPage(filePropertyPage);
