@@ -153,7 +153,8 @@ public class Node2NodeViews extends ViewPart {
     private TableViewer view;
     protected int column = -1;
     private Wrapper data;
-    private boolean direction=true;
+    private boolean direction = true;
+
     @Override
     public void createPartControl(Composite parent) {
         Composite main = new Composite(parent, SWT.FILL);
@@ -211,7 +212,7 @@ public class Node2NodeViews extends ViewPart {
                 widgetSelected(e);
             }
         });
-        direction=true;
+        direction = true;
         outgoingAnalyse.setSelection(direction);
         commit = new Button(main, SWT.BORDER | SWT.PUSH);
         commit.addSelectionListener(new SelectionListener() {
@@ -307,7 +308,7 @@ public class Node2NodeViews extends ViewPart {
         });
         returnFullList.setLayoutData(layoutData);
 
-        table = new Table(main, SWT.VIRTUAL | SWT.BORDER|SWT.FULL_SELECTION);
+        table = new Table(main, SWT.VIRTUAL | SWT.BORDER | SWT.FULL_SELECTION);
         view = new TableViewer(table);
         view.setContentProvider(new VirtualContentProvider());
         view.setLabelProvider(new VirtualLabelProvider());
@@ -320,13 +321,13 @@ public class Node2NodeViews extends ViewPart {
         // });
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
-//        table.addListener(SWT.EraseItem, new Listener() {
-//            public void handleEvent(Event event) {
-//                if ((event.detail & SWT.SELECTED) != 0) {
-//                    event.detail &= ~SWT.SELECTED;
-//                }
-//            }
-//        });
+        // table.addListener(SWT.EraseItem, new Listener() {
+        // public void handleEvent(Event event) {
+        // if ((event.detail & SWT.SELECTED) != 0) {
+        // event.detail &= ~SWT.SELECTED;
+        // }
+        // }
+        // });
         view.setItemCount(0);
         layoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 6, 1);
         view.getControl().setLayoutData(layoutData);
@@ -438,7 +439,7 @@ public class Node2NodeViews extends ViewPart {
      *
      */
     protected void changeDirection() {
-        table.clearAll();
+        formCollumns();
         fireModel(null);
     }
 
@@ -887,6 +888,7 @@ public class Node2NodeViews extends ViewPart {
 
     private void formCollumns() {
         int countRelation = 0;
+        table.setVisible(false);
         table.clearAll();
         if (n2nModel == null) {
             colColut = 0;
@@ -901,12 +903,12 @@ public class Node2NodeViews extends ViewPart {
             propertys = new ArrayList<String>();
             propertys.addAll(propertyNames);
             colColut = propertyNames.size() + 2;
-            boolean createdCollumn=columns.isEmpty();
+            boolean createdCollumn = columns.isEmpty();
             while (columns.size() < colColut) {
                 TableColumn col = new TableColumn(table, SWT.NONE);
                 columns.add(col);
             }
-            if (createdCollumn){
+            if (createdCollumn) {
             }
             columns.get(0).setText("Server ");
             String neighName;
@@ -936,18 +938,19 @@ public class Node2NodeViews extends ViewPart {
         }
         resizecolumns();
         view.setItemCount(countRelation);
+        view.refresh();
         table.setVisible(countRelation > 0);
     }
 
-
     /**
      * Gets the relation iterator.
-     *
+     * 
      * @param filter2 the filter2
      * @return the relation iterator
      */
     private Iterable<Relationship> getRelationIterator(INode2NodeFilter filter2) {
-        return direction?n2ns.getRelationTraverserByFilteredNodes(filter.getFilteredServNodes(n2nModel), Direction.OUTGOING):n2ns.getRelationTraverserByFilteredNodes(filter.getFilteredNeighNodes(n2nModel), Direction.INCOMING);
+        return direction ? n2ns.getRelationTraverserByFilteredNodes(filter.getFilteredServNodes(n2nModel), Direction.OUTGOING) : n2ns.getRelationTraverserByFilteredNodes(
+                filter.getFilteredNeighNodes(n2nModel), Direction.INCOMING);
     }
 
     /**
