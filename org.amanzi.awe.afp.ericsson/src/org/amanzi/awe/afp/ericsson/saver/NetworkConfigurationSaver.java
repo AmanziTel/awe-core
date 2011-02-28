@@ -337,6 +337,16 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
             }
             updateProperty(rootname, NodeTypes.TRX.getId(), trx, "hsn", channalGr.getProperty("hsn", null));
             Integer bcchno = (Integer)sector.getProperty("bcch", null);
+            if (!plan.hasProperty("bcc")){
+                Object bcc = sector.getProperty("bcc");
+                if (bcc!=null){
+                    updateProperty(getPlanName(element), NodeTypes.FREQUENCY_PLAN.getId(),plan,"bcc",bcc);
+                }
+                Object ncc = sector.getProperty("ncc");
+                if (ncc!=null){
+                    updateProperty(getPlanName(element), NodeTypes.FREQUENCY_PLAN.getId(),plan,"ncc",ncc);
+                }
+            }
             if (!plan.hasProperty("arfcn")) {
                 Integer arfcn = null;
                 if (isBcch) {
