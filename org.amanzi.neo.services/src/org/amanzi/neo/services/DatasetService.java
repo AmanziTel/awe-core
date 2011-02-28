@@ -36,6 +36,7 @@ import org.amanzi.neo.services.enums.SplashRelationshipTypes;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.internal.DynamicNodeType;
 import org.amanzi.neo.services.networkselection.NetworkSelectionModel;
+import org.amanzi.neo.services.node2node.NodeToNodeRelationService.NodeToNodeRelationshipTypes;
 import org.amanzi.neo.services.utils.Utils;
 import org.amanzi.neo.services.utils.Utils.FilterAND;
 import org.apache.commons.lang.StringUtils;
@@ -45,7 +46,11 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
 import org.neo4j.graphdb.traversal.PruneEvaluator;
@@ -1564,5 +1569,23 @@ public class DatasetService extends AbstractService {
         } finally {
             tx.finish();
         }
+    }
+    
+    public List<Relationship> getRelationships(Node relationshipNode, List<Node> selectedNodes, Direction direction) {
+        ArrayList<Relationship> relationships = new ArrayList<Relationship>();
+        for (Node selected : selectedNodes) {
+            for (Node node : selected.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+
+                @Override
+                public boolean isReturnableNode(TraversalPosition position) {
+                    return position.lastRelationshipTraversed().isType(DatasetRelationshipTypes.PROXY);
+                }
+            })) {
+                for (Relationship rel : node.getRelationships(direction)) {
+                    relationships.add(rel);
+                }
+            }
+        }
+        return relationships;
     }
 }
