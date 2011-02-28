@@ -149,22 +149,7 @@ public abstract class AbstractMainPage<T extends IConfigurationData> extends Loa
         });
         addAdditionalComponents(parent, main);
         new Label(main, SWT.NONE);
-        final Button batchMode = new Button(main, SWT.CHECK);
-        batchMode.addSelectionListener(new SelectionListener() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                setAccessType(batchMode.getSelection());
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                widgetSelected(e);
-            }
-        });
-        batchMode.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
-        batchMode.setText("batch mode");
-
+       
         setControl(main);
         update();
     }
