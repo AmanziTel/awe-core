@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -86,8 +87,7 @@ public class NeighboursPlugin extends AbstractUIPlugin implements IUpdateViewLis
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
      */
     public void stop(BundleContext context) throws Exception {
-        // Lagutko, 9.10.2009, use NeoServiceProvider instead NeoManager
-        NeoServiceProviderUi.getProvider().rollback();
+//        NeoServiceProviderUi.getProvider().rollback(); - rollback is not necessary.
         plugin = null;
         super.stop(context);
         NeoCorePlugin.getDefault().getUpdateViewManager().removeListener(this);
@@ -233,6 +233,18 @@ public class NeighboursPlugin extends AbstractUIPlugin implements IUpdateViewLis
                                         result.add(proxy);
                                     }
                                 }
+                            return result;
+                        }
+
+                        @Override
+                        public Iterable<Node> getFilteredNeighNodes(NodeToNodeRelationModel models) {
+                            LinkedHashSet<Node> result=new LinkedHashSet<Node>();
+                            for (Node proxy : models.getNeighTraverser(null).nodes()) {
+                                Node node=n2ns.findNodeFromProxy(proxy);
+                                if (all||allNodes.contains(node)) {
+                                    result.add(proxy);
+                                }
+                            }                          
                             return result;
                         }
                     });

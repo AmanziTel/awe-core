@@ -87,7 +87,10 @@ public class NodeToNodeRelationModel {
         countRelation = node2nodeRelationService.getCountRelation(rootNode);
         return result;
     }
-
+    public Node findProxy(Node sector){
+        String name = String.valueOf(sector.getId());// datasetService.getNodeName(node);
+        return node2nodeRelationService.findProxy(proxyIndexKey, name);
+    }
     /**
      * Cleares Model
      * 

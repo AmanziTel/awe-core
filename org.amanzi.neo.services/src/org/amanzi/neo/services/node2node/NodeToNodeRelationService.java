@@ -382,12 +382,9 @@ public class NodeToNodeRelationService extends AbstractService {
         return rel == null ? null : rel.getOtherNode(rootNode);
     }
 
-    public Iterable<Relationship> getOutgoingRelation(Node servNode) {
-        return servNode.getRelationships(NodeToNodeRelationshipTypes.PROXYS, Direction.OUTGOING);
-    }
 
     // TODO why do not work with 2 traverser?
-    public Iterable<Relationship> getRelationTraverserByServNode(final Iterable<Node> filteredServNodes) {
+    public Iterable<Relationship> getRelationTraverserByFilteredNodes(final Iterable<Node> filteredServNodes,final Direction direction) {
         return new Iterable<Relationship>() {
 
             @Override
@@ -423,7 +420,7 @@ public class NodeToNodeRelationService extends AbstractService {
                         while (itr2 == null || !itr2.hasNext()) {
                             if (itr1.hasNext()) {
                                 Node next2 = itr1.next();
-                                itr2 = next2.getRelationships(NodeToNodeRelationshipTypes.PROXYS, Direction.OUTGOING).iterator();
+                                itr2 = next2.getRelationships(NodeToNodeRelationshipTypes.PROXYS, direction).iterator();
                             } else {
                                 break;
                             }

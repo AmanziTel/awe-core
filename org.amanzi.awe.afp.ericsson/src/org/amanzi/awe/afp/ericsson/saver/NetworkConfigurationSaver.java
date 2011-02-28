@@ -346,6 +346,9 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
                 if (ncc!=null){
                     updateProperty(getPlanName(element), NodeTypes.FREQUENCY_PLAN.getId(),plan,"ncc",ncc);
                 }
+                if (bcchno!=null){
+                    updateProperty(getPlanName(element), NodeTypes.FREQUENCY_PLAN.getId(),plan,"bcch",bcchno);
+                }
             }
             if (!plan.hasProperty("arfcn")) {
                 Integer arfcn = null;

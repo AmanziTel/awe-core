@@ -24,4 +24,5 @@ import org.neo4j.graphdb.Node;
 public interface INode2NodeFilter {
     Iterable<NodeToNodeRelationModel>getModels();
     Iterable<Node>getFilteredServNodes(NodeToNodeRelationModel models);
+    Iterable<Node>getFilteredNeighNodes(NodeToNodeRelationModel models);
 }

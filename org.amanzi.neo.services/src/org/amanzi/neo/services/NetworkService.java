@@ -15,6 +15,7 @@ package org.amanzi.neo.services;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -500,7 +501,6 @@ public class NetworkService extends AbstractService {
     }
 
     public INode2NodeFilter getAllNode2NodeFilter(final Node projecNode) {
-
         return new INode2NodeFilter() {
 
             @Override
@@ -532,6 +532,15 @@ public class NetworkService extends AbstractService {
                 for (Node node : models.getServTraverser(null).nodes()) {
                     result.add(node);
                 }
+                return result;
+            }
+
+            @Override
+            public Iterable<Node> getFilteredNeighNodes(NodeToNodeRelationModel models) {
+                LinkedHashSet<Node> result=new LinkedHashSet<Node>();
+                for (Node proxy : models.getNeighTraverser(null).nodes()) {
+                        result.add(proxy);
+                }                          
                 return result;
             }
         };

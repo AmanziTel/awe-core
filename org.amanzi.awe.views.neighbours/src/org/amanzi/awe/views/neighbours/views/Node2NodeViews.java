@@ -153,11 +153,11 @@ public class Node2NodeViews extends ViewPart {
     private TableViewer view;
     protected int column = -1;
     private Wrapper data;
-
+    private boolean direction=true;
     @Override
     public void createPartControl(Composite parent) {
         Composite main = new Composite(parent, SWT.FILL);
-        Layout mainLayout = new GridLayout(6, false);
+        Layout mainLayout = new GridLayout(7, false);
         main.setLayout(mainLayout);
         Label label = new Label(main, SWT.LEFT);
         label.setText(getListTxt());
@@ -196,6 +196,23 @@ public class Node2NodeViews extends ViewPart {
         });
         drawLines = true;
         drawArrow.setSelection(drawLines);
+        Button outgoingAnalyse = new Button(main, SWT.CHECK);
+        outgoingAnalyse.setText("Outgoing analyse");
+        outgoingAnalyse.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                direction = ((Button)e.getSource()).getSelection();
+                changeDirection();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+        direction=true;
+        outgoingAnalyse.setSelection(direction);
         commit = new Button(main, SWT.BORDER | SWT.PUSH);
         commit.addSelectionListener(new SelectionListener() {
 
@@ -290,7 +307,7 @@ public class Node2NodeViews extends ViewPart {
         });
         returnFullList.setLayoutData(layoutData);
 
-        table = new Table(main, SWT.VIRTUAL | SWT.BORDER);
+        table = new Table(main, SWT.VIRTUAL | SWT.BORDER|SWT.FULL_SELECTION);
         view = new TableViewer(table);
         view.setContentProvider(new VirtualContentProvider());
         view.setLabelProvider(new VirtualLabelProvider());
@@ -303,13 +320,13 @@ public class Node2NodeViews extends ViewPart {
         // });
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
-        table.addListener(SWT.EraseItem, new Listener() {
-            public void handleEvent(Event event) {
-                if ((event.detail & SWT.SELECTED) != 0) {
-                    event.detail &= ~SWT.SELECTED;
-                }
-            }
-        });
+//        table.addListener(SWT.EraseItem, new Listener() {
+//            public void handleEvent(Event event) {
+//                if ((event.detail & SWT.SELECTED) != 0) {
+//                    event.detail &= ~SWT.SELECTED;
+//                }
+//            }
+//        });
         view.setItemCount(0);
         layoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 6, 1);
         view.getControl().setLayoutData(layoutData);
@@ -415,6 +432,14 @@ public class Node2NodeViews extends ViewPart {
         // TODO dispose font resources in plugin stop()?
         fontSelected = new Font(fontNormal.getDevice(), fd);
         hookContextMenu();
+    }
+
+    /**
+     *
+     */
+    protected void changeDirection() {
+        table.clearAll();
+        fireModel(null);
     }
 
     private void hookContextMenu() {
@@ -687,7 +712,7 @@ public class Node2NodeViews extends ViewPart {
             @Override
             public PropertyContainer call() {
                 if (createdIter.getIndex() - 1 > i) {
-                    createdIter = new CountedIteratorWr(n2ns.getRelationTraverserByServNode(filter.getFilteredServNodes(n2nModel)).iterator());
+                    createdIter = new CountedIteratorWr(getRelationIterator(filter).iterator());
                 }
                 PropertyContainer res = null;
                 while (createdIter.hasNext()) {
@@ -876,9 +901,12 @@ public class Node2NodeViews extends ViewPart {
             propertys = new ArrayList<String>();
             propertys.addAll(propertyNames);
             colColut = propertyNames.size() + 2;
+            boolean createdCollumn=columns.isEmpty();
             while (columns.size() < colColut) {
                 TableColumn col = new TableColumn(table, SWT.NONE);
                 columns.add(col);
+            }
+            if (createdCollumn){
             }
             columns.get(0).setText("Server ");
             String neighName;
@@ -899,8 +927,7 @@ public class Node2NodeViews extends ViewPart {
             // System.out.println(ds.getNodeName(n));
             // }
             // System.out.println("____");
-
-            for (Relationship rel : n2ns.getRelationTraverserByServNode(filter.getFilteredServNodes(n2nModel))) {
+            for (Relationship rel : getRelationIterator(filter)) {
                 countRelation++;
             }
             System.out.println(countRelation);
@@ -910,6 +937,17 @@ public class Node2NodeViews extends ViewPart {
         resizecolumns();
         view.setItemCount(countRelation);
         table.setVisible(countRelation > 0);
+    }
+
+
+    /**
+     * Gets the relation iterator.
+     *
+     * @param filter2 the filter2
+     * @return the relation iterator
+     */
+    private Iterable<Relationship> getRelationIterator(INode2NodeFilter filter2) {
+        return direction?n2ns.getRelationTraverserByFilteredNodes(filter.getFilteredServNodes(n2nModel), Direction.OUTGOING):n2ns.getRelationTraverserByFilteredNodes(filter.getFilteredNeighNodes(n2nModel), Direction.INCOMING);
     }
 
     /**
@@ -922,7 +960,7 @@ public class Node2NodeViews extends ViewPart {
 
                 @Override
                 public CountedIteratorWr call() {
-                    return new CountedIteratorWr(n2ns.getRelationTraverserByServNode(filter.getFilteredServNodes(n2nModel)).iterator());
+                    return new CountedIteratorWr(getRelationIterator(filter).iterator());
                 }
 
             }).get();
