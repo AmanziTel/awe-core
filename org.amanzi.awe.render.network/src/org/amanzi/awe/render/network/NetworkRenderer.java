@@ -560,18 +560,24 @@ public class NetworkRenderer extends RendererImpl {
                         int w = metric.stringWidth(name);
                         Point pSector = nodesMap.get(sector);
                         Point endLine = sectorMap.get(sector);
-                        // calculate p
-                        int x = (endLine.x < pSector.x) ? endLine.x - w : endLine.x;
-                        int y = (endLine.y < pSector.y) ? endLine.y - h : endLine.y;
-                        Point p = new Point(x, y);
-                        // get the advance of my text in this font and render context
-                        int adv = metrics.stringWidth(name);
-                        // calculate the size of a box to hold the text with some padding.
-                        Rectangle rect = new Rectangle(p.x -1 , p.y - hgt + 1, adv + 2, hgt + 2);
-                        boolean drawsLabel = findNonOverlapPosition(labelRec, hgt, p, rect);
-                        if (drawsLabel) {
-                            labelRec.add(rect);
-                            drawLabel(g, p, name);
+                        if (pSector == null) {
+                            System.out.println("Missing sector for label: " + sector);
+                        } else if (endLine == null) {
+                            System.out.println("Missing sector for label: " + sector);
+                        } else {
+                            // calculate p
+                            int x = (endLine.x < pSector.x) ? endLine.x - w : endLine.x;
+                            int y = (endLine.y < pSector.y) ? endLine.y - h : endLine.y;
+                            Point p = new Point(x, y);
+                            // get the advance of my text in this font and render context
+                            int adv = metrics.stringWidth(name);
+                            // calculate the size of a box to hold the text with some padding.
+                            Rectangle rect = new Rectangle(p.x - 1, p.y - hgt + 1, adv + 2, hgt + 2);
+                            boolean drawsLabel = findNonOverlapPosition(labelRec, hgt, p, rect);
+                            if (drawsLabel) {
+                                labelRec.add(rect);
+                                drawLabel(g, p, name);
+                            }
                         }
                     }
                     g.setFont(fontOld);
