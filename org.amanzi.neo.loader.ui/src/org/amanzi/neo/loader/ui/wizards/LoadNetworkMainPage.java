@@ -197,21 +197,7 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
             }
         });
         new Label(main,SWT.NONE);
-        final Button batchMode = new Button(main,SWT.CHECK);
-        batchMode.addSelectionListener(new SelectionListener() {
-            
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                setAccessType(batchMode.getSelection());
-            }
-            
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                widgetSelected(e);
-            }
-        });
-        batchMode.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
-        batchMode.setText("batch mode");
+        //LN, 28.02.2011, batch mode removed
         labNetworkDescr = new Label(main, SWT.LEFT);
         GridData layoutData = new GridData(GridData.FILL_HORIZONTAL, SWT.CENTER, true, false, 3, 1);
         layoutData.minimumWidth = 150;
