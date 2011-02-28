@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,6 +29,7 @@ import org.amanzi.awe.views.reuse.Messages;
 import org.amanzi.awe.views.reuse.mess_table.DataTypes;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
@@ -715,7 +717,7 @@ public class MessageAndEventTableView extends ViewPart {
         
         private Node dataset;
         private DataTypes type;
-        private HashMap<String, Boolean> allProperties;
+        private LinkedHashMap<String, Boolean> allProperties;
         private List<String> filteredProperties;
         private FrequencyPlanModel model;
         private HashSet<String> trxProp;
@@ -739,8 +741,12 @@ public class MessageAndEventTableView extends ViewPart {
             dataset = networkRoot;
             this.model = model;
             type = DataTypes.NETWORK_PLAN;
-            allProperties = new HashMap<String, Boolean>();
+            allProperties = new LinkedHashMap<String, Boolean>();
+            allProperties.put("sector",true);
+            allProperties.put("trx",true);
             filteredProperties = new ArrayList<String>();
+            filteredProperties.add("sector");
+            filteredProperties.add("trx");
             trxProp = new HashSet<String>();
             String name = ds.getNodeName(networkRoot);
             IStatistic stat = StatisticManager.getStatistic(networkRoot);
@@ -768,7 +774,7 @@ public class MessageAndEventTableView extends ViewPart {
          * Initilize properties.
          */
         private void initProperties(){
-            allProperties = new HashMap<String, Boolean>();
+            allProperties = new LinkedHashMap<String, Boolean>();
             filteredProperties = new ArrayList<String>();
             
             Node propRoot = NeoUtils.findRoot(dataset);
@@ -1082,7 +1088,12 @@ public class MessageAndEventTableView extends ViewPart {
             if (datasetInfo.model != null) {
                 for (String property : properties) {
                     String value;
-                    if (datasetInfo.trxProp.contains(property)){
+                    if ("sector".equals(property)){
+                        Node sector=node.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(node);
+                        value=sector.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString();
+                    }else if ("trx".equals(property)){
+                        value=node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString();
+                    }  else if (datasetInfo.trxProp.contains(property)){
                         value = node.getProperty(property, "").toString();
                     }else{
                         Node plan=datasetInfo.model.findPlanNode(node);
