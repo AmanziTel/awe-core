@@ -5,7 +5,6 @@ import java.util.Collection;
 
 import org.amanzi.awe.afp.ericsson.parser.RirValidator;
 import org.amanzi.neo.loader.core.CommonConfigData;
-import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.FileSelection;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.loader.ui.wizards.LoaderPage;
@@ -35,6 +34,7 @@ public class RirSelectionGui extends LoaderPage<CommonConfigData> {
 
     public RirSelectionGui() {
         super("rirSelectionGuiPage");
+        setTitle("Import a directory of RIR measurement data");
     }
 
     @Override
@@ -84,7 +84,7 @@ public class RirSelectionGui extends LoaderPage<CommonConfigData> {
         Collection<File> files = viewer.getSelectedFiles(null);
 
         if (files.isEmpty()) {
-            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE, DialogPage.INFORMATION);
+            setMessage("Select a directory", DialogPage.INFORMATION);
             return true;
         }
         viewer.storeDefSelection(null);
@@ -96,7 +96,7 @@ public class RirSelectionGui extends LoaderPage<CommonConfigData> {
             return validateConfigData(configurationData);
         }
         if (allLoadedFiles.isEmpty()) {
-            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE, DialogPage.INFORMATION);
+            setMessage("Select a directory", DialogPage.INFORMATION);
             return true;
         }
         setMessage("");

@@ -13,7 +13,11 @@
 
 package org.amanzi.neo.loader.ui.wizards;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
 
 /**
@@ -27,6 +31,14 @@ public class NetworkMeasurementImportWizard extends NetworkConfigurationImportWi
 @Override
 public void init(IWorkbench workbench, IStructuredSelection selection) {
     super.init(workbench, selection);
-    setWindowTitle("Import network measurements data");
+    setWindowTitle("Import a directory of files of measurement data");
+}
+@Override
+protected List<IWizardPage> getMainPagesList() {
+    List<IWizardPage> result = new ArrayList<IWizardPage>();
+    final NetworkGui1 gui = new NetworkGui1();
+    gui.setTitle("Import measurement data into an existing network model");
+    result.add(gui);
+    return result;
 }
 }
