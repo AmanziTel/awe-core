@@ -1162,7 +1162,12 @@ public class MessageAndEventTableView extends ViewPart {
                     }
                     Object objValue;
                     if (datasetInfo.model!=null){
-                        if (datasetInfo.trxProp.contains(property)){
+                        if ("sector".equals(property)){
+                            Node node = currentNode.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(currentNode);
+                            objValue=node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
+                        }    else  if ("trx".equals(property)){
+                            objValue=currentNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
+                        }else  if (datasetInfo.trxProp.contains(property)){
                             objValue= currentNode.getProperty(property, null);
                         }else{
                             Node node = datasetInfo.model.findPlanNode(currentNode);
