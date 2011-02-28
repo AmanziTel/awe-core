@@ -29,6 +29,7 @@ import org.amanzi.neo.services.enums.GisTypes;
 import org.amanzi.neo.services.enums.NetworkTypes;
 import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionEvent;
@@ -46,6 +47,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 
 /**
  * Style editor for org.amanzi.awe.render.network
@@ -522,7 +524,8 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         result.add(NeoStyleContent.DEF_NONE);
         try {
             GeoNeo resource = getLayer().findGeoResource(GeoNeo.class).resolve(GeoNeo.class, null);
-            String[] allFields = PropertyHeader.getPropertyStatistic(resource.getMainGisNode()).getAllFields("-main-type-");
+            Node datasetNode = NeoUtils.getDatasetNodeByGis(resource.getMainGisNode());
+            String[] allFields = PropertyHeader.getPropertyStatistic(datasetNode).getAllFields("-main-type-");
             if (allFields != null) {
                 result.addAll(Arrays.asList(allFields));
             }
