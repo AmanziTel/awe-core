@@ -90,6 +90,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
 
     /** The first file name. */
     private String firstFileName;
+    private int sectorsNotFound = 0;
 
     /**
      * Save.
@@ -622,6 +623,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
      * Creates the matrix.
      */
     private void createMatrix() {
+        sectorsNotFound = 0;
         if (adminValues == null) {
             return;
         }
@@ -633,6 +635,9 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
         statistic.setTypeCount(getInterfMatrixName(), NodeTypes.NODE_NODE_RELATIONS.getId(), interfModel.getRelationCount());
         statistic.setTypeCount(getInterfMatrixName(), NodeTypes.PROXY.getId(), interfModel.getProxyCount());
         info(String.format("Created IM, number relations: %s", interfModel.getRelationCount()));
+        if (sectorsNotFound > 0) {
+            info("During IM creation " + sectorsNotFound + " sectors were not found");
+        }
     }
 
     /**
@@ -669,7 +674,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             updateProperty(rootname, NodeTypes.SECTOR.getId(), servSector, "traffic", traffic);
         }
         for (InterfCell neigh : cell.cells.values()) {
-            handleNeighbohur(cell, servSector, neigh);
+            handleNeighbor(cell, servSector, neigh);
         }
     }
 
@@ -680,10 +685,12 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
      * @param servSector the serv sector
      * @param neigh the neigh
      */
-    private void handleNeighbohur(ServCell cell, Node servSector, InterfCell neigh) {
+    private void handleNeighbor(ServCell cell, Node servSector, InterfCell neigh) {
         Node neighSector = findNode(servSector, neigh);
         if (neighSector == null) {
-            error(String.format("Sector (bsic=%s;arfcn=%s) not found", neigh.bsic, neigh.arfcn));
+            if (sectorsNotFound ++ < 10) {
+                error(String.format("Sector (bsic=%s;arfcn=%s) not found", neigh.bsic, neigh.arfcn));
+            }
             return;
         }
         Double factorCo = getFactorCo(adminValues.relss);
