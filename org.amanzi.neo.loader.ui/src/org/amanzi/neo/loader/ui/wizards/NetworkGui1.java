@@ -47,7 +47,7 @@ public class NetworkGui1 extends AbstractMainPage<CommonConfigData> {
      */
     public NetworkGui1() {
         super("configMainPage", false);
-        setTitle(NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_DESCR);
+        setTitle(NeoLoaderPluginMessages.NetworkConfigurationImportWizard_PAGE_DESCR);
         
     }
 

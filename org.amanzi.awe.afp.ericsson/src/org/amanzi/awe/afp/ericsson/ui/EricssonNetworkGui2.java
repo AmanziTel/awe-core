@@ -53,7 +53,7 @@ public class EricssonNetworkGui2 extends LoaderPage<CommonConfigData> {
      */
     public EricssonNetworkGui2() {
         super("additionalEricssonNetworkGuiPage");
-        setTitle("Import a files containing network BSN data");
+        setTitle("Import one or more files containing network BSM data");
     }
     
     @Override

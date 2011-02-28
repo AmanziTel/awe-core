@@ -24,6 +24,8 @@ public class NeoLoaderPluginMessages extends NLS {
 
     private static ResourceBundle resourceBundle = ResourceBundle.getBundle(BUNDLE_NAME);
     
+    public static String NetworkConfigurationImportWizard_PAGE_DESCR;
+    
     public static String DriveDialog_RemoveButtonText;
     public static String DriveDialog_AddButtonText;
     public static String DriveDialog_BrowseButtonText;

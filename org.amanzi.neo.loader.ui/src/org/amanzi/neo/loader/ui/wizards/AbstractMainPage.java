@@ -148,6 +148,12 @@ public abstract class AbstractMainPage<T extends IConfigurationData> extends Loa
             }
         });
         addAdditionalComponents(parent, main);
+        //TODO: temporary, should be autodetect
+        //LN, 28.02.2011, select single available loader
+        selectLoader(0);
+        loaders.select(0);
+        
+        
         new Label(main, SWT.NONE);
        
         setControl(main);
