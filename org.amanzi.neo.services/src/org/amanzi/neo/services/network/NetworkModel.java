@@ -192,7 +192,7 @@ public class NetworkModel {
         if (lat == null || lon == null) {
             return null;
         }
-        return new Coordinate(lat, lon);
+        return new Coordinate(lon, lat);
     }
 
     public Node getSiteOfSector(Node sector) {
