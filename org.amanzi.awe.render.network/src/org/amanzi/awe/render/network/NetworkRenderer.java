@@ -93,7 +93,8 @@ public class NetworkRenderer extends RendererImpl {
     private static final Color COLOR_SITE_SELECTED = Color.CYAN;
     private static final Color COLOR_SECTOR_SELECTED = Color.CYAN;
     private static final Color COLOR_SECTOR_STAR = Color.RED;
-    private AffineTransform base_transform = null;  // save original graphics transform for repeated re-use
+    private AffineTransform base_transform = null; // save original graphics transform for repeated
+                                                   // re-use
     private MathTransform transform_d2w;
     private MathTransform transform_w2d;
     private Node aggNode;
@@ -101,11 +102,15 @@ public class NetworkRenderer extends RendererImpl {
     private AbstractFilter filterSites;
     private DrawHints drawHints = new DrawHints();
     private IGraphModel graphModel;
-    private void setCrsTransforms(CoordinateReferenceSystem dataCrs) throws FactoryException{
-        boolean lenient = true; // needs to be lenient to work on uDIG 1.1 (otherwise we get error: bursa wolf parameters required
+
+    private void setCrsTransforms(CoordinateReferenceSystem dataCrs) throws FactoryException {
+        boolean lenient = true; // needs to be lenient to work on uDIG 1.1 (otherwise we get error:
+                                // bursa wolf parameters required
         CoordinateReferenceSystem worldCrs = context.getCRS();
         this.transform_d2w = CRS.findMathTransform(dataCrs, worldCrs, lenient);
-        this.transform_w2d = CRS.findMathTransform(worldCrs, dataCrs, lenient); // could use transform_d2w.inverse() also
+        this.transform_w2d = CRS.findMathTransform(worldCrs, dataCrs, lenient); // could use
+                                                                                // transform_d2w.inverse()
+                                                                                // also
     }
 
     private Envelope getTransformedBounds() throws TransformException {
@@ -121,23 +126,27 @@ public class NetworkRenderer extends RendererImpl {
     }
 
     /**
-     * This method is called to render what it can. It is passed a graphics context
-     * with which it can draw. The class already contains a reference to a RenderContext
-     * from which it can obtain the layer and the GeoResource to render.
-     * @see net.refractions.udig.project.internal.render.impl.RendererImpl#render(java.awt.Graphics2D, org.eclipse.core.runtime.IProgressMonitor)
+     * This method is called to render what it can. It is passed a graphics context with which it
+     * can draw. The class already contains a reference to a RenderContext from which it can obtain
+     * the layer and the GeoResource to render.
+     * 
+     * @see net.refractions.udig.project.internal.render.impl.RendererImpl#render(java.awt.Graphics2D,
+     *      org.eclipse.core.runtime.IProgressMonitor)
      */
     @Override
-    public void render( Graphics2D g, IProgressMonitor monitor ) throws RenderException {
+    public void render(Graphics2D g, IProgressMonitor monitor) throws RenderException {
         ILayer layer = getContext().getLayer();
-        // Are there any resources in the layer that respond to the GeoNeo class (should be the case if we found a Neo4J database with GeoNeo data)
+        // Are there any resources in the layer that respond to the GeoNeo class (should be the case
+        // if we found a Neo4J database with GeoNeo data)
         IGeoResource resource = layer.findGeoResource(GeoNeo.class);
-        //Lagutko, 22.10.2009, initialize BlackboardEntry for star, this is necessary to enable IMomento to save on app exit
+        // Lagutko, 22.10.2009, initialize BlackboardEntry for star, this is necessary to enable
+        // IMomento to save on app exit
         layer.getMap().getBlackboard().get(BLACKBOARD_NODE_LIST);
-        if(resource != null){
-            renderGeoNeo(g,resource,monitor);
+        if (resource != null) {
+            renderGeoNeo(g, resource, monitor);
         }
     }
-    
+
     public static class DrawHints {
         Color drawColor;
         Color siteColor;
@@ -165,11 +174,12 @@ public class NetworkRenderer extends RendererImpl {
         boolean sectorLabeling;
         boolean noSiteName;
         Font font;
+
         public void reset(IStyleBlackboard style, Font font) {
             this.font = font;
             drawColor = Color.DARK_GRAY;
-            siteColor = new Color(128, 128, 128,(int)(0.6*255.0));
-            fillColor = new Color(255, 255, 128,(int)(0.6*255.0));
+            siteColor = new Color(128, 128, 128, (int)(0.6 * 255.0));
+            fillColor = new Color(255, 255, 128, (int)(0.6 * 255.0));
             labelColor = Color.DARK_GRAY;
             surroundColor = Color.WHITE;
             lineColor = Color.GRAY;
@@ -189,21 +199,21 @@ public class NetworkRenderer extends RendererImpl {
             scaleSymbols = true;
             siteName = NeoStyleContent.DEF_MAIN_PROPERTY;
             sectorName = NeoStyleContent.DEF_SECONDARY_PROPERTY;
-            NeoStyle neostyle = (NeoStyle)style.get(NeoStyleContent.ID );
-            if (neostyle!=null){
+            NeoStyle neostyle = (NeoStyle)style.get(NeoStyleContent.ID);
+            if (neostyle != null) {
                 try {
                     siteColor = neostyle.getSiteFill();
-                    fillColor=neostyle.getFill();
-                    drawColor=neostyle.getLine();
-                    labelColor=neostyle.getLabel();
+                    fillColor = neostyle.getFill();
+                    drawColor = neostyle.getLine();
+                    labelColor = neostyle.getLabel();
                     float colSum = 0.0f;
-                    for(float comp: labelColor.getRGBColorComponents(null)){
+                    for (float comp : labelColor.getRGBColorComponents(null)) {
                         colSum += comp;
                     }
-                    if(colSum>2.0) {
-                        surroundColor=Color.DARK_GRAY;
+                    if (colSum > 2.0) {
+                        surroundColor = Color.DARK_GRAY;
                     } else {
-                        surroundColor=Color.WHITE;
+                        surroundColor = Color.WHITE;
                     }
                     drawSize = neostyle.getSymbolSize();
                     alpha = 255 - (int)((double)neostyle.getSymbolTransparency() / 100.0 * 255.0);
@@ -219,7 +229,7 @@ public class NetworkRenderer extends RendererImpl {
                     siteName = neostyle.getMainProperty();
                     sectorName = neostyle.getSecondaryProperty();
                 } catch (Exception e) {
-                    //TODO: we can get here if an old style exists, and we have added new fields
+                    // TODO: we can get here if an old style exists, and we have added new fields
                 }
             }
             normalSiteName = NeoStyleContent.DEF_MAIN_PROPERTY.equals(siteName);
@@ -229,11 +239,13 @@ public class NetworkRenderer extends RendererImpl {
             siteColor = changeColor(siteColor, alpha);
             fillColor = changeColor(fillColor, alpha);
         }
+
         public void setNoScaling() {
             drawFull = false;
             drawLite = false;
             drawLabels = false;
         }
+
         public void setScaling(Envelope bounds_transformed, Envelope data_bounds, final IProgressMonitor monitor, long count) {
             double dataScaled = (bounds_transformed.getHeight() * bounds_transformed.getWidth())
                     / (data_bounds.getHeight() * data_bounds.getWidth());
@@ -249,6 +261,7 @@ public class NetworkRenderer extends RendererImpl {
             // expand the boundary to include sites just out of view (so partial sectors can be see)
             bounds_transformed.expandBy(0.75 * (bounds_transformed.getHeight() + bounds_transformed.getWidth()));
         }
+
         public Color changeColor(Color color, int toAlpha) {
             return new Color(color.getRed(), color.getGreen(), color.getBlue(), toAlpha);
         }
@@ -257,13 +270,17 @@ public class NetworkRenderer extends RendererImpl {
     /**
      * This method is called to render data from the Neo4j 'GeoNeo' Geo-Resource.
      */
-    private void renderGeoNeo( Graphics2D g, IGeoResource neoGeoResource, IProgressMonitor monitor ) throws RenderException {
+    private void renderGeoNeo(Graphics2D g, IGeoResource neoGeoResource, IProgressMonitor monitor) throws RenderException {
         if (monitor == null)
             monitor = new NullProgressMonitor();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-        monitor.beginTask("render network sites and sectors: "+neoGeoResource.getIdentifier(), IProgressMonitor.UNKNOWN);    // TODO: Get size from info
+        monitor.beginTask("render network sites and sectors: " + neoGeoResource.getIdentifier(), IProgressMonitor.UNKNOWN); // TODO:
+                                                                                                                            // Get
+                                                                                                                            // size
+                                                                                                                            // from
+                                                                                                                            // info
 
         GeoNeo geoNeo = null;
 
@@ -279,27 +296,29 @@ public class NetworkRenderer extends RendererImpl {
         try {
             monitor.subTask("connecting");
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
-            graphModel=geoNeo.getGraphModel();
-            LOGGER.debug("NetworkRenderer resolved geoNeo '"+geoNeo.getName()+"' from resource: "+neoGeoResource.getIdentifier());
+            graphModel = geoNeo.getGraphModel();
+            LOGGER.debug("NetworkRenderer resolved geoNeo '" + geoNeo.getName() + "' from resource: "
+                    + neoGeoResource.getIdentifier());
             filterSectors = FilterUtil.getFilterOfData(geoNeo.getMainGisNode(), neo);
-            filterSites = FilterUtil.getFilterOfData(geoNeo.getMainGisNode().getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(geoNeo.getMainGisNode()), neo);
+            filterSites = FilterUtil.getFilterOfData(
+                    geoNeo.getMainGisNode().getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)
+                            .getOtherNode(geoNeo.getMainGisNode()), neo);
             String starProperty = getSelectProperty(geoNeo);
             Pair<Point, Long> starPoint = getStarPoint();
             Node starNode = null;
-            if(starPoint != null) {
-                LOGGER.debug("Have star selection: "+starPoint);
+            if (starPoint != null) {
+                LOGGER.debug("Have star selection: " + starPoint);
             }
-            ArrayList<Pair<String,Integer>> multiOmnis = new ArrayList<Pair<String,Integer>>();
+            ArrayList<Pair<String, Integer>> multiOmnis = new ArrayList<Pair<String, Integer>>();
             aggNode = geoNeo.getAggrNode();
             setCrsTransforms(neoGeoResource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
             Envelope data_bounds = geoNeo.getBounds();
             if (bounds_transformed == null) {
                 drawHints.setNoScaling();
-            }else if (data_bounds != null && data_bounds.getHeight()>0 && data_bounds.getWidth()>0) {
+            } else if (data_bounds != null && data_bounds.getHeight() > 0 && data_bounds.getWidth() > 0) {
                 long count = geoNeo.getCount();
-                if (NeoLoaderPlugin.getDefault().getPreferenceStore().getBoolean(
-                        DataLoadPreferences.NETWORK_COMBINED_CALCULATION)) {
+                if (NeoLoaderPlugin.getDefault().getPreferenceStore().getBoolean(DataLoadPreferences.NETWORK_COMBINED_CALCULATION)) {
                     double density = getAverageDensity(monitor);
                     if (density > 0)
                         count = (long)(density * data_bounds.getHeight() * data_bounds.getWidth());
@@ -310,7 +329,8 @@ public class NetworkRenderer extends RendererImpl {
             g.setColor(drawHints.drawColor);
             int count = 0;
             monitor.subTask("drawing");
-            Coordinate world_location = new Coordinate(); // single object for re-use in transform below (minimize object creation)
+            Coordinate world_location = new Coordinate(); // single object for re-use in transform
+                                                          // below (minimize object creation)
 
             // draw selection
             java.awt.Point prev_p = null;
@@ -318,24 +338,24 @@ public class NetworkRenderer extends RendererImpl {
             final Set<Node> selectedNodes = new HashSet<Node>(geoNeo.getSelectedNodes());
 
             final ReturnableEvaluator returnableEvaluator = new ReturnableEvaluator() {
-                
+
                 @Override
                 public boolean isReturnableNode(TraversalPosition currentPos) {
                     final Object property = currentPos.currentNode().getProperty("type", "");
-                    return "site".equals(property)||"probe".equals(property);
+                    return "site".equals(property) || "probe".equals(property);
                 }
             };
             for (Node node : selectedNodes) {
                 final String nodeType = NeoUtils.getNodeType(node, "");
                 if ("network".equals(nodeType)) {
                     // Select all 'site' nodes in that file
-                    for (Node rnode : node
-                            .traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator, GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                    for (Node rnode : node.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator,
+                            GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
                         selectedPoints.add(rnode);
                     }
                 } else if ("city".equals(nodeType) || "bsc".equals(nodeType)) {
-                    for (Node rnode : node.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH,
-                            returnableEvaluator, NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                    for (Node rnode : node.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, returnableEvaluator,
+                            NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
                         selectedPoints.add(rnode);
                     }
                 } else {
@@ -359,7 +379,7 @@ public class NetworkRenderer extends RendererImpl {
                 }
             }
             // Now draw the selected points highlights
-            //TODO remove double selection?
+            // TODO remove double selection?
             for (Node rnode : selectedPoints) {
                 GeoNode node = new GeoNode(rnode);
                 Coordinate location = node.getCoordinate();
@@ -390,7 +410,7 @@ public class NetworkRenderer extends RendererImpl {
             }
             g.setColor(drawHints.drawColor);
             long startTime = System.currentTimeMillis();
-            for(GeoNode node:geoNeo.getGeoNodes(bounds_transformed)) {
+            for (GeoNode node : geoNeo.getGeoNodes(bounds_transformed)) {
                 if (filterSites != null) {
                     if (!filterSites.filterNode(node.getNode()).isValid()) {
                         continue;
@@ -404,7 +424,7 @@ public class NetworkRenderer extends RendererImpl {
                 try {
                     JTS.transform(location, world_location, transform_d2w);
                 } catch (Exception e) {
-                    //JTS.transform(location, world_location, transform_w2d.inverse());
+                    // JTS.transform(location, world_location, transform_w2d.inverse());
                 }
 
                 java.awt.Point p = getContext().worldToPixel(world_location);
@@ -428,17 +448,20 @@ public class NetworkRenderer extends RendererImpl {
                     // }
                     if (selected) {
                         selected = false;
-                        DELTA_LOOP: for (Node rnode:node.getNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.MISSING, Direction.INCOMING, NetworkRelationshipTypes.DIFFERENT, Direction.INCOMING)){
+                        DELTA_LOOP: for (Node rnode : node.getNode().traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE,
+                                ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.MISSING, Direction.INCOMING,
+                                NetworkRelationshipTypes.DIFFERENT, Direction.INCOMING)) {
                             if (geoNeo.getSelectedNodes().contains(rnode)) {
                                 selected = true;
                                 break;
                             } else {
-                                for (Node xnode:rnode.traverse(Order.BREADTH_FIRST, new StopEvaluator(){
+                                for (Node xnode : rnode.traverse(Order.BREADTH_FIRST, new StopEvaluator() {
 
                                     @Override
                                     public boolean isStopNode(TraversalPosition currentPos) {
-                                        return "delta_report".equals(currentPos.currentNode().getProperty("type",""));
-                                    }}, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.INCOMING)){
+                                        return "delta_report".equals(currentPos.currentNode().getProperty("type", ""));
+                                    }
+                                }, ReturnableEvaluator.ALL_BUT_START_NODE, NetworkRelationshipTypes.CHILD, Direction.INCOMING)) {
                                     if (geoNeo.getSelectedNodes().contains(xnode)) {
                                         selected = true;
                                         break DELTA_LOOP;
@@ -455,27 +478,28 @@ public class NetworkRenderer extends RendererImpl {
                     double[] label_position_angles = new double[] {0, 90};
                     try {
                         int s = 0;
-                        for (Relationship relationship : node.getNode().getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                        for (Relationship relationship : node.getNode().getRelationships(NetworkRelationshipTypes.CHILD,
+                                Direction.OUTGOING)) {
                             Node child = relationship.getEndNode();
                             if (child.hasProperty("type") && child.getProperty("type").toString().equals("sector")) {
                                 Double azimuth = getDouble(child, "azimuth", Double.NaN);
                                 Double beamwidth = Double.NaN;
                                 if (azimuth.equals(Double.NaN)) {
                                     beamwidth = getDouble(child, "beamwidth", CIRCLE_BEAMWIDTH);
-                                    if(beamwidth<CIRCLE_BEAMWIDTH){
+                                    if (beamwidth < CIRCLE_BEAMWIDTH) {
                                         azimuth = 0.0;
-                                        System.err.println("Error in render GeoNeo: azimuth is defined, but beamwidth less than "+CIRCLE_BEAMWIDTH);
+                                        System.err.println("Error in render GeoNeo: azimuth is defined, but beamwidth less than "
+                                                + CIRCLE_BEAMWIDTH);
                                     }
-                                }else{
+                                } else {
                                     beamwidth = getDouble(child, "beamwidth", drawHints.defaultBeamwidth);
-                                }                                
+                                }
                                 Color colorToFill = getSectorColor(child, drawHints.fillColor);
                                 borderColor = drawHints.drawColor;
                                 if (starPoint != null && starPoint.right().equals(child.getId())) {
                                     borderColor = COLOR_SECTOR_STAR;
                                     starNode = child;
-                                } else
-                                if (geoNeo.getSelectedNodes().contains(child)) {
+                                } else if (geoNeo.getSelectedNodes().contains(child)) {
                                     borderColor = COLOR_SECTOR_SELECTED;
                                 }
                                 // put sector information in to blackboard
@@ -486,7 +510,7 @@ public class NetworkRenderer extends RendererImpl {
                                 }
                                 Pair<Point, Point> centerPoint = renderSector(g, p, azimuth, beamwidth, colorToFill, borderColor);
                                 nodesMap.put(child, centerPoint.getLeft());
-                                if (drawHints.sectorLabeling){
+                                if (drawHints.sectorLabeling) {
                                     sectorMap.put(child, centerPoint.getRight());
                                 }
                                 if (s < label_position_angles.length) {
@@ -495,7 +519,8 @@ public class NetworkRenderer extends RendererImpl {
                                 // g.setColor(drawColor);
                                 // g.rotate(-Math.toRadians(beamwidth/2));
                                 // g.drawString(sector.getString("name"),drawSize,0);
-                                if(beamwidth==CIRCLE_BEAMWIDTH) countOmnis++;
+                                if (beamwidth == CIRCLE_BEAMWIDTH)
+                                    countOmnis++;
                                 s++;
                             }
                         }
@@ -510,8 +535,8 @@ public class NetworkRenderer extends RendererImpl {
                         g.setTransform(base_transform);
                     }
                     String drawString = getSiteName(node);
-                    if (countOmnis>1) {
-                        //System.err.println("Site "+node+" had "+countOmnis+" omni antennas");
+                    if (countOmnis > 1) {
+                        // System.err.println("Site "+node+" had "+countOmnis+" omni antennas");
                         multiOmnis.add(new Pair<String, Integer>(drawString, countOmnis));
                     }
                     if (drawHints.drawLabels) {
@@ -528,7 +553,7 @@ public class NetworkRenderer extends RendererImpl {
                 FontMetrics metrics = g.getFontMetrics(drawHints.font);
                 // get the height of a line of text in this font and render context
                 int hgt = metrics.getHeight();
-                for(Point p: labelsMap.keySet()) {
+                for (Point p : labelsMap.keySet()) {
                     String drawString = labelsMap.get(p);
                     int label_x = drawHints.drawSize > 15 ? 15 : drawHints.drawSize;
                     int label_y = hgt / 3;
@@ -537,7 +562,7 @@ public class NetworkRenderer extends RendererImpl {
                     // get the advance of my text in this font and render context
                     int adv = metrics.stringWidth(drawString);
                     // calculate the size of a box to hold the text with some padding.
-                    Rectangle rect = new Rectangle(p.x -1 , p.y - hgt + 1, adv + 2, hgt + 2);
+                    Rectangle rect = new Rectangle(p.x - 1, p.y - hgt + 1, adv + 2, hgt + 2);
                     boolean drawsLabel = findNonOverlapPosition(labelRec, hgt, p, rect);
                     if (drawsLabel && !drawString.isEmpty()) {
                         labelRec.add(rect);
@@ -552,7 +577,7 @@ public class NetworkRenderer extends RendererImpl {
                     FontMetrics metric = g.getFontMetrics(fontSector);
                     hgt = metrics.getHeight();
                     int h = hgt / 3;
-                    for (Node sector : nodesMap.keySet()) {
+                    for (Node sector : sectorMap.keySet()) {
                         String name = getSectorName(sector);
                         if (name.isEmpty()) {
                             continue;
@@ -560,33 +585,29 @@ public class NetworkRenderer extends RendererImpl {
                         int w = metric.stringWidth(name);
                         Point pSector = nodesMap.get(sector);
                         Point endLine = sectorMap.get(sector);
-                        if (pSector == null) {
-                            System.out.println("Missing sector for label: " + sector);
-                        } else if (endLine == null) {
-                            System.out.println("Missing sector for label: " + sector);
-                        } else {
-                            // calculate p
-                            int x = (endLine.x < pSector.x) ? endLine.x - w : endLine.x;
-                            int y = (endLine.y < pSector.y) ? endLine.y - h : endLine.y;
-                            Point p = new Point(x, y);
-                            // get the advance of my text in this font and render context
-                            int adv = metrics.stringWidth(name);
-                            // calculate the size of a box to hold the text with some padding.
-                            Rectangle rect = new Rectangle(p.x - 1, p.y - hgt + 1, adv + 2, hgt + 2);
-                            boolean drawsLabel = findNonOverlapPosition(labelRec, hgt, p, rect);
-                            if (drawsLabel) {
-                                labelRec.add(rect);
-                                drawLabel(g, p, name);
-                            }
+
+                        // calculate p
+                        int x = (endLine.x < pSector.x) ? endLine.x - w : endLine.x;
+                        int y = (endLine.y < pSector.y) ? endLine.y - h : endLine.y;
+                        Point p = new Point(x, y);
+                        // get the advance of my text in this font and render context
+                        int adv = metrics.stringWidth(name);
+                        // calculate the size of a box to hold the text with some padding.
+                        Rectangle rect = new Rectangle(p.x - 1, p.y - hgt + 1, adv + 2, hgt + 2);
+                        boolean drawsLabel = findNonOverlapPosition(labelRec, hgt, p, rect);
+                        if (drawsLabel) {
+                            labelRec.add(rect);
+                            drawLabel(g, p, name);
                         }
+
                     }
                     g.setFont(fontOld);
                 }
             }
-            if(multiOmnis.size()>0){
-                //TODO: Move this to utility class
+            if (multiOmnis.size() > 0) {
+                // TODO: Move this to utility class
                 StringBuffer sb = new StringBuffer();
-                int llen=0;
+                int llen = 0;
                 for (Pair<String, Integer> pair : multiOmnis) {
                     if (sb.length() > 1)
                         sb.append(", ");
@@ -600,13 +621,13 @@ public class NetworkRenderer extends RendererImpl {
                     if (sb.length() > 1000)
                         break;
                 }
-                System.err.println("There were "+multiOmnis.size()+" sites with more than one omni antenna: ");
+                System.err.println("There were " + multiOmnis.size() + " sites with more than one omni antenna: ");
                 System.err.println(sb.toString());
             }
             if (starNode != null && starProperty != null) {
                 drawAnalyser(g, starNode, starPoint.left(), starProperty, nodesMap);
             }
-            
+
             if (graphModel == null) {
                 String neiName = (String)geoNeo.getProperties(GeoNeo.NEIGH_NAME);
                 if (neiName != null) {
@@ -621,9 +642,10 @@ public class NetworkRenderer extends RendererImpl {
                     }
                 }
             } else {
-                drawRelations(g,graphModel,nodesMap,drawHints.lineColor);
+                drawRelations(g, graphModel, nodesMap, drawHints.lineColor);
             }
-            LOGGER.debug("Network renderer took " + ((System.currentTimeMillis() - startTime) / 1000.0) + "s to draw " + count + " sites from "+neoGeoResource.getIdentifier());
+            LOGGER.debug("Network renderer took " + ((System.currentTimeMillis() - startTime) / 1000.0) + "s to draw " + count
+                    + " sites from " + neoGeoResource.getIdentifier());
             tx.success();
         } catch (TransformException e) {
             throw new RenderException(e);
@@ -633,8 +655,8 @@ public class NetworkRenderer extends RendererImpl {
             throw new RenderException(e); // rethrow any exceptions encountered
         } finally {
             if (neoGeoResource != null) {
-                HashMap<Long,Point> idMap = new HashMap<Long,Point>();
-                for(Node node:nodesMap.keySet()){
+                HashMap<Long, Point> idMap = new HashMap<Long, Point>();
+                for (Node node : nodesMap.keySet()) {
                     idMap.put(node.getId(), nodesMap.get(node));
                 }
                 getContext().getMap().getBlackboard().put(BLACKBOARD_NODE_LIST, idMap);
@@ -647,7 +669,6 @@ public class NetworkRenderer extends RendererImpl {
     }
 
     /**
-     *
      * @param g
      * @param graphModel2
      * @param nodesMap
@@ -655,24 +676,24 @@ public class NetworkRenderer extends RendererImpl {
      */
     private void drawRelations(Graphics2D g, IGraphModel graphModel, Map<Node, Point> nodesMap, Color lineColor) {
         g.setColor(lineColor);
-        for (Entry<Node,Set<Node>> entry:graphModel.getOutgoingRelationMap().entrySet()){
-           Point from=nodesMap.get(entry.getKey());
-           if (from==null){
-               continue;
-           }
-           for (Node neighNode:entry.getValue()){
-               Point to =nodesMap.get(neighNode);
-               if (to!=null){
-//                   g.drawLine(from.x, from.y, to.x, to.y);
-                   drawArrow(g, from.x, from.y, to.x, to.y);
-               }
-           }
+        for (Entry<Node, Set<Node>> entry : graphModel.getOutgoingRelationMap().entrySet()) {
+            Point from = nodesMap.get(entry.getKey());
+            if (from == null) {
+                continue;
+            }
+            for (Node neighNode : entry.getValue()) {
+                Point to = nodesMap.get(neighNode);
+                if (to != null) {
+                    // g.drawLine(from.x, from.y, to.x, to.y);
+                    drawArrow(g, from.x, from.y, to.x, to.y);
+                }
+            }
         }
     }
 
     @SuppressWarnings("unchecked")
     private Pair<Point, Long> getStarPoint() {
-        Pair<Point,Long> starPoint = (Pair<Point,Long>)getContext().getLayer().getBlackboard().get(BLACKBOARD_START_ANALYSER);
+        Pair<Point, Long> starPoint = (Pair<Point, Long>)getContext().getLayer().getBlackboard().get(BLACKBOARD_START_ANALYSER);
         return starPoint;
     }
 
@@ -696,7 +717,7 @@ public class NetworkRenderer extends RendererImpl {
             RECT: for (int tries : new int[] {1, -1}) {
                 for (int shift = 0; shift != tries * (2 * hgt); shift += tries) {
                     tryRect.setLocation(rect.x, rect.y + shift);
-                    if (labelSafe(tryRect,labelRec)) {
+                    if (labelSafe(tryRect, labelRec)) {
                         drawLabel = true;
                         p.y = p.y + shift;
                         rect.setLocation(tryRect.getLocation());
@@ -720,7 +741,7 @@ public class NetworkRenderer extends RendererImpl {
             return (Double)result;
         }
     }
-    
+
     /**
      * @param sector
      * @return
@@ -736,16 +757,25 @@ public class NetworkRenderer extends RendererImpl {
      * @return site name
      */
     private String getSiteName(GeoNode node) {
-        return drawHints.normalSiteName ? node.toString() : drawHints.noSiteName ? "" : node.getNode().getProperty(drawHints.siteName, "").toString();
+        return drawHints.normalSiteName ? node.toString() : drawHints.noSiteName ? "" : node.getNode()
+                .getProperty(drawHints.siteName, "").toString();
     }
 
     private void drawSoftSurround(Graphics2D g, Shape outline) {
-        g.setPaint(drawHints.changeColor(drawHints.surroundColor,128));
-        g.translate( 1, 0); g.fill(outline);g.draw(outline);
-        g.translate(-1, 1); g.fill(outline);g.draw(outline);
-        g.translate(-1,-1); g.fill(outline);g.draw(outline);
-        g.translate( 1,-1); g.fill(outline);g.draw(outline);
-        g.translate( 0, 1);
+        g.setPaint(drawHints.changeColor(drawHints.surroundColor, 128));
+        g.translate(1, 0);
+        g.fill(outline);
+        g.draw(outline);
+        g.translate(-1, 1);
+        g.fill(outline);
+        g.draw(outline);
+        g.translate(-1, -1);
+        g.fill(outline);
+        g.draw(outline);
+        g.translate(1, -1);
+        g.fill(outline);
+        g.draw(outline);
+        g.translate(0, 1);
     }
 
     private boolean labelSafe(Rectangle rect, Set<Rectangle> labelRectangles) {
@@ -756,7 +786,7 @@ public class NetworkRenderer extends RendererImpl {
         }
         return true;
     }
-    
+
     /**
      * draws neighbour relations
      * 
@@ -765,17 +795,18 @@ public class NetworkRenderer extends RendererImpl {
      * @param node serve node
      * @param lineColor - line color
      * @param nodesMap map of nodes
-     * @param type 
+     * @param type
      */
     private void drawNeighbour(Graphics2D g, String neiName, Node node, Color lineColor, Map<Node, Point> nodesMap, Object type) {
         g.setColor(lineColor);
         Point point1 = nodesMap.get(node);
         Node proxyServeNode = NeoUtils.getProxySector(node, neiName);
-        NetworkSiteType siteType=(NetworkSiteType)type;
+        NetworkSiteType siteType = (NetworkSiteType)type;
         if (point1 != null && proxyServeNode != null) {
             for (RelationshipType relType : new RelationshipType[] {NetworkRelationshipTypes.NEIGHBOUR,
                     NetworkRelationshipTypes.INTERFERS}) {
-                RelationshipType listRelType = relType == NetworkRelationshipTypes.NEIGHBOUR ? NetworkRelationshipTypes.NEIGHBOURS : NetworkRelationshipTypes.INTERFERENCE;
+                RelationshipType listRelType = relType == NetworkRelationshipTypes.NEIGHBOUR ? NetworkRelationshipTypes.NEIGHBOURS
+                        : NetworkRelationshipTypes.INTERFERENCE;
                 for (Relationship relation : NeoUtils.getNeighbourRelations(proxyServeNode, neiName, relType)) {
                     Node proxyNeighNode = relation.getOtherNode(proxyServeNode);
                     final Node neighNode = NeoUtils.getNodeFromProxy(proxyNeighNode, listRelType);
@@ -791,8 +822,8 @@ public class NetworkRenderer extends RendererImpl {
                 }
             }
             for (Relationship relation : NeoUtils.getTransmissionRelations(proxyServeNode, neiName)) {
-            	Node proxyTransNode = relation.getOtherNode(proxyServeNode);
-            	final Node transNode = NeoUtils.getNodeFromProxy(proxyTransNode, NetworkRelationshipTypes.TRANSMISSIONS);
+                Node proxyTransNode = relation.getOtherNode(proxyServeNode);
+                final Node transNode = NeoUtils.getNodeFromProxy(proxyTransNode, NetworkRelationshipTypes.TRANSMISSIONS);
                 Point point2 = nodesMap.get(transNode);
                 if (point2 != null) {
                     g.drawLine(point1.x, point1.y, point2.x, point2.y);
@@ -800,21 +831,21 @@ public class NetworkRenderer extends RendererImpl {
             }
         }
     }
+
     private final int ARR_SIZE = 4;
 
     void drawArrow(Graphics2D g, int x1, int y1, int x2, int y2) {
 
         double dx = x2 - x1, dy = y2 - y1;
         double angle = Math.atan2(dy, dx);
-        int len = (int) Math.sqrt(dx*dx + dy*dy);
+        int len = (int)Math.sqrt(dx * dx + dy * dy);
         AffineTransform oldTr = g.getTransform();
-        
+
         g.translate(x1, y1);
         g.rotate(angle);
         // Draw horizontal arrow starting in (0, 0)
-        g.drawLine(0, 0, (int) len, 0);
-        g.fillPolygon(new int[] {len, len-ARR_SIZE, len-ARR_SIZE, len},
-                      new int[] {0, -ARR_SIZE, ARR_SIZE, 0}, 4);
+        g.drawLine(0, 0, (int)len, 0);
+        g.fillPolygon(new int[] {len, len - ARR_SIZE, len - ARR_SIZE, len}, new int[] {0, -ARR_SIZE, ARR_SIZE, 0}, 4);
         g.setTransform(oldTr);
     }
 
@@ -829,15 +860,16 @@ public class NetworkRenderer extends RendererImpl {
     private void drawRelation(Graphics2D g, Relationship relation, Color lineColor, Map<Node, Point> nodesMap) {
         g.setColor(lineColor);
         Point point1 = nodesMap.get(relation.getStartNode());
-        NetworkRelationshipTypes proxyRelation = relation.isType(NetworkRelationshipTypes.TRANSMISSION)?NetworkRelationshipTypes.TRANSMISSIONS:NetworkRelationshipTypes.NEIGHBOURS;
-        if (point1 == null){
-        	Node servNode = NeoUtils.getNodeFromProxy(relation.getStartNode(), proxyRelation);
-        	point1 = nodesMap.get(servNode);
+        NetworkRelationshipTypes proxyRelation = relation.isType(NetworkRelationshipTypes.TRANSMISSION)
+                ? NetworkRelationshipTypes.TRANSMISSIONS : NetworkRelationshipTypes.NEIGHBOURS;
+        if (point1 == null) {
+            Node servNode = NeoUtils.getNodeFromProxy(relation.getStartNode(), proxyRelation);
+            point1 = nodesMap.get(servNode);
         }
         Point point2 = nodesMap.get(relation.getEndNode());
-        if (point2 == null){
-        	Node transNode = NeoUtils.getNodeFromProxy(relation.getEndNode(), proxyRelation);
-        	point2 = nodesMap.get(transNode);
+        if (point2 == null) {
+            Node transNode = NeoUtils.getNodeFromProxy(relation.getEndNode(), proxyRelation);
+            point2 = nodesMap.get(transNode);
         }
         if (point1 != null && point2 != null) {
             g.drawLine(point1.x, point1.y, point2.x, point2.y);
@@ -846,8 +878,8 @@ public class NetworkRenderer extends RendererImpl {
 
     /**
      * gets average count of geoNeo.getCount() from all resources in map
-     * @param data_bounds 
      * 
+     * @param data_bounds
      * @return average count
      */
     private double getAverageDensity(IProgressMonitor monitor) {
@@ -858,7 +890,7 @@ public class NetworkRenderer extends RendererImpl {
                 if (layer.getGeoResource().canResolve(GeoNeo.class)) {
                     GeoNeo resource = layer.getGeoResource().resolve(GeoNeo.class, monitor);
                     Envelope dbounds = resource.getBounds();
-                    if(dbounds != null && resource.getGisType().equals(GisTypes.NETWORK)) {
+                    if (dbounds != null && resource.getGisType().equals(GisTypes.NETWORK)) {
                         result += resource.getCount() / (dbounds.getHeight() * dbounds.getWidth());
                         count++;
                     }
@@ -880,10 +912,10 @@ public class NetworkRenderer extends RendererImpl {
      * @return color
      */
     private Color getSectorColor(Node node, Color defColor) {
-        if (graphModel!=null){
-            RGB result =graphModel.getColor(node);
-            if (result!=null){
-                return new Color(result.red,result.green,result.blue,drawHints.alpha);
+        if (graphModel != null) {
+            RGB result = graphModel.getColor(node);
+            if (result != null) {
+                return new Color(result.red, result.green, result.blue, drawHints.alpha);
             }
         }
         Transaction tx = NeoUtils.beginTransaction();
@@ -917,13 +949,14 @@ public class NetworkRenderer extends RendererImpl {
      * @param azimuth
      */
     private Pair<java.awt.Point, java.awt.Point> renderSector(Graphics2D g, java.awt.Point p, double azimuth, double beamwidth,
-            Color fillColor,
-            Color borderColor) {
+            Color fillColor, Color borderColor) {
         int drawSize = drawHints.drawSize;
         Color oldColor = g.getColor();
         Pair<java.awt.Point, java.awt.Point> result = null;
-        if(base_transform==null) base_transform = g.getTransform();
-        if(beamwidth<10) beamwidth = 10;
+        if (base_transform == null)
+            base_transform = g.getTransform();
+        if (beamwidth < 10)
+            beamwidth = 10;
         g.setTransform(base_transform);
         g.translate(p.x, p.y);
         int draw2 = drawSize + 3;
@@ -971,7 +1004,7 @@ public class NetworkRenderer extends RendererImpl {
      * @param g
      * @param p
      * @param borderColor
-     * @param drawSize 
+     * @param drawSize
      */
     private void renderSite(Graphics2D g, java.awt.Point p, Color borderColor, Color fillColor, boolean selected) {
         Color oldColor = g.getColor();
@@ -980,7 +1013,8 @@ public class NetworkRenderer extends RendererImpl {
             if (selected)
                 renderSelectionGlow(g, p, drawSize * 4);
             drawSize /= 4;
-            if (drawSize < 2) drawSize = 2;
+            if (drawSize < 2)
+                drawSize = 2;
             g.setColor(fillColor);
             g.fillOval(p.x - drawSize, p.y - drawSize, 2 * drawSize, 2 * drawSize);
             g.setColor(borderColor);
@@ -1001,7 +1035,7 @@ public class NetworkRenderer extends RendererImpl {
 
     /**
      * This method draws a fading glow around a point for selected site/sectors
-     *
+     * 
      * @param g
      * @param p
      * @param drawSize
@@ -1009,7 +1043,7 @@ public class NetworkRenderer extends RendererImpl {
     private void renderSelectionGlow(Graphics2D g, java.awt.Point p, int drawSize) {
         Color highColor = new Color(COLOR_SITE_SELECTED.getRed(), COLOR_SITE_SELECTED.getGreen(), COLOR_SITE_SELECTED.getBlue(), 8);
         g.setColor(highColor);
-        for(;drawSize > 2; drawSize *= 0.8) {
+        for (; drawSize > 2; drawSize *= 0.8) {
             g.fillOval(p.x - drawSize, p.y - drawSize, 2 * drawSize, 2 * drawSize);
         }
     }
@@ -1062,8 +1096,8 @@ public class NetworkRenderer extends RendererImpl {
 
     /**
      * get property to analyze
-     * @param geoNeo 
      * 
+     * @param geoNeo
      * @return property name
      */
     private String getSelectProperty(GeoNeo geoNeo) {
@@ -1072,33 +1106,34 @@ public class NetworkRenderer extends RendererImpl {
         try {
             Node dataset = Utils.getDatasetNodeByGis(geoNeo.getMainGisNode());
             result = dataset.getProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION, "").toString();
-            
+
             if (result.equals("")) {
-            	result = checkCorrelated(geoNeo.getMainGisNode()); 
+                result = checkCorrelated(geoNeo.getMainGisNode());
             }
-            
+
             transaction.success();
         } finally {
             transaction.finish();
         }
         return result == null || result.isEmpty() ? null : result;
     }
-    
+
     private String checkCorrelated(Node root) {
-    	Relationship correlationLink = root.getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING);
-    	
-    	if (correlationLink != null) {
-    		Iterator<Relationship> correlatedNodes = correlationLink.getEndNode().getRelationships(CorrelationRelationshipTypes.CORRELATED, Direction.INCOMING).iterator();
-    		
-    		while (correlatedNodes.hasNext()) {
-    			Node correlatedNode = correlatedNodes.next().getStartNode();
-    			if (correlatedNode.hasProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION)) {
-    				return (String)correlatedNode.getProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION);
-    			}
-    		}
-    	}
-    	
-    	return "";
+        Relationship correlationLink = root.getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING);
+
+        if (correlationLink != null) {
+            Iterator<Relationship> correlatedNodes = correlationLink.getEndNode()
+                    .getRelationships(CorrelationRelationshipTypes.CORRELATED, Direction.INCOMING).iterator();
+
+            while (correlatedNodes.hasNext()) {
+                Node correlatedNode = correlatedNodes.next().getStartNode();
+                if (correlatedNode.hasProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION)) {
+                    return (String)correlatedNode.getProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION);
+                }
+            }
+        }
+
+        return "";
     }
 
     /**
@@ -1113,7 +1148,7 @@ public class NetworkRenderer extends RendererImpl {
     }
 
     @Override
-    public void render( IProgressMonitor monitor ) throws RenderException {
+    public void render(IProgressMonitor monitor) throws RenderException {
         Graphics2D g = getContext().getImage().createGraphics();
         render(g, monitor);
     }
