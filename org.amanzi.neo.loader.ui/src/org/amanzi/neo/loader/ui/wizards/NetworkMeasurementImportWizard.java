@@ -22,7 +22,7 @@ import org.eclipse.ui.IWorkbench;
 
 /**
  * <p>
- *
+ *Wizard for import measurement data
  * </p>
  * @author TsAr
  * @since 1.0.0
@@ -38,6 +38,7 @@ protected List<IWizardPage> getMainPagesList() {
     List<IWizardPage> result = new ArrayList<IWizardPage>();
     final NetworkGui1 gui = new NetworkGui1();
     gui.setTitle("Import measurement data into an existing network model");
+    gui.setSelectDataMsg("Select a directory");
     result.add(gui);
     return result;
 }

@@ -42,6 +42,8 @@ import org.neo4j.graphdb.traversal.TraversalDescription;
 public class NetworkGui1 extends AbstractMainPage<CommonConfigData> {
 
     
+    private String selectDataMsg=NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE;
+
     /**
      * Instantiates a new ericsson network gui.
      */
@@ -50,6 +52,12 @@ public class NetworkGui1 extends AbstractMainPage<CommonConfigData> {
         setTitle(NeoLoaderPluginMessages.NetworkConfigurationImportWizard_PAGE_DESCR);
         
     }
+    
+
+    public void setSelectDataMsg(String selectDataMsg) {
+        this.selectDataMsg = selectDataMsg;
+    }
+
 
     @Override
     protected String getRootLabel() {
@@ -112,13 +120,13 @@ public class NetworkGui1 extends AbstractMainPage<CommonConfigData> {
             configurationData.setRoot(null);
             try {
                 if (getSelectedLoader().getValidator().validate(configurationData).getResult() == Result.SUCCESS) {
-                    setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE, DialogPage.WARNING);
+                    setMessage(getSelectDataMsg(), DialogPage.WARNING);
                     return true;
                 }
             } catch (Exception e) {
                 //not handled
             }
-            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE, DialogPage.ERROR);
+            setMessage(getSelectDataMsg(), DialogPage.ERROR);
             return false;
         }
         viewer.storeDefSelection(null);
@@ -130,7 +138,7 @@ public class NetworkGui1 extends AbstractMainPage<CommonConfigData> {
             return validateConfigData(configurationData);
         }
         if (configurationData.getAllLoadedFiles().isEmpty()){
-            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE,DialogPage.ERROR); 
+            setMessage(getSelectDataMsg(),DialogPage.ERROR); 
             return false;            
         }
         configurationData.setRoot(configurationData.getAllLoadedFiles().iterator().next());
@@ -144,6 +152,14 @@ public class NetworkGui1 extends AbstractMainPage<CommonConfigData> {
             setMessage(""); //$NON-NLS-1$
         }
         return true;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public String getSelectDataMsg() {
+        return selectDataMsg;
     }
 
 }
