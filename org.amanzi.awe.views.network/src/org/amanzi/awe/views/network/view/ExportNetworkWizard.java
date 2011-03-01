@@ -146,7 +146,7 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
             savingDataSelectionPage = new ExportNetworkWizardSavingDataSelectionPage("savingDataSelectionPage");
         }
         if (columnConfigPage == null) {
-            columnConfigPage = new ExportNetworkWizardColumnsConfigPage("columnConfigPage", "Export network");
+            columnConfigPage = new ExportNetworkWizardColumnsConfigPage(ColumnsConfigPageTypes.NETWORK_SECTOR_DATA.getName(), "Export network");
         }
         if (filePropertyPage == null) {
             // NeoLoaderPlugin.getDefault().getPreferenceStore().getString(DataLoadPreferences.DEFAULT_CHARSET);
@@ -160,7 +160,7 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         for (Boolean checkbox : checkBoxStates) {
             String nameOfPage = iterator.next();
             if (checkbox == true) {
-                availablePages.add(new ExportNetworkWizardColumnsConfigPage("column config page" + nameOfPage, nameOfPage));
+                availablePages.add(new ExportNetworkWizardColumnsConfigPage(nameOfPage, nameOfPage));
             }
         }
         addPage(selectionPage);

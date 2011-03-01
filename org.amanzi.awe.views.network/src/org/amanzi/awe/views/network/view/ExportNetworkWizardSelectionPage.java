@@ -121,6 +121,9 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
                 if (element.getType() == NodeTypes.NETWORK) {
                     selectedNode = element.getNode();
                     nextPage.changeNodeSelection(selectedNode);
+                    for (ExportNetworkWizardColumnsConfigPage page : ExportNetworkWizard.availablePages) {
+                        page.changeNodeSelection(selectedNode);
+                    }
                 } else {
                     selectedNode = null;
                 }

@@ -380,35 +380,81 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
      * @param selectedNode the selected node
      */
     public void changeNodeSelection(Node selectedNode) {
-
+        
+        String nameOfPage = this.getName();
+        ColumnsConfigPageTypes typeOfPage = ColumnsConfigPageTypes.findColumnsConfigPageTypeByName(nameOfPage);
         this.rootNode = selectedNode;
         DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
         String[] strtypes = datasetService.getSructureTypesId(rootNode);
         List<String> headers = new ArrayList<String>();
-
-        for (int i = 1; i < strtypes.length; i++) {
-            headers.add(strtypes[i]);
-        }
+        
         // Collect all existed properties
         HashMap<String, Collection<String>> propertyMap = new HashMap<String, Collection<String>>();
         TraversalDescription descr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
-                .filter(Traversal.returnAllButStartNode());
-        for (Path path : descr.traverse(rootNode)) {
-            Node node = path.endNode();
-            INodeType type = datasetService.getNodeType(node);
-            if (type != null && headers.contains(type.getId())) {
-                Collection<String> coll = propertyMap.get(type.getId());
-                if (coll == null) {
-                    coll = new TreeSet<String>();
-                    propertyMap.put(type.getId(), coll);
+        .filter(Traversal.returnAllButStartNode());
+        
+        switch (typeOfPage) {
+            case NETWORK_SECTOR_DATA:
+                for (int i = 1; i < strtypes.length; i++) {
+                    headers.add(strtypes[i]);
                 }
-                for (String propertyName : node.getPropertyKeys()) {
-                    if (INeoConstants.PROPERTY_TYPE_NAME.equals(propertyName)) {
-                        continue;
+                for (Path path : descr.traverse(rootNode)) {
+                    Node node = path.endNode();
+                    INodeType type = datasetService.getNodeType(node);
+                    if (type != null && headers.contains(type.getId())) {
+                        Collection<String> coll = propertyMap.get(type.getId());
+                        if (coll == null) {
+                            coll = new TreeSet<String>();
+                            propertyMap.put(type.getId(), coll);
+                        }
+                        for (String propertyName : node.getPropertyKeys()) {
+                            if (INeoConstants.PROPERTY_TYPE_NAME.equals(propertyName)) {
+                                continue;
+                            }
+                            coll.add(propertyName);
+                        }
                     }
-                    coll.add(propertyName);
                 }
-            }
+                break;
+            case NEIGBOURS_DATA:
+                
+                break;
+            case FREQUENCY_CONSTRAINT_DATA:
+
+                break;
+            case INTERFERENCE_MATRIX:
+                
+                break;
+            case SEPARATION_CONSTRAINT_DATA:
+                headers.add("sector");
+                for (Path path : descr.traverse(rootNode)) {
+                    Node node = path.endNode();
+                    INodeType type = datasetService.getNodeType(node);
+                    if (type != null && headers.contains(type.getId())) {
+                        Collection<String> coll = propertyMap.get(type.getId());
+                        if (coll == null) {
+                            coll = new TreeSet<String>();
+                            propertyMap.put(type.getId(), coll);
+                        }
+                        for (String propertyName : node.getPropertyKeys()) {
+                            if (INeoConstants.PROPERTY_TYPE_NAME.equals(propertyName)) {
+                                continue;
+                            }
+                            if (propertyName.equals("Separation"))
+                                coll.add(propertyName);
+                        }
+                    }
+                }
+                break;
+            case TRAFFIC_DATA:
+                
+                break;
+            case TRX_DATA:
+                
+                break;
+            default:
+                break;
+            
         }
 
         // Kasnitskij_V:

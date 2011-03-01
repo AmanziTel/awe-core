@@ -22,7 +22,6 @@ import org.amanzi.neo.core.utils.EditPropertiesPage;
 import org.amanzi.neo.services.enums.INodeType;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.preference.FileFieldEditor;
-import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -44,14 +43,6 @@ import org.eclipse.swt.widgets.Label;
  */
 public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
 
-    private static final String NETWORK_SECTOR_DATA = "Network sector data";
-    private static final String NEIGBOURS_DATA = "Neighbours data";
-    private static final String FREQUENCY_CONSTRAINT_DATA = "Frequency constraint data";
-    private static final String SEPARATION_CONSTRAINT_DATA = "Separation constraint data";
-    private static final String TRAFFIC_DATA = "Traffic data";
-    private static final String TRX_DATA = "Trx data";
-    private static final String INTERFERENCE_MATRIX = "Interference matrix";
-    
     private FileFieldEditor editor;
     private Group main;
     private String fileWithPrefixName = "";
@@ -91,37 +82,37 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
         GridData checkboxLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
         
         checkboxNetworkSectorData = new Button(main, SWT.CHECK);
-        checkboxNetworkSectorData.setText(NETWORK_SECTOR_DATA);
+        checkboxNetworkSectorData.setText(ColumnsConfigPageTypes.NETWORK_SECTOR_DATA.getName());
         checkboxNetworkSectorData.setLayoutData(checkboxLayoutData);
         checkboxNetworkSectorData.setSelection(true);
         
         checkboxNeigboursData = new Button(main, SWT.CHECK);
-        checkboxNeigboursData.setText(NEIGBOURS_DATA);
+        checkboxNeigboursData.setText(ColumnsConfigPageTypes.NEIGBOURS_DATA.getName());
         checkboxNeigboursData.setLayoutData(checkboxLayoutData);
         checkboxNeigboursData.setSelection(true);
         
         checkboxFrequencyConstraintData = new Button(main, SWT.CHECK);
-        checkboxFrequencyConstraintData.setText(FREQUENCY_CONSTRAINT_DATA);
+        checkboxFrequencyConstraintData.setText(ColumnsConfigPageTypes.FREQUENCY_CONSTRAINT_DATA.getName());
         checkboxFrequencyConstraintData.setLayoutData(checkboxLayoutData);
         checkboxFrequencyConstraintData.setSelection(true);
         
         checkboxInterferenceMatrix = new Button(main, SWT.CHECK);
-        checkboxInterferenceMatrix.setText(INTERFERENCE_MATRIX);
+        checkboxInterferenceMatrix.setText(ColumnsConfigPageTypes.INTERFERENCE_MATRIX.getName());
         checkboxInterferenceMatrix.setLayoutData(checkboxLayoutData);
         checkboxInterferenceMatrix.setSelection(true);
         
         checkboxSeparationConstraintData = new Button(main, SWT.CHECK);
-        checkboxSeparationConstraintData.setText(SEPARATION_CONSTRAINT_DATA);
+        checkboxSeparationConstraintData.setText(ColumnsConfigPageTypes.SEPARATION_CONSTRAINT_DATA.getName());
         checkboxSeparationConstraintData.setLayoutData(checkboxLayoutData);
         checkboxSeparationConstraintData.setSelection(true);
         
         checkboxTrafficData = new Button(main, SWT.CHECK);
-        checkboxTrafficData.setText(TRAFFIC_DATA);
+        checkboxTrafficData.setText(ColumnsConfigPageTypes.TRAFFIC_DATA.getName());
         checkboxTrafficData.setLayoutData(checkboxLayoutData);
         checkboxTrafficData.setSelection(true);
         
         checkboxTrxData = new Button(main, SWT.CHECK);
-        checkboxTrxData.setText(TRX_DATA);
+        checkboxTrxData.setText(ColumnsConfigPageTypes.TRX_DATA.getName());
         checkboxTrxData.setLayoutData(checkboxLayoutData);
         checkboxTrxData.setSelection(true);
         
@@ -182,12 +173,12 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
     public ArrayList<String> getNameOfPages() {
         ArrayList<String> checkboxesState = new ArrayList<String>();
 
-        checkboxesState.add(NEIGBOURS_DATA);
-        checkboxesState.add(FREQUENCY_CONSTRAINT_DATA);
-        checkboxesState.add(INTERFERENCE_MATRIX);
-        checkboxesState.add(SEPARATION_CONSTRAINT_DATA);
-        checkboxesState.add(TRAFFIC_DATA);
-        checkboxesState.add(TRX_DATA);
+        checkboxesState.add(ColumnsConfigPageTypes.NEIGBOURS_DATA.getName());
+        checkboxesState.add(ColumnsConfigPageTypes.FREQUENCY_CONSTRAINT_DATA.getName());
+        checkboxesState.add(ColumnsConfigPageTypes.INTERFERENCE_MATRIX.getName());
+        checkboxesState.add(ColumnsConfigPageTypes.SEPARATION_CONSTRAINT_DATA.getName());
+        checkboxesState.add(ColumnsConfigPageTypes.TRAFFIC_DATA.getName());
+        checkboxesState.add(ColumnsConfigPageTypes.TRX_DATA.getName());
         
         return checkboxesState;
     }
