@@ -25,7 +25,9 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.amanzi.neo.loader.core.ProgressEventImpl;
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
+import org.amanzi.neo.loader.core.parser.IParser;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.INeoConstants;
@@ -61,8 +63,31 @@ public abstract  class AbstractHeaderSaver<T extends BaseTransferData> extends A
     public LinkedHashMap<String, String> headers = new LinkedHashMap<String, String>();
     /** The rootname. */
     protected String rootname;
-
-
+    protected IParser parser;
+    protected double percent;
+    protected double totalJob;
+    protected void fire(double taskPercent,final  String message) {
+        if (parser==null){
+            return;
+        }
+        percent+=taskPercent*totalJob;
+        ProgressEventImpl event = new ProgressEventImpl(message, percent);
+        if (parser.fireProgressEvent(event)){
+            //todo cancel finishup
+        }
+    }
+    protected void initProgress(T element) {
+        if (element==null){
+            parser=null;
+            return;
+        }
+        parser=element.getParser();
+        if (parser==null){
+            return;
+        }
+        percent=element.getCurrentpersentage();
+        totalJob=1d-percent;
+    }
     /**
      * Inits the.
      *

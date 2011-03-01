@@ -76,6 +76,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
     private String planName;
     private FrequencyPlanModel freqPlan;
 
+
     @Override
     public void init(NetworkConfigurationTransferData element) {
         super.init(element);
@@ -88,7 +89,6 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         freqPlan = null;
         startMainTx(2000);
     }
-
     @Override
     public void save(NetworkConfigurationTransferData element) {
         if (type == NetworkConfigurationFileTypes.CNA) {
@@ -520,14 +520,18 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
 
     @Override
     public void finishUp(NetworkConfigurationTransferData element) {
+        initProgress(element);
         createFakeBSC();
+        fire(0.2d,"Commit data");
         super.finishUp(element);
     }
+
 
     /**
      * Creates the fake bsc.
      */
     private void createFakeBSC() {
+        fire(0d,"create FAKE_BSC");
         Traverser tr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).evaluator(new Evaluator() {
 
             @Override
@@ -546,22 +550,30 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
                 removedSites.add(site);  
             }
         }
+        fire(0.1d,"Move sectors");
         if (!fakeSites.isEmpty()) {
             NodeResult fakeBSC = networkService.getBscNode(rootNode, "Fake BSC", rootNode);
             for (Node site : fakeSites) {
                 Relationship rel = site.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING);
                 rel.delete();
                 fakeBSC.createRelationshipTo(site, GeoNeoRelationshipTypes.CHILD);
+                fire(0.4d/fakeSites.size(),"Move sectors");
             }
 
+        }else{
+            fire(0.4d,"Move sectors");
         }
         if (!removedSites.isEmpty()){
             for (Node site : removedSites) {
                 ds.deleteNode(site);
+                fire(0.3d/removedSites.size(),"delete duplication"); 
             }
+        }else{
+            fire(0.3d,"delete duplication"); 
         }
 
     }
+
 
     @Override
     public void finishSaveNewElement(NetworkConfigurationTransferData element) {

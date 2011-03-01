@@ -44,13 +44,20 @@ public class BarRirParser extends CommonFilesParser<RecordTransferData, CommonCo
     List<FileElement>rirFiles=new LinkedList<FileElement>();
     @Override
     protected RecordTransferData getFinishData() {
-        return null;
+        RecordTransferData data=new RecordTransferData();
+        data.setParser(this);
+        data.setCurrentpersentage(percentage);
+        return data;
     }
     @Override
     public void init(CommonConfigData properties, ISaver<RecordTransferData> saver) {
         super.init(properties, saver);
         barFiles.clear();
         rirFiles.clear();
+    }
+    @Override
+    protected double formsParserPercent(CommonConfigData properties) {
+        return 0.5d;
     }
 @Override
 protected List<org.amanzi.neo.loader.core.parser.CommonFilesParser.FileElement> getElementList() {
@@ -228,5 +235,4 @@ protected List<org.amanzi.neo.loader.core.parser.CommonFilesParser.FileElement> 
         }
         return record;
     }
-
 }

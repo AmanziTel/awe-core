@@ -38,7 +38,6 @@ import org.amanzi.neo.services.TransactionWrapper;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.node2node.INode2NodeFilter;
-import org.amanzi.neo.services.node2node.INodeToNodeType;
 import org.amanzi.neo.services.node2node.Node2NodeSelectionInformation;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationService;
@@ -413,7 +412,8 @@ public class Node2NodeViews extends ViewPart {
                             createAndFireModel((Relationship)data.cont, i);
                             if (column < 2) {
                                 selectedServ = data.getText(column);
-                                view.refresh();
+                                //TODO refresh is bad for virtual table!
+//                                view.refresh(false);
                             }
                             return;
                         }
@@ -578,7 +578,18 @@ public class Node2NodeViews extends ViewPart {
         }
         return new N2NGraphModel(new ColoredRulesByPercProp(colorMap), outgoingMap, drawLines);
     }
+    protected IGraphModel createCommonIncomigInterferenceModel(Node proxyNode) {
+        Map<Node, Set<Node>> outgoingMap = new HashMap<Node, Set<Node>>();
 
+        Node mainNode = n2ns.findNodeFromProxy(proxyNode);
+        for (Relationship rel : n2ns.getIncomingRelations(proxyNode)) {
+            Node servNode = n2ns.findNodeFromProxy(rel.getOtherNode(proxyNode));
+            Set<Node> outgoing = new HashSet<Node>();
+            outgoing.add(mainNode);
+            outgoingMap.put(servNode, outgoing);
+        }
+        return new N2NGraphModel(new DefaultColoredRules(mainNode, outgoingMap.keySet()), outgoingMap, drawLines);
+    }
     /**
      * Gets the interference color.
      * 
@@ -653,9 +664,11 @@ public class Node2NodeViews extends ViewPart {
         IGraphModel model;
         if (data == null || i < 0 || i > 2 || n2nModel == null) {
             model = null;
-        } else {
-            INodeToNodeType type = n2nModel.getType();
+        } else if (i==0){
+            
             model = new N2NGraphModel(data, i == 0, drawLines);
+        }else{
+            model=createCommonIncomigInterferenceModel(data.getEndNode());
         }
         fireModel(model);
     }
@@ -712,6 +725,9 @@ public class Node2NodeViews extends ViewPart {
 
             @Override
             public PropertyContainer call() {
+                if (i>=createdIter.getCacheMinIndex()&&i<createdIter.getCachedMax()){
+                    return createdIter.getCashedValue(i);
+                }
                 if (createdIter.getIndex() - 1 > i) {
                     createdIter = new CountedIteratorWr(getRelationIterator(filter).iterator());
                 }
@@ -938,7 +954,6 @@ public class Node2NodeViews extends ViewPart {
         }
         resizecolumns();
         view.setItemCount(countRelation);
-        view.refresh();
         table.setVisible(countRelation > 0);
     }
 
@@ -1069,24 +1084,43 @@ public class Node2NodeViews extends ViewPart {
     }
 
     private static class CountedIteratorWr implements Iterator<PropertyContainer> {
+        private static final int CACHE_SIZE=100;
+        List<PropertyContainer>cachedList=new ArrayList<PropertyContainer>(CACHE_SIZE);
         private final Iterator< ? extends PropertyContainer> baseIterator;
         private int index;
+        private int startId;
 
         CountedIteratorWr(Iterator< ? extends PropertyContainer> baseIterator) {
             this.baseIterator = baseIterator;
             index = 0;
+            startId=0;
 
+        }
+
+        public int getCachedMax() {
+            return startId+cachedList.size();
         }
 
         @Override
         public boolean hasNext() {
             return baseIterator.hasNext();
         }
-
+        public int getCacheMinIndex(){
+            return startId;
+        }
+        public PropertyContainer getCashedValue(int index){
+            return cachedList.get(index-startId);
+        }
         @Override
         public PropertyContainer next() {
+            final PropertyContainer result = baseIterator.next();
+            cachedList.add(result);
+            if (cachedList.size()>=CACHE_SIZE){
+                cachedList.remove(0);
+                startId++;
+            }
             index++;
-            return baseIterator.next();
+            return result;
         }
 
         @Override
@@ -1109,7 +1143,6 @@ public class Node2NodeViews extends ViewPart {
         @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
         }
-
         @Override
         public void updateElement(int index) {
             int start = index / PAGE_SIZE * PAGE_SIZE;

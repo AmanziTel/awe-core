@@ -63,6 +63,11 @@ public class NetworkConfigurationParser extends AbstractCSVParser<NetworkConfigu
     }
 
     @Override
+    protected double formsParserPercent(CommonConfigData properties) {
+        return 0.8d;
+    }
+
+    @Override
     protected List<org.amanzi.neo.loader.core.parser.CommonFilesParser.FileElement> getElementList() {
         List<FileElement> result = super.getElementList();
         String descr = getDescriptionFormat();
@@ -165,7 +170,7 @@ public class NetworkConfigurationParser extends AbstractCSVParser<NetworkConfigu
                             case TG: {
                                 StringTokenizer st = new StringTokenizer(nextLine, " ");
                                 if (st.countTokens() < 4) {
-                                    error(String.format("File '%s'\tLine %s: incorrect TG information structure",element.getFile().getName(), line));
+                                    error(String.format("File '%s'\tLine %s: incorrect TG information structure", element.getFile().getName(), line));
                                     continue;
                                 }
                                 String tg = st.nextToken();
@@ -179,16 +184,16 @@ public class NetworkConfigurationParser extends AbstractCSVParser<NetworkConfigu
                             case TRX: {
                                 StringTokenizer st = new StringTokenizer(nextLine, " ");
                                 if (st.countTokens() < 3) {
-                                    error(String.format("File '%s'\tLine %s: incorrect TRX information structure",element.getFile().getName(), line));
+                                    error(String.format("File '%s'\tLine %s: incorrect TRX information structure", element.getFile().getName(), line));
                                     continue;
                                 }
                                 String tg = st.nextToken();
-                                String cell= st.nextToken();
-                                String group= st.nextToken();
-                                if ("ALL".equalsIgnoreCase(cell)||"ALL".equalsIgnoreCase(group)) {
-                                    error(String.format("File '%s'\tLine %s: incorrect TRX information structure",element.getFile().getName(), line));
+                                String cell = st.nextToken();
+                                String group = st.nextToken();
+                                if ("ALL".equalsIgnoreCase(cell) || "ALL".equalsIgnoreCase(group)) {
+                                    error(String.format("File '%s'\tLine %s: incorrect TRX information structure", element.getFile().getName(), line));
                                     continue;
-                                }                              
+                                }
                                 data.setTG(tg);
                                 data.setCell(cell);
                                 data.setGroup(Integer.valueOf(group));
@@ -276,5 +281,12 @@ public class NetworkConfigurationParser extends AbstractCSVParser<NetworkConfigu
 
     public enum BSA_MODE {
         NONE, TG, TRX, TG_FIND, TRX_FIND;
+    }
+    @Override
+    protected NetworkConfigurationTransferData getFinishData() {
+        NetworkConfigurationTransferData data=createEmptyTransferData();
+        data.setParser(this);
+        data.setCurrentpersentage(percentage);
+        return data;
     }
 }

@@ -53,6 +53,7 @@ public class NetworkConfigurationTransferData extends BaseTransferData{
 
     private Integer ch_group;
 
+
     /**
      * Gets the headers.
      *

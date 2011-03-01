@@ -29,9 +29,23 @@ import org.amanzi.neo.loader.core.saver.IStructuredSaver;
  * @since 1.0.0
  */
 public abstract class StructuredParser<S extends IStructuredElement, T extends IDataElement, C extends IConfigurationData> extends AbstractParser<T, C> {
-    private double percentage;
-    private long totalLen;
-
+    protected double percentage;
+    protected double percentageParser;
+    
+    protected long totalLen;
+public void init(C properties, org.amanzi.neo.loader.core.saver.ISaver<T> saver) {
+    super.init(properties, saver);
+    percentageParser=formsParserPercent(properties);
+    
+};
+    /**
+ *
+ * @param properties
+ * @return
+ */
+protected double formsParserPercent(C properties) {
+    return 1d;
+}
     @SuppressWarnings({"unchecked"})
     @Override
     public void parce() {
@@ -63,7 +77,7 @@ public abstract class StructuredParser<S extends IStructuredElement, T extends I
                         return;
                     }
                 }
-                percentage += (double)element.getSize() / totalLen;
+                percentage += (double)element.getSize() / totalLen*percentageParser;
                 ProgressEventImpl event2 = new ProgressEventImpl(element.getDescription(), percentage);
                 if (fireProgressEvent(event2)) {
                     return;
@@ -85,7 +99,7 @@ public abstract class StructuredParser<S extends IStructuredElement, T extends I
      * @param event the event
      */
     protected boolean fireSubProgressEvent(S element, final IProgressEvent event) {
-        return fireProgressEvent(new ProgressEventImpl(event.getProcessName(), percentage + (double)event.getPercentage() * element.getSize() / totalLen));
+        return fireProgressEvent(new ProgressEventImpl(event.getProcessName(), percentage + (double)event.getPercentage() * element.getSize() / totalLen*percentageParser));
     }
 
     /**

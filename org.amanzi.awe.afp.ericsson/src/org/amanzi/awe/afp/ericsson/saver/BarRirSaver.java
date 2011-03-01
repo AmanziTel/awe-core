@@ -234,9 +234,9 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
         }
         ServCell cell = getServCell(cellName, chGr);
         cell.addRep(getInteger(rec, Parameters.REP));
-        if (barAdminRecNum!=cell.adminNum){
-            cell.adminNum=barAdminRecNum;
-            cell.rectime+=adminValues.rectime;
+        if (barAdminRecNum != cell.adminNum) {
+            cell.adminNum = barAdminRecNum;
+            cell.rectime += adminValues.rectime;
         }
     }
 
@@ -253,7 +253,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
         if (result == null) {
             result = new ServCell(cellName, chGr);
             result.adminNum = barAdminRecNum;
-            result.rectime=adminValues.rectime;
+            result.rectime = adminValues.rectime;
             servCells.put(cellName, result);
         }
         if (!ObjectUtils.equals(chGr, result.chgr)) {
@@ -397,10 +397,12 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
     @Override
     public void finishUp(RecordTransferData element) {
         try {
-            createMatrix();
-            createShadow();
-            createTriangulation();
-            storeRirData();
+            initProgress(element);
+            fire(0, "Create IM");
+            createMatrix();// 40
+            createShadow();// 20
+            createTriangulation();// 20
+            storeRirData();// 20
         } finally {
             super.finishUp(element);
         }
@@ -412,17 +414,22 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
     private void storeRirData() {
         IllegalFrequencySpectrumModel fs = networkModel.getFrequencySpectrum();
         NodeToNodeRelationModel n2n = networkModel.getIllegalFrequency();
-        
+
         if (percentileValue == null || percentileValue < 0 || percentileValue > 1000) {
             error(String.format("Wrong Percentile value %s", percentileValue));
             return;
         }
-        double nspv = NORMSINV(1d*percentileValue/1000d)-NORMSINV(0.5d);
-        if (nspv==0) {
+        double nspv = NORMSINV(1d * percentileValue / 1000d) - NORMSINV(0.5d);
+        if (nspv == 0) {
             error(String.format("Wrong nspv value %s", 0));
             return;
         }
-        for (Entry<String, CellRirData> entry : rirCells.entrySet()) {
+        final Set<Entry<String, CellRirData>> entrySet = rirCells.entrySet();
+        if (entrySet.isEmpty()){
+            fire(0.2,"Store RIR data");
+        }else{
+        for (Entry<String, CellRirData> entry : entrySet) {
+            fire(0.2/entrySet.size(),"Store RIR data");
             Node sector = networkModel.findSector(entry.getKey());
             if (sector == null) {
                 error(String.format("Sector %s not found", entry.getKey()));
@@ -431,25 +438,27 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             CellRirData data = entry.getValue();
             // Map<Integer, RirsData> filteredData = new HashMap<Integer, BarRirSaver.RirsData>();
             for (Entry<Integer, RirsData> entryData : data.data.entrySet()) {
-                if (entryData.getValue().avpercentile < 5 || entryData.getValue().avemedian < 4 ) {
+                if (entryData.getValue().avpercentile < 5 || entryData.getValue().avemedian < 4) {
                     continue;
                 }
                 // filteredData.put(entryData.getKey(), entryData.getValue());
                 double penalty;
-                if ((entryData.getValue().avemedian>10)){
-                    penalty=1d;
-                }else{
-                    double std=entryData.getValue().avpercentile==entryData.getValue().avemedian?5:(entryData.getValue().avpercentile-entryData.getValue().avemedian)/nspv;
-                    penalty=(double)(100-NORMDIST(10, entryData.getValue().avemedian, std, true))/100d;
+                if ((entryData.getValue().avemedian > 10)) {
+                    penalty = 1d;
+                } else {
+                    double std = entryData.getValue().avpercentile == entryData.getValue().avemedian ? 5 : (entryData.getValue().avpercentile - entryData.getValue().avemedian)
+                            / nspv;
+                    penalty = (double)(100 - NORMDIST(10, entryData.getValue().avemedian, std, true)) / 100d;
                 }
-                Node frNode=fs.getFrequencyNode(entryData.getValue().arfcn);
-                for (Relationship rel:sector.getRelationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING)){
-                    Node trx=rel.getOtherNode(sector);
+                Node frNode = fs.getFrequencyNode(entryData.getValue().arfcn);
+                for (Relationship rel : sector.getRelationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                    Node trx = rel.getOtherNode(sector);
                     Relationship relation = n2n.getRelation(trx, frNode);
                     setProperty(n2n.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), relation, "penalty", penalty);
                     setProperty(n2n.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), relation, "channel_type", "ALL");
                 }
             }
+        }
         }
         statistic.setTypeCount(n2n.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), n2n.getRelationCount());
         statistic.setTypeCount(n2n.getName(), NodeTypes.PROXY.getId(), n2n.getProxyCount());
@@ -461,8 +470,13 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
      */
     private void createTriangulation() {
         Set<NodeToNodeRelationModel> models = networkModel.findAllN2nModels(NodeToNodeTypes.NEIGHBOURS);
-        for (NodeToNodeRelationModel model : models) {
-            createTriangulation(model);
+        if (models.isEmpty()) {
+            fire(0.2, "Create Triangulation");
+        } else {
+            for (NodeToNodeRelationModel model : models) {
+                createTriangulation(model);
+                fire(0.2 / models.size(), "Create Triangulation");
+            }
         }
 
     }
@@ -573,6 +587,11 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
      *
      */
     private void createShadow() {
+        long sc = statistic.getTotalCount(rootname, NodeTypes.SECTOR.getId());
+        double persAll = 0;
+        if (sc == 0) {
+            sc++;
+        }
         shadowModel = networkModel.getShadowing(getShadowingMatrixName());
         TraversalDescription td = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
                 .evaluator(new Evaluator() {
@@ -586,6 +605,9 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
                 });
         String indexName = Utils.getLuceneIndexKeyByProperty(rootNode, "bcch", NodeTypes.SECTOR);
         for (Node serv : td.traverse(rootNode).nodes()) {
+            double pers = 0.2d / sc;
+            persAll += pers;
+            fire(pers, "Create shadow");
             Coordinate c1 = networkModel.getCoordinateOfSector(serv);
             if (c1 == null) {
                 continue;
@@ -617,6 +639,9 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
         statistic.setTypeCount(getShadowingMatrixName(), NodeTypes.NODE_NODE_RELATIONS.getId(), shadowModel.getRelationCount());
         statistic.setTypeCount(getShadowingMatrixName(), NodeTypes.PROXY.getId(), shadowModel.getProxyCount());
         info(String.format("Created shadow, number relations: %s", shadowModel.getRelationCount()));
+        if (persAll < 0.2) {
+            fire(0.2 - persAll, "Created shadow");
+        }
     }
 
     /**
@@ -628,9 +653,14 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             return;
         }
         interfModel = networkModel.getInterferenceMatrix(getInterfMatrixName());
-
-        for (ServCell cell : servCells.values()) {
-            handleServCell(cell);
+        if (!servCells.values().isEmpty()) {
+            fire(0.4, "Created IM");
+        } else {
+            double pr = 0.4 / servCells.values().size();
+            for (ServCell cell : servCells.values()) {
+                handleServCell(cell);
+                fire(pr, "Created IM for " + cell.cellName);
+            }
         }
         statistic.setTypeCount(getInterfMatrixName(), NodeTypes.NODE_NODE_RELATIONS.getId(), interfModel.getRelationCount());
         statistic.setTypeCount(getInterfMatrixName(), NodeTypes.PROXY.getId(), interfModel.getProxyCount());
@@ -688,7 +718,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
     private void handleNeighbor(ServCell cell, Node servSector, InterfCell neigh) {
         Node neighSector = findNode(servSector, neigh);
         if (neighSector == null) {
-            if (sectorsNotFound ++ < 10) {
+            if (sectorsNotFound++ < 10) {
                 error(String.format("Sector (bsic=%s;arfcn=%s) not found", neigh.bsic, neigh.arfcn));
             }
             return;
