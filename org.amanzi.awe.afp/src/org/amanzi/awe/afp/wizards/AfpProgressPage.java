@@ -416,7 +416,7 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 					long t = lastItem.getPeriod().getFirstMillisecond();
 					Date d = new Date(t);
 					SimpleDateFormat df = new SimpleDateFormat();
-					df.applyPattern("H:m:s.S");
+					df.applyPattern("H:mm:ss.S");
 					addProgressTableItem(new String[] {df.format(d), ""+lastItem.getValue(), "    ", "    ", "    ", "    "});
 				}
 			});
