@@ -149,6 +149,12 @@ public class AfpExporter extends Job {
                 domainDirPaths[i] = modelDir.getAbsolutePath() + PATH_SEPARATOR;
                 for (int j = 0; j < fileNames.length; j++) {
                     inputFiles[i][j] = new File(tmpAfpFolder + dirName + PATH_SEPARATOR + fileNames[j]);
+                    
+                    
+                    if (inputFiles[i][j].exists()) {
+                        inputFiles[i][j].delete();
+                    }
+                    
                     inputFiles[i][j].createNewFile();
                 }
             } catch (IOException e) {

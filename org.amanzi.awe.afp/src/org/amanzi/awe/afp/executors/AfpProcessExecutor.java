@@ -219,16 +219,19 @@ public class AfpProcessExecutor extends Job {
 	
 	private void createFiles(IProgressMonitor monitor, AfpExporter afpE){
 		
-		// delete output file if exist
-		File outputFile = new File(afpE.outputFileName);
+	    //LN, 1.03.2011, clenaup output files for all domains
+	    for (String domainDir : afpE.domainDirPaths) {
+	        //delete output file if exist
+	        File outputFile = new File(domainDir + afpE.outputFileName);
 		
-		if(outputFile.exists()) {
-			try {
-				outputFile.delete();
-			} catch(Exception e) {
-				AweConsolePlugin.error("AFP Unable to delete output file");
-			}
-		}
+	        if(outputFile.exists()) {
+	            try {
+	                outputFile.delete();
+	            } catch(Exception e) {
+	                AweConsolePlugin.error("AFP Unable to delete output file");
+	            }
+	        }
+	    }
 		
 		/** Create the carrier file */
 //		afpE.writeFilesNew(new SubProgressMonitor(monitor, 30), parameters);
