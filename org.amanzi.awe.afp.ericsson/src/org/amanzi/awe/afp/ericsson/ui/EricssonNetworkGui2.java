@@ -101,8 +101,8 @@ public void setVisible(boolean visible) {
         Collection<File> files = viewer.getSelectedFiles(null);
         
          if (files.isEmpty()){
-             setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE,DialogPage.ERROR); 
-             return false;
+             setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE,DialogPage.INFORMATION); 
+             return true;
          }
          viewer.storeDefSelection(null);
          configurationData.getAdditionalProperties().put("BSM_FILES", files);
@@ -114,8 +114,8 @@ public void setVisible(boolean visible) {
              return validateConfigData(configurationData);
          }
          if (allLoadedFiles.isEmpty()){
-             setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE,DialogPage.ERROR); 
-             return false;            
+             setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE,DialogPage.INFORMATION); 
+             return true;            
          }
          IValidateResult result = validator.validate(configurationData);
          if (result.getResult()==Result.FAIL){

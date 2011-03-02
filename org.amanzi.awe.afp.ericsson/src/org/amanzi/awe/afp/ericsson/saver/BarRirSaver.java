@@ -425,40 +425,41 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             return;
         }
         final Set<Entry<String, CellRirData>> entrySet = rirCells.entrySet();
-        if (entrySet.isEmpty()){
-            fire(0.2,"Store RIR data");
-        }else{
-        for (Entry<String, CellRirData> entry : entrySet) {
-            fire(0.2/entrySet.size(),"Store RIR data");
-            Node sector = networkModel.findSector(entry.getKey());
-            if (sector == null) {
-                error(String.format("Sector %s not found", entry.getKey()));
-                continue;
-            }
-            CellRirData data = entry.getValue();
-            // Map<Integer, RirsData> filteredData = new HashMap<Integer, BarRirSaver.RirsData>();
-            for (Entry<Integer, RirsData> entryData : data.data.entrySet()) {
-                if (entryData.getValue().avpercentile < 5 || entryData.getValue().avemedian < 4) {
+        if (entrySet.isEmpty()) {
+            fire(0.2, "Store RIR data");
+        } else {
+            for (Entry<String, CellRirData> entry : entrySet) {
+                fire(0.2 / entrySet.size(), "Store RIR data");
+                Node sector = networkModel.findSector(entry.getKey());
+                if (sector == null) {
+                    error(String.format("Sector %s not found", entry.getKey()));
                     continue;
                 }
-                // filteredData.put(entryData.getKey(), entryData.getValue());
-                double penalty;
-                if ((entryData.getValue().avemedian > 10)) {
-                    penalty = 1d;
-                } else {
-                    double std = entryData.getValue().avpercentile == entryData.getValue().avemedian ? 5 : (entryData.getValue().avpercentile - entryData.getValue().avemedian)
-                            / nspv;
-                    penalty = (double)(100 - NORMDIST(10, entryData.getValue().avemedian, std, true)) / 100d;
-                }
-                Node frNode = fs.getFrequencyNode(entryData.getValue().arfcn);
-                for (Relationship rel : sector.getRelationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
-                    Node trx = rel.getOtherNode(sector);
-                    Relationship relation = n2n.getRelation(trx, frNode);
-                    setProperty(n2n.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), relation, "penalty", penalty);
-                    setProperty(n2n.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), relation, "channel_type", "ALL");
+                CellRirData data = entry.getValue();
+                // Map<Integer, RirsData> filteredData = new HashMap<Integer,
+                // BarRirSaver.RirsData>();
+                for (Entry<Integer, RirsData> entryData : data.data.entrySet()) {
+                    if (entryData.getValue().avpercentile < 5 || entryData.getValue().avemedian < 4) {
+                        continue;
+                    }
+                    // filteredData.put(entryData.getKey(), entryData.getValue());
+                    double penalty;
+                    if ((entryData.getValue().avemedian > 10)) {
+                        penalty = 1d;
+                    } else {
+                        double std = entryData.getValue().avpercentile == entryData.getValue().avemedian ? 5 : (entryData.getValue().avpercentile - entryData.getValue().avemedian)
+                                / nspv;
+                        penalty = (double)(100 - NORMDIST(10, entryData.getValue().avemedian, std, true)) / 100d;
+                    }
+                    Node frNode = fs.getFrequencyNode(entryData.getValue().arfcn);
+                    for (Relationship rel : sector.getRelationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                        Node trx = rel.getOtherNode(sector);
+                        Relationship relation = n2n.getRelation(trx, frNode);
+                        setProperty(n2n.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), relation, "penalty", penalty);
+                        setProperty(n2n.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), relation, "channel_type", "ALL");
+                    }
                 }
             }
-        }
         }
         statistic.setTypeCount(n2n.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), n2n.getRelationCount());
         statistic.setTypeCount(n2n.getName(), NodeTypes.PROXY.getId(), n2n.getProxyCount());

@@ -119,7 +119,7 @@ public class NetworkGui1 extends AbstractMainPage<CommonConfigData> {
         if (files.isEmpty()) {
             configurationData.setRoot(null);
             try {
-                if (getSelectedLoader().getValidator().validate(configurationData).getResult() == Result.SUCCESS) {
+                if (getSelectedLoader().getValidator().validate(configurationData).getResult() != Result.FAIL) {
                     setMessage(getSelectDataMsg(), DialogPage.WARNING);
                     return true;
                 }
