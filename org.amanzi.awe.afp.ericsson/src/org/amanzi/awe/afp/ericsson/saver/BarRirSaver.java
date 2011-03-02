@@ -653,7 +653,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             return;
         }
         interfModel = networkModel.getInterferenceMatrix(getInterfMatrixName());
-        if (!servCells.values().isEmpty()) {
+        if (servCells.values().isEmpty()) {
             fire(0.4, "Created IM");
         } else {
             double pr = 0.4 / servCells.values().size();
