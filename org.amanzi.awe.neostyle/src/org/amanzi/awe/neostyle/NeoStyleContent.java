@@ -58,7 +58,7 @@ public class NeoStyleContent extends StyleContent {
     /** Network sector font size */
     public static final Integer DEF_FONT_SIZE_SECTOR = 8;
     public static final Integer DEF_MAXIMUM_SYMBOL_SIZE = 40;
-    public static final Integer DEF_DEF_BEAMWIDTH = 10;
+    public static final Integer DEF_DEF_BEAMWIDTH = 40;
     public static final Integer DEF_ICON_OFFSET = 0;
     public static final Color DEF_COLOR_SITE = Color.DARK_GRAY;
     private static final String LINE_PRFX = "LINE_";
