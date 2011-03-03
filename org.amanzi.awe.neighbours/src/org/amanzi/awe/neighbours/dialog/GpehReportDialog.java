@@ -18,7 +18,7 @@ import java.util.LinkedHashMap;
 
 import org.amanzi.awe.neighbours.gpeh.GpehReportType;
 import org.amanzi.awe.neighbours.views.Messages;
-import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.statistics.CallTimePeriods;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.GisTypes;

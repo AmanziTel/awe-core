@@ -21,7 +21,7 @@ import java.util.Set;
 
 import org.amanzi.awe.neighbours.gpeh.GpehReport;
 import org.amanzi.awe.neighbours.gpeh.GpehReportType;
-import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.statistics.CallTimePeriods;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;

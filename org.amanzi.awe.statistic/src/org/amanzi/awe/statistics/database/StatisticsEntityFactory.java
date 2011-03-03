@@ -13,7 +13,7 @@
 
 package org.amanzi.awe.statistics.database;
 
-import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.statistics.CallTimePeriods;
 import org.amanzi.awe.statistics.database.entity.DatasetStatistics;
 import org.amanzi.awe.statistics.database.entity.Dimension;
 import org.amanzi.awe.statistics.database.entity.Level;
@@ -81,22 +81,6 @@ public class StatisticsEntityFactory {
             NeoUtils.finishTx(tx);
         }
     }
-    /**
-     * Creates a statistics group from scratch
-     * 
-     * @param service database service
-     * @return the statistics group
-     */
-    public static StatisticsCell createStatisticsCell(GraphDatabaseService service) {
-        Transaction tx = NeoUtils.beginTx(service);
-        try {
-            Node cellNode = service.createNode();
-            cellNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.S_CELL.getId());
-            return new StatisticsCell(cellNode);
-        } finally {
-            NeoUtils.finishTx(tx);
-        }
-    }
 
     /**
      * Creates a statistics group from a node
@@ -108,7 +92,7 @@ public class StatisticsEntityFactory {
         return new StatisticsGroup(node);
     }
 
-    public static StatisticsRow createStatisticsRow(GraphDatabaseService service, Long startDate, CallTimePeriods period) {
+    public static StatisticsRow createStatisticsRow(GraphDatabaseService service, StatisticsGroup parent,Long startDate, CallTimePeriods period) {
         Transaction tx = NeoUtils.beginTx(service);
         try {
             Node rowNode = service.createNode();
@@ -116,7 +100,7 @@ public class StatisticsEntityFactory {
             String name = NeoUtils.getFormatDateStringForSrow(startDate, period.addPeriod(startDate), "HH:mm", period.getId());
             rowNode.setProperty(INeoConstants.PROPERTY_TIME_NAME, startDate);
             rowNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
-            return new StatisticsRow(rowNode);
+            return new StatisticsRow(rowNode,parent);
         } finally {
             NeoUtils.finishTx(tx);
         }
@@ -147,19 +131,19 @@ public class StatisticsEntityFactory {
      * @param column template column for cell to be created
      * @return the statistics cell
      */
-    public static StatisticsCell createStatisticsCell(GraphDatabaseService service, TemplateColumn column) {
+    public static StatisticsCell createStatisticsCell(GraphDatabaseService service, StatisticsRow parent,TemplateColumn column) {
         Transaction tx = NeoUtils.beginTx(service);
         try {
             Node cellNode = service.createNode();
             cellNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, column.getName());
             cellNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.S_CELL.getId());
-            return new StatisticsCell(cellNode, column);
+            return new StatisticsCell(cellNode, parent, column);
         } finally {
             NeoUtils.finishTx(tx);
         }
     }
 
-    public static StatisticsRow createSummaryRow(GraphDatabaseService service) {
+    public static StatisticsRow createSummaryRow(GraphDatabaseService service,StatisticsGroup parent) {
         Transaction tx = NeoUtils.beginTx(service);
         try {
             Node summaryNode = service.createNode();
@@ -167,7 +151,7 @@ public class StatisticsEntityFactory {
             summaryNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.S_ROW.getId());
             summaryNode.setProperty(INeoConstants.PROPERTY_SUMMARY_NAME, true);
             //TODO use setters
-            return new StatisticsRow(summaryNode);
+            return new StatisticsRow(summaryNode,parent);
         } finally {
             NeoUtils.finishTx(tx);
         }

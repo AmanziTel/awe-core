@@ -33,7 +33,7 @@ import org.amanzi.awe.report.model.Chart;
 import org.amanzi.awe.report.model.Report;
 import org.amanzi.awe.report.model.ReportModel;
 import org.amanzi.awe.report.pdf.PDFPrintingEngine;
-import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.statistics.CallTimePeriods;
 import org.amanzi.awe.statistics.builder.StatisticsBuilder;
 import org.amanzi.awe.statistics.database.entity.Statistics;
 import org.amanzi.awe.statistics.engine.KpiBasedHeader;
@@ -442,7 +442,7 @@ public class GridReportWizard extends Wizard implements IWizard {
                             }
                         }
                         displayNames.add(kpiDisplayName);
-                        KpiBasedHeader kpiBasedHeader1 = new KpiBasedHeader(ruby, fullKpiName, kpiDisplayName);
+                        KpiBasedHeader kpiBasedHeader1 = new KpiBasedHeader(fullKpiName, kpiDisplayName);
                         template.add(kpiBasedHeader1, AggregationFunctions.AVERAGE, threshold == null ? null : new Threshold(
                                 threshold, Condition.LT), kpiDisplayName);
 
@@ -506,7 +506,7 @@ public class GridReportWizard extends Wizard implements IWizard {
                             }
                         }
                         displayNames.add(kpiDisplayName);
-                        KpiBasedHeader kpiBasedHeader1 = new KpiBasedHeader(ruby, fullKpiName, kpiDisplayName);
+                        KpiBasedHeader kpiBasedHeader1 = new KpiBasedHeader(fullKpiName, kpiDisplayName);
                         template.add(kpiBasedHeader1, AggregationFunctions.AVERAGE, threshold == null ? null : new Threshold(
                                 threshold, Condition.LT), kpiDisplayName);
 

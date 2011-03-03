@@ -623,8 +623,8 @@ class Chart
 
           @data.each do |row|
             #          puts "aggregation #{@aggregation} time #{row[@time]} threshold #{@threshold};"
-            #          puts "#{row.keys.join(".\t")}"
-            #          puts "#{row.values.join("\t")}"
+                      puts "#{row.keys.join(".\t")}"
+                      puts "#{row.values.join("\t")}"
             if !row[@time].nil?
               time=java.util.Date.new(row[@time])
               if @aggregation==:hourly
@@ -645,7 +645,7 @@ class Chart
                 ds_series.add(date, java.lang.Double.parseDouble(row[@values].to_s)) if !row[@time].nil? and !row[@values].nil?
               elsif @values.is_a? Array
                 @values.each_with_index do |val,i|
-                  ds_series[i].add(date, java.lang.Double.parseDouble(row[val].to_s))
+                  ds_series[i].add(date, java.lang.Double.parseDouble(row[val].to_s)) if !row[val].nil?
                 end
               end
               ds_time_series.add(date, @threshold) if !@threshold.nil? and !row[@time].nil?

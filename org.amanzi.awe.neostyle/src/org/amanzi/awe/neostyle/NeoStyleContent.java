@@ -79,6 +79,7 @@ public class NeoStyleContent extends StyleContent {
     private static final String FONT_SIZE_SECTOR = "FONT_SIZE_SECTOR";
     private static final String SITE_NAME = "SITE_NAME";
     private static final String SECTOR_NAME = "SECTOR_NAME";
+    private static boolean SHOW_ALERTS=true;
 
     // private static final String IS_NETWORK_STYLE = "IS_NETWORK";
 
@@ -108,6 +109,7 @@ public class NeoStyleContent extends StyleContent {
                 result.setMainProperty(DEF_MAIN_PROPERTY);
                 result.setSecondaryProperty(DEF_SECONDARY_PROPERTY);
                 result.setIgnoreTransparency(IGNORE_TRANSPARENCY);
+                result.setShowAlerts(SHOW_ALERTS);
                 // result.setNetwork(true);
                 return result;
             } else {
@@ -127,6 +129,7 @@ public class NeoStyleContent extends StyleContent {
                 result.setMainProperty(DEF_MAIN_PROPERTY);
                 result.setSecondaryProperty(DEF_SECONDARY_PROPERTY);
                 result.setIgnoreTransparency(IGNORE_TRANSPARENCY);
+                result.setShowAlerts(SHOW_ALERTS);
                 return result;
             }
         }

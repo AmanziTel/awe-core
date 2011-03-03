@@ -14,6 +14,7 @@
 package org.amanzi.awe.statistics.template;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.amanzi.awe.statistics.engine.IAggregationFunction;
@@ -47,7 +48,7 @@ public class Template {
             }
         },
         GRID {
-            
+
             @Override
             public String getTypeName() {
                 return OssType.GRID.getId();
@@ -66,12 +67,19 @@ public class Template {
     }
 
     private String templateName;
+    private String author;
+    private String date;
     private DataType type;
+    private HashMap<String, String> metadata = new HashMap<String, String>();
     private List<TemplateColumn> columns = new ArrayList<TemplateColumn>();
 
     public Template(String name, DataType type) {
         this.templateName = name;
         this.type = type;
+    }
+
+    public Template(String name) {
+        this.templateName = name;
     }
 
     public Template(String name, Template baseTemplate) {
@@ -92,6 +100,10 @@ public class Template {
 
     public void add(IStatisticsHeader header, AggregationFunctions function, Threshold threshold, String name) {
         columns.add(new TemplateColumn(header, function, threshold, name));
+    }
+
+    public void add(TemplateColumn column) {
+        columns.add(column);
     }
 
     public void remove(IStatisticsHeader header, IAggregationFunction function) {
@@ -131,8 +143,56 @@ public class Template {
         }
         return null;
     }
-    public void calculateAll(Node node){
-        
+
+    /**
+     * @return Returns the metadata.
+     */
+    public HashMap<String, String> getMetadata() {
+        return metadata;
+    }
+
+    /**
+     * @param metadata The metadata to set.
+     */
+    public void setMetadata(HashMap<String, String> metadata) {
+        this.metadata = metadata;
+    }
+
+    /**
+     * @return Returns the author.
+     */
+    public String getAuthor() {
+        return author;
+    }
+
+    /**
+     * @param author The author to set.
+     */
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    /**
+     * @return Returns the date.
+     */
+    public String getDate() {
+        return date;
+    }
+
+    /**
+     * @param date The date to set.
+     */
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(String.format("Template('%s',%s,%s)", templateName, author, date));
+        sb.append("\nmetadata:\n");
+        sb.append(metadata).append("\ncolumns:\n");
+        sb.append(columns);
+        return sb.toString();
     }
 
 }

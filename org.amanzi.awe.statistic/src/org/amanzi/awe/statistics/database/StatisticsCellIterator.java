@@ -14,6 +14,7 @@
 package org.amanzi.awe.statistics.database;
 
 import org.amanzi.awe.statistics.database.entity.StatisticsCell;
+import org.amanzi.awe.statistics.database.entity.StatisticsRow;
 import org.amanzi.awe.statistics.template.Template;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NodeTypes;
@@ -28,14 +29,15 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class StatisticsCellIterator extends AbstractStatisticsIterator<StatisticsCell> {
+    private StatisticsRow parent;
 
-    public StatisticsCellIterator(Node node) {
+    public StatisticsCellIterator(Node node, StatisticsRow parent) {
         super(node, NodeTypes.S_CELL);
+        this.parent = parent;
     }
 
     public StatisticsCell next() {
         Node cellNode = nodeIterator.next();
-        return new StatisticsCell(cellNode);
+        return new StatisticsCell(cellNode,parent);
     }
-
 }

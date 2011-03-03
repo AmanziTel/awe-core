@@ -12,6 +12,7 @@
  */
 package org.amanzi.awe.views.tree.drive;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -19,6 +20,7 @@ import java.util.List;
 
 import org.amanzi.awe.views.network.view.NetworkTreeView;
 import org.amanzi.awe.views.tree.drive.views.DriveTreeView;
+import org.amanzi.awe.views.tree.drive.views.StatisticsNeoNode;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.events.ShowPreparedViewEvent;
 import org.amanzi.neo.services.events.UpdateDrillDownEvent;
@@ -123,15 +125,7 @@ public class DriveViewPlugin extends AbstractUIPlugin implements IUpdateViewList
         String source = event.getSource();
         if(!source.equals(DriveTreeView.ID)&& !source.contentEquals(NetworkTreeView.NETWORK_TREE_VIEW_ID)){
             List<Node> nodes = event.getNodes();
-            StructuredSelection selection;
-            if (nodes.size()>1) {
-                Node node = nodes.get(0);
-                Node periodNode = nodes.get(1);
-                selection = new StructuredSelection(new Object[] {new StatisticSelectionNode(node, periodNode)});
-            }
-            else{
-                selection = new StructuredSelection(new Object[] {nodes.get(0)});
-            }
+            StructuredSelection selection= new StructuredSelection(new Object[] {nodes.get(0)});
             IViewPart viewNetwork = getTreeView();
             if (viewNetwork != null) {
                 Viewer networkView = (Viewer)viewNetwork.getSite().getSelectionProvider();
@@ -163,8 +157,12 @@ public class DriveViewPlugin extends AbstractUIPlugin implements IUpdateViewList
             Node node = nodes.get(0);
             StructuredSelection selection;
             if (nodes.size()>1) {
-                Node periodNode = nodes.get(1);
-                selection = new StructuredSelection(new Object[] {new StatisticSelectionNode(node, periodNode)});
+                int i=0;
+                List<StatisticsNeoNode> nodesToSelect=new ArrayList<StatisticsNeoNode>(nodes.size());
+                for (Node n:nodes){
+                    nodesToSelect.add(new StatisticsNeoNode(n,i++));
+                }
+                selection = new StructuredSelection(new Object[] {new StatisticsNeoNode(nodes.get(0),0)});
             }else{
                 selection = new StructuredSelection(new Object[] {new DistributionSelectionNode(node)});
             }

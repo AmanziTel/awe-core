@@ -1425,7 +1425,7 @@ public class DatasetService extends AbstractService {
             @Override
             public boolean accept(Path item) {
                 return item.endNode().hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
-                        && (item.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.DATASET.getId()));
+                        &&( item.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.DATASET.getId())||item.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.OSS.getId()));
             }
         }).traverse(databaseService.getReferenceNode());
     }

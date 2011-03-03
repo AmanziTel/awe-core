@@ -37,7 +37,7 @@ public class Level {
         this.node = node;
     }
 
-    Node getNode() {
+    public Node getNode() {
         return node;
     }
 

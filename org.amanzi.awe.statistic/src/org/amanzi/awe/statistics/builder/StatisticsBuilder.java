@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.statistics.CallTimePeriods;
 import org.amanzi.awe.statistics.database.IDENService;
 import org.amanzi.awe.statistics.database.RomesService;
 import org.amanzi.awe.statistics.database.StatisticsEntityFactory;
@@ -39,6 +39,7 @@ import org.amanzi.awe.statistics.template.Template;
 import org.amanzi.awe.statistics.template.TemplateColumn;
 import org.amanzi.awe.statistics.template.Threshold;
 import org.amanzi.awe.statistics.template.Template.DataType;
+import org.amanzi.awe.views.kpi.KPIPlugin;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
@@ -83,6 +84,17 @@ public class StatisticsBuilder {
         this.dataset = dataset;
 
     }
+    /**
+     * @param neo
+     * @param dataset
+     * @param ruby TODO
+     */
+    public StatisticsBuilder(GraphDatabaseService neo, Node dataset) {
+        this.neo = neo;
+        this.ruby = KPIPlugin.getDefault().getRubyRuntime();
+        this.dataset = dataset;
+        
+    }
 
     /**
      * Builds a 3-dimensional statistics for a given dataset, network level and time period based on
@@ -100,6 +112,7 @@ public class StatisticsBuilder {
         mainTx = neo.beginTx();
         try {
             dsService = getDatasetService(dataset);
+//            monitor.beginTask("Building statistics", /(Integer)dataset.getProperty(INeoConstants.PROPERTY_COUNT_NAME,IProgressMonitor.UNKNOWN));
             monitor.beginTask("Building statistics", IProgressMonitor.UNKNOWN);
             DatasetStatistics statisticsRoot = findOrCreateStatisticsRoot(dataset, template);
             Dimension networkDimension = statisticsRoot.getNetworkDimension();
@@ -280,6 +293,7 @@ public class StatisticsBuilder {
                 currentStartTime = startTime;
             }
             long count = 0;
+            int nodesCount = 0;
             int comm = 0;
             do {
                 if (comm > 500) {
@@ -295,7 +309,8 @@ public class StatisticsBuilder {
 
                 long t = System.currentTimeMillis();
                 Collection<Node> nodes = dsService.getNodes(currentStartTime, nextStartTime);
-                count += nodes.size();
+                nodesCount=nodes.size();
+                count += nodesCount;
                 long total = 0;
                 for (Node node : nodes) {
 
@@ -344,6 +359,7 @@ public class StatisticsBuilder {
                 System.out.println("total=" + count + "\tCalc for period=" + (System.currentTimeMillis() - startForPeriod)
                         + "\tper node" + (total / (nodes.size() != 0 ? nodes.size() : 1)));
                 monitor.worked(1);
+//                monitor.worked(nodesCount);
             } while (currentStartTime < endTime);
             updateFlags(statistics);
             return statistics;
@@ -351,6 +367,7 @@ public class StatisticsBuilder {
     }
 
     /**
+     * Checks if alert should be generated or not
      * @param group
      * @param summaryRow
      * @param row
@@ -366,21 +383,21 @@ public class StatisticsBuilder {
             Condition condition = threshold.getCondition();
             switch (condition) {
             case LT:
-                if (thresholdValue.doubleValue() < cell.getValue().doubleValue()) {
-                    cell.setFlagged(true);
-                    System.out.println(group.getGroupName() + "/" + cell.getName() + ": threshold (" + thresholdValue
-                            + ")is exceeded (" + cell.getValue() + ")");
-                } else {
-                    cell.setFlagged(false);
-                }
-                if (thresholdValue.doubleValue() < summaryCell.getValue().doubleValue()) {
-                    summaryCell.setFlagged(true);
-                    System.out.println(group.getGroupName() + "/" + summaryCell.getName() + ": threshold (" + thresholdValue
-                            + ") is exceeded by average value (" + summaryCell.getValue() + ")");
-                } else {
-                    summaryCell.setFlagged(false);
-
-                }
+                cell.setFlagged(cell.getValue()!=null && thresholdValue.doubleValue() >= cell.getValue().doubleValue());
+                summaryCell.setFlagged(summaryCell.getValue()!=null && thresholdValue.doubleValue() >= summaryCell.getValue().doubleValue());
+                break;
+            case LE:
+                cell.setFlagged(cell.getValue()!=null && thresholdValue.doubleValue() > cell.getValue().doubleValue());
+                summaryCell.setFlagged(summaryCell.getValue()!=null && thresholdValue.doubleValue() > summaryCell.getValue().doubleValue());
+                break;
+            case GT:
+                cell.setFlagged(cell.getValue()!=null && thresholdValue.doubleValue() <= cell.getValue().doubleValue());
+                summaryCell.setFlagged(summaryCell.getValue()!=null && thresholdValue.doubleValue() <= summaryCell.getValue().doubleValue());
+                break;
+            case GE:
+                cell.setFlagged(cell.getValue()!=null && thresholdValue.doubleValue() < cell.getValue().doubleValue());
+                summaryCell.setFlagged(summaryCell.getValue()!=null && thresholdValue.doubleValue() < summaryCell.getValue().doubleValue());
+                break;
             default:
             }
         }
@@ -462,25 +479,31 @@ public class StatisticsBuilder {
                     comm = 0;
                 }
                 StatisticsRow summaryRow = findOrCreateSummaryRow(group, summaries);
-                StatisticsRow row = findOrCreateRow(group, currentStartTime, period);
                 for (Entry<String, StatisticsRow> rowWithKey : uGroup.getRows().entrySet()) {
                     final StatisticsRow uRow = rowWithKey.getValue();
                     if (!uRow.isSummaryNode()) {
                         Long uPeriod = uRow.getPeriod();
                         if (uPeriod >= currentStartTime && uPeriod < nextStartTime) {
+                            StatisticsRow row = findOrCreateRow(group, currentStartTime, period);
                             row.addSourceRow(uRow);
                             List<TemplateColumn> columns = template.getColumns();
                             for (TemplateColumn column : columns) {
                                 comm++;
-                                StatisticsCell cell = findOrCreateCell(row, column);
-                                StatisticsCell summaryCell = findOrCreateCell(summaryRow, column);
-
                                 StatisticsCell uCell = uRow.getCellByKey(column.getName());
 
-                                Number value = uCell.getValue();
-                                cell.update(value);
-                                summaryCell.update(value);
-                                checkThreshold(group, summaryRow, row, column, cell, summaryCell);
+                                if (uCell != null) {
+                                    StatisticsCell cell = findOrCreateCell(row, column);
+                                    StatisticsCell summaryCell = findOrCreateCell(summaryRow, column);
+
+                                    Number value = uCell.getValue();
+                                    cell.update(value);
+                                    cell.addSourceNode(uCell.getNode());
+
+                                    summaryCell.update(value);
+                                    summaryCell.addSourceNode(uCell.getNode());
+                                    checkThreshold(group, summaryRow, row, column, cell, summaryCell);
+                                }
+                                
                             }
                         } else {
                             continue;
@@ -519,7 +542,7 @@ public class StatisticsBuilder {
         String periodName = NeoUtils.getFormatDateStringForSrow(startDate, period.addPeriod(startDate), "HH:mm", period.getId());
         StatisticsRow row = group.getRowByKey(periodName);
         if (row == null) {
-            row = StatisticsEntityFactory.createStatisticsRow(neo, startDate, period);
+            row = StatisticsEntityFactory.createStatisticsRow(neo, group,startDate, period);
             group.addRow(row);
         }
         return row;
@@ -543,7 +566,7 @@ public class StatisticsBuilder {
         String groupName = group.getGroupName();
         StatisticsRow summaryRow = summaries.get(groupName);
         if (summaryRow == null) {
-            summaryRow = StatisticsEntityFactory.createSummaryRow(neo);
+            summaryRow = StatisticsEntityFactory.createSummaryRow(neo,group);
             summaries.put(groupName, summaryRow);
             group.addRow(summaryRow);
         }
@@ -553,7 +576,7 @@ public class StatisticsBuilder {
     private StatisticsCell findOrCreateCell(StatisticsRow row, TemplateColumn column) {
         StatisticsCell cell = row.getCellByKey(column.getName());
         if (cell == null) {
-            cell = StatisticsEntityFactory.createStatisticsCell(neo, column);
+            cell = StatisticsEntityFactory.createStatisticsCell(neo, row,column);
             row.addCell(cell);
         }
         return cell;

@@ -19,7 +19,9 @@ import java.util.LinkedHashMap;
 
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.DriveTypes;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
@@ -56,48 +58,11 @@ public class DriveRoot extends Root {
 
         Transaction transaction = service.beginTx();
         try {
-            LinkedHashMap<String, Node> datasets = NeoUtils.getAllDatasetNodes(service);
-            // Node reference = service.getReferenceNode();
-            // Traverser rootDriveTraverse = reference.traverse(Order.DEPTH_FIRST, new
-            // StopEvaluator() {
-            //
-            // @Override
-            // public boolean isStopNode(TraversalPosition currentPos) {
-            // return currentPos.depth() >= 3;
-            // }
-            // }, new ReturnableEvaluator() {
-            //
-            // @Override
-            // public boolean isReturnableNode(TraversalPosition currentPos) {
-            // Relationship lastRelationshipTraversed = currentPos.lastRelationshipTraversed();
-            // return currentPos.depth() > 1
-            // && (NeoUtils.getNodeType(lastRelationshipTraversed.getStartNode(),
-            // "").equals(INeoConstants.AWE_PROJECT_NODE_TYPE) ||
-            // (NeoUtils.getNodeType(lastRelationshipTraversed.getStartNode(),
-            // "").equals(INeoConstants.DATASET_TYPE_NAME)))
-            // &&
-            // (lastRelationshipTraversed.getEndNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,
-            // "").equals(
-            // INeoConstants.DATASET_TYPE_NAME) ||
-            // (lastRelationshipTraversed.getEndNode().getProperty(
-            // INeoConstants.PROPERTY_TYPE_NAME, "").equals(INeoConstants.FILE_TYPE_NAME)));
-            // }
-            // }, SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING,
-            // NetworkRelationshipTypes.CHILD, Direction.OUTGOING,
-            // GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING);
+
             int nextNum = number+1;
-            for (Node node : datasets.values()) {
+            for (Node node : NeoServiceFactory.getInstance().getDatasetService().getAllDatasetNodes().nodes()) {
                 driveNodes.add(new DriveNeoNode(node,nextNum++));
-                
-                //Lagutko, 3.02.2010, if we have a AMS Call Dataset than we should add Analyzis to tree
-                if (NeoUtils.getDatasetType(node) == DriveTypes.AMS_CALLS) {
-                    Iterator<Relationship> analyzis = node.getRelationships(ProbeCallRelationshipType.CALL_ANALYSIS, Direction.OUTGOING).iterator();
-                    
-                    while (analyzis.hasNext()) {
-                        driveNodes.add(new CallAnalyzisNeoNode(analyzis.next().getEndNode(),nextNum++));
-                    }
-                }
-                if(driveNodes.size()>MAX_CHILDREN_COUNT){
+               if(driveNodes.size()>MAX_CHILDREN_COUNT){
                     break;
                 }
             }

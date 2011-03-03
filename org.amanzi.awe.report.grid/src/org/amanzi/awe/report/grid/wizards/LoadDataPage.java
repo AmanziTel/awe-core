@@ -15,7 +15,7 @@ package org.amanzi.awe.report.grid.wizards;
 
 import org.amanzi.awe.report.grid.wizards.GridReportWizard.PeriodType;
 import org.amanzi.awe.report.pdf.PDFPrintingEngine;
-import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.statistics.CallTimePeriods;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;

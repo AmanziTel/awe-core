@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.statistics.database.entity;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -24,6 +26,7 @@ import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.ui.NeoUtils;
+import org.jfree.data.statistics.StatisticalCategoryDataset;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -37,14 +40,16 @@ import org.neo4j.graphdb.Transaction;
  * @since 1.0.0
  */
 public class StatisticsRow {
-    public static final String TOTAL="total";
+    public static final String TOTAL = "total";
     private Node node;
+    private StatisticsGroup parent;
     private StatisticsCell lastCell;
     // key - column/header name
     private LinkedHashMap<String, StatisticsCell> cells;
 
-    public StatisticsRow(Node node) {
+    public StatisticsRow(Node node, StatisticsGroup parent) {
         this.node = node;
+        this.parent = parent;
     }
 
     /**
@@ -78,7 +83,7 @@ public class StatisticsRow {
     /**
      * @return Returns the node.
      */
-    Node getNode() {
+    public Node getNode() {
         return node;
     }
 
@@ -91,11 +96,20 @@ public class StatisticsRow {
     }
 
     /**
+     * @return Returns the cells.
+     */
+    public StatisticsCell[] getCellsAsArray() {
+        loadCellsIfNecessary();
+        Collection<StatisticsCell> values = cells.values();
+        return values.toArray(new StatisticsCell[values.size()]);
+    }
+
+    /**
      * Loads cells from the database
      */
     private void loadCells() {
         cells = new LinkedHashMap<String, StatisticsCell>();
-        for (StatisticsCell cell : new StatisticsCellIterator(node)) {
+        for (StatisticsCell cell : new StatisticsCellIterator(node, this)) {
             cells.put(cell.getName(), cell);
             lastCell = cell;
         }
@@ -135,9 +149,11 @@ public class StatisticsRow {
     public void setSummaryNode(boolean isSummary) {
         node.setProperty(INeoConstants.PROPERTY_SUMMARY_NAME, isSummary);
     }
+
     public void addSourceRow(StatisticsRow sourceRow) {
         node.createRelationshipTo(sourceRow.getNode(), GeoNeoRelationshipTypes.SOURCE);
     }
+
     public void setFlagged(boolean flagged) {
         if (flagged) {
             node.setProperty(INeoConstants.PROPERTY_FLAGGED_NAME, true);
@@ -150,4 +166,12 @@ public class StatisticsRow {
     public boolean isFlagged() {
         return (Boolean)node.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, false);
     }
+
+    /**
+     * @return Returns the parent.
+     */
+    public StatisticsGroup getParent() {
+        return parent;
+    }
+
 }

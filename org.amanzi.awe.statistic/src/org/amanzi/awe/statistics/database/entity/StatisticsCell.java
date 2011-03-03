@@ -42,18 +42,21 @@ public class StatisticsCell {
     private IStatisticsHeader header;
     private IAggregationFunction function;
     private Node node;
+    private StatisticsRow parent;
     private boolean isReadOnly;
     private boolean isFlagged;
 
-    public StatisticsCell(Node node, TemplateColumn column) {
+    public StatisticsCell(Node node, StatisticsRow parent, TemplateColumn column) {
+        this.parent = parent;
         this.header = column.getHeader();
         this.function = column.getFunction().newFunction();
         this.node = node;
         this.isReadOnly = false;
     }
 
-    public StatisticsCell(Node node) {
+    public StatisticsCell(Node node,StatisticsRow parent) {
         this.node = node;
+        this.parent = parent;
         this.isReadOnly = true;
     }
 
@@ -92,17 +95,17 @@ public class StatisticsCell {
         return (Boolean)node.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, false);
     }
 
-    public Number update(Node dataNode, IDatasetService service) {
-        if (isReadOnly) {
-            throw new CellIsNotEditableException();
-        }
-        Number value = header.calculate(service, dataNode);
-        if (value != null || (value == null && function.acceptsNulls())) {
-            node.setProperty(INeoConstants.PROPERTY_VALUE_NAME, function.update(value).getResult());
-            return value;
-        }
-        return null;
-    }
+//    public Number update(Node dataNode, IDatasetService service) {
+//        if (isReadOnly) {
+//            throw new CellIsNotEditableException();
+//        }
+//        Number value = header.calculate(service, dataNode);
+//        if (value != null || (value == null && function.acceptsNulls())) {
+//            node.setProperty(INeoConstants.PROPERTY_VALUE_NAME, function.update(value).getResult());
+//            return value;
+//        }
+//        return null;
+//    }
 
     public boolean update(Number value) throws CellIsNotEditableException {
         if (isReadOnly) {
@@ -123,4 +126,18 @@ public class StatisticsCell {
     public void addSourceNode(Node sourceNode) {
         node.createRelationshipTo(sourceNode, GeoNeoRelationshipTypes.SOURCE);
     }
+    public StatisticsCell getNextCell() {
+        if (node.hasRelationship(GeoNeoRelationshipTypes.NEXT,Direction.OUTGOING)){
+            return new StatisticsCell(node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode(),parent);
+        }
+        return null;
+    }
+
+    /**
+     * @return Returns the parent.
+     */
+    public StatisticsRow getParent() {
+        return parent;
+    }
+    
 }

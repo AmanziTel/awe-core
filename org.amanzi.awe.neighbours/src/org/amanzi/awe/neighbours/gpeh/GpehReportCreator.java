@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.amanzi.awe.neighbours.gpeh.Calculator3GPPdBm.ValueType;
-import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.statistics.CallTimePeriods;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.preferences.NeoCorePreferencesConstants;
 import org.amanzi.neo.core.utils.export.CommonExporter;

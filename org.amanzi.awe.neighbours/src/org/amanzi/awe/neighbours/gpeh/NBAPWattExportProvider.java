@@ -16,7 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.amanzi.awe.neighbours.gpeh.Calculator3GPPdBm.ValueType;
-import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.statistics.CallTimePeriods;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.neo.services.utils.Pair;
 import org.apache.log4j.Logger;

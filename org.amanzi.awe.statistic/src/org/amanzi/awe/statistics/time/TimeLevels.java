@@ -13,7 +13,7 @@
 
 package org.amanzi.awe.statistics.time;
 
-import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.statistics.CallTimePeriods;
 import org.amanzi.awe.statistics.engine.IHierarchyLevel;
 
 /**

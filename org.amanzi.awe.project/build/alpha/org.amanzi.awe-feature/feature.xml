@@ -251,13 +251,6 @@ PURPOSE.
          unpack="false"/>
 
    <plugin
-         id="org.amanzi.awe.statistic"
-         download-size="0"
-         install-size="0"
-         version="1.0.0.qualifier"
-         unpack="false"/>
-
-   <plugin
          id="org.amanzi.awe.console"
          download-size="0"
          install-size="0"
@@ -336,6 +329,20 @@ PURPOSE.
 
    <plugin
          id="org.amanzi.awe.report.geoptima"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.qualifier"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.awe.statistics.view"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.qualifier"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.awe.statistics"
          download-size="0"
          install-size="0"
          version="1.0.0.qualifier"

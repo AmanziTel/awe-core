@@ -44,7 +44,7 @@ import org.amanzi.awe.report.model.ReportModel;
 import org.amanzi.awe.report.pdf.PDFPrintingEngine;
 import org.amanzi.awe.report.util.ReportUtils;
 import org.amanzi.awe.reports.geoptima.GeoptimaReportsPlugin;
-import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.statistics.CallTimePeriods;
 import org.amanzi.awe.statistics.builder.StatisticsBuilder;
 import org.amanzi.awe.statistics.database.entity.Statistics;
 import org.amanzi.awe.statistics.functions.AggregationFunctions;

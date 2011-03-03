@@ -93,4 +93,12 @@ public enum Condition {
     
     public abstract Condition getInverseCondition();
 
+    public static Condition findConditionByText(String text) {
+        for (Condition condition : values()) {
+            if (condition.getText().equals(text)) {
+                return condition;
+            }
+        }
+        return null;
+    }
 }

@@ -18,7 +18,7 @@ import java.util.Set;
 
 import org.amanzi.awe.neighbours.gpeh.GpehReportCreator;
 import org.amanzi.awe.neighbours.gpeh.GpehReportType;
-import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.statistics.CallTimePeriods;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;

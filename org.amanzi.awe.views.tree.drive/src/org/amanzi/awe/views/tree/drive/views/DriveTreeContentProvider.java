@@ -54,7 +54,7 @@ public class DriveTreeContentProvider extends NetworkTreeContentProvider {
                     IAdaptable adapter = (IAdaptable)element;
                     Pair< ? , ? > pair = (Pair< ? , ? >)adapter.getAdapter(Pair.class);
                     if (pair.getLeft() instanceof Node && pair.getRight() instanceof Node) {
-                        CallAnalyzisNeoNode elem = new CallAnalyzisNeoNode((Node)pair.getLeft(), (Node)pair.getRight(), 0);
+                        StatisticsNeoNode elem = new StatisticsNeoNode((Node)pair.getLeft(), 0);
                         return elem.getParent();
                     }
                 } else if(element instanceof DistributionSelectionNode){
@@ -81,6 +81,9 @@ public class DriveTreeContentProvider extends NetworkTreeContentProvider {
                 }
                 if (element instanceof DistributeNeoNode) {
                     return ((DistributeNeoNode)element).getParent();
+                }
+                if (element instanceof StatisticsNeoNode) {
+                    return ((StatisticsNeoNode)element).getParent();
                 }
                 return findParent(new DriveNeoNode(NeoUtils.getParent(null, node),curNum+1), node);
             } else {

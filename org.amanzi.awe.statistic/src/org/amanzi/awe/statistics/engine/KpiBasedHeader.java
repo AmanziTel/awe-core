@@ -13,9 +13,6 @@
 
 package org.amanzi.awe.statistics.engine;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jruby.Ruby;
 import org.jruby.RubyNumeric;
 import org.jruby.RubyString;
@@ -31,30 +28,31 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class KpiBasedHeader implements IStatisticsHeader {
-    private static final String EVALUATE = "Neo4j::load_node(%s).instance_eval {%s(self)}";
-    private Ruby ruby;
+    // private static final String EVALUATE = "Neo4j::load_node(%s).instance_eval {%s(self)}";
     private String kpiName;
     private String name;
 
+    public KpiBasedHeader() {
+
+    }
+
     /**
-     * @param ruby
      * @param kpiName
      * @param name TODO
      */
-    public KpiBasedHeader(Ruby ruby, String kpiName, String name) {
-        this.ruby = ruby;
+    public KpiBasedHeader(String kpiName, String name) {
         this.kpiName = kpiName;
         this.name = name;
     }
 
     @Override
     public Number calculate(IDatasetService service, Node node) {
-        IRubyObject result = ruby.evalScriptlet(String.format(EVALUATE, node.getId(), kpiName));
-        if (result instanceof RubyString) {
-            return Double.NaN;
-        } else if (result instanceof RubyNumeric) {
-            return ((RubyNumeric)result).getDoubleValue();
-        }
+        // IRubyObject result = ruby.evalScriptlet(String.format(EVALUATE, node.getId(), kpiName));
+        // if (result instanceof RubyString) {
+        // return Double.NaN;
+        // } else if (result instanceof RubyNumeric) {
+        // return ((RubyNumeric)result).getDoubleValue();
+        // }
         return null;
     }
 
@@ -65,6 +63,25 @@ public class KpiBasedHeader implements IStatisticsHeader {
 
     public String getKpiName() {
         return kpiName;
+    }
+
+    /**
+     * @param kpiName The kpiName to set.
+     */
+    public void setKpiName(String kpiName) {
+        this.kpiName = kpiName;
+    }
+
+    /**
+     * @param name The name to set.
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Name: %s, Formula: %s", name, kpiName);
     }
 
 }

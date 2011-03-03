@@ -50,6 +50,7 @@ public class NeoStyle {
     private String secondaryProperty;
     private List<Pair<ShapeType,List<Color>>> styles=new ArrayList<Pair<ShapeType,List<Color>>>();
     private GroupFilter filter;
+    private boolean showAlerts;
 
     /**
      * @return Returns the main property to use for labelling.
@@ -357,5 +358,21 @@ public class NeoStyle {
         System.out.println("Set correlation "+drawCorrelations+" for "+this);
         this.drawCorrelations = drawCorrelations;
     }
+    /**
+     * Checks if we should show alerts
+     * 
+     * @return true, if alerts should be shown
+     */
+    public boolean shouldShowAlerts() {
+        return showAlerts;
+    }
 
+    /**
+     * Sets whether we should show alerts
+     * 
+     * @param should show alerts
+     */
+    public void setShowAlerts(boolean show) {
+        this.showAlerts = show;
+    }
 }

@@ -26,7 +26,7 @@ import java.util.Map.Entry;
 import org.amanzi.awe.report.charts.ChartType;
 import org.amanzi.awe.report.charts.Charts;
 import org.amanzi.awe.report.model.Chart;
-import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.statistics.CallTimePeriods;
 import org.amanzi.awe.statistics.database.entity.Statistics;
 import org.amanzi.awe.statistics.database.entity.StatisticsCell;
 import org.amanzi.awe.statistics.database.entity.StatisticsGroup;

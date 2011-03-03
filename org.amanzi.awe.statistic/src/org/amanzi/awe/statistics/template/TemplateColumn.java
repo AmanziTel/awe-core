@@ -29,7 +29,9 @@ public class TemplateColumn {
     private IStatisticsHeader header;
     private AggregationFunctions function;
     private Threshold threshold;
-
+    public TemplateColumn(String name){
+        this.name=name;
+    }
     /**
      * @param header
      * @param function
@@ -80,6 +82,36 @@ public class TemplateColumn {
      */
     public String getName() {
         return name;
+    }
+    /**
+     * @param name The name to set.
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+    
+    /**
+     * @param header The header to set.
+     */
+    public void setHeader(IStatisticsHeader header) {
+        this.header = header;
+    }
+    
+    /**
+     * @param function The function to set.
+     */
+    public void setFunction(String name) {
+        this.function = AggregationFunctions.getFunctionByName(name);
+    }
+    /**
+     * @param threshold The threshold to set.
+     */
+    public void setThreshold(Threshold threshold) {
+        this.threshold = threshold;
+    }
+    @Override
+    public String toString() {
+        return String.format("\nTemplateColumn[%s, %s, %s, %s]",name,header,function,threshold);
     }
 
 }

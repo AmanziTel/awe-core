@@ -22,6 +22,7 @@ import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.neo.services.ui.enums.ColoredFlags;
+import org.eclipse.swt.graphics.Color;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.ReturnableEvaluator;
@@ -50,6 +51,14 @@ public class DriveNeoNode extends NeoNode {
     public DriveNeoNode(Node node, int number) {
         super(node,number);
     }
+    /**
+     * Constructor
+     * 
+     * @param node node
+     */
+    public DriveNeoNode(Node node,String name, int number) {
+        super(node,name,number);
+    }
 
     @Override
     public NeoNode[] getChildren() {
@@ -64,6 +73,7 @@ public class DriveNeoNode extends NeoNode {
                 children.add(new DistributeNeoNode(node,nextNum++));
             }
         }
+        nextNum = addStatisticsNodes(children, nextNum);
         if (NeoUtils.isCallNode(node)) {
             traverse = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, 
                                      ProbeCallRelationshipType.CALL_M, Direction.OUTGOING);
@@ -80,6 +90,20 @@ public class DriveNeoNode extends NeoNode {
             }
         }        
         return children.toArray(NO_NODES);
+    }
+    /**
+     * Obtains all statistics root nodes
+     * @param children
+     * @param nextNum
+     * @return
+     */
+    private int addStatisticsNodes(ArrayList<NeoNode> children, int nextNum) {
+        Traverser traverse= node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, 
+                GeoNeoRelationshipTypes.ANALYSIS, Direction.OUTGOING);
+        for (Node node : traverse) {
+            children.add(new StatisticsNeoNode(node,nextNum++));
+        }
+        return nextNum;
     }
 
     /**
@@ -111,6 +135,13 @@ public class DriveNeoNode extends NeoNode {
         return super.getImageKey();
     }
 
+    /**
+     * Gets text color
+     * @return null
+     */
+    public Color getTextColor() {
+        return null;
+    }
     /**
      * Return true if current node has type 'File'
      * 

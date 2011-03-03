@@ -73,6 +73,17 @@ public class NeoNode {
         this.name = NeoUtils.getFormatedNodeName(node, "");
         this.number = number;
     }
+    /**
+     * Creates a proxy element for given Node
+     * 
+     * @param node node
+     */
+    
+    public NeoNode(Node node,String name,int number) {
+        this.node = node;
+        this.name = name;
+        this.number = number;
+    }
     
     /**
      * Is this node has children

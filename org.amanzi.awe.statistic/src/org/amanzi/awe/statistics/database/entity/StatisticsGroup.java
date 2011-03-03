@@ -16,7 +16,7 @@ package org.amanzi.awe.statistics.database.entity;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.statistics.CallTimePeriods;
 import org.amanzi.awe.statistics.database.StatisticsRowIterator;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
@@ -72,7 +72,7 @@ public class StatisticsGroup {
      */
     private void loadRows() {
         rows = new LinkedHashMap<String, StatisticsRow>();
-        for (StatisticsRow row : new StatisticsRowIterator(node)) {
+        for (StatisticsRow row : new StatisticsRowIterator(node, this)) {
             rows.put(row.getName(), row);
             lastRow = row;
         }
@@ -97,7 +97,7 @@ public class StatisticsGroup {
     /**
      * @return Returns the node.
      */
-    Node getNode() {
+    public Node getNode() {
         return node;
     }
 

@@ -81,14 +81,15 @@ public class PerformanceCountersLoader extends AbstractLoader {
         useMapper(1, CELL, new StringMapper());
 
 //        addKnownHeader(1, "Date", "date", false);
-        dateFormat = new SimpleDateFormat("dd.MM.yy");
+        dateFormat = new SimpleDateFormat("MM.dd.yy");
         timeFormat = new SimpleDateFormat("HH:mm:ss");
 //        addKnownHeader(1, "time", ".*time.*", false);
 //        useMapper(1, "time", new LongDateMapper("HH:mm:ss"));
-//
-//        final String date = "date";
-//        addKnownHeader(1, date, ".*date.*", false);
+
+        final String date = "date";
+//        addKnownHeader(1, date, new String[]{".*date.*","DATE"}, false);
 //        useMapper(1, date, new LongDateMapper("dd.MM.yy"));
+//        useMapper(1, "DATE", new LongDateMapper("dd.MM.yy"));
 
         try {
             addIndex(NodeTypes.M.getId(), NeoUtils.getTimeIndexProperty(basename));
@@ -167,14 +168,15 @@ public class PerformanceCountersLoader extends AbstractLoader {
             long timestamp;
             for (Map.Entry<String, Object> entry : lineData.entrySet()) {
                 node.setProperty(entry.getKey(), entry.getValue());
-                if ("time".equals(entry.getKey())) {
-                    System.out.println(lineData.get("date") + " " + entry.getValue());
-                    String date = (String)lineData.get("date");
-//                    System.out.print(entry.getValue() + ": " + entry.getValue().getClass() + "\t");
-                    String time = (String)entry.getValue();
+                if ("date".equalsIgnoreCase(entry.getKey())) {
+//                    System.out.println(lineData.get("date") + " " + entry.getValue());
+                    String date = (String)entry.getValue();
+                    String time = (String)lineData.get("time");
 
                     GregorianCalendar cal0 = new GregorianCalendar();
-                    cal0.setTimeInMillis(dateFormat.parse(date).getTime() + timeFormat.parse(time).getTime());
+                    long dateAsMillisecs = dateFormat.parse(date).getTime();
+                    long timeAsMillisecs = time==null?0:timeFormat.parse(time).getTime();
+                    cal0.setTimeInMillis(dateAsMillisecs + timeAsMillisecs);
                                         
                     timestamp = cal0.getTimeInMillis();
                     node.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);

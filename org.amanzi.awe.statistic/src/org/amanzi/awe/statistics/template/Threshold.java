@@ -25,7 +25,9 @@ package org.amanzi.awe.statistics.template;
 public class Threshold {
     private Number thresholdValue;
     private Condition condition;
-
+    public Threshold(){
+        
+    }
     /**
      * @param thresholdValue
      * @param condition
@@ -33,6 +35,14 @@ public class Threshold {
     public Threshold(Number thresholdValue, Condition condition) {
         this.thresholdValue = thresholdValue;
         this.condition = condition;
+    }
+    /**
+     * @param thresholdValue
+     * @param condition
+     */
+    public Threshold(Number thresholdValue, String condition) {
+        this.thresholdValue = thresholdValue;
+        this.condition = Condition.findConditionByText(condition);
     }
 
     /**
@@ -61,6 +71,10 @@ public class Threshold {
      */
     public void setCondition(Condition condition) {
         this.condition = condition;
+    }
+    @Override
+    public String toString() {
+        return String.format("Threshold[alert %s %s]", condition.getText(),thresholdValue);
     }
 
 }

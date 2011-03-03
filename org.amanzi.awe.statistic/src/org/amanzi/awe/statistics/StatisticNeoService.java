@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistic;
+package org.amanzi.awe.statistics;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

@@ -15,7 +15,7 @@ package org.amanzi.awe.neighbours.gpeh;
 
 import java.util.LinkedList;
 
-import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.statistics.CallTimePeriods;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.index.lucene.LuceneIndexService;

@@ -11,23 +11,23 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistic;
+package org.amanzi.awe.statistics;
+
+import org.neo4j.graphdb.Node;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ *Interface for statistic element node
  * </p>
- * @author TsAr
+ * @author tsinkel_a
  * @since 1.0.0
  */
-public interface IStatisticHandler {
-
+public interface IStatisticElementNode extends IStatisticElement {
+    
     /**
-     * @param periodTime
-     * @param periodEnd
-     * @return
+     * Gets the statistic node.
+     *
+     * @return the node
      */
-    IStatisticElement getStatisics(final Long periodTime, final Long periodEnd);
-
+    Node getNode();
 }

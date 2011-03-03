@@ -184,7 +184,8 @@ public class UpdateLayerListener {
             Collection<Node> nodes = event.getSelected();
             Set<Node> prevSel = geo.getSelectedNodes();
             if (!prevSel.equals(nodes)) {
-                geo.setSelectedNodes(new HashSet<Node>(nodes));
+                final HashSet<Node> newNodes = new HashSet<Node>(nodes);
+                geo.setSelectedNodes(newNodes);
                 layer.refresh(null);
             }
         } else {

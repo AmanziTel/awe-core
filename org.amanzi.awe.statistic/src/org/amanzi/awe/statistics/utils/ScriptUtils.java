@@ -89,7 +89,7 @@ public class ScriptUtils {
                 }
             }
             displayNames.add(kpiDisplayName);
-            KpiBasedHeader kpiBasedHeader = new KpiBasedHeader(ruby, fullKpiName, kpiDisplayName);
+            KpiBasedHeader kpiBasedHeader = new KpiBasedHeader(fullKpiName, kpiDisplayName);
             template.add(kpiBasedHeader,function==null? AggregationFunctions.AVERAGE : function, threshold == null ? null : new Threshold(threshold,
                     Condition.LT), kpiDisplayName);
 

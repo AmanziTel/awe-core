@@ -19,7 +19,7 @@ import java.util.GregorianCalendar;
 
 import org.amanzi.awe.report.grid.wizards.GridReportWizard.PeriodType;
 import org.amanzi.awe.report.pdf.PDFPrintingEngine;
-import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.statistics.CallTimePeriods;
 import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.services.utils.Pair;
 import org.amanzi.neo.services.utils.Utils;

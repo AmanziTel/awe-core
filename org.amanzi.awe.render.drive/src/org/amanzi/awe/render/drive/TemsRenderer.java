@@ -56,6 +56,7 @@ import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.indexes.PropertyIndex.NeoIndexRelationshipTypes;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
@@ -119,6 +120,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     private static final int[] eventIconSizes = new int[] {6, 8, 12, 16, 32, 48, 64};
     private static final Color COLOR_HIGHLIGHTED = Color.CYAN;;
     private static final Color COLOR_HIGHLIGHTED_SELECTED = Color.RED;
+    private static final Color COLOR_ALERT = Color.RED;
     private static final Color STRONG_LINE = Color.BLACK;
     private static final Color FADE_LINE = new Color(127, 127, 127, 127);
     private AbstractFilter filterMp;
@@ -133,6 +135,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     private ArrayList<CorrelatedNetwork> networkGeoResources;
     private java.awt.Point previousPoint;
     private double dataScaleFactor = 0.0;
+    private boolean showAlerts;
 
     private static int getIconSize(int size) {
         int lower = eventIconSizes[0];
@@ -517,6 +520,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                 labelColor = neostyle.getLabel();
                 alpha = 255 - (int)((double)neostyle.getSymbolTransparency() / 100.0 * 255.0);
                 ignoreTransp = neostyle.isIgnoreTransparency();
+                showAlerts = neostyle.shouldShowAlerts();
                 drawCorrelations = neostyle.isDrawCorrelations();
                 drawSize = (neostyle.getSymbolSize()-1)/2;
                 maxSitesLabel = neostyle.getLabeling() / 4;
@@ -626,7 +630,6 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             Coordinate world_location = new Coordinate();
 //            final Feature geoFilter = getContext().getFeaturesInBbox(layer, bbox);
             final Feature geoFilter =(Feature) getContext().getLayer().getBlackboard().get("GEO_FILTER");
-            LOGGER.debug("[DEBUG] geo filter "+geoFilter);
             if (geoFilter != null) {
                 final Coordinate[] coordinates = geoFilter.getDefaultGeometry().getCoordinates();
                 final int n = coordinates.length;
@@ -949,16 +952,23 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                         }
                     }
                     Color borderColor = g.getColor();
-                    if (selectedNodes.size() > 0) {
-                        if (selectedNodes.contains(node.getNode())) {
-                            borderColor = COLOR_HIGHLIGHTED;
+                    boolean isBadNode=isBadNode(node.getNode());
+                    if (isBadNode) {
+                        borderColor=COLOR_ALERT;
+                        if (!selectedPoints.contains(node.getNode())){
+                            renderBadPoint(g, p, drawSize, drawFull, drawLite);
+                        }
+                    } else {
+                        if (selectedNodes.size() > 0) {
+                            if (selectedNodes.contains(node.getNode())) {
+                                borderColor = COLOR_HIGHLIGHTED;
+                            }
+                        }
+                        long id = node.getNode().getId();
+                        if ((crossHairId1 != null && id == crossHairId1) || (crossHairId2 != null && crossHairId2 == id)) {
+                            borderColor = COLOR_HIGHLIGHTED_SELECTED;
                         }
                     }
-                    long id = node.getNode().getId();
-                    if ((crossHairId1 != null && id == crossHairId1) || (crossHairId2 != null && crossHairId2 == id)) {
-                        borderColor = COLOR_HIGHLIGHTED_SELECTED;
-                    }
-    
                     renderPoint(g, p, borderColor, nodeColor, drawSize, drawWidth, drawFull, drawLite);
                     if (drawLabels) {
                         shouldDrawLabels.setData(p, node);
@@ -1074,6 +1084,20 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             monitor.done();
 
         }
+    }
+
+    private boolean isBadNode(Node node) {
+        for (Relationship locRel:node.getRelationships(GeoNeoRelationshipTypes.LOCATION,Direction.INCOMING)){
+            for (Relationship rel:locRel.getStartNode().getRelationships(GeoNeoRelationshipTypes.SOURCE,Direction.INCOMING)){
+                Node startNode = rel.getStartNode();
+                if (startNode.hasProperty(INeoConstants.PROPERTY_FLAGGED_NAME) && (Boolean)startNode.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME)){
+                    return true;
+                }
+            }
+            
+        }
+        
+        return false;
     }
 
     private void drawCorrelationLines(Graphics2D g, boolean drawFull, boolean drawLite, ShouldDrawTime shouldDrawLines)
@@ -1625,21 +1649,36 @@ public class TemsRenderer extends RendererImpl implements Renderer {
     private void renderSelectedPoint(Graphics2D g, java.awt.Point p, int drawSize, boolean drawFull, boolean drawLite) {
         Color oldColor = g.getColor();
         if (drawFull) {
-            renderSelectionGlow(g, p, drawSize * 3);
+            renderSelectionGlow(g, p, drawSize * 3, COLOR_HIGHLIGHTED);
         } else if (drawLite) {
-            renderSelectionGlow(g, p, drawSize);
+            renderSelectionGlow(g, p, drawSize, COLOR_HIGHLIGHTED);
         } else {
-            renderSelectionGlow(g, p, drawSize * 2);
+            renderSelectionGlow(g, p, drawSize * 2, COLOR_HIGHLIGHTED);
+        }
+        g.setColor(oldColor);
+    }
+    /**
+     * Draw the selection glow for selected points based on zoom factor conditions.
+     */
+    private void renderBadPoint(Graphics2D g, java.awt.Point p, int drawSize, boolean drawFull, boolean drawLite) {
+        Color oldColor = g.getColor();
+        if (drawFull) {
+            renderSelectionGlow(g, p, drawSize * 3, COLOR_ALERT);
+        } else if (drawLite) {
+            renderSelectionGlow(g, p, drawSize, COLOR_ALERT);
+        } else {
+            renderSelectionGlow(g, p, drawSize * 2, COLOR_ALERT);
         }
         g.setColor(oldColor);
     }
 
     /**
      * Draw the selection glow for selected points at specified draw size.
+     * @param glowColor glow color
      */
-    private void renderSelectionGlow(Graphics2D g, java.awt.Point p, int drawSize) {
+    private void renderSelectionGlow(Graphics2D g, java.awt.Point p, int drawSize, Color glowColor) {
         drawSize *= 3;
-        Color highColor = new Color(COLOR_HIGHLIGHTED.getRed(), COLOR_HIGHLIGHTED.getGreen(), COLOR_HIGHLIGHTED.getBlue(), 8);
+        Color highColor = new Color(glowColor.getRed(), glowColor.getGreen(), glowColor.getBlue(), 8);
         g.setColor(highColor);
         for (; drawSize > 2; drawSize *= 0.8) {
             g.fillOval(p.x - drawSize, p.y - drawSize, 2 * drawSize, 2 * drawSize);

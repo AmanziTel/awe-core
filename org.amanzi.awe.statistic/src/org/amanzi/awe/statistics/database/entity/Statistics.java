@@ -44,7 +44,7 @@ public class Statistics {
         this.node = node;
     }
 
-    Node getNode() {
+    public Node getNode() {
         return node;
     }
 

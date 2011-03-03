@@ -20,7 +20,7 @@ import org.amanzi.awe.report.grid.wizards.GridReportWizard.AnalysisType;
 import org.amanzi.awe.report.grid.wizards.GridReportWizard.CategoryType;
 import org.amanzi.awe.report.grid.wizards.GridReportWizard.Scope;
 import org.amanzi.awe.report.pdf.PDFPrintingEngine;
-import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.statistics.CallTimePeriods;
 import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.enums.NodeTypes;

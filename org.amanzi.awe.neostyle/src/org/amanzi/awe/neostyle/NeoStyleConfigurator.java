@@ -129,6 +129,8 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
 
     private Button bCorrelation;
 
+    private Button bAlerts;
+
     @Override
     public void createControl(Composite parent) {
         //Lagutko, 15.03.2010, adding a Scroll
@@ -359,11 +361,18 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData.top = new FormAttachment(tTransparency, 5);
         bTransp.setLayoutData(formData);
 
+        bAlerts = new Button(grScale, SWT.CHECK);
+        bAlerts.setText(Messages.Show_Alerts);
+        formData = new FormData();
+        formData.left = new FormAttachment(2);
+        formData.top = new FormAttachment(bTransp, 5);
+        bAlerts.setLayoutData(formData);
+        
         bCorrelation = new Button(grScale, SWT.CHECK);
         bCorrelation.setText(Messages.Draw_correlation);
         formData = new FormData();
         formData.left = new FormAttachment(2);
-        formData.top = new FormAttachment(bTransp, 5);
+        formData.top = new FormAttachment(bAlerts, 5);
         bCorrelation.setLayoutData(formData);
 
         lMaxSymSize = new Label(grScale, SWT.NONE);
@@ -609,6 +618,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         curStyle.setSecondaryProperty(cSecondaryProperty.getText());
         curStyle.setIgnoreTransparency(bTransp.getSelection());
         curStyle.setDrawCorrelations(bCorrelation.getSelection());
+        curStyle.setShowAlerts(bAlerts.getSelection());
         getStyleBlackboard().put(ID, curStyle);
     }
 

@@ -11,16 +11,34 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistic;
+package org.amanzi.awe.statistics;
+
+import org.neo4j.graphdb.Node;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * IStatisticStore
  * </p>
+ * 
  * @author TsAr
  * @since 1.0.0
  */
-public class StatisticsElement {
+public interface IStatisticStore {
+
+
+    /**
+     * Store statistic element.
+     * 
+     * @param statElem the stat elem
+     * @param node the node
+     */
+    void storeStatisticElement(IStatisticElement statElem, Node node);
+    
+    /**
+     * Gets the stored nodes count.
+     *
+     * @return the stored nodes count
+     */
+    int getStoredNodesCount();
 
 }

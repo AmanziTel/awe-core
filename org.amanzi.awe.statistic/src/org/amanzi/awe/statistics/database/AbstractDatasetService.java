@@ -16,7 +16,7 @@ package org.amanzi.awe.statistics.database;
 import java.io.IOException;
 import java.util.Collection;
 
-import org.amanzi.awe.statistic.CallTimePeriods;
+import org.amanzi.awe.statistics.CallTimePeriods;
 import org.amanzi.awe.statistics.engine.IDatasetService;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;

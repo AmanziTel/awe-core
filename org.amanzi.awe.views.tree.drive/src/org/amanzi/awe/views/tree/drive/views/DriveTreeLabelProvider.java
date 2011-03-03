@@ -15,8 +15,10 @@ package org.amanzi.awe.views.tree.drive.views;
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
 import org.amanzi.neo.services.ui.IconManager;
+import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 
 /**
@@ -27,7 +29,7 @@ import org.eclipse.swt.graphics.Image;
  * @author Cinkel_A
  * @since 1.0.0
  */
-public class DriveTreeLabelProvider extends LabelProvider {
+public class DriveTreeLabelProvider extends LabelProvider implements IColorProvider {
 
     /*
      * Icon manager
@@ -50,6 +52,19 @@ public class DriveTreeLabelProvider extends LabelProvider {
         }
         else if (element instanceof NeoNode) {
             return manager.getImage(((NeoNode)element).getImageKey());
+        }
+        return null;
+    }
+
+    @Override
+    public Color getBackground(Object element) {
+        return null;
+    }
+
+    @Override
+    public Color getForeground(Object element) {
+        if (element instanceof DriveNeoNode){
+            return ((DriveNeoNode)element).getTextColor();
         }
         return null;
     }
