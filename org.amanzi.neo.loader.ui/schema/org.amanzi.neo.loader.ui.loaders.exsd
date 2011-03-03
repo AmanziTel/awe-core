@@ -126,6 +126,16 @@
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="config" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":org.amanzi.neo.loader.ui.loaders.ILoaderConfig"/>
+               </appInfo>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 
