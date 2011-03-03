@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Statistics View Plug-in
+Bundle-SymbolicName: org.amanzi.awe.statistics.view;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: org.amanzi.awe.statistics.view.StatisticsViewPlugin
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.amanzi.awe.statistics,
+ org.amanzi.neo.services,
+ org.amanzi.neo.services.ui,
+ net.refractions.udig.project.ui,
+ org.eclipse.core.resources,
+ org.amanzi.awe.catalog.neo,
+ org.amanzi.scripting.jruby,
+ org.rubypeople.rdt.core,
+ org.rubypeople.rdt.ui,
+ org.eclipse.ui.ide,
+ org.amanzi.awe.report
+Eclipse-LazyStart: true
