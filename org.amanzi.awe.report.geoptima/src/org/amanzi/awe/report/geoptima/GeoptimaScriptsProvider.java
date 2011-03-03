@@ -50,17 +50,17 @@ public class GeoptimaScriptsProvider implements IScriptsProvider {
 
                 @Override
                 public boolean accept(File pathname) {
-                    return pathname.getName().endsWith(".rb");
+                    final String name = pathname.getName();
+                    return name.endsWith(".rb")||name.endsWith(".t");
                 }
                 
             };
             File[] files = directory.listFiles(fileFilter);
-            for (File file: files){
-                System.out.println("File to be copied: "+file.getPath());
-            }
+//            for (File file: files){
+//                System.out.println("File to be copied: "+file.getPath());
+//            }
             return files;
         } catch (Exception e) {
-            e.printStackTrace();
             // TODO Handle IOException
             throw (RuntimeException) new RuntimeException( ).initCause( e );
         }
