@@ -320,12 +320,8 @@ public class StatisticsView extends ViewPart {
      * Initializes controls with default values
      */
     private void initialize() {
-        selectedFilter = StatisticsViewPlugin.getImageDescriptor("/icons/highlighted_filter.png").createImage();
-        deselectedFilter = StatisticsViewPlugin.getImageDescriptor("/icons/empty_filter.png").createImage();
-        enabledFilter = StatisticsViewPlugin.getImageDescriptor("/icons/filter.png").createImage();
-
-        sortAscImage = StatisticsViewPlugin.getImageDescriptor("/icons/Asc.png").createImage();
-        sortDescImage = StatisticsViewPlugin.getImageDescriptor("/icons/Desc.png").createImage();
+        sortAscImage = StatisticsViewPlugin.getImageDescriptor("icons/Asc.png").createImage();
+        sortDescImage = StatisticsViewPlugin.getImageDescriptor("icons/Desc.png").createImage();
 
         updateDatasets();
         updateTemplates();
