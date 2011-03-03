@@ -91,6 +91,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
     /** The first file name. */
     private String firstFileName;
     private int sectorsNotFound = 0;
+    private int neighboursNotFound = 0;
 
     /**
      * Save.
@@ -412,6 +413,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
      *
      */
     private void storeRirData() {
+        sectorsNotFound = 0;
         IllegalFrequencySpectrumModel fs = networkModel.getFrequencySpectrum();
         NodeToNodeRelationModel n2n = networkModel.getIllegalFrequency();
 
@@ -432,7 +434,9 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
                 fire(0.2 / entrySet.size(), "Store RIR data");
                 Node sector = networkModel.findSector(entry.getKey());
                 if (sector == null) {
-                    error(String.format("Sector %s not found", entry.getKey()));
+                    if (sectorsNotFound++ < 10) {
+                        error(String.format("RIR: Sector %s not found", entry.getKey()));
+                    }
                     continue;
                 }
                 CellRirData data = entry.getValue();
@@ -464,6 +468,9 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
         statistic.setTypeCount(n2n.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), n2n.getRelationCount());
         statistic.setTypeCount(n2n.getName(), NodeTypes.PROXY.getId(), n2n.getProxyCount());
         info(String.format("Created illegal frequency, number relations: %s", n2n.getRelationCount()));
+        if (sectorsNotFound > 0) {
+            error(String.format("During RIR processing %d sectors were not found", sectorsNotFound));
+        }
     }
 
     /**
@@ -650,6 +657,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
      */
     private void createMatrix() {
         sectorsNotFound = 0;
+        neighboursNotFound = 0;
         if (adminValues == null) {
             return;
         }
@@ -668,6 +676,9 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
         info(String.format("Created IM, number relations: %s", interfModel.getRelationCount()));
         if (sectorsNotFound > 0) {
             info("During IM creation " + sectorsNotFound + " sectors were not found");
+        }
+        if (neighboursNotFound > 0) {
+            info("During IM creation " + neighboursNotFound + " neighbours were not found");
         }
     }
 
@@ -697,7 +708,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
     private void handleServCell(ServCell cell) {
         Node servSector = findNode(cell);
         if (servSector == null) {
-            error(String.format("Sector %s not found", cell.cellName));
+            error(String.format("IM: Sector %s not found", cell.cellName));
             return;
         }
         if (cell.rectime != null) {
@@ -719,8 +730,8 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
     private void handleNeighbor(ServCell cell, Node servSector, InterfCell neigh) {
         Node neighSector = findNode(servSector, neigh);
         if (neighSector == null) {
-            if (sectorsNotFound++ < 10) {
-                error(String.format("Sector (bsic=%s;arfcn=%s) not found", neigh.bsic, neigh.arfcn));
+            if (neighboursNotFound++ < 10) {
+                error(String.format("IM: Sector (bsic=%s;arfcn=%s) not found", neigh.bsic, neigh.arfcn));
             }
             return;
         }

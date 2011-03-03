@@ -75,7 +75,8 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
     private DatasetService ds;
     private String planName;
     private FrequencyPlanModel freqPlan;
-
+    private int sectorsNotFound;
+    private int neighboursNotFound;
 
     @Override
     public void init(NetworkConfigurationTransferData element) {
@@ -87,6 +88,8 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         neighbourModel = networkModel.getNeighbours(neighName);
         planName = null;
         freqPlan = null;
+        sectorsNotFound = 0;
+        neighboursNotFound = 0;
         startMainTx(2000);
     }
     @Override
@@ -177,7 +180,9 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
             if (StringUtils.isNotEmpty(neighbour)) {
                 Node neighbourSector = networkService.findSector(rootNode, null, null, neighbour, true);
                 if (neighbourSector == null) {
-                    info(String.format("Line %s: Neighbour sector with name %s not found", element.getLine(), neighbour));
+                    if (neighboursNotFound++ < 10) {
+                        info(String.format("Line %s: Neighbour sector with name %s not found", element.getLine(), neighbour));
+                    }
                     continue;
                 }
                 Relationship rel = neighbourModel.getRelation(sector, neighbourSector);
@@ -301,7 +306,9 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
             // trx
             Node sector = networkService.findSector(rootNode, null, null, element.getCell(), true);
             if (sector == null) {
-                error(String.format("Line %s: Sector with name %s not found", element.getLine(), element.getCell()));
+                if (sectorsNotFound ++ < 10) {
+                    error(String.format("Line %s: Sector with name %s not found", element.getLine(), element.getCell()));
+                }
                 return;
             }
             tgfull = element.getTg();
@@ -523,6 +530,12 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         initProgress(element);
         createFakeBSC();
         fire(0.2d,"Commit data");
+        if (sectorsNotFound > 0) {
+            error(String.format("%d sectors were not found", sectorsNotFound));
+        }
+        if (neighboursNotFound > 0) {
+            error(String.format("%d neighbours were not found", neighboursNotFound));
+        }
         super.finishUp(element);
     }
 
