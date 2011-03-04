@@ -48,7 +48,8 @@
       <module>org.amanzi.awe.script</module>
       <module>org.amanzi.awe.script.jirb</module>
       <module>org.amanzi.awe.startup.splash</module>
-      <module>org.amanzi.awe.statistic</module>
+      <module>org.amanzi.awe.statistics</module>
+      <module>org.amanzi.awe.statistics.view</module>
       <module>org.amanzi.awe.tool.star</module>
       <module>org.amanzi.awe.ui.operation.shape_export</module>
       <module>org.amanzi.awe.views.drive</module>
@@ -176,7 +177,8 @@
       <module>org.amanzi.awe.script</module>
       <module>org.amanzi.awe.script.jirb</module>
       <module>org.amanzi.awe.startup.splash</module>
-      <module>org.amanzi.awe.statistic</module>
+      <module>org.amanzi.awe.statistics</module>
+      <module>org.amanzi.awe.statistics.view</module>
       <module>org.amanzi.awe.tool.star</module>
       <module>org.amanzi.awe.ui.operation.shape_export</module>
       <module>org.amanzi.awe.views.drive</module>

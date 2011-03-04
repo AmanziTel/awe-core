@@ -286,13 +286,6 @@ PURPOSE.
          unpack="false"/>
 
    <plugin
-         id="org.amanzi.awe.statistic"
-         download-size="0"
-         install-size="0"
-         version="1.0.0.qualifier"
-         unpack="false"/>
-
-   <plugin
          id="org.amanzi.awe.console"
          download-size="0"
          install-size="0"
@@ -346,6 +339,20 @@ PURPOSE.
          download-size="0"
          install-size="0"
          version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.awe.statistics"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.qualifier"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.awe.statistics.view"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.qualifier"
          unpack="false"/>
 
 </feature>
