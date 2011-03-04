@@ -326,13 +326,6 @@ Research, Neotechnology, the Eclipse foundation, Geotools et al.
          unpack="false"/>
 
    <plugin
-         id="org.amanzi.awe.statistic"
-         download-size="0"
-         install-size="0"
-         version="1.0.0.qualifier"
-         unpack="false"/>
-
-   <plugin
          id="org.amanzi.awe.console"
          download-size="0"
          install-size="0"
