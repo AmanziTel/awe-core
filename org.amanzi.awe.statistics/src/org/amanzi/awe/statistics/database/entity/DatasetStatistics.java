@@ -93,7 +93,7 @@ public class DatasetStatistics {
     }
 
     public void setTemplateName(String name) {
-        node.setProperty("template", name);
+        node.setProperty(INeoConstants.PROPERTY_TEMPLATE_NAME, name);
     }
 
     public String getTemplateName() {

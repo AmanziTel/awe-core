@@ -208,6 +208,8 @@ public class INeoConstants {
     public static final String PROPERTY_NAME_PREFIX = ".property.name_";
     public static final String CITY_PROPERTY_NAME_PREFIX = "city.property.name_";
     
+    public static final String PROPERTY_TEMPLATE_NAME = "template";
+    
     public static final String AFP_OPTIMIZATION_PARAMETERS = "optimization_parameters";
     public static final String AFP_FREQUENCY_BAND = "frequency_band";
     public static final String AFP_CHANNEL_TYPE = "channel_type";

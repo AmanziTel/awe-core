@@ -97,7 +97,6 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseMoveListener;
-import org.eclipse.swt.events.MouseTrackAdapter;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.ShellAdapter;
@@ -122,6 +121,8 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IViewSite;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
@@ -134,6 +135,8 @@ import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser.Order;
 import org.rubypeople.rdt.core.IRubyProject;
 import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
+
+import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
 
 /**
  * Statistics Table View
@@ -221,6 +224,21 @@ public class StatisticsView extends ViewPart {
     private Image sortDescImage;
     protected Shell shell;
     private Composite parent;
+    private IRubyProject rubyProject;
+    private ArrayList<String> usedTemplates;
+    private ArrayList<String> usedAggreagtions;
+
+    @Override
+    public void init(IViewSite site) throws PartInitException {
+        super.init(site);
+        try {
+            rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, ApplicationGIS.getActiveProject()
+                    .getName());
+        } catch (CoreException e) {
+            // TODO Handle CoreException
+            throw (RuntimeException) new RuntimeException( ).initCause( e );
+        }
+    }
 
     @Override
     public void createPartControl(Composite parent) {
@@ -332,11 +350,14 @@ public class StatisticsView extends ViewPart {
      */
     private void updateDatasets() {
         cDataset.removeAll();
+        ArrayList<String> datasetList = new ArrayList<String>();
         for (Node node : datasetService.getAllDatasetNodes().nodes()) {
             String datasetName = (String)node.getProperty(INeoConstants.PROPERTY_NAME_NAME);
-            cDataset.add(datasetName);
+            datasetList.add(datasetName);
             datasets.put(datasetName, node);
         }
+        Collections.sort(datasetList);
+        cDataset.setItems(datasetList.toArray(new String[]{}));
     }
 
     /**
@@ -355,6 +376,7 @@ public class StatisticsView extends ViewPart {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 Node dataset = getDatasetNode();
+                updateUsedTemplates(dataset);
                 updateAvailableTemplates(dataset);
                 updateDatasetTimeRange(dataset);
                 updateAggregation();
@@ -424,10 +446,7 @@ public class StatisticsView extends ViewPart {
         URL url = FileLocator.toFileURL(StatisticsViewPlugin.getDefault().getBundle().getEntry("ruby/report_template.r"));
         String reportFileTemplate = ScriptUtils.getScriptContent(url.getPath());
 
-        IRubyProject rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, ApplicationGIS.getActiveProject()
-                .getName());
-
-        final IProject project = rubyProject.getProject();
+        IProject project = rubyProject.getProject();
         int i = 0;
         IFile file = null;
         StringBuilder sb = new StringBuilder();
@@ -473,14 +492,39 @@ public class StatisticsView extends ViewPart {
      */
     protected void updateAvailableTemplates(Node dataset) {
         templates = new HashMap<String, Template>();
+        cTemplate.removeAll();
         for (Entry<String, IFile> entry : allTemplates.entrySet()) {
             IFile file = entry.getValue();
             Template template = TemplateBuilder.getInstance().build(ScriptUtils.getScriptContent(file.getLocationURI()));
             if (isSuitableForDataset(template, dataset)) {
-                templates.put(entry.getKey(), template);
+                final String key = entry.getKey();
+                templates.put(key, template);
+                cTemplate.add(usedTemplates.contains(template.getTemplateName())?"*"+key:key);
             }
         }
-        cTemplate.setItems(templates.keySet().toArray(new String[templates.size()]));
+    }
+
+    /**
+     *
+     * @param dataset
+     */
+    private void updateUsedTemplates(Node dataset) {
+        usedTemplates=new ArrayList<String>();
+        usedAggreagtions=new ArrayList<String>();
+        for (Relationship rel:dataset.getRelationships(GeoNeoRelationshipTypes.ANALYSIS,Direction.OUTGOING)){
+            Node statsRoot = rel.getEndNode();
+            usedTemplates.add((String)statsRoot.getProperty(INeoConstants.PROPERTY_TEMPLATE_NAME));
+            //find all aggregations
+            for (Relationship relToDimension: statsRoot.getRelationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING)){
+                Node dimNode = relToDimension.getEndNode();
+                if (dimNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString().equals("network")){
+                    for (Relationship relToLevel:dimNode.getRelationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING)){
+                        usedAggreagtions.add( relToLevel.getEndNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString());
+                    }
+                    break;
+                }
+            }
+        }
     }
 
     /**
@@ -608,16 +652,23 @@ public class StatisticsView extends ViewPart {
                 Node networkNode = relToNetwork.getStartNode();
                 String[] structure = (String[])networkNode.getProperty(INeoConstants.PROPERTY_STRUCTURE_NAME, new String[0]);
                 for (String element : structure) {
-                    aggregations.add(element);
+                    aggregations.add(usedAggreagtions.contains(element)?"*"+element:element);
                 }
             }
         } else {
-            aggregations.add("network");
+            final String NETWORK = "network";
+            aggregations.add(usedAggreagtions.contains(NETWORK)?"*"+NETWORK:NETWORK);
         }
         aggregations.add(SEPARATOR);
         IPropertyHeader propertyHeader = PropertyHeader.getPropertyStatistic(dataset);
         properties = Arrays.asList(propertyHeader.getAllFields("-main-type-"));
         Collections.sort(properties);
+        for (int i=0;i<properties.size();i++){
+            String property = properties.get(i);
+            if (usedAggreagtions.contains(property)){
+                properties.set(i, "*"+property);
+            }
+        }
         aggregations.addAll(properties);
         cAggregation.setItems(aggregations.toArray(new String[aggregations.size()]));
 
@@ -911,7 +962,8 @@ public class StatisticsView extends ViewPart {
      * @return the template
      */
     private Template getTemplate() {
-        return templates.get(cTemplate.getText());
+        String text = cTemplate.getText();
+        return templates.get(text.startsWith("*")?text.substring(1):text);
     }
 
     /**
@@ -920,7 +972,7 @@ public class StatisticsView extends ViewPart {
     private void updateInput() {
         try {
             final Node dataset = getDatasetNode();
-            final String aggregation = cAggregation.getText();
+            final String aggregation = getAggregation();
             final String period = cPeriod.getText();
             final Template template = getTemplate();
             System.out.println("Template " + template);
@@ -1102,12 +1154,22 @@ public class StatisticsView extends ViewPart {
     }
 
     /**
+     *
+     * @return
+     */
+    private String getAggregation() {
+        String text = cAggregation.getText();
+        
+        return text.startsWith("*")?text.substring(1):text;
+    }
+
+    /**
      * Checks if additional column is necessary
      * 
      * @return true if 'sector' is selected for aggregation and it's a network level
      */
     private boolean isAdditionalColumnNecessary() {
-        return cAggregation.getText().equals("sector") && cAggregation.getSelectionIndex() < cAggregation.indexOf(SEPARATOR);
+        return getAggregation().equals("sector") && cAggregation.getSelectionIndex() < cAggregation.indexOf(SEPARATOR);
     }
 
     /**
