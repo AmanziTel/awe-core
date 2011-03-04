@@ -51,8 +51,9 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
     private Button checkboxTrafficData;
     private Button checkboxTrxData;
     private Button checkboxInterferenceMatrix;
-    private Button checkboxNeigboursData;
+    public static Button checkboxNeigboursData;
     private Button checkboxNetworkSectorData;
+    private ArrayList<Boolean> checkboxesState = new ArrayList<Boolean>();
     
     private Map<INodeType, EditPropertiesPage> pages = new HashMap<INodeType, EditPropertiesPage>();
     
@@ -144,16 +145,28 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
      * @return the hashmap with checkboxes state
      */
     public ArrayList<Boolean> getCheckBoxesState() {
-        ArrayList<Boolean> checkboxesState = new ArrayList<Boolean>();
-        
+        checkboxesState.clear();
         checkboxesState.add(checkboxNeigboursData.getSelection());
         checkboxesState.add(checkboxFrequencyConstraintData.getSelection());
         checkboxesState.add(checkboxInterferenceMatrix.getSelection());
         checkboxesState.add(checkboxSeparationConstraintData.getSelection());
         checkboxesState.add(checkboxTrafficData.getSelection());
         checkboxesState.add(checkboxTrxData.getSelection());
-        
         return checkboxesState;
+    }
+    
+    public void setCheckBoxesState(int index, Boolean state) {
+        checkboxesState = new ArrayList<Boolean>();
+        if (checkboxNeigboursData != null) {
+            checkboxesState.add(checkboxNeigboursData.getSelection());
+            checkboxesState.add(checkboxFrequencyConstraintData.getSelection());
+            checkboxesState.add(checkboxInterferenceMatrix.getSelection());
+            checkboxesState.add(checkboxSeparationConstraintData.getSelection());
+            checkboxesState.add(checkboxTrafficData.getSelection());
+            checkboxesState.add(checkboxTrxData.getSelection());
+            checkboxesState.set(index, state);
+            checkboxNeigboursData.setSelection(state);
+        }
     }
     
     /**

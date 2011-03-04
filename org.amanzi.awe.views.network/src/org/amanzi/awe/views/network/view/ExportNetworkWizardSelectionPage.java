@@ -39,6 +39,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -121,7 +122,7 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
                 if (element.getType() == NodeTypes.NETWORK) {
                     selectedNode = element.getNode();
                     nextPage.changeNodeSelection(selectedNode);
-                    for (ExportNetworkWizardColumnsConfigPage page : ExportNetworkWizard.availablePages) {
+                    for (ExportNetworkWizardColumnsConfigPage page : ExportNetworkWizard.getAvailablePages()) {
                         page.changeNodeSelection(selectedNode);
                     }
                 } else {
@@ -182,6 +183,26 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
      */
     public Node getSelectedNode() {
         return this.selectedNode;
+    }
+    
+    @Override
+    public IWizardPage getNextPage() {
+        try {
+            if (ExportNetworkWizardSavingDataSelectionPage.checkboxNeigboursData != null)
+                ExportNetworkWizardSavingDataSelectionPage.checkboxNeigboursData.setEnabled(false);
+            if (ExportNetworkWizard.getAvailablePages().size() != 0) {
+                //ExportNetworkWizard.removeFromAvailablePages(ColumnsConfigPageTypes.NEIGBOURS_DATA.getName());
+                if (ExportNetworkWizard.getSavingDataPage() != null) {
+                    ExportNetworkWizard.getSavingDataPage().setCheckBoxesState(0, false);
+                    
+                }
+            }
+        }
+        catch (Exception e) {
+            
+        }
+        System.out.println("getNextPage " + ExportNetworkWizard.getCurrentIndex());
+        return super.getNextPage();
     }
 
     /**

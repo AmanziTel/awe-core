@@ -25,25 +25,27 @@ import org.apache.commons.lang.StringUtils;
  */
 public enum ColumnsConfigPageTypes {
 
-    NETWORK_SECTOR_DATA("Network sector data"),
-    NEIGBOURS_DATA("Neighbours data"),
-    FREQUENCY_CONSTRAINT_DATA("Frequency constraint data"),
-    SEPARATION_CONSTRAINT_DATA("Separation constraint data"),
-    TRAFFIC_DATA("Traffic data"),
-    TRX_DATA("Trx data"),
-    INTERFERENCE_MATRIX("Interference matrix");
+    NETWORK_SECTOR_DATA("Network sector data", new String[] {}),
+    NEIGBOURS_DATA("Neighbours data", new String[] {"Serving Sector", "Target Sector", "Attempts"}),
+    FREQUENCY_CONSTRAINT_DATA("Frequency constraint data", new String[] {"Sector", "TRX_ID", "Channel Type", "Frequency", "Type", "Penalty"}),
+    SEPARATION_CONSTRAINT_DATA("Separation constraint data", new String[] {"Sector", "Separation"}),
+    TRAFFIC_DATA("Traffic data", new String[] {"Sector", "Traffic"}),
+    TRX_DATA("Trx data", new String[] {"Sector", "Subcell", "Band", "Extended", "Hopping Type", "BCCH", "HSN", "MAIO", "ARFCN"}),
+    INTERFERENCE_MATRIX("Interference matrix", new String[] {"Serving Sector", "Interfering Sector", "Source", "Co", "Adj"});
     
     /**
      * Name of type
      */
     private String name;
+    private String[] properties;
     
     /**
      * Constructor
      * @param name
      */
-    private ColumnsConfigPageTypes(String name) {
+    private ColumnsConfigPageTypes(String name, String[] properties) {
         this.name = name;
+        this.properties = properties;
     }
     
     /**
@@ -53,6 +55,15 @@ public enum ColumnsConfigPageTypes {
      */
     public String getName() {
         return name;
+    }
+    
+    /**
+     * Get properties from type
+     *
+     * @return
+     */
+    public String[] getProperties() {
+        return properties;
     }
     
 

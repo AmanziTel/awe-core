@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.amanzi.neo.services.DatasetService;
@@ -25,6 +26,10 @@ import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.statistic.IPropertyHeader;
+import org.amanzi.neo.services.statistic.PropertyHeader;
+import org.amanzi.neo.services.statistic.internal.PropertyHeaderImpl;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -155,21 +160,33 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
             }
             index++;
         }
-        if (ExportNetworkWizard.currentIndex > indexes.size() - 1) {
+        for (Integer ind : indexes) {
+            System.out.println(ind);
+        }
+        System.out.println(ExportNetworkWizard.getCurrentIndex());
+        for (Boolean state : checkboxStates) {
+            System.out.println(state);
+        }
+        if (ExportNetworkWizard.getCurrentIndex() > indexes.size() - 1) {
             return getWizard().getPage(ExportNetworkWizard.PROPERTY_CSV);
         }
-        if (ExportNetworkWizard.currentIndex < 0) {
-            ExportNetworkWizard.currentIndex = 0;
+        if (ExportNetworkWizard.getCurrentIndex() < 0) {
+            ExportNetworkWizard.setCurrentIndex(0);
         }
-        currentPage = ExportNetworkWizard.availablePages.get(indexes.get(ExportNetworkWizard.currentIndex));
-        ExportNetworkWizard.currentIndex += 2;
+        try {
+            currentPage = ExportNetworkWizard.getAvailablePages().get(indexes.get(ExportNetworkWizard.getCurrentIndex()));
+        }
+        catch (IndexOutOfBoundsException e) {
+            return getWizard().getPage(ExportNetworkWizard.PROPERTY_CSV);
+        }
+        ExportNetworkWizard.setCurrentIndex(ExportNetworkWizard.getCurrentIndex() + 2);
         
         return currentPage;
     }
     
     @Override
     public IWizardPage getPreviousPage() {
-        ExportNetworkWizard.currentIndex--;
+        ExportNetworkWizard.setCurrentIndex(ExportNetworkWizard.getCurrentIndex() - 1);
         return super.getPreviousPage();
     }
 
@@ -381,10 +398,24 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
      */
     public void changeNodeSelection(Node selectedNode) {
         
+        Set<String> allPropertiesWithStatistic = (Set<String>)getAvailabilityPropertiesInNetwork(selectedNode, NodeTypes.SECTOR);
+        Set<String> props2 = (Set<String>)getAvailabilityPropertiesInNetwork(selectedNode, NodeTypes.NEIGHBOUR);
+        Set<String> props3 = (Set<String>)getAvailabilityPropertiesInNetwork(selectedNode, NodeTypes.SITE);
+        Set<String> props4 = (Set<String>)getAvailabilityPropertiesInNetwork(selectedNode, NodeTypes.CITY);
+        Set<String> props5 = (Set<String>)getAvailabilityPropertiesInNetwork(selectedNode, NodeTypes.BSC);
+        Set<String> props6 = (Set<String>)getAvailabilityPropertiesInNetwork(selectedNode, NodeTypes.FREQUENCY_PLAN);
+        Set<String> props7 = (Set<String>)getAvailabilityPropertiesInNetwork(selectedNode, NodeTypes.TRX);
+        Set<String> props8 = (Set<String>)getAvailabilityPropertiesInNetwork(selectedNode, NodeTypes.NETWORK);
+        Set<String> props9 = (Set<String>)getAvailabilityPropertiesInNetwork(selectedNode, NodeTypes.STATISTICS);
+        
+        for (String str : allPropertiesWithStatistic) {
+            System.out.println(str);
+        }
         String nameOfPage = this.getName();
         ColumnsConfigPageTypes typeOfPage = ColumnsConfigPageTypes.findColumnsConfigPageTypeByName(nameOfPage);
         this.rootNode = selectedNode;
         DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
+        
         String[] strtypes = datasetService.getSructureTypesId(rootNode);
         List<String> headers = new ArrayList<String>();
         
@@ -392,7 +423,9 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
         HashMap<String, Collection<String>> propertyMap = new HashMap<String, Collection<String>>();
         TraversalDescription descr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
         .filter(Traversal.returnAllButStartNode());
-        
+        ArrayList<String> properties = new ArrayList<String>();
+        Collection<String> coll = new TreeSet<String>();
+
         switch (typeOfPage) {
             case NETWORK_SECTOR_DATA:
                 for (int i = 1; i < strtypes.length; i++) {
@@ -402,7 +435,7 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
                     Node node = path.endNode();
                     INodeType type = datasetService.getNodeType(node);
                     if (type != null && headers.contains(type.getId())) {
-                        Collection<String> coll = propertyMap.get(type.getId());
+                        coll = propertyMap.get(type.getId());
                         if (coll == null) {
                             coll = new TreeSet<String>();
                             propertyMap.put(type.getId(), coll);
@@ -417,40 +450,106 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
                 }
                 break;
             case NEIGBOURS_DATA:
+                properties.clear();
+                try {
+                    for (String prop : ColumnsConfigPageTypes.NEIGBOURS_DATA.getProperties()) {
+                        properties.add(cleanHeader(prop));
+                    }
+                }
+                catch (NullPointerException e) {
+                    
+                }
+                coll.clear();
+                propertyMap.put(NodeTypes.SECTOR.getId(), coll);
                 
+                for (String propertyName : properties) {
+                    coll.add(propertyName);
+                }
                 break;
             case FREQUENCY_CONSTRAINT_DATA:
-
+                properties.clear();
+                try {
+                    for (String prop : ColumnsConfigPageTypes.FREQUENCY_CONSTRAINT_DATA.getProperties()) {
+                        properties.add(cleanHeader(prop));
+                    }
+                }
+                catch (NullPointerException e) {
+                    
+                }
+                coll.clear();
+                propertyMap.put(NodeTypes.SECTOR.getId(), coll);
+                
+                for (String propertyName : properties) {
+                    coll.add(propertyName);
+                }
                 break;
             case INTERFERENCE_MATRIX:
+                properties.clear();
+                try {
+                    for (String prop : ColumnsConfigPageTypes.INTERFERENCE_MATRIX.getProperties()) {
+                        properties.add(cleanHeader(prop));
+                    }
+                }
+                catch (NullPointerException e) {
+                    
+                }
+                coll.clear();
+                propertyMap.put(NodeTypes.SECTOR.getId(), coll);
                 
+                for (String propertyName : properties) {
+                    coll.add(propertyName);
+                }
                 break;
             case SEPARATION_CONSTRAINT_DATA:
-                headers.add("sector");
-                for (Path path : descr.traverse(rootNode)) {
-                    Node node = path.endNode();
-                    INodeType type = datasetService.getNodeType(node);
-                    if (type != null && headers.contains(type.getId())) {
-                        Collection<String> coll = propertyMap.get(type.getId());
-                        if (coll == null) {
-                            coll = new TreeSet<String>();
-                            propertyMap.put(type.getId(), coll);
-                        }
-                        for (String propertyName : node.getPropertyKeys()) {
-                            if (INeoConstants.PROPERTY_TYPE_NAME.equals(propertyName)) {
-                                continue;
-                            }
-                            if (propertyName.equals("Separation"))
-                                coll.add(propertyName);
-                        }
+                properties.clear();
+                try {
+                    for (String prop : ColumnsConfigPageTypes.SEPARATION_CONSTRAINT_DATA.getProperties()) {
+                        properties.add(cleanHeader(prop));
                     }
+                }
+                catch (NullPointerException e) {
+                    
+                }
+                coll.clear();
+                propertyMap.put(NodeTypes.SECTOR.getId(), coll);
+                
+                for (String propertyName : properties) {
+                    coll.add(propertyName);
                 }
                 break;
             case TRAFFIC_DATA:
+                properties.clear();
+                try {
+                    for (String prop : ColumnsConfigPageTypes.TRAFFIC_DATA.getProperties()) {
+                        properties.add(cleanHeader(prop));
+                    }
+                }
+                catch (NullPointerException e) {
+                    
+                }
+                coll.clear();
+                propertyMap.put(NodeTypes.SECTOR.getId(), coll);
                 
+                for (String propertyName : properties) {
+                    coll.add(propertyName);
+                }
                 break;
             case TRX_DATA:
+                properties.clear();
+                try {
+                    for (String prop : ColumnsConfigPageTypes.TRX_DATA.getProperties()) {
+                        properties.add(cleanHeader(prop));
+                    }
+                }
+                catch (NullPointerException e) {
+                    
+                }
+                coll.clear();
+                propertyMap.put(NodeTypes.SECTOR.getId(), coll);
                 
+                for (String propertyName : properties) {
+                    coll.add(propertyName);
+                }
                 break;
             default:
                 break;
@@ -468,6 +567,39 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
         if (viewer != null)
             viewer.setInput("");
 
+    }
+    
+    private Iterable<String> getAvailabilityPropertiesInNetwork(Node selectedNode, NodeTypes nodeType) {
+        // Kasnitskij_V:
+        IPropertyHeader propertyHeader = null;
+        String currentNetworkName = null;
+        DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
+        try {
+            currentNetworkName = datasetService.findRootByChild((Node)selectedNode)
+                                            .getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+        }
+        catch (NullPointerException e) {
+        }
+        
+        Iterable<Node> rootNodes = datasetService.getAllRootNodes().nodes();
+        Node rootNode = null;
+        for (Node node : rootNodes) {
+            String networkName = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+            if (networkName.equals(currentNetworkName)) {
+                propertyHeader = new PropertyHeaderImpl(node, datasetService.getNodeName(node));
+                rootNode = node;
+                break;
+            }
+        }
+
+        Map<String, Object> propertiesWithValues = propertyHeader.getStatisticParams(nodeType);
+        if (propertiesWithValues.size() == 0) {
+            propertyHeader = PropertyHeader.getPropertyStatistic(rootNode);
+            propertiesWithValues = propertyHeader.getStatisticParams(nodeType);
+        }
+        Set<String> keysFromProperties = propertiesWithValues.keySet();
+    
+        return keysFromProperties;
     }
     
     /**
@@ -503,7 +635,7 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
         return isExistColumnName;
     }
     
-    private String cleanHeader(String header) {
+    private static String cleanHeader(String header) {
         return header.replaceAll("[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+", "_").replaceAll("[^\\w]+", "_").replaceAll("_+", "_").replaceAll("\\_$", "").toLowerCase();
     }
     

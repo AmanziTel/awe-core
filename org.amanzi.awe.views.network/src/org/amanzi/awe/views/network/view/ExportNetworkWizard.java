@@ -77,8 +77,8 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
     
     private IStructuredSelection selection;
     
-    public static ArrayList<ExportNetworkWizardColumnsConfigPage> availablePages = new ArrayList<ExportNetworkWizardColumnsConfigPage>();
-    public static int currentIndex;
+    private static ArrayList<ExportNetworkWizardColumnsConfigPage> availablePages = new ArrayList<ExportNetworkWizardColumnsConfigPage>();
+    private static int currentIndex;
     public static final String PROPERTY_CSV = "propertyCSV";
     
     @Override
@@ -181,8 +181,34 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
     
     public static ExportNetworkWizardSavingDataSelectionPage getSavingDataPage() {
         return savingDataSelectionPage;
+    }   
+    
+    public static ArrayList<ExportNetworkWizardColumnsConfigPage> getAvailablePages() {
+        return availablePages;
     }
     
+    public static void removeFromAvailablePages(String nameOfPage) {
+        int index = 0;
+        for (ExportNetworkWizardColumnsConfigPage page : availablePages) {
+            if (page.getName().equals(nameOfPage))
+            {
+                availablePages.remove(index);
+                currentIndex--;
+                break;
+            }
+                
+            index++;
+        }
+    }
+    
+    public static int getCurrentIndex() {
+        return currentIndex;
+    }
+    
+    public static void setCurrentIndex(int curIndex) {
+        currentIndex = curIndex;
+    }
+
     /**
      * Displays error message instead of throwing an exception.
      * 
