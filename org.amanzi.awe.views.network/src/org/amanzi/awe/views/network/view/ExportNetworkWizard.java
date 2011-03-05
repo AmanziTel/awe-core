@@ -74,13 +74,13 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
 
     /** The saving data selection page. */
     private static ExportNetworkWizardSavingDataSelectionPage savingDataSelectionPage = null;
-    
+
     private IStructuredSelection selection;
-    
+
     private static ArrayList<ExportNetworkWizardColumnsConfigPage> availablePages = new ArrayList<ExportNetworkWizardColumnsConfigPage>();
     private static int currentIndex;
     public static final String PROPERTY_CSV = "propertyCSV";
-    
+
     @Override
     public boolean performFinish() {
         final String fileSelected = selectionPage.getFileName();
@@ -141,12 +141,13 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         if (selectionPage == null) {
             selectionPage = new ExportNetworkWizardSelectionPage("mainPage", selection);
         }
-        
+
         if (savingDataSelectionPage == null) {
             savingDataSelectionPage = new ExportNetworkWizardSavingDataSelectionPage("savingDataSelectionPage");
         }
         if (columnConfigPage == null) {
-            columnConfigPage = new ExportNetworkWizardColumnsConfigPage(ColumnsConfigPageTypes.NETWORK_SECTOR_DATA.getName(), "Export network");
+            columnConfigPage = new ExportNetworkWizardColumnsConfigPage(ColumnsConfigPageTypes.NETWORK_SECTOR_DATA.getName(),
+                    "Export network");
         }
         if (filePropertyPage == null) {
             // NeoLoaderPlugin.getDefault().getPreferenceStore().getString(DataLoadPreferences.DEFAULT_CHARSET);
@@ -156,7 +157,7 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         ArrayList<Boolean> checkBoxStates = savingDataSelectionPage.getDefaultCheckBoxesState();
         ArrayList<String> nameOfPages = savingDataSelectionPage.getNameOfPages();
         Iterator<String> iterator = nameOfPages.iterator();
-        //list.add(columnConfigPage);
+        // list.add(columnConfigPage);
         for (Boolean checkbox : checkBoxStates) {
             String nameOfPage = iterator.next();
             if (checkbox == true) {
@@ -178,33 +179,32 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         this.selection = selection;
         setWindowTitle("Export Network");
     }
-    
+
     public static ExportNetworkWizardSavingDataSelectionPage getSavingDataPage() {
         return savingDataSelectionPage;
-    }   
-    
+    }
+
     public static ArrayList<ExportNetworkWizardColumnsConfigPage> getAvailablePages() {
         return availablePages;
     }
-    
+
     public static void removeFromAvailablePages(String nameOfPage) {
         int index = 0;
         for (ExportNetworkWizardColumnsConfigPage page : availablePages) {
-            if (page.getName().equals(nameOfPage))
-            {
+            if (page.getName().equals(nameOfPage)) {
                 availablePages.remove(index);
                 currentIndex--;
                 break;
             }
-                
+
             index++;
         }
     }
-    
+
     public static int getCurrentIndex() {
         return currentIndex;
     }
-    
+
     public static void setCurrentIndex(int curIndex) {
         currentIndex = curIndex;
     }
@@ -237,21 +237,22 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
      * @param charSet the char set
      * @throws IOException
      */
-    private void runExport(final String fileSelected, final Map<String, Map<String, String>> propertyMap, Node rootNode, ArrayList<Boolean> checkBoxStates, String fileWithPrefix,
-            String separator, String quoteChar, String charSet) throws IOException {
+    private void runExport(final String fileSelected, final Map<String, Map<String, String>> propertyMap, Node rootNode,
+            ArrayList<Boolean> checkBoxStates, String fileWithPrefix, String separator, String quoteChar, String charSet)
+            throws IOException {
 
         DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
-        
+
         String[] strtypes = datasetService.getSructureTypesId(rootNode);
         List<String> headers = new ArrayList<String>();
         List<String> usingHeadersFromStructure = new ArrayList<String>();
-        
+
         for (int i = 1; i < strtypes.length; i++) {
             headers.add(strtypes[i]);
         }
 
-        TraversalDescription descr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
-                .filter(Traversal.returnAllButStartNode());
+        TraversalDescription descr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE)
+                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).filter(Traversal.returnAllButStartNode());
         descr = descr.filter(new Predicate<Path>() {
 
             @Override
@@ -274,15 +275,15 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
 
             char separatorChar = separator.charAt(0);
             char quote = quoteChar.isEmpty() ? CSVWriter.NO_QUOTE_CHARACTER : quoteChar.charAt(0);
-            CSVWriter writer = new CSVWriter(new OutputStreamWriter(new FileOutputStream(fileSelected + ext), charSet), separatorChar, quote);
+            CSVWriter writer = new CSVWriter(new OutputStreamWriter(new FileOutputStream(fileSelected + ext), charSet),
+                    separatorChar, quote);
 
             try {
                 for (String headerType : headers) {
                     Map<String, String> propertyCol = propertyMap.get(headerType);
-                    if(propertyCol == null) {
+                    if (propertyCol == null) {
                         continue;
-                    }
-                    else {
+                    } else {
                         // save using headers from newtwork structure
                         usingHeadersFromStructure.add(headerType);
                     }
@@ -290,7 +291,7 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                         fields.add(col);
                     }
                 }
-                
+
                 // choose which types we write
                 int k = 1;
                 strtypes = new String[usingHeadersFromStructure.size() + 1];
@@ -323,18 +324,16 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                                 index += propertyMap.get(strtypes[i]).keySet().size();
                             i++;
                         }
-                        
+
                         if (currentIndex != index && propertyCol != null) {
                             for (int j = 0; j < index - currentIndex; j++) {
                                 fields.add("");
                             }
                             currentIndex += (index - currentIndex);
-                        }
-                        else if (propertyCol == null) {
+                        } else if (propertyCol == null) {
                             if (index == currentIndex) {
                                 currentIndex++;
-                            }
-                            else {
+                            } else {
                                 currentIndex += (index - currentIndex);
                             }
                         }
@@ -342,7 +341,7 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                             for (String propertyName : propertyCol.keySet()) {
                                 fields.add(String.valueOf(node.getProperty(propertyName, "")));
                                 currentIndex++;
-                            }   
+                            }
                         }
                     }
                     if (fields.size() != 0)
@@ -354,11 +353,9 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
 
         }
     }
-    
+
     /**
-     * Kasnitskij_V:
-     * 
-     * Get synonyms to header
+     * Kasnitskij_V: Get synonyms to header
      * 
      * @param header -header of value from preference store
      * @return array of possible headers
@@ -381,10 +378,10 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         }
         return result.toArray(new String[0]);
     }
-    
+
     /**
      * Kasnitskij_V:
-     *
+     * 
      * @return return map in which key = propertyName and value = name of header
      */
     protected static HashMap<String, String> getMapPropertyNameHeader() {
@@ -400,7 +397,7 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         map.put("city", DataLoadPreferences.NH_CITY);
         map.put("msc", DataLoadPreferences.NH_MSC);
         map.put("bsc", DataLoadPreferences.NH_BSC);
-        
+
         return (HashMap<String, String>)map;
     }
 }

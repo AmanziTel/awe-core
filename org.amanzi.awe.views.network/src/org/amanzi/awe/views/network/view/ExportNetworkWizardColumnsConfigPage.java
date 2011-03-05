@@ -398,19 +398,8 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
      */
     public void changeNodeSelection(Node selectedNode) {
         
-        Set<String> allPropertiesWithStatistic = (Set<String>)getAvailabilityPropertiesInNetwork(selectedNode, NodeTypes.SECTOR);
-        Set<String> props2 = (Set<String>)getAvailabilityPropertiesInNetwork(selectedNode, NodeTypes.NEIGHBOUR);
-        Set<String> props3 = (Set<String>)getAvailabilityPropertiesInNetwork(selectedNode, NodeTypes.SITE);
-        Set<String> props4 = (Set<String>)getAvailabilityPropertiesInNetwork(selectedNode, NodeTypes.CITY);
-        Set<String> props5 = (Set<String>)getAvailabilityPropertiesInNetwork(selectedNode, NodeTypes.BSC);
-        Set<String> props6 = (Set<String>)getAvailabilityPropertiesInNetwork(selectedNode, NodeTypes.FREQUENCY_PLAN);
-        Set<String> props7 = (Set<String>)getAvailabilityPropertiesInNetwork(selectedNode, NodeTypes.TRX);
-        Set<String> props8 = (Set<String>)getAvailabilityPropertiesInNetwork(selectedNode, NodeTypes.NETWORK);
-        Set<String> props9 = (Set<String>)getAvailabilityPropertiesInNetwork(selectedNode, NodeTypes.STATISTICS);
+        defineAvailablePages(selectedNode);
         
-        for (String str : allPropertiesWithStatistic) {
-            System.out.println(str);
-        }
         String nameOfPage = this.getName();
         ColumnsConfigPageTypes typeOfPage = ColumnsConfigPageTypes.findColumnsConfigPageTypeByName(nameOfPage);
         this.rootNode = selectedNode;
@@ -564,11 +553,49 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
         }
         
         validate();
+        // TODO Exception
         if (viewer != null)
             viewer.setInput("");
 
     }
     
+    /**
+     * To know which properties will available
+     *
+     * @param selectedNode
+     */
+    private void defineAvailablePages(Node selectedNode) {
+        Set<String> allPropertiesWithStatistic = (Set<String>)getAvailabilityPropertiesInNetwork(selectedNode, NodeTypes.SECTOR);
+
+        for (ColumnsConfigPageTypes pageType : ColumnsConfigPageTypes.values()) {
+            Boolean isExistOneProperty = false;
+            for (String pageProperty : pageType.getProperties()) {
+                for (String property : allPropertiesWithStatistic) {
+                    if (cleanHeader(property).equals("sector")) 
+                        continue;
+                    
+                    if (cleanHeader(property).equals(cleanHeader(pageProperty))) {
+                        isExistOneProperty = true;
+                        break;
+                    }
+                }
+            }
+            
+            ExportNetworkWizard.getSavingDataPage().setMapOfCheckboxesState(pageType.getIndex(), isExistOneProperty);
+        }
+        
+        for (String str : allPropertiesWithStatistic) {
+            System.out.println(str);
+        }
+    }
+    
+    /**
+     * Return availability properties to sector
+     *
+     * @param selectedNode Selected node
+     * @param nodeType Type of node
+     * @return
+     */
     private Iterable<String> getAvailabilityPropertiesInNetwork(Node selectedNode, NodeTypes nodeType) {
         // Kasnitskij_V:
         IPropertyHeader propertyHeader = null;

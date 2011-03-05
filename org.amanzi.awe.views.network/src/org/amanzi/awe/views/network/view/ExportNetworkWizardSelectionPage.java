@@ -14,6 +14,8 @@
 package org.amanzi.awe.views.network.view;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -59,6 +61,7 @@ import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.helpers.Predicate;
+import org.neo4j.shell.apps.Export;
 
 /**
  * <p>
@@ -188,14 +191,12 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
     @Override
     public IWizardPage getNextPage() {
         try {
-            if (ExportNetworkWizardSavingDataSelectionPage.checkboxNeigboursData != null)
-                ExportNetworkWizardSavingDataSelectionPage.checkboxNeigboursData.setEnabled(false);
-            if (ExportNetworkWizard.getAvailablePages().size() != 0) {
-                //ExportNetworkWizard.removeFromAvailablePages(ColumnsConfigPageTypes.NEIGBOURS_DATA.getName());
-                if (ExportNetworkWizard.getSavingDataPage() != null) {
-                    ExportNetworkWizard.getSavingDataPage().setCheckBoxesState(0, false);
-                    
+            if (ExportNetworkWizard.getSavingDataPage() != null) {
+                HashMap<Integer, Boolean> states = ExportNetworkWizard.getSavingDataPage().getMapOfCheckboxesState();
+                for (Integer index : states.keySet()) {
+                    ExportNetworkWizard.getSavingDataPage().setCheckBoxesState(index, states.get(index));
                 }
+                ExportNetworkWizard.getSavingDataPage().setCheckBoxesState(ColumnsConfigPageTypes.NEIGBOURS_DATA.getIndex(), false);
             }
         }
         catch (Exception e) {
