@@ -117,13 +117,14 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
         checkboxTrxData.setLayoutData(checkboxLayoutData);
         checkboxTrxData.setSelection(true);
         
-        arrayOfCheckboxes.add(checkboxFrequencyConstraintData);
-        arrayOfCheckboxes.add(checkboxInterferenceMatrix);
+        arrayOfCheckboxes.clear();
         arrayOfCheckboxes.add(checkboxNeigboursData);
-        arrayOfCheckboxes.add(checkboxNetworkSectorData);
+        arrayOfCheckboxes.add(checkboxFrequencyConstraintData);
         arrayOfCheckboxes.add(checkboxSeparationConstraintData);
         arrayOfCheckboxes.add(checkboxTrafficData);
         arrayOfCheckboxes.add(checkboxTrxData);
+        arrayOfCheckboxes.add(checkboxInterferenceMatrix);
+        arrayOfCheckboxes.add(checkboxNetworkSectorData);
         
         setControl(main);
     }
@@ -156,10 +157,10 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
         checkboxesState.clear();
         checkboxesState.add(checkboxNeigboursData.getSelection());
         checkboxesState.add(checkboxFrequencyConstraintData.getSelection());
-        checkboxesState.add(checkboxInterferenceMatrix.getSelection());
         checkboxesState.add(checkboxSeparationConstraintData.getSelection());
         checkboxesState.add(checkboxTrafficData.getSelection());
         checkboxesState.add(checkboxTrxData.getSelection());
+        checkboxesState.add(checkboxInterferenceMatrix.getSelection());
         return checkboxesState;
     }
     
@@ -168,10 +169,10 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
         if (checkboxNeigboursData != null) {
             checkboxesState.add(checkboxNeigboursData.getSelection());
             checkboxesState.add(checkboxFrequencyConstraintData.getSelection());
-            checkboxesState.add(checkboxInterferenceMatrix.getSelection());
             checkboxesState.add(checkboxSeparationConstraintData.getSelection());
             checkboxesState.add(checkboxTrafficData.getSelection());
             checkboxesState.add(checkboxTrxData.getSelection());
+            checkboxesState.add(checkboxInterferenceMatrix.getSelection());
             
             checkboxesState.set(index, state);
             for (Button button : arrayOfCheckboxes) {
@@ -210,10 +211,10 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
 
         nameOfPages.add(ColumnsConfigPageTypes.NEIGBOURS_DATA.getName());
         nameOfPages.add(ColumnsConfigPageTypes.FREQUENCY_CONSTRAINT_DATA.getName());
-        nameOfPages.add(ColumnsConfigPageTypes.INTERFERENCE_MATRIX.getName());
         nameOfPages.add(ColumnsConfigPageTypes.SEPARATION_CONSTRAINT_DATA.getName());
         nameOfPages.add(ColumnsConfigPageTypes.TRAFFIC_DATA.getName());
         nameOfPages.add(ColumnsConfigPageTypes.TRX_DATA.getName());
+        nameOfPages.add(ColumnsConfigPageTypes.INTERFERENCE_MATRIX.getName());
         
         return nameOfPages;
     }

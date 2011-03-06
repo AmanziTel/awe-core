@@ -554,9 +554,14 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
         
         validate();
         // TODO Exception
-        if (viewer != null)
-            viewer.setInput("");
-
+        try {
+            if (viewer != null){
+                viewer.setInput("");
+            }
+        }
+        catch (Exception e) {
+            
+        }
     }
     
     /**
@@ -620,12 +625,13 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
         }
 
         Map<String, Object> propertiesWithValues = propertyHeader.getStatisticParams(nodeType);
+        
         if (propertiesWithValues.size() == 0) {
             propertyHeader = PropertyHeader.getPropertyStatistic(rootNode);
             propertiesWithValues = propertyHeader.getStatisticParams(nodeType);
         }
         Set<String> keysFromProperties = propertiesWithValues.keySet();
-    
+
         return keysFromProperties;
     }
     
