@@ -163,7 +163,7 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
     @Override
     public void initializeDefaultPreferences() {
         StoreWrapper pref = new StoreWrapper();
-        pref.setDefault(DataLoadPreferences.REMOVE_SITE_NAME, true);
+        pref.setDefault(DataLoadPreferences.REMOVE_SITE_NAME, false);
         pref.setDefault(DataLoadPreferences.NETWORK_COMBINED_CALCULATION, true);
         pref.setDefault(DataLoadPreferences.ZOOM_TO_LAYER, true);
         pref.setDefault(DataLoadPreferences.ADD_AMS_PROBES_TO_MAP, true);

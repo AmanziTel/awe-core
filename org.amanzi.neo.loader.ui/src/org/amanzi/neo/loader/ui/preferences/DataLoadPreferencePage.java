@@ -19,6 +19,10 @@ import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -43,8 +47,9 @@ public class DataLoadPreferencePage extends FieldEditorPreferencePage implements
 
     @Override
     protected void createFieldEditors() {
+        Composite parent = getFieldEditorParent();
         BooleanFieldEditor editor = new BooleanFieldEditor(DataLoadPreferences.REMOVE_SITE_NAME, LABEL_REMOVE_SITE_NAME,
-                getFieldEditorParent());
+                parent);
         addField(editor);
         editor = new BooleanFieldEditor(DataLoadPreferences.NETWORK_COMBINED_CALCULATION, USE_COMBINED_CALCULATION,
                 getFieldEditorParent());
