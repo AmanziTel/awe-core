@@ -77,6 +77,8 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
     private FrequencyPlanModel freqPlan;
     private int sectorsNotFound;
     private int neighboursNotFound;
+    
+    private final static String ORIGINAL = "original"; 
 
     @Override
     public void init(NetworkConfigurationTransferData element) {
@@ -338,24 +340,26 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
             updateProperty(rootname, NodeTypes.TRX.getId(), trx, "band", channalGr.getProperty("band", null));
             boolean isBcch = 0 == channelGr && "0".equals(trxId);
             updateProperty(rootname, NodeTypes.TRX.getId(), trx, "bcch", isBcch);
-            NodeResult plan = getFreqPlan(getPlanName(element)).getPlanNode(trx);
+            NodeResult plan = getFreqPlan(ORIGINAL).getPlanNode(trx);
             if (plan.isCreated()) {
-                statistic.updateTypeCount(getPlanName(element), NodeTypes.FREQUENCY_PLAN.getId(), 1);
+                statistic.updateTypeCount(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), 1);
             }
             updateProperty(rootname, NodeTypes.TRX.getId(), trx, "hsn", channalGr.getProperty("hsn", null));
             Integer bcchno = (Integer)sector.getProperty("bcch", null);
             if (!plan.hasProperty("bcc")){
                 Object bcc = sector.getProperty("bcc");
                 if (bcc!=null){
-                    updateProperty(getPlanName(element), NodeTypes.FREQUENCY_PLAN.getId(),plan,"bcc",bcc);
+                    updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(),plan,"bcc",bcc);
                 }
                 Object ncc = sector.getProperty("ncc");
                 if (ncc!=null){
-                    updateProperty(getPlanName(element), NodeTypes.FREQUENCY_PLAN.getId(),plan,"ncc",ncc);
+                    updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(),plan,"ncc",ncc);
                 }
                 if (bcchno!=null){
-                    updateProperty(getPlanName(element), NodeTypes.FREQUENCY_PLAN.getId(),plan,"bcch",bcchno);
+                    updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(),plan,"bcch",bcchno);
                 }
+                // Kasnitskij_V:
+                plan.setProperty(INeoConstants.PROPERTY_NAME_NAME, ORIGINAL);
             }
             if (!plan.hasProperty("arfcn")) {
                 Integer arfcn = null;
@@ -412,7 +416,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
                             if (arfcnArr == null) {
                                 arfcnArr = exluded(dchno, removedArfcn);
                                 for (int i = 0; i < arfcnArr.length; i++) {
-                                    statistic.indexValue(getPlanName(element), NodeTypes.FREQUENCY_PLAN.getId(), "arfcn", arfcnArr[i]);
+                                    statistic.indexValue(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), "arfcn", arfcnArr[i]);
                                 }
                             }
                             plan.setProperty("arfcnArr", arfcnArr);
@@ -420,7 +424,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
                     }
                 }
                 if (arfcn != null) {
-                    updateProperty(getPlanName(element), NodeTypes.FREQUENCY_PLAN.getId(), plan, "arfcn", arfcn);
+                    updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), plan, "arfcn", arfcn);
                 }
             }
             if (!plan.hasProperty("maio") && hoptype == 2) {
@@ -445,7 +449,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
                         }
                     }
                 }
-                updateProperty(getPlanName(element), NodeTypes.FREQUENCY_PLAN.getId(), plan, "maio", maioInt);
+                updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), plan, "maio", maioInt);
             }
             break;
         }
@@ -485,20 +489,6 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
             freqPlan = networkModel.getFrequencyModel(planName);
         }
         return freqPlan;
-    }
-
-    /**
-     * Gets the frequency plan name.
-     * 
-     * @param element the element
-     * @return the plan name
-     */
-    private String getPlanName(NetworkConfigurationTransferData element) {
-        if (planName == null) {
-            // TODO check - is it correct use name of first file like name of frequency plan?
-            planName = element.getFileName();
-        }
-        return planName;
     }
 
     @Override
