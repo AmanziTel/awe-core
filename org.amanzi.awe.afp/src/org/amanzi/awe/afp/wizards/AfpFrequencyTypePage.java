@@ -2,49 +2,32 @@ package org.amanzi.awe.afp.wizards;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.Vector;
 
 import org.amanzi.awe.afp.filters.AfpColumnFilter;
 import org.amanzi.awe.afp.filters.AfpRowFilter;
 import org.amanzi.awe.afp.models.AfpDomainModel;
 import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
-import org.amanzi.awe.afp.models.AfpHoppingMALDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
 import org.amanzi.awe.afp.models.AfpModelUtils;
-import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
-import org.apache.commons.lang.StringUtils;
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.ReturnableEvaluator;
-import org.neo4j.graphdb.StopEvaluator;
-import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
-import org.neo4j.graphdb.Traverser.Order;
 
 public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListener{
 	
@@ -212,15 +195,16 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 				    			continue;
 				    	}
 				    	
-				    	int hoppingType = (Integer)node.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0);
+						int hoppingType = (Integer) trxNode.getProperty(
+								INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0);
 				    	
 				    	if (!model.getChanneltypes()[AfpModel.CHANNEL_NON_HOPIING]){
-				    		if (hoppingType < 1)
+							if (hoppingType == 1)
 				    			continue;
 				    	}
 				    	
 				    	if (!model.getChanneltypes()[AfpModel.CHANNEL_HOPPING]){
-				    		if (hoppingType > 0)
+							if (hoppingType == 2)
 				    			continue;
 				    	}
 				    	
