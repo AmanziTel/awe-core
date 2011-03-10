@@ -48,7 +48,7 @@ public class AfpScalingRulesPage extends AfpWizardPage implements Listener {
 
         Group stepsGroup = AfpWizardUtils.getStepsGroup(thisParent, 6);
 
-        TabFolder tabFolder = new TabFolder(thisParent, SWT.NONE | SWT.BORDER);
+		TabFolder tabFolder = new TabFolder(thisParent, SWT.NONE | SWT.BORDER);
         tabFolder.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true));
         TabItem item1 = new TabItem(tabFolder, SWT.NONE);
         item1.setText("Separations");
