@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.amanzi.awe.afp.Activator;
 import org.amanzi.awe.afp.ControlFileProperties;
 import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.executors.AfpProcessProgress;
@@ -40,6 +41,10 @@ import org.amanzi.neo.services.node2node.NodeToNodeTypes;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.neo.services.utils.Pair;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -1551,113 +1556,120 @@ public class AfpModel {
 	 * Write all user selected data to database
 	 */
 	public void saveUserData() {
-		GraphDatabaseService service = datasetNode.getGraphDatabase();
-		Transaction tx = service.beginTx();
-		try {
-			if (afpNode == null) {
-				afpNode = service.createNode();
-				NodeTypes.AFP.setNodeType(afpNode, service);
-				NeoUtils.setNodeName(afpNode, AFP_NODE_NAME , service);
-				datasetNode.createRelationshipTo(afpNode, NetworkRelationshipTypes.CHILD);
-			}
-			afpNode.setProperty(INeoConstants.AFP_OPTIMIZATION_PARAMETERS, getOptimizationParameters());
-			afpNode.setProperty(INeoConstants.AFP_FREQUENCY_BAND, getFrequencyBands());
-			afpNode.setProperty(INeoConstants.AFP_CHANNEL_TYPE, getChanneltypes());
-			afpNode.setProperty(INeoConstants.AFP_ANALYZE_CURRENT, isAnalyzeCurrentFreqAllocation());
-			if (getAvailableFreq(BAND_900) != null)
-				afpNode.setProperty( INeoConstants.AFP_AVAILABLE_FREQUENCIES_900, getAvailableFreq(BAND_900));
-			if (getAvailableFreq(BAND_1800) != null)
-				afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_1800, getAvailableFreq(BAND_1800));
-			
-			if (getAvailableFreq(BAND_850) != null)
-				afpNode.setProperty( INeoConstants.AFP_AVAILABLE_FREQUENCIES_850, getAvailableFreq(BAND_850));
-			if (getAvailableFreq(BAND_1900) != null)
-				afpNode.setProperty( INeoConstants.AFP_AVAILABLE_FREQUENCIES_1900, getAvailableFreq(BAND_1900));
-			afpNode.setProperty(INeoConstants.AFP_AVAILABLE_BCCS, this.availableBCCs);
-			afpNode.setProperty(INeoConstants.AFP_AVAILABLE_NCCS, this.availableNCCs);
+        Job saveData = new Job("save user data") {
 
-			afpNode.setProperty(INeoConstants.AFP_SECTOR_SCALING_RULES, getSectorSeparation());
-			afpNode.setProperty(INeoConstants.AFP_SITE_SCALING_RULES, getSiteSeparation());
-			
-			storeScalingFactor(datasetNode,afpNode);
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                GraphDatabaseService service = datasetNode.getGraphDatabase();
+                Transaction tx = service.beginTx();
+                try {
+                    if (afpNode == null) {
+                        afpNode = service.createNode();
+                        NodeTypes.AFP.setNodeType(afpNode, service);
+                        NeoUtils.setNodeName(afpNode, AFP_NODE_NAME, service);
+                        datasetNode.createRelationshipTo(afpNode, NetworkRelationshipTypes.CHILD);
+                    }
+                    afpNode.setProperty(INeoConstants.AFP_OPTIMIZATION_PARAMETERS, getOptimizationParameters());
+                    afpNode.setProperty(INeoConstants.AFP_FREQUENCY_BAND, getFrequencyBands());
+                    afpNode.setProperty(INeoConstants.AFP_CHANNEL_TYPE, getChanneltypes());
+                    afpNode.setProperty(INeoConstants.AFP_ANALYZE_CURRENT, isAnalyzeCurrentFreqAllocation());
+                    if (getAvailableFreq(BAND_900) != null)
+                        afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_900, getAvailableFreq(BAND_900));
+                    if (getAvailableFreq(BAND_1800) != null)
+                        afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_1800, getAvailableFreq(BAND_1800));
 
-			
-			// remove all chid nodes before storing new ones
-	/*		Traverser traverser = afpNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
-				@Override
-				public boolean isReturnableNode(TraversalPosition currentPos) {
-					if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.AFP_DOMAIN.getId())) 
-						return true;
-					return false;
-				}
-	    		
-	    	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
-			
+                    if (getAvailableFreq(BAND_850) != null)
+                        afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_850, getAvailableFreq(BAND_850));
+                    if (getAvailableFreq(BAND_1900) != null)
+                        afpNode.setProperty(INeoConstants.AFP_AVAILABLE_FREQUENCIES_1900, getAvailableFreq(BAND_1900));
+                    afpNode.setProperty(INeoConstants.AFP_AVAILABLE_BCCS, availableBCCs);
+                    afpNode.setProperty(INeoConstants.AFP_AVAILABLE_NCCS, availableNCCs);
 
-			for (Node n : traverser) {
-				Iterable<Relationship> relationsI = n.getRelationships();
-				if(relationsI != null) {
-					Iterator<Relationship> reations = relationsI.iterator();
-					while(reations.hasNext()) {
-						Relationship r = reations.next();
-						r.delete();
-					}
-				}
-				n.delete();
-			}
-*/
-			HashMap<String,ArrayList<String>> domainNames = getDomainNodeNames(afpNode);
-			for (AfpFrequencyDomainModel frequencyModel : getFreqDomains(false)) {
-				if(!frequencyModel.isFree()){
-					ArrayList<String> nameList = domainNames.get(INeoConstants.AFP_DOMAIN_NAME_FREQUENCY);
-					if (nameList != null){
-						nameList.remove(frequencyModel.getName());
-						domainNames.put(INeoConstants.AFP_DOMAIN_NAME_FREQUENCY, nameList);
-					}
-					createFrequencyDomainNode(afpNode, frequencyModel, service);
-				}
-			}
+                    afpNode.setProperty(INeoConstants.AFP_SECTOR_SCALING_RULES, getSectorSeparation());
+                    afpNode.setProperty(INeoConstants.AFP_SITE_SCALING_RULES, getSiteSeparation());
 
-			for (AfpHoppingMALDomainModel malModel : getMalDomains(true)) {
-				ArrayList<String> nameList = domainNames.get(INeoConstants.AFP_DOMAIN_NAME_MAL);
-				if (nameList != null){
-					nameList.remove(malModel.getName());
-					domainNames.put(INeoConstants.AFP_DOMAIN_NAME_MAL, nameList);
-				}
-				createHoppingMALDomainNode(afpNode, malModel, service);
-			}
+                    storeScalingFactor(datasetNode, afpNode);
 
-			for (AfpSeparationDomainModel separationsModel : getSectorSeparationDomains(true)) {
-				ArrayList<String> nameList = domainNames.get(INeoConstants.AFP_DOMAIN_NAME_SECTOR_SEPARATION);
-				if (nameList != null){
-					nameList.remove(separationsModel.getName());
-					domainNames.put(INeoConstants.AFP_DOMAIN_NAME_SECTOR_SEPARATION, nameList);
-				}
-				createSectorSeparationDomainNode(afpNode, separationsModel, service);
-			}
+                    
+                    // remove all chid nodes before storing new ones
+                    /*
+                     * Traverser traverser = afpNode.traverse(Order.DEPTH_FIRST,
+                     * StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
+                     * @Override public boolean isReturnableNode(TraversalPosition currentPos) { if
+                     * (
+                     * currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals
+                     * (NodeTypes.AFP_DOMAIN.getId())) return true; return false; } },
+                     * NetworkRelationshipTypes.CHILD, Direction.OUTGOING); for (Node n : traverser)
+                     * { Iterable<Relationship> relationsI = n.getRelationships(); if(relationsI !=
+                     * null) { Iterator<Relationship> reations = relationsI.iterator();
+                     * while(reations.hasNext()) { Relationship r = reations.next(); r.delete(); } }
+                     * n.delete(); }
+                     */
+                    HashMap<String, ArrayList<String>> domainNames = getDomainNodeNames(afpNode);
+                    for (AfpFrequencyDomainModel frequencyModel : getFreqDomains(false)) {
+                        if (!frequencyModel.isFree()) {
+                            ArrayList<String> nameList = domainNames.get(INeoConstants.AFP_DOMAIN_NAME_FREQUENCY);
+                            if (nameList != null) {
+                                nameList.remove(frequencyModel.getName());
+                                domainNames.put(INeoConstants.AFP_DOMAIN_NAME_FREQUENCY, nameList);
+                            }
+                            createFrequencyDomainNode(afpNode, frequencyModel, service);
+                        }
+                    }
 
-			for (AfpSeparationDomainModel separationsModel : getSiteSeparationDomains(true)) {
-				ArrayList<String> nameList = domainNames.get(INeoConstants.AFP_DOMAIN_NAME_SITE_SEPARATION);
-				if (nameList != null){
-					nameList.remove(separationsModel.getName());
-					domainNames.put(INeoConstants.AFP_DOMAIN_NAME_SITE_SEPARATION, nameList);
-				}
-				createSiteSeparationDomainNode(afpNode, separationsModel, service);
-			}
-			
-			//delete domains which are not present now
-			for (String type : domainNames.keySet()){
-				for (String name : domainNames.get(type)){
-					deleteDomainNode(afpNode, type, name, service);
-				}
-			}
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-			AweConsolePlugin.exception(e);
-		} finally {
-			tx.finish();
-		}
+                    for (AfpHoppingMALDomainModel malModel : getMalDomains(true)) {
+                        ArrayList<String> nameList = domainNames.get(INeoConstants.AFP_DOMAIN_NAME_MAL);
+                        if (nameList != null) {
+                            nameList.remove(malModel.getName());
+                            domainNames.put(INeoConstants.AFP_DOMAIN_NAME_MAL, nameList);
+                        }
+                        createHoppingMALDomainNode(afpNode, malModel, service);
+                    }
+
+                    for (AfpSeparationDomainModel separationsModel : getSectorSeparationDomains(true)) {
+                        ArrayList<String> nameList = domainNames.get(INeoConstants.AFP_DOMAIN_NAME_SECTOR_SEPARATION);
+                        if (nameList != null) {
+                            nameList.remove(separationsModel.getName());
+                            domainNames.put(INeoConstants.AFP_DOMAIN_NAME_SECTOR_SEPARATION, nameList);
+                        }
+                        createSectorSeparationDomainNode(afpNode, separationsModel, service);
+                    }
+
+                    for (AfpSeparationDomainModel separationsModel : getSiteSeparationDomains(true)) {
+                        ArrayList<String> nameList = domainNames.get(INeoConstants.AFP_DOMAIN_NAME_SITE_SEPARATION);
+                        if (nameList != null) {
+                            nameList.remove(separationsModel.getName());
+                            domainNames.put(INeoConstants.AFP_DOMAIN_NAME_SITE_SEPARATION, nameList);
+                        }
+                        createSiteSeparationDomainNode(afpNode, separationsModel, service);
+                    }
+
+                    // delete domains which are not present now
+                    for (String type : domainNames.keySet()) {
+                        for (String name : domainNames.get(type)) {
+                            deleteDomainNode(afpNode, type, name, service);
+                        }
+                    }
+                    tx.success();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    AweConsolePlugin.exception(e);
+                    return new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e);
+                } finally {
+                    tx.finish();
+                }
+
+                return Status.OK_STATUS;
+            }
+
+        };
+        saveData.schedule();
+        try {
+            saveData.join();
+        } catch (InterruptedException e) {
+            // TODO Handle InterruptedException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
 	}
 	
 	/**
@@ -1694,7 +1706,7 @@ public class AfpModel {
     }
 
     private void loadUserData() {
-		loadScalingFactors(datasetNode, afpNode);
+		
 		try {
 			if (afpNode == null) {
 				return;
@@ -1769,7 +1781,7 @@ public class AfpModel {
 			} catch(Exception e) {
 				// no property sent 
 			}
-
+			loadScalingFactors(datasetNode,afpNode);
 			
 			loadDomainNode(afpNode);
 /*
@@ -1860,9 +1872,6 @@ public class AfpModel {
      * @return
      */
     private Node findScalingNode(Node afpNode,final String name,final  NodeToNodeTypes type) {
-		if (afpNode == null) {
-			return null;
-		}
         Iterator<Node> it = Traversal.description().depthFirst().relationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING).evaluator(new Evaluator() {
             
             @Override
