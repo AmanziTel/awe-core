@@ -73,7 +73,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
     private NetworkModel networkModel;
     private NodeToNodeRelationModel neighbourModel;
     private DatasetService ds;
-    private String planName;
+    //private String planName;
     private FrequencyPlanModel freqPlan;
     private int sectorsNotFound;
     private int neighboursNotFound;
@@ -86,9 +86,9 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         ds = NeoServiceFactory.getInstance().getDatasetService();
         networkService = NeoServiceFactory.getInstance().getNetworkService();
         networkModel = new NetworkModel(rootNode);
-        neighName = "Neighbours";
+        neighName = networkModel.makeUniqueListName("Neighbours");
         neighbourModel = networkModel.getNeighbours(neighName);
-        planName = null;
+        //planName = null;
         freqPlan = null;
         sectorsNotFound = 0;
         neighboursNotFound = 0;

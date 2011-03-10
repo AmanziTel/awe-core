@@ -21,8 +21,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.Set;
 
 import org.amanzi.awe.afp.ericsson.BARRecords;
@@ -93,6 +91,9 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
     /** Statistics on missing sectors */
     private int sectorsNotFound = 0;
     private int neighboursNotFound = 0;
+    private String triangulationListName;
+    private String shadowingListName;
+    private String interferenceListName;
 
     /**
      * Save.
@@ -581,39 +582,14 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
         });
     }
 
-    private boolean listNameExists(String name) {
-        for (NodeToNodeRelationModel m : networkModel.findAllNode2NodeRoot()) {
-            if (m.getName().equals(name))
-                return true;
-        }
-        return false;
-    }
-
-    private String makeUniqueListName(String name) {
-        while(listNameExists(name)) {
-            String base = name;
-            int count = 1;
-            Pattern p = Pattern.compile("\\d+$");
-            Matcher m = p.matcher(name);
-            if(m.matches()) {
-                count = Integer.parseInt(m.group());
-                base = base.replace(m.group(), "");
-            }
-            count ++;
-            name = base + count;
-        }
-        return name;
-    }
-
     /**
      * @param model
      * @return
      */
     private String getTriangulationName(NodeToNodeRelationModel model) {
-        // TODO: we removed the model name from the list name because it was too cluttered. However
-        // if we get lots of lists, this might help to make things less ambiguous.
-        // return model.getName() + "triang";
-        return makeUniqueListName("Triangulation");
+        if (triangulationListName == null)
+            triangulationListName = networkModel.makeUniqueListName("Triangulation");
+        return triangulationListName;
     }
 
     /**
@@ -713,7 +689,9 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
      * @return the shadowing matrix name
      */
     private String getShadowingMatrixName() {
-        return makeUniqueListName("Shadowing");
+        if (shadowingListName == null)
+            shadowingListName = networkModel.makeUniqueListName("Shadowing");
+        return shadowingListName;
     }
 
     /**
@@ -722,8 +700,9 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
      * @return the interf matrix name
      */
     private String getInterfMatrixName() {
-        //return "interference " + firstFileName;
-        return makeUniqueListName("Interference");
+        if (interferenceListName == null)
+            interferenceListName = networkModel.makeUniqueListName("Interference");
+        return interferenceListName;
     }
 
     /**
@@ -763,17 +742,17 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
         }
         Double factorCo = getFactorCo(adminValues.relss);
         if (factorCo == null) {
-            error("Incorreect relss=" + String.valueOf(adminValues.relss));
+            error("Incorrect relss=" + String.valueOf(adminValues.relss));
             return;
         }
         if (neigh.reparfcn == 0) {
-            error("Incorreect reparfcn=0");
+            error("Incorrect reparfcn=0");
             return;
         }
         double impactCO = (double)neigh.timesrelss / neigh.reparfcn * factorCo;
         Double factorAdj = getFactorAdj(adminValues.relss2);
         if (factorAdj == null) {
-            error("Incorreect relss2=" + String.valueOf(adminValues.relss));
+            error("Incorrect relss2=" + String.valueOf(adminValues.relss));
             return;
         }
         double impactAdj = (double)neigh.timesrelss2 / neigh.reparfcn * factorAdj;

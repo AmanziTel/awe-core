@@ -17,6 +17,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.DatasetService.NodeResult;
@@ -67,7 +69,7 @@ public class NetworkModel {
         return new NodeToNodeRelationModel(rootNode, type, name);
     }
     public NodeToNodeRelationModel getIllegalFrequency() {
-        return getNodeToNodeRelationModel(NodeToNodeTypes.ILLEGAL_FREQUENCY, "illegal frequency");
+        return getNodeToNodeRelationModel(NodeToNodeTypes.ILLEGAL_FREQUENCY, "Illegal Frequency");
     }
     public NodeToNodeRelationModel getInterferenceMatrix(String name) {
         return getNodeToNodeRelationModel(NodeToNodeTypes.INTERFERENCE_MATRIX, name);
@@ -215,6 +217,31 @@ public class NetworkModel {
 
     public Iterable<Node> findAllNodeByType(INodeType type) {
         return networkService.findAllNodeByType(rootNode,type);
+    }
+
+    public boolean listNameExists(String name) {
+        for (NodeToNodeRelationModel m : findAllNode2NodeRoot()) {
+            if (m.getName().equals(name))
+                return true;
+        }
+        return false;
+    }
+
+    public String makeUniqueListName(String name) {
+        while(listNameExists(name)) {
+            String base = name;
+            int count = 1;
+            Pattern p = Pattern.compile("\\w+(\\d+)");
+            Matcher m = p.matcher(name);
+            if(m.matches()) {
+                String number = m.group(1);
+                count = Integer.parseInt(number);
+                base = base.replace(number, "");
+            }
+            count ++;
+            name = base + count;
+        }
+        return name;
     }
 
 }
