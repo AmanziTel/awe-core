@@ -1,5 +1,7 @@
 package org.amanzi.awe.afp.wizards;
 
+import java.util.Arrays;
+
 import org.amanzi.awe.afp.models.AfpModel;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.swt.SWT;
@@ -16,6 +18,11 @@ public class AfpLoadNetworkPage extends AfpWizardPage {
 	
 	private Combo networkCombo;
 	protected String datasetName;
+	
+	/*
+	 * Combor for Selection Lists
+	 */
+	private Combo selectionListCombo;
 		
 	
 	public AfpLoadNetworkPage(String pageName, AfpModel model, String desc) {
@@ -46,6 +53,12 @@ public class AfpLoadNetworkPage extends AfpWizardPage {
             	model.setSelectNetworkDataSetName(datasetName);
             	//afpCombo.setItems(getAfpDatasets(datasetNode));
 				setPageComplete(canFlipToNextPage());
+				
+				String[] items = model.getNetworkSelectionLists(datasetName);
+				items = Arrays.copyOf(items, items.length + 1);
+				items[items.length -1] = "[ALL]";
+				Arrays.sort(items);
+				selectionListCombo.setItems(items);
             }
 
             @Override
@@ -54,32 +67,17 @@ public class AfpLoadNetworkPage extends AfpWizardPage {
             }
         });
 		
-		/*
-		new Label(main, SWT.LEFT).setText("Afp Dataset: ");
-        
-		afpCombo = new Combo(main, SWT.DROP_DOWN);
-		afpCombo.setLayoutData(new GridData(GridData.FILL, SWT.BEGINNING, true, false));
+		new Label(main, SWT.LEFT).setText("Selection List:");
 		
-		afpCombo.addModifyListener(new ModifyListener(){
-
-			@Override
-			public void modifyText(ModifyEvent e) {
-				afpName = afpCombo.getText().trim();
-				afpNode = afpNodes.get(afpName);
-				if (afpName == null || afpName.equals(""))
-					setErrorMessage("No Afp Name Specified");
-				else setErrorMessage(null);
-				setPageComplete(canFlipToNextPage());
-			}
-			
-		});
-		
-		afpCombo.addSelectionListener(new SelectionListener() {
+		selectionListCombo = new Combo(main, SWT.DROP_DOWN | SWT.READ_ONLY);
+		selectionListCombo.setLayoutData(new GridData(GridData.FILL, SWT.BEGINNING, true, false));
+		selectionListCombo.setItems(new String[] {"[ALL]"});
+		selectionListCombo.addSelectionListener(new SelectionListener() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-            	afpName = afpCombo.getText().trim();
-            	afpNode = afpNodes.get(afpName);
+                model.setNetworkSelectionName(selectionListCombo.getText().trim());
+                setPageComplete(canFlipToNextPage());
             }
 
             @Override
@@ -87,7 +85,7 @@ public class AfpLoadNetworkPage extends AfpWizardPage {
                 widgetSelected(e);
             }
         });
-		*/
+		
 		setPageComplete(true);
 		setControl(main);
 	}

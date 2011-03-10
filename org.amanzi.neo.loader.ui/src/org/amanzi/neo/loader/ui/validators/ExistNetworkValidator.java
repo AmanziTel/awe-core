@@ -46,12 +46,12 @@ public class ExistNetworkValidator implements ILoaderInputValidator<CommonConfig
         if (root == null || datasetService.getNodeType(root) != NodeTypes.NETWORK) {
             return new ValidateResultImpl(Result.FAIL, String.format("Network '%s' is not found. ", data.getDbRootName()) + "For loader '%s' network should exist.");
         }
-        return new ValidateResultImpl(Result.UNKNOWN, "");
+        return new ValidateResultImpl(Result.SUCCESS, "");
     }
 
     @Override
     public IValidateResult accept(CommonConfigData data) {
-        return new ValidateResultImpl(Result.UNKNOWN, "");
+        return new ValidateResultImpl(Result.SUCCESS, "");
     }
 
 }

@@ -19,7 +19,6 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.amanzi.neo.services.DatasetService.NodeResult;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
@@ -54,14 +53,61 @@ import org.neo4j.kernel.Uniqueness;
  * @author TsAr
  * @since 1.0.0
  */
-public class NetworkService extends AbstractService {
+public class NetworkService extends DatasetService {
 
     public static final String FREQUENCY = "frequency";
-    private DatasetService datasetService;
+    
+    private class NameFilter implements Evaluator {
+        
+        private String name;
+        
+        private boolean toContinue;
+        
+        public NameFilter(String name, boolean toContinue) {
+            this.name = name;
+            this.toContinue = toContinue;
+        }
 
+        @Override
+        public Evaluation evaluate(Path arg0) {
+            boolean include = name.equals(getNodeName(arg0.endNode()));
+            return Evaluation.of(include, toContinue);
+        }
+    }
+    
+    private class MultiNodeTypeFilter implements Evaluator {
+        
+        private INodeType[] nodeTypes;
+        
+        private boolean toContinue;
+        
+        public MultiNodeTypeFilter(boolean toContinue, INodeType ... nodeTypes) {
+            this.nodeTypes = nodeTypes;
+            this.toContinue = toContinue;
+        }
+
+        @Override
+        public Evaluation evaluate(Path arg0) {
+            boolean include = false;
+            INodeType currentNodeType = getNodeType(arg0.endNode());
+            
+            if (currentNodeType != null) {
+                for (INodeType singleType : nodeTypes) {
+                    if ((singleType != null) && 
+                        (singleType.equals(currentNodeType))) {
+                        include = true;
+                        break;
+                    }
+                }
+            }
+            
+            return Evaluation.of(include, toContinue);
+        }
+        
+    }
+    
     public NetworkService() {
-        super();
-        datasetService = NeoServiceFactory.getInstance().getDatasetService();
+        super();        
     }
 
     /**
@@ -154,11 +200,11 @@ public class NetworkService extends AbstractService {
      * @return the sector node or null
      */
     public Node findSector(Node rootNode, Integer ci, Integer lac, String name, boolean returnFirsElement) {
-        return datasetService.findSector(rootNode, ci, lac, name, returnFirsElement);
+        return super.findSector(rootNode, ci, lac, name, returnFirsElement);
     }
 
     public Node findSector(Node rootNode, String name, boolean returnFirstElement) {
-        return datasetService.findSector(rootNode, null, null, name, returnFirstElement);
+        return super.findSector(rootNode, null, null, name, returnFirstElement);
     }
 
     /**
@@ -390,7 +436,7 @@ public class NetworkService extends AbstractService {
                     if (rel==null){
                         includes=false;
                     }else{
-                        includes=fileName.equals(datasetService.getNodeName(rel.getOtherNode(arg0.endNode())));
+                        includes=fileName.equals(getNodeName(rel.getOtherNode(arg0.endNode())));
                     }
                 }
                 return Evaluation.of(includes, arg0.length()==0);
@@ -507,7 +553,7 @@ public class NetworkService extends AbstractService {
             public Iterable<NodeToNodeRelationModel> getModels() {
                 List<NodeToNodeRelationModel> result = new ArrayList<NodeToNodeRelationModel>();
                 if (projecNode != null) {
-                    Traverser networks = datasetService.getRoots(projecNode, new Evaluator() {
+                    Traverser networks = getRoots(projecNode, new Evaluator() {
 
                         @Override
                         public Evaluation evaluate(Path paramPath) {
@@ -623,7 +669,7 @@ public class NetworkService extends AbstractService {
             
             @Override
             public Evaluation evaluate(Path arg0) {
-                return Evaluation.ofIncludes(modelName.equals(datasetService.getNodeName(arg0.endNode())));
+                return Evaluation.ofIncludes(modelName.equals(getNodeName(arg0.endNode())));
             }
         }).nodes().iterator();
         return iter.hasNext()?iter.next():null;
@@ -641,7 +687,7 @@ public class NetworkService extends AbstractService {
     private Node createFrequencyRootNode(Node networkRoot, String modelName) {
         Transaction tx = databaseService.beginTx();
         try {
-            Node result=datasetService.createNode(NodeTypes.FREQUENCY_ROOT, modelName);
+            Node result=super.createNode(NodeTypes.FREQUENCY_ROOT, modelName);
             networkRoot.createRelationshipTo(result, Relations.FREQUENCY_ROOT);
             tx.success();
             return result;
@@ -673,7 +719,7 @@ public class NetworkService extends AbstractService {
             
             @Override
             public Evaluation evaluate(Path arg0) {
-                boolean includes=type.equals(datasetService.getNodeType(arg0.endNode()));
+                boolean includes=type.equals(getNodeType(arg0.endNode()));
                 return Evaluation.of(includes, !includes);
             }
         }).traverse(network).nodes();
@@ -686,7 +732,7 @@ public class NetworkService extends AbstractService {
        }
        Transaction tx = databaseService.beginTx();
        try{
-           Node result=datasetService.createNode(NodeTypes.FR_SPECTRUM, "illegal frequency");
+           Node result= super.createNode(NodeTypes.FR_SPECTRUM, "illegal frequency");
            rootNode.createRelationshipTo(result, Relations.FR_SPECTRUM);
            tx.success();
            return result;
@@ -698,7 +744,7 @@ public class NetworkService extends AbstractService {
     public Node createFrSpectrimNode(Node rootNode, int frequency) {
         Transaction tx = databaseService.beginTx();
         try{
-            Node result=datasetService.createNode(NodeTypes.FREQ, String.valueOf(frequency));
+            Node result=super.createNode(NodeTypes.FREQ, String.valueOf(frequency));
             result.setProperty(FREQUENCY, frequency);
             rootNode.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
             tx.success();
@@ -708,4 +754,112 @@ public class NetworkService extends AbstractService {
         }
     }
 
+    public Node getRootSelectionNode(Node parentNode, String selectionListName) {
+        Node result = findRootSelectionNode(parentNode, selectionListName);
+        if (result == null) {
+            result = createRootSelectionNode(parentNode, selectionListName);
+        }
+        
+        return result;
+    }
+    
+    public Node findRootSelectionNode(Node parentNode, String selectionListName) {
+        Iterator<Node> resultIterator = getNetworkSelectionTraversalDescription(new NameFilter(selectionListName, false)).
+                                        traverse(parentNode).nodes().iterator();
+        if (resultIterator.hasNext()) {
+            return resultIterator.next();
+        }
+        return null;
+    }
+    
+    public Iterable<Node> getAllRootSelectionNodes(Node parentNode) {
+        return getNetworkSelectionTraversalDescription(null).traverse(parentNode).nodes();
+    }
+    
+    private Node createRootSelectionNode(Node parentNode, String selectionListName) {
+        Transaction tx = databaseService.beginTx();
+        try {
+            Node selNode = createNode(NodeTypes.SELECTION_LIST, selectionListName);
+            parentNode.createRelationshipTo(selNode, NetworkRelationshipTypes.SELECTION);
+            tx.success();
+            return selNode;
+        } finally {
+            tx.finish();
+        }
+    }
+    
+    private TraversalDescription getNetworkSelectionTraversalDescription(Evaluator filter) {
+        TraversalDescription initialDescrption = Traversal.description().breadthFirst().
+                         relationships(NetworkRelationshipTypes.SELECTION, Direction.OUTGOING).
+                         evaluator(new Evaluator() {
+                    
+                             @Override
+                             public Evaluation evaluate(Path arg0) {
+                                 if (arg0.length() == 1) {
+                                     if (NodeTypes.SELECTION_LIST.equals(getNodeType(arg0.endNode()))) {
+                                         return Evaluation.INCLUDE_AND_PRUNE;
+                                     }
+                                     return Evaluation.EXCLUDE_AND_PRUNE;
+                                 }
+                                 return Evaluation.EXCLUDE_AND_PRUNE;
+                             }
+                         });
+        if (filter != null) {
+            return initialDescrption.evaluator(filter);
+        }
+        
+        return initialDescrption;
+    }
+    
+    public boolean addToSelection(Node rootSelectionNode, Node sectorNode, String indexKey) {
+        String sectorName = getNodeName(sectorNode);
+        Relationship selectionRel = databaseService.index().forRelationships(indexKey).get(INeoConstants.PROPERTY_NAME_NAME, sectorName).getSingle();
+        
+        if (selectionRel != null) {
+            //selection relationship already exists
+            return false;
+        }
+        
+        Transaction tx = databaseService.beginTx();
+        try {
+            selectionRel = rootSelectionNode.createRelationshipTo(sectorNode, NetworkRelationshipTypes.SELECTED);
+        
+            databaseService.index().forRelationships(indexKey).add(selectionRel, INeoConstants.PROPERTY_NAME_NAME, sectorName);
+            tx.success();            
+        }
+        finally {
+            tx.finish();
+        }
+        
+        return true;
+    }
+    
+    public Iterator<Node> getAllSelectedNodes(Node rootSelectionNode) {
+        return Traversal.description().breadthFirst().
+               relationships(NetworkRelationshipTypes.SELECTED, Direction.OUTGOING).
+               traverse(rootSelectionNode).nodes().iterator();
+    }
+    
+    public TraversalDescription getNetworkElementTraversal(Evaluator filter, INodeType ... nodeTypes) {
+        return getNetworkElementTraversal(new MultiNodeTypeFilter(true, nodeTypes), filter);
+    }
+    
+    public TraversalDescription getSelectionListElementTraversal(Evaluator filter, INodeType ... nodeTypes) {
+        return getNetworkElementTraversal(filter, nodeTypes).relationships(NetworkRelationshipTypes.SELECTED, Direction.OUTGOING);
+    }
+    
+    private TraversalDescription getNetworkElementTraversal(Evaluator ... filters) {
+        TraversalDescription description = Traversal.description().depthFirst().relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+        
+        if (filters != null) {
+            for (Evaluator singleFilter : filters) {
+                if (singleFilter != null) {
+                    description = description.evaluator(singleFilter);
+                }
+            }
+            return description;
+        }
+        
+        return description;
+    }
 }

@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -33,9 +34,11 @@ import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.network.NetworkModel;
+import org.amanzi.neo.services.networkselection.SelectionModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.amanzi.neo.services.node2node.NodeToNodeTypes;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
@@ -58,6 +61,7 @@ import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
+import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.kernel.Traversal;
 /**
  * 
@@ -100,6 +104,13 @@ public class AfpModel {
 	private AfpProcessExecutor afpJob;
 	private HashMap<String, Node> networkNodes;
 	private HashMap<String, Node> afpNodes;
+	
+	private SelectionModel selectionModel;
+	
+	/*
+	 * Selection List nodes 
+	 */
+	private HashMap<Node, Map<String, SelectionModel>> networkSelectionNodes = new HashMap<Node, Map<String, SelectionModel>>();
 
 	boolean optimizeFrequency = true;
 	boolean optimizeBSIC = true;
@@ -225,6 +236,17 @@ public class AfpModel {
 	
 	public AfpModel() {
 	}
+	
+	private Iterable<Node> getElementTraverser(Evaluator filter, INodeType ... nodeTypes) {
+	    if (selectionModel == null) {
+	        //traverse through network
+	        return new NetworkModel(datasetNode).getAllElementsByType(filter, nodeTypes);
+	    }
+	    else {
+	        //traverse through selection list
+	        return selectionModel.getAllElementsByType(filter, nodeTypes);
+	    }
+	}
 
 	/**
 	 * Array rows: 
@@ -253,20 +275,9 @@ public class AfpModel {
 		int[] hoppingTRXs = new int[4];
 		int[] nonHoppingTRXs = new int[4];
 		
-		Traverser traverser = datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
-
-			@Override
-			public boolean isReturnableNode(TraversalPosition currentPos) {
-				if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.SECTOR.getId()) ||
-						currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.SITE.getId()) ||
-						currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.TRX.getId())){
-					return true;
-				}
-				return false;
-			}
-    	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
 		
-		for (Node node: traverser){
+		
+		for (Node node: getElementTraverser(null, NodeTypes.SECTOR, NodeTypes.SITE, NodeTypes.TRX)){
 			// add to unique properties
 			
 			if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.SITE.getId())){
@@ -429,6 +440,10 @@ public class AfpModel {
     		loadAfpDataSet();
     	}
 	}
+	
+	public void setNetworkSelectionName(String selectionListName) {
+	    selectionModel = networkSelectionNodes.get(datasetNode).get(selectionListName);
+	}
 
     public String[] getNetworkDatasets() {
         networkNodes = new HashMap<String, Node>();
@@ -440,6 +455,33 @@ public class AfpModel {
         }
         return networkNodes.keySet().toArray(new String[0]);
     }
+    
+    /**
+     * Returns all NetworkSelection Lists for current Network
+     *
+     * @return
+     */
+    public String[] getNetworkSelectionLists(String networkName) {
+        Map<String, SelectionModel> networkSelectionLists = networkSelectionNodes.get(datasetNode);
+        
+        if (networkSelectionLists == null) {
+            //need to initialize
+            Node networkNode = networkNodes.get(networkName);
+            if (networkNode == null) {
+                getNetworkDatasets();
+                networkNode = networkNodes.get(networkName);
+            }
+            
+            Map<String, SelectionModel> modelMap = new NetworkModel(networkNode).getAllSelectionModels();
+            
+            networkSelectionNodes.put(datasetNode, modelMap);
+            
+            return modelMap.keySet().toArray(new String[0]);
+        }
+        
+        return networkSelectionLists.keySet().toArray(new String[0]);
+    }
+    
 	/**
      * Gets the networ datasets.
      * 
@@ -2137,37 +2179,69 @@ public class AfpModel {
 		return afpJob;
 	}
 
-	public Traverser getTRXList(final HashMap<String, String> filters) {
-    	Traverser traverser = datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
-
-			@Override
-			public boolean isReturnableNode(TraversalPosition currentPos) {
-				boolean ret = false;
-				if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.SECTOR.getId())){
-					if (filters != null){
-						for (String key: filters.keySet()){
-							if (key.equals("band")){
-							    //TODO check correct
-								for (String band : filters.get(key).split(",")){
-									String bandStr = (String)currentPos.currentNode().getProperty("band", "");
-                                    String layerStr = (String)currentPos.currentNode().getProperty("layer", "");
-                                    if (bandStr.contains(band)||(bandStr.isEmpty()&&layerStr.isEmpty()) ||
-											layerStr.contains(band))
-										ret = ret || true;
-								}
-							}
-						}
-					}
-					else 
-						ret = true;
-				}
-					
-				return ret;
-			}
-    		
-    	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
-    	
-        return traverser;
+	public Iterable<Node> getTRXList(final HashMap<String, String> filters) {
+	    
+	    Evaluator bandFilter = new Evaluator() {
+            
+            @Override
+            public Evaluation evaluate(Path arg0) {
+                boolean toContinue = arg0.length() < 2;
+                
+                boolean include = false;
+                if (filters != null) {
+                    for (String key : filters.keySet()) {
+                        if (key.equals("band")) {
+                            //TODO check correct
+                            for (String band : filters.get(key).split(",")){
+                                String bandStr = (String)arg0.endNode().getProperty("band", "");
+                                String layerStr = (String)arg0.endNode().getProperty("layer", "");
+                                if (bandStr.contains(band)||(bandStr.isEmpty()&&layerStr.isEmpty()) ||
+                                        layerStr.contains(band))
+                                    include = include || true;
+                            }
+                        }
+                    }
+                }
+                else {
+                    include = true;
+                }
+                
+                return Evaluation.of(include, toContinue);
+            }
+        };
+        
+        return getElementTraverser(bandFilter, NodeTypes.SECTOR);
+	    
+//    	Traverser traverser = datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
+//
+//			@Override
+//			public boolean isReturnableNode(TraversalPosition currentPos) {
+//				boolean ret = false;
+//				if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.SECTOR.getId())){
+//					if (filters != null){
+//						for (String key: filters.keySet()){
+//							if (key.equals("band")){
+//							    //TODO check correct
+//								for (String band : filters.get(key).split(",")){
+//									String bandStr = (String)currentPos.currentNode().getProperty("band", "");
+//                                    String layerStr = (String)currentPos.currentNode().getProperty("layer", "");
+//                                    if (bandStr.contains(band)||(bandStr.isEmpty()&&layerStr.isEmpty()) ||
+//											layerStr.contains(band))
+//										ret = ret || true;
+//								}
+//							}
+//						}
+//					}
+//					else 
+//						ret = true;
+//				}
+//					
+//				return ret;
+//			}
+//    		
+//    	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+//    	
+//        return traverser;
         
         
 	}

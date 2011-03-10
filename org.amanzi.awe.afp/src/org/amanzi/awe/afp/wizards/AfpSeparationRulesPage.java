@@ -308,7 +308,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 			
 			else{
 			
-			    Traverser sectorTraverser = model.getTRXList(null);
+			    Iterable<Node> sectorTraverser = model.getTRXList(null);
 			    
 			    this.clearAllUniqueValuesForProperty();
 			    
@@ -436,7 +436,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 			
 			else{
 			
-			    Traverser sectorTraverser = model.getTRXList(null);
+			    Iterable<Node> sectorTraverser = model.getTRXList(null);
 			    
 			    this.clearAllUniqueValuesForProperty();
 			    

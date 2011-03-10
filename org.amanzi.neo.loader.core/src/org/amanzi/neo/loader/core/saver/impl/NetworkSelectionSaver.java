@@ -18,7 +18,9 @@ import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
 import org.amanzi.neo.loader.core.saver.MetaData;
 import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.networkselection.NetworkSelectionModel;
+import org.amanzi.neo.services.networkselection.SelectionModel;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -32,8 +34,10 @@ import org.neo4j.graphdb.Node;
 public class NetworkSelectionSaver extends AbstractHeaderSaver<LineTransferData> {
     private Node selectionNode;
     private int skippedCount;
-
-    private NetworkSelectionModel selectionModel;
+    
+    private boolean headerNotHandled = true;
+    
+    private SelectionModel selectionModel;
 
     @Override
     protected String getRootNodeType() {
@@ -56,29 +60,24 @@ public class NetworkSelectionSaver extends AbstractHeaderSaver<LineTransferData>
 
     @Override
     public void save(LineTransferData element) {
+        if (headerNotHandled) {
+            NetworkModel networkModel = new NetworkModel(rootNode);
+            selectionModel = networkModel.getSelectionModel(element.getFileName());
+            
+            headerNotHandled = false;
+            return;
+        }
+        
         String sectorName = element.getStringLine();
         Node sector = findSector(sectorName);
-        Node selectionNode = getSelectionNode(element);
         if (sector == null) {
             getPrintStream().println(String.format("Sector with name '%s' is not found in network '%s'.", sectorName, rootname));
             skippedCount++;
             return;
         }
-        getNetworkSelectionModel().addSelection(selectionNode, sector);
-    }
-
-    private NetworkSelectionModel getNetworkSelectionModel() {
-        if (selectionModel == null) {
-            selectionModel = service.getNetworkSelectionModel(rootNode);
+        if (!selectionModel.addToSelection(sector)) {
+            getPrintStream().println(String.format("Sector with name '%s' already exist in Selection List '%s'.", sectorName, selectionModel.getName()));
         }
-        return selectionModel;
-    }
-
-    private Node getSelectionNode(LineTransferData element) {
-        if (selectionNode == null) {
-            selectionNode = getNetworkSelectionModel().getSelectionNode(element.getFileName());
-        }
-        return selectionNode;
     }
 
     private Node findSector(String sectorName) {

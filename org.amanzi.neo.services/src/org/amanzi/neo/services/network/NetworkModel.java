@@ -14,8 +14,11 @@
 package org.amanzi.neo.services.network;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,6 +31,7 @@ import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.networkselection.SelectionModel;
 import org.amanzi.neo.services.node2node.INodeToNodeType;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationService;
@@ -38,6 +42,7 @@ import org.geotools.geometry.jts.JTS;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.traversal.Evaluator;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -217,6 +222,28 @@ public class NetworkModel {
 
     public Iterable<Node> findAllNodeByType(INodeType type) {
         return networkService.findAllNodeByType(rootNode,type);
+    }
+
+    public SelectionModel getSelectionModel(String name) {
+        Node selectionModelNode = networkService.getRootSelectionNode(rootNode, name);
+        
+        return new SelectionModel(rootNode, selectionModelNode);
+    }
+    
+    public Map<String, SelectionModel> getAllSelectionModels() {
+        HashMap<String, SelectionModel> result = new HashMap<String, SelectionModel>();
+        
+        for (Node singleNode : networkService.getAllRootSelectionNodes(rootNode)) {
+            SelectionModel model = new SelectionModel(rootNode, singleNode);
+            result.put(model.getName(), model);
+        }
+        
+        return result;
+    }
+    
+    //TODO: LN: similar to used in SelectionModel => move to interface
+    public Iterable<Node> getAllElementsByType(Evaluator filter, INodeType ... nodeTypes) {
+        return networkService.getNetworkElementTraversal(filter, nodeTypes).traverse(rootNode).nodes();
     }
 
     public boolean listNameExists(String name) {

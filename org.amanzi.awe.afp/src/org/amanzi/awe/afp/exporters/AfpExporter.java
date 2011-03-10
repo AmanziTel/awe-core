@@ -167,7 +167,7 @@ public class AfpExporter extends Job {
     public void writeFilesNew(IProgressMonitor monitor) {
 
         monitor.beginTask("Write Files", model.getTotalTRX());
-        Traverser sectorTraverser = model.getTRXList(null);
+        Iterable<Node> sectorTraverser = model.getTRXList(null);
 
         try {
 
