@@ -21,6 +21,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.Set;
 
 import org.amanzi.awe.afp.ericsson.BARRecords;
@@ -88,8 +90,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
     /** The shadow model. */
     private NodeToNodeRelationModel shadowModel;
 
-    /** The first file name. */
-    private String firstFileName;
+    /** Statistics on missing sectors */
     private int sectorsNotFound = 0;
     private int neighboursNotFound = 0;
 
@@ -100,9 +101,6 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
      */
     @Override
     public void save(RecordTransferData element) {
-        if (firstFileName == null) {
-            firstFileName = element.getFileName();
-        }
         IRecords type = element.getRecord().getEvent().getType();
         if (type instanceof BARRecords) {
             switch ((BARRecords)type) {
@@ -583,12 +581,39 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
         });
     }
 
+    private boolean listNameExists(String name) {
+        for (NodeToNodeRelationModel m : networkModel.findAllNode2NodeRoot()) {
+            if (m.getName().equals(name))
+                return true;
+        }
+        return false;
+    }
+
+    private String makeUniqueListName(String name) {
+        while(listNameExists(name)) {
+            String base = name;
+            int count = 1;
+            Pattern p = Pattern.compile("\\d+$");
+            Matcher m = p.matcher(name);
+            if(m.matches()) {
+                count = Integer.parseInt(m.group());
+                base = base.replace(m.group(), "");
+            }
+            count ++;
+            name = base + count;
+        }
+        return name;
+    }
+
     /**
      * @param model
      * @return
      */
     private String getTriangulationName(NodeToNodeRelationModel model) {
-        return model.getName() + "triang";
+        // TODO: we removed the model name from the list name because it was too cluttered. However
+        // if we get lots of lists, this might help to make things less ambiguous.
+        // return model.getName() + "triang";
+        return makeUniqueListName("Triangulation");
     }
 
     /**
@@ -688,7 +713,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
      * @return the shadowing matrix name
      */
     private String getShadowingMatrixName() {
-        return "shadowing " + firstFileName;
+        return makeUniqueListName("Shadowing");
     }
 
     /**
@@ -697,7 +722,8 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
      * @return the interf matrix name
      */
     private String getInterfMatrixName() {
-        return "interference " + firstFileName;
+        //return "interference " + firstFileName;
+        return makeUniqueListName("Interference");
     }
 
     /**
@@ -877,7 +903,6 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
         adminValues = null;
         percentileValue = null;
         servCells.clear();
-        firstFileName = null;
         networkModel = new NetworkModel(rootNode);
         barAdminRecNum = 0;
 
