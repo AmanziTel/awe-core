@@ -355,9 +355,9 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
                 if (ncc!=null){
                     updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(),plan,"ncc",ncc);
                 }
-                if (bcchno!=null){
-                    updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(),plan,"bcch",bcchno);
-                }
+                // if (bcchno!=null){
+                // updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(),plan,"bcch",bcchno);
+                // }
                 // Kasnitskij_V:
                 plan.setProperty(INeoConstants.PROPERTY_NAME_NAME, ORIGINAL);
             }
