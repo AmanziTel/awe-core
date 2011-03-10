@@ -207,7 +207,7 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 
 //		Table filterTable = new Table(trxFilterGroup, SWT.VIRTUAL | SWT.MULTI);
 //		filterTable.setHeaderVisible(true);
-		GridData tableGrid = new GridData(GridData.FILL, GridData.CENTER, false, false, 4 ,1);
+		GridData tableGrid = new GridData(GridData.FILL, GridData.CENTER, true, true, 4 ,1);
 		filterTable.setLayoutData(tableGrid);
 		
 //	    for (String item : headers) {
