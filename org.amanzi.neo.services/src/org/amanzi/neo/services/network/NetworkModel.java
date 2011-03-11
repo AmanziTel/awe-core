@@ -88,6 +88,10 @@ public class NetworkModel {
         return getNodeToNodeRelationModel(NodeToNodeTypes.NEIGHBOURS, name);
     }
 
+    public NodeToNodeRelationModel getException(String name) {
+        return getNodeToNodeRelationModel(NodeToNodeTypes.EXCEPTION, name);
+    }
+
     public NodeToNodeRelationModel getTriangulation(String name) {
         return getNodeToNodeRelationModel(NodeToNodeTypes.TRIANGULATION, name);
     }
