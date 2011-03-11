@@ -27,6 +27,7 @@ import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
@@ -302,6 +303,8 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                 }
 
                 writer.writeNext(fields.toArray(new String[0]));
+                
+                // export all data
                 while (iter.hasNext()) {
                     fields.clear();
                     Path path = iter.next();
@@ -352,7 +355,116 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
             }
 
         }
+        
+        //export all additional data
+        int indexOfPage = 0;
+        for (Boolean checkBoxState : checkBoxStates) {
+            if (checkBoxState) {
+                ColumnsConfigPageTypes pageType = ColumnsConfigPageTypes.findColumnsConfigPageTypeByIndex(indexOfPage);
+                runExportAdditionalData(rootNode, pageType, fileWithPrefix, separator, quoteChar, charSet);
+            }
+            indexOfPage++;
+        }
     }
+    
+    /**
+     * Create writer to import data to file
+     *
+     * @param dataName name of file to some data
+     * @param fileWithPrefix prefix of saving file
+     * @param separator the separator
+     * @param quoteChar the quote char
+     * @param charSet the char set
+     * @return CSVWriter
+     * @throws IOException
+     */
+    private CSVWriter createWriterToSomeData(String dataName, String fileWithPrefix, String separator, String quoteChar, String charSet) throws IOException  {
+        String ext = "";
+
+        String extention = LoaderUtils.getFileExtension(fileWithPrefix);
+        if (extention.equals("")) {
+            ext = ".csv";
+        } else if (extention.equals(".")) {
+            ext = "csv";
+        }
+
+        char separatorChar = separator.charAt(0);
+        char quote = quoteChar.isEmpty() ? CSVWriter.NO_QUOTE_CHARACTER : quoteChar.charAt(0);
+        CSVWriter writer = new CSVWriter(new OutputStreamWriter(new FileOutputStream(fileWithPrefix + dataName + ext), charSet),
+                separatorChar, quote);   
+        
+        return writer;
+    }
+    
+    private void runExportAdditionalData(Node rootNode, ColumnsConfigPageTypes pageType, String fileWithPrefix, String separator, 
+            String quoteChar, String charSet) throws IOException {
+        
+        CSVWriter writer = createWriterToSomeData(pageType.getName().replace(' ', '_'), fileWithPrefix, separator, quoteChar, charSet);
+        
+        DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
+        TraversalDescription descr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE)
+                                    .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).filter(Traversal.returnAllButStartNode());
+        descr = descr.filter(new Predicate<Path>() {
+        
+            @Override
+            public boolean accept(Path paramT) {
+                return !paramT.endNode().hasRelationship(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING);
+            }
+        });
+        Iterator<Path> iter = descr.traverse(rootNode).iterator();
+
+        ArrayList<String> fields = new ArrayList<String>();
+        
+        switch (pageType) {
+        case TRX_DATA:
+            try {
+                writer.writeNext(ColumnsConfigPageTypes.TRX_DATA.getProperties());
+                
+                // export all data
+                while (iter.hasNext()) {
+                    fields.clear();
+                    Path path = iter.next();
+                    for (Node node : path.nodes()) {
+                        INodeType nodeType = datasetService.getNodeType(node);
+                        if (nodeType == NodeTypes.SECTOR) {
+                            String[] propertyCol = pageType.getProperties();
+                            for (String propertyName : propertyCol) {
+                                propertyName = new String(cleanHeader(propertyName));
+                                String[] possibleHeaders;
+                                if (propertyName.equals("sector")) {
+                                    possibleHeaders = getPossibleHeaders(DataLoadPreferences.NH_SECTOR);
+                                    
+                                    LABEL: for (String header : possibleHeaders) {
+                                        for (String property : node.getPropertyKeys())
+                                        if (cleanHeader(header).equals(cleanHeader(property))) {
+                                            propertyName = cleanHeader(property);
+                                            break LABEL;
+                                        }
+                                    }
+                                    
+                                }
+                                fields.add(String.valueOf(node.getProperty(propertyName, "")));
+                            }
+                        }
+                    }
+                    if (fields.size() != 0)
+                        writer.writeNext(fields.toArray(new String[0]));
+                }
+            }
+            finally {
+                writer.close();
+            }   
+            break;
+        case TRAFFIC_DATA:
+            
+            break;
+        }
+    }
+    
+    private String cleanHeader(String header) {
+        return header.replaceAll("[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+", "_").replaceAll("[^\\w]+", "_").replaceAll("_+", "_").replaceAll("\\_$", "").toLowerCase();
+    }
+    
 
     /**
      * Kasnitskij_V: Get synonyms to header
