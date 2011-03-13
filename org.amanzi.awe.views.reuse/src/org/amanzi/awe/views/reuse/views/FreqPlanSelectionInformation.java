@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.views.reuse.views;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,7 +23,6 @@ import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.network.FrequencyPlanModel;
 import org.amanzi.neo.services.statistic.IPropertyInformation;
 import org.amanzi.neo.services.statistic.ISelectionInformation;
-import org.amanzi.neo.services.statistic.ISinglePropertyStat;
 import org.amanzi.neo.services.statistic.IStatistic;
 import org.hsqldb.lib.StringUtil;
 import org.neo4j.graphdb.Node;
@@ -60,10 +60,15 @@ public class FreqPlanSelectionInformation implements ISelectionInformation {
         this.networkNode = networkNode;
         this.model = model;
         propertySet = new HashSet<String>();
-        ISinglePropertyStat propStat = statistic.findPropertyStatistic(model.getName(), NodeTypes.FREQUENCY_PLAN.getId(), "arfcn");
-        if (propStat != null) {
-            propertySet.add("arfcn");
-        }
+        Collection<String> col = statistic.getPropertyNameCollection(model.getName(), NodeTypes.FREQUENCY_PLAN.getId(),
+                new Comparable<Class>() {
+
+                    @Override
+                    public int compareTo(Class o) {
+                        return Comparable.class.isAssignableFrom(o) ? 0 : -1;
+                    }
+                });
+        propertySet.addAll(col);
         DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
 
         descr = String.format("Network %s plan %s", ds.getNodeName(networkNode), model.getName());
