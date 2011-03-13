@@ -259,7 +259,7 @@ public class Node2NodeViews extends ViewPart {
         layoutData.widthHint = 150;
         textToSearch.setLayoutData(layoutData);
         search = new Button(main, SWT.PUSH);
-        search.setText("Search:");
+        search.setText("Search");
         search.addMouseListener(new MouseListener() {
 
             @Override
