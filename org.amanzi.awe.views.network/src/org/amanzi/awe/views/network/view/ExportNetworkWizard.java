@@ -358,13 +358,15 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         
         //export all additional data
         int indexOfPage = 0;
+        ArrayList<ColumnsConfigPageTypes> exportingTypes = new ArrayList<ColumnsConfigPageTypes>();
         for (Boolean checkBoxState : checkBoxStates) {
             if (checkBoxState) {
                 ColumnsConfigPageTypes pageType = ColumnsConfigPageTypes.findColumnsConfigPageTypeByIndex(indexOfPage);
-                runExportAdditionalData(rootNode, pageType, fileWithPrefix, separator, quoteChar, charSet);
+                exportingTypes.add(pageType);
             }
             indexOfPage++;
         }
+        runExportAdditionalData(rootNode, exportingTypes, fileWithPrefix, separator, quoteChar, charSet);
     }
     
     /**
@@ -396,73 +398,94 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         return writer;
     }
     
-    private void runExportAdditionalData(Node rootNode, ColumnsConfigPageTypes pageType, String fileWithPrefix, String separator, 
+    private void runExportAdditionalData(Node rootNode, ArrayList<ColumnsConfigPageTypes> pageTypes, String fileWithPrefix, String separator, 
             String quoteChar, String charSet) throws IOException {
         
-        CSVWriter writer = createWriterToSomeData(pageType.getName().replace(' ', '_'), fileWithPrefix, separator, quoteChar, charSet);
-        
-        DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
-        TraversalDescription descr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE)
-                                    .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).filter(Traversal.returnAllButStartNode());
-        descr = descr.filter(new Predicate<Path>() {
-        
-            @Override
-            public boolean accept(Path paramT) {
-                return !paramT.endNode().hasRelationship(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING);
-            }
-        });
-        Iterator<Path> iter = descr.traverse(rootNode).iterator();
-
-        ArrayList<String> fields = new ArrayList<String>();
-        
-        switch (pageType) {
-        case TRX_DATA:
-            try {
-                writer.writeNext(ColumnsConfigPageTypes.TRX_DATA.getProperties());
+        for (ColumnsConfigPageTypes pageType : pageTypes) {
+            CSVWriter writer = createWriterToSomeData(pageType.getName().replace(' ', '_'), fileWithPrefix, separator, quoteChar, charSet);
+            
+            DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
+            TraversalDescription descr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE)
+                                        .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).filter(Traversal.returnAllButStartNode());
+            descr = descr.filter(new Predicate<Path>() {
+            
+                @Override
+                public boolean accept(Path paramT) {
+                    return !paramT.endNode().hasRelationship(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING);
+                }
+            });
+            Iterator<Path> iter = descr.traverse(rootNode).iterator();
+    
+            ArrayList<String> fields = new ArrayList<String>();
+            ArrayList<String> oldFields = new ArrayList<String>();
+            oldFields.add("start string");
+            
+            switch (pageType) {
+            case FREQUENCY_CONSTRAINT_DATA:
+                break;
                 
-                // export all data
-                while (iter.hasNext()) {
-                    fields.clear();
-                    Path path = iter.next();
-                    for (Node node : path.nodes()) {
-                        INodeType nodeType = datasetService.getNodeType(node);
-                        if (nodeType == NodeTypes.SECTOR) {
-                            String[] propertyCol = pageType.getProperties();
-                            for (String propertyName : propertyCol) {
-                                propertyName = new String(cleanHeader(propertyName));
-                                String[] possibleHeaders;
-                                if (propertyName.equals("sector")) {
-                                    possibleHeaders = getPossibleHeaders(DataLoadPreferences.NH_SECTOR);
-                                    
-                                    LABEL: for (String header : possibleHeaders) {
-                                        for (String property : node.getPropertyKeys())
-                                        if (cleanHeader(header).equals(cleanHeader(property))) {
-                                            propertyName = cleanHeader(property);
-                                            break LABEL;
+            case TRAFFIC_DATA:
+            case TRX_DATA:
+            case SEPARATION_CONSTRAINT_DATA:
+                try {
+                    writer.writeNext(pageType.getProperties());
+                    
+                    // export all data
+                    while (iter.hasNext()) {
+                        fields.clear();
+                        Path path = iter.next();
+                        for (Node node : path.nodes()) {
+                            INodeType nodeType = datasetService.getNodeType(node);
+                            if (nodeType == NodeTypes.SECTOR) {
+                                String[] propertyCol = pageType.getProperties();
+                                for (String propertyName : propertyCol) {
+                                    propertyName = findNeedPropertyFromNode(propertyName, node);
+                                    if (propertyName.equals("Sector")) {
+                                        LABEL: for (String header : getPossibleHeaders(DataLoadPreferences.NH_SECTOR)) {
+                                            for (String property : node.getPropertyKeys())
+                                            if (cleanHeader(header).equals(cleanHeader(property))) {
+                                                propertyName = cleanHeader(property);
+                                                break LABEL;
+                                            }
                                         }
                                     }
-                                    
+                                    fields.add(String.valueOf(node.getProperty(propertyName, "")));
                                 }
-                                fields.add(String.valueOf(node.getProperty(propertyName, "")));
                             }
                         }
+                        
+                        if (fields.size() != 0 && !fields.containsAll(oldFields)) {
+                            writer.writeNext(fields.toArray(new String[0]));
+                            oldFields.clear();
+                            oldFields.addAll(fields);
+                        }
                     }
-                    if (fields.size() != 0)
-                        writer.writeNext(fields.toArray(new String[0]));
                 }
+                finally {
+                    writer.close();
+                }
+                break;
             }
-            finally {
-                writer.close();
-            }   
-            break;
-        case TRAFFIC_DATA:
-            
-            break;
         }
     }
     
     private String cleanHeader(String header) {
         return header.replaceAll("[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+", "_").replaceAll("[^\\w]+", "_").replaceAll("_+", "_").replaceAll("\\_$", "").toLowerCase();
+    }
+    
+    /**
+     * Check that node contains property
+     *
+     * @param possibleProperty possible property
+     * @param node the node 
+     * @return possible property or clean(possibleProperty)
+     */
+    private String findNeedPropertyFromNode(String possibleProperty, Node node) {
+        for (String propertyName : node.getPropertyKeys()) {
+            if (propertyName.equals(cleanHeader(possibleProperty)))
+                return propertyName;
+        }
+        return possibleProperty;
     }
     
 
