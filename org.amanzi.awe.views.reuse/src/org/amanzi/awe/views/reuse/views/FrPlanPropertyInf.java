@@ -58,10 +58,11 @@ public class FrPlanPropertyInf implements IPropertyInformation {
     private final String ncc;
     private final String bcc;
     private final TRXTYPE trxtype;
+    private String propertyNameArr;
 
     /**
      * Instantiates a new fr plan property inf.
-     *
+     * 
      * @param statistic the statistic
      * @param networkNode the network node
      * @param model the model
@@ -71,11 +72,13 @@ public class FrPlanPropertyInf implements IPropertyInformation {
      * @param bcc the bcc
      * @param trxtype the trxtype
      */
-    public FrPlanPropertyInf(IStatistic statistic, Node networkNode, FrequencyPlanModel model, String propertyName, String sector, String ncc, String bcc, TRXTYPE trxtype) {
+    public FrPlanPropertyInf(IStatistic statistic, Node networkNode, FrequencyPlanModel model, String propertyName, String sector,
+            String ncc, String bcc, TRXTYPE trxtype) {
         this.statistic = statistic;
         this.networkNode = networkNode;
         this.model = model;
         this.propertyName = propertyName;
+        this.propertyNameArr = propertyName + "Arr";
         this.sector = sector;
         this.ncc = ncc;
         this.bcc = bcc;
@@ -105,7 +108,8 @@ public class FrPlanPropertyInf implements IPropertyInformation {
         if (rootNode == null) {
             return new ArrayList<ISource>();
         }
-        Traverser traverser = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
+        Traverser traverser = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE)
+                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
                 .relationships(DatasetRelationshipTypes.PLAN_ENTRY, Direction.OUTGOING).evaluator(new Evaluator() {
 
                     @Override
@@ -125,11 +129,12 @@ public class FrPlanPropertyInf implements IPropertyInformation {
                             }
                         }
                         if (NodeTypes.FREQUENCY_PLAN.checkNode(node)) {
-                            boolean incl = node.hasProperty(propertyName);
+                            boolean incl = node.hasProperty(propertyName) || node.hasProperty(propertyNameArr);
                             if (incl) {
                                 String modelName;
                                 if (node.hasRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING)) {
-                                    modelName = ds.getNodeName(node.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(node));
+                                    modelName = ds.getNodeName(node.getSingleRelationship(GeoNeoRelationshipTypes.CHILD,
+                                            Direction.INCOMING).getOtherNode(node));
                                 } else {
                                     modelName = ds.getNodeName(node);
                                 }
@@ -141,13 +146,19 @@ public class FrPlanPropertyInf implements IPropertyInformation {
                         return Evaluation.EXCLUDE_AND_CONTINUE;
                     }
                 }).traverse(rootNode);
-        return new SourceExistIterable(traverser, propertyName,new ISourceFinder() {
-            
+        ISourceFinder sf = new ISourceFinder() {
+
             @Override
             public Node getSource(Node node) {
-                    return node==null?null:node.getSingleRelationship(DatasetRelationshipTypes.PLAN_ENTRY, Direction.INCOMING).getStartNode().getSingleRelationship(GeoNeoRelationshipTypes.CHILD,Direction.INCOMING).getStartNode();
+                return node == null ? null : node.getSingleRelationship(DatasetRelationshipTypes.PLAN_ENTRY, Direction.INCOMING)
+                        .getStartNode().getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
             }
-        });
+        };
+        if ("arfcn".equals(propertyName)) {
+            return new SourceExistIterable(traverser, propertyName, propertyNameArr, sf);
+        } else {
+            return new SourceExistIterable(traverser, propertyName, sf);
+        }
     }
 
 }
