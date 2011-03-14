@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -61,7 +60,6 @@ import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
-import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.kernel.Traversal;
 /**
  * 
@@ -2181,67 +2179,67 @@ public class AfpModel {
 
 	public Iterable<Node> getTRXList(final HashMap<String, String> filters) {
 	    
-	    Evaluator bandFilter = new Evaluator() {
-            
+
+        // Evaluator bandFilter = new Evaluator() {
+        //
+        // @Override
+        // public Evaluation evaluate(Path arg0) {
+        // boolean toContinue = arg0.length() < 2;
+        //
+        // boolean include = false;
+        // if (filters != null) {
+        // for (String key : filters.keySet()) {
+        // if (key.equals("band")) {
+        // //TODO check correct
+        // for (String band : filters.get(key).split(",")){
+        // String bandStr = (String)arg0.endNode().getProperty("band", "");
+        // String layerStr = (String)arg0.endNode().getProperty("layer", "");
+        // if (bandStr.contains(band)||(bandStr.isEmpty()&&layerStr.isEmpty()) ||
+        // layerStr.contains(band))
+        // include = include || true;
+        // }
+        // }
+        // }
+        // }
+        // else {
+        // include = true;
+        // }
+        //
+        // return Evaluation.of(include, toContinue);
+        // }
+        // };
+        //
+        // return getElementTraverser(bandFilter, NodeTypes.SECTOR);
+	    
+    	Traverser traverser = datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator() {
+
             @Override
-            public Evaluation evaluate(Path arg0) {
-                boolean toContinue = arg0.length() < 2;
-                
-                boolean include = false;
-                if (filters != null) {
-                    for (String key : filters.keySet()) {
-                        if (key.equals("band")) {
-                            //TODO check correct
-                            for (String band : filters.get(key).split(",")){
-                                String bandStr = (String)arg0.endNode().getProperty("band", "");
-                                String layerStr = (String)arg0.endNode().getProperty("layer", "");
-                                if (bandStr.contains(band)||(bandStr.isEmpty()&&layerStr.isEmpty()) ||
-                                        layerStr.contains(band))
-                                    include = include || true;
+            public boolean isReturnableNode(TraversalPosition currentPos) {
+                boolean ret = false;
+                if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.SECTOR.getId())) {
+                    if (filters != null) {
+                        for (String key : filters.keySet()) {
+                            if (key.equals("band")) {
+                                // TODO check correct
+                                for (String band : filters.get(key).split(",")) {
+                                    String bandStr = (String)currentPos.currentNode().getProperty("band", "");
+                                    String layerStr = (String)currentPos.currentNode().getProperty("layer", "");
+                                    if (bandStr.contains(band) || (bandStr.isEmpty() && layerStr.isEmpty())
+                                            || layerStr.contains(band))
+                                        ret = ret || true;
+                                }
                             }
                         }
-                    }
+                    } else
+                        ret = true;
                 }
-                else {
-                    include = true;
-                }
-                
-                return Evaluation.of(include, toContinue);
+
+                return ret;
             }
-        };
-        
-        return getElementTraverser(bandFilter, NodeTypes.SECTOR);
-	    
-//    	Traverser traverser = datasetNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, new ReturnableEvaluator(){
-//
-//			@Override
-//			public boolean isReturnableNode(TraversalPosition currentPos) {
-//				boolean ret = false;
-//				if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.SECTOR.getId())){
-//					if (filters != null){
-//						for (String key: filters.keySet()){
-//							if (key.equals("band")){
-//							    //TODO check correct
-//								for (String band : filters.get(key).split(",")){
-//									String bandStr = (String)currentPos.currentNode().getProperty("band", "");
-//                                    String layerStr = (String)currentPos.currentNode().getProperty("layer", "");
-//                                    if (bandStr.contains(band)||(bandStr.isEmpty()&&layerStr.isEmpty()) ||
-//											layerStr.contains(band))
-//										ret = ret || true;
-//								}
-//							}
-//						}
-//					}
-//					else 
-//						ret = true;
-//				}
-//					
-//				return ret;
-//			}
-//    		
-//    	}, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
-//    	
-//        return traverser;
+
+        }, NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+
+        return traverser;
         
         
 	}
