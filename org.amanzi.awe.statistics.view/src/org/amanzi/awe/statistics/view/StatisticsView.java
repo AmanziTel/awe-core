@@ -40,6 +40,7 @@ import org.amanzi.awe.catalog.neo.upd_layers.events.ChangeSelectionEvent;
 import org.amanzi.awe.report.editor.ReportEditor;
 import org.amanzi.awe.statistics.CallTimePeriods;
 import org.amanzi.awe.statistics.builder.StatisticsBuilder;
+import org.amanzi.awe.statistics.database.entity.DatasetStatistics;
 import org.amanzi.awe.statistics.database.entity.Statistics;
 import org.amanzi.awe.statistics.database.entity.StatisticsCell;
 import org.amanzi.awe.statistics.database.entity.StatisticsGroup;
@@ -226,6 +227,7 @@ public class StatisticsView extends ViewPart {
     private IRubyProject rubyProject;
     private ArrayList<String> usedTemplates;
     private ArrayList<String> usedAggregations;
+    private Label lblStatus;
 
     @Override
     public void init(IViewSite site) throws PartInitException {
@@ -315,7 +317,7 @@ public class StatisticsView extends ViewPart {
         viewerData.left = new FormAttachment(0, 0);
         viewerData.right = new FormAttachment(100, 0);
         viewerData.top = new FormAttachment(rowComposite, 2);
-        viewerData.bottom = new FormAttachment(100, -2);
+        viewerData.bottom = new FormAttachment(95, 0);
 
         labelProvider = new StatisticsLabelProvider(getSite().getShell().getDisplay(), false);
         statisticsProvider = new StatisticsContentProvider();
@@ -327,6 +329,14 @@ public class StatisticsView extends ViewPart {
         scrolled.setExpandVertical(true);
         scrolled.setExpandHorizontal(true);
         scrolled.setMinWidth(minScrolledWidth);
+        
+        lblStatus = new Label(frame,SWT.LEFT);
+        fData = new FormData();
+        fData.left = new FormAttachment(0, 2);
+        fData.right = new FormAttachment(100, -2);
+        fData.top = new FormAttachment(95, 2);
+        fData.bottom = new FormAttachment(100, -2);
+        lblStatus.setLayoutData(fData);
         //        
         addListeners();
         initialize();
@@ -1035,6 +1045,12 @@ public class StatisticsView extends ViewPart {
                         @Override
                         public void run() {
                             markUsedWithAsterisk();
+                            DatasetStatistics statisticsRoot = statistics.getStatisticsRoot();
+                            String status = String.format("Statistics for '%s' involved %s/%s data from '%s'", template
+                                    .getTemplateName(), statisticsRoot.getUsedNodes(), statisticsRoot.getTotalNodes(), cDataset
+                                    .getText());
+                            lblStatus.setText(status);
+                            System.out.println(status);
                             Iterator<StatisticsGroup> iterator = statistics.getGroups().values().iterator();
                             groups = new ArrayList<String>();
                             StatisticsGroup group = iterator.next();
