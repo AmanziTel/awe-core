@@ -136,8 +136,6 @@ import org.neo4j.graphdb.Traverser.Order;
 import org.rubypeople.rdt.core.IRubyProject;
 import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
-import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
-
 /**
  * Statistics Table View
  * 
@@ -145,6 +143,7 @@ import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
  * @since 1.0.0
  */
 public class StatisticsView extends ViewPart {
+    public static final String ASTERISK = "*";
     private static final String SELECT_ALL = "(Select All)";
     private static final String SEPARATOR = "----------";
     public static final String ID = "org.amanzi.awe.statistics.view.StatisticsTableView";
@@ -226,17 +225,16 @@ public class StatisticsView extends ViewPart {
     private Composite parent;
     private IRubyProject rubyProject;
     private ArrayList<String> usedTemplates;
-    private ArrayList<String> usedAggreagtions;
+    private ArrayList<String> usedAggregations;
 
     @Override
     public void init(IViewSite site) throws PartInitException {
         super.init(site);
         try {
-            rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, ApplicationGIS.getActiveProject()
-                    .getName());
+            rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, ApplicationGIS.getActiveProject().getName());
         } catch (CoreException e) {
             // TODO Handle CoreException
-            throw (RuntimeException) new RuntimeException( ).initCause( e );
+            throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
 
@@ -338,11 +336,12 @@ public class StatisticsView extends ViewPart {
      * Initializes controls with default values
      */
     private void initialize() {
-        sortAscImage = StatisticsViewPlugin.getImageDescriptor("icons/Asc.png").createImage();
-        sortDescImage = StatisticsViewPlugin.getImageDescriptor("icons/Desc.png").createImage();
+//        sortAscImage = StatisticsViewPlugin.getImageDescriptor("icons/Asc.png").createImage();
+//        sortDescImage = StatisticsViewPlugin.getImageDescriptor("icons/Desc.png").createImage();
 
         updateDatasets();
         updateTemplates();
+        checkUpdateButton();
     }
 
     /**
@@ -357,7 +356,7 @@ public class StatisticsView extends ViewPart {
             datasets.put(datasetName, node);
         }
         Collections.sort(datasetList);
-        cDataset.setItems(datasetList.toArray(new String[]{}));
+        cDataset.setItems(datasetList.toArray(new String[] {}));
     }
 
     /**
@@ -380,13 +379,16 @@ public class StatisticsView extends ViewPart {
                 updateAvailableTemplates(dataset);
                 updateDatasetTimeRange(dataset);
                 updateAggregation();
+                checkUpdateButton();
+               
             }
         });
         cTemplate.addSelectionListener(new SelectionAdapter() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-
+                updateAggregation();
+                checkUpdateButton();
             }
         });
         bUpdate.addSelectionListener(new SelectionAdapter() {
@@ -413,11 +415,7 @@ public class StatisticsView extends ViewPart {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (cAggregation.getSelectionIndex() < cAggregation.indexOf(SEPARATOR)) {
-                    System.out.println("Network level selected");
-                } else {
-                    System.out.println("Property selected");
-                }
+                checkUpdateButton();
             }
         });
 
@@ -434,6 +432,10 @@ public class StatisticsView extends ViewPart {
         dateEnd.addSelectionListener(adapter);
         timeEnd.addSelectionListener(adapter);
 
+    }
+
+    private void checkUpdateButton() {
+        bUpdate.setEnabled(cDataset.getSelectionIndex()!=-1&&cPeriod.getSelectionIndex()!=-1&&cTemplate.getSelectionIndex()!=-1&&cAggregation.getSelectionIndex()!=-1);
     }
 
     /**
@@ -499,27 +501,27 @@ public class StatisticsView extends ViewPart {
             if (isSuitableForDataset(template, dataset)) {
                 final String key = entry.getKey();
                 templates.put(key, template);
-                cTemplate.add(usedTemplates.contains(template.getTemplateName())?"*"+key:key);
+                cTemplate.add(usedTemplates.contains(template.getTemplateName()) ? ASTERISK + key : key);
             }
         }
     }
 
     /**
-     *
      * @param dataset
      */
     private void updateUsedTemplates(Node dataset) {
-        usedTemplates=new ArrayList<String>();
-        usedAggreagtions=new ArrayList<String>();
-        for (Relationship rel:dataset.getRelationships(GeoNeoRelationshipTypes.ANALYSIS,Direction.OUTGOING)){
+        usedTemplates = new ArrayList<String>();
+        usedAggregations = new ArrayList<String>();
+        for (Relationship rel : dataset.getRelationships(GeoNeoRelationshipTypes.ANALYSIS, Direction.OUTGOING)) {
             Node statsRoot = rel.getEndNode();
-            usedTemplates.add((String)statsRoot.getProperty(INeoConstants.PROPERTY_TEMPLATE_NAME));
-            //find all aggregations
-            for (Relationship relToDimension: statsRoot.getRelationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING)){
+            String templateName = (String)statsRoot.getProperty(INeoConstants.PROPERTY_TEMPLATE_NAME);
+            usedTemplates.add(templateName);
+            // find all aggregations
+            for (Relationship relToDimension : statsRoot.getRelationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
                 Node dimNode = relToDimension.getEndNode();
-                if (dimNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString().equals("network")){
-                    for (Relationship relToLevel:dimNode.getRelationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING)){
-                        usedAggreagtions.add( relToLevel.getEndNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString());
+                if (dimNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString().equals("network")) {
+                    for (Relationship relToLevel : dimNode.getRelationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                        usedAggregations.add(relToLevel.getEndNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString());
                     }
                     break;
                 }
@@ -621,27 +623,33 @@ public class StatisticsView extends ViewPart {
         setTime(dateStart, timeStart, min);
         setTime(dateEnd, timeEnd, max);
 
-        long time = (max - min) / (1000 * 60 * 60);
+        long time = (max - min) / (1000 * 60);
         List<String> periods = new ArrayList<String>();
-        periods.add(CallTimePeriods.HOURLY.getId());
-        if ((time = time / 24) >= 1) {
-            periods.add(CallTimePeriods.DAILY.getId());
-            if ((time = time / 7) >= 1) {
-                periods.add(CallTimePeriods.WEEKLY.getId());
-            }
-            if ((time = time / 30) >= 1) {
-                periods.add(CallTimePeriods.MONTHLY.getId());
+        if ((time / 60) < 1) {
+            periods.add(CallTimePeriods.QUATER_HOUR.getId());
+        }
+        if ((time = time / 60) >= 1) {
+            periods.add(CallTimePeriods.HOURLY.getId());
+            if ((time = time / 24) >= 1) {
+                periods.add(CallTimePeriods.DAILY.getId());
+                if ((time = time / 7) >= 1) {
+                    periods.add(CallTimePeriods.WEEKLY.getId());
+                }
+                if ((time = time / 30) >= 1) {
+                    periods.add(CallTimePeriods.MONTHLY.getId());
+                }
             }
         }
         cPeriod.setItems(periods.toArray(new String[periods.size()]));
     }
 
     /**
-     * Updates aggregation combo box with network levels if dataset is correlated and properties 
+     * Updates aggregation combo box with network levels if dataset is correlated and properties
      */
     private void updateAggregation() {
         Node dataset = datasets.get(cDataset.getText());
         final ArrayList<String> aggregations = new ArrayList<String>();
+        updateUsedAggregations();
         if (dataset.hasRelationship(CorrelationRelationshipTypes.CORRELATED, Direction.OUTGOING)) {
             Relationship rel = dataset.getRelationships(CorrelationRelationshipTypes.CORRELATED, Direction.OUTGOING).iterator()
                     .next();
@@ -652,26 +660,65 @@ public class StatisticsView extends ViewPart {
                 Node networkNode = relToNetwork.getStartNode();
                 String[] structure = (String[])networkNode.getProperty(INeoConstants.PROPERTY_STRUCTURE_NAME, new String[0]);
                 for (String element : structure) {
-                    aggregations.add(usedAggreagtions.contains(element)?"*"+element:element);
+                    aggregations.add(usedAggregations.contains(element) ? ASTERISK + element : element);
                 }
             }
         } else {
             final String NETWORK = "network";
-            aggregations.add(usedAggreagtions.contains(NETWORK)?"*"+NETWORK:NETWORK);
+            aggregations.add(usedAggregations.contains(NETWORK) ? ASTERISK + NETWORK : NETWORK);
         }
         aggregations.add(SEPARATOR);
         IPropertyHeader propertyHeader = PropertyHeader.getPropertyStatistic(dataset);
         properties = Arrays.asList(propertyHeader.getAllFields("-main-type-"));
         Collections.sort(properties);
-        for (int i=0;i<properties.size();i++){
+        for (int i = 0; i < properties.size(); i++) {
             String property = properties.get(i);
-            if (usedAggreagtions.contains(property)){
-                properties.set(i, "*"+property);
+            if (usedAggregations.contains(property)) {
+                properties.set(i, ASTERISK + property);
             }
         }
         aggregations.addAll(properties);
         cAggregation.setItems(aggregations.toArray(new String[aggregations.size()]));
 
+    }
+    /**
+     * Marks aggregation and template selected as used - with asterisk
+     */
+    private void markUsedWithAsterisk() {
+        String aggregation = cAggregation.getText();
+        if (!aggregation.startsWith(ASTERISK)){
+            cAggregation.setItem(cAggregation.getSelectionIndex(), ASTERISK+aggregation);
+        }
+        String template = cTemplate.getText();
+        if (!template.startsWith(ASTERISK)){
+            cTemplate.setItem(cTemplate.getSelectionIndex(), ASTERISK+template);
+        }
+    }
+    /**
+     * Updates the list of used aggregations for a selected template and a dataset if any
+     */
+    private void updateUsedAggregations() {
+        Node dataset = getDatasetNode();
+        Template template = getTemplate();
+        if (template!=null){
+            usedAggregations.clear();
+            for (Relationship rel : dataset.getRelationships(GeoNeoRelationshipTypes.ANALYSIS, Direction.OUTGOING)) {
+                Node statsRoot = rel.getEndNode();
+                String templateName = (String)statsRoot.getProperty(INeoConstants.PROPERTY_TEMPLATE_NAME);
+                if (templateName.equals(template.getTemplateName())){
+                    for (Relationship relToDimension : statsRoot.getRelationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                        Node dimNode = relToDimension.getEndNode();
+                        if (dimNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString().equals("network")) {
+                            for (Relationship relToLevel : dimNode.getRelationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                                usedAggregations.add(relToLevel.getEndNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString());
+                            }
+                            break;
+                        }
+                    }
+                }
+                
+            }
+        }
     }
 
     /**
@@ -963,7 +1010,7 @@ public class StatisticsView extends ViewPart {
      */
     private Template getTemplate() {
         String text = cTemplate.getText();
-        return templates.get(text.startsWith("*")?text.substring(1):text);
+        return templates.get(text.startsWith(ASTERISK) ? text.substring(1) : text);
     }
 
     /**
@@ -987,6 +1034,7 @@ public class StatisticsView extends ViewPart {
 
                         @Override
                         public void run() {
+                            markUsedWithAsterisk();
                             Iterator<StatisticsGroup> iterator = statistics.getGroups().values().iterator();
                             groups = new ArrayList<String>();
                             StatisticsGroup group = iterator.next();
@@ -1154,13 +1202,12 @@ public class StatisticsView extends ViewPart {
     }
 
     /**
-     *
      * @return
      */
     private String getAggregation() {
         String text = cAggregation.getText();
-        
-        return text.startsWith("*")?text.substring(1):text;
+
+        return text.startsWith(ASTERISK) ? text.substring(1) : text;
     }
 
     /**
