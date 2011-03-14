@@ -35,9 +35,11 @@ public class Dimension {
     private Node node;
     private Map<String, Level> levels;
     private Level lastLevel;
+    private DatasetStatistics datasetStatistics;
 
-    public Dimension(Node node) {
+    public Dimension(Node node, DatasetStatistics datasetStatistics) {
         this.node = node;
+        this.datasetStatistics=datasetStatistics;
     }
 
     Node getNode() {
@@ -72,7 +74,7 @@ public class Dimension {
 
     private void loadLevels() {
         levels = new LinkedHashMap<String, Level>();
-        for (Level level : new StatisticsLevelIterator(node)) {
+        for (Level level : new StatisticsLevelIterator(node,datasetStatistics)) {
             levels.put(level.getName(), level);
             lastLevel = level;
         }

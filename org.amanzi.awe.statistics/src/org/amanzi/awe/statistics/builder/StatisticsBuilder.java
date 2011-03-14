@@ -72,6 +72,7 @@ public class StatisticsBuilder {
     private Node dataset;
     private Ruby ruby;
     private Transaction mainTx;
+    private DatasetStatistics datasetStatistics;
 
     /**
      * @param neo
@@ -114,9 +115,9 @@ public class StatisticsBuilder {
             dsService = getDatasetService(dataset);
 //            monitor.beginTask("Building statistics", /(Integer)dataset.getProperty(INeoConstants.PROPERTY_COUNT_NAME,IProgressMonitor.UNKNOWN));
             monitor.beginTask("Building statistics", IProgressMonitor.UNKNOWN);
-            DatasetStatistics statisticsRoot = findOrCreateStatisticsRoot(dataset, template);
-            Dimension networkDimension = statisticsRoot.getNetworkDimension();
-            Dimension timeDimension = statisticsRoot.getTimeDimension();
+            datasetStatistics = findOrCreateStatisticsRoot(dataset, template);
+            Dimension networkDimension = datasetStatistics.getNetworkDimension();
+            Dimension timeDimension = datasetStatistics.getTimeDimension();
             Level nLevel = findOrCreateLevel(networkLevelName, networkDimension);
 
             Statistics levelStatistics = nLevel.getStatistics(timeLevelName.getId());
@@ -282,11 +283,11 @@ public class StatisticsBuilder {
             monitor.subTask(task);
             Level tLevel = findOrCreateLevel(period.getId(), timeDimension);
             Statistics statistics = StatisticsEntityFactory.createStatistics(neo, networkDimension.getLevelByKey(networkLevel),
-                    tLevel);
+                    tLevel, datasetStatistics);
             Map<String, StatisticsRow> summaries = new HashMap<String, StatisticsRow>();
 
             String hash = createScriptForTemplate(template);
-
+            long noUsedNodes=0;
             long currentStartTime = period.getFirstTime(startTime);
             long nextStartTime = getNextStartDate(period, endTime, currentStartTime);
             if (startTime > currentStartTime) {
@@ -311,9 +312,9 @@ public class StatisticsBuilder {
                 Collection<Node> nodes = dsService.getNodes(currentStartTime, nextStartTime);
                 nodesCount=nodes.size();
                 count += nodesCount;
-                long total = 0;
+                int total = 0;
                 for (Node node : nodes) {
-
+                    boolean isUsed=false;
                     final String EVALUATE = "Neo4j::load_node(%s).instance_eval {%s}";
                     String script = String.format(EVALUATE, node.getId(), hash);
                     long tt = System.currentTimeMillis();
@@ -345,12 +346,18 @@ public class StatisticsBuilder {
                             value = ((RubyNumeric)object).getDoubleValue();
                         }
                         if (cell.update(value)) {
+                            isUsed=true;
                             cell.addSourceNode(node);
                         }
                         if (summaryCell.update(value)) {
+                            isUsed=true;
                             summaryCell.addSourceNode(node);
                         }
                         checkThreshold(group, summaryRow, row, column, cell, summaryCell);
+                    }
+                    if (isUsed){
+                        
+                        noUsedNodes++;
                     }
                 }
 
@@ -361,6 +368,8 @@ public class StatisticsBuilder {
                 monitor.worked(1);
 //                monitor.worked(nodesCount);
             } while (currentStartTime < endTime);
+            datasetStatistics.setUsedNodes(noUsedNodes);
+            datasetStatistics.setTotalNodes(count);
             updateFlags(statistics);
             return statistics;
         }
@@ -456,7 +465,7 @@ public class StatisticsBuilder {
     private Statistics buildHighLevelPeriodStatistics(Template template, long startTime, long endTime, CallTimePeriods period,
             String networkLevel, Dimension networkDimension, Dimension timeDimension, Statistics uStatistics) {
         Level tLevel = findOrCreateLevel(period.getId(), timeDimension);
-        Statistics statistics = StatisticsEntityFactory.createStatistics(neo, networkDimension.getLevelByKey(networkLevel), tLevel);
+        Statistics statistics = StatisticsEntityFactory.createStatistics(neo, networkDimension.getLevelByKey(networkLevel), tLevel, datasetStatistics);
         Map<String, StatisticsRow> summaries = new HashMap<String, StatisticsRow>();
 
         for (Entry<String, StatisticsGroup> groupWithKey : uStatistics.getGroups().entrySet()) {
@@ -556,7 +565,7 @@ public class StatisticsBuilder {
     private Level findOrCreateLevel(String levelKey, Dimension dimension) {
         Level level = dimension.getLevelByKey(levelKey);
         if (level == null) {
-            level = StatisticsEntityFactory.createStatisticsLevel(neo, levelKey);
+            level = StatisticsEntityFactory.createStatisticsLevel(neo, levelKey, datasetStatistics);
             dimension.addLevel(level);
         }
         return level;

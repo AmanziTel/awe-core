@@ -35,13 +35,15 @@ public class Statistics {
     private Map<String, StatisticsGroup> groups;
 
     private StatisticsGroup lastGroup;
+    private DatasetStatistics datasetStatistics;
 
     /**
      * @param networkLevel
      * @param timeLevel
      */
-    public Statistics(Node node) {
+    public Statistics(Node node,DatasetStatistics datasetStatistics) {
         this.node = node;
+        this.datasetStatistics=datasetStatistics;
     }
 
     public Node getNode() {
@@ -95,5 +97,7 @@ public class Statistics {
     public String getName() {
         return node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
     }
-   
+   public DatasetStatistics getStatisticsRoot(){
+       return datasetStatistics;
+   }
 }

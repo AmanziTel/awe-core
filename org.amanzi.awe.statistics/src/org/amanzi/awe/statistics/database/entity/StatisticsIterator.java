@@ -27,13 +27,16 @@ import org.neo4j.graphdb.Node;
  */
 public class StatisticsIterator extends AbstractStatisticsIterator<Statistics> {
 
-    public StatisticsIterator(Node node) {
+    private DatasetStatistics datasetStatistics;
+
+    public StatisticsIterator(Node node,DatasetStatistics datasetStatistics) {
         super(node, NodeTypes.STATISTICS);
+        this.datasetStatistics=datasetStatistics;
     }
 
     @Override
     public Statistics next() {
-        return new Statistics(nodeIterator.next());
+        return new Statistics(nodeIterator.next(),datasetStatistics);
     }
 
 }

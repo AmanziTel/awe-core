@@ -32,9 +32,11 @@ import org.neo4j.graphdb.Node;
 public class Level {
     private Node node;
     private List<Statistics> stats;
+    private DatasetStatistics datasetStatistics;
 
-    public Level(Node node) {
+    public Level(Node node,DatasetStatistics datasetStatistics) {
         this.node = node;
+        this.datasetStatistics=datasetStatistics;
     }
 
     public Node getNode() {
@@ -69,7 +71,7 @@ public class Level {
      */
     private void loadStats() {
         stats = new ArrayList<Statistics>();
-        for (Statistics stat : new StatisticsIterator(node)) {
+        for (Statistics stat : new StatisticsIterator(node,datasetStatistics)) {
             stats.add(stat);
         }
     }

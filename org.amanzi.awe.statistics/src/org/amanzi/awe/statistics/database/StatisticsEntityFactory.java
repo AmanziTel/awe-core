@@ -64,13 +64,13 @@ public class StatisticsEntityFactory {
             Node networkDimensionNode = service.createNode();
             networkDimensionNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.DIMENSION.getId());
             
-            Dimension networkDimension = new Dimension(networkDimensionNode);
+            Dimension networkDimension = new Dimension(networkDimensionNode,datasetStatistics);
             networkDimension.setName(DatasetStatistics.NETWORK_DIMENSION_NAME);
             
             Node timeDimensionNode = service.createNode();
             timeDimensionNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.DIMENSION.getId());
             
-            Dimension timeDimension = new Dimension(timeDimensionNode);
+            Dimension timeDimension = new Dimension(timeDimensionNode,datasetStatistics);
             timeDimension.setName(DatasetStatistics.TIME_DIMENSION_NAME);
             
             datasetStatistics.addDimension(networkDimension);
@@ -156,7 +156,7 @@ public class StatisticsEntityFactory {
             NeoUtils.finishTx(tx);
         }
     }
-    public static Statistics createStatistics(GraphDatabaseService service, Level networkLevel, Level timeLevel) {
+    public static Statistics createStatistics(GraphDatabaseService service, Level networkLevel, Level timeLevel, DatasetStatistics datasetStatistics) {
         Transaction tx = NeoUtils.beginTx(service);
         try {
             Node statisticsNode = service.createNode();
@@ -164,7 +164,7 @@ public class StatisticsEntityFactory {
 //            networkLevel.addStatistics(stat)
             statisticsNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.STATISTICS.getId());
             //TODO use setters
-            Statistics stat = new Statistics(statisticsNode);
+            Statistics stat = new Statistics(statisticsNode,datasetStatistics);
             networkLevel.addStatistics(stat);
             timeLevel.addStatistics(stat);
             return stat;
@@ -173,14 +173,14 @@ public class StatisticsEntityFactory {
         }
     }
 
-    public static Level createStatisticsLevel(GraphDatabaseService service, String levelKey) {
+    public static Level createStatisticsLevel(GraphDatabaseService service, String levelKey, DatasetStatistics datasetStatistics) {
         Transaction tx = NeoUtils.beginTx(service);
         try {
             Node levelNode = service.createNode();
             levelNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, levelKey);
             levelNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.LEVEL.getId());
             //TODO use setters
-            return new Level(levelNode);
+            return new Level(levelNode,datasetStatistics);
         } finally {
             NeoUtils.finishTx(tx);
         }

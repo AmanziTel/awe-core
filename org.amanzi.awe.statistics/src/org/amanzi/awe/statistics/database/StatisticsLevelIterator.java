@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.statistics.database;
 
+import org.amanzi.awe.statistics.database.entity.DatasetStatistics;
 import org.amanzi.awe.statistics.database.entity.Level;
 import org.amanzi.awe.statistics.database.entity.StatisticsRow;
 import org.amanzi.neo.services.enums.NodeTypes;
@@ -28,13 +29,16 @@ import org.neo4j.graphdb.Node;
  */
 public class StatisticsLevelIterator extends AbstractStatisticsIterator<Level> {
 
-    public StatisticsLevelIterator(Node node) {
+    private DatasetStatistics datasetStatistics;
+
+    public StatisticsLevelIterator(Node node, DatasetStatistics datasetStatistics) {
         super(node, NodeTypes.LEVEL);
+        this.datasetStatistics=datasetStatistics;
     }
 
     @Override
     public Level next() {
-        return new Level(nodeIterator.next());
+        return new Level(nodeIterator.next(),datasetStatistics);
     }
 
 }

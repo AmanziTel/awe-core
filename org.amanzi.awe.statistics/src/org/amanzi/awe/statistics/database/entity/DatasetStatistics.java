@@ -78,9 +78,9 @@ public class DatasetStatistics {
             Node dimensNode = rel.getEndNode();
             String name = dimensNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
             if (NETWORK_DIMENSION_NAME.equals(name)) {
-                networkDimension = new Dimension(dimensNode);
+                networkDimension = new Dimension(dimensNode,this);
             } else if (TIME_DIMENSION_NAME.equals(name)) {
-                timeDimension = new Dimension(dimensNode);
+                timeDimension = new Dimension(dimensNode,this);
             }
         }
     }
@@ -98,5 +98,19 @@ public class DatasetStatistics {
 
     public String getTemplateName() {
         return node.getProperty("template").toString();
+    }
+
+    public long  getUsedNodes() {
+        return (Long)node.getProperty(INeoConstants.PROPERTY_USED_NODES);
+    }
+    public void setUsedNodes(long noUsedNodes) {
+        node.setProperty(INeoConstants.PROPERTY_USED_NODES, noUsedNodes);
+    }
+
+    public long getTotalNodes() {
+        return (Long)node.getProperty(INeoConstants.PROPERTY_TOTAL_NODES);
+    }
+    public void setTotalNodes(long total) {
+        node.setProperty(INeoConstants.PROPERTY_TOTAL_NODES, total);
     }
 }

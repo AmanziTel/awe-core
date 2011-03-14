@@ -244,4 +244,6 @@ public class INeoConstants {
     public static final String AFP_PROPERTY_SEPARATIONS_NAME = "separations";
     public static final String AFP_PROPERTY_FILTERS_NAME = "filters";
     public static final String AFP_PROPERTY_ORIGINAL_NAME = "original";
+    public static final String PROPERTY_USED_NODES = "used nodes";
+    public static final String PROPERTY_TOTAL_NODES = "total nodes";
 }

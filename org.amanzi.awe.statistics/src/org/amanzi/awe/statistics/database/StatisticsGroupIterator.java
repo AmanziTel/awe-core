@@ -13,8 +13,6 @@
 
 package org.amanzi.awe.statistics.database;
 
-import java.util.Iterator;
-
 import org.amanzi.awe.statistics.database.entity.StatisticsGroup;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.neo4j.graphdb.Node;
@@ -28,6 +26,7 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class StatisticsGroupIterator extends AbstractStatisticsIterator<StatisticsGroup> {
+
 
     public StatisticsGroupIterator(Node node) {
         super(node, NodeTypes.S_GROUP);
