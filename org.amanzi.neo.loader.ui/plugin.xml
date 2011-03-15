@@ -73,7 +73,7 @@
              </command>
              <command
                    commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader"
-                   icon="icons/16/call.png"
+                   icon="icons/16/oss.png"
                    id="org.amanzi.neo.loader.ui.commands.LaunchLoader"
                    style="push"
                    tooltip="Load Network Configuration Data">
@@ -84,7 +84,7 @@
              </command>
              <command
                    commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader"
-                   icon="icons/16/site.png"
+                   icon="icons/16/oss_stats.png"
                    id="org.amanzi.neo.loader.ui.commands.LaunchLoader"
                    style="push"
                    tooltip="Load Network Measurements Data">
