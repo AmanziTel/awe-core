@@ -289,4 +289,11 @@ public class NetworkConfigurationParser extends AbstractCSVParser<NetworkConfigu
         data.setCurrentpersentage(percentage);
         return data;
     }
+
+    @Override
+    protected NetworkConfigurationTransferData getInitData(CommonConfigData properties) {
+        NetworkConfigurationTransferData result = super.getInitData(properties);
+        result.put("haveBSM", String.valueOf(!bsmFiles.isEmpty()));
+        return result;
+    }
 }

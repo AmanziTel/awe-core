@@ -66,7 +66,7 @@ public class EricssonValidator implements ILoaderInputValidator<CommonConfigData
     @Override
     public IValidateResult accept(CommonConfigData data) {
         if (data.getRoot()==null){
-             return new ValidateResultImpl(Result.UNKNOWN, "Select a file for import");
+            return new ValidateResultImpl(Result.FAIL, "Select a file for import");
         }
         return ValidatorUtils.checkFileAndHeaders(data.getRoot(), 3, new String[]{"dchno_0"}, new String[]{" "},false);
     }

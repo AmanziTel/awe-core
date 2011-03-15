@@ -202,7 +202,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
         if (chGr == null) {
             error("chGr is not found");
         }
-        Integer bsic = getInteger(rec, Parameters.BSIC);
+        Integer bsic = getBsic(rec);
         Integer arfcn = getInteger(rec, Parameters.ARFCN);
         if (bsic == null || arfcn == null) {
             error("Some of neighbohur id values is null");
@@ -214,6 +214,18 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
         neigh.addTimesrelss(getInteger(rec, Parameters.TIMESRELSS));
         neigh.addTimesrelss2(getInteger(rec, Parameters.TIMESRELSS2));
         neigh.addTimesabss(getInteger(rec, Parameters.TIMESABSS));
+    }
+
+    /**
+     * @param rec
+     * @return
+     */
+    private Integer getBsic(Record rec) {
+        Integer bsic = getInteger(rec, Parameters.BSIC);
+        if (bsic != null) {
+            bsic = bsic / 8 * 10 + bsic % 8;
+        }
+        return bsic;
     }
 
     /**
@@ -667,6 +679,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             fire(0.4, "Created IM");
         } else {
             double pr = 0.4 / servCells.values().size();
+            loggingIM(servCells);
             for (ServCell cell : servCells.values()) {
                 handleServCell(cell);
                 fire(pr, "Created IM for " + cell.cellName);
@@ -681,6 +694,13 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
         if (neighboursNotFound > 0) {
             info("During IM creation " + neighboursNotFound + " neighbours were not found");
         }
+    }
+
+    /**
+     * @param servCells2
+     */
+    private void loggingIM(Map<String, ServCell> servCells) {
+
     }
 
     /**

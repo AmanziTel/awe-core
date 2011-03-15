@@ -862,4 +862,25 @@ public class NetworkService extends DatasetService {
         
         return description;
     }
+
+
+    /**
+     * Have chanel group.
+     * 
+     * @param sectorNode the sector node
+     * @return true, if successful
+     */
+    public boolean haveChanelGroup(Node sectorNode) {
+        return sectorNode.hasRelationship(Relations.CHANNEL, Direction.OUTGOING);
+    }
+
+    /**
+     * Gets the channel groups.
+     * 
+     * @param sectorNode the sector node
+     * @return the channel groups
+     */
+    public Iterable<Relationship> getChannelGroups(Node sectorNode) {
+        return sectorNode.getRelationships(Relations.CHANNEL, Direction.OUTGOING);
+    }
 }

@@ -60,7 +60,9 @@ import org.neo4j.kernel.Uniqueness;
  * @author TsAr
  * @since 1.0.0
  */
-public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfigurationTransferData> implements IStructuredSaver<NetworkConfigurationTransferData> {
+public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfigurationTransferData>
+        implements
+            IStructuredSaver<NetworkConfigurationTransferData> {
     private final MetaData metadata = new MetaData("network", MetaData.SUB_TYPE, "radio");
     private NetworkConfigurationFileTypes type;
     private NetworkService networkService;
@@ -73,12 +75,13 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
     private NetworkModel networkModel;
     private NodeToNodeRelationModel neighbourModel;
     private DatasetService ds;
-    //private String planName;
+    // private String planName;
     private FrequencyPlanModel freqPlan;
     private int sectorsNotFound;
     private int neighboursNotFound;
+    private Boolean haveBsm;
 
-    private final static String ORIGINAL = "original"; 
+    private final static String ORIGINAL = "original";
 
     @Override
     public void init(NetworkConfigurationTransferData element) {
@@ -88,12 +91,14 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         networkModel = new NetworkModel(rootNode);
         neighName = networkModel.makeUniqueListName("Neighbours");
         neighbourModel = networkModel.getNeighbours(neighName);
-        //planName = null;
+        // planName = null;
         freqPlan = null;
         sectorsNotFound = 0;
         neighboursNotFound = 0;
+        haveBsm = Boolean.valueOf(element.get("haveBSM"));
         startMainTx(2000);
     }
+
     @Override
     public void save(NetworkConfigurationTransferData element) {
         if (type == NetworkConfigurationFileTypes.CNA) {
@@ -147,13 +152,15 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         }
         if (ci != null && !sector.hasProperty(INeoConstants.PROPERTY_SECTOR_CI)) {
             setProperty(rootname, NodeTypes.SECTOR.getId(), sector, INeoConstants.PROPERTY_SECTOR_CI, ci);
-            getIndexService().index(sector, Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR), ci);
+            getIndexService().index(sector,
+                    Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR), ci);
         }
         if (lac != null && !sector.hasProperty(INeoConstants.PROPERTY_SECTOR_LAC)) {
             setProperty(rootname, NodeTypes.SECTOR.getId(), sector, INeoConstants.PROPERTY_SECTOR_LAC, lac);
-            getIndexService().index(sector, Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_SECTOR_LAC, NodeTypes.SECTOR), lac);
+            getIndexService().index(sector,
+                    Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_SECTOR_LAC, NodeTypes.SECTOR), lac);
         }
-        updateProperty(rootname, NodeTypes.SECTOR.getId(), sector,"vendor","Ericsson");
+        updateProperty(rootname, NodeTypes.SECTOR.getId(), sector, "vendor", "Ericsson");
         String bcc = getStringValue("bcc", element);
         boolean notEmptyBcc = StringUtils.isNotEmpty(bcc);
         String ncc = getStringValue("ncc", element);
@@ -308,7 +315,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
             // trx
             Node sector = networkService.findSector(rootNode, null, null, element.getCell(), true);
             if (sector == null) {
-                if (sectorsNotFound ++ < 10) {
+                if (sectorsNotFound++ < 10) {
                     error(String.format("Line %s: Sector with name %s not found", element.getLine(), element.getCell()));
                 }
                 return;
@@ -346,14 +353,14 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
             }
             updateProperty(rootname, NodeTypes.TRX.getId(), trx, "hsn", channalGr.getProperty("hsn", null));
             Integer bcchno = (Integer)sector.getProperty("bcch", null);
-            if (!plan.hasProperty("bcc")){
+            if (!plan.hasProperty("bcc")) {
                 Object bcc = sector.getProperty("bcc");
-                if (bcc!=null){
-                    updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(),plan,"bcc",bcc);
+                if (bcc != null) {
+                    updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), plan, "bcc", bcc);
                 }
                 Object ncc = sector.getProperty("ncc");
-                if (ncc!=null){
-                    updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(),plan,"ncc",ncc);
+                if (ncc != null) {
+                    updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), plan, "ncc", ncc);
                 }
                 // if (bcchno!=null){
                 // updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(),plan,"bcch",bcchno);
@@ -373,7 +380,8 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
                     if (dchno != null) {
                         if (hoptype < 2 && bcchno != null) {
                             int j = -1;
-                            for (Relationship rel : sector.getRelationships(DatasetRelationshipTypes.PLAN_ENTRY, Direction.OUTGOING)) {
+                            for (Relationship rel : sector
+                                    .getRelationships(DatasetRelationshipTypes.PLAN_ENTRY, Direction.OUTGOING)) {
                                 final Node trxOth = rel.getOtherNode(sector);
                                 if (trx.equals(trxOth)) {
                                     continue;
@@ -397,7 +405,8 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
                             int j = -1;
                             int[] arfcnArr = null;
                             Set<Integer> removedArfcn = new HashSet<Integer>();
-                            for (Relationship rel : sector.getRelationships(DatasetRelationshipTypes.PLAN_ENTRY, Direction.OUTGOING)) {
+                            for (Relationship rel : sector
+                                    .getRelationships(DatasetRelationshipTypes.PLAN_ENTRY, Direction.OUTGOING)) {
                                 final Node trxOth = rel.getOtherNode(sector);
                                 if (trx.equals(trxOth)) {
                                     continue;
@@ -518,8 +527,11 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
     @Override
     public void finishUp(NetworkConfigurationTransferData element) {
         initProgress(element);
+        if (!haveBsm) {
+            createTRXForChannel();
+        }
         createFakeBSC();
-        fire(0.2d,"Commit data");
+        fire(0.2d, "Commit data");
         if (sectorsNotFound > 0) {
             error(String.format("%d sectors were not found", sectorsNotFound));
         }
@@ -529,12 +541,122 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         super.finishUp(element);
     }
 
+    /**
+     * Creates the trx for channel.
+     */
+    private void createTRXForChannel() {
+        // TODO implement;
+        Traverser tr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).evaluator(new Evaluator() {
+
+            @Override
+            public Evaluation evaluate(Path arg0) {
+                boolean isSector = NodeTypes.SECTOR.checkNode(arg0.endNode());
+                boolean continues = !isSector;
+                boolean includes = isSector && networkService.haveChanelGroup(arg0.endNode());
+                return Evaluation.of(includes, continues);
+            }
+        }).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).traverse(rootNode);
+        for (Node sector : tr.nodes()) {
+            for (Relationship rel : networkService.getChannelGroups(sector)) {
+                createTRXforGroup(sector, rel.getOtherNode(sector));
+            }
+        }
+    }
+
+    /**
+     * Creates the tr xfor group.
+     * 
+     * @param sector the sector
+     * @param otherNode the other node
+     */
+    private void createTRXforGroup(Node sector, Node group) {
+        String grNum = (String)group.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
+        if (grNum == null) {
+            info("Node " + group + "\tgroup do not have number ");
+            return;
+        }
+        Integer num = Integer.parseInt(grNum);
+        String hop = (String)group.getProperty("hop", null);
+        if (hop == null) {
+            info("Node " + group + "\tgroup do not have 'hop' ");
+            return;
+        }
+        int hoptype;
+        if ("ON".equalsIgnoreCase((String)group.getProperty("hop", null))) {
+            hoptype = 1;
+        } else {
+            hoptype = 0;
+        }
+        int[] dchno = (int[])group.getProperty("dchno", null);
+        Integer bcchno = (Integer)sector.getProperty("bcch", null);
+        if (dchno == null || dchno.length == 0) {
+            if (0 == num && bcchno != null) {
+                createTRX(sector, group, num, bcchno, hoptype, 0, bcchno);
+            }
+            return;
+        }
+        int id = 0;
+        for (int arfcn : dchno) {
+            createTRX(sector, group, num, bcchno, hoptype, ++id, arfcn);
+        }
+    }
+
+    /**
+     * @param group
+     * @param num
+     * @param bcchno
+     * @param hoptype
+     * @param id
+     * @param arfcn
+     */
+    private void createTRX(Node sector, Node group, Integer channelGr, Integer bcchno, int hoptype, int id, int arfcn) {
+        if (channelGr == 0 && bcchno != null && bcchno.equals(arfcn)) {
+            if (networkService.findTrxNode(sector, "0", channelGr) == null) {
+                id = 0;
+            } else {
+                // skip arfcn
+                return;
+            }
+        }
+        NodeResult trx = networkService.getTRXNode(sector, String.valueOf(id), channelGr);
+        if (trx.isCreated()) {
+            statistic.updateTypeCount(rootname, NodeTypes.TRX.getId(), 1);
+            updateTx(1, 1);
+        } else {
+            return;
+        }
+        updateProperty(rootname, NodeTypes.TRX.getId(), trx, "band", group.getProperty("band", null));
+        updateProperty(rootname, NodeTypes.TRX.getId(), trx, "hopping_type", hoptype);
+        updateProperty(rootname, NodeTypes.TRX.getId(), trx, "band", group.getProperty("band", null));
+        boolean isBcch = 0 == channelGr && 0 == id;
+        updateProperty(rootname, NodeTypes.TRX.getId(), trx, "bcch", isBcch);
+        NodeResult plan = getFreqPlan(ORIGINAL).getPlanNode(trx);
+        statistic.updateTypeCount(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), 1);
+        updateProperty(rootname, NodeTypes.TRX.getId(), trx, "hsn", group.getProperty("hsn", null));
+        Object bcc = sector.getProperty("bcc");
+        if (bcc != null) {
+            updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), plan, "bcc", bcc);
+        }
+        Object ncc = sector.getProperty("ncc");
+        if (ncc != null) {
+            updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), plan, "ncc", ncc);
+        }
+        // if (bcchno!=null){
+        // updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(),plan,"bcch",bcchno);
+        // }
+        // Kasnitskij_V:
+        plan.setProperty(INeoConstants.PROPERTY_NAME_NAME, ORIGINAL);
+        updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), plan, "arfcn", arfcn);
+        String maioPr = "maio_" + id;
+        Integer maioInt = (Integer)group.getProperty(maioPr, null);
+        updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), plan, "maio", maioInt);
+    }
 
     /**
      * Creates the fake bsc.
      */
     private void createFakeBSC() {
-        fire(0d,"create FAKE_BSC");
+        fire(0d, "create FAKE_BSC");
         Traverser tr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).evaluator(new Evaluator() {
 
             @Override
@@ -547,36 +669,35 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         Set<Node> fakeSites = new HashSet<Node>();
         Set<Node> removedSites = new HashSet<Node>();
         for (Node site : tr.nodes()) {
-            if (site.hasRelationship(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING)){
+            if (site.hasRelationship(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
                 fakeSites.add(site);
-            }else{
-                removedSites.add(site);  
+            } else {
+                removedSites.add(site);
             }
         }
-        fire(0.1d,"Move sectors");
+        fire(0.1d, "Move sectors");
         if (!fakeSites.isEmpty()) {
             NodeResult fakeBSC = networkService.getBscNode(rootNode, "Fake BSC", rootNode);
             for (Node site : fakeSites) {
                 Relationship rel = site.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING);
                 rel.delete();
                 fakeBSC.createRelationshipTo(site, GeoNeoRelationshipTypes.CHILD);
-                fire(0.4d/fakeSites.size(),"Move sectors");
+                fire(0.4d / fakeSites.size(), "Move sectors");
             }
 
-        }else{
-            fire(0.4d,"Move sectors");
+        } else {
+            fire(0.4d, "Move sectors");
         }
-        if (!removedSites.isEmpty()){
+        if (!removedSites.isEmpty()) {
             for (Node site : removedSites) {
                 ds.deleteNode(site);
-                fire(0.3d/removedSites.size(),"delete duplication"); 
+                fire(0.3d / removedSites.size(), "delete duplication");
             }
-        }else{
-            fire(0.3d,"delete duplication"); 
+        } else {
+            fire(0.3d, "delete duplication");
         }
 
     }
-
 
     @Override
     public void finishSaveNewElement(NetworkConfigurationTransferData element) {
