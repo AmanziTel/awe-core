@@ -51,7 +51,7 @@ public class ExistNetworkValidator implements ILoaderInputValidator<CommonConfig
 
     @Override
     public IValidateResult accept(CommonConfigData data) {
-        return new ValidateResultImpl(Result.SUCCESS, "");
+        return new ValidateResultImpl(Result.UNKNOWN, "");
     }
 
 }
