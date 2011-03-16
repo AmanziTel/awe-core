@@ -13,11 +13,15 @@
 
 package org.amanzi.neo.loader.ui.validators;
 
+import java.io.File;
+
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.ILoaderInputValidator;
 import org.amanzi.neo.loader.core.IValidateResult;
+import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.core.ValidateResultImpl;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.NodeTypes;
@@ -46,12 +50,40 @@ public class ExistNetworkValidator implements ILoaderInputValidator<CommonConfig
         if (root == null || datasetService.getNodeType(root) != NodeTypes.NETWORK) {
             return new ValidateResultImpl(Result.FAIL, String.format("Network '%s' is not found. ", data.getDbRootName()) + "For loader '%s' network should exist.");
         }
-        return new ValidateResultImpl(Result.SUCCESS, "");
+        return accept(data);
     }
 
     @Override
     public IValidateResult accept(CommonConfigData data) {
-        return new ValidateResultImpl(Result.UNKNOWN, "");
+        String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
+        
+        return checkFileAndHeader(data.getRoot(), 1, "Sector", possibleFieldSepRegexes);
+    }
+    
+    private IValidateResult checkFileAndHeader(File file, int minSize, String constant, String[] possibleFieldSepRegexes) {
+        try {
+            if (file == null || !file.isFile()) {
+                return new ValidateResultImpl(Result.FAIL, "incorrect file");
+            }
+            String del = LoaderUtils.defineDelimeters(file, minSize, possibleFieldSepRegexes);
+            String[] header = LoaderUtils.getCSVRow(file, minSize, 1, del.charAt(0));
+            if (header == null) {
+                return new ValidateResultImpl(Result.FAIL, "not found correct header row");
+            }
+            if (header.length != 1 && header[0].equals(constant)) {
+                return new ValidateResultImpl(Result.FAIL, "too much data");
+            }
+            if (!header[0].equals(constant)) {
+                return new ValidateResultImpl(Result.FAIL, "incorrect file");
+            }
+            
+            return new ValidateResultImpl(Result.SUCCESS, "");
+            
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.printStackTrace();
+            return new ValidateResultImpl(Result.FAIL, e.getLocalizedMessage());
+        }
     }
 
 }
