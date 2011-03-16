@@ -215,7 +215,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
      * @param element the element
      */
     private void storeChannelInfo(Node sector, int i, NetworkConfigurationTransferData element) {
-        Node channalGr = networkService.getChannelNode(sector, i);
+        Node channalGr = networkService.getChannelGroupNode(sector, i);
         String tg = getStringValue(i, "chgr_tg", element);
         if (StringUtils.isNotEmpty(tg)) {
             channalGr.setProperty("tg", tg);
@@ -334,7 +334,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
                 statistic.updateTypeCount(rootname, NodeTypes.TRX.getId(), 1);
             }
             updateTx(1, 1);
-            Node channalGr = networkService.getChannelNode(sector, channelGr);
+            Node channalGr = networkService.getChannelGroupNode(sector, channelGr);
             updateProperty(rootname, NodeTypes.TRX.getId(), trx, "band", channalGr.getProperty("band", null));
             int hoptype;
             if ("ON".equalsIgnoreCase((String)channalGr.getProperty("hop", null))) {
