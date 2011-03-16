@@ -241,20 +241,20 @@ public class NetworkService extends DatasetService {
     }
 
     /**
-     * Get channel node
+     * Get channel_group node
      * 
      * @param sector - sector node
      * @param channelNum - channel gr Number
      * @return Node
      */
-    public Node getChannelNode(Node sector, int channelNum) {
-        Node channel = findChannelNode(sector, channelNum);
+    public Node getChannelGroupNode(Node sector, int channelNum) {
+        Node channel = findChannelGroupNode(sector, channelNum);
         if (channel == null) {
             Transaction tx = databaseService.beginTx();
             try {
                 Node result = databaseService.createNode();
                 result.setProperty(INeoConstants.PROPERTY_NAME_NAME, String.valueOf(channelNum));
-                sector.createRelationshipTo(result, Relations.CHANNEL);
+                sector.createRelationshipTo(result, Relations.CHANNEL_GROUP);
 
                 tx.success();
                 return result;
@@ -272,23 +272,23 @@ public class NetworkService extends DatasetService {
      * @param channelNum - channel gr Number
      * @return Node
      */
-    public Node findChannelNode(Node sector, int channelNum) {
+    public Node findChannelGroupNode(Node sector, int channelNum) {
         final DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
-        final String channelName = String.valueOf(channelNum);
+        final String channelGroupName = String.valueOf(channelNum);
 
         Iterator<Path> itr = Traversal.description().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1))
                 .filter(new Predicate<Path>() {
 
                     @Override
                     public boolean accept(Path item) {
-                        return item.length() > 0 && ds.getNodeName(item.endNode()).equals(channelName);
+                        return item.length() > 0 && ds.getNodeName(item.endNode()).equals(channelGroupName);
                     }
-                }).relationships(Relations.CHANNEL, Direction.OUTGOING).traverse(sector).iterator();
+                }).relationships(Relations.CHANNEL_GROUP, Direction.OUTGOING).traverse(sector).iterator();
         return itr.hasNext() ? itr.next().endNode() : null;
     }
 
     private enum Relations implements RelationshipType {
-        CHANNEL,FREQUENCY_ROOT, FR_SPECTRUM;
+        CHANNEL_GROUP, CHANNEL_TRX, FREQUENCY_ROOT, FR_SPECTRUM;
     }
 
     /**
@@ -321,6 +321,7 @@ public class NetworkService extends DatasetService {
                 trxNode = NeoServiceFactory.getInstance().getDatasetService().addSimpleChild(sector, NodeTypes.TRX, trxId);
                 if (channelGr != null) {
                     trxNode.setProperty("group", channelGr);
+                    getChannelGroupNode(sector, channelGr).createRelationshipTo(trxNode, Relations.CHANNEL_TRX);
                 }
                 tx.success();
             } finally {
@@ -871,7 +872,7 @@ public class NetworkService extends DatasetService {
      * @return true, if successful
      */
     public boolean haveChanelGroup(Node sectorNode) {
-        return sectorNode.hasRelationship(Relations.CHANNEL, Direction.OUTGOING);
+        return sectorNode.hasRelationship(Relations.CHANNEL_GROUP, Direction.OUTGOING);
     }
 
     /**
@@ -881,6 +882,6 @@ public class NetworkService extends DatasetService {
      * @return the channel groups
      */
     public Iterable<Relationship> getChannelGroups(Node sectorNode) {
-        return sectorNode.getRelationships(Relations.CHANNEL, Direction.OUTGOING);
+        return sectorNode.getRelationships(Relations.CHANNEL_GROUP, Direction.OUTGOING);
     }
 }
