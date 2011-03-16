@@ -337,8 +337,10 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
             Node channalGr = networkService.getChannelGroupNode(sector, channelGr);
             updateProperty(rootname, NodeTypes.TRX.getId(), trx, "band", channalGr.getProperty("band", null));
             int hoptype;
+            String fchop = tgProperty.get(tg);
+            //LN, 15.03.2011, update channel group Node with fhop
+            channalGr.setProperty(tg, fchop);
             if ("ON".equalsIgnoreCase((String)channalGr.getProperty("hop", null))) {
-                String fchop = tgProperty.get(tg);
                 hoptype = "BB".equalsIgnoreCase(fchop) ? 1 : 2;
             } else {
                 hoptype = 0;

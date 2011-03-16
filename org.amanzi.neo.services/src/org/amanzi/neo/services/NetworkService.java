@@ -650,7 +650,7 @@ public class NetworkService extends DatasetService {
             }
         });
         if (additionalEvaluation!=null){
-            tr.evaluator(additionalEvaluation);
+            tr = tr.evaluator(additionalEvaluation);
         }
         return tr.traverse(networkNode);
     }

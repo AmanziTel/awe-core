@@ -149,7 +149,9 @@ public class AfpLoader {
         if (projectName == null) {
             projectName = ApplicationGIS.getActiveProject().getName();
         }
-        afpRoot = NeoUtils.findorCreateRootInActiveProject(projectName, rootName, creater, neo);
+        if (afpRoot == null) {
+            afpRoot = NeoUtils.findorCreateRootInActiveProject(projectName, rootName, creater, neo);
+        }
         statistic = StatisticManager.getStatistic(afpRoot);
         networkModel = new NetworkModel(afpRoot);
 
@@ -355,24 +357,8 @@ public class AfpLoader {
         // in main part?
         afpCell = afpRoot;
 
-        // create the virtual data set node
-        // if(afpDataset != null) {
-        // Transaction tx = this.neo.beginTx();
-        // try {
-        // Node child = this.neo.createNode();
-        // child.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.FREQ);
-        // child.setProperty(INeoConstants.PROPERTY_NAME_NAME, (new Date()).toString());
-        // afpDataset.createRelationshipTo(child, NetworkRelationshipTypes.CHILD);
-        // tx.success();
-        // prevFreqNode = child;
-        // } finally {
-        // tx.finish();
-        // }
-        //
-        // // prevFreqNode = networkService.addFREQNode(afpDataset, (new Date()).toString(), null);
-        //
-        // AweConsolePlugin.info("Created new Freq plan node ");
-        // }
+        //LN, 16.03.2011, we need to initialize NetworkModel here
+        defineRoot();
         CommonImporter importer = new CommonImporter(new CellFileHandler(afpCell, neo, isNodeIdBased),
                 new TxtFileImporter(cellFile));
         importer.process();
@@ -561,6 +547,7 @@ public class AfpLoader {
 
                         // for (int j = 0; j < frq.length; j++){
                         Node planNode = planModel.getPlanNode(trxNode);
+                        planNode.setProperty("arfcn", frq);
 
                         planNode.setProperty(INeoConstants.AFP_PROPERTY_ORIGINAL_NAME, false);
                         // }
