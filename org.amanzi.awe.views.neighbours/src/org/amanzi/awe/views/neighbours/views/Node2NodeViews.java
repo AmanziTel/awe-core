@@ -105,6 +105,8 @@ import org.neo4j.graphdb.Relationship;
  * @since 1.0.0
  */
 public class Node2NodeViews extends ViewPart {
+    /** String OUTGOING_ANALYSE field */
+    private static final String OUTGOING_ANALYSE = "Outgoing analyse";
     private static final RGB main = new RGB(0, 0, 255);
     private static final RGB more50 = new RGB(112, 48, 160);
     private static final RGB more30 = new RGB(255, 0, 0);
@@ -134,6 +136,7 @@ public class Node2NodeViews extends ViewPart {
     private String searchingSector = "";
     /** String SEARCH field */
     private static final String SEARCH = "Search";
+    private static final String GR_MODE = "group by TRX";
 
     protected DatasetService ds;
     protected NodeToNodeRelationService n2ns;
@@ -153,6 +156,7 @@ public class Node2NodeViews extends ViewPart {
     protected int column = -1;
     private Wrapper data;
     private boolean direction = true;
+    private Button outgoingAnalyse;
 
     @Override
     public void createPartControl(Composite parent) {
@@ -196,8 +200,8 @@ public class Node2NodeViews extends ViewPart {
         });
         drawLines = true;
         drawArrow.setSelection(drawLines);
-        Button outgoingAnalyse = new Button(main, SWT.CHECK);
-        outgoingAnalyse.setText("Outgoing analyse");
+        outgoingAnalyse = new Button(main, SWT.CHECK);
+        outgoingAnalyse.setText(OUTGOING_ANALYSE);
         outgoingAnalyse.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -889,6 +893,11 @@ public class Node2NodeViews extends ViewPart {
         }
         fireModel(null);
         n2nModel = model;
+        if (n2nModel.getType().equals(NodeToNodeTypes.ILLEGAL_FREQUENCY)) {
+            outgoingAnalyse.setText(GR_MODE);
+        } else {
+            outgoingAnalyse.setText(OUTGOING_ANALYSE);
+        }
         formCollumns();
     }
 
@@ -926,14 +935,7 @@ public class Node2NodeViews extends ViewPart {
             }
             if (createdCollumn) {
             }
-            columns.get(0).setText("Server ");
-            String neighName;
-            if (n2nModel.getType().equals(NodeToNodeTypes.INTERFERENCE_MATRIX)) {
-                neighName = "Interferer";
-            } else {
-                neighName = "Neighbour";
-            }
-            columns.get(1).setText(neighName);
+            setColumnNames();
             for (int i = 2; i < colColut; i++) {
                 String propertyName = propertys.get(i - 2);
                 TableColumn tableColumn = columns.get(i);
@@ -955,6 +957,27 @@ public class Node2NodeViews extends ViewPart {
         resizecolumns();
         view.setItemCount(countRelation);
         table.setVisible(countRelation > 0);
+    }
+
+    /**
+     *
+     */
+    private void setColumnNames() {
+        String name1;
+        String name2;
+        if (n2nModel.getType().equals(NodeToNodeTypes.ILLEGAL_FREQUENCY)) {
+            name1 = "TRX";
+            name2 = "Channel";
+        } else {
+            name1 = "Server";
+            if (n2nModel.getType().equals(NodeToNodeTypes.INTERFERENCE_MATRIX)) {
+                name2 = "Interferer";
+            } else {
+                name2 = "Neighbour";
+            }
+        }
+        columns.get(0).setText(name1);
+        columns.get(1).setText(name2);
     }
 
     /**
