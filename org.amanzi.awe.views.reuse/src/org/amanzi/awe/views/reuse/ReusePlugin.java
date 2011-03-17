@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import org.amanzi.awe.views.reuse.mess_table.view.MessageAndEventTableView;
+import org.amanzi.awe.views.reuse.views.FrequencyPlanAnalyser;
 import org.amanzi.awe.views.reuse.views.ReuseAnalyserView;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.events.UpdateViewEvent;
@@ -42,6 +43,7 @@ public class ReusePlugin extends AbstractUIPlugin implements IUpdateViewListener
     }
     /** String VIEW_ID field */
     public static final String REUSE_VIEW_ID = "org.amanzi.awe.views.reuse.views.ReuseAnalyserView";
+    public static final String FRQ_VIEW_ID = "org.amanzi.awe.views.reuse.views.FrequencyPlanAnalyser";
     public static final String MESS_TABLE_VIEW_ID = "org.amanzi.awe.views.reuse.views.MessageAndEventTableView";
 
     // The plug-in ID
@@ -107,6 +109,10 @@ public class ReusePlugin extends AbstractUIPlugin implements IUpdateViewListener
                 IViewPart reuseView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(REUSE_VIEW_ID);
                 if (reuseView != null) {
                     ((ReuseAnalyserView)reuseView).updateGisNode();
+                }
+                reuseView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(FRQ_VIEW_ID);
+                if (reuseView != null) {
+                    ((FrequencyPlanAnalyser)reuseView).updateGisNode();
                 }
                 IViewPart tableView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(MESS_TABLE_VIEW_ID);
                 if (tableView != null) {

@@ -42,9 +42,11 @@ public class AfpOutputFileLoader extends AfpLoader{
         		String outputFileName = dirPath + exporter.outputFileName;
         		File outputFile = new File(outputFileName);
         		if (outputFile != null) {
-                	if(outputFile.exists())
+                    if (outputFile.exists()) {
+                        defineRoot();
                 		loadCellFile(outputFile, true);
-                	else {
+                        statistic.save();
+                    } else {
                 		AweConsolePlugin.error("Error:: No output File generated");
                 	}
                 }

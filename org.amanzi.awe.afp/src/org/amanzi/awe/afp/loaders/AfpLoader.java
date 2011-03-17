@@ -87,7 +87,7 @@ public class AfpLoader {
     private long started = System.currentTimeMillis();
     protected Node afpDataset = null;
 
-    private IStatistic statistic;
+    public IStatistic statistic;
 
     private NetworkModel networkModel;
 
@@ -259,10 +259,10 @@ public class AfpLoader {
                     return;
                 loadInterferenceFile(file.getInterferenceFile(), afpCell);
             }
+            statistic.save();
             commit(true);
             monitor.worked(1);
 
-            statistic.save();
         } finally {
             commit(false);
         }
@@ -357,8 +357,6 @@ public class AfpLoader {
         // in main part?
         afpCell = afpRoot;
 
-        //LN, 16.03.2011, we need to initialize NetworkModel here
-        defineRoot();
         CommonImporter importer = new CommonImporter(new CellFileHandler(afpCell, neo, isNodeIdBased),
                 new TxtFileImporter(cellFile));
         importer.process();
@@ -533,13 +531,18 @@ public class AfpLoader {
                         // if (trxNode == null){
                         // trxNode = addChild(sector, NodeTypes.TRX, trxName, trxName);
                         // }
-                        trxNode.setProperty("nonrelevant", nonrelevant);
-                        statistic.indexValue(rootName, NodeTypes.TRX.getId(), "nonrelevant", nonrelevant);
-                        trxNode.setProperty("numberoffreqenciesrequired", numberoffreqenciesrequired);
-                        statistic.indexValue(rootName, NodeTypes.TRX.getId(), "numberoffreqenciesrequired",
-                                numberoffreqenciesrequired);
-                        trxNode.setProperty("numberoffrequenciesgiven", numberoffrequenciesgiven);
-                        statistic.indexValue(rootName, NodeTypes.TRX.getId(), "nonrelevant", nonrelevant);
+                        // trxNode.setProperty("nonrelevant", nonrelevant);
+                        // statistic.indexValue(rootName, NodeTypes.TRX.getId(), "nonrelevant",
+                        // nonrelevant);
+                        // trxNode.setProperty("numberoffreqenciesrequired",
+                        // numberoffreqenciesrequired);
+                        // statistic.indexValue(rootName, NodeTypes.TRX.getId(),
+                        // "numberoffreqenciesrequired",
+                        // numberoffreqenciesrequired);
+                        // trxNode.setProperty("numberoffrequenciesgiven",
+                        // numberoffrequenciesgiven);
+                        // statistic.indexValue(rootName, NodeTypes.TRX.getId(), "nonrelevant",
+                        // nonrelevant);
                         // String band = (String)sector.getProperty("band", "");
                         // if (band.contains(" "))
                         // band = band.split("\\s")[1];
@@ -548,7 +551,7 @@ public class AfpLoader {
                         // for (int j = 0; j < frq.length; j++){
                         Node planNode = planModel.getPlanNode(trxNode);
                         planNode.setProperty("arfcn", frq);
-
+                        statistic.indexValue(planModel.getName(), NodeTypes.FREQUENCY_PLAN.getId(), "arfcn", frq);
                         planNode.setProperty(INeoConstants.AFP_PROPERTY_ORIGINAL_NAME, false);
                         // }
 
@@ -623,13 +626,18 @@ public class AfpLoader {
                         if (trxNode == null) {
                             trxNode = addChild(sector, NodeTypes.TRX, trxName, trxName);
                         }
-                        trxNode.setProperty("nonrelevant", nonrelevant);
-                        statistic.indexValue(rootName, NodeTypes.TRX.getId(), "nonrelevant", nonrelevant);
-                        trxNode.setProperty("numberoffreqenciesrequired", numberoffreqenciesrequired);
-                        statistic.indexValue(rootName, NodeTypes.TRX.getId(), "numberoffreqenciesrequired",
-                                numberoffreqenciesrequired);
-                        trxNode.setProperty("numberoffrequenciesgiven", numberoffrequenciesgiven);
-                        statistic.indexValue(rootName, NodeTypes.TRX.getId(), "nonrelevant", nonrelevant);
+                        // trxNode.setProperty("nonrelevant", nonrelevant);
+                        // statistic.indexValue(rootName, NodeTypes.TRX.getId(), "nonrelevant",
+                        // nonrelevant);
+                        // trxNode.setProperty("numberoffreqenciesrequired",
+                        // numberoffreqenciesrequired);
+                        // statistic.indexValue(rootName, NodeTypes.TRX.getId(),
+                        // "numberoffreqenciesrequired",
+                        // numberoffreqenciesrequired);
+                        // trxNode.setProperty("numberoffrequenciesgiven",
+                        // numberoffrequenciesgiven);
+                        // statistic.indexValue(rootName, NodeTypes.TRX.getId(), "nonrelevant",
+                        // nonrelevant);
                         String band = (String)sector.getProperty("band", "");
                         if (band.contains(" "))
                             band = band.split("\\s")[1];
@@ -637,6 +645,9 @@ public class AfpLoader {
 
                         for (int j = 0; j < frq.length; j++) {
                             Node planNode = planModel.getPlanNode(trxNode);
+                            planNode.setProperty("arfcn", frq);
+                            statistic.indexValue(planModel.getName(), NodeTypes.FREQUENCY_PLAN.getId(), "arfcn", frq);
+                            planNode.setProperty(INeoConstants.AFP_PROPERTY_ORIGINAL_NAME, false);
                         }
                         // Traverser traverser = Utils.getTrxTraverser(sector);
                         // int j = 0;

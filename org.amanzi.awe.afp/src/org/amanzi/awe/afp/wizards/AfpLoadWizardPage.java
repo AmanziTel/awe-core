@@ -23,6 +23,9 @@ import org.amanzi.awe.afp.loaders.AfpLoader;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.events.UpdateDatabaseEvent;
+import org.amanzi.neo.services.events.UpdateViewEventType;
+import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.neo.wizards.FileFieldEditorExt;
 import org.apache.commons.lang.StringUtils;
@@ -216,7 +219,8 @@ public class AfpLoadWizardPage extends WizardPage {
 						    	AfpLoader loader = new AfpLoader(datasetName, controlFile, service);
 				                try {
 				                    loader.run(monitor);				                    
-				                    
+                                    NeoServicesUiPlugin.getDefault().getUpdateViewManager()
+                                            .fireUpdateView(new UpdateDatabaseEvent(UpdateViewEventType.GIS));
 				                } catch (Exception e) {
 				                    AweConsolePlugin.exception(e);
 				                }
