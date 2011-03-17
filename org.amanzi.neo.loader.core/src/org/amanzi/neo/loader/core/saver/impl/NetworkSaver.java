@@ -300,9 +300,9 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
 //                        }
 //                    }
                 }
-                site.setProperty(INeoConstants.PROPERTY_LAT_NAME, lat);
-                site.setProperty(INeoConstants.PROPERTY_LON_NAME, lon);
-
+               
+                updateProperty(rootname,NodeTypes.SITE.getId(),site,INeoConstants.PROPERTY_LAT_NAME, lat);
+                updateProperty(rootname,NodeTypes.SITE.getId(),site,INeoConstants.PROPERTY_LON_NAME, lon);
                 index(site);
             }
             Integer ci = getNumberValue(Integer.class, INeoConstants.PROPERTY_SECTOR_CI, element);
