@@ -543,7 +543,7 @@ public class AfpLoader {
                         // String band = (String)sector.getProperty("band", "");
                         // if (band.contains(" "))
                         // band = band.split("\\s")[1];
-                        AweConsolePlugin.info("Adding TRX and FREQ for sector node id " + nodeId);
+                        AweConsolePlugin.info("Adding frequency plan results[" + frq + "] for TRX node id " + nodeId);
 
                         // for (int j = 0; j < frq.length; j++){
                         Node planNode = planModel.getPlanNode(trxNode);
