@@ -308,7 +308,15 @@ public class FrequencyPlanAnalyser extends ViewPart implements IPropertyChangeLi
                         selInf.setNcc(cNcc.getText());
                         selInf.setSectorName(cSector.getText());
                         selInf.setTrxType(cTRX.getText());
-                        findOrCreateAggregateNodeInNewThread(object, propertyCombo.getText());
+                        // Kasnitskij_V:
+                        if (propertyCombo.getText().equals("")) {
+                            String firstItemInCombo = propertyCombo.getItem(0);
+                            findOrCreateAggregateNodeInNewThread(object, firstItemInCombo);
+                            propertyCombo.setText(firstItemInCombo);
+                        }
+                        else {
+                            findOrCreateAggregateNodeInNewThread(object, propertyCombo.getText());
+                        }
                     }
                 }
                 
