@@ -1515,7 +1515,7 @@ public class AfpModel {
     }
 
     private void loadUserData() {
-
+        loadScalingFactors(datasetNode, afpNode);
         try {
             if (afpNode == null) {
                 return;
@@ -1590,7 +1590,7 @@ public class AfpModel {
             } catch (Exception e) {
                 // no property sent
             }
-            loadScalingFactors(datasetNode, afpNode);
+
 
             loadDomainNode(afpNode);
             /*
@@ -1672,6 +1672,9 @@ public class AfpModel {
      * @return
      */
     private Node findScalingNode(Node afpNode, final String name, final NodeToNodeTypes type) {
+        if (afpNode == null) {
+            return null;
+        }
         Iterator<Node> it = Traversal.description().depthFirst().relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
                 .evaluator(new Evaluator() {
 
