@@ -175,8 +175,8 @@ public class AfpExporter extends Job {
             BufferedWriter[] intWriters = new BufferedWriter[models.length];
 
             for (int i = 0; i < models.length; i++) {
-                cellWriters[i] = new BufferedWriter(new FileWriter(inputFiles[i][CELL]));
-                intWriters[i] = new BufferedWriter(new FileWriter(inputFiles[i][INTERFERENCE]));
+                cellWriters[i] = new BufferedWriter(new FileWriter(inputFiles[i][CELL]), 8 * 1024);
+                intWriters[i] = new BufferedWriter(new FileWriter(inputFiles[i][INTERFERENCE]), 8 * 1024);
             }
 
             for (Node sectorNode : sectorTraverser) {
@@ -240,19 +240,20 @@ public class AfpExporter extends Job {
 
                                     Integer[] freqArray = freq.toArray(new Integer[0]);
                                     if (freqArray.length > 1) {
-                                        for (int j = 0; j < freqArray.length; j++) {
-                                            sb.append(1 + "-");// add trxid as 1 always
-                                            sb.append(j);
-                                            sb.append(" ");
-                                            sb.append(1);// non-relevant
-                                            sb.append(" ");
-                                            sb.append(1);// required
-                                            sb.append(" ");
-                                            sb.append(1);// given
-                                            sb.append(" " + freqArray[i]);// required frequencies
-                                            sb.append("\n");
-                                            cellWriters[i].write(sb.toString());
-                                        }
+                                        //LN, 17.03.2011, SY hopping type is disabled for now
+//                                        for (int j = 0; j < freqArray.length; j++) {
+//                                            sb.append(1 + "-");// add trxid as 1 always
+//                                            sb.append(j);
+//                                            sb.append(" ");
+//                                            sb.append(1);// non-relevant
+//                                            sb.append(" ");
+//                                            sb.append(1);// required
+//                                            sb.append(" ");
+//                                            sb.append(1);// given
+//                                            sb.append(" " + freqArray[i]);// required frequencies
+//                                            sb.append("\n");
+//                                            cellWriters[i].write(sb.toString());
+//                                        }
                                     }
 
                                     else {
