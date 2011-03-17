@@ -164,5 +164,10 @@ class NodeWrapper implements Node {
         
         return false;
     }
+    
+    @Override
+    public int hashCode() {
+        return node.hashCode();
+    }
 
 }
