@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -299,6 +300,9 @@ public class AfpExporter extends Job {
     private void writeInterferenceForTrx(Node sector, Node trx, BufferedWriter intWriter, HashMap<Node, SectorValues> sectorIntValues, AfpRowFilter rf) throws IOException {
 
         DecimalFormat df = new DecimalFormat("0.0000000000");
+        DecimalFormatSymbols dfSymbols = df.getDecimalFormatSymbols();
+        dfSymbols.setDecimalSeparator('.');
+        df.setDecimalFormatSymbols(dfSymbols);
         StringBuilder trxSb = new StringBuilder();
         trxSb.append("SUBCELL 0 0 1 1 ");
         int numberofinterferers = 0;
