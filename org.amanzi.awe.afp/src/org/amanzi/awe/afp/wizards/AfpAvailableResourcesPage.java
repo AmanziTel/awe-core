@@ -76,6 +76,8 @@ public class AfpAvailableResourcesPage extends AfpWizardPage implements Listener
     	freq900Label = new Label (frequenciesGroup, SWT.LEFT);
     	freq900Label.setText("900: ");
     	frequencies900 = new Text (frequenciesGroup, SWT.BORDER | SWT.SINGLE);
+    	//LN, 17.03.2011, fix for 2487, make Text field non-editable
+    	frequencies900.setEditable(false);
     	frequencies900.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false));
     	frequencies900.addModifyListener(new ModifyListener(){
 
@@ -107,6 +109,8 @@ public class AfpAvailableResourcesPage extends AfpWizardPage implements Listener
     	freq1800Label = new Label (frequenciesGroup, SWT.LEFT);
     	freq1800Label.setText("1800: ");
     	frequencies1800 = new Text (frequenciesGroup, SWT.BORDER | SWT.SINGLE);
+    	//LN, 17.03.2011, fix for 2487, make Text field non-editable
+        frequencies1800.setEditable(false);
     	frequencies1800.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false));
     	frequencies1800.addModifyListener(new ModifyListener(){
 
@@ -134,6 +138,8 @@ public class AfpAvailableResourcesPage extends AfpWizardPage implements Listener
     	freq850Label = new Label (frequenciesGroup, SWT.LEFT);
     	freq850Label.setText("850: ");
     	frequencies850 = new Text (frequenciesGroup, SWT.BORDER | SWT.SINGLE);
+    	//LN, 17.03.2011, fix for 2487, make Text field non-editable
+        frequencies850.setEditable(false);
     	frequencies850.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false));
     	frequencies850.addModifyListener(new ModifyListener(){
 
@@ -162,6 +168,8 @@ public class AfpAvailableResourcesPage extends AfpWizardPage implements Listener
     	freq1900Label = new Label (frequenciesGroup, SWT.LEFT);
     	freq1900Label.setText("1900: ");
     	frequencies1900 = new Text (frequenciesGroup, SWT.BORDER | SWT.SINGLE);
+    	//LN, 17.03.2011, fix for 2487, make Text field non-editable
+        frequencies1900.setEditable(false);
     	frequencies1900.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false));
     	frequencies1900.addModifyListener(new ModifyListener(){
 
@@ -215,7 +223,6 @@ public class AfpAvailableResourcesPage extends AfpWizardPage implements Listener
 		    bcc[i].setSelection(true);
 	    }
 	    
-    	
 	    setPageComplete(true);
 		setControl (thisParent);
 		
