@@ -72,12 +72,6 @@
           <toolbar
                 id="org.amanzi.neo.loader.toolbar">
              <command
-                   commandId="org.amanzi.neo.loader.commands.LoadNetworkSite"
-            icon="icons/16/network_site.png"
-            id="org.amanzi.neo.loader.LoadNetworkSite"
-                   tooltip="Load Network Data">
-             </command>
-             <command
                    commandId="org.amanzi.neo.loader.commands.LoadDrive"
             icon="icons/16/drive.png"
             id="org.amanzi.neo.loader.LoadDrive"
@@ -89,16 +83,6 @@
     
    <extension
           point="org.eclipse.ui.importWizards">
-       <wizard  
-             category="org.amanzi.load"
-             class="org.amanzi.neo.wizards.NetworkSiteImportWizard"
-             icon="icons/16/network.png"
-             id="org.amanzi.neo.wizards.NetworkSiteImportWizard"
-             name="Import Network Site data">
-          <description>
- 				Import one or more drive data log files into the project database
-          </description>
-       </wizard>  
         <wizard
              category="org.amanzi.load"
              class="org.amanzi.neo.wizards.TemsImportWizard"
@@ -109,17 +93,6 @@
  				Import one or more drive data log files into the project database
           </description>
        </wizard>
-        <wizard
-             category="org.amanzi.load"
-             class="org.amanzi.neo.wizards.GPEHImportWizard"
-             icon="icons/16/delta_network.png"
-             id="org.amanzi.neo.wizards.GPEHImportWizard"
-             name="Import Drive data">
-          <description>
- 				Import one or more drive data log files into the project database
-          </description>
-       </wizard>
-          
        <category
              id="org.amanzi.load"
              name="Amanzi Data">
