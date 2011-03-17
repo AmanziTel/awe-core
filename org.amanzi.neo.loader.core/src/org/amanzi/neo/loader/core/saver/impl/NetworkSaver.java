@@ -117,8 +117,6 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
             startMainTx(1000);
             initializeIndexes();
             headerNotHandled = false;
-            // Kasnitskij_V:
-            rootNode.setProperty(INeoConstants.PROPERTY_STRUCTURE_NAME, getLevelsFound());
             parseHeader(headers);
             saveFileStructure();
         }
@@ -133,14 +131,12 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
      * @return levels found as an array of Strings
      */
     private String[] getLevelsFound() {
-        levels.iterator().next();
-        String[] levelsFound = new String[NetworkLevels.values().length];
-        Iterator<NetworkLevels> iterator = levels.iterator();
+        String[] levelsFound = new String[levels.size()];
         int i = 0;
-        iterator.next();
         for (NetworkLevels networkLevel : NetworkLevels.values()) {
-            String name = networkLevel.name().toLowerCase();
-            levelsFound[i++] = name;
+            if (levels.contains(networkLevel)) {
+                levelsFound[i++] = networkLevel.name().toLowerCase();;
+            }
         }
         return levelsFound;
     }
@@ -228,6 +224,9 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
                 sectorField = sectorField.replaceAll(siteField + "[\\:\\-]?", "");
             }
             if (cityField != null && !cityField.equals(cityName)) {
+                if (!levels.contains(NetworkLevels.CITY)) {
+                    levels.add(NetworkLevels.CITY);
+                }
                 cityName = cityField;
                 city = city_s.get(cityField);
                 if (city == null) {
@@ -259,6 +258,9 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
             }
             if (lon == null) {
                 lon = 0d;
+            }
+            if (!levels.contains(NetworkLevels.SITE)) {
+                levels.add(NetworkLevels.SITE);
             }
             if (!siteField.equals(siteName)) {
                 siteName = siteField;
@@ -304,6 +306,9 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
                 updateProperty(rootname,NodeTypes.SITE.getId(),site,INeoConstants.PROPERTY_LAT_NAME, lat);
                 updateProperty(rootname,NodeTypes.SITE.getId(),site,INeoConstants.PROPERTY_LON_NAME, lon);
                 index(site);
+            }
+            if (!levels.contains(NetworkLevels.SECTOR)) {
+                levels.add(NetworkLevels.SECTOR);
             }
             Integer ci = getNumberValue(Integer.class, INeoConstants.PROPERTY_SECTOR_CI, element);
             Integer lac = getNumberValue(Integer.class, INeoConstants.PROPERTY_SECTOR_LAC, element);
@@ -396,7 +401,11 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
         
     }
 
-
+    @Override
+    public void finishUp(BaseTransferData element) {
+        rootNode.setProperty(INeoConstants.PROPERTY_STRUCTURE_NAME, getLevelsFound());
+        super.finishUp(element);
+    }
 
 
 
