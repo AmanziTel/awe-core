@@ -155,5 +155,14 @@ class NodeWrapper implements Node {
     public Iterable<Object> getPropertyValues() {
         return node.getPropertyValues();
     }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (o != null) {
+            return node.equals(o);
+        }
+        
+        return false;
+    }
 
 }
