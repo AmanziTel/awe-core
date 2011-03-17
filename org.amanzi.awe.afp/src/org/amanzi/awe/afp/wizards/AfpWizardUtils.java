@@ -1,20 +1,24 @@
+/* AWE - Amanzi Wireless Explorer
+ * http://awe.amanzi.org
+ * (C) 2008-2009, AmanziTel AB
+ *
+ * This library is provided under the terms of the Eclipse Public License
+ * as described at http://www.eclipse.org/legal/epl-v10.html. Any use,
+ * reproduction or distribution of the library constitutes recipient's
+ * acceptance of this agreement.
+ *
+ * This library is distributed WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ */
+
 package org.amanzi.awe.afp.wizards;
 
 
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.ListIterator;
 
-import org.amanzi.awe.afp.models.AfpDomainModel;
-import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
-import org.amanzi.awe.afp.models.AfpHoppingMALDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
 import org.amanzi.awe.afp.models.AfpSeparationDomainModel;
-import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.services.enums.NodeTypes;
-import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -31,31 +35,17 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.ReturnableEvaluator;
-import org.neo4j.graphdb.StopEvaluator;
-import org.neo4j.graphdb.TraversalPosition;
-import org.neo4j.graphdb.Traverser;
-import org.neo4j.graphdb.Traverser.Order;
 
 
 public class AfpWizardUtils {
 	
 	private static String domainName;
 	private static String[] selectedArray;
-	private static Button actionButton;
 	
 	protected static Group getStepsGroup(Composite parent, int stepNumber){
 		Group stepsGroup = new Group(parent, SWT.NONE);
@@ -82,78 +72,6 @@ public class AfpWizardUtils {
 		
 		return stepsGroup;
 	}
-	
-	/*protected static String[][] getSummaryTableItems(){
-		
-		String rowHeaders[] = {"Selected Sectors: ",
-							   "Selected TRXs: ",
-							   "BCCH TRXs: ",
-							   "TCH Non/BB Hopping TRXs: ",
-							   "TCH SY HoppingTRXs: "};
-		
-		String[][] items = new String[rowHeaders.length][6];
-		
-		for (int i=0; i < items.length; i++){
-			items[i][0] = rowHeaders[i];
-		}
-		
-		int total = 0;
-
-		//populate 1st row
-		int[] sectorStats = getStatistics("Sector");
-		
-		for (int i = 0; i < sectorStats.length; i++){
-			items[0][i+2] = Integer.toString(sectorStats[i]);
-			total += sectorStats[i];
-		}
-		items[0][1] = Integer.toString(total);
-		
-		//populate 2nd row
-		total = 0;
-		int[] selectedTRXStats = getStatistics("SelectedTRX");
-		
-		for (int i = 0; i < selectedTRXStats.length; i++){
-			items[1][i+2] = Integer.toString(selectedTRXStats[i]);
-			total += selectedTRXStats[i];
-		}
-		items[1][1] = Integer.toString(total);
-		
-		//populate 3rd row
-		total = 0;
-		int[] bcchTRXStats = getStatistics("BCCHTRX");
-		
-		for (int i = 0; i < bcchTRXStats.length; i++){
-			items[2][i+2] = Integer.toString(bcchTRXStats[i]);
-			total += bcchTRXStats[i];
-		}
-		items[2][1] = Integer.toString(total);
-		
-		//populate 4th row
-		total = 0;
-		int[] nonBBTRXStats = getStatistics("NonBBTRX");
-		
-		for (int i = 0; i < nonBBTRXStats.length; i++){
-			items[3][i+2] = Integer.toString(nonBBTRXStats[i]);
-			total += nonBBTRXStats[i];
-		}
-		items[3][1] = Integer.toString(total);
-		
-		//populate 4th row
-		total = 0;
-		int[] sYTRXStats = getStatistics("SYTRX");
-		
-		for (int i = 0; i < sYTRXStats.length; i++){
-			items[4][i+2] = Integer.toString(sYTRXStats[i]);
-			total += sYTRXStats[i];
-		}
-		items[4][1] = Integer.toString(total);
-		
-		return items;
-	}
-	
-	public static int[] getStatistics(String element){
-		return new int[] {150, 150, 0, 0};
-	}*/
 	
 	protected static void makeFontBold(Control label){
 		FontData[] fD = label.getFont().getFontData();
@@ -210,16 +128,13 @@ public class AfpWizardUtils {
 		
 		final List selectedList = createListSelector(freqGroup, frequenciesLeft, selectedRanges, selectionLabel);
 		
-		/*	selectedList.add(new SelectionAdapter() {
-			
-		});*/
 		Button selectButton = new Button(subShell, SWT.PUSH);
 		selectButton.setLayoutData(new GridData(GridData.END, GridData.BEGINNING, true, false, 2, 1));
 		selectButton.setText("Select");
 		selectButton.addSelectionListener(new SelectionAdapter(){
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				String selected[] = selectedList.getItems();
+				String selected[] = AfpModel.arrayToRangeArray(selectedList.getItems());
 				String selectedString = "";
 				for (int i = 0; i< selected.length; i++){
 					if (i == selected.length - 1)
@@ -257,7 +172,6 @@ public class AfpWizardUtils {
 	 */
 	public static List createListSelector(Group parentGroup, String[] leftList, String[] rightList, Label selectionLabel){
 		
-		int numSelected = 0;
 		final Label thisSelectionLabel = selectionLabel;
 		final List freqList = new List(parentGroup, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
 		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true, true, 1, 2);
@@ -280,7 +194,7 @@ public class AfpWizardUtils {
 		gridData.heightHint = trim.height;
 		gridData.widthHint = listWidth;
 		selectedList.setLayoutData(gridData);
-		selectedList.setItems(rightList);
+		selectedList.setItems(AfpModel.rangeArraytoArray(rightList));
 		
 		rightArrowButton.addSelectionListener(new SelectionAdapter(){
 			@Override
@@ -291,11 +205,8 @@ public class AfpWizardUtils {
 						selectedList.add(item);
 						freqList.remove(item);
 					}
-					String array[] = AfpModel.rangeArraytoArray(selectedList.getItems());
-					String selected[] = AfpModel.arrayToRangeArray(array);
-					selectedArray = selected;
-					selectedList.setItems(selected);
-					thisSelectionLabel.setText("" + array.length + " Frequencies selected");
+					selectedArray = selectedList.getItems();
+					thisSelectionLabel.setText("" + selectedArray.length + " Frequencies selected");
 				}
 				
 			}
