@@ -246,7 +246,8 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         int[] dccno = new int[64];
         int j = 0;
         for (int ind = 0; ind < 64; ind++) {
-            String valStr = getStringValue(i, "dchno_" + ind, element);
+            //LN, 17.03.2011, we should skip first block of data
+            String valStr = getStringValue(i + 1, "dchno_" + ind, element);
             if (valStr != null) {
                 try {
                     int valInt = Integer.parseInt(valStr);
@@ -383,12 +384,13 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
                         if (hoptype < 2 && bcchno != null) {
                             int j = -1;
                             for (Relationship rel : sector
-                                    .getRelationships(DatasetRelationshipTypes.PLAN_ENTRY, Direction.OUTGOING)) {
+                                    .getRelationships(DatasetRelationshipTypes.CHILD, Direction.OUTGOING)) {
                                 final Node trxOth = rel.getOtherNode(sector);
                                 if (trx.equals(trxOth)) {
                                     continue;
                                 }
-                                if (channelGr.equals(trxOth.getProperty("group", null))) {
+                                if (channelGr.equals(trxOth.getProperty("group", null)) &&
+                                    !(Boolean)trxOth.getProperty("bcch")) {
                                     j++;
                                 }
                             }
@@ -400,7 +402,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
                                     if (k == j) {
                                         arfcn = dchno[i];
                                         break;
-                                    }
+                                    }                                    
                                 }
                             }
                         } else {
