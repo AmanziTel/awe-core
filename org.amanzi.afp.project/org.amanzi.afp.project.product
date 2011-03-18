@@ -6,14 +6,13 @@
    <aboutInfo>
       <image path="/org.amanzi.afp/nl/en/about.gif"/>
       <text>
-         Opti-Test AFP
+         Opti-AFP 6.0 lite
 
 This automatic frequency planning application is developed by Triangulum and
 AmanziTel, and has been developed on AWE, the Amanzi Wireless Explorer
 open source platform for data management, planning and optimization in
-cellular radio networks. It is distributed for free and without warranty. It is based
-on software written by AmanziTel AB, Refractions Research, Neotechnology, the
-Eclipse Foundation and others.
+cellular radio networks. It is based on software written by AmanziTel AB,
+Refractions Research, Neotechnology, the Eclipse Foundation and others.
 
 Please refer to the http://awe.amanzi.org/license.html  for complete licensing
 information for the AWE platform.
@@ -33,7 +32,7 @@ For more information and support visit http://www.amanzitel.com/page/AWE
 
    <splash
       startupProgressRect="0,312,500,18"
-      startupMessageRect="7,230,445,16"
+      startupMessageRect="7,225,445,16"
       startupForegroundColor="FFFFFF" />
    <launcher name="afp">
       <linux icon="/org.amanzi.afp/icons/afp_128.xpm"/>
