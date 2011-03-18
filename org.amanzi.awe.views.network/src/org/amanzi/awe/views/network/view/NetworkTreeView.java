@@ -206,6 +206,8 @@ public class NetworkTreeView extends ViewPart {
 
         tSearch = new Text(parent, SWT.BORDER);
         viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+    
+        
         viewer.addSelectionChangedListener(new NetworkSelectionListener());
         viewer.addDoubleClickListener(new IDoubleClickListener() {
             @Override
@@ -230,9 +232,8 @@ public class NetworkTreeView extends ViewPart {
         try {
             setProviders(neoServiceProvider);
             setEditable(false);
-            viewer.setInput(getSite());
-            getSite().setSelectionProvider(viewer);
-
+            viewer.setInput(getSite());          
+            getSite().setSelectionProvider(viewer);           
             hookContextMenu();
         } finally {
             tx.finish();

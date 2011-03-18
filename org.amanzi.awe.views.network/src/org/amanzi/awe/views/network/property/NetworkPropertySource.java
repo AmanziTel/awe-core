@@ -96,6 +96,7 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
         String[] allKeys; 
         DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
         try {
+        	
             currentNetworkName = datasetService.findRootByChild((Node)container)
                                             .getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
         }
