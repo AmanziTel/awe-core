@@ -58,8 +58,9 @@ public class AfpExporter extends Job {
 
     protected static final String AMANZI_STR = ".amanzi";
     private static final String DATA_SAVER_DIR = "AfpTemp";
+    public static final String PATH_SEPARATOR = File.separator;
     public static final String tmpAfpFolder = getTmpFolderPath();
-    public static final String PATH_SEPARATOR = File.pathSeparator;
+    
 
     public static final int CONTROL = 0;
     public static final int CELL = 1;
