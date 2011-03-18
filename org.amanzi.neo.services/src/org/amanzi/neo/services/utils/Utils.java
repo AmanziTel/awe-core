@@ -372,7 +372,7 @@ public class Utils {
             public boolean isReturnableNode(TraversalPosition currentPos) {
                 return currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(type);
             }
-        }, NetworkRelationshipTypes.CHILD, Direction.INCOMING);
+        }, NetworkRelationshipTypes.CHILD, Direction.INCOMING, DatasetRelationshipTypes.PLAN_ENTRY, Direction.BOTH);
         return traverse.iterator().hasNext() ? traverse.iterator().next() : null;
     }
     /**

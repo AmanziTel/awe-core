@@ -937,6 +937,7 @@ public class DatasetService extends AbstractService {
 
     public String[] getSructureTypesId(Node sourceNode) {
         Node networkNode = Utils.getParentNode(sourceNode, NodeTypes.NETWORK.getId());
+       
         return (String[])networkNode.getProperty(INeoConstants.PROPERTY_STRUCTURE_NAME, new String[0]);
     }
 
@@ -965,7 +966,7 @@ public class DatasetService extends AbstractService {
      */
     public Traverser findProjectByChild(Node node) {
         TraversalDescription trd = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst().relationships(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING)
-                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).relationships(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.INCOMING).filter(
+                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).relationships(DatasetRelationshipTypes.PLAN_ENTRY, Direction.BOTH).relationships(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.INCOMING).filter(
                         new Predicate<Path>() {
 
                             @Override
