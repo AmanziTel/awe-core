@@ -308,15 +308,7 @@ public class FrequencyPlanAnalyser extends ViewPart implements IPropertyChangeLi
                         selInf.setNcc(cNcc.getText());
                         selInf.setSectorName(cSector.getText());
                         selInf.setTrxType(cTRX.getText());
-                        // Kasnitskij_V:
-                        if (propertyCombo.getText().equals("")) {
-                            String firstItemInCombo = propertyCombo.getItem(0);
-                            findOrCreateAggregateNodeInNewThread(object, firstItemInCombo);
-                            propertyCombo.setText(firstItemInCombo);
-                        }
-                        else {
-                            findOrCreateAggregateNodeInNewThread(object, propertyCombo.getText());
-                        }
+                        findOrCreateAggregateNodeInNewThread(object, propertyCombo.getText());
                     }
                 }
                 
@@ -325,6 +317,8 @@ public class FrequencyPlanAnalyser extends ViewPart implements IPropertyChangeLi
                 }
             });
             launch.setText("Execute");
+            launch.setEnabled(false);
+            
             ld=new GridData();
             ld.widthHint=50;
             ld.verticalSpan=2;
@@ -572,6 +566,11 @@ public class FrequencyPlanAnalyser extends ViewPart implements IPropertyChangeLi
                     }
                     Collections.sort(propertyList);
                     propertyCombo.setItems(propertyList.toArray(new String[] {}));
+                    
+                    // Kasnitskij_V:
+                    if (propertyCombo.getText().equals("")) {
+                        launch.setEnabled(false);
+                    }
                 }
 
                 @Override
@@ -625,6 +624,11 @@ public class FrequencyPlanAnalyser extends ViewPart implements IPropertyChangeLi
                         }
 //                        findOrCreateAggregateNodeInNewThread(gisNode, propertyName);
                         // chartUpdate(aggrNode);
+
+                        // Kasnitskij_V:
+                        if (!propertyCombo.getText().equals("")) {
+                            launch.setEnabled(true);
+                        }
                     }
                 }
 
