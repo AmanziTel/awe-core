@@ -439,94 +439,14 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
                 }
                 break;
             case NEIGBOURS_DATA:
-                properties.clear();
-                try {
-                    for (String prop : ColumnsConfigPageTypes.NEIGBOURS_DATA.getProperties()) {
-                        properties.add(cleanHeader(prop));
-                    }
-                }
-                catch (NullPointerException e) {
-                    
-                }
-                coll.clear();
-                propertyMap.put(NodeTypes.SECTOR.getId(), coll);
-                
-                for (String propertyName : properties) {
-                    coll.add(propertyName);
-                }
-                break;
             case FREQUENCY_CONSTRAINT_DATA:
-                properties.clear();
-                try {
-                    for (String prop : ColumnsConfigPageTypes.FREQUENCY_CONSTRAINT_DATA.getProperties()) {
-                        properties.add(cleanHeader(prop));
-                    }
-                }
-                catch (NullPointerException e) {
-                    
-                }
-                coll.clear();
-                propertyMap.put(NodeTypes.SECTOR.getId(), coll);
-                
-                for (String propertyName : properties) {
-                    coll.add(propertyName);
-                }
-                break;
             case INTERFERENCE_MATRIX:
-                properties.clear();
-                try {
-                    for (String prop : ColumnsConfigPageTypes.INTERFERENCE_MATRIX.getProperties()) {
-                        properties.add(cleanHeader(prop));
-                    }
-                }
-                catch (NullPointerException e) {
-                    
-                }
-                coll.clear();
-                propertyMap.put(NodeTypes.SECTOR.getId(), coll);
-                
-                for (String propertyName : properties) {
-                    coll.add(propertyName);
-                }
-                break;
             case SEPARATION_CONSTRAINT_DATA:
-                properties.clear();
-                try {
-                    for (String prop : ColumnsConfigPageTypes.SEPARATION_CONSTRAINT_DATA.getProperties()) {
-                        properties.add(cleanHeader(prop));
-                    }
-                }
-                catch (NullPointerException e) {
-                    
-                }
-                coll.clear();
-                propertyMap.put(NodeTypes.SECTOR.getId(), coll);
-                
-                for (String propertyName : properties) {
-                    coll.add(propertyName);
-                }
-                break;
             case TRAFFIC_DATA:
-                properties.clear();
-                try {
-                    for (String prop : ColumnsConfigPageTypes.TRAFFIC_DATA.getProperties()) {
-                        properties.add(cleanHeader(prop));
-                    }
-                }
-                catch (NullPointerException e) {
-                    
-                }
-                coll.clear();
-                propertyMap.put(NodeTypes.SECTOR.getId(), coll);
-                
-                for (String propertyName : properties) {
-                    coll.add(propertyName);
-                }
-                break;
             case TRX_DATA:
                 properties.clear();
                 try {
-                    for (String prop : ColumnsConfigPageTypes.TRX_DATA.getProperties()) {
+                    for (String prop : typeOfPage.getProperties()) {
                         properties.add(cleanHeader(prop));
                     }
                 }
@@ -657,6 +577,10 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
                 String origHeader = originalHeaders.get(type + INeoConstants.PROPERTY_NAME_PREFIX + cleanHeader(propertyName));
                 if (origHeader != null) {
                     columnName = origHeader;
+                    isExistColumnName = true;
+                }
+                if (columnName.equals("")) {
+                    columnName = ColumnsConfigPageTypes.getNameOfProperty(propertyName);
                     isExistColumnName = true;
                 }
                 rows.add(new RowWr(type, propertyName, columnName));

@@ -17,6 +17,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -46,6 +47,7 @@ import org.eclipse.ui.PlatformUI;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.helpers.Predicate;
 import org.neo4j.kernel.Traversal;
@@ -89,16 +91,16 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         final String quoteChar = getQuoteChar();
         final String charSet = filePropertyPage.getCharsetValue();
         final Node rootNode = selectionPage.getSelectedNode();
-        final Map<String, Map<String, String>> propertyMap = columnConfigPage.getPropertyMap();
+        //final Map<String, Map<String, String>> propertyMap = columnConfigPage.getPropertyMap();
         final ArrayList<Boolean> checkBoxStates = savingDataSelectionPage.getCheckBoxesState();
-        final String fileWithPrefix = savingDataSelectionPage.getFileWithPrefixName();
-
+        final String fileWithPrefix = fileSelected;
+        final HashMap<String, Map<String, Map<String, String>>> pagesWithProperties = selectionPage.getPagesWithProperties();
         Job exportJob = new Job("Network export") {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-                    runExport(fileSelected, propertyMap, rootNode, checkBoxStates, fileWithPrefix, separator, quoteChar, charSet);
+                    runExport(fileWithPrefix, pagesWithProperties, rootNode, checkBoxStates, separator, quoteChar, charSet);
                     return Status.OK_STATUS;
                 } catch (IOException e) {
                     return new Status(Status.ERROR, NetworkTreePlugin.PLUGIN_ID, e.getLocalizedMessage(), e);
@@ -138,6 +140,8 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
 
     @Override
     public void addPages() {
+        availablePages.clear();
+        
         super.addPages();
         if (selectionPage == null) {
             selectionPage = new ExportNetworkWizardSelectionPage("mainPage", selection);
@@ -231,17 +235,18 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
      * Run export.
      * 
      * @param fileSelected the file selected
-     * @param propertyMap the property map
+     * @param propertyMapToNetwork the property map
      * @param rootNode the root node
      * @param separator the separator
      * @param quoteChar the quote char
      * @param charSet the char set
      * @throws IOException
      */
-    private void runExport(final String fileSelected, final Map<String, Map<String, String>> propertyMap, Node rootNode,
-            ArrayList<Boolean> checkBoxStates, String fileWithPrefix, String separator, String quoteChar, String charSet)
+    private void runExport(final String fileSelected, final HashMap<String, Map<String, Map<String, String>>> propertyMap, Node rootNode,
+            ArrayList<Boolean> checkBoxStates, String separator, String quoteChar, String charSet)
             throws IOException {
-
+        final Map<String, Map<String, String>> propertyMapToNetwork = propertyMap.get(ColumnsConfigPageTypes.NETWORK_SECTOR_DATA.getName());
+        
         DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
 
         String[] strtypes = datasetService.getSructureTypesId(rootNode);
@@ -281,7 +286,7 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
 
             try {
                 for (String headerType : headers) {
-                    Map<String, String> propertyCol = propertyMap.get(headerType);
+                    Map<String, String> propertyCol = propertyMapToNetwork.get(headerType);
                     if (propertyCol == null) {
                         continue;
                     } else {
@@ -314,17 +319,17 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                         if (nodeType == NodeTypes.NETWORK) {
                             continue;
                         }
-                        Map<String, String> propertyCol = propertyMap.get(nodeType.getId());
+                        Map<String, String> propertyCol = propertyMapToNetwork.get(nodeType.getId());
                         // if property exist, but not need write
                         if (propertyCol == null) {
                             continue;
                         }
                         int i = 0, index = 0;
                         while (!nodeType.getId().equals(strtypes[i])) {
-                            if (propertyMap.get(strtypes[i]) == null)
+                            if (propertyMapToNetwork.get(strtypes[i]) == null)
                                 index++;
                             else
-                                index += propertyMap.get(strtypes[i]).keySet().size();
+                                index += propertyMapToNetwork.get(strtypes[i]).keySet().size();
                             i++;
                         }
 
@@ -366,7 +371,7 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
             }
             indexOfPage++;
         }
-        runExportAdditionalData(rootNode, exportingTypes, fileWithPrefix, separator, quoteChar, charSet);
+        runExportAdditionalData(rootNode, exportingTypes, propertyMap, fileSelected, separator, quoteChar, charSet);
     }
     
     /**
@@ -398,7 +403,8 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         return writer;
     }
     
-    private void runExportAdditionalData(Node rootNode, ArrayList<ColumnsConfigPageTypes> pageTypes, String fileWithPrefix, String separator, 
+    private void runExportAdditionalData(Node rootNode, ArrayList<ColumnsConfigPageTypes> pageTypes, 
+            HashMap<String, Map<String, Map<String, String>>> propertyMap, String fileWithPrefix, String separator, 
             String quoteChar, String charSet) throws IOException {
         
         for (ColumnsConfigPageTypes pageType : pageTypes) {
@@ -428,7 +434,13 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
             case TRX_DATA:
             case SEPARATION_CONSTRAINT_DATA:
                 try {
-                    writer.writeNext(pageType.getProperties());
+                    Collection<String> headers = propertyMap.get(pageType.getName()).get("sector").values();
+                    String[] headersToArray = new String[headers.size()];
+                    int i = 0;
+                    for (String str : headers) {
+                        headersToArray[i++] = str;
+                    }
+                    writer.writeNext(headersToArray);
                     
                     // export all data
                     while (iter.hasNext()) {
@@ -484,6 +496,12 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         for (String propertyName : node.getPropertyKeys()) {
             if (propertyName.equals(cleanHeader(possibleProperty)))
                 return propertyName;
+        }
+        for (Relationship rel : node.getRelationships()) {
+            Iterable<String> iter = rel.getPropertyKeys();
+            for (String str : iter) {
+                System.out.println(str);
+            }
         }
         return possibleProperty;
     }

@@ -118,4 +118,19 @@ public enum ColumnsConfigPageTypes {
         }
         return null;
     }
+    
+    public static String getNameOfProperty(String searchingProperty) {
+        for (ColumnsConfigPageTypes type : ColumnsConfigPageTypes.values()) {
+            for (String property : type.getProperties()) {
+                String prop = cleanHeader(searchingProperty);
+                if (prop.equals(cleanHeader(property)))
+                    return property;
+            }
+        }
+        return "";
+    }
+    
+    private static String cleanHeader(String header) {
+        return header.replaceAll("[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+", "_").replaceAll("[^\\w]+", "_").replaceAll("_+", "_").replaceAll("\\_$", "").toLowerCase();
+    }
 }

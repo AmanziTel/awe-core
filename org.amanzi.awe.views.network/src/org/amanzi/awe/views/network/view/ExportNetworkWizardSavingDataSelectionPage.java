@@ -16,22 +16,15 @@ package org.amanzi.awe.views.network.view;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
-import org.amanzi.neo.core.utils.EditPropertiesPage;
-import org.amanzi.neo.services.enums.INodeType;
 import org.eclipse.jface.dialogs.DialogPage;
-import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
 
 /**
  * TODO Purpose of 
@@ -43,7 +36,6 @@ import org.eclipse.swt.widgets.Label;
  */
 public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
 
-    private FileFieldEditor editor;
     private Group main;
     private String fileWithPrefixName = "";
     private Button checkboxFrequencyConstraintData;
@@ -60,26 +52,14 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
     protected ExportNetworkWizardSavingDataSelectionPage(String pageName) {
         super(pageName);
         setDescription("Choose data that should be exported and prefix of target files for export");
-        setPageComplete(false);
+        //setPageComplete(false);
     }
-    
+     
     @Override
     public void createControl(Composite parent) {
         main = new Group(parent, SWT.NULL);
         main.setLayout(new GridLayout(3, false));
 
-        Label label = new Label(main, SWT.LEFT);
-        label.setText("Network");
-        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
-        
-        editor = new FileFieldEditor("DirectorySelect", "Postfix name", main);
-
-        editor.getTextControl(main).addModifyListener(new ModifyListener() {
-            public void modifyText(ModifyEvent e) {
-                setDirectoryName(editor.getStringValue());
-            }
-        });
-        
         GridData checkboxLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
         
         checkboxNetworkSectorData = new Button(main, SWT.CHECK);
@@ -127,16 +107,6 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
         arrayOfCheckboxes.add(checkboxNetworkSectorData);
         
         setControl(main);
-    }
-    
-    /**
-     * Sets the file name.
-     * 
-     * @param fileName the new file name
-     */
-    protected void setDirectoryName(String directoryName) {
-        this.fileWithPrefixName = directoryName;
-        validate();
     }
 
     /**
@@ -218,30 +188,4 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
         
         return nameOfPages;
     }
-    
-    /**
-     * Validate page content.
-     */
-    private void validate() {
-        if (fileWithPrefixName.isEmpty()) {
-            setPageComplete(false);
-            setMessage("Target file is not selected.", DialogPage.ERROR);
-            return;
-        }
-        if (!new File(fileWithPrefixName).isAbsolute() || new File(fileWithPrefixName).isDirectory()) {
-            setPageComplete(false);
-            setMessage(String.format("File path '%s' is not valid.", fileWithPrefixName), DialogPage.ERROR);
-            return;
-        }
-
-        if (new File(fileWithPrefixName).isFile()) {
-            setPageComplete(true);
-            setMessage(String.format("File path '%s' is already exist.", fileWithPrefixName), DialogPage.WARNING);
-            return;
-        }
-
-        setMessage("", DialogPage.NONE);
-        setPageComplete(true);
-    }
-
 }

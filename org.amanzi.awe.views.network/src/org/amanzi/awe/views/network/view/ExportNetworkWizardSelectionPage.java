@@ -14,10 +14,10 @@
 package org.amanzi.awe.views.network.view;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.neo.services.DatasetService;
@@ -61,7 +61,6 @@ import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.helpers.Predicate;
-import org.neo4j.shell.apps.Export;
 
 /**
  * <p>
@@ -81,7 +80,7 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
     private final List<TreeNeoNode> elements = new LinkedList<TreeNeoNode>();
     private final DatasetService service = NeoServiceFactory.getInstance().getDatasetService();
     private final IStructuredSelection selection;
-
+    private final HashMap<String, Map<String, Map<String, String>>> pagesWithProperties = new HashMap<String, Map<String,Map<String,String>>>();
     /**
      * Instantiates a new export network wizard selection page.
      * 
@@ -125,8 +124,10 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
                 if (element.getType() == NodeTypes.NETWORK) {
                     selectedNode = element.getNode();
                     nextPage.changeNodeSelection(selectedNode);
+                    pagesWithProperties.put(nextPage.getName(), nextPage.getPropertyMap());
                     for (ExportNetworkWizardColumnsConfigPage page : ExportNetworkWizard.getAvailablePages()) {
                         page.changeNodeSelection(selectedNode);
+                        pagesWithProperties.put(page.getName(), page.getPropertyMap());
                     }
                 } else {
                     selectedNode = null;
@@ -158,6 +159,15 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
         });
 
         setControl(main);
+    }
+    
+    /**
+     * Get pages with properties
+     *
+     * @return
+     */
+    public HashMap<String, Map<String, Map<String, String>>> getPagesWithProperties() {
+        return pagesWithProperties;
     }
 
     /**
