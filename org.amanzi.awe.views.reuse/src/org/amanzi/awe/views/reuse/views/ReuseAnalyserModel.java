@@ -1402,6 +1402,7 @@ public class ReuseAnalyserModel {
             Node parent = aggrNode;
             for (Object property : valueMap.keySet()) {
                 Column column = new Column(aggrNode, parent, 0, 0.0, distribute, String.valueOf(property), service);
+                column.setComparableValue((Comparable)property);
                 column.setValue(((Number)valueMap.get(property)).intValue());
                 parent = column.getNode();
                 result.put(column, 0);

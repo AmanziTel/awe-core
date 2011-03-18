@@ -52,6 +52,8 @@ public class Column implements Comparable<Column> {
     /** The property value. */
     private Object propertyValue;
 
+    private Comparable compValue = null;
+
     /**
      * Constructor.
      *
@@ -210,42 +212,45 @@ public class Column implements Comparable<Column> {
      */
     @Override
     public int compareTo(Column o) {
-        return minValue.compareTo(o.minValue);
+        return compValue == null ? minValue.compareTo(o.minValue) : compValue.compareTo(o.compValue);
     }
 
-    /**
-     * Hash code.
-     *
-     * @return the int
-     */
+
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + ((compValue == null) ? 0 : compValue.hashCode());
         result = prime * result + ((minValue == null) ? 0 : minValue.hashCode());
         return result;
     }
 
-    /**
-     * Equals.
-     *
-     * @param obj the obj
-     * @return true, if successful
-     */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (!(obj instanceof Column)) {
             return false;
+        }
         Column other = (Column)obj;
-        if (minValue == null) {
-            if (other.minValue != null)
+        if (compValue == null) {
+            if (other.compValue != null) {
                 return false;
-        } else if (!minValue.equals(other.minValue))
+            }
+        } else if (!compValue.equals(other.compValue)) {
             return false;
+        }
+        if (minValue == null) {
+            if (other.minValue != null) {
+                return false;
+            }
+        } else if (!minValue.equals(other.minValue)) {
+            return false;
+        }
         return true;
     }
 
@@ -337,6 +342,13 @@ public class Column implements Comparable<Column> {
         }else{
             return false;
         }
+    }
+
+    /**
+     * @param property
+     */
+    public void setComparableValue(Comparable property) {
+        compValue = property;
     }
 
 }
