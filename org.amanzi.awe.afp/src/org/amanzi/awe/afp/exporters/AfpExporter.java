@@ -275,7 +275,9 @@ public class AfpExporter extends Job {
                                         cellWriters[i].write(sb.toString());
                                     }
 
-                                    writeInterferenceForTrx(sectorNode, trxNode, intWriters[i], sectorIntValues, rf);
+                                    if (freqArray.length < 2) {
+                                        writeInterferenceForTrx(sectorNode, trxNode, intWriters[i], sectorIntValues, rf);
+                                    }
 
                                 }
                             }
