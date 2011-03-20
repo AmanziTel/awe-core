@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.awe.views.network.NetworkTreePlugin;
+import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
@@ -33,6 +34,9 @@ import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
+import org.amanzi.neo.services.node2node.NodeToNodeRelationService.NodeToNodeRelationshipTypes;
+import org.amanzi.neo.services.node2node.NodeToNodeTypes;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -45,10 +49,15 @@ import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.traversal.Evaluation;
+import org.neo4j.graphdb.traversal.Evaluator;
 import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.graphdb.traversal.Traverser;
 import org.neo4j.helpers.Predicate;
 import org.neo4j.kernel.Traversal;
 import org.neo4j.kernel.Uniqueness;
@@ -83,7 +92,8 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
     private static ArrayList<ExportNetworkWizardColumnsConfigPage> availablePages = new ArrayList<ExportNetworkWizardColumnsConfigPage>();
     private static int currentIndex;
     public static final String PROPERTY_CSV = "propertyCSV";
-
+    private static final HashMap<String, Map<String, Map<String, String>>> pagesWithProperties = new HashMap<String, Map<String,Map<String,String>>>();
+    
     @Override
     public boolean performFinish() {
         final String fileSelected = selectionPage.getFileName();
@@ -371,6 +381,29 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
             }
             indexOfPage++;
         }
+        
+//        GraphDatabaseService databaseService = DatabaseManager.getInstance().getCurrentDatabaseService();
+//        Transaction tx = databaseService.beginTx();
+//
+//        try {
+//            rootNode.setProperty("node2node", NodeToNodeTypes.NEIGHBOURS.toString());
+//            rootNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, "rootNode");
+//            tx.success();
+//        } finally {
+//            tx.finish();
+//        }
+//        
+//        NodeToNodeRelationModel model = new NodeToNodeRelationModel(rootNode);
+//        Traverser traverser = model.getNeighTraverser(new Evaluator() {
+//            
+//            @Override
+//            public Evaluation evaluate(Path arg0) {
+//                return null;
+//            }
+//        });
+//        Iterable<Relationship> iter2 = traverser.relationships();
+//        
+//        
         runExportAdditionalData(rootNode, exportingTypes, propertyMap, fileSelected, separator, quoteChar, charSet);
     }
     
@@ -427,6 +460,9 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
             oldFields.add("start string");
             
             switch (pageType) {
+            case NEIGBOURS_DATA:
+                break;
+                
             case FREQUENCY_CONSTRAINT_DATA:
                 break;
                 
@@ -434,7 +470,7 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
             case TRX_DATA:
             case SEPARATION_CONSTRAINT_DATA:
                 try {
-                    Collection<String> headers = propertyMap.get(pageType.getName()).get("sector").values();
+                    Collection<String> headers = pagesWithProperties.get(pageType.getName()).get("sector").values();
                     String[] headersToArray = new String[headers.size()];
                     int i = 0;
                     for (String str : headers) {
@@ -552,5 +588,9 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         map.put("bsc", DataLoadPreferences.NH_BSC);
 
         return (HashMap<String, String>)map;
+    }
+
+    public static void putIntoPropertyMap(String name, Map<String, Map<String, String>> propertyMap) {
+        pagesWithProperties.put(name, propertyMap);
     }
 }

@@ -13,11 +13,9 @@
 
 package org.amanzi.awe.views.network.view;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;

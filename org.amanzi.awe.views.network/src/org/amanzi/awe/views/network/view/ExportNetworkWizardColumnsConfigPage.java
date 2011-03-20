@@ -76,7 +76,7 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
     private static final Color BAD_COLOR = new Color(null, 255, 0, 0);
     private static final Color SKIP_COLOR = new Color(null, 150, 150, 150);
     private Node rootNode;
-
+    
     /**
      * Instantiates a new export network wizard columns config page.
      * 
@@ -164,9 +164,9 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
             System.out.println(ind);
         }
         System.out.println(ExportNetworkWizard.getCurrentIndex());
-        for (Boolean state : checkboxStates) {
-            System.out.println(state);
-        }
+//        for (Boolean state : checkboxStates) {
+//            System.out.println(state);
+//        }
         if (ExportNetworkWizard.getCurrentIndex() > indexes.size() - 1) {
             return getWizard().getPage(ExportNetworkWizard.PROPERTY_CSV);
         }
@@ -179,8 +179,14 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
         catch (IndexOutOfBoundsException e) {
             return getWizard().getPage(ExportNetworkWizard.PROPERTY_CSV);
         }
-        ExportNetworkWizard.setCurrentIndex(ExportNetworkWizard.getCurrentIndex() + 2);
+        if (ExportNetworkWizard.getCurrentIndex() < 0) {
+            ExportNetworkWizard.setCurrentIndex(0);
+        }
+        ExportNetworkWizard.setCurrentIndex(ExportNetworkWizard.getCurrentIndex() + 3);
         
+        ExportNetworkWizard.putIntoPropertyMap(currentPage.getName(), currentPage.getPropertyMap());
+
+        validate();
         return currentPage;
     }
     
