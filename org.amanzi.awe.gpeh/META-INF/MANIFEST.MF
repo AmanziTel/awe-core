@@ -22,3 +22,4 @@ Export-Package: org.amanzi.awe.gpeh,
  org.amanzi.awe.gpeh.parser.internal
 Bundle-ClassPath: lib/jflac-1.3.jar,
  .
+Bundle-Vendor: amanzi.org

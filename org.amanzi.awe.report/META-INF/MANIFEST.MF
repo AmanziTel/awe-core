@@ -33,3 +33,4 @@ Export-Package: org.amanzi.awe.report,
  org.amanzi.awe.report.pdf,
  org.amanzi.awe.report.util,
  org.amanzi.awe.report.wizards
+Bundle-Vendor: amanzi.org

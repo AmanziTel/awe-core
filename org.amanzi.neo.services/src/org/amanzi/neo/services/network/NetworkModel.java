@@ -120,6 +120,9 @@ public class NetworkModel {
         Set<Node> nodes = findSectorsByBsicBcch(bsic, bcch);
         return getClosestNode(servSector, nodes,30000);
     }
+    public FrequencyPlanModel getFrequencyModel(String modelName, String time){
+        return FrequencyPlanModel.getModel(rootNode, modelName, time);
+    }
     public FrequencyPlanModel getFrequencyModel(String modelName){
         return FrequencyPlanModel.getModel(rootNode, modelName);
     }

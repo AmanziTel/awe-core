@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Ui
-Bundle-SymbolicName: org.amanzi.awe.ui
+Bundle-SymbolicName: org.amanzi.awe.ui;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.awe.ui.AweUiPlugin
 Bundle-Vendor: amanzi.org

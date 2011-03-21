@@ -29,3 +29,4 @@ Require-Bundle: org.eclipse.ui,
 Eclipse-LazyStart: true
 Bundle-ClassPath: lib/poi-3.6-20091214.jar,
  .
+Bundle-Vendor: amanzi.org

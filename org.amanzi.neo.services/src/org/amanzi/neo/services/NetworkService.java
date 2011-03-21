@@ -677,6 +677,14 @@ public class NetworkService extends DatasetService {
         
     }
 
+    public Node getFrequencyRootNode(Node networkRoot, String modelName, String time) {
+        Node result=findFrequencyRootNode(networkRoot, modelName);
+        if (result==null){
+            result=createFrequencyRootNode(networkRoot,modelName,time);
+        }
+        return result;
+    }
+    
     public Node getFrequencyRootNode(Node networkRoot, String modelName) {
         Node result=findFrequencyRootNode(networkRoot, modelName);
         if (result==null){
@@ -685,6 +693,18 @@ public class NetworkService extends DatasetService {
         return result;
     }
 
+    private Node createFrequencyRootNode(Node networkRoot, String modelName, String time) {
+        Transaction tx = databaseService.beginTx();
+        try {
+            Node result=super.createNode(NodeTypes.FREQUENCY_ROOT, modelName,time);
+            networkRoot.createRelationshipTo(result, Relations.FREQUENCY_ROOT);
+            tx.success();
+            return result;
+        } finally {
+            tx.finish();
+        }
+   
+    }
     private Node createFrequencyRootNode(Node networkRoot, String modelName) {
         Transaction tx = databaseService.beginTx();
         try {

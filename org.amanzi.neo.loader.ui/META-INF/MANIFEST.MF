@@ -27,3 +27,4 @@ Export-Package: org.amanzi.neo.loader.ui,
  org.amanzi.neo.loader.ui.wizards
 Bundle-Activator: org.amanzi.neo.loader.ui.NeoLoaderPlugin
 Eclipse-LazyStart: true
+Bundle-Vendor: amanzi.org

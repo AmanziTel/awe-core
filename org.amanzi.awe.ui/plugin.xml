@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="org.amanzi.awe.ui.timeformat.TimeFormat"
+            id="org.amanzi.awe.ui.timeformat.TimeFormat"
+            name="Timeformat">
+      </page>
+      <page
+            class="org.amanzi.awe.ui.timeformat.Test"
+            id="org.amanzi.awe.ui.test"
+            name="test">
+      </page>
+   </extension>
+
+</plugin>

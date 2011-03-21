@@ -14,7 +14,9 @@ package org.amanzi.awe.afp.loaders;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -463,7 +465,11 @@ public class AfpLoader {
         public CellFileHandler(Node rootNode, GraphDatabaseService service, boolean isNodeIdBased) {
             super(rootNode, service);
             time = System.currentTimeMillis();
-            planModel = networkModel.getFrequencyModel(Long.toString(time));
+            
+            String formTime = new SimpleDateFormat("dd-MMM-yyyy, HH:mm:ss:SS",
+                    new Locale("en","US","WINDOWS")).format(time);
+            
+            planModel = networkModel.getFrequencyModel(formTime,Long.toString(time));
             this.isNodeIdBased = isNodeIdBased;
         }
 

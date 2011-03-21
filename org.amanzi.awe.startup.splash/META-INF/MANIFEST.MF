@@ -13,3 +13,4 @@ Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.awe.startup.splash,
  org.amanzi.awe.startup.splash.splashHandlers
+Bundle-Vendor: amanzi.org

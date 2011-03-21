@@ -31,3 +31,4 @@ Require-Bundle: org.eclipse.ui,
  org.rubypeople.rdt.core,
  org.eclipse.core.resources
 Eclipse-LazyStart: true
+Bundle-Vendor: amanzi.org

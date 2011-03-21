@@ -607,7 +607,17 @@ public class DatasetService extends AbstractService {
     public Node createNode(INodeType type, String name) {
         return createNode(type.getId(), INeoConstants.PROPERTY_NAME_NAME, name);
     }
-
+    /**
+     * Creates the new node
+     *
+     * @param type
+     * @param name
+     * @param time
+     * @return the created node
+     */
+    public Node createNode(INodeType type, String name, String time) {
+        return createNode(type.getId(), INeoConstants.PROPERTY_NAME_NAME, name, INeoConstants.PROPERTY_TIME_NAME, time);
+    }
     /**
      * Creates the node
      * 

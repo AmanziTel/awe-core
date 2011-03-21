@@ -11,3 +11,4 @@ Require-Bundle: org.eclipse.ui,
  org.amanzi.awe.report,
  org.apache.log4j
 Eclipse-LazyStart: true
+Bundle-Vendor: amanzi.org
