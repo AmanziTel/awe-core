@@ -161,7 +161,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 			    
 			    trxCount =0;
 			    //initialize trx of all model domains to 0
-			    for(AfpFrequencyDomainModel mod: model.getFreqDomains(false)){
+			    for(AfpFrequencyDomainModel mod: model.getFreqDomains(false, true)){
 			    	mod.setNumTRX(0);
 			    }
 			    model.setTotalRemainingTRX(0);
@@ -172,7 +172,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 			    	
 			    	boolean includeFlag = true;
 			    	for (Node trxNode: trxTraverser){
-				    	for(AfpFrequencyDomainModel mod: model.getFreqDomains(false)){
+				    	for(AfpFrequencyDomainModel mod: model.getFreqDomains(false, true)){
 				    		String filterString = mod.getFilters();
 				    		if (filterString != null && !filterString.trim().isEmpty()){
 					    		AfpRowFilter rf = AfpRowFilter.getFilter(mod.getFilters());
@@ -285,12 +285,12 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
      */
     protected boolean isValidPage() {
         
-        if (model.getFreqDomains(false).isEmpty()) {
+        if (model.getFreqDomains(false, true).isEmpty()) {
         	setErrorMessage("No domains created");
             return false;
         }
         
-        for (AfpFrequencyDomainModel frDomain : model.getFreqDomains(false)){
+        for (AfpFrequencyDomainModel frDomain : model.getFreqDomains(false, true)){
         	if (frDomain.getNumTRX() > 0){
         		setErrorMessage(null);
         		return true;
@@ -337,7 +337,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 		
 //		int counts[] = model.getFreqDomainsTrxCount(true);
 		int i=0;
-		for(AfpFrequencyDomainModel domainModel: model.getFreqDomains(true)) {
+		for(AfpFrequencyDomainModel domainModel: model.getFreqDomains(true, true)) {
 			if(domainModel != null) {
 				Label freePlanLabel = new Label(frequencyDomainsGroup, SWT.LEFT);
 				freePlanLabel.setText(domainModel.getName());
@@ -406,7 +406,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 			
 			final Combo domainCombo = new Combo(subShell, SWT.DROP_DOWN | SWT.READ_ONLY);
 			ArrayList<String> modelNames = new ArrayList<String>();
-			for (AfpFrequencyDomainModel dm : model.getFreqDomains(false)){
+			for (AfpFrequencyDomainModel dm : model.getFreqDomains(false, true)){
 				modelNames.add(dm.getName());
 			}
 			domainCombo.setItems(modelNames.toArray(new String[0]));

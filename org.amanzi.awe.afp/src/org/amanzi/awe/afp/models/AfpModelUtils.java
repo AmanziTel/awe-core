@@ -17,7 +17,7 @@ public class AfpModelUtils {
 		Traverser trxTraverser = sectorNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator(){
 			@Override
 			public boolean isReturnableNode(TraversalPosition currentPos) {
-				if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.TRX.getId())){
+			    if (currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME,"").equals(NodeTypes.TRX.getId())){
 					return true;
 				}
 					

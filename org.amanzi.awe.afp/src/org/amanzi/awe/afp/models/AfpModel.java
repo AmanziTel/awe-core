@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -167,7 +168,7 @@ public class AfpModel {
     int availableBCCs = 0xff;
 
     // Page 3 params
-    HashMap<String, AfpFrequencyDomainModel> freqDomains = new HashMap<String, AfpFrequencyDomainModel>();
+    HashMap<String, AfpFrequencyDomainModel> freqDomains = new LinkedHashMap<String, AfpFrequencyDomainModel>();
 
     // Page 4 params
     HashMap<String, AfpHoppingMALDomainModel> malDomains = new HashMap<String, AfpHoppingMALDomainModel>();
@@ -779,27 +780,29 @@ public class AfpModel {
     /**
      * @return the freqDomains
      */
-    public Collection<AfpFrequencyDomainModel> getFreqDomains(boolean addFree) {
+    public Collection<AfpFrequencyDomainModel> getFreqDomains(boolean addFree, boolean sort) {
         addRemoveFreeFrequencyDomain(addFree);
         ArrayList<AfpFrequencyDomainModel> l = new ArrayList<AfpFrequencyDomainModel>();
         for (AfpFrequencyDomainModel d : freqDomains.values()) {
             l.add(new AfpFrequencyDomainModel(d));
         }
 
-        Collections.sort(l, new Comparator<AfpDomainModel>() {
+        if (sort) {
+            Collections.sort(l, new Comparator<AfpDomainModel>() {
 
-            @Override
-            public int compare(AfpDomainModel arg0, AfpDomainModel arg1) {
-                for (String name : DEFAULT_BAND_NAMES) {
-                    if (arg0.getName().equals(name))
-                        return -1;
-                    else if (arg1.getName().equals(name))
-                        return 1;
+                @Override
+                public int compare(AfpDomainModel arg0, AfpDomainModel arg1) {
+                    for (String name : DEFAULT_BAND_NAMES) {
+                        if (arg0.getName().equals(name))
+                            return -1;
+                        else if (arg1.getName().equals(name))
+                            return 1;
+                    }
+                    return arg0.getName().compareTo(arg1.getName());
                 }
-                return arg0.getName().compareTo(arg1.getName());
-            }
 
-        });
+            });
+        }
         return l;
     }
 
@@ -1211,7 +1214,7 @@ public class AfpModel {
     public String[] getAllFrequencyDomainNames() {
         String[] names = new String[freqDomains.size()];
         int i = 0;
-        for (AfpFrequencyDomainModel freqDomain : this.getFreqDomains(false)) {
+        for (AfpFrequencyDomainModel freqDomain : this.getFreqDomains(false, true)) {
             if (!freqDomain.isFree()) {
                 names[i] = freqDomain.getName();
                 i++;
@@ -1417,7 +1420,7 @@ public class AfpModel {
                      * n.delete(); }
                      */
                     HashMap<String, ArrayList<String>> domainNames = getDomainNodeNames(afpNode);
-                    for (AfpFrequencyDomainModel frequencyModel : getFreqDomains(false)) {
+                    for (AfpFrequencyDomainModel frequencyModel : getFreqDomains(false, true)) {
                         if (!frequencyModel.isFree()) {
                             ArrayList<String> nameList = domainNames.get(INeoConstants.AFP_DOMAIN_NAME_FREQUENCY);
                             if (nameList != null) {
@@ -1590,7 +1593,6 @@ public class AfpModel {
             } catch (Exception e) {
                 // no property sent
             }
-
 
             loadDomainNode(afpNode);
             /*

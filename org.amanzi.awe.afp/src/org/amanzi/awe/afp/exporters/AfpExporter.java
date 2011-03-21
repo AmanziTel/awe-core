@@ -137,7 +137,7 @@ public class AfpExporter extends Job {
     private void createFiles() {
         createTmpFolder();
 
-        models = model.getFreqDomains(false).toArray(new AfpFrequencyDomainModel[0]);
+        models = model.getFreqDomains(false, false).toArray(new AfpFrequencyDomainModel[0]);
         inputFiles = new File[models.length][fileNames.length];
         domainDirPaths = new String[models.length];
         useTraffic = new boolean[models.length];
@@ -190,19 +190,24 @@ public class AfpExporter extends Job {
                     monitor.worked(1);
                     if (count % 100 == 0)
                         AweConsolePlugin.info(count + " trxs processed");
+                    boolean filtered = false;
                     for (int i = 0; i < models.length; i++) {
+                        if (filtered) {
+                            break;
+                        }
                         AfpFrequencyDomainModel mod = models[i];
                         String filterString = mod.getFilters();
                         if (filterString != null && !filterString.trim().isEmpty()) {
                             AfpRowFilter rf = AfpRowFilter.getFilter(mod.getFilters());
                             if (rf != null) {
                                 if (rf.equal(trxNode)) {
+                                    filtered = true;
                                     currentDomainIndex = i;
                                     LinkedHashSet<Integer> freq = new LinkedHashSet<Integer>();
                                     StringBuilder sb = new StringBuilder();
                                     sb.append(Long.toString(trxNode.getId()));
                                     sb.append(" ");
-
+                                        
                                     // String trxNo =
                                     // (String)trxNode.getProperty(INeoConstants.PROPERTY_NAME_NAME,
                                     // "0");
@@ -594,6 +599,9 @@ public class AfpExporter extends Job {
     public HashMap<Node, SectorValues> getSectorIntValues(Node sector) {
 
         DecimalFormat df = new DecimalFormat("0.0000000000");
+        DecimalFormatSymbols dfSymbols = df.getDecimalFormatSymbols();
+        dfSymbols.setDecimalSeparator('.');
+        df.setDecimalFormatSymbols(dfSymbols);
 
         // values in 2-D array for each interfering node
         // array[neighbourArray, intArray, TriArray, shadowArray]
