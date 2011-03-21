@@ -157,7 +157,7 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 		gridData.heightHint = trim.height;
 		gridData.widthHint = listWidth;
 		selectedList.setLayoutData(gridData);
-		selectedList.setItems(rightList);
+		selectedList.setItems(AfpModel.rangeArraytoArray(rightList));
 		
 		rightArrowButton.addSelectionListener(new SelectionAdapter(){
 			@Override
@@ -168,11 +168,9 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 						selectedList.add(item);
 						freqList.remove(item);
 					}
-					String array[] = AfpModel.rangeArraytoArray(selectedList.getItems());
-					String selected[] = AfpModel.arrayToRangeArray(array);
-					selectedArray = selected;
-					selectedList.setItems(selected);
-					thisSelectionLabel.setText("" + array.length + " Frequencies selected");
+					selectedArray = selectedList.getItems();
+					selectedList.setItems(selectedArray);
+					thisSelectionLabel.setText("" + selectedArray.length + " Frequencies selected");
 				}
 				
 			}
