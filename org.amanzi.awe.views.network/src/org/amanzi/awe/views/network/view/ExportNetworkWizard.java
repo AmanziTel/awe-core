@@ -382,28 +382,31 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
             indexOfPage++;
         }
         
-//        GraphDatabaseService databaseService = DatabaseManager.getInstance().getCurrentDatabaseService();
-//        Transaction tx = databaseService.beginTx();
-//
-//        try {
-//            rootNode.setProperty("node2node", NodeToNodeTypes.NEIGHBOURS.toString());
-//            rootNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, "rootNode");
-//            tx.success();
-//        } finally {
-//            tx.finish();
-//        }
-//        
-//        NodeToNodeRelationModel model = new NodeToNodeRelationModel(rootNode);
-//        Traverser traverser = model.getNeighTraverser(new Evaluator() {
-//            
-//            @Override
-//            public Evaluation evaluate(Path arg0) {
-//                return null;
-//            }
-//        });
-//        Iterable<Relationship> iter2 = traverser.relationships();
-//        
-//        
+        GraphDatabaseService databaseService = DatabaseManager.getInstance().getCurrentDatabaseService();
+        Transaction tx = databaseService.beginTx();
+
+        try {
+            rootNode.setProperty("node2node", NodeToNodeTypes.NEIGHBOURS.toString());
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+        
+        NodeToNodeRelationModel model = new NodeToNodeRelationModel(rootNode);
+        Traverser traverser = model.getNeighTraverser(new Evaluator() {
+            
+            @Override
+            public Evaluation evaluate(Path arg0) {
+                return null;
+            }
+        });
+        Iterable<Relationship> iter2 = traverser.relationships();
+        for (Relationship rel : iter2) {
+            for (String str : rel.getPropertyKeys()) {
+                System.out.println(str);
+            }
+        }
+        
         runExportAdditionalData(rootNode, exportingTypes, propertyMap, fileSelected, separator, quoteChar, charSet);
     }
     
