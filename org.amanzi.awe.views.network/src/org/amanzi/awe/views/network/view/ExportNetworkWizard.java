@@ -24,19 +24,18 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.awe.views.network.NetworkTreePlugin;
-import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
-import org.amanzi.neo.services.node2node.NodeToNodeRelationService.NodeToNodeRelationshipTypes;
-import org.amanzi.neo.services.node2node.NodeToNodeTypes;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -49,11 +48,10 @@ import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
 import org.neo4j.graphdb.traversal.TraversalDescription;
@@ -61,6 +59,7 @@ import org.neo4j.graphdb.traversal.Traverser;
 import org.neo4j.helpers.Predicate;
 import org.neo4j.kernel.Traversal;
 import org.neo4j.kernel.Uniqueness;
+import org.neo4j.neoclipse.property.RelationshipTypes;
 
 import au.com.bytecode.opencsv.CSVWriter;
 
@@ -382,31 +381,6 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
             indexOfPage++;
         }
         
-        GraphDatabaseService databaseService = DatabaseManager.getInstance().getCurrentDatabaseService();
-        Transaction tx = databaseService.beginTx();
-
-        try {
-            rootNode.setProperty("node2node", NodeToNodeTypes.NEIGHBOURS.toString());
-            tx.success();
-        } finally {
-            tx.finish();
-        }
-        
-        NodeToNodeRelationModel model = new NodeToNodeRelationModel(rootNode);
-        Traverser traverser = model.getNeighTraverser(new Evaluator() {
-            
-            @Override
-            public Evaluation evaluate(Path arg0) {
-                return null;
-            }
-        });
-        Iterable<Relationship> iter2 = traverser.relationships();
-        for (Relationship rel : iter2) {
-            for (String str : rel.getPropertyKeys()) {
-                System.out.println(str);
-            }
-        }
-        
         runExportAdditionalData(rootNode, exportingTypes, propertyMap, fileSelected, separator, quoteChar, charSet);
     }
     
@@ -467,14 +441,90 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                 break;
                 
             case FREQUENCY_CONSTRAINT_DATA:
+//              Collection<String> headers = pagesWithProperties.get(pageType.getName()).get("sector").values();
+//              String[] headersToArray;
+//              if (headers == null) {
+//                  headersToArray = pageType.getProperties();
+//              }
+//              else {
+//                  headersToArray = new String[headers.size()];
+//              }
+//              int i = 0;
+//              for (String str : headers) {
+//                  headersToArray[i++] = str;
+//              }
+//              writer.writeNext(headersToArray);
+
+                writer.writeNext(ColumnsConfigPageTypes.FREQUENCY_CONSTRAINT_DATA.getProperties());
+                NetworkModel networkModel = new NetworkModel(rootNode);
+                NodeToNodeRelationModel n2n = networkModel.getIllegalFrequency();
+                String chanellType = "", trx_id = "", sector_name = "", 
+                    frequency = "", type = "", penalty = "";
+
+                Traverser trav = n2n.getServTraverser(new Evaluator() {
+                    
+                    @Override
+                    public Evaluation evaluate(Path arg0) {
+                        return Evaluation.INCLUDE_AND_CONTINUE;
+                    }
+                });
+                for (Node servNode : trav.nodes()) {
+                    trx_id = (String)servNode.getProperty(INeoConstants.PROPERTY_NAME_NAME.toString());
+                    Node carrier = n2n.findNodeFromProxy(servNode);
+                    for (Relationship rel2 : carrier.getRelationships()) {
+                        if (rel2.isType(RelationshipTypes.CHILD)) {
+                            sector_name = rel2.getStartNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+                        }
+                        if (rel2.isType(DatasetRelationshipTypes.PLAN_ENTRY)) {
+                            try {
+                                frequency = Integer.valueOf((((int[])rel2.getEndNode().getProperty("arfcn"))[0])).toString(); 
+                            }
+                            catch (Exception e) {
+                                frequency = "";
+                            }
+                        }
+                    }
+                    for (Relationship rel : n2n.getOutgoingRelations(servNode)) {
+                        try {
+                            chanellType = rel.getProperty("channel_type").toString();
+                            type = rel.getProperty("type").toString();
+                            penalty = rel.getProperty("penalty").toString();
+                        }
+                        catch (NotFoundException e) {
+                            
+                        }
+                        chanellType = chanellType == null ? "" : chanellType;
+                        type = type == null ? "" : type;
+                        penalty = penalty == null ? "" : penalty;
+                        
+                        fields.add(sector_name);
+                        fields.add(trx_id);
+                        fields.add(chanellType);
+                        fields.add(frequency);
+                        fields.add(type);
+                        fields.add(penalty);
+                        if (!fields.contains(""))
+                            writer.writeNext(fields.toArray(new String[0]));
+                        fields.clear();
+                    }
+                }
+                
+                writer.close();
+                break;
+            case TRX_DATA:
                 break;
                 
             case TRAFFIC_DATA:
-            case TRX_DATA:
             case SEPARATION_CONSTRAINT_DATA:
                 try {
                     Collection<String> headers = pagesWithProperties.get(pageType.getName()).get("sector").values();
-                    String[] headersToArray = new String[headers.size()];
+                    String[] headersToArray;
+                    if (headers == null) {
+                        headersToArray = pageType.getProperties();
+                    }
+                    else {
+                        headersToArray = new String[headers.size()];
+                    }
                     int i = 0;
                     for (String str : headers) {
                         headersToArray[i++] = str;
@@ -485,7 +535,7 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                     while (iter.hasNext()) {
                         fields.clear();
                         Path path = iter.next();
-                        for (Node node : path.nodes()) {
+                        for (Node node : path.nodes()) {     
                             INodeType nodeType = datasetService.getNodeType(node);
                             if (nodeType == NodeTypes.SECTOR) {
                                 String[] propertyCol = pageType.getProperties();
