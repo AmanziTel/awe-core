@@ -19,6 +19,7 @@ import java.util.Arrays;
 
 import org.amanzi.awe.afp.models.AfpModel;
 import org.amanzi.awe.afp.models.AfpSeparationDomainModel;
+import org.apache.commons.lang.ArrayUtils;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
