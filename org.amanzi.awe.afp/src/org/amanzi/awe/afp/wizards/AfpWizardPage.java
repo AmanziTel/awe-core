@@ -12,6 +12,8 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
@@ -260,10 +262,12 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 		public void handleEvent(Event event) {
 			
 			final ArrayList<String> selectedValues = new ArrayList<String>();
-			final Shell subShell = new Shell(parentShell, SWT.PRIMARY_MODAL);
+			final Shell subShell = new Shell(parentShell,SWT.PRIMARY_MODAL);
 			subShell.setLayout(new GridLayout(2, false));
 			Point location = subShell.getDisplay().getCursorLocation();
-			subShell.setLocation(location);
+			
+			subShell.setLocation(location.x,450);
+			
 			/*subShell.addMouseListener(new MouseAdapter(){
 
 				@Override
@@ -361,6 +365,7 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 				
 				@Override
 				public void widgetSelected(SelectionEvent e) {
+				  
 					for (TreeItem item : tree.getItems()){
 						if (item.getChecked()){
 							selectedValues.add(item.getText());
@@ -372,8 +377,9 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 					subShell.dispose();
 				}
 				
+				
 			});
-
+			
 			
 			subShell.pack();
 			subShell.open();
