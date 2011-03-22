@@ -28,10 +28,13 @@ import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.core.preferences.PreferenceStore;
 import org.amanzi.neo.loader.core.saver.AbstractHeaderSaver;
 import org.amanzi.neo.loader.core.saver.MetaData;
+import org.amanzi.neo.services.DatasetService.NodeResult;
 import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.network.FrequencyPlanModel;
+import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.utils.Utils;
 import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Direction;
@@ -60,14 +63,15 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
     private final HashMap<String, Node> bsc_s = new HashMap<String, Node>();
     private final HashMap<String, Node> city_s = new HashMap<String, Node>();
     private final MetaData metadata=new MetaData("network", MetaData.SUB_TYPE,"radio"); 
-    
+    private FrequencyPlanModel plan = null;
     private enum NetworkLevels {
-        NETWORK, CITY, BSC, SITE, SECTOR;
+        NETWORK, CITY, BSC, SITE, SECTOR, carrier, frequency_plan;
     }
 
     private Set<NetworkLevels> levels = EnumSet.of(NetworkLevels.NETWORK);
     private boolean trimSectorName;
     private CoordinateReferenceSystem crs;
+    private NetworkModel networkModel;
 
     @Override
     public void init(BaseTransferData element) {
@@ -75,6 +79,7 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
         propertyMap.clear();
         headerNotHandled = true;
         trimSectorName = PreferenceStore.getPreferenceStore().getValue(DataLoadPreferences.REMOVE_SITE_NAME);
+        networkModel = new NetworkModel(rootNode);
         addNetworkIndexes();
         String crsWkt =element.get("CRS");
         if (crsWkt!=null){
@@ -377,8 +382,24 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
         Object frequency = propertyMap.get("bcch");
         if (frequency != null) {
             Integer iFrequency = (Integer)frequency;
-            
-            Utils.createBCCHCarrier(sector, band, new int[] {iFrequency}, getService());
+            NodeResult carrier=networkModel.getCarrier(sector, "0", null);
+            if (!levels.contains(NetworkLevels.carrier)) {
+                levels.add(NetworkLevels.carrier);
+                levels.add(NetworkLevels.frequency_plan);
+            }
+            if (carrier.isCreated()){
+                statistic.updateTypeCount(rootname, NodeTypes.TRX.getId(),1);
+                updateTx(1, 1);
+            }
+            updateProperty(rootname, NodeTypes.TRX.getId(), carrier, "bcch", true);
+            updateProperty(rootname, NodeTypes.TRX.getId(), carrier, "band", band);
+            NodeResult planNode = getPlanModel().getPlanNode(carrier);
+
+            if (planNode.isCreated()) {
+                statistic.updateTypeCount(getPlanModel().getName(), NodeTypes.FREQUENCY_PLAN.getId(), 1);
+                updateTx(1, 1);
+            }
+            updateProperty(getPlanModel().getName(), NodeTypes.FREQUENCY_PLAN.getId(), planNode, "arfcn", iFrequency);
         }
         
         //try to get other frequencies
@@ -386,11 +407,25 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
         for (String key : propertyMap.keySet()) {
             if (key.startsWith("trx")) {
                 String trxIndex = key.substring(key.indexOf("trx") + 3);
-                Integer trxId = Integer.parseInt(trxIndex);
-                
                 Integer arfcn = (Integer)propertyMap.get(key);
                 propertiesToRemove.add(key);
-                Utils.createCarrier(sector, trxId, band, new int[] {arfcn}, getService());
+                NodeResult carrier = networkModel.getCarrier(sector, trxIndex, null);
+                if (carrier.isCreated()) {
+                    statistic.updateTypeCount(rootname, NodeTypes.TRX.getId(), 1);
+                    updateTx(1, 1);
+                }
+                updateProperty(rootname, NodeTypes.TRX.getId(), carrier, "bcch", false);
+                updateProperty(rootname, NodeTypes.TRX.getId(), carrier, "band", band);
+                NodeResult planNode = getPlanModel().getPlanNode(carrier);
+                if (planNode.isCreated()) {
+                    statistic.updateTypeCount(getPlanModel().getName(), NodeTypes.FREQUENCY_PLAN.getId(), 1);
+                    updateTx(1, 1);
+                }
+                if (!levels.contains(NetworkLevels.carrier)) {
+                    levels.add(NetworkLevels.carrier);
+                    levels.add(NetworkLevels.frequency_plan);
+                }
+                updateProperty(getPlanModel().getName(), NodeTypes.FREQUENCY_PLAN.getId(), planNode, "arfcn", arfcn);
             }
         }
         
@@ -407,7 +442,12 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
         super.finishUp(element);
     }
 
-
+    public FrequencyPlanModel getPlanModel() {
+        if (plan == null) {
+            plan = networkModel.getFrequencyModel("original");
+        }
+        return plan;
+    }
 
 
     /**

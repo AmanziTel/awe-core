@@ -47,7 +47,6 @@ import org.amanzi.neo.services.events.UpdateViewEventType;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
-import org.amanzi.neo.services.utils.Utils;
 import org.eclipse.swt.widgets.Display;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -826,7 +825,8 @@ public class NetworkLoader extends AbstractLoader {
         if (frequency != null) {
             Integer iFrequency = (Integer)frequency;
             
-            Utils.createBCCHCarrier(sector, band, new int[] {iFrequency}, neo);
+
+            // Utils.createBCCHCarrier(sector, band, new int[] {iFrequency}, neo);
         }
         
         //try to get other frequencies
@@ -838,7 +838,7 @@ public class NetworkLoader extends AbstractLoader {
                 
                 Integer arfcn = (Integer)propertyMap.get(key);
                 propertiesToRemove.add(key);
-                Utils.createCarrier(sector, trxId, band, new int[] {arfcn}, neo);
+                // Utils.createCarrier(sector, trxId, band, new int[] {arfcn}, neo);
             }
         }
         
