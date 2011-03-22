@@ -219,6 +219,31 @@ public class LoaderUtils {
         return null;
     }
 
+    public static String[][] getCSVRows(File file, int minSize, int rowNum, int rowCount, char delimeter) {
+        String[][] result = new String[rowCount][];
+        CSVReader reader = null;
+        try {
+            CountingFileInputStream is = new CountingFileInputStream(file);
+            reader = new CSVReader(new InputStreamReader(is), delimeter);
+            String[] nextLine;
+            long line = 0;
+            int i = 0;
+            while ((nextLine = reader.readNext()) != null && i < rowCount) {
+                if (nextLine.length < minSize) {
+                    continue;
+                }
+                line++;
+                if (line >= rowNum) {
+                    result[i++] = nextLine;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        return result;
+    }
     /**
      * Find header id.
      * 
@@ -267,4 +292,5 @@ public class LoaderUtils {
         }
         return result;
     }
+
 }

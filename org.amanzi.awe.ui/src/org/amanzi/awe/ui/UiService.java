@@ -18,7 +18,10 @@ import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.nodes.AweProjectNode;
+import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Node;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
@@ -48,5 +51,33 @@ public class UiService  {
     public Node getActiveProjectNode() {
         AweProjectNode nodeWr = NeoServiceFactory.getInstance().getProjectService().findAweProject(getActiveProjectName());
         return nodeWr==null?null:nodeWr.getUnderlyingNode();
+    }
+
+    /**
+     * Define CoordinateReferenceSystem.
+     * 
+     * @param lat the lattitude
+     * @param lon the longitude
+     * @param hint
+     * @return the coordinate reference system
+     */
+    public CoordinateReferenceSystem defineCRS(Double lat, Double lon, String hint) {
+        if (lat == 0 || lon == null) {
+            return null;
+        }
+        String epsg = "EPSG:4326";
+        if ((lat > 90 || lat < -90) && (lon > 180 || lon < -180)) {
+            if ("germany".equals(hint)) {
+                epsg = "EPSG:31467";
+            } else {
+                epsg = "EPSG:3021";
+            }
+        }
+        try {
+            return CRS.decode(epsg);
+        } catch (NoSuchAuthorityCodeException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

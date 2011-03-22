@@ -122,13 +122,14 @@
     <extension
           point="org.amanzi.neo.loader.ui.loaders">
        <loader
+             allowCreate="true"
+             config="org.amanzi.neo.loader.ui.validators.NetworkSectorDataValidator"
              description="Network Sector Data"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             saver="org.amanzi.neo.loader.core.saver.impl.NetworkSaver"
-             validator="org.amanzi.neo.loader.ui.validators.NetworkSectorDataValidator"
              renderable="true"
-             allowCreate="true">
+             saver="org.amanzi.neo.loader.core.saver.impl.NetworkSaver"
+             validator="org.amanzi.neo.loader.ui.validators.NetworkSectorDataValidator">
        </loader>
        <loader
              description="Network Site Data"

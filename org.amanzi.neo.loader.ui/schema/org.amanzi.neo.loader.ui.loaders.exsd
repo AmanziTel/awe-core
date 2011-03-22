@@ -132,7 +132,7 @@
                   
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.amanzi.neo.loader.ui.loaders.ILoaderConfig"/>
+                  <meta.attribute kind="java" basedOn=":org.amanzi.neo.loader.core.ILoaderConfig"/>
                </appInfo>
             </annotation>
          </attribute>

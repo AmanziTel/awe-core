@@ -11,7 +11,11 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.ui.loaders;
+package org.amanzi.neo.loader.core;
+
+import java.io.File;
+
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * <p>
@@ -22,5 +26,6 @@ package org.amanzi.neo.loader.ui.loaders;
  * @since 1.0.0
  */
 public interface ILoaderConfig {
+    CoordinateReferenceSystem getCRS(File file);
 
 }

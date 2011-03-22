@@ -25,6 +25,7 @@ import net.refractions.udig.catalog.IService;
 import org.amanzi.awe.catalog.neo.NeoService;
 import org.amanzi.neo.db.manager.DatabaseManager.DatabaseAccessType;
 import org.amanzi.neo.loader.core.ILoader;
+import org.amanzi.neo.loader.core.ILoaderConfig;
 import org.amanzi.neo.loader.core.ILoaderInputValidator;
 import org.amanzi.neo.loader.core.ILoaderProgressListener;
 import org.amanzi.neo.loader.core.IValidateResult;
@@ -86,10 +87,16 @@ public class Loader<T extends IDataElement, T2 extends IConfigurationData> imple
     private boolean isRenderable;
     
     private boolean allowCreate;
+    private ILoaderConfig config;
     
     @Override
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @Override
+    public void setConfig(ILoaderConfig config) {
+        this.config = config;
     }
 
     @Override
@@ -237,5 +244,10 @@ public class Loader<T extends IDataElement, T2 extends IConfigurationData> imple
     @Override
     public boolean isAllowCreate() {
         return allowCreate;
+    }
+
+    @Override
+    public ILoaderConfig getConfig() {
+        return config;
     }
 }

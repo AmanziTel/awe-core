@@ -21,6 +21,7 @@ import java.util.Set;
 
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.ILoader;
+import org.amanzi.neo.loader.core.ILoaderConfig;
 import org.amanzi.neo.loader.core.IValidateResult;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.core.parser.IDataElement;
@@ -162,7 +163,6 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
                         networkName=new java.io.File(getFileName()).getName(); 
                         network.setText(networkName);
                         changeNetworkName();
-                        return;
                     }                 
                 }
                 else {
@@ -171,6 +171,7 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
                         changeNetworkName();
                     }
                 }
+                updateCRS();
                 update();
             }
         });
@@ -188,6 +189,7 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 selectLoader(networkType.getSelectionIndex());
+                updateCRS();
                 update();
             }
 
@@ -205,6 +207,28 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         setControl(main);
         update();
     }
+
+    /**
+     *
+     */
+    protected boolean updateCRS() {
+        if (selectCRS.isEnabled()) {
+            ILoader< ? extends IDataElement, CommonConfigData> selectedLoader = getSelectedLoader();
+
+            if (selectedLoader != null && selectedLoader.isAllowCreate()) {
+                ILoaderConfig config = selectedLoader.getConfig();
+                if (config != null && selectedLoader.getValidator().accept(getConfigurationData()).getResult() != Result.FAIL) {
+                    CoordinateReferenceSystem crs = config.getCRS(getConfigurationData().getRoot());
+                    if (crs != null) {
+                        setSelectedCRS(crs);
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     @Override
     protected void update() {
         updateButtonLabel();
@@ -362,18 +386,20 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
                     setSelectedCRS(crs);
                 }else{
                     selectCRS.setEnabled(true);
+                    updateCRS();
                 }
             }else{
                 selectCRS.setEnabled(true);
+                updateCRS();
             }
         }else{
             selectCRS.setEnabled(true);
+            updateCRS();
         }
         getConfigurationData().setProjectName(LoaderUiUtils.getAweProjectName());
         getConfigurationData().setDbRootName(networkName);
         updateLabelNetwDescr();
         update();
     }
-
 
 }

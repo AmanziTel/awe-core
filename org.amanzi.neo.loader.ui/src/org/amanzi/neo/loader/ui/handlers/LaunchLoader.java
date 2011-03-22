@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.amanzi.neo.loader.core.ILoader;
+import org.amanzi.neo.loader.core.ILoaderConfig;
 import org.amanzi.neo.loader.core.ILoaderInputValidator;
 import org.amanzi.neo.loader.core.parser.IConfigurationData;
 import org.amanzi.neo.loader.core.parser.IDataElement;
@@ -128,6 +129,7 @@ public class LaunchLoader extends AbstractHandler {
      * @param element the element
      * @return the i loader
      */
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private ILoader< ? extends IDataElement, ? extends IConfigurationData> defineLoader(IConfigurationElement element) {
         try {
             String loaderClass = element.getAttribute("loader_class");
@@ -144,6 +146,11 @@ public class LaunchLoader extends AbstractHandler {
                 loader.setDescription(element.getAttribute("description"));
                 loader.setRenderable(Boolean.parseBoolean(element.getAttribute("renderable")));
                 loader.setAllowCreate(Boolean.parseBoolean(element.getAttribute("allowCreate")));
+                String confidClass = element.getAttribute("config");
+                if (confidClass != null) {
+                    ILoaderConfig config = (ILoaderConfig)element.createExecutableExtension("config");
+                    loader.setConfig(config);
+                }
                 // TODO define additional pages for loaders!
                 loader.setParser(parser);
                 loader.setSaver(saver);

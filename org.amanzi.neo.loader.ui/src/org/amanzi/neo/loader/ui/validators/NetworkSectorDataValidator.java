@@ -13,10 +13,14 @@
 
 package org.amanzi.neo.loader.ui.validators;
 
+import java.io.File;
+
 import org.amanzi.neo.loader.core.CommonConfigData;
+import org.amanzi.neo.loader.core.ILoaderConfig;
 import org.amanzi.neo.loader.core.ILoaderInputValidator;
 import org.amanzi.neo.loader.core.IValidateResult;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * <p>
@@ -26,13 +30,14 @@ import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
  * @author tsinkel_a
  * @since 1.0.0
  */
-public class NetworkSectorDataValidator implements ILoaderInputValidator<CommonConfigData>{
+public class NetworkSectorDataValidator implements ILoaderInputValidator<CommonConfigData>, ILoaderConfig {
 
     private String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
 
     @Override
     public IValidateResult validate(CommonConfigData data) {
-        return ValidatorUtils.checkFileAndHeaders(data.getRoot(), 3, new String[]{DataLoadPreferences.NH_SECTOR,DataLoadPreferences.NH_LATITUDE}, possibleFieldSepRegexes);
+        return ValidatorUtils.checkFileAndHeaders(data.getRoot(), 3, new String[] {DataLoadPreferences.NH_SECTOR,
+                DataLoadPreferences.NH_LATITUDE}, possibleFieldSepRegexes);
     }
 
     @Override
@@ -44,5 +49,10 @@ public class NetworkSectorDataValidator implements ILoaderInputValidator<CommonC
         return validate(data);
     }
 
+    @Override
+    public CoordinateReferenceSystem getCRS(File file) {
+        String[] constants = new String[] {DataLoadPreferences.NH_LATITUDE, DataLoadPreferences.NH_LONGITUDE};
+        return ValidatorUtils.defineCRS(file, 10, constants, possibleFieldSepRegexes, true);
+    }
 
 }
