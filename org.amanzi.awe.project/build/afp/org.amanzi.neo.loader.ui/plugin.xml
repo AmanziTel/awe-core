@@ -95,6 +95,7 @@
           point="org.amanzi.neo.loader.ui.loaders">
        <loader
              description="Network Sector Data"
+			 config="org.amanzi.neo.loader.ui.validators.NetworkSectorDataValidator"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
              saver="org.amanzi.neo.loader.core.saver.impl.NetworkSaver"
