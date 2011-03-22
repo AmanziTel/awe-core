@@ -47,7 +47,7 @@ public class AfpOutputFileLoader extends AfpLoader{
                 		loadCellFile(outputFile, true);
                         statistic.save();
                     } else {
-                		AweConsolePlugin.error("Error:: No output File generated");
+                		AweConsolePlugin.error("Error:: No output File generated: " + outputFile);
                 	}
                 }
         		monitor.worked(1);
