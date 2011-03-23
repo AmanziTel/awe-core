@@ -117,7 +117,7 @@ public class AfpExporter extends Job {
     int defaultUseGrouping = 0;
     int defaultNrOfGroups = 1;
 
-    static int count;
+    int count;
 
     public AfpExporter(Node afpRoot, Node afpDataset, AfpModel model) {
         super("Write Input files");
@@ -190,11 +190,11 @@ public class AfpExporter extends Job {
                 cellWriters[i] = new BufferedWriter(new FileWriter(inputFiles[i][CELL]), 8 * 1024);
                 intWriters[i] = new BufferedWriter(new FileWriter(inputFiles[i][INTERFERENCE]), 8 * 1024);
             }
-
+          
             for (Node sectorNode : sectorTraverser) {
                 HashMap<Node, SectorValues> sectorIntValues = getSectorIntValues(sectorNode);
                 Traverser trxTraverser = AfpModelUtils.getTrxTraverser(sectorNode);
-
+                
                 for (Node trxNode : trxTraverser) {
                     count++;
                     monitor.worked(1);
