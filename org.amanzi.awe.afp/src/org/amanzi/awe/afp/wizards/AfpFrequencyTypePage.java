@@ -420,6 +420,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 				public void widgetSelected(SelectionEvent e) {
 					String domainName = domainCombo.getText();
 					AfpDomainModel freqModel = model.findDomainByName(model.DOMAIN_TYPES[0], domainName);
+					model.addFrequencyDomainToQueue((AfpFrequencyDomainModel)freqModel);
 					freqModel.setFilters(rowFilter.toString());
 					freqModel.setNumTRX(trxCount);
 //					model.setTotalRemainingTRX(model.getTotalRemainingTRX() - trxCount);

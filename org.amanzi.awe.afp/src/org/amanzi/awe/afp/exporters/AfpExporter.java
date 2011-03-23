@@ -137,7 +137,7 @@ public class AfpExporter extends Job {
     private void createFiles() {
         createTmpFolder();
 
-        models = model.getFreqDomains(false, false).toArray(new AfpFrequencyDomainModel[0]);
+        models = model.getFrequencyDomainQueue().toArray(new AfpFrequencyDomainModel[0]);
         inputFiles = new File[models.length][fileNames.length];
         domainDirPaths = new String[models.length];
         useTraffic = new boolean[models.length];
@@ -169,7 +169,17 @@ public class AfpExporter extends Job {
     public void writeFilesNew(IProgressMonitor monitor) {
 
         monitor.beginTask("Write Files", model.getTotalTRX());
-        Iterable<Node> sectorTraverser = model.getTRXList(null);
+        
+        HashMap<String, String> bandFilters = new HashMap<String, String> ();
+        for (int i = 0; i < model.getFrequencyBands().length; i++){
+            if (model.getFrequencyBands()[i])
+                if (bandFilters.get("band") == null)
+                    bandFilters.put("band", model.BAND_NAMES[i]);
+                else
+                    bandFilters.put("band", bandFilters.get("band") + "," + model.BAND_NAMES[i]);
+        }
+        
+        Iterable<Node> sectorTraverser = model.getTRXList(bandFilters);
 
         try {
 
@@ -270,12 +280,14 @@ public class AfpExporter extends Job {
                                         sb.append(" ");
                                         sb.append(1);// required
                                         sb.append(" ");
-                                        if (freqArray == null || freqArray.length < 1)
-                                            sb.append(0);// given
-                                        else {
-                                            sb.append(1);// given
-                                            sb.append(" " + freqArray[0]);// required frequencies
-                                        }
+//                                        if (freqArray == null || freqArray.length < 1)
+//                                            sb.append(0);// given
+//                                        else {
+//                                            sb.append(1);// given
+//                                            sb.append(" " + freqArray[0]);// required frequencies
+//                                        }
+                                        //LN, 23.03.2011, setting channels to zero
+                                        sb.append(0);
                                         sb.append("\n");
                                         cellWriters[i].write(sb.toString());
                                     }

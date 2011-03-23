@@ -465,11 +465,10 @@ public class AfpLoader {
         public CellFileHandler(Node rootNode, GraphDatabaseService service, boolean isNodeIdBased) {
             super(rootNode, service);
             time = System.currentTimeMillis();
-            
-            String formTime = new SimpleDateFormat("dd-MMM-yyyy, HH:mm:ss:SS",
-                    new Locale("en","US","WINDOWS")).format(time);
-            
-            planModel = networkModel.getFrequencyModel(formTime,Long.toString(time));
+
+            String formTime = new SimpleDateFormat("dd-MMM-yyyy, HH:mm:ss:SS", new Locale("en", "US", "WINDOWS")).format(time);
+
+            planModel = networkModel.getFrequencyModel(formTime, Long.toString(time));
             this.isNodeIdBased = isNodeIdBased;
         }
 
@@ -520,52 +519,53 @@ public class AfpLoader {
                     Integer numberoffreqenciesrequired = Integer.valueOf(field[i++]);
                     Integer numberoffrequenciesgiven = Integer.valueOf(field[i++]);
                     int frq = 0;
-                    // for (int j = 0; j < frq.length; j++) {
-                    frq = Integer.valueOf(field[i++]);
-                    // }
 
-                    // Traverser traverser = Utils.getTrxTraverser(sector);
-                    Transaction tx = service.beginTx();
-                    try {
-                        // for (Node trx: traverser){
-                        // if (trx.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(trxName)){
-                        // trxNode = trx;
-                        // break;
-                        // }
-                        // }
+                    for (int j = 0; j < numberoffrequenciesgiven; j++) {
+                        frq = Integer.valueOf(field[i++]);
 
-                        // if (trxNode == null){
-                        // trxNode = addChild(sector, NodeTypes.TRX, trxName, trxName);
-                        // }
-                        // trxNode.setProperty("nonrelevant", nonrelevant);
-                        // statistic.indexValue(rootName, NodeTypes.TRX.getId(), "nonrelevant",
-                        // nonrelevant);
-                        // trxNode.setProperty("numberoffreqenciesrequired",
-                        // numberoffreqenciesrequired);
-                        // statistic.indexValue(rootName, NodeTypes.TRX.getId(),
-                        // "numberoffreqenciesrequired",
-                        // numberoffreqenciesrequired);
-                        // trxNode.setProperty("numberoffrequenciesgiven",
-                        // numberoffrequenciesgiven);
-                        // statistic.indexValue(rootName, NodeTypes.TRX.getId(), "nonrelevant",
-                        // nonrelevant);
-                        // String band = (String)sector.getProperty("band", "");
-                        // if (band.contains(" "))
-                        // band = band.split("\\s")[1];
-                        AweConsolePlugin.info("Adding frequency plan results[" + frq + "] for TRX node id " + nodeId);
+                        // Traverser traverser = Utils.getTrxTraverser(sector);
+                        Transaction tx = service.beginTx();
+                        try {
+                            // for (Node trx: traverser){
+                            // if
+                            // (trx.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(trxName)){
+                            // trxNode = trx;
+                            // break;
+                            // }
+                            // }
 
-                        // for (int j = 0; j < frq.length; j++){
-                        Node planNode = planModel.getPlanNode(trxNode);
-                        planNode.setProperty("arfcn", frq);
-                        statistic.indexValue(planModel.getName(), NodeTypes.FREQUENCY_PLAN.getId(), "arfcn", frq);
-                        planNode.setProperty(INeoConstants.AFP_PROPERTY_ORIGINAL_NAME, false);
-                        // }
+                            // if (trxNode == null){
+                            // trxNode = addChild(sector, NodeTypes.TRX, trxName, trxName);
+                            // }
+                            // trxNode.setProperty("nonrelevant", nonrelevant);
+                            // statistic.indexValue(rootName, NodeTypes.TRX.getId(), "nonrelevant",
+                            // nonrelevant);
+                            // trxNode.setProperty("numberoffreqenciesrequired",
+                            // numberoffreqenciesrequired);
+                            // statistic.indexValue(rootName, NodeTypes.TRX.getId(),
+                            // "numberoffreqenciesrequired",
+                            // numberoffreqenciesrequired);
+                            // trxNode.setProperty("numberoffrequenciesgiven",
+                            // numberoffrequenciesgiven);
+                            // statistic.indexValue(rootName, NodeTypes.TRX.getId(), "nonrelevant",
+                            // nonrelevant);
+                            // String band = (String)sector.getProperty("band", "");
+                            // if (band.contains(" "))
+                            // band = band.split("\\s")[1];
+                            AweConsolePlugin.info("Adding frequency plan results[" + frq + "] for TRX node id " + nodeId);
 
-                        tx.success();
-                    } finally {
-                        tx.finish();
+                            // for (int j = 0; j < frq.length; j++){
+                            Node planNode = planModel.getPlanNode(trxNode);
+                            planNode.setProperty("arfcn", frq);
+                            statistic.indexValue(planModel.getName(), NodeTypes.FREQUENCY_PLAN.getId(), "arfcn", frq);
+                            planNode.setProperty(INeoConstants.AFP_PROPERTY_ORIGINAL_NAME, false);
+                            // }
+
+                            tx.success();
+                        } finally {
+                            tx.finish();
+                        }
                     }
-
                 }
 
                 else {
@@ -694,7 +694,6 @@ public class AfpLoader {
                 Logger.getLogger(this.getClass()).error(errStr, e);
             }
         }
-
     }
 
     /**
