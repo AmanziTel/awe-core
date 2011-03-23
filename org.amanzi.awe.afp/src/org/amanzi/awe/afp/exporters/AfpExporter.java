@@ -280,12 +280,14 @@ public class AfpExporter extends Job {
                                         sb.append(" ");
                                         sb.append(1);// required
                                         sb.append(" ");
-                                        if (freqArray == null || freqArray.length < 1)
-                                            sb.append(0);// given
-                                        else {
-                                            sb.append(1);// given
-                                            sb.append(" " + freqArray[0]);// required frequencies
-                                        }
+//                                        if (freqArray == null || freqArray.length < 1)
+//                                            sb.append(0);// given
+//                                        else {
+//                                            sb.append(1);// given
+//                                            sb.append(" " + freqArray[0]);// required frequencies
+//                                        }
+                                        //LN, 23.03.2011, set channel to zero
+                                        sb.append(0);
                                         sb.append("\n");
                                         cellWriters[i].write(sb.toString());
                                     }
