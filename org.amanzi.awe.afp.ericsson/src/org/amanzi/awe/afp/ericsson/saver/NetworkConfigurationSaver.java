@@ -80,6 +80,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
     private int sectorsNotFound;
     private int neighboursNotFound;
     private Boolean haveBsm;
+    private int lastId;
 
     private final static String ORIGINAL = "original";
 
@@ -561,6 +562,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
             }
         }).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).traverse(rootNode);
         for (Node sector : tr.nodes()) {
+            lastId=0;
             for (Relationship rel : networkService.getChannelGroups(sector)) {
                 createTRXforGroup(sector, rel.getOtherNode(sector));
             }
@@ -599,9 +601,8 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
             }
             return;
         }
-        int id = 0;
         for (int arfcn : dchno) {
-            createTRX(sector, group, num, bcchno, hoptype, ++id, arfcn);
+            createTRX(sector, group, num, bcchno, hoptype, ++lastId, arfcn);
         }
     }
 
@@ -615,7 +616,8 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
      */
     private void createTRX(Node sector, Node group, Integer channelGr, Integer bcchno, int hoptype, int id, int arfcn) {
         if (channelGr == 0 && bcchno != null && bcchno.equals(arfcn)) {
-            if (networkService.findTrxNode(sector, "0", channelGr) == null) {
+            if (networkService.findTrxNode(sector, "0") == null) {
+                lastId--;
                 id = 0;
             } else {
                 // skip arfcn

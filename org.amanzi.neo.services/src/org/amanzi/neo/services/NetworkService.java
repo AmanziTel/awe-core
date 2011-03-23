@@ -313,7 +313,7 @@ public class NetworkService extends DatasetService {
      * @return
      */
     public NodeResult getTRXNode(Node sector, String trxId, Integer channelGr) {
-        Node trxNode = findTrxNode(sector, trxId, channelGr);
+        Node trxNode = findTrxNode(sector, trxId);
         boolean isCreated = trxNode == null;
         if (isCreated) {
             Transaction tx = databaseService.beginTx();
@@ -349,10 +349,9 @@ public class NetworkService extends DatasetService {
     /**
      * @param sector
      * @param trxId
-     * @param channelGr
      * @return
      */
-    public Node findTrxNode(Node sector, final String trxId, final Integer channelGr) {
+    public Node findTrxNode(Node sector, final String trxId) {
         Iterator<Path> itr = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst()
                 .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).evaluator(new Evaluator() {
 
@@ -360,8 +359,7 @@ public class NetworkService extends DatasetService {
                     public Evaluation evaluate(Path arg0) {
                         boolean continues = arg0.length() == 0;
                         boolean includes = !continues
-                                && arg0.endNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, "").equals(trxId)
-                                && (channelGr == null || arg0.endNode().getProperty("group", -1).equals(channelGr));
+                                && arg0.endNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, "").equals(trxId);
                         return Evaluation.of(includes, continues);
                     }
                 }).traverse(sector).iterator();
@@ -500,7 +498,7 @@ public class NetworkService extends DatasetService {
     public Iterable<Node> findSectorByPlan(Node rootNetwork, String bsic, int arfcn, final String planName) {
         List<Node> result = new LinkedList<Node>();
         for (Node sector : findIndexedNodeByProperty(rootNetwork, NodeTypes.SECTOR, "BSIC", bsic)) {
-            Node trx = findTrxNode(sector, "0", 0);
+            Node trx = findTrxNode(sector, "0");
             if (trx != null) {
                 final DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
                 TraversalDescription td;
