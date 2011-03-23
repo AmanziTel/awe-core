@@ -436,30 +436,32 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
             ArrayList<String> oldFields = new ArrayList<String>();
             oldFields.add("start string");
             
+            String[] headersToArray = null;
+            if (pagesWithProperties.get(pageType.getName()) != null) {
+                Collection<String> headers = pagesWithProperties.get(pageType.getName()).get("sector").values();
+                if (headers == null) {
+                    headersToArray = pageType.getProperties();
+                }
+                else {
+                    headersToArray = new String[headers.size()];
+                }
+                int i = 0;
+                for (String str : headers) {
+                    headersToArray[i++] = str;
+                }
+            }
+            else {
+                headersToArray = pageType.getProperties();
+            }
+            
             switch (pageType) {
             case NEIGBOURS_DATA:
                 break;
-                
-            case FREQUENCY_CONSTRAINT_DATA:
-//              Collection<String> headers = pagesWithProperties.get(pageType.getName()).get("sector").values();
-//              String[] headersToArray;
-//              if (headers == null) {
-//                  headersToArray = pageType.getProperties();
-//              }
-//              else {
-//                  headersToArray = new String[headers.size()];
-//              }
-//              int i = 0;
-//              for (String str : headers) {
-//                  headersToArray[i++] = str;
-//              }
-//              writer.writeNext(headersToArray);
-
-                writer.writeNext(ColumnsConfigPageTypes.FREQUENCY_CONSTRAINT_DATA.getProperties());
+               
+            case INTERFERENCE_MATRIX:
+                writer.writeNext(headersToArray);
                 NetworkModel networkModel = new NetworkModel(rootNode);
-                NodeToNodeRelationModel n2n = networkModel.getIllegalFrequency();
-                String chanellType = "", trx_id = "", sector_name = "", 
-                    frequency = "", type = "", penalty = "";
+                NodeToNodeRelationModel n2n = networkModel.getInterferenceMatrix(rootNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString());
 
                 Traverser trav = n2n.getServTraverser(new Evaluator() {
                     
@@ -468,23 +470,64 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                         return Evaluation.INCLUDE_AND_CONTINUE;
                     }
                 });
+                Traverser trav3 = n2n.getNeighTraverser(new Evaluator() {
+                    
+                    @Override
+                    public Evaluation evaluate(Path arg0) {
+                        return Evaluation.INCLUDE_AND_CONTINUE;
+                    }
+                });
+                for (Node neighNode : trav3.nodes()) {
+                    System.out.println(neighNode);
+                }
                 for (Node servNode : trav.nodes()) {
+                    for (Relationship rel : n2n.getOutgoingRelations(servNode)) {
+                        try {
+                            String chanellType = rel.getProperty("channel_type").toString();
+                        }
+                        catch (NotFoundException e) {
+                            
+                        }
+                        if (!fields.contains(""))
+                            writer.writeNext(fields.toArray(new String[0]));
+                        fields.clear();
+                    }
+                }
+                
+                writer.close();
+                break;
+            case FREQUENCY_CONSTRAINT_DATA:
+                writer.writeNext(headersToArray);
+
+                NetworkModel networkModel2 = new NetworkModel(rootNode);
+                NodeToNodeRelationModel n2nIllegalFrequency = networkModel2.getIllegalFrequency();
+                String chanellType = "", trx_id = "", sector_name = "", 
+                    frequency = "", type = "", penalty = "";
+
+                Traverser trav2 = n2nIllegalFrequency.getServTraverser(new Evaluator() {
+                    
+                    @Override
+                    public Evaluation evaluate(Path arg0) {
+                        return Evaluation.INCLUDE_AND_CONTINUE;
+                    }
+                });
+                for (Node servNode : trav2.nodes()) {
                     trx_id = (String)servNode.getProperty(INeoConstants.PROPERTY_NAME_NAME.toString());
-                    Node carrier = n2n.findNodeFromProxy(servNode);
+                    Node carrier = n2nIllegalFrequency.findNodeFromProxy(servNode);
                     for (Relationship rel2 : carrier.getRelationships()) {
                         if (rel2.isType(RelationshipTypes.CHILD)) {
                             sector_name = rel2.getStartNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
                         }
                         if (rel2.isType(DatasetRelationshipTypes.PLAN_ENTRY)) {
                             try {
-                                frequency = Integer.valueOf((((int[])rel2.getEndNode().getProperty("arfcn"))[0])).toString(); 
+                                frequency = rel2.getEndNode().getProperty("arfcn").toString(); 
                             }
                             catch (Exception e) {
                                 frequency = "";
                             }
                         }
                     }
-                    for (Relationship rel : n2n.getOutgoingRelations(servNode)) {
+                    for (Relationship rel : n2nIllegalFrequency.getOutgoingRelations(servNode)) {
                         try {
                             chanellType = rel.getProperty("channel_type").toString();
                             type = rel.getProperty("type").toString();
@@ -512,24 +555,14 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                 writer.close();
                 break;
             case TRX_DATA:
-                break;
-                
             case TRAFFIC_DATA:
             case SEPARATION_CONSTRAINT_DATA:
                 try {
-                    Collection<String> headers = pagesWithProperties.get(pageType.getName()).get("sector").values();
-                    String[] headersToArray;
-                    if (headers == null) {
-                        headersToArray = pageType.getProperties();
-                    }
-                    else {
-                        headersToArray = new String[headers.size()];
-                    }
-                    int i = 0;
-                    for (String str : headers) {
-                        headersToArray[i++] = str;
-                    }
                     writer.writeNext(headersToArray);
+                    int typesSize = pageType.getProperties().length;
+                    String rightHeaders[] = null;
+                    String value = null;
+                    int notEmptyProperties = 0;
                     
                     // export all data
                     while (iter.hasNext()) {
@@ -538,24 +571,19 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                         for (Node node : path.nodes()) {     
                             INodeType nodeType = datasetService.getNodeType(node);
                             if (nodeType == NodeTypes.SECTOR) {
-                                String[] propertyCol = pageType.getProperties();
-                                for (String propertyName : propertyCol) {
-                                    propertyName = findNeedPropertyFromNode(propertyName, node);
-                                    if (propertyName.equals("Sector")) {
-                                        LABEL: for (String header : getPossibleHeaders(DataLoadPreferences.NH_SECTOR)) {
-                                            for (String property : node.getPropertyKeys())
-                                            if (cleanHeader(header).equals(cleanHeader(property))) {
-                                                propertyName = cleanHeader(property);
-                                                break LABEL;
-                                            }
-                                        }
-                                    }
-                                    fields.add(String.valueOf(node.getProperty(propertyName, "")));
+                                if (rightHeaders == null)
+                                    rightHeaders = getRightHeaders(node, pageType);
+                                notEmptyProperties = 0;
+                                for (String propertyName : rightHeaders) {
+                                    value = String.valueOf(node.getProperty(propertyName, ""));
+                                    fields.add(value);
+                                    if (!value.equals(""))
+                                        notEmptyProperties++;
                                 }
                             }
                         }
                         
-                        if (fields.size() != 0 && !fields.containsAll(oldFields)) {
+                        if (notEmptyProperties > 1 && !fields.containsAll(oldFields)) {
                             writer.writeNext(fields.toArray(new String[0]));
                             oldFields.clear();
                             oldFields.addAll(fields);
@@ -568,6 +596,27 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                 break;
             }
         }
+    }
+    
+    private String[] getRightHeaders(Node sectorNode, ColumnsConfigPageTypes pageType) {
+        
+        String rightHeaders[] = new String[pageType.getProperties().length];
+        int index = 0;
+        String[] propertyCol = pageType.getProperties();
+        for (String propertyName : propertyCol) {
+            propertyName = findNeedPropertyFromNode(propertyName, sectorNode);
+            if (propertyName.equals("Sector")) {
+                LABEL: for (String header : getPossibleHeaders(DataLoadPreferences.NH_SECTOR)) {
+                    for (String property : sectorNode.getPropertyKeys())
+                    if (cleanHeader(header).equals(cleanHeader(property))) {
+                        propertyName = cleanHeader(property);
+                        break LABEL;
+                    }
+                }
+            }
+            rightHeaders[index++] = propertyName;
+        }
+        return rightHeaders;
     }
     
     private String cleanHeader(String header) {
@@ -585,12 +634,6 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         for (String propertyName : node.getPropertyKeys()) {
             if (propertyName.equals(cleanHeader(possibleProperty)))
                 return propertyName;
-        }
-        for (Relationship rel : node.getRelationships()) {
-            Iterable<String> iter = rel.getPropertyKeys();
-            for (String str : iter) {
-                System.out.println(str);
-            }
         }
         return possibleProperty;
     }

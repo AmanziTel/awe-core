@@ -24,9 +24,12 @@ import java.util.TreeSet;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.network.NetworkModel;
+import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.amanzi.neo.services.statistic.internal.PropertyHeaderImpl;
@@ -51,10 +54,16 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.traversal.Evaluation;
+import org.neo4j.graphdb.traversal.Evaluator;
 import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.graphdb.traversal.Traverser;
 import org.neo4j.kernel.Traversal;
 import org.neo4j.kernel.Uniqueness;
+import org.neo4j.neoclipse.property.RelationshipTypes;
 
 /**
  * <p>
@@ -508,6 +517,27 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
                     if (cleanHeader(property).equals(cleanHeader(pageProperty))) {
                         isExistOneProperty = true;
                         break;
+                    }
+                }
+            }
+            
+            if (pageType == ColumnsConfigPageTypes.FREQUENCY_CONSTRAINT_DATA) {
+                NetworkModel networkModel = new NetworkModel(selectedNode);
+                NodeToNodeRelationModel n2n = networkModel.getIllegalFrequency();
+                Traverser trav = n2n.getServTraverser(new Evaluator() {
+                    
+                    @Override
+                    public Evaluation evaluate(Path arg0) {
+                        return Evaluation.INCLUDE_AND_CONTINUE;
+                    }
+                });
+                LABEL: for (Node servNode : trav.nodes()) {
+                    Node carrier = n2n.findNodeFromProxy(servNode);
+                    for (Relationship rel2 : carrier.getRelationships()) {
+                        if (rel2.isType(DatasetRelationshipTypes.PLAN_ENTRY)) {
+                            isExistOneProperty = true;
+                            break LABEL;
+                        }
                     }
                 }
             }

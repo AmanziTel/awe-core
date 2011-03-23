@@ -27,7 +27,7 @@ public enum ColumnsConfigPageTypes {
 
     NETWORK_SECTOR_DATA("Network sector data", 7, new String[] {}),
     NEIGBOURS_DATA("Neighbours data", 0, new String[] {"Serving Sector", "Target Sector", "Attempts"}),
-    FREQUENCY_CONSTRAINT_DATA("Frequency constraint data", 1, new String[] {"Sector", "TRX_ID", "Channel Type", "Frequency", "Type", "Penalty"}),
+    FREQUENCY_CONSTRAINT_DATA("Frequency constraint data", 1, new String[] {"Sector", "TRX_ID", "Channel Type", "ARFCN", "Type", "Penalty"}),
     SEPARATION_CONSTRAINT_DATA("Separation constraint data", 2, new String[] {"Sector", "Separation"}),
     TRAFFIC_DATA("Traffic data", 3, new String[] {"Sector", "Traffic"}),
     TRX_DATA("Trx data", 4, new String[] {"Sector", "Subcell", "Band", "Extended", "Hopping Type", "BCCH", "HSN", "MAIO", "ARFCN"}),
