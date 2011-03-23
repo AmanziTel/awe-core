@@ -28,6 +28,7 @@ import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.network.FrequencyPlanModel;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
@@ -523,23 +524,31 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
             
             if (pageType == ColumnsConfigPageTypes.FREQUENCY_CONSTRAINT_DATA) {
                 NetworkModel networkModel = new NetworkModel(selectedNode);
-                NodeToNodeRelationModel n2n = networkModel.getIllegalFrequency();
-                Traverser trav = n2n.getServTraverser(new Evaluator() {
-                    
-                    @Override
-                    public Evaluation evaluate(Path arg0) {
-                        return Evaluation.INCLUDE_AND_CONTINUE;
-                    }
-                });
-                LABEL: for (Node servNode : trav.nodes()) {
-                    Node carrier = n2n.findNodeFromProxy(servNode);
-                    for (Relationship rel2 : carrier.getRelationships()) {
-                        if (rel2.isType(DatasetRelationshipTypes.PLAN_ENTRY)) {
-                            isExistOneProperty = true;
-                            break LABEL;
-                        }
-                    }
+                Set<FrequencyPlanModel> frequencyModels = networkModel.findAllFrqModel();
+                ArrayList<String> modelNames = new ArrayList<String>();
+                for (FrequencyPlanModel model : frequencyModels) {
+                    modelNames.add(model.getName());
                 }
+                if (modelNames.size() > 0) 
+                    isExistOneProperty = true;
+                ExportNetworkWizard.setFrequencyPlanModelNames(modelNames);
+                
+//                Traverser trav = n2n.getServTraverser(new Evaluator() {
+//                    
+//                    @Override
+//                    public Evaluation evaluate(Path arg0) {
+//                        return Evaluation.INCLUDE_AND_CONTINUE;
+//                    }
+//                });
+//                LABEL: for (Node servNode : trav.nodes()) {
+//                    Node carrier = n2n.findNodeFromProxy(servNode);
+//                    for (Relationship rel2 : carrier.getRelationships()) {
+//                        if (rel2.isType(DatasetRelationshipTypes.PLAN_ENTRY)) {
+//                            isExistOneProperty = true;
+//                            break LABEL;
+//                        }
+//                    }
+//                }
             }
             
             ExportNetworkWizard.getSavingDataPage().setMapOfCheckboxesState(pageType.getIndex(), isExistOneProperty);

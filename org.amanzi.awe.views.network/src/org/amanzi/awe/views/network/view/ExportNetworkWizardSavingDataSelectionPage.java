@@ -18,11 +18,16 @@ import java.util.HashMap;
 
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.List;
+import org.eclipse.swt.widgets.Shell;
 
 /**
  * TODO Purpose of 
@@ -35,6 +40,7 @@ import org.eclipse.swt.widgets.Group;
 public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
 
     private Group main;
+    private List freqList; 
     private String fileWithPrefixName = "";
     private Button checkboxFrequencyConstraintData;
     private Button checkboxSeparationConstraintData;
@@ -94,6 +100,48 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
         checkboxTrxData.setText(ColumnsConfigPageTypes.TRX_DATA.getName());
         checkboxTrxData.setLayoutData(checkboxLayoutData);
         checkboxTrxData.setSelection(true);
+        checkboxTrxData.addMouseListener(new MouseListener() {
+            
+            @Override
+            public void mouseUp(MouseEvent e) {
+                if (checkboxTrxData.getSelection()) {
+                    freqList.setVisible(true);
+                }
+                else {
+                    freqList.setVisible(false);
+                }
+            }
+            
+            @Override
+            public void mouseDown(MouseEvent e) {
+            }
+            
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+            }
+        });
+        
+        GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+        freqList = new List(main, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
+        gridData.heightHint = 200;
+        freqList.setLayoutData(gridData);
+        freqList.setItems(ExportNetworkWizard.getFrequencyPlanModelNames().toArray(new String[0]));
+        freqList.addMouseListener(new MouseListener() {
+            
+            @Override
+            public void mouseUp(MouseEvent e) {
+                ExportNetworkWizard.setSelectionFrequencyPlanModelNames(freqList.getSelection());
+            }
+            
+            @Override
+            public void mouseDown(MouseEvent e) {
+            }
+            
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+            }
+        });
+        freqList.setSelection(0);
         
         arrayOfCheckboxes.clear();
         arrayOfCheckboxes.add(checkboxNeigboursData);

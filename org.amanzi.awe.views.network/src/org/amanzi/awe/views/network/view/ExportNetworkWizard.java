@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.neo.loader.core.LoaderUtils;
@@ -34,6 +35,7 @@ import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.network.FrequencyPlanModel;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -92,6 +94,8 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
     private static int currentIndex;
     public static final String PROPERTY_CSV = "propertyCSV";
     private static final HashMap<String, Map<String, Map<String, String>>> pagesWithProperties = new HashMap<String, Map<String,Map<String,String>>>();
+    private static ArrayList<String> frequencyPlanModelNames = new ArrayList<String>();
+    private static String[] selectionFrequencyPlanModelNames = null;
     
     @Override
     public boolean performFinish() {
@@ -221,6 +225,34 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
 
     public static void setCurrentIndex(int curIndex) {
         currentIndex = curIndex;
+    }
+    
+    /**
+     * @param selectionFrequencyPlanModelNames The selectionFrequencyPlanModelNames to set.
+     */
+    public static void setSelectionFrequencyPlanModelNames(String[] selectionFrequencyPlanModelNames) {
+        ExportNetworkWizard.selectionFrequencyPlanModelNames = selectionFrequencyPlanModelNames;
+    }
+
+    /**
+     * @return Returns the selectionFrequencyPlanModelNames.
+     */
+    public static String[] getSelectionFrequencyPlanModelNames() {
+        return selectionFrequencyPlanModelNames;
+    }
+
+    /**
+     * @param frequencyPlanModelNames The frequencyPlanModelNames to set.
+     */
+    public static void setFrequencyPlanModelNames(ArrayList<String> frequencyPlanModelNames) {
+        ExportNetworkWizard.frequencyPlanModelNames = frequencyPlanModelNames;
+    }
+
+    /**
+     * @return Returns the frequencyPlanModelNames.
+     */
+    public static ArrayList<String> getFrequencyPlanModelNames() {
+        return frequencyPlanModelNames;
     }
 
     /**
@@ -418,7 +450,9 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
             String quoteChar, String charSet) throws IOException {
         
         for (ColumnsConfigPageTypes pageType : pageTypes) {
-            CSVWriter writer = createWriterToSomeData(pageType.getName().replace(' ', '_'), fileWithPrefix, separator, quoteChar, charSet);
+            CSVWriter writer = null;
+            if (pageType != ColumnsConfigPageTypes.TRX_DATA)
+                writer = createWriterToSomeData(pageType.getName().replace(' ', '_'), fileWithPrefix, separator, quoteChar, charSet);
             
             DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
             TraversalDescription descr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE)
@@ -453,6 +487,8 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
             else {
                 headersToArray = pageType.getProperties();
             }
+            
+            int notEmptyProperties = 0;
             
             switch (pageType) {
             case NEIGBOURS_DATA:
@@ -555,6 +591,58 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                 writer.close();
                 break;
             case TRX_DATA:
+                String[] rightHeadersFromPlan = null, 
+                        rightHeadersFromCarrier = null;
+                String valueTRX = null;
+                String sectorName = null;
+                boolean isNeedExportModel = false;
+                
+                NetworkModel networkModel3 = new NetworkModel(rootNode);
+                Set<FrequencyPlanModel> frequencyModels = networkModel3.findAllFrqModel();
+                for (FrequencyPlanModel model : frequencyModels) {
+                    for (String selection : getSelectionFrequencyPlanModelNames()) {
+                        if (selection.equals(model.getName()))
+                            isNeedExportModel = true;
+                    }
+                    if (isNeedExportModel) {
+                        CSVWriter trxWriter = createWriterToSomeData(pageType.getName().replace(' ', '_') + "_" + cleanHeader(model.getName()), fileWithPrefix, separator, quoteChar, charSet);
+                        trxWriter.writeNext(headersToArray);
+                        Iterable<Node> nodes = networkModel3.findAllNodeByType(NodeTypes.TRX);
+                        for (Node carrierNode : nodes) {
+                            notEmptyProperties = 0;
+                            Node planNode = model.findPlanNode(carrierNode);
+                            for (Relationship relation : carrierNode.getRelationships()) {
+                                if (relation.getType().toString().equals(DatasetRelationshipTypes.CHILD.toString())) {
+                                    sectorName = relation.getStartNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+                                }
+                            }
+                            fields.add(sectorName);
+                            if (rightHeadersFromCarrier == null)
+                                rightHeadersFromCarrier = getRightHeaders(carrierNode, pageType);
+                            if (planNode != null) {
+                                if (rightHeadersFromPlan == null)
+                                    rightHeadersFromPlan = getRightHeaders(planNode, pageType);
+                            }
+                            for (int i = 0; i < rightHeadersFromCarrier.length; i++) {
+                                valueTRX = String.valueOf(carrierNode.getProperty(rightHeadersFromCarrier[i], ""));
+                                if (valueTRX == null || valueTRX.equals("") && planNode != null)
+                                    valueTRX = String.valueOf(planNode.getProperty(rightHeadersFromPlan[i], ""));
+                                
+                                fields.add(valueTRX);
+                                if (!valueTRX.equals(""))
+                                    notEmptyProperties++;
+                            }
+                            
+                            if (notEmptyProperties > 1)
+                                trxWriter.writeNext(fields.toArray(new String[0]));
+                            fields.clear();
+                        }
+                        
+                        trxWriter.close();
+                    }
+                    isNeedExportModel = false;
+                }
+                break;
             case TRAFFIC_DATA:
             case SEPARATION_CONSTRAINT_DATA:
                 try {
@@ -562,7 +650,6 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                     int typesSize = pageType.getProperties().length;
                     String rightHeaders[] = null;
                     String value = null;
-                    int notEmptyProperties = 0;
                     
                     // export all data
                     while (iter.hasNext()) {
