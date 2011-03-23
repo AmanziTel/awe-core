@@ -596,7 +596,15 @@ public class DatasetService extends AbstractService {
         return createNode(NodeTypes.FILE, fileName);
 
     }
-
+    /**
+     * Creates the new node
+     * 
+     * @param type the node type
+     * @return the created node
+     */
+    public Node createNode(INodeType type) {
+        return createNode(type.getId());
+    }
     /**
      * Creates the new node
      * 

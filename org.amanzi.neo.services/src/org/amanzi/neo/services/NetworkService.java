@@ -403,7 +403,7 @@ public class NetworkService extends DatasetService {
         if (isCreated) {
             Transaction tx = databaseService.beginTx();
             try{
-                planNode = NeoServiceFactory.getInstance().getDatasetService().createNode(NodeTypes.FREQUENCY_PLAN, "");
+                planNode = NeoServiceFactory.getInstance().getDatasetService().createNode(NodeTypes.FREQUENCY_PLAN);
                 trx.createRelationshipTo(planNode,DatasetRelationshipTypes.PLAN_ENTRY);
                 getFrequencyRootNode(networkRoot, fileName).createRelationshipTo(planNode, GeoNeoRelationshipTypes.CHILD);
             tx.success();
@@ -722,7 +722,7 @@ public class NetworkService extends DatasetService {
         if (isCreated) {
             Transaction tx = databaseService.beginTx();
             try{
-                planNode = NeoServiceFactory.getInstance().getDatasetService().createNode(NodeTypes.FREQUENCY_PLAN, "");
+                planNode = NeoServiceFactory.getInstance().getDatasetService().createNode(NodeTypes.FREQUENCY_PLAN);
                 trx.createRelationshipTo(planNode,DatasetRelationshipTypes.PLAN_ENTRY);
                 rootNode.createRelationshipTo(planNode, GeoNeoRelationshipTypes.CHILD);
             tx.success();

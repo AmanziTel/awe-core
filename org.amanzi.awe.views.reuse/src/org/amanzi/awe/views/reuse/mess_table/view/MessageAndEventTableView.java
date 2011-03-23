@@ -1285,11 +1285,13 @@ public class MessageAndEventTableView extends ViewPart {
         memento.putString(MEM_PROPERTY, cProperty.getText());
         memento.putString(MEM_EXPRESSION, cExpression.getText());
         int datasetsCount = 0;
+       
         for(String dataset : datasets.keySet()){
             memento.putString(MEM_DATASET_MAP+datasetsCount++, dataset);
             String[] invisible = datasets.get(dataset).getNotVisibleProperties();
             int propCount = invisible.length;
             String memKey = getMemKey(dataset);
+         
             memento.putInteger(MEM_PROPERTY_COUNT+memKey, propCount);
             for(int i=0; i<propCount;i++){
                 memento.putString(MEM_PROPERTY_MAP+memKey+i, invisible[i]);
@@ -1308,6 +1310,7 @@ public class MessageAndEventTableView extends ViewPart {
         String result = StringEscapeUtils.escapeXml(dataset);
         result = result.replace(" ", "_");
         result = result.replace("+", "_");
+        result = result.replace(",", "_");
         return result;
     }
     

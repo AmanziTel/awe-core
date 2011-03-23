@@ -370,7 +370,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
                 // updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(),plan,"bcch",bcchno);
                 // }
                 // Kasnitskij_V:
-                plan.setProperty(INeoConstants.PROPERTY_NAME_NAME, ORIGINAL);
+               // plan.setProperty(INeoConstants.PROPERTY_NAME_NAME, ORIGINAL);
             }
             if (!plan.hasProperty("arfcn")) {
                 Integer arfcn = null;
@@ -651,7 +651,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         // updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(),plan,"bcch",bcchno);
         // }
         // Kasnitskij_V:
-        plan.setProperty(INeoConstants.PROPERTY_NAME_NAME, ORIGINAL);
+        //plan.setProperty(INeoConstants.PROPERTY_NAME_NAME, ORIGINAL);
         updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), plan, "arfcn", arfcn);
         String maioPr = "maio_" + id;
         Integer maioInt = (Integer)group.getProperty(maioPr, null);
