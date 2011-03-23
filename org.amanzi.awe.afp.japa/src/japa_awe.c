@@ -67,14 +67,14 @@ void print_call_stack(int frames) {
  #define _S_____(i)      E_(i,NetworkSet)     
  #define _N___IX_(i)     E_(i,NetworkSet)
  */
-#define _N__E(i)       Network->_N___[i]
-#define ID(i)         Network->_N___[i]->Id
-#define NC(i)         Network->_N___[i]->NC
-#define CNC(i)        Network->_N___[i]->CNC
-#define COI(i)        Network->_N___[i]->COI
-#define ADI(i)        Network->_N___[i]->ADI
-#define XC(i)         Network->_N___[i]->XC
-#define LC(i)         Network->_N___[i]->LC
+#define _N__E(i)       Network->cells[i]
+#define ID(i)         Network->cells[i]->Id
+#define NC(i)         Network->cells[i]->NC
+#define CNC(i)        Network->cells[i]->CNC
+#define COI(i)        Network->cells[i]->COI
+#define ADI(i)        Network->cells[i]->ADI
+#define XC(i)         Network->cells[i]->XC
+#define LC(i)         Network->cells[i]->LC
 #define _ED__(i,j)     Network->_E___[i][j]
 #define PERM(i)       Network->Perm[i]
 ///?#define NetworkSet         networkSet      
@@ -179,16 +179,17 @@ typedef struct set {
 	int Card;
 } SetStruct;
 
+/* This is the structure for each sector, including the current frequency plan */
 typedef struct node {
 	long COI, ADI, Clno;
 	char S[MaxNameL], SCL;
 	int TSS, SS, Id;
 	int *ff, NC, LC, XC, AxF, FxF;
-} _N__E_T;
+} CellStructure;
 
 typedef struct netstruct {
 	int B, lb, ub, FXF, Card, LB0, LB[3];
-	_N__E_T ** _N___;
+	CellStructure ** cells;
 	___P____ ** _E___;
 	short ** ENAB;
 	BYTE * Perm;
@@ -329,13 +330,13 @@ NetworkStructure * AllocateNetworkMemory(int dim, int bim) {
 	NetworkStructure *Network;
 	Network = (NetworkStructure *) calloc(1,sizeof(NetworkStructure));
 	AllocError(Network,sizeof(NetworkStructure),"Network",exit(0);)
-	Network->_N___ = ( PTR(_N__E_T) *) calloc(dim,sizeof(PTR(_N__E_T)));
-	AllocError(Network->_N___,dim*sizeof(PTR(_N__E_T)),"Network->_N___",exit(0);)
+	Network->cells = ( PTR(CellStructure) *) calloc(dim,sizeof(PTR(CellStructure)));
+	AllocError(Network->cells,dim*sizeof(PTR(CellStructure)),"Network->cells",exit(0);)
 	for (i=0; i<dim; i++) {
-		Network->_N___[i] = (_N__E_T *) calloc(1,sizeof(_N__E_T));
-		AllocError(Network->_N___[i],sizeof(_N__E_T),"Network->_N___[i]",exit(0);)
-		Network->_N___[i]->ff = (int*) calloc(bim,sizeof(int));
-		AllocError(Network->_N___[i]->ff,bim*sizeof(int),"Network->_N___[i]->ff",exit(0);)
+		Network->cells[i] = (CellStructure *) calloc(1,sizeof(CellStructure));
+		AllocError(Network->cells[i],sizeof(CellStructure),"Network->cells[i]",exit(0);)
+		Network->cells[i]->ff = (int*) calloc(bim,sizeof(int));
+		AllocError(Network->cells[i]->ff,bim*sizeof(int),"Network->cells[i]->ff",exit(0);)
 	}
 	Network->_E___ = (PTR(___P____) *) calloc(dim,sizeof(PTR(char)));
 	AllocError(Network->_E___,dim*sizeof(PTR(char)),"Network->_E___",exit(0);)
@@ -356,12 +357,12 @@ void free_memory(void) {
 	int i;
 	if (Network) {
 		for (i=0; i<Network->Card; i++) {
-			if (Network->_N___[i]) {
-				free(Network->_N___[i]->ff);
-				free(Network->_N___[i]);
+			if (Network->cells[i]) {
+				free(Network->cells[i]->ff);
+				free(Network->cells[i]);
 			}
 		}
-		free(Network->_N___);
+		free(Network->cells);
 		for (i=0; i<Network->Card; i++)
 			free(Network->_E___[i]);
 		free(Network->_E___);
@@ -503,9 +504,9 @@ void IDform_Set(int scard, SetStruct * Bx) {
 int g___n___(char *snxx, int ssx) {
 	int i;
 	for (i=0; i<Network->Card; i++)
-		if ( (Network->_N___[i]->TSS == ssx) && !strcmp(snxx, 
-		Network->_N___[i]->S) )
-			return (Network->_N___[i]->Id);
+		if ( (Network->cells[i]->TSS == ssx) && !strcmp(snxx, 
+		Network->cells[i]->S) )
+			return (Network->cells[i]->Id);
 	return (-1);
 }
 
@@ -517,11 +518,11 @@ void write_frequency_plan_to_file(char * fname, T_C___ * xN) {
 		return;
 	}
 	while (j<CARD_(Network)) {
-		fprintf(cefp, "%s %d %d %d %d ", Network->_N___[j]->S, 
-		Network->_N___[j]->TSS, Network->_N___[j]->SS, 
-		Network->_N___[j]->NC, Network->_N___[j]->AxF);
-		for (i=0; i<Network->_N___[j]->AxF; i++) {
-			x = Network->_N___[j]->ff[i]+FirstChannel;
+		fprintf(cefp, "%s %d %d %d %d ", Network->cells[j]->S, 
+		Network->cells[j]->TSS, Network->cells[j]->SS, 
+		Network->cells[j]->NC, Network->cells[j]->AxF);
+		for (i=0; i<Network->cells[j]->AxF; i++) {
+			x = Network->cells[j]->ff[i]+FirstChannel;
 			fprintf(cefp, "%d ", x);
 		}
 		fprintf(cefp, "\n");
@@ -537,16 +538,16 @@ BOOL is_fixed
 )
 {
 	int l;
-	if(!Network->_N___[nix]->FxF) return(False);
-	for(l=0;l<Network->_N___[nix]->FxF;l++)
-	if(Network->_N___[nix]->ff[l] == fix) return(True);
+	if(!Network->cells[nix]->FxF) return(False);
+	for(l=0;l<Network->cells[nix]->FxF;l++)
+	if(Network->cells[nix]->ff[l] == fix) return(True);
 	return(False);
 }
 void print_out_plan_dump(T_C___ *xN) {
 	int i, j, k;
 	logInfo("\nJPB-FA======================================================\n");
 	for (i=0; i<Network->Card; i++) {
-		Network->_N___[i]->AxF = Network->_N___[i]->FxF;
+		Network->cells[i]->AxF = Network->cells[i]->FxF;
 	}
 	logInfo("\n============== %d::\n", 1);
 	for (i= -1; i<Network->ub+1; i++) {
@@ -554,12 +555,12 @@ void print_out_plan_dump(T_C___ *xN) {
 		logInfo( "\nF:=%3d::> ", i);
 		for (j=0; j<NOFC; j++) {
 			if (i==xN[j].Fn) {
-				logInfo( "%s.%d.%d| ", Network->_N___[xN[j].Nix]->S, 
-				Network->_N___[xN[j].Nix]->TSS, xN[j].Cid);
+				logInfo( "%s.%d.%d| ", Network->cells[xN[j].Nix]->S, 
+				Network->cells[xN[j].Nix]->TSS, xN[j].Cid);
 				if (!is_fixed(xN[j].Nix, i)) {
-					if (Network->_N___[xN[j].Nix]->AxF < Network->_N___[xN[j].Nix]->NC) {
-						Network->_N___[xN[j].Nix]->ff[Network->_N___[xN[j].Nix]->AxF] = i;
-						Network->_N___[xN[j].Nix]->AxF++;
+					if (Network->cells[xN[j].Nix]->AxF < Network->cells[xN[j].Nix]->NC) {
+						Network->cells[xN[j].Nix]->ff[Network->cells[xN[j].Nix]->AxF] = i;
+						Network->cells[xN[j].Nix]->AxF++;
 					}
 				}
 				k++;
@@ -572,8 +573,8 @@ void print_out_plan_dump(T_C___ *xN) {
 	if (j<NOFC) {
 		logInfo( "!%4d RTs out: ", coX->Card);
 		for (j=0; j<coX->Card; j++) {
-			logInfo( "%s.%d.%d| ", Network->_N___[NIX(coX->Chain[j])]->S, 
-			Network->_N___[NIX(coX->Chain[j])]->SS, 
+			logInfo( "%s.%d.%d| ", Network->cells[NIX(coX->Chain[j])]->S, 
+			Network->cells[NIX(coX->Chain[j])]->SS, 
 			CID(coX->Chain[j]));
 			if (j && !(j%6))
 				logInfo( "\n              ");
@@ -796,12 +797,12 @@ void Sect_cet(SetStruct *xQ0) {
 	NOFC += k;
 	while (j<NOFC) {
 		for (i=0; i<CARD_(aux); i++) {
-			k = Network->_N___[_S_____(xQ0->Chain[i])]->FxF;
+			k = Network->cells[_S_____(xQ0->Chain[i])]->FxF;
 			if (E_(i,aux)) {
 				cet[j].Nix = _N___IX__(i,xQ0);
 				cet[j].Cid = LC__(i,xQ0) - E_(i,aux);
 				if (l<k) {
-					cet[j].Fn = Network->_N___[_S_____(xQ0->Chain[i])]->ff[l];
+					cet[j].Fn = Network->cells[_S_____(xQ0->Chain[i])]->ff[l];
 					cet[j].fxd = 1;
 				} else {
 					cet[j].Fn = -1;
@@ -843,7 +844,7 @@ void NatOrd(int c, SetStruct *S) {
 
 void OrderNet(void) {
 	int i, j;
-	_N__E_T * x0;
+	CellStructure * x0;
 	for (i=0; i<Network->Card; i++) {
 		for (j=i+1; j<Network->Card; j++) {
 			if (NC(i) < NC(j)) {
@@ -1206,9 +1207,9 @@ void init_graph(NetworkStructure *xN, ___P____ **CRX) {
 	ClNo=0;
 	for (nix=0; nix<xN->Card; nix++) {
 		xN->Perm[nix] = 1;
-		xN->_N___[nix]->COI = 0;
-		xN->_N___[nix]->ADI = 0;
-		xN->_N___[nix]->Clno = 0;
+		xN->cells[nix]->COI = 0;
+		xN->cells[nix]->ADI = 0;
+		xN->cells[nix]->Clno = 0;
 	}
 	init_cr(xN, CRX);
 	for (nix=0; nix<xN->Card; nix++) {
@@ -1327,10 +1328,10 @@ BYTE read_forbidden(char *fnet)
 		sscanf(xx,"%s",aux);xx = xx + strlen(aux)+1;
 		sscanf(aux,"%d",&nof); if(!nof) continue;
 		Network->ENAB[cid][0] -= nof;
-		if(Network->ENAB[cid][0] < Network->_N___[cid]->NC) {
+		if(Network->ENAB[cid][0] < Network->cells[cid]->NC) {
 			printf(
 					"!!!ERROR number of frequencies allowed=%d < %d=required for the cell %s %d\n",
-					Network->ENAB[cid][0],Network->_N___[cid]->NC,site,cno);
+					Network->ENAB[cid][0],Network->cells[cid]->NC,site,cno);
 			free(lx);
 			fclose(fp);
 			return(0);
@@ -1468,7 +1469,7 @@ void set_cr_SCC_it(int o_pri, int pri, int dis, int ctre, int atre,
 			;
 			if (!(d1 < o_pri))
 				continue;
-			if ( !strcmp(Network->_N___[nix]->S,Network->_N___[njx]->S) ) {
+			if ( !strcmp(Network->cells[nix]->S,Network->cells[njx]->S) ) {
 				P__(CRX,nix,njx,pri);
 				P__(CRX,njx,nix,pri);
 				D__(CRX,nix,njx,dis);
@@ -1606,7 +1607,7 @@ BYTE read_it(int o_pri, int p_pri, char *fname, ___P____ ** CRX, int traff_m)
 			A__(CRX,njx,nix,iadt);
 			if(lk < o_pri)
 			{	P__(CRX,njx,nix,p_pri); P__(CRX,nix,njx,p_pri);}
-			Network->_N___[njx]->COI += icot; Network->_N___[njx]->ADI += iadt;
+			Network->cells[njx]->COI += icot; Network->cells[njx]->ADI += iadt;
 		}
 		else {
 			sscanf(lx,"%s %s %d %lf %lf %d %s",s1,s2,&lk,&A,&T,&noofi,subcx);
@@ -1780,7 +1781,7 @@ int extract_pair(int ncl, int nprio, int dis, ___P____ ** rel) {
 			P__(rel,i,j,nprio);
 			P__(rel,j,i,nprio);
 			logInfo( "!!EXTRACT pair %d, %d = %s von %d\n", i, j, 
-			Network->_N___[i]->S, CARD_(Network));
+			Network->cells[i]->S, CARD_(Network));
 			card++;
 		}
 	}
@@ -2204,7 +2205,7 @@ int F1_analyze_FACC(T_C___ * cetx, SetStruct * Qxx, SetStruct * cQ) {
 			*(XCET+j) = *(cetx+j);
 		PlExist = 1;
 	} else
-		strcpy(XSITE,Network->_N___[NIX(cQ->Chain[0])]->S);
+		strcpy(XSITE,Network->cells[NIX(cQ->Chain[0])]->S);
 	return (i);
 }
 
@@ -2487,9 +2488,10 @@ BOOL read_control_file(char * pctrfile) {
 	return(True);
 }
 
-int japa_awe
-///?japa1
-(char * pctrfile) {
+/*
+ * This is the main method that starts the process, initializing memory, loading files, running the optimizer and saving the plan.
+ */
+int japa_awe(char * pctrfile) {
 	BOOL cr_read=False,it_read=False, COIT=False,ADIT=False;
 	int lim=0, QC=0, QC2=0, nt=0, pt=1000, AT1=0, unb=1, uit=0, p=0;
 	double x=0.0;
@@ -2633,12 +2635,12 @@ void free_all(void) {
 	int i;
 	if (Network) {
 		for (i=0; i<Network->Card; i++) {
-			if (Network->_N___[i]) {
-				free(Network->_N___[i]->ff);
-				free(Network->_N___[i]);
+			if (Network->cells[i]) {
+				free(Network->cells[i]->ff);
+				free(Network->cells[i]);
 			}
 		}
-		free(Network->_N___);
+		free(Network->cells);
 		for (i=0; i<Network->Card; i++)
 			free(Network->_E___[i]);
 		free(Network->_E___);
