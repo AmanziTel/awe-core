@@ -286,9 +286,7 @@ public class AfpExporter extends Job {
                                             sb.append(1);// given
                                             sb.append(" " + freqArray[0]);// required frequencies
                                         }
-                                        //LN, 23.03.2011, setting channels to zero
-//                                        sb.append(0);
-//                                        sb.append("\n");
+                                        sb.append("\n");
                                         cellWriters[i].write(sb.toString());
                                     }
 
