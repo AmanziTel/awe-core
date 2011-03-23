@@ -324,7 +324,7 @@ void jprtl(char * into, int value, int len) {
  * (This looks like the main allocation routing because it started with allocating to the main object
  * _N_____
  */
-NetworkStructure * A___N__(int dim, int bim) {
+NetworkStructure * AllocateNetworkMemory(int dim, int bim) {
 	int i;
 	NetworkStructure *Network;
 	Network = (NetworkStructure *) calloc(1,sizeof(NetworkStructure));
@@ -1248,7 +1248,7 @@ BYTE read_net_new(char *fnet)
 		card++;
 	}
 	rewind(fp);
-	Network = A___N__(card,MaxRTperCell);
+	Network = AllocateNetworkMemory(card,MaxRTperCell);
 	Network->Card = 0;
 	Network->FXF = 0;
 	while (fgets(lx,MaxLineL,fp) != NULL)
