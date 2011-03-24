@@ -170,8 +170,8 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 	
 			    	Node siteNode = node.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
 			    	
-			    	boolean includeFlag = true;
 			    	for (Node trxNode: trxTraverser){
+			    	    boolean includeFlag = true;
 				    	for(AfpFrequencyDomainModel mod: model.getFreqDomains(false)){
 				    		String filterString = mod.getFilters();
 				    		if (filterString != null && !filterString.trim().isEmpty()){
