@@ -43,7 +43,7 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 
 
 		if (action.equals("Edit") || action.equals("Delete")){
-			for(AfpFrequencyDomainModel d: model.getFreqDomains(false, true)) {
+			for(AfpFrequencyDomainModel d: model.getFreqDomains(false)) {
 				this.domain2Edit = d;
 				break;
 			}
@@ -200,7 +200,7 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 	}
 	protected void handleDomainNameSection(int selection, String name) {
 		int j=0;
-		for(AfpFrequencyDomainModel d: model.getFreqDomains(false, true)) {
+		for(AfpFrequencyDomainModel d: model.getFreqDomains(false)) {
 			if(j ==selection) {
 				domain2Edit = d;
 				break;

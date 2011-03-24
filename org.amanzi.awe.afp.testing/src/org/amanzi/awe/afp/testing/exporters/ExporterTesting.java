@@ -151,7 +151,7 @@ public class ExporterTesting {
 		//rowFilter.addColumn(colFilter);
 		fd.setFilters(rowFilter.toString());
 		HashMap<String,AfpFrequencyDomainModel> freqDomains = new HashMap<String,AfpFrequencyDomainModel>();
-		for (AfpFrequencyDomainModel fdModels : model.getFreqDomains(false, false))
+		for (AfpFrequencyDomainModel fdModels : model.getFreqDomains(false))
 			freqDomains.put(fdModels.getBand(), fdModels);
 
 		freqDomains.put("1800", fd);

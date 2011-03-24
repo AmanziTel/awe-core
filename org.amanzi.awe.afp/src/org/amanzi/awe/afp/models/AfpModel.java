@@ -815,29 +815,29 @@ public class AfpModel {
     /**
      * @return the freqDomains
      */
-    public Collection<AfpFrequencyDomainModel> getFreqDomains(boolean addFree, boolean sort) {
+    public Collection<AfpFrequencyDomainModel> getFreqDomains(boolean addFree) {
         addRemoveFreeFrequencyDomain(addFree);
         ArrayList<AfpFrequencyDomainModel> l = new ArrayList<AfpFrequencyDomainModel>();
         for (AfpFrequencyDomainModel d : freqDomains.values()) {
             l.add(new AfpFrequencyDomainModel(d));
         }
+       
+        Collections.sort(l, new Comparator<AfpDomainModel>() {
 
-        if (sort) {
-            Collections.sort(l, new Comparator<AfpDomainModel>() {
-
-                @Override
-                public int compare(AfpDomainModel arg0, AfpDomainModel arg1) {
-                    for (String name : DEFAULT_BAND_NAMES) {
-                        if (arg0.getName().equals(name))
-                            return -1;
-                        else if (arg1.getName().equals(name))
-                            return 1;
-                    }
-                    return arg0.getName().compareTo(arg1.getName());
+            @Override
+            public int compare(AfpDomainModel arg0, AfpDomainModel arg1) {
+                for (String name : DEFAULT_BAND_NAMES) {
+                    if (arg0.getName().equals(name))
+                        return -1;
+                    else if (arg1.getName().equals(name))
+                        return 1;
                 }
+                return 0;
+            }
 
-            });
-        }
+        });
+
+
         return l;
     }
 
@@ -1253,7 +1253,7 @@ public class AfpModel {
     public String[] getAllFrequencyDomainNames() {
         String[] names = new String[freqDomains.size()];
         int i = 0;
-        for (AfpFrequencyDomainModel freqDomain : this.getFreqDomains(false, true)) {
+        for (AfpFrequencyDomainModel freqDomain : this.getFreqDomains(false)) {
             if (!freqDomain.isFree()) {
                 names[i] = freqDomain.getName();
                 i++;
