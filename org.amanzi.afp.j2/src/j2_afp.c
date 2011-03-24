@@ -9,7 +9,7 @@
  *********************************************************************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
-#include <conio.h>
+//#include <conio.h>
 #include <string.h>
 #include <math.h>
 #define P_2_(t) t*
