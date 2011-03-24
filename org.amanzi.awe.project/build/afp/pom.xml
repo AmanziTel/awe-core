@@ -22,7 +22,7 @@
       <activeByDefault>true</activeByDefault>
     </activation>
     <modules>
-      <module>org.amanzi.awe.afp.japa</module>
+      <module>org.amanzi.afp.j2</module>
     </modules>
     <build>
       <plugins>	  
@@ -109,8 +109,8 @@
       <module>org.amanzi.awe.report.geoptima</module>
       <module>org.amanzi.awe.script</module>
       <module>org.amanzi.awe.script.jirb</module>
-      <module>org.amanzi.awe.startup.splash</module><module>org.amanzi.awe.statistics</module>
-      
+      <module>org.amanzi.awe.startup.splash</module>
+      <module>org.amanzi.awe.statistics</module>
       <module>org.amanzi.awe.statistics.view</module>
       <module>org.amanzi.awe.tool.star</module>
       <module>org.amanzi.awe.ui.operation.shape_export</module>
@@ -165,7 +165,7 @@
 	  <module>org.amanzi.neo.services</module>
 	  <module>org.amanzi.neo.services.ui</module>	  	  
 	  <module>org.amanzi.awe.ui</module>	 
-	  <module>org.amanzi.awe.afp.ericsson</module> 	  
+	  <module>org.amanzi.awe.afp.ericsson</module>
     </modules>
     <build>
       <plugins>	  

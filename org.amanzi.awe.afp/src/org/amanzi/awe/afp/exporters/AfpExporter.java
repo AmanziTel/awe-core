@@ -729,84 +729,45 @@ public class AfpExporter extends Job {
 
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(inputFiles[domainIndex][CONTROL]));
-
-            writer.write("SiteSpacing " + defaultSiteSpacing);
+            
+            //LN, 23.03.2011, switching format of control file to new version
+            writer.write("FileWithAllCells " + "\"" + this.inputFiles[domainIndex][CELL].getAbsolutePath() + "\"");
             writer.newLine();
 
-            writer.write("CellSpacing " + defaultCellSpacing);
+            writer.write("DistanceSpacingConditionForSites " + defaultSiteSpacing);
             writer.newLine();
 
-            writer.write("RegNbrSpacing " + defaultRegNbrSpacing);
+            writer.write("DistanceSpacingConditionForCells " + defaultCellSpacing);
+            writer.newLine();
+            
+            writer.write("MaximumRTDemandperCell " + maxTRX);
             writer.newLine();
 
-            writer.write("MinNbrSpacing " + defaultMinNbrSpacing);
+            writer.write("DistanceSpacingConditionRequiredForNeigbours " + defaultRegNbrSpacing);
             writer.newLine();
 
-            writer.write("SecondNbrSpacing " + defaultSecondNbrSpacing);
+            writer.write("DistanceSpacingConditionForSecondOrderNeighbours " + defaultSecondNbrSpacing);
+            writer.newLine();
+            
+            writer.write("NeighboursConditionFile " + "\"" + this.inputFiles[domainIndex][NEIGHBOUR].getAbsolutePath() + "\"");
+            writer.newLine();
+            
+            writer.write("TrafficOrAreaInterference " + (useTraffic[domainIndex] ? "1" : "0"));
             writer.newLine();
 
-            writer.write("RecalculateAll " + defaultRecalculateAll);
-            writer.newLine();
-
-            writer.write("UseTraffic " + (useTraffic[domainIndex] ? "1" : "0"));
-            writer.newLine();
-
-            writer.write("UseSONbrs " + defaultUseSONbrs);
+            writer.write("IndicatorForSecondOrderNeighboursUsage " + defaultUseSONbrs);
             writer.newLine();
 
             writer.write("Quality " + defaultQuality);
             writer.newLine();
 
-            writer.write("DecomposeInCliques " + defaultDecomposeInCliques);
+            writer.write("InterferenceMatrixFile " + "\"" + this.inputFiles[domainIndex][INTERFERENCE].getAbsolutePath() + "\"");
             writer.newLine();
 
-            writer.write("ExistCliques " + defaultExistCliques);
+            writer.write("PlanFile " + "\"" + this.domainDirPaths[domainIndex] + this.outputFileName + "\"");
             writer.newLine();
 
-            writer.write("GMaxRTperCell " + maxTRX);
-            writer.newLine();
-
-            writer.write("GMaxRTperSite " + maxTRX);
-            writer.newLine();
-
-            writer.write("HoppingType " + defaultHoppingType);
-            writer.newLine();
-
-            writer.write("UseGrouping " + defaultUseGrouping);
-            writer.newLine();
-
-            writer.write("NrOfGroups " + defaultNrOfGroups);
-            writer.newLine();
-
-            writer.write("LogFile " + "\"" + this.domainDirPaths[domainIndex] + this.logFileName + "\"");
-            writer.newLine();
-
-            // TBD count TRXs
-            writer.write("CellCardinality " + "0");
-            writer.newLine();
-
-            writer.write("CellFile " + "\"" + this.inputFiles[domainIndex][CELL].getAbsolutePath() + "\"");
-            writer.newLine();
-
-            writer.write("NeighboursFile " + "\"" + this.inputFiles[domainIndex][NEIGHBOUR].getAbsolutePath() + "\"");
-            writer.newLine();
-
-            writer.write("InterferenceFile " + "\"" + this.inputFiles[domainIndex][INTERFERENCE].getAbsolutePath() + "\"");
-            writer.newLine();
-
-            writer.write("OutputFile " + "\"" + this.domainDirPaths[domainIndex] + this.outputFileName + "\"");
-            writer.newLine();
-
-            writer.write("CliquesFile " + "\"" + this.inputFiles[domainIndex][CLIQUES].getAbsolutePath() + "\"");
-            writer.newLine();
-
-            writer.write("ForbiddenFile " + "\"" + this.inputFiles[domainIndex][FORBIDDEN].getAbsolutePath() + "\"");
-            writer.newLine();
-
-            writer.write("ExceptionFile " + "\"" + this.inputFiles[domainIndex][EXCEPTION].getAbsolutePath() + "\"");
-            writer.newLine();
-
-            writer.write("Carriers " + parseCarriers(getFrequencies(domainIndex)));
+            writer.write("SetOfCarriers " + parseCarriers(getFrequencies(domainIndex)));
             writer.newLine();
 
             writer.close();

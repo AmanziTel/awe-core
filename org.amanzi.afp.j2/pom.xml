@@ -31,8 +31,8 @@
           <source>
             <directory>src</directory>
             <fileNames>
-              <fileName>japa_awe.c</fileName>
-              <fileName>japa_main.c</fileName>
+              <fileName>j2_afp.c</fileName>
+              <fileName>j2_main.c</fileName>
             </fileNames>
           </source>
           <source>
@@ -81,8 +81,8 @@
           <source>
             <directory>src</directory>
             <fileNames>
-              <fileName>japa_awe.c</fileName>
-              <fileName>japa_main.c</fileName>
+              <fileName>j2_afp.c</fileName>
+              <fileName>j2_main.c</fileName>
             </fileNames>
           </source>
           <source>
@@ -128,8 +128,8 @@
           <source>
             <directory>src</directory>
             <fileNames>
-              <fileName>japa_awe.c</fileName>
-              <fileName>japa_main.c</fileName>
+              <fileName>j2_afp.c</fileName>
+              <fileName>j2_main.c</fileName>
             </fileNames>
           </source>
           <source>
