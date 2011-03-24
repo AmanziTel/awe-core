@@ -352,6 +352,7 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
             Map<String, Object> sectorData = getNotHandledData(element,rootname,NodeTypes.SECTOR.getId());
             
             String band = getStringValue("band", element);
+            updateProperty(rootname, NodeTypes.SECTOR.getId(), sector, "band", band);
             
             processCarriers(sector, band, sectorData);
 
@@ -371,11 +372,6 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
     private void processCarriers(Node sector, String band, Map<String, Object> propertyMap) {
         if (band==null){
             return;
-        }
-        //try to get a Band
-        int spaceIndex = band.indexOf(" ");
-        if (spaceIndex > 0) {
-            band = band.substring(spaceIndex).trim();
         }
         
         //try to get BCCH frequency
