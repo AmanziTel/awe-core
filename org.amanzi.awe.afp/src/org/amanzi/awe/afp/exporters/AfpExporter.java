@@ -404,12 +404,12 @@ public class AfpExporter extends Job {
         int index = 0;
         if ((Boolean)trx1.getProperty(INeoConstants.PROPERTY_BCCH_NAME, false))
             isBCCH1 = true;
-        if ((Integer)trx1.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME) >= 1)
+        if ((Integer)trx1.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) >= 1)
             isHopping1 = true;
 
         if ((Boolean)trx2.getProperty(INeoConstants.PROPERTY_BCCH_NAME))
             isBCCH2 = true;
-        if ((Integer)trx2.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME) >= 1)
+        if ((Integer)trx2.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) >= 1)
             isHopping2 = true;
 
         if (isBCCH1) {
