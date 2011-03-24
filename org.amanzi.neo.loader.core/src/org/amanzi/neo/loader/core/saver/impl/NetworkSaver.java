@@ -407,6 +407,9 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
         for (String key : propertyMap.keySet()) {
             if (key.startsWith("trx")) {
                 String trxIndex = key.substring(key.indexOf("trx") + 3);
+                if (!propertyMap.keySet().contains("trx1")){
+                    trxIndex=String.valueOf(Integer.parseInt(trxIndex)-1);
+                }
                 Integer arfcn = (Integer)propertyMap.get(key);
                 propertiesToRemove.add(key);
                 NodeResult carrier = networkModel.getCarrier(sector, trxIndex, null);
