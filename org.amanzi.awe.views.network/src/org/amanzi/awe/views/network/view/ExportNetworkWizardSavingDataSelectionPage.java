@@ -125,7 +125,11 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
         freqList = new List(main, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
         gridData.heightHint = 200;
         freqList.setLayoutData(gridData);
-        freqList.setItems(ExportNetworkWizard.getFrequencyPlanModelNames().toArray(new String[0]));
+        freqList.add("latest");
+        ExportNetworkWizard.setSelectionFrequencyPlanModelNames(freqList.getItems());
+        for (String str : ExportNetworkWizard.getFrequencyPlanModelNames().toArray(new String[0])) {
+            freqList.add(str);
+        }
         freqList.addMouseListener(new MouseListener() {
             
             @Override

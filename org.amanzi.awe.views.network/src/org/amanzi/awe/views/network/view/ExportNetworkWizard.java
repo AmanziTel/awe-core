@@ -591,56 +591,51 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                 writer.close();
                 break;
             case TRX_DATA:
-                String[] rightHeadersFromPlan = null, 
-                        rightHeadersFromCarrier = null;
-                String valueTRX = null;
-                String sectorName = null;
                 boolean isNeedExportModel = false;
+                long timestamp = 0;
+                String latestModelName = null;
                 
                 NetworkModel networkModel3 = new NetworkModel(rootNode);
                 Set<FrequencyPlanModel> frequencyModels = networkModel3.findAllFrqModel();
+                Iterable<Node> nodes = networkModel3.findAllNodeByType(NodeTypes.TRX);
+                
                 for (FrequencyPlanModel model : frequencyModels) {
                     for (String selection : getSelectionFrequencyPlanModelNames()) {
                         if (selection.equals(model.getName()))
                             isNeedExportModel = true;
-                    }
-                    if (isNeedExportModel) {
-                        CSVWriter trxWriter = createWriterToSomeData(pageType.getName().replace(' ', '_') + "_" + cleanHeader(model.getName()), fileWithPrefix, separator, quoteChar, charSet);
-                        trxWriter.writeNext(headersToArray);
-                        Iterable<Node> nodes = networkModel3.findAllNodeByType(NodeTypes.TRX);
-                        for (Node carrierNode : nodes) {
-                            notEmptyProperties = 0;
-                            Node planNode = model.findPlanNode(carrierNode);
-                            for (Relationship relation : carrierNode.getRelationships()) {
-                                if (relation.getType().toString().equals(DatasetRelationshipTypes.CHILD.toString())) {
-                                    sectorName = relation.getStartNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+                        
+                        if (selection.equals("latest")) {
+                            LABEL: for (Node carrierNode : nodes) {
+                                Node planNode = model.findPlanNode(carrierNode);
+                                if (planNode != null) {
+                                    for (Relationship rel : planNode.getRelationships()) {
+                                        if (rel.getType().toString().equals(DatasetRelationshipTypes.CHILD.toString())) {
+                                            Object timestampObject = null;
+                                            if (rel.getStartNode().hasProperty("time"))
+                                                timestampObject = rel.getStartNode().getProperty("time");
+                                            if (timestampObject != null) {
+                                                long timestampTemp = Long.parseLong(timestampObject.toString());
+                                                if (timestampTemp > timestamp) {
+                                                    timestamp = timestampTemp;
+                                                    latestModelName = model.getName();
+                                                }
+                                                break LABEL;
+                                            }
+                                        }
+                                    }
                                 }
                             }
-                            fields.add(sectorName);
-                            if (rightHeadersFromCarrier == null)
-                                rightHeadersFromCarrier = getRightHeaders(carrierNode, pageType);
-                            if (planNode != null) {
-                                if (rightHeadersFromPlan == null)
-                                    rightHeadersFromPlan = getRightHeaders(planNode, pageType);
-                            }
-                            for (int i = 0; i < rightHeadersFromCarrier.length; i++) {
-                                valueTRX = String.valueOf(carrierNode.getProperty(rightHeadersFromCarrier[i], ""));
-                                if (valueTRX == null || valueTRX.equals("") && planNode != null)
-                                    valueTRX = String.valueOf(planNode.getProperty(rightHeadersFromPlan[i], ""));
-                                
-                                fields.add(valueTRX);
-                                if (!valueTRX.equals(""))
-                                    notEmptyProperties++;
-                            }
-                            
-                            if (notEmptyProperties > 1)
-                                trxWriter.writeNext(fields.toArray(new String[0]));
-                            fields.clear();
                         }
-                        
-                        trxWriter.close();
+                    }
+                    if (isNeedExportModel) {
+                        runExportFrequencyPlan(nodes, model, headersToArray, fileWithPrefix, separator, quoteChar, charSet);
                     }
                     isNeedExportModel = false;
+                }
+                
+                if (timestamp != 0) {
+                    FrequencyPlanModel model = FrequencyPlanModel.getModel(rootNode, latestModelName);
+                    runExportFrequencyPlan(nodes, model, headersToArray, fileWithPrefix, separator, quoteChar, charSet);
                 }
                 break;
             case TRAFFIC_DATA:
@@ -685,6 +680,51 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         }
     }
     
+    
+    private void runExportFrequencyPlan(Iterable<Node> nodes, FrequencyPlanModel model, String[] headersToArray,
+            String fileWithPrefix, String separator, 
+            String quoteChar, String charSet) throws IOException {
+        ArrayList<String> fields = new ArrayList<String>();
+        String[] rightHeadersFromPlan = null, 
+        rightHeadersFromCarrier = null;
+        String valueTRX = null;
+        String sectorName = null;
+        int notEmptyProperties = 0;
+
+        CSVWriter trxWriter = createWriterToSomeData(ColumnsConfigPageTypes.TRX_DATA.getName().replace(' ', '_') + "_" + cleanHeader(model.getName()), fileWithPrefix, separator, quoteChar, charSet);
+        trxWriter.writeNext(headersToArray);
+        for (Node carrierNode : nodes) {
+            notEmptyProperties = 0;
+            Node planNode = model.findPlanNode(carrierNode);
+            for (Relationship relation : carrierNode.getRelationships()) {
+                if (relation.getType().toString().equals(DatasetRelationshipTypes.CHILD.toString())) {
+                    sectorName = relation.getStartNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+                }
+            }
+            fields.add(sectorName);
+            if (rightHeadersFromCarrier == null)
+                rightHeadersFromCarrier = getRightHeaders(carrierNode, ColumnsConfigPageTypes.TRX_DATA);
+            if (planNode != null) {
+                if (rightHeadersFromPlan == null)
+                    rightHeadersFromPlan = getRightHeaders(planNode, ColumnsConfigPageTypes.TRX_DATA);
+            }
+            for (int i = 0; i < rightHeadersFromCarrier.length; i++) {
+                valueTRX = String.valueOf(carrierNode.getProperty(rightHeadersFromCarrier[i], ""));
+                if (valueTRX == null || valueTRX.equals("") && planNode != null)
+                    valueTRX = String.valueOf(planNode.getProperty(rightHeadersFromPlan[i], ""));
+                
+                fields.add(valueTRX);
+                if (!valueTRX.equals(""))
+                    notEmptyProperties++;
+            }
+            
+            if (notEmptyProperties > 1)
+                trxWriter.writeNext(fields.toArray(new String[0]));
+            fields.clear();
+        }
+        
+        trxWriter.close();
+    }
     private String[] getRightHeaders(Node sectorNode, ColumnsConfigPageTypes pageType) {
         
         String rightHeaders[] = new String[pageType.getProperties().length];
