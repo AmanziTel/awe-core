@@ -16,7 +16,6 @@ package org.amanzi.neo.services.network;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -74,7 +73,7 @@ public class NetworkModel {
         return new NodeToNodeRelationModel(rootNode, type, name);
     }
     public NodeToNodeRelationModel getIllegalFrequency() {
-        return getNodeToNodeRelationModel(NodeToNodeTypes.ILLEGAL_FREQUENCY, "Illegal Frequency");
+        return getNodeToNodeRelationModel(NodeToNodeTypes.ILLEGAL_FREQUENCY, "Illegal Frequencies");
     }
     public NodeToNodeRelationModel getInterferenceMatrix(String name) {
         return getNodeToNodeRelationModel(NodeToNodeTypes.INTERFERENCE_MATRIX, name);
