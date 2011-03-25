@@ -38,6 +38,7 @@ import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.network.FrequencyPlanModel;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
+import org.amanzi.neo.services.node2node.NodeToNodeTypes;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -496,37 +497,46 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                
             case INTERFERENCE_MATRIX:
                 writer.writeNext(headersToArray);
-                NetworkModel networkModel = new NetworkModel(rootNode);
-                NodeToNodeRelationModel n2n = networkModel.getInterferenceMatrix(rootNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString());
-
-                Traverser trav = n2n.getServTraverser(new Evaluator() {
+                
+                NetworkModel networkModel5 = new NetworkModel(rootNode);
+                Set<NodeToNodeRelationModel> models1 = networkModel5.findAllN2nModels(NodeToNodeTypes.INTERFERENCE_MATRIX);
+                for (NodeToNodeRelationModel model : models1) {
+                    String adj = "", co = "", source = "",
+                    servingSector = "", interferingSector = "", twoSectorTogether = "";
+                    Integer index = 0;
+                    HashMap<String, Integer> twoSectorTogetherList = new HashMap<String, Integer>();
                     
-                    @Override
-                    public Evaluation evaluate(Path arg0) {
-                        return Evaluation.INCLUDE_AND_CONTINUE;
-                    }
-                });
-                Traverser trav3 = n2n.getNeighTraverser(new Evaluator() {
-                    
-                    @Override
-                    public Evaluation evaluate(Path arg0) {
-                        return Evaluation.INCLUDE_AND_CONTINUE;
-                    }
-                });
-                for (Node neighNode : trav3.nodes()) {
-                    System.out.println(neighNode);
-                }
-                for (Node servNode : trav.nodes()) {
-                    for (Relationship rel : n2n.getOutgoingRelations(servNode)) {
-                        try {
-                            String chanellType = rel.getProperty("channel_type").toString();
+                    Traverser traverser = model.getNeighTraverser(new Evaluator() {
+                        
+                        @Override
+                        public Evaluation evaluate(Path arg0) {
+                            return Evaluation.INCLUDE_AND_CONTINUE;
                         }
-                        catch (NotFoundException e) {
-                            
+                    });
+                    for (Node node : traverser.nodes()) {
+                        for (Relationship rel : model.getOutgoingRelations(node)) {
+                            fields.clear();
+                            servingSector = rel.getStartNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+                            interferingSector = rel.getEndNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+                            twoSectorTogether = servingSector + interferingSector;
+                            if (twoSectorTogetherList.get(twoSectorTogether) == null) {
+                                twoSectorTogetherList.put(twoSectorTogether, index);
+                                index++;
+                                    
+                                adj = rel.getProperty("adj").toString();
+                                co = rel.getProperty("co").toString();
+                                fields.add(servingSector);
+                                fields.add(interferingSector);
+                                fields.add(source);
+                                fields.add(co);
+                                fields.add(adj);
+                                if (!fields.containsAll(oldFields)) {
+                                    writer.writeNext(fields.toArray(new String[0]));
+                                    oldFields.clear();
+                                    oldFields.addAll(fields);
+                                }
+                            }
                         }
-                        if (!fields.contains(""))
-                            writer.writeNext(fields.toArray(new String[0]));
-                        fields.clear();
                     }
                 }
                 
@@ -534,7 +544,36 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                 break;
             case FREQUENCY_CONSTRAINT_DATA:
                 writer.writeNext(headersToArray);
+                
+                NetworkModel networkModel4 = new NetworkModel(rootNode);
+                Set<NodeToNodeRelationModel> models = networkModel4.findAllN2nModels(NodeToNodeTypes.NEIGHBOURS);
+                for (NodeToNodeRelationModel model : models) {
+                    String sector_name = "";
+                    Traverser traverser = model.getNeighTraverser(new Evaluator() {
+                        
+                        @Override
+                        public Evaluation evaluate(Path arg0) {
+                            return Evaluation.INCLUDE_AND_CONTINUE;
+                        }
+                    });
+                    for (Node node : traverser.nodes()) {
+                        Node carrier = model.findNodeFromProxy(node);
+                        for (Relationship rel2 : carrier.getRelationships()) {
+                            if (rel2.isType(RelationshipTypes.CHILD)) {
+                                sector_name = rel2.getStartNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+                                break;
+                            }
+                        }
+                        for (Relationship rel : model.getOutgoingRelations(node)) {
+                            for (String str : rel.getPropertyKeys()) {
+                                System.out.println(str);
+                            }
+                        }
+                    }
+                }
+      
 
+                
                 NetworkModel networkModel2 = new NetworkModel(rootNode);
                 NodeToNodeRelationModel n2nIllegalFrequency = networkModel2.getIllegalFrequency();
                 String chanellType = "", trx_id = "", sector_name = "", 

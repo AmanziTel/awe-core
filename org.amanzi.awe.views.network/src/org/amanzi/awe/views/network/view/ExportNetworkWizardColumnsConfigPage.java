@@ -31,6 +31,7 @@ import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.network.FrequencyPlanModel;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
+import org.amanzi.neo.services.node2node.NodeToNodeTypes;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.amanzi.neo.services.statistic.internal.PropertyHeaderImpl;
@@ -522,6 +523,13 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
                 }
             }
             
+            if (pageType == ColumnsConfigPageTypes.INTERFERENCE_MATRIX) {
+                NetworkModel networkModel = new NetworkModel(selectedNode);
+                Set<NodeToNodeRelationModel> interferenceModels = networkModel.findAllN2nModels(NodeToNodeTypes.INTERFERENCE_MATRIX);
+                if (interferenceModels.size() > 0) {
+                    isExistOneProperty = true;
+                }
+            }
             if (pageType == ColumnsConfigPageTypes.FREQUENCY_CONSTRAINT_DATA) {
                 NetworkModel networkModel = new NetworkModel(selectedNode);
                 Set<FrequencyPlanModel> frequencyModels = networkModel.findAllFrqModel();
