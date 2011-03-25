@@ -362,7 +362,7 @@ public class AfpExporter extends Job {
                 float[] trxValues = calculateInterference(trx, intTrx, sectorIntValues.get(intSector));
                 boolean includeSubcell = false;
                 for (int i = 0; i < trxValues.length; i++) {
-                    if (trxValues[i] > 0.2)
+                    if (trxValues[i] > 0.002)
                         includeSubcell = true;
                     sbSubCell.append(df.format(trxValues[i]) + " ");
                 }
