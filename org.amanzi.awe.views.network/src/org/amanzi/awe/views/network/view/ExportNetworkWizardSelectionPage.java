@@ -31,7 +31,7 @@ import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.DialogPage;
-import org.eclipse.jface.preference.FileFieldEditor;
+import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -72,7 +72,7 @@ import org.neo4j.helpers.Predicate;
  */
 public class ExportNetworkWizardSelectionPage extends WizardPage {
 
-    private FileFieldEditor editor;
+    private DirectoryFieldEditor editor;
     private Group main;
     private String fileName = "";
     private TreeViewer viewer;
@@ -150,11 +150,11 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
             }
         }
 
-        editor = new FileFieldEditor("fileSelectNeighb", "File", main);
+        editor = new DirectoryFieldEditor("fileSelectNeighb", "Directory", main);
 
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                setFileName(editor.getStringValue());
+                setFileName(editor.getStringValue() + "\\\\");
             }
         });
 
@@ -511,20 +511,18 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
             setMessage("Target file is not selected.", DialogPage.ERROR);
             return;
         }
-        if (!new File(fileName).isAbsolute() || new File(fileName).isDirectory()) {
-            setPageComplete(false);
-            setMessage(String.format("File path '%s' is not valid.", fileName), DialogPage.ERROR);
-            return;
-        }
+//        if (!new File(fileName).isAbsolute() || new File(fileName).isDirectory()) {
+//            setPageComplete(false);
+//            setMessage(String.format("File path '%s' is not valid.", fileName), DialogPage.ERROR);
+//            return;
+//        }
 
-        if (new File(fileName).isFile()) {
+        if (new File(fileName).isDirectory()) {
+            setMessage("", DialogPage.NONE);
             setPageComplete(true);
-            setMessage(String.format("File path '%s' is already exist.", fileName), DialogPage.WARNING);
+            //setMessage(String.format("File path '%s' is already exist.", fileName), DialogPage.WARNING);
             return;
         }
-
-        setMessage("", DialogPage.NONE);
-        setPageComplete(true);
     }
 
 }

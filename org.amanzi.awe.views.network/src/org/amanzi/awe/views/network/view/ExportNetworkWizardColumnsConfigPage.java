@@ -523,15 +523,21 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
                 }
             }
             
-            if (pageType == ColumnsConfigPageTypes.INTERFERENCE_MATRIX) {
-                NetworkModel networkModel = new NetworkModel(selectedNode);
+            NetworkModel networkModel = new NetworkModel(selectedNode);
+            switch(pageType) {
+            case INTERFERENCE_MATRIX:
                 Set<NodeToNodeRelationModel> interferenceModels = networkModel.findAllN2nModels(NodeToNodeTypes.INTERFERENCE_MATRIX);
                 if (interferenceModels.size() > 0) {
                     isExistOneProperty = true;
                 }
-            }
-            if (pageType == ColumnsConfigPageTypes.FREQUENCY_CONSTRAINT_DATA) {
-                NetworkModel networkModel = new NetworkModel(selectedNode);
+                break;
+            case NEIGBOURS_DATA:
+                Set<NodeToNodeRelationModel> neighbourModels = networkModel.findAllN2nModels(NodeToNodeTypes.NEIGHBOURS);
+                if (neighbourModels.size() > 0) {
+                    isExistOneProperty = true;
+                }
+                break;
+            case FREQUENCY_CONSTRAINT_DATA:
                 Set<FrequencyPlanModel> frequencyModels = networkModel.findAllFrqModel();
                 ArrayList<String> modelNames = new ArrayList<String>();
                 for (FrequencyPlanModel model : frequencyModels) {
@@ -540,23 +546,7 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
                 if (modelNames.size() > 0) 
                     isExistOneProperty = true;
                 ExportNetworkWizard.setFrequencyPlanModelNames(modelNames);
-                
-//                Traverser trav = n2n.getServTraverser(new Evaluator() {
-//                    
-//                    @Override
-//                    public Evaluation evaluate(Path arg0) {
-//                        return Evaluation.INCLUDE_AND_CONTINUE;
-//                    }
-//                });
-//                LABEL: for (Node servNode : trav.nodes()) {
-//                    Node carrier = n2n.findNodeFromProxy(servNode);
-//                    for (Relationship rel2 : carrier.getRelationships()) {
-//                        if (rel2.isType(DatasetRelationshipTypes.PLAN_ENTRY)) {
-//                            isExistOneProperty = true;
-//                            break LABEL;
-//                        }
-//                    }
-//                }
+                break;
             }
             
             ExportNetworkWizard.getSavingDataPage().setMapOfCheckboxesState(pageType.getIndex(), isExistOneProperty);

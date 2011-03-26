@@ -25,13 +25,13 @@ import org.apache.commons.lang.StringUtils;
  */
 public enum ColumnsConfigPageTypes {
 
-    NETWORK_SECTOR_DATA("Network sector data", 7, new String[] {}),
-    NEIGBOURS_DATA("Neighbours data", 0, new String[] {"Serving Sector", "Target Sector", "Attempts"}),
-    FREQUENCY_CONSTRAINT_DATA("Frequency constraint data", 1, new String[] {"Sector", "TRX_ID", "Channel Type", "ARFCN", "Type", "Penalty"}),
-    SEPARATION_CONSTRAINT_DATA("Separation constraint data", 2, new String[] {"Sector", "Separation"}),
-    TRAFFIC_DATA("Traffic data", 3, new String[] {"Sector", "Traffic"}),
-    TRX_DATA("Trx data", 4, new String[] {"Sector", "Subcell", "Band", "Extended", "Hopping Type", "BCCH", "HSN", "MAIO", "ARFCN"}),
-    INTERFERENCE_MATRIX("Interference matrix", 5, new String[] {"Serving Sector", "Interfering Sector", "Source", "Co", "Adj"});
+    NETWORK_SECTOR_DATA("Network sector data", 7, new String[] {}, "SECTOR_FILE.csv"),
+    NEIGBOURS_DATA("Neighbours data", 0, new String[] {"Serving Sector", "Attempts", "Target Sector"}, "NEIGHBOR_LIST_FILE.csv"),
+    FREQUENCY_CONSTRAINT_DATA("Frequency constraint data", 1, new String[] {"Sector", "TRX_ID", "Channel Type", "ARFCN", "Type", "Penalty"}, "FREQUENCY_CONSTRAINTS_FILE.csv"),
+    SEPARATION_CONSTRAINT_DATA("Separation constraint data", 2, new String[] {"Sector", "Separation"}, "SEPARATION_CONSTRAINTS_FILE.csv"),
+    TRAFFIC_DATA("Traffic data", 3, new String[] {"Sector", "Traffic"}, "TRAFFIC_DATA_FILE.csv"),
+    TRX_DATA("Trx data", 4, new String[] {"Sector", "Subcell", "Band", "Extended", "Hopping Type", "BCCH", "HSN", "MAIO", "ARFCN"}, "TRX_FILE"),
+    INTERFERENCE_MATRIX("Interference matrix", 5, new String[] {"Serving Sector", "Interfering Sector", "Source", "Co", "Adj"}, "INTERFERENCE_MODEL.csv");
     
     /**
      * Name of type
@@ -44,6 +44,11 @@ public enum ColumnsConfigPageTypes {
     private String[] properties;
     
     /**
+     * Name of file to property
+     */
+    private String fileName;
+    
+    /**
      * Index of page
      */
     private Integer index;
@@ -52,10 +57,11 @@ public enum ColumnsConfigPageTypes {
      * Constructor
      * @param name
      */
-    private ColumnsConfigPageTypes(String name, Integer index, String[] properties) {
+    private ColumnsConfigPageTypes(String name, Integer index, String[] properties, String fileName) {
         this.name = name;
         this.index = index;
         this.properties = properties;
+        this.fileName = fileName;
     }
     
     /**
@@ -83,6 +89,15 @@ public enum ColumnsConfigPageTypes {
      */
     public String[] getProperties() {
         return properties;
+    }
+    
+    /**
+     * Get name of file to property
+     *
+     * @return
+     */
+    public String getFileName() {
+        return fileName;
     }
     
 
