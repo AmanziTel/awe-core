@@ -16,6 +16,7 @@ package org.amanzi.awe.views.neighbours.views;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -31,6 +32,8 @@ import org.amanzi.awe.catalog.neo.upd_layers.events.ChangeSelectionEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEventTypes;
 import org.amanzi.awe.ui.AweUiPlugin;
 import org.amanzi.awe.ui.IGraphModel;
+import org.amanzi.awe.views.neighbours.NeighboursPlugin;
+import org.amanzi.awe.views.neighbours.PreferenceInitializer;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NetworkService;
@@ -46,6 +49,7 @@ import org.amanzi.neo.services.statistic.ISelectionInformation;
 import org.amanzi.neo.services.statistic.IStatistic;
 import org.amanzi.neo.services.statistic.StatisticManager;
 import org.amanzi.neo.services.ui.IconManager;
+import org.amanzi.neo.services.utils.FilteredIterator;
 import org.amanzi.neo.services.utils.RunnableWithResult;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
@@ -53,6 +57,8 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ILazyContentProvider;
 import org.eclipse.jface.viewers.ITableFontProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
@@ -104,9 +110,9 @@ import org.neo4j.graphdb.Relationship;
  * @author TsAr
  * @since 1.0.0
  */
-public class Node2NodeViews extends ViewPart {
+public class Node2NodeViews extends ViewPart implements IPropertyChangeListener {
     /** String OUTGOING_ANALYSE field */
-    private static final String OUTGOING_ANALYSE = "Outgoing analyse";
+    private static final String OUTGOING_ANALYSE = " Outgoing analyse";
     private static final RGB main = new RGB(0, 0, 255);
     private static final RGB more50 = new RGB(112, 48, 160);
     private static final RGB more30 = new RGB(255, 0, 0);
@@ -157,6 +163,9 @@ public class Node2NodeViews extends ViewPart {
     private Wrapper data;
     private boolean direction = true;
     private Button outgoingAnalyse;
+    private Integer maxRowCount;
+    private boolean canSort=false;
+    private ArrayList<Wrapper> rows=new ArrayList<Wrapper>();
 
     @Override
     public void createPartControl(Composite parent) {
@@ -441,6 +450,33 @@ public class Node2NodeViews extends ViewPart {
 
     /**
      *
+     * @param currentColumn
+     * @param dir
+     */
+    protected void sortRows(TableColumn currentColumn, int dir) {
+        final int idx=dir==SWT.UP?-1:1;
+        final int index = columns.indexOf(currentColumn);
+        Collections.sort(rows, new Comparator<Wrapper>(){
+
+            @Override
+            public int compare(Wrapper o1, Wrapper o2) {
+                return idx*cmp(o1,o2);
+            }
+
+            public int cmp(Wrapper o1, Wrapper o2) {
+                String p1 = o1.getText(index);
+                String p2 = o2.getText(index);
+                if (p1==null){
+                    return p2==null?0:-1;
+                }
+                return p2==null?1:p1.compareTo(p2);
+            }
+            
+        });
+    }
+
+    /**
+     *
      */
     protected void changeDirection() {
         formCollumns();
@@ -677,54 +713,7 @@ public class Node2NodeViews extends ViewPart {
         fireModel(model);
     }
 
-    /**
-     * @param event REMOVE METHOD
-     */
-    protected void setData(Event event) {
-        TableItem item = (TableItem)event.item;
-        int index = event.index;
-        int start = index / PAGE_SIZE * PAGE_SIZE;
-        int end = Math.min(start + PAGE_SIZE, table.getItemCount());
-
-        int k = 0;
-        for (int i = start; i < end; i++) {
-            PropertyContainer cont = getElement(i);
-            String servingNodeName = ds.getNodeName(((Relationship)cont).getStartNode());
-
-            item = table.getItem(i);
-            // Kasnitskij_V:
-            // search need sector
-            if (!searchingSector.equals("")) {
-                if (servingNodeName.equals(searchingSector)) {
-                    item = table.getItem(k++);
-                }
-            }
-
-            item.setData(cont);
-
-            item.setText(0, servingNodeName);
-            if (servingNodeName.equals(selectedServ)) {
-                item.setFont(0, fontSelected);
-            } else {
-                item.setFont(0, fontNormal);
-            }
-            item.setText(1, ds.getNodeName(((Relationship)cont).getEndNode()));
-            for (int j = 2; j < colColut; j++) {
-                item.setText(j, String.valueOf(cont.getProperty(propertys.get(j - 2), "")));
-            }
-        }
-        if (k != 0) {
-            view.setItemCount(k);
-        } else {
-            if (!searchingSector.equals("")) {
-                textToSearch.setText("not found");
-            } else {
-                textToSearch.setText("");
-            }
-        }
-    }
-
-    private PropertyContainer getElement(final int i) {
+     private PropertyContainer getElement(final int i) {
         Callable<PropertyContainer> cl = new Callable<PropertyContainer>() {
 
             @Override
@@ -848,6 +837,7 @@ public class Node2NodeViews extends ViewPart {
 
     @Override
     public void dispose() {
+        NeighboursPlugin.getDefault().getPreferenceStore().removePropertyChangeListener(this);
         fireModel(null);
         isDisposed = true;
         tx.stop(false);
@@ -856,6 +846,8 @@ public class Node2NodeViews extends ViewPart {
 
     @Override
     public void init(IViewSite site) throws PartInitException {
+        NeighboursPlugin.getDefault().getPreferenceStore().addPropertyChangeListener(this);
+        maxRowCount=NeighboursPlugin.getDefault().getPreferenceStore().getInt(PreferenceInitializer.N2N_MAX_SORTED_ROW);
         super.init(site);
         ds = NeoServiceFactory.getInstance().getDatasetService();
         n2ns = NeoServiceFactory.getInstance().getNodeToNodeRelationService();
@@ -912,9 +904,11 @@ public class Node2NodeViews extends ViewPart {
     }
 
     private void formCollumns() {
+        rows.clear();
         int countRelation = 0;
         table.setVisible(false);
         table.clearAll();
+        table.setSortDirection(SWT.NONE);
         if (n2nModel == null) {
             colColut = 0;
             statistic = null;
@@ -928,12 +922,33 @@ public class Node2NodeViews extends ViewPart {
             propertys = new ArrayList<String>();
             propertys.addAll(propertyNames);
             colColut = propertyNames.size() + 2;
-            boolean createdCollumn = columns.isEmpty();
             while (columns.size() < colColut) {
                 TableColumn col = new TableColumn(table, SWT.NONE);
                 columns.add(col);
-            }
-            if (createdCollumn) {
+                Listener sortListener = new Listener() {
+                    public void handleEvent(Event e) {
+                        if (canSort) {
+                            // determine new sort column and direction
+                            TableColumn sortColumn = table.getSortColumn();
+                            TableColumn currentColumn = (TableColumn)e.widget;
+                            int dir = table.getSortDirection();
+                            if (sortColumn == currentColumn) {
+                                dir = dir == SWT.UP ? SWT.DOWN : SWT.UP;
+                            } else {
+                                table.setSortColumn(currentColumn);
+                                dir = SWT.UP;
+                            }
+                            // sort the data based on column and direction
+                            sortRows(currentColumn, dir);
+                            // update data displayed in table
+                            table.setSortDirection(dir);
+                            table.clearAll();
+                        } else {
+                            table.setSortDirection(SWT.NONE);
+                        }
+                    }
+                };
+                col.addListener(SWT.Selection, sortListener);
             }
             setColumnNames();
             for (int i = 2; i < colColut; i++) {
@@ -943,20 +958,57 @@ public class Node2NodeViews extends ViewPart {
                 tableColumn.setToolTipText("Type " + information.getPropertyInformation(propertyName).getStatistic().getType().getName());
 
             }
-            // for (Node n:filter.getFilteredServNodes(n2nModel)){
-            // System.out.println(ds.getNodeName(n));
-            // }
-            // System.out.println("____");
+            
             for (Relationship rel : getRelationIterator(filter)) {
                 countRelation++;
+                if (countRelation<=maxRowCount){
+                    rows.add(new Wrapper(rel));
+                }
             }
+            canSort=maxRowCount>=countRelation;
             System.out.println(countRelation);
-            createdIter = createCountedIter();
+            if (canSort){
+                fillProperties();
+            }else{
+                rows.clear();
+                createdIter = createCountedIter();
+            }
+
 
         }
         resizecolumns();
         view.setItemCount(countRelation);
         table.setVisible(countRelation > 0);
+    }
+
+    /**
+     *
+     */
+    private void fillProperties() {
+        Runnable cl = new Runnable() {
+
+            @Override
+            public void run() {
+                for (Wrapper wr : rows) {
+                    String servingNodeName = ds.getNodeName(((Relationship)wr.cont).getStartNode());
+                    wr.addProperty(servingNodeName);
+                    wr.addProperty(ds.getNodeName(((Relationship)wr.cont).getEndNode()));
+                    for (int j = 2; j < colColut; j++) {
+                        wr.addProperty(String.valueOf(wr.cont.getProperty(propertys.get(j - 2), "")));
+                    }
+                }
+            }
+        };
+
+        try {
+            tx.submit(cl).get();
+        } catch (InterruptedException e) {
+            // TODO Handle InterruptedException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } catch (ExecutionException e) {
+            // TODO Handle ExecutionException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
     }
 
     /**
@@ -986,9 +1038,16 @@ public class Node2NodeViews extends ViewPart {
      * @param filter2 the filter2
      * @return the relation iterator
      */
-    private Iterable<Relationship> getRelationIterator(INode2NodeFilter filter2) {
-        return direction ? n2ns.getRelationTraverserByFilteredNodes(filter.getFilteredServNodes(n2nModel), Direction.OUTGOING) : n2ns.getRelationTraverserByFilteredNodes(
+    private Iterable<Relationship> getRelationIterator(INode2NodeFilter filter) {
+        final Iterable<Relationship> iterable = direction ? n2ns.getRelationTraverserByFilteredNodes(filter.getFilteredServNodes(n2nModel), Direction.OUTGOING) : n2ns.getRelationTraverserByFilteredNodes(
                 filter.getFilteredNeighNodes(n2nModel), Direction.INCOMING);
+        return searchingSector.isEmpty()?iterable:new Iterable<Relationship>() {
+            
+            @Override
+            public Iterator<Relationship> iterator() {
+                return new FilterItr(iterable.iterator(), searchingSector);
+            }
+        };
     }
 
     /**
@@ -1168,6 +1227,10 @@ public class Node2NodeViews extends ViewPart {
         }
         @Override
         public void updateElement(int index) {
+            if (canSort){
+                view.replace(rows.get(index), index);
+                return;
+            }
             int start = index / PAGE_SIZE * PAGE_SIZE;
             int end = Math.min(start + PAGE_SIZE, table.getItemCount());
             // TODO not correct search- need refactor.
@@ -1178,33 +1241,33 @@ public class Node2NodeViews extends ViewPart {
                 String servingNodeName = ds.getNodeName(((Relationship)cont).getStartNode());
 
                 ind = i;
-                // Kasnitskij_V:
-                // search need sector
-                if (!searchingSector.equals("")) {
-                    if (servingNodeName.equals(searchingSector)) {
-                        ind = k++;
-                    } else {
-                        if (end < table.getItemCount()) {
-                            end++;
-                        }
-                        continue;
-                    }
-                }
-                Wrapper wr = new Wrapper(cont, ind);
+//                // Kasnitskij_V:
+//                // search need sector
+//                if (!searchingSector.equals("")) {
+//                    if (servingNodeName.equals(searchingSector)) {
+//                        ind = k++;
+//                    } else {
+//                        if (end < table.getItemCount()) {
+//                            end++;
+//                        }
+//                        continue;
+//                    }
+//                }
+                Wrapper wr = new Wrapper(cont);
                 wr.addProperty(servingNodeName);
                 wr.addProperty(ds.getNodeName(((Relationship)cont).getEndNode()));
                 fillProrerty(cont, wr);
                 view.replace(wr, ind);
             }
-            if (k != 0) {
-                view.setItemCount(k);
-            } else {
-                if (!searchingSector.equals("")) {
-                    textToSearch.setText("not found");
-                } else {
-                    textToSearch.setText("");
-                }
-            }
+//            if (k != 0) {
+//                view.setItemCount(k);
+//            } else {
+//                if (!searchingSector.equals("")) {
+//                    textToSearch.setText("not found");
+//                } else {
+//                    textToSearch.setText("");
+//                }
+//            }
         }
 
     }
@@ -1233,16 +1296,13 @@ public class Node2NodeViews extends ViewPart {
     private static class Wrapper {
 
         private final PropertyContainer cont;
-        private final int index;
         private final ArrayList<String> values = new ArrayList<String>();
 
         /**
          * @param cont
-         * @param index
          */
-        public Wrapper(PropertyContainer cont, int index) {
+        public Wrapper(PropertyContainer cont) {
             this.cont = cont;
-            this.index = index;
         }
 
         /**
@@ -1256,5 +1316,36 @@ public class Node2NodeViews extends ViewPart {
         public void addProperty(String val) {
             values.add(val);
         }
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent event) {
+        if (ObjectUtils.equals(event.getOldValue(), event.getNewValue())){
+            return;
+        }
+        if (event.getProperty().equals(PreferenceInitializer.N2N_MAX_SORTED_ROW)){
+            maxRowCount= (Integer)event.getNewValue();
+            n2nModel=null;
+            n2nSelectionChange();
+        }
+    }
+    public static class FilterItr extends FilteredIterator<Relationship>{
+
+        private final String servNodeName;
+        private DatasetService service;
+
+        public FilterItr(Iterator<Relationship> iterator,String servNodeName) {
+            super(iterator);
+            this.servNodeName = servNodeName;
+            service=NeoServiceFactory.getInstance().getDatasetService();
+            
+        }
+
+        @Override
+        public boolean canBeNext(Relationship elem) {
+            String name=service.getNodeName(elem.getStartNode());
+            return name!=null&&name.equalsIgnoreCase(servNodeName);
+        }
+        
     }
 }

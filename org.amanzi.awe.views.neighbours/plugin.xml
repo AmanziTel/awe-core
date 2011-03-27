@@ -58,5 +58,19 @@
          </viewShortcut>
       </perspectiveExtension>
    </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.amanzi.awe.views.neighbours.PreferenceInitializer">
+      </initializer>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="org.amanzi.awe.views.neighbours.views.N2NPreferencePage"
+            id="org.amanzi.awe.views.neighbours.views.N2NPreferencePage"
+            name="Relation view preferences">
+      </page>
+   </extension>
 
 </plugin>

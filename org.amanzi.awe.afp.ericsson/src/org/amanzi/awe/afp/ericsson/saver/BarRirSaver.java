@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.afp.ericsson.saver;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -54,6 +56,8 @@ import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.kernel.Traversal;
 import org.neo4j.kernel.Uniqueness;
 
+import au.com.bytecode.opencsv.CSVWriter;
+
 import com.vividsolutions.jts.geom.Coordinate;
 
 /**
@@ -94,6 +98,9 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
     private String triangulationListName;
     private String shadowingListName;
     private String interferenceListName;
+    private String rirFileName = null;
+    private CSVWriter rirInterference = null;
+    private static final boolean LOGGING = true;
 
     /**
      * Save.
@@ -148,6 +155,10 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
      * @param element the element
      */
     private void handleRirCellData(RecordTransferData element) {
+        ArrayList<String>log=new ArrayList<String>();
+        if (LOGGING) {
+            defineRirWriter(element);
+        }
         Record rec = element.getRecord().getEvent();
         String cellName = getString(rec, Parameters.CELL_NAME);
         if (cellName == null) {
@@ -159,15 +170,68 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             return;
         }
         CellRirData cell = getRirCell(cellName);
+        if (LOGGING){
+            log.add(cellName);
+            log.add(String.valueOf(count));
+        }
         for (int i = 1; i <= count; i++) {
             Integer arfcn = getInteger(rec, new CountableParameters(Parameters.ARFCN, i));
             Integer avemedian = getInteger(rec, new CountableParameters(Parameters.AVMEDIAN, i));
             Integer avpercentile = getInteger(rec, new CountableParameters(Parameters.AVPERCENTILE, i));
             Integer noofmeas = getInteger(rec, new CountableParameters(Parameters.NOOFMEAS, i));
+            if (LOGGING){
+                log.add(String.valueOf(arfcn));
+                log.add(String.valueOf(avemedian));
+                log.add(String.valueOf(avpercentile));
+                log.add(String.valueOf(noofmeas));
+            }
             if (arfcn == null || avemedian == null || avpercentile == null || noofmeas == null) {
                 error("incorect rir data");
             }
             cell.addRirData(i, arfcn, avemedian, avpercentile, noofmeas);
+        }
+        if (LOGGING){
+            rirInterference.writeNext(log.toArray(new String[0]));
+        }       
+    }
+
+    /**
+     * @param element
+     * @return
+     */
+    private CSVWriter defineRirWriter(RecordTransferData element) {
+        if (rirInterference == null) {
+            rirInterference = createCSVWriter(element);
+        } else if (!rirFileName.startsWith(element.getFileName())) {
+            try {
+                rirInterference.close();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            rirInterference = createCSVWriter(element);
+        }
+        return rirInterference;
+    }
+
+    private CSVWriter createCSVWriter(RecordTransferData element) {
+        rirFileName = element.getFileName() + "_parse_.csv";
+        try {
+            CSVWriter writer = new CSVWriter(new FileWriter(rirFileName));
+            List<String>headers=new ArrayList<String>();
+            headers.add("CELL_NAME");
+            headers.add("NUMBER_FREQ");
+            for (int i=1;i<=150;i++){
+                headers.add("ARFCN"+i);
+                headers.add("AVMEDIAN"+i);
+                headers.add("AVPERCENTILE"+i);
+                headers.add("NOOFMEAS"+i);
+            }
+            writer.writeNext(headers.toArray(new String[0]));
+            return writer;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -408,6 +472,15 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
      */
     @Override
     public void finishUp(RecordTransferData element) {
+        if (LOGGING){
+            if (rirInterference!=null){
+                try {
+                    rirInterference.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
         try {
             initProgress(element);
             fire(0, "Create IM");
