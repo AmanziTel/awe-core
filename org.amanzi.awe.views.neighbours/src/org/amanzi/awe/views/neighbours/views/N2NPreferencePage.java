@@ -38,7 +38,7 @@ public class N2NPreferencePage extends FieldEditorPreferencePage implements IWor
         Composite attributePanel = getFieldEditorParent();
         attributePanel.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, true));
         attributePanel.setLayout(new GridLayout());
-        final IntegerFieldEditor maxRow = new IntegerFieldEditor(PreferenceInitializer.N2N_MAX_SORTED_ROW, "Max row in table for sorting", attributePanel);
+        final IntegerFieldEditor maxRow = new IntegerFieldEditor(PreferenceInitializer.N2N_MAX_SORTED_ROW, "Max rows in table for sorting", attributePanel);
         maxRow.setValidRange(0, Integer.MAX_VALUE);
         addField(maxRow);
 
