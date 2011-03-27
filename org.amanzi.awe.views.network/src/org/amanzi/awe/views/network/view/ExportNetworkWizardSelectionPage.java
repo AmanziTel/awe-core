@@ -508,7 +508,7 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
         }
         if (fileName.isEmpty()) {
             setPageComplete(false);
-            setMessage("Target file is not selected.", DialogPage.ERROR);
+            setMessage("Target directory is not selected.", DialogPage.ERROR);
             return;
         }
 //        if (!new File(fileName).isAbsolute() || new File(fileName).isDirectory()) {

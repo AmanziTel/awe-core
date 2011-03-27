@@ -97,6 +97,7 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
     private static final HashMap<String, Map<String, Map<String, String>>> pagesWithProperties = new HashMap<String, Map<String,Map<String,String>>>();
     private static ArrayList<String> frequencyPlanModelNames = new ArrayList<String>();
     private static String[] selectionFrequencyPlanModelNames = null;
+    private static boolean stateOfNetworkDataCheckbox = true;
     
     @Override
     public boolean performFinish() {
@@ -226,6 +227,14 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
 
     public static void setCurrentIndex(int curIndex) {
         currentIndex = curIndex;
+    }
+    
+    public static void setStateOfNetworkDataCheckbox(boolean state) {
+        stateOfNetworkDataCheckbox = state;
+    }
+    
+    public static boolean getStateOfNetworkDataCheckbox() {
+        return stateOfNetworkDataCheckbox;
     }
     
     /**

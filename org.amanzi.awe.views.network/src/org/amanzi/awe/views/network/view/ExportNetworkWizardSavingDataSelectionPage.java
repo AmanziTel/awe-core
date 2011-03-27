@@ -16,18 +16,17 @@ package org.amanzi.awe.views.network.view;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.List;
-import org.eclipse.swt.widgets.Shell;
 
 /**
  * TODO Purpose of 
@@ -70,6 +69,23 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
         checkboxNetworkSectorData.setText(ColumnsConfigPageTypes.NETWORK_SECTOR_DATA.getName());
         checkboxNetworkSectorData.setLayoutData(checkboxLayoutData);
         checkboxNetworkSectorData.setSelection(true);
+        checkboxNetworkSectorData.addMouseListener(new MouseListener() {
+            
+            @Override
+            public void mouseUp(MouseEvent e) {
+                ExportNetworkWizard.setStateOfNetworkDataCheckbox(checkboxNetworkSectorData.getSelection());
+//                if (checkboxNetworkSectorData.getSelection() == false) 
+//                    validate(true);
+            }
+            
+            @Override
+            public void mouseDown(MouseEvent e) {
+            }
+            
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+            }
+        });
         
         checkboxNeigboursData = new Button(main, SWT.CHECK);
         checkboxNeigboursData.setText(ColumnsConfigPageTypes.NEIGBOURS_DATA.getName());
@@ -238,4 +254,17 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
         
         return nameOfPages;
     }
+    
+//    @Override
+//    public IWizardPage getNextPage() {
+//        if (ExportNetworkWizard.getStateOfNetworkDataCheckbox()) 
+//            return super.getNextPage();
+//        else {
+//            return super.getNextPage().getNextPage();
+//        }
+//    }
+//    
+//    private void validate(boolean state) {
+//        setPageComplete(state);
+//    }
 }
