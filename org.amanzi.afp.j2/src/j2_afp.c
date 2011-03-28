@@ -1348,7 +1348,6 @@ unsigned char read_InterferenceMatrix(int p_np, int p_itd) {
 					&l_aval, &l_tval, &l_noif, l_cstr2);
 			if (Use_TRAF>1)
 				l_tval = l_aval;
-
 			if ((l_tval > 0.0) && (l_noif > 0)) {
 				l_ino = ( (int)l_cstr2[strlen(l_cstr2)-1] - (int)'A' ) + 1;
 				l_cstr2[strlen(l_cstr2)-1] = '\0';
@@ -2240,9 +2239,7 @@ awe_afp(char * control_file) {
 	}
 	Use_SON = Use_SON && N_DIST_REQ && SON_DIST;
 
-	//LN, 28.03.2011, removed USE_TRAF condition, since it disable
-	//computing freq on only area data
-	if (!read_ITM(IT1_PRIO,1)) {
+	if (Use_TRAF && !read_ITM(IT1_PRIO,1)) {
 		_f_ALL();
 		return (IT_R_ERR);
 	}
