@@ -100,7 +100,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
     private String interferenceListName;
     private String rirFileName = null;
     private CSVWriter rirInterference = null;
-    private static final boolean LOGGING = true;
+    private static final boolean LOGGING = false;
 
     /**
      * Save.
