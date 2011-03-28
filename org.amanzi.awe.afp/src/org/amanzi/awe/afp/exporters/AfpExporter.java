@@ -752,7 +752,7 @@ public class AfpExporter extends Job {
             writer.write("NeighboursConditionFile " + "\"" + this.inputFiles[domainIndex][NEIGHBOUR].getAbsolutePath() + "\"");
             writer.newLine();
             
-            writer.write("TrafficOrAreaInterference " + (useTraffic[domainIndex] ? "1" : "0"));
+            writer.write("TrafficOrAreaInterference " + (useTraffic[domainIndex] ? "1" : "2"));
             writer.newLine();
 
             writer.write("IndicatorForSecondOrderNeighboursUsage " + defaultUseSONbrs);
