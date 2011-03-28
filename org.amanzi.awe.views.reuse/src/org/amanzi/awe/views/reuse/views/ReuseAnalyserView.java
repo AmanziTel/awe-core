@@ -2110,8 +2110,6 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
         IFile file;
         try {
             int i = 0;
-            // Node node = selectedGisNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT,
-            // Direction.OUTGOING).getEndNode();
             // find or create AWE and RDT project
             String aweProjectName = AWEProjectManager.getActiveProjectName();
             IRubyProject rubyProject;
@@ -2131,11 +2129,16 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
             final Select select = !cSelect.isEnabled() ? Select.EXISTS : Select.findSelectByValue(cSelect.getText());
             final String distribute = Distribute.findEnumByValue(cDistribute.getText()).getDescription();
             final String propName = propertyCombo.getText();
-            StringBuffer sb = new StringBuffer("report '").append("Distribution analysis of ").append(gisCombo.getText()).append(
+            String dsName = gisCombo.getText();
+            Object root = members.get(dsName);
+            if (root instanceof ISelectionInformation){
+                dsName=((ISelectionInformation)root).getRootNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+            }
+            StringBuffer sb = new StringBuffer("report '").append("Distribution analysis of ").append(dsName).append(
                     " ").append(propName).append("' do\n");
             sb.append("  author '").append(System.getProperty("user.name")).append("'\n");
             sb.append("  date '").append(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).append("'\n");
-            sb.append("  text 'Distribution analysis of ").append(gisCombo.getText()).append(" ").append(propName).append(
+            sb.append("  text 'Distribution analysis of ").append(dsName).append(" ").append(propName).append(
                     ", with values distributed ").append(distribute).append(" and calculated using ").append(
                     select.getDescription()).append("'\n");
             sb.append("  map 'Drive map', :map => GIS.maps.first.copy, :width => 600, :height => 400 do |m|\n");
@@ -2144,7 +2147,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
             sb.append("  chart '").append(propName).append("' do |chart| \n");
             sb.append("    chart.domain_axis='Value'\n");
             sb.append("    chart.range_axis='Count'\n");
-            sb.append("    chart.statistics='").append(gisCombo.getText()).append("'\n");
+            sb.append("    chart.statistics='").append(dsName).append("'\n");
             sb.append("    chart.property='").append(propName).append("'\n");
             sb.append("    chart.distribute='").append(cDistribute.getText()).append("'\n");
             sb.append("    chart.select='").append(select.toString()).append("'\n");

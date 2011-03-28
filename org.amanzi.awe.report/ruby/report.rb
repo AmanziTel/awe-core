@@ -67,16 +67,13 @@ module NodeUtils
   end
 
   def find_dataset(dataset_name)
-    puts "Neo4j.reference_node #{Neo4j.ref_node}"
     traverser=Neo4j.ref_node.outgoing(:CHILD).depth(2).filter      do
-      puts "find_dataset #{get_property(:name.to_s)} #{neo_id}"
       get_property(:name.to_s)== dataset_name
     end
     traverser.first
   end
 
   def find_aggr_node(gis_node,property, distribute, select)
-    puts "gis node #{gis_node}"
     if gis_node.rel? :NEXT
       dataset_node=gis_node.rel(:NEXT).end_node
     else

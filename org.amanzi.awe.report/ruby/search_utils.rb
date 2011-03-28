@@ -102,7 +102,7 @@ end
 
 module NodeUtils
   def dataset(name,type="dataset",project=nil)
-    datasets=project_node.outgoing(:CHILD,:VIRTUAL_DATASET).depth(2).filter do
+    datasets=project_node(project).outgoing(:CHILD,:VIRTUAL_DATASET).depth(2).filter do
       get_property("type")==type and get_property("name")==name
     end
     datasets.first
