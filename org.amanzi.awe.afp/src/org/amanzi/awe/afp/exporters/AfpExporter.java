@@ -93,8 +93,8 @@ public class AfpExporter extends Job {
     public static final int SHADOWING = 3;
 
     public static final int CoA = 0;
-    public static final int AdA = 1;
-    public static final int CoT = 2;
+    public static final int CoT = 1;
+    public static final int AdA = 2;
     public static final int AdT = 3;
 
     public static final float CO_SITE_SCALING_FACTOR = 1;
