@@ -766,7 +766,7 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                 if (rightHeadersFromPlan == null)
                     rightHeadersFromPlan = getRightHeaders(planNode, ColumnsConfigPageTypes.TRX_DATA);
             }
-            for (int i = 0; i < rightHeadersFromCarrier.length; i++) {
+            for (int i = 1; i < rightHeadersFromCarrier.length; i++) {
                 valueTRX = String.valueOf(carrierNode.getProperty(rightHeadersFromCarrier[i], ""));
                 if (valueTRX == null || valueTRX.equals("") && planNode != null)
                     valueTRX = String.valueOf(planNode.getProperty(rightHeadersFromPlan[i], ""));
