@@ -17,9 +17,6 @@ import org.amanzi.awe.views.neighbours.NeighboursPlugin;
 import org.amanzi.awe.views.neighbours.PreferenceInitializer;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IntegerFieldEditor;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -36,8 +33,6 @@ public class N2NPreferencePage extends FieldEditorPreferencePage implements IWor
     @Override
     protected void createFieldEditors() {
         Composite attributePanel = getFieldEditorParent();
-        attributePanel.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, true));
-        attributePanel.setLayout(new GridLayout());
         final IntegerFieldEditor maxRow = new IntegerFieldEditor(PreferenceInitializer.N2N_MAX_SORTED_ROW, "Max rows in table for sorting", attributePanel);
         maxRow.setValidRange(0, Integer.MAX_VALUE);
         addField(maxRow);
