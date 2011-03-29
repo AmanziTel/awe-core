@@ -332,13 +332,21 @@ public class NetworkService extends DatasetService {
         return new DatasetService.NodeResultImpl(trxNode, isCreated);
     }
 
+
     /**
-     * @param sector
-     * @return
+     * Gets the all trx node.
+     * 
+     * @param sector the sector
+     * @return the all trx node
      */
     public ArrayList<Node> getAllTRXNode(Node sector) {
-        Iterable<Node> itr = Traversal.description().uniqueness(Uniqueness.NONE).breadthFirst().prune(Traversal.pruneAfterDepth(1))
-                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).traverse(sector).nodes();
+        Iterable<Node> itr = Traversal.description().uniqueness(Uniqueness.NONE).breadthFirst().evaluator(new Evaluator() {
+
+            @Override
+            public Evaluation evaluate(Path path) {
+                return Evaluation.of(path.length() == 1, path.length() == 0);
+            }
+        }).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).traverse(sector).nodes();
 
         ArrayList<Node> allTrx = new ArrayList<Node>();
         for (Node it : itr) {
@@ -931,5 +939,24 @@ public class NetworkService extends DatasetService {
      */
     public Iterable<Relationship> getChannelGroups(Node sectorNode) {
         return sectorNode.getRelationships(Relations.CHANNEL_GROUP, Direction.OUTGOING);
+    }
+
+
+    /**
+     * Checks if is group have trx.
+     * 
+     * @param group the group
+     * @return true, if is group have trx
+     */
+    public boolean isGroupHaveTrx(Node group) {
+        return group.hasRelationship(Relations.CHANNEL_TRX, Direction.OUTGOING);
+    }
+
+    public int findFirstID(Node sector) {
+        int maxId = -1;
+        for (Node trx : getAllTRXNode(sector)) {
+            maxId = Math.max(maxId, Integer.parseInt(getNodeName(trx)));
+        }
+        return 1 + maxId;
     }
 }

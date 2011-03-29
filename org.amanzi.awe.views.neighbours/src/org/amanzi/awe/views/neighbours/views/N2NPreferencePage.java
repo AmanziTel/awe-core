@@ -17,6 +17,7 @@ import org.amanzi.awe.views.neighbours.NeighboursPlugin;
 import org.amanzi.awe.views.neighbours.PreferenceInitializer;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IntegerFieldEditor;
+import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -36,7 +37,9 @@ public class N2NPreferencePage extends FieldEditorPreferencePage implements IWor
         final IntegerFieldEditor maxRow = new IntegerFieldEditor(PreferenceInitializer.N2N_MAX_SORTED_ROW, "Max rows in table for sorting", attributePanel);
         maxRow.setValidRange(0, Integer.MAX_VALUE);
         addField(maxRow);
-
+        StringFieldEditor edit = new StringFieldEditor(PreferenceInitializer.N2N_FORMATTED_MASK, "Mask for flot/double cells",
+                attributePanel);
+        addField(edit);
         
     }
 

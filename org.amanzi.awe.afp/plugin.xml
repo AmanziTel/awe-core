@@ -32,4 +32,18 @@
           </toolbar>
        </menuContribution>
     </extension>     
+       <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.amanzi.awe.afp.PreferenceInitializer">
+      </initializer>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="org.amanzi.awe.afp.AfpPreferencePage"
+            id="org.amanzi.awe.afp.AfpPreferencePage"
+            name="AFP export preferences">
+      </page>
+   </extension>
 </plugin>

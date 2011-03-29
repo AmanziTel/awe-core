@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.views.neighbours.views;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -151,6 +153,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
     private Map<String, NodeToNodeRelationModel> modelMap = new HashMap<String, NodeToNodeRelationModel>();
     private ISelectionInformation information;
     private ArrayList<String> propertys;
+    private ArrayList<Class> propertyClass = new ArrayList<Class>();
     private INode2NodeFilter filter;
     private CountedIteratorWr createdIter;
     protected boolean drawLines;
@@ -166,6 +169,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
     private Integer maxRowCount;
     private boolean canSort=false;
     private ArrayList<Wrapper> rows=new ArrayList<Wrapper>();
+    private DecimalFormat formatter = null;
 
     @Override
     public void createPartControl(Composite parent) {
@@ -855,6 +859,17 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         n2nModel = null;
         tx = new TransactionWrapper();
         previousModelDescr = null;
+        try {
+            formatter = new DecimalFormat(NeighboursPlugin.getDefault().getPreferenceStore()
+                    .getString(PreferenceInitializer.N2N_FORMATTED_MASK));
+            DecimalFormatSymbols symb = formatter.getDecimalFormatSymbols();
+            symb.setDecimalSeparator('.');
+            formatter.setDecimalFormatSymbols(symb);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            formatter = null;
+        }
     }
 
     /**
@@ -905,6 +920,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
 
     private void formCollumns() {
         rows.clear();
+        propertyClass.clear();
         int countRelation = 0;
         table.setVisible(false);
         table.clearAll();
@@ -955,7 +971,9 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
                 String propertyName = propertys.get(i - 2);
                 TableColumn tableColumn = columns.get(i);
                 tableColumn.setText(propertyName);
-                tableColumn.setToolTipText("Type " + information.getPropertyInformation(propertyName).getStatistic().getType().getName());
+                Class type = information.getPropertyInformation(propertyName).getStatistic().getType();
+                propertyClass.add(type);
+                tableColumn.setToolTipText("Type " + type.getName());
 
             }
             
@@ -1274,6 +1292,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
 
     public class VirtualLabelProvider extends LabelProvider implements ITableLabelProvider, ITableFontProvider {
 
+
         @Override
         public Font getFont(Object element, int columnIndex) {
             Wrapper wr = (Wrapper)element;
@@ -1288,7 +1307,24 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         @Override
         public String getColumnText(Object element, int columnIndex) {
             Wrapper wr = (Wrapper)element;
-            return wr.getText(columnIndex);
+            String result = wr.getText(columnIndex);
+            if (columnIndex > 1 && formatter != null) {
+                @SuppressWarnings("rawtypes")
+                Class cls = propertyClass.get(columnIndex - 2);
+                if (Double.class.isAssignableFrom(cls) || Float.class.isAssignableFrom(cls)) {
+                    if (StringUtils.isEmpty(result)) {
+                        return result;
+                    } else {
+                        try {
+                            return formatter.format(new Double(result).doubleValue());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return result;
+                        }
+                    }
+                }
+            }
+            return result;
         }
 
     }
@@ -1327,6 +1363,18 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
             maxRowCount= (Integer)event.getNewValue();
             n2nModel=null;
             n2nSelectionChange();
+        }
+        if (event.getProperty().equals(PreferenceInitializer.N2N_FORMATTED_MASK)){
+            try {
+                formatter = new DecimalFormat((String)event.getNewValue());
+                DecimalFormatSymbols symb = formatter.getDecimalFormatSymbols();
+                symb.setDecimalSeparator('.');
+                formatter.setDecimalFormatSymbols(symb);
+            } catch (Exception e) {
+                e.printStackTrace();
+                formatter = null;
+            }
+            table.clearAll();
         }
     }
     public static class FilterItr extends FilteredIterator<Relationship>{
