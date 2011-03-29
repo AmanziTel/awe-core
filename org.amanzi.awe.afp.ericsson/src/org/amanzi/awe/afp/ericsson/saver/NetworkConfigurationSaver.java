@@ -79,7 +79,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
     private FrequencyPlanModel freqPlan;
     private int sectorsNotFound;
     private int neighboursNotFound;
-    private Boolean haveBsm;
+    // private Boolean haveBsm;
     private int lastId;
 
     private final static String ORIGINAL = "original";
@@ -96,7 +96,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         freqPlan = null;
         sectorsNotFound = 0;
         neighboursNotFound = 0;
-        haveBsm = Boolean.valueOf(element.get("haveBSM"));
+        // haveBsm = Boolean.valueOf(element.get("haveBSM"));
         startMainTx(2000);
     }
 
@@ -349,7 +349,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
             }
             updateProperty(rootname, NodeTypes.TRX.getId(), trx, "hopping_type", hoptype);
             updateProperty(rootname, NodeTypes.TRX.getId(), trx, "band", channalGr.getProperty("band", null));
-            boolean isBcch = 0 == channelGr && "0".equals(trxId);
+            boolean isBcch = defineBCCH(trx, channelGr, channalGr);
             updateProperty(rootname, NodeTypes.TRX.getId(), trx, "bcch", isBcch);
             NodeResult plan = getFreqPlan(ORIGINAL).getPlanNode(trx);
             if (plan.isCreated()) {
@@ -469,6 +469,22 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         }
     }
 
+
+    private boolean defineBCCH(NodeResult trx, Integer channelGr, Node channalGr) {
+        if (trx.isCreated()) {
+            if (0 != channelGr) {
+                return false;
+            }
+            if (channalGr.hasProperty("firstTRX")) {
+                return false;
+            }
+            channalGr.setProperty("firstTRX", trx.getId());
+            return true;
+        } else {
+            return (Boolean)trx.getProperty("bcch", false);
+        }
+    }
+
     /**
      * @param dchno
      * @param removedArfcn
@@ -532,9 +548,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
     @Override
     public void finishUp(NetworkConfigurationTransferData element) {
         initProgress(element);
-        if (!haveBsm) {
-            createTRXForChannel();
-        }
+        createTRXForChannel();
         createFakeBSC();
         fire(0.2d, "Commit data");
         if (sectorsNotFound > 0) {
@@ -562,7 +576,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
             }
         }).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).traverse(rootNode);
         for (Node sector : tr.nodes()) {
-            lastId=0;
+            lastId = networkService.findFirstID(sector);
             for (Relationship rel : networkService.getChannelGroups(sector)) {
                 createTRXforGroup(sector, rel.getOtherNode(sector));
             }
@@ -576,6 +590,9 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
      * @param otherNode the other node
      */
     private void createTRXforGroup(Node sector, Node group) {
+        if (networkService.isGroupHaveTrx(group)) {
+            return;
+        }
         String grNum = (String)group.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
         if (grNum == null) {
             info("Node " + group + "\tgroup do not have number ");
@@ -595,14 +612,14 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         }
         int[] dchno = (int[])group.getProperty("dchno", null);
         Integer bcchno = (Integer)sector.getProperty("bcch", null);
+        if (0 == num && bcchno != null) {
+            createTRX(sector, group, num, bcchno, hoptype, lastId++, bcchno);
+        }
         if (dchno == null || dchno.length == 0) {
-            if (0 == num && bcchno != null) {
-                createTRX(sector, group, num, bcchno, hoptype, 0, bcchno);
-            }
             return;
         }
         for (int arfcn : dchno) {
-            createTRX(sector, group, num, bcchno, hoptype, ++lastId, arfcn);
+            createTRX(sector, group, num, bcchno, hoptype, lastId++, arfcn);
         }
     }
 
@@ -615,11 +632,10 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
      * @param arfcn
      */
     private void createTRX(Node sector, Node group, Integer channelGr, Integer bcchno, int hoptype, int id, int arfcn) {
-        if (channelGr == 0 && bcchno != null && bcchno.equals(arfcn)) {
-            if (networkService.findTrxNode(sector, "0") == null) {
-                lastId--;
-                id = 0;
-            } else {
+
+        boolean isBcch = channelGr == 0 && bcchno != null && bcchno.equals(arfcn);
+        if (isBcch) {
+            if (group.hasProperty("firstTRX")) {
                 // skip arfcn
                 return;
             }
@@ -634,8 +650,10 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         updateProperty(rootname, NodeTypes.TRX.getId(), trx, "band", group.getProperty("band", null));
         updateProperty(rootname, NodeTypes.TRX.getId(), trx, "hopping_type", hoptype);
         updateProperty(rootname, NodeTypes.TRX.getId(), trx, "band", group.getProperty("band", null));
-        boolean isBcch = 0 == channelGr && 0 == id;
         updateProperty(rootname, NodeTypes.TRX.getId(), trx, "bcch", isBcch);
+        if (isBcch) {
+            group.setProperty("firstTRX", trx.getId());
+        }
         NodeResult plan = getFreqPlan(ORIGINAL).getPlanNode(trx);
         statistic.updateTypeCount(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), 1);
         updateProperty(rootname, NodeTypes.TRX.getId(), trx, "hsn", group.getProperty("hsn", null));
