@@ -359,7 +359,7 @@ public class AfpLoader {
         // in main part?
         afpCell = afpRoot;
 
-        CommonImporter importer = new CommonImporter(new CellFileHandler(afpCell, neo, isNodeIdBased),
+        CommonImporter importer = new CommonImporter(new CellFileHandler(afpCell, neo, isNodeIdBased, cellFile),
                 new TxtFileImporter(cellFile));
         importer.process();
     }
@@ -462,13 +462,13 @@ public class AfpLoader {
          * @param rootNode the root node
          * @param service the service
          */
-        public CellFileHandler(Node rootNode, GraphDatabaseService service, boolean isNodeIdBased) {
+        public CellFileHandler(Node rootNode, GraphDatabaseService service, boolean isNodeIdBased, File cellFile) {
             super(rootNode, service);
             time = System.currentTimeMillis();
-
-            String formTime = new SimpleDateFormat("dd-MMM-yyyy, HH:mm:ss:SS", new Locale("en", "US", "WINDOWS")).format(time);
-
-            planModel = networkModel.getFrequencyModel(formTime, Long.toString(time));
+            String domain = cellFile.getParentFile().getName();
+            String formTime = new SimpleDateFormat("dd-MMM-yyyy HH:mm", new Locale("en", "US", "WINDOWS")).format(time);
+            String name = domain +" "+ formTime;System.out.println("name:"+name);
+            planModel = networkModel.getFrequencyModel(name, Long.toString(time), domain);
             this.isNodeIdBased = isNodeIdBased;
         }
 

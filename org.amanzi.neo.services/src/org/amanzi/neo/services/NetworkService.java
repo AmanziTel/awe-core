@@ -38,6 +38,7 @@ import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
+import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.PruneEvaluator;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Traverser;
@@ -675,10 +676,10 @@ public class NetworkService extends DatasetService {
         
     }
 
-    public Node getFrequencyRootNode(Node networkRoot, String modelName, String time) {
+    public Node getFrequencyRootNode(Node networkRoot, String modelName, String time, String domain) {
         Node result=findFrequencyRootNode(networkRoot, modelName);
         if (result==null){
-            result=createFrequencyRootNode(networkRoot,modelName,time);
+            result=createFrequencyRootNode(networkRoot,modelName,time,domain);
         }
         return result;
     }
@@ -691,11 +692,40 @@ public class NetworkService extends DatasetService {
         return result;
     }
 
-    private Node createFrequencyRootNode(Node networkRoot, String modelName, String time) {
+    private Node createFrequencyRootNode(Node networkRoot, String modelName, String time, final String domain) {
         Transaction tx = databaseService.beginTx();
         try {
-            Node result=super.createNode(NodeTypes.FREQUENCY_ROOT, modelName,time);
+           
+            Node result=super.createNode(NodeTypes.FREQUENCY_ROOT, modelName,time,domain);
             networkRoot.createRelationshipTo(result, Relations.FREQUENCY_ROOT);
+            
+            TraversalDescription td = Traversal.description()
+            .breadthFirst()
+            .relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)
+            .evaluator(Evaluators.excludeStartPosition())
+            .evaluator(new Evaluator(){
+                 public Evaluation evaluate(Path arg0) {
+                     
+                     boolean includes = false;
+                     boolean continues;
+                     
+                     if (arg0.endNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, "").equals(domain)
+                             &&arg0.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.AFP_DOMAIN.getId())){
+                         includes = true;
+                     }
+                     continues =(arg0.length()<2)&&(!includes);
+                     return Evaluation.of(includes, continues);
+                 }
+            });
+            int count = 0;
+            Node domainNode = null;
+            for (Node node : td.traverse(networkRoot).nodes()){
+                count++;
+                domainNode = node;
+            }
+            if (count == 1){
+                result.createRelationshipTo(domainNode, NetworkRelationshipTypes.DOMAIN);
+            }
             tx.success();
             return result;
         } finally {

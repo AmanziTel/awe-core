@@ -321,6 +321,19 @@ public class AfpWizardUtils {
 			}
     		
     	});
+    	Button clearButton = new Button(buttonsGroup, GridData.BEGINNING);
+        clearButton.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, false, false, 1 , 1));
+        clearButton.setText("Clear Domain");
+        clearButton.addSelectionListener(new SelectionAdapter(){
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (thisCaller.equals("FrequencyType"))
+                    new AfpFrequencySelector(page,parentShell, "Clear", parentGroup, model);
+                
+            }
+        });    
+    	
 	}
 	
 	protected static void createSeparationDomainShell(final WizardPage page,Shell parentShell, final String action, final boolean isSector, final Group parentGroup, final AfpModel model){

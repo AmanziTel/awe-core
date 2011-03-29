@@ -40,7 +40,7 @@ public class INeoConstants {
     public static final String PROPERTY_LAT_NAME = "lat";
     //longitude
     public static final String PROPERTY_LON_NAME = "lon";
-
+    public static final String PROPERTY_DOMAIN_NAME = "domain";
     public static final String PROPERTY_SECTOR_LAC = "lac";
     public static final String PROPERTY_SECTOR_CI = "ci";
     public static final String PROPERTY_SECTOR_BSIC = "bsic";

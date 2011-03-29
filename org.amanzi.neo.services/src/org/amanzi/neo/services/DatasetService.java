@@ -623,8 +623,9 @@ public class DatasetService extends AbstractService {
      * @param time
      * @return the created node
      */
-    public Node createNode(INodeType type, String name, String time) {
-        return createNode(type.getId(), INeoConstants.PROPERTY_NAME_NAME, name, INeoConstants.PROPERTY_TIME_NAME, time);
+    public Node createNode(INodeType type, String name, String time, String domain) {
+       
+        return createNode(type.getId(), INeoConstants.PROPERTY_NAME_NAME, name, INeoConstants.PROPERTY_TIME_NAME, time,INeoConstants.PROPERTY_DOMAIN_NAME,domain);
     }
     /**
      * Creates the node
@@ -641,6 +642,7 @@ public class DatasetService extends AbstractService {
             setType(node, typeId);
             if (additionalProperties != null) {
                 for (int i = 0; i < additionalProperties.length - 1; i += 2) {
+                    System.out.println(String.valueOf(additionalProperties[i])+" "+additionalProperties[i + 1]);
                     node.setProperty(String.valueOf(additionalProperties[i]), additionalProperties[i + 1]);
                 }
             }

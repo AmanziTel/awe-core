@@ -34,9 +34,9 @@ public class FrequencyPlanModel {
         ds = NeoServiceFactory.getInstance().getDatasetService();
         networkService = NeoServiceFactory.getInstance().getNetworkService();
     }
-    public static FrequencyPlanModel getModel(Node networkRoot,String modelName,String time){
+    public static FrequencyPlanModel getModel(Node networkRoot,String modelName,String time, String domain){
         NetworkService ns = NeoServiceFactory.getInstance().getNetworkService();
-        Node rootNode= ns.getFrequencyRootNode(networkRoot,modelName,time);
+        Node rootNode= ns.getFrequencyRootNode(networkRoot,modelName,time, domain);
         return new FrequencyPlanModel(rootNode);       
     }
     public static FrequencyPlanModel getModel(Node networkRoot,String modelName){

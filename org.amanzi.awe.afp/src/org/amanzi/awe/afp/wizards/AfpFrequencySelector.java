@@ -93,7 +93,7 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 		//updateFreqList();
 		createListSelector(new String[0],new String[0]);
 		updateFreqList();
-		if (action.equals("Delete")){
+		if (action.equals("Delete")||action.equals("Clear")){
 			bandCombo.setEnabled(false);
 			selectedList.setEnabled(false);
 			freqList.setEnabled(false);

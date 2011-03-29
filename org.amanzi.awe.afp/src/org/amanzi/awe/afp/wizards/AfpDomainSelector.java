@@ -59,7 +59,7 @@ public class AfpDomainSelector {
 			});
 		}
 		
-		if (action.equals("Edit") || action.equals("Delete")){
+		if (action.equals("Edit") || action.equals("Delete")|| action.equals("Clear")){
 			newDomain = false;
 			Combo nameCombo = new Combo(subShell, SWT.DROP_DOWN | SWT.READ_ONLY);
 //			String names[] = model.getAllFrequencyDomainNames();
