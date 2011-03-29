@@ -12,16 +12,12 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.KeyAdapter;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -345,7 +341,26 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 	    		TreeItem item = new TreeItem(tree, 0);
 		        item.setText(value.toString());
 	    	}
-	    	
+            Button applyButton = new Button(filterGroup, SWT.PUSH);
+            applyButton.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, true, true, 1, 1));
+            applyButton.setText("Apply");
+            applyButton.addSelectionListener(new SelectionAdapter() {
+
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+
+                    for (TreeItem item : tree.getItems()) {
+                        if (item.getChecked()) {
+                            selectedValues.add(item.getText());
+                        }
+                    }
+                    listener.onFilterSelected(col, selectedValues);
+                    // filter.setEqualityText("900");
+                    // viewer.refresh(true);
+                    subShell.dispose();
+                }
+
+            });
 	    	Button cacelButton = new Button(filterGroup, SWT.PUSH);
 	    	cacelButton.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, true, true, 1, 1));
 	    	cacelButton.setText("Cancel");
@@ -358,27 +373,7 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 				
 			});
 
-			Button applyButton = new Button(filterGroup, SWT.PUSH);
-			applyButton.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, true, true, 1, 1));
-			applyButton.setText("Apply");
-			applyButton.addSelectionListener(new SelectionAdapter(){
-				
-				@Override
-				public void widgetSelected(SelectionEvent e) {
-				  
-					for (TreeItem item : tree.getItems()){
-						if (item.getChecked()){
-							selectedValues.add(item.getText());
-						}
-					}
-					listener.onFilterSelected(col, selectedValues);
-//					filter.setEqualityText("900");
-//					viewer.refresh(true);
-					subShell.dispose();
-				}
-				
-				
-			});
+
 			
 			
 			subShell.pack();
