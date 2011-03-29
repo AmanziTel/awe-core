@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.amanzi.awe.afp.Activator;
+import org.amanzi.awe.afp.PreferenceInitializer;
 import org.amanzi.awe.afp.filters.AfpRowFilter;
 import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
@@ -118,13 +120,14 @@ public class AfpExporter extends Job {
     int defaultNrOfGroups = 1;
 
     int count;
+    private double minCo;
 
     public AfpExporter(Node afpRoot, Node afpDataset, AfpModel model) {
         super("Write Input files");
         this.afpRoot = afpRoot;
         this.afpDataset = afpDataset;
         this.model = model;
-
+        minCo = Activator.getDefault().getPreferenceStore().getDouble(PreferenceInitializer.AFP_MIN_CO);
     }
 
     @Override
@@ -365,6 +368,9 @@ public class AfpExporter extends Job {
                     if (trxValues[i] > 0.002)
                         includeSubcell = true;
                     sbSubCell.append(df.format(trxValues[i]) + " ");
+                }
+                if (trxValues[0] < minCo || trxValues[1] < minCo) {
+                    includeSubcell = false;
                 }
                 sbSubCell.append(intTrx.getId());
                 sbSubCell.append("A");
