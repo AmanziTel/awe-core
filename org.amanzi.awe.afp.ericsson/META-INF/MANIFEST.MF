@@ -8,7 +8,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.amanzi.neo.loader.core,
  org.eclipse.ui;bundle-version="3.3.1",
  org.amanzi.awe.ui;bundle-version="1.0.0",
- org.amanzi.neo.loader.ui;bundle-version="1.0.0"
+ org.amanzi.neo.loader.ui;bundle-version="1.0.0",
+ org.amanzi.awe.afp;bundle-version="1.0.0"
 Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Import-Package: org.amanzi.neo.loader,

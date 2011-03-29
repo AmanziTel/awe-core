@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.amanzi.awe.afp.Activator;
+import org.amanzi.awe.afp.PreferenceInitializer;
 import org.amanzi.awe.afp.ericsson.BARRecords;
 import org.amanzi.awe.afp.ericsson.CountableParameters;
 import org.amanzi.awe.afp.ericsson.IParameters;
@@ -49,6 +51,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
@@ -100,6 +103,8 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
     private String interferenceListName;
     private String rirFileName = null;
     private CSVWriter rirInterference = null;
+    private double minCo;
+    private double minValues;
     private static final boolean LOGGING = false;
 
     /**
@@ -138,6 +143,16 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
         }
     }
 
+    @Override
+    protected boolean setProperty(String key, String nodeType, PropertyContainer rel, String propertyName, Object value) {
+        if (value instanceof Double || value instanceof Float) {
+            if (((Number)value).doubleValue() < minValues) {
+                return false;
+            }
+        }
+        return super.setProperty(key, nodeType, rel, propertyName, value);
+    }
+
     /**
      * Store rir admin values.
      * 
@@ -155,7 +170,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
      * @param element the element
      */
     private void handleRirCellData(RecordTransferData element) {
-        ArrayList<String>log=new ArrayList<String>();
+        ArrayList<String> log = new ArrayList<String>();
         if (LOGGING) {
             defineRirWriter(element);
         }
@@ -170,7 +185,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             return;
         }
         CellRirData cell = getRirCell(cellName);
-        if (LOGGING){
+        if (LOGGING) {
             log.add(cellName);
             log.add(String.valueOf(count));
         }
@@ -179,7 +194,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             Integer avemedian = getInteger(rec, new CountableParameters(Parameters.AVMEDIAN, i));
             Integer avpercentile = getInteger(rec, new CountableParameters(Parameters.AVPERCENTILE, i));
             Integer noofmeas = getInteger(rec, new CountableParameters(Parameters.NOOFMEAS, i));
-            if (LOGGING){
+            if (LOGGING) {
                 log.add(String.valueOf(arfcn));
                 log.add(String.valueOf(avemedian));
                 log.add(String.valueOf(avpercentile));
@@ -190,9 +205,9 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             }
             cell.addRirData(i, arfcn, avemedian, avpercentile, noofmeas);
         }
-        if (LOGGING){
+        if (LOGGING) {
             rirInterference.writeNext(log.toArray(new String[0]));
-        }       
+        }
     }
 
     /**
@@ -218,14 +233,14 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
         rirFileName = element.getFileName() + "_parse_.csv";
         try {
             CSVWriter writer = new CSVWriter(new FileWriter(rirFileName));
-            List<String>headers=new ArrayList<String>();
+            List<String> headers = new ArrayList<String>();
             headers.add("CELL_NAME");
             headers.add("NUMBER_FREQ");
-            for (int i=1;i<=150;i++){
-                headers.add("ARFCN"+i);
-                headers.add("AVMEDIAN"+i);
-                headers.add("AVPERCENTILE"+i);
-                headers.add("NOOFMEAS"+i);
+            for (int i = 1; i <= 150; i++) {
+                headers.add("ARFCN" + i);
+                headers.add("AVMEDIAN" + i);
+                headers.add("AVPERCENTILE" + i);
+                headers.add("NOOFMEAS" + i);
             }
             writer.writeNext(headers.toArray(new String[0]));
             return writer;
@@ -386,7 +401,8 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             return;
         }
         if (!ObjectUtils.equals(relssPM, adminValues.relssPM)) {
-            error(String.format("Parameter %s=%s is differ then stored values(=%s)", Parameters.RELSS_PLUS_MINUS, relssPM, adminValues.relssPM));
+            error(String.format("Parameter %s=%s is differ then stored values(=%s)", Parameters.RELSS_PLUS_MINUS, relssPM,
+                    adminValues.relssPM));
             return;
         }
         if (!ObjectUtils.equals(relss, adminValues.relss)) {
@@ -394,7 +410,8 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             return;
         }
         if (!ObjectUtils.equals(relss2pm, adminValues.relss2PM)) {
-            error(String.format("Parameter %s=%s is differ then stored values(=%s)", Parameters.RELSS2_PLUS_MINUS, relss2pm, adminValues.relss2PM));
+            error(String.format("Parameter %s=%s is differ then stored values(=%s)", Parameters.RELSS2_PLUS_MINUS, relss2pm,
+                    adminValues.relss2PM));
             return;
         }
         if (!ObjectUtils.equals(relss2, adminValues.relss2)) {
@@ -472,8 +489,8 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
      */
     @Override
     public void finishUp(RecordTransferData element) {
-        if (LOGGING){
-            if (rirInterference!=null){
+        if (LOGGING) {
+            if (rirInterference != null) {
                 try {
                     rirInterference.close();
                 } catch (IOException e) {
@@ -535,8 +552,8 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
                     if ((entryData.getValue().avemedian > 10)) {
                         penalty = 1d;
                     } else {
-                        double std = entryData.getValue().avpercentile == entryData.getValue().avemedian ? 5 : (entryData.getValue().avpercentile - entryData.getValue().avemedian)
-                                / nspv;
+                        double std = entryData.getValue().avpercentile == entryData.getValue().avemedian ? 5 : (entryData
+                                .getValue().avpercentile - entryData.getValue().avemedian) / nspv;
                         penalty = (double)(100 - NORMDIST(10, entryData.getValue().avemedian, std, true)) / 100d;
                     }
                     Node frNode = fs.getFrequencyNode(entryData.getValue().arfcn);
@@ -687,8 +704,8 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             sc++;
         }
         shadowModel = networkModel.getShadowing(getShadowingMatrixName());
-        TraversalDescription td = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
-                .evaluator(new Evaluator() {
+        TraversalDescription td = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE)
+                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).evaluator(new Evaluator() {
 
                     @Override
                     public Evaluation evaluate(Path arg0) {
@@ -843,6 +860,9 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
             return;
         }
         double impactCO = (double)neigh.timesrelss / neigh.reparfcn * factorCo;
+        if (impactCO < minCo) {
+            return;
+        }
         Double factorAdj = getFactorAdj(adminValues.relss2);
         if (factorAdj == null) {
             error("Incorrect relss2=" + String.valueOf(adminValues.relss));
@@ -977,7 +997,8 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
         servCells.clear();
         networkModel = new NetworkModel(rootNode);
         barAdminRecNum = 0;
-
+        minCo = Activator.getDefault().getPreferenceStore().getDouble(PreferenceInitializer.AFP_MIN_CO);
+        minValues = Activator.getDefault().getPreferenceStore().getDouble(PreferenceInitializer.AFP_MIN_PROP_VALUE);
     }
 
     /**
@@ -1302,11 +1323,14 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
         /**
          * Coefficients in rational approximations
          */
-        double[] a = {-3.969683028665376e+01, 2.209460984245205e+02, -2.759285104469687e+02, 1.383577518672690e+02, -3.066479806614716e+01, 2.506628277459239e+00};
+        double[] a = {-3.969683028665376e+01, 2.209460984245205e+02, -2.759285104469687e+02, 1.383577518672690e+02,
+                -3.066479806614716e+01, 2.506628277459239e+00};
 
-        double[] b = {-5.447609879822406e+01, 1.615858368580409e+02, -1.556989798598866e+02, 6.680131188771972e+01, -1.328068155288572e+01};
+        double[] b = {-5.447609879822406e+01, 1.615858368580409e+02, -1.556989798598866e+02, 6.680131188771972e+01,
+                -1.328068155288572e+01};
 
-        double[] c = {-7.784894002430293e-03, -3.223964580411365e-01, -2.400758277161838e+00, -2.549732539343734e+00, 4.374664141464968e+00, 2.938163982698783e+00};
+        double[] c = {-7.784894002430293e-03, -3.223964580411365e-01, -2.400758277161838e+00, -2.549732539343734e+00,
+                4.374664141464968e+00, 2.938163982698783e+00};
 
         double[] d = {7.784695709041462e-03, 3.224671290700398e-01, 2.445134137142996e+00, 3.754408661907416e+00};
 
@@ -1321,7 +1345,8 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
          */
         if (p < plow) {
             double q = Math.sqrt(-2 * Math.log(p));
-            return (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1);
+            return (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5])
+                    / ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1);
         }
 
         /**
@@ -1329,7 +1354,8 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
          */
         if (phigh < p) {
             double q = Math.sqrt(-2 * Math.log(1 - p));
-            return -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1);
+            return -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5])
+                    / ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1);
         }
 
         /**
@@ -1337,7 +1363,8 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
          */
         double q = p - 0.5;
         double r = q * q;
-        return (((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * q / (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1);
+        return (((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * q
+                / (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1);
     }
 
     public static double NORMDIST(double x, double mean, double std, boolean cumulative) {
@@ -1363,7 +1390,11 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
                         + t
                         * (1.00002368 + t
                                 * (0.37409196 + t
-                                        * (0.09678418 + t * (-0.18628806 + t * (0.27886807 + t * (-1.13520398 + t * (1.48851587 + t * (-0.82215223 + t * (0.17087277))))))))));
+                                        * (0.09678418 + t
+                                                * (-0.18628806 + t
+                                                        * (0.27886807 + t
+                                                                * (-1.13520398 + t
+                                                                        * (1.48851587 + t * (-0.82215223 + t * (0.17087277))))))))));
         if (z >= 0)
             return ans;
         else
@@ -1391,7 +1422,8 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
         } else {
             final double oor2pi = 1 / (Math.sqrt(2 * Math.PI));
             double t = 1 / (1 + 0.2316419 * Math.abs(x));
-            t *= oor2pi * Math.exp(-0.5 * x * x) * (0.31938153 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429))));
+            t *= oor2pi * Math.exp(-0.5 * x * x)
+                    * (0.31938153 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429))));
 
             if (x >= 0) {
                 res = 1 - t;
