@@ -1,6 +1,14 @@
-load 'tems_formulas.rb'
+load 'statistics/tems_formulas.rb'
 template 'TEMS template' do |t|
   t.metadata :type=>:dataset,:drive_type=>"tems"
+  t.column 'No. of samples' do |c|
+    c.formula='KPI::Tems.no_samples'
+    c.aggregation=:sum
+  end
+  t.column 'No. of events' do |c|
+    c.formula='KPI::Tems.no_events'
+    c.aggregation=:sum
+  end
   t.column 'Call Attempt' do |c|
     c.formula='KPI::Tems.call_attempt'
     c.aggregation=:sum

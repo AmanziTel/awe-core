@@ -46,6 +46,7 @@ import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.enums.OssType;
 import org.amanzi.neo.services.ui.NeoUtils;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.jruby.Ruby;
 import org.jruby.RubyHash;
@@ -67,6 +68,7 @@ import org.neo4j.graphdb.Traverser.Order;
  * @since 1.0.0
  */
 public class StatisticsBuilder {
+    private static final Logger LOGGER = Logger.getLogger(StatisticsBuilder.class);
     private GraphDatabaseService neo;
     private IDatasetService dsService;
     private Node dataset;
@@ -127,8 +129,10 @@ public class StatisticsBuilder {
                 long maxTime = (Long)dataset.getProperty(INeoConstants.MAX_TIMESTAMP);
                 levelStatistics = buildStatisticsForPeriod(template, minTime, maxTime, timeLevelName, networkLevelName,
                         networkDimension, timeDimension, monitor);
-                System.out.println(timeLevelName.getId() + "/" + networkLevelName + ": total time in seconds: "
-                        + (System.currentTimeMillis() - start) / 1000);
+                final String debugInfo = timeLevelName.getId() + "/" + networkLevelName + ": total time in seconds: "
+                        + (System.currentTimeMillis() - start) / 1000;
+                System.out.println(debugInfo);
+                LOGGER.debug(debugInfo);
             }
 
             return levelStatistics;
@@ -271,6 +275,7 @@ public class StatisticsBuilder {
             }
             final String task = "Building stats for " + period.getId() + "/" + networkLevel;
             System.out.println(task);
+            LOGGER.debug(task);
             monitor.subTask(task);
             Statistics statistics = buildHighLevelPeriodStatistics(template, startTime, endTime, period, networkLevel,
                     networkDimension, timeDimension, uStatistics);
@@ -280,6 +285,7 @@ public class StatisticsBuilder {
         } else {
             final String task = "Building stats for " + period.getId() + "/" + networkLevel;
             System.out.println(task);
+            LOGGER.debug(task);
             monitor.subTask(task);
             Level tLevel = findOrCreateLevel(period.getId(), timeDimension);
             Statistics statistics = StatisticsEntityFactory.createStatistics(neo, networkDimension.getLevelByKey(networkLevel),
@@ -302,8 +308,10 @@ public class StatisticsBuilder {
                     comm = 0;
                 }
                 long startForPeriod = System.currentTimeMillis();
-                System.out.println("currentStartTime=" + currentStartTime + "\tnextStartTime=" + nextStartTime + "\tendTime="
-                        + endTime);
+                String debugInfo = "currentStartTime=" + currentStartTime + "\tnextStartTime=" + nextStartTime + "\tendTime="
+                        + endTime;
+                System.out.println(debugInfo);
+                LOGGER.debug(debugInfo);
                 // if(monitor.isCanceled()){
                 // break;
                 // }
@@ -317,7 +325,6 @@ public class StatisticsBuilder {
                     boolean isUsed=false;
                     final String EVALUATE = "Neo4j::load_node(%s).instance_eval {%s}";
                     String script = String.format(EVALUATE, node.getId(), hash);
-                    long tt = System.currentTimeMillis();
                     RubyHash result = (RubyHash)ruby.evalScriptlet(script);
 
                     Node networkNode = findNetworkNode(node, networkLevel);
@@ -363,8 +370,9 @@ public class StatisticsBuilder {
 
                 currentStartTime = nextStartTime;
                 nextStartTime = getNextStartDate(period, endTime, currentStartTime);
-                System.out.println("total=" + count + "\tCalc for period=" + (System.currentTimeMillis() - startForPeriod)
-                        + "\tper node" + (total / (nodes.size() != 0 ? nodes.size() : 1)));
+                debugInfo="total=" + count + "\tCalc for period=" + (System.currentTimeMillis() - startForPeriod)+ "\tper node" + (total / (nodes.size() != 0 ? nodes.size() : 1));
+                System.out.println(debugInfo);
+                LOGGER.debug(debugInfo);
                 monitor.worked(1);
 //                monitor.worked(nodesCount);
             } while (currentStartTime < endTime);
@@ -482,7 +490,9 @@ public class StatisticsBuilder {
 
             int comm = 0;
             do {
-                System.out.println("Period " + currentStartTime + " - " + nextStartTime);
+                final String debugInfo = "Period " + currentStartTime + " - " + nextStartTime;
+                System.out.println(debugInfo);
+                LOGGER.debug(debugInfo);
                 if (comm > 500) {
                     commit(true);
                     comm = 0;

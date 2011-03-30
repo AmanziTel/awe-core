@@ -2,6 +2,14 @@ module KPI
   module Tems
     include Annotations
 
+    annotation :name=>'No. of samples'
+    def Tems.no_samples(data)
+      1
+    end
+    annotation :name=>'No. of events'
+    def Tems.no_events(data)
+      !data[:event].nil? ? 1:nil
+    end
     annotation :name=>'Call Attempt'
     def Tems.call_attempt(data)
       event=data[:event]

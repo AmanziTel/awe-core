@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Statistic
-Bundle-SymbolicName: org.amanzi.awe.statistics
+Bundle-SymbolicName: org.amanzi.awe.statistics;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.awe.statistics.StatisticPlugin
 Require-Bundle: org.eclipse.ui,
@@ -11,7 +11,8 @@ Require-Bundle: org.eclipse.ui,
  org.jruby,
  org.amanzi.awe.views.kpi,
  org.jfree,
- org.amanzi.scripting.jruby
+ org.amanzi.scripting.jruby,
+ org.rubypeople.rdt.ui
 Eclipse-LazyStart: true
 Eclipse-RegisterBuddy: org.amanzi.awe.views.kpi
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
