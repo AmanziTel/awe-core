@@ -389,9 +389,7 @@ public abstract  class AbstractHeaderSaver<T extends BaseTransferData> extends A
                         for (String regex : knownHeaders.get(key)) {
                             for (String testString : new String[] {header, headerName}) {
                                 if (testString.toLowerCase().matches(regex.toLowerCase())) {
-                                    if (!identityHeaders.contains(key)){
-                                        headers.put(key, headerName);
-                                    }
+                                    headers.put(key, headerName);
                                     added = true;
                                     break KNOWN;
                                 }
