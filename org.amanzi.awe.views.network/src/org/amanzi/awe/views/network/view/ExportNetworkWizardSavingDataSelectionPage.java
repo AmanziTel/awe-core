@@ -69,6 +69,7 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
         checkboxNetworkSectorData.setText(ColumnsConfigPageTypes.NETWORK_SECTOR_DATA.getName());
         checkboxNetworkSectorData.setLayoutData(checkboxLayoutData);
         checkboxNetworkSectorData.setSelection(true);
+        checkboxNetworkSectorData.setEnabled(false);
         checkboxNetworkSectorData.addMouseListener(new MouseListener() {
             
             @Override

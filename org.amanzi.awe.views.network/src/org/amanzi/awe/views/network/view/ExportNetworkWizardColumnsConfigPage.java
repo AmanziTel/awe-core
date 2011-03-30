@@ -24,7 +24,6 @@ import java.util.TreeSet;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
@@ -56,16 +55,13 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Path;
-import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Traverser;
 import org.neo4j.kernel.Traversal;
 import org.neo4j.kernel.Uniqueness;
-import org.neo4j.neoclipse.property.RelationshipTypes;
 
 /**
  * <p>
@@ -171,13 +167,6 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
             }
             index++;
         }
-        for (Integer ind : indexes) {
-            System.out.println(ind);
-        }
-        System.out.println(ExportNetworkWizard.getCurrentIndex());
-//        for (Boolean state : checkboxStates) {
-//            System.out.println(state);
-//        }
         if (ExportNetworkWizard.getCurrentIndex() > indexes.size() - 1) {
             return getWizard().getPage(ExportNetworkWizard.PROPERTY_CSV);
         }
@@ -194,7 +183,6 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
             ExportNetworkWizard.setCurrentIndex(0);
         }
         ExportNetworkWizard.setCurrentIndex(ExportNetworkWizard.getCurrentIndex() + 3);
-        
         ExportNetworkWizard.putIntoPropertyMap(currentPage.getName(), currentPage.getPropertyMap());
 
         validate();
@@ -204,7 +192,21 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
     @Override
     public IWizardPage getPreviousPage() {
         ExportNetworkWizard.setCurrentIndex(ExportNetworkWizard.getCurrentIndex() - 1);
-        return super.getPreviousPage();
+
+        ArrayList<Boolean> checkboxStates = ExportNetworkWizard.getSavingDataPage().getCheckBoxesState();
+        ArrayList<Integer> indexes = new ArrayList<Integer>();
+        int index = 0;
+        for (Boolean state : checkboxStates) {
+            if (state == true) {
+                indexes.add(index);
+            }
+            index++;
+        }
+        if (ExportNetworkWizard.getCurrentIndex() > indexes.size() - 1 ||
+                ExportNetworkWizard.getCurrentIndex() < 0) {
+            return ExportNetworkWizard.getSavingDataPage();
+        }
+        return ExportNetworkWizard.getAvailablePages().get(indexes.get(ExportNetworkWizard.getCurrentIndex()));
     }
 
     /*
@@ -511,17 +513,6 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
 
         for (ColumnsConfigPageTypes pageType : ColumnsConfigPageTypes.values()) {
             Boolean isExistOneProperty = false;
-            for (String pageProperty : pageType.getProperties()) {
-                for (String property : allPropertiesWithStatistic) {
-                    if (cleanHeader(property).equals("sector")) 
-                        continue;
-                    
-                    if (cleanHeader(property).equals(cleanHeader(pageProperty))) {
-                        isExistOneProperty = true;
-                        break;
-                    }
-                }
-            }
             
             NetworkModel networkModel = new NetworkModel(selectedNode);
             switch(pageType) {
@@ -543,17 +534,38 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
                 for (FrequencyPlanModel model : frequencyModels) {
                     modelNames.add(model.getName());
                 }
-                if (modelNames.size() > 0) 
+                
+                NodeToNodeRelationModel n2nIllegalFrequency = networkModel.getIllegalFrequency();
+                Traverser traverser = n2nIllegalFrequency.getServTraverser(new Evaluator() {
+                    
+                    @Override
+                    public Evaluation evaluate(Path arg0) {
+                        return Evaluation.INCLUDE_AND_CONTINUE;
+                    }
+                });
+                for (Node servNode : traverser.nodes()) {
                     isExistOneProperty = true;
+                    break;
+                }
                 ExportNetworkWizard.setFrequencyPlanModelNames(modelNames);
                 break;
             }
             
+            if (isExistOneProperty == false) {
+                LABEL:for (String pageProperty : pageType.getProperties()) {
+                    for (String property : allPropertiesWithStatistic) {
+                        if (cleanHeader(property).equals("sector")) 
+                            continue;
+                        
+                        if (cleanHeader(property).equals(cleanHeader(pageProperty))) {
+                            isExistOneProperty = true;
+                            break LABEL;
+                        }
+                    }
+                }
+            }
+            
             ExportNetworkWizard.getSavingDataPage().setMapOfCheckboxesState(pageType.getIndex(), isExistOneProperty);
-        }
-        
-        for (String str : allPropertiesWithStatistic) {
-            System.out.println(str);
         }
     }
     

@@ -696,6 +696,10 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                     FrequencyPlanModel model = FrequencyPlanModel.getModel(rootNode, latestModelName);
                     runExportFrequencyPlan(nodes, model, headersToArray, folderName, separator, quoteChar, charSet);
                 }
+                else {
+                    FrequencyPlanModel model = FrequencyPlanModel.getModel(rootNode, "original");
+                    runExportFrequencyPlan(nodes, model, headersToArray, folderName, separator, quoteChar, charSet);                   
+                }
                 break;
             case TRAFFIC_DATA:
             case SEPARATION_CONSTRAINT_DATA:
@@ -712,7 +716,7 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                             INodeType nodeType = datasetService.getNodeType(node);
                             if (nodeType == NodeTypes.SECTOR) {
                                 if (rightHeaders == null)
-                                    rightHeaders = getRightHeaders(node, pageType);
+                                    rightHeaders = getRightHeaders(node, headersToArray);
                                 notEmptyProperties = 0;
                                 for (String propertyName : rightHeaders) {
                                     value = String.valueOf(node.getProperty(propertyName, ""));
@@ -748,9 +752,24 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
         String valueTRX = null;
         String sectorName = null;
         int notEmptyProperties = 0;
-
+        boolean isArrayOfARFCN = false;
+        // 71 headers in trx-file
+        String[] correctArrayOfHeaders = new String[71];
+        int index = 0;
+        
         CSVWriter trxWriter = createWriterToSomeData(fileWithPrefix + ColumnsConfigPageTypes.TRX_DATA.getFileName() + "_" + cleanHeader(model.getName()), separator, quoteChar, charSet);
-        trxWriter.writeNext(headersToArray);
+        int k = 0;
+        for (String str : headersToArray) {
+            if (!str.equals("ARFCN"))
+                correctArrayOfHeaders[index++] = headersToArray[k++];
+            else {
+                for (int i = 1; i < 64; i++) {
+                    correctArrayOfHeaders[index++] = "ARFCN" + i;
+                }
+                k++;
+            }
+        }
+        trxWriter.writeNext(correctArrayOfHeaders);
         for (Node carrierNode : nodes) {
             notEmptyProperties = 0;
             Node planNode = model.findPlanNode(carrierNode);
@@ -761,17 +780,38 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
             }
             fields.add(sectorName);
             if (rightHeadersFromCarrier == null)
-                rightHeadersFromCarrier = getRightHeaders(carrierNode, ColumnsConfigPageTypes.TRX_DATA);
+                rightHeadersFromCarrier = getRightHeaders(carrierNode, headersToArray);
             if (planNode != null) {
                 if (rightHeadersFromPlan == null)
-                    rightHeadersFromPlan = getRightHeaders(planNode, ColumnsConfigPageTypes.TRX_DATA);
+                    rightHeadersFromPlan = getRightHeaders(planNode, headersToArray);
             }
             for (int i = 1; i < rightHeadersFromCarrier.length; i++) {
+                isArrayOfARFCN = false;
                 valueTRX = String.valueOf(carrierNode.getProperty(rightHeadersFromCarrier[i], ""));
-                if (valueTRX == null || valueTRX.equals("") && planNode != null)
-                    valueTRX = String.valueOf(planNode.getProperty(rightHeadersFromPlan[i], ""));
+                if (valueTRX == null || valueTRX.equals("") && planNode != null) {
+                    if (cleanHeader(rightHeadersFromPlan[i]).equals(cleanHeader("ARFCN"))) {
+                        if (planNode.getProperty(rightHeadersFromPlan[i], "") instanceof int[]) {
+                            for (Integer arfcn : (int[])planNode.getProperty(rightHeadersFromPlan[i], "")) {
+                                fields.add(arfcn.toString());
+                            }
+                            isArrayOfARFCN = true;
+                        }
+                        else {
+                            valueTRX = String.valueOf(planNode.getProperty(rightHeadersFromPlan[i], ""));
+                            fields.add(valueTRX);
+                            for (int j = 1; j < 63; j++) {
+                                fields.add("");
+                            }
+                            isArrayOfARFCN = true;
+                        }                       
+                    } 
+                    else {
+                        valueTRX = String.valueOf(planNode.getProperty(rightHeadersFromPlan[i], ""));
+                    }
+                }
                 
-                fields.add(valueTRX);
+                if (!isArrayOfARFCN)
+                    fields.add(valueTRX);
                 if (!valueTRX.equals(""))
                     notEmptyProperties++;
             }
@@ -785,11 +825,11 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
     }
     
     
-    private String[] getRightHeaders(Node sectorNode, ColumnsConfigPageTypes pageType) {
+    private String[] getRightHeaders(Node sectorNode, String[] headers) {
         
-        String rightHeaders[] = new String[pageType.getProperties().length];
+        String rightHeaders[] = new String[headers.length];
         int index = 0;
-        String[] propertyCol = pageType.getProperties();
+        String[] propertyCol = headers;
         for (String propertyName : propertyCol) {
             propertyName = findNeedPropertyFromNode(propertyName, sectorNode);
             if (propertyName.equals("Sector")) {
