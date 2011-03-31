@@ -48,6 +48,7 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
     private Button checkboxInterferenceMatrix;
     private Button checkboxNeigboursData;
     private Button checkboxNetworkSectorData;
+    private Button checkboxSelectionData;
     private ArrayList<Boolean> checkboxesState = new ArrayList<Boolean>();
     private ArrayList<Button> arrayOfCheckboxes = new ArrayList<Button>();
     private HashMap<Integer, Boolean> mapOfCheckboxesState = new HashMap<Integer, Boolean>();
@@ -138,6 +139,11 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
             }
         });
         
+        checkboxSelectionData = new Button(main, SWT.CHECK);
+        checkboxSelectionData.setText(ColumnsConfigPageTypes.SELECTION_FILE.getName());
+        checkboxSelectionData.setLayoutData(checkboxLayoutData);
+        checkboxSelectionData.setSelection(true);
+        
         GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
         freqList = new List(main, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
         gridData.heightHint = 200;
@@ -172,6 +178,7 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
         arrayOfCheckboxes.add(checkboxTrxData);
         arrayOfCheckboxes.add(checkboxInterferenceMatrix);
         arrayOfCheckboxes.add(checkboxNetworkSectorData);
+        arrayOfCheckboxes.add(checkboxSelectionData);
         
         setControl(main);
     }
@@ -198,6 +205,7 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
         checkboxesState.add(checkboxTrafficData.getSelection());
         checkboxesState.add(checkboxTrxData.getSelection());
         checkboxesState.add(checkboxInterferenceMatrix.getSelection());
+        checkboxesState.add(checkboxSelectionData.getSelection());
         return checkboxesState;
     }
     
@@ -210,6 +218,7 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
             checkboxesState.add(checkboxTrafficData.getSelection());
             checkboxesState.add(checkboxTrxData.getSelection());
             checkboxesState.add(checkboxInterferenceMatrix.getSelection());
+            checkboxesState.add(checkboxSelectionData.getSelection());
             
             checkboxesState.set(index, state);
             for (Button button : arrayOfCheckboxes) {
@@ -236,7 +245,7 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
      */
     public ArrayList<Boolean> getDefaultCheckBoxesState() {
         ArrayList<Boolean> checkboxesState = new ArrayList<Boolean>();
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 7; i++) {
             checkboxesState.add(true);
         }
         
@@ -252,6 +261,7 @@ public class ExportNetworkWizardSavingDataSelectionPage extends WizardPage {
         nameOfPages.add(ColumnsConfigPageTypes.TRAFFIC_DATA.getName());
         nameOfPages.add(ColumnsConfigPageTypes.TRX_DATA.getName());
         nameOfPages.add(ColumnsConfigPageTypes.INTERFERENCE_MATRIX.getName());
+        nameOfPages.add(ColumnsConfigPageTypes.SELECTION_FILE.getName());
         
         return nameOfPages;
     }

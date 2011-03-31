@@ -30,8 +30,9 @@ public enum ColumnsConfigPageTypes {
     FREQUENCY_CONSTRAINT_DATA("Frequency constraint data", 1, new String[] {"Sector", "TRX_ID", "Channel Type", "ARFCN", "Type", "Penalty"}, "FREQUENCY_CONSTRAINTS_FILE.csv"),
     SEPARATION_CONSTRAINT_DATA("Separation constraint data", 2, new String[] {"Sector", "Separation"}, "SEPARATION_CONSTRAINTS_FILE.csv"),
     TRAFFIC_DATA("Traffic data", 3, new String[] {"Sector", "Traffic"}, "TRAFFIC_DATA_FILE.csv"),
-    TRX_DATA("Trx data", 4, new String[] {"Sector", "Subcell", "Band", "Extended", "Hopping Type", "BCCH", "HSN", "MAIO", "ARFCN"}, "TRX_FILE"),
-    INTERFERENCE_MATRIX("Interference matrix", 5, new String[] {"Serving Sector", "Interfering Sector", "Source", "Co", "Adj"}, "INTERFERENCE_MODEL.csv");
+    TRX_DATA("Trx data", 4, new String[] {"Sector", "Subcell", "TRX_ID", "Band", "Extended", "Hopping Type", "BCCH", "HSN", "MAIO", "ARFCN"}, "TRX_FILE"),
+    INTERFERENCE_MATRIX("Interference matrix", 5, new String[] {"Serving Sector", "Interfering Sector", "Source", "Co", "Adj"}, "INTERFERENCE_MODEL.csv"),
+    SELECTION_FILE("Selection file", 6, new String[] {"Sector"}, "SELECTION_FILE.csv");
     
     /**
      * Name of type

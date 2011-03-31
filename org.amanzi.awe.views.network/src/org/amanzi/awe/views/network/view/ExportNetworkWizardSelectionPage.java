@@ -15,6 +15,7 @@ package org.amanzi.awe.views.network.view;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -80,7 +81,7 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
     private final List<TreeNeoNode> elements = new LinkedList<TreeNeoNode>();
     private final DatasetService service = NeoServiceFactory.getInstance().getDatasetService();
     private final IStructuredSelection selection;
-    private final HashMap<String, Map<String, Map<String, String>>> pagesWithProperties = new HashMap<String, Map<String,Map<String,String>>>();
+    private final HashMap<String, Map<String, LinkedHashMap<String, String>>> pagesWithProperties = new HashMap<String, Map<String, LinkedHashMap<String,String>>>();
     /**
      * Instantiates a new export network wizard selection page.
      * 
@@ -166,7 +167,7 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
      *
      * @return
      */
-    public HashMap<String, Map<String, Map<String, String>>> getPagesWithProperties() {
+    public HashMap<String, Map<String, LinkedHashMap<String, String>>> getPagesWithProperties() {
         return pagesWithProperties;
     }
 

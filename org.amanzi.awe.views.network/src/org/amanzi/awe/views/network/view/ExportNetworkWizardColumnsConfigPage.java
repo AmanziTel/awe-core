@@ -16,6 +16,7 @@ package org.amanzi.awe.views.network.view;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -428,11 +429,11 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
         List<String> headers = new ArrayList<String>();
         
         // Collect all existed properties
-        HashMap<String, Collection<String>> propertyMap = new HashMap<String, Collection<String>>();
+        LinkedHashMap<String, Collection<String>> propertyMap = new LinkedHashMap<String, Collection<String>>();
         TraversalDescription descr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
         .filter(Traversal.returnAllButStartNode());
         ArrayList<String> properties = new ArrayList<String>();
-        Collection<String> coll = new TreeSet<String>();
+        Collection<String> coll = new ArrayList<String>();
 
         switch (typeOfPage) {
             case NETWORK_SECTOR_DATA:
@@ -463,6 +464,7 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
             case SEPARATION_CONSTRAINT_DATA:
             case TRAFFIC_DATA:
             case TRX_DATA:
+            case SELECTION_FILE:
                 properties.clear();
                 try {
                     for (String prop : typeOfPage.getProperties()) {
@@ -516,6 +518,9 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
             
             NetworkModel networkModel = new NetworkModel(selectedNode);
             switch(pageType) {
+            case SELECTION_FILE: 
+                isExistOneProperty = true;
+                break;
             case INTERFERENCE_MATRIX:
                 Set<NodeToNodeRelationModel> interferenceModels = networkModel.findAllN2nModels(NodeToNodeTypes.INTERFERENCE_MATRIX);
                 if (interferenceModels.size() > 0) {
@@ -618,7 +623,7 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
      * @param datasetService DatasetService
      * @param propertyMap PropertyMap
      */
-    private boolean createTableContentFromNode(DatasetService datasetService, HashMap<String, Collection<String>> propertyMap) {
+    private boolean createTableContentFromNode(DatasetService datasetService, LinkedHashMap<String, Collection<String>> propertyMap) {
         boolean isExistColumnName = false;
         
         // Create table content
@@ -659,7 +664,7 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
      * @param datasetService DatasetService
      * @param propertyMap PropertyMap
      */
-    private void createTableContentWithCasualHeaders(DatasetService datasetService, HashMap<String, Collection<String>> propertyMap) {
+    private void createTableContentWithCasualHeaders(DatasetService datasetService, LinkedHashMap<String, Collection<String>> propertyMap) {
         
         // Create table content
         List<RowWr> rows = new ArrayList<RowWr>();
@@ -742,8 +747,8 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
      * 
      * @return the property map
      */
-    public Map<String, Map<String, String>> getPropertyMap() {
-        Map<String, Map<String, String>> propertyMap = new HashMap<String, Map<String, String>>();
+    public Map<String, LinkedHashMap<String, String>> getPropertyMap() {
+        Map<String, LinkedHashMap<String, String>> propertyMap = new HashMap<String, LinkedHashMap<String, String>>();
         for (RowWr row : propertyList) {
             String type = row.getValue(colIndexType);
             String property = row.getValue(colIndexProperty);
@@ -753,7 +758,7 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
 
             Map<String, String> propertyCol = propertyMap.get(type);
             if (propertyCol == null) {
-                propertyMap.put(type, new HashMap<String, String>());
+                propertyMap.put(type, new LinkedHashMap<String, String>());
                 propertyCol = propertyMap.get(type);
             }
             propertyCol.put(property, column);
