@@ -37,6 +37,8 @@ import org.amanzi.neo.services.events.ShowViewEvent;
 import org.amanzi.neo.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.services.network.FrequencyPlanModel;
 import org.amanzi.neo.services.network.NetworkModel;
+import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
+import org.amanzi.neo.services.node2node.NodeToNodeTypes;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.IStatistic;
 import org.amanzi.neo.services.statistic.PropertyHeader;
@@ -93,6 +95,7 @@ import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
@@ -721,6 +724,7 @@ public class MessageAndEventTableView extends ViewPart {
         private List<String> filteredProperties;
         private FrequencyPlanModel model;
         private HashSet<String> trxProp;
+        private NodeToNodeRelationModel modl;
         
         /**
          * Constructor.
@@ -748,6 +752,13 @@ public class MessageAndEventTableView extends ViewPart {
             filteredProperties.add("sector");
             filteredProperties.add("trx");
             trxProp = new HashSet<String>();
+            Set<NodeToNodeRelationModel> im = new NetworkModel(networkRoot).findAllN2nModels(NodeToNodeTypes.ILLEGAL_FREQUENCY);
+            if (im.size() == 1) {
+                modl = im.iterator().next();
+            } else {
+                modl = null;
+            }
+
             String name = ds.getNodeName(networkRoot);
             IStatistic stat = StatisticManager.getStatistic(networkRoot);
             final Comparable<Class> comparable = new Comparable<Class>() {
@@ -762,6 +773,11 @@ public class MessageAndEventTableView extends ViewPart {
                 allProperties.put(property, true);
                 filteredProperties.add(property);
                 trxProp.add(property);
+            }
+            if (modl != null) {
+                allProperties.put("Illegal Frequencies", true);
+                filteredProperties.add("Illegal Frequencies");
+                trxProp.add("Illegal Frequencies");
             }
             result = stat.getPropertyNameCollection(model.getName(), NodeTypes.FREQUENCY_PLAN.getId(), comparable);
             for(String property : result){
@@ -1094,7 +1110,27 @@ public class MessageAndEventTableView extends ViewPart {
                     }else if ("trx".equals(property)){
                         value=node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString();
                     }  else if (datasetInfo.trxProp.contains(property)){
-                        value = node.getProperty(property, "").toString();
+                        value = "";
+                        if ("Illegal Frequencies".equals(property)) {
+                            StringBuilder bl=new StringBuilder("[");
+                            Node proxy = datasetInfo.modl.findProxy(node);
+                            boolean fst = false;
+                            if (proxy != null) {
+                                for (Relationship rel : datasetInfo.modl.getOutgoingRelations(proxy)) {
+                                    if (fst) {
+                                        bl.append(", ");
+                                    }
+                                    Integer freq = (Integer)datasetInfo.modl.findNodeFromProxy(rel.getOtherNode(proxy))
+                                            .getProperty("frequency");
+                                    bl.append(freq);
+                                    fst = true;
+                                }
+                            }
+                            bl.append("]");
+                            value = bl.toString();
+                        } else {
+                            value = node.getProperty(property, "").toString();
+                        }
                     }else{
                         Node plan=datasetInfo.model.findPlanNode(node);
                         value=plan==null?"":plan.getProperty(property, "").toString();
