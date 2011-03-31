@@ -1308,7 +1308,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         public String getColumnText(Object element, int columnIndex) {
             Wrapper wr = (Wrapper)element;
             String result = wr.getText(columnIndex);
-            if (columnIndex > 1 && formatter != null) {
+            if (columnIndex > 1 && formatter != null && columnIndex - 2 < propertyClass.size()) {
                 @SuppressWarnings("rawtypes")
                 Class cls = propertyClass.get(columnIndex - 2);
                 if (Double.class.isAssignableFrom(cls) || Float.class.isAssignableFrom(cls)) {
