@@ -114,7 +114,7 @@ import org.neo4j.graphdb.Relationship;
  */
 public class Node2NodeViews extends ViewPart implements IPropertyChangeListener {
     /** String OUTGOING_ANALYSE field */
-    private static final String OUTGOING_ANALYSE = " Outgoing analyse";
+    private static final String OUTGOING_ANALYSE = "Outgoing";
     private static final RGB main = new RGB(0, 0, 255);
     private static final RGB more50 = new RGB(112, 48, 160);
     private static final RGB more30 = new RGB(255, 0, 0);
@@ -835,7 +835,8 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
     private void setSelectionModel(INode2NodeFilter allNode2NodeFilter) {
         modelMap.clear();
         for (NodeToNodeRelationModel model : allNode2NodeFilter.getModels()) {
-            modelMap.put(model.getDescription(), model);
+            //modelMap.put(model.getDescription(), model);
+            modelMap.put(model.getName(), model);
         }
     }
 
