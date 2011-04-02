@@ -21,6 +21,7 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -67,9 +68,13 @@ import org.amanzi.neo.services.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.services.events.ShowPreparedViewEvent;
 import org.amanzi.neo.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.services.events.UpdateDrillDownEvent;
+import org.amanzi.neo.services.events.UpdateViewEvent;
 import org.amanzi.neo.services.events.UpdateViewEventType;
+import org.amanzi.neo.services.ui.IUpdateViewListener;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
 import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.ui.UpdateViewManager;
 import org.apache.log4j.Logger;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
@@ -868,6 +873,7 @@ public class NetworkTreeView extends ViewPart {
                 }
             }
             NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(new ChangeSelectionEvent(null, selection));
+            NeoServicesUiPlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent("", selection));
         }
 
         /**

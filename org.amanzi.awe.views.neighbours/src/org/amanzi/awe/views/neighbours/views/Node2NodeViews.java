@@ -25,8 +25,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+
+import net.refractions.udig.catalog.internal.ui.CatalogView;
 
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.ChangeModelEvent;
@@ -42,6 +45,10 @@ import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.TransactionWrapper;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.events.NewCorrelationEvent;
+import org.amanzi.neo.services.events.ShowPreparedViewEvent;
+import org.amanzi.neo.services.events.UpdateViewEvent;
+import org.amanzi.neo.services.events.UpdateViewEventType;
 import org.amanzi.neo.services.node2node.INode2NodeFilter;
 import org.amanzi.neo.services.node2node.Node2NodeSelectionInformation;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
@@ -50,7 +57,10 @@ import org.amanzi.neo.services.node2node.NodeToNodeTypes;
 import org.amanzi.neo.services.statistic.ISelectionInformation;
 import org.amanzi.neo.services.statistic.IStatistic;
 import org.amanzi.neo.services.statistic.StatisticManager;
+import org.amanzi.neo.services.ui.IUpdateViewListener;
 import org.amanzi.neo.services.ui.IconManager;
+import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.amanzi.neo.services.utils.FilteredIterator;
 import org.amanzi.neo.services.utils.RunnableWithResult;
 import org.apache.commons.lang.ObjectUtils;
@@ -95,10 +105,12 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
@@ -323,7 +335,8 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
             }
         });
         returnFullList.setLayoutData(layoutData);
-
+        NeoServicesUiPlugin.getDefault().getUpdateViewManager().addListener(new SelectionNodeViewListener());
+        
         table = new Table(main, SWT.VIRTUAL | SWT.BORDER | SWT.FULL_SELECTION);
         view = new TableViewer(table);
         view.setContentProvider(new VirtualContentProvider());
@@ -450,6 +463,29 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         // TODO dispose font resources in plugin stop()?
         fontSelected = new Font(fontNormal.getDevice(), fd);
         hookContextMenu();
+    }
+    
+    private class SelectionNodeViewListener implements IUpdateViewListener {
+        private Collection<UpdateViewEventType> handedTypes;
+        
+        public SelectionNodeViewListener() {
+            Collection<UpdateViewEventType> spr = new HashSet<UpdateViewEventType>();
+            spr.add(UpdateViewEventType.SHOW_PREPARED_VIEW);
+            handedTypes = Collections.unmodifiableCollection(spr);
+        }
+        
+        @Override
+        public void updateView(UpdateViewEvent event) {
+            searchingSector = ((ShowPreparedViewEvent)event).getNodes().iterator().next().getProperty("name").toString();
+            textToSearch.setText(searchingSector);
+            formCollumns();
+        }
+
+        @Override
+        public Collection<UpdateViewEventType> getType() {
+            return handedTypes;
+        }
+        
     }
 
     /**
