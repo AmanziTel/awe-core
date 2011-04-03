@@ -91,5 +91,19 @@
          </viewShortcut>
       </perspectiveExtension>
    </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="org.amanzi.awe.views.reuse.DistributionPreferences"
+            id="org.amanzi.awe.views.reuse.DistributionPreferences"
+            name="Distribution">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.amanzi.awe.views.reuse.PreferenceInitializer">
+      </initializer>
+   </extension>
 
 </plugin>
