@@ -296,9 +296,6 @@ public class StatisticsBuilder {
             long noUsedNodes=0;
             long currentStartTime = period.getFirstTime(startTime);
             long nextStartTime = getNextStartDate(period, endTime, currentStartTime);
-            if (startTime > currentStartTime) {
-                currentStartTime = startTime;
-            }
             long count = 0;
             int nodesCount = 0;
             int comm = 0;

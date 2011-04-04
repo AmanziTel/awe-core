@@ -1914,6 +1914,9 @@ public class Utils {
         if (periodId.equals("weekly")) {
             return getNameForWeeklySRow(startTime, endTime);
         }
+        if (periodId.equals("15min")) {
+            return getNameFor15MinSRow(startTime, endTime);
+        }
         return getNameForMonthlySRow(startTime, endTime);
     }
 
@@ -1945,6 +1948,29 @@ public class Utils {
             sb.append(sf.format(startTimeCal.getTime()));
             sb.append(" to ").append(sfMulDay2.format(endTimeCal.getTime()));
         }
+        return sb.toString();
+    }
+    /**
+     * Gets the name for 15-minutes statistics row.
+     * 
+     * @param startTime the start time
+     * @param endTime the end time
+     * @param dayFormat the day format
+     * @return the name for hourly s row
+     */
+    public static String getNameFor15MinSRow(Long startTime, Long endTime) {
+        Calendar endTimeCal = Calendar.getInstance();
+        endTimeCal.setTimeInMillis(endTime);
+        
+        Calendar startTimeCal = Calendar.getInstance();
+        startTimeCal.setTimeInMillis(startTime);
+        
+        String pattern = "HH:mm";
+        SimpleDateFormat sf = new SimpleDateFormat(pattern);
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append(sf.format(startTimeCal.getTime()));
+        sb.append(" - ").append(sf.format(endTimeCal.getTime()));
         return sb.toString();
     }
 
