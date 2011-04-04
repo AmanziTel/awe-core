@@ -42,6 +42,7 @@ public class NeoUtils extends Utils{
         Transaction tx = beginTransaction();
         try {
             String prefStore = org.neo4j.neoclipse.Activator.getDefault().getPreferenceStore().getString(DecoratorPreferences.NODE_PROPERTY_NAMES);
+            
             StringBuilder values = new StringBuilder();
             for (String name : prefStore.split(",")) {
                 name = name.trim();

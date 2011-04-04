@@ -642,7 +642,7 @@ public class DatasetService extends AbstractService {
             setType(node, typeId);
             if (additionalProperties != null) {
                 for (int i = 0; i < additionalProperties.length - 1; i += 2) {
-                    System.out.println(String.valueOf(additionalProperties[i])+" "+additionalProperties[i + 1]);
+                   
                     node.setProperty(String.valueOf(additionalProperties[i]), additionalProperties[i + 1]);
                 }
             }

@@ -54,7 +54,7 @@ public class INeoConstants {
     public static final String PRPOPERTY_CHANNEL_NAME = "channel";
     public static final String PROPERTY_LAST_LINE_NAME = "last_line";
     public static final String PROPERTY_FIRST_LINE_NAME = "first_line";
-    public static final String PROPERTY_TIME_NAME = "time";
+    public static final String PROPERTY_TIME_NAME = "timestamp";
     public static final String PROPERTY_PARAMS_NAME = "event_parameters";
     public static final String HEADER_MS = "ms";
     public static final String PROPERTY_BBOX_NAME = "bbox";

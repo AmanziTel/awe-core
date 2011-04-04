@@ -1,8 +1,15 @@
 package org.amanzi.awe.afp.wizards;
 
+import java.util.Collection;
+
 import org.amanzi.awe.afp.models.AfpDomainModel;
 import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
+import org.amanzi.awe.afp.services.DomainRelations;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -20,6 +27,14 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.Traverser.Order;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.neo.services.utils.Pair;
 
 public class AfpFrequencySelector extends AfpDomainSelector{
@@ -42,8 +57,9 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 		int selectedBand =0;
 
 
-		if (action.equals("Edit") || action.equals("Delete")){
+		if (action.equals("Edit") || action.equals("Delete") || action.equals("Clear")){
 			for(AfpFrequencyDomainModel d: model.getFreqDomains(false)) {
+			    
 				this.domain2Edit = d;
 				break;
 			}
@@ -202,6 +218,7 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 		int j=0;
 		for(AfpFrequencyDomainModel d: model.getFreqDomains(false)) {
 			if(j ==selection) {
+			    
 				domain2Edit = d;
 				break;
 			}
@@ -228,14 +245,125 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 		((AfpFrequencyDomainModel)domain2Edit).setFrequencies(selectedArray);
 		model.editFreqDomain(((AfpFrequencyDomainModel)domain2Edit));
 	}
-	protected void handleDeleteDomain() {
+	protected void handleClearDomain() throws InterruptedException{
+	    
+	    model.removeFrequencyDomainFromQueue((AfpFrequencyDomainModel)domain2Edit);
+        domain2Edit.setFilters(null);
+        domain2Edit.setNumTRX(0);
+        model.editFreqDomain((AfpFrequencyDomainModel)domain2Edit);
+        
+        Job job = new Job("ClearDomain"){
+
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                // TODO Auto-generated method stub
+                if (model.getAfpNode().hasRelationship(DomainRelations.DOMAINS, Direction.OUTGOING)){
+                    Collection<Node> tr = model.getAfpNode().getSingleRelationship(DomainRelations.DOMAINS, Direction.OUTGOING).getEndNode()
+                    .traverse(Order.BREADTH_FIRST,
+                            StopEvaluator.END_OF_GRAPH,
+                            ReturnableEvaluator.ALL_BUT_START_NODE,
+                            DomainRelations.NEXT,
+                            Direction.OUTGOING).getAllNodes();
+
+                    Node domainNode = null;
+                    for (Node node : tr){
+                        if (node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").equals(domain2Edit.getName()))
+                            domainNode = node;
+                    }
+                    if (domainNode!=null){
+                        Transaction tx = NeoUtils.beginTx(domainNode.getGraphDatabase());
+                        try{
+                            if (domainNode.hasRelationship(DomainRelations.ASSIGNED_NEXT, Direction.OUTGOING)){
+                                domainNode.removeProperty(INeoConstants.AFP_PROPERTY_FILTERS_NAME);
+                                domainNode.getSingleRelationship(DomainRelations.ASSIGNED_NEXT, Direction.INCOMING).getStartNode()
+                                .createRelationshipTo(domainNode.getSingleRelationship(DomainRelations.ASSIGNED_NEXT, Direction.OUTGOING).getEndNode(), DomainRelations.ASSIGNED_NEXT);
+                                domainNode.getSingleRelationship(DomainRelations.ASSIGNED_NEXT, Direction.INCOMING).delete();
+                                domainNode.getSingleRelationship(DomainRelations.ASSIGNED_NEXT, Direction.OUTGOING).delete();
+                            }
+                            else if (domainNode.hasRelationship(DomainRelations.ASSIGNED_NEXT,Direction.INCOMING)){
+                                domainNode.removeProperty(INeoConstants.AFP_PROPERTY_FILTERS_NAME);
+                                domainNode.getSingleRelationship(DomainRelations.ASSIGNED_NEXT, Direction.INCOMING).delete();
+                            }
+                            tx.success();
+                        }
+                        finally{
+                            tx.finish();
+                        }
+                    }
+                }
+                return Status.OK_STATUS;
+                
+            }
+
+        };
+        job.join();
+
+        
+	}
+	protected void handleDeleteDomain() throws InterruptedException {
 		if (domain2Edit == null){
 			//TODO Do some error handling here;
 			return;
 		}
 //		model.setTotalRemainingTRX(model.getTotalRemainingTRX() + domain2Edit.getNumTRX());
 		model.deleteFreqDomain(domain2Edit.getName());
-	}
+		Job job = new Job("DeleteDomain"){
 
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                // TODO Auto-generated method stub
+                if (model.getAfpNode().hasRelationship(DomainRelations.DOMAINS, Direction.OUTGOING)){
+                    Collection<Node> tr = model.getAfpNode().getSingleRelationship(DomainRelations.DOMAINS, Direction.OUTGOING).getEndNode()
+                    .traverse(Order.BREADTH_FIRST,
+                            StopEvaluator.END_OF_GRAPH,
+                            ReturnableEvaluator.ALL_BUT_START_NODE,
+                            DomainRelations.NEXT,
+                            Direction.OUTGOING).getAllNodes();
+
+                    Node domainNode = null;
+                    for (Node node : tr){
+                        if (node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").equals(domain2Edit.getName()))
+                            domainNode = node;
+                    }
+                    if (domainNode!=null){
+                        Transaction tx = NeoUtils.beginTx(domainNode.getGraphDatabase());
+                        try{
+                            if (domainNode.hasRelationship(DomainRelations.ASSIGNED_NEXT, Direction.OUTGOING)){
+
+                                domainNode.getSingleRelationship(DomainRelations.ASSIGNED_NEXT, Direction.INCOMING).getStartNode()
+                                .createRelationshipTo(domainNode.getSingleRelationship(DomainRelations.ASSIGNED_NEXT, Direction.OUTGOING).getEndNode(), DomainRelations.ASSIGNED_NEXT);
+                                domainNode.getSingleRelationship(DomainRelations.ASSIGNED_NEXT, Direction.INCOMING).delete();
+                                domainNode.getSingleRelationship(DomainRelations.ASSIGNED_NEXT, Direction.OUTGOING).delete();
+                            }
+                            else if (domainNode.hasRelationship(DomainRelations.ASSIGNED_NEXT,Direction.INCOMING)){
+
+                                domainNode.getSingleRelationship(DomainRelations.ASSIGNED_NEXT, Direction.INCOMING).delete();
+                            }
+                            if (domainNode.hasRelationship(DomainRelations.NEXT, Direction.OUTGOING)){
+
+                                domainNode.getSingleRelationship(DomainRelations.NEXT, Direction.INCOMING).getStartNode()
+                                .createRelationshipTo(domainNode.getSingleRelationship(DomainRelations.NEXT, Direction.OUTGOING).getEndNode(), DomainRelations.NEXT);
+                                domainNode.getSingleRelationship(DomainRelations.NEXT, Direction.INCOMING).delete();
+                                domainNode.getSingleRelationship(DomainRelations.NEXT, Direction.OUTGOING).delete();
+                            }
+                            else if (domainNode.hasRelationship(DomainRelations.NEXT,Direction.INCOMING)){
+
+                                domainNode.getSingleRelationship(DomainRelations.NEXT, Direction.INCOMING).delete();
+                            }
+                            domainNode.delete();
+                            tx.success();
+                        }
+                        finally{
+                            tx.finish();
+                        }
+                    }
+                }
+                return Status.OK_STATUS;
+            }
+
+		};
+		job.join();
+		
+	}
 
 }

@@ -291,16 +291,17 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
         }
         
         for (AfpFrequencyDomainModel frDomain : model.getFreqDomains(false)){
-        	if (frDomain.getNumTRX() > 0){
-        		setErrorMessage(null);
-        		return true;
-        	}
-        	setErrorMessage("No Trx in any any domain. Please assign the trxs to a domain");
-        	return false;
+            if (frDomain.getNumTRX() > 0){
+                setErrorMessage(null);
+                return true;
+            }
         }
+        setErrorMessage("No Trx in any any domain. Please assign the trxs to a domain");
+        return false;
+
               
-        setErrorMessage(null);
-        return true;
+       // setErrorMessage(null);
+       // return true;
     }
 	
 	public void refreshPage(){
@@ -420,6 +421,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 				public void widgetSelected(SelectionEvent e) {
 					String domainName = domainCombo.getText();
 					AfpDomainModel freqModel = model.findDomainByName(model.DOMAIN_TYPES[0], domainName);
+					
 					model.addFrequencyDomainToQueue((AfpFrequencyDomainModel)freqModel);
 					freqModel.setFilters(rowFilter.toString());
 					freqModel.setNumTRX(trxCount);

@@ -108,7 +108,9 @@ public class AfpDomainSelector {
 			public void widgetSelected(SelectionEvent e) {
 				boolean ret = true;
 				if (action.equals("Add")){
+				    
 					ret = handleAddDomain();
+					
 					((AfpWizardPage)page).refreshPage();
 				}
 				if (action.equals("Edit")){
@@ -117,10 +119,24 @@ public class AfpDomainSelector {
 				}
 				
 				if (action.equals("Delete")){
-					handleDeleteDomain();
+					try {
+                        handleDeleteDomain();
+                    } catch (InterruptedException e1) {
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
+                    }
 					((AfpWizardPage)page).refreshPage();
 				}
 				
+				if (action.equals("Clear")){
+                    try {
+                        handleClearDomain();
+                    } catch (InterruptedException e1) {
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
+                    }
+                    ((AfpWizardPage)page).refreshPage();
+                }
 				if(ret)
 					subShell.dispose();
 			}
@@ -150,9 +166,11 @@ public class AfpDomainSelector {
 	}
 	protected void handleEditDomain() {
 	}
-	protected void handleDeleteDomain() {
+	protected void handleDeleteDomain() throws InterruptedException {
 	}
-
+	protected void handleClearDomain() throws InterruptedException{
+	    
+	}
 	public void setDomainModel(AfpDomainModel domainModel) {
 		this.domain2Edit = domainModel;
 	}

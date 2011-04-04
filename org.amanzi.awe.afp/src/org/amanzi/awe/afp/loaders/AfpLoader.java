@@ -467,7 +467,7 @@ public class AfpLoader {
             time = System.currentTimeMillis();
             String domain = cellFile.getParentFile().getName();
             String formTime = new SimpleDateFormat("dd-MMM-yyyy HH:mm", new Locale("en", "US", "WINDOWS")).format(time);
-            String name = domain +" "+ formTime;System.out.println("name:"+name);
+            String name = domain +" "+ formTime;
             planModel = networkModel.getFrequencyModel(name, Long.toString(time), domain);
             this.isNodeIdBased = isNodeIdBased;
         }
