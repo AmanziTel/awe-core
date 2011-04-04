@@ -62,7 +62,6 @@ public class AfpExporter extends Job {
     private static final String DATA_SAVER_DIR = "AfpTemp";
     public static final String PATH_SEPARATOR = File.separator;
     public static final String tmpAfpFolder = getTmpFolderPath();
-    
 
     public static final int CONTROL = 0;
     public static final int CELL = 1;
@@ -73,8 +72,8 @@ public class AfpExporter extends Job {
     public static final int CLIQUES = 6;
 
     /** The Control File */
-    public final String[] fileNames = {"InputControlFile.awe", "InputCellFile.awe", "InputInterferenceFile.awe", "InputNeighboursFile.awe", "InputForbiddenFile.awe",
-            "InputExceptionFile.awe", "InputCliquesFile.awe"};
+    public final String[] fileNames = {"InputControlFile.awe", "InputCellFile.awe", "InputInterferenceFile.awe",
+            "InputNeighboursFile.awe", "InputForbiddenFile.awe", "InputExceptionFile.awe", "InputCliquesFile.awe"};
 
     public String[] domainDirPaths;
 
@@ -154,12 +153,11 @@ public class AfpExporter extends Job {
                 domainDirPaths[i] = modelDir.getAbsolutePath() + PATH_SEPARATOR;
                 for (int j = 0; j < fileNames.length; j++) {
                     inputFiles[i][j] = new File(tmpAfpFolder + dirName + PATH_SEPARATOR + fileNames[j]);
-                    
-                    
+
                     if (inputFiles[i][j].exists()) {
                         inputFiles[i][j].delete();
                     }
-                    
+
                     inputFiles[i][j].createNewFile();
                 }
             } catch (IOException e) {
@@ -172,16 +170,16 @@ public class AfpExporter extends Job {
     public void writeFilesNew(IProgressMonitor monitor) {
 
         monitor.beginTask("Write Files", model.getTotalTRX());
-        
-        HashMap<String, String> bandFilters = new HashMap<String, String> ();
-        for (int i = 0; i < model.getFrequencyBands().length; i++){
+
+        HashMap<String, String> bandFilters = new HashMap<String, String>();
+        for (int i = 0; i < model.getFrequencyBands().length; i++) {
             if (model.getFrequencyBands()[i])
                 if (bandFilters.get("band") == null)
                     bandFilters.put("band", model.BAND_NAMES[i]);
                 else
                     bandFilters.put("band", bandFilters.get("band") + "," + model.BAND_NAMES[i]);
         }
-        
+
         Iterable<Node> sectorTraverser = model.getTRXList(bandFilters);
 
         try {
@@ -193,11 +191,11 @@ public class AfpExporter extends Job {
                 cellWriters[i] = new BufferedWriter(new FileWriter(inputFiles[i][CELL]), 8 * 1024);
                 intWriters[i] = new BufferedWriter(new FileWriter(inputFiles[i][INTERFERENCE]), 8 * 1024);
             }
-          
+
             for (Node sectorNode : sectorTraverser) {
                 HashMap<Node, SectorValues> sectorIntValues = getSectorIntValues(sectorNode);
                 Traverser trxTraverser = AfpModelUtils.getTrxTraverser(sectorNode);
-                
+
                 for (Node trxNode : trxTraverser) {
                     count++;
                     monitor.worked(1);
@@ -220,7 +218,7 @@ public class AfpExporter extends Job {
                                     StringBuilder sb = new StringBuilder();
                                     sb.append(Long.toString(trxNode.getId()));
                                     sb.append(" ");
-                                        
+
                                     // String trxNo =
                                     // (String)trxNode.getProperty(INeoConstants.PROPERTY_NAME_NAME,
                                     // "0");
@@ -230,18 +228,22 @@ public class AfpExporter extends Job {
                                     // Character.getNumericValue('A')+ 1);
                                     // }
 
-                                    for (Node plan : trxNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+                                    for (Node plan : trxNode.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE,
+                                            new ReturnableEvaluator() {
 
-                                        @Override
-                                        public boolean isReturnableNode(TraversalPosition pos) {
-                                            if (pos.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, "").equals("original"))
-                                                return true;
-                                            if (pos.currentNode().getProperty(INeoConstants.AFP_PROPERTY_ORIGINAL_NAME, true).equals(true))
-                                                return true;
-                                            return false;
-                                        }
+                                                @Override
+                                                public boolean isReturnableNode(TraversalPosition pos) {
+                                                    if (pos.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, "")
+                                                            .equals("original"))
+                                                        return true;
+                                                    if (pos.currentNode()
+                                                            .getProperty(INeoConstants.AFP_PROPERTY_ORIGINAL_NAME, true)
+                                                            .equals(true))
+                                                        return true;
+                                                    return false;
+                                                }
 
-                                    }, DatasetRelationshipTypes.PLAN_ENTRY, Direction.OUTGOING)) {
+                                            }, DatasetRelationshipTypes.PLAN_ENTRY, Direction.OUTGOING)) {
                                         try {
                                             if (plan.hasProperty("arfcn")) {
                                                 freq.add((Integer)plan.getProperty("arfcn"));
@@ -260,20 +262,20 @@ public class AfpExporter extends Job {
 
                                     Integer[] freqArray = freq.toArray(new Integer[0]);
                                     if (freqArray.length > 1) {
-                                        //LN, 17.03.2011, SY hopping type is disabled for now
-//                                        for (int j = 0; j < freqArray.length; j++) {
-//                                            sb.append(1 + "-");// add trxid as 1 always
-//                                            sb.append(j);
-//                                            sb.append(" ");
-//                                            sb.append(1);// non-relevant
-//                                            sb.append(" ");
-//                                            sb.append(1);// required
-//                                            sb.append(" ");
-//                                            sb.append(1);// given
-//                                            sb.append(" " + freqArray[i]);// required frequencies
-//                                            sb.append("\n");
-//                                            cellWriters[i].write(sb.toString());
-//                                        }
+                                        // LN, 17.03.2011, SY hopping type is disabled for now
+                                        // for (int j = 0; j < freqArray.length; j++) {
+                                        // sb.append(1 + "-");// add trxid as 1 always
+                                        // sb.append(j);
+                                        // sb.append(" ");
+                                        // sb.append(1);// non-relevant
+                                        // sb.append(" ");
+                                        // sb.append(1);// required
+                                        // sb.append(" ");
+                                        // sb.append(1);// given
+                                        // sb.append(" " + freqArray[i]);// required frequencies
+                                        // sb.append("\n");
+                                        // cellWriters[i].write(sb.toString());
+                                        // }
                                     }
 
                                     else {
@@ -283,13 +285,13 @@ public class AfpExporter extends Job {
                                         sb.append(" ");
                                         sb.append(1);// required
                                         sb.append(" ");
-//                                        if (freqArray == null || freqArray.length < 1)
-//                                            sb.append(0);// given
-//                                        else {
-//                                            sb.append(1);// given
-//                                            sb.append(" " + freqArray[0]);// required frequencies
-//                                        }
-                                        //LN, 23.03.2011, set channel to zero
+                                        // if (freqArray == null || freqArray.length < 1)
+                                        // sb.append(0);// given
+                                        // else {
+                                        // sb.append(1);// given
+                                        // sb.append(" " + freqArray[0]);// required frequencies
+                                        // }
+                                        // LN, 23.03.2011, set channel to zero
                                         sb.append(0);
                                         sb.append("\n");
                                         cellWriters[i].write(sb.toString());
@@ -320,7 +322,8 @@ public class AfpExporter extends Job {
         }
     }
 
-    private void writeInterferenceForTrx(Node sector, Node trx, BufferedWriter intWriter, HashMap<Node, SectorValues> sectorIntValues, AfpRowFilter rf) throws IOException {
+    private void writeInterferenceForTrx(Node sector, Node trx, BufferedWriter intWriter,
+            HashMap<Node, SectorValues> sectorIntValues, AfpRowFilter rf) throws IOException {
 
         DecimalFormat df = new DecimalFormat("0.0000000000");
         DecimalFormatSymbols dfSymbols = df.getDecimalFormatSymbols();
@@ -492,21 +495,29 @@ public class AfpExporter extends Job {
         HashMap<Node, String[][]> intValues = new HashMap<Node, String[][]>();
 
         // Add this sector to calculate co-sector TRXs
-        String[][] coSectorTrxValues = new String[][] { {Float.toString(1), Float.toString(1), Float.toString(1), Float.toString(1)}, {}, {}, {}};
+        String[][] coSectorTrxValues = new String[][] {
+                {Float.toString(1), Float.toString(1), Float.toString(1), Float.toString(1)}, {}, {}, {}};
         intValues.put(sector, coSectorTrxValues);
 
-        for (Node proxySector : sector.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+        for (Node proxySector : sector.traverse(
+                Order.DEPTH_FIRST,
+                StopEvaluator.DEPTH_ONE,
+                new ReturnableEvaluator() {
 
-            @Override
-            public boolean isReturnableNode(TraversalPosition pos) {
-                if (pos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.SECTOR_SECTOR_RELATIONS.getId())
-                        || pos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.PROXY.getId()))
-                    return true;
+                    @Override
+                    public boolean isReturnableNode(TraversalPosition pos) {
+                        if (pos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME)
+                                .equals(NodeTypes.SECTOR_SECTOR_RELATIONS.getId())
+                                || pos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.PROXY.getId()))
+                            return true;
 
-                return false;
-            }
-        }, NetworkRelationshipTypes.INTERFERENCE, Direction.OUTGOING, NetworkRelationshipTypes.NEIGHBOURS, Direction.OUTGOING, DatasetRelationshipTypes.PROXY, Direction.OUTGOING)) {
-            for (Relationship relation : proxySector.getRelationships(NetworkRelationshipTypes.INTERFERS, NetworkRelationshipTypes.NEIGHBOUR, NodeToNodeRelationshipTypes.PROXYS)) {
+                        return false;
+                    }
+                }, NetworkRelationshipTypes.INTERFERENCE, Direction.OUTGOING, NetworkRelationshipTypes.NEIGHBOURS,
+                Direction.OUTGOING,
+                DatasetRelationshipTypes.PROXY, Direction.OUTGOING)) {
+            for (Relationship relation : proxySector.getRelationships(NetworkRelationshipTypes.INTERFERS,
+                    NetworkRelationshipTypes.NEIGHBOUR, NodeToNodeRelationshipTypes.PROXYS)) {
                 if (relation.getEndNode().equals(proxySector))
                     continue;
                 Node intProxySector = relation.getEndNode();
@@ -529,7 +540,8 @@ public class AfpExporter extends Job {
                 int typeIndex = NEIGH;
                 if (type.equals(NodeToNodeRelationshipTypes.PROXYS)) {
                     isProxy = true;
-                    Node fileNode = intProxySector.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
+                    Node fileNode = intProxySector.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING)
+                            .getStartNode();
                     if (fileNode.getProperty("node2node", "").equals(NodeToNodeTypes.NEIGHBOURS))
                         typeIndex = NEIGH;
                     else if (fileNode.getProperty("node2node", "").equals(NodeToNodeTypes.INTERFERENCE_MATRIX))
@@ -628,26 +640,28 @@ public class AfpExporter extends Job {
 
         // Add this sector to calculate co-sector TRXs
         // as I understand - not necessary
-        // String[][] coSectorTrxValues = new String[][] { {Float.toString(1), Float.toString(1),
-        // Float.toString(1), Float.toString(1)}, {}, {}, {}};
-        // intValues.put(sector, coSectorTrxValues);
+//        String[][] coSectorTrxValues = new String[][] {
+//                {Float.toString(1), Float.toString(1), Float.toString(1), Float.toString(1)}, {}, {}, {}};
+//        intValues.put(sector, coSectorTrxValues);
 
-        for (Node proxySector : Traversal.description().depthFirst().relationships(DatasetRelationshipTypes.PROXY, Direction.OUTGOING).evaluator(new Evaluator() {
+        for (Node proxySector : Traversal.description().depthFirst()
+                .relationships(DatasetRelationshipTypes.PROXY, Direction.OUTGOING).evaluator(new Evaluator() {
 
-            @Override
-            public Evaluation evaluate(Path arg0) {
+                    @Override
+                    public Evaluation evaluate(Path arg0) {
 
-                boolean includes = arg0.length() == 1;
-                return Evaluation.of(includes, arg0.length() == 0);
-            }
-        }).traverse(sector).nodes()) {
+                        boolean includes = arg0.length() == 1;
+                        return Evaluation.of(includes, arg0.length() == 0);
+                    }
+                }).traverse(sector).nodes()) {
 
-            Node proxyRoot = proxySector.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(proxySector);
+            Node proxyRoot = proxySector.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(
+                    proxySector);
             NodeToNodeRelationModel prModel = new NodeToNodeRelationModel(proxyRoot);
             final INodeToNodeType proxytype = prModel.getType();
             final String prName = prModel.getName();
-            if (proxytype != NodeToNodeTypes.INTERFERENCE_MATRIX && prModel.getType() != NodeToNodeTypes.SHADOWING && prModel.getType() != NodeToNodeTypes.TRIANGULATION
-                    && prModel.getType() != NodeToNodeTypes.NEIGHBOURS) {
+            if (proxytype != NodeToNodeTypes.INTERFERENCE_MATRIX && prModel.getType() != NodeToNodeTypes.SHADOWING
+                    && prModel.getType() != NodeToNodeTypes.TRIANGULATION && prModel.getType() != NodeToNodeTypes.NEIGHBOURS) {
                 continue;
             }
 
@@ -717,10 +731,18 @@ public class AfpExporter extends Job {
                 }
 
                 data.addValues((NodeToNodeTypes)proxytype, prName, value);
-
+                
+                if (proxytype.equals(NodeToNodeTypes.NEIGHBOURS)) {
+                    if (!intValues.containsKey(sector)) {
+                        SectorValues sameSector = new SectorValues();
+                        intValues.put(sector, sameSector);
+                        
+                        sameSector.addValues(NodeToNodeTypes.NEIGHBOURS, prName, new String[] {"1.0", "1.0", "1.0", "1.0"});
+                    }
+                }
             }
         }
-
+        
         return intValues;
 
     }
@@ -735,8 +757,8 @@ public class AfpExporter extends Job {
 
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(inputFiles[domainIndex][CONTROL]));
-            
-            //LN, 23.03.2011, switching format of control file to new version
+
+            // LN, 23.03.2011, switching format of control file to new version
             writer.write("FileWithAllCells " + "\"" + this.inputFiles[domainIndex][CELL].getAbsolutePath() + "\"");
             writer.newLine();
 
@@ -745,7 +767,7 @@ public class AfpExporter extends Job {
 
             writer.write("DistanceSpacingConditionForCells " + defaultCellSpacing);
             writer.newLine();
-            
+
             writer.write("MaximumRTDemandperCell " + maxTRX);
             writer.newLine();
 
@@ -754,10 +776,10 @@ public class AfpExporter extends Job {
 
             writer.write("DistanceSpacingConditionForSecondOrderNeighbours " + defaultSecondNbrSpacing);
             writer.newLine();
-            
+
             writer.write("NeighboursConditionFile " + "\"" + this.inputFiles[domainIndex][NEIGHBOUR].getAbsolutePath() + "\"");
             writer.newLine();
-            
+
             writer.write("TrafficOrAreaInterference " + (useTraffic[domainIndex] ? "1" : "2"));
             writer.newLine();
 
