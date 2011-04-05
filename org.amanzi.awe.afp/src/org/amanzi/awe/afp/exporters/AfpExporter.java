@@ -313,7 +313,7 @@ public class AfpExporter extends Job {
                                     }
 
                                     if (freqArray.length < 2) {
-                                        impact = networkModel.getImpactMatrix(inputFiles[i][INTERFERENCE].getName());
+                                        impact = networkModel.getImpactMatrix("Impact_" + inputFiles[i][INTERFERENCE].getName());
                                         statistic = StatisticManager.getStatistic(model.getDatasetNode());
                                         writeInterferenceForTrx(sectorNode, trxNode, intWriters[i], sectorIntValues, rf);
                                     }
