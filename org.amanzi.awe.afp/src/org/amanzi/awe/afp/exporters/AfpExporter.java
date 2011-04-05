@@ -22,14 +22,18 @@ import org.amanzi.awe.afp.models.AfpModel.ScalingFactors;
 import org.amanzi.awe.afp.models.AfpModelUtils;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.TransactionWrapper;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.node2node.INodeToNodeType;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationService.NodeToNodeRelationshipTypes;
 import org.amanzi.neo.services.node2node.NodeToNodeTypes;
+import org.amanzi.neo.services.statistic.IStatistic;
+import org.amanzi.neo.services.statistic.StatisticManager;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -120,6 +124,10 @@ public class AfpExporter extends Job {
 
     int count;
     private double minCo;
+    private NodeToNodeRelationModel impact;
+    private TransactionWrapper tx;
+    private int globalCount;
+    private IStatistic statistic;
 
     public AfpExporter(Node afpRoot, Node afpDataset, AfpModel model) {
         super("Write Input files");
@@ -186,12 +194,19 @@ public class AfpExporter extends Job {
 
             BufferedWriter[] cellWriters = new BufferedWriter[models.length];
             BufferedWriter[] intWriters = new BufferedWriter[models.length];
-
+            NetworkModel networkModel = new NetworkModel(model.getDatasetNode());
+            // if (models.length>0){
+            // impact= new
+            // NetworkModel(networkNode).getImpactMatrix(inputFiles[0][INTERFERENCE].getName());
+            // }else{
+            // impact=null;
+            // }
             for (int i = 0; i < models.length; i++) {
                 cellWriters[i] = new BufferedWriter(new FileWriter(inputFiles[i][CELL]), 8 * 1024);
                 intWriters[i] = new BufferedWriter(new FileWriter(inputFiles[i][INTERFERENCE]), 8 * 1024);
             }
-
+            tx = new TransactionWrapper();
+            globalCount = 0;
             for (Node sectorNode : sectorTraverser) {
                 HashMap<Node, SectorValues> sectorIntValues = getSectorIntValues(sectorNode);
                 Traverser trxTraverser = AfpModelUtils.getTrxTraverser(sectorNode);
@@ -298,6 +313,8 @@ public class AfpExporter extends Job {
                                     }
 
                                     if (freqArray.length < 2) {
+                                        impact = networkModel.getImpactMatrix(inputFiles[i][INTERFERENCE].getName());
+                                        statistic = StatisticManager.getStatistic(model.getDatasetNode());
                                         writeInterferenceForTrx(sectorNode, trxNode, intWriters[i], sectorIntValues, rf);
                                     }
 
@@ -309,7 +326,7 @@ public class AfpExporter extends Job {
                 }
 
             }
-
+            tx.stop(true);
             // close the writers and create control files
             for (int i = 0; i < models.length; i++) {
                 cellWriters[i].close();
@@ -322,7 +339,7 @@ public class AfpExporter extends Job {
         }
     }
 
-    private void writeInterferenceForTrx(Node sector, Node trx, BufferedWriter intWriter,
+    private void writeInterferenceForTrx(Node sector, final Node trx, BufferedWriter intWriter,
             HashMap<Node, SectorValues> sectorIntValues, AfpRowFilter rf) throws IOException {
 
         DecimalFormat df = new DecimalFormat("0.0000000000");
@@ -336,7 +353,7 @@ public class AfpExporter extends Job {
 
         for (Node intSector : sectorIntValues.keySet()) {
 
-            for (Node intTrx : intSector.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
+            for (final Node intTrx : intSector.traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
 
                 @Override
                 public boolean isReturnableNode(TraversalPosition pos) {
@@ -365,7 +382,7 @@ public class AfpExporter extends Job {
                 StringBuilder sbSubCell = new StringBuilder();
                 sbSubCell.append("INT 0\t0\t");
                 // String[] values = sectorIntValues.get(intSector)[1];
-                float[] trxValues = calculateInterference(trx, intTrx, sectorIntValues.get(intSector));
+                final float[] trxValues = calculateInterference(trx, intTrx, sectorIntValues.get(intSector));
                 boolean includeSubcell = false;
                 for (int i = 0; i < trxValues.length; i++) {
                     if (trxValues[i] > 0.002)
@@ -378,16 +395,43 @@ public class AfpExporter extends Job {
                 sbSubCell.append(intTrx.getId());
                 sbSubCell.append("A");
                 if (includeSubcell) {
+                    tx.submit(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            Relationship relation = impact.getRelation(trx, intTrx);
+                            relation.setProperty("coa", trxValues[CoA]);
+                            relation.setProperty("cot", trxValues[CoT]);
+                            relation.setProperty("ada", trxValues[AdA]);
+                            relation.setProperty("adt", trxValues[AdT]);
+                            statistic.indexValue(impact.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), "coa", trxValues[CoA]);
+                            statistic.indexValue(impact.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), "cot", trxValues[CoT]);
+                            statistic.indexValue(impact.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), "ada", trxValues[AdA]);
+                            statistic.indexValue(impact.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), "adt", trxValues[AdT]);
+                        }
+                    });
+                    globalCount += 4;
+                    if (globalCount >= 1000) {
+                        globalCount = 0;
+                        tx.commit();
+                    }
                     sbAllInt.append(sbSubCell);
                     sbAllInt.append("\n");
                 }
                 numberofinterferers++;
             }
-
         }
+        tx.submit(new Runnable() {
 
-        String trxId = (String)trx.getProperty(INeoConstants.PROPERTY_NAME_NAME, "0");
-
+            @Override
+            public void run() {
+                statistic.updateTypeCount(impact.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), impact.getRelationCount());
+                statistic.setTypeCount(impact.getName(), NodeTypes.PROXY.getId(), impact.getProxyCount());
+                statistic.save();
+            }
+        });
+        globalCount = 0;
+        tx.commit();
         trxSb.append(numberofinterferers);
         trxSb.append(" ");
         trxSb.append(trx.getId());
@@ -640,9 +684,10 @@ public class AfpExporter extends Job {
 
         // Add this sector to calculate co-sector TRXs
         // as I understand - not necessary
-//        String[][] coSectorTrxValues = new String[][] {
-//                {Float.toString(1), Float.toString(1), Float.toString(1), Float.toString(1)}, {}, {}, {}};
-//        intValues.put(sector, coSectorTrxValues);
+        // String[][] coSectorTrxValues = new String[][] {
+        // {Float.toString(1), Float.toString(1), Float.toString(1), Float.toString(1)}, {}, {},
+        // {}};
+        // intValues.put(sector, coSectorTrxValues);
 
         for (Node proxySector : Traversal.description().depthFirst()
                 .relationships(DatasetRelationshipTypes.PROXY, Direction.OUTGOING).evaluator(new Evaluator() {
@@ -731,18 +776,18 @@ public class AfpExporter extends Job {
                 }
 
                 data.addValues((NodeToNodeTypes)proxytype, prName, value);
-                
+
                 if (proxytype.equals(NodeToNodeTypes.NEIGHBOURS)) {
                     if (!intValues.containsKey(sector)) {
                         SectorValues sameSector = new SectorValues();
                         intValues.put(sector, sameSector);
-                        
+
                         sameSector.addValues(NodeToNodeTypes.NEIGHBOURS, prName, new String[] {"1.0", "1.0", "1.0", "1.0"});
                     }
                 }
             }
         }
-        
+
         return intValues;
 
     }

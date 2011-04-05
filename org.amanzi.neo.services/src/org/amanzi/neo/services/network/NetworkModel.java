@@ -78,6 +78,9 @@ public class NetworkModel {
     public NodeToNodeRelationModel getInterferenceMatrix(String name) {
         return getNodeToNodeRelationModel(NodeToNodeTypes.INTERFERENCE_MATRIX, name);
     }
+    public NodeToNodeRelationModel getImpactMatrix(String name) {
+        return getNodeToNodeRelationModel(NodeToNodeTypes.IMPACT, name);
+    }
 
     public NodeToNodeRelationModel getShadowing(String name) {
         return getNodeToNodeRelationModel(NodeToNodeTypes.SHADOWING, name);
