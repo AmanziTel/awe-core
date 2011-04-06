@@ -111,6 +111,11 @@ public class AfpModelFactory {
         
         model.loadAfpDataSet();
         
+        model.getFrequencyDomainQueue().clear();
+        for (AfpFrequencyDomainModel singleModel : model.getFreqDomains(false)) {
+            model.deleteFreqDomain(singleModel.getName());
+        }
+        
         return model;
     }
     
