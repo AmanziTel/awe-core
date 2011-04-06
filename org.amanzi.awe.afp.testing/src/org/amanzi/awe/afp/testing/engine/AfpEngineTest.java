@@ -57,6 +57,8 @@ public class AfpEngineTest {
     
     private static HashMap<IDataset, HashMap<AfpScenario, AfpModel>> scenarios = new HashMap<IDataset, HashMap<AfpScenario, AfpModel>>();
     
+    private static HashMap<AfpModel, AfpExporter> exporterMap = new HashMap<AfpModel, AfpExporter>();
+    
     /**
      *
      * @throws java.lang.Exception
@@ -195,6 +197,8 @@ public class AfpEngineTest {
                 AfpModel model = dataset.getAfpModel(scenario);
                 AfpExporter exporter = model.getExporter();
                 
+                exporterMap.put(model, exporter);
+                
                 LOGGER.info("Writing files for Dataset <" + dataset.getName() + "> using " + scenario.name() + " scenario");
                 long before = System.currentTimeMillis();
                 exporter.run(null);
@@ -254,7 +258,7 @@ public class AfpEngineTest {
             for (AfpScenario scenario : scenarios.get(dataset).keySet()) {
                 AfpModel model = scenarios.get(dataset).get(scenario);
                 
-                AfpExporter exporter = model.getExporter();
+                AfpExporter exporter = exporterMap.get(model);
                 
                 for (String domainDir : exporter.domainDirPaths) {
                     File outputFile = new File(domainDir + File.separator + exporter.outputFileName);
