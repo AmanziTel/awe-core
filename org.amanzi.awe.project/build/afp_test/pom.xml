@@ -111,6 +111,7 @@
 				<module>org.amanzi.neo.db</module>
 				<module>org.amanzi.neo.loader</module>
 				<module>org.amanzi.neo.loader.core</module>
+				<module>org.amanzi.neo.loader.ui</module>
 				<module>org.amanzi.neo.services</module>
 				<module>org.amanzi.neo.services.ui</module>
 				<module>org.amanzi.scripting.jruby</module>
