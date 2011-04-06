@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.afp.testing.engine;
 
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -237,9 +238,43 @@ public class AfpEngineTest {
                seconds + " seconds";
         
     }
+    
     @Test
     public void test1() {
         
+    }
+    
+    @Test
+    public void checkOutputFiles() {
+        LOGGER.info("Check generation of Output Files");
+        
+        ArrayList<String> errors = new ArrayList<String>();
+        
+        for (IDataset dataset : scenarios.keySet()) {
+            for (AfpScenario scenario : scenarios.get(dataset).keySet()) {
+                AfpModel model = scenarios.get(dataset).get(scenario);
+                
+                AfpExporter exporter = model.getExporter();
+                
+                for (String domainDir : exporter.domainDirPaths) {
+                    File outputFile = new File(domainDir + File.separator + exporter.outputFileName);
+                    
+                    if (!outputFile.exists()) {
+                        errors.add("<" + dataset.getName() + "> on " + scenario.name() + 
+                                   " missing OutputFile for domain " + new File(domainDir).getName());
+                    }
+                }
+            }
+        }
+        
+        if (!errors.isEmpty()) {
+            StringBuilder errorMessage = new StringBuilder();
+            for (String error : errors) {
+                errorMessage.append(error + "\n");
+            }
+            
+            fail(errorMessage.toString());
+        }
     }
 
 }
