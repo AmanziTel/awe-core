@@ -100,14 +100,14 @@
 				<module>org.amanzi.awe.catalog.neo</module>
 				<module>org.amanzi.awe.console</module>
 				<module>org.amanzi.awe.l3messages</module>
-				<module>org.amanzi.startup.splash</module>
+				<module>org.amanzi.awe.startup.splash</module>
 				<module>org.amanzi.awe.ui</module>
 				<module>org.amanzi.awe.views.network</module>
 				<module>org.amanzi.gef</module>
 				<module>org.amanzi.integrator.awe</module>
 				<module>org.amanzi.integrator.rdt</module>
 				<module>org.amanzi.neo.core</module>
-				<module>org.amanzi.neo.data_generator</module>
+				<module>org.amanzi.neo.data-generator</module>
 				<module>org.amanzi.neo.db</module>
 				<module>org.amanzi.neo.loader</module>
 				<module>org.amanzi.neo.loader.core</module>
