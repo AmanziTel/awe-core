@@ -129,12 +129,25 @@ public class AfpExporter extends Job {
     private TransactionWrapper tx;
     private int globalCount;
     private IStatistic statistic;
+    private float[] contributions_co;
+    private float[] contributions_adj;
+    private Map<NodeToNodeTypes, List<String>> lists = new HashMap<NodeToNodeTypes, List<String>>();
+    private Map<NodeToNodeTypes, Integer> index = new HashMap<NodeToNodeTypes, Integer>();
+    private int totalIndex;
 
     public AfpExporter(Node afpRoot, Node afpDataset, AfpModel model) {
         super("Write Input files");
         this.afpRoot = afpRoot;
         this.afpDataset = afpDataset;
         this.model = model;
+        totalIndex=0;
+        for (Entry<NodeToNodeTypes, Map<String, ScalingFactors>> entry : model.scaling.entrySet()) {
+            ArrayList<String> list = new ArrayList<String>();
+            list.addAll(entry.getValue().keySet());
+            lists.put(entry.getKey(), list);
+            index.put(entry.getKey(), totalIndex);
+            totalIndex += list.size();
+        }
         minCo = Activator.getDefault().getPreferenceStore().getDouble(PreferenceInitializer.AFP_MIN_CO);
     }
 
@@ -387,6 +400,8 @@ public class AfpExporter extends Job {
                 StringBuilder sbSubCell = new StringBuilder();
                 sbSubCell.append("INT 0\t0\t");
                 // String[] values = sectorIntValues.get(intSector)[1];
+                contributions_co = new float[totalIndex + 2];
+                contributions_adj = new float[totalIndex + 2];
                 final float[] trxValues = calculateInterference(trx, intTrx, sectorIntValues.get(intSector));
                 boolean includeSubcell = false;
                 for (int i = 0; i < trxValues.length; i++) {
@@ -409,10 +424,16 @@ public class AfpExporter extends Job {
                             relation.setProperty("cot", trxValues[CoT]);
                             relation.setProperty("ada", trxValues[AdA]);
                             relation.setProperty("adt", trxValues[AdT]);
+                            relation.setProperty("contributions_co", contributions_co);
+                            relation.setProperty("contributions_adj", contributions_adj);
                             statistic.indexValue(impact.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), "coa", trxValues[CoA]);
                             statistic.indexValue(impact.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), "cot", trxValues[CoT]);
                             statistic.indexValue(impact.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), "ada", trxValues[AdA]);
                             statistic.indexValue(impact.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), "adt", trxValues[AdT]);
+                            statistic.indexValue(impact.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), "contributions_adj",
+                                    contributions_adj);
+                            statistic.indexValue(impact.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), "contributions_co",
+                                    contributions_co);
                         }
                     });
                     globalCount += 4;
@@ -492,7 +513,11 @@ public class AfpExporter extends Job {
 
             float val = 0;
             for (Entry<NodeToNodeTypes, Map<String, List<String[]>>> entry : sectorValues.map.entrySet()) {
+                int id = -1;
                 for (Entry<String, List<String[]>> entryList : entry.getValue().entrySet()) {
+                    if (j == CoA || j == AdA) {
+                        id = this.index.get(entry.getKey()) + lists.get(entry.getKey()).indexOf(entryList.getKey());
+                    }
                     ScalingFactors sf = model.findScalingFactor(entry.getKey(), entryList.getKey());
                     for (String[] values : entryList.getValue()) {
                         try {
@@ -514,6 +539,11 @@ public class AfpExporter extends Job {
                             scalingFactor = sf.getCo()[index] / 100;
                         } else if (j == AdA || j == AdT) {
                             scalingFactor = sf.getAdj()[index] / 100;
+                        }
+                        if (j == CoA) {
+                            contributions_co[id] += val * scalingFactor;
+                        } else if (j == AdA) {
+                            contributions_adj[id] += val * scalingFactor;
                         }
                         calculatedValues[j] += val * scalingFactor;
                     }

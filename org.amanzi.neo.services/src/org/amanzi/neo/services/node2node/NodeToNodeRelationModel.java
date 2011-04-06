@@ -137,4 +137,35 @@ public class NodeToNodeRelationModel {
     public Iterable<Relationship> getOutgoingRelations(Node proxyServ) {
         return node2nodeRelationService.getOutgoingRelations(proxyServ);
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((rootNode == null) ? 0 : rootNode.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof NodeToNodeRelationModel)) {
+            return false;
+        }
+        NodeToNodeRelationModel other = (NodeToNodeRelationModel)obj;
+        if (rootNode == null) {
+            if (other.rootNode != null) {
+                return false;
+            }
+        } else if (!rootNode.equals(other.rootNode)) {
+            return false;
+        }
+        return true;
+    }
+
 }
