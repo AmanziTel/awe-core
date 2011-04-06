@@ -13,8 +13,12 @@
 
 package org.amanzi.awe.log4j;
 
+import java.io.IOException;
+
 import org.apache.log4j.xml.DOMConfigurator;
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -43,16 +47,16 @@ public class LogStarter extends AbstractUIPlugin {
 
     }
     
-    private void initializeLogger(){
+    private void initializeLogger() throws IOException {
         //using different Log4j configs for different modes
         if (Platform.inDevelopmentMode()) {        
-            DOMConfigurator.configure(getBundle().getEntry("/log4j-development.xml"));
+            DOMConfigurator.configure(FileLocator.toFileURL(getBundle().getEntry("/log4j-development.xml")));
         }
         else if (Platform.inDebugMode()) {
-            DOMConfigurator.configure(getBundle().getEntry("/log4j-debug.xml"));
+            DOMConfigurator.configure(FileLocator.toFileURL(getBundle().getEntry("/log4j-debug.xml")));
         }
         else {
-            DOMConfigurator.configure(getBundle().getEntry("/log4j-production.xml"));
+            DOMConfigurator.configure(FileLocator.toFileURL(getBundle().getEntry("/log4j-production.xml")));
         }
     }
 
@@ -64,7 +68,12 @@ public class LogStarter extends AbstractUIPlugin {
     public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
-        initializeLogger();
+        try {
+            initializeLogger();
+        }
+        catch (IOException e) {
+            getLog().log(new Status(Status.ERROR, PLUGIN_ID, "Log4j was not initialized", e));
+        }
     }
 
     /*
