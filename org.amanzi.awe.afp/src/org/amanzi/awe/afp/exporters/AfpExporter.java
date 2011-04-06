@@ -36,6 +36,7 @@ import org.amanzi.neo.services.statistic.IStatistic;
 import org.amanzi.neo.services.statistic.StatisticManager;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.neo4j.graphdb.Direction;
@@ -176,7 +177,11 @@ public class AfpExporter extends Job {
     }
 
     public void writeFilesNew(IProgressMonitor monitor) {
-
+        
+        if (monitor == null) {
+            monitor = new NullProgressMonitor();
+        }
+        
         monitor.beginTask("Write Files", model.getTotalTRX());
 
         HashMap<String, String> bandFilters = new HashMap<String, String>();
@@ -517,11 +522,13 @@ public class AfpExporter extends Job {
             }
 
             // co-site
-            if (site1.equals(site2)) {
-                calculatedValues[j] += CO_SITE_SCALING_FACTOR * model.siteSeparation[index] / 100;
-            }
-            if (sector1.equals(sector2)) {
-                calculatedValues[j] += CO_SECTOR_SCALING_FACTOR * model.sectorSeparation[index] / 100;
+            if (j == CoA || j == CoT) {
+                if (site1.equals(site2)) {
+                    calculatedValues[j] += CO_SITE_SCALING_FACTOR * model.siteSeparation[index] / 100;
+                }
+                if (sector1.equals(sector2)) {
+                    calculatedValues[j] += CO_SECTOR_SCALING_FACTOR * model.sectorSeparation[index] / 100;
+                }
             }
         }
 
@@ -782,7 +789,7 @@ public class AfpExporter extends Job {
                         SectorValues sameSector = new SectorValues();
                         intValues.put(sector, sameSector);
 
-                        sameSector.addValues(NodeToNodeTypes.NEIGHBOURS, prName, new String[] {"1.0", "1.0", "1.0", "1.0"});
+                        sameSector.addValues(NodeToNodeTypes.NEIGHBOURS, prName, new String[] {"0.0", "0.0", "0.0", "0.0"});
                     }
                 }
             }

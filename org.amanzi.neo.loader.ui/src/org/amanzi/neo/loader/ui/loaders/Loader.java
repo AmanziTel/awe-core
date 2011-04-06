@@ -45,6 +45,7 @@ import org.amanzi.neo.services.events.UpdateViewEventType;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.ui.PlatformUI;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -164,36 +165,41 @@ public class Loader<T extends IDataElement, T2 extends IConfigurationData> imple
     }
 
     public static void updateCatalog() {
-        try {
-            NeoServiceProviderUi neoProvider = NeoServiceProviderUi.getProvider();
-            if (neoProvider != null) {
-                String databaseLocation = neoProvider.getDefaultDatabaseLocation();
+        if (PlatformUI.isWorkbenchRunning()) {
+            try {
+                NeoServiceProviderUi neoProvider = NeoServiceProviderUi.getProvider();
+                if (neoProvider != null) {
+                    String databaseLocation = neoProvider.getDefaultDatabaseLocation();
 
-                ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
-                URL url;
-                url = new URL("file://" + databaseLocation);
+                    ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
+                    URL url;
+                    url = new URL("file://" + databaseLocation);
 
-                List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(url);
-                for (IService service : services) {
-                    NeoService serviceold = catalog.getById(NeoService.class, service.getIdentifier(), new NullProgressMonitor());
-                    if (serviceold != null) {
-                        // TODO refactor for working in 2 database modes
-                        // serviceold.updateResource();
-                        catalog.replace(service.getIdentifier(), service);
-                    } else {
-                        catalog.add(service);
+                    List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(url);
+                    for (IService service : services) {
+                        NeoService serviceold = catalog.getById(NeoService.class, service.getIdentifier(),
+                                new NullProgressMonitor());
+                        if (serviceold != null) {
+                            // TODO refactor for working in 2 database modes
+                            // serviceold.updateResource();
+                            catalog.replace(service.getIdentifier(), service);
+                        } else {
+                            catalog.add(service);
+                        }
                     }
-                }
 
+                }
+            } catch (MalformedURLException e) {
+                // TODO handle exception
+                e.printStackTrace();
             }
-        } catch (MalformedURLException e) {
-            // TODO handle exception
-            e.printStackTrace();
         }
     }
 
     public static void sendUpdateEvent(UpdateViewEventType aType) {
-        NeoServicesUiPlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDatabaseEvent(aType));
+        if (PlatformUI.isWorkbenchRunning()) {
+            NeoServicesUiPlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDatabaseEvent(aType));
+        }
     }
 
     @Override

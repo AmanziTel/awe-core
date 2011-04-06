@@ -17,6 +17,7 @@ Import-Package: org.amanzi.neo.loader,
  org.amanzi.neo.loader.core.parser,
  org.amanzi.neo.loader.core.saver
 Export-Package: org.amanzi.awe.afp.ericsson,
- org.amanzi.awe.afp.ericsson.parser
+ org.amanzi.awe.afp.ericsson.parser,
+ org.amanzi.awe.afp.ericsson.saver;x-friends:="org.amanzi.awe.afp.testing"
 Bundle-Activator: org.amanzi.awe.afp.ericsson.Activator
 Bundle-Vendor: amanzi.org

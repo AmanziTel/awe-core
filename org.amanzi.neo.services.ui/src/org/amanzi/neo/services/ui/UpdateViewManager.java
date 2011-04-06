@@ -85,7 +85,10 @@ public class UpdateViewManager {
      * @param event UpdateDatabaseEvent
      */
     public void fireUpdateView(final UpdateViewEvent event) {
-        Display display = PlatformUI.getWorkbench().getDisplay();
+        Display display = null;
+        if (PlatformUI.isWorkbenchRunning()) {
+            display = PlatformUI.getWorkbench().getDisplay();
+        }
         boolean currentThread = (display == null) ||
                                 PlatformUI.getWorkbench().isClosing() ||                                 
                                 Thread.currentThread().equals(display.getThread());

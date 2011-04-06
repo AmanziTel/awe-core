@@ -29,6 +29,7 @@ import org.amanzi.awe.afp.models.AfpModel;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
@@ -83,6 +84,10 @@ public class AfpProcessExecutor extends Job {
 	 */
 	@Override
 	public IStatus run(IProgressMonitor monitor){
+	    if (monitor == null) {
+	        monitor = new NullProgressMonitor();
+	    }
+	    
 		progressMonitor = monitor;
 		monitor.beginTask("Execute Afp", 100);
 //        AfpExporter afpE = new AfpExporter(afpRoot, afpDataset, model);

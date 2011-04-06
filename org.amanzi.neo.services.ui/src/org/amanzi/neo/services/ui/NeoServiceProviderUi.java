@@ -88,6 +88,8 @@ public class NeoServiceProviderUi implements INeoManager{
     }
     private void init(GraphDatabaseService service, String pathToDatabase) {
         NeoServiceProvider.getProvider().init(service, pathToDatabase,this);
+        
+        databaseLocation = pathToDatabase;
     }
     /**
      * Protected constructor
