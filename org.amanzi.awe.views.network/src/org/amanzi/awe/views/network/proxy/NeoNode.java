@@ -72,11 +72,31 @@ public class NeoNode {
     public NeoNode(Node node,int number) {
         this.node = node;
         if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME,"")
-    			.equals(NodeTypes.FREQUENCY_PLAN.getId())){
-    		
-    		this.name = NeoUtils.getFormatedNodeName(
-    				node.getSingleRelationship(DatasetRelationshipTypes.CHILD, Direction.INCOMING).getStartNode(),"");
-    	}
+        		.equals(NodeTypes.FREQUENCY_PLAN.getId())){
+        	String theName;
+        	theName = NeoUtils.getFormatedNodeName(
+        			node.getSingleRelationship(DatasetRelationshipTypes.CHILD, Direction.INCOMING).getStartNode(),"");
+
+
+
+        	Object propertyValue = node.getProperty("arfcn", null);
+        	if (propertyValue!=null)
+        		theName = theName+", ARFCN="+propertyValue.toString();
+        	propertyValue = node.getProperty("bsic", null);
+        	if (propertyValue!=null)
+        		theName = theName+", BSIC="+propertyValue.toString();
+
+        	propertyValue = node.getProperty("hsn", null);
+        	if (propertyValue!=null)
+        		theName = theName+", HSN="+propertyValue.toString();
+
+        	propertyValue = node.getProperty("maio", null);
+        	if (propertyValue!=null)
+        		theName = theName+", MAIO="+propertyValue.toString();
+        	this.name = theName;
+
+        }
+    
         else{
         	this.name = NeoUtils.getFormatedNodeName(node, "");
         }

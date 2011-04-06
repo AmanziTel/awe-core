@@ -12,6 +12,8 @@
  */
 package org.amanzi.neo.services.ui;
 
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.utils.Utils;
 import org.eclipse.swt.graphics.RGB;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -54,7 +56,9 @@ public class NeoUtils extends Utils{
                     continue;
                 }
                 values.append(", ").append(propertyValue.toString());
+                
             }
+            
             return values.length() == 0 ? defName : values.substring(2);
         } finally {
             tx.finish();
