@@ -554,9 +554,15 @@ public class AfpExporter extends Job {
             // co-site
             if (j == CoA || j == CoT) {
                 if (site1.equals(site2)) {
+                    if (j == CoA) {
+                        contributions_co[totalIndex] += CO_SITE_SCALING_FACTOR * model.siteSeparation[index] / 100;
+                    }
                     calculatedValues[j] += CO_SITE_SCALING_FACTOR * model.siteSeparation[index] / 100;
                 }
                 if (sector1.equals(sector2)) {
+                    if (j == CoA) {
+                        contributions_co[totalIndex + 1] += CO_SECTOR_SCALING_FACTOR * model.sectorSeparation[index] / 100;
+                    }
                     calculatedValues[j] += CO_SECTOR_SCALING_FACTOR * model.sectorSeparation[index] / 100;
                 }
             }
