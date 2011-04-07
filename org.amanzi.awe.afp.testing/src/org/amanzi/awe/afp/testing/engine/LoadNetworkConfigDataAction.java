@@ -29,9 +29,7 @@ import org.apache.log4j.Logger;
  * @since 1.0.0
  */
 public class LoadNetworkConfigDataAction extends AbstractLoadAction {
-    
-    private static final Logger LOGGER = Logger.getLogger(LoadNetworkConfigDataAction.class);
-    
+
     /**
      * @param file
      * @param projectName
@@ -44,38 +42,26 @@ public class LoadNetworkConfigDataAction extends AbstractLoadAction {
     @Override
     protected CommonConfigData getConfigData() {
         CommonConfigData configData = super.getConfigData();
-        
-        LOGGER.info(file.getAbsolutePath());
-        LOGGER.info(file.isDirectory());
-        LOGGER.info(file.listFiles());
-        if (file.listFiles() != null) {
-            LOGGER.info(file.listFiles().length);
-        }
-        
 
         ArrayList<File> cnaFiles = new ArrayList<File>();
         ArrayList<File> bsmFiles = new ArrayList<File>();
         ArrayList<File> currentList = null;
         for (File singleFile : file.listFiles()) {
-            if (singleFile.isDirectory()) {
-                if (singleFile.getName().contains("CNA")) {
-                    currentList = cnaFiles;
-                } else if (singleFile.getName().contains("BSM")) {
-                    currentList = bsmFiles;
-                }
-                
-                for (File subFile : singleFile.listFiles()) {
-                    if (!subFile.isDirectory()) {
-                        currentList.add(subFile);
-                    }
-                }
-            }            
+            if (singleFile.getName().contains("CNA")) {
+                currentList = cnaFiles;
+            } else if (singleFile.getName().contains("BSM")) {
+                currentList = bsmFiles;
+            }
+
+            if (!singleFile.isDirectory()) {
+                currentList.add(singleFile);
+            }
         }
-        
+
         configData.setFileToLoad(cnaFiles);
         configData.getAdditionalProperties().put("BSM_FILES", bsmFiles);
 
-        return configData;      
+        return configData;
     }
 
     @Override
