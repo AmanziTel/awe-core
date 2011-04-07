@@ -18,6 +18,7 @@ import java.util.ArrayList;
 
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.ILoader;
+import org.apache.log4j.Logger;
 
 /**
  * TODO Purpose of
@@ -28,6 +29,8 @@ import org.amanzi.neo.loader.core.ILoader;
  * @since 1.0.0
  */
 public class LoadNetworkConfigDataAction extends AbstractLoadAction {
+    
+    private static final Logger LOGGER = Logger.getLogger(LoadNetworkConfigDataAction.class);
 
     /**
      * @param file
@@ -44,6 +47,7 @@ public class LoadNetworkConfigDataAction extends AbstractLoadAction {
         
         ArrayList<File> fileList = new ArrayList<File>();
         for (File singleFile : file.listFiles()) {
+            LOGGER.info(singleFile.getAbsolutePath());
             fileList.add(singleFile);
         }
         configData.setFileToLoad(fileList);

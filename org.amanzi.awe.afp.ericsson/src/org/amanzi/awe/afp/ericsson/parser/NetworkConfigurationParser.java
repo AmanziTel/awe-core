@@ -97,6 +97,7 @@ public class NetworkConfigurationParser extends AbstractCSVParser<NetworkConfigu
 
     @Override
     protected boolean parseElement(org.amanzi.neo.loader.core.parser.CommonFilesParser.FileElement element) {
+        System.out.println("Parsing file " + element.getFile().getAbsolutePath());
         if (isCNAFile(element)) {
             return super.parseElement(element);
         } else {
