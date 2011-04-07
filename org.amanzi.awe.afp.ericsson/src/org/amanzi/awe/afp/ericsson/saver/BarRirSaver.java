@@ -562,6 +562,7 @@ public class BarRirSaver extends AbstractHeaderSaver<RecordTransferData> {
                         Relationship relation = n2n.getRelation(trx, frNode);
                         setProperty(n2n.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), relation, "penalty", penalty);
                         setProperty(n2n.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), relation, "channel_type", "ALL");
+                        updateTx(0, 2);
                     }
                 }
             }

@@ -52,7 +52,8 @@ public class LoadNetworkMeasurementDataAction extends AbstractLoadAction {
                 } else if (singleFile.getName().equals("RIR")) {
                     currentList = rirFiles;
                 }
-                
+                if (currentList == null)
+                	continue;
                 for (File subFile : singleFile.listFiles()) {
                     if (!subFile.isDirectory()) {
                         currentList.add(subFile);

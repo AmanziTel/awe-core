@@ -52,7 +52,7 @@ public class LoadNetworkConfigDataAction extends AbstractLoadAction {
             } else if (singleFile.getName().contains("BSM")) {
                 currentList = bsmFiles;
             }
-
+            
             if (!singleFile.isDirectory()) {
                 currentList.add(singleFile);
             }

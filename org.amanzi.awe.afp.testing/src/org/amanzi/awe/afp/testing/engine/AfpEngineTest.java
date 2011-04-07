@@ -19,6 +19,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+
+import junit.framework.Assert;
 
 import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.exporters.AfpExporter;
@@ -27,6 +31,10 @@ import org.amanzi.awe.afp.testing.engine.AfpModelFactory.AfpScenario;
 import org.amanzi.awe.afp.testing.engine.TestDataLocator.DataType;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.loader.ui.preferences.DataLoadPreferenceInitializer;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -34,7 +42,10 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 /**
@@ -71,8 +82,8 @@ public class AfpEngineTest {
         try {
             initEnvironment();
             loadDataset();
-            exportInputFiles();
-            runEngine();
+            //exportInputFiles();
+            //runEngine();
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -181,7 +192,7 @@ public class AfpEngineTest {
         case GENERAL_FORMAT:
             return null;
         case GERMANY:
-            return new LoadGermanyDataAction("project");
+            return null;//new LoadGermanyDataAction("project");
         }
         
         return null;
@@ -279,6 +290,59 @@ public class AfpEngineTest {
             
             fail(errorMessage.toString());
         }
+    }
+    
+    @Test
+    public void CorrectStructure(){
+    	
+    	LinkedList<String> structureNode = new LinkedList<String>();
+    	structureNode.add(0, NodeTypes.NETWORK.getId());
+    	structureNode.add(1, NodeTypes.BSC.getId());
+    	structureNode.add(2, NodeTypes.SITE.getId());
+    	structureNode.add(3, NodeTypes.SECTOR.getId());
+    	structureNode.add(4, NodeTypes.TRX.getId());
+    	structureNode.add(5, NodeTypes.FREQUENCY_PLAN.getId());
+    	
+    	LinkedList<RelationshipType> structureRelation = new LinkedList<RelationshipType>();
+    	structureRelation.add(0, NetworkRelationshipTypes.CHILD);
+    	structureRelation.add(1, NetworkRelationshipTypes.CHILD);
+    	structureRelation.add(2, NetworkRelationshipTypes.CHILD);
+    	structureRelation.add(3, NetworkRelationshipTypes.CHILD);
+    	structureRelation.add(4, DatasetRelationshipTypes.PLAN_ENTRY);
+    	structureRelation.add(5, null);
+    	
+    	for (IDataset dataset : datasets) {
+    		if (dataset == null){
+    			continue;
+    		}
+    		Iterator<String> iterNode = structureNode.iterator();
+    		Iterator<RelationshipType> iterRelation = structureRelation.iterator();
+    		Node node = dataset.getRootNode();
+    		String nodeType;
+    		RelationshipType relationType;
+    		while (iterNode.hasNext() && iterRelation.hasNext()){
+    			nodeType = iterNode.next();
+    			relationType = iterRelation.next();
+    			isCorrect(node, nodeType, relationType);
+    			if (relationType != null)
+    				node = node.getRelationships(relationType, Direction.OUTGOING).iterator().next().getEndNode();
+    		}
+    		
+    				
+    			
+    		   			
+    	}
+    }
+    
+    private void isCorrect(Node node, String nodeType, RelationshipType relationType ){
+    	Assert.assertEquals(
+    			node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null)+"unequal"+nodeType,
+				nodeType,
+				node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null));
+    	if (relationType != null)
+    		Assert.assertTrue(nodeType+" hasn't "+relationType+" relation",node.hasRelationship(relationType, Direction.OUTGOING));
+    	
+    	
     }
 
 }

@@ -533,7 +533,7 @@ public abstract class AbstractSaver<T extends IDataElement> implements ISaver<T>
             this.nodesAll += nodes;
             this.relations += rel;
             this.relationsAll += rel;
-            return nodes + relations >= maxTotal;
+            return this.nodes + this.relations >= maxTotal;
         }
 
 
