@@ -58,9 +58,9 @@ public class LoadNetworkConfigDataAction extends AbstractLoadAction {
         ArrayList<File> currentList = null;
         for (File singleFile : file.listFiles()) {
             if (singleFile.isDirectory()) {
-                if (singleFile.getName().contains("BSM")) {
+                if (singleFile.getName().contains("CNA")) {
                     currentList = cnaFiles;
-                } else if (singleFile.getName().equals("RIR")) {
+                } else if (singleFile.getName().contains("BSM")) {
                     currentList = bsmFiles;
                 }
                 
