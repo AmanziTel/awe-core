@@ -18,7 +18,6 @@ import java.util.ArrayList;
 
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.ILoader;
-import org.apache.log4j.Logger;
 
 /**
  * TODO Purpose of
@@ -30,8 +29,6 @@ import org.apache.log4j.Logger;
  */
 public class LoadNetworkConfigDataAction extends AbstractLoadAction {
     
-    private static final Logger LOGGER = Logger.getLogger(LoadNetworkConfigDataAction.class);
-
     /**
      * @param file
      * @param projectName
@@ -44,15 +41,30 @@ public class LoadNetworkConfigDataAction extends AbstractLoadAction {
     @Override
     protected CommonConfigData getConfigData() {
         CommonConfigData configData = super.getConfigData();
-        
-        ArrayList<File> fileList = new ArrayList<File>();
+
+        ArrayList<File> cnaFiles = new ArrayList<File>();
+        ArrayList<File> bsmFiles = new ArrayList<File>();
+        ArrayList<File> currentList = null;
         for (File singleFile : file.listFiles()) {
-            LOGGER.info(singleFile.getAbsolutePath());
-            fileList.add(singleFile);
+            if (singleFile.isDirectory()) {
+                if (singleFile.getName().contains("BSM")) {
+                    currentList = cnaFiles;
+                } else if (singleFile.getName().equals("RIR")) {
+                    currentList = bsmFiles;
+                }
+                
+                for (File subFile : singleFile.listFiles()) {
+                    if (!subFile.isDirectory()) {
+                        currentList.add(subFile);
+                    }
+                }
+            }            
         }
-        configData.setFileToLoad(fileList);
         
-        return configData;       
+        configData.setFileToLoad(cnaFiles);
+        configData.getAdditionalProperties().put("BSM_FILES", bsmFiles);
+
+        return configData;      
     }
 
     @Override
