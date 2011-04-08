@@ -959,4 +959,35 @@ public class NetworkService extends DatasetService {
         }
         return 1 + maxId;
     }
+
+    /**
+     * @param rootNode
+     * @param sourceRootNode
+     */
+    public void attachSingleSource(Node rootNode, Node sourceRootNode) {
+        Transaction tx = databaseService.beginTx();
+
+        try {
+            Iterable<Relationship> rels = rootNode.getRelationships(GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING);
+            for (Relationship rel : rels) {
+                rel.delete();
+            }
+            rootNode.createRelationshipTo(sourceRootNode, GeoNeoRelationshipTypes.SOURCE);
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+    }
+
+
+    /**
+     * Gets the single source.
+     * 
+     * @param rootNode the root node
+     * @return the single source
+     */
+    public Node getSingleSource(Node rootNode) {
+        Relationship rel = rootNode.getSingleRelationship(GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING);
+        return rel == null ? null : rel.getOtherNode(rootNode);
+    }
 }

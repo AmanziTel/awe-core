@@ -168,4 +168,11 @@ public class NodeToNodeRelationModel {
         return true;
     }
 
+    /**
+     * @return Returns the rootNode.
+     */
+    public Node getRootNode() {
+        return rootNode;
+    }
+
 }

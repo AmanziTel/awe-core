@@ -58,4 +58,19 @@ public class FrequencyPlanModel {
     public String getName() {
         return ds.getNodeName(rootNode);
     }
+
+    public void attachSingleSource(Node sourceRootNode) {
+        networkService.attachSingleSource(rootNode, sourceRootNode);
+    }
+    /**
+     * @return Returns the rootNode.
+     */
+    public Node getRootNode() {
+        return rootNode;
+    }
+
+    public Node getSingleSource() {
+        return networkService.getSingleSource(rootNode);
+    }
+
 }

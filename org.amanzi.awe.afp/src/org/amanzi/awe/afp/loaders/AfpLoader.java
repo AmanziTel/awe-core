@@ -354,14 +354,16 @@ public class AfpLoader {
      * @param cellFile the cell file
      * @param monitor the monitor
      */
-    protected void loadCellFile(File cellFile, boolean isNodeIdBased) {
+    protected CellFileHandler loadCellFile(File cellFile, boolean isNodeIdBased) {
         // TODO define root of cell file. If we create virtual dataset for it what we should store
         // in main part?
         afpCell = afpRoot;
 
-        CommonImporter importer = new CommonImporter(new CellFileHandler(afpCell, neo, isNodeIdBased, cellFile),
+        CellFileHandler handler = new CellFileHandler(afpCell, neo, isNodeIdBased, cellFile);
+        CommonImporter importer = new CommonImporter(handler,
                 new TxtFileImporter(cellFile));
         importer.process();
+        return handler;
     }
 
     /**
@@ -454,7 +456,7 @@ public class AfpLoader {
         /** The header. */
         private long time;
         boolean isNodeIdBased;
-        private FrequencyPlanModel planModel;
+        FrequencyPlanModel planModel;
 
         /**
          * Instantiates a new cell file handler.

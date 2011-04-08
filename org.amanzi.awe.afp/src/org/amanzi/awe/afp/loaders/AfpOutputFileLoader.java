@@ -38,13 +38,16 @@ public class AfpOutputFileLoader extends AfpLoader{
         NeoUtils.addTransactionLog(mainTx, Thread.currentThread(), "AfpLoader");
         try {
         	monitor.beginTask("Load generated output", exporter.domainDirPaths.length);
+            int i = -1;
         	for (String dirPath : exporter.domainDirPaths){
+                i++;
         		String outputFileName = dirPath + exporter.outputFileName;
         		File outputFile = new File(outputFileName);
         		if (outputFile != null) {
                     if (outputFile.exists()) {
                         defineRoot();
-                		loadCellFile(outputFile, true);
+                        CellFileHandler handler = loadCellFile(outputFile, true);
+                        handler.planModel.attachSingleSource(exporter.impacts[i].getRootNode());
                         statistic.save();
                     } else {
                 		AweConsolePlugin.error("Error:: No output File generated: " + outputFile);

@@ -126,6 +126,7 @@ public class AfpExporter extends Job {
     int count;
     private double minCo;
     private NodeToNodeRelationModel impact;
+    public NodeToNodeRelationModel impacts[];
     private TransactionWrapper tx;
     private int globalCount;
     private IStatistic statistic;
@@ -164,6 +165,7 @@ public class AfpExporter extends Job {
         models = model.getFrequencyDomainQueue().toArray(new AfpFrequencyDomainModel[0]);
         inputFiles = new File[models.length][fileNames.length];
         domainDirPaths = new String[models.length];
+        impacts = new NodeToNodeRelationModel[models.length];
         useTraffic = new boolean[models.length];
         for (int i = 0; i < models.length; i++) {
             String dirName = models[i].getName();
@@ -331,7 +333,10 @@ public class AfpExporter extends Job {
                                     }
 
                                     if (freqArray.length < 2) {
-                                        impact = networkModel.getImpactMatrix("Impact_" + inputFiles[i][INTERFERENCE].getName());
+                                        // TODO add time to impact name?
+                                        impact = networkModel.getImpactMatrix("Impact_" + i + " "
+                                                + inputFiles[i][INTERFERENCE].getName());
+                                        impacts[i] = impact;
                                         statistic = StatisticManager.getStatistic(model.getDatasetNode());
                                         writeInterferenceForTrx(sectorNode, trxNode, intWriters[i], sectorIntValues, rf);
                                     }
