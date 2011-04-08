@@ -157,7 +157,7 @@ public class AfpEngineTest {
     }
     
     private static String getDbLocation() {
-        return System.getProperty("user.home") + File.separator + ".amanzi" + File.separator + "neo_test";
+        return System.getProperty("user.home") + File.separator + ".amanzi" + File.separator + "afp_test";
     }
     
     private static void loadDataset() {
