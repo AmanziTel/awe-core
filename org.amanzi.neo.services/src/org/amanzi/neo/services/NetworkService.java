@@ -706,7 +706,8 @@ public class NetworkService extends DatasetService {
            
             Node result=super.createNode(NodeTypes.FREQUENCY_ROOT, modelName,time,domain);
             networkRoot.createRelationshipTo(result, Relations.FREQUENCY_ROOT);
-            
+            // TODO Tsinkel A is it correct place for create link with domain??? Maybe wrong place
+            // and strange logic...
             TraversalDescription td = Traversal.description()
             .breadthFirst()
             .relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)
