@@ -135,6 +135,7 @@ public class AfpExporter extends Job {
     private Map<NodeToNodeTypes, List<String>> lists = new HashMap<NodeToNodeTypes, List<String>>();
     private Map<NodeToNodeTypes, Integer> index = new HashMap<NodeToNodeTypes, Integer>();
     private int totalIndex;
+    private List<String> names = new ArrayList<String>();
 
     public AfpExporter(Node afpRoot, Node afpDataset, AfpModel model) {
         super("Write Input files");
@@ -142,11 +143,13 @@ public class AfpExporter extends Job {
         this.afpDataset = afpDataset;
         this.model = model;
         totalIndex=0;
+
         for (Entry<NodeToNodeTypes, Map<String, ScalingFactors>> entry : model.scaling.entrySet()) {
             ArrayList<String> list = new ArrayList<String>();
             list.addAll(entry.getValue().keySet());
             lists.put(entry.getKey(), list);
             index.put(entry.getKey(), totalIndex);
+            names.addAll(list);
             totalIndex += list.size();
         }
         minCo = Activator.getDefault().getPreferenceStore().getDouble(PreferenceInitializer.AFP_MIN_CO);
@@ -336,6 +339,13 @@ public class AfpExporter extends Job {
                                         // TODO add time to impact name?
                                         impact = networkModel.getImpactMatrix("Impact_" + i + " "
                                                 + inputFiles[i][INTERFERENCE].getName());
+                                        tx.submit(new Runnable() {
+
+                                            @Override
+                                            public void run() {
+                                                impact.getRootNode().setProperty("names", names.toArray(new String[0]));
+                                            }
+                                        });
                                         impacts[i] = impact;
                                         statistic = StatisticManager.getStatistic(model.getDatasetNode());
                                         writeInterferenceForTrx(sectorNode, trxNode, intWriters[i], sectorIntValues, rf);

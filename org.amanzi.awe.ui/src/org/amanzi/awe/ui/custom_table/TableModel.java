@@ -18,6 +18,8 @@ import org.eclipse.core.runtime.ISafeRunnable;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.jface.util.SafeRunnable;
 import org.eclipse.jface.viewers.ILazyContentProvider;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
@@ -48,8 +50,9 @@ public abstract class TableModel {
         // do nothing in initial implementation
     }
 
-    public TableColumn defineColumn(final Table table, final int columnId) {
-        TableColumn column = createColumn(table, columnId);
+    public TableViewerColumn defineColumn(final TableViewer viewer, final int columnId) {
+        TableViewerColumn columnviewer = createColumn(viewer, columnId);
+        final Table table = viewer.getTable();
         Listener sortListener = new Listener() {
 
             public void handleEvent(Event e) {
@@ -74,13 +77,13 @@ public abstract class TableModel {
                 }
             }
         };
-        column.addListener(SWT.Selection, sortListener);
-        return column;
+        columnviewer.getColumn().addListener(SWT.Selection, sortListener);
+        return columnviewer;
     }
 
-    public TableColumn createColumn(Table table, int columnId) {
-        return new TableColumn(table, SWT.NONE);
-        // TODO should override for set name...
+    public TableViewerColumn createColumn(TableViewer viewer, int columnId) {
+        return new TableViewerColumn(viewer, SWT.NONE, columnId);
+        // TODO should override for set labelProvider
     }
 
     public abstract int getColumnsCount();

@@ -46,4 +46,13 @@
             name="AFP export preferences">
       </page>
    </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            class="org.amanzi.awe.afp.views.ViolationsReportView"
+            icon="icons/afp.png"
+            id="org.amanzi.awe.afp.views.ViolationsReportView"
+            name="Violations Report">
+      </view>
+   </extension>
 </plugin>

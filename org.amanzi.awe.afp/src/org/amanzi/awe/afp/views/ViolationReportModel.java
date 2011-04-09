@@ -13,17 +13,33 @@
 
 package org.amanzi.awe.afp.views;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import org.amanzi.awe.ui.custom_table.ChangeModelType;
 import org.amanzi.awe.ui.custom_table.IModelChangeEvent;
 import org.amanzi.awe.ui.custom_table.TableModel;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.NetworkService;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.network.FrequencyPlanModel;
+import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
+import org.amanzi.neo.services.utils.ConvertIterator;
 import org.amanzi.neo.services.utils.CountedIterable;
-import org.eclipse.core.runtime.Assert;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ILazyContentProvider;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.traversal.Evaluation;
+import org.neo4j.graphdb.traversal.Evaluator;
 
 /**
  * <p>
@@ -35,13 +51,29 @@ import org.eclipse.swt.widgets.TableColumn;
  */
 public class ViolationReportModel extends TableModel {
     private CountedIterable<ViolationWrapper> iterable = null;
-    private int colCount = 0;
     private ILazyContentProvider provider;
     private FrequencyPlanModel model;
+    private List<String> columns;
+    private String[] names = new String[0];
+    private NodeToNodeRelationModel impact;
+    private NetworkService ns = NeoServiceFactory.getInstance().getNetworkService();
 
     public ViolationReportModel() {
         provider = new ContentProvider();
+        columns = new ArrayList<String>();
+        columns.add("Site");
+        columns.add("Sector");
+        columns.add("TRX");
+        columns.add("Violation");
+        columns.add("Site");
+        columns.add("Sector");
+        columns.add("TRX");
+        columns.add("Impact");
+        columns.add("Co-Site");
+        columns.add("Co-Sector");
+
     }
+
     @Override
     public ILazyContentProvider getContentProvider() {
         return provider;
@@ -49,11 +81,55 @@ public class ViolationReportModel extends TableModel {
 
     @Override
     public int getRowsCount() {
-        return iterable == null ? null : iterable.getElementCount(true);
+        return iterable == null ? 0 : iterable.getElementCount(true);
     }
 
-    public void setFrequemcyPlanModel(FrequencyPlanModel model) {
+    @Override
+    public TableViewerColumn createColumn(TableViewer viewer, int columnId) {
+        TableViewerColumn columnVuewer = super.createColumn(viewer, columnId);
+        columnVuewer.setLabelProvider(new ViolationLabelProvider(columnId));
+        return columnVuewer;
+    }
+
+    public void setFrequemcyPlanModel(final FrequencyPlanModel model) {
         this.model = model;
+        names = (String[])model.getRootNode().getProperty("names");
+        impact = new NodeToNodeRelationModel(model.getSingleSource());
+        final Iterable<Relationship> relationIter = impact.getNeighTraverser(new Evaluator() {
+
+            @Override
+            public Evaluation evaluate(Path arg0) {
+                Relationship impactRel = arg0.lastRelationship();
+
+                Node trx1 = impact.findNodeFromProxy(impactRel.getStartNode());
+                Node trx2 = impact.findNodeFromProxy(impactRel.getEndNode());
+                Node planNode1 = model.findPlanNode(trx1);
+                Node planNode2 = model.findPlanNode(trx2);
+                if (planNode1 == null || planNode2 == null) {
+                    return Evaluation.ofIncludes(false);
+                }
+                Integer arfcn1 = (Integer)planNode1.getProperty("arfcn", null);
+                Integer arfcn2 = (Integer)planNode2.getProperty("arfcn", null);
+                if (arfcn1 == null || arfcn2 == null) {
+                    return Evaluation.ofIncludes(false);
+                }
+                return Evaluation.ofIncludes(arfcn1.equals(arfcn2) || Math.abs(arfcn1 - arfcn2) == 1);
+            }
+        }).relationships();
+        Iterable<ViolationWrapper> baseIterable = new Iterable<ViolationWrapper>() {
+
+            @Override
+            public Iterator<ViolationWrapper> iterator() {
+                return new ConvertIterator<ViolationWrapper, Relationship>(relationIter.iterator()) {
+
+                    @Override
+                    protected ViolationWrapper convert(Relationship next) {
+                        return new ViolationWrapper(next);
+                    }
+                };
+            }
+        };
+        iterable = new CountedIterable<ViolationWrapper>(baseIterable);
         fireEvent(new IModelChangeEvent() {
 
             @Override
@@ -68,6 +144,7 @@ public class ViolationReportModel extends TableModel {
         });
 
     }
+
     @Override
     public boolean canSort() {
         return false;
@@ -79,11 +156,16 @@ public class ViolationReportModel extends TableModel {
 
     @Override
     public void updateColumn(Table table, TableColumn column, int columnId) {
+        if (columnId < columns.size()) {
+            column.setText(columns.get(columnId));
+        } else {
+            column.setText(names[columnId - columns.size()]);
+        }
     }
 
     @Override
     public int getColumnsCount() {
-        return colCount;
+        return columns.size() + names.length;
     }
 
     public static class ContentProvider implements ILazyContentProvider {
@@ -105,23 +187,78 @@ public class ViolationReportModel extends TableModel {
             if (iterable == null) {
                 return;
             }
-            ViolationWrapper wrapper = iterable.getElement(index / 2);
-            wrapper.setActualId(index % 2);
+            ViolationWrapper wrapper = iterable.getElement(index);
             viewer.replace(wrapper, index);
         }
 
     }
-    public static class ViolationWrapper{
 
-        private int id;
+    public class ViolationLabelProvider extends ColumnLabelProvider {
+        private final int columnId;
+
+        public ViolationLabelProvider(int columnId) {
+            this.columnId = columnId;
+        }
+
+        @Override
+        public String getText(Object element) {
+            ViolationWrapper wrapper = (ViolationWrapper)element;
+            return wrapper == null ? "" : wrapper.getStrValue(columnId);
+        }
+    }
+
+    public class ViolationWrapper {
+        private final Relationship impactrelation;
+        private final String[] fields;
+        public ViolationWrapper(Relationship impactrelation) {
+            this.impactrelation = impactrelation;
+            fields = new String[getColumnsCount()];
+            fill();
+        }
 
         /**
-         * @param i
+         * @param columnId
+         * @return
          */
-        public void setActualId(int id) {
-            Assert.isTrue(id < 2 && id >= 0);
-            this.id = id;
+        public String getStrValue(int columnId) {
+            return fields[columnId];
         }
-        
+
+        public void fill() {
+            Node trx1 = impact.findNodeFromProxy(impactrelation.getStartNode());
+            Node trx2 = impact.findNodeFromProxy(impactrelation.getEndNode());
+            Node sector1 = trx1.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(trx1);
+            Node sector2 = trx2.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(trx2);
+            Node site1 = sector1.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(sector1);
+            Node site2 = sector2.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(sector2);
+
+            Node planNode1 = model.findPlanNode(trx1);
+            Node planNode2 = model.findPlanNode(trx2);
+
+            Integer arfcn1 = (Integer)planNode1.getProperty("arfcn");
+            Integer arfcn2 = (Integer)planNode2.getProperty("arfcn");
+            boolean isCo = arfcn1.equals(arfcn2);
+            int i = 0;
+            fields[i++] = ns.getNodeName(site1);
+            fields[i++] = ns.getNodeName(sector1);
+            fields[i++] = ns.getNodeName(trx1);
+            fields[i++] = isCo ? "Co-channel" : "Adj-channel";
+            fields[i++] = ns.getNodeName(site2);
+            fields[i++] = ns.getNodeName(sector2);
+            fields[i++] = ns.getNodeName(trx2);
+            fields[i++] = String.valueOf(impactrelation.getProperty(isCo ? "coa" : "ada"));
+            float[] arr = (float[])impactrelation.getProperty(isCo ? "coa" : "ada");
+            fields[i++] = String.valueOf(arr[arr.length - 2]);
+            fields[i++] = String.valueOf(arr[arr.length - 1]);
+            for (int j = 0; j < arr.length - 2; j++) {
+                fields[i++] = String.valueOf(arr[j]);
+            }
+        }
+
     }
+
+    /**
+     *
+     */
+
 }

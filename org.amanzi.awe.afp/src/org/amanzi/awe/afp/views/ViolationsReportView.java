@@ -25,6 +25,8 @@ import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.network.FrequencyPlanModel;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -58,13 +60,34 @@ public class ViolationsReportView extends ViewPart {
         GridData data = new GridData();
         data.horizontalSpan = 2;
         fplan.setLayoutData(data);
-        table = new CustomTable<ViolationReportModel>(reportModel, SWT.FILL);
+        table = new CustomTable<ViolationReportModel>(reportModel, SWT.BORDER | SWT.FULL_SELECTION);
         table.createPartControl(main);
-        data = new GridData();
-        data.horizontalSpan = 3;
-        data.grabExcessHorizontalSpace = true;
-        data.grabExcessVerticalSpace = true;
-        table.getViewer().getTable().setLayoutData(data);
+        GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 3, 4);
+        table.getViewer().getControl().setLayoutData(layoutData);
+        fplan.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                selectPlan(fplan.getText());
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+        setPlans();
+    }
+
+    /**
+     * @param text
+     */
+    protected void selectPlan(String text) {
+        FrequencyPlanModel fp = plans.get(text);
+        if (fp != null) {
+            reportModel.setFrequemcyPlanModel(fp);
+        }
+
     }
 
     @Override
@@ -88,7 +111,7 @@ public class ViolationsReportView extends ViewPart {
                 plans.put(new StringBuilder(name).append(':').append(model.getName()).toString(), model);
             }
         }
-        return plans.values().toArray(new String[0]);
+        return plans.keySet().toArray(new String[0]);
     }
     @Override
     public void setFocus() {

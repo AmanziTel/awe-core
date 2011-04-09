@@ -16,6 +16,7 @@ package org.amanzi.awe.ui.custom_table;
 import java.util.ArrayList;
 
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
@@ -83,8 +84,8 @@ public class CustomTable<E extends TableModel> extends ViewPart implements IMode
             model.updateColumn(table, columns.get(i), i);
         }
         while (columns.size() < columnCount) {
-            TableColumn col = model.defineColumn(table, columns.size());
-            columns.add(col);
+            TableViewerColumn col = model.defineColumn(viewer, columns.size());
+            columns.add(col.getColumn());
         }
         for (int i = columnCount; i < columns.size(); i++) {
             TableColumn tableColumn = columns.get(i);
