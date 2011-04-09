@@ -53,6 +53,7 @@ public class CustomTable<E extends TableModel> extends ViewPart implements IMode
         viewer = new TableViewer(parent, SWT.VIRTUAL | style);
         viewer.setContentProvider(model.getContentProvider());
         formColumns();
+        model.addModelChangeListener(this);
     }
 
     @Override
@@ -92,8 +93,15 @@ public class CustomTable<E extends TableModel> extends ViewPart implements IMode
             tableColumn.setWidth(0);
             model.hideColumn(table, tableColumn, i);
         }
+        updateTable(table);
         table.setItemCount(model.getRowsCount());
         table.setVisible(true);
+    }
+
+
+    public void updateTable(final Table table) {
+        table.setHeaderVisible(true);
+        table.setLinesVisible(true);
     }
 
     /**

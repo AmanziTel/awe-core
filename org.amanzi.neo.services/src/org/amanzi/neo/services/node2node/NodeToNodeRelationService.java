@@ -285,9 +285,15 @@ public class NodeToNodeRelationService extends AbstractService {
      * @return the neigh traverser
      */
     public Traverser getNeighTraverser(Node rootNode, Evaluator additionalEvaluator) {
+        // TODO very impotent order of evaluator - it is depended on current realization of neo4j.
+        // Maybe better find another way...
         TraversalDescription td = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).depthFirst()
                 .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
-                .relationships(NodeToNodeRelationshipTypes.PROXYS, Direction.OUTGOING).evaluator(new Evaluator() {
+                .relationships(NodeToNodeRelationshipTypes.PROXYS, Direction.OUTGOING);
+        if (additionalEvaluator != null) {
+            td = td.evaluator(additionalEvaluator);
+        }
+        td = td.evaluator(new Evaluator() {
 
                     @Override
                     public Evaluation evaluate(Path arg0) {
@@ -297,9 +303,7 @@ public class NodeToNodeRelationService extends AbstractService {
                         return Evaluation.of(includes, !prune);
                     }
                 });
-        if (additionalEvaluator != null) {
-            td.evaluator(additionalEvaluator);
-        }
+
         return td.traverse(rootNode);
     }
 

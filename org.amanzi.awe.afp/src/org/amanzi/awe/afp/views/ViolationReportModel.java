@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.afp.views;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -27,6 +28,7 @@ import org.amanzi.neo.services.network.FrequencyPlanModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.amanzi.neo.services.utils.ConvertIterator;
 import org.amanzi.neo.services.utils.CountedIterable;
+import org.amanzi.neo.services.utils.FilteredIterator;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ILazyContentProvider;
 import org.eclipse.jface.viewers.TableViewer;
@@ -36,10 +38,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.traversal.Evaluation;
-import org.neo4j.graphdb.traversal.Evaluator;
 
 /**
  * <p>
@@ -57,6 +56,7 @@ public class ViolationReportModel extends TableModel {
     private String[] names = new String[0];
     private NodeToNodeRelationModel impact;
     private NetworkService ns = NeoServiceFactory.getInstance().getNetworkService();
+    DecimalFormat formatter = new DecimalFormat("#.####");
 
     public ViolationReportModel() {
         provider = new ContentProvider();
@@ -88,34 +88,41 @@ public class ViolationReportModel extends TableModel {
     public TableViewerColumn createColumn(TableViewer viewer, int columnId) {
         TableViewerColumn columnVuewer = super.createColumn(viewer, columnId);
         columnVuewer.setLabelProvider(new ViolationLabelProvider(columnId));
+        updateColumn(viewer.getTable(), columnVuewer.getColumn(), columnId);
         return columnVuewer;
     }
 
     public void setFrequemcyPlanModel(final FrequencyPlanModel model) {
         this.model = model;
-        names = (String[])model.getRootNode().getProperty("names");
         impact = new NodeToNodeRelationModel(model.getSingleSource());
-        final Iterable<Relationship> relationIter = impact.getNeighTraverser(new Evaluator() {
+        names = (String[])impact.getRootNode().getProperty("names");
+
+        final Iterable<Relationship> relationIter2 = impact.getNeighTraverser(null).relationships();
+        final Iterable<Relationship> relationIter = new Iterable<Relationship>() {
 
             @Override
-            public Evaluation evaluate(Path arg0) {
-                Relationship impactRel = arg0.lastRelationship();
+            public Iterator<Relationship> iterator() {
+                return new FilteredIterator<Relationship>(relationIter2.iterator()) {
 
-                Node trx1 = impact.findNodeFromProxy(impactRel.getStartNode());
-                Node trx2 = impact.findNodeFromProxy(impactRel.getEndNode());
-                Node planNode1 = model.findPlanNode(trx1);
-                Node planNode2 = model.findPlanNode(trx2);
-                if (planNode1 == null || planNode2 == null) {
-                    return Evaluation.ofIncludes(false);
-                }
-                Integer arfcn1 = (Integer)planNode1.getProperty("arfcn", null);
-                Integer arfcn2 = (Integer)planNode2.getProperty("arfcn", null);
-                if (arfcn1 == null || arfcn2 == null) {
-                    return Evaluation.ofIncludes(false);
-                }
-                return Evaluation.ofIncludes(arfcn1.equals(arfcn2) || Math.abs(arfcn1 - arfcn2) == 1);
+                    @Override
+                    public boolean canBeNext(Relationship impactRel) {
+                        Node trx1 = impact.findNodeFromProxy(impactRel.getStartNode());
+                        Node trx2 = impact.findNodeFromProxy(impactRel.getEndNode());
+                        Node planNode1 = model.findPlanNode(trx1);
+                        Node planNode2 = model.findPlanNode(trx2);
+                        if (planNode1 == null || planNode2 == null) {
+                            return false;
+                        }
+                        Integer arfcn1 = (Integer)planNode1.getProperty("arfcn", null);
+                        Integer arfcn2 = (Integer)planNode2.getProperty("arfcn", null);
+                        if (arfcn1 == null || arfcn2 == null) {
+                            return false;
+                        }
+                        return arfcn1.equals(arfcn2) || Math.abs(arfcn1 - arfcn2) == 1;
+                    }
+                };
             }
-        }).relationships();
+        };
         Iterable<ViolationWrapper> baseIterable = new Iterable<ViolationWrapper>() {
 
             @Override
@@ -156,6 +163,7 @@ public class ViolationReportModel extends TableModel {
 
     @Override
     public void updateColumn(Table table, TableColumn column, int columnId) {
+        column.setWidth(100);
         if (columnId < columns.size()) {
             column.setText(columns.get(columnId));
         } else {
@@ -210,6 +218,7 @@ public class ViolationReportModel extends TableModel {
     public class ViolationWrapper {
         private final Relationship impactrelation;
         private final String[] fields;
+
         public ViolationWrapper(Relationship impactrelation) {
             this.impactrelation = impactrelation;
             fields = new String[getColumnsCount()];
@@ -246,12 +255,12 @@ public class ViolationReportModel extends TableModel {
             fields[i++] = ns.getNodeName(site2);
             fields[i++] = ns.getNodeName(sector2);
             fields[i++] = ns.getNodeName(trx2);
-            fields[i++] = String.valueOf(impactrelation.getProperty(isCo ? "coa" : "ada"));
-            float[] arr = (float[])impactrelation.getProperty(isCo ? "coa" : "ada");
-            fields[i++] = String.valueOf(arr[arr.length - 2]);
-            fields[i++] = String.valueOf(arr[arr.length - 1]);
+            fields[i++] = formatter.format(impactrelation.getProperty(isCo ? "coa" : "ada"));
+            float[] arr = (float[])impactrelation.getProperty(isCo ? "contributions_co" : "contributions_adj");
+            fields[i++] = formatter.format(arr[arr.length - 2]);
+            fields[i++] = formatter.format(arr[arr.length - 1]);
             for (int j = 0; j < arr.length - 2; j++) {
-                fields[i++] = String.valueOf(arr[j]);
+                fields[i++] = formatter.format(arr[j]);
             }
         }
 

@@ -52,6 +52,7 @@ public abstract class TableModel {
 
     public TableViewerColumn defineColumn(final TableViewer viewer, final int columnId) {
         TableViewerColumn columnviewer = createColumn(viewer, columnId);
+        columnviewer.getColumn().setWidth(100);
         final Table table = viewer.getTable();
         Listener sortListener = new Listener() {
 
