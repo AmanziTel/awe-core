@@ -37,11 +37,9 @@ public class ViolationReportModel extends TableModel {
     private CountedIterable<ViolationWrapper> iterable = null;
     private int colCount = 0;
     private ILazyContentProvider provider;
-    private final TableViewer viewer;
     private FrequencyPlanModel model;
 
-    public ViolationReportModel(TableViewer viewer) {
-        this.viewer = viewer;
+    public ViolationReportModel() {
         provider = new ContentProvider();
     }
     @Override
@@ -56,7 +54,6 @@ public class ViolationReportModel extends TableModel {
 
     public void setFrequemcyPlanModel(FrequencyPlanModel model) {
         this.model = model;
-        viewer.setInput(null);
         fireEvent(new IModelChangeEvent() {
 
             @Override
