@@ -280,4 +280,7 @@ public class NetworkModel {
         return name;
     }
 
+    public String getName() {
+        return networkService.getNodeName(rootNode);
+    }
 }

@@ -14,10 +14,13 @@
 package org.amanzi.neo.services;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
@@ -25,6 +28,8 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.indexes.PropertyIndex.NeoIndexRelationshipTypes;
+import org.amanzi.neo.services.network.FrequencyPlanModel;
+import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.node2node.INode2NodeFilter;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationService;
@@ -990,5 +995,36 @@ public class NetworkService extends DatasetService {
     public Node getSingleSource(Node rootNode) {
         Relationship rel = rootNode.getSingleRelationship(GeoNeoRelationshipTypes.SOURCE, Direction.OUTGOING);
         return rel == null ? null : rel.getOtherNode(rootNode);
+    }
+
+    /**
+     * Find all frequency plan with source.
+     * 
+     * @param projectNode the project node
+     * @return the map ()
+     */
+    public Map<NetworkModel, Set<FrequencyPlanModel>> findAllFrequencyPlanWithSource(Node projectNode) {
+        Map<NetworkModel, Set<FrequencyPlanModel>> result = new HashMap<NetworkModel, Set<FrequencyPlanModel>>();
+        for (Path path : getRoots(projectNode, new Evaluator() {
+
+            @Override
+            public Evaluation evaluate(Path arg0) {
+                return Evaluation.ofIncludes(NodeTypes.NETWORK.checkNode(arg0.endNode()));
+            }
+        })) {
+            NetworkModel model = new NetworkModel(path.endNode());
+            Set<FrequencyPlanModel> models = model.findAllFrqModel();
+            Iterator<FrequencyPlanModel> it = models.iterator();
+            while (it.hasNext()) {
+                FrequencyPlanModel type = it.next();
+                if (type.getSingleSource() == null) {
+                    it.remove();
+                }
+            }
+            if (!models.isEmpty()) {
+                result.put(model, models);
+            }
+        }
+        return result;
     }
 }

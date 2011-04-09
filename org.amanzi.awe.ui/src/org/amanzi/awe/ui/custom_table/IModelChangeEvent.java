@@ -23,4 +23,6 @@ package org.amanzi.awe.ui.custom_table;
  */
 public interface IModelChangeEvent {
     ChangeModelType getType();
+
+    Object getData();
 }

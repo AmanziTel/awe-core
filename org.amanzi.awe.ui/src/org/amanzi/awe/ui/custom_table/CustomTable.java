@@ -68,6 +68,10 @@ public class CustomTable<E extends TableModel> extends ViewPart implements IMode
     @Override
     public void handleEvent(IModelChangeEvent event) {
         formColumns();
+        if (event.getType() == ChangeModelType.CONTENT) {
+            Object data = event.getData();
+            viewer.setInput(data);
+        }
     }
 
     private void formColumns() {
