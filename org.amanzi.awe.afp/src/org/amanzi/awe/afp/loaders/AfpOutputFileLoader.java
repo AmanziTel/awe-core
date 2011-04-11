@@ -7,6 +7,7 @@ import org.amanzi.awe.afp.exporters.AfpExporter;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.neo4j.graphdb.Node;
 
 public class AfpOutputFileLoader extends AfpLoader{
@@ -33,7 +34,10 @@ public class AfpOutputFileLoader extends AfpLoader{
     }
     
     public void runAfpLoader(IProgressMonitor monitor) {
-
+        if (monitor == null) {
+            monitor = new NullProgressMonitor();
+        }
+        
     	mainTx = neo.beginTx();
         NeoUtils.addTransactionLog(mainTx, Thread.currentThread(), "AfpLoader");
         try {
