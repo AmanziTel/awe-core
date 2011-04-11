@@ -36,6 +36,7 @@ import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -325,18 +326,20 @@ public class AfpEngineTest {
     	LinkedList<String> structureNode = new LinkedList<String>();
     	structureNode.add(0, NodeTypes.NETWORK.getId());
     	structureNode.add(1, NodeTypes.BSC.getId());
-    	structureNode.add(2, NodeTypes.SITE.getId());
-    	structureNode.add(3, NodeTypes.SECTOR.getId());
-    	structureNode.add(4, NodeTypes.TRX.getId());
-    	structureNode.add(5, NodeTypes.FREQUENCY_PLAN.getId());
+    	structureNode.add(2, NodeTypes.CITY.getId());
+    	structureNode.add(3, NodeTypes.SITE.getId());
+    	structureNode.add(4, NodeTypes.SECTOR.getId());
+    	structureNode.add(5, NodeTypes.TRX.getId());
+    	structureNode.add(6, NodeTypes.FREQUENCY_PLAN.getId());
     	
     	LinkedList<RelationshipType> structureRelation = new LinkedList<RelationshipType>();
     	structureRelation.add(0, NetworkRelationshipTypes.CHILD);
     	structureRelation.add(1, NetworkRelationshipTypes.CHILD);
     	structureRelation.add(2, NetworkRelationshipTypes.CHILD);
     	structureRelation.add(3, NetworkRelationshipTypes.CHILD);
-    	structureRelation.add(4, DatasetRelationshipTypes.PLAN_ENTRY);
-    	structureRelation.add(5, null);
+    	structureRelation.add(4, NetworkRelationshipTypes.CHILD);
+    	structureRelation.add(5, DatasetRelationshipTypes.PLAN_ENTRY);
+    	structureRelation.add(6, null);
     	
     	for (IDataset dataset : datasets) {
     		if (dataset == null){
@@ -372,4 +375,12 @@ public class AfpEngineTest {
     	
     }
 
+    @Test
+    public void checkFrequencyPlanCoSiteCoSectorSeparations() {
+        for (IDataset dataset : datasets) {
+            NetworkModel network = new NetworkModel(dataset.getRootNode());
+            
+            
+        }
+    }
 }
