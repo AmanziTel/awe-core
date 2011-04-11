@@ -274,7 +274,7 @@ public class AfpEngineTest {
                 AfpOutputFileLoader loader = loaderMap.get(model);
                 
                 long before = System.currentTimeMillis();
-                loader.run(null);
+                loader.runAfpLoader(null, "project");
                 long after = System.currentTimeMillis();
                 LOGGER.info("Generated Frequency Plan for datasets <" + dataset.getName() + "> and scenario <" + scenario.name() + "> was loaded in " + (after - before) + " milliseconds");
             }
