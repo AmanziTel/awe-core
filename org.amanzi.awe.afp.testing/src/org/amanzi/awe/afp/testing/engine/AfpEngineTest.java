@@ -214,7 +214,7 @@ public class AfpEngineTest {
                 AfpModel model = dataset.getAfpModel(scenario);
                 AfpExporter exporter = model.getExporter();
                 
-                AfpOutputFileLoader loader = new AfpOutputFileLoader(dataset.getRootNode(), model.getAfpNode(), exporter);
+                AfpOutputFileLoader loader = new AfpOutputFileLoader("project", dataset.getRootNode(), model.getAfpNode(), exporter);
                 loaderMap.put(model, loader);
                 
                 exporterMap.put(model, exporter);
@@ -274,7 +274,7 @@ public class AfpEngineTest {
                 AfpOutputFileLoader loader = loaderMap.get(model);
                 
                 long before = System.currentTimeMillis();
-                loader.runAfpLoader(null, "project");
+                loader.runAfpLoader(null);
                 long after = System.currentTimeMillis();
                 LOGGER.info("Generated Frequency Plan for datasets <" + dataset.getName() + "> and scenario <" + scenario.name() + "> was loaded in " + (after - before) + " milliseconds");
             }

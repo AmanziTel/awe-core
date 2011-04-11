@@ -21,6 +21,13 @@ public class AfpOutputFileLoader extends AfpLoader{
         this.exporter = exporter;
 	}
 	
+	public AfpOutputFileLoader(String projectName, Node networkRoot, Node afpDataset, AfpExporter exporter) {
+        super(projectName, null, networkRoot.getGraphDatabase());
+        this.afpRoot = networkRoot;
+        this.afpDataset = afpDataset;
+        this.exporter = exporter;
+    }
+	
     /**
      * Run.
      * 
