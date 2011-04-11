@@ -249,7 +249,7 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 				    	}
 			    		
 			    		
-				    	if ((Integer)trxNode.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) < 1)
+				    	if ((Integer)trxNode.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) < 2)
 				    		continue;
 				    	remainingTRX++;
 				    	
@@ -264,7 +264,8 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 			    	
 				    	TableItem item = new TableItem(filterTable, SWT.NONE);
 				    	int j=0;
-				    	if(trxCount <= 100){ 
+				    	
+				    	if(trxCount <= 100 ){ 
 					    	for (String prop_name : headers){
 					    		Object val = null;
 					    		try {
@@ -277,6 +278,7 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 					    				val = node.getProperty(headers_prop.get(prop_name), "");
 					    			} else {
 					    				val = trxNode.getProperty(headers_prop.get(prop_name), "");
+					    			    
 					    			}
 		
 					    			if(val == null) val ="";
@@ -286,6 +288,7 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 					    			item.setText(j, "");
 					    		}
 					    		j++;
+					    		
 					    	}
 				    	}
 				    	trxCount++;

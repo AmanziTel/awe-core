@@ -403,6 +403,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 				    				val = sectorNode.getProperty(headers_prop.get(prop_name), "");
 				    			} else {
 				    				val = trxNode.getProperty(headers_prop.get(prop_name), "");
+				    			    
 				    			}
 	
 				    			if(val == null) val ="";
