@@ -12,6 +12,8 @@
  */
 package org.amanzi.neo.services.network;
 
+import java.util.Iterator;
+
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.DatasetService.NodeResult;
 import org.amanzi.neo.services.NeoServiceFactory;
@@ -73,4 +75,7 @@ public class FrequencyPlanModel {
         return networkService.getSingleSource(rootNode);
     }
 
+    public Iterator<Node> getFrequencyPlans() {
+        return networkService.getFrequencyPlanNodesIterator(rootNode);
+    }
 }

@@ -13,10 +13,12 @@
 
 package org.amanzi.neo.services.network;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -215,6 +217,16 @@ public class NetworkModel {
         Relationship rel = sector.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING);
         return rel != null ? rel.getOtherNode(sector) : null;
     }
+    
+    public List<Node> getSectorsOfSite(Node site) {
+        ArrayList<Node> result = new ArrayList<Node>();
+        
+        for (Relationship childRelationship : site.getRelationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
+            result.add(childRelationship.getEndNode());
+        }
+        
+        return result;
+    }
 
     public Set<NodeToNodeRelationModel> findAllN2nModels(NodeToNodeTypes type) {
         return n2nserrvice.findAllN2nModels(rootNode,type);
@@ -282,5 +294,9 @@ public class NetworkModel {
 
     public String getName() {
         return networkService.getNodeName(rootNode);
+    }
+    
+    public List<Node> getAllTrxNodesOfSector(Node sector) {
+        return networkService.getAllTRXNode(sector);
     }
 }

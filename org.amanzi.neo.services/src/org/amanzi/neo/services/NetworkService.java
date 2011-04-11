@@ -1027,4 +1027,24 @@ public class NetworkService extends DatasetService {
         }
         return result;
     }
+    
+    public Iterator<Node> getFrequencyPlanNodesIterator(Node rootFrequencyPlanNode) {
+        TraversalDescription description = Traversal.description().breadthFirst().relationships(DatasetRelationshipTypes.CHILD,
+                Direction.OUTGOING).evaluator(new Evaluator() {
+
+            @Override
+            public Evaluation evaluate(Path arg0) {
+                switch (arg0.length()) {
+                case 0:
+                    return Evaluation.EXCLUDE_AND_CONTINUE;
+                case 1:
+                    return Evaluation.INCLUDE_AND_PRUNE;
+                default:
+                    return Evaluation.EXCLUDE_AND_PRUNE;
+                }
+            }
+        });
+
+        return description.traverse(rootFrequencyPlanNode).nodes().iterator();
+    }
 }
