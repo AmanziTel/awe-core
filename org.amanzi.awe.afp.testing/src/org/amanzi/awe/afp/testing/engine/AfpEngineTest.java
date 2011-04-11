@@ -21,12 +21,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 
 import junit.framework.Assert;
 
 import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.exporters.AfpExporter;
 import org.amanzi.awe.afp.loaders.AfpOutputFileLoader;
+import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
 import org.amanzi.awe.afp.testing.engine.AfpModelFactory.AfpScenario;
 import org.amanzi.awe.afp.testing.engine.TestDataLocator.DataType;
@@ -36,14 +38,17 @@ import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.network.FrequencyPlanModel;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.utils.Pair;
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.neo4j.examples.server.plugins.GetAll;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -379,8 +384,74 @@ public class AfpEngineTest {
     public void checkFrequencyPlanCoSiteCoSectorSeparations() {
         for (IDataset dataset : datasets) {
             NetworkModel network = new NetworkModel(dataset.getRootNode());
-            
-            
+
+            for (FrequencyPlanModel freqPlanModel : network.findAllFrqModel()) {
+                checkFrequencyPlanSeparations(network, freqPlanModel);
+            }
         }
+    }
+    
+    private void checkFrequencyPlanSeparations(NetworkModel networkModel, FrequencyPlanModel frequencyPlanModel) {
+        for (Node siteNode : networkModel.getAllElementsByType(null, NodeTypes.SITE)) {
+            HashMap<Node, Node> frequencies = getAllFrequenciesOfSite(networkModel, siteNode, frequencyPlanModel);
+            
+            ArrayList<Pair<Node, Node>> result = checkFrequenciesOfSite(frequencies);
+            
+            if (!result.isEmpty()) {
+                String message = "Same freqencies was found for:\n";
+                for (Pair<Node, Node> singleResult : result) {
+                    if (singleResult.left().equals(singleResult.right())) {
+                        message += "Sector <" + singleResult.left().getProperty("name") + ">\n";
+                    }
+                    else {
+                        message += "Site " + siteNode.getProperty("name") + "\n";
+                    }
+                }
+            }
+        }
+    }
+    
+    private ArrayList<Pair<Node, Node>> checkFrequenciesOfSite(HashMap<Node, Node> frequencies) {
+        HashMap<Integer, Node> usedFrequencies = new HashMap<Integer, Node>();
+        ArrayList<Pair<Node, Node>> reusedSectors = new ArrayList<Pair<Node,Node>>();
+        
+        for (Node singleFreqNode : frequencies.keySet()) {
+            Integer arfcn = (Integer)singleFreqNode.getProperty("arfcn");
+            
+            if (usedFrequencies.containsKey(arfcn)) {
+                Node sector1 = frequencies.get(singleFreqNode);
+                Node sector2 = frequencies.get(usedFrequencies.get(arfcn));
+                reusedSectors.add(new Pair<Node, Node>(sector1, sector2));
+            }
+            else {
+                usedFrequencies.put(arfcn, singleFreqNode);
+            }
+        }
+        
+        return reusedSectors;
+    }
+    
+    private HashMap<Node, Node> getAllFrequenciesOfSite(NetworkModel networkModel, Node siteNode, FrequencyPlanModel frequencyPlanModel) {
+        HashMap<Node, Node> result = new HashMap<Node, Node>();
+        
+        for (Node sectorNode : networkModel.getSectorsOfSite(siteNode)) {
+            result.putAll(getAllFrequenciesOfSector(networkModel, sectorNode, frequencyPlanModel));
+        }
+        
+        return result;
+    }
+    
+    private HashMap<Node, Node> getAllFrequenciesOfSector(NetworkModel networkModel, Node sectorNode, FrequencyPlanModel frequencyPlanModel) {
+        HashMap<Node, Node> result = new HashMap<Node, Node>();
+        
+        for (Node trxNode : networkModel.getAllTrxNodesOfSector(sectorNode)) {
+            Node frequencyNode = frequencyPlanModel.findPlanNode(trxNode);
+            
+            if (frequencyNode != null) {
+                result.put(frequencyNode, sectorNode);
+            }
+        }
+        
+        return result;
     }
 }
