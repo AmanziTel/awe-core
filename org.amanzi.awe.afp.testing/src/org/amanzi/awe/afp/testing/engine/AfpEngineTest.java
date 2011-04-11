@@ -266,6 +266,9 @@ public class AfpEngineTest {
     private static void loadResults() throws IOException {
         LOGGER.info("Loading generated Frequency Plans back to Database");
         for (IDataset dataset : datasets) {
+            if (dataset == null) {
+                continue;
+            }
             for (AfpScenario scenario : scenarios.get(dataset).keySet()) {
                 AfpModel model = scenarios.get(dataset).get(scenario);
                 AfpOutputFileLoader loader = loaderMap.get(model);
