@@ -214,7 +214,7 @@ public class AfpEngineTest {
                 AfpModel model = dataset.getAfpModel(scenario);
                 AfpExporter exporter = model.getExporter();
                 
-                AfpOutputFileLoader loader = new AfpOutputFileLoader("project", dataset.getRootNode(), model.getAfpNode(), exporter);
+                AfpOutputFileLoader loader = new FakeAfpLoader(dataset.getRootNode(), model.getAfpNode(), exporter);
                 loaderMap.put(model, loader);
                 
                 exporterMap.put(model, exporter);
