@@ -200,7 +200,7 @@ public class AfpEngineTest {
     private static IDataset getDatasetLoader(DataType dataType) throws IOException {
         switch (dataType) {
         case ERICSSON:
-            return null;//new LoadEricssonDataAction("project");
+            return new LoadEricssonDataAction("project");
         case GENERAL_FORMAT:
             return null;
         case GERMANY:
