@@ -383,6 +383,9 @@ public class AfpEngineTest {
     @Test
     public void checkFrequencyPlanCoSiteCoSectorSeparations() {
         for (IDataset dataset : datasets) {
+            if (dataset == null) {
+                continue;
+            }
             NetworkModel network = new NetworkModel(dataset.getRootNode());
 
             for (FrequencyPlanModel freqPlanModel : network.findAllFrqModel()) {
