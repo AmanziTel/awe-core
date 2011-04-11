@@ -192,7 +192,7 @@ public class AfpEngineTest {
         case GENERAL_FORMAT:
             return null;
         case GERMANY:
-            return null;//new LoadGermanyDataAction("project");
+            return new LoadGermanyDataAction("project");
         }
         
         return null;
@@ -251,6 +251,10 @@ public class AfpEngineTest {
         return hours + " hours " + 
                minutes + " minutes " + 
                seconds + " seconds";
+        
+    }
+    
+    private static void loadResults() {
         
     }
     
