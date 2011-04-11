@@ -13,7 +13,6 @@
 
 package org.amanzi.awe.afp.views;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -56,7 +55,6 @@ public class ViolationReportModel extends TableModel {
     private String[] names = new String[0];
     private NodeToNodeRelationModel impact;
     private NetworkService ns = NeoServiceFactory.getInstance().getNetworkService();
-    DecimalFormat formatter = new DecimalFormat("#.####");
 
     public ViolationReportModel() {
         provider = new ContentProvider();
@@ -88,7 +86,6 @@ public class ViolationReportModel extends TableModel {
     public TableViewerColumn createColumn(TableViewer viewer, int columnId) {
         TableViewerColumn columnVuewer = super.createColumn(viewer, columnId);
         columnVuewer.setLabelProvider(new ViolationLabelProvider(columnId));
-        updateColumn(viewer.getTable(), columnVuewer.getColumn(), columnId);
         return columnVuewer;
     }
 
@@ -163,7 +160,6 @@ public class ViolationReportModel extends TableModel {
 
     @Override
     public void updateColumn(Table table, TableColumn column, int columnId) {
-        column.setWidth(100);
         if (columnId < columns.size()) {
             column.setText(columns.get(columnId));
         } else {
@@ -255,12 +251,12 @@ public class ViolationReportModel extends TableModel {
             fields[i++] = ns.getNodeName(site2);
             fields[i++] = ns.getNodeName(sector2);
             fields[i++] = ns.getNodeName(trx2);
-            fields[i++] = formatter.format(impactrelation.getProperty(isCo ? "coa" : "ada"));
+            fields[i++] = String.valueOf(impactrelation.getProperty(isCo ? "coa" : "ada"));
             float[] arr = (float[])impactrelation.getProperty(isCo ? "contributions_co" : "contributions_adj");
-            fields[i++] = formatter.format(arr[arr.length - 2]);
-            fields[i++] = formatter.format(arr[arr.length - 1]);
+            fields[i++] = String.valueOf(arr[arr.length - 2]);
+            fields[i++] = String.valueOf(arr[arr.length - 1]);
             for (int j = 0; j < arr.length - 2; j++) {
-                fields[i++] = formatter.format(arr[j]);
+                fields[i++] = String.valueOf(arr[j]);
             }
         }
 
