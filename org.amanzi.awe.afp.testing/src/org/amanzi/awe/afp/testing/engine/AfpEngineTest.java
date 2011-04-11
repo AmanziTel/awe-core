@@ -13,7 +13,7 @@
 
 package org.amanzi.awe.afp.testing.engine;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +26,7 @@ import junit.framework.Assert;
 
 import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.exporters.AfpExporter;
+import org.amanzi.awe.afp.loaders.AfpOutputFileLoader;
 import org.amanzi.awe.afp.models.AfpModel;
 import org.amanzi.awe.afp.testing.engine.AfpModelFactory.AfpScenario;
 import org.amanzi.awe.afp.testing.engine.TestDataLocator.DataType;
@@ -70,6 +71,8 @@ public class AfpEngineTest {
     
     private static HashMap<AfpModel, AfpExporter> exporterMap = new HashMap<AfpModel, AfpExporter>();
     
+    private static HashMap<AfpModel, AfpOutputFileLoader> loaderMap = new HashMap<AfpModel, AfpOutputFileLoader>();
+    
     /**
      *
      * @throws java.lang.Exception
@@ -84,6 +87,7 @@ public class AfpEngineTest {
             loadDataset();
             exportInputFiles();
             runEngine();
+            loadResults();
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -102,12 +106,14 @@ public class AfpEngineTest {
         clearDb();
         
         long duration = System.currentTimeMillis() - startTimestamp;
+        int milliseconds = (int)(duration % 1000);
         int seconds = (int)(duration / 1000 % 60 );
         int minutes = (int)(duration / 1000 / 60 % 60);
         int hours = (int)(duration / 1000 / 60 / 60 % 24);
         LOGGER.info("Test finished. Test time - " + hours + " hours " + 
                                                     minutes + " minutes " + 
-                                                    seconds + " seconds");
+                                                    seconds + " seconds " +
+                                                    milliseconds + " milliseconds");
     }
 
     /**
@@ -188,7 +194,7 @@ public class AfpEngineTest {
     private static IDataset getDatasetLoader(DataType dataType) throws IOException {
         switch (dataType) {
         case ERICSSON:
-            return new LoadEricssonDataAction("project");
+            return null;//new LoadEricssonDataAction("project");
         case GENERAL_FORMAT:
             return null;
         case GERMANY:
@@ -207,6 +213,9 @@ public class AfpEngineTest {
             for (AfpScenario scenario : AfpScenario.values()) {
                 AfpModel model = dataset.getAfpModel(scenario);
                 AfpExporter exporter = model.getExporter();
+                
+                AfpOutputFileLoader loader = new AfpOutputFileLoader(dataset.getRootNode(), model.getAfpNode(), exporter);
+                loaderMap.put(model, loader);
                 
                 exporterMap.put(model, exporter);
                 
@@ -254,8 +263,19 @@ public class AfpEngineTest {
         
     }
     
-    private static void loadResults() {
-        
+    private static void loadResults() throws IOException {
+        LOGGER.info("Loading generated Frequency Plans back to Database");
+        for (IDataset dataset : datasets) {
+            for (AfpScenario scenario : scenarios.get(dataset).keySet()) {
+                AfpModel model = scenarios.get(dataset).get(scenario);
+                AfpOutputFileLoader loader = loaderMap.get(model);
+                
+                long before = System.currentTimeMillis();
+                loader.run(null);
+                long after = System.currentTimeMillis();
+                LOGGER.info("Generated Frequency Plan for datasets <" + dataset.getName() + "> and scenario <" + scenario.name() + "> was loaded in " + (after - before) + " milliseconds");
+            }
+        }
     }
     
     @Test
