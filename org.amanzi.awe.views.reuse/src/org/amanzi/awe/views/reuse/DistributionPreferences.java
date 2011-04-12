@@ -1,5 +1,12 @@
 package org.amanzi.awe.views.reuse;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -7,8 +14,12 @@ import java.util.regex.Pattern;
 
 import org.amanzi.awe.views.reuse.range.Bar;
 import org.amanzi.awe.views.reuse.range.RangeModel;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.utils.Pair;
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.CellEditor;
@@ -48,6 +59,7 @@ import org.geotools.util.NumberRange;
  * The Class DistributionPreferences.
  */
 public class DistributionPreferences extends PreferencePage implements IWorkbenchPreferencePage {
+    public static Logger LOG = Logger.getLogger(DistributionPreferences.class);
 
     /** The content. */
     private Composite content;
@@ -85,6 +97,7 @@ public class DistributionPreferences extends PreferencePage implements IWorkbenc
     @Override
     public void init(IWorkbench workbench) {
         setPreferenceStore(ReusePlugin.getDefault().getPreferenceStore());
+        setTitle("Create custom range for distribution view");
     }
 
     /**
@@ -110,7 +123,7 @@ public class DistributionPreferences extends PreferencePage implements IWorkbenc
 
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
-                changeCurrentName();
+                changeModel();
             }
         });
         formRangeList();
@@ -169,10 +182,15 @@ public class DistributionPreferences extends PreferencePage implements IWorkbenc
         });
         viewer.setContentProvider(new ContentProvider());
         viewer.setInput(model);
-        setValid(false);
+        validate();
         return content;
     }
 
+    @Override
+    protected void performApply() {
+        saveModel();
+        super.performApply();
+    }
     /**
      * Form range list.
      */
@@ -186,36 +204,47 @@ public class DistributionPreferences extends PreferencePage implements IWorkbenc
     /**
      * Load model list.
      */
+    @SuppressWarnings("unchecked")
     private void loadModelList() {
         models.clear();
         String modelStr = ReusePlugin.getDefault().getPreferenceStore().getString(PreferenceInitializer.RV_MODELS);
         if (!modelStr.isEmpty()) {
-            // TODO
+            ByteArrayInputStream bin = new ByteArrayInputStream(modelStr.getBytes());
+            ObjectInputStream in;
+            try {
+                in = new ObjectInputStream(new BufferedInputStream(bin));
+                Object object = in.readObject();
+                in.close();
+                models.putAll((Map< ? extends String, ? extends RangeModel>)object);
+            } catch (IOException e) {
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            } catch (ClassNotFoundException e) {
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
         }
     }
 
-
-    /**
-     * Change current name.
-     */
-    protected void changeCurrentName() {
-        model.setName(rangeName.getText());
-        validate();
-    }
 
 
     /**
      * Change model.
      */
     protected void changeModel() {
+        String newName = rangeName.getText().trim();
+        RangeModel md = models.get(newName);
+        if (md == null || md == model) {
+            model.setName(newName);
+            if (md != null) {
+                changeModelName(newName);
+            }
+            return;
+        }
         if (model.isChanged()) {
-            if (!ObjectUtils.equals(model.getName(), rangeName.getText())) {
                 setMessage("Please save/cancel current changed model");
                 rangeName.setText(model.getName());
                 return;
-            }
         } else {
-            model = models.get(rangeName.getText());
+            model = md;
             if (model == null) {
                 createDefModel();
             }
@@ -225,10 +254,20 @@ public class DistributionPreferences extends PreferencePage implements IWorkbenc
     }
 
     /**
+     * @param newName
+     */
+    public void changeModelName(String newName) {
+        models.values().remove(model);
+        models.put(newName, model);
+        rangeName.setItems(models.keySet().toArray(new String[0]));
+        rangeName.setText(newName);
+    }
+
+    /**
      * Creates the default model.
      */
     private void createDefModel() {
-        model = new RangeModel(rangeName.getText());
+        model = new RangeModel(rangeName.getText().trim());
         model.setSize(1);
     }
 
@@ -237,12 +276,61 @@ public class DistributionPreferences extends PreferencePage implements IWorkbenc
      * Save model.
      */
     protected void saveModel() {
+        if (!model.isChanged()) {
+            return;
+        }
+        clearChartsFromDB(model.getName());
+        String newName = rangeName.getText().trim();
+        RangeModel md = models.get(newName);
+        if (md != null && md != model) {
+            setMessage("This name already exist", DialogPage.ERROR);
+            rangeName.setFocus();
+            return;
+        }
+        changeModelName(newName);
+        if (StringUtils.isEmpty(model.getName())) {
+            setMessage("Please enter the model name", DialogPage.ERROR);
+            rangeName.setFocus();
+            return;
+        }
         Pair<Boolean, String> res = model.validate();
         if (res.getLeft()) {
-            // TODO
+            models.put(newName, model);
+            model.setChanged(false);
+            storeAll();
+            validate();
         } else {
             setMessage(res.getRight(), DialogPage.ERROR);
         }
+    }
+
+    /**
+     * clear all created charts with this model if model was changed
+     * 
+     * @param modelName
+     */
+    private void clearChartsFromDB(String modelName) {
+        NeoServiceFactory.getInstance().getDatasetService().deleteAggregateCharts(INeoConstants.PROPERTY_DISTRIBUTE_NAME, modelName);
+    }
+
+    /**
+     *
+     */
+    private void storeAll() {
+        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+
+        ObjectOutputStream out;
+        try {
+            out = new ObjectOutputStream(new BufferedOutputStream(bout));
+            out.writeObject(models);
+            out.close();
+        } catch (IOException e) {
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+
+        String value = new String(bout.toByteArray());
+        LOG.debug("Store size " + value.length());
+        getPreferenceStore().setValue(PreferenceInitializer.RV_MODELS, value);
     }
 
     /**
@@ -435,7 +523,7 @@ public class DistributionPreferences extends PreferencePage implements IWorkbenc
 
         /** The pt. */
         Pattern pt = Pattern
-                .compile("(^.*)([\\[\\(]{1})([^0-9\\-]*)([\\-\\d\\.]+)([^0-9\\-\\+]+)([\\+\\-\\d\\.]+)([\\}\\)]{1})(.*$)");
+.compile("(^.*)([\\[\\(]{1})([^0-9\\-]*)([\\-\\d\\.]+)([^0-9\\-\\+]+)([\\+\\-\\d\\.]+)([\\]\\)]{1})(.*$)");
 
         /** The column index. */
         private final int columnIndex;
@@ -533,7 +621,7 @@ public class DistributionPreferences extends PreferencePage implements IWorkbenc
                                     Double v1 = "-".equals(num1.trim()) ? Double.NEGATIVE_INFINITY : Double.valueOf(num1);
                                     Double v2 = "+".equals(num2.trim()) ? Double.POSITIVE_INFINITY : Double.valueOf(num2);
                                     boolean v1Incl = "[".equals(g1);
-                                    boolean v2Incl = "}".equals(g2);
+                                    boolean v2Incl = "]".equals(g2);
                                     NumberRange range;
                                     if (v1 <= v2) {
                                         range = new NumberRange(v1, v1Incl, v2, v2Incl);
@@ -563,8 +651,8 @@ public class DistributionPreferences extends PreferencePage implements IWorkbenc
      */
     public static void main(String[] args) {
         Pattern pt = Pattern
-                .compile("(^.*)([\\[\\(]{1})([^0-9\\-]*)([\\-\\d\\.]+)([^0-9\\-\\+]+)([\\+\\-\\d\\.]+)([\\}\\)]{1})(.*$)");
-        Matcher matcher = pt.matcher("(-,+)");
+.compile("(^.*)([\\[\\(]{1})([^0-9\\-]*)([\\-\\d\\.]+)([^0-9\\-\\+]+)([\\+\\-\\d\\.]+)([\\]\\)]{1})(.*$)");
+        Matcher matcher = pt.matcher("(40.0, 50.0]");
         System.out.println(matcher.matches());
         System.out.println(matcher.group(2));
         System.out.println(matcher.group(4));

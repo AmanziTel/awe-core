@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.views.reuse.range;
 
+import java.io.Serializable;
+
 import org.apache.commons.lang.ObjectUtils;
 import org.eclipse.swt.graphics.RGB;
 import org.geotools.util.NumberRange;
@@ -25,7 +27,10 @@ import org.geotools.util.NumberRange;
  * @author TsAr
  * @since 1.0.0
  */
-public class Bar {
+public class Bar implements Serializable {
+
+    /** long serialVersionUID field */
+    private static final long serialVersionUID = 3099787166503541650L;
 
     /** The range. */
     private NumberRange range;

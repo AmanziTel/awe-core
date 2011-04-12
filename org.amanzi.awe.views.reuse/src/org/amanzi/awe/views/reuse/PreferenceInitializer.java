@@ -5,6 +5,7 @@ import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 
 public class PreferenceInitializer extends AbstractPreferenceInitializer {
     public static String RV_MODELS = "RV_MODELS";
+    public static String d = "RV_MODELS";
     public PreferenceInitializer() {
     }
 

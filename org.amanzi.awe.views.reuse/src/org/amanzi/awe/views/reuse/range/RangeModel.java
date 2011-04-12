@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.views.reuse.range;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -32,7 +33,9 @@ import org.geotools.util.NumberRange;
  * @author TsAr
  * @since 1.0.0
  */
-public class RangeModel {
+public class RangeModel implements Serializable{
+    /** long serialVersionUID field */
+    private static final long serialVersionUID = 6819225905295887269L;
     private LinkedList<Bar> bars = new LinkedList<Bar>();
     private String name;
     private boolean isChanged = false;
@@ -100,6 +103,11 @@ public class RangeModel {
      */
     public void setChanged(boolean isChanged) {
         this.isChanged = isChanged;
+        if (!isChanged) {
+            for (Bar bar : bars) {
+                bar.setChanged(false);
+            }
+        }
     }
 
     /**
@@ -121,6 +129,7 @@ public class RangeModel {
      * @return
      */
     public Pair<Boolean, String> validate() {
+
         Bar[] bars = getBars();
         List<Bar> list = Arrays.asList(bars);
         Collections.sort(list, new Comparator<Bar>() {
