@@ -52,8 +52,13 @@ import org.neo4j.examples.server.plugins.GetAll;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.traversal.Evaluation;
+import org.neo4j.graphdb.traversal.Evaluator;
+import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
+import org.neo4j.kernel.Traversal;
 
 /**
  * TODO Purpose of 
@@ -330,8 +335,8 @@ public class AfpEngineTest {
     	
     	LinkedList<String> structureNode = new LinkedList<String>();
     	structureNode.add(0, NodeTypes.NETWORK.getId());
-    	structureNode.add(1, NodeTypes.BSC.getId());
-    	structureNode.add(2, NodeTypes.CITY.getId());
+    	structureNode.add(1, NodeTypes.CITY.getId());
+    	structureNode.add(2, NodeTypes.BSC.getId());
     	structureNode.add(3, NodeTypes.SITE.getId());
     	structureNode.add(4, NodeTypes.SECTOR.getId());
     	structureNode.add(5, NodeTypes.TRX.getId());
@@ -353,6 +358,46 @@ public class AfpEngineTest {
     		Iterator<String> iterNode = structureNode.iterator();
     		Iterator<RelationshipType> iterRelation = structureRelation.iterator();
     		Node node = dataset.getRootNode();
+    		Iterable<Node> nodes = Traversal.description().depthFirst().evaluator(Evaluators.all())
+    		.evaluator(new Evaluator() {
+				
+				@Override
+				public Evaluation evaluate(Path arg0) {
+					boolean continues = true;
+					if (arg0.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, null)
+					.equals(NodeTypes.TRX.getId()))
+						continues = false;
+					
+					// TODO Auto-generated method stub
+					return Evaluation.ofContinues(continues);
+				}
+			}).relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)
+			.traverse(node).nodes();
+    		int counter = 0;
+    		String secondNode = null;
+    		for (Node i : nodes){
+    			counter++;
+    			if (counter == 2){
+    				secondNode = (String)i.getProperty(INeoConstants.PROPERTY_TYPE_NAME);
+    			}
+    		}
+    		if (counter == 4){
+    			structureNode.remove(NodeTypes.BSC.getId());
+    			structureNode.remove(NodeTypes.CITY.getId());
+    			structureRelation.remove(2);
+    			structureRelation.remove(1);	
+    		}
+    		if (counter == 5){
+    			if (secondNode == NodeTypes.CITY.getId()){
+    				structureNode.remove(NodeTypes.BSC.getId());
+    				structureRelation.remove(2);
+    			}
+    			if (secondNode == NodeTypes.BSC.getId()){
+    				structureNode.remove(NodeTypes.CITY.getId());
+    				structureRelation.remove(1);
+    			}
+    				
+    		}
     		String nodeType;
     		RelationshipType relationType;
     		while (iterNode.hasNext() && iterRelation.hasNext()){
@@ -371,7 +416,7 @@ public class AfpEngineTest {
     
     private void isCorrect(Node node, String nodeType, RelationshipType relationType ){
     	Assert.assertEquals(
-    			node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null)+"unequal"+nodeType,
+    			node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null)+" unequal "+nodeType,
 				nodeType,
 				node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null));
     	if (relationType != null)
