@@ -14,8 +14,11 @@ package org.amanzi.awe.views.reuse.views;
 
 import java.awt.Color;
 import java.awt.Paint;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,9 +40,11 @@ import org.amanzi.awe.catalog.neo.upd_layers.events.RefreshPropertiesEvent;
 import org.amanzi.awe.report.editor.ReportEditor;
 import org.amanzi.awe.views.reuse.Distribute;
 import org.amanzi.awe.views.reuse.Messages;
+import org.amanzi.awe.views.reuse.PreferenceInitializer;
 import org.amanzi.awe.views.reuse.Properties;
 import org.amanzi.awe.views.reuse.ReusePlugin;
 import org.amanzi.awe.views.reuse.Select;
+import org.amanzi.awe.views.reuse.range.RangeModel;
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.preferences.NeoCorePreferencesConstants;
@@ -234,6 +239,8 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
     ReuseAnalyserModel model = null;
     private static final String ERROR_CHART = "Error Chart";
     private String globalDistribute = null;
+
+    private Map<String, RangeModel> custommRanges = new HashMap<String, RangeModel>();
     
     @Override
     public void createPartControl(Composite parent) {
@@ -259,7 +266,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
         lDistribute = new Label(parent, SWT.NONE);
         lDistribute.setText(DISTRIBUTE_LABEL);
         cDistribute = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
-        cDistribute.setItems(Distribute.getEnumAsStringArray());
+        formDistribution();
         cDistribute.select(0);
         lSelect = new Label(parent, SWT.NONE);
         lSelect.setText(SELECT_LABEL);
@@ -1390,6 +1397,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
         }
 
         private boolean calculate(IProgressMonitor monitor) {
+
             Transaction tx = NeoUtils.beginTransaction();
             NeoUtils.addTransactionLog(tx, Thread.currentThread(), "ComputeStatisticsJob");
             try {
@@ -1398,6 +1406,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
                 node = model.findOrCreateAggregateNode((Node)gisNode, propertyName, isStringProperty(propertyName), distribute, select,
                         monitor);
                 }else{
+                    Object distribute = getDistribute(this.distribute);
                     node = model.findOrCreateAggregateNode((ISelectionInformation)gisNode, propertyName, distribute, select,                            monitor);
                 }
                 tx = model.getCurrenTransaction();
@@ -1427,6 +1436,15 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
      */
     private boolean isAggregatedProperty(String propertyName) {
         return aggregatedProperties.keySet().contains(propertyName);
+    }
+
+    /**
+     * @param distribute
+     * @return
+     */
+    public Object getDistribute(String distribute) {
+        RangeModel result = custommRanges.get(distribute);
+        return result != null ? result : Distribute.findEnumByValue(distribute);
     }
 
     /**
@@ -2127,7 +2145,8 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
             }
             // the following code depends on code from findOrCreateAggregateNodeInNewThread()
             final Select select = !cSelect.isEnabled() ? Select.EXISTS : Select.findSelectByValue(cSelect.getText());
-            final String distribute = Distribute.findEnumByValue(cDistribute.getText()).getDescription();
+            Distribute distr = Distribute.findEnumByValue(cDistribute.getText());
+            final String distribute = distr == null ? cDistribute.getText() : distr.getDescription();
             final String propName = propertyCombo.getText();
             String dsName = gisCombo.getText();
             Object root = members.get(dsName);
@@ -2196,9 +2215,40 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
             }
             Collections.sort(propertyList);
             propertyCombo.setItems(propertyList.toArray(new String[] {}));
+        } else if (event.getProperty().equals(PreferenceInitializer.RV_MODELS)) {
+            formDistribution();
+            updateGisNode();
         }
     }
 
+
+    /**
+     *
+     */
+    @SuppressWarnings("unchecked")
+    private void formDistribution() {
+        List<String> items = new ArrayList<String>(Arrays.asList(Distribute.getEnumAsStringArray()));
+        custommRanges.clear();
+        String ranges = ReusePlugin.getDefault().getPreferenceStore().getString(PreferenceInitializer.RV_MODELS);
+        if (!ranges.isEmpty()) {
+            ByteArrayInputStream bin = new ByteArrayInputStream(ranges.getBytes());
+            ObjectInputStream in;
+            try {
+                in = new ObjectInputStream(new BufferedInputStream(bin));
+                Object object = in.readObject();
+                in.close();
+                custommRanges.putAll((Map< ? extends String, ? extends RangeModel>)object);
+            } catch (IOException e) {
+                e.printStackTrace();
+                custommRanges.clear();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+                custommRanges.clear();
+            }
+            items.addAll(custommRanges.keySet());
+        }
+        cDistribute.setItems(items.toArray(new String[0]));
+    }
 
     private boolean isAggregated(Object root) {
         if (root==null){
@@ -2211,11 +2261,13 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
     public void init(IViewSite site) throws PartInitException {
         super.init(site);
         NeoCorePlugin.getDefault().getPluginPreferences().addPropertyChangeListener(this);
+        ReusePlugin.getDefault().getPluginPreferences().addPropertyChangeListener(this);
     }
 
     @Override
     public void dispose() {
         NeoCorePlugin.getDefault().getPluginPreferences().removePropertyChangeListener(this);
+        ReusePlugin.getDefault().getPluginPreferences().removePropertyChangeListener(this);
         super.dispose();
     }
 

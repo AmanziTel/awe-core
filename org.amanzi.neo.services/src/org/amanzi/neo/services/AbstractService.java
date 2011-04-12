@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -105,7 +106,7 @@ public abstract class AbstractService implements IDatabaseChangeListener {
      *
      * @param cacheDelete
      */
-    private void deleteCache(INeoDbService service,Set<Node> cacheDelete) {
+    private void deleteCache(INeoDbService service, Collection<Node> cacheDelete) {
         Transaction tx = service.beginTx();
         try{
             Iterator<Node> iterator = cacheDelete.iterator();

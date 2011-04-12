@@ -20,6 +20,10 @@ import org.amanzi.neo.services.utils.Pair;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.CellEditor;
@@ -258,6 +262,7 @@ public class DistributionPreferences extends PreferencePage implements IWorkbenc
      */
     public void changeModelName(String newName) {
         models.values().remove(model);
+        model.setName(newName);
         models.put(newName, model);
         rangeName.setItems(models.keySet().toArray(new String[0]));
         rangeName.setText(newName);
@@ -309,8 +314,17 @@ public class DistributionPreferences extends PreferencePage implements IWorkbenc
      * 
      * @param modelName
      */
-    private void clearChartsFromDB(String modelName) {
-        NeoServiceFactory.getInstance().getDatasetService().deleteAggregateCharts(INeoConstants.PROPERTY_DISTRIBUTE_NAME, modelName);
+    private void clearChartsFromDB(final String modelName) {
+        Job job=new Job("Delete charts"){
+
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                NeoServiceFactory.getInstance().getDatasetService().deleteAggregateCharts(INeoConstants.PROPERTY_DISTRIBUTE_NAME, modelName);
+                return Status.OK_STATUS;
+            }
+            
+        };
+        job.schedule();
     }
 
     /**

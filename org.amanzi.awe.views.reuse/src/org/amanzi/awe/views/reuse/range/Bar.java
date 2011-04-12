@@ -86,7 +86,7 @@ public class Bar implements Serializable {
      * @return the name
      */
     public String getName() {
-        return name;
+        return name != null ? name : getRangeAsStr("");
     }
 
 

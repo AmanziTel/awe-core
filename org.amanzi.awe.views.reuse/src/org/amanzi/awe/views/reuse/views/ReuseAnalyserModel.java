@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -25,6 +26,8 @@ import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.views.reuse.Distribute;
 import org.amanzi.awe.views.reuse.Properties;
 import org.amanzi.awe.views.reuse.Select;
+import org.amanzi.awe.views.reuse.range.Bar;
+import org.amanzi.awe.views.reuse.range.RangeModel;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.services.INeoConstants;
@@ -1246,7 +1249,8 @@ public class ReuseAnalyserModel {
      * @param monitor
      * @return
      */
-    public Node findOrCreateAggregateNode(ISelectionInformation information, final String propertyName, final String distribute, final String select, IProgressMonitor monitor) {
+    public Node findOrCreateAggregateNode(ISelectionInformation information, final String propertyName, final Object distribute, final String select, IProgressMonitor monitor) {
+        final String distrStr = distribute instanceof Distribute ? distribute.toString() : ((RangeModel)distribute).getName();
         correlationUpdate.clear();
         Transaction tx = service.beginTx();
         final String descr = information.getFullDescription();
@@ -1261,12 +1265,12 @@ public class ReuseAnalyserModel {
 
                     return propertyName.equals(arg0.currentNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, null))
                     // necessary property distribute type
-                            && (distribute.equals(arg0.currentNode().getProperty(INeoConstants.PROPERTY_DISTRIBUTE_NAME, null)))
+                            && (distrStr.equals(arg0.currentNode().getProperty(INeoConstants.PROPERTY_DISTRIBUTE_NAME, null)))
                             // network of necessary select type
                             && select.equals(arg0.currentNode().getProperty(INeoConstants.PROPERTY_SELECT_NAME, null)) && descr.equals(arg0.currentNode().getProperty("descr", ""));
                 }
             }, NetworkRelationshipTypes.AGGREGATION, Direction.OUTGOING).iterator();
-            Distribute distributeColumn = Distribute.findEnumByValue(distribute);
+            // Distribute distributeColumn = Distribute.findEnumByValue(distribute);
             if (iterator.hasNext()) {
                 Node result = iterator.next();
                 return result;
@@ -1276,7 +1280,7 @@ public class ReuseAnalyserModel {
             try {
                 result.setProperty(INeoConstants.PROPERTY_NAME_NAME, propertyName);
                 result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.AGGREGATION.getId());
-                result.setProperty(INeoConstants.PROPERTY_DISTRIBUTE_NAME, distribute);
+                result.setProperty(INeoConstants.PROPERTY_DISTRIBUTE_NAME, distrStr);
                 result.setProperty(INeoConstants.PROPERTY_SELECT_NAME, select);
                 result.setProperty("descr", descr);
 
@@ -1290,7 +1294,11 @@ public class ReuseAnalyserModel {
                     gis.setProperty(INeoConstants.PROPERTY_SELECTED_AGGREGATION, propertyName);
                     correlationUpdate.add(new Pair<Node, Node>(network, result));
                 }
-                computeStatistics(information, rootNode, result, propertyName, distributeColumn, Select.findSelectByValue(select), monitor);
+                if (distribute instanceof Distribute) {
+                    computeStatistics(information, rootNode, result, propertyName, (Distribute)distribute, Select.findSelectByValue(select), monitor);
+                } else {
+                    computeStatistics(information, rootNode, result, propertyName, (RangeModel)distribute, Select.findSelectByValue(select), monitor);
+                }
 
             } catch (RuntimeException e) {
                 // TODO delete
@@ -1309,6 +1317,67 @@ public class ReuseAnalyserModel {
         } finally {
             tx.success();
             tx.finish();
+        }
+
+    }
+
+    /**
+     * @param information2
+     * @param rootNode
+     * @param result
+     * @param propertyName
+     * @param distribute
+     * @param findSelectByValue
+     * @param monitor
+     */
+    private void computeStatistics(ISelectionInformation information, Node rootNode, Node aggrNode, String propertyName, RangeModel rangeModel, Select rules,
+            IProgressMonitor monitor) throws StatisticCalculationException {
+        Map<Bar, Pair<Column, Integer>> columns = new HashMap<Bar, Pair<Column, Integer>>();
+        Node parentNode = aggrNode;
+        for (Bar bar : rangeModel.getBars()) {
+            Column col = new Column(aggrNode, parentNode, bar, service);
+            columns.put(bar, new Pair<Column, Integer>(col, 0));
+        }
+        IPropertyInformation inf = information.getPropertyInformation(propertyName);
+        int totalWork = (int)inf.getStatistic().getCount();
+        monitor.beginTask("Searching database", totalWork);
+        for (ISource source : inf.getValueIterable(rules.getRule())) {
+            monitor.worked(1);
+            if (monitor.isCanceled())
+                break;
+            propertyValue = source.getValue();
+            if (propertyValue == null) {
+                continue;
+            }
+            int relCount = 0;
+            for (Entry<Bar, Pair<Column, Integer>> entry : columns.entrySet()) {
+                if (monitor.isCanceled())
+                    break;
+                
+                Column column=entry.getValue().getLeft();
+                if (column.getPropertyValue() == null) {
+                    column.setPropertyValue(propertyValue);
+                }
+                if (entry.getKey().getRange().contains((Number)propertyValue)) {
+                    Integer count = entry.getValue().right();
+                    Node nodeToLink = source.getSource();
+                    if (nodeToLink != null) {
+                        column.getNode().createRelationshipTo(nodeToLink, NetworkRelationshipTypes.AGGREGATE);
+                        relCount++;
+                        if (relCount > 5000) {
+                            commit();
+                            relCount = 0;
+                        }
+                    }
+                    entry.getValue().setRight(1 + (count == null ? 0 : count));
+                    break;
+                }
+            }
+        }
+        monitor.subTask("Finalizing results");
+        for (Entry<Bar, Pair<Column, Integer>> entry : columns.entrySet()) {
+            Column column = entry.getValue().getLeft();
+            column.setValue(entry.getValue().getRight());
         }
 
     }

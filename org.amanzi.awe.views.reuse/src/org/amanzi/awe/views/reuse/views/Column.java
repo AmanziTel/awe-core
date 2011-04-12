@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import org.amanzi.awe.views.reuse.Distribute;
+import org.amanzi.awe.views.reuse.range.Bar;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
@@ -54,6 +55,8 @@ public class Column implements Comparable<Column> {
 
     private Comparable compValue = null;
 
+    private Bar bar = null;
+
     /**
      * Constructor.
      *
@@ -66,9 +69,11 @@ public class Column implements Comparable<Column> {
         node = null;
     }
 
+
+
     /**
      * Merge.
-     *
+     * 
      * @param prevCol the prev col
      */
     public void merge(Column prevCol,GraphDatabaseService service) {
@@ -148,6 +153,21 @@ public class Column implements Comparable<Column> {
 
     }
 
+    public Column(Node aggrNode, Node lastNode, Bar bar,GraphDatabaseService service) {
+        this(bar.getRange().getMaximum(), 1);
+        this.bar = bar;
+        this.distribute = null;
+        this.propertyValue = null;
+        node = service.createNode();
+        node.setProperty(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.COUNT.getId());
+        node.setProperty(INeoConstants.PROPERTY_NAME_NAME, bar.getName());
+        node.setProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, bar.getRange().getMinimum());
+        node.setProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE, bar.getRange().getMaximum());
+        node.setProperty(INeoConstants.PROPERTY_VALUE_NAME, 0);
+        node.setProperty(INeoConstants.PROPERTY_AGGR_PARENT_ID, aggrNode.getId());
+        NeoUtils.addChild(aggrNode, node, aggrNode.equals(lastNode)?null:lastNode, service);
+
+    }
     /**
      * Gets the column name.
      *

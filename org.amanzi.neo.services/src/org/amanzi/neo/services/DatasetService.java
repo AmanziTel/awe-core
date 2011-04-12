@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
@@ -36,9 +37,9 @@ import org.amanzi.neo.services.enums.SplashRelationshipTypes;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.internal.DynamicNodeType;
 import org.amanzi.neo.services.networkselection.NetworkSelectionModel;
-import org.amanzi.neo.services.node2node.NodeToNodeRelationService.NodeToNodeRelationshipTypes;
 import org.amanzi.neo.services.utils.Utils;
 import org.amanzi.neo.services.utils.Utils.FilterAND;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -1608,5 +1609,78 @@ public class DatasetService extends AbstractService {
             }
         }
         return relationships;
+    }
+
+
+    public void deleteAggregateCharts(Object... properties) {
+        Assert.isTrue(properties != null);
+        Set<Node> charts = findAggregationNodes(properties);
+        Transaction tx = databaseService.beginTx();
+        try {
+            Iterator<Node> it = charts.iterator();
+            while (it.hasNext()) {
+                Node node = it.next();
+                deleteChildNext(node);
+            }
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+    }
+
+    public void deleteChildNext(Node rootNode) {
+        Transaction tx = databaseService.beginTx();
+        try {
+            Relationship rel = rootNode.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING);
+            Node nextNode = rootNode;
+            do {
+                Node oldNode = nextNode;
+                nextNode = rel == null ? null : rel.getOtherNode(oldNode);
+                rel = nextNode == null ? null : nextNode.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+                deleteNode(oldNode);
+            } while (nextNode != null);
+        } finally {
+            tx.finish();
+        }       
+    }
+
+    public Set<Node> findAggregationNodes(Object... properties) {
+        Set<Node> result = new HashSet<Node>();
+        final Map<String, Object> propertyMap = formPropertyMap(properties);
+        for (Node aggrNode : Traversal.description().depthFirst().uniqueness(Uniqueness.NONE)
+                .relationships(SplashRelationshipTypes.AWE_PROJECT, Direction.OUTGOING)
+                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
+                .relationships(NetworkRelationshipTypes.AGGREGATION, Direction.OUTGOING).evaluator(new Evaluator() {
+
+                    @Override
+                    public Evaluation evaluate(Path paramPath) {
+                        boolean includes = paramPath.lastRelationship() != null
+                                && paramPath.lastRelationship().isType(NetworkRelationshipTypes.AGGREGATION);
+                        boolean continues = !includes && paramPath.length() < 3; // (rn->project->dataset->chart)
+                        if (includes) {
+                            for (Entry<String, Object> entry : propertyMap.entrySet()) {
+                                Object value = entry.getValue();
+                                includes = value == null ? !paramPath.endNode().hasProperty(entry.getKey()) : ObjectUtils.equals(
+                                        value, paramPath.endNode().getProperty(entry.getKey(), null));
+                                if (!includes) {
+                                    break;
+                                }
+                            }
+                        }
+                        return Evaluation.of(includes, continues);
+                    }
+                }).traverse(databaseService.getReferenceNode()).nodes()) {
+            result.add(aggrNode);
+        }
+        return result;
+    }
+
+
+    private Map<String, Object> formPropertyMap(Object[] properties) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        for (int i = 0; i < properties.length; i += 2) {
+            result.put((String)properties[i], properties[i + 1]);
+        }
+        return result;
     }
 }
