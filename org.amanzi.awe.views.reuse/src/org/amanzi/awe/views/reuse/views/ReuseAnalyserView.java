@@ -25,9 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +43,7 @@ import org.amanzi.awe.views.reuse.Properties;
 import org.amanzi.awe.views.reuse.ReusePlugin;
 import org.amanzi.awe.views.reuse.Select;
 import org.amanzi.awe.views.reuse.range.RangeModel;
+import org.amanzi.awe.views.reuse.views.FrequencyPlanAnalyser.PropertyCategoryDataset;
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.preferences.NeoCorePreferencesConstants;
@@ -116,8 +115,6 @@ import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.category.CategoryItemRenderer;
-import org.jfree.data.category.CategoryDataset;
-import org.jfree.data.general.AbstractDataset;
 import org.jfree.experimental.chart.swt.ChartComposite;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -1748,194 +1745,19 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
 
     /**
      * <p>
-     * Implementation of CategoryDataset Only for mapping. Does not support complete functionality.
-     * </p>
-     * 
-     * @author Cinkel_A
-     * @since 1.0.0
-     */
-    private static class PropertyCategoryDataset extends AbstractDataset implements CategoryDataset {
-
-        /** long serialVersionUID field */
-        private static final long serialVersionUID = -1941659139984700171L;
-
-        private Node aggrNode;
-        private List<String> rowList = new ArrayList<String>();
-        private final List<ChartNode> nodeList = Collections.synchronizedList(new LinkedList<ChartNode>());
-
-        /**
-         * @return Returns the nodeList.
-         */
-        public List<ChartNode> getNodeList() {
-            return nodeList;
-        }
-
-        /**
-         * sets palette name into aggregation node
-         * 
-         * @param currentPalette
-         */
-        public void setPalette(final BrewerPalette currentPalette) {
-            Job job = new Job("setPalette") {
-                @Override
-                protected IStatus run(IProgressMonitor monitor) {
-                    Transaction tx = NeoUtils.beginTransaction();
-                    NeoUtils.addTransactionLog(tx, Thread.currentThread(), "setPalette");
-
-                    try {
-                        if (aggrNode != null) {
-                            if (currentPalette != null) {
-                                aggrNode.setProperty(INeoConstants.PALETTE_NAME, currentPalette.getName());
-                            } else {
-                                aggrNode.removeProperty(INeoConstants.PALETTE_NAME);
-                            }
-                        }
-                        return Status.OK_STATUS;
-                    } finally {
-                        tx.finish();
-                    }
-                }
-
-            };
-            job.schedule();
-            try {
-                job.join();
-            } catch (InterruptedException e) {
-                // TODO Handle InterruptedException
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            }
-        }
-
-        PropertyCategoryDataset() {
-            super();
-            rowList = new ArrayList<String>();
-            rowList.add(ROW_KEY);
-            aggrNode = null;
-        }
-
-        /**
-         * Gets aggregation node
-         * 
-         * @return aggregation node
-         */
-        public Node getAggrNode() {
-            return aggrNode;
-        }
-
-        /**
-         * Sets aggregation node
-         * 
-         * @param aggrNode new node
-         */
-        public void setAggrNode(final Node aggrNode) {
-            Job job = new Job("setAggrNode") {
-
-                @Override
-                protected IStatus run(IProgressMonitor monitor) {
-                    Transaction tx = NeoUtils.beginTransaction();
-                    NeoUtils.addTransactionLog(tx, Thread.currentThread(), "setAggrNode");
-                    try {
-                        Iterator<Node> iteratorChild = NeoUtils.getChildTraverser(aggrNode).iterator();
-                        nodeList.clear();
-                        while (iteratorChild.hasNext()) {
-                            Node node = iteratorChild.next();
-                            nodeList.add(new ChartNode(node));
-                        }
-                        return Status.OK_STATUS;
-                    } finally {
-                        tx.finish();
-                    }
-                }
-            };
-            this.aggrNode = aggrNode;
-            job.schedule();
-            try {
-                job.join();
-            } catch (InterruptedException e) {
-                // TODO Handle InterruptedException
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            }
-            fireDatasetChanged();
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public int getColumnIndex(Comparable comparable) {
-            return nodeList.indexOf(comparable);
-        }
-
-        @Override
-        public Comparable<ChartNode> getColumnKey(int i) {
-            return nodeList.get(i);
-        }
-
-        @Override
-        public List<ChartNode> getColumnKeys() {
-            return nodeList;
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public int getRowIndex(Comparable comparable) {
-            return 0;
-        }
-
-        @Override
-        public Comparable<String> getRowKey(int i) {
-            return ROW_KEY;
-        }
-
-        @Override
-        public List<String> getRowKeys() {
-            return rowList;
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public Number getValue(Comparable comparable0, Comparable comparable1) {
-            if (!(comparable1 instanceof ChartNode)) {
-                return 0;
-            }
-            try {
-                return ((Number)((ChartNode)comparable1).getNode().getProperty(INeoConstants.PROPERTY_VALUE_NAME)).intValue();
-            } catch (Exception e) {
-                // TODO Handle Exception
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            }
-        }
-
-        @Override
-        public int getColumnCount() {
-            return nodeList.size();
-        }
-
-        @Override
-        public int getRowCount() {
-            return 1;
-        }
-
-        @Override
-        public Number getValue(int i, int j) {
-            return getValue(i, getColumnKey(j));
-        }
-
-    }
-
-    /**
-     * <p>
      * Wrapper of chart node
      * </p>
      * 
      * @author Cinkel_A
      * @since 1.0.0
      */
-    private static class ChartNode implements Comparable<ChartNode> {
+    public static class ChartNode implements Comparable<ChartNode> {
         private final Node node;
         private final Double nodeKey;
         private final String columnValue;
         private Color color;
 
-        ChartNode(Node aggrNode) {
+        public ChartNode(Node aggrNode) {
             node = aggrNode;
             nodeKey = ((Number)aggrNode.getProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE)).doubleValue();
             columnValue = aggrNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString();

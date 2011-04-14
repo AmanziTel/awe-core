@@ -15,8 +15,11 @@ package org.amanzi.awe.views.reuse.views;
 
 import java.awt.Color;
 import java.awt.Paint;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,10 +42,13 @@ import org.amanzi.awe.catalog.neo.upd_layers.events.RefreshPropertiesEvent;
 import org.amanzi.awe.report.editor.ReportEditor;
 import org.amanzi.awe.views.reuse.Distribute;
 import org.amanzi.awe.views.reuse.Messages;
+import org.amanzi.awe.views.reuse.PreferenceInitializer;
 import org.amanzi.awe.views.reuse.Properties;
 import org.amanzi.awe.views.reuse.ReusePlugin;
 import org.amanzi.awe.views.reuse.Select;
+import org.amanzi.awe.views.reuse.range.RangeModel;
 import org.amanzi.awe.views.reuse.views.FreqPlanSelectionInformation.TRXTYPE;
+import org.amanzi.awe.views.reuse.views.ReuseAnalyserView.ChartNode;
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.preferences.NeoCorePreferencesConstants;
@@ -60,7 +66,6 @@ import org.amanzi.neo.services.statistic.ISinglePropertyStat;
 import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
-import org.amanzi.neo.services.ui.enums.ColoredFlags;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.amanzi.neo.services.utils.Pair;
 import org.amanzi.neo.services.utils.RunnableWithResult;
@@ -249,7 +254,7 @@ public class FrequencyPlanAnalyser extends ViewPart implements IPropertyChangeLi
         private Combo cBCC;
 
         private Combo cTRX;
-        
+        private Map<String, RangeModel> custommRanges = new HashMap<String, RangeModel>();
         @Override
         public void createPartControl(Composite parent) {
             freq=new Composite(parent, SWT.FILL);
@@ -285,7 +290,7 @@ public class FrequencyPlanAnalyser extends ViewPart implements IPropertyChangeLi
             ld=new GridData(SWT.FILL);
             ld.widthHint=70;
             cDistribute.setLayoutData(ld);
-            cDistribute.setItems(Distribute.getEnumAsStringArray());
+            formDistribution();
             cDistribute.select(0);
             lSelect = new Label(freq, SWT.NONE);
             lSelect.setText(SELECT_LABEL);
@@ -1430,7 +1435,10 @@ public class FrequencyPlanAnalyser extends ViewPart implements IPropertyChangeLi
             ComputeStatisticsJob job = new ComputeStatisticsJob(object, propertyName, cDistribute.getText(), select);
             job.schedule();
         }
-
+        public Object getDistribute(String distribute) {
+            RangeModel result = custommRanges.get(distribute);
+            return result != null ? result : Distribute.findEnumByValue(distribute);
+        }
         private class ComputeStatisticsJob extends Job {
 
             private final Object gisNode;
@@ -1502,6 +1510,7 @@ public class FrequencyPlanAnalyser extends ViewPart implements IPropertyChangeLi
                     node = model.findOrCreateAggregateNode((Node)gisNode, propertyName, isStringProperty(propertyName), distribute, select,
                             monitor);
                     }else{
+                        Object distribute = getDistribute(this.distribute); 
                         node = model.findOrCreateAggregateNode((ISelectionInformation)gisNode, propertyName, distribute, select,                            monitor);
                     }
                     tx = model.getCurrenTransaction();
@@ -1834,42 +1843,34 @@ public class FrequencyPlanAnalyser extends ViewPart implements IPropertyChangeLi
             dReport.top = new FormAttachment(tSelectedInformation, 5, SWT.CENTER);
             bReport.setLayoutData(dReport);
         }
-
+        @SuppressWarnings("unchecked")
+        private void formDistribution() {
+            List<String> items = new ArrayList<String>(Arrays.asList(Distribute.getEnumAsStringArray()));
+            custommRanges.clear();
+            String ranges = ReusePlugin.getDefault().getPreferenceStore().getString(PreferenceInitializer.RV_MODELS);
+            if (!ranges.isEmpty()) {
+                ByteArrayInputStream bin = new ByteArrayInputStream(ranges.getBytes());
+                ObjectInputStream in;
+                try {
+                    in = new ObjectInputStream(new BufferedInputStream(bin));
+                    Object object = in.readObject();
+                    in.close();
+                    custommRanges.putAll((Map< ? extends String, ? extends RangeModel>)object);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    custommRanges.clear();
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                    custommRanges.clear();
+                }
+                items.addAll(custommRanges.keySet());
+            }
+            cDistribute.setItems(items.toArray(new String[0]));
+        }
         @Override
         public void setFocus() {
         }
 
-        // /**
-        // * <p>
-        // * Implementation of ReturnableEvaluator Returns necessary MS or sector nodes
-        // * </p>
-        // *
-        // * @author Cinkel_A
-        // * @since 1.0.0
-        // */
-        // private static final class PropertyReturnableEvalvator implements ReturnableEvaluator {
-        // private final HashSet<String> propertyList;
-        //
-        // public PropertyReturnableEvalvator() {
-        // super();
-        // propertyList = new HashSet<String>();
-        // propertyList.add(NodeTypes.M.getId());
-        // propertyList.add("mv");
-        // propertyList.add(NodeTypes.SECTOR.getId());
-        // propertyList.add(NodeTypes.HEADER_MS.getId());
-        // propertyList.add(NodeTypes.PROBE.getId());
-        // propertyList.add(NodeTypes.CALL.getId());
-        // propertyList.add(NodeTypes.UTRAN_DATA.getId());
-        // propertyList.add(NodeTypes.GPEH_EVENT.getId());
-        // }
-        //
-        // @Override
-        // public boolean isReturnableNode(TraversalPosition traversalposition) {
-        // Node curNode = traversalposition.currentNode();
-        // Object type = curNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null);
-        // return type != null && propertyList.contains(type);
-        // }
-        // }
 
         /**
          * <p>
@@ -1879,14 +1880,14 @@ public class FrequencyPlanAnalyser extends ViewPart implements IPropertyChangeLi
          * @author Cinkel_A
          * @since 1.0.0
          */
-        private static class PropertyCategoryDataset extends AbstractDataset implements CategoryDataset {
+        public static class PropertyCategoryDataset extends AbstractDataset implements CategoryDataset {
 
             /** long serialVersionUID field */
             private static final long serialVersionUID = -1941659139984700171L;
 
             private Node aggrNode;
             private List<String> rowList = new ArrayList<String>();
-            private final List<ChartNode> nodeList = Collections.synchronizedList(new LinkedList<ChartNode>());
+            final List<ChartNode> nodeList = Collections.synchronizedList(new LinkedList<ChartNode>());
 
             /**
              * @return Returns the nodeList.
@@ -1931,7 +1932,7 @@ public class FrequencyPlanAnalyser extends ViewPart implements IPropertyChangeLi
                 }
             }
 
-            PropertyCategoryDataset() {
+            public PropertyCategoryDataset() {
                 super();
                 rowList = new ArrayList<String>();
                 rowList.add(ROW_KEY);
@@ -2046,112 +2047,7 @@ public class FrequencyPlanAnalyser extends ViewPart implements IPropertyChangeLi
 
         }
 
-        /**
-         * <p>
-         * Wrapper of chart node
-         * </p>
-         * 
-         * @author Cinkel_A
-         * @since 1.0.0
-         */
-        private static class ChartNode implements Comparable<ChartNode> {
-            private final Node node;
-            private final Double nodeKey;
-            private final String columnValue;
-            private Color color;
-
-            ChartNode(Node aggrNode) {
-                node = aggrNode;
-                nodeKey = ((Number)aggrNode.getProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE)).doubleValue();
-                columnValue = aggrNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString();
-            }
-
-            /**
-             * Returns true if value in selected column;
-             * 
-             * @param value value to find
-             * @return true if value in selected column;
-             */
-            public boolean containsValue(double value) {
-                double minValue = (Double)node.getProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE);
-                double maxValue = (Double)node.getProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE);
-                return value >= minValue && (value == minValue || value < maxValue);
-            }
-
-            @Override
-            public int compareTo(ChartNode o) {
-                return Double.compare(getNodeKey(), o.getNodeKey());
-            }
-
-            /**
-             * @return Returns the node.
-             */
-            public Node getNode() {
-                return node;
-            }
-
-            @Override
-            public String toString() {
-                return columnValue;
-            }
-
-            /**
-             * @return Returns the nodeKey.
-             */
-            public Double getNodeKey() {
-                return nodeKey;
-            }
-
-            /**
-             * save colors
-             * 
-             * @param color - color
-             */
-            public void saveColor(final Color color) {
-                if (this.color != null && this.color.equals(color)) {
-                    return;
-                }
-                this.color = color;
-                if (node != null) {
-                    Job job = new Job("save color") {
-
-                        @Override
-                        protected IStatus run(IProgressMonitor monitor) {
-                            Transaction tx = NeoUtils.beginTransaction();
-                            try {
-                                Integer valueToSave = color == null ? null : color.getRGB();
-                                if (valueToSave == null) {
-                                    ColoredFlags flag = ColoredFlags.getFlagById((String)node.getProperty(
-                                            INeoConstants.PROPERTY_FLAGGED_NAME, ColoredFlags.NONE.getId()));
-                                    if (!flag.equals(ColoredFlags.NONE)) {
-                                        node.setProperty(INeoConstants.AGGREGATION_COLOR, flag.getRgb());
-                                    }
-                                    node.removeProperty(INeoConstants.AGGREGATION_COLOR);
-                                } else {
-                                    node.setProperty(INeoConstants.AGGREGATION_COLOR, valueToSave);
-                                }
-                                tx.success();
-                            } finally {
-                                tx.finish();
-                            }
-                            return Status.OK_STATUS;
-                        }
-                    };
-                    job.schedule();
-                    // job.join(); TODO test on necessary join
-                }
-            }
-
-            /**
-             * gets column color
-             * 
-             * @return color
-             */
-            public Color getColor() {
-                return color;
-            }
-        }
-
+ 
         /**
          * A custom renderer that returns a different color for each items.
          */
@@ -2336,6 +2232,9 @@ public class FrequencyPlanAnalyser extends ViewPart implements IPropertyChangeLi
                 }
                 Collections.sort(propertyList);
                 propertyCombo.setItems(propertyList.toArray(new String[] {}));
+            }else if (event.getProperty().equals(PreferenceInitializer.RV_MODELS)) {
+                formDistribution();
+                updateGisNode();
             }
         }
 
@@ -2351,11 +2250,13 @@ public class FrequencyPlanAnalyser extends ViewPart implements IPropertyChangeLi
         public void init(IViewSite site) throws PartInitException {
             super.init(site);
             NeoCorePlugin.getDefault().getPluginPreferences().addPropertyChangeListener(this);
+            ReusePlugin.getDefault().getPluginPreferences().addPropertyChangeListener(this);
         }
 
         @Override
         public void dispose() {
             NeoCorePlugin.getDefault().getPluginPreferences().removePropertyChangeListener(this);
+            ReusePlugin.getDefault().getPluginPreferences().removePropertyChangeListener(this);
             super.dispose();
         }
 
