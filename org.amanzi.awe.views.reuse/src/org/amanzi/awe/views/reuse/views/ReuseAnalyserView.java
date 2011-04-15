@@ -1752,6 +1752,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
      * @since 1.0.0
      */
     public static class ChartNode implements Comparable<ChartNode> {
+        private boolean fixedColor;
         private final Node node;
         private final Double nodeKey;
         private final String columnValue;
@@ -1761,6 +1762,11 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
             node = aggrNode;
             nodeKey = ((Number)aggrNode.getProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE)).doubleValue();
             columnValue = aggrNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").toString();
+            fixedColor = (Boolean)aggrNode.getProperty(INeoConstants.PROPERTY_FIXED_COLOR, false);
+            Integer rgb = (Integer)node.getProperty(INeoConstants.AGGREGATION_COLOR, null);
+            if (rgb != null) {
+                color = new Color(rgb);
+            }
         }
 
         /**
@@ -1800,12 +1806,29 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
         }
 
         /**
+         * @return Returns the fixedColor.
+         */
+        public boolean isFixedColor() {
+            return fixedColor;
+        }
+
+        /**
+         * @param fixedColor The fixedColor to set.
+         */
+        public void setFixedColor(boolean fixedColor) {
+            this.fixedColor = fixedColor;
+        }
+
+        /**
          * save colors
          * 
          * @param color - color
          */
         public void saveColor(final Color color) {
             if (this.color != null && this.color.equals(color)) {
+                return;
+            }
+            if (fixedColor && this.color != null) {
                 return;
             }
             this.color = color;
@@ -1882,16 +1905,16 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
         setVisibleForChart(false);
     }
 
-    /**
-     * @param column
-     * @param color
-     */
-    public void setColumnColor(int column, Color color) {
-        if (dataset != null) {
-            ChartNode child = dataset.getNodeList().get(column);
-            child.saveColor(color);
-        }
-    }
+    // /**
+    // * @param column
+    // * @param color
+    // */
+    // public void setColumnColor(int column, Color color) {
+    // if (dataset != null) {
+    // ChartNode child = dataset.getNodeList().get(column);
+    // child.saveColor(color);
+    // }
+    // }
 
     /**
      * @param colorThema The colorThema to set.

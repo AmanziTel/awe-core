@@ -86,6 +86,8 @@ public class DistributionPreferences extends PreferencePage implements IWorkbenc
     /** The models. */
     private Map<String, RangeModel> models = new HashMap<String, RangeModel>();
 
+    private Spinner spin;
+
     /**
      * Instantiates a new distribution preferences.
      */
@@ -135,7 +137,7 @@ public class DistributionPreferences extends PreferencePage implements IWorkbenc
         rangeName.setLayoutData(layoutData);
         label = new Label(content, SWT.NONE);
         label.setText("Number of bar");
-        Spinner spin = new Spinner(content, SWT.BORDER);
+        spin = new Spinner(content, SWT.BORDER);
         spin.setMinimum(1);
         spin.addModifyListener(new ModifyListener() {
 
@@ -165,6 +167,18 @@ public class DistributionPreferences extends PreferencePage implements IWorkbenc
         cancel = new Button(content, SWT.PUSH);
         cancel.setText("Cancel");
         cancel.setEnabled(false);
+        cancel.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                cancelModel();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
         viewer = new TableViewer(content, SWT.FULL_SELECTION);
         formColumns();
         layoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 6, 4);
@@ -188,6 +202,19 @@ public class DistributionPreferences extends PreferencePage implements IWorkbenc
         viewer.setInput(model);
         validate();
         return content;
+    }
+
+    /**
+     *
+     */
+    protected void cancelModel() {
+        if (!model.isChanged()) {
+            return;
+        }
+        String name = model.getName();
+        formRangeList();
+        viewer.setInput(model);
+        // TODO select last model
     }
 
     @Override
@@ -252,6 +279,7 @@ public class DistributionPreferences extends PreferencePage implements IWorkbenc
             if (model == null) {
                 createDefModel();
             }
+            spin.setSelection(model.getSize());
             viewer.setInput(model);
             validate();
         }
@@ -463,7 +491,7 @@ public class DistributionPreferences extends PreferencePage implements IWorkbenc
         public String getText(Object element) {
             Bar bar = (Bar)element;
             if (columnIndex == 2) {
-                return "";
+                return "COLOR";
             } else if (columnIndex == 0) {
                 return bar.getRangeAsStr(null);
             } else {
@@ -488,6 +516,14 @@ public class DistributionPreferences extends PreferencePage implements IWorkbenc
             return super.getBackground(element);
         }
 
+        @Override
+        public Color getForeground(Object element) {
+            Bar bar = (Bar)element;
+            if (columnIndex == 2) {
+                return new Color(viewer.getControl().getShell().getDisplay(), bar.getDefaultRGB());
+            }
+            return super.getForeground(element);
+        }
     }
 
     /**
@@ -652,9 +688,9 @@ public class DistributionPreferences extends PreferencePage implements IWorkbenc
                         }
                     }
                 }
-                getViewer().update(element, null);
                 validate();
             }
+            getViewer().update(element, null);
         }
     }
 

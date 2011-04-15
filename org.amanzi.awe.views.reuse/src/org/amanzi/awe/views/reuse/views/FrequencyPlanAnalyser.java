@@ -501,6 +501,7 @@ public class FrequencyPlanAnalyser extends ViewPart implements IPropertyChangeLi
             // legends.add(new LegendItem(ROW_KEY, defaultColor));
             // plot.setFixedLegendItems(legends);
             CategoryItemRenderer renderer = new CustomRenderer();
+        ((BarRenderer)renderer).setShadowVisible(false);
             renderer.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
             plot.setRenderer(renderer);
             plot.setBackgroundPaint(PLOT_BACKGROUND);
@@ -2081,16 +2082,16 @@ public class FrequencyPlanAnalyser extends ViewPart implements IPropertyChangeLi
             setVisibleForChart(false);
         }
 
-        /**
-         * @param column
-         * @param color
-         */
-        public void setColumnColor(int column, Color color) {
-            if (dataset != null) {
-                ChartNode child = dataset.getNodeList().get(column);
-                child.saveColor(color);
-            }
-        }
+    // /**
+    // * @param column
+    // * @param color
+    // */
+    // public void setColumnColor(int column, Color color) {
+    // if (dataset != null) {
+    // ChartNode child = dataset.getNodeList().get(column);
+    // child.saveColor(color);
+    // }
+    // }
 
         /**
          * @param colorThema The colorThema to set.

@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.views.reuse.views;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -46,6 +47,7 @@ import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.neo.services.utils.Pair;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.swt.graphics.RGB;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -1334,8 +1336,16 @@ public class ReuseAnalyserModel {
             IProgressMonitor monitor) throws StatisticCalculationException {
         Map<Bar, Pair<Column, Integer>> columns = new HashMap<Bar, Pair<Column, Integer>>();
         Node parentNode = aggrNode;
+        RGB defColor = new RGB(255, 255, 255);
         for (Bar bar : rangeModel.getBars()) {
             Column col = new Column(aggrNode, parentNode, bar, service);
+            parentNode = col.getNode();
+            RGB barCol = bar.getColor();
+            if (barCol != null && !barCol.equals(defColor)) {
+                parentNode.setProperty(INeoConstants.PROPERTY_FIXED_COLOR, true);
+                parentNode.setProperty(INeoConstants.AGGREGATION_COLOR, new Color(barCol.red, barCol.green, barCol.blue).getRGB());
+            }
+
             columns.put(bar, new Pair<Column, Integer>(col, 0));
         }
         IPropertyInformation inf = information.getPropertyInformation(propertyName);
