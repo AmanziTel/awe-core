@@ -355,24 +355,32 @@ public class AfpEngineTest {
     		if (dataset == null){
     			continue;
     		}
-    		Iterator<String> iterNode = structureNode.iterator();
-    		Iterator<RelationshipType> iterRelation = structureRelation.iterator();
-    		Node node = dataset.getRootNode();
-    		Iterable<Node> nodes = Traversal.description().depthFirst().evaluator(Evaluators.all())
+    		
+    		Node rootNode = dataset.getRootNode();
+    		Iterator<Path> iter = Traversal.description().depthFirst().evaluator(Evaluators.all())
     		.evaluator(new Evaluator() {
 				
 				@Override
 				public Evaluation evaluate(Path arg0) {
+					boolean includes = true;
 					boolean continues = true;
 					if (arg0.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, null)
-					.equals(NodeTypes.TRX.getId()))
-						continues = false;
-					
+							.equals(NodeTypes.AFP.getId()) ||
+							arg0.endNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, null)
+							.equals("Fake"))
+						includes = false;
+					continues = includes;
 					// TODO Auto-generated method stub
-					return Evaluation.ofContinues(continues);
+					return Evaluation.of(includes,continues);
 				}
 			}).relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)
-			.traverse(node).nodes();
+			.traverse(rootNode).iterator();
+    		Path path = iter.next();
+    		Iterable<Node> nodes = null;
+    		while (!path.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, null).equals(NodeTypes.SITE.getId())){
+    			nodes = path.nodes();
+    			path = iter.next();
+    		}
     		int counter = 0;
     		String secondNode = null;
     		for (Node i : nodes){
@@ -381,13 +389,13 @@ public class AfpEngineTest {
     				secondNode = (String)i.getProperty(INeoConstants.PROPERTY_TYPE_NAME);
     			}
     		}
-    		if (counter == 4){
+    		if (counter == 1){
     			structureNode.remove(NodeTypes.BSC.getId());
     			structureNode.remove(NodeTypes.CITY.getId());
     			structureRelation.remove(2);
     			structureRelation.remove(1);	
     		}
-    		if (counter == 5){
+    		if (counter == 2){
     			if (secondNode == NodeTypes.CITY.getId()){
     				structureNode.remove(NodeTypes.BSC.getId());
     				structureRelation.remove(2);
@@ -398,19 +406,53 @@ public class AfpEngineTest {
     			}
     				
     		}
-    		String nodeType;
-    		RelationshipType relationType;
-    		while (iterNode.hasNext() && iterRelation.hasNext()){
-    			nodeType = iterNode.next();
-    			relationType = iterRelation.next();
-    			isCorrect(node, nodeType, relationType);
-    			if (relationType != null)
-    				node = node.getRelationships(relationType, Direction.OUTGOING).iterator().next().getEndNode();
-    		}
     		
-    				
+    		
+    		iter = Traversal.description().depthFirst().evaluator(Evaluators.all())
+    		.evaluator(new Evaluator() {
+				
+				@Override
+				public Evaluation evaluate(Path arg0) {
+					boolean continues = true;
+					boolean includes = true;
+					if (arg0.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, null)
+					.equals(NodeTypes.FREQUENCY_PLAN.getId()))
+						continues = false;
+					if (arg0.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, null)
+							.equals(NodeTypes.AFP.getId()) ||
+							arg0.endNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, null)
+							.equals("Fake"))
+						includes = false;
+					continues = continues && includes;
+					
+					
+					// TODO Auto-generated method stub
+					return Evaluation.of(includes,continues);
+				}
+			}).relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)
+			.relationships(DatasetRelationshipTypes.PLAN_ENTRY, Direction.OUTGOING)
+			.traverse(rootNode).iterator();
+    		
+    		while (iter.hasNext()){
+    			path = iter.next();
+    			while(!path.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, null).equals(NodeTypes.FREQUENCY_PLAN.getId())){
+    				path = iter.next();
+    			}
+    			Iterable<Node> chain = path.nodes();
+    			Iterator<String> iterNode = structureNode.iterator();
+        		Iterator<RelationshipType> iterRelation = structureRelation.iterator();
+        		Iterator<Node> iterChain = chain.iterator();
+        		String nodeType;
+        		RelationshipType relationType;
+        		Node node;
+        		while (iterNode.hasNext() && iterRelation.hasNext() && iterChain.hasNext()){
+        			nodeType = iterNode.next();
+        			relationType = iterRelation.next();
+        			node = iterChain.next();
+        			isCorrect(node, nodeType, relationType);
+        		}
     			
-    		   			
+    		}  		   			
     	}
     }
     
