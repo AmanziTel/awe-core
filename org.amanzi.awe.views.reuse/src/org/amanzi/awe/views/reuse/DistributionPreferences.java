@@ -58,9 +58,13 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.geotools.util.NumberRange;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class DistributionPreferences.
+ * <p>
+ * Preference page for distribution view
+ * </p>
+ * 
+ * @author TsAr
+ * @since 1.0.0
  */
 public class DistributionPreferences extends PreferencePage implements IWorkbenchPreferencePage {
     public static Logger LOG = Logger.getLogger(DistributionPreferences.class);
