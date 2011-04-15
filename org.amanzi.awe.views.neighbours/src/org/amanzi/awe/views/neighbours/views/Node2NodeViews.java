@@ -118,6 +118,8 @@ import org.neo4j.graphdb.Relationship;
  * @since 1.0.0
  */
 public class Node2NodeViews extends ViewPart implements IPropertyChangeListener {
+    public Node2NodeViews() {
+    }
     /** String OUTGOING_ANALYSE field */
     private static final String OUTGOING_ANALYSE = "Outgoing";
     private static final RGB main = new RGB(0, 0, 255);
@@ -175,11 +177,12 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
     private boolean canSort=false;
     private ArrayList<Wrapper> rows=new ArrayList<Wrapper>();
     private DecimalFormat formatter = null;
+    private Button followTree;
 
     @Override
     public void createPartControl(Composite parent) {
         Composite main = new Composite(parent, SWT.FILL);
-        Layout mainLayout = new GridLayout(7, false);
+        Layout mainLayout = new GridLayout(8, false);
         main.setLayout(mainLayout);
         Label label = new Label(main, SWT.LEFT);
         label.setText(getListTxt());
@@ -235,6 +238,10 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         });
         direction = true;
         outgoingAnalyse.setSelection(direction);
+        followTree = new Button(main, SWT.CHECK);
+        followTree.setText("Follow tree");
+        followTree.setSelection(true);
+        
         commit = new Button(main, SWT.BORDER | SWT.PUSH);
         commit.addSelectionListener(new SelectionListener() {
 
@@ -351,7 +358,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         // }
         // });
         view.setItemCount(0);
-        layoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 7, 1);
+        layoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 8, 1);
         view.getControl().setLayoutData(layoutData);
         setFilter(networks.getAllNode2NodeFilter(AweUiPlugin.getDefault().getUiService().getActiveProjectNode()));
         final TableEditor editor = new TableEditor(table);
@@ -416,38 +423,17 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
                 }
             }
         });
+        
+        table.addListener(SWT.MouseUp, new Listener() {
+            public void handleEvent(Event event) {
+                mouseOnDoubleClickOnTable(event);
+            }
+        });
 
         table.addListener(SWT.MouseDoubleClick, new Listener() {
 
             public void handleEvent(Event event) {
-                Rectangle clientArea = table.getClientArea();
-                Point pt = new Point(event.x, event.y);
-                int index = table.getTopIndex();
-                while (index < table.getItemCount()) {
-                    boolean visible = false;
-                    final TableItem item = table.getItem(index);
-                    for (int i = 0; i < 2; i++) {
-                        Rectangle rect = item.getBounds(i);
-                        if (rect.contains(pt)) {
-                            column = i;
-
-                            data = (Wrapper)item.getData();
-                            createAndFireModel((Relationship)data.cont, i);
-                            if (column < 2) {
-                                selectedServ = data.getText(column);
-                                //TODO refresh is bad for virtual table!
-//                                view.refresh(false);
-                            }
-                            return;
-                        }
-                        if (!visible && rect.intersects(clientArea)) {
-                            visible = true;
-                        }
-                    }
-                    if (!visible)
-                        return;
-                    index++;
-                }
+                mouseOnDoubleClickOnTable(event);
             }
         });
         fontNormal = table.getFont();
@@ -456,6 +442,63 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         // TODO dispose font resources in plugin stop()?
         fontSelected = new Font(fontNormal.getDevice(), fd);
         hookContextMenu();
+    }
+    
+    private void mouseOnDoubleClickOnTable(Event event) {
+        Rectangle clientArea = table.getClientArea();
+        Point pt = new Point(event.x, event.y);
+        int index = table.getTopIndex();
+        while (index < table.getItemCount()) {
+            boolean visible = false;
+            final TableItem item = table.getItem(index);
+            for (int i = 0; i < 2; i++) {
+                Rectangle rect = item.getBounds(i);
+                if (rect.contains(pt)) {
+                    column = i;
+
+                    data = (Wrapper)item.getData();
+                    createAndFireModel((Relationship)data.cont, i);
+                    if (column < 2) {
+                        selectedServ = data.getText(column);
+                        //TODO refresh is bad for virtual table!
+//                        view.refresh(false);
+                    }
+                    return;
+                }
+                if (!visible && rect.intersects(clientArea)) {
+                    visible = true;
+                }
+            }
+            if (!visible)
+                return;
+            index++;
+        }
+    }
+    
+    private void mouseOnDoubleClickOnTable() {
+        Rectangle clientArea = table.getClientArea();
+        int index = table.getTopIndex();
+        while (index < table.getItemCount()) {
+            boolean visible = false;
+            final TableItem item = table.getItem(index);
+            for (int i = 0; i < 2; i++) {
+                Rectangle rect = item.getBounds(i);
+                    column = i;
+
+                    data = (Wrapper)item.getData();
+                    createAndFireModel((Relationship)data.cont, i);
+                    if (column < 2) {
+                        selectedServ = data.getText(column);
+                    }
+                if (!visible && rect.intersects(clientArea)) {
+                    visible = true;
+                }
+                return;
+            }
+            if (!visible)
+                return;
+            index++;
+        }
     }
     
     private class SelectionNodeViewListener implements IUpdateViewListener {
@@ -469,9 +512,18 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         
         @Override
         public void updateView(UpdateViewEvent event) {
-            searchingSector = ((ShowPreparedViewEvent)event).getNodes().iterator().next().getProperty("name").toString();
-            textToSearch.setText(searchingSector);
-            formCollumns();
+            if (outgoingAnalyse.getSelection()) {
+                if (followTree.getSelection()) {
+                    searchingSector = ((ShowPreparedViewEvent)event).getNodes().iterator().next().getProperty("name").toString();
+                    textToSearch.setText(searchingSector);
+                    formCollumns();
+                }
+                else {
+                    textToSearch.setText("");
+                    formCollumns();
+                }
+                mouseOnDoubleClickOnTable();
+            }
         }
 
         @Override
@@ -968,7 +1020,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
             propertys = new ArrayList<String>();
             propertys.addAll(propertyNames);
             colColut = propertyNames.size() + 2;
-            while (columns.size() < colColut) {
+            while (columns.size() <= colColut) {
                 TableColumn col = new TableColumn(table, SWT.NONE);
                 columns.add(col);
                 Listener sortListener = new Listener() {
