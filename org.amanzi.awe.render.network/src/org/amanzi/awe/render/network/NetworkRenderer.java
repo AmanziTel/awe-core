@@ -22,11 +22,14 @@ import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Arc2D;
+import java.awt.geom.GeneralPath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -75,6 +78,7 @@ import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser.Order;
+import org.neo4j.graphdb.index.RelationshipIndex;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -102,6 +106,7 @@ public class NetworkRenderer extends RendererImpl {
     private AbstractFilter filterSites;
     private DrawHints drawHints = new DrawHints();
     private IGraphModel graphModel;
+    private RelationshipIndex index;
 
     private void setCrsTransforms(CoordinateReferenceSystem dataCrs) throws FactoryException {
         boolean lenient = true; // needs to be lenient to work on uDIG 1.1 (otherwise we get error:
@@ -295,6 +300,7 @@ public class NetworkRenderer extends RendererImpl {
         NeoUtils.addTransactionLog(tx, Thread.currentThread(), "render Network");
         try {
             monitor.subTask("connecting");
+            index=neo.index().forRelationships(INeoConstants.INDEX_REL_MULTY);
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
             graphModel = geoNeo.getGraphModel();
             LOGGER.debug("NetworkRenderer resolved geoNeo '" + geoNeo.getName() + "' from resource: "
@@ -494,7 +500,7 @@ public class NetworkRenderer extends RendererImpl {
                                 } else {
                                     beamwidth = getDouble(child, "beamwidth", drawHints.defaultBeamwidth);
                                 }
-                                Color colorToFill = getSectorColor(child, drawHints.fillColor);
+                                 Set<Color> colorsToFill = getSectorColors(child, drawHints.fillColor);
                                 borderColor = drawHints.drawColor;
                                 if (starPoint != null && starPoint.right().equals(child.getId())) {
                                     borderColor = COLOR_SECTOR_STAR;
@@ -508,7 +514,7 @@ public class NetworkRenderer extends RendererImpl {
                                         continue;
                                     }
                                 }
-                                Pair<Point, Point> centerPoint = renderSector(g, p, azimuth, beamwidth, colorToFill, borderColor);
+                                Pair<Point, Point> centerPoint = renderSector(g, p, azimuth, beamwidth, colorsToFill, borderColor);
                                 nodesMap.put(child, centerPoint.getLeft());
                                 if (drawHints.sectorLabeling) {
                                     sectorMap.put(child, centerPoint.getRight());
@@ -938,7 +944,48 @@ public class NetworkRenderer extends RendererImpl {
             tx.finish();
         }
     }
-
+    private Set<Color> getSectorColors(Node node, Color defColor) {
+        Set<Color> results=new LinkedHashSet<Color>();
+        if (graphModel != null) {
+            RGB result = graphModel.getColor(node);
+            if (result != null) {
+                results.add( new Color(result.red, result.green, result.blue, drawHints.alpha));
+                return results;
+            }
+        }
+            if (aggNode == null) {
+                results.add(defColor);
+                return results;
+            }
+            for (Relationship rel:index.get("aggType", aggNode.getId(),null,node)){
+                Node chartNode=rel.getOtherNode(node);
+                final Integer rgb = (Integer)chartNode.getProperty(INeoConstants.AGGREGATION_COLOR, defColor.getRGB());
+                Color clr;
+                if (drawHints.ignoreTransp) {
+                    clr= new Color(rgb);
+                } else {
+                    clr= new Color((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, (rgb >> 0) & 0xFF, drawHints.alpha);
+                }      
+                results.add(clr);
+            }
+            if (!results.isEmpty()){
+                return results;
+            }
+            Node chartNode = NeoUtils.getChartNode(node, aggNode);
+            if (chartNode == null) {
+                results.add(defColor);
+                return results;
+            }
+            final Integer rgb = (Integer)chartNode.getProperty(INeoConstants.AGGREGATION_COLOR, defColor.getRGB());
+            Color clr;
+            if (drawHints.ignoreTransp) {
+                clr= new Color(rgb);
+            } else {
+                clr= new Color((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, (rgb >> 0) & 0xFF, drawHints.alpha);
+            }
+            results.add(clr);
+            return results;
+    }
     /**
      * Render the sector symbols based on the point and azimuth. We simply save the graphics
      * transform, then modify the graphics through the appropriate transformations (origin to site,
@@ -949,53 +996,89 @@ public class NetworkRenderer extends RendererImpl {
      * @param azimuth
      */
     private Pair<java.awt.Point, java.awt.Point> renderSector(Graphics2D g, java.awt.Point p, double azimuth, double beamwidth,
-            Color fillColor, Color borderColor) {
+            Set<Color> colorsToFill, Color borderColor) {
+        /* for testing
+        colorsToFill.add(Color.GREEN);
+        colorsToFill.add(Color.ORANGE);
+        */
         int drawSize = drawHints.drawSize;
         Color oldColor = g.getColor();
         Pair<java.awt.Point, java.awt.Point> result = null;
         if (base_transform == null)
             base_transform = g.getTransform();
-        if (beamwidth < 10)
+        if (beamwidth < 10){
             beamwidth = 10;
-        g.setTransform(base_transform);
-        g.translate(p.x, p.y);
-        int draw2 = drawSize + 3;
-        if (beamwidth >= CIRCLE_BEAMWIDTH) {
-            g.setColor(fillColor);
-            g.fillOval(-drawSize, -drawSize, 2 * drawSize, 2 * drawSize);
-            g.setColor(borderColor);
-            g.drawOval(-drawSize, -drawSize, 2 * drawSize, 2 * drawSize);
-            result = new Pair<java.awt.Point, java.awt.Point>(p, new java.awt.Point(p.x + draw2, p.y));
-
-        } else {
-            double angdeg = -90 + azimuth - beamwidth / 2.0;
-            g.rotate(Math.toRadians(angdeg));
-            g.setColor(fillColor);
-            g.fillArc(-drawSize, -drawSize, 2 * drawSize, 2 * drawSize, 0, -(int)beamwidth);
-            // TODO correct gets point
-
-            g.setColor(borderColor);
-            g.drawArc(-drawSize, -drawSize, 2 * drawSize, 2 * drawSize, 0, -(int)beamwidth);
-            g.drawLine(0, 0, drawSize, 0);
-            g.rotate(Math.toRadians(beamwidth / 2));
-            double xLoc = drawSize / 2;
-            double yLoc = 0;
-            AffineTransform transform = g.getTransform();
-            int x = (int)(transform.getScaleX() * xLoc + transform.getShearX() * yLoc + transform.getTranslateX());
-            int y = (int)(transform.getShearY() * xLoc + transform.getScaleY() * yLoc + transform.getTranslateY());
-
-            int x2 = (int)(transform.getScaleX() * draw2 + transform.getShearX() * yLoc + transform.getTranslateX());
-            int y2 = (int)(transform.getShearY() * draw2 + transform.getScaleY() * yLoc + transform.getTranslateY());
-
-            g.rotate(Math.toRadians(beamwidth / 2));
-            g.drawLine(0, 0, drawSize, 0);
-            Point result1 = new java.awt.Point(x, y);
-            Point result2 = new java.awt.Point(x2, y2);
-            result = new Pair<java.awt.Point, java.awt.Point>(result1, result2);
-
-            g.setColor(oldColor);
+        }else if (beamwidth>CIRCLE_BEAMWIDTH){
+            beamwidth=CIRCLE_BEAMWIDTH;
         }
-        return result;
+        g.setTransform(base_transform);
+//        g.translate(p.x, p.y);
+        int draw2 = drawSize + 3;
+        int h=drawSize/colorsToFill.size();
+        int r1=0;
+        int i=0;
+        double angle1 = -90 + azimuth - beamwidth / 2.0;
+        double angle2 = angle1+beamwidth;
+        Arc2D a=null;
+        for (Color color:colorsToFill){
+            i++;
+            int r2=r1+h;
+            if (i==colorsToFill.size()){
+                r2=drawSize;
+            }
+            GeneralPath path = new GeneralPath();
+            a = new Arc2D.Double();
+            a.setArcByCenter(p.x, p.y, r1, angle2, -beamwidth, Arc2D.OPEN);
+            path.append(a.getPathIterator(null), true);
+            a.setArcByCenter(p.x, p.y, r2, angle1, beamwidth, Arc2D.OPEN);
+            path.append(a.getPathIterator(null), true);
+            path.closePath();
+            g.setColor(color);
+            g.fill(path);
+            g.setColor(borderColor);
+            g.draw(path);
+            r1=r2;
+        }
+        g.setColor(oldColor);
+        java.awt.Point right = new java.awt.Point();
+        right.setLocation(a.getCenterX(), a.getCenterY());
+        return new Pair<java.awt.Point, java.awt.Point>(p, right);
+//        if (beamwidth >= CIRCLE_BEAMWIDTH) {
+//            g.setColor(colorToFill);
+//            g.fillOval(-drawSize, -drawSize, 2 * drawSize, 2 * drawSize);
+//            g.setColor(borderColor);
+//            g.drawOval(-drawSize, -drawSize, 2 * drawSize, 2 * drawSize);
+//            result = new Pair<java.awt.Point, java.awt.Point>(p, new java.awt.Point(p.x + draw2, p.y));
+//
+//        } else {
+//            double angdeg = -90 + azimuth - beamwidth / 2.0;
+//            g.rotate(Math.toRadians(angdeg));
+//            g.setColor(colorToFill);
+//            g.fillArc(-drawSize, -drawSize, 2 * drawSize, 2 * drawSize, 0, -(int)beamwidth);
+//            // TODO correct gets point
+//
+//            g.setColor(borderColor);
+//            g.drawArc(-drawSize, -drawSize, 2 * drawSize, 2 * drawSize, 0, -(int)beamwidth);
+//            g.drawLine(0, 0, drawSize, 0);
+//            g.rotate(Math.toRadians(beamwidth / 2));
+//            double xLoc = drawSize / 2;
+//            double yLoc = 0;
+//            AffineTransform transform = g.getTransform();
+//            int x = (int)(transform.getScaleX() * xLoc + transform.getShearX() * yLoc + transform.getTranslateX());
+//            int y = (int)(transform.getShearY() * xLoc + transform.getScaleY() * yLoc + transform.getTranslateY());
+//
+//            int x2 = (int)(transform.getScaleX() * draw2 + transform.getShearX() * yLoc + transform.getTranslateX());
+//            int y2 = (int)(transform.getShearY() * draw2 + transform.getScaleY() * yLoc + transform.getTranslateY());
+//
+//            g.rotate(Math.toRadians(beamwidth / 2));
+//            g.drawLine(0, 0, drawSize, 0);
+//            Point result1 = new java.awt.Point(x, y);
+//            Point result2 = new java.awt.Point(x2, y2);
+//            result = new Pair<java.awt.Point, java.awt.Point>(result1, result2);
+//
+//            g.setColor(oldColor);
+//        }
+//        return result;
     }
 
     /**

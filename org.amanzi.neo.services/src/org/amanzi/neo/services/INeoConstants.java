@@ -247,4 +247,5 @@ public class INeoConstants {
     public static final String PROPERTY_USED_NODES = "used nodes";
     public static final String PROPERTY_TOTAL_NODES = "total nodes";
     public static final String PROPERTY_FIXED_COLOR = "fixed_color";
+    public static final String INDEX_REL_MULTY = "multy-aggregate";
 }

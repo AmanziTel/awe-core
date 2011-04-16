@@ -35,6 +35,7 @@ public enum NetworkRelationshipTypes implements DeletableRelationshipType {
     NEIGHBOUR_DATA(null,null), 
     TRANSMISSION_DATA(null,null),
     AGGREGATE(null,null),
+    MULTI_AGGREGATE(null, null),
     NEXT(null, null),
     NEIGHBOURS(null, null),
     INTERFERENCE_DATA(null, null), 

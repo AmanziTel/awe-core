@@ -58,6 +58,7 @@ import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser.Order;
+import org.neo4j.graphdb.index.RelationshipIndex;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Traverser;
 import org.neo4j.helpers.Predicate;
@@ -104,6 +105,8 @@ public class ReuseAnalyserModel {
 
     private ISelectionInformation information;
 
+    private RelationshipIndex index;
+
     public void setCurrenTransaction(Transaction transaction) {
         this.currentTransaction = transaction;
     }
@@ -130,12 +133,14 @@ public class ReuseAnalyserModel {
         this.aggregatedProperties = aggregatedProperties;
         this.propertyReturnableEvalvator = propertyReturnableEvalvator;
         this.service = service;
+        index = service.index().forRelationships(INeoConstants.INDEX_REL_MULTY);
     }
 
     /**
      * @param root
      */
     public ReuseAnalyserModel(ISelectionInformation information) {
+        index = service.index().forRelationships(INeoConstants.INDEX_REL_MULTY);
         this.information = information;
         this.service = DatabaseManager.getInstance().getCurrentDatabaseService();
     }
@@ -398,9 +403,9 @@ public class ReuseAnalyserModel {
             }
         }
         double range = 0;
-        //Kasnitskij_V:
+        // Kasnitskij_V:
         double[] varyingRange = null;
-        
+
         if (min == null || max == null) {
             // error calculation
             throw new StatisticCalculationException(ERROR_MSG_NULL);
@@ -436,14 +441,13 @@ public class ReuseAnalyserModel {
             break;
         // Kasnitskij_V:
         case CUSTOM:
-            if (Properties.fingEnumByValue(propertyName) == Properties.ALL_RXLEV_FULL_DBM ||
-                    Properties.fingEnumByValue(propertyName) == Properties.ALL_RXLEV_SUB_DBM) {
+            if (Properties.fingEnumByValue(propertyName) == Properties.ALL_RXLEV_FULL_DBM || Properties.fingEnumByValue(propertyName) == Properties.ALL_RXLEV_SUB_DBM) {
                 min = -120.0;
                 max = -10.0;
             }
             min = Math.rint(min) - 0.5;
             max = Math.rint(max) + 0.5;
-            
+
             varyingRange = Properties.fingEnumByValue(propertyName).getRanges();
             break;
         default:
@@ -459,9 +463,9 @@ public class ReuseAnalyserModel {
         ArrayList<Column> keySet = new ArrayList<Column>();
         double curValue = min;
         Node parentNode = aggrNode;
-        //Kasnitskij_V:
+        // Kasnitskij_V:
         int k = 0;
-        while (Math.abs(curValue - max) >= 0.0001 ) {
+        while (Math.abs(curValue - max) >= 0.0001) {
             if (distribute == Distribute.CUSTOM) {
                 range = varyingRange[k++];
             }
@@ -1363,8 +1367,8 @@ public class ReuseAnalyserModel {
             for (Entry<Bar, Pair<Column, Integer>> entry : columns.entrySet()) {
                 if (monitor.isCanceled())
                     break;
-                
-                Column column=entry.getValue().getLeft();
+
+                Column column = entry.getValue().getLeft();
                 if (column.getPropertyValue() == null) {
                     column.setPropertyValue(propertyValue);
                 }
@@ -1403,6 +1407,7 @@ public class ReuseAnalyserModel {
      */
     private void computeStatistics(ISelectionInformation information, Node rootNode, Node aggrNode, String propertyName, Distribute distribute, Select rules,
             IProgressMonitor monitor) throws StatisticCalculationException {
+
         IPropertyInformation inf = information.getPropertyInformation(propertyName);
 
         Class type = inf.getStatistic().getType();
@@ -1410,8 +1415,8 @@ public class ReuseAnalyserModel {
         Integer totalWork = null;
         int relCount = 0;
 
-            totalWork = (int)inf.getStatistic().getCount();
-        if (totalWork ==0l) {
+        totalWork = (int)inf.getStatistic().getCount();
+        if (totalWork == 0l) {
             LOGGER.warn(String.format("For property '%s' not found counts. Take default value=1000", propertyName));
             totalWork = 1000;
         }
@@ -1459,10 +1464,10 @@ public class ReuseAnalyserModel {
 
                 throw new StatisticCalculationException(ERROR_MSG);
             }
-            if ((Integer.class == type || Long.class == type)&& range < 1) {
+            if ((Integer.class == type || Long.class == type) && range < 1) {
                 range = 1;
             }
-            
+
             ArrayList<Column> keySet = new ArrayList<Column>();
             double curValue = min;
             Node parentNode = aggrNode;
@@ -1487,32 +1492,40 @@ public class ReuseAnalyserModel {
                 result.put(column, 0);
             }
         }
-        monitor.beginTask("Searching database",totalWork);
-        for (ISource source:inf.getValueIterable(rules.getRule())){
+        monitor.beginTask("Searching database", totalWork);
+        for (ISource source : inf.getValueIterable(rules.getRule())) {
             monitor.worked(1);
             if (monitor.isCanceled())
                 break;
-            propertyValue=source.getValue();
-            if (propertyValue==null){
+            propertyValue = source.getValue();
+            if (propertyValue == null) {
                 continue;
             }
             for (Column column : result.keySet()) {
                 if (monitor.isCanceled())
                     break;
-                if (column.getPropertyValue()==null){
+                if (column.getPropertyValue() == null) {
                     column.setPropertyValue(propertyValue);
                 }
                 if (column.containsValue(source.getValue())) {
                     Integer count = result.get(column);
-                    Node nodeToLink =source.getSource();
-                        if (nodeToLink != null) {
-                            column.getNode().createRelationshipTo(nodeToLink, NetworkRelationshipTypes.AGGREGATE);
+                    Node nodeToLink = source.getSource();
+                    if (nodeToLink != null) {
+                        column.getNode().createRelationshipTo(nodeToLink, NetworkRelationshipTypes.AGGREGATE);
+                        relCount++;
+                    }
+                    nodeToLink = source.getMultiSource();
+                    if (nodeToLink != null) {
+                        if (index.get("aggType", aggrNode.getId(), column.getNode(), nodeToLink).getSingle() == null) {
+                            Relationship rel = column.getNode().createRelationshipTo(nodeToLink, NetworkRelationshipTypes.MULTI_AGGREGATE);
+                            index.add(rel, "aggType", aggrNode.getId());
                             relCount++;
-                            if (relCount > 5000) {
-                                commit();
-                                relCount = 0;
-                            }
                         }
+                    }
+                    if (relCount > 5000) {
+                        commit();
+                        relCount = 0;
+                    }
                     result.put(column, 1 + (count == null ? 0 : count));
                     break;
                 }
@@ -1526,7 +1539,7 @@ public class ReuseAnalyserModel {
         keySet.addAll(result.keySet());
         for (Column column : keySet) {
             if (prev_col != null && result.get(prev_col) == 0 && result.get(column) == 0) {
-                column.merge(prev_col, service);
+                column.merge(prev_col, service, aggrNode);
                 result.remove(prev_col);
 
             }

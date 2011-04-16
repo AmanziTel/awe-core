@@ -24,6 +24,7 @@ import org.neo4j.graphdb.Node;
  */
 public interface ISource {
     Node getSource();
+    Node getMultiSource();
     Object getValue();
     
 }

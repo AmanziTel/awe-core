@@ -18,7 +18,9 @@ import java.math.RoundingMode;
 
 import org.amanzi.awe.views.reuse.Distribute;
 import org.amanzi.awe.views.reuse.range.Bar;
+import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
@@ -27,6 +29,8 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.index.IndexHits;
+import org.neo4j.graphdb.index.RelationshipIndex;
 
 /**
  * <p>
@@ -77,6 +81,8 @@ public class Column implements Comparable<Column> {
      * @param prevCol the prev col
      */
     public void merge(Column prevCol,GraphDatabaseService service) {
+        DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
+        
         minValue = prevCol.minValue;
         range += prevCol.range;
         node.setProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, minValue);
@@ -84,6 +90,41 @@ public class Column implements Comparable<Column> {
         Node prevNode = prevCol.getNode();
         for (Relationship relation : prevNode.getRelationships(NetworkRelationshipTypes.AGGREGATE, Direction.OUTGOING)) {
             node.createRelationshipTo(relation.getOtherNode(node), NetworkRelationshipTypes.AGGREGATE);
+        }
+        GeoNeoRelationshipTypes linkType = GeoNeoRelationshipTypes.CHILD;
+        Relationship parentLink = prevNode.getSingleRelationship(linkType, Direction.INCOMING);
+        if(parentLink==null){
+            linkType = GeoNeoRelationshipTypes.NEXT;
+            parentLink = prevNode.getSingleRelationship(linkType, Direction.INCOMING);
+        }
+        Node parentMain = parentLink.getOtherNode(prevNode);
+        NeoUtils.deleteSingleNode(prevNode,service);
+        node.setProperty(INeoConstants.PROPERTY_NAME_NAME, getColumnName());
+        prevCol.setNode(null);
+        parentMain.createRelationshipTo(node, linkType);
+        setSpacer(true);
+    }
+    public void merge(Column prevCol,GraphDatabaseService service,Node aggregateNode) {
+        RelationshipIndex index = service.index().forRelationships(INeoConstants.INDEX_REL_MULTY);
+        minValue = prevCol.minValue;
+        range += prevCol.range;
+        node.setProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, minValue);
+        node.setProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE, minValue + range);
+        Node prevNode = prevCol.getNode();
+        IndexHits<Relationship> rels = index.get("aggType", aggregateNode.getId(),null,prevNode);
+        for (Relationship rel:rels){
+            index.remove(rel, "aggType", aggregateNode.getId());
+        }
+        for (Relationship relation : prevNode.getRelationships(NetworkRelationshipTypes.AGGREGATE, Direction.OUTGOING)) {
+            node.createRelationshipTo(relation.getOtherNode(node), NetworkRelationshipTypes.AGGREGATE);
+        }
+      
+        for (Relationship relation : prevNode.getRelationships(NetworkRelationshipTypes.MULTI_AGGREGATE, Direction.OUTGOING)) {
+            Node multiNode = relation.getOtherNode(node);
+            if (index.get("aggType", aggregateNode.getId(),node,multiNode).getSingle()==null){
+                Relationship rel = node.createRelationshipTo(relation.getOtherNode(node), NetworkRelationshipTypes.MULTI_AGGREGATE);
+                index.add(rel, "aggType", aggregateNode.getId());
+            }
         }
         GeoNeoRelationshipTypes linkType = GeoNeoRelationshipTypes.CHILD;
         Relationship parentLink = prevNode.getSingleRelationship(linkType, Direction.INCOMING);
