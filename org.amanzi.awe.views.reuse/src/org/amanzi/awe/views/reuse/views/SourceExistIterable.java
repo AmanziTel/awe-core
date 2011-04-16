@@ -124,14 +124,27 @@ public class SourceExistIterable implements Iterable<ISource> {
                     boolean isArrIter = arrIter != null && arrIter.hasNext();
                     Node node = isArrIter ? arrNode : nextNode;
                     if (isArrIter) {
-                        return new SourceImpl(finder == null ? node : finder.getSource(node), arrIter.next());
-                    } else {
+                        if (finder!=null){
+                            return new SourceImpl(finder.getMultySource(node), finder.getSource(node), arrIter.next());
+                            
+                        }else{
+                            return new SourceImpl(node , arrIter.next());
+                        }
+                     } else {
                         nextNode = null;
-                        return new SourceImpl(finder == null ? node : finder.getSource(node), node.getProperty(name, null));
+                        if (finder!=null){
+                            return new SourceImpl(finder.getMultySource(node), finder.getSource(node), node.getProperty(name, null));
+                        }else{
+                            return new SourceImpl(node , node.getProperty(name, null));
+                        }
                     }
                 }
                 Node node = it.next();
-                return new SourceImpl(finder == null ? node : finder.getSource(node), node.getProperty(name, null));
+                if (finder!=null){
+                    return new SourceImpl(finder.getMultySource(node), finder.getSource(node), node.getProperty(name, null));
+                }else{
+                    return new SourceImpl( node , node.getProperty(name, null));
+                }
             }
 
             @Override

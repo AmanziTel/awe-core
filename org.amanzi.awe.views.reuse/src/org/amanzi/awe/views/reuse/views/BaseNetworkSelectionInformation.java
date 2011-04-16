@@ -22,6 +22,7 @@ import java.util.Set;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.statistic.IPropertyInformation;
 import org.amanzi.neo.services.statistic.ISelectionInformation;
 import org.amanzi.neo.services.statistic.ISinglePropertyStat;
@@ -142,7 +143,26 @@ public class BaseNetworkSelectionInformation implements ISelectionInformation {
                     return Evaluation.of(includes, continues);
                 }
             }).traverse(root);
-            return new SourceExistIterable(td,name);
+            return new SourceExistIterable(td,name,formSourceFinder(nodeType));
+        }
+        public ISourceFinder formSourceFinder(String nodeType) {
+
+            if (NodeTypes.TRX.getId().equals(nodeType)){
+                return new ISourceFinder() {
+                    
+                    @Override
+                    public Node getSource(Node node) {
+                        return node;
+                    }
+                    
+                    @Override
+                    public Node getMultySource(Node node) {
+                        return node.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
+                    }
+                };
+            }
+            //TODO implement full
+            return null;
         }
 
     }
@@ -150,4 +170,5 @@ public class BaseNetworkSelectionInformation implements ISelectionInformation {
     public String getFullDescription() {
         return getDescription();
     }
+
 }

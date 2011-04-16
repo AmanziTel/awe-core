@@ -153,6 +153,12 @@ public class FrPlanPropertyInf implements IPropertyInformation {
                 return node == null ? null : node.getSingleRelationship(DatasetRelationshipTypes.PLAN_ENTRY, Direction.INCOMING)
                         .getStartNode().getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
             }
+
+            @Override
+            public Node getMultySource(Node node) {
+                //TODO refactor
+                return null;
+            }
         };
         if ("arfcn".equals(propertyName)) {
             return new SourceExistIterable(traverser, propertyName, propertyNameArr, sf);

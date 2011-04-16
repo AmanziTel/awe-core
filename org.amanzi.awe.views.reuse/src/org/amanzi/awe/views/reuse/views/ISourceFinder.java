@@ -30,5 +30,6 @@ public interface ISourceFinder {
  * @param node the node
  * @return the source
  */
-Node getSource(Node node);
+    Node getSource(Node node);
+    Node getMultySource(Node node);
 }

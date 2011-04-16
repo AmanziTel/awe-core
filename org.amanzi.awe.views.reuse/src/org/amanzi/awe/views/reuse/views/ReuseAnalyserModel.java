@@ -140,9 +140,9 @@ public class ReuseAnalyserModel {
      * @param root
      */
     public ReuseAnalyserModel(ISelectionInformation information) {
-        index = service.index().forRelationships(INeoConstants.INDEX_REL_MULTY);
         this.information = information;
         this.service = DatabaseManager.getInstance().getCurrentDatabaseService();
+        index = service.index().forRelationships(INeoConstants.INDEX_REL_MULTY);
     }
 
     /**
