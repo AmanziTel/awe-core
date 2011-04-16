@@ -161,7 +161,8 @@ public class AfpDomainSelector {
 	 }
 	
 	protected void setStateToAddButton(boolean state) {
-	    actionButton.setEnabled(state);
+	    if (actionButton.getText().equals("Add"))
+	        actionButton.setEnabled(state);
 	}
 
 	protected void handleDomainNameSection(int selection, String name) {
