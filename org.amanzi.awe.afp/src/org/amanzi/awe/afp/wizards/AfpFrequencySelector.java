@@ -55,6 +55,7 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 		bandIndexes = model.getAvailableFrequencyBandsIndexs();
 
 		int selectedBand =0;
+		selectedArray = new String[0];
 
 
 		if (action.equals("Edit") || action.equals("Delete") || action.equals("Clear")){
@@ -118,8 +119,16 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 		}
 
 		super.addButtons(action);
+		setStateToAddButton(false);
 	 }
 
+	private void setEnabledToAddButton() {
+	    if (selectedArray.length > 0)
+            setStateToAddButton(true);
+        else
+            setStateToAddButton(false);
+	}
+	
 	void updateFreqList() {
 		//TODO update the frequencies on basis of selection
 		//String leftFreq[] = model.getFrequencyArray(bandIndexes[0]);
@@ -185,6 +194,7 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 						freqList.remove(item);
 					}
 					selectedArray = selectedList.getItems();
+					setEnabledToAddButton();
 					selectedList.setItems(selectedArray);
 					thisSelectionLabel.setText("" + selectedArray.length + " Frequencies selected");
 				}
@@ -205,6 +215,7 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 						selectedList.remove(item);
 					}
 					selectedArray = selectedList.getItems();
+					setEnabledToAddButton();
 					String array[] = AfpModel.rangeArraytoArray(selectedArray);
 					thisSelectionLabel.setText("" + array.length + " Frequencies selected");
 					String notSelected[] = AfpModel.rangeArraytoArray(freqList.getItems());

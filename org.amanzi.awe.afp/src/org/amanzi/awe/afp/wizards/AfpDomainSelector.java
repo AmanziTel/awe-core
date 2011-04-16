@@ -29,6 +29,8 @@ public class AfpDomainSelector {
 	
 	protected boolean newDomain = true;
 	protected AfpDomainModel domain2Edit = null;
+	
+	private Button actionButton;
 
 	public AfpDomainSelector(final WizardPage page, Shell parentShell, final Group parentGroup, final AfpModel model){
 
@@ -99,7 +101,7 @@ public class AfpDomainSelector {
 	}
 	
 	protected void addButtons(final String action) {
-		Button actionButton = new Button(subShell, SWT.PUSH);
+		actionButton = new Button(subShell, SWT.PUSH);
 		actionButton.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
 		
 		actionButton.setText(action);
@@ -157,7 +159,10 @@ public class AfpDomainSelector {
 		subShell.open();
 		
 	 }
-
+	
+	protected void setStateToAddButton(boolean state) {
+	    actionButton.setEnabled(state);
+	}
 
 	protected void handleDomainNameSection(int selection, String name) {
 	}
