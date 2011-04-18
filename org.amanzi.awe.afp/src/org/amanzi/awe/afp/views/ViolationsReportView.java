@@ -30,6 +30,7 @@ import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.network.FrequencyPlanModel;
 import org.amanzi.neo.services.network.NetworkModel;
+import org.apache.commons.io.FilenameUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -121,7 +122,7 @@ public class ViolationsReportView extends ViewPart {
         fd.setFilterPath(LoaderUiUtils.getDefaultDirectory());
         String[] filterExt = { "*.txt", "*.csv","*.*" };
         fd.setFilterExtensions(filterExt);
-        fd.setFileName(fplan.getText());
+        fd.setFileName(FilenameUtils.getName(fplan.getText().trim().replace(':','_')));
         final String selected = fd.open();
         if (selected!=null){
             fplan.setEnabled(false);
