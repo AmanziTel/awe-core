@@ -49,10 +49,34 @@
    <extension
          point="org.eclipse.ui.views">
       <view
+            category="org.amanzi.awe.script"
             class="org.amanzi.awe.afp.views.ViolationsReportView"
             icon="icons/afp.png"
             id="org.amanzi.awe.afp.views.ViolationsReportView"
             name="Violations Report">
       </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.amanzi.afp.perspective">
+         <view
+               id="org.amanzi.awe.afp.views.ViolationsReportView"
+               minimized="false"
+               relationship="stack"
+               relative="net.refractions.udig.catalog.ui.CatalogView"
+               visible="true">
+         </view>
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="org.amanzi.awe.perspective">
+         <view
+               id="org.amanzi.awe.afp.views.ViolationsReportView"
+               minimized="false"
+               relationship="stack"
+               relative="net.refractions.udig.catalog.ui.CatalogView"
+               visible="true">
+         </view>
+      </perspectiveExtension>
    </extension>
 </plugin>

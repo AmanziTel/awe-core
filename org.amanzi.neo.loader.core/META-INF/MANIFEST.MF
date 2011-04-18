@@ -17,7 +17,8 @@ Export-Package: au.com.bytecode.opencsv,
  org.amanzi.neo.loader.core.preferences,
  org.amanzi.neo.loader.core.saver,
  org.amanzi.neo.loader.core.saver.impl,
- org.amanzi.neo.loader.core.saver.network
+ org.amanzi.neo.loader.core.saver.network,
+ org.amanzi.neo.loader.core.utils
 Bundle-ClassPath: .,
  lib/opencsv-2.2.jar
 Bundle-Vendor: amanzi.org

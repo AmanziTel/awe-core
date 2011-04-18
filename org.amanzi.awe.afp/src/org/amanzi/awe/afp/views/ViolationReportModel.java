@@ -81,7 +81,10 @@ public class ViolationReportModel extends TableModel {
     public int getRowsCount() {
         return iterable == null ? 0 : iterable.getElementCount(true);
     }
-
+    public String getDataTxt(int column,int row){
+        ViolationWrapper el = iterable.getElement(row);
+        return el.getStrValue(column);
+    }
     @Override
     public TableViewerColumn createColumn(TableViewer viewer, int columnId) {
         TableViewerColumn columnVuewer = super.createColumn(viewer, columnId);
@@ -160,13 +163,16 @@ public class ViolationReportModel extends TableModel {
 
     @Override
     public void updateColumn(Table table, TableColumn column, int columnId) {
-        if (columnId < columns.size()) {
-            column.setText(columns.get(columnId));
-        } else {
-            column.setText(names[columnId - columns.size()]);
-        }
-    }
+        column.setText(getColumnTxt(columnId));
 
+    }
+    public String getColumnTxt(int columnId){
+        if (columnId < columns.size()) {
+            return columns.get(columnId);
+        } else {
+            return names[columnId - columns.size()];
+        }   
+    }
     @Override
     public int getColumnsCount() {
         return columns.size() + names.length;
