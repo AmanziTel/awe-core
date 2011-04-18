@@ -13,6 +13,11 @@
 
 package org.amanzi.neo.services.ui;
 
+import java.util.List;
+
+import org.amanzi.neo.services.enums.INodeType;
+
+
 /**
  * TODO Purpose of 
  * <p>
@@ -27,5 +32,5 @@ public interface ISelectionPropertyImplementation {
     public String getName();
     
     // if property not visible return false
-    public boolean checkImplementation(String property);
+    public boolean checkImplementation(String property, List<INodeType> networkStructure);
 }

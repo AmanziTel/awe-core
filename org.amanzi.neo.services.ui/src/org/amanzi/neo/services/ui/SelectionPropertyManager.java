@@ -14,6 +14,9 @@
 package org.amanzi.neo.services.ui;
 
 import java.util.ArrayList;
+import java.util.List;
+
+import org.amanzi.neo.services.enums.INodeType;
 
 /**
  * TODO Purpose of 
@@ -83,10 +86,10 @@ public class SelectionPropertyManager {
      * @param property checking property
      * @return false - if property not visible, true - if property visible
      */
-    public boolean checkVisibility(String property) {
+    public boolean checkVisibility(String property, List<INodeType> networkStructure) {
         boolean isSuccess = true;
         for (ISelectionPropertyImplementation implementation : listOfImplementations) {
-            isSuccess = implementation.checkImplementation(property);
+            isSuccess = implementation.checkImplementation(property, networkStructure);
         }
         
         return isSuccess;
