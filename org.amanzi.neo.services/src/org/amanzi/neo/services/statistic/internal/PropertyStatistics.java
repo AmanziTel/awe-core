@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.amanzi.neo.db.manager.INeoDbService;
 import org.amanzi.neo.services.statistic.ChangeClassRule;
@@ -47,7 +48,7 @@ public class PropertyStatistics implements ISinglePropertyStat {
     private long count;
 
     /** The values. */
-    private Map<Object, Long> values = new HashMap<Object, Long>();
+    private Map<Object, Long> values = new TreeMap<Object, Long>();
 
     /** The is comparable. */
     private boolean isComparable;

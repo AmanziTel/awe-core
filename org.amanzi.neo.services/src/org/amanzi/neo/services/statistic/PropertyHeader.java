@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
@@ -474,7 +475,7 @@ public class PropertyHeader implements IPropertyHeader {
 
         @Override
         public Map<Object, Long> getValueMap() {
-            Map<Object, Long> result = new HashMap<Object, Long>();
+            Map<Object, Long> result = new TreeMap<Object, Long>();
             if (valueNode != null) {
                 for (String propString : valueNode.getPropertyKeys()) {
                     result.put(propString, ((Number)valueNode.getProperty(propString)).longValue());
