@@ -430,7 +430,7 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 		exportJob = model.getExporter();
 		exportJob.setRule(rule);
 		
-		loadJob = new AfpOutputFileLoaderJob("Load generated Network", model.getDatasetNode(), model.getAfpNode(), exportJob);
+		loadJob = new AfpOutputFileLoaderJob("Loading new frequency plans", model.getDatasetNode(), model.getAfpNode(), exportJob);
 		loadJob.setRule(rule);
 		
 		if(afpJob == null) {

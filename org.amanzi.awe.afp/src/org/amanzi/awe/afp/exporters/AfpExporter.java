@@ -140,7 +140,7 @@ public class AfpExporter extends Job {
     private List<String> names = new ArrayList<String>();
 
     public AfpExporter(Node afpRoot, Node afpDataset, AfpModel model) {
-        super("Write Input files");
+        super("Preparing AFP scenarios");
         this.afpRoot = afpRoot;
         this.afpDataset = afpDataset;
         this.model = model;

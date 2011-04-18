@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.HashMap;
+import java.util.StringTokenizer;
 
 import org.amanzi.awe.afp.Activator;
 import org.amanzi.awe.afp.AfpEngine;
@@ -89,6 +90,7 @@ public class AfpProcessExecutor extends Job {
 	    }
 	    
 		progressMonitor = monitor;
+		super.setName("Starting AFP optimization");
 		monitor.beginTask("Execute Afp", 100);
 //        AfpExporter afpE = new AfpExporter(afpRoot, afpDataset, model);
         
@@ -103,16 +105,17 @@ public class AfpProcessExecutor extends Job {
 			//String command = path + " \"" + afpE.controlFileName + "\"";
 			//AweConsolePlugin.info("Executing Cmd: " + command);
 			//process = run.exec(command);
-			int numDomains = afpE.domainDirPaths.length;
+			int numDomains = afpE.domainDirPaths.length + 1;
 			process = new Process[numDomains];
-			for (processIndex = 0; processIndex < numDomains; processIndex++){
+			for (processIndex = 0; processIndex < numDomains - 1; processIndex++){
 				jobFinished = false;
 				String dirPath = afpE.domainDirPaths[processIndex];
-				
+				String nameOfDomain = getNameOfDomain(dirPath);
+				super.setName("Optimize plan for " + nameOfDomain);
 				String controlFileName = dirPath + afpE.fileNames[AfpExporter.CONTROL];
 				process[processIndex] = run.exec(new String[]{path,controlFileName});
 				AweConsolePlugin.info("Executing: " + processIndex);
-				monitor.worked(0);
+				monitor.worked((int)(100/numDomains));
 				AweConsolePlugin.info("AFP Engine .... started");
 						
 				/**
@@ -198,7 +201,7 @@ public class AfpProcessExecutor extends Job {
 				}
 			}
 			AweConsolePlugin.info("AFP Engine .... finished");
-			monitor.worked(100);
+			monitor.worked(90);
 //			String outFileName = afpE.domainDirPaths[0] + afpE.outputFileName;
 //			AfpOutputFileLoader afpOutputFileLoader = new AfpOutputFileLoader(afpRoot, outFileName, afpDataset);
 //			afpOutputFileLoader.run(monitor);
@@ -211,10 +214,27 @@ public class AfpProcessExecutor extends Job {
             return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getLocalizedMessage(), e);
 		}
 		finally{
+		    monitor.worked(100);
 			monitor.done();
+			super.setName("AFP completed");
 		}
 		
 		return Status.OK_STATUS;
+	}
+	
+	/**
+	 * Get name of domain from path
+	 *
+	 * @param path the path
+	 * @return name of domain
+	 */
+	private String getNameOfDomain(String path) {
+	    StringBuffer stringBuffer = new StringBuffer(path);
+	    stringBuffer = stringBuffer.reverse();
+	    StringTokenizer stringTokenizer = new StringTokenizer(stringBuffer.toString());
+	    stringBuffer = new StringBuffer(stringTokenizer.nextToken("\\\\"));
+	    stringBuffer = stringBuffer.reverse();
+	    return stringBuffer.toString();
 	}
 	
 	/**

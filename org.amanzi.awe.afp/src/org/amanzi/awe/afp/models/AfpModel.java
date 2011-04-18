@@ -1905,7 +1905,7 @@ public class AfpModel {
             if (parameters == null) {
                 setParameters();
             }
-            afpJob = new AfpProcessExecutor("Execute Afp Process", datasetNode, this.afpNode, parameters, this, exportJob);
+            afpJob = new AfpProcessExecutor("Optimize plan for ", datasetNode, this.afpNode, parameters, this, exportJob);
             afpJob.setProgress(progress);
             // afpJob.schedule();
         }
