@@ -258,11 +258,11 @@ public class AfpWizardPage extends WizardPage implements SelectionListener {
 		public void handleEvent(Event event) {
 			
 			final ArrayList<String> selectedValues = new ArrayList<String>();
-			final Shell subShell = new Shell(parentShell,SWT.PRIMARY_MODAL);
+			final Shell subShell = new Shell(parentShell,SWT.PRIMARY_MODAL|SWT.RESIZE|SWT.DIALOG_TRIM);
 			subShell.setLayout(new GridLayout(2, false));
 			Point location = subShell.getDisplay().getCursorLocation();
 			
-			subShell.setLocation(location.x,450);
+			subShell.setLocation(location.x,location.y);
 			
 			/*subShell.addMouseListener(new MouseAdapter(){
 
