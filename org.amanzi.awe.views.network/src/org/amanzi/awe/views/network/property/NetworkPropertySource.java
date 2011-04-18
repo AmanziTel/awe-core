@@ -12,7 +12,6 @@
  */
 package org.amanzi.awe.views.network.property;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,35 +19,28 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.refractions.udig.internal.ui.UiPlugin;
-
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEvent;
-import org.amanzi.awe.ui.AweUiPlugin;
-import org.amanzi.awe.ui.UiService;
 import org.amanzi.awe.views.network.proxy.NeoNode;
-import org.amanzi.neo.core.database.entity.NeoDataService;
-import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.IndexManager;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.ISinglePropertyStat;
 import org.amanzi.neo.services.statistic.PropertyHeader;
-import org.amanzi.neo.services.statistic.StatisticManager;
 import org.amanzi.neo.services.statistic.internal.PropertyHeaderImpl;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.SelectionPropertyManager;
 import org.amanzi.neo.services.utils.Utils;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.ui.internal.UIPlugin;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.traversal.Traverser;
 import org.neo4j.neoclipse.property.NodePropertySource;
 import org.neo4j.neoclipse.property.PropertyDescriptor;
 import org.neo4j.neoclipse.property.PropertyTransform;
@@ -86,8 +78,7 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
      * @return the property descriptors
      */
     public IPropertyDescriptor[] getPropertyDescriptors() {
-        List<IPropertyDescriptor> descs = new ArrayList<IPropertyDescriptor>();
-        descs.addAll(getHeadPropertyDescriptors());
+        SelectionPropertyManager propertyManager = SelectionPropertyManager.getInstanse();
         
         // Kasnitskij_V:
         IPropertyHeader propertyHeader = null;
@@ -102,6 +93,20 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
         }
         catch (NullPointerException e) {
             isNetworkName = false;
+        }
+        
+        List<INodeType> networkStructure;
+        try {
+            networkStructure = datasetService.getSructureTypes((Node)container);
+        }
+        catch (NullPointerException e) {
+            networkStructure = new ArrayList<INodeType>();
+        }
+        
+        List<IPropertyDescriptor> descs = new ArrayList<IPropertyDescriptor>();
+        for (IPropertyDescriptor descriptor : getHeadPropertyDescriptors()) {
+            if (propertyManager.checkVisibility(descriptor.getDisplayName(), networkStructure))
+                descs.add(descriptor);   
         }
         
         if (isNetworkName) {
@@ -143,7 +148,9 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
             
             int index = 0;
             for (String key : keys) {
-                allKeys[index++] = key;
+                boolean isVisible = propertyManager.checkVisibility(key, networkStructure);
+                if (isVisible)
+                    allKeys[index++] = key;
             }
             for (String keyFromProperties : keysFromProperties) {
                 allKeys[index++] = keyFromProperties;
@@ -167,25 +174,27 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
         }
 
         for (String key : allKeys) {
-            Object value = container.getProperty((String)key);
-            Class< ? > c = value.getClass();
-            if(isDeltaNode && key.startsWith("Delta ")) {
-                String name = key.replace("Delta ", "");
-                String category = "Changes for";
-                Matcher matcher = pattern.matcher(key);
-                if(matcher.matches()) {
-                    name = matcher.group(2);
-                    category = category + " " + matcher.group(1);
-                } else if(container.hasProperty("name")) {
-                    category = category + " " + container.getProperty("name");
+            if (key != null) {
+                Object value = container.getProperty((String)key);
+                Class< ? > c = value.getClass();
+                if(isDeltaNode && key.startsWith("Delta ")) {
+                    String name = key.replace("Delta ", "");
+                    String category = "Changes for";
+                    Matcher matcher = pattern.matcher(key);
+                    if(matcher.matches()) {
+                        name = matcher.group(2);
+                        category = category + " " + matcher.group(1);
+                    } else if(container.hasProperty("name")) {
+                        category = category + " " + container.getProperty("name");
+                    }
+                    descs.add(new PropertyDescriptor(key, name, category, c));
+                } else {
+                    NodeTypes nt = NodeTypes.getNodeType(container,null);
+                    if(nt == null || nt.isPropertyEditable(key))
+                        descs.add(new PropertyDescriptor(key, key, PROPERTIES_CATEGORY, c));
+                    else
+                        descs.add(new PropertyDescriptor(key, key, NODE_CATEGORY));
                 }
-                descs.add(new PropertyDescriptor(key, name, category, c));
-            } else {
-                NodeTypes nt = NodeTypes.getNodeType(container,null);
-                if(nt == null || nt.isPropertyEditable(key))
-                    descs.add(new PropertyDescriptor(key, key, PROPERTIES_CATEGORY, c));
-                else
-                    descs.add(new PropertyDescriptor(key, key, NODE_CATEGORY));
             }
         }
         return descs.toArray(new IPropertyDescriptor[descs.size()]);
