@@ -251,7 +251,7 @@ public class ViolationReportModel extends TableModel {
             fields[i++] = ns.getNodeName(site2);
             fields[i++] = ns.getNodeName(sector2);
             fields[i++] = ns.getNodeName(trx2);
-            fields[i++] = String.valueOf(impactrelation.getProperty(isCo ? "coa" : "ada"));
+            fields[i++] = String.valueOf(impactrelation.getProperty(isCo ? "co" : "adj"));
             float[] arr = (float[])impactrelation.getProperty(isCo ? "contributions_co" : "contributions_adj");
             fields[i++] = String.valueOf(arr[arr.length - 2]);
             fields[i++] = String.valueOf(arr[arr.length - 1]);

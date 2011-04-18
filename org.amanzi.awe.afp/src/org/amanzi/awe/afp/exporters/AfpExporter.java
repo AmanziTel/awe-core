@@ -131,7 +131,9 @@ public class AfpExporter extends Job {
     private int globalCount;
     private IStatistic statistic;
     private float[] contributions_co;
+    private float[] contributions_cot;
     private float[] contributions_adj;
+    private float[] contributions_adjt;
     private Map<NodeToNodeTypes, List<String>> lists = new HashMap<NodeToNodeTypes, List<String>>();
     private Map<NodeToNodeTypes, Integer> index = new HashMap<NodeToNodeTypes, Integer>();
     private int totalIndex;
@@ -416,7 +418,9 @@ public class AfpExporter extends Job {
                 sbSubCell.append("INT 0\t0\t");
                 // String[] values = sectorIntValues.get(intSector)[1];
                 contributions_co = new float[totalIndex + 2];
+                contributions_cot = new float[totalIndex + 2];
                 contributions_adj = new float[totalIndex + 2];
+                contributions_adjt = new float[totalIndex + 2];
                 final float[] trxValues = calculateInterference(trx, intTrx, sectorIntValues.get(intSector));
                 boolean includeSubcell = false;
                 for (int i = 0; i < trxValues.length; i++) {
@@ -424,7 +428,8 @@ public class AfpExporter extends Job {
                         includeSubcell = true;
                     sbSubCell.append(df.format(trxValues[i]) + " ");
                 }
-                if (trxValues[0] < minCo || trxValues[1] < minCo) {
+                float co=useTraffic[currentDomainIndex]?trxValues[CoT]:trxValues[CoA];
+                if (co < minCo) {
                     includeSubcell = false;
                 }
                 sbSubCell.append(intTrx.getId());
@@ -435,20 +440,31 @@ public class AfpExporter extends Job {
                         @Override
                         public void run() {
                             Relationship relation = impact.getRelation(trx, intTrx);
-                            relation.setProperty("coa", trxValues[CoA]);
-                            relation.setProperty("cot", trxValues[CoT]);
-                            relation.setProperty("ada", trxValues[AdA]);
-                            relation.setProperty("adt", trxValues[AdT]);
-                            relation.setProperty("contributions_co", contributions_co);
-                            relation.setProperty("contributions_adj", contributions_adj);
-                            statistic.indexValue(impact.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), "coa", trxValues[CoA]);
-                            statistic.indexValue(impact.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), "cot", trxValues[CoT]);
-                            statistic.indexValue(impact.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), "ada", trxValues[AdA]);
-                            statistic.indexValue(impact.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), "adt", trxValues[AdT]);
+                            float co;
+                            float ad;
+                            float[]arr;
+                            float[]arr2;
+                            if (useTraffic[currentDomainIndex]){
+                                co=trxValues[CoT];
+                                ad=trxValues[AdT];
+                                arr= contributions_cot;
+                                arr2= contributions_adjt;
+                            }else{
+                                co=trxValues[CoA];
+                                ad=trxValues[AdA];
+                                arr= contributions_co;
+                                arr2= contributions_adj;
+                            }
+                            relation.setProperty("co", co);
+                            relation.setProperty("adj",ad);
+                            relation.setProperty("contributions_co",arr);
+                            relation.setProperty("contributions_adj", arr2);                                
+                            statistic.indexValue(impact.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), "co", co);
+                            statistic.indexValue(impact.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), "adj", ad);
                             statistic.indexValue(impact.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), "contributions_adj",
-                                    contributions_adj);
+                                    arr);
                             statistic.indexValue(impact.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), "contributions_co",
-                                    contributions_co);
+                                    arr2);
                         }
                     });
                     globalCount += 4;
@@ -524,15 +540,14 @@ public class AfpExporter extends Job {
         }
 
         for (int j = 0; j < 4; j++) {
+            float[] arr=j==CoA?contributions_co:j==CoT?contributions_cot:j==AdA?contributions_adj:contributions_adjt;
             // CoA
 
             float val = 0;
             for (Entry<NodeToNodeTypes, Map<String, List<String[]>>> entry : sectorValues.map.entrySet()) {
                 int id = -1;
                 for (Entry<String, List<String[]>> entryList : entry.getValue().entrySet()) {
-                    if (j == CoA || j == AdA) {
-                        id = this.index.get(entry.getKey()) + lists.get(entry.getKey()).indexOf(entryList.getKey());
-                    }
+                    id = this.index.get(entry.getKey()) + lists.get(entry.getKey()).indexOf(entryList.getKey());
                     ScalingFactors sf = model.findScalingFactor(entry.getKey(), entryList.getKey());
                     for (String[] values : entryList.getValue()) {
                         try {
@@ -555,11 +570,7 @@ public class AfpExporter extends Job {
                         } else if (j == AdA || j == AdT) {
                             scalingFactor = sf.getAdj()[index] / 100;
                         }
-                        if (j == CoA) {
-                            contributions_co[id] += val * scalingFactor;
-                        } else if (j == AdA) {
-                            contributions_adj[id] += val * scalingFactor;
-                        }
+                        arr[id]+=val * scalingFactor;
                         calculatedValues[j] += val * scalingFactor;
                     }
 
@@ -569,15 +580,11 @@ public class AfpExporter extends Job {
             // co-site
             if (j == CoA || j == CoT) {
                 if (site1.equals(site2)) {
-                    if (j == CoA) {
-                        contributions_co[totalIndex] += CO_SITE_SCALING_FACTOR * model.siteSeparation[index] / 100;
-                    }
+                    arr[totalIndex] += CO_SITE_SCALING_FACTOR * model.siteSeparation[index] / 100;
                     calculatedValues[j] += CO_SITE_SCALING_FACTOR * model.siteSeparation[index] / 100;
                 }
                 if (sector1.equals(sector2)) {
-                    if (j == CoA) {
-                        contributions_co[totalIndex + 1] += CO_SECTOR_SCALING_FACTOR * model.sectorSeparation[index] / 100;
-                    }
+                    arr[totalIndex+1] += CO_SECTOR_SCALING_FACTOR * model.sectorSeparation[index] / 100;
                     calculatedValues[j] += CO_SECTOR_SCALING_FACTOR * model.sectorSeparation[index] / 100;
                 }
             }
