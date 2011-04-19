@@ -56,7 +56,7 @@ public class AfpProcessExecutor extends Job {
 	/** Flag whether process is completed*/
 	private boolean jobFinished = false;
 	long progressTime =0;
-	
+	private long currentCompleted = 0;
 	private Node afpRoot;
 	protected Transaction transaction;
 	private HashMap<String, String> parameters;
@@ -91,7 +91,7 @@ public class AfpProcessExecutor extends Job {
 	    
 		progressMonitor = monitor;
 		super.setName("Starting AFP optimization");
-		monitor.beginTask("Execute Afp", 100);
+		monitor.beginTask("Execute Afp", 100000);
 //        AfpExporter afpE = new AfpExporter(afpRoot, afpDataset, model);
         
         
@@ -108,6 +108,7 @@ public class AfpProcessExecutor extends Job {
 			int numDomains = afpE.domainDirPaths.length + 1;
 			process = new Process[numDomains];
 			for (processIndex = 0; processIndex < numDomains - 1; processIndex++){
+			    currentCompleted = 0;
 				jobFinished = false;
 				String dirPath = afpE.domainDirPaths[processIndex];
 				String nameOfDomain = getNameOfDomain(dirPath);
@@ -115,7 +116,8 @@ public class AfpProcessExecutor extends Job {
 				String controlFileName = dirPath + afpE.fileNames[AfpExporter.CONTROL];
 				process[processIndex] = run.exec(new String[]{path,controlFileName});
 				AweConsolePlugin.info("Executing: " + processIndex);
-				monitor.worked((int)(100/numDomains));
+				final int currentProgress = (int)(100000 / numDomains);
+				monitor.worked(currentProgress);
 				AweConsolePlugin.info("AFP Engine .... started");
 						
 				/**
@@ -151,8 +153,8 @@ public class AfpProcessExecutor extends Job {
 		    			try{
 		    				while ((output = input.readLine()) != null){
 		    					// check the progress variable
-		    					AweConsolePlugin.info("Output: " + output);
-		    					checkForProgress(progressMonitor, output);
+		    					//AweConsolePlugin.info("Output: " + output);
+		    					checkForProgress(progressMonitor, output, currentProgress);
 		    				}
 		    				input.close();
 		    				writer.close();
@@ -201,7 +203,7 @@ public class AfpProcessExecutor extends Job {
 				}
 			}
 			AweConsolePlugin.info("AFP Engine .... finished");
-			monitor.worked(90);
+			monitor.worked(10000);
 //			String outFileName = afpE.domainDirPaths[0] + afpE.outputFileName;
 //			AfpOutputFileLoader afpOutputFileLoader = new AfpOutputFileLoader(afpRoot, outFileName, afpDataset);
 //			afpOutputFileLoader.run(monitor);
@@ -214,7 +216,7 @@ public class AfpProcessExecutor extends Job {
             return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getLocalizedMessage(), e);
 		}
 		finally{
-		    monitor.worked(100);
+		    monitor.worked(10000);
 			monitor.done();
 			super.setName("AFP completed");
 		}
@@ -301,9 +303,9 @@ public class AfpProcessExecutor extends Job {
 		
 	}
 	
-	void checkForProgress(IProgressMonitor monitor, String output) {
+	void checkForProgress(IProgressMonitor monitor, String output, int currentProgress) {
 		
-		if(output.startsWith("PROGRESS CoIT1Done/CoIT1")) {
+		if(output.startsWith("PROGRESS")) {
 		// progress line
 		String[] tokens = output.split(",");
 		if (tokens.length >= 3) {
@@ -311,18 +313,20 @@ public class AfpProcessExecutor extends Job {
 				long time =  Long.parseLong(tokens[1]);
 				long completed = Long.parseLong(tokens[2]);
 				long total = Long.parseLong(tokens[3]);
-				AweConsolePlugin
-						.info(" total " + total);
+//				AweConsolePlugin
+//						.info(" total " + total);
 				if (completed > total) {
 					completed = total;
 				}
-				AweConsolePlugin.info(" completed "
-						+ completed);
+//				AweConsolePlugin.info(" completed "
+//						+ completed);
 				
+				long local = completed - currentCompleted;
 				if(monitor != null) {
-					long per = (completed *100) /total;
-					monitor.worked((int)per);
+					int per = (int)(((local *100000) /total) * (currentProgress / 100000d));
+					monitor.worked(per);
 				}
+				currentCompleted = completed;
 				onProgressUpdate(0, time *1000, total - completed,
 						0, 0, 0, 0, 0, 0, 0);
 			} catch (Exception e) {
