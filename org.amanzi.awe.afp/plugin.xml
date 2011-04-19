@@ -31,7 +31,11 @@
              </command>
           </toolbar>
        </menuContribution>
-    </extension>     
+    </extension>  
+   <extension
+         point="org.eclipse.ui.startup">
+      <startup class="org.amanzi.awe.afp.ActivatorSelectionProperty"/>
+   </extension>   
        <extension
          point="org.eclipse.core.runtime.preferences">
       <initializer
