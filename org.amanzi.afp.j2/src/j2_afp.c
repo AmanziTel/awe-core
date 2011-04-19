@@ -1399,7 +1399,8 @@ void h_def_mset(void) {
 	int i, j, l_n1=0, l_n2=0;
 	double l_nnx=0.0;
 	G_ToComp = 0;
-	for (i=0; i<CARD_(GRAPH); i++)
+
+	for (i=0; i<CARD_(GRAPH); i++) {
 		for (j=i; j<CARD_(GRAPH); j++) {
 			R_IT1(GRAPH->Edge,i,j,l_n1)
 			;
@@ -1409,19 +1410,20 @@ void h_def_mset(void) {
 				G_ToComp++;
 			}
 		}
+	}
 
 	l_nnx = (double) G_ToComp;
 
 	l_n1 = (int) ((l_nnx-1) / 100);
 
 	l_n1 = 1 + (100-QUALITY)*l_n1;
+
 	l_n1 = _MAX_(l_n1,1);
 
 	G_Min_SET = _MIN_(G_ToComp, l_n1);
-	
 	//TODO: This is how Rahul output progress to the console. We need to fine the right place, since this seems unlikely to be correct
-	printf("CoIT1 = %d, MAX_SET = %d, MIN_SET = %d\n", G_ToComp, l_n1,
-			G_Min_SET);
+//	printf("CoIT1 = %d, MAX_SET = %d, MIN_SET = %d\n", G_ToComp, l_n1,
+//			G_Min_SET);
 
 }
 
@@ -1859,6 +1861,8 @@ void _O_test_subset(int p_pr) {
 
 	LOW_PRIO = p_pr + 1;
 	l_trx = IT_MAX;
+	int totalCount = l_trx - G_PAR[p_pr].pclb;
+	int currentCount = 0;
 	while (G_PAR[p_pr].pclb < l_trx) {
 		switch (_h_get_trile(l_ffound, p_pr, EX_PRIO, p_pr-1,
 				G_PAR[p_pr].pdisr, G_PAR[p_pr].pdisr-1, l_trx)) {
@@ -1878,6 +1882,9 @@ void _O_test_subset(int p_pr) {
 			l_ffound = _MAX_(G_Min_SET,G_Cur_SET/2);
 			break;
 		}
+		currentCount = totalCount - l_trx;
+		int time = 0;
+		printf("PROGRESS,%d,%d,%d\n", time, currentCount, totalCount);
 	}
 	l_trz = G_Act_d;
 	if (_O_test_CC()) {
@@ -1914,7 +1921,6 @@ void _i_X_AFP_(void) {
 	LOW_PRIO = NO_PRIO;
 
 	for (l_prio=CCl_PRIO; (2 < l_prio); l_prio--) {
-
 		if (!G_PAR[l_prio].act_prio)
 			continue;
 		//fprintf(ProtocolFile,"FA for PRIO = %d, DIST = %d  >>>>>\n",l_prio,G_PAR[l_prio].pdisr);
@@ -1923,9 +1929,8 @@ void _i_X_AFP_(void) {
 	}
 
 	_OUT_coloring2protfile();
-	///fflush(ProtocolFile);           
+	///fflush(ProtocolFile);
 	_OUT_current_coloring(1);
-
 }
 
 short read_GRAPH_data(char * p_ctrfile) {
@@ -2264,13 +2269,16 @@ awe_afp(char * control_file) {
 	}
 
 	if (Use_SON) {
+		printf("Use_SON");
 		put_SON_CR(N2_PRIO,SON_PRIO,1,-1,SON_IT_Min);
 		G_PAR[SON_PRIO].act_prio = 1;
 	}
 
 	_i_X_AFP_();
 
+	printf("_fALL_start");
 	_f_ALL();
+	printf("_fAll end");
 	return (NO_ERR);
 
 }
