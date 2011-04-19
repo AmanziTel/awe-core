@@ -1338,7 +1338,7 @@ public class ReuseAnalyserModel {
      */
     private void computeStatistics(ISelectionInformation information, Node rootNode, Node aggrNode, String propertyName, RangeModel rangeModel, Select rules,
             IProgressMonitor monitor) throws StatisticCalculationException {
-        Map<Bar, Pair<Column, Integer>> columns = new HashMap<Bar, Pair<Column, Integer>>();
+        Map<Bar, Pair<Column, Double>> columns = new HashMap<Bar, Pair<Column, Double>>();
         Node parentNode = aggrNode;
         RGB defColor = new RGB(255, 255, 255);
         for (Bar bar : rangeModel.getBars()) {
@@ -1350,7 +1350,7 @@ public class ReuseAnalyserModel {
                 parentNode.setProperty(INeoConstants.AGGREGATION_COLOR, new Color(barCol.red, barCol.green, barCol.blue).getRGB());
             }
 
-            columns.put(bar, new Pair<Column, Integer>(col, 0));
+            columns.put(bar, new Pair<Column, Double>(col, 0d));
         }
         IPropertyInformation inf = information.getPropertyInformation(propertyName);
         int totalWork = (int)inf.getStatistic().getCount();
@@ -1364,7 +1364,7 @@ public class ReuseAnalyserModel {
                 continue;
             }
             int relCount = 0;
-            for (Entry<Bar, Pair<Column, Integer>> entry : columns.entrySet()) {
+            for (Entry<Bar, Pair<Column, Double>> entry : columns.entrySet()) {
                 if (monitor.isCanceled())
                     break;
 
@@ -1373,7 +1373,7 @@ public class ReuseAnalyserModel {
                     column.setPropertyValue(propertyValue);
                 }
                 if (entry.getKey().getRange().contains((Number)propertyValue)) {
-                    Integer count = entry.getValue().right();
+                    Double count = entry.getValue().right();
                     Node nodeToLink = source.getSource();
                     if (nodeToLink != null) {
                         column.getNode().createRelationshipTo(nodeToLink, NetworkRelationshipTypes.AGGREGATE);
@@ -1383,13 +1383,13 @@ public class ReuseAnalyserModel {
                             relCount = 0;
                         }
                     }
-                    entry.getValue().setRight(1 + (count == null ? 0 : count));
+                    entry.getValue().setRight(source.getCount() + (count == null ? 0 : count));
                     break;
                 }
             }
         }
         monitor.subTask("Finalizing results");
-        for (Entry<Bar, Pair<Column, Integer>> entry : columns.entrySet()) {
+        for (Entry<Bar, Pair<Column, Double>> entry : columns.entrySet()) {
             Column column = entry.getValue().getLeft();
             column.setValue(entry.getValue().getRight());
         }
@@ -1411,7 +1411,7 @@ public class ReuseAnalyserModel {
         IPropertyInformation inf = information.getPropertyInformation(propertyName);
 
         Class type = inf.getStatistic().getType();
-        TreeMap<Column, Integer> result = new TreeMap<Column, Integer>();
+        TreeMap<Column, Double> result = new TreeMap<Column, Double>();
         Integer totalWork = null;
         int relCount = 0;
 
@@ -1475,7 +1475,7 @@ public class ReuseAnalyserModel {
                 Column col = new Column(aggrNode, parentNode, curValue, range, distribute, null, service);
                 parentNode = col.getNode();
                 keySet.add(col);
-                result.put(col, 0); // make sure distribution is continuous (includes gaps)
+                result.put(col, 0d); // make sure distribution is continuous (includes gaps)
                 curValue += range;
                 if (range == 0) {
                     break;
@@ -1489,7 +1489,7 @@ public class ReuseAnalyserModel {
                 column.setComparableValue((Comparable)property);
                 column.setValue(((Number)valueMap.get(property)).intValue());
                 parent = column.getNode();
-                result.put(column, 0);
+                result.put(column, 0d);
             }
         }
         monitor.beginTask("Searching database", totalWork);
@@ -1508,7 +1508,7 @@ public class ReuseAnalyserModel {
                     column.setPropertyValue(propertyValue);
                 }
                 if (column.containsValue(source.getValue())) {
-                    Integer count = result.get(column);
+                    Double count = result.get(column);
                     Node nodeToLink = source.getSource();
                     if (nodeToLink != null) {
                         column.getNode().createRelationshipTo(nodeToLink, NetworkRelationshipTypes.AGGREGATE);
@@ -1526,7 +1526,7 @@ public class ReuseAnalyserModel {
                         commit();
                         relCount = 0;
                     }
-                    result.put(column, 1 + (count == null ? 0 : count));
+                    result.put(column, source.getCount() + (count == null ? 0 : count));
                     break;
                 }
             }

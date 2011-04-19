@@ -72,18 +72,22 @@ public class TransactionWrapper {
             //TODO generate error?
         }
     }
+
+    public Future< ? > commitNoWait() {
+        return executor.submit(new Runnable() {
+
+            @Override
+            public void run() {
+                tx.success();
+                tx.finish();
+                tx = DatabaseManager.getInstance().getCurrentDatabaseService().beginTx();
+                isChanged = false;
+            }
+        });
+    }
     public void commit(){
         try {
-            executor.submit(new Runnable() {
-                
-                @Override
-                public void run() {
-                    tx.success();
-                    tx.finish();
-                    tx=DatabaseManager.getInstance().getCurrentDatabaseService().beginTx();
-                }
-            }).get();
-            isChanged=false;
+            commitNoWait().get();
         } catch (InterruptedException e) {
             // TODO Handle InterruptedException
             throw (RuntimeException) new RuntimeException( ).initCause( e );
@@ -92,18 +96,21 @@ public class TransactionWrapper {
             throw (RuntimeException) new RuntimeException( ).initCause( e );
         }      
     }
+    public Future< ? > rollbackNoWait(){
+        return executor.submit(new Runnable() {
+            
+            @Override
+            public void run() {
+                tx.failure();
+                tx.finish();
+                tx=DatabaseManager.getInstance().getCurrentDatabaseService().beginTx();
+                isChanged=false;
+            }
+        }); 
+    }
     public void rollback(){
         try {
-            executor.submit(new Runnable() {
-                
-                @Override
-                public void run() {
-                    tx.failure();
-                    tx.finish();
-                    tx=DatabaseManager.getInstance().getCurrentDatabaseService().beginTx();
-                }
-            }).get();
-            isChanged=false;
+            rollbackNoWait().get();
         } catch (InterruptedException e) {
             // TODO Handle InterruptedException
             throw (RuntimeException) new RuntimeException( ).initCause( e );
@@ -126,6 +133,23 @@ public class TransactionWrapper {
     public Future<?> submit(Runnable task){
 //        isChanged=true;
         return executor.submit(task);
+    }
+    public  Future<?> finishTxNoWait(final boolean isCommit){
+        return executor.submit(new Runnable() {
+            
+            @Override
+            public void run() {
+                try{
+                    if (isCommit){
+                        tx.success();
+                    }
+                    tx.finish();
+                }finally{
+                    tx=null;
+                    executor.shutdown();                 
+                }
+            }
+        });
     }
     public  void stop(boolean isCommit) {
         try {
@@ -157,7 +181,7 @@ public class TransactionWrapper {
     }
     public static void main(String[] args) {
         ScheduledExecutorService shed = Executors.newSingleThreadScheduledExecutor();
-        ScheduledExecutorService shed2 = Executors.newSingleThreadScheduledExecutor();
+        final ScheduledExecutorService shed2 = Executors.newSingleThreadScheduledExecutor();
         Runnable command=new Runnable() {
             
             @Override
@@ -169,12 +193,17 @@ public class TransactionWrapper {
             
             @Override
             public void run() {
+                System.err.println(shed2.isShutdown());
                 System.err.println(Thread.currentThread().getId());
+                shed2.shutdown();
             }
         };
         shed.execute(command);
         shed2.execute(command2);
         shed.execute(command);
+        shed2.execute(command2);
+        shed2.execute(command2);
+        shed2.execute(command2);
         shed2.execute(command2);
     }
     public boolean isChanged() {

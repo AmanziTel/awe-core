@@ -26,5 +26,6 @@ public interface ISource {
     Node getSource();
     Node getMultiSource();
     Object getValue();
+    Double getCount();
     
 }

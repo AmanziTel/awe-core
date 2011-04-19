@@ -2024,7 +2024,8 @@ public class FrequencyPlanAnalyser extends ViewPart implements IPropertyChangeLi
                     return 0;
                 }
                 try {
-                    return ((Number)((ChartNode)comparable1).getNode().getProperty(INeoConstants.PROPERTY_VALUE_NAME)).intValue();
+                    Double value = ((Number)((ChartNode)comparable1).getNode().getProperty(INeoConstants.PROPERTY_VALUE_NAME)).doubleValue();
+                    return value.equals(Math.floor(value))?value.intValue():value;
                 } catch (Exception e) {
                     // TODO Handle Exception
                     throw (RuntimeException)new RuntimeException().initCause(e);

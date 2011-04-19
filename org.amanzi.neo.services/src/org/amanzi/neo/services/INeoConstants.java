@@ -45,6 +45,7 @@ public class INeoConstants {
     public static final String PROPERTY_SECTOR_CI = "ci";
     public static final String PROPERTY_SECTOR_BSIC = "bsic";
     public static final String PROPERTY_SECTOR_ARFCN = "arfcn";
+    public static final String PROPERTY_MAL= "mal";
     public static final String PROPERTY_SECTOR_NAME = "name";
     public static final String PROPERTY_GIS_TYPE_NAME = "gis_type";
     public static final String PROPERTY_FILENAME_NAME = "filename";
@@ -248,4 +249,6 @@ public class INeoConstants {
     public static final String PROPERTY_TOTAL_NODES = "total nodes";
     public static final String PROPERTY_FIXED_COLOR = "fixed_color";
     public static final String INDEX_REL_MULTY = "multy-aggregate";
+    public static final String PROPERTY_MAIO = "maio";
+
 }

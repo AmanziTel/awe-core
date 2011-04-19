@@ -1297,7 +1297,10 @@ public class DatasetService extends AbstractService {
     /**
      * The Interface NodeResult. - wrapper of Node which contains result of operation: Node was
      * found, or node was created
+     * 
+     * Use WrNode, NodeResult is not fully correct, because neo4j NodeImpl.class have not fully correct equals method
      */
+    @Deprecated 
     public interface NodeResult extends Node {
 
         /**

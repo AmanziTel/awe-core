@@ -27,6 +27,7 @@ public class SourceImpl implements ISource {
     private Node source;
     private Node multiSource;
     private Object value;
+    private double count;
 
     /**
      * @param source
@@ -37,6 +38,7 @@ public class SourceImpl implements ISource {
         this.source = source;
         this.multiSource = null;
         this.value = value;
+        count=1;
     }
 
     public SourceImpl(Node multiSource, Node source, Object value) {
@@ -44,6 +46,7 @@ public class SourceImpl implements ISource {
         this.source = source;
         this.multiSource = multiSource;
         this.value = value;
+        count=1;
     }
 
     @Override
@@ -66,6 +69,15 @@ public class SourceImpl implements ISource {
     @Override
     public Node getMultiSource() {
         return multiSource;
+    }
+
+    public void setCount(double count) {
+        this.count = count;
+    }
+
+    @Override
+    public Double getCount() {
+        return count;
     }
 
 }

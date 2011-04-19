@@ -15,8 +15,11 @@ package org.amanzi.awe.afp.ericsson.saver;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -355,9 +358,13 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
             if (plan.isCreated()) {
                 statistic.updateTypeCount(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), 1);
             }
-            updateProperty(rootname, NodeTypes.TRX.getId(), trx, "hsn", channalGr.getProperty("hsn", null));
+            //HSN for hopping
+            if (hoptype>0){
+                updateProperty(rootname, NodeTypes.TRX.getId(), trx, "hsn", channalGr.getProperty("hsn", null));
+            }
             Integer bcchno = (Integer)sector.getProperty("bcch", null);
-            if (!plan.hasProperty("bcc")) {
+            //BCC/NCC belong to BCCH TRX, but does not exist for any non-BCCH TRX
+            if (isBcch&&!plan.hasProperty("bcc")) {
                 Object bcc = sector.getProperty("bcc");
                 if (bcc != null) {
                     updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), plan, "bcc", bcc);
@@ -372,11 +379,10 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
                 // Kasnitskij_V:
                // plan.setProperty(INeoConstants.PROPERTY_NAME_NAME, ORIGINAL);
             }
-            if (!plan.hasProperty("arfcn")) {
+            if (!plan.hasProperty(INeoConstants.PROPERTY_SECTOR_ARFCN)&&!plan.hasProperty(INeoConstants.PROPERTY_MAL)) {
                 Integer arfcn = null;
                 if (isBcch) {
                     if (bcchno != null) {
-
                         arfcn = bcchno;
                     }
                 } else {
@@ -411,14 +417,15 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
                             int[] arfcnArr = null;
                             Set<Integer> removedArfcn = new HashSet<Integer>();
                             for (Relationship rel : sector
-                                    .getRelationships(DatasetRelationshipTypes.PLAN_ENTRY, Direction.OUTGOING)) {
+                                    .getRelationships(DatasetRelationshipTypes.CHILD, Direction.OUTGOING)) {
                                 final Node trxOth = rel.getOtherNode(sector);
                                 if (trx.equals(trxOth)) {
                                     continue;
                                 }
                                 if (channelGr.equals(trxOth.getProperty("group", null))) {
                                     if (hoptype != (Integer)trxOth.getProperty("hopping_type", null)) {
-                                        Integer arfcnOth = (Integer)trxOth.getProperty("arfcn", null);
+                                        NodeResult fp = getFreqPlan(ORIGINAL).getPlanNode(trx);
+                                        Integer arfcnOth = (Integer)fp.getProperty(INeoConstants.PROPERTY_SECTOR_ARFCN, null);
                                         if (arfcnOth != null) {
                                             removedArfcn.add(arfcnOth);
                                         }
@@ -430,45 +437,65 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
                             if (arfcnArr == null) {
                                 arfcnArr = exluded(dchno, removedArfcn);
                                 for (int i = 0; i < arfcnArr.length; i++) {
-                                    statistic.indexValue(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), "arfcn", arfcnArr[i]);
+                                    statistic.indexValue(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), INeoConstants.PROPERTY_SECTOR_ARFCN, arfcnArr[i]);
                                 }
                             }
-                            plan.setProperty("arfcnArr", arfcnArr);
+                            plan.setProperty(INeoConstants.PROPERTY_MAL, arfcnArr);
                         }
                     }
                 }
                 if (arfcn != null) {
-                    updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), plan, "arfcn", arfcn);
+                    updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), plan, INeoConstants.PROPERTY_SECTOR_ARFCN, arfcn);
                 }
             }
-            if (!plan.hasProperty("maio") && hoptype == 2) {
-                String maioPr = "maio_" + trxId;
-                Integer maioInt = (Integer)channalGr.getProperty(maioPr, null);
+            if (!plan.hasProperty(INeoConstants.PROPERTY_MAIO) && hoptype == 2) {
 
-                if (maioInt == null) {
-                    int[] arfcnArr = (int[])plan.getProperty("arfcnArr", null);
-                    if (arfcnArr != null) {
-                        int maxVal = arfcnArr.length;
-                        int numTrx = Integer.valueOf(trxId);
-                        if (channelGr == 0) {
-                            numTrx++;
+                // String maioPr = "maio_" + trxId;
+                // Integer maioInt = (Integer)channalGr.getProperty(maioPr, null);
+
+                // if (maioInt == null) {
+                int[] arfcnArr = (int[])plan.getProperty(INeoConstants.PROPERTY_MAL, null);
+                if (arfcnArr != null) {
+                    int[] maioArr = new int[arfcnArr.length];
+                    ArrayList<Integer> maio = new ArrayList<Integer>();
+                    for (int i = 0; i < arfcnArr.length; i++) {
+                        maio.add(i);
+                    }
+                    Collections.sort(maio, new Comparator<Integer>() {
+
+                        @Override
+                        public int compare(Integer o1, Integer o2) {
+                            boolean isOdd1 = ((o1 & 1) == 0);
+                            boolean isOdd2 = ((o2 & 1) == 0);
+                            return isOdd1 == isOdd2 ? o1.compareTo(o2) : isOdd1 ? o1 : o2;
                         }
-                        if (numTrx > maxVal) {
-                            error("Can't create maio property for trx with id=" + trxId);
+
+                    });
+                    for (int i = 0; i < arfcnArr.length; i++) {
+                        String maioPr = "maio_" + trxId;
+                        Integer maioInt = (Integer)channalGr.getProperty(maioPr, null);
+                        if (maioInt != null) {
+                            maio.remove(maioInt);
+                            maioArr[i] = maioInt;
                         } else {
-                            maxVal--;
-                            int oddVal = (numTrx - 1) * 2;
-                            // TODO check formula
-                            maioInt = oddVal <= maxVal ? oddVal : numTrx - (maxVal + 1) / 2;
+                            maioArr[i] = -1;
                         }
                     }
+                    Iterator<Integer> it = maio.iterator();
+                    if (it.hasNext()) {
+                        for (int i = 0; i < arfcnArr.length; i++) {
+                            if (maioArr[i] < 0) {
+                                maioArr[i] = it.next();
+                            }
+                        }
+                    }
+                    plan.setProperty(INeoConstants.PROPERTY_MAIO, maioArr);
                 }
-                updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), plan, "maio", maioInt);
+                // }
             }
             break;
         }
     }
-
 
     private boolean defineBCCH(NodeResult trx, Integer channelGr, Node channalGr) {
         if (trx.isCreated()) {
@@ -655,25 +682,34 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
             group.setProperty("firstTRX", trx.getId());
         }
         NodeResult plan = getFreqPlan(ORIGINAL).getPlanNode(trx);
-        statistic.updateTypeCount(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), 1);
-        updateProperty(rootname, NodeTypes.TRX.getId(), trx, "hsn", group.getProperty("hsn", null));
-        Object bcc = sector.getProperty("bcc");
-        if (bcc != null) {
-            updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), plan, "bcc", bcc);
+        if (!plan.isCreated()){
+            return;
         }
-        Object ncc = sector.getProperty("ncc");
-        if (ncc != null) {
-            updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), plan, "ncc", ncc);
+        statistic.updateTypeCount(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), 1);
+        //HSN for hopping
+        if (hoptype>0){
+            updateProperty(rootname, NodeTypes.TRX.getId(), trx, "hsn", group.getProperty("hsn", null));
+        }
+        //BCC/NCC for BCCH TRX only
+        if (isBcch) {
+            Object bcc = sector.getProperty("bcc");
+            if (bcc != null) {
+                updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), plan, "bcc", bcc);
+            }
+            Object ncc = sector.getProperty("ncc");
+            if (ncc != null) {
+                updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), plan, "ncc", ncc);
+            }
         }
         // if (bcchno!=null){
         // updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(),plan,"bcch",bcchno);
         // }
         // Kasnitskij_V:
         //plan.setProperty(INeoConstants.PROPERTY_NAME_NAME, ORIGINAL);
-        updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), plan, "arfcn", arfcn);
-        String maioPr = "maio_" + id;
-        Integer maioInt = (Integer)group.getProperty(maioPr, null);
-        updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), plan, "maio", maioInt);
+        updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), plan, INeoConstants.PROPERTY_SECTOR_ARFCN, arfcn);
+//        String maioPr = "maio_" + id;
+//        Integer maioInt = (Integer)group.getProperty(maioPr, null);
+//        updateProperty(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), plan, "maio", maioInt);
     }
 
     /**

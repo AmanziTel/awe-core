@@ -34,6 +34,7 @@ import org.amanzi.neo.services.node2node.INode2NodeFilter;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationService;
 import org.amanzi.neo.services.utils.Utils;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
@@ -294,7 +295,7 @@ public class NetworkService extends DatasetService {
     }
 
     private enum Relations implements RelationshipType {
-        CHANNEL_GROUP, CHANNEL_TRX, FREQUENCY_ROOT, FR_SPECTRUM;
+        CHANNEL_GROUP, SY_GROUP,CHANNEL_TRX, FREQUENCY_ROOT, FR_SPECTRUM, GROUP_TRX;
     }
 
     /**
@@ -766,15 +767,61 @@ public class NetworkService extends DatasetService {
         if (isCreated) {
             Transaction tx = databaseService.beginTx();
             try{
-                planNode = NeoServiceFactory.getInstance().getDatasetService().createNode(NodeTypes.FREQUENCY_PLAN);
+                Node gr=null;
+                if (ObjectUtils.equals(getHopType(trx),2)&&!(Boolean)trx.getProperty("bcch",false)){
+                    gr = getSYGroup(findSectorOfTRX(trx)).getOriginalNode();
+                    planNode=findPlanNode(gr, rootNode);
+                }
+                if (planNode==null){
+                    planNode = NeoServiceFactory.getInstance().getDatasetService().createNode(NodeTypes.FREQUENCY_PLAN);
+                    rootNode.createRelationshipTo(planNode, GeoNeoRelationshipTypes.CHILD);
+                    if (gr!=null){
+                        gr.createRelationshipTo(trx, Relations.GROUP_TRX);
+                        gr.createRelationshipTo(planNode,DatasetRelationshipTypes.PLAN_ENTRY);
+                    }
+                }else{
+                    isCreated=false;
+                }
                 trx.createRelationshipTo(planNode,DatasetRelationshipTypes.PLAN_ENTRY);
-                rootNode.createRelationshipTo(planNode, GeoNeoRelationshipTypes.CHILD);
-            tx.success();
+                tx.success();
             }finally{
                 tx.finish();
             }
         }
         return new DatasetService.NodeResultImpl(planNode, isCreated);
+    }
+
+
+
+
+    public WrNode getSYGroup(Node sector) {
+        Node group=findSYGroup(sector);
+        if (group!=null){
+            return new WrNode(group);
+        }
+        Transaction tx = databaseService.beginTx();
+        try{
+            group = createNode(NodeTypes.SY_GROUP);
+            sector.createRelationshipTo(group,Relations.SY_GROUP);
+            tx.success();
+            return new WrNode(group,true);
+        }finally{
+            tx.finish();
+        }     
+    }
+
+
+    private Node findSYGroup(Node sector) {
+        Relationship rel = sector.getSingleRelationship(Relations.SY_GROUP, Direction.OUTGOING);
+        return rel==null?null:rel.getOtherNode(sector);
+    }
+
+    public Node findSectorOfTRX(Node trx) {
+        return trx.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(trx);
+    }
+
+    public Integer getHopType(Node trx) {
+        return (Integer)trx.getProperty("hopping_type",null);
     }
 
     public Iterable<Node> findAllNodeByType(Node network,final INodeType type) {

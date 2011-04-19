@@ -154,7 +154,7 @@ public class Column implements Comparable<Column> {
      *
      * @param countNode the new value
      */
-    public void setValue(int countNode) {
+    public void setValue(double countNode) {
         if (node != null) {
             node.setProperty(INeoConstants.PROPERTY_VALUE_NAME, countNode);
         }
