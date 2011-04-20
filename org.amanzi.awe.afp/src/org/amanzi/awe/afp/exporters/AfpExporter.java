@@ -242,6 +242,7 @@ public class AfpExporter extends Job {
                 intWriters[i] = new BufferedWriter(new FileWriter(inputFiles[i][INTERFERENCE]), 8 * 1024);
                 // TODO add time to impact name?
                 impacts[i] = networkModel.getImpactMatrix("Impact_" + i + " " + inputFiles[i][INTERFERENCE].getName());
+                impact=impacts[i];
                 tx.submit(new Runnable() {
 
                     @Override
@@ -318,7 +319,7 @@ public class AfpExporter extends Job {
                                     statistic = StatisticManager.getStatistic(model.getDatasetNode());
                                     float kf1=1f;
                                     if (syTrx){
-                                        kf1=(float)ns.getTrxOfSyGroup(gr)/frequencies.length;
+                                        kf1=(float)ns.getTrxCountOfSyGroup(gr)/frequencies.length;
                                     }
                                     writeInterferenceForTrx(kf1,sectorNode, syTrx,syTrx?gr:trxNode, intWriters[i], sectorIntValues, rf);
 
@@ -373,7 +374,7 @@ public class AfpExporter extends Job {
                     if (arr.length==0){
                         continue;
                     }
-                    kf2=(float)ns.getTrxOfSyGroup(gr)/arr.length;
+                    kf2=(float)ns.getTrxCountOfSyGroup(gr)/arr.length;
                 }
                 analyseSy=analyseSy||syTrx;
                 // TODO debug (2nd part of old condition do not necessary...)

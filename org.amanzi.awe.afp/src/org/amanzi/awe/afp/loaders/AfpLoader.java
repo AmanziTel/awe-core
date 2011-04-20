@@ -15,7 +15,9 @@ package org.amanzi.awe.afp.loaders;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +33,7 @@ import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NetworkService;
+import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.network.FrequencyPlanModel;
@@ -291,8 +294,7 @@ public class AfpLoader {
                 tx.finish();
             }
         }
-        CommonImporter importer = new CommonImporter(new InterferenceFileHandler(afpInterference, neo), new TxtFileImporter(
-                interferenceFile));
+        CommonImporter importer = new CommonImporter(new InterferenceFileHandler(afpInterference, neo), new TxtFileImporter(interferenceFile));
         importer.process();
     }
 
@@ -360,8 +362,7 @@ public class AfpLoader {
         afpCell = afpRoot;
 
         CellFileHandler handler = new CellFileHandler(afpCell, neo, isNodeIdBased, cellFile);
-        CommonImporter importer = new CommonImporter(handler,
-                new TxtFileImporter(cellFile));
+        CommonImporter importer = new CommonImporter(handler, new TxtFileImporter(cellFile));
         importer.process();
         return handler;
     }
@@ -431,8 +432,7 @@ public class AfpLoader {
 
             sector.createRelationshipTo(proxySector, type);
 
-            luceneInd.index(proxySector, NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME,
-                    NodeTypes.SECTOR_SECTOR_RELATIONS), proxySectorName);
+            luceneInd.index(proxySector, NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS), proxySectorName);
 
             tx.success();
         } finally {
@@ -469,14 +469,13 @@ public class AfpLoader {
             time = System.currentTimeMillis();
             String domain = cellFile.getParentFile().getName();
             String formTime = new SimpleDateFormat("dd-MMM-yyyy HH:mm", new Locale("en", "US", "WINDOWS")).format(time);
-            String name = domain +" "+ formTime;
+            String name = domain + " " + formTime;
             planModel = networkModel.getFrequencyModel(name, Long.toString(time), domain);
             this.isNodeIdBased = isNodeIdBased;
         }
 
         private String getSampleSectorName(String siteName, String sectorNo) {
-            Node site = luceneInd.getSingleNode(
-                    NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteName);
+            Node site = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteName);
             if (site != null) {
                 // find a sector under this site
                 for (Relationship r : site.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
@@ -513,6 +512,7 @@ public class AfpLoader {
                 if (isNodeIdBased) {
                     long nodeId = Long.parseLong(field[i++]);
                     Node trxNode = service.getNodeById(nodeId);
+                    boolean isGroup = NodeTypes.SY_GROUP.checkNode(trxNode);
                     // Node sector = service.getNodeById(nodeId);
                     String trxName = field[i++];
                     if (trxName.contains("-"))
@@ -520,54 +520,71 @@ public class AfpLoader {
                     Integer nonrelevant = Integer.valueOf(field[i++]);
                     Integer numberoffreqenciesrequired = Integer.valueOf(field[i++]);
                     Integer numberoffrequenciesgiven = Integer.valueOf(field[i++]);
-                    int frq = 0;
+                    List<Integer> frq = new ArrayList<Integer>();
 
                     for (int j = 0; j < numberoffrequenciesgiven; j++) {
-                        frq = Integer.valueOf(field[i++]);
-
-                        // Traverser traverser = Utils.getTrxTraverser(sector);
-                        Transaction tx = service.beginTx();
-                        try {
-                            // for (Node trx: traverser){
-                            // if
-                            // (trx.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(trxName)){
-                            // trxNode = trx;
-                            // break;
-                            // }
-                            // }
-
-                            // if (trxNode == null){
-                            // trxNode = addChild(sector, NodeTypes.TRX, trxName, trxName);
-                            // }
-                            // trxNode.setProperty("nonrelevant", nonrelevant);
-                            // statistic.indexValue(rootName, NodeTypes.TRX.getId(), "nonrelevant",
-                            // nonrelevant);
-                            // trxNode.setProperty("numberoffreqenciesrequired",
-                            // numberoffreqenciesrequired);
-                            // statistic.indexValue(rootName, NodeTypes.TRX.getId(),
-                            // "numberoffreqenciesrequired",
-                            // numberoffreqenciesrequired);
-                            // trxNode.setProperty("numberoffrequenciesgiven",
-                            // numberoffrequenciesgiven);
-                            // statistic.indexValue(rootName, NodeTypes.TRX.getId(), "nonrelevant",
-                            // nonrelevant);
-                            // String band = (String)sector.getProperty("band", "");
-                            // if (band.contains(" "))
-                            // band = band.split("\\s")[1];
-                            AweConsolePlugin.info("Adding frequency plan results[" + frq + "] for TRX node id " + nodeId);
-
-                            // for (int j = 0; j < frq.length; j++){
-                            Node planNode = planModel.getPlanNode(trxNode);
-                            planNode.setProperty("arfcn", frq);
-                            statistic.indexValue(planModel.getName(), NodeTypes.FREQUENCY_PLAN.getId(), "arfcn", frq);
-                            planNode.setProperty(INeoConstants.AFP_PROPERTY_ORIGINAL_NAME, false);
-                            // }
-
-                            tx.success();
-                        } finally {
-                            tx.finish();
-                        }
+                        frq.add(Integer.valueOf(field[i++]));
                     }
+                    // Traverser traverser = Utils.getTrxTraverser(sector);
+                    Transaction tx = service.beginTx();
+                    try {
+                        // for (Node trx: traverser){
+                        // if
+                        // (trx.getProperty(INeoConstants.PROPERTY_NAME_NAME).equals(trxName)){
+                        // trxNode = trx;
+                        // break;
+                        // }
+                        // }
+
+                        // if (trxNode == null){
+                        // trxNode = addChild(sector, NodeTypes.TRX, trxName, trxName);
+                        // }
+                        // trxNode.setProperty("nonrelevant", nonrelevant);
+                        // statistic.indexValue(rootName, NodeTypes.TRX.getId(), "nonrelevant",
+                        // nonrelevant);
+                        // trxNode.setProperty("numberoffreqenciesrequired",
+                        // numberoffreqenciesrequired);
+                        // statistic.indexValue(rootName, NodeTypes.TRX.getId(),
+                        // "numberoffreqenciesrequired",
+                        // numberoffreqenciesrequired);
+                        // trxNode.setProperty("numberoffrequenciesgiven",
+                        // numberoffrequenciesgiven);
+                        // statistic.indexValue(rootName, NodeTypes.TRX.getId(), "nonrelevant",
+                        // nonrelevant);
+                        // String band = (String)sector.getProperty("band", "");
+                        // if (band.contains(" "))
+                        // band = band.split("\\s")[1];
+                        AweConsolePlugin.info("Adding frequency plan results[" + frq + "] for TRX node id " + nodeId);
+
+                        // for (int j = 0; j < frq.length; j++){
+                        Node planNode = planModel.getPlanNode(trxNode);
+                        if (frq.size() > 0) {
+                            if (isGroup) {
+                                int arfcn[] = new int[frq.size()];
+                                for (int j = 0; j < arfcn.length; j++) {
+                                    arfcn[i] = frq.get(i);
+                                    statistic.indexValue(planModel.getName(), NodeTypes.FREQUENCY_PLAN.getId(), "arfcn", arfcn[i]);
+                                }
+                                planNode.setProperty(INeoConstants.PROPERTY_MAL,arfcn);
+                                for (Node trx:networkService.getTrxOfSyGroup(trxNode)){
+                                    trx.createRelationshipTo(planNode,DatasetRelationshipTypes.PLAN_ENTRY);
+                                }
+                            } else {
+                                if (frq.size() > 1) {
+                                    System.err.println("Incorrect arfcn" + frq);
+                                }
+                                planNode.setProperty("arfcn", frq.get(0));
+                                statistic.indexValue(planModel.getName(), NodeTypes.FREQUENCY_PLAN.getId(), "arfcn", frq.get(0));
+                            }
+                        }
+                        planNode.setProperty(INeoConstants.AFP_PROPERTY_ORIGINAL_NAME, false);
+                        // }
+
+                        tx.success();
+                    } finally {
+                        tx.finish();
+                    }
+
                 }
 
                 else {
@@ -598,9 +615,7 @@ public class AfpLoader {
 
                     Transaction tx = service.beginTx();
                     try {
-                        Node site = luceneInd.getSingleNode(
-                                NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE),
-                                siteName);
+                        Node site = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), siteName);
                         if (site == null) {
                             site = addChild(afpCell, NodeTypes.SITE, siteName, siteName);
                         }
@@ -615,9 +630,7 @@ public class AfpLoader {
                         if (reduceSectorName) {
                             sectorName = sectorName.substring(sectorName.length() - sectorNameLength);
                         }
-                        Node sector = luceneInd.getSingleNode(
-                                NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR),
-                                sectorName);
+                        Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
                         if (sector == null) {
                             sector = addChild(site, NodeTypes.SECTOR, sectorName, sectorName);
                         }
@@ -742,9 +755,7 @@ public class AfpLoader {
                 String sectorName = siteName + field[1];
                 Transaction tx = service.beginTx();
                 try {
-                    Node sector = luceneInd.getSingleNode(
-                            NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR),
-                            sectorName);
+                    Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
                     if (sector == null) {
                         error("Forbidden Frquencies File. Not found in network sector " + sectorName);
                         return;
@@ -855,8 +866,7 @@ public class AfpLoader {
          */
         private Node defineSector(String siteName, String field) {
             String sectorName = siteName.trim() + field.trim();
-            Node sector = luceneInd.getSingleNode(
-                    NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
+            Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
             if (sector == null) {
                 error("Neighbours File. Not found sector " + sectorName);
             }
@@ -927,8 +937,7 @@ public class AfpLoader {
                     String sectorName = field[6];
                     String sectorNo = sectorName.substring(sectorName.length() - 1);
                     if (!sectorNo.matches("\\d")) {
-                        int diff = Character.getNumericValue(sectorName.charAt(sectorName.length() - 1))
-                                - Character.getNumericValue('A') + 1;
+                        int diff = Character.getNumericValue(sectorName.charAt(sectorName.length() - 1)) - Character.getNumericValue('A') + 1;
                         sectorName = sectorName.substring(0, sectorName.length() - 1) + diff;
                     }
                     serve = defineServe(sectorName);
@@ -944,8 +953,7 @@ public class AfpLoader {
                     } else {
                         String sectorName = field[7];
                         if (!sectorName.substring(sectorName.length() - 1).matches("\\d")) {
-                            int sectorNo = Character.getNumericValue(sectorName.charAt(sectorName.length() - 1))
-                                    - Character.getNumericValue('A') + 1;
+                            int sectorNo = Character.getNumericValue(sectorName.charAt(sectorName.length() - 1)) - Character.getNumericValue('A') + 1;
                             sectorName = sectorName.substring(0, sectorName.length() - 1) + sectorNo;
                         }
                         Relationship relation = defineInterferer(sectorName);
@@ -973,12 +981,10 @@ public class AfpLoader {
         private Relationship defineInterferer(String sectorName) {
             String proxySectorName = interferenceName + "/" + sectorName;
 
-            Node proxySector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell,
-                    INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS), proxySectorName);
+            Node proxySector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS),
+                    proxySectorName);
             if (proxySector == null) {
-                Node sector = luceneInd.getSingleNode(
-                        NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR),
-                        sectorName);
+                Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
                 if (sector == null) {
                     error(". Interference File. Not found sector " + sectorName);
                     return null;
@@ -1001,12 +1007,10 @@ public class AfpLoader {
         private Node defineServe(String sectorName) {
             String proxySectorName = interferenceName + "/" + sectorName;
 
-            Node proxySector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell,
-                    INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS), proxySectorName);
+            Node proxySector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS),
+                    proxySectorName);
             if (proxySector == null) {
-                Node sector = luceneInd.getSingleNode(
-                        NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR),
-                        sectorName);
+                Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
                 if (sector == null) {
                     error(". Interference File. Not found sector " + sectorName);
                     return null;
@@ -1106,8 +1110,7 @@ public class AfpLoader {
          * @param field the field
          */
         private Node defineSector(String sectorName) {
-            Node sector = luceneInd.getSingleNode(
-                    NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
+            Node sector = luceneInd.getSingleNode(NeoUtils.getLuceneIndexKeyByProperty(afpCell, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR), sectorName);
             if (sector == null) {
                 error("Exception File. Not found sector " + sectorName);
             }

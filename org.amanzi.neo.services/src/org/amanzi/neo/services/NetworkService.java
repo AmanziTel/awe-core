@@ -15,6 +15,7 @@ package org.amanzi.neo.services;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -1113,17 +1114,20 @@ public class NetworkService extends DatasetService {
      * @param gr
      * @return
      */
-    public int getTrxOfSyGroup(Node gr) {
+    public int getTrxCountOfSyGroup(Node gr) {
         //TODO store in property of group...
+        return getTrxOfSyGroup(gr).size();
+    }
+    public Set<Node> getTrxOfSyGroup(Node gr) {
+        //TODO store in property of group...
+        Set<Node> result=new HashSet<Node>();
         Node sector = findSectorOfSyGroup(gr);
-        int count=0;
         for (Relationship rel:sector.getRelationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING)){
             Node trx=rel.getOtherNode(sector);
             if (getHopType(trx)==2&&!(Boolean)trx.getProperty("bcch",false)){
-                count++;
+                result.add(trx);
             }
         }
-        return count;
+        return result;
     }
-
 }
