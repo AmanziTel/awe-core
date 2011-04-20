@@ -811,13 +811,16 @@ public class NetworkService extends DatasetService {
     }
 
 
-    private Node findSYGroup(Node sector) {
+    public Node findSYGroup(Node sector) {
         Relationship rel = sector.getSingleRelationship(Relations.SY_GROUP, Direction.OUTGOING);
         return rel==null?null:rel.getOtherNode(sector);
     }
 
     public Node findSectorOfTRX(Node trx) {
         return trx.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(trx);
+    }
+    public Node findSectorOfSyGroup(Node trx) {
+        return trx.getSingleRelationship(Relations.SY_GROUP, Direction.INCOMING).getOtherNode(trx);
     }
 
     public Integer getHopType(Node trx) {
@@ -1105,4 +1108,18 @@ public class NetworkService extends DatasetService {
         }
         return rel.getOtherNode(trxGr);
     }
+
+    /**
+     *
+     * @param gr
+     * @return
+     */
+    public int getTrxOfSyGroup(Node gr) {
+        int count=0;
+        for (Relationship rel:gr.getRelationships(Relations.GROUP_TRX,Direction.OUTGOING)){
+            count++;
+        }
+        return count;
+    }
+
 }

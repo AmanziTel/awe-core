@@ -299,4 +299,9 @@ public class NetworkModel {
     public List<Node> getAllTrxNodesOfSector(Node sector) {
         return networkService.getAllTRXNode(sector);
     }
+
+
+    public FrequencyPlanModel findFrequencyModel(String modelName) {
+        return FrequencyPlanModel.findModel(rootNode, modelName);
+    }
 }
