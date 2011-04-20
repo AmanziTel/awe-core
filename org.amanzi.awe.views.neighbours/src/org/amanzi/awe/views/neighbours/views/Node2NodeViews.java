@@ -376,6 +376,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
                 while (index < table.getItemCount()) {
                     boolean visible = false;
                     final TableItem item = table.getItem(index);
+                    final int row=index;
                     for (int i = 0; i < table.getColumnCount(); i++) {
                         Rectangle rect = item.getBounds(i);
                         if (rect.contains(pt)) {
@@ -389,13 +390,13 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
                                 public void handleEvent(final Event e) {
                                     switch (e.type) {
                                     case SWT.FocusOut:
-                                        setData(item, column, text);
+                                        setData(item, column, text,row);
                                         text.dispose();
                                         break;
                                     case SWT.Traverse:
                                         switch (e.detail) {
                                         case SWT.TRAVERSE_RETURN:
-                                            setData(item, column, text);
+                                            setData(item, column, text,row);
                                             // FALL THROUGH
                                         case SWT.TRAVERSE_ESCAPE:
                                             text.dispose();
@@ -541,6 +542,13 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
     protected void sortRows(TableColumn currentColumn, int dir) {
         final int idx=dir==SWT.UP?-1:1;
         final int index = columns.indexOf(currentColumn);
+        final boolean isNumber;
+        if (index<2){
+            isNumber=false;
+        }else{
+            Class klass = propertyClass.get(index-2);
+            isNumber=Number.class.isAssignableFrom(klass);
+        }
         Collections.sort(rows, new Comparator<Wrapper>(){
 
             @Override
@@ -551,10 +559,30 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
             public int cmp(Wrapper o1, Wrapper o2) {
                 String p1 = o1.getText(index);
                 String p2 = o2.getText(index);
-                if (p1==null){
-                    return p2==null?0:-1;
+                if (p1!=null&&p1.isEmpty()){
+                    p1=null;
                 }
-                return p2==null?1:p1.compareTo(p2);
+                if (p2!=null&&p2.isEmpty()){
+                    p2=null;
+                }
+                if (p1==p2){
+                    return 0;
+                }
+                if (p1==null){
+                    return -1;
+                }
+                if (p2==null){
+                    return 1;
+                }
+                
+                if (isNumber){
+                    Double d1 = Double.valueOf(p1);
+                    Double d2 = Double.valueOf(p2);
+                    return d1.compareTo(d2);
+                }else{
+                    return p1.compareTo(p2);
+                }
+
             }
             
         });
@@ -959,6 +987,15 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
      */
     protected void rollback() {
         tx.rollback();
+        table.setEnabled(false);
+        if (!rows.isEmpty()){
+            rows.clear();
+            for (Relationship rel : getRelationIterator(filter)) {
+                rows.add(new Wrapper(rel));
+            }
+        }
+        //TODO add prev sorting
+        table.setEnabled(true);
         table.clearAll();
         transactionChange(false);
     }
@@ -1205,7 +1242,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
      * @param column
      * @param text
      */
-    protected void setData(final TableItem item, final int column, final Text text) {
+    protected void setData(final TableItem item, final int column, final Text text,final int row) {
         if (StringUtils.equals(item.getText(column), text.getText())) {
             return;
         }
@@ -1229,6 +1266,10 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
             tx.submit(task);
             transactionChange(true);
             item.setText(column, text.getText());
+            if (rows!=null&&rows.size()>row){
+                Wrapper wr = rows.get(row);
+                wr.setProperty(column, text.getText());
+            }
         }
     }
 
@@ -1434,6 +1475,9 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         public void addProperty(String val) {
             values.add(val);
         }
+        public void setProperty(int id,String val) {
+            values.set(id,val);
+        }      
     }
 
     @Override
