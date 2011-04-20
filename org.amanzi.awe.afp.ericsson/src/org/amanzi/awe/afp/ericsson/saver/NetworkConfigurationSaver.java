@@ -423,12 +423,10 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
                                     continue;
                                 }
                                 if (channelGr.equals(trxOth.getProperty("group", null))) {
-                                    if (hoptype != (Integer)trxOth.getProperty("hopping_type", null)) {
-                                        NodeResult fp = getFreqPlan(ORIGINAL).getPlanNode(trx);
-                                        Integer arfcnOth = (Integer)fp.getProperty(INeoConstants.PROPERTY_SECTOR_ARFCN, null);
-                                        if (arfcnOth != null) {
-                                            removedArfcn.add(arfcnOth);
-                                        }
+                                    NodeResult fp = getFreqPlan(ORIGINAL).getPlanNode(trxOth);
+                                    Integer arfcnOth = (Integer)fp.getProperty(INeoConstants.PROPERTY_SECTOR_ARFCN, null);
+                                    if (arfcnOth != null) {
+                                        removedArfcn.add(arfcnOth);
                                     }
                                     j++;
                                 }

@@ -17,6 +17,7 @@ import java.util.ArrayList;
 
 import org.amanzi.awe.views.reuse.views.FreqPlanSelectionInformation.TRXTYPE;
 import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
@@ -78,7 +79,7 @@ public class FrPlanPropertyInf implements IPropertyInformation {
         this.networkNode = networkNode;
         this.model = model;
         this.propertyName = propertyName;
-        this.propertyNameArr = propertyName + "Arr";
+        this.propertyNameArr = INeoConstants.PROPERTY_SECTOR_ARFCN.equals(propertyName)?INeoConstants.PROPERTY_MAL:propertyName + "Arr";
         this.sector = sector;
         this.ncc = ncc;
         this.bcc = bcc;
@@ -147,20 +148,18 @@ public class FrPlanPropertyInf implements IPropertyInformation {
                     }
                 }).traverse(rootNode);
         ISourceFinder sf = new ISourceFinder() {
-
+            NetworkService ns=NeoServiceFactory.getInstance().getNetworkService();
             @Override
             public Node getSource(Node node) {
-                return node == null ? null : node.getSingleRelationship(DatasetRelationshipTypes.PLAN_ENTRY, Direction.INCOMING)
-                        .getStartNode().getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
+                return node;
             }
 
             @Override
             public Node getMultySource(Node node) {
-                //TODO refactor
-                return null;
+                return ns.findSectorOfPlan(node);
             }
         };
-        if ("arfcn".equals(propertyName)) {
+        if (INeoConstants.PROPERTY_SECTOR_ARFCN.equals(propertyName)) {
             return new SourceExistIterable(traverser, propertyName, propertyNameArr, sf);
         } else {
             return new SourceExistIterable(traverser, propertyName, sf);

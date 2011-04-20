@@ -1094,4 +1094,15 @@ public class NetworkService extends DatasetService {
 
         return description.traverse(rootFrequencyPlanNode).nodes().iterator();
     }
+
+
+    public Node findSectorOfPlan(Node planNode) {
+        Relationship rel = planNode.getRelationships(DatasetRelationshipTypes.PLAN_ENTRY, Direction.INCOMING).iterator().next();
+        Node trxGr=rel.getOtherNode(planNode);
+        rel= trxGr.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING);
+        if (rel==null){
+            rel=trxGr.getSingleRelationship(Relations.SY_GROUP, Direction.INCOMING);
+        }
+        return rel.getOtherNode(trxGr);
+    }
 }

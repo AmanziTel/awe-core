@@ -116,13 +116,13 @@ public class Column implements Comparable<Column> {
             index.remove(rel, "aggType", aggregateNode.getId());
         }
         for (Relationship relation : prevNode.getRelationships(NetworkRelationshipTypes.AGGREGATE, Direction.OUTGOING)) {
-            node.createRelationshipTo(relation.getOtherNode(node), NetworkRelationshipTypes.AGGREGATE);
+            node.createRelationshipTo(relation.getOtherNode(prevNode), NetworkRelationshipTypes.AGGREGATE);
         }
       
         for (Relationship relation : prevNode.getRelationships(NetworkRelationshipTypes.MULTI_AGGREGATE, Direction.OUTGOING)) {
-            Node multiNode = relation.getOtherNode(node);
+            Node multiNode = relation.getOtherNode(prevNode);
             if (index.get("aggType", aggregateNode.getId(),node,multiNode).getSingle()==null){
-                Relationship rel = node.createRelationshipTo(relation.getOtherNode(node), NetworkRelationshipTypes.MULTI_AGGREGATE);
+                Relationship rel = node.createRelationshipTo(multiNode, NetworkRelationshipTypes.MULTI_AGGREGATE);
                 index.add(rel, "aggType", aggregateNode.getId());
             }
         }
