@@ -27,5 +27,5 @@ Export-Package: au.com.bytecode.opencsv,
  org.apache.commons.io.output
 Bundle-ClassPath: .,
  lib/opencsv-2.2.jar,
- lib/commons-io-2.0.1/commons-io-2.0.1.jar
+ lib/commons-io-2.0.1.jar
 Bundle-Vendor: amanzi.org
