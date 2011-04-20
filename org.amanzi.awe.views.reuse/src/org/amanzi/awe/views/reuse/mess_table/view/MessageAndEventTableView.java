@@ -1133,7 +1133,12 @@ public class MessageAndEventTableView extends ViewPart {
                         }
                     }else{
                         Node plan=datasetInfo.model.findPlanNode(node);
-                        value=plan==null?"":plan.getProperty(property, "").toString();
+                        if (plan!=null&&INeoConstants.PROPERTY_SECTOR_ARFCN.equals(property)&&plan.hasProperty(INeoConstants.PROPERTY_MAL)){
+                            int[] mal = (int[])plan.getProperty(INeoConstants.PROPERTY_MAL);
+                            value=Arrays.toString(mal);
+                        }else{
+                            value=plan==null?"":plan.getProperty(property, "").toString();
+                        }
                     }
                     values.add(value);
                 }
@@ -1148,7 +1153,6 @@ public class MessageAndEventTableView extends ViewPart {
             return row;
         }
     }
-    
     /**
      * Data for build table.
      * <p>
