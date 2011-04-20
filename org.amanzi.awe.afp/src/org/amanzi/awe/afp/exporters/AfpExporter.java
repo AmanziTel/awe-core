@@ -360,7 +360,7 @@ public class AfpExporter extends Job {
             Node gr=ns.findSYGroup(intSector);
             for (Relationship rel: intSector.getRelationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING)){
                 final Node intTrx =rel.getOtherNode(intSector);
-                boolean syTrx = ns.getHopType(intTrx)==2&&!(Boolean)intTrx.getProperty("hopping_type",false);
+                boolean syTrx = ns.getHopType(intTrx)==2&&!(Boolean)intTrx.getProperty("bcch",false);
                 if (syTrx&&analyseSy){
                     continue;
                 }
