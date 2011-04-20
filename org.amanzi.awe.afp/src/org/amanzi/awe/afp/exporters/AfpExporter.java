@@ -258,7 +258,7 @@ public class AfpExporter extends Job {
                 boolean analyseSy=false;
                 Node gr=ns.findSYGroup(sectorNode);
                 for (Node trxNode : trxTraverser) {
-                    boolean syTrx = ns.getHopType(trxNode)==2&&!(Boolean)trxNode.getProperty("hopping_type",false);
+                    boolean syTrx = ns.getHopType(trxNode)==2&&!(Boolean)trxNode.getProperty("bcch",false);
                     if (syTrx&&analyseSy){
                         continue;
                     }
