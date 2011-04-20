@@ -295,7 +295,7 @@ public class NetworkService extends DatasetService {
     }
 
     private enum Relations implements RelationshipType {
-        CHANNEL_GROUP, SY_GROUP,CHANNEL_TRX, FREQUENCY_ROOT, FR_SPECTRUM, GROUP_TRX;
+        CHANNEL_GROUP, SY_GROUP,CHANNEL_TRX, FREQUENCY_ROOT, FR_SPECTRUM;
     }
 
     /**
@@ -776,7 +776,6 @@ public class NetworkService extends DatasetService {
                     planNode = NeoServiceFactory.getInstance().getDatasetService().createNode(NodeTypes.FREQUENCY_PLAN);
                     rootNode.createRelationshipTo(planNode, GeoNeoRelationshipTypes.CHILD);
                     if (gr!=null){
-                        gr.createRelationshipTo(trx, Relations.GROUP_TRX);
                         gr.createRelationshipTo(planNode,DatasetRelationshipTypes.PLAN_ENTRY);
                     }
                 }else{
@@ -1115,9 +1114,14 @@ public class NetworkService extends DatasetService {
      * @return
      */
     public int getTrxOfSyGroup(Node gr) {
+        //TODO store in property of group...
+        Node sector = findSectorOfSyGroup(gr);
         int count=0;
-        for (Relationship rel:gr.getRelationships(Relations.GROUP_TRX,Direction.OUTGOING)){
-            count++;
+        for (Relationship rel:sector.getRelationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING)){
+            Node trx=rel.getOtherNode(sector);
+            if (getHopType(trx)==2&&!(Boolean)trx.getProperty("bcch",false)){
+                count++;
+            }
         }
         return count;
     }
