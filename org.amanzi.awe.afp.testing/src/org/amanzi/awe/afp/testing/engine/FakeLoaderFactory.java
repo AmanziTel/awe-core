@@ -23,8 +23,11 @@ import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.parser.CSVParser;
+import org.amanzi.neo.loader.core.parser.LineParser;
+import org.amanzi.neo.loader.core.parser.LineTransferData;
 import org.amanzi.neo.loader.core.saver.impl.NeighbourSaver;
 import org.amanzi.neo.loader.core.saver.impl.NetworkSaver;
+import org.amanzi.neo.loader.core.saver.impl.NetworkSelectionSaver;
 import org.amanzi.neo.loader.core.saver.network.InterferenceMatrixSaver;
 import org.amanzi.neo.loader.ui.loaders.Loader;
 
@@ -43,6 +46,15 @@ public class FakeLoaderFactory {
         
         loader.setParser(new CSVParser());
         loader.setSaver(new NetworkSaver());
+        
+        return loader;
+    }
+    
+    public static ILoader<?, CommonConfigData> getSelectionLoader() {
+        Loader<LineTransferData, CommonConfigData> loader = new Loader<LineTransferData, CommonConfigData>();
+        
+        loader.setParser(new LineParser());
+        loader.setSaver(new NetworkSelectionSaver());
         
         return loader;
     }

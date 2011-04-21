@@ -21,14 +21,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 
 import junit.framework.Assert;
 
 import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.exporters.AfpExporter;
 import org.amanzi.awe.afp.loaders.AfpOutputFileLoader;
-import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
 import org.amanzi.awe.afp.testing.engine.AfpModelFactory.AfpScenario;
 import org.amanzi.awe.afp.testing.engine.TestDataLocator.DataType;
@@ -48,7 +46,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.neo4j.examples.server.plugins.GetAll;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -114,7 +111,7 @@ public class AfpEngineTest {
         NeoServiceProviderUi.getProvider().getIndexService().shutdown();
         graphDatabaseService.shutdown();
          
-        clearDb();
+        //clearDb();
         
         long duration = System.currentTimeMillis() - startTimestamp;
         int milliseconds = (int)(duration % 1000);
@@ -205,7 +202,7 @@ public class AfpEngineTest {
     private static IDataset getDatasetLoader(DataType dataType) throws IOException {
         switch (dataType) {
         case ERICSSON:
-            return null;//return new LoadEricssonDataAction("project");
+            return new LoadEricssonDataAction("project");
         case GENERAL_FORMAT:
             return null;
         case GERMANY:
@@ -396,11 +393,11 @@ public class AfpEngineTest {
     			structureRelation.remove(1);	
     		}
     		if (counter == 2){
-    			if (secondNode == NodeTypes.CITY.getId()){
+    			if (secondNode.equals(NodeTypes.CITY.getId())) {
     				structureNode.remove(NodeTypes.BSC.getId());
     				structureRelation.remove(2);
     			}
-    			if (secondNode == NodeTypes.BSC.getId()){
+    			if (secondNode.equals(NodeTypes.BSC.getId())) {
     				structureNode.remove(NodeTypes.CITY.getId());
     				structureRelation.remove(1);
     			}
@@ -415,12 +412,12 @@ public class AfpEngineTest {
 				public Evaluation evaluate(Path arg0) {
 					boolean continues = true;
 					boolean includes = true;
-					if (arg0.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, null)
+					if (arg0.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "")
 					.equals(NodeTypes.FREQUENCY_PLAN.getId()))
 						continues = false;
-					if (arg0.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, null)
+					if (arg0.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "")
 							.equals(NodeTypes.AFP.getId()) ||
-							arg0.endNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, null)
+							arg0.endNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, "")
 							.equals("Fake"))
 						includes = false;
 					continues = continues && includes;
@@ -506,15 +503,17 @@ public class AfpEngineTest {
         ArrayList<Pair<Node, Node>> reusedSectors = new ArrayList<Pair<Node,Node>>();
         
         for (Node singleFreqNode : frequencies.keySet()) {
-            Integer arfcn = (Integer)singleFreqNode.getProperty("arfcn");
+            Integer arfcn = (Integer)singleFreqNode.getProperty("arfcn", null);
             
-            if (usedFrequencies.containsKey(arfcn)) {
-                Node sector1 = frequencies.get(singleFreqNode);
-                Node sector2 = frequencies.get(usedFrequencies.get(arfcn));
-                reusedSectors.add(new Pair<Node, Node>(sector1, sector2));
-            }
-            else {
-                usedFrequencies.put(arfcn, singleFreqNode);
+            if (arfcn != null) {
+                if (usedFrequencies.containsKey(arfcn)) {
+                    Node sector1 = frequencies.get(singleFreqNode);
+                    Node sector2 = frequencies.get(usedFrequencies.get(arfcn));
+                    reusedSectors.add(new Pair<Node, Node>(sector1, sector2));
+                }
+                else {
+                    usedFrequencies.put(arfcn, singleFreqNode);
+                }
             }
         }
         

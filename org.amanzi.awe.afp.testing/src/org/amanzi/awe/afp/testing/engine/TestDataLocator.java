@@ -84,5 +84,15 @@ public class TestDataLocator {
         
         return new File(FileLocator.toFileURL(url).getPath());
     }
+    
+    private static Path getSelectionFilePath(DataType dataType) {
+        return new Path("files" + File.separator + "afp_engine" + File.separator + dataType.name().toLowerCase() + File.separator + "Selection");
+    }
+    
+    public static File getSelectionFile(DataType dataType) throws IOException {
+        URL url = FileLocator.find(Activator.getDefault().getBundle(), getSelectionFilePath(dataType), null);
+        
+        return new File(FileLocator.toFileURL(url).getPath());
+    }
 
 }

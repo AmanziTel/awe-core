@@ -18,7 +18,6 @@ import java.util.ArrayList;
 
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.ILoader;
-import org.apache.log4j.Logger;
 
 /**
  * TODO Purpose of

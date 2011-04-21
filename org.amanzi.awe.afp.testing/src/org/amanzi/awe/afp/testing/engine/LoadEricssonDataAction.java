@@ -15,6 +15,8 @@ package org.amanzi.awe.afp.testing.engine;
 
 import java.io.IOException;
 
+import org.amanzi.awe.afp.models.AfpModel;
+import org.amanzi.awe.afp.testing.engine.AfpModelFactory.AfpScenario;
 import org.amanzi.awe.afp.testing.engine.TestDataLocator.DataType;
 
 /**
@@ -35,6 +37,7 @@ public class LoadEricssonDataAction extends AbstractDataset {
         loadActions.add(new LoadNetworkDataAction(TestDataLocator.getNetworkFile(getDataType()), projectName, DATASET_NAME));
         loadActions.add(new LoadNetworkConfigDataAction(TestDataLocator.getNetworkConfigDirectory(getDataType()), projectName, DATASET_NAME));
         loadActions.add(new LoadNetworkMeasurementDataAction(TestDataLocator.getNetworkMeasurementsDirectory(getDataType()), projectName, DATASET_NAME));
+        loadActions.add(new LoadSelectionDataAction(TestDataLocator.getSelectionFile(getDataType()), projectName, DATASET_NAME));
     }
 
     @Override
@@ -45,5 +48,21 @@ public class LoadEricssonDataAction extends AbstractDataset {
     @Override
     public String getName() {
         return DATASET_NAME;
+    }
+    
+    @Override
+    public AfpModel getAfpModel(AfpScenario scenario) {
+        AfpModel model = AfpModelFactory.getAfpModel(this, scenario);
+        try {
+            model.getNetworkDatasets();
+            model.getNetworkSelectionLists(getName());
+        
+            model.setNetworkSelectionName(TestDataLocator.getSelectionFile(getDataType()).getName());
+        }
+        catch (IOException e) { 
+            //do nothing - error on 
+        }
+        
+        return model;
     }
 }
