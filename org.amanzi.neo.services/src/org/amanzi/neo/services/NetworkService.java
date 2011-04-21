@@ -824,7 +824,7 @@ public class NetworkService extends DatasetService {
     }
 
     public Integer getHopType(Node trx) {
-        return (Integer)trx.getProperty("hopping_type",null);
+        return (Integer)trx.getProperty("hopping_type", 0);
     }
 
     public Iterable<Node> findAllNodeByType(Node network,final INodeType type) {
