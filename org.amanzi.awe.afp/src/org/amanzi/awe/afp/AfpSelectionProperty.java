@@ -33,8 +33,16 @@ public class AfpSelectionProperty implements ISelectionPropertyImplementation {
     private List<INodeType> networkStructure;
     
     public AfpSelectionProperty() {
-        INodeType[] structure = new INodeType[] { NodeTypes.NETWORK, 
+        /* 
+         * need correct structure.
+         * Correct structure is         
+         * 
+         * INodeType[] structure = new INodeType[] { NodeTypes.NETWORK, 
                 NodeTypes.BSC, NodeTypes.SITE, NodeTypes.SECTOR, NodeTypes.TRX };
+         */
+        
+        INodeType[] structure = new INodeType[] { NodeTypes.NETWORK, 
+                NodeTypes.SITE, NodeTypes.SECTOR };
         
          networkStructure = Arrays.asList(structure);    
     }
@@ -46,8 +54,8 @@ public class AfpSelectionProperty implements ISelectionPropertyImplementation {
 
     @Override
     public boolean checkImplementation(String property, List<INodeType> networkStructure) {
-        if (!this.networkStructure.containsAll(networkStructure) || 
-                this.networkStructure.size() != networkStructure.size())
+        if (!networkStructure.containsAll(this.networkStructure) )
+                //|| this.networkStructure.size() != networkStructure.size())
             return true;
         
         String[] notVisibleProperties = new String[] {"Id", "Type", "Sector_ID"};
