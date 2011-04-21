@@ -1014,18 +1014,16 @@ public class NetworkRenderer extends RendererImpl {
         g.setTransform(base_transform);
 //        g.translate(p.x, p.y);
         int draw2 = drawSize + 3;
-        int h=drawSize/colorsToFill.size();
-        int r1=0;
+        double h=(double)drawSize/3.3;
+        double r1=0;
         int i=0;
         double angle1 = -90 + azimuth - beamwidth / 2.0;
         double angle2 = angle1+beamwidth;
         Arc2D a=null;
         for (Color color:colorsToFill){
             i++;
-            int r2=r1+h;
-            if (i==colorsToFill.size()){
-                r2=drawSize;
-            }
+            double r2=(i+0.3)*h;
+
             GeneralPath path = new GeneralPath();
             a = new Arc2D.Double();
             a.setArcByCenter(p.x, p.y, r1, angle2, -beamwidth, Arc2D.OPEN);
