@@ -68,6 +68,7 @@ import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
+import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.kernel.Traversal;
 
@@ -1964,16 +1965,15 @@ public class AfpModel {
         for (Node node : traverser) {
             nodes.add(node);
         }
-        traverser = afpNode.getSingleRelationship(DomainRelations.DOMAINS, Direction.OUTGOING).getEndNode()
-        .traverse(Order.BREADTH_FIRST,
-                StopEvaluator.END_OF_GRAPH,
-                ReturnableEvaluator.ALL_BUT_START_NODE,
-                DomainRelations.NEXT,
-                Direction.OUTGOING).getAllNodes();
-        for (Node node : traverser) {
-            nodes.add(node);
+        Iterable<Node> domainNodes = Traversal.description()
+            .breadthFirst()
+            .filter(Traversal.returnAllButStartNode())
+            .relationships(DomainRelations.DOMAINS, Direction.OUTGOING)
+            .relationships(DomainRelations.NEXT, Direction.OUTGOING)
+            .traverse(afpNode).nodes();
+        for (Node domainNode : domainNodes) {
+            nodes.add(domainNode);
         }
-        
         Collections.sort(nodes, new Comparator<Node>() {
 
             @Override
