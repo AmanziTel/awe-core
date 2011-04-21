@@ -250,15 +250,17 @@ public class AfpProcessExecutor extends Job {
 	    for (String domainDir : afpE.domainDirPaths) {
 	        //delete output file if exist
 	        File outputFile = new File(domainDir + afpE.outputFileName);
-		
-	        if(outputFile.exists()) {
-	            try {
-	                outputFile.delete();
-	            } catch(Exception e) {
-	                AweConsolePlugin.error("AFP Unable to delete output file");
-	            }
-	        }
-	    }
+            try {
+                if(outputFile.exists()) {
+                    outputFile.delete();
+                }
+                //create empty output file
+                outputFile.createNewFile();
+                
+            } catch(IOException e) {
+                AweConsolePlugin.error("AFP Unable to delete output file");
+            }
+        }
 		
 		/** Create the carrier file */
 //		afpE.writeFilesNew(new SubProgressMonitor(monitor, 30), parameters);
