@@ -31,6 +31,9 @@ import org.amanzi.awe.afp.ControlFileProperties;
 import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.executors.AfpProcessProgress;
 import org.amanzi.awe.afp.exporters.AfpExporter;
+import org.amanzi.awe.afp.filters.AfpColumnFilter;
+import org.amanzi.awe.afp.filters.AfpFilter;
+import org.amanzi.awe.afp.filters.AfpRowFilter;
 import org.amanzi.awe.afp.services.DomainRelations;
 import org.amanzi.awe.afp.services.DomainService;
 import org.amanzi.awe.console.AweConsolePlugin;
@@ -181,6 +184,8 @@ public class AfpModel {
     // Page 5 params
     HashMap<String, AfpSeparationDomainModel> siteSeparationDomains = new HashMap<String, AfpSeparationDomainModel>();
     HashMap<String, AfpSeparationDomainModel> sectorSeparationDomains = new HashMap<String, AfpSeparationDomainModel>();
+    
+    HashMap<String, AfpFrequencyDomainModel> freeFrequencyDomains = new HashMap<String, AfpFrequencyDomainModel>();
 
     // Page 6 params
     // Constants defining the index of Serving-Interfering pair in the scaling rules arrays
@@ -718,20 +723,40 @@ public class AfpModel {
         }
         this.availableBCCs = n;
     }
+    
+    private AfpFrequencyDomainModel createFreeFreqDomain(int index) {
+        AfpFrequencyDomainModel d = freeFrequencyDomains.get(DEFAULT_BAND_NAMES[index]);
+        if (d != null) {
+            return d;
+        }
+        
+        d = new AfpFrequencyDomainModel();
+        d.setName(DEFAULT_BAND_NAMES[index]);
+        d.setBand(BAND_NAMES[index]);
+        d.setNumTRX(0);
+        d.setFree(true);
+        
+        //filter for band
+        AfpFilter filter = new AfpFilter();
+        filter.addFilter("flike", "band", ".*" + d.getBand() + ".*");
+        
+        d.setFilters(filter.toString());
+        
+        String f[] = new String[1];
+        f[0] = this.availableFreq[index];
+        d.setFrequencies(f);
+        
+        freeFrequencyDomains.put(d.getName(), d);
+        
+        return d;
+    }
 
     private void addRemoveFreeFrequencyDomain(boolean addFree) {
         for (int i = 0; i < frequencyBands.length; i++) {
             if (frequencyBands[i]) {
                 // add free domains
                 if (addFree) {
-                    AfpFrequencyDomainModel d = new AfpFrequencyDomainModel();
-                    d.setName(DEFAULT_BAND_NAMES[i]);
-                    d.setBand(BAND_NAMES[i]);
-                    d.setNumTRX(totalRemainingTRX);
-                    d.setFree(true);
-                    String f[] = new String[1];
-                    f[0] = this.availableFreq[i];
-                    d.setFrequencies(f);
+                    AfpFrequencyDomainModel d = createFreeFreqDomain(i);
                     freqDomains.put(d.getName(), d);
                 } else {
                     freqDomains.remove("Free " + BAND_NAMES[i]);
@@ -813,6 +838,18 @@ public class AfpModel {
         }
         
         return domains;
+    }
+    
+    public Collection<AfpFrequencyDomainModel> getFreeFreqDomains() {
+        ArrayList<AfpFrequencyDomainModel> result = new ArrayList<AfpFrequencyDomainModel>();
+        
+        for (int i = 0; i < frequencyBands.length; i++) {
+            if (frequencyBands[i]) {
+                result.add(createFreeFreqDomain(i));
+            }
+        }
+        
+        return result;
     }
 
     /**

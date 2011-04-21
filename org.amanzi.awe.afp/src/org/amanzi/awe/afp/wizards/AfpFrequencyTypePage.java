@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.amanzi.awe.afp.filters.AfpColumnFilter;
+import org.amanzi.awe.afp.filters.AfpFilter;
 import org.amanzi.awe.afp.filters.AfpRowFilter;
 import org.amanzi.awe.afp.models.AfpDomainModel;
 import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
@@ -161,7 +162,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 			    
 			    trxCount =0;
 			    //initialize trx of all model domains to 0
-			    for(AfpFrequencyDomainModel mod: model.getFreqDomains(false)){
+			    for(AfpFrequencyDomainModel mod: model.getFreqDomains(true)){
 			    	mod.setNumTRX(0);
 			    }
 			    model.setTotalRemainingTRX(0);
@@ -175,7 +176,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 				    	for(AfpFrequencyDomainModel mod: model.getFreqDomains(false)){
 				    		String filterString = mod.getFilters();
 				    		if (filterString != null && !filterString.trim().isEmpty()){
-					    		AfpRowFilter rf = AfpRowFilter.getFilter(mod.getFilters());
+				    		    AfpRowFilter rf = AfpRowFilter.getFilter(mod.getFilters());
 					    		if (rf != null){
 						    		if (rf.equal(trxNode)){
 						    			mod.setNumTRX(mod.getNumTRX() + 1);
@@ -189,6 +190,20 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 				    	
 				    	if (!includeFlag)
 				    		continue;
+				    	
+				    	for (AfpFrequencyDomainModel freeDomain : model.getFreeFreqDomains()) {
+				    	    String filterString = freeDomain.getFilters();
+                            if (filterString != null && !filterString.trim().isEmpty()){
+                                AfpFilter rf = AfpFilter.getFilter(freeDomain.getFilters());
+                                if (rf != null){
+                                    if (rf.like(trxNode)){
+                                        freeDomain.setNumTRX(freeDomain.getNumTRX() + 1);
+                                        model.updateFreqDomain(freeDomain);
+                                        break;
+                                    }
+                                }
+                            }
+				    	}
 			    		
 				    	if (!model.getChanneltypes()[AfpModel.CHANNEL_BCCH]){
 				    		if ((Boolean)trxNode.getProperty(INeoConstants.PROPERTY_BCCH_NAME, false))
