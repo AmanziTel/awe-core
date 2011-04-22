@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
@@ -15,7 +16,10 @@ import org.amanzi.awe.afp.models.AfpHoppingMALDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
 import org.amanzi.awe.afp.models.AfpModelUtils;
 import org.amanzi.awe.afp.models.AfpSeparationDomainModel;
+import org.amanzi.awe.afp.services.DomainRelations;
+import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.eclipse.jface.wizard.WizardPage;
@@ -37,11 +41,15 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
+import org.neo4j.kernel.Traversal;
+import org.neo4j.management.impl.jconsole.Neo4jPlugin;
 
 public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterListener{
 	
@@ -308,7 +316,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 			
 			else{
 			
-			    Iterable<Node> sectorTraverser = model.getTRXList(null);
+			    Iterable<Node> sectorTraverser = model.getSectorList(null);
 			    
 			    this.clearAllUniqueValuesForProperty();
 			    
@@ -437,7 +445,7 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 			
 			else{
 			
-			    Iterable<Node> sectorTraverser = model.getTRXList(null);
+			    Iterable<Node> siteTraverser = model.getSiteList(null);
 			    
 			    this.clearAllUniqueValuesForProperty();
 			    
@@ -447,104 +455,107 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 			    }
 			    remainingSites = 0;
 	
-			    for (Node sectorNode : sectorTraverser) {
+			    for (Node siteNode : siteTraverser) {
 			    	// temp fix.
 			    	// find the one TRX node under
-			    	Node siteNode = sectorNode.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
-			    	Traverser trxTraverser = AfpModelUtils.getTrxTraverser(sectorNode);
-			    	
-			    	boolean includeSite = false;
-			    	int hoppingType = (Integer)sectorNode.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0);
-			    	
-			    	if (!model.getChanneltypes()[AfpModel.CHANNEL_NON_HOPIING]){
-			    		if (hoppingType < 1)
-			    			continue;
-			    	}
-			    	
-			    	if (!model.getChanneltypes()[AfpModel.CHANNEL_HOPPING]){
-			    		if (hoppingType > 0)
-			    			continue;
-			    	}
-			    	
-			    	Node trxNode = null;
-			    	for(Node n  :trxTraverser) {
-			    		trxNode = n;
-			    		
-			    		if (!model.getChanneltypes()[AfpModel.CHANNEL_BCCH]){
-				    		if (!((Boolean)trxNode.getProperty(INeoConstants.PROPERTY_BCCH_NAME, false))){
-				    			includeSite = true;
-				    			break;
-				    		}
-				    	}
-			    		else
-			    			includeSite = true;
-				    
-			    	}
-			    	
-			    	if (!includeSite)
-			    		continue;
-			    	
-			    	
-			    	if(trxNode == null)
-			    		continue;
-			    	
-			    	boolean includeFlag = true;
-			    	for(AfpSeparationDomainModel mod: model.getSiteSeparationDomains(false)){
-			    		String filterString = mod.getFilters();
-			    		if (filterString != null && !filterString.trim().isEmpty()){
-				    		AfpRowFilter rf = AfpRowFilter.getFilter(mod.getFilters());
-				    		if (rf != null){
-					    		if (rf.equal(trxNode)){
-					    			mod.setNumTRX(mod.getNumTRX() + 1);
-					    			model.updateSiteSepDomain(mod);
-					    			includeFlag = false;
-					    			break;
-					    		}
-				    		}
-			    		}
-			    	}
-				    	
-			    	if (!includeFlag)
-			    		continue;
-			    	
-			    	remainingSites++;
-			    		
-		    		if (rowFilter != null){
-			    		if (!rowFilter.equal(trxNode)) 
-			    			continue;
-			    	}
-			    	this.addSectorUniqueProperties(sectorNode);
-					this.addSiteUniqueProperties(siteNode);
-			    	this.addTrxUniqueProperties(trxNode);
-	    		    	
-			    	
-			    	if(siteCount <= 10) {  
-				    	TableItem item = new TableItem(table, SWT.NONE);
-				    	int j=0;
-				    	for (String prop_name : headers){
-				    		Object val = null;
-				    		try {
-				    			String type = this.headersNodeType.get(prop_name);
-				    			if(NodeTypes.SITE.getId().equals(type)) {
-				    				if (siteNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals("site"))
-				    					val = (String)siteNode.getProperty(headers_prop.get(prop_name), "");
-	
-				    			} else if( NodeTypes.SECTOR.getId().equals(type)) {
-				    				val = sectorNode.getProperty(headers_prop.get(prop_name), "");
-				    			} else {
-				    				val = trxNode.getProperty(headers_prop.get(prop_name), "");
-				    			}
-	
-				    			if(val == null) val ="";
-				    			
-				    			item.setText(j, val.toString());
-				    		} catch(Exception e) {
-				    			item.setText(j, "");
-				    		}
-				    		j++;
-				    	}
-			    	}
-			    	siteCount++;
+			        remainingSites++;
+			        Iterable<Node> sectorNodes = getSectorsOfSite(siteNode);
+			        for (Node sectorNode : sectorNodes) {
+    			    	Node oneSiteNode = sectorNode.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
+    			    	Traverser trxTraverser = AfpModelUtils.getTrxTraverser(sectorNode);
+    			    	
+    			    	boolean includeSite = false;
+    			    	int hoppingType = (Integer)sectorNode.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0);
+    			    	
+    			    	if (!model.getChanneltypes()[AfpModel.CHANNEL_NON_HOPIING]){
+    			    		if (hoppingType < 1)
+    			    			continue;
+    			    	}
+    			    	
+    			    	if (!model.getChanneltypes()[AfpModel.CHANNEL_HOPPING]){
+    			    		if (hoppingType > 0)
+    			    			continue;
+    			    	}
+    			    	
+    			    	Node trxNode = null;
+    			    	for(Node n  :trxTraverser) {
+    			    		trxNode = n;
+    			    		
+    			    		if (!model.getChanneltypes()[AfpModel.CHANNEL_BCCH]){
+    				    		if (!((Boolean)trxNode.getProperty(INeoConstants.PROPERTY_BCCH_NAME, false))){
+    				    			includeSite = true;
+    				    			break;
+    				    		}
+    				    	}
+    			    		else
+    			    			includeSite = true;
+    				    
+    			    	}
+    			    	
+    			    	if (!includeSite)
+    			    		continue;
+    			    	
+    			    	
+    			    	if(trxNode == null)
+    			    		continue;
+    			    	
+    			    	boolean includeFlag = true;
+    			    	for(AfpSeparationDomainModel mod: model.getSiteSeparationDomains(false)){
+    			    		String filterString = mod.getFilters();
+    			    		if (filterString != null && !filterString.trim().isEmpty()){
+    				    		AfpRowFilter rf = AfpRowFilter.getFilter(mod.getFilters());
+    				    		if (rf != null){
+    					    		if (rf.equal(trxNode)){
+    					    			mod.setNumTRX(mod.getNumTRX() + 1);
+    					    			model.updateSiteSepDomain(mod);
+    					    			includeFlag = false;
+    					    			break;
+    					    		}
+    				    		}
+    			    		}
+    			    	}
+    				    	
+    			    	if (!includeFlag)
+    			    		continue;
+    			    	
+    			    		
+    		    		if (rowFilter != null){
+    			    		if (!rowFilter.equal(trxNode)) 
+    			    			continue;
+    			    	}
+    			    	this.addSectorUniqueProperties(sectorNode);
+    					this.addSiteUniqueProperties(oneSiteNode);
+    			    	this.addTrxUniqueProperties(trxNode);
+    	    		    	
+    			    	
+    			    	if(siteCount <= 10) {  
+    				    	TableItem item = new TableItem(table, SWT.NONE);
+    				    	int j=0;
+    				    	for (String prop_name : headers){
+    				    		Object val = null;
+    				    		try {
+    				    			String type = this.headersNodeType.get(prop_name);
+    				    			if(NodeTypes.SITE.getId().equals(type)) {
+    				    				if (oneSiteNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals("site"))
+    				    					val = (String)oneSiteNode.getProperty(headers_prop.get(prop_name), "");
+    	
+    				    			} else if( NodeTypes.SECTOR.getId().equals(type)) {
+    				    				val = sectorNode.getProperty(headers_prop.get(prop_name), "");
+    				    			} else {
+    				    				val = trxNode.getProperty(headers_prop.get(prop_name), "");
+    				    			}
+    	
+    				    			if(val == null) val ="";
+    				    			
+    				    			item.setText(j, val.toString());
+    				    		} catch(Exception e) {
+    				    			item.setText(j, "");
+    				    		}
+    				    		j++;
+    				    	}
+    			    	}
+    			    }
+			        siteCount++;
 			    }
 			}
 		    for (int i = 0; i < headers.length; i++) {
@@ -554,6 +565,16 @@ public class AfpSeparationRulesPage extends AfpWizardPage  implements FilterList
 		    this.updateSiteFilterLabel(siteCount, remainingSites);
 		}
 	}
+	
+    private List<Node> getSectorsOfSite(Node site) {
+        ArrayList<Node> result = new ArrayList<Node>();
+        
+        for (Relationship childRelationship : site.getRelationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
+            result.add(childRelationship.getEndNode());
+        }
+        
+        return result;
+    }
 
 	@Override
 	public void onFilterSelected(String columnName,	ArrayList<String> selectedValues) {

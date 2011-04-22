@@ -199,7 +199,7 @@ public class AfpSYHoppingMALsPage extends AfpWizardPage  implements FilterListen
 							bandFilters.put("band", bandFilters.get("band") + "," + model.BAND_NAMES[i]);
 				}
 				
-				Iterable<Node> sectorTraverser = model.getTRXList(bandFilters);
+				Iterable<Node> sectorTraverser = model.getSectorList(bandFilters);
 			    
 			    trxCount =0;
 			    for(AfpDomainModel mod: model.getMalDomains(false)){

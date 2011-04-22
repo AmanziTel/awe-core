@@ -158,7 +158,7 @@ public class AfpFrequencyTypePage extends AfpWizardPage implements FilterListene
 							bandFilters.put("band", bandFilters.get("band") + "," + model.BAND_NAMES[i]);
 				}
 				
-				Iterable<Node> sectorTraverser = model.getTRXList(bandFilters);
+				Iterable<Node> sectorTraverser = model.getSectorList(bandFilters);
 			    
 			    trxCount =0;
 			    //initialize trx of all model domains to 0

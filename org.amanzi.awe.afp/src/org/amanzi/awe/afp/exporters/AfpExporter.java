@@ -217,7 +217,7 @@ public class AfpExporter extends Job {
                     bandFilters.put("band", bandFilters.get("band") + "," + model.BAND_NAMES[i]);
         }
 
-        Iterable<Node> sectorTraverser = model.getTRXList(bandFilters);
+        Iterable<Node> sectorTraverser = model.getSectorList(bandFilters);
 
         try {
 

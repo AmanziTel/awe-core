@@ -950,7 +950,7 @@ public class AfpModel {
         ArrayList<AfpSeparationDomainModel> l = new ArrayList<AfpSeparationDomainModel>();
         for (AfpSeparationDomainModel d : this.siteSeparationDomains.values()) {
             if (!getFree) {
-                if (d.getName().equals(DEFAULT_SECTOR_SEP_NAME))
+                if (d.getName().equals(DEFAULT_SITE_SEP_NAME))
                     continue;
             }
             l.add(new AfpSeparationDomainModel(d));
@@ -2024,7 +2024,7 @@ public class AfpModel {
         return afpJob;
     }
 
-    public Iterable<Node> getTRXList(final HashMap<String, String> filters) {
+    public Iterable<Node> getSectorList(final HashMap<String, String> filters) {
 
         Evaluator bandFilter = new Evaluator() {
 
@@ -2052,6 +2052,37 @@ public class AfpModel {
         };
 
         return getElementTraverser(bandFilter, NodeTypes.SECTOR);
+
+    }
+    
+    public Iterable<Node> getSiteList(final HashMap<String, String> filters) {
+
+        Evaluator bandFilter = new Evaluator() {
+
+            @Override
+            public Evaluation evaluate(Path arg0) {
+                boolean include = false;
+                if (filters != null) {
+                    for (String key : filters.keySet()) {
+                        if (key.equals("band")) {
+                            // TODO check correct
+                            for (String band : filters.get(key).split(",")) {
+                                String bandStr = (String)arg0.endNode().getProperty("band", "");
+                                String layerStr = (String)arg0.endNode().getProperty("layer", "");
+                                if (bandStr.contains(band) || (bandStr.isEmpty() && layerStr.isEmpty()) || layerStr.contains(band))
+                                    include = include || true;
+                            }
+                        }
+                    }
+                } else {
+                    include = true;
+                }
+
+                return Evaluation.of(include, true);
+            }
+        };
+
+        return getElementTraverser(bandFilter, NodeTypes.SITE);
 
     }
 
