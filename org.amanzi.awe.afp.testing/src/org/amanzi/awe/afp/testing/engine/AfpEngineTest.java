@@ -93,9 +93,9 @@ public class AfpEngineTest {
         try {
             initEnvironment();
             loadDataset();
-//            exportInputFiles();
-//            runEngine();
-//            loadResults();
+            exportInputFiles();
+            runEngine();
+            loadResults();
         }
         catch (Exception e) {
             e.printStackTrace();
