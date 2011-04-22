@@ -92,10 +92,10 @@ public class AfpEngineTest {
         
         try {
             initEnvironment();
-            loadDataset();
-            exportInputFiles();
-            runEngine();
-            loadResults();
+//            loadDataset();
+//            exportInputFiles();
+//            runEngine();
+//            loadResults();
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -433,7 +433,7 @@ public class AfpEngineTest {
     		while (iter.hasNext()){
     			path = iter.next();
     			while(!path.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, null).equals(NodeTypes.FREQUENCY_PLAN.getId())){
-    				path = iter.next();
+    			    path = iter.next();
     			}
     			Iterable<Node> chain = path.nodes();
     			Iterator<String> iterNode = structureNode.iterator();
