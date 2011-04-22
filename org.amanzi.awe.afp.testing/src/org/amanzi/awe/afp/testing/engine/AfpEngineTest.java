@@ -92,7 +92,7 @@ public class AfpEngineTest {
         
         try {
             initEnvironment();
-//            loadDataset();
+            loadDataset();
 //            exportInputFiles();
 //            runEngine();
 //            loadResults();
@@ -111,7 +111,7 @@ public class AfpEngineTest {
         NeoServiceProviderUi.getProvider().getIndexService().shutdown();
         graphDatabaseService.shutdown();
          
-        //clearDb();
+        clearDb();
         
         long duration = System.currentTimeMillis() - startTimestamp;
         int milliseconds = (int)(duration % 1000);
@@ -330,28 +330,28 @@ public class AfpEngineTest {
     @Test
     public void CorrectStructure(){
     	
-    	LinkedList<String> structureNode = new LinkedList<String>();
-    	structureNode.add(0, NodeTypes.NETWORK.getId());
-    	structureNode.add(1, NodeTypes.CITY.getId());
-    	structureNode.add(2, NodeTypes.BSC.getId());
-    	structureNode.add(3, NodeTypes.SITE.getId());
-    	structureNode.add(4, NodeTypes.SECTOR.getId());
-    	structureNode.add(5, NodeTypes.TRX.getId());
-    	structureNode.add(6, NodeTypes.FREQUENCY_PLAN.getId());
-    	
-    	LinkedList<RelationshipType> structureRelation = new LinkedList<RelationshipType>();
-    	structureRelation.add(0, NetworkRelationshipTypes.CHILD);
-    	structureRelation.add(1, NetworkRelationshipTypes.CHILD);
-    	structureRelation.add(2, NetworkRelationshipTypes.CHILD);
-    	structureRelation.add(3, NetworkRelationshipTypes.CHILD);
-    	structureRelation.add(4, NetworkRelationshipTypes.CHILD);
-    	structureRelation.add(5, DatasetRelationshipTypes.PLAN_ENTRY);
-    	structureRelation.add(6, null);
-    	
     	for (IDataset dataset : datasets) {
     		if (dataset == null){
     			continue;
     		}
+    		
+    		LinkedList<String> structureNode = new LinkedList<String>();
+            structureNode.add(0, NodeTypes.NETWORK.getId());
+            structureNode.add(1, NodeTypes.CITY.getId());
+            structureNode.add(2, NodeTypes.BSC.getId());
+            structureNode.add(3, NodeTypes.SITE.getId());
+            structureNode.add(4, NodeTypes.SECTOR.getId());
+            structureNode.add(5, NodeTypes.TRX.getId());
+            structureNode.add(6, NodeTypes.FREQUENCY_PLAN.getId());
+            
+            LinkedList<RelationshipType> structureRelation = new LinkedList<RelationshipType>();
+            structureRelation.add(0, NetworkRelationshipTypes.CHILD);
+            structureRelation.add(1, NetworkRelationshipTypes.CHILD);
+            structureRelation.add(2, NetworkRelationshipTypes.CHILD);
+            structureRelation.add(3, NetworkRelationshipTypes.CHILD);
+            structureRelation.add(4, NetworkRelationshipTypes.CHILD);
+            structureRelation.add(5, DatasetRelationshipTypes.PLAN_ENTRY);
+            structureRelation.add(6, null);
     		
     		Node rootNode = dataset.getRootNode();
     		Iterator<Path> iter = Traversal.description().depthFirst().evaluator(Evaluators.all())
@@ -432,6 +432,7 @@ public class AfpEngineTest {
     		
     		while (iter.hasNext()){
     			path = iter.next();
+    			
     			while(!path.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, null).equals(NodeTypes.FREQUENCY_PLAN.getId())){
     			    path = iter.next();
     			}
