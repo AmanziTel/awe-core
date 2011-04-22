@@ -47,6 +47,8 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 	int bandIndexes[];
 	Button leftArrowButton;
 	Button rightArrowButton;
+	Button rightDoubleArrowButton;
+	Button leftDoubleArrowButton;
 
 	
 	public AfpFrequencySelector(final WizardPage page, Shell parentShell, final String action, final Group parentGroup, final AfpModel model){
@@ -162,7 +164,7 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 		int numSelected = 0;
 		final Label thisSelectionLabel = selectionLabel;
 		freqList = new List(freqGroup, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
-		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true, true, 1, 2);
+		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true, true, 1, 4);
 		int listHeight = freqList.getItemHeight() * 12;
 		int listWidth = selectionLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
 		Rectangle trim = freqList.computeTrim(0, 0, 0, listHeight);
@@ -173,12 +175,12 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 		
 		rightArrowButton = new Button (freqGroup, SWT.ARROW | SWT.RIGHT | SWT.BORDER);
 		GridData arrowGridData = new GridData(GridData.FILL, GridData.END, true, false,1 ,1);
-		arrowGridData.verticalIndent = trim.height/2;
+		arrowGridData.verticalIndent = trim.height/10;
 		rightArrowButton.setLayoutData(arrowGridData);
 		
 		
 		selectedList = new List(freqGroup, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
-		gridData = new GridData(GridData.FILL, GridData.FILL, true, true, 1, 2);
+		gridData = new GridData(GridData.FILL, GridData.FILL, true, true, 1, 4);
 		gridData.heightHint = trim.height;
 		gridData.widthHint = listWidth;
 		selectedList.setLayoutData(gridData);
@@ -193,7 +195,7 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 						selectedList.add(item);
 						freqList.remove(item);
 					}
-					selectedArray = selectedList.getItems();
+					selectedArray = sortList(selectedList.getItems());
 					setEnabledToAddButton();
 					selectedList.setItems(selectedArray);
 					thisSelectionLabel.setText("" + selectedArray.length + " Frequencies selected");
@@ -203,8 +205,13 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 		});
 		
 		
+		
+		
+		
+		
 		leftArrowButton = new Button (freqGroup, SWT.ARROW | SWT.LEFT | SWT.BORDER);
 		leftArrowButton.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false,1 ,1));
+		
 		leftArrowButton.addSelectionListener(new SelectionAdapter(){
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -218,13 +225,74 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 					setEnabledToAddButton();
 					String array[] = AfpModel.rangeArraytoArray(selectedArray);
 					thisSelectionLabel.setText("" + array.length + " Frequencies selected");
-					String notSelected[] = AfpModel.rangeArraytoArray(freqList.getItems());
+					String notSelected[] = sortList(AfpModel.rangeArraytoArray(freqList.getItems()));
 					freqList.setItems(notSelected);
 				}
 				
 			}
 		});
+		
+        
+        rightDoubleArrowButton = new Button (freqGroup, SWT.ARROW | SWT.RIGHT | SWT.BORDER);
+        GridData gd = new GridData(GridData.FILL, GridData.END, true, false,1 ,1);
+        gd.verticalIndent = trim.height/5;
+        rightDoubleArrowButton.setLayoutData(gd);
+        rightDoubleArrowButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                freqList.selectAll();
+                if (freqList.getSelectionCount() > 0){
+                    String selectedNew[] = freqList.getSelection();
+                    for (String item: selectedNew){//int i = 0; i < selectedNew.length; i++){
+                        selectedList.add(item);
+                        freqList.remove(item);
+                    }
+                    selectedArray = sortList(selectedList.getItems());
+                    setEnabledToAddButton();
+                    selectedList.setItems(selectedArray);
+                    thisSelectionLabel.setText("" + selectedArray.length + " Frequencies selected");
+                }
+            }
+        });
+        
+        leftDoubleArrowButton = new Button (freqGroup, SWT.ARROW | SWT.LEFT | SWT.BORDER);
+        leftDoubleArrowButton.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false,1 ,1));
+        leftDoubleArrowButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                selectedList.selectAll();
+                if (selectedList.getSelectionCount() > 0){
+                    String deSelected[] = selectedList.getSelection();
+                    for (String item: deSelected){//int i = 0; i < deSelected.length; i++){
+                        freqList.add(item);
+                        selectedList.remove(item);
+                    }
+                    selectedArray = selectedList.getItems();
+                    setEnabledToAddButton();
+                    String array[] = AfpModel.rangeArraytoArray(selectedArray);
+                    thisSelectionLabel.setText("" + array.length + " Frequencies selected");
+                    String notSelected[] = sortList(AfpModel.rangeArraytoArray(freqList.getItems()));
+                    
+                    freqList.setItems(notSelected);
+                }
+            }
+        });
 	}
+	
+	public String[] sortList(String[] items){
+	 	    
+	    for (int i=0; i < items.length; i++){
+	       for (int j=0; j < items.length-1; j++){
+	           if (items[j].hashCode()>items[j+1].hashCode()){
+	               String temp = items[j];
+	               items[j] = items[j+1];
+	               items[j+1] = temp;
+	           }
+	       }
+	    }
+	    return items;
+	}
+	
 	protected void handleDomainNameSection(int selection, String name) {
 		int j=0;
 		for(AfpFrequencyDomainModel d: model.getFreqDomains(false)) {
