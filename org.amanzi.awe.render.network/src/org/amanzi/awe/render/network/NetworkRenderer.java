@@ -179,6 +179,7 @@ public class NetworkRenderer extends RendererImpl {
         boolean sectorLabeling;
         boolean noSiteName;
         Font font;
+        public int siteSize;
 
         public void reset(IStyleBlackboard style, Font font) {
             this.font = font;
@@ -1001,7 +1002,7 @@ public class NetworkRenderer extends RendererImpl {
         colorsToFill.add(Color.GREEN);
         colorsToFill.add(Color.ORANGE);
         */
-        int drawSize = drawHints.drawSize;
+//        int drawSize = drawHints.drawSize;
         Color oldColor = g.getColor();
         Pair<java.awt.Point, java.awt.Point> result = null;
         if (base_transform == null)
@@ -1013,16 +1014,16 @@ public class NetworkRenderer extends RendererImpl {
         }
         g.setTransform(base_transform);
 //        g.translate(p.x, p.y);
-        int draw2 = drawSize + 3;
-        double h=(double)drawSize/3.3;
-        double r1=0;
+//        int draw2 = drawSize + 3;
+        double h=(double)drawHints.siteSize;
+        double r1=h;
         int i=0;
         double angle1 = -90 + azimuth - beamwidth / 2.0;
         double angle2 = angle1+beamwidth;
         Arc2D a=null;
         for (Color color:colorsToFill){
+            double r2=r1+2d/(2+i)*h;
             i++;
-            double r2=(i+0.3)*h;
 
             GeneralPath path = new GeneralPath();
             a = new Arc2D.Double();
@@ -1096,6 +1097,7 @@ public class NetworkRenderer extends RendererImpl {
             drawSize /= 4;
             if (drawSize < 2)
                 drawSize = 2;
+            drawHints.siteSize=drawSize;
             g.setColor(fillColor);
             g.fillOval(p.x - drawSize, p.y - drawSize, 2 * drawSize, 2 * drawSize);
             g.setColor(borderColor);
