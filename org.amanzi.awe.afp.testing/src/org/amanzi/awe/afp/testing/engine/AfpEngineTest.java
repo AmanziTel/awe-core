@@ -90,6 +90,8 @@ public class AfpEngineTest {
         startTimestamp = System.currentTimeMillis();
         LOGGER.info("Set up AFP Engine Test");
         
+        clearDb();
+        
         try {
             initEnvironment();
             loadDataset();
