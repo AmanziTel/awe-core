@@ -35,6 +35,7 @@ public class LoadGermanyDataAction extends AbstractDataset {
         loadActions.add(new LoadNetworkDataAction(TestDataLocator.getNetworkFile(getDataType()), projectName, DATASET_NAME));
         loadActions.add(new LoadNeighbourDataAction(TestDataLocator.getNeighbourFile(getDataType()), projectName, DATASET_NAME));
         loadActions.add(new LoadIMDataAction(TestDataLocator.getIMFile(getDataType()), projectName, DATASET_NAME));
+        loadActions.add(new LoadSelectionDataAction(TestDataLocator.getSelectionFile(getDataType()), projectName, DATASET_NAME));
     }
 
     @Override

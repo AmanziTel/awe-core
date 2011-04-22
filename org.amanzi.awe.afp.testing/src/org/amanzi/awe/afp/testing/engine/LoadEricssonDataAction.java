@@ -49,20 +49,4 @@ public class LoadEricssonDataAction extends AbstractDataset {
     public String getName() {
         return DATASET_NAME;
     }
-    
-    @Override
-    public AfpModel getAfpModel(AfpScenario scenario) {
-        AfpModel model = AfpModelFactory.getAfpModel(this, scenario);
-        try {
-            model.getNetworkDatasets();
-            model.getNetworkSelectionLists(getName());
-        
-            model.setNetworkSelectionName(TestDataLocator.getSelectionFile(getDataType()).getName());
-        }
-        catch (IOException e) { 
-            //do nothing - error on 
-        }
-        
-        return model;
-    }
 }

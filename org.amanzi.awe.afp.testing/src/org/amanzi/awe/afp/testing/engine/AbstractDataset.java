@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.afp.testing.engine;
 
+import java.io.IOException;
 import java.util.LinkedList;
 
 import org.amanzi.awe.afp.models.AfpModel;
@@ -52,7 +53,18 @@ public abstract class AbstractDataset implements IDataset {
 
     @Override
     public AfpModel getAfpModel(AfpScenario scenario) {
-        return AfpModelFactory.getAfpModel(this, scenario);
+        AfpModel model = AfpModelFactory.getAfpModel(this, scenario);
+        try {
+            model.getNetworkDatasets();
+            model.getNetworkSelectionLists(getName());
+        
+            model.setNetworkSelectionName(TestDataLocator.getSelectionFile(getDataType()).getName());
+        }
+        catch (IOException e) { 
+            //do nothing - error on 
+        }
+        
+        return model;
     }
 
 }
