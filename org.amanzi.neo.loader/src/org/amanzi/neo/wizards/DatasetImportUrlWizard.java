@@ -211,14 +211,8 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
     		}
     		
     		if(lastMNode != null) {
-	    		String time = (String) lastMNode.getProperty(INeoConstants.PROPERTY_TIME_NAME);
-	    		SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss.SSS");
-	    		Date date = new Date();
-	    		try {
-	    			date = format.parse(time);
-	    		} catch (ParseException e) {
-					e.printStackTrace();
-				}
+	    		Long time = (Long) lastMNode.getProperty(INeoConstants.PROPERTY_TIME_NAME);
+	    		Date date = new Date(time);
 	    		
 	    		String imei=null, imsi=null;
 	    		Object ob1 = lastMNode.getProperty("imei");
@@ -243,11 +237,9 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
 	    			imsi = ((String)ob2);
 	    		}
 	    		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-	    		time = dateFormat.format(date);
-	    		
 				
 	    		try {
-					urlString = urlString + "&cdate=" + time + "&cimei=" + URLEncoder.encode(imei, "UTF-8") + "&cimsi=" + URLEncoder.encode(imsi, "UTF-8");
+					urlString = urlString + "&cdate=" + dateFormat.format(date) + "&cimei=" + URLEncoder.encode(imei, "UTF-8") + "&cimsi=" + URLEncoder.encode(imsi, "UTF-8");
 				} catch (UnsupportedEncodingException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
