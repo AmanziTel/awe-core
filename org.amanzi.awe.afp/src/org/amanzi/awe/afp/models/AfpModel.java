@@ -31,9 +31,7 @@ import org.amanzi.awe.afp.ControlFileProperties;
 import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.executors.AfpProcessProgress;
 import org.amanzi.awe.afp.exporters.AfpExporter;
-import org.amanzi.awe.afp.filters.AfpColumnFilter;
 import org.amanzi.awe.afp.filters.AfpFilter;
-import org.amanzi.awe.afp.filters.AfpRowFilter;
 import org.amanzi.awe.afp.services.DomainRelations;
 import org.amanzi.awe.afp.services.DomainService;
 import org.amanzi.awe.console.AweConsolePlugin;
@@ -46,6 +44,7 @@ import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.networkselection.SelectionModel;
+import org.amanzi.neo.services.node2node.INodeToNodeType;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.amanzi.neo.services.node2node.NodeToNodeTypes;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
@@ -68,8 +67,6 @@ import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
-import org.neo4j.graphdb.traversal.Evaluators;
-import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.kernel.Traversal;
 
 /**
@@ -254,6 +251,8 @@ public class AfpModel {
         totalSites = 0;
         totalSectors = 0;
         totalHoppingTRX = 0;
+        
+        int withoutBand = 0;
 
         int[] bandTRXs = new int[4];
         int[] bandSectors = new int[4];
@@ -283,13 +282,14 @@ public class AfpModel {
                     bandSectors[BAND_1900]++;
                 }
             } else if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.TRX.getId())) {
-                totalTRX++;
                 String band = (String)node.getProperty("band", "");
+                withoutBand++;
+                
                 if (band.contains("900")) {
                     bandTRXs[BAND_900]++;
                     if ((Boolean)node.getProperty(INeoConstants.PROPERTY_BCCH_NAME, false))
                         bcchTRXs[BAND_900]++;
-                    if ((Integer)node.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) < 1)
+                    else if ((Integer)node.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) < 1)
                         nonHoppingTRXs[BAND_900]++;
                     else {
                         hoppingTRXs[BAND_900]++;
@@ -300,7 +300,7 @@ public class AfpModel {
                     bandTRXs[BAND_1800]++;
                     if ((Boolean)node.getProperty(INeoConstants.PROPERTY_BCCH_NAME, false))
                         bcchTRXs[BAND_1800]++;
-                    if ((Integer)node.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) < 1)
+                    else if ((Integer)node.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) < 1)
                         nonHoppingTRXs[BAND_1800]++;
                     else {
                         hoppingTRXs[BAND_1800]++;
@@ -311,7 +311,7 @@ public class AfpModel {
                     bandTRXs[BAND_850]++;
                     if ((Boolean)node.getProperty(INeoConstants.PROPERTY_BCCH_NAME, false))
                         bcchTRXs[BAND_850]++;
-                    if ((Integer)node.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) < 1)
+                    else if ((Integer)node.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) < 1)
                         nonHoppingTRXs[BAND_850]++;
                     else {
                         hoppingTRXs[BAND_850]++;
@@ -322,7 +322,7 @@ public class AfpModel {
                     bandTRXs[BAND_1900]++;
                     if ((Boolean)node.getProperty(INeoConstants.PROPERTY_BCCH_NAME, false))
                         bcchTRXs[BAND_1900]++;
-                    if ((Integer)node.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) < 1)
+                    else if ((Integer)node.getProperty(INeoConstants.PROPERTY_HOPPING_TYPE_NAME, 0) < 1)
                         nonHoppingTRXs[BAND_1900]++;
                     else {
                         hoppingTRXs[BAND_1900]++;
@@ -1109,7 +1109,7 @@ public class AfpModel {
         return result == null || result.getCo() == null ? coInterferenceDef : result.getCo();
     }
 
-    public ScalingFactors findScalingFactor(NodeToNodeTypes type, String listName) {
+    public ScalingFactors findScalingFactor(INodeToNodeType type, String listName) {
         Map<String, ScalingFactors> map = scaling.get(type);
         return map == null ? null : map.get(listName);
     }
