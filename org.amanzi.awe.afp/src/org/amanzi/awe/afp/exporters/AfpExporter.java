@@ -62,6 +62,11 @@ import org.neo4j.kernel.Traversal;
  */
 
 public class AfpExporter extends Job {
+    
+    private enum ConstraintNodeToNode implements INodeToNodeType {
+        CO_SECTOR, CO_SITE; 
+    }
+    
     private Node afpRoot;
     private Node afpDataset;
 
@@ -137,7 +142,7 @@ public class AfpExporter extends Job {
     private float[] contributions_adj;
     private float[] contributions_adjt;
     private Map<NodeToNodeTypes, List<String>> lists = new HashMap<NodeToNodeTypes, List<String>>();
-    private Map<NodeToNodeTypes, Integer> index = new HashMap<NodeToNodeTypes, Integer>();
+    private Map<INodeToNodeType, Integer> index = new HashMap<INodeToNodeType, Integer>();
     private int totalIndex;
     private List<String> names = new ArrayList<String>();
     private FrequencyPlanModel fp;
@@ -511,9 +516,12 @@ public class AfpExporter extends Job {
             // CoA
 
             float val = 0;
-            for (Entry<NodeToNodeTypes, Map<String, List<String[]>>> entry : sectorValues.map.entrySet()) {
+            for (Entry<INodeToNodeType, Map<String, List<String[]>>> entry : sectorValues.map.entrySet()) {
                 int id = -1;
                 for (Entry<String, List<String[]>> entryList : entry.getValue().entrySet()) {
+                    if (!this.index.containsKey(entry.getKey())) {
+                        continue;
+                    }
                     id = this.index.get(entry.getKey()) + lists.get(entry.getKey()).indexOf(entryList.getKey());
                     ScalingFactors sf = model.findScalingFactor(entry.getKey(), entryList.getKey());
                     for (String[] values : entryList.getValue()) {
@@ -808,15 +816,22 @@ public class AfpExporter extends Job {
                 }
 
                 data.addValues((NodeToNodeTypes)proxytype, prName, value);
-
-                if (proxytype.equals(NodeToNodeTypes.NEIGHBOURS)) {
-                    if (!intValues.containsKey(sector)) {
-                        SectorValues sameSector = new SectorValues();
-                        intValues.put(sector, sameSector);
-
-                        sameSector.addValues(NodeToNodeTypes.NEIGHBOURS, prName, new String[] {"0.0", "0.0", "0.0", "0.0"});
-                    }
+            }
+        }
+        
+        //LN, 25.04.2011, more correct adding Co-Site and Co-Sector separations
+        NetworkService ns=NeoServiceFactory.getInstance().getNetworkService();
+        Node site = sector.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
+        
+        for (Node child : ns.getSectorsOfSite(site).nodes()) {
+            if (!child.equals(sector)) {
+                SectorValues data = intValues.get(child);
+                if (data == null) {
+                    data = new SectorValues();
+                    intValues.put(child, data);
                 }
+                
+                data.addValues(ConstraintNodeToNode.CO_SITE, ConstraintNodeToNode.CO_SITE.toString(), new String[] {"0.0", "0.0", "0,0", "0.0"});
             }
         }
 
@@ -1000,9 +1015,9 @@ public class AfpExporter extends Job {
 
     public static class SectorValues {
 
-        Map<NodeToNodeTypes, Map<String, List<String[]>>> map = new HashMap<NodeToNodeTypes, Map<String, List<String[]>>>();
+        Map<INodeToNodeType, Map<String, List<String[]>>> map = new HashMap<INodeToNodeType, Map<String, List<String[]>>>();
 
-        public void addValues(NodeToNodeTypes proxytype, String listName, String[] value) {
+        public void addValues(INodeToNodeType proxytype, String listName, String[] value) {
             Map<String, List<String[]>> maps = map.get(proxytype);
             if (maps == null) {
                 maps = new HashMap<String, List<String[]>>();
