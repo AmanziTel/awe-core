@@ -79,6 +79,7 @@ public abstract class TableModel {
             }
         };
         columnviewer.getColumn().addListener(SWT.Selection, sortListener);
+        updateColumn(viewer.getTable(), columnviewer.getColumn(), columnId);
         return columnviewer;
     }
 
