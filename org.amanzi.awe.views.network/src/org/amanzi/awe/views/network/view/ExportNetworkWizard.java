@@ -16,12 +16,16 @@ package org.amanzi.awe.views.network.view;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -711,25 +715,30 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                             isNeedExportModel = true;
                         
                         if (selection.equals("latest")) {
-                            LABEL: for (Node carrierNode : nodes) {
-                                Node planNode = model.findPlanNode(carrierNode);
-                                if (planNode != null) {
-                                    for (Relationship rel : planNode.getRelationships()) {
-                                        if (rel.getType().toString().equals(DatasetRelationshipTypes.CHILD.toString())) {
-                                            Object timestampObject = null;
-                                            if (rel.getStartNode().hasProperty("time"))
-                                                timestampObject = rel.getStartNode().getProperty("time");
-                                            if (timestampObject != null) {
-                                                long timestampTemp = Long.parseLong(timestampObject.toString());
-                                                if (timestampTemp > timestamp) {
-                                                    timestamp = timestampTemp;
-                                                    latestModelName = model.getName();
-                                                }
-                                                break LABEL;
-                                            }
-                                        }
-                                    }
-                                }
+//                            LABEL: for (Node carrierNode : nodes) {
+//                                Node planNode = model.findPlanNode(carrierNode);
+//                                if (planNode != null) {
+//                                    for (Relationship rel : planNode.getRelationships()) {
+//                                        if (rel.getType().toString().equals(DatasetRelationshipTypes.CHILD.toString())) {
+//                                            Object timestampObject = null;
+//                                            if (rel.getStartNode().hasProperty("time"))
+//                                                timestampObject = rel.getStartNode().getProperty("time");
+//                                            if (timestampObject != null) {
+//                                                long timestampTemp = Long.parseLong(timestampObject.toString());
+//                                                if (timestampTemp > timestamp) {
+//                                                    timestamp = timestampTemp;
+//                                                    latestModelName = model.getName();
+//                                                }
+//                                                break LABEL;
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            }
+                            long timestampTemp = getTimeFromString(model.getName());
+                            if (timestampTemp > timestamp) {
+                                timestamp = timestampTemp;
+                                latestModelName = model.getName();
                             }
                         }
                     }
@@ -787,6 +796,19 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                 break;
             }
         }
+    }
+    
+    private long getTimeFromString(String timeString) {
+        int indexOfSpace = timeString.indexOf(' ');
+        timeString = timeString.substring(indexOfSpace + 1);
+        String mask = "dd-MMM-yy hh:mm";
+        SimpleDateFormat sdf = new SimpleDateFormat(mask, Locale.ENGLISH);
+        Date date = sdf.parse(timeString, new ParsePosition(0));
+        
+        if (date != null)
+            return date.getTime();
+        else
+            return 0;
     }
     
     
