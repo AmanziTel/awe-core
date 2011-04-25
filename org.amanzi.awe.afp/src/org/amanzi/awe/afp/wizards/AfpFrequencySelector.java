@@ -174,7 +174,7 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 		//freqList.setItems(leftList);
 		
 		rightArrowButton = new Button (freqGroup, SWT.ARROW | SWT.RIGHT | SWT.BORDER);
-		GridData arrowGridData = new GridData(GridData.FILL, GridData.END, true, false,1 ,1);
+		GridData arrowGridData = new GridData(GridData.CENTER, GridData.END, true, false,1 ,1);
 		arrowGridData.verticalIndent = trim.height/10;
 		rightArrowButton.setLayoutData(arrowGridData);
 		
@@ -210,7 +210,7 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 		
 		
 		leftArrowButton = new Button (freqGroup, SWT.ARROW | SWT.LEFT | SWT.BORDER);
-		leftArrowButton.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false,1 ,1));
+		leftArrowButton.setLayoutData(new GridData(GridData.CENTER, GridData.BEGINNING, true, false,1 ,1));
 		
 		leftArrowButton.addSelectionListener(new SelectionAdapter(){
 			@Override
@@ -233,8 +233,9 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 		});
 		
         
-        rightDoubleArrowButton = new Button (freqGroup, SWT.ARROW | SWT.RIGHT | SWT.BORDER);
+        rightDoubleArrowButton = new Button (freqGroup, SWT.BORDER);
         GridData gd = new GridData(GridData.FILL, GridData.END, true, false,1 ,1);
+        rightDoubleArrowButton.setText(">>");
         gd.verticalIndent = trim.height/5;
         rightDoubleArrowButton.setLayoutData(gd);
         rightDoubleArrowButton.addSelectionListener(new SelectionAdapter() {
@@ -255,7 +256,8 @@ public class AfpFrequencySelector extends AfpDomainSelector{
             }
         });
         
-        leftDoubleArrowButton = new Button (freqGroup, SWT.ARROW | SWT.LEFT | SWT.BORDER);
+        leftDoubleArrowButton = new Button (freqGroup, SWT.BORDER);
+        leftDoubleArrowButton.setText("<<");
         leftDoubleArrowButton.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false,1 ,1));
         leftDoubleArrowButton.addSelectionListener(new SelectionAdapter() {
             @Override

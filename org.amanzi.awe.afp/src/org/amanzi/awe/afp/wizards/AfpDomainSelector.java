@@ -49,7 +49,7 @@ public class AfpDomainSelector {
 		nameLabel.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
 		nameLabel.setText("Domain Name");
 
-		if (action.equals("Add")){
+		if (action.equals("Create")){
 			Text nameText = new Text (subShell, SWT.BORDER | SWT.SINGLE);
 			nameText.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
 			nameText.addModifyListener(new ModifyListener(){
@@ -102,14 +102,14 @@ public class AfpDomainSelector {
 	
 	protected void addButtons(final String action) {
 		actionButton = new Button(subShell, SWT.PUSH);
-		actionButton.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
+		actionButton.setLayoutData(new GridData(GridData.END, GridData.BEGINNING, true, false, 2, 1));
 		
 		actionButton.setText(action);
 		actionButton.addSelectionListener(new SelectionAdapter(){
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				boolean ret = true;
-				if (action.equals("Add")){
+				if (action.equals("Create")){
 				    
 					ret = handleAddDomain();
 					
@@ -161,7 +161,7 @@ public class AfpDomainSelector {
 	 }
 	
 	protected void setStateToAddButton(boolean state) {
-	    if (actionButton.getText().equals("Add"))
+	    if (actionButton.getText().equals("Create"))
 	        actionButton.setEnabled(state);
 	}
 

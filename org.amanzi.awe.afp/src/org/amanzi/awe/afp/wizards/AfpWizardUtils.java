@@ -185,7 +185,7 @@ public class AfpWizardUtils {
 		freqList.setItems(leftList);
 		
 		Button rightArrowButton = new Button (parentGroup, SWT.ARROW | SWT.RIGHT | SWT.BORDER);
-		GridData arrowGridData = new GridData(GridData.FILL, GridData.END, true, false,1 ,1);
+		GridData arrowGridData = new GridData(GridData.CENTER, GridData.END, true, false,1 ,1);
 		arrowGridData.verticalIndent = trim.height/10;
 		rightArrowButton.setLayoutData(arrowGridData);
 		
@@ -198,16 +198,18 @@ public class AfpWizardUtils {
 		selectedList.setItems(AfpModel.rangeArraytoArray(rightList));
 		
 		Button leftArrowButton = new Button (parentGroup, SWT.ARROW | SWT.LEFT | SWT.BORDER);
-        leftArrowButton.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false,1 ,1));
+        leftArrowButton.setLayoutData(new GridData(GridData.CENTER, GridData.BEGINNING, true, false,1 ,1));
         
-        Button rightDoubleArrowButton = new Button (parentGroup, SWT.ARROW | SWT.RIGHT | SWT.BORDER);
+        Button rightDoubleArrowButton = new Button (parentGroup, SWT.BORDER);
         GridData gd = new GridData(GridData.FILL, GridData.END, true, false,1 ,1);
         gd.verticalIndent = trim.height/5;
         rightDoubleArrowButton.setLayoutData(gd);
+        rightDoubleArrowButton.setText(">>");
         
         
-        Button leftDoubleArrowButton = new Button (parentGroup, SWT.ARROW | SWT.LEFT | SWT.BORDER);
+        Button leftDoubleArrowButton = new Button (parentGroup, SWT.BORDER);
         leftDoubleArrowButton.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false,1 ,1));
+        leftDoubleArrowButton.setText("<<");
         
 		
 		rightArrowButton.addSelectionListener(new SelectionAdapter(){
@@ -323,20 +325,20 @@ public class AfpWizardUtils {
     	buttonsGroup.setLayoutData(new GridData(GridData.END, GridData.FILL, false, true, 1 , 10));
     	Button addButton = new Button(buttonsGroup, GridData.BEGINNING);
     	addButton.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, false, false, 1 , 1));
-    	addButton.setText("Add Domain");
+    	addButton.setText("Create Domain");
     	addButton.addSelectionListener(new SelectionAdapter(){
     		
     		@Override
 			public void widgetSelected(SelectionEvent e) {
     			if (thisCaller.equals("FrequencyType"))
-    				new AfpFrequencySelector(page,parentShell, "Add", parentGroup, model);
+    				new AfpFrequencySelector(page,parentShell, "Create", parentGroup, model);
     			else if (thisCaller.equals("HoppingMAL"))
-    				new AfpMalSelector(page,parentShell, "Add", parentGroup, model);
+    				new AfpMalSelector(page,parentShell, "Create", parentGroup, model);
     			else if (thisCaller.equals("Sector SeparationRules"))
-    				new AfpSeperationSelector(page,parentShell, "Add", parentGroup, model,true );
+    				new AfpSeperationSelector(page,parentShell, "Create", parentGroup, model,true );
     				//AfpWizardUtils.createSeparationDomainShell(page,parentShell, "Add", true, parentGroup, model);
     			else if (thisCaller.equals("Site SeparationRules"))
-    				new AfpSeperationSelector(page,parentShell, "Add", parentGroup, model,false );
+    				new AfpSeperationSelector(page,parentShell, "Create", parentGroup, model,false );
     				//AfpWizardUtils.createSeparationDomainShell(page,parentShell, "Add", false, parentGroup, model);
 			}
     		
