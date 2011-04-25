@@ -426,35 +426,36 @@ public class AfpExporter extends Job {
                 sbSubCell.append(intTrx.getId());
                 sbSubCell.append("A");
                 if (includeSubcell) {
+                    final float coo;
+                    final float ad;
+                    final float[]arr;
+                    final float[]arr2;
+                    if (useTraffic[currentDomainIndex]){
+                        coo=trxValues[CoT];
+                        ad=trxValues[AdT];
+                        arr= contributions_cot;
+                        arr2= contributions_adjt;
+                    }else{
+                        coo=trxValues[CoA];
+                        ad=trxValues[AdA];
+                        arr= contributions_co;
+                        arr2= contributions_adj;
+                    }
                     tx.submit(new Runnable() {
 
                         @Override
                         public void run() {
                             Relationship relation = impact.getRelation(trx, intTrx);
-                            float co;
-                            float ad;
-                            float[]arr;
-                            float[]arr2;
-                            if (useTraffic[currentDomainIndex]){
-                                co=trxValues[CoT];
-                                ad=trxValues[AdT];
-                                arr= contributions_cot;
-                                arr2= contributions_adjt;
-                            }else{
-                                co=trxValues[CoA];
-                                ad=trxValues[AdA];
-                                arr= contributions_co;
-                                arr2= contributions_adj;
-                            }
-                            relation.setProperty("co", co);
+
+                            relation.setProperty("co", coo);
                             relation.setProperty("adj",ad);
                             relation.setProperty("contributions_co",arr);
                             relation.setProperty("contributions_adj", arr2);                                
-                            statistic.indexValue(impact.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), "co", co);
+                            statistic.indexValue(impact.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), "co", coo);
                             statistic.indexValue(impact.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), "adj", ad);
-                            statistic.indexValue(impact.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), "contributions_adj",
-                                    arr);
                             statistic.indexValue(impact.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), "contributions_co",
+                                    arr);
+                            statistic.indexValue(impact.getName(), NodeTypes.NODE_NODE_RELATIONS.getId(), "contributions_adj",
                                     arr2);
                         }
                     });
