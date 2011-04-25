@@ -55,7 +55,7 @@ public class AfpFilter {
 			if(!ret) return false;
 			
 			try {
-				Object v = n.getProperty(col);
+				Object v = n.getProperty(col, null);
 				if(v == null) {
 					ret = ret && false;
 					continue;
