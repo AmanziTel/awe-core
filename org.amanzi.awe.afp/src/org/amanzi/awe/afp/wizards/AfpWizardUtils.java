@@ -184,7 +184,8 @@ public class AfpWizardUtils {
 		freqList.setLayoutData(gridData);
 		freqList.setItems(leftList);
 		
-		Button rightArrowButton = new Button (parentGroup, SWT.ARROW | SWT.RIGHT | SWT.BORDER);
+		Button rightArrowButton = new Button (parentGroup, SWT.NONE);
+		rightArrowButton.setText(">");
 		GridData arrowGridData = new GridData(GridData.CENTER, GridData.END, true, false,1 ,1);
 		arrowGridData.verticalIndent = trim.height/10;
 		rightArrowButton.setLayoutData(arrowGridData);
@@ -197,17 +198,18 @@ public class AfpWizardUtils {
 		selectedList.setLayoutData(gridData);
 		selectedList.setItems(AfpModel.rangeArraytoArray(rightList));
 		
-		Button leftArrowButton = new Button (parentGroup, SWT.ARROW | SWT.LEFT | SWT.BORDER);
+		Button leftArrowButton = new Button (parentGroup,SWT.NONE);
+		leftArrowButton.setText("<");
         leftArrowButton.setLayoutData(new GridData(GridData.CENTER, GridData.BEGINNING, true, false,1 ,1));
         
-        Button rightDoubleArrowButton = new Button (parentGroup, SWT.BORDER);
+        Button rightDoubleArrowButton = new Button (parentGroup, SWT.NONE);
         GridData gd = new GridData(GridData.FILL, GridData.END, true, false,1 ,1);
         gd.verticalIndent = trim.height/5;
         rightDoubleArrowButton.setLayoutData(gd);
         rightDoubleArrowButton.setText(">>");
         
         
-        Button leftDoubleArrowButton = new Button (parentGroup, SWT.BORDER);
+        Button leftDoubleArrowButton = new Button (parentGroup, SWT.NONE);
         leftDoubleArrowButton.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false,1 ,1));
         leftDoubleArrowButton.setText("<<");
         

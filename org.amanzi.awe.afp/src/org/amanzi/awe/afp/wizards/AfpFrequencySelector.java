@@ -173,7 +173,8 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 		freqList.setLayoutData(gridData);
 		//freqList.setItems(leftList);
 		
-		rightArrowButton = new Button (freqGroup, SWT.ARROW | SWT.RIGHT | SWT.BORDER);
+		rightArrowButton = new Button (freqGroup,SWT.NONE);
+		rightArrowButton.setText(">");
 		GridData arrowGridData = new GridData(GridData.CENTER, GridData.END, true, false,1 ,1);
 		arrowGridData.verticalIndent = trim.height/10;
 		rightArrowButton.setLayoutData(arrowGridData);
@@ -209,7 +210,8 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 		
 		
 		
-		leftArrowButton = new Button (freqGroup, SWT.ARROW | SWT.LEFT | SWT.BORDER);
+		leftArrowButton = new Button (freqGroup, SWT.NONE);
+		leftArrowButton.setText("<");
 		leftArrowButton.setLayoutData(new GridData(GridData.CENTER, GridData.BEGINNING, true, false,1 ,1));
 		
 		leftArrowButton.addSelectionListener(new SelectionAdapter(){
@@ -233,7 +235,7 @@ public class AfpFrequencySelector extends AfpDomainSelector{
 		});
 		
         
-        rightDoubleArrowButton = new Button (freqGroup, SWT.BORDER);
+        rightDoubleArrowButton = new Button (freqGroup, SWT.NONE);
         GridData gd = new GridData(GridData.FILL, GridData.END, true, false,1 ,1);
         rightDoubleArrowButton.setText(">>");
         gd.verticalIndent = trim.height/5;
@@ -256,7 +258,7 @@ public class AfpFrequencySelector extends AfpDomainSelector{
             }
         });
         
-        leftDoubleArrowButton = new Button (freqGroup, SWT.BORDER);
+        leftDoubleArrowButton = new Button (freqGroup, SWT.NONE);
         leftDoubleArrowButton.setText("<<");
         leftDoubleArrowButton.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false,1 ,1));
         leftDoubleArrowButton.addSelectionListener(new SelectionAdapter() {
