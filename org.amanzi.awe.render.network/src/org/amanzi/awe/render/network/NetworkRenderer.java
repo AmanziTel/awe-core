@@ -1015,8 +1015,8 @@ public class NetworkRenderer extends RendererImpl {
         g.setTransform(base_transform);
 //        g.translate(p.x, p.y);
 //        int draw2 = drawSize + 3;
-        double h=(double)drawHints.siteSize;
-        double r1=h;
+        double h=(double)drawHints.drawSize/2;
+        double r1=0.0;
         int i=0;
         double angle1 = -90 + azimuth - beamwidth / 2.0;
         double angle2 = angle1+beamwidth;
