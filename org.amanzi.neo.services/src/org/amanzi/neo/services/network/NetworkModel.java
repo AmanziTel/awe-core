@@ -304,4 +304,9 @@ public class NetworkModel {
     public FrequencyPlanModel findFrequencyModel(String modelName) {
         return FrequencyPlanModel.findModel(rootNode, modelName);
     }
+
+    public Node getRootNode() {
+        return rootNode;
+    }
+    
 }

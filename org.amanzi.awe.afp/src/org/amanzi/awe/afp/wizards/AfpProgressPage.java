@@ -2,14 +2,22 @@ package org.amanzi.awe.afp.wizards;
 
 import java.awt.Color;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 
 import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.executors.AfpProcessProgress;
 import org.amanzi.awe.afp.exporters.AfpExporter;
+import org.amanzi.awe.afp.exporters.MaioOptimizer;
 import org.amanzi.awe.afp.loaders.AfpOutputFileLoaderJob;
 import org.amanzi.awe.afp.models.AfpModel;
+import org.amanzi.neo.services.network.FrequencyPlanModel;
+import org.amanzi.neo.services.network.NetworkModel;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -432,7 +440,29 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 		
 		loadJob = new AfpOutputFileLoaderJob("Loading new frequency plans", model.getDatasetNode(), model.getAfpNode(), exportJob);
 		loadJob.setRule(rule);
-		
+		final Job postFreqLoadJob=new Job(""){
+
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                Collection<FrequencyPlanModel> freq=loadJob.getCreatedPlans();
+                NetworkModel network=new NetworkModel(model.getDatasetNode());
+                if (model.isOptimizeMAIO()&&model.isOptimizeFrequency()&model.getChanneltypes()[2]){
+                    for (FrequencyPlanModel model:freq){
+                        MaioOptimizer optimizer = new MaioOptimizer(network, model);
+                         optimizer.run(monitor);
+                    }
+                }
+                if (model.isOptimizeBSIC()){
+                    //TODO implement
+                }
+                if (model.isOptimizeHSN()){
+                    //TODO implement 
+                }
+                return Status.OK_STATUS;
+            }
+		    
+		};
+		postFreqLoadJob.setRule(rule);
 		if(afpJob == null) {
 			model.executeAfpEngine(this, exportJob);
 			afpJob = model.getExecutor();
@@ -440,6 +470,7 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 			exportJob.schedule();
 			afpJob.schedule();
 			loadJob.schedule();
+			postFreqLoadJob.schedule();
 		}		    
 	}
 }

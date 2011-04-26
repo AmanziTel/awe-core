@@ -120,7 +120,14 @@ public class ViolationReportModel extends TableModel {
                         if (arfcn1 == null || arfcn2 == null) {
                             return false;
                         }
-                        return arfcn1.equals(arfcn2) || Math.abs(arfcn1 - arfcn2) == 1;
+                        boolean isCo= arfcn1.equals(arfcn2);
+                        //co handled during cretion impact
+                        boolean isAdj= Math.abs(arfcn1 - arfcn2) == 1;
+                        if (isAdj){
+                            float ad=(Float)impactRel.getProperty("adj",0.0f);
+                            isAdj=ad>0;
+                        }
+                        return isCo||isAdj;
                     }
                 };
             }

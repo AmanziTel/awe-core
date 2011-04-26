@@ -1,10 +1,13 @@
 package org.amanzi.awe.afp.loaders;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 import org.amanzi.awe.afp.exporters.AfpExporter;
 import org.amanzi.neo.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.services.events.UpdateViewEventType;
+import org.amanzi.neo.services.network.FrequencyPlanModel;
 import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -37,5 +40,7 @@ public class AfpOutputFileLoaderJob extends Job {
 		}
 		return Status.OK_STATUS;
 	}
-
+	public List<FrequencyPlanModel> getCreatedPlans(){
+	    return Collections.unmodifiableList(loader.models);
+	}
 }

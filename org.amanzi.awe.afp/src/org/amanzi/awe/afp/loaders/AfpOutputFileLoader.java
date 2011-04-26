@@ -2,9 +2,12 @@ package org.amanzi.awe.afp.loaders;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.amanzi.awe.afp.exporters.AfpExporter;
 import org.amanzi.awe.console.AweConsolePlugin;
+import org.amanzi.neo.services.network.FrequencyPlanModel;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -12,7 +15,8 @@ import org.neo4j.graphdb.Node;
 
 public class AfpOutputFileLoader extends AfpLoader{
 	
-	private AfpExporter exporter;
+    private AfpExporter exporter;
+	public List<FrequencyPlanModel> models=new ArrayList<FrequencyPlanModel>();
 	
 	public AfpOutputFileLoader(Node networkRoot, Node afpDataset, AfpExporter exporter) {
 		super("", null, networkRoot.getGraphDatabase());
@@ -52,6 +56,7 @@ public class AfpOutputFileLoader extends AfpLoader{
                         defineRoot();
                         CellFileHandler handler = loadCellFile(outputFile, true);
                         handler.planModel.attachSingleSource(exporter.impacts[i].getRootNode());
+                        models.add(handler.planModel);
                         statistic.save();
                     } else {
                 		AweConsolePlugin.error("Error:: No output File generated: " + outputFile);

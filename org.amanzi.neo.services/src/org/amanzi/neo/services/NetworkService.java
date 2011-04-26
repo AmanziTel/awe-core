@@ -1130,4 +1130,16 @@ public class NetworkService extends DatasetService {
         }
         return result;
     }
+
+    /**
+     *
+     * @return
+     */
+    public int getTotalTrxOfPlan(Node plan) {
+        int relCount=0;;
+        for (Relationship rel:plan.getRelationships(DatasetRelationshipTypes.PLAN_ENTRY, Direction.INCOMING)){
+            relCount++;  
+        }
+        return relCount;
+    }
 }
