@@ -13,6 +13,9 @@
 
 package org.amanzi.awe.statistics.template;
 
+import java.text.DecimalFormat;
+import java.text.Format;
+
 import org.amanzi.awe.statistics.engine.IStatisticsHeader;
 import org.amanzi.awe.statistics.functions.AggregationFunctions;
 
@@ -29,6 +32,7 @@ public class TemplateColumn {
     private IStatisticsHeader header;
     private AggregationFunctions function;
     private Threshold threshold;
+    private Format format=new DecimalFormat();
     public TemplateColumn(String name){
         this.name=name;
     }
@@ -108,6 +112,19 @@ public class TemplateColumn {
      */
     public void setThreshold(Threshold threshold) {
         this.threshold = threshold;
+    }
+    
+    /**
+     * @return Returns the format.
+     */
+    public Format getFormat() {
+        return format;
+    }
+    /**
+     * @param format The format to set.
+     */
+    public void setFormat(Format format) {
+        this.format = format;
     }
     @Override
     public String toString() {

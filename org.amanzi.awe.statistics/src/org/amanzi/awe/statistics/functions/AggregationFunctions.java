@@ -24,13 +24,29 @@ import org.amanzi.awe.statistics.engine.IAggregationFunction;
  * @since 1.0.0
  */
 public enum AggregationFunctions {
-    SUM("sum") {
+    MAX("max") {
 
+        @Override
+        public IAggregationFunction newFunction() {
+            return new Max();
+        }
+
+    },
+    MIN("min") {
+        
+        @Override
+        public IAggregationFunction newFunction() {
+            return new Min();
+        }
+        
+    },
+    SUM("sum") {
+        
         @Override
         public IAggregationFunction newFunction() {
             return new Sum();
         }
-
+        
     },
     COUNT("count"){
 

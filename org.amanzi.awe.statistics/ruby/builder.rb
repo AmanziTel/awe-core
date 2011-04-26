@@ -65,6 +65,15 @@ class TemplateColumn
     setThreshold(t.threshold)
   end
 
+  def format(type,pattern)
+    type||=:decimal
+    if type=:decimal
+      setFormat(java.text.DecimalFormat.new(pattern))
+    elsif type=:date
+      setFormat(java.text.SimpleDateFormat.new(pattern))
+    end
+  end
+
   def method_missing(method, *args)
     if method.to_s=~/alert_(\w+)/
       thresholds{alert.send($1,*args)}

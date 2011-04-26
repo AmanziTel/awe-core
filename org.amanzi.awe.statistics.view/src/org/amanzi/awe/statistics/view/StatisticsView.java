@@ -346,8 +346,8 @@ public class StatisticsView extends ViewPart {
      * Initializes controls with default values
      */
     private void initialize() {
-//        sortAscImage = StatisticsViewPlugin.getImageDescriptor("icons/Asc.png").createImage();
-//        sortDescImage = StatisticsViewPlugin.getImageDescriptor("icons/Desc.png").createImage();
+        sortAscImage = StatisticsViewPlugin.getImageDescriptor("icons/Asc.png").createImage();
+        sortDescImage = StatisticsViewPlugin.getImageDescriptor("icons/Desc.png").createImage();
 
         updateDatasets();
         updateTemplates();
@@ -401,6 +401,15 @@ public class StatisticsView extends ViewPart {
                 checkUpdateButton();
             }
         });
+        cPeriod.addSelectionListener(new SelectionAdapter() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                checkUpdateButton();
+            }
+        });
+        
+        
         bUpdate.addSelectionListener(new SelectionAdapter() {
 
             @Override
@@ -2057,7 +2066,7 @@ public class StatisticsView extends ViewPart {
 
     }
 
-    public String clearTextFromSpecialChars(String filter) {
+    private String clearTextFromSpecialChars(String filter) {
         return filter.toLowerCase().replaceAll("\\.", "\\.");
     }
 }
