@@ -16,6 +16,7 @@ package org.amanzi.awe.views.reuse.mess_table.view;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -703,7 +704,21 @@ public class MessageAndEventTableView extends ViewPart {
     private String[] convertListToArray(List<String> list){
         String[] result = new String[list.size()];
         result = list.toArray(result);
-        Arrays.sort(result);
+        Arrays.sort(result, new Comparator<String>() {
+
+            @Override
+            public int compare(String arg0, String arg1) {
+                if (arg0.equals("sector") || arg0.equals("trx")) {
+                    if (arg1.equals("sector") || arg1.equals("trx")) {
+                        return arg0.compareTo(arg1);
+                    }
+                    else {
+                        return -1;
+                    }
+                }
+                return arg0.compareTo(arg1);
+            }
+        });
         return result;
     }
     
