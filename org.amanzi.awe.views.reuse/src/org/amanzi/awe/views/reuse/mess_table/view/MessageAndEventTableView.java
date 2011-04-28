@@ -16,7 +16,11 @@ package org.amanzi.awe.views.reuse.mess_table.view;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+
+import java.util.Collections;
+
 import java.util.Comparator;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -26,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+
 import org.amanzi.awe.views.reuse.Messages;
 import org.amanzi.awe.views.reuse.mess_table.DataTypes;
 import org.amanzi.neo.core.NeoCorePlugin;
@@ -34,8 +39,11 @@ import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.events.ShowPreparedViewEvent;
 import org.amanzi.neo.services.events.ShowViewEvent;
 import org.amanzi.neo.services.events.UpdateDrillDownEvent;
+import org.amanzi.neo.services.events.UpdateViewEvent;
+import org.amanzi.neo.services.events.UpdateViewEventType;
 import org.amanzi.neo.services.network.FrequencyPlanModel;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
@@ -44,7 +52,9 @@ import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.IStatistic;
 import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.amanzi.neo.services.statistic.StatisticManager;
+import org.amanzi.neo.services.ui.IUpdateViewListener;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -147,6 +157,7 @@ public class MessageAndEventTableView extends ViewPart {
     
     private HashMap<String, DatasetInfo> datasets;
     private Point point;
+    private boolean flag = true;
     
     private String initDataset;
     private String initProperty;
@@ -217,8 +228,48 @@ public class MessageAndEventTableView extends ViewPart {
         initTableContent();
         
         addListeners();
+        NeoServicesUiPlugin.getDefault().getUpdateViewManager().addListener(new SelectedNodeListener());
+
         initializeStartupProperties();
         hookContextMenu();
+    }
+    private class SelectedNodeListener implements IUpdateViewListener {
+        private Collection<UpdateViewEventType> handedTypes;
+        
+        public SelectedNodeListener() {
+            Collection<UpdateViewEventType> spr = new HashSet<UpdateViewEventType>();
+            spr.add(UpdateViewEventType.SHOW_PREPARED_VIEW);
+            
+            handedTypes = Collections.unmodifiableCollection(spr);
+        }
+        
+        @Override
+        public void updateView(UpdateViewEvent event) {
+        	if (!flag){
+        		flag = true;
+        		return;
+        	}
+        	ShowPreparedViewEvent showEvent = (ShowPreparedViewEvent)event;
+        	if(cDataset.getSelectionIndex()<0){
+                return;
+            }           
+            cProperty.deselectAll();
+            
+            cExpression.deselectAll();
+                    
+            
+            
+        	contentProvider.uploadData(showEvent.getNodes());
+        	
+        	
+            
+        }
+
+        @Override
+        public Collection<UpdateViewEventType> getType() {
+            return handedTypes;
+        }
+        
     }
 
     private void initTableContent() {
@@ -402,6 +453,7 @@ public class MessageAndEventTableView extends ViewPart {
                 TableItem item = (TableItem) event.item;
                 table.getTable().deselectAll();
                 final int index = table.getTable().indexOf (item);
+                
                 contentProvider.uploadData(null,index);
             }
         });
@@ -415,12 +467,14 @@ public class MessageAndEventTableView extends ViewPart {
             @Override
             public void mouseDown(MouseEvent e) {
                 point = new Point(e.x, e.y);
+                flag = false;
                 fireDrillDown(); 
             }
 
             @Override
             public void mouseDoubleClick(MouseEvent e) {
                 point = new Point(e.x, e.y);
+                flag = false;
                 fireDrillDown(); 
             }
         });
@@ -1055,10 +1109,49 @@ public class MessageAndEventTableView extends ViewPart {
             }
             labelProvider.refreshTable(properties);
             rows.clear();
+            
             uploadData(data,0);            
             table.getControl().setVisible(true);
         }
 
+        
+        public void uploadData( final List<Node> nodes) {
+
+        	Job updateJob = new Job("Upload data to table job") {            
+        		@Override
+        		protected IStatus run(IProgressMonitor monitor) { 
+        			rows.clear();
+
+        			GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
+        			Transaction tx = service.beginTx();            
+        			try{
+        				allNodes = nodes.iterator(); 
+        				int start = 0;
+        				while(allNodes.hasNext()&&start<PAGE_SIZE){
+        					rows.add(parseRow(allNodes.next(), properties));
+        					start++;
+        				}
+        			}finally{
+        				tx.finish();
+        			}
+        			return Status.OK_STATUS;
+        		}
+        	};
+        	updateJob.schedule(0);
+        	try {
+        		updateJob.join();
+        	} catch (InterruptedException e) {
+        		e.printStackTrace();
+        	}
+
+        	table.refresh();
+        }
+
+        	
+        
+        
+        
+        
         /**
          * Upload data for table.
          *
@@ -1244,6 +1337,58 @@ public class MessageAndEventTableView extends ViewPart {
                GeoNeoRelationshipTypes.NEXT,Direction.OUTGOING).iterator();
             return result;
         }
+        
+        private Iterator<Node> getNodesByFilter(GraphDatabaseService service, NodeTypes childType, List<Node> nodes){
+        	
+        	Iterator<Node> iter = nodes.iterator();
+        	Node currentNode;
+        	List<Node> returnList = new ArrayList<Node>();
+        	while (iter.hasNext()){
+        		currentNode = iter.next();
+        		if (filterProperty(service, childType, currentNode))        			
+        			returnList.add(currentNode);        			
+        	}
+        	
+        	
+        	return returnList.iterator();
+            
+        }
+        private boolean filterProperty(GraphDatabaseService service, NodeTypes childType,Node currentNode){
+        	DatasetInfo datasetInfo = datasets.get(dataset);
+        	NodeTypes type = NodeTypes.getNodeType(currentNode, service);
+            if(type==null || !type.equals(childType)){
+                return false;
+            }
+            if(property==null){
+                return true;
+            }
+            Object objValue;
+            if (datasetInfo.model!=null){
+                if ("sector".equals(property)){
+                    Node node = currentNode.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(currentNode);
+                    objValue=node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
+                }    else  if ("trx".equals(property)){
+                    objValue=currentNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
+                }else  if (datasetInfo.trxProp.contains(property)){
+                    objValue= currentNode.getProperty(property, null);
+                }else{
+                    Node node = datasetInfo.model.findPlanNode(currentNode);
+                    objValue=node==null?null:node.getProperty(property, null);
+                }
+            }else{
+                objValue= currentNode.getProperty(property, null);
+            }
+            String realValue = objValue==null?null:objValue.toString();
+            if(expression.equals(EXPRESSION_EMPTY)){
+                return realValue==null;
+            }
+            if(expression.equals(EXPRESSION_NOT_EMPTY)){
+                return realValue!=null;
+            }
+            return isGoodValue(realValue);
+        }
+        
+        
         
         /**
          * Is property correct.
