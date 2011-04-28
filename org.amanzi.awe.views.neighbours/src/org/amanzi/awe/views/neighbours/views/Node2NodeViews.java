@@ -56,10 +56,16 @@ import org.amanzi.neo.services.statistic.StatisticManager;
 import org.amanzi.neo.services.ui.IUpdateViewListener;
 import org.amanzi.neo.services.ui.IconManager;
 import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
+import org.amanzi.neo.services.ui.utils.JobWithResult;
 import org.amanzi.neo.services.utils.FilteredIterator;
 import org.amanzi.neo.services.utils.RunnableWithResult;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -181,16 +187,17 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
     private Button followTree;
     private int mode=-1;
     private ImageDescriptor id=ImageDescriptor.createFromFile(NeighboursPlugin.class, "/icons/complete_status.gif");
+    private Composite mainC;
 
     @Override
     public void createPartControl(Composite parent) {
-        Composite main = new Composite(parent, SWT.FILL);
+        mainC = new Composite(parent, SWT.FILL);
         Layout mainLayout = new GridLayout(8, false);
-        main.setLayout(mainLayout);
-        Label label = new Label(main, SWT.LEFT);
+        mainC.setLayout(mainLayout);
+        Label label = new Label(mainC, SWT.LEFT);
         label.setText(getListTxt());
 
-        n2nSelection = new Combo(main, SWT.DROP_DOWN | SWT.READ_ONLY);
+        n2nSelection = new Combo(mainC, SWT.DROP_DOWN | SWT.READ_ONLY);
         n2nSelection.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -207,7 +214,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         layoutData.horizontalSpan = 2;
         layoutData.widthHint = 300;
         n2nSelection.setLayoutData(layoutData);
-        Button drawArrow = new Button(main, SWT.CHECK);
+        Button drawArrow = new Button(mainC, SWT.CHECK);
         drawArrow.setText("Draw lines");
         drawArrow.addSelectionListener(new SelectionListener() {
 
@@ -224,7 +231,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         });
         drawLines = true;
         drawArrow.setSelection(drawLines);
-        outgoingAnalyse = new Button(main, SWT.CHECK);
+        outgoingAnalyse = new Button(mainC, SWT.CHECK);
         outgoingAnalyse.setText(OUTGOING_ANALYSE);
         outgoingAnalyse.addSelectionListener(new SelectionListener() {
 
@@ -241,11 +248,11 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         });
         direction = true;
         outgoingAnalyse.setSelection(direction);
-        followTree = new Button(main, SWT.CHECK);
+        followTree = new Button(mainC, SWT.CHECK);
         followTree.setText("Follow tree");
         followTree.setSelection(true);
         
-        commit = new Button(main, SWT.BORDER | SWT.PUSH);
+        commit = new Button(mainC, SWT.BORDER | SWT.PUSH);
         commit.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -261,7 +268,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         commit.setToolTipText("Commit");
         commit.setImage(IconManager.getIconManager().getCommitImage());
         commit.setEnabled(false);
-        rollback = new Button(main, SWT.BORDER | SWT.PUSH);
+        rollback = new Button(mainC, SWT.BORDER | SWT.PUSH);
         rollback.setImage(IconManager.getIconManager().getRollbackImage());
         rollback.addSelectionListener(new SelectionListener() {
 
@@ -280,17 +287,17 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
 
         // Kasnitskij_V:
 
-        Label label2 = new Label(main, SWT.FLAT);
+        Label label2 = new Label(mainC, SWT.FLAT);
         label2.setText("Search:");
         label2.setToolTipText("Search for sectors containing this text");
-        textToSearch = new Text(main, SWT.SINGLE | SWT.BORDER);
+        textToSearch = new Text(mainC, SWT.SINGLE | SWT.BORDER);
         // textToSearch.setSize(200, 20);
         // textToSearch.setLayoutData(layoutData);
         layoutData = new GridData();
 
         layoutData.widthHint = 150;
         textToSearch.setLayoutData(layoutData);
-        search = new Button(main, SWT.PUSH);
+        search = new Button(mainC, SWT.PUSH);
         search.setText("Search");
         search.addMouseListener(new MouseListener() {
 
@@ -314,7 +321,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         });
         // search.setLayoutData(layoutData);
 
-        returnFullList = new Button(main, SWT.PUSH);
+        returnFullList = new Button(mainC, SWT.PUSH);
         // returnFullList.setSize(200, 20);
         layoutData = new GridData();
 
@@ -340,7 +347,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         returnFullList.setLayoutData(layoutData);
         NeoServicesUiPlugin.getDefault().getUpdateViewManager().addListener(new SelectionNodeViewListener());
         
-        table = new Table(main, SWT.VIRTUAL | SWT.BORDER | SWT.FULL_SELECTION);
+        table = new Table(mainC, SWT.VIRTUAL | SWT.BORDER | SWT.FULL_SELECTION);
         view = new TableViewer(table);
         view.setContentProvider(new VirtualContentProvider());
         view.setLabelProvider(new VirtualLabelProvider());
@@ -1068,8 +1075,9 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
     private void formCollumns() {
         rows.clear();
         propertyClass.clear();
-        int countRelation = 0;
+
         table.setVisible(false);
+        mainC.setEnabled(false);
         table.clearAll();
         table.setSortDirection(SWT.NONE);
         if (n2nModel == null) {
@@ -1123,27 +1131,56 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
                 tableColumn.setToolTipText("Type " + type.getName());
 
             }
-            
-            for (Relationship rel : getRelationIterator(filter)) {
-                countRelation++;
-                if (countRelation<=maxRowCount){
-                    rows.add(new Wrapper(rel));
+            final JobWithResult<Integer> job=new JobWithResult<Integer>("traversing"){
+                @Override
+                protected IStatus run(IProgressMonitor monitor) {
+                    int countRelation = 0;
+                   
+                    for (Relationship rel : getRelationIterator(filter)) {
+                        countRelation++;
+                        if (countRelation<=maxRowCount){
+                            rows.add(new Wrapper(rel));
+                        }
+                    }
+                    canSort=maxRowCount>=countRelation;
+                    System.out.println(countRelation);
+                    if (canSort){
+                        fillProperties();
+                    }else{
+                        rows.clear();
+                        createdIter = createCountedIter();
+                    }
+                    result=countRelation;
+//                    try {
+//                        Thread.currentThread().sleep(60000);
+//                    } catch (InterruptedException e) {
+//                    }
+                    return Status.OK_STATUS;
                 }
-            }
-            canSort=maxRowCount>=countRelation;
-            System.out.println(countRelation);
-            if (canSort){
-                fillProperties();
-            }else{
-                rows.clear();
-                createdIter = createCountedIter();
-            }
+                
+            };
+            job.addJobChangeListener(new JobChangeAdapter() {
+                
 
+                @Override
+                public void done(IJobChangeEvent event) {
+                    if( PlatformUI.getWorkbench().isClosing())
+                        return;
+                    
+                    Display.getDefault().asyncExec(new Runnable(){
+                        public void run() {
+                            view.setItemCount(job.returnResult());
+                            table.setVisible(job.returnResult() > 0);
+                            mainC.setEnabled(true);
+                        }
+                    });
+                }
+                
+            });
+            job.schedule();
 
         }
         resizecolumns();
-        view.setItemCount(countRelation);
-        table.setVisible(countRelation > 0);
     }
 
     /**
