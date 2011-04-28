@@ -64,6 +64,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ILazyContentProvider;
@@ -178,6 +179,8 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
     private ArrayList<Wrapper> rows=new ArrayList<Wrapper>();
     private DecimalFormat formatter = null;
     private Button followTree;
+    private int mode=-1;
+    private ImageDescriptor id=ImageDescriptor.createFromFile(NeighboursPlugin.class, "/icons/complete_status.gif");
 
     @Override
     public void createPartControl(Composite parent) {
@@ -660,38 +663,63 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
      */
     private void addInterferenceAnalysis(IMenuManager manager, final Node node) {
         MenuManager subMenu = new MenuManager("Outgoing interference analyse");
+
         manager.add(subMenu);
-        manager.add(subMenu);
-        subMenu.add(new Action("by 'Co'") {
+//        manager.add(subMenu);
+        Action action = new Action("by 'Co'") {
             @Override
             public void run() {
                 model = createOutgoingInterferenceModel(node, "co");
+                mode=0;
                 fireModel(model);
             }
-        });
-        subMenu.add(new Action("by 'Adj'") {
+            @Override
+            public ImageDescriptor getImageDescriptor() {
+                return mode==0?id:super.getImageDescriptor();
+            }
+        };
+        subMenu.add(action);
+        Action action2 = new Action("by 'Adj'") {
             @Override
             public void run() {
+                mode=1;
                 model = createOutgoingInterferenceModel(node, "adj");
                 fireModel(model);
             }
-        });
+            @Override
+            public ImageDescriptor getImageDescriptor() {
+                return mode==1?id:super.getImageDescriptor();
+            }
+        };
+        subMenu.add(action2);
         subMenu = new MenuManager("Incoming interference analyse");
         manager.add(subMenu);
-        subMenu.add(new Action("by 'Co'") {
+        Action action3 = new Action("by 'Co'") {
             @Override
             public void run() {
                 model = createIncomigInterferenceModel(node, "co");
+                mode=2;
                 fireModel(model);
             }
-        });
-        subMenu.add(new Action("by 'Adj'") {
+            @Override
+            public ImageDescriptor getImageDescriptor() {
+                return mode==2?id:super.getImageDescriptor();
+            }
+        };
+        subMenu.add(action3);
+        Action action4 = new Action("by 'Adj'") {
             @Override
             public void run() {
                 model = createIncomigInterferenceModel(node, "adj");
+                mode=3;
                 fireModel(model);
             }
-        });
+            @Override
+            public ImageDescriptor getImageDescriptor() {
+                return mode==3?id:super.getImageDescriptor();
+            }
+        };
+        subMenu.add(action4);
 
     }
 
