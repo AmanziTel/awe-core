@@ -56,7 +56,6 @@ import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.indexes.PropertyIndex.NeoIndexRelationshipTypes;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
@@ -1543,6 +1542,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
      * assigned colors.
      */
     private Color getNodeColor(Node node, Color defColor) {
+        //TODO refactor!
         Transaction tx = NeoUtils.beginTransaction();
         try {
             if (aggNode != null) {               

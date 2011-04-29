@@ -31,5 +31,5 @@ public interface ISourceFinder {
  * @return the source
  */
     Node getSource(Node node);
-    Node getMultySource(Node node);
+    Iterable<Node> getMultySource(Node node);
 }

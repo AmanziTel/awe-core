@@ -1514,12 +1514,14 @@ public class ReuseAnalyserModel {
                         column.getNode().createRelationshipTo(nodeToLink, NetworkRelationshipTypes.AGGREGATE);
                         relCount++;
                     }
-                    nodeToLink = source.getMultiSource();
-                    if (nodeToLink != null) {
-                        if (index.get("aggType", aggrNode.getId(), column.getNode(), nodeToLink).getSingle() == null) {
-                            Relationship rel = column.getNode().createRelationshipTo(nodeToLink, NetworkRelationshipTypes.MULTI_AGGREGATE);
-                            index.add(rel, "aggType", aggrNode.getId());
-                            relCount++;
+                    Iterable<Node> multi = source.getMultiSource();
+                    if (multi != null) {
+                        for (Node nLink : multi) {
+                            if (index.get("aggType", aggrNode.getId(), column.getNode(), nLink).getSingle() == null) {
+                                Relationship rel = column.getNode().createRelationshipTo(nLink, NetworkRelationshipTypes.MULTI_AGGREGATE);
+                                index.add(rel, "aggType", aggrNode.getId());
+                                relCount++;
+                            }
                         }
                     }
                     if (relCount > 5000) {

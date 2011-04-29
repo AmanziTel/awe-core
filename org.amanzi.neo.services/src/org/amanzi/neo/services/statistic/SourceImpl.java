@@ -25,7 +25,7 @@ import org.neo4j.graphdb.Node;
 public class SourceImpl implements ISource {
 
     private Node source;
-    private Node multiSource;
+    private Iterable<Node> multiSource;
     private Object value;
     private double count;
 
@@ -41,7 +41,7 @@ public class SourceImpl implements ISource {
         count=1;
     }
 
-    public SourceImpl(Node multiSource, Node source, Object value) {
+    public SourceImpl(Iterable<Node> multiSource, Node source, Object value) {
         super();
         this.source = source;
         this.multiSource = multiSource;
@@ -62,12 +62,12 @@ public class SourceImpl implements ISource {
     /**
      * @param multiSource The multiSource to set.
      */
-    public void setMultiSource(Node multiSource) {
+    public void setMultiSource(Iterable<Node> multiSource) {
         this.multiSource = multiSource;
     }
 
     @Override
-    public Node getMultiSource() {
+    public Iterable<Node> getMultiSource() {
         return multiSource;
     }
 

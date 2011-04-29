@@ -16,6 +16,7 @@ package org.amanzi.awe.views.reuse.views;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,6 +37,7 @@ import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
 import org.neo4j.graphdb.traversal.Traverser;
 import org.neo4j.kernel.Traversal;
+import org.neo4j.kernel.Uniqueness;
 
 /**
  * TODO Purpose of 
@@ -156,12 +158,34 @@ public class BaseNetworkSelectionInformation implements ISelectionInformation {
                     }
                     
                     @Override
-                    public Node getMultySource(Node node) {
-                        return node.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getStartNode();
+                    public Iterable<Node> getMultySource(Node node) {
+                        HashSet<Node>res=new HashSet<Node>();
+                        res.add(node.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getStartNode());
+                        return res;
+                    }
+                };
+            } else if (!NodeTypes.SECTOR.getId().equals(nodeType)&&NodeTypes.SITE.getId().equals(nodeType)){
+                return new ISourceFinder() {
+                    
+                    @Override
+                    public Node getSource(Node node) {
+                        return node;
+                    }
+                    
+                    @Override
+                    public Iterable<Node> getMultySource(Node node) {
+                        return Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(GeoNeoRelationshipTypes.CHILD,Direction.INCOMING).evaluator(new Evaluator() {
+                            
+                            @Override
+                            public Evaluation evaluate(Path arg0) {
+                                boolean include = NodeTypes.SITE.checkNode(arg0.endNode());
+                                return Evaluation.of(include, !include);
+                            }
+                        }).traverse(node).nodes();
                     }
                 };
             }
-            //TODO implement full
+            //TODO use network structure instead fixed types
             return null;
         }
 

@@ -478,7 +478,7 @@ public class NetworkRenderer extends RendererImpl {
                         }
                     }
                 }
-                renderSite(g, p, borderColor, getSectorColor(node.getNode(), drawHints.siteColor), selected);
+                renderSite(g, p, borderColor, getSinngleColor(node.getNode(), drawHints.siteColor), selected);
                 nodesMap.put(node.getNode(), p);
                 if (drawHints.drawFull) {
                     int countOmnis = 0;
@@ -918,17 +918,27 @@ public class NetworkRenderer extends RendererImpl {
      * @param defColor - default value
      * @return color
      */
-    private Color getSectorColor(Node node, Color defColor) {
+    private Color getSinngleColor(Node node, Color defColor) {
         if (graphModel != null) {
             RGB result = graphModel.getColor(node);
             if (result != null) {
                 return new Color(result.red, result.green, result.blue, drawHints.alpha);
             }
         }
-        Transaction tx = NeoUtils.beginTransaction();
-        try {
             if (aggNode == null) {
                 return defColor;
+            }
+            Relationship rel=index.get("aggType", aggNode.getId(),null,node).getSingle();
+            if (rel!=null){
+                Node chartNode=rel.getOtherNode(node);
+                final Integer rgb = (Integer)chartNode.getProperty(INeoConstants.AGGREGATION_COLOR, defColor.getRGB());
+                Color clr;
+                if (drawHints.ignoreTransp) {
+                    clr= new Color(rgb);
+                } else {
+                    clr= new Color((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, (rgb >> 0) & 0xFF, drawHints.alpha);
+                }      
+                return clr;
             }
             Node chartNode = NeoUtils.getChartNode(node, aggNode);
             if (chartNode == null) {
@@ -941,9 +951,6 @@ public class NetworkRenderer extends RendererImpl {
                 return new Color((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, (rgb >> 0) & 0xFF, drawHints.alpha);
 
             }
-        } finally {
-            tx.finish();
-        }
     }
     private Set<Color> getSectorColors(Node node, Color defColor) {
         Set<Color> results=new LinkedHashSet<Color>();

@@ -14,6 +14,7 @@
 package org.amanzi.awe.views.reuse.views;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import org.amanzi.awe.views.reuse.views.FreqPlanSelectionInformation.TRXTYPE;
 import org.amanzi.neo.services.DatasetService;
@@ -155,8 +156,10 @@ public class FrPlanPropertyInf implements IPropertyInformation {
             }
 
             @Override
-            public Node getMultySource(Node node) {
-                return ns.findSectorOfPlan(node);
+            public Iterable<Node> getMultySource(Node node) {
+                HashSet<Node>res=new HashSet<Node>();
+                res.add(ns.findSectorOfPlan(node));
+                return res;
             }
         };
         if (INeoConstants.PROPERTY_SECTOR_ARFCN.equals(propertyName)) {
