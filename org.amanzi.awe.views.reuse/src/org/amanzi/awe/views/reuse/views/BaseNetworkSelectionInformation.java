@@ -164,7 +164,7 @@ public class BaseNetworkSelectionInformation implements ISelectionInformation {
                         return res;
                     }
                 };
-            } else if (!NodeTypes.SECTOR.getId().equals(nodeType)&&NodeTypes.SITE.getId().equals(nodeType)){
+            } else if (!NodeTypes.SECTOR.getId().equals(nodeType)&&!NodeTypes.SITE.getId().equals(nodeType)){
                 return new ISourceFinder() {
                     
                     @Override
@@ -174,7 +174,7 @@ public class BaseNetworkSelectionInformation implements ISelectionInformation {
                     
                     @Override
                     public Iterable<Node> getMultySource(Node node) {
-                        return Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(GeoNeoRelationshipTypes.CHILD,Direction.INCOMING).evaluator(new Evaluator() {
+                        return Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING).evaluator(new Evaluator() {
                             
                             @Override
                             public Evaluation evaluate(Path arg0) {
