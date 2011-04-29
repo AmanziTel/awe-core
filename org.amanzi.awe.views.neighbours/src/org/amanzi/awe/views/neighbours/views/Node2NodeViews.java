@@ -67,6 +67,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
@@ -102,6 +103,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -186,7 +188,8 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
     private DecimalFormat formatter = null;
     private Button followTree;
     private int mode=-1;
-    private ImageDescriptor id=ImageDescriptor.createFromFile(NeighboursPlugin.class, "/icons/complete_status.gif");
+    private ImageDescriptor imageDescr=ImageDescriptor.createFromFile(NeighboursPlugin.class, "/icons/complete_status.gif");
+    private Image imageCheck=imageDescr.createImage(true);
     private Composite mainC;
 
     @Override
@@ -452,7 +455,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         fd[0].setStyle(SWT.BOLD);
         // TODO dispose font resources in plugin stop()?
         fontSelected = new Font(fontNormal.getDevice(), fd);
-        hookContextMenu();
+        hookContextMenu2();
     }
     
     private void mouseOnDoubleClickOnTable(Event event) {
@@ -605,7 +608,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         formCollumns();
         fireModel(null);
     }
-
+    @Deprecated //TODO remove ater debug
     private void hookContextMenu() {
         MenuManager menuMgr = new MenuManager("#PopupMenu");
         menuMgr.setRemoveAllWhenShown(true);
@@ -617,6 +620,36 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         Menu menu = menuMgr.createContextMenu(table);
         table.setMenu(menu);
     }
+    private void hookContextMenu2() {
+        final Menu menu = new Menu (mainC.getShell(), SWT.POP_UP);
+        table.setMenu(menu);
+        menu.addListener (SWT.Show, new Listener () {
+            public void handleEvent (Event event) {
+                MenuItem [] menuItems = menu.getItems ();
+                for (int i=0; i<menuItems.length; i++) {
+                    menuItems [i].dispose ();
+                }
+                fillContextMenu(menu);
+            }
+        });
+        
+    }
+    /**
+     *
+     * @param menu
+     */
+    private void fillContextMenu(final Menu menu) {
+        if (data == null || n2nModel == null) {
+            return;
+        }
+        if (column == 0) {
+            fillServMenu(menu, data);
+        } else if (column == 1) {
+            fillNeighMenu(menu, data);
+        }
+    }
+
+
 
     /**
      * @param manager
@@ -631,7 +664,36 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
             fillNeighMenu(manager, data);
         }
     }
-
+    private void fillNeighMenu(Menu menu, Wrapper data2) {
+        Action action = new Action(String.format(SHOW_NEIGHBOUR, data.getText(0), data.getText(1))) {
+            @Override
+            public void run() {
+                model = new N2NGraphModel((Relationship)data.cont, false, drawLines);
+                fireModel(model);
+            }
+        };
+        new ActionContributionItem(action).fill(menu, 0);
+        int id=1;
+        if (n2nModel.getType().equals(NodeToNodeTypes.INTERFERENCE_MATRIX)) {
+           id= addInterferenceAnalysis(menu,id, ((Relationship)data.cont).getEndNode());
+        }
+        action=new Action(String.format("Zoom to %s (x8)", data.getText(1))) {
+            @Override
+            public void run() {
+                if (n2nModel != null) {
+                    Node networkRoot = n2nModel.getNetworkNode();
+                    Node gisNode = ds.findGisNode(networkRoot);
+                    Collection<Node> sites = new ArrayList<Node>();
+                    Node sector = n2ns.findNodeFromProxy(((Relationship)data.cont).getEndNode());
+                    Node site = sector.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(sector);
+                    sites.add(site);
+                    ChangeSelectionEvent event = new ChangeSelectionEvent(UpdateLayerEventTypes.ZOOM, gisNode, sites);
+                    NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(event);
+                }
+            }
+        };     
+        new ActionContributionItem(action).fill(menu, id++);
+    }
     /**
      * @param manager
      * @param data2
@@ -664,10 +726,76 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         });
     }
 
-    /**
-     * @param manager
-     * @param endNode
-     */
+    private int addInterferenceAnalysis(final Menu menu, int id,final Node node) {
+        MenuItem item2 = new MenuItem (menu, SWT.CASCADE,id++);
+        item2.setText ("Outgoing interference analyse");
+        if (mode<2&&mode>=0){
+            item2.setImage(imageCheck);  
+        }
+        Menu subMenu = new Menu (menu);
+        item2.setMenu (subMenu);
+        Action action = new Action("by 'Co'") {
+            @Override
+            public void run() {
+                model = createOutgoingInterferenceModel(node, "co");
+                mode=0;
+                fireModel(model);
+            }
+            @Override
+            public ImageDescriptor getImageDescriptor() {
+                return mode==0?imageDescr:super.getImageDescriptor();
+            }
+        };
+        new ActionContributionItem(action).fill(subMenu, 0);
+        Action action2 = new Action("by 'Adj'") {
+            @Override
+            public void run() {
+                mode=1;
+                model = createOutgoingInterferenceModel(node, "adj");
+                fireModel(model);
+            }
+            @Override
+            public ImageDescriptor getImageDescriptor() {
+                return mode==1?imageDescr:super.getImageDescriptor();
+            }
+        };
+        new ActionContributionItem(action2).fill(subMenu, 1);
+        MenuItem item3 = new MenuItem (menu, SWT.CASCADE,id++);
+        item3.setText ("Incoming interference analyse");
+        if (mode>1){
+            item3.setImage(imageCheck);  
+        }
+        subMenu = new Menu (menu);
+        item3.setMenu (subMenu);
+        Action action3 = new Action("by 'Co'") {
+            @Override
+            public void run() {
+                model = createIncomigInterferenceModel(node, "co");
+                mode=2;
+                fireModel(model);
+            }
+            @Override
+            public ImageDescriptor getImageDescriptor() {
+                return mode==2?imageDescr:super.getImageDescriptor();
+            }
+        };
+        new ActionContributionItem(action3).fill(subMenu, 0);
+        Action action4 = new Action("by 'Adj'") {
+            @Override
+            public void run() {
+                model = createIncomigInterferenceModel(node, "adj");
+                mode=3;
+                fireModel(model);
+            }
+            @Override
+            public ImageDescriptor getImageDescriptor() {
+                return mode==3?imageDescr:super.getImageDescriptor();
+            }
+        };
+        new ActionContributionItem(action4).fill(subMenu, 1);
+        return id;
+    }
+    
     private void addInterferenceAnalysis(IMenuManager manager, final Node node) {
         MenuManager subMenu = new MenuManager("Outgoing interference analyse");
 
@@ -682,7 +810,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
             }
             @Override
             public ImageDescriptor getImageDescriptor() {
-                return mode==0?id:super.getImageDescriptor();
+                return mode==0?imageDescr:super.getImageDescriptor();
             }
         };
         subMenu.add(action);
@@ -695,7 +823,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
             }
             @Override
             public ImageDescriptor getImageDescriptor() {
-                return mode==1?id:super.getImageDescriptor();
+                return mode==1?imageDescr:super.getImageDescriptor();
             }
         };
         subMenu.add(action2);
@@ -710,7 +838,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
             }
             @Override
             public ImageDescriptor getImageDescriptor() {
-                return mode==2?id:super.getImageDescriptor();
+                return mode==2?imageDescr:super.getImageDescriptor();
             }
         };
         subMenu.add(action3);
@@ -723,7 +851,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
             }
             @Override
             public ImageDescriptor getImageDescriptor() {
-                return mode==3?id:super.getImageDescriptor();
+                return mode==3?imageDescr:super.getImageDescriptor();
             }
         };
         subMenu.add(action4);
@@ -801,6 +929,39 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
             return more50;
         }
     }
+    private void fillServMenu(final Menu menu, final Wrapper data) {
+        Action action = new Action(String.format(SHOW_SERVE, data.getText(0))) {
+            @Override
+            public void run() {
+                model = new N2NGraphModel((Relationship)data.cont, true, drawLines);
+                fireModel(model);
+            }
+        };
+        new ActionContributionItem(action).fill(menu, 0);
+        int id=1;
+        if (n2nModel.getType().equals(NodeToNodeTypes.INTERFERENCE_MATRIX)) {
+          id=  addInterferenceAnalysis(menu,id, ((Relationship)data.cont).getStartNode());
+        }
+        action=new Action(String.format("Zoom to %s (x8)", data.getText(0))) {
+            @Override
+            public void run() {
+                if (n2nModel != null) {
+                    Node networkRoot = n2nModel.getNetworkNode();
+                    Node gisNode = ds.findGisNode(networkRoot);
+                    Collection<Node> sites = new ArrayList<Node>();
+                    Node sector = n2ns.findNodeFromProxy(((Relationship)data.cont).getStartNode());
+                    Node site = sector.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(sector);
+                    sites.add(site);
+                    ChangeSelectionEvent event = new ChangeSelectionEvent(UpdateLayerEventTypes.ZOOM, gisNode, sites);
+                    NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(event);
+                }
+            }
+        };
+        new ActionContributionItem(action).fill(menu, id++);
+       
+    }
+
+
 
     /**
      * @param manager
@@ -989,6 +1150,9 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         NeighboursPlugin.getDefault().getPreferenceStore().removePropertyChangeListener(this);
         fireModel(null);
         isDisposed = true;
+        if (imageCheck!=null){
+            imageCheck.dispose();
+        }
         tx.stop(false);
         super.dispose();
     }
