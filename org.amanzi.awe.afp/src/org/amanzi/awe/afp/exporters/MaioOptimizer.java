@@ -54,7 +54,7 @@ public class MaioOptimizer {
      */
     public void run(IProgressMonitor monitor) {
         int count = 0;
-        Iterator<Node> planIter = freq.getFrequencyPlans();
+        Iterator<Node> planIter = freq.getFrequencyPlansIterator();
         Transaction tx = DatabaseManager.getInstance().getCurrentDatabaseService().beginTx();
         try {
             while (planIter.hasNext()) {

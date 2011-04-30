@@ -75,7 +75,10 @@ public class FrequencyPlanModel {
         return networkService.getSingleSource(rootNode);
     }
 
-    public Iterator<Node> getFrequencyPlans() {
-        return networkService.getFrequencyPlanNodesIterator(rootNode);
+    public Iterator<Node> getFrequencyPlansIterator() {
+        return getFrequencyPlans().iterator();
+    }
+    public Iterable<Node> getFrequencyPlans() {
+        return networkService.getFrequencyPlanNodes(rootNode);
     }
 }

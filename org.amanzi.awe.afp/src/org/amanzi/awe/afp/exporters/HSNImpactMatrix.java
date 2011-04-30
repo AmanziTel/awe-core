@@ -34,7 +34,7 @@ public class HSNImpactMatrix {
 
     public HSNImpactMatrix(FrequencyPlanModel freq) {
         this.freq = freq;
-        Iterator<Node> it = freq.getFrequencyPlans();
+        Iterator<Node> it = freq.getFrequencyPlansIterator();
         while (it.hasNext()) {
             Node plan = it.next();
             if (plan.hasProperty(INeoConstants.PROPERTY_MAL)) {

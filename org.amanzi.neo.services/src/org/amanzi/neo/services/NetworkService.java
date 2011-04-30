@@ -1078,7 +1078,7 @@ public class NetworkService extends DatasetService {
         return result;
     }
     
-    public Iterator<Node> getFrequencyPlanNodesIterator(Node rootFrequencyPlanNode) {
+    public Iterable<Node> getFrequencyPlanNodes(Node rootFrequencyPlanNode) {
         TraversalDescription description = Traversal.description().breadthFirst().relationships(DatasetRelationshipTypes.CHILD,
                 Direction.OUTGOING).evaluator(new Evaluator() {
 
@@ -1095,7 +1095,7 @@ public class NetworkService extends DatasetService {
             }
         });
 
-        return description.traverse(rootFrequencyPlanNode).nodes().iterator();
+        return description.traverse(rootFrequencyPlanNode).nodes();
     }
 
 
