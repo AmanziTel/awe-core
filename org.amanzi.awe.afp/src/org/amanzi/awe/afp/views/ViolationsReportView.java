@@ -13,14 +13,21 @@
 
 package org.amanzi.awe.afp.views;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import net.refractions.udig.project.ui.ApplicationGIS;
+
 import org.amanzi.awe.afp.Activator;
+import org.amanzi.awe.report.editor.ReportEditor;
+import org.amanzi.awe.report.util.ReportUtils;
 import org.amanzi.awe.ui.AweUiPlugin;
 import org.amanzi.awe.ui.custom_table.CustomTable;
 import org.amanzi.neo.loader.core.utils.ITableExporter;
@@ -31,14 +38,21 @@ import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.network.FrequencyPlanModel;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.log4j.Logger;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -52,7 +66,10 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
+import org.rubypeople.rdt.core.IRubyProject;
+import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
 /**
  * <p>
@@ -63,16 +80,18 @@ import org.eclipse.ui.part.ViewPart;
  * @since 1.0.0
  */
 public class ViolationsReportView extends ViewPart {
+    private static final Logger LOGGER=Logger.getLogger(ViolationsReportView.class);
     private NetworkService ns = NeoServiceFactory.getInstance().getNetworkService();
     private CustomTable<ViolationReportModel> table;
     private Map<String, FrequencyPlanModel> plans = new HashMap<String, FrequencyPlanModel>();
     private Combo fplan;
     private ViolationReportModel reportModel;
     private Button export;
+    private Button report;
     @Override
     public void createPartControl(Composite parent) {
         Composite main = new Composite(parent, SWT.NONE);
-        main.setLayout(new GridLayout(3, false));
+        main.setLayout(new GridLayout(4, false));
         Label label=new Label(main, SWT.LEFT);
         label.setText("Frequncy plan");
         fplan = new Combo(main, SWT.READ_ONLY | SWT.BORDER);
@@ -94,9 +113,18 @@ public class ViolationsReportView extends ViewPart {
                 widgetSelected(e);
             }
         });
+        report=new Button(main,SWT.PUSH);
+        report.setText("Summary report");
+        report.setEnabled(false);
+        report.addSelectionListener(new SelectionAdapter(){
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                generateReport();
+            }});
         table = new CustomTable<ViolationReportModel>(reportModel, SWT.BORDER | SWT.FULL_SELECTION);
         table.createPartControl(main);
-        GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 3, 4);
+        GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 4, 4);
         table.getViewer().getControl().setLayoutData(layoutData);
         fplan.addSelectionListener(new SelectionListener() {
 
@@ -111,6 +139,44 @@ public class ViolationsReportView extends ViewPart {
             }
         });
         setPlans();
+    }
+
+    /**
+     * Generates the summary report based on the template
+     */
+    private void generateReport() {
+        URL url;
+        try {
+            url = FileLocator.toFileURL(Activator.getDefault().getBundle().getEntry(
+            "ruby/summary_report.rb"));
+            String reportFileTemplate = ReportUtils.readScript(url.getPath());
+            
+            IRubyProject rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, ApplicationGIS
+                    .getActiveProject().getName());
+            
+            final IProject project = rubyProject.getProject();
+            StringBuilder sb = new StringBuilder();
+            final String text = fplan.getText();
+            final int separatorIndex = text.indexOf(':');
+            sb.append("dataset_name=\"").append(text.substring(0, separatorIndex)).append("\"\n");
+            sb.append("plan_name=\"").append(text.substring(separatorIndex+1)).append("\"\n");
+            sb.append(reportFileTemplate);
+            IFile file;int i=0;
+            while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) {
+                i++;
+            }
+            InputStream is = new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
+            file.create(is, true, null);
+            is.close();
+            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().openEditor(new FileEditorInput(file),
+                    ReportEditor.class.getName());
+        } catch (IOException e) {
+            // TODO Handle IOException
+            throw (RuntimeException) new RuntimeException( ).initCause( e );
+        } catch (CoreException e) {
+            // TODO Handle CoreException
+            throw (RuntimeException) new RuntimeException( ).initCause( e );
+        }
     }
 
     /**
@@ -187,9 +253,10 @@ public class ViolationsReportView extends ViewPart {
     protected void selectPlan(String text) {
         FrequencyPlanModel fp = plans.get(text);
         if (fp != null) {
-            reportModel.setFrequemcyPlanModel(fp);
+            reportModel.setFrequencyPlanModel(fp);
         }
         export.setEnabled(fp!=null);
+        report.setEnabled(fp!=null);
     }
 
     @Override

@@ -413,7 +413,12 @@ class ReportTable
     self.instance_eval &block if block_given?
     get_data
   end
-
+  def headers(ruby_array)
+    setHeaders(ruby_array.to_java(java.lang.String))
+  end
+  def row(ruby_array)
+    addRow(ruby_array.to_java(java.lang.String))
+  end
   def  get_data
     Neo4j::Transaction.run {
       if !@nodes.nil?

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,8 +18,8 @@ import org.amanzi.awe.afp.PreferenceInitializer;
 import org.amanzi.awe.afp.filters.AfpRowFilter;
 import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
-import org.amanzi.awe.afp.models.AfpModel.ScalingFactors;
 import org.amanzi.awe.afp.models.AfpModelUtils;
+import org.amanzi.awe.afp.models.AfpModel.ScalingFactors;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
@@ -32,10 +33,11 @@ import org.amanzi.neo.services.network.FrequencyPlanModel;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.node2node.INodeToNodeType;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
-import org.amanzi.neo.services.node2node.NodeToNodeRelationService.NodeToNodeRelationshipTypes;
 import org.amanzi.neo.services.node2node.NodeToNodeTypes;
+import org.amanzi.neo.services.node2node.NodeToNodeRelationService.NodeToNodeRelationshipTypes;
 import org.amanzi.neo.services.statistic.IStatistic;
 import org.amanzi.neo.services.statistic.StatisticManager;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -62,7 +64,7 @@ import org.neo4j.kernel.Traversal;
  */
 
 public class AfpExporter extends Job {
-    
+    private static final Logger LOGGER=Logger.getLogger(AfpExporter.class);
     private enum ConstraintNodeToNode implements INodeToNodeType {
         CO_SECTOR, CO_SITE; 
     }
@@ -146,6 +148,14 @@ public class AfpExporter extends Job {
     private int totalIndex;
     private List<String> names = new ArrayList<String>();
     private FrequencyPlanModel fp;
+    
+    //totals
+    private  float coTotal;
+    private  float adjTotal;
+    private  float[] contrCoTotal;
+    private  float[] contrAdjTotal;
+    private  long[] violations;
+    
 
     public AfpExporter(Node afpRoot, Node afpDataset, AfpModel model) {
         super("Preparing AFP scenarios");
@@ -162,6 +172,10 @@ public class AfpExporter extends Job {
             names.addAll(list);
             totalIndex += list.size();
         }
+        //totals
+        contrAdjTotal=new float[totalIndex + 2];
+        contrCoTotal=new float[totalIndex + 2];
+        violations=new long[totalIndex + 2];
         minCo = Activator.getDefault().getPreferenceStore().getDouble(PreferenceInitializer.AFP_MIN_CO);
     }
 
@@ -336,6 +350,20 @@ public class AfpExporter extends Job {
                 }
 
             }
+            tx.submit(new Runnable() {
+
+                @Override
+                public void run() {
+                    Node rootNode = impact.getRootNode();
+                    rootNode.setProperty("sectors_opt_set", model.getTotalSectors() );
+                    rootNode.setProperty("trx_opt_set", model.getTotalTRX() );
+                    rootNode.setProperty("violations", violations );
+                    rootNode.setProperty("co total", coTotal );
+                    rootNode.setProperty("adj total", adjTotal );
+                    rootNode.setProperty("co total details", contrCoTotal);
+                    rootNode.setProperty("adj total details", contrAdjTotal);
+                }
+            });
             tx.stop(true);
             // close the writers and create control files
             for (int i = 0; i < models.length; i++) {
@@ -441,6 +469,7 @@ public class AfpExporter extends Job {
                         arr= contributions_co;
                         arr2= contributions_adj;
                     }
+                    updateTotals(sector,trx,coo,ad,arr,arr2);
                     tx.submit(new Runnable() {
 
                         @Override
@@ -491,6 +520,22 @@ public class AfpExporter extends Job {
             intWriter.write(sbAllInt.toString());
         }
 
+    }
+
+    private void updateTotals(Node sector, Node trx, float co, float adj, float[] contrCo, float[] contrAdj) {
+        if (contrCo[contrCo.length-2]!=0||contrAdj[contrAdj.length-2]!=0){
+            LOGGER.debug("sector: "+sector.getProperty("name")+"\ttrx: "+trx.getProperty("name","trx")+"\t"+Arrays.toString(contrCo)+"\t"+Arrays.toString(contrAdj));
+        }
+        coTotal+=co;
+        adjTotal+=adj;
+        for (int i=0;i<contrCo.length;i++){
+            contrCoTotal[i]+=contrCo[i];
+            contrAdjTotal[i]+=contrAdj[i];
+            if (contrCo[i]>0 || contrAdj[i]>0){
+                violations[i]++;
+            }
+        }
+        
     }
 
     private float[] calculateInterference(float kf1, boolean isSyTrx1, Node trx1, float kf2, boolean isSyTrx2, Node trx2, SectorValues sectorValues) {

@@ -94,7 +94,7 @@ public class ViolationReportModel extends TableModel {
         return columnVuewer;
     }
 
-    public void setFrequemcyPlanModel(final FrequencyPlanModel model) {
+    public void setFrequencyPlanModel(final FrequencyPlanModel model) {
         this.model = model;
         impact = new NodeToNodeRelationModel(model.getSingleSource());
         names = (String[])impact.getRootNode().getProperty("names");
