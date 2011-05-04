@@ -81,4 +81,8 @@ public class FrequencyPlanModel {
     public Iterable<Node> getFrequencyPlans() {
         return networkService.getFrequencyPlanNodes(rootNode);
     }
+
+    public Node getSingleTrx(Node plan) {
+        return networkService.getSingleTrx(plan);
+    }
 }

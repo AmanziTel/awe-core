@@ -53,29 +53,56 @@ import org.neo4j.helpers.Predicate;
 import org.neo4j.kernel.Traversal;
 import org.neo4j.kernel.Uniqueness;
 
+// TODO: Auto-generated Javadoc
 /**
  * <p>
  * Network service
+ * </p>.
+ *
+ * @author TsAr
+ * @since 1.0.0
+ */
+/**
+ * TODO Purpose of 
+ * <p>
+ *
  * </p>
- * 
  * @author TsAr
  * @since 1.0.0
  */
 public class NetworkService extends DatasetService {
 
+    /** The Constant FREQUENCY. */
     public static final String FREQUENCY = "frequency";
     
+    /**
+     * The Class NameFilter.
+     */
     private class NameFilter implements Evaluator {
         
+        /** The name. */
         private String name;
         
+        /** The to continue. */
         private boolean toContinue;
         
+        /**
+         * Instantiates a new name filter.
+         *
+         * @param name the name
+         * @param toContinue the to continue
+         */
         public NameFilter(String name, boolean toContinue) {
             this.name = name;
             this.toContinue = toContinue;
         }
 
+        /**
+         * Evaluate.
+         *
+         * @param arg0 the arg0
+         * @return the evaluation
+         */
         @Override
         public Evaluation evaluate(Path arg0) {
             boolean include = name.equals(getNodeName(arg0.endNode()));
@@ -83,17 +110,34 @@ public class NetworkService extends DatasetService {
         }
     }
     
+    /**
+     * The Class MultiNodeTypeFilter.
+     */
     private class MultiNodeTypeFilter implements Evaluator {
         
+        /** The node types. */
         private INodeType[] nodeTypes;
         
+        /** The to continue. */
         private boolean toContinue;
         
+        /**
+         * Instantiates a new multi node type filter.
+         *
+         * @param toContinue the to continue
+         * @param nodeTypes the node types
+         */
         public MultiNodeTypeFilter(boolean toContinue, INodeType ... nodeTypes) {
             this.nodeTypes = nodeTypes;
             this.toContinue = toContinue;
         }
 
+        /**
+         * Evaluate.
+         *
+         * @param arg0 the arg0
+         * @return the evaluation
+         */
         @Override
         public Evaluation evaluate(Path arg0) {
             boolean include = false;
@@ -114,17 +158,20 @@ public class NetworkService extends DatasetService {
         
     }
     
+    /**
+     * Instantiates a new network service.
+     */
     public NetworkService() {
         super();        
     }
 
     /**
-     * Get BSC node with necessary name if bsc node not exist it will be created
-     * 
+     * Get BSC node with necessary name if bsc node not exist it will be created.
+     *
      * @param networkNode - network root node
      * @param bscName -bsc name
      * @param parentNode - parent node
-     * @return
+     * @return the bsc node
      */
     public NodeResult getBscNode(Node networkNode, String bscName, Node parentNode) {
         Node result = findBscNode(networkNode, bscName);
@@ -146,8 +193,8 @@ public class NetworkService extends DatasetService {
     }
 
     /**
-     * Find BSC node by name
-     * 
+     * Find BSC node by name.
+     *
      * @param networkNode network root node
      * @param bscName bsc name
      * @return bsc node or null if node not found;
@@ -158,12 +205,12 @@ public class NetworkService extends DatasetService {
     }
 
     /**
-     * Get site node with necessary name if site node not exist it will be created
-     * 
+     * Get site node with necessary name if site node not exist it will be created.
+     *
      * @param networkNode - network root node
      * @param siteName -site name
      * @param parentNode - parent node
-     * @return
+     * @return the site
      */
     public NodeResult getSite(Node networkNode, String siteName, Node parentNode) {
         Node result = findSiteNode(networkNode, siteName);
@@ -184,8 +231,8 @@ public class NetworkService extends DatasetService {
     }
 
     /**
-     * Find Site node by name
-     * 
+     * Find Site node by name.
+     *
      * @param networkNode network root node
      * @param siteName site name
      * @return site node or null if node not found;
@@ -211,19 +258,27 @@ public class NetworkService extends DatasetService {
         return super.findSector(rootNode, ci, lac, name, returnFirsElement);
     }
 
+    /**
+     * Find sector.
+     *
+     * @param rootNode the root node
+     * @param name the name
+     * @param returnFirstElement the return first element
+     * @return the node
+     */
     public Node findSector(Node rootNode, String name, boolean returnFirstElement) {
         return super.findSector(rootNode, null, null, name, returnFirstElement);
     }
 
     /**
-     * Create sector
-     * 
+     * Create sector.
+     *
      * @param networkNode - network node
      * @param site - parent node
      * @param sectorName sector name
      * @param ci - ci
      * @param lac - lac
-     * @return
+     * @return the node
      */
     public Node createSector(Node networkNode, Node site, String sectorName, Integer ci, Integer lac) {
         Transaction tx = databaseService.beginTx();
@@ -249,8 +304,8 @@ public class NetworkService extends DatasetService {
     }
 
     /**
-     * Get channel_group node
-     * 
+     * Get channel_group node.
+     *
      * @param sector - sector node
      * @param channelNum - channel gr Number
      * @return Node
@@ -274,8 +329,8 @@ public class NetworkService extends DatasetService {
     }
 
     /**
-     * find channel node
-     * 
+     * find channel node.
+     *
      * @param sector - sector node
      * @param channelNum - channel gr Number
      * @return Node
@@ -295,8 +350,21 @@ public class NetworkService extends DatasetService {
         return itr.hasNext() ? itr.next().endNode() : null;
     }
 
+    /**
+     * The Enum Relations.
+     */
     private enum Relations implements RelationshipType {
-        CHANNEL_GROUP, SY_GROUP,CHANNEL_TRX, FREQUENCY_ROOT, FR_SPECTRUM;
+        
+        /** The CHANNE l_ group. */
+        CHANNEL_GROUP, 
+ /** The S y_ group. */
+ SY_GROUP,
+/** The CHANNE l_ trx. */
+CHANNEL_TRX, 
+ /** The FREQUENC y_ root. */
+ FREQUENCY_ROOT, 
+ /** The F r_ spectrum. */
+ FR_SPECTRUM;
     }
 
     /**
@@ -315,10 +383,12 @@ public class NetworkService extends DatasetService {
     }
 
     /**
-     * @param sector
-     * @param trxId
-     * @param channelGr
-     * @return
+     * Gets the tRX node.
+     *
+     * @param sector the sector
+     * @param trxId the trx id
+     * @param channelGr the channel gr
+     * @return the tRX node
      */
     public NodeResult getTRXNode(Node sector, String trxId, Integer channelGr) {
         Node trxNode = findTrxNode(sector, trxId);
@@ -363,9 +433,11 @@ public class NetworkService extends DatasetService {
     }
 
     /**
-     * @param sector
-     * @param trxId
-     * @return
+     * Find trx node.
+     *
+     * @param sector the sector
+     * @param trxId the trx id
+     * @return the node
      */
     public Node findTrxNode(Node sector, final String trxId) {
         Iterator<Path> itr = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst()
@@ -383,10 +455,12 @@ public class NetworkService extends DatasetService {
     }
 
     /**
-     * @param sector
-     * @param trxId
-     * @param channelGr
-     * @return
+     * Adds the freq node.
+     *
+     * @param trxNode the trx node
+     * @param freq the freq
+     * @param prevFREQNode the prev freq node
+     * @return the node
      */
     public Node addFREQNode(Node trxNode, String freq, Node prevFREQNode) {
         Node freqNode = null;
@@ -407,9 +481,9 @@ public class NetworkService extends DatasetService {
 
     /**
      * Gets the plan node.
-     * 
+     *
+     * @param networkRoot the network root
      * @param trx the trx
-     * @param trx 
      * @param fileName the file name
      * @return the plan node
      */
@@ -459,11 +533,12 @@ public class NetworkService extends DatasetService {
         }).traverse(trx).iterator();
         return itr.hasNext() ? itr.next().endNode() : null;
     }
+    
     /**
      * Find plan node.
-     * 
+     *
      * @param trx the trx
-     * @param fileName the file name
+     * @param frModelRoot the fr model root
      * @return the node
      */
     public Node findPlanNode(Node trx, final Node frModelRoot) {
@@ -561,6 +636,12 @@ public class NetworkService extends DatasetService {
         return result;
     }
 
+    /**
+     * Gets the all node2 node filter.
+     *
+     * @param projecNode the projec node
+     * @return the all node2 node filter
+     */
     public INode2NodeFilter getAllNode2NodeFilter(final Node projecNode) {
         return new INode2NodeFilter() {
 
@@ -634,6 +715,13 @@ public class NetworkService extends DatasetService {
         }
     }
 
+    /**
+     * Update location.
+     *
+     * @param parent the parent
+     * @param site the site
+     * @return true, if successful
+     */
     private boolean updateLocation(Node parent, Node site) {
         try {
             //TODO debug
@@ -655,6 +743,14 @@ public class NetworkService extends DatasetService {
             throw (RuntimeException) new RuntimeException( ).initCause( e );
         }
     }
+    
+    /**
+     * Find all frq root.
+     *
+     * @param networkNode the network node
+     * @param additionalEvaluation the additional evaluation
+     * @return the traverser
+     */
     public Traverser findAllFrqRoot(Node networkNode, Evaluator additionalEvaluation){
         TraversalDescription tr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(Relations.FREQUENCY_ROOT,Direction.OUTGOING).evaluator(new Evaluator() {
             
@@ -679,6 +775,13 @@ public class NetworkService extends DatasetService {
         return rel == null ? null : rel.getOtherNode(sector);
     }
 
+    /**
+     * Find frequency root node.
+     *
+     * @param networkRoot the network root
+     * @param modelName the model name
+     * @return the node
+     */
     public Node findFrequencyRootNode(Node networkRoot, final String modelName) {
         Iterator<Node> iter = findAllFrqRoot(networkRoot, new Evaluator() {
             
@@ -691,6 +794,15 @@ public class NetworkService extends DatasetService {
         
     }
 
+    /**
+     * Gets the frequency root node.
+     *
+     * @param networkRoot the network root
+     * @param modelName the model name
+     * @param time the time
+     * @param domain the domain
+     * @return the frequency root node
+     */
     public Node getFrequencyRootNode(Node networkRoot, String modelName, String time, String domain) {
         Node result=findFrequencyRootNode(networkRoot, modelName);
         if (result==null){
@@ -699,6 +811,13 @@ public class NetworkService extends DatasetService {
         return result;
     }
     
+    /**
+     * Gets the frequency root node.
+     *
+     * @param networkRoot the network root
+     * @param modelName the model name
+     * @return the frequency root node
+     */
     public Node getFrequencyRootNode(Node networkRoot, String modelName) {
         Node result=findFrequencyRootNode(networkRoot, modelName);
         if (result==null){
@@ -707,6 +826,15 @@ public class NetworkService extends DatasetService {
         return result;
     }
 
+    /**
+     * Creates the frequency root node.
+     *
+     * @param networkRoot the network root
+     * @param modelName the model name
+     * @param time the time
+     * @param domain the domain
+     * @return the node
+     */
     private Node createFrequencyRootNode(Node networkRoot, String modelName, String time, final String domain) {
         Transaction tx = databaseService.beginTx();
         try {
@@ -749,6 +877,14 @@ public class NetworkService extends DatasetService {
         }
    
     }
+    
+    /**
+     * Creates the frequency root node.
+     *
+     * @param networkRoot the network root
+     * @param modelName the model name
+     * @return the node
+     */
     private Node createFrequencyRootNode(Node networkRoot, String modelName) {
         Transaction tx = databaseService.beginTx();
         try {
@@ -762,6 +898,13 @@ public class NetworkService extends DatasetService {
    
     }
 
+    /**
+     * Gets the plan node.
+     *
+     * @param rootNode the root node
+     * @param trx the trx
+     * @return the plan node
+     */
     public NodeResult getPlanNode(Node rootNode, Node trx) {
         Node planNode = findPlanNode(trx, rootNode);
         boolean isCreated = planNode == null;
@@ -794,6 +937,12 @@ public class NetworkService extends DatasetService {
 
 
 
+    /**
+     * Gets the sY group.
+     *
+     * @param sector the sector
+     * @return the sY group
+     */
     public WrNode getSYGroup(Node sector) {
         Node group=findSYGroup(sector);
         if (group!=null){
@@ -811,22 +960,54 @@ public class NetworkService extends DatasetService {
     }
 
 
+    /**
+     * Find sy group.
+     *
+     * @param sector the sector
+     * @return the node
+     */
     public Node findSYGroup(Node sector) {
         Relationship rel = sector.getSingleRelationship(Relations.SY_GROUP, Direction.OUTGOING);
         return rel==null?null:rel.getOtherNode(sector);
     }
 
+    /**
+     * Find sector of trx.
+     *
+     * @param trx the trx
+     * @return the node
+     */
     public Node findSectorOfTRX(Node trx) {
         return trx.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(trx);
     }
+    
+    /**
+     * Find sector of sy group.
+     *
+     * @param trx the trx
+     * @return the node
+     */
     public Node findSectorOfSyGroup(Node trx) {
         return trx.getSingleRelationship(Relations.SY_GROUP, Direction.INCOMING).getOtherNode(trx);
     }
 
+    /**
+     * Gets the hop type.
+     *
+     * @param trx the trx
+     * @return the hop type
+     */
     public Integer getHopType(Node trx) {
         return (Integer)trx.getProperty("hopping_type", 0);
     }
 
+    /**
+     * Find all node by type.
+     *
+     * @param network the network
+     * @param type the type
+     * @return the iterable
+     */
     public Iterable<Node> findAllNodeByType(Node network,final INodeType type) {
         return Traversal.description().depthFirst().relationships(GeoNeoRelationshipTypes.CHILD,Direction.OUTGOING).uniqueness(Uniqueness.NONE).evaluator(new Evaluator() {
             
@@ -838,6 +1019,12 @@ public class NetworkService extends DatasetService {
         }).traverse(network).nodes();
     }
 
+    /**
+     * Gets the frequency spectrum root node.
+     *
+     * @param rootNode the root node
+     * @return the frequency spectrum root node
+     */
     public Node getFrequencySpectrumRootNode(Node rootNode) {
        Relationship rel=rootNode.getSingleRelationship(Relations.FR_SPECTRUM, Direction.OUTGOING);
        if (rel!=null){
@@ -854,6 +1041,13 @@ public class NetworkService extends DatasetService {
        }
     }
 
+    /**
+     * Creates the fr spectrim node.
+     *
+     * @param rootNode the root node
+     * @param frequency the frequency
+     * @return the node
+     */
     public Node createFrSpectrimNode(Node rootNode, int frequency) {
         Transaction tx = databaseService.beginTx();
         try{
@@ -867,6 +1061,13 @@ public class NetworkService extends DatasetService {
         }
     }
 
+    /**
+     * Gets the root selection node.
+     *
+     * @param parentNode the parent node
+     * @param selectionListName the selection list name
+     * @return the root selection node
+     */
     public Node getRootSelectionNode(Node parentNode, String selectionListName) {
         Node result = findRootSelectionNode(parentNode, selectionListName);
         if (result == null) {
@@ -876,6 +1077,13 @@ public class NetworkService extends DatasetService {
         return result;
     }
     
+    /**
+     * Find root selection node.
+     *
+     * @param parentNode the parent node
+     * @param selectionListName the selection list name
+     * @return the node
+     */
     public Node findRootSelectionNode(Node parentNode, String selectionListName) {
         Iterator<Node> resultIterator = getNetworkSelectionTraversalDescription(new NameFilter(selectionListName, false)).
                                         traverse(parentNode).nodes().iterator();
@@ -885,10 +1093,23 @@ public class NetworkService extends DatasetService {
         return null;
     }
     
+    /**
+     * Gets the all root selection nodes.
+     *
+     * @param parentNode the parent node
+     * @return the all root selection nodes
+     */
     public Iterable<Node> getAllRootSelectionNodes(Node parentNode) {
         return getNetworkSelectionTraversalDescription(null).traverse(parentNode).nodes();
     }
     
+    /**
+     * Creates the root selection node.
+     *
+     * @param parentNode the parent node
+     * @param selectionListName the selection list name
+     * @return the node
+     */
     private Node createRootSelectionNode(Node parentNode, String selectionListName) {
         Transaction tx = databaseService.beginTx();
         try {
@@ -901,6 +1122,12 @@ public class NetworkService extends DatasetService {
         }
     }
     
+    /**
+     * Gets the network selection traversal description.
+     *
+     * @param filter the filter
+     * @return the network selection traversal description
+     */
     private TraversalDescription getNetworkSelectionTraversalDescription(Evaluator filter) {
         TraversalDescription initialDescrption = Traversal.description().breadthFirst().
                          relationships(NetworkRelationshipTypes.SELECTION, Direction.OUTGOING).
@@ -924,6 +1151,14 @@ public class NetworkService extends DatasetService {
         return initialDescrption;
     }
     
+    /**
+     * Adds the to selection.
+     *
+     * @param rootSelectionNode the root selection node
+     * @param sectorNode the sector node
+     * @param indexKey the index key
+     * @return true, if successful
+     */
     public boolean addToSelection(Node rootSelectionNode, Node sectorNode, String indexKey) {
         String sectorName = getNodeName(sectorNode);
         Relationship selectionRel = databaseService.index().forRelationships(indexKey).get(INeoConstants.PROPERTY_NAME_NAME, sectorName).getSingle();
@@ -947,20 +1182,46 @@ public class NetworkService extends DatasetService {
         return true;
     }
     
+    /**
+     * Gets the all selected nodes.
+     *
+     * @param rootSelectionNode the root selection node
+     * @return the all selected nodes
+     */
     public Iterator<Node> getAllSelectedNodes(Node rootSelectionNode) {
         return Traversal.description().breadthFirst().
                relationships(NetworkRelationshipTypes.SELECTED, Direction.OUTGOING).
                traverse(rootSelectionNode).nodes().iterator();
     }
     
+    /**
+     * Gets the network element traversal.
+     *
+     * @param filter the filter
+     * @param nodeTypes the node types
+     * @return the network element traversal
+     */
     public TraversalDescription getNetworkElementTraversal(Evaluator filter, INodeType ... nodeTypes) {
         return getNetworkElementTraversal(new MultiNodeTypeFilter(true, nodeTypes), filter);
     }
     
+    /**
+     * Gets the selection list element traversal.
+     *
+     * @param filter the filter
+     * @param nodeTypes the node types
+     * @return the selection list element traversal
+     */
     public TraversalDescription getSelectionListElementTraversal(Evaluator filter, INodeType ... nodeTypes) {
         return getNetworkElementTraversal(filter, nodeTypes).relationships(NetworkRelationshipTypes.SELECTED, Direction.OUTGOING);
     }
     
+    /**
+     * Gets the network element traversal.
+     *
+     * @param filters the filters
+     * @return the network element traversal
+     */
     private TraversalDescription getNetworkElementTraversal(Evaluator ... filters) {
         TraversalDescription description = Traversal.description().depthFirst().relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
         
@@ -1008,6 +1269,12 @@ public class NetworkService extends DatasetService {
         return group.hasRelationship(Relations.CHANNEL_TRX, Direction.OUTGOING);
     }
 
+    /**
+     * Find first id.
+     *
+     * @param sector the sector
+     * @return the int
+     */
     public int findFirstID(Node sector) {
         int maxId = -1;
         for (Node trx : getAllTRXNode(sector)) {
@@ -1017,8 +1284,10 @@ public class NetworkService extends DatasetService {
     }
 
     /**
-     * @param rootNode
-     * @param sourceRootNode
+     * Attach single source.
+     *
+     * @param rootNode the root node
+     * @param sourceRootNode the source root node
      */
     public void attachSingleSource(Node rootNode, Node sourceRootNode) {
         Transaction tx = databaseService.beginTx();
@@ -1078,6 +1347,12 @@ public class NetworkService extends DatasetService {
         return result;
     }
     
+    /**
+     * Gets the frequency plan nodes.
+     *
+     * @param rootFrequencyPlanNode the root frequency plan node
+     * @return the frequency plan nodes
+     */
     public Iterable<Node> getFrequencyPlanNodes(Node rootFrequencyPlanNode) {
         TraversalDescription description = Traversal.description().breadthFirst().relationships(DatasetRelationshipTypes.CHILD,
                 Direction.OUTGOING).evaluator(new Evaluator() {
@@ -1099,6 +1374,12 @@ public class NetworkService extends DatasetService {
     }
 
 
+    /**
+     * Find sector of plan.
+     *
+     * @param planNode the plan node
+     * @return the node
+     */
     public Node findSectorOfPlan(Node planNode) {
         Relationship rel = planNode.getRelationships(DatasetRelationshipTypes.PLAN_ENTRY, Direction.INCOMING).iterator().next();
         Node trxGr=rel.getOtherNode(planNode);
@@ -1110,14 +1391,22 @@ public class NetworkService extends DatasetService {
     }
 
     /**
+     * Gets the trx count of sy group.
      *
-     * @param gr
-     * @return
+     * @param gr the gr
+     * @return the trx count of sy group
      */
     public int getTrxCountOfSyGroup(Node gr) {
         //TODO store in property of group...
         return getTrxOfSyGroup(gr).size();
     }
+    
+    /**
+     * Gets the trx of sy group.
+     *
+     * @param gr the gr
+     * @return the trx of sy group
+     */
     public Set<Node> getTrxOfSyGroup(Node gr) {
         //TODO store in property of group...
         Set<Node> result=new HashSet<Node>();
@@ -1131,9 +1420,12 @@ public class NetworkService extends DatasetService {
         return result;
     }
 
+
     /**
+     * Gets the total trx of plan.
      *
-     * @return
+     * @param plan the plan
+     * @return the total trx of plan
      */
     public int getTotalTrxOfPlan(Node plan) {
         int relCount=0;;
@@ -1141,5 +1433,27 @@ public class NetworkService extends DatasetService {
             relCount++;  
         }
         return relCount;
+    }
+
+
+    /**
+     * Gets the single trx.
+     *
+     * @param plan the plan
+     * @return the single trx
+     */
+    public Node getSingleTrx(Node plan) {
+        return plan.getSingleRelationship(DatasetRelationshipTypes.PLAN_ENTRY, Direction.INCOMING).getOtherNode(plan);
+    }
+
+
+    /**
+     * Checks if is bCCHTRX.
+     *
+     * @param trx the trx
+     * @return true, if is bCCHTRX
+     */
+    public boolean isBCCHTRX(Node trx) {
+        return (Boolean)trx.getProperty("bcch",false);
     }
 }
