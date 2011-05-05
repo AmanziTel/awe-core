@@ -274,7 +274,6 @@ public class StatisticsBuilder {
                         networkDimension, timeDimension, monitor);
             }
             final String task = "Building stats for " + period.getId() + "/" + networkLevel;
-            System.out.println(task);
             LOGGER.debug(task);
             monitor.subTask(task);
             Statistics statistics = buildHighLevelPeriodStatistics(template, startTime, endTime, period, networkLevel,
@@ -284,7 +283,6 @@ public class StatisticsBuilder {
 
         } else {
             final String task = "Building stats for " + period.getId() + "/" + networkLevel;
-            System.out.println(task);
             LOGGER.debug(task);
             monitor.subTask(task);
             Level tLevel = findOrCreateLevel(period.getId(), timeDimension);
@@ -307,7 +305,6 @@ public class StatisticsBuilder {
                 long startForPeriod = System.currentTimeMillis();
                 String debugInfo = "currentStartTime=" + currentStartTime + "\tnextStartTime=" + nextStartTime + "\tendTime="
                         + endTime;
-                System.out.println(debugInfo);
                 LOGGER.debug(debugInfo);
                 // if(monitor.isCanceled()){
                 // break;
@@ -368,7 +365,6 @@ public class StatisticsBuilder {
                 currentStartTime = nextStartTime;
                 nextStartTime = getNextStartDate(period, endTime, currentStartTime);
                 debugInfo="total=" + count + "\tCalc for period=" + (System.currentTimeMillis() - startForPeriod)+ "\tper node" + (total / (nodes.size() != 0 ? nodes.size() : 1));
-                System.out.println(debugInfo);
                 LOGGER.debug(debugInfo);
                 monitor.worked(1);
 //                monitor.worked(nodesCount);
