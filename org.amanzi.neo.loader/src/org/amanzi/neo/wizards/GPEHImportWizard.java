@@ -75,7 +75,7 @@ public class GPEHImportWizard extends Wizard implements IImportWizard {
                         handleSelect(monitor, loaderOss.getRootNodes());
                         break;
                     case GRID:
-                        IDENLoader grid = new IDENLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display, null);
+                        IDENLoader grid = new IDENLoader(mainPage.getDirectory(), mainPage.getDatasetName(), display, NeoServiceProviderUi.getProvider().getService());
                         grid.run(monitor);
                         handleSelect(monitor, grid.getRootNodes());
                         break;
