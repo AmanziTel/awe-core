@@ -1,8 +1,12 @@
 module KPI
   module IDEN
     include Annotations
-
+    annotation :name=>'No. of samples'
+    def self.no_samples(data)
+      1
+    end
     annotation :name=>'Dispatch  voice  call  attempts'
+
     def self.dispatch_voice_call_attempts(data)
       data[:dis_tch_requests]
     end
