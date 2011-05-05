@@ -103,7 +103,8 @@ public class BsicOptimizer {
                 violation=viol;
             }
         }
-        LOG.info(String.format("Violation by arfcn=%s is %s "+matrix.getArfcn(),violation));
+        matrix.saveStored(freq,statistic);
+        LOG.info(String.format("Violation by arfcn=%s is %s ",matrix.getArfcn(),violation));
     }
     public double optimizeByFirstNode(BSICMatrix matrix,Node firstPlanNode){
         int averageCount=(int)Math.ceil((double)matrix.getSize()/totalCount);
@@ -123,6 +124,7 @@ public class BsicOptimizer {
             }
             if (simpleAssign){
                 matrix.definePlan(planToSet,bsciIterator.next()); 
+                totalDefined++;
                 continue;
             }
             Pair<Double,Collection<Node>> plans=matrix.getPlanWithFarPlans(planToSet,sortedAscByDistance,i,averageCount);

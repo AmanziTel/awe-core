@@ -8,6 +8,7 @@ import java.util.Date;
 import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.executors.AfpProcessProgress;
 import org.amanzi.awe.afp.exporters.AfpExporter;
+import org.amanzi.awe.afp.exporters.BsicOptimizer;
 import org.amanzi.awe.afp.exporters.MaioOptimizer;
 import org.amanzi.awe.afp.loaders.AfpOutputFileLoaderJob;
 import org.amanzi.awe.afp.models.AfpModel;
@@ -446,6 +447,14 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
             protected IStatus run(IProgressMonitor monitor) {
                 Collection<FrequencyPlanModel> freq=loadJob.getCreatedPlans();
                 NetworkModel network=new NetworkModel(model.getDatasetNode());
+                int[]bcc=model.getAvailableBccArr();
+                int[]ncc=model.getAvailableNccArr();
+                if (model.isOptimizeBSIC()&&model.isOptimizeFrequency()&model.getChanneltypes()[0]){
+                    for (FrequencyPlanModel model:freq){
+                        BsicOptimizer optimizer = new BsicOptimizer(network, model,bcc,ncc);
+                         optimizer.run(monitor);
+                    }
+                }
                 if (model.isOptimizeMAIO()&&model.isOptimizeFrequency()&model.getChanneltypes()[2]){
                     for (FrequencyPlanModel model:freq){
                         MaioOptimizer optimizer = new MaioOptimizer(network, model);

@@ -25,10 +25,15 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.amanzi.neo.db.manager.DatabaseManager;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.network.FrequencyPlanModel;
+import org.amanzi.neo.services.statistic.IStatistic;
 import org.amanzi.neo.services.utils.Pair;
 import org.apache.log4j.Logger;
 import org.geotools.geometry.jts.JTS;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 
@@ -176,6 +181,29 @@ public class BSICMatrix {
 
     public Integer getArfcn() {
         return arfcn;
+    }
+
+    public void saveStored(FrequencyPlanModel model,IStatistic statistic) {
+        Transaction tx = DatabaseManager.getInstance().getCurrentDatabaseService().beginTx();
+        try{
+            for (Entry<Node, Pair<String, String>> entry:storedPlans.entrySet()){
+                Node plan = entry.getKey();
+                String nccStr = entry.getValue().left();
+                String bccStr = entry.getValue().right();
+                plan.setProperty("ncc", nccStr);
+                plan.setProperty("bcc", bccStr);
+                statistic.indexValue(model.getName(), NodeTypes.FREQUENCY_PLAN.getId(), "ncc", nccStr);
+                statistic.indexValue(model.getName(), NodeTypes.FREQUENCY_PLAN.getId(), "bcc", bccStr);
+
+            }
+            statistic.save();
+            tx.success();
+        }finally{
+            tx.finish();
+        }
+        
+        
+        
     }
 
 }

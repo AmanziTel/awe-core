@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
@@ -2386,5 +2387,47 @@ public class AfpModel {
 
         return domainNode;
 
+    }
+
+    /**
+     *
+     * @return
+     */
+    public int[] getAvailableBccArr() {
+        List<Integer> result=new ArrayList<Integer>();
+        int i=-1;
+        for (boolean bcc:getAvailableBCCs()){
+            i++;
+            if (bcc){
+                result.add(i);
+            }
+        }
+        int[]bcc=new int[result.size()];
+        Iterator<Integer> it = result.iterator();
+        for (int j = 0; j < bcc.length; j++) {
+            bcc[j]=it.next();
+        }
+        return bcc;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public int[] getAvailableNccArr() {
+        List<Integer> result=new ArrayList<Integer>();
+        int i=-1;
+        for (boolean bcc:getAvailableNCCs()){
+            i++;
+            if (bcc){
+                result.add(i);
+            }
+        }
+        int[]ncc=new int[result.size()];
+        Iterator<Integer> it = result.iterator();
+        for (int j = 0; j < ncc.length; j++) {
+            ncc[j]=it.next();
+        }
+        return ncc;
     }
 }
