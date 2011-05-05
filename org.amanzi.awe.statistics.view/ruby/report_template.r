@@ -1,4 +1,5 @@
 include NodeUtils
+time_property="timestamp"
 unit="#"
 ticks={:hourly=>[:hour,1,"HH:00, dd"],
   :three_hourly=>[:hour,3,"HH:00, dd"],
@@ -8,8 +9,8 @@ ticks={:hourly=>[:hour,1,"HH:00, dd"],
   :weekly=>[:day,7,"w, yyyy"],
   :monthly=>[:month,1,"MMMMM"]}
 
-def get_statistics(dataset_name,template_name,statistics,kpi_name, groups=nil)
-  ds_root=dataset(dataset_name)
+def get_statistics(dataset_name,dataset_type,template_name,statistics,kpi_name, time_property,groups=nil)
+  ds_root=dataset(dataset_name,dataset_type)
   analysis_root=find_first(ds_root,{"type"=>"statistics_root","template"=>template_name},:ANALYSIS)
   level=find_first(analysis_root,{"type"=>"statistics","name"=>"#{statistics}"},:CHILD)
   data=select_properties :key=>"type",:value=>"name" do
@@ -22,7 +23,7 @@ def get_statistics(dataset_name,template_name,statistics,kpi_name, groups=nil)
       else
         where {get_property("type")=="s_group" and (property? "name" and groups.include? get_property("name"))}
       end
-      select_properties ["time","name"] do
+      select_properties [time_property,"name"] do
         from do
           traverse :CHILD, :NEXT
           depth :all
@@ -49,7 +50,7 @@ def get_statistics(dataset_name,template_name,statistics,kpi_name, groups=nil)
     groups<<group unless groups.include? group
     period=row["name"]
     if period!="total"
-      group_data<<{"time"=>row["time"],group=>row["value"]}
+      group_data<<{time_property=>row[time_property],group=>row["value"]}
     else
       val=row["value"]
       sum+=val
@@ -63,7 +64,7 @@ report "KPI report for #{dataset_name}\nstatistics - #{statistics}" do |r|
   kpis.each do |kpi|
     kpi_name=kpi[0]
     threshold=kpi[1]
-    stats=get_statistics(dataset_name,template_name,statistics,kpi_name, groups)
+    stats=get_statistics(dataset_name,dataset_type,template_name,statistics,kpi_name, time_property,groups)
     averages=stats[1]
     data=stats[0]
     chart kpi_name do |chart|
@@ -72,7 +73,7 @@ report "KPI report for #{dataset_name}\nstatistics - #{statistics}" do |r|
       #        chart.subtitle=group
       chart.aggregation=aggregation
       chart.values=stats[2]
-      chart.time="time"
+      chart.time=time_property
       chart.threshold=averages if threshold
       chart.threshold_label="average (#{(averages*1000).round/1000})" if threshold
       chart.range_axis_ticks=ticks
@@ -81,7 +82,7 @@ report "KPI report for #{dataset_name}\nstatistics - #{statistics}" do |r|
   end
 
   file("Report for #{dataset_name} - #{template_name} - #{statistics}.pdf")
-  save
+  #save
 
 end
 

@@ -472,6 +472,7 @@ public class StatisticsView extends ViewPart {
         IFile file = null;
         StringBuilder sb = new StringBuilder();
         sb.append("dataset_name=\"").append(cDataset.getText()).append("\"\n");
+        sb.append("dataset_type=\"").append(getDatasetNode().getProperty("type","dataset")).append("\"\n");
         sb.append("template_name=\"").append(getTemplate().getTemplateName()).append("\"\n");
         sb.append("aggregation=:").append(statistics.getName().split(", ")[1]).append("\n");
         sb.append("statistics=\"").append(statistics.getName()).append("\"\n");
@@ -688,7 +689,11 @@ public class StatisticsView extends ViewPart {
         }
         aggregations.add(SEPARATOR);
         IPropertyHeader propertyHeader = PropertyHeader.getPropertyStatistic(dataset);
-        properties = Arrays.asList(propertyHeader.getAllFields("-main-type-"));
+        List<String> properties = new ArrayList<String>(Arrays.asList(propertyHeader.getAllFields("-main-type-")));
+        String[] identities = propertyHeader.getIdentityFields();
+        if (identities.length!=0){
+            Collections.addAll(properties, identities);
+        }
         Collections.sort(properties);
         for (int i = 0; i < properties.size(); i++) {
             String property = properties.get(i);
