@@ -9,7 +9,7 @@ ticks={:hourly=>[:hour,1,"HH:00, dd"],
   :weekly=>[:day,7,"w, yyyy"],
   :monthly=>[:month,1,"MMMMM"]}
 
-def get_statistics(dataset_name,dataset_type,template_name,statistics,kpi_name, time_property,groups=nil)
+def get_statistics(dataset_name,dataset_type,template_name,statistics,time_property,groups=nil)
   ds_root=dataset(dataset_name,dataset_type)
   analysis_root=find_first(ds_root,{"type"=>"statistics_root","template"=>template_name},:ANALYSIS)
   level=find_first(analysis_root,{"type"=>"statistics","name"=>"#{statistics}"},:CHILD)
@@ -29,12 +29,12 @@ def get_statistics(dataset_name,dataset_type,template_name,statistics,kpi_name, 
           depth :all
           stop_on {get_property("type")=="s_group"}
           where {get_property("type")=="s_row"}
-          select_properties "value" do
+          select_properties "value"=>"value","name"=>"kpi_name" do
             from do
               traverse :CHILD, :NEXT
               depth :all
-              stop_on {get_property("type")=="s_row" or get_property("name")==kpi_name}
-              where {get_property("type")=="s_cell" and get_property("name")==kpi_name and property? "value"}
+              stop_on {get_property("type")=="s_row"}
+              where {get_property("type")=="s_cell" and property? "value"}
             end
           end
         end
@@ -45,28 +45,35 @@ def get_statistics(dataset_name,dataset_type,template_name,statistics,kpi_name, 
   sum=0.0
   count=0
   groups!=[]
+  averages={}
   data.each do |row|
     group=row["s_group"]
+    kpi_name=row["kpi_name"]
     groups<<group unless groups.include? group
     period=row["name"]
     if period!="total"
-      group_data<<{time_property=>row[time_property],group=>row["value"]}
+      group_data<<{time_property=>row[time_property],group=>row["value"],"kpi_name"=>kpi_name}
     else
       val=row["value"]
-      sum+=val
-      count+=1
+      if !averages.include? kpi_name
+        averages[kpi_name]=[0.0,0]
+      else
+        averages[kpi_name][0]+=val
+        averages[kpi_name][1]+=1
+      end
     end
   end
-  [group_data,count=0?0.0:sum/count,groups]
+  [group_data,averages,groups]
 end
 
 report "KPI report for #{dataset_name}\nstatistics - #{statistics}" do |r|
+  stats=get_statistics(dataset_name,dataset_type,template_name,statistics, time_property,groups)
   kpis.each do |kpi|
     kpi_name=kpi[0]
     threshold=kpi[1]
-    stats=get_statistics(dataset_name,dataset_type,template_name,statistics,kpi_name, time_property,groups)
-    averages=stats[1]
-    data=stats[0]
+    averages=stats[1][kpi_name]
+    average=averages[1]==0?0.0:averages[0]/averages[1]
+    data=stats[0].select{|x| x["kpi_name"]==kpi_name}
     chart kpi_name do |chart|
       chart.data=data
       chart.type=data.size<10 ? :combined : :time
@@ -74,10 +81,10 @@ report "KPI report for #{dataset_name}\nstatistics - #{statistics}" do |r|
       chart.aggregation=aggregation
       chart.values=stats[2]
       chart.time=time_property
-      chart.threshold=averages if threshold
-      chart.threshold_label="average (#{(averages*1000).round/1000})" if threshold
+      chart.threshold=average if threshold
+      chart.threshold_label="average (#{(average*1000).round/1000})" if threshold
       chart.range_axis_ticks=ticks
-      chart.range_axis="#"
+      #chart.range_axis="#"
     end
   end
 
@@ -85,4 +92,3 @@ report "KPI report for #{dataset_name}\nstatistics - #{statistics}" do |r|
   #save
 
 end
-

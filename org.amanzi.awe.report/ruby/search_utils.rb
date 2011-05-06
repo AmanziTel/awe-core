@@ -40,13 +40,19 @@ class SearchQuery
   def each
     configure_traverser
     @traverser.each do |node|
-#      puts "#{node[:type]} ->#{node[:name]} ->#{node.props}"
+      #      puts "#{node[:type]} ->#{node[:name]} ->#{node.props}"
       result=Hash.new
-#      puts @properties.class
+      #      puts @properties.class
       if @properties.is_a? Hash
-        key_property=@properties[:key]
-        value_property=@properties[:value]
-        result[node[key_property]]=get_node_property(node,value_property)#node[value_property]
+        if @properties.include? :key
+          key_property=@properties[:key]
+          value_property=@properties[:value]
+          result[node[key_property]]=get_node_property(node,value_property)#node[value_property]
+        else
+          @properties.each_pair do |k,v|
+            result[v]=get_node_property(node,k)
+          end
+         end
       else
         @properties.each do |prop|
           result[prop]=(node.property? prop) ? node.get_property(prop): nil

@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.statistics.builder;
 
+import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -314,7 +316,8 @@ public class StatisticsBuilder {
                 Collection<Node> nodes = dsService.getNodes(currentStartTime, nextStartTime);
                 nodesCount=nodes.size();
                 count += nodesCount;
-                int total = 0;
+                long cellCalcTime=0L;
+                long startFindGroup=0L;
                 for (Node node : nodes) {
                     boolean isUsed=false;
                     final String EVALUATE = "Neo4j::load_node(%s).instance_eval {%s}";
@@ -325,15 +328,17 @@ public class StatisticsBuilder {
                     // TODO use key property instead of key node name for non-correlated datasets
                     // String keyProperty = dsService.getKeyProperty(node);
                     StatisticsGroup group;
+                   startFindGroup=System.currentTimeMillis();
                     if (networkNode != null) {
                         group = findOrCreateGroup(statistics, networkNode);
                     } else {
                         group = findOrCreateGroup(statistics, node.getProperty(networkLevel, "unknown").toString());
                     }
+                    startFindGroup=System.currentTimeMillis()-startFindGroup;
                     // add summary row first
                     StatisticsRow summaryRow = findOrCreateSummaryRow(group, summaries);
                     StatisticsRow row = findOrCreateRow(group, currentStartTime, period);
-
+                    long startCalcTime=System.currentTimeMillis();
                     for (Object key : result.keySet()) {
                         comm++;
                         TemplateColumn column = template.getColumnByName(key.toString());
@@ -345,6 +350,12 @@ public class StatisticsBuilder {
                             value = (Number)object;
                         } else if (object instanceof RubyNumeric) {
                             value = ((RubyNumeric)object).getDoubleValue();
+                        }else if (object instanceof String){
+                            try{
+                            value=new DecimalFormat("0.#").parse((String)object);
+                            }catch (ParseException e) {
+                                // TODO: handle exception
+                            }
                         }
                         if (cell.update(value)) {
                             isUsed=true;
@@ -356,6 +367,7 @@ public class StatisticsBuilder {
                         }
                         checkThreshold(group, summaryRow, row, column, cell, summaryCell);
                     }
+                    cellCalcTime+=(System.currentTimeMillis()-startCalcTime);
                     if (isUsed){
                         
                         noUsedNodes++;
@@ -364,7 +376,8 @@ public class StatisticsBuilder {
 
                 currentStartTime = nextStartTime;
                 nextStartTime = getNextStartDate(period, endTime, currentStartTime);
-                debugInfo="total=" + count + "\tCalc for period=" + (System.currentTimeMillis() - startForPeriod)+ "\tper node" + (total / (nodes.size() != 0 ? nodes.size() : 1));
+                debugInfo="Total no. of nodes processed: " + count + "\tCalc time for period=" + (System.currentTimeMillis() - startForPeriod)+
+                "\tTime to update cells: "+cellCalcTime+"\tTime to find a group:"+startFindGroup;
                 LOGGER.debug(debugInfo);
                 monitor.worked(1);
 //                monitor.worked(nodesCount);
