@@ -81,7 +81,7 @@ public class PerformanceCountersLoader extends AbstractLoader {
         useMapper(1, CELL, new StringMapper());
 
 //        addKnownHeader(1, "Date", "date", false);
-        dateFormat = new SimpleDateFormat("MM.dd.yy");
+        dateFormat = new SimpleDateFormat("MM.dd.yyyy");
         timeFormat = new SimpleDateFormat("HH:mm:ss");
 //        addKnownHeader(1, "time", ".*time.*", false);
 //        useMapper(1, "time", new LongDateMapper("HH:mm:ss"));
