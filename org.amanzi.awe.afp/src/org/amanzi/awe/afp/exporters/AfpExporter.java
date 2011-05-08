@@ -18,8 +18,8 @@ import org.amanzi.awe.afp.PreferenceInitializer;
 import org.amanzi.awe.afp.filters.AfpRowFilter;
 import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
-import org.amanzi.awe.afp.models.AfpModelUtils;
 import org.amanzi.awe.afp.models.AfpModel.ScalingFactors;
+import org.amanzi.awe.afp.models.AfpModelUtils;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
@@ -33,8 +33,8 @@ import org.amanzi.neo.services.network.FrequencyPlanModel;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.node2node.INodeToNodeType;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
-import org.amanzi.neo.services.node2node.NodeToNodeTypes;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationService.NodeToNodeRelationshipTypes;
+import org.amanzi.neo.services.node2node.NodeToNodeTypes;
 import org.amanzi.neo.services.statistic.IStatistic;
 import org.amanzi.neo.services.statistic.StatisticManager;
 import org.apache.log4j.Logger;
@@ -327,10 +327,12 @@ public class AfpExporter extends Job {
                                     sb.append(1);// non-relevant
                                     sb.append(" ");
                                     sb.append(frequencies.length);// required
-                                    for (int id = 0; id < frequencies.length; id++) {
-                                        sb.append(" ");
-                                        sb.append(0);
-                                    }
+                                    sb.append(" ");
+                                    sb.append("0");// computed
+//                                    for (int id = 0; id < frequencies.length; id++) {
+//                                        sb.append(" ");
+//                                        sb.append(0);
+//                                    }
                                     sb.append("\n");
                                     cellWriters[i].write(sb.toString());
 

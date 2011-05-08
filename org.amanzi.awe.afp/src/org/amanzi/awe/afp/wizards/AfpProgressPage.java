@@ -9,6 +9,7 @@ import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.executors.AfpProcessProgress;
 import org.amanzi.awe.afp.exporters.AfpExporter;
 import org.amanzi.awe.afp.exporters.BsicOptimizer;
+import org.amanzi.awe.afp.exporters.HsnOptimizer;
 import org.amanzi.awe.afp.exporters.MaioOptimizer;
 import org.amanzi.awe.afp.loaders.AfpOutputFileLoaderJob;
 import org.amanzi.awe.afp.models.AfpModel;
@@ -461,11 +462,11 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
                          optimizer.run(monitor);
                     }
                 }
-                if (model.isOptimizeBSIC()){
-                    //TODO implement
-                }
                 if (model.isOptimizeHSN()){
-                    //TODO implement 
+                    for (FrequencyPlanModel model:freq){
+                        HsnOptimizer optimizer = new HsnOptimizer(network, model);
+                        optimizer.run(monitor);
+                    }
                 }
                 return Status.OK_STATUS;
             }

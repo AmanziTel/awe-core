@@ -512,7 +512,7 @@ public class AfpLoader {
                 if (isNodeIdBased) {
                     long nodeId = Long.parseLong(field[i++]);
                     Node trxNode = service.getNodeById(nodeId);
-                    boolean isGroup = NodeTypes.SY_GROUP.checkNode(trxNode);
+                    boolean isGroup = !NodeTypes.TRX.checkNode(trxNode);
                     // Node sector = service.getNodeById(nodeId);
                     String trxName = field[i++];
                     if (trxName.contains("-"))
@@ -562,8 +562,8 @@ public class AfpLoader {
                             if (isGroup) {
                                 int arfcn[] = new int[frq.size()];
                                 for (int j = 0; j < arfcn.length; j++) {
-                                    arfcn[i] = frq.get(i);
-                                    statistic.indexValue(planModel.getName(), NodeTypes.FREQUENCY_PLAN.getId(), "arfcn", arfcn[i]);
+                                    arfcn[j] = frq.get(j);
+                                    statistic.indexValue(planModel.getName(), NodeTypes.FREQUENCY_PLAN.getId(), "arfcn", arfcn[j]);
                                 }
                                 planNode.setProperty(INeoConstants.PROPERTY_MAL,arfcn);
                                 for (Node trx:networkService.getTrxOfSyGroup(trxNode)){

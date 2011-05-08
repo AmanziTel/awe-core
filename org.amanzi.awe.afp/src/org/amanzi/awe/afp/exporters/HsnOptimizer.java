@@ -42,8 +42,17 @@ public class HsnOptimizer {
         statistic = StatisticManager.getStatistic(network.getRootNode());
     }
     public void run(IProgressMonitor monitor) {
-        HSNImpactMatrix matrix = new HSNImpactMatrix(freq);
+        HSNImpactMatrix matrix = new HSNImpactMatrix(network,freq);
+        optimize(matrix,monitor);
         
         
+    }
+    /**
+     *
+     * @param matrix
+     * @param monitor
+     */
+    private void optimize(HSNImpactMatrix matrix, IProgressMonitor monitor) {
+        //TODO implemented, but chrckin after debug
     }
 }
