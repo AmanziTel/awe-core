@@ -89,6 +89,6 @@ report "KPI report for #{dataset_name}\nstatistics - #{statistics}" do |r|
   end
 
   file("Report for #{dataset_name} - #{template_name} - #{statistics}.pdf")
-  #save
+  save
 
 end

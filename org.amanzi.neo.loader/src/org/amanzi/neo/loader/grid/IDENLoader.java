@@ -290,6 +290,7 @@ public class IDENLoader extends DriveLoader {
                                     String dateTime = new StringBuilder(nextLine[0]).append(' ').append(nextLine[1]).toString();
                                     Calendar cl = getTime(dateTime);
                                     data.put(INeoConstants.PROPERTY_TIME_NAME, dateTime);
+                                    data.put(INeoConstants.PROPERTY_NAME_NAME, dateTime);
                                     data.setWorkDate(cl);
                                 }
                                 save(data);

@@ -937,6 +937,7 @@ public class StatisticsView extends ViewPart {
      * @param columnIndex column index
      */
     private void drillDown(StatisticsCell[] cells, int columnIndex) {
+        boolean additionalColumnNecessary = isAdditionalColumnNecessary();
         List<Node> nodes = new ArrayList<Node>();
         StatisticsRow row = cells[0].getParent();
         StatisticsGroup group = row.getParent();
@@ -944,8 +945,15 @@ public class StatisticsView extends ViewPart {
         Node levelNode = NeoUtils.getParent(null, statNode);
         Node dimNode = NeoUtils.getParent(null, levelNode);
         Node rootNode = NeoUtils.getParent(null, dimNode);
+        int periodIndex = additionalColumnNecessary ? 2 : 1;
+        int kpiIndex = columnIndex - (!additionalColumnNecessary ? 2 : 3);
 
-        nodes.add(row.getNode());
+        if (columnIndex >= periodIndex) {
+            if (columnIndex > periodIndex) {
+                nodes.add(cells[kpiIndex].getNode());
+            }
+            nodes.add(row.getNode());
+        }
         nodes.add(group.getNode());
         nodes.add(statNode);
         nodes.add(levelNode);
