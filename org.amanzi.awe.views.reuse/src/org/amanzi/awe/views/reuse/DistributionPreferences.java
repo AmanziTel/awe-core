@@ -221,11 +221,13 @@ public class DistributionPreferences extends PreferencePage implements IWorkbenc
         // TODO select last model
     }
 
+
     @Override
-    protected void performApply() {
+    public boolean performOk() {
         saveModel();
-        super.performApply();
+        return super.performOk();
     }
+    
     /**
      * Form range list.
      */

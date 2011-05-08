@@ -13,6 +13,9 @@
 
 package org.amanzi.awe.views.reuse.range;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 import org.apache.commons.lang.ObjectUtils;
@@ -33,7 +36,7 @@ public class Bar implements Serializable {
     private static final long serialVersionUID = 3099787166503541650L;
 
     /** The range. */
-    private NumberRange range;
+    private transient NumberRange range;
 
     /** The name. */
     private String name;
@@ -80,6 +83,7 @@ public class Bar implements Serializable {
         }
         this.range = range;
     }
+
     /**
      * Gets the name.
      * 
@@ -88,7 +92,6 @@ public class Bar implements Serializable {
     public String getName() {
         return name != null ? name : getRangeAsStr("");
     }
-
 
     /**
      * Sets the name.
@@ -115,7 +118,6 @@ public class Bar implements Serializable {
         return color;
     }
 
-
     /**
      * Sets the color.
      * 
@@ -131,7 +133,6 @@ public class Bar implements Serializable {
         }
         this.color = color;
     }
-
 
     /**
      * Checks if is changed.
@@ -176,4 +177,34 @@ public class Bar implements Serializable {
         return range != null;
     }
 
+    private void writeObject(ObjectOutputStream oos) throws IOException {
+        oos.defaultWriteObject();
+        if (range==null){
+            oos.writeDouble(Double.NaN);
+        }else{
+            double min=range.getMinimum();
+            boolean inmin=range.isMinIncluded();
+            double max = range.getMaximum();
+            boolean inmax=range.isMaxIncluded();
+            oos.writeDouble(min);
+            oos.writeBoolean(inmin);
+            oos.writeDouble(max);
+            oos.writeBoolean(inmax);
+        }
+    }
+
+    // assumes "static java.util.Date aDate;" declared
+    private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
+        ois.defaultReadObject();
+        // Read/initialize additional fields
+        double min=ois.readDouble();
+        if (min==Double.NaN){
+            range=null;
+        }else{
+            boolean inmin=ois.readBoolean();
+            double max = ois.readDouble();
+            boolean inmax=ois.readBoolean();   
+            range=new NumberRange(min, inmin, max, inmax);
+        }
+    }
 }
