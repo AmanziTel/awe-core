@@ -873,7 +873,9 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
             outgoing.add(neighNode);
         }
         outgoingMap.put(mainNode, outgoing);
-        return new N2NGraphModel(new ColoredRulesByPercProp(colorMap), outgoingMap, drawLines);
+        N2NGraphModel result = new N2NGraphModel(new ColoredRulesByPercProp(colorMap), outgoingMap, drawLines);
+        result.setRelColRules(new OutgoingRelationsColorMapRules(mainNode,colorMap));
+        return result;
     }
 
     protected IGraphModel createIncomigInterferenceModel(Node proxyNode, String propertyName) {
@@ -892,7 +894,9 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
             outgoing.add(mainNode);
             outgoingMap.put(servNode, outgoing);
         }
-        return new N2NGraphModel(new ColoredRulesByPercProp(colorMap), outgoingMap, drawLines);
+        N2NGraphModel result = new N2NGraphModel(new ColoredRulesByPercProp(colorMap), outgoingMap, drawLines);
+        result.setRelColRules(new IncomingRelationsColorMapRules(mainNode,colorMap));
+        return result;
     }
     protected IGraphModel createCommonIncomigInterferenceModel(Node proxyNode) {
         Map<Node, Set<Node>> outgoingMap = new HashMap<Node, Set<Node>>();
@@ -904,7 +908,8 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
             outgoing.add(mainNode);
             outgoingMap.put(servNode, outgoing);
         }
-        return new N2NGraphModel(new DefaultColoredRules(mainNode, outgoingMap.keySet()), outgoingMap, drawLines);
+        N2NGraphModel result = new N2NGraphModel(new DefaultColoredRules(mainNode, outgoingMap.keySet()), outgoingMap, drawLines);
+        return result;
     }
     /**
      * Gets the interference color.

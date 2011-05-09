@@ -11,28 +11,42 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui;
+package org.amanzi.awe.views.neighbours.views;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.swt.graphics.RGB;
 import org.neo4j.graphdb.Node;
 
 /**
+ * TODO Purpose of 
  * <p>
  *
  * </p>
  * @author TsAr
  * @since 1.0.0
  */
-public interface IGraphModel {
-    RGB getColor(Node visualNode);
-    Set<Node> getOutgoingRelation(Node visualNode);
-    RGB getRelationColor(Node nodeFrom,Node nodeTo);
+public class OutgoingRelationsColorMapRules implements IRelationColorRules {
+
+    private final Node mainNode;
+    private final Map<Node, RGB> colorMap=new HashMap<Node, RGB>();
+
     /**
-     *
-     * @return
+     * @param mainNode
+     * @param colorMap
      */
-    Map<Node, Set<Node>> getOutgoingRelationMap();
+    public OutgoingRelationsColorMapRules(Node mainNode, Map<Node, RGB> colorMap) {
+        this.mainNode = mainNode;
+        this.colorMap.putAll(colorMap);
+    }
+
+    @Override
+    public RGB getColor(Node nodeFrom, Node nodeTo) {
+        if (mainNode.equals(nodeFrom)){
+            return colorMap.get(nodeTo);
+        }
+        return null;
+    }
+
 }

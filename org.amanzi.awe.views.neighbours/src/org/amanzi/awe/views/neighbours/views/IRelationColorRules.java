@@ -11,28 +11,25 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui;
-
-import java.util.Map;
-import java.util.Set;
+package org.amanzi.awe.views.neighbours.views;
 
 import org.eclipse.swt.graphics.RGB;
 import org.neo4j.graphdb.Node;
 
 /**
  * <p>
- *
+ *Rules for relation color
  * </p>
  * @author TsAr
  * @since 1.0.0
  */
-public interface IGraphModel {
-    RGB getColor(Node visualNode);
-    Set<Node> getOutgoingRelation(Node visualNode);
-    RGB getRelationColor(Node nodeFrom,Node nodeTo);
+public interface IRelationColorRules {
     /**
+     * get color of relation
      *
-     * @return
+     * @param nodeFrom - start node
+     * @param nodeTo - end node
+     * @return RGB or null if current rules do not define color
      */
-    Map<Node, Set<Node>> getOutgoingRelationMap();
+    RGB getColor(Node nodeFrom,Node nodeTo);
 }

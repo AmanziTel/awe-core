@@ -39,6 +39,7 @@ public class N2NGraphModel implements IGraphModel {
     private IcoloredRules colorRules;
     private Boolean drawLines;
     private Map<Node, Set<Node>> relMap = new HashMap<Node, Set<Node>>();
+    private IRelationColorRules relColRules;
     
     public N2NGraphModel(Relationship relation, boolean showAllOutgoing, boolean drawLines) {
         this.drawLines = drawLines;
@@ -78,6 +79,12 @@ public class N2NGraphModel implements IGraphModel {
         this.drawLines = drawLines;
     }
 
+    public IRelationColorRules getRelColRules() {
+        return relColRules;
+    }
+    public void setRelColRules(IRelationColorRules relColRules) {
+        this.relColRules = relColRules;
+    }
     @Override
     public Set<Node> getOutgoingRelation(Node visualNode) {
         Set<Node> result;
@@ -137,6 +144,10 @@ public class N2NGraphModel implements IGraphModel {
     @Override
     public Map<Node, Set<Node>> getOutgoingRelationMap() {
         return drawLines?Collections.unmodifiableMap(relMap):Collections.<Node, Set<Node>>emptyMap();
+    }
+    @Override
+    public RGB getRelationColor(Node nodeFrom, Node nodeTo) {
+        return relColRules == null ? null : relColRules.getColor(nodeFrom,nodeTo);
     }
 
 }

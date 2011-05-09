@@ -12,6 +12,7 @@
  */
 package org.amanzi.awe.render.network;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -20,6 +21,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
@@ -682,13 +684,19 @@ public class NetworkRenderer extends RendererImpl {
      * @param lineColor
      */
     private void drawRelations(Graphics2D g, IGraphModel graphModel, Map<Node, Point> nodesMap, Color lineColor) {
-        g.setColor(lineColor);
+//        g.setColor(lineColor);
+        Stroke oldStr = g.getStroke();
+        g.setStroke(new BasicStroke(2));
+        
         for (Entry<Node, Set<Node>> entry : graphModel.getOutgoingRelationMap().entrySet()) {
             Point from = nodesMap.get(entry.getKey());
             if (from == null) {
                 continue;
             }
             for (Node neighNode : entry.getValue()) {
+                RGB color = graphModel.getRelationColor(entry.getKey(), neighNode);
+                Color clr=color==null?lineColor: new Color(color.red, color.green, color.blue, drawHints.alpha);
+                g.setColor(clr);
                 Point to = nodesMap.get(neighNode);
                 if (to != null) {
                     // g.drawLine(from.x, from.y, to.x, to.y);
@@ -696,6 +704,7 @@ public class NetworkRenderer extends RendererImpl {
                 }
             }
         }
+        g.setStroke(oldStr);
     }
 
     @SuppressWarnings("unchecked")
