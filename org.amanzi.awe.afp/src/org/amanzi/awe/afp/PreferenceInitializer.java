@@ -12,8 +12,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
     @Override
     public void initializeDefaultPreferences() {
         Preferences store = Activator.getDefault().getPluginPreferences();
-        store.setDefault(AFP_MIN_CO, 0.001);
-        store.setDefault(AFP_MIN_PROP_VALUE, 0.0003);
+        store.setDefault(AFP_MIN_CO, 0.0001);
+        store.setDefault(AFP_MIN_PROP_VALUE, 0.0001);
     }
 
 }
