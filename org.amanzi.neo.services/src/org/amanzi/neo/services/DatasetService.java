@@ -1686,4 +1686,27 @@ public class DatasetService extends AbstractService {
         }
         return result;
     }
+
+    /**
+     *
+     * @param node
+     * @param filter
+     * @return
+     */
+    public boolean isChildOf(Node node, Node root) {
+        if (node.equals(root)){
+            return true;
+        }
+        Traverser traverser = findProjectByChild(node);
+        Iterator<Path> rel = traverser.iterator();
+        if (rel.hasNext()) {
+            Path path = rel.next();
+            for (Node rootNode:path.nodes()){
+                if (rootNode.equals(root)){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

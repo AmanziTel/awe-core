@@ -20,7 +20,6 @@ import org.amanzi.awe.views.reuse.mess_table.view.MessageAndEventTableView;
 import org.amanzi.awe.views.reuse.views.FrequencyPlanAnalyser;
 import org.amanzi.awe.views.reuse.views.ReuseAnalyserView;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.services.events.SelectEvent;
 import org.amanzi.neo.services.events.UpdateViewEvent;
 import org.amanzi.neo.services.events.UpdateViewEventType;
 import org.amanzi.neo.services.ui.IUpdateViewListener;
@@ -126,21 +125,7 @@ public class ReusePlugin extends AbstractUIPlugin implements IUpdateViewListener
 
     @Override
     public void updateView(UpdateViewEvent event) {
-        if (event instanceof SelectEvent){
-            final SelectEvent selEvent=(SelectEvent)event; 
-            ActionUtil.getInstance().runTask(new Runnable() {
-
-                @Override
-                public void run() {
-                    IViewPart tableView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(MESS_TABLE_VIEW_ID);
-                    if (tableView != null) {
-                        ((MessageAndEventTableView )tableView).setSelectionFilter(selEvent.getSelectedNodes());
-                    }
-                }
-            }, true);         
-        }else{
-            updateView();
-        }
+        updateView();
     }
 
     @Override

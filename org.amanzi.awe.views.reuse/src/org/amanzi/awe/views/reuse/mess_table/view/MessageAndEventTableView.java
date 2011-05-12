@@ -141,7 +141,6 @@ public class MessageAndEventTableView extends ViewPart {
     private Combo cProperty;
     private Combo cExpression;
     private TableViewer table;
-    private Set<Node>filters=new HashSet<Node>();
     
     private TableLabelProvider labelProvider;
     private TableContentProvider contentProvider;
@@ -249,14 +248,26 @@ public class MessageAndEventTableView extends ViewPart {
         	}
         	ShowPreparedViewEvent showEvent = (ShowPreparedViewEvent)event;
         	if(cDataset.getSelectionIndex()<0){
-                return;
+        	    if (showEvent.getNodes().size()>0){
+        	        Node child=showEvent.getNodes().iterator().next();
+        	        Node root=ds.findRootByChild(child);
+        	        if (root==null){
+        	            return;
+        	        }
+        	        Entry<String, DatasetInfo> dataset = findFirst(root);
+        	        if (dataset==null){
+        	            return;
+        	        }
+        	        cDataset.setText(dataset.getKey());
+                    updateProperty();
+                    contentProvider.storeRows();
+        	    }else{
+        	        return;
+        	    }
             }           
             cProperty.deselectAll();
-            
-            cExpression.deselectAll();
-                    
-            
-            
+            cExpression.deselectAll();    
+            contentProvider.restoreRows();
         	contentProvider.uploadData(showEvent.getNodes());
         	
         	
@@ -481,7 +492,6 @@ public class MessageAndEventTableView extends ViewPart {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                filters.clear();
                 updateProperty();
             }
 
@@ -632,6 +642,7 @@ public class MessageAndEventTableView extends ViewPart {
         Arrays.sort(propNames);
         cProperty.setItems(propNames);
         updateExpression();
+        contentProvider.storeRows();
     }
     
     /**
@@ -1063,32 +1074,21 @@ public class MessageAndEventTableView extends ViewPart {
      */
     private class TableContentProvider implements IStructuredContentProvider {
         
-        private static final int PAGE_SIZE = 100;
+        private static final int PAGE_SIZE = 10000;
 
         private List<TableRowWrapper> rows = new ArrayList<TableRowWrapper>();
+        private List<TableRowWrapper> rowstore = new ArrayList<TableRowWrapper>();
         private Iterator<Node> allNodes;
         private String dataset;
         private String[] properties;
+
+
         
         @Override
         public Object[] getElements(Object inputElement) {
-            return getFilteredRows().toArray(new TableRowWrapper[0]);
+            return rows.toArray(new TableRowWrapper[0]);
         }
 
-        /**
-         *
-         * @return
-         */
-        private Collection<TableRowWrapper> getFilteredRows() {
-            if (filters.isEmpty()){
-                return rows;
-            }
-            Set<TableRowWrapper> result=new HashSet<TableRowWrapper>();
-            for (TableRowWrapper row:rows){
-                
-            }
-            return result;
-        }
 
         @Override
         public void dispose() {
@@ -1134,22 +1134,27 @@ public class MessageAndEventTableView extends ViewPart {
         	Job updateJob = new Job("Upload data to table job") {            
         		@Override
         		protected IStatus run(IProgressMonitor monitor) { 
-        			rows.clear();
-
-        			GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
-        			Transaction tx = service.beginTx();            
-        			try{
-        				allNodes = nodes.iterator(); 
-        				int start = 0;
-        				while(allNodes.hasNext()&&start<PAGE_SIZE){
-        					rows.add(parseRow(allNodes.next(), properties));
-        					start++;
-        				}
-        			}finally{
-        				tx.finish();
-        			}
+//        			rows.clear();
+        		    List<TableRowWrapper> result = new ArrayList<TableRowWrapper>();
+                    int start = 0;
+        		    for (TableRowWrapper row:rows){
+                        allNodes = nodes.iterator(); 
+                        while(allNodes.hasNext()){
+                            if (ds.isChildOf(row.node, allNodes.next())){
+                                result.add(row);
+                                start++;
+                                break;
+                            }
+                        }
+                        if (start>PAGE_SIZE){
+                            break;
+                        }
+        		    }
+        		    rows=result;
         			return Status.OK_STATUS;
         		}
+
+
         	};
         	updateJob.schedule(0);
         	try {
@@ -1160,7 +1165,14 @@ public class MessageAndEventTableView extends ViewPart {
 
         	table.refresh();
         }
-
+        private void restoreRows() {
+            rows.clear();
+            rows.addAll(rowstore);
+        }
+        private void storeRows() {
+            rowstore.clear();
+            rowstore.addAll(rows);
+        }
         	
         
         
@@ -1559,38 +1571,6 @@ public class MessageAndEventTableView extends ViewPart {
             propertySheetPage.dispose();
         }
         super.dispose();
-    }
-
-    /**
-     *
-     * @param selectedNodes
-     */
-    public void setSelectionFilter(Collection<Node> selectedNodes) {
-      if (selectedNodes.size()>0){
-          Node node=selectedNodes.iterator().next();
-          Node root=ds.findRootByChild(node);
-          if (root==null){
-              return;
-          }
-          String datasetName = cDataset.getText();
-          DatasetInfo currentDataset = datasets.get(datasetName);
-          if (currentDataset!=null){
-              if (currentDataset.dataset.equals(root)){
-                  currentDataset=null;
-              }
-          }
-          filters.clear();
-          filters.addAll(selectedNodes);
-          if (currentDataset==null){
-              Entry<String, DatasetInfo> entry = findFirst(root);
-              if (entry==null){
-                  filters.clear();
-                  return;
-              }
-              cDataset.setText(entry.getKey());
-          }
-          updateProperty();
-      }
     }
 
     /**
