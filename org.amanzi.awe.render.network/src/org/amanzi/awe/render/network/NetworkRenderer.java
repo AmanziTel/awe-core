@@ -22,6 +22,7 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
+import java.awt.font.TextAttribute;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
@@ -518,6 +519,7 @@ public class NetworkRenderer extends RendererImpl {
                                     }
                                 }
                                 Pair<Point, Point> centerPoint = renderSector(g, p, azimuth, beamwidth, colorsToFill, borderColor);
+                                
                                 nodesMap.put(child, centerPoint.getLeft());
                                 if (drawHints.sectorLabeling) {
                                     sectorMap.put(child, centerPoint.getRight());
@@ -562,10 +564,12 @@ public class NetworkRenderer extends RendererImpl {
                 FontMetrics metrics = g.getFontMetrics(drawHints.font);
                 // get the height of a line of text in this font and render context
                 int hgt = metrics.getHeight();
+               
                 for (Point p : labelsMap.keySet()) {
                     String drawString = labelsMap.get(p);
                     int label_x = drawHints.drawSize > 15 ? 15 : drawHints.drawSize;
                     int label_y = hgt / 3;
+               
                     p = new Point(p.x + label_x, p.y + label_y);
 
                     // get the advance of my text in this font and render context
@@ -575,7 +579,9 @@ public class NetworkRenderer extends RendererImpl {
                     boolean drawsLabel = findNonOverlapPosition(labelRec, hgt, p, rect);
                     if (drawsLabel && !drawString.isEmpty()) {
                         labelRec.add(rect);
-                        drawLabel(g, p, drawString);
+                        
+                        drawLabel(g, p, drawString, null);
+                        
                     }
                 }
                 // draw sector name
@@ -586,6 +592,7 @@ public class NetworkRenderer extends RendererImpl {
                     FontMetrics metric = g.getFontMetrics(fontSector);
                     hgt = metrics.getHeight();
                     int h = hgt / 3;
+                    
                     for (Node sector : sectorMap.keySet()) {
                         String name = getSectorName(sector);
                         if (name.isEmpty()) {
@@ -597,6 +604,7 @@ public class NetworkRenderer extends RendererImpl {
 
                         // calculate p
                         int x = (endLine.x < pSector.x) ? endLine.x - w : endLine.x;
+                        
                         int y = (endLine.y < pSector.y) ? endLine.y - h : endLine.y;
                         Point p = new Point(x, y);
                         // get the advance of my text in this font and render context
@@ -606,7 +614,10 @@ public class NetworkRenderer extends RendererImpl {
                         boolean drawsLabel = findNonOverlapPosition(labelRec, hgt, p, rect);
                         if (drawsLabel) {
                             labelRec.add(rect);
-                            drawLabel(g, p, name);
+                            Color sectorColor = getSectorColors(sector, drawHints.labelColor).iterator().next();
+                            drawLabel(g, p, name, sectorColor);
+                            
+                            
                         }
 
                     }
@@ -713,16 +724,23 @@ public class NetworkRenderer extends RendererImpl {
         return starPoint;
     }
 
-    private void drawLabel(Graphics2D g, Point p, String drawString) {
+    private void drawLabel(Graphics2D g, Point p, String drawString, Color color) {
+    	
         TextLayout text = new TextLayout(drawString, g.getFont(), g.getFontRenderContext());
+        
         AffineTransform at = AffineTransform.getTranslateInstance(p.x, p.y);
         Shape outline = text.getOutline(at);
         drawSoftSurround(g, outline);
         g.setPaint(drawHints.surroundColor);
         g.fill(outline);
         g.draw(outline);
-        g.setPaint(drawHints.labelColor);
+        if (color != null)
+        	g.setPaint(color);
+        else g.setPaint(drawHints.labelColor);
         text.draw(g, p.x, p.y);
+        
+        
+        
     }
 
     private boolean findNonOverlapPosition(Set<Rectangle> labelRec, int hgt, Point p, Rectangle rect) {
@@ -1037,7 +1055,9 @@ public class NetworkRenderer extends RendererImpl {
         double angle1 = 90 - azimuth - beamwidth / 2.0;
         double angle2 = angle1+beamwidth;
         Arc2D a=null;
+        
         for (Color color:colorsToFill){
+        	
             double r2=r1+2d/(2+i)*h;
             i++;
 
@@ -1056,7 +1076,9 @@ public class NetworkRenderer extends RendererImpl {
         }
         g.setColor(oldColor);
         java.awt.Point right = new java.awt.Point();
-        right.setLocation(a.getCenterX(), a.getCenterY());
+        right.setLocation(a.getStartPoint().getX(), a.getStartPoint().getY());
+        /*String drawString = Double.toString(azimuth);
+        drawLabel(g, right, drawString);*/
         return new Pair<java.awt.Point, java.awt.Point>(p, right);
 //        if (beamwidth >= CIRCLE_BEAMWIDTH) {
 //            g.setColor(colorToFill);
