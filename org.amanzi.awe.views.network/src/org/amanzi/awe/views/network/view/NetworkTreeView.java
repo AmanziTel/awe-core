@@ -21,7 +21,6 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,16 +64,14 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.enums.ProbeCallRelationshipType;
+import org.amanzi.neo.services.events.SelectEvent;
 import org.amanzi.neo.services.events.ShowPreparedViewEvent;
 import org.amanzi.neo.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.services.events.UpdateDrillDownEvent;
-import org.amanzi.neo.services.events.UpdateViewEvent;
 import org.amanzi.neo.services.events.UpdateViewEventType;
-import org.amanzi.neo.services.ui.IUpdateViewListener;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
 import org.amanzi.neo.services.ui.NeoUtils;
-import org.amanzi.neo.services.ui.UpdateViewManager;
 import org.apache.log4j.Logger;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
@@ -449,17 +446,10 @@ public class NetworkTreeView extends ViewPart {
      */
 
     private void fillContextMenu(IMenuManager manager) {
-        // TODO remove all disabled part of menu??
-        manager.add(new Action("Show/edit properties") {
-            @Override
-            public void run() {
-                try {
-                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
-                } catch (PartInitException e) {
-                    NetworkTreePlugin.error(null, e);
-                }
-            }
-        });
+        SelectAction select = new SelectAction((IStructuredSelection)viewer.getSelection());
+        if (select.isEnabled()){
+            manager.add(select); 
+        }
         RenameAction reanmeAction = new RenameAction((IStructuredSelection)viewer.getSelection());
         manager.add(reanmeAction);
         RevertNameAction revertAction = new RevertNameAction((IStructuredSelection)viewer.getSelection());
@@ -988,7 +978,54 @@ public class NetworkTreeView extends ViewPart {
             transaction.finish();
         }
     }
+    private class SelectAction extends Action {
+        private boolean enabled;
+        private final String text;
+        private Set<Node>selectedNodes=new HashSet<Node>();
 
+        /**
+         * Constructor
+         * 
+         * @param selection - selection
+         */
+        public SelectAction(IStructuredSelection selection) {
+            Iterator it = selection.iterator();
+            while (it.hasNext()) {
+                NeoNode element = (NeoNode)it.next();
+                if (element instanceof Root){
+                    continue;
+                }else{
+                    selectedNodes.add(element.getNode());
+                }
+            }
+            enabled = selectedNodes.size()>0;
+            text=selectedNodes.size()>1?"Show properties":"Show/edit property";
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        @Override
+        public String getText() {
+            return text;
+        }
+
+        @Override
+        public void run() {
+            try {
+                if (selectedNodes.size() > 1) {
+                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("org.amanzi.awe.views.reuse.views.MessageAndEventTableView");
+                    NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new SelectEvent(selectedNodes));
+                } else {
+                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
+                }
+            } catch (PartInitException e) {
+                NetworkTreePlugin.error(null, e);
+            }
+        }     
+    }
     private class RenameAction extends Action {
 
         private boolean enabled;

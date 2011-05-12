@@ -16,20 +16,17 @@ package org.amanzi.awe.views.reuse.mess_table.view;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-
 import java.util.Collections;
-
 import java.util.Comparator;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
-
 
 import org.amanzi.awe.views.reuse.Messages;
 import org.amanzi.awe.views.reuse.mess_table.DataTypes;
@@ -144,6 +141,7 @@ public class MessageAndEventTableView extends ViewPart {
     private Combo cProperty;
     private Combo cExpression;
     private TableViewer table;
+    private Set<Node>filters=new HashSet<Node>();
     
     private TableLabelProvider labelProvider;
     private TableContentProvider contentProvider;
@@ -483,6 +481,7 @@ public class MessageAndEventTableView extends ViewPart {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
+                filters.clear();
                 updateProperty();
             }
 
@@ -701,7 +700,7 @@ public class MessageAndEventTableView extends ViewPart {
      */
     private HashMap<String, DatasetInfo> initDatasetsInfo(){
         GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
-        Transaction tx = service.beginTx();
+//        Transaction tx = service.beginTx();
         HashMap<String, DatasetInfo> result = new HashMap<String, DatasetInfo>();
         for (Node root:ds.getAllRootNodes().nodes()){
             result.putAll(formDatasetInfo(root));
@@ -1073,7 +1072,22 @@ public class MessageAndEventTableView extends ViewPart {
         
         @Override
         public Object[] getElements(Object inputElement) {
-            return rows.toArray(new TableRowWrapper[0]);
+            return getFilteredRows().toArray(new TableRowWrapper[0]);
+        }
+
+        /**
+         *
+         * @return
+         */
+        private Collection<TableRowWrapper> getFilteredRows() {
+            if (filters.isEmpty()){
+                return rows;
+            }
+            Set<TableRowWrapper> result=new HashSet<TableRowWrapper>();
+            for (TableRowWrapper row:rows){
+                
+            }
+            return result;
         }
 
         @Override
@@ -1545,5 +1559,51 @@ public class MessageAndEventTableView extends ViewPart {
             propertySheetPage.dispose();
         }
         super.dispose();
+    }
+
+    /**
+     *
+     * @param selectedNodes
+     */
+    public void setSelectionFilter(Collection<Node> selectedNodes) {
+      if (selectedNodes.size()>0){
+          Node node=selectedNodes.iterator().next();
+          Node root=ds.findRootByChild(node);
+          if (root==null){
+              return;
+          }
+          String datasetName = cDataset.getText();
+          DatasetInfo currentDataset = datasets.get(datasetName);
+          if (currentDataset!=null){
+              if (currentDataset.dataset.equals(root)){
+                  currentDataset=null;
+              }
+          }
+          filters.clear();
+          filters.addAll(selectedNodes);
+          if (currentDataset==null){
+              Entry<String, DatasetInfo> entry = findFirst(root);
+              if (entry==null){
+                  filters.clear();
+                  return;
+              }
+              cDataset.setText(entry.getKey());
+          }
+          updateProperty();
+      }
+    }
+
+    /**
+     *
+     * @param root
+     * @return
+     */
+    private Entry<String,DatasetInfo> findFirst(Node root) {
+        for (Entry<String,DatasetInfo> entry:datasets.entrySet()){
+            if (entry.getValue().dataset.equals(root)){
+                return entry;
+            }
+        }
+        return null;
     }
 }

@@ -30,5 +30,5 @@ public enum UpdateViewEventType {
     DRILL_DOWN,
     SHOW_VIEW,
     NEW_CORRELATION,
-    SHOW_PREPARED_VIEW;
+    SHOW_PREPARED_VIEW, SELECT;
 }
