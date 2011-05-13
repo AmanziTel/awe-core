@@ -223,19 +223,19 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 		Button pauseButton = new Button(controlGroup, SWT.PUSH);
 		pauseButton.setLayoutData(new GridData(GridData.END, GridData.BEGINNING, false, false));
 		pauseButton.setText("Pause");
-		pauseButton.setEnabled(false);
+		pauseButton.setEnabled(true);
 		pauseButton.addSelectionListener(new SelectionListener(){
 
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
 				// TODO Auto-generated method stub
-				
+			    
 			}
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				// TODO Auto-generated method stub
-				
+			    AfpProcessExecutor.setValueToBooleanButton(2);
 			}
 			
 		});
@@ -243,19 +243,19 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 		Button resumeButton = new Button(controlGroup, SWT.PUSH);
 		resumeButton.setLayoutData(new GridData(GridData.END, GridData.BEGINNING, false, false));
 		resumeButton.setText("Resume");
-		resumeButton.setEnabled(false);
+		resumeButton.setEnabled(true);
 		resumeButton.addSelectionListener(new SelectionListener(){
 
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
 				// TODO Auto-generated method stub
-				
+			    
 			}
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				// TODO Auto-generated method stub
-				
+			    AfpProcessExecutor.setValueToBooleanButton(3);
 			}
 			
 		});
@@ -274,6 +274,9 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				// TODO Auto-generated method stub
+			    AfpProcessExecutor.setValueToBooleanButton(1);
+			    exportJob.cancel();
+			    loadJob.cancel();
 				afpJob.cancel();
 				//((AfpImportWizard)getContainer()).isDone = true;
 				//((WizardDialog)getContainer()).close();

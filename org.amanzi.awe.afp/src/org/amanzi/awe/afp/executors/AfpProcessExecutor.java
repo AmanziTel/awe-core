@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
@@ -27,6 +29,7 @@ import org.amanzi.awe.afp.AfpEngine;
 import org.amanzi.awe.afp.exporters.AfpExporter;
 import org.amanzi.awe.afp.loaders.AfpOutputFileLoader;
 import org.amanzi.awe.afp.models.AfpModel;
+import org.amanzi.awe.afp.wizards.AfpProgressPage;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -65,6 +68,10 @@ public class AfpProcessExecutor extends Job {
 	private AfpModel model;
 	AfpExporter afpE;
 	
+	private static boolean isStop = false;
+	private static boolean isPause = false;
+	private static boolean isResume = false;
+	
 	public AfpProcessExecutor(String name, Node afpRoot,Node afpDataset, HashMap<String, String> parameters, AfpModel model, AfpExporter afpE) {
 		super(name);
 		this.afpRoot = afpRoot;
@@ -76,6 +83,34 @@ public class AfpProcessExecutor extends Job {
 
 	public void setProgress(AfpProcessProgress progress) {
 		this.progress = progress;
+	}
+	
+	/**
+	 * Set value to isStop, isPause, isResume
+	 *
+	 * @param type 1 - to isStop, 2 - to isPause, 3 - to isResume
+	 * @param value boolean value to type
+	 */
+	public static void setValueToBooleanButton(int type) {
+	    switch (type) {
+        case 1:
+            isStop = true;
+            isPause = false;
+            isResume = false;
+            break;
+        case 2:
+            isStop = false;
+            isPause = true;
+            isResume = false;
+            break;
+        case 3:
+            isStop = false;
+            isPause = false;
+            isResume = true;
+            break;
+        default:
+            break;
+        }
 	}
 
 
@@ -147,17 +182,18 @@ public class AfpProcessExecutor extends Job {
 				Thread outputThread = new Thread("AFP stdout" + processIndex){
 					@Override
 					public void run(){
+					    System.out.println("Process index = " + processIndex);
 						BufferedReader input = new BufferedReader(new InputStreamReader(process[processIndex].getInputStream()));
-						BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process[processIndex].getOutputStream()));
-		    			String output = null;
+						//BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process[processIndex].getOutputStream()));
+						String output = null;
 		    			try{
 		    				while ((output = input.readLine()) != null){
 		    					// check the progress variable
-		    					//AweConsolePlugin.info("Output: " + output);
+		    					AweConsolePlugin.info("Output: " + output);
 		    					checkForProgress(progressMonitor, output, currentProgress);
 		    				}
 		    				input.close();
-		    				writer.close();
+		    				//writer.close();
 		    			    AweConsolePlugin.info("AFP stdout closed");
 		    			}catch(IOException ioe){
 		    				AweConsolePlugin.debug(ioe.getLocalizedMessage());
@@ -166,8 +202,57 @@ public class AfpProcessExecutor extends Job {
 					}
 				};
 				
-				errorThread.start();
 				outputThread.start();
+				
+				Thread inputThread = new Thread("AFP stdin" + processIndex) {
+				    @Override
+                    public void run(){
+				        int i = 0;
+				        int j = 0;
+				        int k = 0;
+				        //PrintStream writer = new PrintStream(process[processIndex].getOutputStream());
+				        
+                        //BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process[processIndex].getOutputStream()));
+				        while (!jobFinished){
+				            if (isStop) {
+                                System.out.println("isStop = " + i++);
+                                //for (int m = 0; m < 2; m++) {
+                                    PrintWriter writer = new PrintWriter(process[processIndex].getOutputStream());
+                                    writer.write("3\n");
+                                    writer.flush();
+                                //}
+                                isStop = false;
+                            }
+                            if (isPause) {
+                                System.out.println("isPause = " + j++);
+                                for (int m = 0; m < 2; m++) {
+                                    PrintWriter writer = new PrintWriter(process[processIndex].getOutputStream());
+                                    writer.write("1\n");
+                                    writer.flush();
+                                }
+                                isPause = false;
+                            }
+                            if (isResume) {
+                                System.out.println("isResume = " + k++);
+                                //for (int m = 0; m < 2; m++) {
+                                    PrintWriter writer = new PrintWriter(process[processIndex].getOutputStream());
+                                    writer.write("2\n");
+                                    writer.flush();
+                                //}
+                                isResume = false;
+                            }
+                            //походу нужно все время что-то слать ибо висит...
+                            else {
+                                PrintWriter writer = new PrintWriter(process[processIndex].getOutputStream());
+                                writer.write("0\n");
+                                writer.flush();
+                            }
+                        }
+                    }
+				};
+				inputThread.start();
+				
+				errorThread.start();
 				
 				
 				/**
@@ -306,7 +391,13 @@ public class AfpProcessExecutor extends Job {
 	}
 	
 	void checkForProgress(IProgressMonitor monitor, String output, int currentProgress) {
-		
+	    System.out.println(output);
+	    if (output.startsWith("STOP"))
+	        System.out.println("STOP");
+	    if (output.startsWith("RESUME"))
+	        System.out.println("RESUME");
+	    if (output.startsWith("PAUSE"))
+	        System.out.println("PAUSE");
 		if(output.startsWith("PROGRESS")) {
 		// progress line
 		String[] tokens = output.split(",");

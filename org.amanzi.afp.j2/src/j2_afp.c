@@ -636,6 +636,17 @@ void C_Cl_Set(void) {
 	_freeSET(l_xset);
 }
 
+int getBehaviour() {
+	char text[20];
+	if (fgets(text, sizeof(text), stdin)) {
+		int behaviour;
+		if (sscanf(text, "%d", &behaviour) == 1) {
+			return behaviour;
+		}
+	}
+	return 0;
+}
+
 void _PUT_card_L(int p_cmac_col) {
 	int i;
 	for (i=0; i<G_CARD; i++)
@@ -649,10 +660,48 @@ void O_decompose_GRAPH(int p_mprio, int p_noofat, int p_mdis, int p_ldis,
 	O_All_C_Left();
 	G_Not_Empty = CARD_(SetOfVertexes);
 
+	int time = 0;
+	int totalCount = G_Not_Empty;
+	int currentCount = 0;
+	int behaviour = 0;
+	int isStop = 0;
 	while (G_Not_Empty) {
-		_GET_m_LB(p_mprio, p_noofat, p_mdis, p_ldis);
-		_h_SET_false();
-		C_Cl_Set();
+		if (isStop == 1)
+			break;
+		if (behaviour == 0) {
+			currentCount = totalCount - G_Not_Empty + 1;
+			printf("PROGRESS,%d,%d,%d\n", time, currentCount, totalCount);
+			_GET_m_LB(p_mprio, p_noofat, p_mdis, p_ldis);
+			_h_SET_false();
+			C_Cl_Set();
+
+			behaviour = getBehaviour();
+		}
+		else if (behaviour == 3) {
+			printf("STOP\n");
+			printf("PROGRESS,%d,%d,%d\n", time, totalCount, totalCount);
+			isStop = 1;
+			break;
+		}
+		else if (behaviour == 1) {
+			printf("PAUSE\n");
+			while (1) {
+				behaviour = getBehaviour();
+				if (behaviour == 2) {
+					printf("RESUME\n");
+					isStop = 0;
+					behaviour = 0;
+					break;
+				}
+				if (behaviour == 3) {
+					printf("STOP\n");
+					printf("PROGRESS,%d,%d,%d\n", time, totalCount, totalCount);
+					isStop = 1;
+					behaviour = 3;
+					break;
+				}
+			}
+		}
 	}
 }
 
@@ -1863,33 +1912,72 @@ void _O_test_subset(int p_pr) {
 	l_trx = IT_MAX;
 	int totalCount = l_trx - G_PAR[p_pr].pclb;
 	int currentCount = 0;
+	int behaviour = 0;
+	int isStop = 0;
+	int time = 0;
 	while (G_PAR[p_pr].pclb < l_trx) {
-		switch (_h_get_trile(l_ffound, p_pr, EX_PRIO, p_pr-1,
-				G_PAR[p_pr].pdisr, G_PAR[p_pr].pdisr-1, l_trx)) {
-		case 0:
-			l_trx--;
-			l_ffound = _MAX_(l_ffound,G_Min_SET);
+		if (isStop == 1)
 			break;
-		case 1:
-			l_try = l_trx;
-			l_ffound = _MAX_(G_Min_SET,2*G_Cur_SET);
-			break;
-		case 2:
-			l_try = l_trx;
-			break;
-		default:
-			l_trx = l_try;
-			l_ffound = _MAX_(G_Min_SET,G_Cur_SET/2);
+		if (behaviour == 0) {
+			switch (_h_get_trile(l_ffound, p_pr, EX_PRIO, p_pr-1,
+					G_PAR[p_pr].pdisr, G_PAR[p_pr].pdisr-1, l_trx)) {
+			case 0:
+				l_trx--;
+				l_ffound = _MAX_(l_ffound,G_Min_SET);
+				break;
+			case 1:
+				l_try = l_trx;
+				l_ffound = _MAX_(G_Min_SET,2*G_Cur_SET);
+				break;
+			case 2:
+				l_try = l_trx;
+				break;
+			default:
+				l_trx = l_try;
+				l_ffound = _MAX_(G_Min_SET,G_Cur_SET/2);
+				break;
+			}
+			currentCount = totalCount - l_trx;
+			printf("PROGRESS,%d,%d,%d\n", time, currentCount, totalCount);
+
+			behaviour = getBehaviour();
+		}
+		else if (behaviour == 3) {
+			printf("STOP\n");
+			printf("PROGRESS,%d,%d,%d\n", time, totalCount, totalCount);
+			isStop = 1;
 			break;
 		}
-		currentCount = totalCount - l_trx;
-		int time = 0;
-		printf("PROGRESS,%d,%d,%d\n", time, currentCount, totalCount);
+		else if (behaviour == 1) {
+			printf("PAUSE\n");
+			while (1) {
+				behaviour = getBehaviour();
+				if (behaviour == 2) {
+					printf("RESUME\n");
+					isStop = 0;
+					behaviour = 0;
+					break;
+				}
+				else if (behaviour == 3) {
+					printf("STOP\n");
+					printf("PROGRESS,%d,%d,%d\n", time, totalCount, totalCount);
+					isStop = 1;
+					behaviour = 3;
+					break;
+				}
+			}
+		}
+
+		// stop = 3
+		// resume = 2
+		// pause = 1
 	}
-	l_trz = G_Act_d;
-	if (_O_test_CC()) {
-		G_Act_d = 1-l_trz;
-		_O_test_CC();
+	if (isStop == 0) {
+		l_trz = G_Act_d;
+		if (_O_test_CC()) {
+			G_Act_d = 1-l_trz;
+			_O_test_CC();
+		}
 	}
 }
 
@@ -1910,13 +1998,19 @@ void _i_X_AFP_(void) {
 	int LOW_PRIO, l_prio;
 
 	if (!PARTITION) {
+		printf("_h_SET_id_start");
 		_h_SET_id();
+		printf("_h_SET_id_finish");
 		C_Cl_Set();
 	} else {
+		printf("O_decompose_start");
 		O_decompose_GRAPH(N2_PRIO,ColorsCard,1,1,Max_ATCell);
+		printf("O_decompose_finish");
 	}
 
+	printf("h_def_start\n");
 	h_def_mset();
+	printf("h_def_finish\n");
 
 	LOW_PRIO = NO_PRIO;
 
@@ -1924,8 +2018,11 @@ void _i_X_AFP_(void) {
 		if (!G_PAR[l_prio].act_prio)
 			continue;
 		//fprintf(ProtocolFile,"FA for PRIO = %d, DIST = %d  >>>>>\n",l_prio,G_PAR[l_prio].pdisr);
-		if ( !_O_test_all(l_prio))
+		printf("_O_test_start\n");
+		if ( !_O_test_all(l_prio)) {
 			_O_test_subset(l_prio);
+		}
+		printf("_O_test_finish\n");
 	}
 
 	_OUT_coloring2protfile();
@@ -2274,11 +2371,13 @@ awe_afp(char * control_file) {
 		G_PAR[SON_PRIO].act_prio = 1;
 	}
 
+	printf("_i_X_start\n");
 	_i_X_AFP_();
+	printf("_i_X_finish\n");
 
-	printf("_fALL_start");
+	printf("_fALL_start\n");
 	_f_ALL();
-	printf("_fAll end");
+	printf("_fAll end\n");
 	return (NO_ERR);
 
 }
