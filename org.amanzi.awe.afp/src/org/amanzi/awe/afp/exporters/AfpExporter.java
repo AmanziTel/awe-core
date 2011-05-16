@@ -359,11 +359,11 @@ public class AfpExporter extends Job {
                     Node rootNode = impact.getRootNode();
                     rootNode.setProperty("sectors_opt_set", model.getTotalSectors() );
                     rootNode.setProperty("trx_opt_set", model.getTotalTRX() );
-                    rootNode.setProperty("violations", violations );
-                    rootNode.setProperty("co total", coTotal );
-                    rootNode.setProperty("adj total", adjTotal );
-                    rootNode.setProperty("co total details", contrCoTotal);
-                    rootNode.setProperty("adj total details", contrAdjTotal);
+//                    rootNode.setProperty("violations", violations );
+//                    rootNode.setProperty("co total", coTotal );
+//                    rootNode.setProperty("adj total", adjTotal );
+//                    rootNode.setProperty("co total details", contrCoTotal);
+//                    rootNode.setProperty("adj total details", contrAdjTotal);
                 }
             });
             tx.stop(true);
@@ -471,7 +471,7 @@ public class AfpExporter extends Job {
                         arr= contributions_co;
                         arr2= contributions_adj;
                     }
-                    updateTotals(sector,trx,coo,ad,arr,arr2);
+//                    updateTotals(sector,trx,coo,ad,arr,arr2);
                     tx.submit(new Runnable() {
 
                         @Override

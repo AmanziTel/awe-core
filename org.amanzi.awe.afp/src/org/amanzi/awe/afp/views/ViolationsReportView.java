@@ -252,8 +252,11 @@ public class ViolationsReportView extends ViewPart {
      */
     protected void selectPlan(String text) {
         FrequencyPlanModel fp = plans.get(text);
+        System.out.println("plan name: "+fp.getName());
+        System.out.println(fp.getRootNode().getProperty("name","root node"));
         if (fp != null) {
             reportModel.setFrequencyPlanModel(fp);
+            reportModel.saveTotals();
         }
         export.setEnabled(fp!=null);
         report.setEnabled(fp!=null);

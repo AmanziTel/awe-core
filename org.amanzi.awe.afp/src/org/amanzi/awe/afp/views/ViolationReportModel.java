@@ -14,6 +14,7 @@
 package org.amanzi.awe.afp.views;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -22,12 +23,14 @@ import org.amanzi.awe.ui.custom_table.IModelChangeEvent;
 import org.amanzi.awe.ui.custom_table.TableModel;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NetworkService;
+import org.amanzi.neo.services.TransactionWrapper;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.network.FrequencyPlanModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.amanzi.neo.services.utils.ConvertIterator;
 import org.amanzi.neo.services.utils.CountedIterable;
 import org.amanzi.neo.services.utils.FilteredIterator;
+import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ILazyContentProvider;
 import org.eclipse.jface.viewers.TableViewer;
@@ -48,6 +51,7 @@ import org.neo4j.graphdb.Relationship;
  * @since 1.0.0
  */
 public class ViolationReportModel extends TableModel {
+    private static final Logger LOGGER=Logger.getLogger(ViolationReportModel.class);
     private CountedIterable<ViolationWrapper> iterable = null;
     private ILazyContentProvider provider;
     private FrequencyPlanModel model;
@@ -55,6 +59,14 @@ public class ViolationReportModel extends TableModel {
     private String[] names = new String[0];
     private NodeToNodeRelationModel impact;
     private NetworkService ns = NeoServiceFactory.getInstance().getNetworkService();
+
+    // totals
+    private float coTotal;
+    private float adjTotal;
+    private float[] contrCoTotal;
+    private float[] contrAdjTotal;
+    private long[] violations;
+    private TransactionWrapper tx;
 
     public ViolationReportModel() {
         provider = new ContentProvider();
@@ -98,6 +110,11 @@ public class ViolationReportModel extends TableModel {
         this.model = model;
         impact = new NodeToNodeRelationModel(model.getSingleSource());
         names = (String[])impact.getRootNode().getProperty("names");
+        // totals
+        int n = names.length;
+        contrAdjTotal = new float[n + 2];
+        contrCoTotal = new float[n + 2];
+        violations = new long[n + 2];
 
         final Iterable<Relationship> relationIter2 = impact.getNeighTraverser(null).relationships();
         final Iterable<Relationship> relationIter = new Iterable<Relationship>() {
@@ -120,14 +137,14 @@ public class ViolationReportModel extends TableModel {
                         if (arfcn1 == null || arfcn2 == null) {
                             return false;
                         }
-                        boolean isCo= arfcn1.equals(arfcn2);
-                        //co handled during cretion impact
-                        boolean isAdj= Math.abs(arfcn1 - arfcn2) == 1;
-                        if (isAdj){
-                            float ad=(Float)impactRel.getProperty("adj",0.0f);
-                            isAdj=ad>0;
+                        boolean isCo = arfcn1.equals(arfcn2);
+                        // co handled during cretion impact
+                        boolean isAdj = Math.abs(arfcn1 - arfcn2) == 1;
+                        if (isAdj) {
+                            float ad = (Float)impactRel.getProperty("adj", 0.0f);
+                            isAdj = ad > 0;
                         }
-                        return isCo||isAdj;
+                        return isCo || isAdj;
                     }
                 };
             }
@@ -268,17 +285,59 @@ public class ViolationReportModel extends TableModel {
             fields[i++] = ns.getNodeName(site2);
             fields[i++] = ns.getNodeName(sector2);
             fields[i++] = ns.getNodeName(trx2);
-            fields[i++] = String.valueOf(impactrelation.getProperty(isCo ? "co" : "adj"));
+            final String coOrAdj = String.valueOf(impactrelation.getProperty(isCo ? "co" : "adj"));
+            fields[i++] = coOrAdj;
             float[] arr = (float[])impactrelation.getProperty(isCo ? "contributions_co" : "contributions_adj");
+            Double dCoOrAdj = Double.valueOf(coOrAdj);
+            if (isCo) {
+                coTotal += dCoOrAdj;
+            } else {
+                adjTotal += dCoOrAdj;
+            }
+
             fields[i++] = String.valueOf(arr[arr.length - 2]);
             fields[i++] = String.valueOf(arr[arr.length - 1]);
             for (int j = 0; j < arr.length - 2; j++) {
                 fields[i++] = String.valueOf(arr[j]);
             }
+            for (int j = 0; j < arr.length; j++) {
+                if (arr[j] > 0) {
+                    violations[j]++;
+                }
+                if (isCo) {
+                    contrCoTotal[j] += arr[j];
+                } else {
+                    contrAdjTotal[j] += arr[j];
+                }
+            }
         }
 
     }
 
+    public void saveTotals() {
+        final Node rootNode = model.getRootNode();
+        tx = new TransactionWrapper();
+        tx.submit(new Runnable() {
+
+            @Override
+            public void run() {
+//                rootNode.setProperty("sectors_opt_set", model.getTotalSectors() );
+//                rootNode.setProperty("trx_opt_set", model.getTotalTRX() );
+                rootNode.setProperty("violations", violations );
+                rootNode.setProperty("co total", coTotal );
+                rootNode.setProperty("adj total", adjTotal );
+                rootNode.setProperty("co total details", contrCoTotal);
+                rootNode.setProperty("adj total details", contrAdjTotal);
+            }
+        });
+        tx.commit();
+        LOGGER.debug("coTotal: "+coTotal);
+        LOGGER.debug("adjTotal: "+adjTotal);
+        LOGGER.debug("names: "+Arrays.toString(names));
+        LOGGER.debug("violations: "+Arrays.toString(violations));
+        LOGGER.debug("contrCoTotal: "+Arrays.toString(contrCoTotal));
+        LOGGER.debug("contrAdjTotal: "+Arrays.toString(contrAdjTotal));
+    }
     /**
      *
      */
