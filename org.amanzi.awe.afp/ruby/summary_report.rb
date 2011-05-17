@@ -11,8 +11,8 @@ report "AFP summary report for #{dataset_name}:#{plan_name}\n" do
   ds_root=dataset(dataset_name,"network")
   frq_root=find_first(ds_root,{"name"=>plan_name},:FREQUENCY_ROOT)
   impact=find_first(frq_root,{"type"=>"root_proxy","node2node"=>"IMPACT"},:SOURCE)
-  #  text "Number of Sectors in Optimization set: #{impact["sectors_opt_set"]}"
-  #  text "Number of TRXs in Optimization set: #{impact["trx_opt_set"]}"
+  text "Number of Sectors in Optimization set: #{impact["sectors_opt_set"]}"
+  text "Number of TRXs in Optimization set: #{impact["trx_opt_set"]}"
   text "Number of Sectors in Surrounding set: 0"
   text "Number of TRXs in Surrounding set: 0"
 
