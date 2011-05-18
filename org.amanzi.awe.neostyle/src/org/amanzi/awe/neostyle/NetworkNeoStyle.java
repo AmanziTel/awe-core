@@ -10,24 +10,20 @@
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+
 package org.amanzi.awe.neostyle;
 
 import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.amanzi.neo.services.utils.Pair;
 
 /**
  * <p>
- * Contains information about network and tems style
+ *Network style config
  * </p>
- * 
- * @author Cinkel_A
+ * @author TsAr
  * @since 1.0.0
  */
-public class NeoStyle extends BaseNeoStyle {
+public class NetworkNeoStyle extends BaseNeoStyle{
+
     private Color line;
     private Color fill;
     private Color fillSite;
@@ -42,19 +38,17 @@ public class NeoStyle extends BaseNeoStyle {
     private Integer symbolTransparency;
     private Integer maximumSymbolSize;
     private Integer defaultBeamwidth;
-    private Integer iconOffset;
     private Integer fontSize;
     private Integer secondaryFontSize;
     private String mainProperty;
     private String secondaryProperty;
-    private List<Pair<ShapeType,List<Color>>> styles=new ArrayList<Pair<ShapeType,List<Color>>>();
-    private boolean showAlerts;
+
 
     /**
      * @return Returns the main property to use for labelling.
      */
     public String getMainProperty() {
-        return mainProperty != null ? mainProperty : NeoStyleContent.DEF_MAIN_PROPERTY;
+        return mainProperty ;
     }
 
     /**
@@ -68,7 +62,7 @@ public class NeoStyle extends BaseNeoStyle {
      * @return Returns the secondary property to use for labelling.
      */
     public String getSecondaryProperty() {
-        return secondaryProperty != null ? secondaryProperty : NeoStyleContent.DEF_NONE;
+        return secondaryProperty;
     }
 
     /**
@@ -82,7 +76,7 @@ public class NeoStyle extends BaseNeoStyle {
      * @return Returns the sectorFontSize.
      */
     public Integer getSecondaryFontSize() {
-        return secondaryFontSize != null ? secondaryFontSize : NeoStyleContent.DEF_FONT_SIZE_SECTOR;
+        return secondaryFontSize ;
     }
 
     /**
@@ -91,7 +85,8 @@ public class NeoStyle extends BaseNeoStyle {
     public void setSectorFontSize(Integer sectorFontSize) {
         this.secondaryFontSize = sectorFontSize;
     }
-
+    public NetworkNeoStyle() {
+    }
     /**
      * Constructor
      * 
@@ -99,8 +94,7 @@ public class NeoStyle extends BaseNeoStyle {
      * @param fill fill color
      * @param label label color
      */
-    public NeoStyle(Color line, Color fill, Color label) {
-        super();
+    public NetworkNeoStyle(Color line, Color fill, Color label) {
         this.line = line;
         this.fill = fill;
         this.label = label;
@@ -112,7 +106,7 @@ public class NeoStyle extends BaseNeoStyle {
      * @return
      */
     public Color getLine() {
-        return line != null ? line : NeoStyleContent.DEF_COLOR_LINE;
+        return line;
     }
 
     /**
@@ -130,7 +124,7 @@ public class NeoStyle extends BaseNeoStyle {
      * @return
      */
     public Color getFill() {
-        return fill != null ? fill : NeoStyleContent.DEF_COLOR_FILL;
+        return fill;
     }
 
     /**
@@ -148,7 +142,7 @@ public class NeoStyle extends BaseNeoStyle {
      * @return
      */
     public Color getLabel() {
-        return label != null ? label : NeoStyleContent.DEF_COLOR_LABEL;
+        return label;
     }
 
     /**
@@ -164,7 +158,7 @@ public class NeoStyle extends BaseNeoStyle {
      * @return Returns the smallestSymb.
      */
     public Integer getSmallestSymb() {
-        return smallestSymb != null ? smallestSymb : NeoStyleContent.DEF_SMALLEST_SYMB;
+        return smallestSymb ;
     }
 
     /**
@@ -178,7 +172,7 @@ public class NeoStyle extends BaseNeoStyle {
      * @return Returns the smallSymb.
      */
     public Integer getSmallSymb() {
-        return smallSymb != null ? smallSymb : NeoStyleContent.DEF_SMALL_SYMB;
+        return smallSymb ;
     }
 
     /**
@@ -192,7 +186,7 @@ public class NeoStyle extends BaseNeoStyle {
      * @return Returns the labeling.
      */
     public Integer getLabeling() {
-        return labeling != null ? labeling : NeoStyleContent.DEF_LABELING;
+        return labeling;
     }
 
     /**
@@ -220,7 +214,7 @@ public class NeoStyle extends BaseNeoStyle {
      * @return Returns the symbolSize.
      */
     public Integer getSymbolSize() {
-        return symbolSize != null ? symbolSize : NeoStyleContent.DEF_SYMB_SIZE;
+        return symbolSize ;
     }
 
     /**
@@ -234,7 +228,7 @@ public class NeoStyle extends BaseNeoStyle {
      * @return Returns the current symbol transparency setting (0-100)
      */
     public Integer getSymbolTransparency() {
-        return symbolTransparency != null ? symbolTransparency : NeoStyleContent.DEF_TRANSPARENCY;
+        return symbolTransparency;
     }
 
     /**
@@ -255,14 +249,14 @@ public class NeoStyle extends BaseNeoStyle {
      * @return Returns the fillSite.
      */
     public Color getSiteFill() {
-        return fillSite != null ? fillSite : NeoStyleContent.DEF_COLOR_SITE;
+        return fillSite ;
     }
 
     /**
      * @return the maximumSymbolSize
      */
     public int getMaximumSymbolSize() {
-        return maximumSymbolSize != null ? maximumSymbolSize : NeoStyleContent.DEF_MAXIMUM_SYMBOL_SIZE;
+        return maximumSymbolSize;
     }
 
     /**
@@ -288,27 +282,12 @@ public class NeoStyle extends BaseNeoStyle {
         this.defaultBeamwidth = defaultBeamwidth;
     }
     
-    /**
-     * @return the icon offset
-     */
-    public int getIconOffset() {
-        return iconOffset != null ? iconOffset : NeoStyleContent.DEF_ICON_OFFSET;
-    }
-
-    /**
-     * sets icon offset
-     * 
-     * @param offset the icon offset to set
-     */
-    public void setIconOffset(Integer offset) {
-        this.iconOffset = offset;
-    }
 
     /**
      * @return Returns the fontSize.
      */
     public Integer getFontSize() {
-        return fontSize != null ? fontSize : NeoStyleContent.DEF_FONT_SIZE;
+        return fontSize ;
     }
 
     /**
@@ -319,17 +298,7 @@ public class NeoStyle extends BaseNeoStyle {
     }
 
 
-    public List<Pair<ShapeType, List<Color>>> getStyles() {
-        return styles;
-    }
 
-    public void addStyle(ShapeType shape, Color[] colors) {
-        styles.add(new Pair<ShapeType, List<Color>>(shape, new ArrayList<Color>(Arrays.asList(colors))));
-    }
-
-    public void clearStyle() {
-        styles.clear();
-    }
     public boolean isIgnoreTransparency() {
         return ignoreTransparency;
     }
@@ -347,21 +316,6 @@ public class NeoStyle extends BaseNeoStyle {
         System.out.println("Set correlation "+drawCorrelations+" for "+this);
         this.drawCorrelations = drawCorrelations;
     }
-    /**
-     * Checks if we should show alerts
-     * 
-     * @return true, if alerts should be shown
-     */
-    public boolean shouldShowAlerts() {
-        return showAlerts;
-    }
 
-    /**
-     * Sets whether we should show alerts
-     * 
-     * @param should show alerts
-     */
-    public void setShowAlerts(boolean show) {
-        this.showAlerts = show;
-    }
+
 }

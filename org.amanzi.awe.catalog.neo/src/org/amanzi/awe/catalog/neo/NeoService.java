@@ -19,9 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.catalog.IService;
 
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.GisTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.ui.INeoServiceProviderListener;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
@@ -95,7 +97,7 @@ public class NeoService extends IService  implements INeoServiceProviderListener
         return info;
     }
 
-	private List<NeoGeoResource> members;
+	private List<IGeoResource> members;
     private GraphDatabaseService graphDatabaseService;
     /**
      * This method returns a list containing all NeoGeoResource objects which contains the
@@ -105,18 +107,19 @@ public class NeoService extends IService  implements INeoServiceProviderListener
      * @see org.amanzi.awe.catalog.neo.NeoGeoResource
      */
     @Override
-    public List<NeoGeoResource> resources( IProgressMonitor monitor ) throws IOException {
+    public List<IGeoResource> resources( IProgressMonitor monitor ) throws IOException {
         if (members == null) {
             synchronized (this) {
                 if (members == null) {
                     checkNeo(); // check we have a connection to the database
                     Transaction transaction = graphDatabaseService.beginTx();
                     try {
-                        members = new ArrayList<NeoGeoResource>();
+                        members = new ArrayList<IGeoResource>();
                         for(Relationship relationship:graphDatabaseService.getReferenceNode().getRelationships(Direction.OUTGOING)){
                             Node node = relationship.getEndNode();
                             if(node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME) && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString().equalsIgnoreCase(NodeTypes.GIS.getId())){
-                                members.add(new NeoGeoResource(this,graphDatabaseService,node));
+                                GisTypes gistype = GisTypes.findGisTypeByHeader(node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME).toString());
+                                members.add(gistype==GisTypes.NETWORK?new NeoNetworkGeoRes(this,graphDatabaseService,node):new NeoDriveGeoRes(this, graphDatabaseService, node));
                             }
                         }
                         transaction.success();

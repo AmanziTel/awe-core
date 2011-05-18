@@ -118,16 +118,10 @@ public enum NetworkTypes {
      * Check type.
      *
      * @param node the node
-     * @param service the service
      * @return true, if successful
      */
-    public boolean checkType(Node node, GraphDatabaseService service) {
-        Transaction tx = Utils.beginTx(service);
-        try {
+    public boolean checkType(Node node) {
             return node==null?false:getId().equals(node.getProperty(PROPERTY_NAME, ""));
-        } finally {
-            Utils.finishTx(tx);
-        }
     }
 
 }

@@ -10,25 +10,19 @@
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+
 package org.amanzi.awe.neostyle;
 
-import java.awt.Color;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import net.refractions.udig.project.internal.Layer;
 import net.refractions.udig.project.ui.internal.dialogs.ColorEditor;
-import net.refractions.udig.style.IStyleConfigurator;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
-import org.amanzi.awe.catalog.neo.NeoGeoResource;
-import org.amanzi.neo.services.enums.GisTypes;
 import org.amanzi.neo.services.enums.NetworkTypes;
 import org.amanzi.neo.services.statistic.PropertyHeader;
-import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -46,36 +40,23 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
-import org.neo4j.graphdb.GraphDatabaseService;
+import org.eclipse.ui.part.ViewPart;
 import org.neo4j.graphdb.Node;
 
 /**
- * Style editor for org.amanzi.awe.render.network
- * 
- * @author Cinkel_A
+ * TODO Purpose of 
+ * <p>
+ *
+ * </p>
+ * @author TsAr
  * @since 1.0.0
  */
-public class NeoStyleConfigurator extends IStyleConfigurator {
-
-    /** NeoStyleConfigurator ID field */
-    public static final String ID = "org.amanzi.awe.neostyle.style"; //$NON-NLS-1$
-
+public class NetworkStyleDefiner extends ViewPart {
     private static final String[] FONT_SIZE_ARRAY = new String[] {"8", "9", "10", "11", "12", "14", "16", "18", "20", "24"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$
-    //private static final String[] ICON_SIZES = new String[] {"6", "8", "12", "16", "32", "48", "64"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
-
-    public NeoStyleConfigurator() {
-        super();
-    }
-
-    @Override
-    public boolean canStyle(Layer aLayer) {
-        return aLayer.getStyleBlackboard().get(ID) != null;
-    }
 
     private Label labelFill;
     private Label labelLabel;
     private Label labelLine;
-    private NeoStyle curStyle;
     private ColorEditor cEdFill;
     private ColorEditor cEdLine;
     private ColorEditor cEdLabel;
@@ -97,14 +78,13 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
     private Spinner sMaxSymSize;
     private Label lDefBeamwidth;
     private Spinner sDefBeamwidth;
-    private Label lIconOffset;
-    private Spinner sIconOffset;
+    // private Label lIconOffset;
+    // private Spinner sIconOffset;
 
     private Group grSiteSymb;
 
     private Group grScale;
 
-    private boolean isNetwork;
     private boolean isProbe;
 
     private Combo cFontSize;
@@ -129,10 +109,80 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
 
     private Button bCorrelation;
 
-    private Button bAlerts;
+    private  NetworkNeoStyle curStyle;
+    private GeoNeo resource;
 
+    public NetworkStyleDefiner(NetworkNeoStyle curStyle){
+        this.curStyle = curStyle;
+        
+    }
+    public NetworkStyleDefiner(){
+    }   
+    public NetworkNeoStyle getCurStyle() {
+        return curStyle;
+    }
+
+    public void setCurStyle(NetworkNeoStyle curStyle) {
+        this.curStyle = curStyle;
+    }
+
+    public void refresh(){
+        cEdFill.setColorValue(rgbFromColor(curStyle.getFill()));
+        cEdLabel.setColorValue(rgbFromColor(curStyle.getLabel()));
+        cEdLine.setColorValue(rgbFromColor(curStyle.getLine()));
+        cEdFillSite.setColorValue(rgbFromColor(curStyle.getSiteFill()));
+        tSmallestSymb.setSelection(curStyle.getSmallestSymb());
+        tSmallSymb.setSelection(curStyle.getSmallSymb());
+        tLabeling.setSelection(curStyle.getLabeling());
+        if (curStyle.isFixSymbolSize()) {
+            rButton2.setSelection(true);
+        } else {
+            rButton1.setSelection(true);
+        }
+
+        tSymbolSize.setSelection(curStyle.getSymbolSize());
+        tTransparency.setSelection(curStyle.getSymbolTransparency());
+        bTransp.setSelection(curStyle.isIgnoreTransparency());
+        bCorrelation.setSelection(curStyle.isDrawCorrelations());
+        sMaxSymSize.setSelection(curStyle.getMaximumSymbolSize());
+        sDefBeamwidth.setSelection(curStyle.getDefaultBeamwidth());
+        cFontSize.setText(String.valueOf(curStyle.getFontSize()));
+        cSecondaryFontSize.setText(String.valueOf(curStyle.getSecondaryFontSize()));
+        cSecondaryProperty.setItems(getSecondaryPropertyChoices());
+        cMainProperty.setItems(getMainPropertyChoices());
+        cSecondaryProperty.setText(curStyle.getSecondaryProperty());
+        cMainProperty.setText(curStyle.getMainProperty());
+        if (isProbe) {
+            changeToProbeNetworkStyle();
+        }       
+    }
+    private void changeToProbeNetworkStyle() {
+        lMainProperty.setText("Probe property"); //$NON-NLS-1$
+        lFontSize.setText("Probe font size"); //$NON-NLS-1$
+        lFillSite.setText("Probe fill"); //$NON-NLS-1$
+    }
+    public void preApply(){
+        curStyle.setFill(colorFromRGB(cEdFill.getColorValue()));
+        curStyle.setSiteFill(colorFromRGB(cEdFillSite.getColorValue()));
+        curStyle.setLabel(colorFromRGB(cEdLabel.getColorValue()));
+        curStyle.setLine(colorFromRGB(cEdLine.getColorValue()));
+        curStyle.setSmallestSymb(getSmallestSymb());
+        curStyle.setSmallSymb(getSmallSymb());
+        curStyle.setLabeling(getLabeling());
+        curStyle.setFixSymbolSize(rButton2.getSelection());
+        curStyle.setSymbolSize(getSymbolSize());
+        curStyle.setSymbolTransparency(getSectorTransparency());
+        curStyle.setFontSize(getLabelFontSize());
+        curStyle.setSectorFontSize(getSectorFontSize());
+        curStyle.setMaximumSymbolSize(sMaxSymSize.getSelection());
+        curStyle.setDefaultBeamwidth(sDefBeamwidth.getSelection());
+        curStyle.setMainProperty(cMainProperty.getText());
+        curStyle.setSecondaryProperty(cSecondaryProperty.getText());
+        curStyle.setIgnoreTransparency(bTransp.getSelection());
+        curStyle.setDrawCorrelations(bCorrelation.getSelection());
+    }
     @Override
-    public void createControl(Composite parent) {
+    public void createPartControl(Composite parent) {
         //Lagutko, 15.03.2010, adding a Scroll
         GridLayout mainLayout = new GridLayout(1, false);
         parent.setLayout(mainLayout);
@@ -158,7 +208,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         FormData formData = new FormData();
         formData.top = new FormAttachment(0, 5);
         formData.left = new FormAttachment(0, 5);
-        formData.right = new FormAttachment(70, -10);
+        formData.right = new FormAttachment(90,-10);
         xGroup.setLayout(new FormLayout());
         xGroup.setLayoutData(formData);
 
@@ -214,7 +264,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData = new FormData();
         formData.top = new FormAttachment(xGroup, 5);
         formData.left = new FormAttachment(0, 5);
-        formData.right = new FormAttachment(70, -10);
+        formData.right = new FormAttachment(90, -10);
         labelsGroup.setLayoutData(formData);
         labelsGroup.setLayout(new GridLayout(2, false));
 
@@ -256,7 +306,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData = new FormData();
         formData.top = new FormAttachment(labelsGroup, 15);
         formData.left = new FormAttachment(0, 5);
-        formData.right = new FormAttachment(70, -10);
+        formData.right = new FormAttachment(90, -10);
         grSiteSymb.setLayout(new FormLayout());
         grSiteSymb.setLayoutData(formData);
 
@@ -309,7 +359,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData = new FormData();
         formData.top = new FormAttachment(grSiteSymb, 15);
         formData.left = new FormAttachment(0, 5);
-        formData.right = new FormAttachment(70, -10);
+        formData.right = new FormAttachment(90, -10);
         grScale.setLayout(new FormLayout());
         grScale.setLayoutData(formData);
         rButton1 = new Button(grScale, SWT.RADIO);
@@ -361,18 +411,12 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData.top = new FormAttachment(tTransparency, 5);
         bTransp.setLayoutData(formData);
 
-        bAlerts = new Button(grScale, SWT.CHECK);
-        bAlerts.setText(Messages.Show_Alerts);
-        formData = new FormData();
-        formData.left = new FormAttachment(2);
-        formData.top = new FormAttachment(bTransp, 5);
-        bAlerts.setLayoutData(formData);
-        
+
         bCorrelation = new Button(grScale, SWT.CHECK);
         bCorrelation.setText(Messages.Draw_correlation);
         formData = new FormData();
         formData.left = new FormAttachment(2);
-        formData.top = new FormAttachment(bAlerts, 5);
+        formData.top = new FormAttachment(bTransp, 5);
         bCorrelation.setLayoutData(formData);
 
         lMaxSymSize = new Label(grScale, SWT.NONE);
@@ -389,7 +433,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData.top = new FormAttachment(bCorrelation, 5);
         formData.right = new FormAttachment(100, -5);
         sMaxSymSize.setLayoutData(formData);
-        
+
         lDefBeamwidth = new Label(grScale, SWT.NONE);
         sDefBeamwidth = new Spinner(grScale, SWT.BORDER);
         lDefBeamwidth.setText(Messages.Symbol_Def_Beam);
@@ -404,21 +448,6 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData.top = new FormAttachment(sMaxSymSize, 5);
         formData.right = new FormAttachment(100, -5);
         sDefBeamwidth.setLayoutData(formData);
-
-        lIconOffset = new Label(grScale, SWT.NONE);
-        sIconOffset = new Spinner(grScale, SWT.BORDER);
-        lIconOffset.setText(Messages.Icon_Offset);
-
-        formData = new FormData();
-        formData.top = new FormAttachment(sIconOffset, 5, SWT.CENTER);
-        formData.left = new FormAttachment(2);
-        lIconOffset.setLayoutData(formData);
-
-        formData = new FormData();
-        formData.left = new FormAttachment(70, 10);
-        formData.top = new FormAttachment(sDefBeamwidth, 5);
-        formData.right = new FormAttachment(100, -5);
-        sIconOffset.setLayoutData(formData);
 
         // sets spinners range
         tLabeling.setMinimum(1);
@@ -435,193 +464,49 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         sDefBeamwidth.setMinimum(10);
         sDefBeamwidth.setMaximum(360);
         rButton1.addSelectionListener(new SelectionListener() {
-            
+
             @Override
             public void widgetSelected(SelectionEvent e) {
                 lMaxSymSize.setVisible(rButton1.getSelection());
                 sMaxSymSize.setVisible(rButton1.getSelection());
             }
-            
+
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
             }
         });
-        
+
         scroll.setContent(parent);
         scroll.setMinSize(parent.computeSize(SWT.DEFAULT, SWT.DEFAULT));
     }
-
     /**
-     * @return
+     * get array of sector names
+     * 
+     * @return array
      */
-    private String[] getDefaultFontItem() {
-
-        return FONT_SIZE_ARRAY;
-    }
-
-    @Override
-    protected void refresh() {
-        try {
-            curStyle = (NeoStyle)getStyleBlackboard().get(ID);
-            cEdFill.setColorValue(rgbFromColor(curStyle.getFill()));
-            cEdLabel.setColorValue(rgbFromColor(curStyle.getLabel()));
-            cEdLine.setColorValue(rgbFromColor(curStyle.getLine()));
-            cEdFillSite.setColorValue(rgbFromColor(curStyle.getSiteFill()));
-            tSmallestSymb.setSelection(curStyle.getSmallestSymb());
-            tSmallSymb.setSelection(curStyle.getSmallSymb());
-            tLabeling.setSelection(curStyle.getLabeling());
-            if (curStyle.isFixSymbolSize()) {
-                rButton2.setSelection(true);
-            } else {
-                rButton1.setSelection(true);
+    private String[] getSecondaryPropertyChoices() {
+        List<String> result = new ArrayList<String>();
+        result.add(NetworkNeoStyleContent.DEF_NONE);
+            Node datasetNode = NeoUtils.getDatasetNodeByGis(resource.getMainGisNode());
+            String[] allFields = PropertyHeader.getPropertyStatistic(datasetNode).getAllFields("sector");
+            if (allFields != null) {
+                result.addAll(Arrays.asList(allFields));
             }
-
-            tSymbolSize.setSelection(curStyle.getSymbolSize());
-            tTransparency.setSelection(curStyle.getSymbolTransparency());
-            bTransp.setSelection(curStyle.isIgnoreTransparency());
-            bCorrelation.setSelection(curStyle.isDrawCorrelations());
-            sMaxSymSize.setSelection(curStyle.getMaximumSymbolSize());
-            sDefBeamwidth.setSelection(curStyle.getDefaultBeamwidth());
-            cFontSize.setText(String.valueOf(curStyle.getFontSize()));
-            cSecondaryFontSize.setText(String.valueOf(curStyle.getSecondaryFontSize()));
-            cSecondaryProperty.setItems(getSecondaryPropertyChoices());
-            cMainProperty.setItems(getMainPropertyChoices());
-            cSecondaryProperty.setText(curStyle.getSecondaryProperty());
-            cMainProperty.setText(curStyle.getMainProperty());
-            sIconOffset.setSelection(curStyle.getIconOffset());
-
-            if(isNetwork){
-                lIconOffset.setVisible(false);
-                sIconOffset.setVisible(false);
-                if (isProbe){
-                    changeToProbeNetworkStyle();
-                }
-            } else {
-                changeToDriveStyle();
-            }
-        } finally {
-        }
+            Collections.sort(result);
+            return result.toArray(new String[0]);
     }
-
-    /**
-     *
-     */
-    private void changeToProbeNetworkStyle() {
-        lMainProperty.setText("Probe property"); //$NON-NLS-1$
-        lFontSize.setText("Probe font size"); //$NON-NLS-1$
-        lFillSite.setText("Probe fill"); //$NON-NLS-1$
-        
-    }
-
     /**
      * get array of possible site names
      * 
      * @return String[]
      */
     private String[] getMainPropertyChoices() {
-        return new String[] {NeoStyleContent.DEF_NONE, NeoStyleContent.DEF_MAIN_PROPERTY, "lat", "lon"}; //$NON-NLS-1$ //$NON-NLS-2$
+        return new String[] {NetworkNeoStyleContent.DEF_NONE, NetworkNeoStyleContent.DEF_MAIN_PROPERTY, "lat", "lon"}; //$NON-NLS-1$ //$NON-NLS-2$
     }
-
-    /**
-     *get array of sector names
-     * 
-     * @return array
-     */
-    private String[] getSecondaryPropertyChoices() {
-        List<String> result = new ArrayList<String>();
-        result.add(NeoStyleContent.DEF_NONE);
-        try {
-            GeoNeo resource = getLayer().findGeoResource(GeoNeo.class).resolve(GeoNeo.class, null);
-            Node datasetNode = NeoUtils.getDatasetNodeByGis(resource.getMainGisNode());
-            String[] allFields = PropertyHeader.getPropertyStatistic(datasetNode).getAllFields("-main-type-");
-            if (allFields != null) {
-                result.addAll(Arrays.asList(allFields));
-            }
-            Collections.sort(result);
-            return result.toArray(new String[0]);
-        } catch (IOException e) {
-            // TODO Handle IOException
-            e.printStackTrace();
-            Collections.sort(result);
-            return result.toArray(new String[0]);
-        }
-    }
-
     @Override
-    public void focus(Layer layer1) {
-        try {
-            GeoNeo geoNeo = layer1.findGeoResource(NeoGeoResource.class).resolve(GeoNeo.class, null);
-            isNetwork = geoNeo.getGisType() == GisTypes.NETWORK;
-            if (isNetwork) {
-                GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
-                //TODO now we store network type in gis node.
-//                Node mainNode = NeoUtils.getMainNodeFromGis(geoNeo.getMainGisNode(), service);
-                isProbe = NetworkTypes.PROBE.checkType(geoNeo.getMainGisNode());
-            } else {
-                isProbe = false;
-            }
-        } catch (IOException e) {
-            // TODO Handle IOException
-            e.printStackTrace();
-            isNetwork = true;
-            isProbe = false;
-        }
-        super.focus(layer1);
+    public void setFocus() {
     }
-    /**
-     *
-     */
-    private void changeToDriveStyle() {
-        //Hide site fill color
-        lFillSite.setVisible(false);
-        cEdFillSite.getButton().setVisible(false);
-
-        //Change sector fill to 'fill' and reset layout
-        labelFill.setText(Messages.Color_Fill_Drive);
-        FormData formData = new FormData();
-        formData.left = new FormAttachment(labelFill, 130);
-        formData.top = new FormAttachment(labelFill, 10);
-        cEdLine.getButton().setLayoutData(formData);
-        formData = new FormData();
-        formData.top = new FormAttachment(labelFill, 15);
-        formData.left = new FormAttachment(2);
-        labelLine.setLayoutData(formData);
-
-        lSecondaryFontSize.setVisible(false);
-        cSecondaryFontSize.setVisible(false);
-
-        lFontSize.setText(Messages.Font_Size);
-        lMainProperty.setText(Messages.Point_Property);
-        lSecondaryProperty.setText(Messages.Measurement_Property);
-    }
-
-    @Override
-    public void preApply() {
-        super.preApply();
-        curStyle.setFill(colorFromRGB(cEdFill.getColorValue()));
-        curStyle.setSiteFill(colorFromRGB(cEdFillSite.getColorValue()));
-        curStyle.setLabel(colorFromRGB(cEdLabel.getColorValue()));
-        curStyle.setLine(colorFromRGB(cEdLine.getColorValue()));
-        curStyle.setSmallestSymb(getSmallestSymb());
-        curStyle.setSmallSymb(getSmallSymb());
-        curStyle.setLabeling(getLabeling());
-        curStyle.setFixSymbolSize(rButton2.getSelection());
-        curStyle.setSymbolSize(getSymbolSize());
-        curStyle.setSymbolTransparency(getSectorTransparency());
-        curStyle.setFontSize(getLabelFontSize());
-        curStyle.setSectorFontSize(getSectorFontSize());
-        curStyle.setMaximumSymbolSize(sMaxSymSize.getSelection());
-        curStyle.setDefaultBeamwidth(sDefBeamwidth.getSelection());
-        curStyle.setIconOffset(sIconOffset.getSelection());
-        curStyle.setMainProperty(cMainProperty.getText());
-        curStyle.setSecondaryProperty(cSecondaryProperty.getText());
-        curStyle.setIgnoreTransparency(bTransp.getSelection());
-        curStyle.setDrawCorrelations(bCorrelation.getSelection());
-        curStyle.setShowAlerts(bAlerts.getSelection());
-        getStyleBlackboard().put(ID, curStyle);
-    }
-
     /**
      * gets sector font size
      * 
@@ -631,7 +516,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         try {
             return Integer.parseInt(cSecondaryFontSize.getText());
         } catch (NumberFormatException e) {
-            return NeoStyleContent.DEF_FONT_SIZE_SECTOR;
+            return NetworkNeoStyleContent.DEF_FONT_SIZE_SECTOR;
         }
     }
 
@@ -644,7 +529,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         try {
             return Integer.parseInt(cFontSize.getText());
         } catch (NumberFormatException e) {
-            return NeoStyleContent.DEF_FONT_SIZE;
+            return NetworkNeoStyleContent.DEF_FONT_SIZE;
         }
     }
 
@@ -701,8 +586,8 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
      * @param colorValue - RGB value
      * @return
      */
-    private Color colorFromRGB(RGB colorValue) {
-        return new Color(colorValue.red, colorValue.green, colorValue.blue);
+    private java.awt.Color colorFromRGB(RGB colorValue) {
+        return new java.awt.Color(colorValue.red, colorValue.green, colorValue.blue);
     }
 
     /**
@@ -711,7 +596,19 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
      * @param color color value
      * @return
      */
-    private RGB rgbFromColor(Color color) {
+    private RGB rgbFromColor(java.awt.Color color) {
         return new RGB(color.getRed(), color.getGreen(), color.getBlue());
+    }
+    /**
+     *
+     * @param resource
+     */
+    public void setGeoNeo(GeoNeo resource) {
+        this.resource = resource;
+        isProbe = NetworkTypes.PROBE.checkType(resource.getMainGisNode());
+    }
+    private String[] getDefaultFontItem() {
+
+        return FONT_SIZE_ARRAY;
     }
 }

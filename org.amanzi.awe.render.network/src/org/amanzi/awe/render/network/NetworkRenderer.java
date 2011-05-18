@@ -22,7 +22,6 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
-import java.awt.font.TextAttribute;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
@@ -48,8 +47,9 @@ import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.catalog.neo.GeoNeo.GeoNode;
 import org.amanzi.awe.filters.AbstractFilter;
 import org.amanzi.awe.filters.FilterUtil;
-import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
+import org.amanzi.awe.neostyle.NetworkNeoStyle;
+import org.amanzi.awe.neostyle.NetworkNeoStyleContent;
 import org.amanzi.awe.ui.IGraphModel;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
@@ -208,7 +208,7 @@ public class NetworkRenderer extends RendererImpl {
             scaleSymbols = true;
             siteName = NeoStyleContent.DEF_MAIN_PROPERTY;
             sectorName = NeoStyleContent.DEF_SECONDARY_PROPERTY;
-            NeoStyle neostyle = (NeoStyle)style.get(NeoStyleContent.ID);
+            NetworkNeoStyle neostyle = (NetworkNeoStyle)style.get(NetworkNeoStyleContent.ID);
             if (neostyle != null) {
                 try {
                     siteColor = neostyle.getSiteFill();
