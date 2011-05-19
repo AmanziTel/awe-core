@@ -14,6 +14,11 @@
 package org.amanzi.awe.neostyle;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -27,6 +32,8 @@ public class BaseNeoStyle implements Serializable {
 
     /** long serialVersionUID field */
     private static final long serialVersionUID = 2850532621545533216L;
+    private Map<String,IFilterWrapper> filters=new HashMap<String,IFilterWrapper>();
+    
     //TODO check if this values is necessary
 //    private GroupFilter filter;
 //
@@ -37,5 +44,13 @@ public class BaseNeoStyle implements Serializable {
 //    public GroupFilter getFilter() {
 //        return filter;
 //    }
-
+    public Set<String> getFilterNames(){
+        return Collections.unmodifiableSet(filters.keySet());
+    }
+    public void setFilterMap( Collection<String> filterNames){
+        filters.clear();
+        if (filterNames!=null){
+            filters.putAll(NeoStylePlugin.getDefault().getFilterModel().formsMapByName(filterNames));
+        }
+    }
 }

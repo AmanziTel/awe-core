@@ -13,16 +13,16 @@
 
 package org.amanzi.awe.neostyle;
 
+import org.amanzi.neo.services.filters.IFilter;
+
 /**
- * TODO Purpose of 
  * <p>
- *
+ *Filter wrapper
  * </p>
  * @author tsinkel_a
  * @since 1.0.0
  */
 public interface IFilterWrapper {
-    String getFilterName();
     IFilter getFilter();
     BaseNeoStyle getStyle();
 }

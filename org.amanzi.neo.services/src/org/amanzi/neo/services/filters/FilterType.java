@@ -13,7 +13,14 @@
 
 package org.amanzi.neo.services.filters;
 
-
+/**
+ * 
+ * <p>
+ *Filters type describe behavior with next filter
+ * </p>
+ * @author tsinkel_a
+ * @since 1.0.0
+ */
 public enum FilterType{
     EQUALS, LIKE;
 }

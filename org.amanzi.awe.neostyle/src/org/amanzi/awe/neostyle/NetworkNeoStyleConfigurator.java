@@ -19,6 +19,7 @@ import net.refractions.udig.project.internal.Layer;
 import net.refractions.udig.style.IStyleConfigurator;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -122,7 +123,9 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
         defaultStyle.refresh();
  
     }
-
+    public IPreferenceStore getPreferenceStore(){
+        return NeoStylePlugin.getDefault().getPreferenceStore();
+    }
     @Override
     public void preApply() {
         super.preApply();

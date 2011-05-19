@@ -16,12 +16,14 @@ package org.amanzi.awe.neostyle;
 import java.awt.Color;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.StyleContent;
 
 import org.amanzi.awe.catalog.neo.NeoGeoResource;
 import org.amanzi.neo.services.enums.GisTypes;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.IMemento;
 
@@ -58,6 +60,7 @@ public class NetworkNeoStyleContent extends StyleContent{
         public static final Integer DEF_FONT_SIZE = 10;
         /** Network sector font size */
         public static final Integer DEF_FONT_SIZE_SECTOR = 8;
+        public static final String FILTERS = "FILTERS";
         public static final Integer DEF_MAXIMUM_SYMBOL_SIZE = 40;
         public static final Integer DEF_DEF_BEAMWIDTH = 40;
         public static final Integer DEF_ICON_OFFSET = 0;
@@ -136,6 +139,11 @@ public class NetworkNeoStyleContent extends StyleContent{
             result.setSectorFontSize(memento.getInteger(FONT_SIZE_SECTOR));
             result.setMainProperty((memento.getString(SITE_NAME)));
             result.setSecondaryProperty((memento.getString(SECTOR_NAME)));
+            String filters = memento.getString(FILTERS);
+            if (StringUtils.isNotEmpty(filters)){
+                result.setFilterMap(Arrays.asList(filters.split("\n")));
+                
+            }
             // result.setNetwork(getBoolean(memento, IS_NETWORK_STYLE, true));
             return result;
         }
@@ -170,6 +178,12 @@ public class NetworkNeoStyleContent extends StyleContent{
             memento.putInteger(FONT_SIZE_SECTOR, style.getSecondaryFontSize());
             memento.putString(SITE_NAME, style.getMainProperty());
             memento.putString(SECTOR_NAME, style.getSecondaryProperty());
+            StringBuilder sb=new StringBuilder();
+            String del="\n";
+            for (String name:style.getFilterNames()){
+                sb.append(name).append(del);
+            }
+            memento.putString(FILTERS,sb.toString() );
         }
 
         /**
