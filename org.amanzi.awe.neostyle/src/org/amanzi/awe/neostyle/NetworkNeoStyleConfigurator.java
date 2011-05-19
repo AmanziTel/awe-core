@@ -14,12 +14,29 @@
 package org.amanzi.awe.neostyle;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
 import net.refractions.udig.project.internal.Layer;
 import net.refractions.udig.style.IStyleConfigurator;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
-import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.viewers.CellLabelProvider;
+import org.eclipse.jface.viewers.CheckStateChangedEvent;
+import org.eclipse.jface.viewers.CheckboxTableViewer;
+import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.ICheckStateListener;
+import org.eclipse.jface.viewers.IDoubleClickListener;
+import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -27,6 +44,7 @@ import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 
 /**
  * TODO Purpose of
@@ -39,6 +57,8 @@ import org.eclipse.swt.widgets.Composite;
 public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
     private NetworkNeoStyle curStyle;
     private NetworkStyleDefiner defaultStyle=new NetworkStyleDefiner();
+    private CheckboxTableViewer viewer;
+    private ContentProvider provider;
     /** NetworkNeoStyleConfigurator ID field */
     public static final String ID = "org.amanzi.awe.neostyle.style.network"; //$NON-NLS-1$
 
@@ -103,10 +123,53 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
 
 
     private void createFilterPage(Composite filterMain) {
-        filterMain.setLayout(new GridLayout(1, true));
+        filterMain.setLayout(new GridLayout(2, true));
+        Label lb=new Label(filterMain,SWT.LEFT);
+        lb.setText("Applyed filters:");
+        viewer =  CheckboxTableViewer.newCheckList(filterMain, SWT.FULL_SELECTION|SWT.BORDER);
+        viewer.setColumnProperties(new String[]{"Filter"});
+        viewer.setLabelProvider(new FiltrLabelProvider());
+        viewer.addCheckStateListener(new ICheckStateListener() {
+            
+            @Override
+            public void checkStateChanged(CheckStateChangedEvent event) {
+               FilterRow row = (FilterRow)event.getElement();
+               row.setSelected(event.getChecked());
+            }
+        });
+        viewer.addDoubleClickListener(new IDoubleClickListener() {
+            
+            @Override
+            public void doubleClick(DoubleClickEvent event) {
+                IStructuredSelection selection=(IStructuredSelection)event.getSelection();
+                if (selection.size()==1){
+                    FilterRow row = (FilterRow)selection.getFirstElement();
+                    //TODO implement
+                }
+            }
+        });
+        GridData layoutData = new GridData(SWT.FILL, SWT.NONE, true, true, 2, 10);
+        provider = new ContentProvider();
+        viewer.setContentProvider(provider);
+        viewer.getControl().setLayoutData(layoutData);
+        formColumns(viewer);
+        ColumnViewerToolTipSupport.enableFor(viewer);
         
     }
 
+
+
+
+    /**
+     *
+     * @param viewer2
+     */
+    private void formColumns(CheckboxTableViewer viewer) {
+          
+         TableViewerColumn column = new TableViewerColumn(viewer, SWT.FILL);
+        column.setLabelProvider(new FiltrLabelProvider());
+        column.getColumn().setText("Filter name");
+    }
 
     @Override
     protected void refresh() {
@@ -121,17 +184,107 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
         }
         defaultStyle.setGeoNeo(resource);
         defaultStyle.refresh();
- 
+        ColumnViewerToolTipSupport.enableFor(viewer,ToolTip.NO_RECREATE);
+        viewer.setInput(curStyle);
+        
     }
-    public IPreferenceStore getPreferenceStore(){
-        return NeoStylePlugin.getDefault().getPreferenceStore();
-    }
+
     @Override
     public void preApply() {
         super.preApply();
         defaultStyle.preApply();
         getStyleBlackboard().put(ID, curStyle);
     }
+    private static class ContentProvider implements IStructuredContentProvider{
 
- 
+        List<FilterRow>elements=new ArrayList<FilterRow>();
+        private CheckboxTableViewer viewer;
+        @Override
+        public void dispose() {
+        }
+
+        @Override
+        public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+            this.viewer = (CheckboxTableViewer)viewer;
+            if (newInput==null){
+                elements.clear();
+            }  else{
+               NetworkNeoStyle style=(NetworkNeoStyle)newInput;
+               formElements(style);
+            }
+        }
+
+        
+        /**
+         *
+         * @return
+         */
+        public Object[] getChecked() {
+            List<FilterRow> checked=new ArrayList<FilterRow>();
+            for (FilterRow row:elements){
+                if (row.isSelected()){
+                    checked.add(row);
+                }
+            }
+            return checked.toArray();
+        }
+
+        private void formElements(NetworkNeoStyle style) {
+            elements.clear();
+            FilterModel model=NeoStylePlugin.getDefault().getFilterModel();
+            Set<String> names = style.getFilterNames();
+            for (String name:model.getFilterNames()){
+                FilterRow wr = new FilterRow();
+                wr.setName(name);
+                wr.setWrapper(model.getWrapperByName(name));
+                wr.setSelected(names.contains(name));
+                elements.add(wr);
+                viewer.setChecked(wr, wr.isSelected());
+            }
+            
+            FilterRow wr = new FilterRow();
+            wr.setName("test");
+            wr.setWrapper(model.getWrapperByName("test"));
+            wr.setSelected(names.contains("test"));
+            wr.setSelected(true);
+            viewer.setChecked(wr, wr.isSelected());
+            elements.add(wr);
+            
+            
+            Collections.sort(elements,new Comparator<FilterRow>(){
+
+                @Override
+                public int compare(FilterRow o1, FilterRow o2) {
+                    return o1.getName().compareTo(o2.getName());
+//                    if (o1.isSelected()==o2.isSelected()){
+//                        return o1.getName().compareTo(o2.getName());
+//                    }else{
+//                        return o1.isSelected()?-1:1;
+//                    }
+                }
+                
+            });
+        }
+
+        @Override
+        public Object[] getElements(Object inputElement) {
+            return elements.toArray(new FilterRow[0]);
+        }
+        
+    }
+    private static class FiltrLabelProvider extends CellLabelProvider{
+        
+
+        @Override
+        public void update(ViewerCell cell) {
+            FilterRow wrapper = ((FilterRow)cell.getElement());
+            cell.setText(wrapper.getName());
+        }
+        @Override
+        public String getToolTipText(Object element) {
+            FilterRow wrapper = ((FilterRow)element);
+            
+            return "Use doubleclick for edit filter '"+wrapper.getName()+"'";
+        }
+    }
 }

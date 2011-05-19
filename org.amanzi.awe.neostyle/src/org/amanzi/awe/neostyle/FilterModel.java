@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -117,6 +118,14 @@ public Map<String,  IFilterWrapper> formsMapByName(Collection<String> filterName
         
     }
     return result;
+}
+
+public Iterable<String> getFilterNames() {
+    return Collections.unmodifiableCollection(filters.keySet());
+}
+
+public IFilterWrapper getWrapperByName(String name) {
+    return filters.get(name);
 }
 
 
