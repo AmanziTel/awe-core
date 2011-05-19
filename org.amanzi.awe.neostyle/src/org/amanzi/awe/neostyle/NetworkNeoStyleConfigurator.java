@@ -100,17 +100,11 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
         scroll.setContent(filterMain);
     }
 
-    /**
-     *
-     * @param filterMain
-     */
+
     private void createFilterPage(Composite filterMain) {
         filterMain.setLayout(new GridLayout(1, true));
+        
     }
-
-    /**
-     * @return
-     */
 
 
     @Override

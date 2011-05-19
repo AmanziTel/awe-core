@@ -11,17 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.services.enums;
+package org.amanzi.neo.services.filters;
 
-import java.io.Serializable;
 
-/**
- * <p>
- *Interface for node type
- * </p>
- * @author TsAr
- * @since 1.0.0
- */
-public interface INodeType extends Serializable{
-    String getId();
+public enum FilterType{
+    EQUALS, LIKE;
 }

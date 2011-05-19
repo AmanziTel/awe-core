@@ -25,6 +25,8 @@ import org.amanzi.neo.services.enums.INodeType;
  */
 public class DynamicNodeType implements INodeType {
 
+    /** long serialVersionUID field */
+    private static final long serialVersionUID = -3813803992295251681L;
     private final String type;
 
     /**

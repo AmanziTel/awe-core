@@ -13,29 +13,16 @@
 
 package org.amanzi.awe.neostyle;
 
-import java.io.Serializable;
-
-
 /**
+ * TODO Purpose of 
  * <p>
- *Contain base information about NeoGeoResource styles
+ *
  * </p>
- * @author TsAr
+ * @author tsinkel_a
  * @since 1.0.0
  */
-public class BaseNeoStyle implements Serializable {
-
-    /** long serialVersionUID field */
-    private static final long serialVersionUID = 2850532621545533216L;
-    //TODO check if this values is necessary
-//    private GroupFilter filter;
-//
-//    public void addFilter(GroupFilter filter) {
-//        this.filter = filter;
-//    }
-//
-//    public GroupFilter getFilter() {
-//        return filter;
-//    }
-
+public interface IFilterWrapper {
+    String getFilterName();
+    IFilter getFilter();
+    BaseNeoStyle getStyle();
 }

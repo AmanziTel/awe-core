@@ -11,31 +11,26 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.neostyle;
+package org.amanzi.neo.services.filters;
 
 import java.io.Serializable;
 
+import org.amanzi.neo.services.enums.INodeType;
+import org.neo4j.graphdb.Node;
 
 /**
  * <p>
- *Contain base information about NeoGeoResource styles
+ *Filter interface
  * </p>
- * @author TsAr
+ * @author tsinkel_a
  * @since 1.0.0
  */
-public class BaseNeoStyle implements Serializable {
+public interface IFilter extends Serializable {
 
-    /** long serialVersionUID field */
-    private static final long serialVersionUID = 2850532621545533216L;
-    //TODO check if this values is necessary
-//    private GroupFilter filter;
-//
-//    public void addFilter(GroupFilter filter) {
-//        this.filter = filter;
-//    }
-//
-//    public GroupFilter getFilter() {
-//        return filter;
-//    }
+    void setExpression(INodeType nodeType, String propertyName, Serializable value);
+
+    void addFilter(IFilter additionalFilter);
+
+    boolean check(Node node);
 
 }

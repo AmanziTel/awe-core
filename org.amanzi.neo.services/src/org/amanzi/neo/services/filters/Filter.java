@@ -11,7 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.afp.filters;
+package org.amanzi.neo.services.filters;
+
+import java.io.Serializable;
 
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
@@ -27,15 +29,10 @@ import org.neo4j.graphdb.Node;
  * @author gerzog
  * @since 1.0.0
  */
-public class AfpFilterNew {
+public class Filter implements IFilter {
 
-    public enum FilterType {
-        EQUALS, LIKE;
-    }
-
-    public enum ExpressionType {
-        OR, AND;
-    }
+    /** long serialVersionUID field */
+    private static final long serialVersionUID = -8231241185471872716L;
 
     private FilterType filterType;
 
@@ -45,37 +42,40 @@ public class AfpFilterNew {
     
     private String propertyName;
     
-    private Object value;
+    private Serializable value;
     
-    private AfpFilterNew underlyingFilter;
+    private IFilter underlyingFilter;
 
-    public AfpFilterNew(FilterType filterType, ExpressionType expressionType) {
+    public Filter(FilterType filterType, ExpressionType expressionType) {
         this.filterType = filterType;
         this.expressionType = expressionType;
     }
 
-    public AfpFilterNew(FilterType filterType) {
+    public Filter(FilterType filterType) {
         this(filterType, ExpressionType.AND);
     }
 
-    public AfpFilterNew(ExpressionType expressionType) {
+    public Filter(ExpressionType expressionType) {
         this(FilterType.EQUALS, expressionType);
     }
 
-    public AfpFilterNew() {
+    public Filter() {
         this(FilterType.EQUALS, ExpressionType.AND);
     }
     
-    public void setExpression(INodeType nodeType, String propertyName, Object value) {
+    @Override
+    public void setExpression(INodeType nodeType, String propertyName, Serializable value) {
         this.nodeType = nodeType;
         this.propertyName = propertyName;
         this.value = value;
     }
     
-    public void addFilter(AfpFilterNew additionalFilter) {
+    @Override
+    public void addFilter(IFilter additionalFilter) {
         this.underlyingFilter = additionalFilter;
     }
     
+    @Override
     public boolean check(Node node) {
         boolean result = false;
         

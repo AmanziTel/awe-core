@@ -14,6 +14,7 @@
 package org.amanzi.awe.neostyle;
 
 import java.awt.Color;
+import java.io.Serializable;
 
 /**
  * <p>
@@ -22,8 +23,10 @@ import java.awt.Color;
  * @author TsAr
  * @since 1.0.0
  */
-public class NetworkNeoStyle extends BaseNeoStyle{
+public class NetworkNeoStyle extends BaseNeoStyle implements Serializable{
 
+    /** long serialVersionUID field */
+    private static final long serialVersionUID = -7312398919809416135L;
     private Color line;
     private Color fill;
     private Color fillSite;
