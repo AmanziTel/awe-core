@@ -14,7 +14,6 @@
 package org.amanzi.awe.afp.filters;
 
 import org.amanzi.neo.services.DatasetService;
-import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.INodeType;
 import org.neo4j.graphdb.Node;
