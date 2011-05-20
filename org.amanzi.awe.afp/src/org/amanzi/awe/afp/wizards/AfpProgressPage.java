@@ -43,8 +43,10 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.time.DateRange;
 import org.jfree.data.time.Millisecond;
 import org.jfree.data.time.RegularTimePeriod;
@@ -57,6 +59,7 @@ import org.jfree.experimental.chart.swt.ChartComposite;
 
 public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress{
 	
+    private JFreeChart progressChart;
 	JFreeChart chart;
 	TimeSeries series[];
 	TimeSeriesCollection dataset = new TimeSeriesCollection();
@@ -100,7 +103,17 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
         setDescription(desc);
         setPageComplete (false);
 	}
-
+//
+//	@Override
+//    public IStatus run(IProgressMonitor monitor){
+//	    if (monitor == null) {
+//	        monitor = new NullProgressMonitor();
+//        }
+//        
+//        progressMonitor = monitor;
+//        monitor.beginTask("Execute Afp", 100000);
+//	    return Status.OK_STATUS;
+//	}
 	
 	@Override
 	public void createControl(Composite parent) {
@@ -236,6 +249,7 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 			public void widgetSelected(SelectionEvent e) {
 				// TODO Auto-generated method stub
 			    AfpProcessExecutor.setValueToBooleanButton(2);
+			    AfpExporter.setValueToBooleanButton(2);
 			}
 			
 		});
@@ -256,6 +270,7 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 			public void widgetSelected(SelectionEvent e) {
 				// TODO Auto-generated method stub
 			    AfpProcessExecutor.setValueToBooleanButton(3);
+			    AfpExporter.setValueToBooleanButton(3);
 			}
 			
 		});
@@ -275,6 +290,7 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 			public void widgetSelected(SelectionEvent e) {
 				// TODO Auto-generated method stub
 			    AfpProcessExecutor.setValueToBooleanButton(1);
+			    AfpExporter.setValueToBooleanButton(1);
 			    exportJob.cancel();
 			    loadJob.cancel();
 				afpJob.cancel();
@@ -284,6 +300,14 @@ public class AfpProgressPage extends AfpWizardPage implements AfpProcessProgress
 			
 		});
 		
+		progressChart = ChartFactory.createBarChart("SWTBarChart", "Value", "Count", null, PlotOrientation.VERTICAL, false,
+                false, false);
+        progressChart.setBackgroundPaint(Color.red);
+        gridData.heightHint = 100;
+        gridData.minimumWidth = 20;
+        final ChartComposite frame2 = new ChartComposite(graphGroup, SWT.NONE, chart, true);
+        frame2.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, true, true, 7 ,1));
+        
 		setPageComplete (true);
 		setControl(main);
 	}
