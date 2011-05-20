@@ -156,6 +156,9 @@ public class AfpExporter extends Job {
     private  float[] contrAdjTotal;
     private  long[] violations;
     
+    private static boolean isStop = false;
+    private static boolean isPause = false;
+    private static boolean isResume = false;
 
     public AfpExporter(Node afpRoot, Node afpDataset, AfpModel model) {
         super("Preparing AFP scenarios");
@@ -184,6 +187,67 @@ public class AfpExporter extends Job {
         createFiles();
         writeFilesNew(monitor);
         return Status.OK_STATUS;
+    }
+    
+    /**
+     * Set value to isStop, isPause, isResume
+     *
+     * @param type 1 - to isStop, 2 - to isPause, 3 - to isResume
+     * @param value boolean value to type
+     */
+    public static void setValueToBooleanButton(int type) {
+        switch (type) {
+        case 1:
+            isStop = true;
+            isPause = false;
+            isResume = false;
+            break;
+        case 2:
+            isStop = false;
+            isPause = true;
+            isResume = false;
+            break;
+        case 3:
+            isStop = false;
+            isPause = false;
+            isResume = true;
+            break;
+        default:
+            break;
+        }
+    }
+    
+    /**
+     * Processing of behavior
+     *
+     * @return break with cycle or not break
+     */
+    private int getBehavior() {
+        if (isPause) {
+            while(!isResume) {
+                if (true) {
+                    AweConsolePlugin.info("AFP is paused");
+                    try {
+                        Thread.currentThread().sleep(1500);
+                    } catch (InterruptedException e) {
+                        throw (RuntimeException) new RuntimeException( ).initCause( e );
+                    }
+                }
+                if (isStop) 
+                    break;
+            } 
+            isPause = false;
+        }
+        if (isStop) {
+            AweConsolePlugin.info("AFP is stopped");
+            isStop = false;
+            return - 1;
+        }
+        if (isResume) {
+            AweConsolePlugin.info("AFP if resumed");
+            isResume = false;
+        }
+        return 0;
     }
 
     private void createFiles() {
@@ -273,6 +337,8 @@ public class AfpExporter extends Job {
 
 
             for (Node sectorNode : sectorTraverser) {
+                if (getBehavior() == -1) 
+                    break;
                 HashMap<Node, SectorValues> sectorIntValues = getSectorIntValues(sectorNode);
                 Traverser trxTraverser = AfpModelUtils.getTrxTraverser(sectorNode);
                 boolean analyseSy=false;
