@@ -31,8 +31,10 @@ import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.IDoubleClickListener;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
@@ -41,10 +43,14 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Table;
 
 /**
  * TODO Purpose of
@@ -59,6 +65,8 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
     private NetworkStyleDefiner defaultStyle=new NetworkStyleDefiner();
     private CheckboxTableViewer viewer;
     private ContentProvider provider;
+    private Button createNew;
+    private  Button remove;
     /** NetworkNeoStyleConfigurator ID field */
     public static final String ID = "org.amanzi.awe.neostyle.style.network"; //$NON-NLS-1$
 
@@ -137,6 +145,14 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
                row.setSelected(event.getChecked());
             }
         });
+        viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+                IStructuredSelection selection = (IStructuredSelection)event.getSelection();
+                remove.setEnabled(selection.size()==1);
+            }
+        });
         viewer.addDoubleClickListener(new IDoubleClickListener() {
             
             @Override
@@ -148,13 +164,32 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
                 }
             }
         });
-        GridData layoutData = new GridData(SWT.FILL, SWT.NONE, true, true, 2, 10);
+        GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 10);
         provider = new ContentProvider();
         viewer.setContentProvider(provider);
         viewer.getControl().setLayoutData(layoutData);
         formColumns(viewer);
-        ColumnViewerToolTipSupport.enableFor(viewer);
-        
+        viewer.getTable().addControlListener(new ControlListener() {
+
+            @Override
+            public void controlResized(ControlEvent e) {
+                Table table = (Table)e.widget;
+                int width = table.getClientArea().width;
+                table.getColumn(0).setWidth(width-2);
+            }
+
+            @Override
+            public void controlMoved(ControlEvent e) {
+            }
+        });
+        viewer.getTable().setHeaderVisible(true);
+//        ColumnViewerToolTipSupport.enableFor(viewer);
+       createNew=new Button(filterMain, SWT.PUSH);
+       createNew.setText("Create filter");
+       
+       remove=new Button(filterMain, SWT.PUSH);
+       remove.setText("Delete selected");       
+       remove.setEnabled(false);
     }
 
 

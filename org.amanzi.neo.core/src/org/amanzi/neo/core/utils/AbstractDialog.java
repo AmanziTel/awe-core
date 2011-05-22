@@ -54,7 +54,15 @@ public abstract class AbstractDialog<E> extends Dialog {
         Point size = parentShell.getSize();
         int dlgWidth = shell.getSize().x;
         int dlgHeight = shell.getSize().y;
-        shell.setLocation((size.x - dlgWidth) / 2, (size.y - dlgHeight) / 2);
+        int y = (size.y - dlgHeight) / 2;
+        int x = (size.x - dlgWidth) / 2;
+        if (x<0){
+            x=0;
+        }
+        if (y<0){
+            y=0;
+        }
+        shell.setLocation(x, y);
         beforeOpen();
         shell.open();
         // wait
