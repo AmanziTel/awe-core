@@ -58,4 +58,13 @@
          </toolbar>
       </menuContribution>
    </extension>
+   <extension
+         point="net.refractions.udig.mapgraphic.mapgraphic">
+      <mapGraphic
+            class="org.amanzi.awe.neighbours.legend.LegendRelations"
+            icon="icons/legend.gif"
+            id="relations legend"
+            name="Relations Legend">
+      </mapGraphic>
+   </extension>
 </plugin>
