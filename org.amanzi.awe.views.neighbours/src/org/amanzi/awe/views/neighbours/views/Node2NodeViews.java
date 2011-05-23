@@ -13,6 +13,28 @@
 
 package org.amanzi.awe.views.neighbours.views;
 
+import java.awt.Color;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.Paint;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.Stroke;
+import java.awt.RenderingHints.Key;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImageOp;
+import java.awt.image.ImageObserver;
+import java.awt.image.RenderedImage;
+import java.awt.image.renderable.RenderableImage;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.AttributedCharacterIterator;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
@@ -28,10 +50,32 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
+import net.refractions.udig.catalog.CatalogPlugin;
+import net.refractions.udig.catalog.IGeoResource;
+import net.refractions.udig.catalog.IResolve;
+import net.refractions.udig.catalog.IService;
+import net.refractions.udig.mapgraphic.MapGraphicContext;
+import net.refractions.udig.mapgraphic.MapGraphicPlugin;
+import net.refractions.udig.mapgraphic.internal.MapGraphicContextImpl;
+import net.refractions.udig.mapgraphic.internal.MapGraphicRenderer;
+import net.refractions.udig.mapgraphic.internal.MapGraphicService;
+import net.refractions.udig.project.ILayer;
+import net.refractions.udig.project.command.UndoableComposite;
+import net.refractions.udig.project.command.factory.BasicCommandFactory;
+import net.refractions.udig.project.command.factory.EditCommandFactory;
+import net.refractions.udig.project.internal.Layer;
+import net.refractions.udig.project.internal.render.impl.RenderContextImpl;
+import net.refractions.udig.project.internal.render.impl.RenderManagerImpl;
+import net.refractions.udig.project.ui.ApplicationGIS;
+import net.refractions.udig.project.ui.internal.ApplicationGISInternal;
+import net.refractions.udig.ui.ProgressManager;
+
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.ChangeModelEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.ChangeSelectionEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEventTypes;
+
+import org.amanzi.awe.neighbours.legend.LegendRelations;
 import org.amanzi.awe.ui.AweUiPlugin;
 import org.amanzi.awe.ui.IGraphModel;
 import org.amanzi.awe.views.neighbours.NeighboursPlugin;
@@ -63,6 +107,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -117,6 +162,7 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
+import org.opengis.layer.LegendURL;
 
 /**
  * <p>
@@ -737,9 +783,13 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         Action action = new Action("by 'Co'") {
             @Override
             public void run() {
+            	
                 model = createOutgoingInterferenceModel(node, "co");
                 mode=0;
                 fireModel(model);
+                removeLegend();
+                addLegend();
+ 
             }
             @Override
             public ImageDescriptor getImageDescriptor() {
@@ -753,6 +803,8 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
                 mode=1;
                 model = createOutgoingInterferenceModel(node, "adj");
                 fireModel(model);
+                removeLegend();
+                addLegend();
             }
             @Override
             public ImageDescriptor getImageDescriptor() {
@@ -773,6 +825,8 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
                 model = createIncomigInterferenceModel(node, "co");
                 mode=2;
                 fireModel(model);
+                removeLegend();
+                addLegend();
             }
             @Override
             public ImageDescriptor getImageDescriptor() {
@@ -786,6 +840,8 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
                 model = createIncomigInterferenceModel(node, "adj");
                 mode=3;
                 fireModel(model);
+                removeLegend();
+                addLegend();
             }
             @Override
             public ImageDescriptor getImageDescriptor() {
@@ -796,6 +852,53 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         return id;
     }
     
+    private void addLegend() {
+        net.refractions.udig.project.internal.Map map = ApplicationGISInternal.getActiveMap();
+        try {
+            IGeoResource legendResource = null;
+
+            URL url = new URL(MapGraphicService.SERVICE_URL, "#relations legend" ); //$NON-NLS-1$
+            List<IResolve> matches = CatalogPlugin.getDefault().getLocalCatalog().find(url,
+                    ProgressManager.instance().get());
+            
+            if (!matches.isEmpty())
+                legendResource = (IGeoResource) matches.get(0);
+
+           
+            if (legendResource == null)
+                return;
+            Layer layer = map.getLayerFactory().createLayer(legendResource);
+            map.sendCommandSync(BasicCommandFactory.getInstance().createAddLayer(layer));
+        } catch (MalformedURLException e) {
+            MapGraphicPlugin.log("", e); //$NON-NLS-1$
+        } catch (IOException e) {
+            MapGraphicPlugin.log("", e); //$NON-NLS-1$
+        }
+
+    }
+    private void removeLegend() {
+    	net.refractions.udig.project.internal.Map map = ApplicationGISInternal.getActiveMap();
+        if (map == ApplicationGIS.NO_MAP)
+            return;
+
+        List<ILayer> layers = map.getMapLayers();
+        List<ILayer> toRemove = new ArrayList<ILayer>();
+
+        for( ILayer layer : layers ) {
+            if (layer.hasResource(LegendRelations.class)) {
+                toRemove.add(layer);
+            }
+        }
+
+        UndoableComposite composite = new UndoableComposite();
+        for( ILayer layer : toRemove ) {
+            composite.getCommands().add(EditCommandFactory.getInstance().createDeleteLayer((Layer)layer));
+        }
+
+        map.sendCommandASync(composite);
+    }
+   
+    
     private void addInterferenceAnalysis(IMenuManager manager, final Node node) {
         MenuManager subMenu = new MenuManager("Outgoing interference analyse");
 
@@ -804,10 +907,11 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         Action action = new Action("by 'Co'") {
             @Override
             public void run() {
+            	
                 model = createOutgoingInterferenceModel(node, "co");
                 mode=0;
                 fireModel(model);
-            }
+                           }
             @Override
             public ImageDescriptor getImageDescriptor() {
                 return mode==0?imageDescr:super.getImageDescriptor();
