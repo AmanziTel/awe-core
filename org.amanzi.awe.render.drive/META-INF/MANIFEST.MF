@@ -16,3 +16,4 @@ Require-Bundle: org.eclipse.core.runtime,
  org.amanzi.awe.filters;bundle-version="1.0.0"
 Eclipse-LazyStart: true
 Bundle-Vendor: amanzi.org
+Export-Package: org.amanzi.awe.render.drive
