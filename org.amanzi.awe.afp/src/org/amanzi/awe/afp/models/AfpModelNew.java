@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.amanzi.awe.afp.models.parameters.ChannelType;
 import org.amanzi.awe.afp.models.parameters.FrequencyBand;
@@ -47,7 +48,9 @@ import org.neo4j.graphdb.traversal.Evaluator;
  * @since 1.0.0
  */
 public class AfpModelNew {
-
+    
+    public static final int BSIC_MAX_NUMBER = 7;
+    
     private Node afpModelNode;
 
     private NetworkModel networkModel;
@@ -71,6 +74,10 @@ public class AfpModelNew {
     private int sectorCount;
     
     private int trxCount;
+    
+    private HashMap<String, Boolean> supportedBCC = new HashMap<String, Boolean>();
+    
+    private HashMap<String, Boolean> supportedNCC = new HashMap<String, Boolean>();
     
     private HashMap<ChannelType, Integer> channelCount = new HashMap<ChannelType, Integer>();
 
@@ -207,6 +214,22 @@ public class AfpModelNew {
         initializeChannelTypes();
         addDefaultFrequencyDomains();
         initializeTotalCounts();
+        initializeBCC();
+        initializeNCC();
+    }
+    
+    private void initializeBCC() {
+        supportedBCC.clear();
+        for (int i = 0; i < BSIC_MAX_NUMBER; i++) {
+            supportedBCC.put(Integer.toString(i), Boolean.TRUE);
+        }
+    }
+    
+    private void initializeNCC() {
+        supportedNCC.clear();
+        for (int i = 0; i < BSIC_MAX_NUMBER; i++) {
+            supportedNCC.put(Integer.toString(i), Boolean.TRUE);
+        }
     }
     
     private void initializeTotalCounts() {
@@ -354,5 +377,29 @@ public class AfpModelNew {
 
     public int getTrxCount() {
         return trxCount;
+    }
+    
+    public Set<String> getAvailableNCC() {
+        return supportedNCC.keySet();
+    }
+    
+    public Set<String> getAvailableBCC() {
+        return supportedBCC.keySet();
+    }
+    
+    public boolean isBCCSupported(String bcc) {
+        return supportedBCC.get(bcc);
+    }
+    
+    public boolean isNCCSupported(String ncc) {
+        return supportedNCC.get(ncc);
+    }
+    
+    public void setSupportedBCC(String bcc, boolean isSupported) {
+        supportedBCC.put(bcc, isSupported);
+    }
+    
+    public void setSupportedNCC(String ncc, boolean isSupported) {
+        supportedNCC.put(ncc, isSupported);
     }
 }

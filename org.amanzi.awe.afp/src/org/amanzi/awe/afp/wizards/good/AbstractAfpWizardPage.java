@@ -88,4 +88,8 @@ public abstract class AbstractAfpWizardPage extends WizardPage {
     protected void refreshPage() {
         model = wizard.getModel();
     }
+    
+    protected abstract boolean isStepAvailable();
+    
+    
 }

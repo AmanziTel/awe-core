@@ -240,4 +240,9 @@ public class Step0SelectScenarioPage extends AbstractAfpWizardPage {
     protected void refreshPage() {
         //do nothing
     }
+
+    @Override
+    protected boolean isStepAvailable() {
+        return true;
+    }
 }

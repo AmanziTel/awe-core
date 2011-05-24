@@ -51,6 +51,7 @@ public abstract class AbstractAfpTest extends AbstractAWETest {
     private static HashMap<AfpModel, AfpOutputFileLoader> loaderMap = new HashMap<AfpModel, AfpOutputFileLoader>();
     
     protected static void initEnvironment() throws IOException {
+        clearDb();
         initializeDb();
         initPreferences();
         

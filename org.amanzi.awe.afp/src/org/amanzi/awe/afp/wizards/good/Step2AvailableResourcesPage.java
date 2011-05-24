@@ -14,14 +14,19 @@
 package org.amanzi.awe.afp.wizards.good;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
+import org.amanzi.awe.afp.models.AfpModelNew;
 import org.amanzi.awe.afp.models.FrequencyDomain;
 import org.amanzi.awe.afp.models.parameters.FrequencyBand;
+import org.amanzi.neo.services.utils.Pair;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -45,6 +50,10 @@ public class Step2AvailableResourcesPage extends AbstractAfpWizardPage {
     private static final int STEP_NUMBER = 2;
 
     private static final String PAGE_DESCRIPTION = "Step 2 - " + PAGE_NAME;
+    
+    private HashMap<FrequencyBand, Pair<Text, Button>> bandFields = new HashMap<FrequencyBand, Pair<Text,Button>>();
+    
+    private HashMap<String, Pair<Button, Button>> bsicFields = new HashMap<String, Pair<Button,Button>>();
     
     /**
      * @param pageName
@@ -91,6 +100,8 @@ public class Step2AvailableResourcesPage extends AbstractAfpWizardPage {
             frequenciesButton.setText("...");
             frequenciesButton.setEnabled(model.isFrequencyBandSupported(frequencyBand));
             
+            bandFields.put(frequencyBand, new Pair<Text, Button>(frequenciesText, frequenciesButton));
+            
             frequenciesText.addModifyListener(new ModifyListener() {
 
                 @Override
@@ -112,8 +123,73 @@ public class Step2AvailableResourcesPage extends AbstractAfpWizardPage {
             });
         }
         
+        /** Create BSIC Group */
+        Group bsicGroup = new Group(main, SWT.NONE);
+        bsicGroup.setLayout(new GridLayout(9, false));
+        bsicGroup.setLayoutData(new GridData(GridData.FILL, GridData.FILL, false, false, 1, 5));
+        bsicGroup.setText("BSIC");
+        
+        for (int i = 0; i < AfpModelNew.BSIC_MAX_NUMBER + 1; i++) {
+            String text;
+            if (i == 0) {
+                text = StringUtils.EMPTY;
+            }
+            else {
+                text = Integer.toString(i - 1);
+            }
+            new Label(bsicGroup, GridData.BEGINNING).setText(text);
+        }
+        
+        new Label(bsicGroup, GridData.BEGINNING).setText("Available NCCs: ");
+        for (final String ncc : model.getAvailableNCC()) {
+            final Button nccButton = new Button(bsicGroup, SWT.CHECK);
+            nccButton.setSelection(model.isNCCSupported(ncc));
+            nccButton.addSelectionListener(new SelectionListener() {
+                
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    setNCCSupport(ncc, nccButton.getSelection());
+                }
+                
+                @Override
+                public void widgetDefaultSelected(SelectionEvent e) {
+                    widgetSelected(e);
+                }
+            });
+            
+            bsicFields.put(ncc, new Pair<Button, Button>(nccButton, null));
+        }
+
+        new Label(bsicGroup, GridData.BEGINNING).setText("Available BCCs: ");
+        for (final String bcc : model.getAvailableBCC()) {
+            final Button bccButton = new Button(bsicGroup, SWT.CHECK);
+            bccButton.setSelection(model.isBCCSupported(bcc));
+            bccButton.addSelectionListener(new SelectionListener() {
+                
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    setBCCSupport(bcc, bccButton.getSelection());
+                }
+                
+                @Override
+                public void widgetDefaultSelected(SelectionEvent e) {
+                    widgetSelected(e);
+                }
+            });
+            
+            bsicFields.get(bcc).setRight(bccButton);
+        }
+        
         setControl(thisParent);
         setPageComplete(true);
+    }
+    
+    private void setNCCSupport(String ncc, boolean value) {
+        model.setSupportedNCC(ncc, value);
+    }
+    
+    private void setBCCSupport(String bcc, boolean value) {
+        model.setSupportedBCC(bcc, value);
     }
     
     private void setFrequencies(FrequencyBand band, Text frequenciesText) {
@@ -138,6 +214,31 @@ public class Step2AvailableResourcesPage extends AbstractAfpWizardPage {
     @Override
     protected int getStepNumber() {
         return STEP_NUMBER;
+    }
+
+    @Override
+    protected boolean isStepAvailable() {
+        return true;
+    }
+    
+    @Override
+    protected void refreshPage() {
+        super.refreshPage();
+
+        for (FrequencyBand frequencyBand : FrequencyBand.values()) {
+            Pair<Text, Button> field = bandFields.get(frequencyBand);
+            
+            field.left().setEnabled(model.isFrequencyBandSupported(frequencyBand));
+            field.right().setEnabled(model.isFrequencyBandSupported(frequencyBand));
+        }
+
+        for (String bcc : model.getAvailableBCC()) {
+            bsicFields.get(bcc).right().setEnabled(model.isBCCSupported(bcc));
+        }
+        
+        for (String ncc : model.getAvailableNCC()) {
+            bsicFields.get(ncc).right().setEnabled(model.isNCCSupported(ncc));
+        }
     }
 
 }

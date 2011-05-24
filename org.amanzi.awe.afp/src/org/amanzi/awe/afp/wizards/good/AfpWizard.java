@@ -146,7 +146,8 @@ public class AfpWizard extends Wizard implements IImportWizard {
             //do nothing - error on saving data already logged
         }
         
-        ((AbstractAfpWizardPage)page).refreshPage();
+        AbstractAfpWizardPage afpPage = (AbstractAfpWizardPage)page;
+        afpPage.refreshPage();
         
         return super.getNextPage(page);
     }

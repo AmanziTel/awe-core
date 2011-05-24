@@ -360,4 +360,9 @@ public class Step1OptimizationGoalsPage extends AbstractAfpWizardPage {
         summaryGroup.layout();
     }
 
+    @Override
+    protected boolean isStepAvailable() {
+        return true;
+    }
+
 }
