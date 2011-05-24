@@ -135,6 +135,7 @@
 				<module>org.amanzi.awe.filters</module>
    			    <module>org.amanzi.awe.neostyle</module>
    			    <module>org.amanzi.awe.script.jirb</module>
+   			    <module>org.amanzi.scripting.jirb</module>
 			</modules>
 			<build>
 				<plugins>
