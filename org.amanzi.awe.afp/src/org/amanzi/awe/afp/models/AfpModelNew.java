@@ -146,6 +146,9 @@ public class AfpModelNew {
             }
         }
         afpService.saveChannelTypes(afpModelNode, enabledChannels);
+        
+        //save supported BCC
+        
     }
 
     public void loadData() {

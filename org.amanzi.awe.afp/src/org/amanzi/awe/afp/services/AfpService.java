@@ -28,6 +28,10 @@ public class AfpService extends AbstractService {
     private static final String OPTIMIZATION_BANDS = "optimization_domains";
     
     private static final String CHANNEL_TYPES = "channel_types";
+    
+    private static final String SUPPORTED_BCC = "supported_bcc";
+    
+    private static final String SUPPORTED_NCC = "supported_ncc";
 
     private static AfpService instance;
     
@@ -162,6 +166,42 @@ public class AfpService extends AbstractService {
         }
         catch (Exception e) {
             LOGGER.error("Error on saving Optimization Bands", e);
+        }
+        finally {
+            tx.finish();
+        }
+    }
+    
+    public void saveBCC(Node modelNode, List<String> bcc) {
+        LOGGER.info("Saving supported BCC");
+        
+        String[] parameterValue = bcc.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
+        
+        Transaction tx = databaseService.beginTx();
+        try {
+            modelNode.setProperty(SUPPORTED_BCC, parameterValue);
+            tx.success();
+        }
+        catch (Exception e) { 
+            LOGGER.error("Error on saving supported BCC", e);
+        }
+        finally {
+            tx.finish();
+        }
+    }
+    
+    public void saveNCC(Node modelNode, List<String> ncc) {
+        LOGGER.info("Saving supported NCC");
+        
+        String[] parameterValue = ncc.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
+        
+        Transaction tx = databaseService.beginTx();
+        try {
+            modelNode.setProperty(SUPPORTED_NCC, parameterValue);
+            tx.success();
+        }
+        catch (Exception e) { 
+            LOGGER.error("Error on saving supported NCC", e);
         }
         finally {
             tx.finish();
