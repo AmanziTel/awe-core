@@ -43,7 +43,7 @@ import org.neo4j.kernel.Uniqueness;
  * @since 1.0.0
  */
 public abstract class AbstractService implements IDatabaseChangeListener {
-
+    
     protected GraphDatabaseService databaseService;
     
     private boolean updateService = true;

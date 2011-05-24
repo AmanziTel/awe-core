@@ -76,6 +76,8 @@ import com.vividsolutions.jts.util.Assert;
  */
 public class DatasetService extends AbstractService {
     private final Map<String, INodeType> registeredTypes = Collections.synchronizedMap(new HashMap<String, INodeType>());
+    
+    
 
     /**
      * should be used NeoServiceFactory for getting instance of DatasetService
@@ -494,6 +496,21 @@ public class DatasetService extends AbstractService {
         Iterator<Node> it = td.traverse(parent).nodes().iterator();
         return it.hasNext() ? it.next() : null;
     };
+    
+    public TraversalDescription getChildrenTraversal(Evaluator ... filters) {
+        TraversalDescription description = Traversal.description().depthFirst().relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+        
+        if (filters != null) {
+            for (Evaluator singleFilter : filters) {
+                if (singleFilter != null) {
+                    description = description.evaluator(singleFilter);
+                }
+            }
+            return description;
+        }
+        
+        return description;
+    }
 
     /**
      * Gets the child traversal - returns TraversalDescription for CHILD-NEXT structure
@@ -1686,6 +1703,18 @@ public class DatasetService extends AbstractService {
         }
         return result;
     }
+    
+    protected TraversalDescription getAllRootTraverser(Evaluator... evaluators) {
+        TraversalDescription description = Traversal.description().depthFirst().
+                                    relationships(DatasetRelationshipTypes.AWE_PROJECT, Direction.OUTGOING).
+                                    relationships(DatasetRelationshipTypes.CHILD, Direction.OUTGOING);
+        
+        for (Evaluator singleEvaluator : evaluators) {
+            description = description.evaluator(singleEvaluator);
+        }
+        
+        return description;
+    }
 
     /**
      *
@@ -1709,4 +1738,5 @@ public class DatasetService extends AbstractService {
         }
         return false;
     }
+
 }

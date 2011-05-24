@@ -37,6 +37,8 @@ import org.amanzi.neo.services.node2node.INodeToNodeType;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationService;
 import org.amanzi.neo.services.node2node.NodeToNodeTypes;
+import org.amanzi.neo.services.statistic.IStatistic;
+import org.amanzi.neo.services.statistic.internal.PropertyStatistics;
 import org.amanzi.neo.services.utils.Utils;
 import org.apache.commons.lang.ObjectUtils;
 import org.geotools.geometry.jts.JTS;
@@ -56,12 +58,14 @@ import com.vividsolutions.jts.geom.Coordinate;
  * @author Saelenchits_N
  * @since 1.0.0
  */
-public class NetworkModel {
+public class NetworkModel implements INetworkTraversableModel {
     private final Node rootNode;
     private final DatasetService ds;
 
     private final NetworkService networkService;
     private NodeToNodeRelationService n2nserrvice;
+    
+    private IStatistic statistics;
 
     public NetworkModel(Node rootNode) {
         this.rootNode = rootNode;
@@ -262,7 +266,7 @@ public class NetworkModel {
         return result;
     }
     
-    //TODO: LN: similar to used in SelectionModel => move to interface
+    @Override
     public Iterable<Node> getAllElementsByType(Evaluator filter, INodeType ... nodeTypes) {
         return networkService.getNetworkElementTraversal(filter, nodeTypes).traverse(rootNode).nodes();
     }
@@ -304,9 +308,22 @@ public class NetworkModel {
     public FrequencyPlanModel findFrequencyModel(String modelName) {
         return FrequencyPlanModel.findModel(rootNode, modelName);
     }
+    
+    public static List<NetworkModel> getAllNetworkModels() {
+        List<NetworkModel> result = new ArrayList<NetworkModel>();
+        
+        NetworkService networkService = NeoServiceFactory.getInstance().getNetworkService();
+        
+        for (Node networkNode : networkService.findAllNetworkNodes()) {
+            result.add(new NetworkModel(networkNode));
+        }
+        
+        return result;
+    }
 
     public Node getRootNode() {
         return rootNode;
     }
+    
     
 }

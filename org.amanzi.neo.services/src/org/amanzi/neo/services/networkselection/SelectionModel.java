@@ -20,6 +20,7 @@ import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.network.INetworkTraversableModel;
 import org.amanzi.neo.services.utils.Utils;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.traversal.Evaluator;
@@ -33,7 +34,7 @@ import org.neo4j.graphdb.traversal.Traverser;
  * @author gerzog
  * @since 1.0.0
  */
-public class SelectionModel {
+public class SelectionModel implements INetworkTraversableModel {
     
     /*
      * Name of Selection List
@@ -87,6 +88,7 @@ public class SelectionModel {
         return modelName;
     }
 
+    @Override
     public Iterable<Node> getAllElementsByType(Evaluator filter, INodeType ... nodeTypes) {
         return networkService.getSelectionListElementTraversal(filter, nodeTypes).traverse(rootNode).nodes();
     }

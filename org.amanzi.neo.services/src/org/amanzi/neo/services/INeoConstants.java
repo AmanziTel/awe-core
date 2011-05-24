@@ -22,7 +22,7 @@ import org.amanzi.neo.services.enums.NodeTypes;
  * @since 1.0.0
  */
 
-public class INeoConstants {
+public interface INeoConstants {
     
     /***********************************************************
      * Properties used by the org.amanzi.neo.loader clases
@@ -250,5 +250,7 @@ public class INeoConstants {
     public static final String PROPERTY_FIXED_COLOR = "fixed_color";
     public static final String INDEX_REL_MULTY = "multy-aggregate";
     public static final String PROPERTY_MAIO = "maio";
+    
+    public static final String AFP_PROPERTY_LAYER_NAME = "layer";
 
 }

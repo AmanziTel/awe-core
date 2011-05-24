@@ -53,15 +53,6 @@ import org.neo4j.helpers.Predicate;
 import org.neo4j.kernel.Traversal;
 import org.neo4j.kernel.Uniqueness;
 
-// TODO: Auto-generated Javadoc
-/**
- * <p>
- * Network service
- * </p>.
- *
- * @author TsAr
- * @since 1.0.0
- */
 /**
  * TODO Purpose of 
  * <p>
@@ -75,6 +66,7 @@ public class NetworkService extends DatasetService {
     /** The Constant FREQUENCY. */
     public static final String FREQUENCY = "frequency";
     
+
     /**
      * The Class NameFilter.
      */
@@ -1202,7 +1194,7 @@ CHANNEL_TRX,
      * @return the network element traversal
      */
     public TraversalDescription getNetworkElementTraversal(Evaluator filter, INodeType ... nodeTypes) {
-        return getNetworkElementTraversal(new MultiNodeTypeFilter(true, nodeTypes), filter);
+        return getChildrenTraversal(new MultiNodeTypeFilter(true, nodeTypes), filter);
     }
     
     /**
@@ -1236,7 +1228,6 @@ CHANNEL_TRX,
         
         return description;
     }
-
 
     /**
      * Have chanel group.
@@ -1419,6 +1410,22 @@ CHANNEL_TRX,
         }
         return result;
     }
+    
+    public List<Node> findAllNetworkNodes() {
+        return findAllNetworkNodes(databaseService.getReferenceNode());
+    }
+
+    public List<Node> findAllNetworkNodes(Node rootNode) {
+        ArrayList<Node> result = new ArrayList<Node>();
+        
+        for (Node node : getAllRootTraverser(Evaluators.toDepth(2), new MultiNodeTypeFilter(true, NodeTypes.NETWORK)).
+                         traverse(rootNode).
+                         nodes()) {
+            result.add(node);
+        }
+        
+        return result;
+    }
 
 
     /**
@@ -1434,7 +1441,6 @@ CHANNEL_TRX,
         }
         return relCount;
     }
-
 
     /**
      * Gets the single trx.
@@ -1456,4 +1462,5 @@ CHANNEL_TRX,
     public boolean isBCCHTRX(Node trx) {
         return (Boolean)trx.getProperty("bcch",false);
     }
+
 }
