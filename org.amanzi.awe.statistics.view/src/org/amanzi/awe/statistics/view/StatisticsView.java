@@ -37,6 +37,7 @@ import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.ChangeSelectionEvent;
+import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEventTypes;
 import org.amanzi.awe.report.editor.ReportEditor;
 import org.amanzi.awe.statistics.CallTimePeriods;
 import org.amanzi.awe.statistics.builder.StatisticsBuilder;
@@ -62,6 +63,7 @@ import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
 import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.ui.UpdateViewManager;
 import org.amanzi.scripting.jruby.ScriptUtils;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -961,8 +963,9 @@ public class StatisticsView extends ViewPart {
         nodes.add(rootNode);
         nodes.add(getDatasetNode());
 
-        NeoServicesUiPlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent(DRIVE_ID, nodes));
-        NeoServicesUiPlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDrillDownEvent(nodes, StatisticsView.ID));
+        final UpdateViewManager updViewManager = NeoServicesUiPlugin.getDefault().getUpdateViewManager();
+        updViewManager.fireUpdateView(new ShowPreparedViewEvent(DRIVE_ID, nodes));
+        updViewManager.fireUpdateView(new UpdateDrillDownEvent(nodes, StatisticsView.ID));
         selectNodesOnMap(cells, columnIndex);
     }
 
@@ -989,7 +992,8 @@ public class StatisticsView extends ViewPart {
                 getSourceNodesForCell(nodes, cell);
             }
 
-            ChangeSelectionEvent event = new ChangeSelectionEvent(null, nodes);
+            Node gisNode = NeoServiceFactory.getInstance().getDatasetService().findGisNode(getDatasetNode());
+            ChangeSelectionEvent event = new ChangeSelectionEvent(UpdateLayerEventTypes.CHANGE_SELECTION_AND_ZOOM,gisNode, nodes);
             NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(event);
         }
     }

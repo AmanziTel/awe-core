@@ -25,6 +25,7 @@ public enum UpdateLayerEventTypes {
     
     REFRESH,
     CHANGE_SELECTION,
+    CHANGE_SELECTION_AND_ZOOM,
     ADD_SELECTION,
     PROPERTY_UPDATE,
     PROPERTY_REFRESH,

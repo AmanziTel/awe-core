@@ -39,16 +39,22 @@ import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesAndMapEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesEvent;
 import org.amanzi.awe.ui.IGraphModel;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.neo.services.utils.Pair;
 import org.amanzi.neo.services.utils.Utils;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * Listener for layer events.
@@ -109,6 +115,9 @@ public class UpdateLayerListener {
             case ZOOM:
                 zoomToData((ChangeSelectionEvent)event);
                 break;
+            case CHANGE_SELECTION_AND_ZOOM:
+                zoomToNodes((ChangeSelectionEvent)event);
+                break;
             default:
 
             }
@@ -138,22 +147,111 @@ public class UpdateLayerListener {
         }
         Coordinate cr = new Coordinate(loc.r(), loc.l());
 
+        sendCenterComand(cr);
+    }
+    /**
+     * Select nodes on map and adjust zoom
+     * 
+     * @param event event object containing selected data
+     * @throws IOException
+     */
+    private void zoomToNodes(ChangeSelectionEvent event) throws IOException {
+        Node gis = event.getGisNode();
+        if (!isEventForThisLayer(gis)) {
+            return;
+        }
+        getGeoNeo().setSelectedNodes(new HashSet<Node>(event.getSelected()));
+        // find bounding box for selected data
+        Double minLon = Double.MAX_VALUE;
+        Double maxLon = Double.MIN_VALUE;
+        Double minLat = Double.MAX_VALUE;
+        Double maxLat = Double.MIN_VALUE;
+        for (Node node : event.getSelected()) {
+            Node locationNode = null;
+            if (node.hasProperty(INeoConstants.PROPERTY_LAT_NAME)) {
+                locationNode = node;
+            } else if (node.hasRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING)) {
+                locationNode = node.getSingleRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.OUTGOING).getEndNode();
+            }
+            if (locationNode != null) {
+                Pair<Double, Double> loc = Utils.getLocationPair(locationNode);
+                maxLat = Math.max(maxLat, loc.l());
+                minLat = Math.min(minLat, loc.l());
+                maxLon = Math.max(maxLon, loc.r());
+                minLon = Math.min(minLon, loc.r());
+            }
+        }
+        // add margin 5% to show all nodes
+        double margin = 0.05;
+        double deltaLat = (maxLat - minLat) * margin;
+        double deltaLon = (maxLon - minLon) * margin;
+        
+        sendChangeBBoxComand(new Coordinate(minLon - deltaLon, minLat - deltaLat), new Coordinate(maxLon + deltaLon, maxLat + deltaLat));
+    }
+
+    /**
+     * Sends zoom to center command
+     * 
+     * @param cr coordinate to be a center
+     */
+    private void sendCenterComand(Coordinate cr) {
         try {
             NavigationCommandFactory factory = NavigationCommandFactory.getInstance();
             IMap m = layer.getMap();
-            CoordinateReferenceSystem worldCrs =m.getViewportModel().getCRS();
+            CoordinateReferenceSystem worldCrs = m.getViewportModel().getCRS();
             CoordinateReferenceSystem dataCRS = layer.getGeoResource().getInfo(null).getCRS();
             MathTransform transform_d2w = CRS.findMathTransform(dataCRS, worldCrs, true);
-            Coordinate cr2=new Coordinate();
-            JTS.transform(cr,cr2, transform_d2w);
-            NavCommand[] commands = new NavCommand[] {
-            factory.createSetViewportCenterCommand(cr2), factory.createZoomCommand(8d)};
+            Coordinate cr2 = new Coordinate();
+            JTS.transform(cr, cr2, transform_d2w);
+            NavCommand[] commands = new NavCommand[] {factory.createSetViewportCenterCommand(cr2), factory.createZoomCommand(8d)};
 
             ((Map)m).sendCommandASync(factory.createCompositeCommand(commands));
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    /**
+     * Sends change BBox command
+     * 
+     * @param crd1 a left top corner coordinate
+     * @param crd2 a right bottom corner coordinate
+     */
+    private void sendChangeBBoxComand(Coordinate crd1,Coordinate crd2) {
+        try {
+            
+            NavigationCommandFactory factory = NavigationCommandFactory.getInstance();
+            IMap m = layer.getMap();
+            CoordinateReferenceSystem worldCrs = m.getViewportModel().getCRS();
+            CoordinateReferenceSystem dataCRS = layer.getGeoResource().getInfo(null).getCRS();
+           
+            Coordinate minCoord = new Coordinate();
+            Coordinate maxCoord = new Coordinate();
+            transformCoordinate(crd1, worldCrs, dataCRS, minCoord);
+            transformCoordinate(crd2, worldCrs, dataCRS, maxCoord);
+            
+            NavCommand[] commands = new NavCommand[] {factory.createSetViewportBBoxCommand(new Envelope(minCoord,maxCoord))};
+            
+            ((Map)m).sendCommandASync(factory.createCompositeCommand(commands));
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     *
+     * @param crd1
+     * @param worldCrs
+     * @param dataCRS
+     * @param cr2
+     * @throws FactoryException
+     * @throws TransformException
+     */
+    private void transformCoordinate(Coordinate crd1, CoordinateReferenceSystem worldCrs, CoordinateReferenceSystem dataCRS,
+            Coordinate cr2) throws FactoryException, TransformException {
+        MathTransform transform_d2w = CRS.findMathTransform(dataCRS, worldCrs, true);
+        JTS.transform(crd1, cr2, transform_d2w);
     }
 
     /**
