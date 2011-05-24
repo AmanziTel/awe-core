@@ -15,7 +15,7 @@ package org.amanzi.awe.afp.testing;
 
 import org.amanzi.awe.afp.testing.engine.internal.AfpEngineTest;
 import org.amanzi.awe.afp.testing.model.AfpModelTest;
-import org.amanzi.awe.afp.wizards.good.FrequenciesListUtils;
+import org.amanzi.awe.afp.testing.model.FrequenciesListUtilsTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -31,7 +31,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses({ AfpEngineTest.class,
                 AfpModelTest.class,
-                FrequenciesListUtils.class})
+                FrequenciesListUtilsTest.class})
 public class AFPTestSuite {
 
 }
