@@ -94,6 +94,8 @@ public class AfpService extends AbstractService {
     }
     
     public List<OptimizationType> loadOptimizationTypes(Node modelNode) {
+        LOGGER.info("Load Optimization Types");
+        
         ArrayList<OptimizationType> result = new ArrayList<OptimizationType>();
         
         String[] enabledTypes = (String[])modelNode.getProperty(OPTIMIZATION_TYPES, ArrayUtils.EMPTY_STRING_ARRAY);
@@ -106,6 +108,8 @@ public class AfpService extends AbstractService {
     }
     
     public List<FrequencyBand> loadOptimizationBands(Node modelNode) {
+        LOGGER.info("Load Optimization Bands");
+        
         ArrayList<FrequencyBand> result = new ArrayList<FrequencyBand>();
         
         String[] enabledTypes = (String[])modelNode.getProperty(OPTIMIZATION_BANDS, ArrayUtils.EMPTY_STRING_ARRAY);
@@ -118,6 +122,8 @@ public class AfpService extends AbstractService {
     }
     
     public List<ChannelType> loadChannelTypes(Node modelNode) {
+        LOGGER.info("Load Channel Types");
+        
         ArrayList<ChannelType> result = new ArrayList<ChannelType>();
         
         String[] enabledTypes = (String[])modelNode.getProperty(CHANNEL_TYPES, ArrayUtils.EMPTY_STRING_ARRAY);
