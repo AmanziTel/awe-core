@@ -25,7 +25,6 @@ import org.amanzi.neo.services.enums.NetworkTypes;
 import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.RGB;
@@ -183,27 +182,16 @@ public class NetworkStyleDefiner extends ViewPart {
     }
     @Override
     public void createPartControl(Composite parent) {
-        //Lagutko, 15.03.2010, adding a Scroll
-        GridLayout mainLayout = new GridLayout(1, false);
-        parent.setLayout(mainLayout);
-        
-        ScrolledComposite scroll = new ScrolledComposite(parent, SWT.V_SCROLL | SWT.H_SCROLL);
-        scroll.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-        scroll.setExpandVertical(true);
-        scroll.setExpandHorizontal(true);
-        
-        parent = new Composite(scroll, SWT.NONE);
-        parent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-        parent.setLayout(new GridLayout(1, true));
-        
+
+        Composite pMain = parent;//new Composite(parent, SWT.FILL);
         FormLayout layout = new FormLayout();
         layout.marginHeight = 0;
         layout.marginWidth = 0;
         layout.marginWidth = 0;
         layout.spacing = 0;
-        parent.setLayout(layout);
+        pMain.setLayout(layout);
         // color block
-        Group xGroup = new Group(parent, SWT.NONE);
+        Group xGroup = new Group(pMain, SWT.NONE);
         xGroup.setText("Colors"); //$NON-NLS-1$
         FormData formData = new FormData();
         formData.top = new FormAttachment(0, 5);
@@ -259,7 +247,7 @@ public class NetworkStyleDefiner extends ViewPart {
         formData.top = new FormAttachment(labelLine, 10);
         cEdLabel.getButton().setLayoutData(formData);
 
-        labelsGroup = new Group(parent, SWT.NONE);
+        labelsGroup = new Group(pMain, SWT.NONE);
         labelsGroup.setText("Labels"); //$NON-NLS-1$
         formData = new FormData();
         formData.top = new FormAttachment(xGroup, 5);
@@ -301,7 +289,7 @@ public class NetworkStyleDefiner extends ViewPart {
         // formData.top = new FormAttachment(labelLabel, 10);
         // sFontSize.setLayoutData(formData);
 
-        grSiteSymb = new Group(parent, SWT.NONE);
+        grSiteSymb = new Group(pMain, SWT.NONE);
         grSiteSymb.setText(Messages.Density_Thresholds);
         formData = new FormData();
         formData.top = new FormAttachment(labelsGroup, 15);
@@ -354,7 +342,7 @@ public class NetworkStyleDefiner extends ViewPart {
         lSmallSymb.setText(Messages.Small_Symbols);
         lLabeling.setText(Messages.Labels);
 
-        grScale = new Group(parent, SWT.NONE);
+        grScale = new Group(pMain, SWT.NONE);
         grScale.setText(Messages.Symbol_Sizes);
         formData = new FormData();
         formData.top = new FormAttachment(grSiteSymb, 15);
@@ -477,8 +465,6 @@ public class NetworkStyleDefiner extends ViewPart {
             }
         });
 
-        scroll.setContent(parent);
-        scroll.setMinSize(parent.computeSize(SWT.DEFAULT, SWT.DEFAULT));
     }
     /**
      * get array of sector names
@@ -606,6 +592,9 @@ public class NetworkStyleDefiner extends ViewPart {
     public void setGeoNeo(GeoNeo resource) {
         this.resource = resource;
         isProbe = NetworkTypes.PROBE.checkType(resource.getMainGisNode());
+    }
+    public GeoNeo getGeoNeo(){
+        return resource;
     }
     private String[] getDefaultFontItem() {
 

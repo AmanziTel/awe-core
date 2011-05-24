@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -24,10 +25,10 @@ import net.refractions.udig.project.internal.Layer;
 import net.refractions.udig.style.IStyleConfigurator;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
+import org.amanzi.neo.services.filters.Filter;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
-import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -38,13 +39,14 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
-import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -53,8 +55,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 
 /**
- * TODO Purpose of
  * <p>
+ * Configurer of network style
  * </p>
  * 
  * @author TsAr
@@ -62,20 +64,19 @@ import org.eclipse.swt.widgets.Table;
  */
 public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
     private NetworkNeoStyle curStyle;
-    private NetworkStyleDefiner defaultStyle=new NetworkStyleDefiner();
+    private NetworkStyleDefiner defaultStyle = new NetworkStyleDefiner();
     private CheckboxTableViewer viewer;
     private ContentProvider provider;
     private Button createNew;
-    private  Button remove;
+    private Button remove;
     /** NetworkNeoStyleConfigurator ID field */
     public static final String ID = "org.amanzi.awe.neostyle.style.network"; //$NON-NLS-1$
-
 
     //private static final String[] ICON_SIZES = new String[] {"6", "8", "12", "16", "32", "48", "64"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
 
     public NetworkNeoStyleConfigurator() {
         super();
-        
+
     }
 
     @Override
@@ -93,74 +94,77 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
         // return false;
     }
 
-
     @Override
     public void createControl(Composite parent) {
         parent.setLayout(new GridLayout(1, false));
         CTabFolder tabFolder = new CTabFolder(parent, SWT.TOP);
         tabFolder.setBorderVisible(true);
         tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
-        
-//        // Set up a gradient background for the selected tab
-//        tabFolder.setSelectionBackground(new Color[] {
-//            display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW),
-//            display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW),
-//            display.getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW)}, new int[] { 50,
-//            100});
 
-        CTabItem item = new CTabItem (tabFolder, SWT.NONE);
-        item.setText ("Style");
+        // // Set up a gradient background for the selected tab
+        // tabFolder.setSelectionBackground(new Color[] {
+        // display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW),
+        // display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW),
+        // display.getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW)}, new int[] { 50,
+        // 100});
+
+        CTabItem item = new CTabItem(tabFolder, SWT.NONE);
+        item.setText("Style");
         tabFolder.setSelection(item);
-        Composite style=new Composite(tabFolder,SWT.NONE);
-        style.setLayoutData(new GridData(GridData.FILL_BOTH));
-        
-        defaultStyle.createPartControl(style);
-        item.setControl(style);
-        item = new CTabItem (tabFolder, SWT.NONE);
-        item.setText ("Filters");
         ScrolledComposite scroll = new ScrolledComposite(tabFolder, SWT.V_SCROLL | SWT.H_SCROLL);
+        scroll.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        scroll.setExpandVertical(true);
+        scroll.setExpandHorizontal(true);
+        item.setControl(scroll);
+        Composite style = new Composite(scroll, SWT.FILL);
+        style.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        defaultStyle.createPartControl(style);
+        scroll.setContent(style);
+        scroll.setMinSize(style.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+        item = new CTabItem(tabFolder, SWT.NONE);
+        item.setText("Filters");
+        scroll = new ScrolledComposite(tabFolder, SWT.V_SCROLL | SWT.H_SCROLL);
         scroll.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         scroll.setExpandVertical(true);
         scroll.setExpandHorizontal(true);
         item.setControl(scroll);
         Composite filterMain = new Composite(scroll, SWT.NONE);
         filterMain.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-        createFilterPage(filterMain);    
+        createFilterPage(filterMain);
         scroll.setContent(filterMain);
     }
 
-
     private void createFilterPage(Composite filterMain) {
         filterMain.setLayout(new GridLayout(2, true));
-        Label lb=new Label(filterMain,SWT.LEFT);
+        Label lb = new Label(filterMain, SWT.LEFT);
         lb.setText("Applyed filters:");
-        viewer =  CheckboxTableViewer.newCheckList(filterMain, SWT.FULL_SELECTION|SWT.BORDER);
-        viewer.setColumnProperties(new String[]{"Filter"});
+        viewer = CheckboxTableViewer.newCheckList(filterMain, SWT.FULL_SELECTION | SWT.BORDER);
+        viewer.setColumnProperties(new String[] {"Filter"});
         viewer.setLabelProvider(new FiltrLabelProvider());
         viewer.addCheckStateListener(new ICheckStateListener() {
-            
+
             @Override
             public void checkStateChanged(CheckStateChangedEvent event) {
-               FilterRow row = (FilterRow)event.getElement();
-               row.setSelected(event.getChecked());
+                FilterRow row = (FilterRow)event.getElement();
+                row.setSelected(event.getChecked());
             }
         });
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
-            
+
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 IStructuredSelection selection = (IStructuredSelection)event.getSelection();
-                remove.setEnabled(selection.size()==1);
+                remove.setEnabled(selection.size() == 1);
             }
         });
         viewer.addDoubleClickListener(new IDoubleClickListener() {
-            
+
             @Override
             public void doubleClick(DoubleClickEvent event) {
-                IStructuredSelection selection=(IStructuredSelection)event.getSelection();
-                if (selection.size()==1){
+                IStructuredSelection selection = (IStructuredSelection)event.getSelection();
+                if (selection.size() == 1) {
                     FilterRow row = (FilterRow)selection.getFirstElement();
-                    //TODO implement
+                    editStyle(row);
                 }
             }
         });
@@ -175,7 +179,7 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
             public void controlResized(ControlEvent e) {
                 Table table = (Table)e.widget;
                 int width = table.getClientArea().width;
-                table.getColumn(0).setWidth(width-2);
+                table.getColumn(0).setWidth(width - 2);
             }
 
             @Override
@@ -183,25 +187,103 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
             }
         });
         viewer.getTable().setHeaderVisible(true);
-//        ColumnViewerToolTipSupport.enableFor(viewer);
-       createNew=new Button(filterMain, SWT.PUSH);
-       createNew.setText("Create filter");
-       
-       remove=new Button(filterMain, SWT.PUSH);
-       remove.setText("Delete selected");       
-       remove.setEnabled(false);
+        // ColumnViewerToolTipSupport.enableFor(viewer);
+        createNew = new Button(filterMain, SWT.PUSH);
+        createNew.setText("Create filter");
+        createNew.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                createNew();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+        remove = new Button(filterMain, SWT.PUSH);
+        remove.setText("Delete selected");
+        remove.setEnabled(false);
+        remove.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                removeSelected();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
     }
 
-
-
+    /**
+     * @param row
+     */
+    protected void editStyle(FilterRow row) {
+        NetworkFilterDefiner definer = new NetworkFilterDefiner(viewer.getControl().getShell(), "Edit filter",defaultStyle.getGeoNeo(), row.getName(), row.getWrapper());
+        FilterModel model = NeoStylePlugin.getDefault().getFilterModel();
+        Set<String> restr = new HashSet<String>();
+        restr.addAll(model.getFilterNames());
+        restr.remove(row.getName());
+        definer.setRestrictedNames(restr);
+        IFilterWrapper result = definer.open();
+        if (result != null) {
+            model.removeFilter(row.getName());
+            defaultStyle.getCurStyle().removeFilter(row.getName());
+            model.addFilter(definer.getWrapperName(), result);
+            model.addFilter(definer.getWrapperName(), result);
+            defaultStyle.getCurStyle().addFilter(definer.getWrapperName(), result);
+            model.store();
+        }
+        viewer.setInput(defaultStyle.getCurStyle());
+    }
 
     /**
      *
-     * @param viewer2
      */
+    protected void createNew() {
+        FilterWrapperImpl<NetworkNeoStyle> wrapper = createDefWrapper();
+        NetworkFilterDefiner definer = new NetworkFilterDefiner(viewer.getControl().getShell(), "Create new filter",defaultStyle.getGeoNeo(), "new", wrapper);
+        FilterModel model = NeoStylePlugin.getDefault().getFilterModel();
+        definer.setRestrictedNames(model.getFilterNames());
+        IFilterWrapper result = definer.open();
+        if (result != null) {
+            model.addFilter(definer.getWrapperName(), result);
+            defaultStyle.getCurStyle().addFilter(definer.getWrapperName(), result);
+            model.store();
+        }
+        viewer.setInput(defaultStyle.getCurStyle());
+    }
+
+    /**
+     * @return
+     */
+    private FilterWrapperImpl<NetworkNeoStyle> createDefWrapper() {
+        FilterWrapperImpl<NetworkNeoStyle> result = new FilterWrapperImpl<NetworkNeoStyle>();
+        Filter filter = new Filter();
+        result.setFilter(filter);
+        result.setStyle(new NetworkNeoStyleContent().createDefaultNetworkStyle());
+        return result;
+    }
+
+    /**
+     *
+     */
+    protected void removeSelected() {
+        IStructuredSelection sel=(IStructuredSelection)viewer.getSelection();
+        if (sel.size()!=1){
+            return;
+        }
+        
+        
+    }
+
+
     private void formColumns(CheckboxTableViewer viewer) {
-          
-         TableViewerColumn column = new TableViewerColumn(viewer, SWT.FILL);
+        TableViewerColumn column = new TableViewerColumn(viewer, SWT.FILL);
         column.setLabelProvider(new FiltrLabelProvider());
         column.getColumn().setText("Filter name");
     }
@@ -214,26 +296,34 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
         try {
             resource = getLayer().findGeoResource(GeoNeo.class).resolve(GeoNeo.class, null);
         } catch (IOException e) {
-            // TODO Handle IOException
-            throw (RuntimeException) new RuntimeException( ).initCause( e );
+            throw (RuntimeException)new RuntimeException().initCause(e);
         }
         defaultStyle.setGeoNeo(resource);
         defaultStyle.refresh();
-        ColumnViewerToolTipSupport.enableFor(viewer,ToolTip.NO_RECREATE);
         viewer.setInput(curStyle);
-        
+
     }
 
     @Override
     public void preApply() {
         super.preApply();
         defaultStyle.preApply();
-        getStyleBlackboard().put(ID, curStyle);
+        storeFilters();
+        getStyleBlackboard().put(ID, defaultStyle.getCurStyle());
     }
-    private static class ContentProvider implements IStructuredContentProvider{
 
-        List<FilterRow>elements=new ArrayList<FilterRow>();
+    /**
+     *
+     */
+    private void storeFilters() {
+        defaultStyle.getCurStyle().setFilterMap(provider.getChecked());
+    }
+
+    private static class ContentProvider implements IStructuredContentProvider {
+
+        List<FilterRow> elements = new ArrayList<FilterRow>();
         private CheckboxTableViewer viewer;
+
         @Override
         public void dispose() {
         }
@@ -241,63 +331,50 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
         @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
             this.viewer = (CheckboxTableViewer)viewer;
-            if (newInput==null){
+            if (newInput == null) {
                 elements.clear();
-            }  else{
-               NetworkNeoStyle style=(NetworkNeoStyle)newInput;
-               formElements(style);
+            } else {
+                NetworkNeoStyle style = (NetworkNeoStyle)newInput;
+                formElements(style);
             }
         }
 
-        
-        /**
-         *
-         * @return
-         */
-        public Object[] getChecked() {
-            List<FilterRow> checked=new ArrayList<FilterRow>();
-            for (FilterRow row:elements){
-                if (row.isSelected()){
-                    checked.add(row);
+        public List<String> getChecked() {
+            List<String> checked = new ArrayList<String>();
+            for (FilterRow row : elements) {
+                if (row.isSelected()) {
+                    checked.add(row.getName());
                 }
             }
-            return checked.toArray();
+            return checked;
         }
 
+        @SuppressWarnings("unchecked")
         private void formElements(NetworkNeoStyle style) {
             elements.clear();
-            FilterModel model=NeoStylePlugin.getDefault().getFilterModel();
+            FilterModel model = NeoStylePlugin.getDefault().getFilterModel();
             Set<String> names = style.getFilterNames();
-            for (String name:model.getFilterNames()){
+            for (String name : model.getFilterNames(NetworkNeoStyle.class)) {
                 FilterRow wr = new FilterRow();
                 wr.setName(name);
-                wr.setWrapper(model.getWrapperByName(name));
+                wr.setWrapper((FilterWrapperImpl<NetworkNeoStyle>)model.getWrapperByName(name));
                 wr.setSelected(names.contains(name));
                 elements.add(wr);
                 viewer.setChecked(wr, wr.isSelected());
             }
-            
-            FilterRow wr = new FilterRow();
-            wr.setName("test");
-            wr.setWrapper(model.getWrapperByName("test"));
-            wr.setSelected(names.contains("test"));
-            wr.setSelected(true);
-            viewer.setChecked(wr, wr.isSelected());
-            elements.add(wr);
-            
-            
-            Collections.sort(elements,new Comparator<FilterRow>(){
+
+            Collections.sort(elements, new Comparator<FilterRow>() {
 
                 @Override
                 public int compare(FilterRow o1, FilterRow o2) {
                     return o1.getName().compareTo(o2.getName());
-//                    if (o1.isSelected()==o2.isSelected()){
-//                        return o1.getName().compareTo(o2.getName());
-//                    }else{
-//                        return o1.isSelected()?-1:1;
-//                    }
+                    // if (o1.isSelected()==o2.isSelected()){
+                    // return o1.getName().compareTo(o2.getName());
+                    // }else{
+                    // return o1.isSelected()?-1:1;
+                    // }
                 }
-                
+
             });
         }
 
@@ -305,21 +382,22 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
         public Object[] getElements(Object inputElement) {
             return elements.toArray(new FilterRow[0]);
         }
-        
+
     }
-    private static class FiltrLabelProvider extends CellLabelProvider{
-        
+
+    private static class FiltrLabelProvider extends CellLabelProvider {
 
         @Override
         public void update(ViewerCell cell) {
             FilterRow wrapper = ((FilterRow)cell.getElement());
             cell.setText(wrapper.getName());
         }
+
         @Override
         public String getToolTipText(Object element) {
             FilterRow wrapper = ((FilterRow)element);
-            
-            return "Use doubleclick for edit filter '"+wrapper.getName()+"'";
+
+            return "Use doubleclick for edit filter '" + wrapper.getName() + "'";
         }
     }
 }

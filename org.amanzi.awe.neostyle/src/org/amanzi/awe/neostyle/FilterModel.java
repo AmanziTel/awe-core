@@ -20,13 +20,17 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -107,6 +111,10 @@ public void propertyChange(PropertyChangeEvent event) {
 //        String newValue=
     }
 }
+public void addFilter(String filterName,  IFilterWrapper wrapper){
+    Assert.isTrue(!filters.containsKey(filterName));
+   filters.put(filterName, wrapper); 
+}
 
 public Map<String,  IFilterWrapper> formsMapByName(Collection<String> filterNames) {
     Map<String, IFilterWrapper> result=new HashMap<String, IFilterWrapper>();
@@ -120,12 +128,31 @@ public Map<String,  IFilterWrapper> formsMapByName(Collection<String> filterName
     return result;
 }
 
-public Iterable<String> getFilterNames() {
+public Collection<String> getFilterNames() {
     return Collections.unmodifiableCollection(filters.keySet());
 }
 
 public IFilterWrapper getWrapperByName(String name) {
     return filters.get(name);
+}
+/**
+ *
+ * @param class1
+ * @return
+ */
+public Iterable<String> getFilterNames(Class<? extends BaseNeoStyle> clazz) {
+    List<String> result=new ArrayList<String>();
+    for (Entry<String, IFilterWrapper> entry:filters.entrySet()){
+        if (clazz.isAssignableFrom(entry.getValue().getStyle().getClass())){
+            result.add(entry.getKey());
+        }
+        
+    }
+    return result;
+}
+
+public void removeFilter(String name) {
+    filters.remove(name);
 }
 
 

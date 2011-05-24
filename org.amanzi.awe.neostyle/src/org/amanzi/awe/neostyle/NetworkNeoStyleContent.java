@@ -93,25 +93,33 @@ public class NetworkNeoStyleContent extends StyleContent{
             if (resource.canResolve(NeoGeoResource.class)) {
                 NeoGeoResource res = resource.resolve(NeoGeoResource.class, monitor);
                 if (res.getGeoNeo(monitor).getGisType() == GisTypes.NETWORK) {
-                    NetworkNeoStyle result = new NetworkNeoStyle(DEF_COLOR_LINE, DEF_COLOR_FILL, DEF_COLOR_LABEL);
-                    result.setSmallestSymb(DEF_SMALLEST_SYMB);
-                    result.setSmallSymb(DEF_SMALL_SYMB);
-                    result.setLabeling(DEF_LABELING);
-                    result.setFixSymbolSize(DEF_FIX_SYMB_SIZE);
-                    result.setSymbolSize(DEF_SYMB_SIZE);
-                    result.setSymbolTransparency(DEF_TRANSPARENCY);
-                    result.setSiteFill(DEF_COLOR_SITE);
-                    result.setMaximumSymbolSize(DEF_MAXIMUM_SYMBOL_SIZE);
-                    result.setDefaultBeamwidth(DEF_DEF_BEAMWIDTH);
-                    result.setFontSize(DEF_FONT_SIZE);
-                    result.setSectorFontSize(DEF_FONT_SIZE_SECTOR);
-                    result.setMainProperty(DEF_MAIN_PROPERTY);
-                    result.setSecondaryProperty(DEF_SECONDARY_PROPERTY);
-                    result.setIgnoreTransparency(IGNORE_TRANSPARENCY);
-                    return result;
+                    return createDefaultNetworkStyle();
                 } 
             }
             return null;
+        }
+
+        /**
+         *
+         * @return
+         */
+        public NetworkNeoStyle createDefaultNetworkStyle() {
+            NetworkNeoStyle result = new NetworkNeoStyle(DEF_COLOR_LINE, DEF_COLOR_FILL, DEF_COLOR_LABEL);
+            result.setSmallestSymb(DEF_SMALLEST_SYMB);
+            result.setSmallSymb(DEF_SMALL_SYMB);
+            result.setLabeling(DEF_LABELING);
+            result.setFixSymbolSize(DEF_FIX_SYMB_SIZE);
+            result.setSymbolSize(DEF_SYMB_SIZE);
+            result.setSymbolTransparency(DEF_TRANSPARENCY);
+            result.setSiteFill(DEF_COLOR_SITE);
+            result.setMaximumSymbolSize(DEF_MAXIMUM_SYMBOL_SIZE);
+            result.setDefaultBeamwidth(DEF_DEF_BEAMWIDTH);
+            result.setFontSize(DEF_FONT_SIZE);
+            result.setSectorFontSize(DEF_FONT_SIZE_SECTOR);
+            result.setMainProperty(DEF_MAIN_PROPERTY);
+            result.setSecondaryProperty(DEF_SECONDARY_PROPERTY);
+            result.setIgnoreTransparency(IGNORE_TRANSPARENCY);
+            return result;
         }
 
         @Override

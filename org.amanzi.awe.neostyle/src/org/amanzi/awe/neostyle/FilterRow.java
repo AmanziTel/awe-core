@@ -14,13 +14,13 @@
 package org.amanzi.awe.neostyle;
 
 public class FilterRow{
-    IFilterWrapper wrapper;
+    FilterWrapperImpl<NetworkNeoStyle> wrapper;
     String name;
     boolean selected;
-    public IFilterWrapper getWrapper() {
+    public FilterWrapperImpl<NetworkNeoStyle> getWrapper() {
         return wrapper;
     }
-    public void setWrapper(IFilterWrapper wrapper) {
+    public void setWrapper(FilterWrapperImpl<NetworkNeoStyle> wrapper) {
         this.wrapper = wrapper;
     }
     public String getName() {

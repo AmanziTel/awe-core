@@ -53,4 +53,17 @@ public class BaseNeoStyle implements Serializable {
             filters.putAll(NeoStylePlugin.getDefault().getFilterModel().formsMapByName(filterNames));
         }
     }
+
+   public void addFilter(String filterName,IFilterWrapper filter) {
+       filters.put(filterName, filter);
+   }
+
+  /**
+   * Removes the filter.
+   *
+   * @param filterName the filter name
+   */
+  public void removeFilter(String filterName) {
+      filters.remove(filterName);
+  }
 }

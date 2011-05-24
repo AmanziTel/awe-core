@@ -319,6 +319,4 @@ public class NetworkNeoStyle extends BaseNeoStyle implements Serializable{
         System.out.println("Set correlation "+drawCorrelations+" for "+this);
         this.drawCorrelations = drawCorrelations;
     }
-
-
 }
