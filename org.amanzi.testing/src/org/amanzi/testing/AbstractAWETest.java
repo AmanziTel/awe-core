@@ -70,14 +70,15 @@ public abstract class AbstractAWETest {
     }
     
     private static void deleteDirectory(File directory) {
-        for (File subFile : directory.listFiles()) {
-            if (subFile.isDirectory()) {
-                deleteDirectory(subFile);
-            }            
-            else {
-                subFile.delete();
+        if (directory.exists()) {
+            for (File subFile : directory.listFiles()) {
+                if (subFile.isDirectory()) {
+                    deleteDirectory(subFile);
+                } else {
+                    subFile.delete();
+                }
             }
+            directory.delete();
         }
-        directory.delete();
     }
 }
