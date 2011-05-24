@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.afp.testing.engine;
+package org.amanzi.awe.afp.testing.engine.internal;
 
 import java.io.File;
 
@@ -26,20 +26,20 @@ import org.amanzi.neo.loader.core.ILoader;
  * @author gerzog
  * @since 1.0.0
  */
-public class LoadSelectionDataAction extends AbstractLoadAction {
+public class LoadIMDataAction extends AbstractLoadAction {
 
     /**
      * @param file
      * @param projectName
      * @param rootName
      */
-    public LoadSelectionDataAction(File file, String projectName, String rootName) {
+    public LoadIMDataAction(File file, String projectName, String rootName) {
         super(file, projectName, rootName);
     }
 
     @Override
-    protected ILoader< ? , CommonConfigData> getLoader() {
-        return FakeLoaderFactory.getSelectionLoader();
+    public ILoader<?, CommonConfigData> getLoader() {
+        return FakeLoaderFactory.getIMLoader();
     }
 
 }

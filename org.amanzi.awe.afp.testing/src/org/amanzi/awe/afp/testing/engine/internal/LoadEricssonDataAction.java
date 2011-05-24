@@ -11,11 +11,11 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.afp.testing.engine;
+package org.amanzi.awe.afp.testing.engine.internal;
 
 import java.io.IOException;
 
-import org.amanzi.awe.afp.testing.engine.TestDataLocator.DataType;
+import org.amanzi.awe.afp.testing.engine.internal.TestDataLocator.DataType;
 
 /**
  * TODO Purpose of 
@@ -25,26 +25,26 @@ import org.amanzi.awe.afp.testing.engine.TestDataLocator.DataType;
  * @author gerzog
  * @since 1.0.0
  */
-public class LoadGermanyDataAction extends AbstractDataset {
-
-    private static final String DATASET_NAME = "Germany_dataset"; 
+public class LoadEricssonDataAction extends AbstractDataset {
     
-    public LoadGermanyDataAction(String projectName) throws IOException {
+    private static final String DATASET_NAME = "Ericsson_dataset"; 
+    
+    public LoadEricssonDataAction(String projectName) throws IOException {
         super(projectName);
         
         loadActions.add(new LoadNetworkDataAction(TestDataLocator.getNetworkFile(getDataType()), projectName, DATASET_NAME));
-        loadActions.add(new LoadNeighbourDataAction(TestDataLocator.getNeighbourFile(getDataType()), projectName, DATASET_NAME));
-        loadActions.add(new LoadIMDataAction(TestDataLocator.getIMFile(getDataType()), projectName, DATASET_NAME));
+        loadActions.add(new LoadNetworkConfigDataAction(TestDataLocator.getNetworkConfigDirectory(getDataType()), projectName, DATASET_NAME));
+        loadActions.add(new LoadNetworkMeasurementDataAction(TestDataLocator.getNetworkMeasurementsDirectory(getDataType()), projectName, DATASET_NAME));
         loadActions.add(new LoadSelectionDataAction(TestDataLocator.getSelectionFile(getDataType()), projectName, DATASET_NAME));
     }
 
     @Override
     public DataType getDataType() {
-        return DataType.GERMANY;
+        return DataType.ERICSSON;
     }
 
     @Override
     public String getName() {
         return DATASET_NAME;
-    }    
+    }
 }

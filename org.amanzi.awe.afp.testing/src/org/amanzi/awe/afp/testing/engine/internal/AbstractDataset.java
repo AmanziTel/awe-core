@@ -11,13 +11,13 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.afp.testing.engine;
+package org.amanzi.awe.afp.testing.engine.internal;
 
 import java.io.IOException;
 import java.util.LinkedList;
 
 import org.amanzi.awe.afp.models.AfpModel;
-import org.amanzi.awe.afp.testing.engine.AfpModelFactory.AfpScenario;
+import org.amanzi.awe.afp.testing.engine.internal.AfpModelFactory.AfpScenario;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.neo4j.graphdb.Node;
 

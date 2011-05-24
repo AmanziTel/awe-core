@@ -11,12 +11,14 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.afp.testing.engine;
+package org.amanzi.awe.afp.testing;
 
-import org.amanzi.awe.afp.models.AfpModel;
-import org.amanzi.awe.afp.testing.engine.AfpModelFactory.AfpScenario;
-import org.amanzi.awe.afp.testing.engine.TestDataLocator.DataType;
-import org.neo4j.graphdb.Node;
+import org.amanzi.awe.afp.testing.engine.internal.AfpEngineTest;
+import org.amanzi.awe.afp.testing.model.AfpModelTest;
+import org.amanzi.awe.afp.wizards.good.FrequenciesListUtils;
+import org.amanzi.testing.sanity.CustomSuite;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite.SuiteClasses;
 
 /**
  * TODO Purpose of 
@@ -26,14 +28,10 @@ import org.neo4j.graphdb.Node;
  * @author gerzog
  * @since 1.0.0
  */
-public interface IDataset extends Runnable {
-    
-    public Node getRootNode();
-    
-    public DataType getDataType();
-    
-    public String getName();
-    
-    public AfpModel getAfpModel(AfpScenario scenario); 
+@RunWith(CustomSuite.class)
+@SuiteClasses({ AfpEngineTest.class,
+                AfpModelTest.class,
+                FrequenciesListUtils.class})
+public class AFPTestSuite {
 
 }

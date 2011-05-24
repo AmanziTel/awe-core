@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.afp.testing.engine;
+package org.amanzi.awe.afp.testing.engine.internal;
 
 import org.amanzi.awe.afp.ericsson.parser.BarRirParser;
 import org.amanzi.awe.afp.ericsson.parser.NetworkConfigurationParser;
