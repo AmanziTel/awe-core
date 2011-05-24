@@ -94,11 +94,9 @@ public class Step2AvailableResourcesPage extends AbstractAfpWizardPage {
             
             final Text frequenciesText = new Text(frequenciesGroup, SWT.BORDER | SWT.SINGLE);
             frequenciesText.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false));
-            frequenciesText.setEnabled(model.isFrequencyBandSupported(frequencyBand));
             
             final Button frequenciesButton = new Button(frequenciesGroup, GridData.END);
             frequenciesButton.setText("...");
-            frequenciesButton.setEnabled(model.isFrequencyBandSupported(frequencyBand));
             
             bandFields.put(frequencyBand, new Pair<Text, Button>(frequenciesText, frequenciesButton));
             
@@ -141,9 +139,8 @@ public class Step2AvailableResourcesPage extends AbstractAfpWizardPage {
         }
         
         new Label(bsicGroup, GridData.BEGINNING).setText("Available NCCs: ");
-        for (final String ncc : model.getAvailableNCC()) {
+        for (final String ncc : AfpModelNew.getAvailableBSIC()) {
             final Button nccButton = new Button(bsicGroup, SWT.CHECK);
-            nccButton.setSelection(model.isNCCSupported(ncc));
             nccButton.addSelectionListener(new SelectionListener() {
                 
                 @Override
@@ -161,9 +158,8 @@ public class Step2AvailableResourcesPage extends AbstractAfpWizardPage {
         }
 
         new Label(bsicGroup, GridData.BEGINNING).setText("Available BCCs: ");
-        for (final String bcc : model.getAvailableBCC()) {
+        for (final String bcc : AfpModelNew.getAvailableBSIC()) {
             final Button bccButton = new Button(bsicGroup, SWT.CHECK);
-            bccButton.setSelection(model.isBCCSupported(bcc));
             bccButton.addSelectionListener(new SelectionListener() {
                 
                 @Override
@@ -232,11 +228,11 @@ public class Step2AvailableResourcesPage extends AbstractAfpWizardPage {
             field.right().setEnabled(model.isFrequencyBandSupported(frequencyBand));
         }
 
-        for (String bcc : model.getAvailableBCC()) {
+        for (String bcc : AfpModelNew.getAvailableBSIC()) {
             bsicFields.get(bcc).right().setEnabled(model.isBCCSupported(bcc));
         }
         
-        for (String ncc : model.getAvailableNCC()) {
+        for (String ncc : AfpModelNew.getAvailableBSIC()) {
             bsicFields.get(ncc).right().setEnabled(model.isNCCSupported(ncc));
         }
     }
