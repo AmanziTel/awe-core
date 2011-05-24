@@ -118,7 +118,6 @@
 				<module>org.amanzi.scripting.jruby</module>
 				<module>org.amanzi.splash</module>
 				<module>org.amanzi.testing</module>
-				<module>org.amanzi.testing.sanity</module>
 				<module>org.apache.log4j</module>
 				<module>org.jfree</module>
 				<module>org.jruby</module>
