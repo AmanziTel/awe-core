@@ -131,6 +131,9 @@
 				<module>org.rubypeople.rdt.refactoring</module>
 				<module>org.rubypeople.rdt.ui</module>
 				<module>org.amanzi.awe.report</module>
+				<module>org.amanzi.awe.views.kpi</module>
+				<module>org.amanzi.awe.filters</module>
+   			    <module>org.amanzi.awe.neostyle</module>
 			</modules>
 			<build>
 				<plugins>
