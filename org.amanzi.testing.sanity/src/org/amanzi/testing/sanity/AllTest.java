@@ -13,15 +13,7 @@
 
 package org.amanzi.testing.sanity;
 
-import java.net.URL;
-import java.net.URLClassLoader;
-
-import junit.framework.JUnit4TestAdapter;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
 import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 /**
@@ -45,7 +37,8 @@ import org.junit.runners.Suite.SuiteClasses;
 				org.amanzi.neo.loader.testing.TemsLoaderTest.class,
 				org.amanzi.neo.loader.core.saver.impl.testing.NetworkSaverTesting.class,
 //				org.amanzi.neo.loader.core.saver.impl.testing.StatisticTesting.class,
-				org.amanzi.neo.services.node2node.testing.NodeToNodeRelationModelTesting.class} )
+				org.amanzi.neo.services.node2node.testing.NodeToNodeRelationModelTesting.class,
+				org.amanzi.neo.services.testing.filters.FilterTest.class} )
 // Note that Categories is a kind of Suite
 public class AllTest {
 	

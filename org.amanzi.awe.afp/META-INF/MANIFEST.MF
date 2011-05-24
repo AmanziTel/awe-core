@@ -30,4 +30,7 @@ Export-Package: org.amanzi.awe.afp,
  org.amanzi.awe.afp.filters,
  org.amanzi.awe.afp.loaders,
  org.amanzi.awe.afp.models,
- org.amanzi.awe.afp.views
+ org.amanzi.awe.afp.models.parameters;x-friends:="org.amanzi.awe.afp.testing",
+ org.amanzi.awe.afp.services,
+ org.amanzi.awe.afp.views,
+ org.amanzi.awe.afp.wizards.good;x-friends:="org.amanzi.awe.afp.testing"

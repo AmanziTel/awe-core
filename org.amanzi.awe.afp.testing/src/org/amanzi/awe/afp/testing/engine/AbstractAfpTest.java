@@ -13,7 +13,6 @@
 
 package org.amanzi.awe.afp.testing.engine;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,18 +21,14 @@ import org.amanzi.awe.afp.executors.AfpProcessExecutor;
 import org.amanzi.awe.afp.exporters.AfpExporter;
 import org.amanzi.awe.afp.loaders.AfpOutputFileLoader;
 import org.amanzi.awe.afp.models.AfpModel;
+import org.amanzi.awe.afp.testing.engine.internal.AfpModelFactory.AfpScenario;
 import org.amanzi.awe.afp.testing.engine.internal.FakeAfpLoader;
 import org.amanzi.awe.afp.testing.engine.internal.IDataset;
 import org.amanzi.awe.afp.testing.engine.internal.LoadEricssonDataAction;
 import org.amanzi.awe.afp.testing.engine.internal.LoadGermanyDataAction;
-import org.amanzi.awe.afp.testing.engine.internal.AfpModelFactory.AfpScenario;
 import org.amanzi.awe.afp.testing.engine.internal.TestDataLocator.DataType;
-import org.amanzi.neo.db.manager.DatabaseManager;
-import org.amanzi.neo.loader.ui.preferences.DataLoadPreferenceInitializer;
-import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 /**
  * TODO Purpose of 
@@ -43,11 +38,9 @@ import org.neo4j.kernel.EmbeddedGraphDatabase;
  * @author gerzog
  * @since 1.0.0
  */
-public abstract class AbstractAfpTest {
+public abstract class AbstractAfpTest extends AbstractAWETest {
     
     private static Logger LOGGER = Logger.getLogger(AbstractAfpTest.class);
-    
-    protected static GraphDatabaseService graphDatabaseService;
     
     protected static ArrayList<IDataset> datasets = new ArrayList<IDataset>();
     
@@ -68,27 +61,6 @@ public abstract class AbstractAfpTest {
                 datasets.add(getDatasetLoader(singleType));
             }
         }
-    }
-    
-    /**
-     * Initialized Database on selected Directory
-     */
-    private static void initializeDb() {
-        LOGGER.info("Initialize Database");
-        graphDatabaseService = new EmbeddedGraphDatabase(getDbLocation());
-        NeoServiceProviderUi.initProvider(graphDatabaseService, getDbLocation());
-        DatabaseManager.setDatabaseAndIndexServices(graphDatabaseService, NeoServiceProviderUi.getProvider().getIndexService());
-        LOGGER.info("Database was successfully initialized");
-    }
-    
-    private static void initPreferences() {
-        LOGGER.info("Load Preferences");
-        DataLoadPreferenceInitializer initializer = new DataLoadPreferenceInitializer();
-        initializer.initializeDefaultPreferences();
-    }
-    
-    protected static String getDbLocation() {
-        return System.getProperty("user.home") + File.separator + ".amanzi" + File.separator + "afp_test";
     }
     
     private static IDataset getDatasetLoader(DataType dataType) throws IOException {
@@ -188,30 +160,6 @@ public abstract class AbstractAfpTest {
                 LOGGER.info("Generated Frequency Plan for datasets <" + dataset.getName() + "> and scenario <" + scenario.name() + "> was loaded in " + (after - before) + " milliseconds");
             }
         }
-    }
-    
-    protected static void stopDb() {
-        NeoServiceProviderUi.getProvider().getIndexService().shutdown();
-        graphDatabaseService.shutdown();        
-    }
-    
-    /**
-     * Clears Database Directory
-     */
-    protected static void clearDb() {
-        deleteDirectory(new File(getDbLocation()));
-    }
-    
-    private static void deleteDirectory(File directory) {
-        for (File subFile : directory.listFiles()) {
-            if (subFile.isDirectory()) {
-                deleteDirectory(subFile);
-            }            
-            else {
-                subFile.delete();
-            }
-        }
-        directory.delete();
     }
 
 }

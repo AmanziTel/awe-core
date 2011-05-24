@@ -11,15 +11,15 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.afp.testing.model;
+package org.amanzi.neo.services.testing.filters;
 
-import org.amanzi.awe.afp.filters.AfpFilterNew;
-import org.amanzi.awe.afp.filters.AfpFilterNew.ExpressionType;
-import org.amanzi.awe.afp.filters.AfpFilterNew.FilterType;
-import org.amanzi.awe.afp.testing.engine.AbstractAfpTest;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.filters.ExpressionType;
+import org.amanzi.neo.services.filters.Filter;
+import org.amanzi.neo.services.filters.FilterType;
+import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -36,9 +36,9 @@ import org.neo4j.graphdb.Transaction;
  * @author Kondratenko_V
  * @since 1.0.0
  */
-public class AfpFilterTest extends AbstractAfpTest {
+public class FilterTest extends AbstractAWETest {
     
-    private static Logger LOGGER = Logger.getLogger(AfpModelTest.class);
+    private static Logger LOGGER = Logger.getLogger(FilterTest.class);
 
     private static long startTimestamp;
 
@@ -51,9 +51,9 @@ public class AfpFilterTest extends AbstractAfpTest {
         LOGGER.info("Set up AFP Filter Test");
 
         try {
-            initEnvironment();
+            initializeDb();
+            initPreferences();
             
-            // loadDataset();
             datasetService = NeoServiceFactory.getInstance().getDatasetService();
             //afpService = AfpService.getService();
         } catch (Exception e) {
@@ -95,12 +95,12 @@ public class AfpFilterTest extends AbstractAfpTest {
             datasetService.getNodeType(firstNode);
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "Value1");
-            AfpFilterNew afpFilter=new AfpFilterNew(FilterType.EQUALS,ExpressionType.AND);
+            Filter afpFilter=new Filter(FilterType.EQUALS,ExpressionType.AND);
             LOGGER.info("--firstNode property: "+"'Name'; value: "+firstNode.getProperty("Name"));
             LOGGER.info("--secondNode property: "+"'Name'; value: "+secondNode.getProperty("Name"));
             LOGGER.info("----FilterType is 'EQUALS' ExpressionType is 'AND'");
-            //afpFilter.addFilter(new AfpFilterNew(FilterType.EQUALS,ExpressionType.AND));
-            afpFilter.setExpression(null, "Name", secondNode.getProperty("Name"));
+            //afpFilter.addFilter(new Filter(FilterType.EQUALS,ExpressionType.AND));
+            afpFilter.setExpression(null, "Name", secondNode.getProperty("Name").toString());
             Assert.assertTrue("Values are not EQUALS ",afpFilter.check(firstNode));
             
             tx.success();
@@ -130,12 +130,12 @@ public class AfpFilterTest extends AbstractAfpTest {
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "Value 1 6 kk");
   
-            AfpFilterNew afpFilter=new AfpFilterNew(FilterType.EQUALS,ExpressionType.AND);
+            Filter afpFilter=new Filter(FilterType.EQUALS,ExpressionType.AND);
             LOGGER.info("--firstNode property: "+"'Name';value: "+firstNode.getProperty("Name"));
             LOGGER.info("--secondNode property: "+"'Name';value: "+secondNode.getProperty("Name"));
             LOGGER.info("----FilterType is 'EQUALS' ExpressionType is 'AND'");
-            //afpFilter.addFilter(new AfpFilterNew(FilterType.EQUALS,ExpressionType.AND));
-            afpFilter.setExpression(null, "Name", secondNode.getProperty("Name"));
+            //afpFilter.addFilter(new Filter(FilterType.EQUALS,ExpressionType.AND));
+            afpFilter.setExpression(null, "Name", secondNode.getProperty("Name").toString());
             Assert.assertFalse("Values are EQUALS or expression is find ",afpFilter.check(firstNode));
             tx.success();
             
@@ -162,7 +162,7 @@ public class AfpFilterTest extends AbstractAfpTest {
             datasetService.getNodeType(firstNode);
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "Value");
-            AfpFilterNew afpFilter=new AfpFilterNew(FilterType.LIKE,ExpressionType.AND);
+            Filter afpFilter=new Filter(FilterType.LIKE,ExpressionType.AND);
             afpFilter.setExpression(null, "Name", ".*"+secondNode.getProperty("Name")+".*");
             LOGGER.info("--firstNode property: "+"'Name'; value: "+firstNode.getProperty("Name"));
             LOGGER.info("--secondNode property: "+"'Name'; value: "+secondNode.getProperty("Name"));
@@ -193,8 +193,8 @@ public class AfpFilterTest extends AbstractAfpTest {
             datasetService.getNodeType(firstNode);
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "Value");
-            AfpFilterNew afpFilter=new AfpFilterNew(FilterType.LIKE,ExpressionType.AND);
-            afpFilter.setExpression(null, "Name", secondNode.getProperty("Name"));
+            Filter afpFilter=new Filter(FilterType.LIKE,ExpressionType.AND);
+            afpFilter.setExpression(null, "Name", secondNode.getProperty("Name").toString());
             LOGGER.info("--firstNode property: "+"'Name'; value: "+firstNode.getProperty("Name"));
             LOGGER.info("--secondNode property: "+"'Name'; value: "+secondNode.getProperty("Name"));
             LOGGER.info("----FilterType is 'LIKE' ExpressionType is 'AND'");
@@ -226,11 +226,11 @@ public class AfpFilterTest extends AbstractAfpTest {
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", 33);
             secondNode.setProperty("Rest", "value1");
-            AfpFilterNew afpFilter=new AfpFilterNew(FilterType.EQUALS,ExpressionType.OR);
-            AfpFilterNew addAfpFilter=new AfpFilterNew(FilterType.EQUALS);
+            Filter afpFilter=new Filter(FilterType.EQUALS,ExpressionType.OR);
+            Filter addAfpFilter=new Filter(FilterType.EQUALS);
            
             afpFilter.setExpression(null, "Name", ".*"+secondNode.getProperty("Name")+".*");
-            addAfpFilter.setExpression(null,"Rest", secondNode.getProperty("Rest"));
+            addAfpFilter.setExpression(null,"Rest", secondNode.getProperty("Rest").toString());
            
             afpFilter.addFilter(addAfpFilter);
             LOGGER.info("--firstNode property: "+"'Name'; value: "+firstNode.getProperty("Name"));
@@ -262,8 +262,8 @@ public class AfpFilterTest extends AbstractAfpTest {
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "name");
             secondNode.setProperty("Rest", "value");
-            AfpFilterNew afpFilter=new AfpFilterNew(FilterType.LIKE,ExpressionType.AND);
-            AfpFilterNew addAfpFilter=new AfpFilterNew(FilterType.LIKE);
+            Filter afpFilter=new Filter(FilterType.LIKE,ExpressionType.AND);
+            Filter addAfpFilter=new Filter(FilterType.LIKE);
            
             afpFilter.setExpression(null, "Name", ".*"+secondNode.getProperty("Name")+".*");
             addAfpFilter.setExpression(null,"Rest", ".*"+secondNode.getProperty("Rest")+".*");
@@ -299,10 +299,10 @@ public class AfpFilterTest extends AbstractAfpTest {
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "name 1");
             secondNode.setProperty("Rest", "value");
-            AfpFilterNew afpFilter=new AfpFilterNew(FilterType.EQUALS,ExpressionType.AND);
-            AfpFilterNew addAfpFilter=new AfpFilterNew(FilterType.LIKE);
+            Filter afpFilter=new Filter(FilterType.EQUALS,ExpressionType.AND);
+            Filter addAfpFilter=new Filter(FilterType.LIKE);
            
-            afpFilter.setExpression(null, "Name", secondNode.getProperty("Name"));
+            afpFilter.setExpression(null, "Name", secondNode.getProperty("Name").toString());
             addAfpFilter.setExpression(null,"Rest", ".*"+secondNode.getProperty("Rest")+".*");
             afpFilter.addFilter(addAfpFilter);
              
@@ -338,11 +338,11 @@ public class AfpFilterTest extends AbstractAfpTest {
             secondNode.setProperty("Name", "name");
             secondNode.setProperty("Rest", "value 4");
             
-            AfpFilterNew afpFilter=new AfpFilterNew(FilterType.LIKE,ExpressionType.AND);
-            AfpFilterNew addAfpFilter=new AfpFilterNew(FilterType.EQUALS);
+            Filter afpFilter=new Filter(FilterType.LIKE,ExpressionType.AND);
+            Filter addAfpFilter=new Filter(FilterType.EQUALS);
            
             afpFilter.setExpression(null, "Name", ".*"+secondNode.getProperty("Name")+".*");
-            addAfpFilter.setExpression(null,"Rest", secondNode.getProperty("Rest"));
+            addAfpFilter.setExpression(null,"Rest", secondNode.getProperty("Rest").toString());
             afpFilter.addFilter(addAfpFilter);
              
             LOGGER.info("--firstNode property: "+"'Name'; value: "+firstNode.getProperty("Name"));
@@ -375,7 +375,7 @@ public class AfpFilterTest extends AbstractAfpTest {
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "name");
             secondNode.setProperty("Rest", "value 4");
-            AfpFilterNew afpFilter = new AfpFilterNew(FilterType.LIKE);
+            Filter afpFilter = new Filter(FilterType.LIKE);
             afpFilter.setExpression(null, "Name", ".*" + secondNode.getProperty("Name") + ".*");
 
             LOGGER.info("--firstNode doesn't consist 'Name' property: ");
@@ -410,7 +410,7 @@ public class AfpFilterTest extends AbstractAfpTest {
 //            Node secondNode = graphDatabaseService.createNode();
 //            secondNode.setProperty("Name", "name");
 //            secondNode.setProperty("Rest", "value 4");
-//            AfpFilterNew afpFilter = new AfpFilterNew(FilterType.LIKE);
+//            Filter afpFilter = new Filter(FilterType.LIKE);
 //            afpFilter.setExpression(null, "Name", ".*" + secondNode.getProperty("Name") + ".*");
 //
 //            LOGGER.info("--firstNode property: " + "'Name'; value: " + firstNode.getProperty("Name"));
@@ -446,7 +446,7 @@ public class AfpFilterTest extends AbstractAfpTest {
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "name");
             secondNode.setProperty("Rest", "value 4");
-            AfpFilterNew afpFilter = new AfpFilterNew(FilterType.LIKE);
+            Filter afpFilter = new Filter(FilterType.LIKE);
             afpFilter.setExpression(null,null, ".*" + secondNode.getProperty("Name") + ".*");
 
             LOGGER.info("--firstNode property: " + "'Name'; value: " + firstNode.getProperty("Name"));
@@ -482,8 +482,8 @@ public class AfpFilterTest extends AbstractAfpTest {
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "name");
             secondNode.setProperty("Rest", "value 4");
-            AfpFilterNew afpFilter = new AfpFilterNew(FilterType.EQUALS);
-            afpFilter.setExpression(null,null,secondNode.getProperty("Name"));
+            Filter afpFilter = new Filter(FilterType.EQUALS);
+            afpFilter.setExpression(null,null,secondNode.getProperty("Name").toString());
 
             LOGGER.info("--firstNode property: " + "'Name'; value: " + firstNode.getProperty("Name"));
             LOGGER.info("--secondNode property: " + "'Name'; value: " + secondNode.getProperty("Name"));
@@ -518,7 +518,7 @@ public class AfpFilterTest extends AbstractAfpTest {
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "name");
             secondNode.setProperty("Rest", "value 4");
-            AfpFilterNew afpFilter = new AfpFilterNew(FilterType.EQUALS);
+            Filter afpFilter = new Filter(FilterType.EQUALS);
             afpFilter.setExpression(null,"Name", null);
 
             LOGGER.info("--firstNode property: " + "'Name'; value: " + firstNode.getProperty("Name"));
@@ -553,7 +553,7 @@ public class AfpFilterTest extends AbstractAfpTest {
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "name");
             secondNode.setProperty("Rest", "value 4");
-            AfpFilterNew afpFilter = new AfpFilterNew(FilterType.LIKE);
+            Filter afpFilter = new Filter(FilterType.LIKE);
             afpFilter.setExpression(null,"Name", null);
 
             LOGGER.info("--firstNode property: " + "'Name'; value: " + firstNode.getProperty("Name"));
@@ -587,7 +587,7 @@ public class AfpFilterTest extends AbstractAfpTest {
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "name");
             secondNode.setProperty("Rest", "value 4");
-            AfpFilterNew afpFilter = new AfpFilterNew(FilterType.LIKE);
+            Filter afpFilter = new Filter(FilterType.LIKE);
             afpFilter.setExpression(null,null, null);
 
             LOGGER.info("--firstNode property: " + "'Name'; value: " + firstNode.getProperty("Name"));
@@ -622,7 +622,7 @@ public class AfpFilterTest extends AbstractAfpTest {
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "name");
             secondNode.setProperty("Rest", "value 4");
-            AfpFilterNew afpFilter = new AfpFilterNew(FilterType.EQUALS);
+            Filter afpFilter = new Filter(FilterType.EQUALS);
             afpFilter.setExpression(null,null, null);
 
             LOGGER.info("--firstNode property: " + "'Name'; value: " + firstNode.getProperty("Name"));
@@ -662,7 +662,7 @@ public class AfpFilterTest extends AbstractAfpTest {
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "name");
             secondNode.setProperty("Rest", "value 4");
-            AfpFilterNew afpFilter = new AfpFilterNew(FilterType.EQUALS,ExpressionType.AND);
+            Filter afpFilter = new Filter(FilterType.EQUALS,ExpressionType.AND);
             afpFilter.setExpression(NodeTypes.CITY,"Rest", "value 4");
 
             LOGGER.info("--firstNode nodeType:'CITY'; property: " + "'Rest'; value: " + firstNode.getProperty("Rest"));
@@ -700,8 +700,8 @@ public class AfpFilterTest extends AbstractAfpTest {
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "name");
             secondNode.setProperty("Rest", "value 4");
-            AfpFilterNew afpFilter = new AfpFilterNew(FilterType.EQUALS,ExpressionType.AND);
-            //AfpFilterNew addafpFilter = new AfpFilterNew(FilterType.LIKE);
+            Filter afpFilter = new Filter(FilterType.EQUALS,ExpressionType.AND);
+            //Filter addafpFilter = new Filter(FilterType.LIKE);
            // addafpFilter.setExpression(NodeTypes.CITY, "Name", ".*Name.*");
             afpFilter.setExpression(NodeTypes.BSC,"Rest", "value 4");
            // afpFilter.addFilter(addafpFilter);

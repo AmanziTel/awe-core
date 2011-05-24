@@ -78,17 +78,18 @@ public class Filter implements IFilter {
     @Override
     public boolean check(Node node) {
         boolean result = false;
+        boolean supportedType = true;
         
         DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
         INodeType currentType = datasetService.getNodeType(node);
         
         if ((currentType != null) && (nodeType != null) &&
-            (!currentType.equals(nodeType))) {
-            result = false;
-        }
+                (!currentType.equals(nodeType))) {
+                supportedType = false;
+            }
         
         //check is node has this property
-        if (node.hasProperty(propertyName)) {
+        if (supportedType && node.hasProperty(propertyName)) {
             //get property value
             Object propertyValue = node.getProperty(propertyName);
             
