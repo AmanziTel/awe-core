@@ -148,7 +148,22 @@ public class AfpModelNew {
         afpService.saveChannelTypes(afpModelNode, enabledChannels);
         
         //save supported BCC
+        ArrayList<String> bcc = new ArrayList<String>();
+        for (Entry<String, Boolean> singleBCC : supportedBCC.entrySet()) {
+            if (singleBCC.getValue()) {
+                bcc.add(singleBCC.getKey());
+            }
+        }
+        afpService.saveBCC(afpModelNode, bcc);
         
+        //save supported NCC
+        ArrayList<String> ncc = new ArrayList<String>();
+        for (Entry<String, Boolean> singleNCC : supportedNCC.entrySet()) {
+            if (singleNCC.getValue()) {
+                ncc.add(singleNCC.getKey());
+            }
+        }
+        afpService.saveBCC(afpModelNode, ncc);
     }
 
     public void loadData() {
