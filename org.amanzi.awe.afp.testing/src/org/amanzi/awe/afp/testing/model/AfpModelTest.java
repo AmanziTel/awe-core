@@ -20,6 +20,7 @@ import org.amanzi.awe.afp.models.AfpModelNew;
 import org.amanzi.awe.afp.models.FrequencyDomain;
 import org.amanzi.awe.afp.models.parameters.ChannelType;
 import org.amanzi.awe.afp.models.parameters.FrequencyBand;
+import org.amanzi.awe.afp.models.parameters.OptimizationType;
 import org.amanzi.awe.afp.services.AfpService;
 import org.amanzi.awe.afp.testing.engine.AbstractAfpTest;
 import org.amanzi.awe.afp.testing.engine.internal.IDataset;
@@ -357,6 +358,116 @@ public class AfpModelTest extends AbstractAfpTest {
         }
         
         return result;
+    }
+    
+    @Test
+    public void checkSupportedOptimizationTypes() {
+        LOGGER.info("Test to check correct work with OptimizationTypes");
+
+        IDataset dataset = datasets.get(0);
+        
+        long before = System.currentTimeMillis();
+        LOGGER.info("Test on <" + dataset.getName() + "> dataset");
+            
+        NetworkModel network = new NetworkModel(dataset.getRootNode());
+        AfpModelNew afpModel = new AfpModelNew(SCENARIO_PREFIX, network);
+        
+        //check default
+        for (OptimizationType type : OptimizationType.values()) {
+            Assert.assertTrue("Incorrect default Optimization Type <" + type.getText() + ">", afpModel.isOptimizationSupported(type));
+        }
+        
+        //change types
+        int i = 0;
+        for (OptimizationType type : OptimizationType.values()) {
+            afpModel.setOptimizationSupport(type, (i++ % 2) == 0);
+        }
+        
+        //check changed 
+        i = 0;
+        for (OptimizationType type : OptimizationType.values()) {
+            if ((i++ % 2 == 0)) {
+                Assert.assertTrue("Incorrect change for Optimization Type <" + type.getText() + ">", afpModel.isOptimizationSupported(type));
+            }
+            else {
+                Assert.assertFalse("Incorrect change for Optimization Type <" + type.getText() + ">", afpModel.isOptimizationSupported(type));
+            }
+        }
+        
+        //save
+        afpModel.saveData();
+        
+        //create new model with same node
+        AfpModelNew anotherModel = new AfpModelNew(afpService.getAllAfpNodes(network.getRootNode()).get(0));
+        anotherModel.loadData();
+        
+        //check that changes came to model
+        i = 0;
+        for (OptimizationType type : OptimizationType.values()) {
+            if ((i++ % 2 == 0)) {
+                Assert.assertTrue("Incorrect change for Optimization Type <" + type.getText() + ">", afpModel.isOptimizationSupported(type));
+            }
+            else {
+                Assert.assertFalse("Incorrect change for Optimization Type <" + type.getText() + ">", afpModel.isOptimizationSupported(type));
+            }
+        }
+        
+        LOGGER.info("Test finished in " + (System.currentTimeMillis() - before) + " milliseconds");
+    }
+    
+    @Test
+    public void checkSupportedChannelTypes() {
+        LOGGER.info("Test to check correct work with OptimizationTypes");
+
+        IDataset dataset = datasets.get(1);
+        
+        long before = System.currentTimeMillis();
+        LOGGER.info("Test on <" + dataset.getName() + "> dataset");
+            
+        NetworkModel network = new NetworkModel(dataset.getRootNode());
+        AfpModelNew afpModel = new AfpModelNew(SCENARIO_PREFIX, network);
+        
+        //check default
+        for (ChannelType type : ChannelType.values()) {
+            Assert.assertTrue("Incorrect default Channel Type <" + type.getText() + ">", afpModel.isChannelTypeSupported(type));
+        }
+        
+        //change types
+        int i = 0;
+        for (ChannelType type : ChannelType.values()) {
+            afpModel.setChannelTypeSupported(type, (i++ % 2) == 0);
+        }
+        
+        //check changed 
+        i = 0;
+        for (ChannelType type : ChannelType.values()) {
+            if ((i++ % 2 == 0)) {
+                Assert.assertTrue("Incorrect change for Channel Type <" + type.getText() + ">", afpModel.isChannelTypeSupported(type));
+            }
+            else {
+                Assert.assertFalse("Incorrect change for Channel Type <" + type.getText() + ">", afpModel.isChannelTypeSupported(type));
+            }
+        }
+        
+        //save
+        afpModel.saveData();
+        
+        //create new model with same node
+        AfpModelNew anotherModel = new AfpModelNew(afpService.getAllAfpNodes(network.getRootNode()).get(0));
+        anotherModel.loadData();
+        
+        //check that changes came to model
+        i = 0;
+        for (ChannelType type : ChannelType.values()) {
+            if ((i++ % 2 == 0)) {
+                Assert.assertTrue("Incorrect change for Channel Type <" + type.getText() + ">", afpModel.isChannelTypeSupported(type));
+            }
+            else {
+                Assert.assertFalse("Incorrect change for Channel Type <" + type.getText() + ">", afpModel.isChannelTypeSupported(type));
+            }
+        }
+        
+        LOGGER.info("Test finished in " + (System.currentTimeMillis() - before) + " milliseconds");
     }
     
 }

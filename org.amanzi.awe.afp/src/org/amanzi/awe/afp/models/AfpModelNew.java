@@ -15,6 +15,7 @@ package org.amanzi.awe.afp.models;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -379,12 +380,14 @@ public class AfpModelNew {
         return trxCount;
     }
     
-    public Set<String> getAvailableNCC() {
-        return supportedNCC.keySet();
-    }
-    
-    public Set<String> getAvailableBCC() {
-        return supportedBCC.keySet();
+    public static Set<String> getAvailableBSIC() {
+        HashSet<String> result = new HashSet<String>();
+        
+        for (int i = 0; i < BSIC_MAX_NUMBER; i++) {
+            result.add(Integer.toString(i));
+        }
+        
+        return result;
     }
     
     public boolean isBCCSupported(String bcc) {

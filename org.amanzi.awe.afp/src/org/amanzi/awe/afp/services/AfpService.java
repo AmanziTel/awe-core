@@ -14,7 +14,6 @@ import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
