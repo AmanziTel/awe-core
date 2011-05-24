@@ -64,7 +64,7 @@ public class Step1OptimizationGoalsPage extends AbstractAfpWizardPage {
         
         public String getText(SummaryType summaryType);
         
-        public Label getLabel();
+        public Label getLabel(SummaryType summaryType);
         
     }
 
@@ -102,7 +102,7 @@ public class Step1OptimizationGoalsPage extends AbstractAfpWizardPage {
         //empty header 
         ISummaryData empty = new ISummaryData() {
             
-            private Label label = null;
+            private HashMap<SummaryType, Label> labels = new HashMap<SummaryType, Label>();
             
             @Override
             public String getHeader() {
@@ -115,18 +115,20 @@ public class Step1OptimizationGoalsPage extends AbstractAfpWizardPage {
             }
 
             @Override
-            public Label getLabel() {
+            public Label getLabel(SummaryType summaryType) {
+                Label label = labels.get(summaryType);
                 if (label == null) {
                     label =  new Label(summaryGroup, SWT.LEFT);
+                    labels.put(summaryType, label);
                 }
                 return label;
-            }
+            }            
         };
         
         //total summary
         ISummaryData totalSummary = new ISummaryData() {
             
-            private Label label;
+            private HashMap<SummaryType, Label> labels = new HashMap<SummaryType, Label>();
             
             @Override
             public String getHeader() {
@@ -158,12 +160,14 @@ public class Step1OptimizationGoalsPage extends AbstractAfpWizardPage {
             }
             
             @Override
-            public Label getLabel() {
+            public Label getLabel(SummaryType summaryType) {
+                Label label = labels.get(summaryType);
                 if (label == null) {
                     label =  new Label(summaryGroup, SWT.LEFT);
+                    labels.put(summaryType, label);
                 }
                 return label;
-            }
+            }      
         };
         
         summaryData.add(empty);
@@ -172,7 +176,7 @@ public class Step1OptimizationGoalsPage extends AbstractAfpWizardPage {
         for (final FrequencyBand band : FrequencyBand.valuesSorted()) {
             ISummaryData bandSummary = new ISummaryData() {
                 
-                private Label label;
+                private HashMap<SummaryType, Label> labels = new HashMap<SummaryType, Label>();
                 
                 @Override
                 public String getHeader() {
@@ -207,12 +211,15 @@ public class Step1OptimizationGoalsPage extends AbstractAfpWizardPage {
                 }
                 
                 @Override
-                public Label getLabel() {
+                public Label getLabel(SummaryType summaryType) {
+                    Label label = labels.get(summaryType);
                     if (label == null) {
                         label =  new Label(summaryGroup, SWT.LEFT);
+                        labels.put(summaryType, label);
                     }
                     return label;
-                }
+                }  
+
             };
             
             summaryData.add(bandSummary);
@@ -353,7 +360,7 @@ public class Step1OptimizationGoalsPage extends AbstractAfpWizardPage {
 
         for (SummaryType summaryType : SummaryType.values()) {
             for (ISummaryData summary : summaryData) {
-                summary.getLabel().setText(summary.getText(summaryType));
+                summary.getLabel(summaryType).setText(summary.getText(summaryType));
             }
         }
         
@@ -361,7 +368,7 @@ public class Step1OptimizationGoalsPage extends AbstractAfpWizardPage {
     }
 
     @Override
-    protected boolean isStepAvailable() {
+    public boolean isStepAvailable() {
         return true;
     }
 

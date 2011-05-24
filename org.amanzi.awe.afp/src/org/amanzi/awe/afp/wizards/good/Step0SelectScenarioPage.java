@@ -242,7 +242,7 @@ public class Step0SelectScenarioPage extends AbstractAfpWizardPage {
     }
 
     @Override
-    protected boolean isStepAvailable() {
+    public boolean isStepAvailable() {
         return true;
     }
 }

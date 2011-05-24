@@ -89,7 +89,7 @@ public abstract class AbstractAfpWizardPage extends WizardPage {
         model = wizard.getModel();
     }
     
-    protected abstract boolean isStepAvailable();
+    public abstract boolean isStepAvailable();
     
     
 }

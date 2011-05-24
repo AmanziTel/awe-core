@@ -1,6 +1,7 @@
 package org.amanzi.awe.afp.services;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.amanzi.awe.afp.models.parameters.ChannelType;
@@ -133,6 +134,22 @@ public class AfpService extends AbstractService {
         }
         
         return result;
+    }
+    
+    public List<String> loadBCC(Node modelNode) {
+        LOGGER.info("Load supported BCC");
+        
+        String[] enabledBCC = (String[])modelNode.getProperty(SUPPORTED_BCC, ArrayUtils.EMPTY_STRING_ARRAY);
+        
+        return Arrays.asList(enabledBCC);
+    }
+    
+    public List<String> loadNCC(Node modelNode) {
+        LOGGER.info("Load supported NCC");
+        
+        String[] enabledNCC = (String[])modelNode.getProperty(SUPPORTED_NCC, ArrayUtils.EMPTY_STRING_ARRAY);
+        
+        return Arrays.asList(enabledNCC);
     }
     
     public void saveOptimizationTypes(Node modelNode, List<OptimizationType> enabledTypes) {

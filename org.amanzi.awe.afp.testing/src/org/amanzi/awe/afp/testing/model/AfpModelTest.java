@@ -407,10 +407,10 @@ public class AfpModelTest extends AbstractAfpTest {
         i = 0;
         for (OptimizationType type : OptimizationType.values()) {
             if ((i++ % 2 == 0)) {
-                Assert.assertTrue("Incorrect change for Optimization Type <" + type.getText() + ">", anotherModel.isOptimizationSupported(type));
+                Assert.assertTrue("Incorrect load for Optimization Type <" + type.getText() + ">", anotherModel.isOptimizationSupported(type));
             }
             else {
-                Assert.assertFalse("Incorrect change for Optimization Type <" + type.getText() + ">", anotherModel.isOptimizationSupported(type));
+                Assert.assertFalse("Incorrect load for Optimization Type <" + type.getText() + ">", anotherModel.isOptimizationSupported(type));
             }
         }
         
@@ -462,10 +462,10 @@ public class AfpModelTest extends AbstractAfpTest {
         i = 0;
         for (ChannelType type : ChannelType.values()) {
             if ((i++ % 2 == 0)) {
-                Assert.assertTrue("Incorrect change for Channel Type <" + type.getText() + ">", anotherModel.isChannelTypeSupported(type));
+                Assert.assertTrue("Incorrect load for Channel Type <" + type.getText() + ">", anotherModel.isChannelTypeSupported(type));
             }
             else {
-                Assert.assertFalse("Incorrect change for Channel Type <" + type.getText() + ">", anotherModel.isChannelTypeSupported(type));
+                Assert.assertFalse("Incorrect load for Channel Type <" + type.getText() + ">", anotherModel.isChannelTypeSupported(type));
             }
         }
         
@@ -517,10 +517,10 @@ public class AfpModelTest extends AbstractAfpTest {
         i = 0;
         for (FrequencyBand band : FrequencyBand.values()) {
             if ((i++ % 2 == 0)) {
-                Assert.assertTrue("Incorrect change for Frequency Bands <" + band.getText() + ">", anotherModel.isFrequencyBandSupported(band));
+                Assert.assertTrue("Incorrect load for Frequency Bands <" + band.getText() + ">", anotherModel.isFrequencyBandSupported(band));
             }
             else {
-                Assert.assertFalse("Incorrect change for Frequency Bands <" + band.getText() + ">", anotherModel.isFrequencyBandSupported(band));
+                Assert.assertFalse("Incorrect load for Frequency Bands <" + band.getText() + ">", anotherModel.isFrequencyBandSupported(band));
             }
         }
         
@@ -576,12 +576,12 @@ public class AfpModelTest extends AbstractAfpTest {
         i = 0;
         for (String bsic : AfpModelNew.getAvailableBSIC()) {
             if ((i++ % 2 == 0)) {
-                Assert.assertTrue("Incorrect change for BCC <" + bsic + ">", anotherModel.isBCCSupported(bsic));
-                Assert.assertFalse("Incorrect change for NCC <" + bsic + ">", anotherModel.isNCCSupported(bsic));
+                Assert.assertTrue("Incorrect load for BCC <" + bsic + ">", anotherModel.isBCCSupported(bsic));
+                Assert.assertFalse("Incorrect load for NCC <" + bsic + ">", anotherModel.isNCCSupported(bsic));
             }
             else {
-                Assert.assertFalse("Incorrect change for BCC <" + bsic + ">", anotherModel.isBCCSupported(bsic));
-                Assert.assertTrue("Incorrect change for NCC <" + bsic + ">", anotherModel.isNCCSupported(bsic));
+                Assert.assertFalse("Incorrect load for BCC <" + bsic + ">", anotherModel.isBCCSupported(bsic));
+                Assert.assertTrue("Incorrect load for NCC <" + bsic + ">", anotherModel.isNCCSupported(bsic));
             }
         }
         

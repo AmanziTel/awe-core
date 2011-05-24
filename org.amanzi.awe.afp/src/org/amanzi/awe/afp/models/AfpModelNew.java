@@ -191,6 +191,20 @@ public class AfpModelNew {
         for (FrequencyBand band : enabledBands) {
             frequencyDomains.put(band.getText(), createFrequencyDomain(band));
         }
+        
+        //load BCC
+        List<String> bcc = afpService.loadBCC(afpModelNode);
+        supportedBCC.clear();
+        for (String singleBCC : getAvailableBSIC()) {
+            supportedBCC.put(singleBCC, bcc.contains(singleBCC));
+        }
+        
+        //load NCC
+        List<String> ncc = afpService.loadNCC(afpModelNode);
+        supportedNCC.clear();
+        for (String singleNCC : getAvailableBSIC()) {
+            supportedNCC.put(singleNCC, ncc.contains(singleNCC));
+        }
     }
 
     private INetworkTraversableModel getTraversableModel() {
@@ -239,14 +253,14 @@ public class AfpModelNew {
     
     private void initializeBCC() {
         supportedBCC.clear();
-        for (int i = 0; i < BSIC_MAX_NUMBER; i++) {
+        for (int i = 0; i <= BSIC_MAX_NUMBER; i++) {
             supportedBCC.put(Integer.toString(i), Boolean.TRUE);
         }
     }
     
     private void initializeNCC() {
         supportedNCC.clear();
-        for (int i = 0; i < BSIC_MAX_NUMBER; i++) {
+        for (int i = 0; i <= BSIC_MAX_NUMBER; i++) {
             supportedNCC.put(Integer.toString(i), Boolean.TRUE);
         }
     }
@@ -401,7 +415,7 @@ public class AfpModelNew {
     public static Set<String> getAvailableBSIC() {
         HashSet<String> result = new HashSet<String>();
         
-        for (int i = 0; i < BSIC_MAX_NUMBER; i++) {
+        for (int i = 0; i <= BSIC_MAX_NUMBER; i++) {
             result.add(Integer.toString(i));
         }
         

@@ -127,7 +127,7 @@ public class Step2AvailableResourcesPage extends AbstractAfpWizardPage {
         bsicGroup.setLayoutData(new GridData(GridData.FILL, GridData.FILL, false, false, 1, 5));
         bsicGroup.setText("BSIC");
         
-        for (int i = 0; i < AfpModelNew.BSIC_MAX_NUMBER + 1; i++) {
+        for (int i = 0; i <= AfpModelNew.BSIC_MAX_NUMBER + 1; i++) {
             String text;
             if (i == 0) {
                 text = StringUtils.EMPTY;
@@ -213,7 +213,7 @@ public class Step2AvailableResourcesPage extends AbstractAfpWizardPage {
     }
 
     @Override
-    protected boolean isStepAvailable() {
+    public boolean isStepAvailable() {
         return true;
     }
     

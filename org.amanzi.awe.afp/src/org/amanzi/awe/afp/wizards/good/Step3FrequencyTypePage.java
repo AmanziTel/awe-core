@@ -63,7 +63,7 @@ public class Step3FrequencyTypePage extends AbstractAfpWizardPage {
     }
 
     @Override
-    protected boolean isStepAvailable() {
+    public boolean isStepAvailable() {
         return model.isOptimizationSupported(OptimizationType.FREQUENCIES);
     }
 

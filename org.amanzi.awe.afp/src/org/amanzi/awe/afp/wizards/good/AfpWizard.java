@@ -114,6 +114,7 @@ public class AfpWizard extends Wizard implements IImportWizard {
         addPage(new Step0SelectScenarioPage(this));
         addPage(new Step1OptimizationGoalsPage(this));
         addPage(new Step2AvailableResourcesPage(this));
+        addPage(new Step3FrequencyTypePage(this));
     }
     
     @Override
@@ -147,6 +148,9 @@ public class AfpWizard extends Wizard implements IImportWizard {
         }
         
         AbstractAfpWizardPage afpPage = (AbstractAfpWizardPage)page;
+        if (!afpPage.isStepAvailable()) {
+            page = super.getNextPage(page);
+        }
         afpPage.refreshPage();
         
         return super.getNextPage(page);
