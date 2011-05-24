@@ -122,6 +122,8 @@ public class AfpModelTest extends AbstractAfpTest {
             }
 
             tx.success();
+        } catch (Exception e) { 
+            e.printStackTrace();
         } finally {
             tx.finish();
         }
@@ -405,10 +407,10 @@ public class AfpModelTest extends AbstractAfpTest {
         i = 0;
         for (OptimizationType type : OptimizationType.values()) {
             if ((i++ % 2 == 0)) {
-                Assert.assertTrue("Incorrect change for Optimization Type <" + type.getText() + ">", afpModel.isOptimizationSupported(type));
+                Assert.assertTrue("Incorrect change for Optimization Type <" + type.getText() + ">", anotherModel.isOptimizationSupported(type));
             }
             else {
-                Assert.assertFalse("Incorrect change for Optimization Type <" + type.getText() + ">", afpModel.isOptimizationSupported(type));
+                Assert.assertFalse("Incorrect change for Optimization Type <" + type.getText() + ">", anotherModel.isOptimizationSupported(type));
             }
         }
         
@@ -460,10 +462,126 @@ public class AfpModelTest extends AbstractAfpTest {
         i = 0;
         for (ChannelType type : ChannelType.values()) {
             if ((i++ % 2 == 0)) {
-                Assert.assertTrue("Incorrect change for Channel Type <" + type.getText() + ">", afpModel.isChannelTypeSupported(type));
+                Assert.assertTrue("Incorrect change for Channel Type <" + type.getText() + ">", anotherModel.isChannelTypeSupported(type));
             }
             else {
-                Assert.assertFalse("Incorrect change for Channel Type <" + type.getText() + ">", afpModel.isChannelTypeSupported(type));
+                Assert.assertFalse("Incorrect change for Channel Type <" + type.getText() + ">", anotherModel.isChannelTypeSupported(type));
+            }
+        }
+        
+        LOGGER.info("Test finished in " + (System.currentTimeMillis() - before) + " milliseconds");
+    }
+    
+    @Test
+    public void checkSupportedFrequencyBands() {
+        LOGGER.info("Test to check correct work with FrequencyBands");
+
+        IDataset dataset = datasets.get(0);
+        
+        long before = System.currentTimeMillis();
+        LOGGER.info("Test on <" + dataset.getName() + "> dataset");
+            
+        NetworkModel network = new NetworkModel(dataset.getRootNode());
+        AfpModelNew afpModel = new AfpModelNew(SCENARIO_PREFIX, network);
+        
+        //check default
+        for (FrequencyBand band : FrequencyBand.values()) {
+            Assert.assertTrue("Incorrect default Frequency Bands <" + band.getText() + ">", afpModel.isFrequencyBandSupported(band));
+        }
+        
+        //change types
+        int i = 0;
+        for (FrequencyBand band : FrequencyBand.values()) {
+            afpModel.setFrequencyBandSupport(band, (i++ % 2) == 0);
+        }
+        
+        //check changed 
+        i = 0;
+        for (FrequencyBand band : FrequencyBand.values()) {
+            if ((i++ % 2 == 0)) {
+                Assert.assertTrue("Incorrect change for Frequency Bands <" + band.getText() + ">", afpModel.isFrequencyBandSupported(band));
+            }
+            else {
+                Assert.assertFalse("Incorrect change for Frequency Bands <" + band.getText() + ">", afpModel.isFrequencyBandSupported(band));
+            }
+        }
+        
+        //save
+        afpModel.saveData();
+        
+        //create new model with same node
+        AfpModelNew anotherModel = new AfpModelNew(afpService.getAllAfpNodes(network.getRootNode()).get(0));
+        anotherModel.loadData();
+        
+        //check that changes came to model
+        i = 0;
+        for (FrequencyBand band : FrequencyBand.values()) {
+            if ((i++ % 2 == 0)) {
+                Assert.assertTrue("Incorrect change for Frequency Bands <" + band.getText() + ">", anotherModel.isFrequencyBandSupported(band));
+            }
+            else {
+                Assert.assertFalse("Incorrect change for Frequency Bands <" + band.getText() + ">", anotherModel.isFrequencyBandSupported(band));
+            }
+        }
+        
+        LOGGER.info("Test finished in " + (System.currentTimeMillis() - before) + " milliseconds");
+    }
+    
+    @Test
+    public void checkSupportedBSIC() {
+        LOGGER.info("Test to check correct work with BSIC");
+
+        IDataset dataset = datasets.get(1);
+        
+        long before = System.currentTimeMillis();
+        LOGGER.info("Test on <" + dataset.getName() + "> dataset");
+            
+        NetworkModel network = new NetworkModel(dataset.getRootNode());
+        AfpModelNew afpModel = new AfpModelNew(SCENARIO_PREFIX, network);
+        
+        //check default
+        for (String bsic : AfpModelNew.getAvailableBSIC()) {
+            Assert.assertTrue("Incorrect default BCC <" + bsic + ">", afpModel.isBCCSupported(bsic));
+            Assert.assertTrue("Incorrect default NCC <" + bsic + ">", afpModel.isNCCSupported(bsic));
+        }
+        
+        //change types
+        int i = 0;
+        for (String bsic : AfpModelNew.getAvailableBSIC()) {
+            afpModel.setSupportedBCC(bsic, (i++ % 2) == 0);
+            afpModel.setSupportedNCC(bsic, (i++ % 2) != 0);
+        }
+        
+        //check changed 
+        i = 0;
+        for (String bsic : AfpModelNew.getAvailableBSIC()) {
+            if ((i++ % 2 == 0)) {
+                Assert.assertTrue("Incorrect change for BCC <" + bsic + ">", afpModel.isBCCSupported(bsic));
+                Assert.assertFalse("Incorrect change for NCC <" + bsic + ">", afpModel.isNCCSupported(bsic));
+            }
+            else {
+                Assert.assertFalse("Incorrect change for BCC <" + bsic + ">", afpModel.isBCCSupported(bsic));
+                Assert.assertTrue("Incorrect change for NCC <" + bsic + ">", afpModel.isNCCSupported(bsic));
+            }
+        }
+        
+        //save
+        afpModel.saveData();
+        
+        //create new model with same node
+        AfpModelNew anotherModel = new AfpModelNew(afpService.getAllAfpNodes(network.getRootNode()).get(0));
+        anotherModel.loadData();
+        
+        //check that changes came to model
+        i = 0;
+        for (String bsic : AfpModelNew.getAvailableBSIC()) {
+            if ((i++ % 2 == 0)) {
+                Assert.assertTrue("Incorrect change for BCC <" + bsic + ">", anotherModel.isBCCSupported(bsic));
+                Assert.assertFalse("Incorrect change for NCC <" + bsic + ">", anotherModel.isNCCSupported(bsic));
+            }
+            else {
+                Assert.assertFalse("Incorrect change for BCC <" + bsic + ">", anotherModel.isBCCSupported(bsic));
+                Assert.assertTrue("Incorrect change for NCC <" + bsic + ">", anotherModel.isNCCSupported(bsic));
             }
         }
         
