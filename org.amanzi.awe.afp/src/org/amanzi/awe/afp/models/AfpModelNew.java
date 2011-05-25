@@ -163,7 +163,7 @@ public class AfpModelNew {
                 ncc.add(singleNCC.getKey());
             }
         }
-        afpService.saveBCC(afpModelNode, ncc);
+        afpService.saveNCC(afpModelNode, ncc);
     }
 
     public void loadData() {
