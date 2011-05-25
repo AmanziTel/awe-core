@@ -140,10 +140,15 @@ public class AfpModelTest extends AbstractAfpTest {
             // create an AFP model
             NetworkModel network = new NetworkModel(dataset.getRootNode());
             AfpModelNew model = new AfpModelNew(SCENARIO_PREFIX + "_" + dataset.getName(), network);
+            
+            Iterator<Node> i = getAfpNodesTraverser(dataset.getRootNode());
+            while (i.hasNext()) {
+                LOGGER.info(i.next().getProperty("name"));
+            }
 
             // check manually that node was created
             Iterator<Node> afpNodes = getAfpNodesTraverser(dataset.getRootNode());
-
+            
             Assert.assertTrue("Created AFP Node was not found", afpNodes.hasNext());
 
             Node afpNode = afpNodes.next();
