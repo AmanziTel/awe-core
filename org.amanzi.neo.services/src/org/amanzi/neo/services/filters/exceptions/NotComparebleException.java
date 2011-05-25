@@ -21,7 +21,7 @@ package org.amanzi.neo.services.filters.exceptions;
  * @author Sasha
  * @since 1.0.0
  */
-public class NotComparebleException extends Exception{
+public class NotComparebleException extends RuntimeException{
    
     /** long serialVersionUID field */
     private static final long serialVersionUID = 3884623639107628988L;

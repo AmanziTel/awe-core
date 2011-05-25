@@ -21,7 +21,7 @@ package org.amanzi.neo.services.filters.exceptions;
  * @author Sasha
  * @since 1.0.0
  */
-public class NullValueException extends Exception{
+public class NullValueException extends RuntimeException{
     /** long serialVersionUID field */
     private static final long serialVersionUID = -2670058876000375919L;
     private String exceptionMessage = "value or propertyValue is null";

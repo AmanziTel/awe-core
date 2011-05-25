@@ -13,7 +13,6 @@
 
 package org.amanzi.neo.services.filters.exceptions;
 
-import org.amanzi.neo.services.enums.INodeType;
 
 /**
  * TODO Purpose of 
@@ -23,7 +22,7 @@ import org.amanzi.neo.services.enums.INodeType;
  * @author Sasha
  * @since 1.0.0
  */
-public class FilterTypeException extends Exception{
+public class FilterTypeException extends RuntimeException{
 
     /** long serialVersionUID field */
     private static final long serialVersionUID = -272699684424803979L;
