@@ -548,8 +548,9 @@ public class AfpModelTest extends AbstractAfpTest {
         //change types
         int i = 0;
         for (String bsic : AfpModelNew.getAvailableBSIC()) {
-            afpModel.setSupportedBCC(bsic, (i++ % 2) == 0);
-            afpModel.setSupportedNCC(bsic, (i++ % 2) != 0);
+            afpModel.setSupportedBCC(bsic, (i % 2) == 0);
+            afpModel.setSupportedNCC(bsic, (i % 2) != 0);
+            i++;
         }
         
         //check changed 
