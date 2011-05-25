@@ -18,6 +18,9 @@ import java.io.Serializable;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.filters.exceptions.FilterTypeException;
+import org.amanzi.neo.services.filters.exceptions.NotComparebleException;
+import org.amanzi.neo.services.filters.exceptions.NullValueException;
 import org.neo4j.graphdb.Node;
 
 
@@ -69,14 +72,22 @@ public class Filter implements IFilter {
         this.propertyName = propertyName;
         this.value = value;
     }
+    @Override
+    public void setExpression(INodeType nodeType, String propertyName)throws FilterTypeException{
+        if (filterType != FilterType.EMPTY && filterType != FilterType.NOT_EMPTY)
+            throw new FilterTypeException();
+        this.nodeType = nodeType;
+        this.propertyName = propertyName;                            
+    }
     
     @Override
     public void addFilter(IFilter additionalFilter) {
         this.underlyingFilter = additionalFilter;
     }
     
+    @SuppressWarnings("unchecked")
     @Override
-    public boolean check(Node node) {
+    public boolean check(Node node) throws NotComparebleException, NullValueException{
         boolean result = false;
         boolean supportedType = true;
         
@@ -89,13 +100,18 @@ public class Filter implements IFilter {
             }
         
         //check is node has this property
-        if (supportedType && node.hasProperty(propertyName)) {
+        if (supportedType) {
+            boolean hasProperty = node.hasProperty(propertyName);
+            Object propertyValue = null;
             //get property value
-            Object propertyValue = node.getProperty(propertyName);
-            
+            if (hasProperty){
+                propertyValue = node.getProperty(propertyName);
+            }
             //compare
             switch (filterType) {
             case EQUALS:
+                if (!hasProperty)
+                    break;
                 //two variants:
                 //1. filter value is NULL - compare both values with null 
                 //2. filter value is not NULL - use equals()
@@ -103,8 +119,72 @@ public class Filter implements IFilter {
                          ((value != null) && value.equals(propertyValue));
                 break;
             case LIKE:
+                if (!hasProperty)
+                    break;
                 result = ((value == null) && (propertyValue == null)) ||
                          (propertyValue.toString().matches(value.toString()));
+                break;
+            
+            case MORE:
+                if (!hasProperty)
+                    break;
+
+                if (propertyValue == null || value == null)
+                    throw new NullValueException();
+
+                if (!(propertyValue instanceof Comparable<?> && value instanceof Comparable<?>)){
+                    throw new NotComparebleException();
+                }
+                result = false;
+                if (((Comparable<Serializable>)propertyValue).compareTo(value) > 0)
+                    result = true;          
+
+                break;
+               
+            case LESS:
+                if (!hasProperty)
+                    break;
+
+                if (propertyValue == null || value == null)
+                    throw new NullValueException();
+
+                if (!(propertyValue instanceof Comparable<?> && value instanceof Comparable<?>)){
+                    throw new NotComparebleException();
+                }
+                result = false;
+                if (((Comparable<Serializable>)propertyValue).compareTo(value) < 0)
+                    result = true;                     
+
+                break;
+            case MORE_OR_EQUALS:
+                if (!hasProperty)
+                    break;
+                result = ((value == null) && (propertyValue == null)) ||
+                ((value != null) && value.equals(propertyValue));
+                if (!(propertyValue instanceof Comparable<?> && value instanceof Comparable<?>)){
+                    throw new NotComparebleException();
+                }
+                
+                if (((Comparable<Serializable>)propertyValue).compareTo(value) > 0)
+                    result = true;                     
+                break;
+            case LESS_OR_EQUALS:
+                if (!hasProperty)
+                    break;
+                result = ((value == null) && (propertyValue == null)) ||
+                ((value != null) && value.equals(propertyValue));
+                if (!(propertyValue instanceof Comparable<?> && value instanceof Comparable<?>)){
+                    throw new NotComparebleException();
+                }
+                
+                if (((Comparable<Serializable>)propertyValue).compareTo(value) < 0)
+                    result = true;
+                break;
+            case EMPTY:
+                result = propertyValue == null || propertyValue.toString().isEmpty() || !hasProperty;
+                break;
+            case NOT_EMPTY:
+                result = !(propertyValue == null || propertyValue.toString().isEmpty() || !hasProperty);
                 break;
             }
         }
@@ -122,5 +202,7 @@ public class Filter implements IFilter {
         
         return result;
     }
+    
+    
 
 }

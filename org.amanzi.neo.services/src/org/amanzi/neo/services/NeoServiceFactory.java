@@ -32,6 +32,7 @@ public class NeoServiceFactory {
     private DatasetService datasetService = null;
     private CorrelationService correlationService = null;
     private AweProjectService projectService=null;
+    private StatisticService statisticService = null;
     
     private NodeToNodeRelationService node2nodeRelationService = null;
     private final Object node2nodeServiceMonitor = new Object();
@@ -82,6 +83,17 @@ public class NeoServiceFactory {
             }
         }
         return projectService;
+    }
+    
+    public StatisticService getStatisticService() {
+        if (statisticService == null) {
+            synchronized (datasetMon) {
+                if (statisticService == null) {
+                    statisticService = new StatisticService();
+                }
+            }
+        }
+        return statisticService;
     }
 
     public NodeToNodeRelationService getNodeToNodeRelationService() {

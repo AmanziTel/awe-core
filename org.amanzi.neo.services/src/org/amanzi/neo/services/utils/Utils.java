@@ -1724,6 +1724,7 @@ public class Utils {
      * @return parent node or null
      */
     public static Node getParent(GraphDatabaseService service, Node childNode) {
+        
         Transaction tx = beginTx(service);
         try {
             Iterator<Node> parentIterator = childNode.traverse(Order.BREADTH_FIRST, new StopEvaluator() {

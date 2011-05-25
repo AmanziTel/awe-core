@@ -16,6 +16,9 @@ package org.amanzi.neo.services.filters;
 import java.io.Serializable;
 
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.filters.exceptions.FilterTypeException;
+import org.amanzi.neo.services.filters.exceptions.NotComparebleException;
+import org.amanzi.neo.services.filters.exceptions.NullValueException;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -28,9 +31,11 @@ import org.neo4j.graphdb.Node;
 public interface IFilter extends Serializable {
 
     void setExpression(INodeType nodeType, String propertyName, Serializable value);
+    
+    void setExpression(INodeType nodeType, String propertyName) throws FilterTypeException;
 
     void addFilter(IFilter additionalFilter);
 
-    boolean check(Node node);
+    boolean check(Node node) throws NotComparebleException, NullValueException;
 
 }

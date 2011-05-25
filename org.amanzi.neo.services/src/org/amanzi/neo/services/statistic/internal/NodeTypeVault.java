@@ -27,6 +27,9 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.traversal.Evaluation;
+import org.neo4j.graphdb.traversal.Evaluator;
+import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.helpers.Predicate;
 import org.neo4j.kernel.Traversal;
@@ -48,7 +51,7 @@ public class NodeTypeVault {
     
     /** The Constant PROPERTYS. */
     public static final TraversalDescription PROPERTYS = Traversal.description().depthFirst().relationships(StatisticRelationshipTypes.NODE_TYPES, Direction.OUTGOING)
-            .uniqueness(Uniqueness.NONE).filter(Traversal.returnAllButStartNode()).prune(Traversal.pruneAfterDepth(1));
+            .uniqueness(Uniqueness.NONE).evaluator(Evaluators.excludeStartPosition());
 
     /** The property map. */
     private HashMap<String, PropertyStatistics> propertyMap = new HashMap<String, PropertyStatistics>();
@@ -173,11 +176,15 @@ public class NodeTypeVault {
             Transaction tx = service.beginTx();
             try {
                 if (nodeTypeVault == null) {
-                    Iterator<Node> iterator = PROPERTYS.filter(new Predicate<Path>() {
-
+                    Iterator<Node> iterator = PROPERTYS.evaluator(new Evaluator() {
+                        
                         @Override
-                        public boolean accept(Path paramT) {
-                            return nodeType.equals(paramT.endNode().getProperty(StatisticProperties.KEY, ""));
+                        public Evaluation evaluate(Path arg0) {
+                            boolean includes;
+                            if (nodeType.equals(arg0.endNode().getProperty(StatisticProperties.KEY, "")))
+                                    includes = true;
+                            else includes =false;
+                            return Evaluation.ofIncludes(includes);
                         }
                     }).traverse(parent).nodes().iterator();
                     if (iterator.hasNext()) {

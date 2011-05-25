@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.amanzi.neo.db.manager.INeoDbService;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.StatisticService;
 import org.amanzi.neo.services.statistic.ChangeClassRule;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
@@ -57,6 +58,16 @@ public class StatisticHandler {
     
     /** The stat root. */
     private Node statRoot;
+    
+    /** The Statistic Service */
+    private StatisticService statisticService;
+    
+    /**
+     * constructor
+     */
+    public StatisticHandler(){
+        statisticService = NeoServiceFactory.getInstance().getStatisticService();
+    }
 
     /**
      * Load statistic.
@@ -66,12 +77,11 @@ public class StatisticHandler {
     public void loadStatistic(Node root){
         this.root = root;
         clearStatistic();
-        
-        Relationship rel = root.getSingleRelationship(StatisticRelationshipTypes.STATISTIC_PROP,Direction.OUTGOING);
-        if (rel==null){
+        Node node = statisticService.findStatRoot(root);
+        if (node == null)
             return;
-        }
-        statRoot=rel.getEndNode();
+        
+        statRoot=node;
         totalCount=(Long)statRoot.getProperty(StatisticProperties.COUNT, 0l);
         vaults.putAll(Vault.loadVaults(statRoot));
         isChanged=false;
@@ -95,14 +105,8 @@ public class StatisticHandler {
             this.root=root;
             Transaction tx = service.beginTx();
             try {
-                Relationship rel = root.getSingleRelationship(StatisticRelationshipTypes.STATISTIC_PROP,Direction.OUTGOING);
-                if (rel==null){
-                    statRoot=service.createNode();
-                    statRoot.setProperty(StatisticProperties.KEY, "PROPERTIES");
-                    root.createRelationshipTo(statRoot, StatisticRelationshipTypes.STATISTIC_PROP);
-                }else{
-                    statRoot=rel.getEndNode();
-                }
+                statRoot = statisticService.findOrCreateStatRoot(root);
+                
                 statRoot.setProperty(StatisticProperties.COUNT, totalCount);
                 HashSet<Node>treeToDelete=new HashSet<Node>();
                 HashSet<Vault>savedVault=new HashSet<Vault>();

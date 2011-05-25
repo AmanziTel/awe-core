@@ -11,16 +11,26 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.services.filters;
+package org.amanzi.neo.services.filters.exceptions;
 
 /**
- * 
+ * TODO Purpose of 
  * <p>
- *Filters type describe behavior with next filter
+ *
  * </p>
- * @author tsinkel_a
+ * @author Sasha
  * @since 1.0.0
  */
-public enum FilterType{
-    EQUALS, LIKE, MORE, LESS, MORE_OR_EQUALS, LESS_OR_EQUALS, EMPTY, NOT_EMPTY;
+public class NotComparebleException extends Exception{
+   
+    /** long serialVersionUID field */
+    private static final long serialVersionUID = 3884623639107628988L;
+    private String exceptionMessage = "value or propertyValue is not compareble type";
+    
+    public NotComparebleException() {
+    }
+    public String toString(){
+        return "Exception: "+ exceptionMessage;
+    }
+
 }
