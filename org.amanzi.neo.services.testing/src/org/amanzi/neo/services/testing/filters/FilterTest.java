@@ -19,6 +19,8 @@ import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.filters.ExpressionType;
 import org.amanzi.neo.services.filters.Filter;
 import org.amanzi.neo.services.filters.FilterType;
+import org.amanzi.neo.services.filters.exceptions.NotComparebleException;
+import org.amanzi.neo.services.filters.exceptions.NullValueException;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
@@ -179,6 +181,270 @@ public class FilterTest extends AbstractAWETest {
         }
      }
     
+    
+    /*
+     * check with 'MORE' filterType , result false
+     */
+    @Test
+    public void CheckMOREFilterFalse(){
+    	LOGGER.info("< checkMOREFilterFalseTest begin >");
+        Transaction tx = graphDatabaseService.beginTx();
+        try {
+
+            Node node = graphDatabaseService.createNode();
+            node.setProperty("intValue", 5);
+            
+            Filter afpFilter=new Filter(FilterType.MORE);
+            LOGGER.info("--Node property: "+"'intValue';value: "+node.getProperty("intValue"));
+           
+            LOGGER.info("----FilterType is 'MORE' ");
+           
+            afpFilter.setExpression(null, "intValue", 6);
+            Assert.assertFalse("propertyValue is MORE then value ",afpFilter.check(node));
+            tx.success();
+            
+        } catch (Exception e) {        
+            LOGGER.error(e.toString());
+           
+        }finally{
+            tx.finish();
+            LOGGER.info("< checkMOREFilterFalseTest end >");
+        }
+    }
+    
+    /*
+     * check with 'MORE' filterType , result true
+     */
+    @Test
+    public void CheckMOREFilterTrue(){
+    	LOGGER.info("< checkMOREFilterTrueTest begin >");
+        Transaction tx = graphDatabaseService.beginTx();
+        try {
+
+            Node node = graphDatabaseService.createNode();
+            node.setProperty("intValue", 6);
+            Filter afpFilter=new Filter(FilterType.MORE);
+            
+            LOGGER.info("--Node property: "+"'intValue';value: "+node.getProperty("intValue"));
+           
+            LOGGER.info("----FilterType is 'MORE' ");
+           
+            afpFilter.setExpression(null, "intValue", 5);
+            Assert.assertTrue("propertyValue isn't MORE then value ",afpFilter.check(node));
+            tx.success();
+            
+        } catch (Exception e) {        
+            LOGGER.error(e.toString());
+           
+        }finally{
+            tx.finish();
+            LOGGER.info("< checkMOREFilterTrueTest end >");
+        }
+    }
+    
+    /*
+     * check with 'LESS' filterType , result false
+     */
+    @Test
+    public void CheckLESSFilterFalse(){
+    	LOGGER.info("< checkLESSFilterFalseTest begin >");
+        Transaction tx = graphDatabaseService.beginTx();
+        try {
+
+            Node node = graphDatabaseService.createNode();
+            node.setProperty("intValue", 6);
+
+            Filter afpFilter=new Filter(FilterType.LESS);
+            LOGGER.info("--Node property: "+"'intValue';value: "+node.getProperty("intValue"));
+           
+            LOGGER.info("----FilterType is 'LESS' ");
+           
+            afpFilter.setExpression(null, "intValue", 5);
+            Assert.assertFalse("propertyValue is LESS then value ",afpFilter.check(node));
+            tx.success();
+            
+        } catch (Exception e) {        
+            LOGGER.error(e.toString());
+           
+        }finally{
+            tx.finish();
+            LOGGER.info("< checkLESSFilterFalseTest end >");
+        }
+    }
+    
+    /*
+     * check with 'LESS' filterType , result true
+     */
+    @Test
+    public void CheckLESSFilterTrue(){
+    	LOGGER.info("< checkLESSFilterTrueTest begin >");
+        Transaction tx = graphDatabaseService.beginTx();
+        try {
+
+            Node node = graphDatabaseService.createNode();
+            node.setProperty("intValue", 5);
+         
+            Filter afpFilter=new Filter(FilterType.LESS);
+            LOGGER.info("--Node property: "+"'intValue';value: "+node.getProperty("intValue"));
+           
+            LOGGER.info("----FilterType is 'LESS' ");
+           
+            afpFilter.setExpression(null, "intValue", 6);
+            Assert.assertTrue("propertyValue isn't LESS then value ",afpFilter.check(node));
+            tx.success();
+            
+        } catch (Exception e) {        
+            LOGGER.error(e.toString());
+           
+        }finally{
+            tx.finish();
+            LOGGER.info("< checkLESSFilterTrueTest end >");
+        }
+    }
+    
+    /*
+     * check with 'LESS' filterType with NullValueException
+     */
+    @Test
+    public void CheckNullValueException(){
+    	LOGGER.info("< checkNullValueExceptionTest begin >");
+        Transaction tx = graphDatabaseService.beginTx();
+        try {
+
+            Node node = graphDatabaseService.createNode();
+            node.setProperty("intValue", 5);
+         
+            Filter afpFilter=new Filter(FilterType.LESS);
+            LOGGER.info("--Node property: "+"'intValue';value: "+node.getProperty("intValue"));
+           
+            LOGGER.info("----FilterType is 'LESS' ");
+           
+            afpFilter.setExpression(null, "intValue", null);
+            Exception exc = null;
+            try{
+            	afpFilter.check(node);
+            }
+            
+            catch (Exception e){
+            	exc = e;
+            }
+            finally{
+            	Assert.assertTrue("method check(Node node) don't catch NullValueException",exc instanceof NullValueException );
+            }
+            tx.success();
+            
+        } catch (Exception e) {        
+            LOGGER.error(e.toString());
+            
+           
+        }finally{
+            tx.finish();            
+            LOGGER.info("< checkNullValueExceptionTest end >");
+        }
+    }
+    
+    
+    /*
+     * check with 'LESS' filterType with NotComparebleException
+     */
+    @Test
+    public void CheckNotComparebleException(){
+    	LOGGER.info("< checkNotComparebleExceptionTest begin >");
+        Transaction tx = graphDatabaseService.beginTx();
+        try {
+
+            Node node = graphDatabaseService.createNode();
+            Object obj = new Object();
+            node.setProperty("intValue",obj );
+               
+            Filter afpFilter=new Filter(FilterType.LESS);
+            LOGGER.info("--Node property: "+"'intValue';value: "+node.getProperty("intValue", "null"));
+           
+            LOGGER.info("----FilterType is 'LESS' ");
+           
+            afpFilter.setExpression(null, "intValue", 6);
+            Exception exc = null;
+            try{
+            	afpFilter.check(node);
+            }
+            catch (Exception e){
+            	exc = e;          	
+            }
+            finally{
+            	Assert.assertTrue("method check(Node node) don't catch NotComparebleException",exc instanceof NotComparebleException );
+            }
+            tx.success();
+            
+        } catch (Exception e) {        
+            LOGGER.error(e.toString());
+            
+           
+        }finally{
+            tx.finish();            
+            LOGGER.info("< checkNotComparebleExceptionTest end >");
+        }
+    }
+    /*
+     * check with 'MORE_OR_EQUALS' filterType , result true
+     */
+    @Test
+    public void CheckMORE_OR_EQUALSFilterTrue(){
+    	LOGGER.info("< checkMORE_OR_EQUALSFilterTrueTest begin >");
+        Transaction tx = graphDatabaseService.beginTx();
+        try {
+
+            Node node = graphDatabaseService.createNode();
+            node.setProperty("intValue", 5);
+         
+            Filter afpFilter=new Filter(FilterType.MORE_OR_EQUALS);
+            LOGGER.info("--Node property: "+"'intValue';value: "+node.getProperty("intValue"));
+           
+            LOGGER.info("----FilterType is 'MORE_OR_EQUALS' ");
+           
+            afpFilter.setExpression(null, "intValue", 5);
+            Assert.assertTrue("propertyValue isn't MORE_OR_EQUALS then value ",afpFilter.check(node));
+            tx.success();
+            
+        } catch (Exception e) {        
+            LOGGER.error(e.toString());
+           
+        }finally{
+            tx.finish();
+            LOGGER.info("< checkMORE_OR_EQUALSFilterTrueTest end >");
+        }
+    }
+    
+    /*
+     * check with 'MORE_OR_EQUALS' filterType , result false
+     */
+    @Test
+    public void CheckMORE_OR_EQUALSFilterFalse(){
+    	LOGGER.info("< checkMORE_OR_EQUALSFilterFalseTest begin >");
+        Transaction tx = graphDatabaseService.beginTx();
+        try {
+
+            Node node = graphDatabaseService.createNode();
+            node.setProperty("intValue", 5);
+         
+            Filter afpFilter=new Filter(FilterType.MORE_OR_EQUALS);
+            LOGGER.info("--Node property: "+"'intValue';value: "+node.getProperty("intValue"));
+           
+            LOGGER.info("----FilterType is 'MORE_OR_EQUALS' ");
+           
+            afpFilter.setExpression(null, "intValue", 6);
+            Assert.assertFalse("propertyValue is MORE_OR_EQUALS then value ",afpFilter.check(node));
+            tx.success();
+            
+        } catch (Exception e) {        
+            LOGGER.error(e.toString());
+           
+        }finally{
+            tx.finish();
+            LOGGER.info("< checkMORE_OR_EQUALSFilterFalseTest end >");
+        }
+    }
+    
+    
     /*
      * check with 'Like' filterType and without RegExp
      */
@@ -247,6 +513,68 @@ public class FilterTest extends AbstractAWETest {
             LOGGER.info("< checkAdditionFilterEQ end >");
         }
      }
+    
+    /*
+     * check with 'LESS_OR_EQUALS' filterType , result false
+     */
+    @Test
+    public void CheckLESS_OR_EQUALSFilterFalse(){
+    	LOGGER.info("< checkLESS_OR_EQUALSFilterFalseTest begin >");
+        Transaction tx = graphDatabaseService.beginTx();
+        try {
+
+            Node node = graphDatabaseService.createNode();
+            node.setProperty("intValue", 6);
+         
+            Filter afpFilter=new Filter(FilterType.LESS_OR_EQUALS);
+            LOGGER.info("--Node property: "+"'intValue';value: "+node.getProperty("intValue"));
+           
+            LOGGER.info("----FilterType is 'LESS_OR_EQUALS' ");
+           
+            afpFilter.setExpression(null, "intValue", 5);
+            Assert.assertFalse("propertyValue is LESS_OR_EQUALS then value ",afpFilter.check(node));
+            tx.success();
+            
+        } catch (Exception e) {        
+            LOGGER.error(e.toString());
+           
+        }finally{
+            tx.finish();
+            LOGGER.info("< checkLESS_OR_EQUALSFilterFalseTest end >");
+        }
+    }
+    
+    /*
+     * check with 'LESS_OR_EQUALS' filterType , result true
+     */
+    @Test
+    public void CheckLESS_OR_EQUALSFilterTrue(){
+    	LOGGER.info("< checkLESS_OR_EQUALSFilterTrueTest begin >");
+        Transaction tx = graphDatabaseService.beginTx();
+        try {
+
+            Node node = graphDatabaseService.createNode();
+            node.setProperty("intValue", 5);
+         
+            Filter afpFilter=new Filter(FilterType.LESS_OR_EQUALS);
+            LOGGER.info("--Node property: "+"'intValue';value: "+node.getProperty("intValue"));
+           
+            LOGGER.info("----FilterType is 'LESS_OR_EQUALS' ");
+           
+            afpFilter.setExpression(null, "intValue", 6);
+            Assert.assertTrue("propertyValue isn't LESS_OR_EQUALS then value ",afpFilter.check(node));
+            tx.success();
+            
+        } catch (Exception e) {        
+            LOGGER.error(e.toString());
+           
+        }finally{
+            tx.finish();
+            LOGGER.info("< checkLESS_OR_EQUALSFilterTrueTest end >");
+        }
+    }
+    
+    
     /*
      *check afpFilter with 'LIKE' filterType and 'AND' expressionType
      *addAfpFilter with 'LIKE' filterType and with 'AND'  ExpressionType
