@@ -234,7 +234,6 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
             model.removeFilter(row.getName());
             defaultStyle.getCurStyle().removeFilter(row.getName());
             model.addFilter(definer.getWrapperName(), result);
-            model.addFilter(definer.getWrapperName(), result);
             defaultStyle.getCurStyle().addFilter(definer.getWrapperName(), result);
             model.store();
         }

@@ -38,4 +38,6 @@ public interface IFilter extends Serializable {
 
     boolean check(Node node) throws NotComparebleException, NullValueException;
 
+    INodeType getNodeType();
+
 }

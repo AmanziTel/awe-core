@@ -205,4 +205,53 @@ public class Filter implements IFilter {
     
     
 
+    @Override
+    public INodeType getNodeType() {
+        return nodeType;
+    }
+
+    public FilterType getFilterType() {
+        return filterType;
+    }
+
+    public void setFilterType(FilterType filterType) {
+        this.filterType = filterType;
+    }
+
+    public ExpressionType getExpressionType() {
+        return expressionType;
+    }
+
+    public void setExpressionType(ExpressionType expressionType) {
+        this.expressionType = expressionType;
+    }
+
+    public String getPropertyName() {
+        return propertyName;
+    }
+
+    public void setPropertyName(String propertyName) {
+        this.propertyName = propertyName;
+    }
+
+    public Serializable getValue() {
+        return value;
+    }
+
+    public void setValue(Serializable value) {
+        this.value = value;
+    }
+
+    public IFilter getUnderlyingFilter() {
+        return underlyingFilter;
+    }
+
+    public void setUnderlyingFilter(IFilter underlyingFilter) {
+        this.underlyingFilter = underlyingFilter;
+    }
+
+    public void setNodeType(INodeType nodeType) {
+        this.nodeType = nodeType;
+    }
+
 }
