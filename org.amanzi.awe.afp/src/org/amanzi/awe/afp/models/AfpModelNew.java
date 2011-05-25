@@ -330,14 +330,16 @@ public class AfpModelNew {
     }
 
     public void setFrequencyBandSupport(FrequencyBand band, boolean isSupported) {
-        boolean contains = frequencyDomains.containsKey(band);
+        String key = band.getText();
+        
+        boolean contains = frequencyDomains.containsKey(key);
 
         if (contains && !isSupported) {
-            frequencyDomains.remove(band);
+            frequencyDomains.remove(key);
             return;
         }
         if (!contains && isSupported) {
-            frequencyDomains.put(band.getText(), createFrequencyDomain(band));
+            frequencyDomains.put(key, createFrequencyDomain(band));
         }
     }
 
