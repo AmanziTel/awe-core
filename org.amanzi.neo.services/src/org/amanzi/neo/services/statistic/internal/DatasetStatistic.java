@@ -38,7 +38,7 @@ public class DatasetStatistic implements IStatistic {
     private StatisticHandler handler;
 
     public DatasetStatistic(Node root) {
-        this();
+        handler = new StatisticHandler(root);
         this.root = root;
 
     }
@@ -53,7 +53,7 @@ public class DatasetStatistic implements IStatistic {
     @Override
     public void save() {
         if (root != null) {
-            handler.saveStatistic(DatabaseManager.getInstance().getCurrentDatabaseService(), root);
+            handler.saveStatistic();
         }
     }
 
@@ -62,7 +62,7 @@ public class DatasetStatistic implements IStatistic {
      */
     public void init() {
         if (root != null) {
-            handler.loadStatistic(root);
+            handler.loadStatistic();
         }
     }
 

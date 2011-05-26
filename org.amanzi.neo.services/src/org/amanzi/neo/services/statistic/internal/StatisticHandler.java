@@ -68,14 +68,22 @@ public class StatisticHandler {
     public StatisticHandler(){
         statisticService = NeoServiceFactory.getInstance().getStatisticService();
     }
+    
+    /**
+     * constructor
+     */
+    public StatisticHandler(Node root){
+        statisticService = NeoServiceFactory.getInstance().getStatisticService();
+        this.root = root;
+    }
 
     /**
      * Load statistic.
      *
      * @param root the root
      */
-    public void loadStatistic(Node root){
-        this.root = root;
+    public void loadStatistic(){
+     
         clearStatistic();
         Node node = statisticService.findStatRoot(root);
         if (node == null)
@@ -94,44 +102,16 @@ public class StatisticHandler {
         vaults.clear();
         totalCount=0;
     }
+    
     /**
      * Save statistic.
      *
      * @param service the service
      * @param root the root
      */
-    public void saveStatistic(INeoDbService service,Node root){
-        if (isChanged(root)) {
-            this.root=root;
-            Transaction tx = service.beginTx();
-            try {
-                statRoot = statisticService.findOrCreateStatRoot(root);
-                
-                statRoot.setProperty(StatisticProperties.COUNT, totalCount);
-                HashSet<Node>treeToDelete=new HashSet<Node>();
-                HashSet<Vault>savedVault=new HashSet<Vault>();
-                for (Path path:Vault.PROPERTYS.traverse(statRoot)){
-                    String key= (String)path.endNode().getProperty(StatisticProperties.KEY);
-                    Vault vault=vaults.get(key);
-                    if (vault==null){
-                        treeToDelete.add(path.endNode());
-                    }else {
-                        vault.saveVault(service,statRoot,path.endNode());
-                        savedVault.add(vault);
-                    }
-                 }   
-                for (Node node:treeToDelete){
-                    NeoServiceFactory.getInstance().getDatasetService().deleteTree(service, node);
-                }
-                for (Vault vault:vaults.values()){
-                    if (!savedVault.contains(vault)){
-                        vault.saveVault(service,statRoot, null);
-                    }
-                }
-                tx.success();
-            } finally {
-                tx.finish();
-            }
+    public void saveStatistic(){
+        if (isChanged()){
+            statisticService.saveStatistic(statRoot, root, totalCount, Vault.PROPERTYS, vaults);
         }
         isChanged=false;
     }
@@ -142,10 +122,8 @@ public class StatisticHandler {
      * @param root the root
      * @return true, if is changed
      */
-    private boolean isChanged(Node root) {
-        if ( isChanged||this.root==null||!root.equals(this.root)){
-            return true;
-        }
+    private boolean isChanged() {
+        
         for (Vault vault:vaults.values()){
             if (vault.isChanged(statRoot)){
                 return true;
