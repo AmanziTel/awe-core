@@ -13,8 +13,7 @@ Require-Bundle: org.eclipse.ui,
  org.amanzi.awe.catalog.neo;bundle-version="1.0.0",
  org.amanzi.neo.services;bundle-version="1.0.0",
  org.amanzi.awe.ui;bundle-version="1.0.0",
- net.refractions.udig.mapgraphic;bundle-version="1.1.1",
- net.refractions.udig;bundle-version="1.1.0"
+ net.refractions.udig.mapgraphic;bundle-version="1.1.1"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Eclipse-LazyStart: true
 Export-Package: org.amanzi.awe.views.neighbours,
