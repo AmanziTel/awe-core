@@ -223,7 +223,7 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
      * @param row
      */
     protected void editStyle(FilterRow row) {
-        NetworkFilterDefiner definer = new NetworkFilterDefiner(viewer.getControl().getShell(), "Edit filter",defaultStyle.getGeoNeo(), row.getName(), row.getWrapper());
+        NetworkFilterDefiner definer = new NetworkFilterDefiner(viewer.getControl().getShell(), "Edit filter", defaultStyle.getGeoNeo(), row.getName(), row.getWrapper());
         FilterModel model = NeoStylePlugin.getDefault().getFilterModel();
         Set<String> restr = new HashSet<String>();
         restr.addAll(model.getFilterNames());
@@ -245,7 +245,7 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
      */
     protected void createNew() {
         FilterWrapperImpl<NetworkNeoStyle> wrapper = createDefWrapper();
-        NetworkFilterDefiner definer = new NetworkFilterDefiner(viewer.getControl().getShell(), "Create new filter",defaultStyle.getGeoNeo(), "new", wrapper);
+        NetworkFilterDefiner definer = new NetworkFilterDefiner(viewer.getControl().getShell(), "Create new filter", defaultStyle.getGeoNeo(), "new", wrapper);
         FilterModel model = NeoStylePlugin.getDefault().getFilterModel();
         definer.setRestrictedNames(model.getFilterNames());
         IFilterWrapper result = definer.open();
@@ -272,14 +272,12 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
      *
      */
     protected void removeSelected() {
-        IStructuredSelection sel=(IStructuredSelection)viewer.getSelection();
-        if (sel.size()!=1){
+        IStructuredSelection sel = (IStructuredSelection)viewer.getSelection();
+        if (sel.size() != 1) {
             return;
         }
-        
-        
-    }
 
+    }
 
     private void formColumns(CheckboxTableViewer viewer) {
         TableViewerColumn column = new TableViewerColumn(viewer, SWT.FILL);
@@ -335,18 +333,17 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
             } else {
                 NetworkNeoStyle style = (NetworkNeoStyle)newInput;
                 formElements(style);
+                viewer.getControl().getDisplay().asyncExec(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        ContentProvider.this.viewer.setCheckedElements(getCheckedElem());
+                    }
+                });
             }
-            viewer.getControl().getDisplay().asyncExec(new Runnable() {
-                
-                @Override
-                public void run() {
-                    ContentProvider.this.viewer.setCheckedElements(getCheckedElem());
-                }
-            });
         }
 
         /**
-         *
          * @return
          */
         protected Object[] getCheckedElem() {
