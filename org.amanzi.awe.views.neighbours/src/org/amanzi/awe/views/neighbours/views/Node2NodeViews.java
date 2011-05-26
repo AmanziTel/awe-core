@@ -13,28 +13,9 @@
 
 package org.amanzi.awe.views.neighbours.views;
 
-import java.awt.Color;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
-import java.awt.Paint;
-import java.awt.RenderingHints;
-import java.awt.Shape;
-import java.awt.Stroke;
-import java.awt.RenderingHints.Key;
-import java.awt.font.FontRenderContext;
-import java.awt.font.GlyphVector;
-import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
-import java.awt.image.BufferedImageOp;
-import java.awt.image.ImageObserver;
-import java.awt.image.RenderedImage;
-import java.awt.image.renderable.RenderableImage;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.AttributedCharacterIterator;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
@@ -53,19 +34,13 @@ import java.util.concurrent.ExecutionException;
 import net.refractions.udig.catalog.CatalogPlugin;
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.catalog.IResolve;
-import net.refractions.udig.catalog.IService;
-import net.refractions.udig.mapgraphic.MapGraphicContext;
 import net.refractions.udig.mapgraphic.MapGraphicPlugin;
-import net.refractions.udig.mapgraphic.internal.MapGraphicContextImpl;
-import net.refractions.udig.mapgraphic.internal.MapGraphicRenderer;
 import net.refractions.udig.mapgraphic.internal.MapGraphicService;
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.command.UndoableComposite;
 import net.refractions.udig.project.command.factory.BasicCommandFactory;
 import net.refractions.udig.project.command.factory.EditCommandFactory;
 import net.refractions.udig.project.internal.Layer;
-import net.refractions.udig.project.internal.render.impl.RenderContextImpl;
-import net.refractions.udig.project.internal.render.impl.RenderManagerImpl;
 import net.refractions.udig.project.ui.ApplicationGIS;
 import net.refractions.udig.project.ui.internal.ApplicationGISInternal;
 import net.refractions.udig.ui.ProgressManager;
@@ -74,10 +49,9 @@ import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.ChangeModelEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.ChangeSelectionEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEventTypes;
-
-import org.amanzi.awe.neighbours.legend.LegendRelations;
 import org.amanzi.awe.ui.AweUiPlugin;
 import org.amanzi.awe.ui.IGraphModel;
+import org.amanzi.awe.views.neighbours.LegendRelations;
 import org.amanzi.awe.views.neighbours.NeighboursPlugin;
 import org.amanzi.awe.views.neighbours.PreferenceInitializer;
 import org.amanzi.neo.services.DatasetService;
@@ -107,7 +81,6 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -162,7 +135,6 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
-import org.opengis.layer.LegendURL;
 
 /**
  * <p>

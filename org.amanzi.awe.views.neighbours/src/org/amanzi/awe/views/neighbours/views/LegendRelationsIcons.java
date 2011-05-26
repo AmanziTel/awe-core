@@ -1,4 +1,4 @@
-package org.amanzi.awe.neighbours.legend;
+package org.amanzi.awe.views.neighbours.views;
 
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
@@ -6,8 +6,7 @@ import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 
-import org.amanzi.awe.neighbours.NeighbourPlugin;
-import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
+import org.amanzi.awe.views.neighbours.NeighboursPlugin;
 
 public enum LegendRelationsIcons {
 	OTHERS("others"),
@@ -30,7 +29,7 @@ public enum LegendRelationsIcons {
         }
     }
     private void loadImage(int size) {
-        InputStream stream = NeighbourPlugin.getDefault().getClass().getClassLoader().getResourceAsStream("images/icons/" + fileName + "_" + size + ".png");
+        InputStream stream = NeighboursPlugin.getDefault().getClass().getClassLoader().getResourceAsStream("images/icons/" + fileName + "_" + size + ".png");
        
         try {
             images.put(size,ImageIO.read(stream));

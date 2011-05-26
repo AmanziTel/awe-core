@@ -1,27 +1,18 @@
-package org.amanzi.awe.neighbours.legend;
+package org.amanzi.awe.views.neighbours;
 
-import net.refractions.udig.mapgraphic.MapGraphic;
-import net.refractions.udig.mapgraphic.MapGraphicContext;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import java.io.InputStream;
-import java.util.HashMap;
-
-import javax.imageio.ImageIO;
-
-import org.amanzi.neo.core.utils.DriveEvents;
-import org.amanzi.neo.services.ui.IconManager;
-import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
-import org.amanzi.neo.services.ui.IconManager.EventIcons;
 
 import net.refractions.udig.mapgraphic.MapGraphic;
 import net.refractions.udig.mapgraphic.MapGraphicContext;
 import net.refractions.udig.ui.PlatformGIS;
 import net.refractions.udig.ui.graphics.ViewportGraphics;
+
+import org.amanzi.awe.views.neighbours.views.LegendElements;
 
 public class LegendRelations implements MapGraphic {
 
