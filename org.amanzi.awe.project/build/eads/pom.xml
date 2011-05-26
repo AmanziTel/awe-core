@@ -48,7 +48,7 @@
     <module>org.amanzi.awe.views.calls</module>
     <module>org.amanzi.awe.views.drive</module>
     <module>org.amanzi.awe.views.kpi</module>
-    <module>org.amanzi.awe.views.neighbours</module>
+    <module>org.amanzi.awe.neighbours</module>
     <module>org.amanzi.awe.views.network</module>
     <module>org.amanzi.awe.views.reuse</module>
     <module>org.amanzi.awe.views.tree.drive</module>

@@ -336,6 +336,27 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
                 NetworkNeoStyle style = (NetworkNeoStyle)newInput;
                 formElements(style);
             }
+            viewer.getControl().getDisplay().asyncExec(new Runnable() {
+                
+                @Override
+                public void run() {
+                    ContentProvider.this.viewer.setCheckedElements(getCheckedElem());
+                }
+            });
+        }
+
+        /**
+         *
+         * @return
+         */
+        protected Object[] getCheckedElem() {
+            List<FilterRow> checked = new ArrayList<FilterRow>();
+            for (FilterRow row : elements) {
+                if (row.isSelected()) {
+                    checked.add(row);
+                }
+            }
+            return checked.toArray();
         }
 
         public List<String> getChecked() {
@@ -359,7 +380,6 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
                 wr.setWrapper((FilterWrapperImpl<NetworkNeoStyle>)model.getWrapperByName(name));
                 wr.setSelected(names.contains(name));
                 elements.add(wr);
-                viewer.setChecked(wr, wr.isSelected());
             }
 
             Collections.sort(elements, new Comparator<FilterRow>() {

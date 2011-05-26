@@ -8,7 +8,7 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <groupId>AWE_build</groupId>
-  <artifactId>org.amanzi.awe.views.neighbours</artifactId>
+  <artifactId>org.amanzi.awe.neighbours</artifactId>
   <version>1.0.0.qualifier</version>
   <packaging>eclipse-plugin</packaging>
 </project>
