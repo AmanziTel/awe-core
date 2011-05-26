@@ -150,7 +150,6 @@
       <module>org.rubypeople.rdt.launching</module>
       <module>org.rubypeople.rdt.refactoring</module>
       <module>org.rubypeople.rdt.ui</module>
-      <module>org.amanzi.awe.neighbours</module>
       <module>org.amanzi.awe.wizards</module>
       <module>org.amanzi.awe.report.o2</module>
       <module>org.amanzi.awe.afp-site</module>
@@ -293,7 +292,6 @@
       <module>org.rubypeople.rdt.launching</module>
       <module>org.rubypeople.rdt.refactoring</module>
       <module>org.rubypeople.rdt.ui</module>
-      <module>org.amanzi.awe.neighbours</module>
       <module>org.amanzi.awe.wizards</module>
       <module>org.amanzi.awe.report.o2</module>
       <module>org.amanzi.awe.afp-site</module>
