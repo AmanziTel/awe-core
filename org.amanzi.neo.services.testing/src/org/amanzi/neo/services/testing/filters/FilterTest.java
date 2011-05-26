@@ -19,6 +19,7 @@ import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.filters.ExpressionType;
 import org.amanzi.neo.services.filters.Filter;
 import org.amanzi.neo.services.filters.FilterType;
+import org.amanzi.neo.services.filters.exceptions.FilterTypeException;
 import org.amanzi.neo.services.filters.exceptions.NotComparebleException;
 import org.amanzi.neo.services.filters.exceptions.NullValueException;
 import org.amanzi.testing.AbstractAWETest;
@@ -414,6 +415,162 @@ public class FilterTest extends AbstractAWETest {
         }
     }
     
+    /*
+     * check with 'EMPTY' filterType , result true
+     */
+    @Test
+    public void CheckEMPTYFilterTrue(){
+    	LOGGER.info("< checkEMPTYFilterTrueTest begin >");
+        Transaction tx = graphDatabaseService.beginTx();
+        try {
+
+            Node node = graphDatabaseService.createNode();
+            node.setProperty("property", 5);
+         
+            Filter afpFilter=new Filter(FilterType.EMPTY);
+            LOGGER.info("--Node property: "+"'property';value: "+node.getProperty("property"));
+           
+            LOGGER.info("----FilterType is 'EMPTY' ");
+           
+            afpFilter.setExpression(null, "anotherProperty");
+            Assert.assertTrue(" 'EMPTY' filter is wron ",afpFilter.check(node));
+            tx.success();
+            
+        } catch (Exception e) {        
+            LOGGER.error(e.toString());
+           
+        }finally{
+            tx.finish();
+            LOGGER.info("< checkEMPTYFilterTrueTest end >");
+        }
+    }
+    
+    /*
+     * check with 'EMPTY' filterType , result false
+     */
+    @Test
+    public void CheckEMPTYFilterFalse(){
+    	LOGGER.info("< checkEMPTYFilterFalseTest begin >");
+        Transaction tx = graphDatabaseService.beginTx();
+        try {
+
+            Node node = graphDatabaseService.createNode();
+            node.setProperty("property", 5);
+         
+            Filter afpFilter=new Filter(FilterType.EMPTY);
+            LOGGER.info("--Node property: "+"'property';value: "+node.getProperty("property"));
+           
+            LOGGER.info("----FilterType is 'EMPTY' ");
+           
+            afpFilter.setExpression(null, "property");
+            Assert.assertFalse(" 'EMPTY' filter is wron ",afpFilter.check(node));
+            tx.success();
+            
+        } catch (Exception e) {        
+            LOGGER.error(e.toString());
+           
+        }finally{
+            tx.finish();
+            LOGGER.info("< checkEMPTYFilterFalseTest end >");
+        }
+    }
+    
+    /*
+     * check with 'NOT_EMPTY' filterType , result false
+     */
+    @Test
+    public void CheckNOT_EMPTYFilterFalse(){
+    	LOGGER.info("< checkNOT_EMPTYFilterFalseTest begin >");
+        Transaction tx = graphDatabaseService.beginTx();
+        try {
+
+            Node node = graphDatabaseService.createNode();
+            node.setProperty("property", 5);
+         
+            Filter afpFilter=new Filter(FilterType.NOT_EMPTY);
+            LOGGER.info("--Node property: "+"'property';value: "+node.getProperty("property"));
+           
+            LOGGER.info("----FilterType is 'NOT_EMPTY' ");
+           
+            afpFilter.setExpression(null, "anotherProperty");
+            Assert.assertFalse(" 'NOT_EMPTY' filter is wron ",afpFilter.check(node));
+            tx.success();
+            
+        } catch (Exception e) {        
+            LOGGER.error(e.toString());
+           
+        }finally{
+            tx.finish();
+            LOGGER.info("< checkNOT_EMPTYFilterFalseTest end >");
+        }
+    }
+    
+    /*
+     * check with 'NOT_EMPTY' filterType , result true
+     */
+    @Test
+    public void CheckNOT_EMPTYFilterTrue(){
+    	LOGGER.info("< checkNOT_EMPTYFilterTrueTest begin >");
+        Transaction tx = graphDatabaseService.beginTx();
+        try {
+
+            Node node = graphDatabaseService.createNode();
+            node.setProperty("property", 5);
+         
+            Filter afpFilter=new Filter(FilterType.NOT_EMPTY);
+            LOGGER.info("--Node property: "+"'property';value: "+node.getProperty("property"));
+           
+            LOGGER.info("----FilterType is 'NOT_EMPTY' ");
+           
+            afpFilter.setExpression(null, "property");
+            Assert.assertTrue(" 'NOT_EMPTY' filter is wron ",afpFilter.check(node));
+            tx.success();
+            
+        } catch (Exception e) {        
+            LOGGER.error(e.toString());
+           
+        }finally{
+            tx.finish();
+            LOGGER.info("< checkNOT_EMPTYFilterTrueTest end >");
+        }
+    }
+    
+    /*
+     * setExpression with FilterTypeException
+     */
+    @Test
+    public void CheckFilterTypeException(){
+    	LOGGER.info("< checkFilterTypeExceptionTest begin >");
+    	Transaction tx = graphDatabaseService.beginTx();
+    	try {
+
+    		Node node = graphDatabaseService.createNode();
+    		node.setProperty("property", 5);
+
+    		Filter afpFilter=new Filter(FilterType.MORE);
+    		LOGGER.info("--Node property: "+"'property';value: "+node.getProperty("property"));
+
+    		LOGGER.info("----FilterType is 'NOT_EMPTY' ");
+    		Exception exc = null;
+    		try{
+    			afpFilter.setExpression(null, "property");
+    		}
+    		catch (Exception e){
+    			exc = e;
+    		}
+    		finally{
+    			Assert.assertTrue("method setExpression() don't catch FilterTypeException", exc instanceof FilterTypeException);
+    		}
+    		tx.success();
+
+    	} catch (Exception e) {        
+    		LOGGER.error(e.toString());
+
+    	}finally{
+    		tx.finish();
+    		LOGGER.info("< checkFilterTypeExceptionTest end >");
+    	}
+    }
     /*
      * check with 'MORE_OR_EQUALS' filterType , result false
      */
