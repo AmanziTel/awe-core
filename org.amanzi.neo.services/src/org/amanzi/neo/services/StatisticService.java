@@ -13,11 +13,19 @@
 
 package org.amanzi.neo.services;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
+import org.amanzi.neo.db.manager.INeoDbService;
 import org.amanzi.neo.services.statistic.internal.StatisticProperties;
 import org.amanzi.neo.services.statistic.internal.StatisticRelationshipTypes;
+import org.amanzi.neo.services.statistic.internal.Vault;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.traversal.TraversalDescription;
 
 /**
  * TODO Purpose of 
@@ -47,5 +55,41 @@ public class StatisticService extends AbstractService{
         }
         return statRoot;
     }
+    
+    public void saveStatistic(Node statRoot, Node root, long totalCount, TraversalDescription trDisc, HashMap<String,Vault>vaults){
+
+
+        Transaction tx = databaseService.beginTx();
+        try {
+            statRoot = findOrCreateStatRoot(root);
+
+            statRoot.setProperty(StatisticProperties.COUNT, totalCount);
+            HashSet<Node>treeToDelete=new HashSet<Node>();
+            HashSet<Vault>savedVault=new HashSet<Vault>();
+            for (Path path:trDisc.traverse(statRoot)){
+                String key= (String)path.endNode().getProperty(StatisticProperties.KEY);
+                Vault vault=vaults.get(key);
+                if (vault==null){
+                    treeToDelete.add(path.endNode());
+                }else {
+                    vault.saveVault((INeoDbService)databaseService,statRoot,path.endNode());
+                    savedVault.add(vault);
+                }
+            }   
+            for (Node node:treeToDelete){
+                NeoServiceFactory.getInstance().getDatasetService().deleteTree((INeoDbService)databaseService, node);
+            }
+            for (Vault vault:vaults.values()){
+                if (!savedVault.contains(vault)){
+                    vault.saveVault((INeoDbService)databaseService,statRoot, null);
+                }
+            }
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+    }
+
+    
 
 }
