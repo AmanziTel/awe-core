@@ -22,5 +22,6 @@ Require-Bundle: org.eclipse.ui,
  org.amanzi.awe.afp.ericsson;bundle-version="1.0.0"
 Eclipse-LazyStart: true
 Export-Package: org.amanzi.awe.afp.testing.engine,
+ org.amanzi.awe.afp.testing.engine.internal,
  org.amanzi.awe.afp.testing.exporters
 Bundle-Vendor: amanzi.org

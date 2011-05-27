@@ -32,13 +32,18 @@ import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.networkModel.IDistributionModel;
+import org.amanzi.neo.services.networkModel.IDistributionalModel;
+import org.amanzi.neo.services.networkModel.PropertyEvaluator;
+import org.amanzi.neo.services.networkModel.StringDistributionModel;
 import org.amanzi.neo.services.networkselection.SelectionModel;
 import org.amanzi.neo.services.node2node.INodeToNodeType;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationService;
 import org.amanzi.neo.services.node2node.NodeToNodeTypes;
+import org.amanzi.neo.services.statistic.ISinglePropertyStat;
 import org.amanzi.neo.services.statistic.IStatistic;
-import org.amanzi.neo.services.statistic.internal.PropertyStatistics;
+import org.amanzi.neo.services.statistic.StatisticManager;
 import org.amanzi.neo.services.utils.Utils;
 import org.apache.commons.lang.ObjectUtils;
 import org.geotools.geometry.jts.JTS;
@@ -58,13 +63,14 @@ import com.vividsolutions.jts.geom.Coordinate;
  * @author Saelenchits_N
  * @since 1.0.0
  */
-public class NetworkModel implements INetworkTraversableModel {
+public class NetworkModel implements IDistributionalModel, INetworkTraversableModel {
+
     private final Node rootNode;
     private final DatasetService ds;
 
     private final NetworkService networkService;
     private NodeToNodeRelationService n2nserrvice;
-    
+
     private IStatistic statistics;
 
     public NetworkModel(Node rootNode) {
@@ -78,12 +84,15 @@ public class NetworkModel implements INetworkTraversableModel {
         // TODO define - should we always create new instance?
         return new NodeToNodeRelationModel(rootNode, type, name);
     }
+
     public NodeToNodeRelationModel getIllegalFrequency() {
         return getNodeToNodeRelationModel(NodeToNodeTypes.ILLEGAL_FREQUENCY, "Illegal Frequencies");
     }
+
     public NodeToNodeRelationModel getInterferenceMatrix(String name) {
         return getNodeToNodeRelationModel(NodeToNodeTypes.INTERFERENCE_MATRIX, name);
     }
+
     public NodeToNodeRelationModel getImpactMatrix(String name) {
         return getNodeToNodeRelationModel(NodeToNodeTypes.IMPACT, name);
     }
@@ -113,7 +122,7 @@ public class NetworkModel implements INetworkTraversableModel {
     }
 
     public NodeResult getPlan(Node carrierNode, String fileName) {
-        return networkService.getPlanNode(rootNode,carrierNode, fileName);
+        return networkService.getPlanNode(rootNode, carrierNode, fileName);
     }
 
     public NodeResult getCarrier(Node sector, String trxId, Integer channelGr) {
@@ -126,21 +135,23 @@ public class NetworkModel implements INetworkTraversableModel {
 
     public Node getClosestSector(Node servSector, Integer bsic, Integer bcch) {
         Set<Node> nodes = findSectorsByBsicBcch(bsic, bcch);
-        return getClosestNode(servSector, nodes,30000);
+        return getClosestNode(servSector, nodes, 30000);
     }
-    public FrequencyPlanModel getFrequencyModel(String modelName, String time, String domain){
+
+    public FrequencyPlanModel getFrequencyModel(String modelName, String time, String domain) {
         return FrequencyPlanModel.getModel(rootNode, modelName, time, domain);
     }
-    public FrequencyPlanModel getFrequencyModel(String modelName){
+
+    public FrequencyPlanModel getFrequencyModel(String modelName) {
         return FrequencyPlanModel.getModel(rootNode, modelName);
     }
+
     /**
-     *
      * @param servSector
      * @param candidates
      * @return
      */
-    public Node getClosestNode(Node servSector, Collection<Node> candidates,double maxDistance) {
+    public Node getClosestNode(Node servSector, Collection<Node> candidates, double maxDistance) {
         Coordinate c = getCoordinateOfSector(servSector);
         CoordinateReferenceSystem crs = getCrs();
         if (c == null || crs == null) {
@@ -149,28 +160,28 @@ public class NetworkModel implements INetworkTraversableModel {
         Double dist = null;
         Node candidateNode = null;
         for (Node candidate : candidates) {
-            if (servSector.equals(candidate)){
+            if (servSector.equals(candidate)) {
                 continue;
             }
             Coordinate c1 = getCoordinateOfSector(candidate);
             if (c1 == null) {
                 continue;
             }
-                double distance;
-                try {
-                    distance = JTS.orthodromicDistance(c, c1, crs);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    distance= Math.sqrt(Math.pow(c.x - c1.x, 2) + Math.pow(c.y - c1.y, 2));
+            double distance;
+            try {
+                distance = JTS.orthodromicDistance(c, c1, crs);
+            } catch (Exception e) {
+                e.printStackTrace();
+                distance = Math.sqrt(Math.pow(c.x - c1.x, 2) + Math.pow(c.y - c1.y, 2));
 
-                }
-                if (distance > maxDistance) {
-                    continue;
-                }
-                if (candidateNode == null || distance < dist) {
-                    dist = distance;
-                    candidateNode = candidate;
-                }
+            }
+            if (distance > maxDistance) {
+                continue;
+            }
+            if (candidateNode == null || distance < dist) {
+                dist = distance;
+                candidateNode = candidate;
+            }
         }
         return candidateNode;
     }
@@ -202,11 +213,13 @@ public class NetworkModel implements INetworkTraversableModel {
         }
         return getCoordinateOfSite(getSiteOfSector(servSector));
     }
-    public IllegalFrequencySpectrumModel getFrequencySpectrum(){
+
+    public IllegalFrequencySpectrumModel getFrequencySpectrum() {
         return new IllegalFrequencySpectrumModel(networkService.getFrequencySpectrumRootNode(rootNode));
     }
+
     public Coordinate getCoordinateOfSite(Node site) {
-        if (site==null){
+        if (site == null) {
             return null;
         }
         Double lat = (Double)site.getProperty(INeoConstants.PROPERTY_LAT_NAME, null);
@@ -221,53 +234,53 @@ public class NetworkModel implements INetworkTraversableModel {
         Relationship rel = sector.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING);
         return rel != null ? rel.getOtherNode(sector) : null;
     }
-    
+
     public List<Node> getSectorsOfSite(Node site) {
         ArrayList<Node> result = new ArrayList<Node>();
-        
+
         for (Relationship childRelationship : site.getRelationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)) {
             result.add(childRelationship.getEndNode());
         }
-        
+
         return result;
     }
 
     public Set<NodeToNodeRelationModel> findAllN2nModels(NodeToNodeTypes type) {
-        return n2nserrvice.findAllN2nModels(rootNode,type);
+        return n2nserrvice.findAllN2nModels(rootNode, type);
 
     }
 
     public Set<FrequencyPlanModel> findAllFrqModel() {
-        Set<FrequencyPlanModel> result=new HashSet<FrequencyPlanModel>();
-        for (Node root:networkService.findAllFrqRoot(rootNode, null).nodes()){
+        Set<FrequencyPlanModel> result = new HashSet<FrequencyPlanModel>();
+        for (Node root : networkService.findAllFrqRoot(rootNode, null).nodes()) {
             result.add(new FrequencyPlanModel(root));
         }
         return result;
     }
 
     public Iterable<Node> findAllNodeByType(INodeType type) {
-        return networkService.findAllNodeByType(rootNode,type);
+        return networkService.findAllNodeByType(rootNode, type);
     }
 
     public SelectionModel getSelectionModel(String name) {
         Node selectionModelNode = networkService.getRootSelectionNode(rootNode, name);
-        
+
         return new SelectionModel(rootNode, selectionModelNode);
     }
-    
+
     public Map<String, SelectionModel> getAllSelectionModels() {
         HashMap<String, SelectionModel> result = new HashMap<String, SelectionModel>();
-        
+
         for (Node singleNode : networkService.getAllRootSelectionNodes(rootNode)) {
             SelectionModel model = new SelectionModel(rootNode, singleNode);
             result.put(model.getName(), model);
         }
-        
+
         return result;
     }
-    
+
     @Override
-    public Iterable<Node> getAllElementsByType(Evaluator filter, INodeType ... nodeTypes) {
+    public Iterable<Node> getAllElementsByType(Evaluator filter, INodeType... nodeTypes) {
         return networkService.getNetworkElementTraversal(filter, nodeTypes).traverse(rootNode).nodes();
     }
 
@@ -280,17 +293,17 @@ public class NetworkModel implements INetworkTraversableModel {
     }
 
     public String makeUniqueListName(String name) {
-        while(listNameExists(name)) {
+        while (listNameExists(name)) {
             String base = name;
             int count = 1;
             Pattern p = Pattern.compile("\\w+(\\d+)");
             Matcher m = p.matcher(name);
-            if(m.matches()) {
+            if (m.matches()) {
                 String number = m.group(1);
                 count = Integer.parseInt(number);
                 base = base.replace(number, "");
             }
-            count ++;
+            count++;
             name = base + count;
         }
         return name;
@@ -299,31 +312,55 @@ public class NetworkModel implements INetworkTraversableModel {
     public String getName() {
         return networkService.getNodeName(rootNode);
     }
-    
+
     public List<Node> getAllTrxNodesOfSector(Node sector) {
         return networkService.getAllTRXNode(sector);
     }
 
-
     public FrequencyPlanModel findFrequencyModel(String modelName) {
         return FrequencyPlanModel.findModel(rootNode, modelName);
     }
-    
+
     public static List<NetworkModel> getAllNetworkModels() {
         List<NetworkModel> result = new ArrayList<NetworkModel>();
-        
+
         NetworkService networkService = NeoServiceFactory.getInstance().getNetworkService();
-        
+
         for (Node networkNode : networkService.findAllNetworkNodes()) {
             result.add(new NetworkModel(networkNode));
         }
-        
+
         return result;
     }
 
     public Node getRootNode() {
         return rootNode;
     }
-    
-    
+
+    @Override
+    public Iterable<Node> getElementsByType(String propertyName, INodeType type) {
+        Evaluator ev = new PropertyEvaluator(propertyName, "");
+        return getAllElementsByType(ev, type);
+    }
+
+    @Override
+    public IDistributionModel getModel(String property, INodeType type) {
+        IStatistic stat = StatisticManager.getStatistic(rootNode);
+
+        ISinglePropertyStat propertyType = stat.findPropertyStatistic(rootNode.getProperty(INeoConstants.PROPERTY_NAME_NAME)
+                .toString(), type.getId(), property);
+
+        IDistributionModel model = null;
+        if (propertyType.getType() == String.class) {
+            model = new StringDistributionModel(property, NodeTypes.NETWORK, this);
+            model.setRootDistributionNode(rootNode);
+        }
+        return model;
+    }
+
+    @Override
+    public String getModelName() {
+        return rootNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+    }
+
 }
