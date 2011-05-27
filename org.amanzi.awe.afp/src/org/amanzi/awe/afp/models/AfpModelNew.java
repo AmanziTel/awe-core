@@ -34,6 +34,8 @@ import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.filters.ExpressionType;
 import org.amanzi.neo.services.filters.Filter;
 import org.amanzi.neo.services.filters.FilterType;
+import org.amanzi.neo.services.filters.exceptions.NotComparebleException;
+import org.amanzi.neo.services.filters.exceptions.NullValueException;
 import org.amanzi.neo.services.network.INetworkTraversableModel;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.networkselection.SelectionModel;
@@ -362,27 +364,43 @@ public class AfpModelNew {
                 sectorCount++;
                 
                 for (FrequencyDomain freeDomain : getFreeFrequencyDomains().values()) {
-                    if (freeDomain.getFilter().check(node)) {
-                        freeDomain.setSectorCount(freeDomain.getSectorCount() + 1);
-                        break;
+                    try {
+                        if (freeDomain.getFilter().check(node)) {
+                            freeDomain.setSectorCount(freeDomain.getSectorCount() + 1);
+                            break;
+                        }
+                    } catch (NotComparebleException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (NullValueException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
                     }
                 }
             }
             else if (nodeType.equals(NodeTypes.TRX)) {
                 trxCount++;
                 for (FrequencyDomain freeDomain : getFreeFrequencyDomains().values()) {
-                    if (freeDomain.getFilter().check(node)) {
-                        freeDomain.setTrxCount(freeDomain.getTrxCount() + 1);
-                        
-                        for (ChannelType channel : ChannelType.values()) {
-                            if (channel.getFilter().check(node)) {
-                                freeDomain.getChannelCount().put(channel, freeDomain.getChannelCount().get(channel) + 1);
-                                channelCount.put(channel, channelCount.get(channel) + 1);
-                                break;
+                    try {
+                        if (freeDomain.getFilter().check(node)) {
+                            freeDomain.setTrxCount(freeDomain.getTrxCount() + 1);
+                            
+                            for (ChannelType channel : ChannelType.values()) {
+                                if (channel.getFilter().check(node)) {
+                                    freeDomain.getChannelCount().put(channel, freeDomain.getChannelCount().get(channel) + 1);
+                                    channelCount.put(channel, channelCount.get(channel) + 1);
+                                    break;
+                                }
                             }
+                            
+                            break;
                         }
-                        
-                        break;
+                    } catch (NotComparebleException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (NullValueException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
                     }
                 }
             }
