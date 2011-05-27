@@ -18,6 +18,7 @@ import java.io.Serializable;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.filters.exceptions.FilterTypeException;
 import org.amanzi.neo.services.filters.exceptions.NotComparebleException;
+import org.amanzi.neo.services.filters.exceptions.NotComparebleRuntimeException;
 import org.amanzi.neo.services.filters.exceptions.NullValueException;
 import org.neo4j.graphdb.Node;
 
@@ -36,7 +37,7 @@ public interface IFilter extends Serializable {
 
     void addFilter(IFilter additionalFilter);
 
-    boolean check(Node node) throws NotComparebleException, NullValueException;
+    boolean check(Node node) throws NullValueException, NotComparebleException;
 
     INodeType getNodeType();
 

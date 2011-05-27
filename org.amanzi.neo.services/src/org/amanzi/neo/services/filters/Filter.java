@@ -20,6 +20,7 @@ import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.filters.exceptions.FilterTypeException;
 import org.amanzi.neo.services.filters.exceptions.NotComparebleException;
+import org.amanzi.neo.services.filters.exceptions.NotComparebleRuntimeException;
 import org.amanzi.neo.services.filters.exceptions.NullValueException;
 import org.neo4j.graphdb.Node;
 
@@ -67,7 +68,9 @@ public class Filter implements IFilter {
     }
     
     @Override
-    public void setExpression(INodeType nodeType, String propertyName, Serializable value) {
+    public void setExpression(INodeType nodeType, String propertyName, Serializable value) throws NotComparebleRuntimeException{
+        if (!(value instanceof Comparable<?>))
+            throw new NotComparebleRuntimeException();
         this.nodeType = nodeType;
         this.propertyName = propertyName;
         this.value = value;
@@ -116,15 +119,15 @@ public class Filter implements IFilter {
                 //1. filter value is NULL - compare both values with null 
                 //2. filter value is not NULL - use equals()
                 result = ((value == null) && (propertyValue == null)) ||
-                         ((value != null) && value.equals(propertyValue));
+                ((value != null) && value.equals(propertyValue));
                 break;
             case LIKE:
                 if (!hasProperty)
                     break;
                 result = ((value == null) && (propertyValue == null)) ||
-                         (propertyValue.toString().matches(value.toString()));
+                (propertyValue.toString().matches(value.toString()));
                 break;
-            
+
             case MORE:
                 if (!hasProperty)
                     break;
@@ -135,12 +138,13 @@ public class Filter implements IFilter {
                 if (!(propertyValue instanceof Comparable<?> && value instanceof Comparable<?>)){
                     throw new NotComparebleException();
                 }
+
                 result = false;
                 if (((Comparable<Serializable>)propertyValue).compareTo(value) > 0)
                     result = true;          
 
                 break;
-               
+
             case LESS:
                 if (!hasProperty)
                     break;
@@ -151,6 +155,7 @@ public class Filter implements IFilter {
                 if (!(propertyValue instanceof Comparable<?> && value instanceof Comparable<?>)){
                     throw new NotComparebleException();
                 }
+
                 result = false;
                 if (((Comparable<Serializable>)propertyValue).compareTo(value) < 0)
                     result = true;                     
@@ -159,24 +164,29 @@ public class Filter implements IFilter {
             case MORE_OR_EQUALS:
                 if (!hasProperty)
                     break;
+
                 result = ((value == null) && (propertyValue == null)) ||
                 ((value != null) && value.equals(propertyValue));
                 if (!(propertyValue instanceof Comparable<?> && value instanceof Comparable<?>)){
                     throw new NotComparebleException();
                 }
-                
+
                 if (((Comparable<Serializable>)propertyValue).compareTo(value) > 0)
                     result = true;                     
                 break;
             case LESS_OR_EQUALS:
                 if (!hasProperty)
                     break;
-                result = ((value == null) && (propertyValue == null)) ||
-                ((value != null) && value.equals(propertyValue));
-                if (!(propertyValue instanceof Comparable<?> && value instanceof Comparable<?>)){
-                    throw new NotComparebleException();
+                try{
+                    result = ((value == null) && (propertyValue == null)) ||
+                    ((value != null) && value.equals(propertyValue));
+                    if (!(propertyValue instanceof Comparable<?> && value instanceof Comparable<?>)){
+                        throw new NotComparebleException();
+                    }
                 }
-                
+                catch(Exception e){
+
+                }
                 if (((Comparable<Serializable>)propertyValue).compareTo(value) < 0)
                     result = true;
                 break;
@@ -188,7 +198,7 @@ public class Filter implements IFilter {
                 break;
             }
         }
-        
+
         if (underlyingFilter != null) {
             switch (expressionType) {
             case AND:
@@ -199,11 +209,11 @@ public class Filter implements IFilter {
                 break;
             }
         }    
-        
+
         return result;
     }
-    
-    
+
+
 
     @Override
     public INodeType getNodeType() {
