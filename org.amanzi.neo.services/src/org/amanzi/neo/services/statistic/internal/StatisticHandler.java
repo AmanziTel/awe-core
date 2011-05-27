@@ -123,7 +123,8 @@ public class StatisticHandler {
      * @return true, if is changed
      */
     private boolean isChanged() {
-        
+        if (isChanged)
+            return true;
         for (Vault vault:vaults.values()){
             if (vault.isChanged(statRoot)){
                 return true;
