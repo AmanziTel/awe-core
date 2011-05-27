@@ -18,19 +18,18 @@ package org.amanzi.neo.services.filters.exceptions;
  * <p>
  *
  * </p>
- * @author Sasha
+ * @author Kruglik_A
  * @since 1.0.0
  */
-public class NotComparebleException extends RuntimeException{
-   
+public class NotComparebleException extends AbstractFilterException{
     /** long serialVersionUID field */
     private static final long serialVersionUID = 3884623639107628988L;
     private String exceptionMessage = "value or propertyValue is not compareble type";
-    
+
     public NotComparebleException() {
     }
     public String toString(){
-        return "Exception: "+ exceptionMessage;
+        return "NotComparebleException: "+ exceptionMessage;
     }
 
 }

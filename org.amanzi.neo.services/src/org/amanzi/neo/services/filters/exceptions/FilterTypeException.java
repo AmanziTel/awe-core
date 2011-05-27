@@ -22,7 +22,7 @@ package org.amanzi.neo.services.filters.exceptions;
  * @author Sasha
  * @since 1.0.0
  */
-public class FilterTypeException extends RuntimeException{
+public class FilterTypeException extends AbstractFilterRuntimeException{
 
     /** long serialVersionUID field */
     private static final long serialVersionUID = -272699684424803979L;
@@ -31,7 +31,7 @@ public class FilterTypeException extends RuntimeException{
     public FilterTypeException() {
     }
     public String toString(){
-        return "Exception: "+ exceptionMessage;
+        return "FilterTypeException: "+ exceptionMessage;
     }
 
 }

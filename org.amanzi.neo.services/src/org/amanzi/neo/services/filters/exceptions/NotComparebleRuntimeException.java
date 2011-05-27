@@ -21,16 +21,16 @@ package org.amanzi.neo.services.filters.exceptions;
  * @author Sasha
  * @since 1.0.0
  */
-public class NullValueException extends AbstractFilterException{
+public class NotComparebleRuntimeException extends AbstractFilterRuntimeException{
+   
     /** long serialVersionUID field */
-    private static final long serialVersionUID = -2670058876000375919L;
-    private String exceptionMessage = "value or propertyValue is null";
+    private static final long serialVersionUID = 3884623639107628988L;
+    private String exceptionMessage = "value is not compareble type";
     
-    public NullValueException() {
-        
+    public NotComparebleRuntimeException() {
     }
     public String toString(){
-        return "NullValueException: "+ exceptionMessage;
+        return "NotComparebleRuntimeException: "+ exceptionMessage;
     }
 
 }

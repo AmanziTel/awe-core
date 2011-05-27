@@ -18,19 +18,12 @@ package org.amanzi.neo.services.filters.exceptions;
  * <p>
  *
  * </p>
- * @author Sasha
+ * @author Kruglik_A
  * @since 1.0.0
  */
-public class NullValueException extends AbstractFilterException{
+public class AbstractFilterRuntimeException extends RuntimeException{
+
     /** long serialVersionUID field */
-    private static final long serialVersionUID = -2670058876000375919L;
-    private String exceptionMessage = "value or propertyValue is null";
-    
-    public NullValueException() {
-        
-    }
-    public String toString(){
-        return "NullValueException: "+ exceptionMessage;
-    }
+    private static final long serialVersionUID = -8198455261852658470L;
 
 }
