@@ -17,8 +17,12 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.amanzi.neo.services.enums.INodeType;
+import org.apache.commons.lang.ObjectUtils;
 
 
 /**
@@ -65,5 +69,14 @@ public class BaseNeoStyle implements Serializable {
    */
   public void removeFilter(String filterName) {
       filters.remove(filterName);
+  }
+  public Collection<IFilterWrapper> getFilterWrByType(INodeType type){
+      Collection<IFilterWrapper> result=new HashSet<IFilterWrapper>();
+      for (IFilterWrapper wr:filters.values()){
+          if (ObjectUtils.equals(type, wr.getFilter().getNodeType())){
+              result.add(wr);
+          }
+      }
+    return result;
   }
 }

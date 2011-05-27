@@ -28,6 +28,7 @@ import java.awt.geom.Arc2D;
 import java.awt.geom.GeneralPath;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -39,7 +40,6 @@ import java.util.Set;
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.core.Pair;
 import net.refractions.udig.project.ILayer;
-import net.refractions.udig.project.IStyleBlackboard;
 import net.refractions.udig.project.internal.render.impl.RendererImpl;
 import net.refractions.udig.project.render.RenderException;
 
@@ -47,6 +47,7 @@ import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.catalog.neo.GeoNeo.GeoNode;
 import org.amanzi.awe.filters.AbstractFilter;
 import org.amanzi.awe.filters.FilterUtil;
+import org.amanzi.awe.neostyle.IFilterWrapper;
 import org.amanzi.awe.neostyle.NeoStyleContent;
 import org.amanzi.awe.neostyle.NetworkNeoStyle;
 import org.amanzi.awe.neostyle.NetworkNeoStyleContent;
@@ -60,6 +61,7 @@ import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.GisTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkSiteType;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.neo.services.utils.Utils;
@@ -110,6 +112,9 @@ public class NetworkRenderer extends RendererImpl {
     private DrawHints drawHints = new DrawHints();
     private IGraphModel graphModel;
     private RelationshipIndex index;
+    private NetworkNeoStyle style;
+    private Collection<IFilterWrapper> siteFilters=new HashSet<IFilterWrapper>();
+    private Collection<IFilterWrapper> sectorFilters=new HashSet<IFilterWrapper>();
 
     private void setCrsTransforms(CoordinateReferenceSystem dataCrs) throws FactoryException {
         boolean lenient = true; // needs to be lenient to work on uDIG 1.1 (otherwise we get error:
@@ -184,7 +189,7 @@ public class NetworkRenderer extends RendererImpl {
         Font font;
         public int siteSize;
 
-        public void reset(IStyleBlackboard style, Font font) {
+        public void reset(NetworkNeoStyle neostyle, Font font, Graphics2D g) {
             this.font = font;
             drawColor = Color.DARK_GRAY;
             siteColor = new Color(128, 128, 128, (int)(0.6 * 255.0));
@@ -208,7 +213,6 @@ public class NetworkRenderer extends RendererImpl {
             scaleSymbols = true;
             siteName = NeoStyleContent.DEF_MAIN_PROPERTY;
             sectorName = NeoStyleContent.DEF_SECONDARY_PROPERTY;
-            NetworkNeoStyle neostyle = (NetworkNeoStyle)style.get(NetworkNeoStyleContent.ID);
             if (neostyle != null) {
                 try {
                     siteColor = neostyle.getSiteFill();
@@ -247,6 +251,7 @@ public class NetworkRenderer extends RendererImpl {
             lineColor = changeColor(drawColor, alpha);
             siteColor = changeColor(siteColor, alpha);
             fillColor = changeColor(fillColor, alpha);
+            g.setFont(font.deriveFont((float)fontSize));
         }
 
         public void setNoScaling() {
@@ -294,8 +299,12 @@ public class NetworkRenderer extends RendererImpl {
         GeoNeo geoNeo = null;
 
         // Setup default drawing parameters and thresholds (to be modified by style if found)
-        drawHints.reset(getContext().getLayer().getStyleBlackboard(), g.getFont());
-        g.setFont(drawHints.font.deriveFont((float)drawHints.fontSize));
+        style=(NetworkNeoStyle)getContext().getLayer().getStyleBlackboard().get(NetworkNeoStyleContent.ID);
+        siteFilters=style.getFilterWrByType(NodeTypes.SITE);
+        sectorFilters=style.getFilterWrByType(NodeTypes.SECTOR);
+        
+        drawHints.reset(style, g.getFont(),g);
+        
         Map<Node, java.awt.Point> nodesMap = new HashMap<Node, java.awt.Point>();
         Map<Node, java.awt.Point> sectorMap = new HashMap<Node, java.awt.Point>();
         Map<Point, String> labelsMap = new HashMap<Point, String>();
@@ -418,7 +427,7 @@ public class NetworkRenderer extends RendererImpl {
                 }
                 renderSelectionGlow(g, p, drawHints.drawSize * 4);
             }
-            g.setColor(drawHints.drawColor);
+            
             long startTime = System.currentTimeMillis();
             for (GeoNode node : geoNeo.getGeoNodes(bounds_transformed)) {
                 if (filterSites != null) {
@@ -426,6 +435,9 @@ public class NetworkRenderer extends RendererImpl {
                         continue;
                     }
                 }
+                NetworkNeoStyle siteStyle=getSiteStyle(node.getNode());
+                drawHints.reset(siteStyle, g.getFont(), g);
+                g.setColor(drawHints.drawColor);
                 Coordinate location = node.getCoordinate();
 
                 if (bounds_transformed != null && !bounds_transformed.contains(location)) {
@@ -492,6 +504,11 @@ public class NetworkRenderer extends RendererImpl {
                                 Direction.OUTGOING)) {
                             Node child = relationship.getEndNode();
                             if (child.hasProperty("type") && child.getProperty("type").toString().equals("sector")) {
+                                NetworkNeoStyle sectorStyle=getSectorStyle(child,siteStyle);
+                                //TODO optimize - set only if necessary
+                                drawHints.reset(sectorStyle, g.getFont(), g);
+                                g.setColor(drawHints.drawColor);
+                                
                                 Double azimuth = getDouble(child, "azimuth", Double.NaN);
                                 Double beamwidth = Double.NaN;
                                 if (azimuth.equals(Double.NaN)) {
@@ -687,6 +704,25 @@ public class NetworkRenderer extends RendererImpl {
             tx.finish();
         }
     }
+
+
+    private NetworkNeoStyle getSiteStyle(Node node) {
+        for (IFilterWrapper wr:siteFilters){
+            if (wr.getFilter().check(node)){
+                return (NetworkNeoStyle)wr.getStyle();
+            }
+        }
+        return style;
+    }
+    private NetworkNeoStyle getSectorStyle(Node node,NetworkNeoStyle style) {
+        for (IFilterWrapper wr:sectorFilters){
+            if (wr.getFilter().check(node)){
+                return (NetworkNeoStyle)wr.getStyle();
+            }
+        }
+        return style;
+    }
+    
 
     /**
      * @param g
