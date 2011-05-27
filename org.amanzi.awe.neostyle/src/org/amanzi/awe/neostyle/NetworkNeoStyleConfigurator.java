@@ -276,7 +276,12 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
         if (sel.size() != 1) {
             return;
         }
-
+        FilterRow row = (FilterRow)sel.getFirstElement();
+        defaultStyle.getCurStyle().removeFilter(row.getName());
+        FilterModel model = NeoStylePlugin.getDefault().getFilterModel();
+        model.removeFilter(row.getName());
+        model.store();
+        viewer.setInput(defaultStyle.getCurStyle());
     }
 
     private void formColumns(CheckboxTableViewer viewer) {

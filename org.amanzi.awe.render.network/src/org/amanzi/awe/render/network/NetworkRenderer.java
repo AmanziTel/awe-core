@@ -62,6 +62,7 @@ import org.amanzi.neo.services.enums.GisTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkSiteType;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.filters.exceptions.AbstractFilterException;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.neo.services.utils.Utils;
@@ -707,18 +708,36 @@ public class NetworkRenderer extends RendererImpl {
 
 
     private NetworkNeoStyle getSiteStyle(Node node) {
-        for (IFilterWrapper wr:siteFilters){
-            if (wr.getFilter().check(node)){
-                return (NetworkNeoStyle)wr.getStyle();
-            }
+        Iterator<IFilterWrapper> it = siteFilters.iterator();
+        while (it.hasNext()) {
+            IFilterWrapper wr = it.next();
+            try {
+                if (wr.getFilter().check(node)){
+                    return (NetworkNeoStyle)wr.getStyle();
+                }
+            } catch (AbstractFilterException e) {
+                LOGGER.error("Wrong filter",e);
+                //remove Iterator from style
+               it.remove(); 
+            } 
+            
         }
         return style;
     }
     private NetworkNeoStyle getSectorStyle(Node node,NetworkNeoStyle style) {
-        for (IFilterWrapper wr:sectorFilters){
-            if (wr.getFilter().check(node)){
-                return (NetworkNeoStyle)wr.getStyle();
-            }
+        Iterator<IFilterWrapper> it = sectorFilters.iterator();
+        while (it.hasNext()) {
+            IFilterWrapper wr = it.next();
+            try {
+                if (wr.getFilter().check(node)){
+                    return (NetworkNeoStyle)wr.getStyle();
+                }
+            } catch (AbstractFilterException e) {
+                LOGGER.error("Wrong filter",e);
+                //remove Iterator from style
+               it.remove(); 
+            } 
+            
         }
         return style;
     }
