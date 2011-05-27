@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.services.testing.filters;
 
+import java.io.Serializable;
+
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.NodeTypes;
@@ -21,6 +23,7 @@ import org.amanzi.neo.services.filters.Filter;
 import org.amanzi.neo.services.filters.FilterType;
 import org.amanzi.neo.services.filters.exceptions.FilterTypeException;
 import org.amanzi.neo.services.filters.exceptions.NotComparebleException;
+import org.amanzi.neo.services.filters.exceptions.NotComparebleRuntimeException;
 import org.amanzi.neo.services.filters.exceptions.NullValueException;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
@@ -550,7 +553,7 @@ public class FilterTest extends AbstractAWETest {
     		Filter afpFilter=new Filter(FilterType.MORE);
     		LOGGER.info("--Node property: "+"'property';value: "+node.getProperty("property"));
 
-    		LOGGER.info("----FilterType is 'NOT_EMPTY' ");
+    		LOGGER.info("----FilterType is 'MORE' ");
     		Exception exc = null;
     		try{
     			afpFilter.setExpression(null, "property");
@@ -569,6 +572,44 @@ public class FilterTest extends AbstractAWETest {
     	}finally{
     		tx.finish();
     		LOGGER.info("< checkFilterTypeExceptionTest end >");
+    	}
+    }
+    
+    /*
+     * setExpression with NotComparebleRuntimeException
+     */
+    @Test
+    public void CheckNotComparebleRuntimeException(){
+    	LOGGER.info("< checkNotComparebleRuntimeExceptionTest begin >");
+    	Transaction tx = graphDatabaseService.beginTx();
+    	try {
+
+    		Node node = graphDatabaseService.createNode();
+    		node.setProperty("property", 5);
+
+    		Filter afpFilter=new Filter(FilterType.MORE);
+    		LOGGER.info("--Node property: "+"'property';value: "+node.getProperty("property"));
+
+    		LOGGER.info("----FilterType is 'MORE' ");
+    		Exception exc = null;
+    		try{
+    			Object object = new Object();
+    			afpFilter.setExpression(null, "property", (Serializable)object);
+    		}
+    		catch (Exception e){
+    			exc = e;
+    		}
+    		finally{
+    			Assert.assertTrue("method setExpression() don't catch NotComparebleRuntimeException ", exc instanceof NotComparebleRuntimeException);
+    		}
+    		tx.success();
+
+    	} catch (Exception e) {        
+    		LOGGER.error(e.toString());
+
+    	}finally{
+    		tx.finish();
+    		LOGGER.info("< checkNotComparebleRuntimeExceptionTest end >");
     	}
     }
     /*
