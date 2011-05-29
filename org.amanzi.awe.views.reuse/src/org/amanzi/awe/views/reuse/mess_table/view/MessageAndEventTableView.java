@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -35,6 +36,7 @@ import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.events.ShowPreparedViewEvent;
 import org.amanzi.neo.services.events.ShowViewEvent;
@@ -57,7 +59,9 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -84,6 +88,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
@@ -103,12 +108,16 @@ import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser.Order;
+import org.neo4j.graphdb.traversal.Evaluation;
+import org.neo4j.graphdb.traversal.Evaluator;
+import org.neo4j.graphdb.traversal.TraversalDescription;
 
 /**
  * View for Message and Event tabular
@@ -1074,7 +1083,7 @@ public class MessageAndEventTableView extends ViewPart {
      */
     private class TableContentProvider implements IStructuredContentProvider {
         
-        private static final int PAGE_SIZE = 10000;
+        private static final int PAGE_SIZE = 100000;
 
         private List<TableRowWrapper> rows = new ArrayList<TableRowWrapper>();
         private List<TableRowWrapper> rowstore = new ArrayList<TableRowWrapper>();
@@ -1130,41 +1139,69 @@ public class MessageAndEventTableView extends ViewPart {
 
         
         public void uploadData( final List<Node> nodes) {
-
+            table.getControl().setVisible(false);
         	Job updateJob = new Job("Upload data to table job") {            
         		@Override
         		protected IStatus run(IProgressMonitor monitor) { 
 //        			rows.clear();
-        		    List<TableRowWrapper> result = new ArrayList<TableRowWrapper>();
+        		    LinkedHashSet<TableRowWrapper> result = new LinkedHashSet<TableRowWrapper>();
                     int start = 0;
-        		    for (TableRowWrapper row:rows){
-                        allNodes = nodes.iterator(); 
-                        while(allNodes.hasNext()){
-                            if (ds.isChildOf(row.node, allNodes.next())){
-                                result.add(row);
-                                start++;
-                                break;
-                            }
-                        }
-                        if (start>PAGE_SIZE){
-                            break;
-                        }
-        		    }
-        		    rows=result;
+                    for (Node filterNode:nodes){
+                        result.addAll(filterChildsFromRow(filterNode)); 
+                    }
+        		    rows=new ArrayList<MessageAndEventTableView.TableRowWrapper>(result);
         			return Status.OK_STATUS;
         		}
 
 
         	};
+        	updateJob.addJobChangeListener(new JobChangeAdapter(){
+                public void done(IJobChangeEvent event) {
+                    if( PlatformUI.getWorkbench().isClosing())
+                        return;
+                    
+                    Display.getDefault().asyncExec(new Runnable(){
+                        public void run() {
+                            table.getControl().setVisible(true);
+                            table.refresh();
+                        }
+                    });
+                };
+        	});
         	updateJob.schedule(0);
-        	try {
-        		updateJob.join();
-        	} catch (InterruptedException e) {
-        		e.printStackTrace();
-        	}
-
-        	table.refresh();
         }
+        /**
+         *
+         * @param filterNode
+         * @return
+         */
+        protected Collection<TableRowWrapper> filterChildsFromRow(Node filterNode) {
+            Collection<TableRowWrapper> result = new LinkedHashSet<MessageAndEventTableView.TableRowWrapper>();
+            if (rows.isEmpty()) {
+                return result;
+            }
+            final INodeType nodetype = ds.getNodeType(rows.get(0).node);
+            TraversalDescription descr = ds.getChildrenTraversal(new Evaluator() {
+
+                @Override
+                public Evaluation evaluate(Path arg0) {
+                    boolean includes = nodetype.equals(ds.getNodeType(arg0.endNode()));
+                    return Evaluation.of(includes, !includes);
+                }
+
+            });
+            for (Node child:descr.traverse(filterNode).nodes()){
+               for (TableRowWrapper row:rows){
+                   if (child.equals(row.getNode())){
+                       result.add(row);
+                       break;
+                   }
+               }
+           }
+            return result;
+        }
+
+
         private void restoreRows() {
             rows.clear();
             rows.addAll(rowstore);

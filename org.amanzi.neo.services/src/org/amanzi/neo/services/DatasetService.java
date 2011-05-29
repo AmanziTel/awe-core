@@ -506,7 +506,6 @@ public class DatasetService extends AbstractService {
                     description = description.evaluator(singleFilter);
                 }
             }
-            return description;
         }
         
         return description;
