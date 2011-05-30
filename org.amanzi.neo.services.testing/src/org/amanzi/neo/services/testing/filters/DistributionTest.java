@@ -19,19 +19,16 @@ import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.networkModel.IDistributionModel;
 import org.amanzi.neo.services.networkModel.IDistributionalModel;
-import org.amanzi.neo.services.networkModel.PropertyEvaluator;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.traversal.Evaluator;
 
 public class DistributionTest extends AbstractAWETest {
 
@@ -142,7 +139,7 @@ public class DistributionTest extends AbstractAWETest {
 	}
 
 	/**
-	 * Create Distribution test if not Exist
+	 * Create Distribution test if Statistic root not Exist
 	 */
 	@Test
 	public void creationOfDistributionNotExistTest() {
@@ -170,9 +167,7 @@ public class DistributionTest extends AbstractAWETest {
 
 	}
 
-	/**
-	 * Create Distribution test if Exist
-	 */
+
 
 	public void prepareExistTest() {
 
@@ -214,7 +209,9 @@ public class DistributionTest extends AbstractAWETest {
 		}
 
 	}
-
+	/**
+	 * Create Distribution test if Statistic root Exist
+	 */
 	@Test
 	public void creationOfDistributionExistTest() {
 		LOGGER.info("< creationOfDistributionExistTest begin >");
