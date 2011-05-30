@@ -353,7 +353,7 @@ public class NetworkModel implements IDistributionalModel, INetworkTraversableMo
         IDistributionModel model = null;
         if (propertyType.getType() == String.class) {
             model = new StringDistributionModel(property, NodeTypes.NETWORK, this);
-            model.setRootDistributionNode(rootNode);
+
         }
         return model;
     }

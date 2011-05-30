@@ -14,7 +14,6 @@
 package org.amanzi.neo.services.networkModel;
 
 import org.amanzi.neo.services.enums.INodeType;
-import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of
@@ -26,5 +25,4 @@ import org.neo4j.graphdb.Node;
  */
 public interface IDistributionModel extends IModel {
     public INodeType getType();
-    public Node setRootDistributionNode(Node node);
 }

@@ -19,7 +19,6 @@ import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
-import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.traversal.Evaluator;
 
@@ -46,27 +45,27 @@ public class StringDistributionModel implements IDistributionModel {
         this.model = model;
         this.propertyName = propertyName;
         this.type = type;
+        setRootDistributionNode(this.model.getRootNode());
 
     }
 
-    public Node setRootDistributionNode(Node rootNode) {
-         this.rootNode = rootNode;
+    private void setRootDistributionNode(Node rootNode) {
+        this.rootNode = rootNode;
 
         if (searchModel()) {
             returnableNode = networkService.createNode(getType(), getModelName());
             rootNode.createRelationshipTo(returnableNode, NetworkRelationshipTypes.CHILD);
-            System.out.println("Enter "+returnableNode.getId());
-        } 
-        return returnableNode;
+            System.out.println("Enter " + returnableNode.getId());
+        }
+
     }
 
-    public boolean searchModel() {
+    private boolean searchModel() {
         Evaluator ev = new PropertyEvaluator(propertyName, getModelName());
         Iterable<Node> networkNodes = networkService.getNetworkElementTraversal(ev, getType()).traverse(rootNode).nodes();
-        
-        if (!networkNodes.iterator().hasNext()&&
-                !rootNode.getProperty(propertyName).equals(getModelName())
-                &&!rootNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(getType())) {
+
+        if (!networkNodes.iterator().hasNext() && !rootNode.getProperty(propertyName).equals(getModelName())
+                && !rootNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(getType())) {
             return true;
         }
         returnableNode = networkNodes.iterator().next();
