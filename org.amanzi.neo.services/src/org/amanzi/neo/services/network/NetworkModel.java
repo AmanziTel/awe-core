@@ -337,6 +337,7 @@ public class NetworkModel implements IDistributionalModel, INetworkTraversableMo
         return rootNode;
     }
 
+    
     @Override
     public Iterable<Node> getElementsByTypeAndProperty(String propertyName, INodeType type) {
         Evaluator ev = new PropertyEvaluator(propertyName, getName());

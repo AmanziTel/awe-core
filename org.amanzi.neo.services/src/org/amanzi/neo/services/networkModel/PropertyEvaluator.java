@@ -29,6 +29,11 @@ import org.neo4j.graphdb.traversal.Evaluator;
 public class PropertyEvaluator implements Evaluator {
     String propertyName = "";
     String propertyValue="";
+    /**
+     * 
+     * @param property  propertyName
+     * @param propertyValue propertyValue
+     */
     public PropertyEvaluator(String property,String propertyValue) {
         this.propertyValue=propertyValue;
         this.propertyName = property;

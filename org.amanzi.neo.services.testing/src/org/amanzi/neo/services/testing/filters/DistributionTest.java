@@ -125,12 +125,12 @@ public class DistributionTest extends AbstractAWETest {
 
 			Assert.assertEquals("Incorrect model name",
 					rootNode.getProperty(INeoConstants.PROPERTY_NAME_NAME)
-							.toString(), nm.getModelName());
+							.toString(), nm.getName());
 
 			tx.success();
 		} catch (Exception e) {
 			e.printStackTrace();
-			Assert.fail("Exception "+e.getMessage());
+			Assert.fail("Exception " + e.getMessage());
 
 		} finally {
 			tx.finish();
@@ -155,13 +155,13 @@ public class DistributionTest extends AbstractAWETest {
 			LOGGER.info("< finded node id " + sm.getRootNode().getId() + " >");
 			LOGGER.info("< Statistic Root id " + sm.getRootNode().getId()
 					+ " >");
-			Assert.assertTrue("Different  values excepted",
+			Assert.assertTrue("Different  values expected",
 					!rootNode.equals(sm.getRootNode()));
 
 			tx.success();
 		} catch (Exception e) {
 			e.printStackTrace();
-			Assert.fail("Exception "+e.getMessage());
+			Assert.fail("Exception " + e.getMessage());
 		} finally {
 			tx.finish();
 			LOGGER.info("< creationOfDistributionNotExistTest end >");
@@ -185,7 +185,8 @@ public class DistributionTest extends AbstractAWETest {
 				statisticRoot = relation.getEndNode();
 
 				if (statisticRoot.getProperty(INeoConstants.PROPERTY_NAME_NAME)
-						.equals(rootNode.getProperty(INeoConstants.PROPERTY_NAME_NAME))
+						.equals(rootNode
+								.getProperty(INeoConstants.PROPERTY_NAME_NAME))
 						&& NodeTypes.STATISTICS_ROOT.checkNode(statisticRoot)) {
 					statisticRoot.delete();
 					relation.delete();
@@ -196,7 +197,7 @@ public class DistributionTest extends AbstractAWETest {
 			tx.success();
 		} catch (Exception e) {
 			e.printStackTrace();
-			Assert.fail("Exception "+e.getMessage());
+			Assert.fail("Exception " + e.getMessage());
 		} finally {
 			tx.finish();
 			LOGGER.info("< Prepare test finish >");
@@ -222,7 +223,7 @@ public class DistributionTest extends AbstractAWETest {
 					.setNodeType(statisticNode, graphDatabaseService);
 			rootNode.createRelationshipTo(statisticNode,
 					NetworkRelationshipTypes.CHILD);
-		
+
 			IDistributionalModel nm = new NetworkModel(rootNode);
 			IDistributionModel sm = nm.getModel(
 					INeoConstants.PROPERTY_NAME_NAME, NodeTypes.CITY);
@@ -230,12 +231,13 @@ public class DistributionTest extends AbstractAWETest {
 			LOGGER.info("< finded node id " + sm.getRootNode().getId() + " >");
 			LOGGER.info("< Statistic Root id " + statisticNode.getId() + " >");
 
-			Assert.assertEquals("Same values excepted", statisticNode,sm.getRootNode());
+			Assert.assertEquals("Same values expected", statisticNode,
+					sm.getRootNode());
+
 			tx.success();
 		} catch (Exception e) {
-			Assert.fail("Exception "+e.getMessage());
 			e.printStackTrace();
-
+			Assert.fail("Exception " + e.getMessage());
 
 		} finally {
 			tx.finish();
@@ -244,4 +246,31 @@ public class DistributionTest extends AbstractAWETest {
 
 	}
 
+	/**
+	 * Check correct return if property value doesn't String 
+	 */
+	@Test
+	public void checkStringPropertyValue() {
+		LOGGER.info("< creationOfDistributionExistTest begin >");
+
+		Transaction tx = graphDatabaseService.beginTx();
+
+		try {
+
+			IDistributionalModel nm = new NetworkModel(rootNode);
+			IDistributionModel sm = nm.getModel(INeoConstants.PROPERTY_LON_NAME, NodeTypes.SITE);
+
+			Assert.assertNull("Null value expected", sm);
+
+			tx.success();
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail("Exception " + e.getMessage());
+
+		} finally {
+			tx.finish();
+			LOGGER.info("< creationOfDistributionNotExistTest end >");
+		}
+
+	}
 }
