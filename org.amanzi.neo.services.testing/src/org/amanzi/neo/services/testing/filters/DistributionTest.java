@@ -130,6 +130,7 @@ public class DistributionTest extends AbstractAWETest {
 			tx.success();
 		} catch (Exception e) {
 			e.printStackTrace();
+			Assert.fail("Exception "+e.getMessage());
 
 		} finally {
 			tx.finish();
@@ -150,24 +151,23 @@ public class DistributionTest extends AbstractAWETest {
 			IDistributionalModel nm = new NetworkModel(rootNode);
 			IDistributionModel sm = nm.getModel(
 					INeoConstants.PROPERTY_NAME_NAME, NodeTypes.CITY);
-			LOGGER.info("< StringDistribution root " + sm.getRootNode().getId()
+
+			LOGGER.info("< finded node id " + sm.getRootNode().getId() + " >");
+			LOGGER.info("< Statistic Root id " + sm.getRootNode().getId()
 					+ " >");
-			LOGGER.info("< RootNode NetworkModel " + rootNode.getId());
 			Assert.assertTrue("Different  values excepted",
 					!rootNode.equals(sm.getRootNode()));
 
 			tx.success();
 		} catch (Exception e) {
 			e.printStackTrace();
-
+			Assert.fail("Exception "+e.getMessage());
 		} finally {
 			tx.finish();
 			LOGGER.info("< creationOfDistributionNotExistTest end >");
 		}
 
 	}
-
-
 
 	public void prepareExistTest() {
 
@@ -184,15 +184,8 @@ public class DistributionTest extends AbstractAWETest {
 				relation = iterR.next();
 				statisticRoot = relation.getEndNode();
 
-				if (statisticRoot
-						.getProperty(INeoConstants.PROPERTY_NAME_NAME)
-						.equals(rootNode
-								.getProperty(INeoConstants.PROPERTY_NAME_NAME)
-								+ "#"
-								+ rootNode
-										.getProperty(
-												INeoConstants.PROPERTY_TYPE_NAME)
-										.toString().toUpperCase())
+				if (statisticRoot.getProperty(INeoConstants.PROPERTY_NAME_NAME)
+						.equals(rootNode.getProperty(INeoConstants.PROPERTY_NAME_NAME))
 						&& NodeTypes.STATISTICS_ROOT.checkNode(statisticRoot)) {
 					statisticRoot.delete();
 					relation.delete();
@@ -203,12 +196,14 @@ public class DistributionTest extends AbstractAWETest {
 			tx.success();
 		} catch (Exception e) {
 			e.printStackTrace();
+			Assert.fail("Exception "+e.getMessage());
 		} finally {
 			tx.finish();
 			LOGGER.info("< Prepare test finish >");
 		}
 
 	}
+
 	/**
 	 * Create Distribution test if Statistic root Exist
 	 */
@@ -221,18 +216,13 @@ public class DistributionTest extends AbstractAWETest {
 		try {
 
 			Node statisticNode = graphDatabaseService.createNode();
-			statisticNode.setProperty(
-					INeoConstants.PROPERTY_NAME_NAME,
-					rootNode.getProperty(INeoConstants.PROPERTY_NAME_NAME)
-							+ "#"
-							+ rootNode
-									.getProperty(
-											INeoConstants.PROPERTY_TYPE_NAME)
-									.toString().toUpperCase());
+			statisticNode.setProperty(INeoConstants.PROPERTY_NAME_NAME,
+					rootNode.getProperty(INeoConstants.PROPERTY_NAME_NAME));
 			NodeTypes.getEnumById(NodeTypes.STATISTICS_ROOT.getId())
 					.setNodeType(statisticNode, graphDatabaseService);
 			rootNode.createRelationshipTo(statisticNode,
 					NetworkRelationshipTypes.CHILD);
+		
 			IDistributionalModel nm = new NetworkModel(rootNode);
 			IDistributionModel sm = nm.getModel(
 					INeoConstants.PROPERTY_NAME_NAME, NodeTypes.CITY);
@@ -240,11 +230,12 @@ public class DistributionTest extends AbstractAWETest {
 			LOGGER.info("< finded node id " + sm.getRootNode().getId() + " >");
 			LOGGER.info("< Statistic Root id " + statisticNode.getId() + " >");
 
-			Assert.assertEquals("Same values excepted", statisticNode,
-					sm.getRootNode());
+			Assert.assertEquals("Same values excepted", statisticNode,sm.getRootNode());
 			tx.success();
 		} catch (Exception e) {
+			Assert.fail("Exception "+e.getMessage());
 			e.printStackTrace();
+
 
 		} finally {
 			tx.finish();
