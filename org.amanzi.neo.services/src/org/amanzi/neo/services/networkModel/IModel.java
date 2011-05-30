@@ -24,7 +24,7 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public interface IModel {
-    public String getModelName();
+    public String getName();
     
     public Node getRootNode();
 }

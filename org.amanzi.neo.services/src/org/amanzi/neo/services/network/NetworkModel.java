@@ -338,8 +338,8 @@ public class NetworkModel implements IDistributionalModel, INetworkTraversableMo
     }
 
     @Override
-    public Iterable<Node> getElementsByType(String propertyName, INodeType type) {
-        Evaluator ev = new PropertyEvaluator(propertyName, "");
+    public Iterable<Node> getElementsByTypeAndProperty(String propertyName, INodeType type) {
+        Evaluator ev = new PropertyEvaluator(propertyName, getName());
         return getAllElementsByType(ev, type);
     }
 
@@ -352,15 +352,12 @@ public class NetworkModel implements IDistributionalModel, INetworkTraversableMo
 
         IDistributionModel model = null;
         if (propertyType.getType() == String.class) {
-            model = new StringDistributionModel(property, NodeTypes.NETWORK, this);
+            model = new StringDistributionModel(property, NodeTypes.STATISTICS_ROOT, this);
 
         }
         return model;
     }
 
-    @Override
-    public String getModelName() {
-        return rootNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-    }
+   
 
 }

@@ -26,5 +26,5 @@ import org.neo4j.graphdb.Node;
  */
 public interface IDistributionalModel extends IModel {
     public IDistributionModel getModel(String property,INodeType type);
-    public Iterable<Node>getElementsByType(String propertyName,INodeType type);
+    public Iterable<Node>getElementsByTypeAndProperty(String propertyName,INodeType type);
 }

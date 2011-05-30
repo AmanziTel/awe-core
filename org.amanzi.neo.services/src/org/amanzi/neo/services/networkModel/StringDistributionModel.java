@@ -35,10 +35,9 @@ public class StringDistributionModel implements IDistributionModel {
     private final NetworkService networkService;
     private String propertyName;
     private INodeType type;
-    private Node returnableNode;
+    private Node statisticNode;
 
     public StringDistributionModel(String propertyName, INodeType type, IDistributionalModel model) {
-        // System.out.println(this.getClass().getName());
         networkService = NeoServiceFactory.getInstance().getNetworkService();
         this.model = model;
         this.propertyName = propertyName;
@@ -49,28 +48,26 @@ public class StringDistributionModel implements IDistributionModel {
 
     private void setRootDistributionNode() {
         if (searchModel()) {
-            returnableNode = networkService.createNode(getType(), getModelName());
-            model.getRootNode().createRelationshipTo(returnableNode, NetworkRelationshipTypes.CHILD);
+            statisticNode = networkService.createNode(getType(), getName());
+            model.getRootNode().createRelationshipTo(statisticNode, NetworkRelationshipTypes.CHILD);
         }
 
     }
 
     private boolean searchModel() {
-        Evaluator ev = new PropertyEvaluator(propertyName, getModelName());
-        Iterable<Node> networkNodes = networkService.getNetworkElementTraversal(ev, getType()).traverse(model.getRootNode())
-                .nodes();
+        Iterable<Node> networkNodes = this.model.getElementsByTypeAndProperty(propertyName, type);
 
         if (!networkNodes.iterator().hasNext()
                 && !model.getRootNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(getType())) {
             return true;
         }
-        returnableNode = networkNodes.iterator().next();
+        statisticNode = networkNodes.iterator().next();
         return false;
     }
 
     @Override
-    public String getModelName() {
-        return model.getModelName();
+    public String getName() {
+        return model.getName();
     }
 
     @Override
@@ -80,6 +77,6 @@ public class StringDistributionModel implements IDistributionModel {
 
     @Override
     public Node getRootNode() {
-        return returnableNode;
+        return statisticNode;
     }
 }
