@@ -32,7 +32,9 @@ import org.amanzi.neo.services.DatasetService.NodeResult;
 import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.network.DatasetStructureHandler;
 import org.amanzi.neo.services.network.FrequencyPlanModel;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.utils.Utils;
@@ -72,6 +74,7 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
     private boolean trimSectorName;
     private CoordinateReferenceSystem crs;
     private NetworkModel networkModel;
+    private DatasetStructureHandler strHandler;
 
     @Override
     public void init(BaseTransferData element) {
@@ -80,6 +83,7 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
         headerNotHandled = true;
         trimSectorName = PreferenceStore.getPreferenceStore().getValue(DataLoadPreferences.REMOVE_SITE_NAME);
         networkModel = new NetworkModel(rootNode);
+        strHandler=networkModel.getDatasetStructureHandler();
         addNetworkIndexes();
         String crsWkt =element.get("CRS");
         if (crsWkt!=null){
@@ -100,7 +104,15 @@ public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
         }
 
     }
-
+@Override
+protected Node addSimpleChild(Node parent, INodeType type, String name) {
+    if (!strHandler.contain(type)){
+        INodeType nodeType=service.getNodeType(parent);
+        strHandler.addType(nodeType, type);
+        strHandler.store();
+    }
+    return super.addSimpleChild(parent, type, name);
+}
 
     @Override
     public void save(BaseTransferData element) {

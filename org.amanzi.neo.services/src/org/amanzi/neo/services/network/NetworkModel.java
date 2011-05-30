@@ -72,11 +72,13 @@ public class NetworkModel implements IDistributionalModel, INetworkTraversableMo
     private NodeToNodeRelationService n2nserrvice;
 
     private IStatistic statistics;
+    private DatasetStructureHandler datasetHandler;
 
     public NetworkModel(Node rootNode) {
         this.rootNode = rootNode;
         ds = NeoServiceFactory.getInstance().getDatasetService();
         networkService = NeoServiceFactory.getInstance().getNetworkService();
+        datasetHandler=new DatasetStructureHandler(rootNode, networkService);
         n2nserrvice = NeoServiceFactory.getInstance().getNodeToNodeRelationService();
     }
 
@@ -360,5 +362,9 @@ public class NetworkModel implements IDistributionalModel, INetworkTraversableMo
     }
 
    
+
+    public DatasetStructureHandler getDatasetStructureHandler() {
+        return datasetHandler;
+    }
 
 }

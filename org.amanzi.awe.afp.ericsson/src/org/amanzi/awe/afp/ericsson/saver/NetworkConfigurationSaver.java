@@ -40,6 +40,7 @@ import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.network.DatasetStructureHandler;
 import org.amanzi.neo.services.network.FrequencyPlanModel;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
@@ -84,6 +85,7 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
     private int neighboursNotFound;
     // private Boolean haveBsm;
     private int lastId;
+    private DatasetStructureHandler strHandler;
 
     private final static String ORIGINAL = "original";
 
@@ -93,6 +95,8 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         ds = NeoServiceFactory.getInstance().getDatasetService();
         networkService = NeoServiceFactory.getInstance().getNetworkService();
         networkModel = new NetworkModel(rootNode);
+        strHandler=networkModel.getDatasetStructureHandler();
+        
         neighName = networkModel.makeUniqueListName("Neighbours");
         neighbourModel = networkModel.getNeighbours(neighName);
         // planName = null;
@@ -125,6 +129,10 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         }
         NodeResult bscNode = networkService.getBscNode(rootNode, bscName, rootNode);
         if (bscNode.isCreated()) {
+            if (!strHandler.contain( NodeTypes.BSC)){
+                strHandler.addType(NodeTypes.NETWORK,  NodeTypes.BSC);
+                strHandler.store();
+            }
             statistic.updateTypeCount(rootname, NodeTypes.BSC.getId(), 1);
         }
         String sectorName = getStringValue("CELL", element);
@@ -667,6 +675,10 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         }
         NodeResult trx = networkService.getTRXNode(sector, String.valueOf(id), channelGr);
         if (trx.isCreated()) {
+            if (!strHandler.contain( NodeTypes.TRX)){
+                strHandler.addType(NodeTypes.SECTOR,  NodeTypes.TRX);
+                strHandler.store();
+            }
             statistic.updateTypeCount(rootname, NodeTypes.TRX.getId(), 1);
             updateTx(1, 1);
         } else {
@@ -682,6 +694,10 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         NodeResult plan = getFreqPlan(ORIGINAL).getPlanNode(trx);
         if (!plan.isCreated()){
             return;
+        }
+        if (!strHandler.contain( NodeTypes.FREQUENCY_PLAN)){
+            strHandler.addType(NodeTypes.TRX,  NodeTypes.FREQUENCY_PLAN);
+            strHandler.store();
         }
         statistic.updateTypeCount(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), 1);
         //HSN for hopping

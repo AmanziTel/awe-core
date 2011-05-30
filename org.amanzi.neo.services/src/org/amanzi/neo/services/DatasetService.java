@@ -74,7 +74,7 @@ import com.vividsolutions.jts.util.Assert;
  * @author Lagutko_N
  * @since 1.0.0
  */
-public class DatasetService extends AbstractService {
+public class DatasetService extends AbstractService implements IDatasetService {
     private final Map<String, INodeType> registeredTypes = Collections.synchronizedMap(new HashMap<String, INodeType>());
     
     
@@ -935,12 +935,8 @@ public class DatasetService extends AbstractService {
         setStructure(root, structureProperty);
     }
 
-    /**
-     * Sets the structure of root node
-     * 
-     * @param root the child of project node (network.dataset,"")
-     * @param structureProperty the structure - array of type id
-     */
+
+    @Override
     public void setStructure(Node root, String[] structureProperty) {
         Transaction tx = databaseService.beginTx();
         try {
