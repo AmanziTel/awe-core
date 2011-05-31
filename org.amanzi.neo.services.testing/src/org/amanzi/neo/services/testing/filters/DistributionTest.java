@@ -19,6 +19,9 @@ import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.networkModel.IDistributionModel;
 import org.amanzi.neo.services.networkModel.IDistributionalModel;
+import org.amanzi.neo.services.networkModel.IRange;
+import org.amanzi.neo.services.networkModel.NumberRange;
+import org.amanzi.neo.services.networkModel.StringRange;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
@@ -72,7 +75,7 @@ public class DistributionTest extends AbstractAWETest {
 			datasetService = NeoServiceFactory.getInstance()
 					.getDatasetService();
 			rootNode = datasetService.findRoot("project", "rootNode");
-			// afpService = AfpService.getService();
+
 			tx.success();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -115,7 +118,7 @@ public class DistributionTest extends AbstractAWETest {
 	 */
 	@Test
 	public void creationOfNetworkModelTest() {
-		LOGGER.info("< createNetworkModelTest begin >");
+		LOGGER.info("< create NetworkModel test begin >");
 		Transaction tx = graphDatabaseService.beginTx();
 		try {
 
@@ -134,17 +137,17 @@ public class DistributionTest extends AbstractAWETest {
 
 		} finally {
 			tx.finish();
-			LOGGER.info("< createNetworkModelTest end >");
+			LOGGER.info("< create NetworkModel test end >");
 		}
 
 	}
 
 	/**
-	 * Create Distribution test if Statistic root not Exist
+	 *  Distribution test if Statistic root not Exist
 	 */
 	@Test
 	public void creationOfDistributionNotExistTest() {
-		LOGGER.info("< creationOfDistributionNotExistTest begin >");
+		LOGGER.info("< Distribution test if Statistic root not Exist begin >");
 		Transaction tx = graphDatabaseService.beginTx();
 		try {
 
@@ -164,7 +167,7 @@ public class DistributionTest extends AbstractAWETest {
 			Assert.fail("Exception " + e.getMessage());
 		} finally {
 			tx.finish();
-			LOGGER.info("< creationOfDistributionNotExistTest end >");
+			LOGGER.info("< Distribution test if Statistic root not Exist end >");
 		}
 
 	}
@@ -206,11 +209,11 @@ public class DistributionTest extends AbstractAWETest {
 	}
 
 	/**
-	 * Create Distribution test if Statistic root Exist
+	 * Distribution test if Statistic root Exist
 	 */
 	@Test
 	public void creationOfDistributionExistTest() {
-		LOGGER.info("< creationOfDistributionExistTest begin >");
+		LOGGER.info("< Distribution test if Statistic root Exist begin >");
 		prepareExistTest();
 		Transaction tx = graphDatabaseService.beginTx();
 
@@ -241,24 +244,25 @@ public class DistributionTest extends AbstractAWETest {
 
 		} finally {
 			tx.finish();
-			LOGGER.info("< creationOfDistributionNotExistTest end >");
+			LOGGER.info("< Distribution test if Statistic root Exist end >");
 		}
 
 	}
 
 	/**
-	 * Check correct return if property value doesn't String 
+	 * Check correct return if property value doesn't String
 	 */
 	@Test
 	public void checkStringPropertyValue() {
-		LOGGER.info("< creationOfDistributionExistTest begin >");
+		LOGGER.info("< Check correct return if property value doesn't String begin >");
 
 		Transaction tx = graphDatabaseService.beginTx();
 
 		try {
 
 			IDistributionalModel nm = new NetworkModel(rootNode);
-			IDistributionModel sm = nm.getModel(INeoConstants.PROPERTY_LON_NAME, NodeTypes.SITE);
+			IDistributionModel sm = nm.getModel(
+					INeoConstants.PROPERTY_LON_NAME, NodeTypes.SITE);
 
 			Assert.assertNull("Null value expected", sm);
 
@@ -269,8 +273,109 @@ public class DistributionTest extends AbstractAWETest {
 
 		} finally {
 			tx.finish();
-			LOGGER.info("< creationOfDistributionNotExistTest end >");
+			LOGGER.info("< Check correct return if property value doesn't String end >");
 		}
 
 	}
+
+	/**
+	 * Check corect String Range
+	 */
+	@Test
+	public void checkCorrectStringRange() {
+		LOGGER.info("< Check correct return if property value doesn't String begin >");
+
+		Transaction tx = graphDatabaseService.beginTx();
+
+		try {
+
+			Node checkNode = graphDatabaseService.createNode();
+			checkNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, "value 1");
+			NodeTypes.getEnumById(NodeTypes.SITE.getId()).setNodeType(
+					checkNode, graphDatabaseService);
+
+			IRange strRange = new StringRange(checkNode.getProperty(
+					INeoConstants.PROPERTY_NAME_NAME).toString());
+			Assert.assertTrue(strRange.includes(checkNode));
+			checkNode.delete();
+			tx.success();
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail("Exception " + e.getMessage());
+
+		} finally {
+			tx.finish();
+			LOGGER.info("< Check correct return if property value doesn't String end >");
+		}
+
+	}
+
+	/**
+	 * Check corect Number Range
+	 */
+	@Test
+	public void checkCorrectNumberRange() {
+		LOGGER.info("< Check corect Number Range begin >");
+
+		Transaction tx = graphDatabaseService.beginTx();
+
+		try {
+
+			Node checkNode = graphDatabaseService.createNode();
+			checkNode.setProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE, 12);
+			checkNode.setProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, 5);
+			NodeTypes.getEnumById(NodeTypes.SITE.getId()).setNodeType(
+					checkNode, graphDatabaseService);
+
+			IRange numRange = new NumberRange(5.0, 11.0);
+			Assert.assertTrue(numRange.includes(checkNode));
+			checkNode.delete();
+			tx.success();
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail("Exception " + e.getMessage());
+
+		} finally {
+			tx.finish();
+			LOGGER.info("< Check corect Number Range end >");
+		}
+
+	}
+
+	/**
+	 * Check corect BOTH Range
+	 */
+	@Test
+	public void checkCorrectBothRange() {
+		LOGGER.info("< Check corect BOTH Range begin >");
+
+		Transaction tx = graphDatabaseService.beginTx();
+
+		try {
+
+			Node checkNode = graphDatabaseService.createNode();
+			checkNode.setProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE, 12);
+			checkNode.setProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, 5);
+			checkNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, "value 1");
+			NodeTypes.getEnumById(NodeTypes.SITE.getId()).setNodeType(
+					checkNode, graphDatabaseService);
+
+			IRange numRange = new NumberRange(5.0, 11.0);
+			IRange strRange = new StringRange(checkNode.getProperty(
+					INeoConstants.PROPERTY_NAME_NAME).toString());
+			Assert.assertTrue(numRange.includes(checkNode)
+					&& strRange.includes(checkNode));
+			checkNode.delete();
+			tx.success();
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail("Exception " + e.getMessage());
+
+		} finally {
+			tx.finish();
+			LOGGER.info("< Check corect BOTH Range end >");
+		}
+
+	}
+
 }
