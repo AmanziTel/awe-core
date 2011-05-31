@@ -284,6 +284,7 @@ public class NetworkModel implements IDistributionalModel, INetworkTraversableMo
     @Override
     public Iterable<Node> getAllElementsByType(Evaluator filter, INodeType... nodeTypes) {
         return networkService.getNetworkElementTraversal(filter, nodeTypes).traverse(rootNode).nodes();
+   
     }
 
     public boolean listNameExists(String name) {
@@ -340,12 +341,13 @@ public class NetworkModel implements IDistributionalModel, INetworkTraversableMo
     }
 
     
-    @Override
-    public Iterable<Node> getElementsByTypeAndProperty(String propertyName, INodeType type) {
-        Evaluator ev = new PropertyEvaluator(propertyName, getName());
-        return getAllElementsByType(ev, type);
-    }
-
+   
+/**
+ * @property Node property name
+ * @type Node type
+ * 
+ */
+        
     @Override
     public IDistributionModel getModel(String property, INodeType type) {
         IStatistic stat = StatisticManager.getStatistic(rootNode);
@@ -366,5 +368,7 @@ public class NetworkModel implements IDistributionalModel, INetworkTraversableMo
     public DatasetStructureHandler getDatasetStructureHandler() {
         return datasetHandler;
     }
+
+
 
 }
