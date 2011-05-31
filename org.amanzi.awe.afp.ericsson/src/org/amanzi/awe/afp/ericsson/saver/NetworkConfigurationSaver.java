@@ -695,10 +695,6 @@ public class NetworkConfigurationSaver extends AbstractHeaderSaver<NetworkConfig
         if (!plan.isCreated()){
             return;
         }
-        if (!strHandler.contain( NodeTypes.FREQUENCY_PLAN)){
-            strHandler.addType(NodeTypes.TRX,  NodeTypes.FREQUENCY_PLAN);
-            strHandler.store();
-        }
         statistic.updateTypeCount(ORIGINAL, NodeTypes.FREQUENCY_PLAN.getId(), 1);
         //HSN for hopping
         if (hoptype>0){
