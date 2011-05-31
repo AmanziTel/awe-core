@@ -13,6 +13,10 @@
 
 package org.amanzi.neo.services.networkModel;
 
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.filters.Filter;
+import org.amanzi.neo.services.filters.FilterType;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -25,9 +29,14 @@ import org.neo4j.graphdb.Node;
  */
 public class StringRange extends DefaultRange {
     private String strRangeValue;
-
+    private static Filter filter;
+    protected static Filter init(){
+        filter = new Filter(FilterType.LIKE);
+        filter.setExpression(NodeTypes.SITE, INeoConstants.PROPERTY_NAME_NAME, ".*val.*");
+        return filter;
+    }
     public StringRange(String rangeValue) {
-        super(rangeValue);
+        super(init());
         strRangeValue = rangeValue;
     }
 

@@ -68,7 +68,7 @@ public class StringDistributionModel implements IDistributionModel {
 
     @Override
     public INodeType getType() {
-        return (INodeType)statisticNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME);
+        return NodeTypes.STATISTICS_ROOT;
     }
 
     @Override

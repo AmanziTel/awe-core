@@ -13,7 +13,10 @@
 
 package org.amanzi.neo.services.networkModel;
 
-import org.neo4j.graphdb.Node;
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.filters.Filter;
+import org.amanzi.neo.services.filters.FilterType;
 
 /**
  * TODO Purpose of 
@@ -24,13 +27,22 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class NumberRange extends DefaultRange {
-    private Double min;
-    private Double max;
-    
-   public NumberRange(Double min,Double max){
-       super(min, max);
-        this.min=min;
-        this.max=max;
+    private static Number minimum;
+    private static Number maximum;
+    private static Filter filter;
+    private static Filter filterAddition;
+    protected static Filter init(Number min,Number max){
+        filter = new Filter(FilterType.MORE_OR_EQUALS);
+        filter.setExpression(NodeTypes.SITE, INeoConstants.PROPERTY_NAME_MIN_VALUE, min);
+        filterAddition = new Filter(FilterType.LESS_OR_EQUALS);
+        filterAddition.setExpression(NodeTypes.SITE, INeoConstants.PROPERTY_NAME_MAX_VALUE, max);
+        filter.addFilter(filterAddition);
+        return filter;
+    }
+   public NumberRange(Number min,Number max){
+        super(init(min,max));
+        minimum=min;
+        maximum=max;
   
     }
 

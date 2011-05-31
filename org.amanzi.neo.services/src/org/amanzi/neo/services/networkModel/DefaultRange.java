@@ -34,19 +34,14 @@ public abstract class DefaultRange implements IRange {
     private String numRange;
     private String strRange;
     private Filter filt;
+   
 
-    DefaultRange(String name) {
-        filt = new Filter(FilterType.LIKE);
-        filt.setExpression(NodeTypes.SITE, INeoConstants.PROPERTY_NAME_NAME, ".*val.*");
-
+    DefaultRange(Filter filter) {
+        this.filt=filter;
+       
     }
 
-    DefaultRange(Double min, Double max) {
-        filt = new Filter(FilterType.LIKE);
-        // filt.setExpression(NodeTypes.SITE, INeoConstants.PROPERTY_NAME_NAME);
-
-    }
-
+    
     @Override
     public boolean includes(Node checkNode) {
         boolean res;
