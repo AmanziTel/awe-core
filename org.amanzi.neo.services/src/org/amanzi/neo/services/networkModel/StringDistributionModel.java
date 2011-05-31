@@ -18,6 +18,7 @@ import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.traversal.Evaluator;
 
@@ -47,23 +48,18 @@ public class StringDistributionModel implements IDistributionModel {
     }
 
     private void setRootDistributionNode() {
-        if (searchModel()) {
-            statisticNode = networkService.createNode(getType(), getName());
-            model.getRootNode().createRelationshipTo(statisticNode, NetworkRelationshipTypes.CHILD);
-        }
-
-    }
-
-    private boolean searchModel() {
-        Iterable<Node> networkNodes = this.model.getElementsByTypeAndProperty(propertyName, type);
-
+        Evaluator ev = new PropertyEvaluator(propertyName, getName());
+        Iterable<Node> networkNodes = this.model.getAllElementsByType(ev, type);
         if (!networkNodes.iterator().hasNext()
                 && !model.getRootNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(getType())) {
-            return true;
+            statisticNode = networkService.createNode(getType(), getName());
+            model.getRootNode().createRelationshipTo(statisticNode, NetworkRelationshipTypes.CHILD);
+        }else{
+            statisticNode = networkNodes.iterator().next();
         }
-        statisticNode = networkNodes.iterator().next();
-        return false;
+
     }
+
 
     @Override
     public String getName() {
@@ -72,7 +68,7 @@ public class StringDistributionModel implements IDistributionModel {
 
     @Override
     public INodeType getType() {
-        return type;
+        return (INodeType)statisticNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME);
     }
 
     @Override

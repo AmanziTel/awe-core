@@ -13,19 +13,22 @@
 
 package org.amanzi.neo.services.networkModel;
 
-import org.amanzi.neo.services.enums.INodeType;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.traversal.Evaluator;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Kondratenko_V
  * @since 1.0.0
  */
-public interface IDistributionalModel extends IModel {
-    public IDistributionModel getModel(String property,INodeType type);
-    public Iterable<Node> getAllElementsByType(Evaluator filter, INodeType... nodeTypes);
+public class StringRange extends DefaultRange {
+    private String strRangeValue;
+
+    public StringRange(String rangeValue) {
+        super(rangeValue);
+        strRangeValue = rangeValue;
+    }
+
 }
