@@ -128,7 +128,7 @@ public class RangeTest extends AbstractAWETest {
 			NodeTypes.getEnumById(NodeTypes.SITE.getId()).setNodeType(
 					checkNode, graphDatabaseService);
 
-			IRange numRange = new NumberRange(4.0, 13.0);
+			IRange numRange = new NumberRange(5.0, 13.0);
 			Assert.assertTrue(numRange.includes(checkNode));
 			checkNode.delete();
 			tx.success();
