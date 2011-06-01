@@ -127,7 +127,7 @@ public class StatisticTests extends AbstractAWETest {
 	 */
 	@Test
 	public void creationOfStatisticTest() {
-		LOGGER.info("<  Creation of rootNode begin >");
+		LOGGER.info("<  Test statistic creation begin >");
 
 		Transaction tx = graphDatabaseService.beginTx();
 
@@ -172,7 +172,7 @@ public class StatisticTests extends AbstractAWETest {
 
 		} finally {
 			tx.finish();
-			LOGGER.info("<  Creation of rootNode end >");
+			LOGGER.info("<  Test statistic creation end >");
 		}
 
 	}
@@ -182,7 +182,7 @@ public class StatisticTests extends AbstractAWETest {
 	 */
 	@Test
 	public void rangeDistributionTest() {
-		LOGGER.info("<  Creation of rootNode begin >");
+		LOGGER.info("<   Test range distribution begin >");
 
 		Transaction tx = graphDatabaseService.beginTx();
 
@@ -200,11 +200,11 @@ public class StatisticTests extends AbstractAWETest {
 			IStatistic stat = StatisticManager.getStatistic(rootNode);
 			
 			rootNode.createRelationshipTo(childNode, NetworkRelationshipTypes.CHILD);
-			stat.indexValue(rootKey, NodeTypes.NETWORK.toString(),
-					"String value", NodeTypes.NETWORK.toString());
-			stat.updateTypeCount(rootKey, NodeTypes.NETWORK.toString(), 1);
-			stat.indexValue(rootKey, NodeTypes.NETWORK.toString(),
-					"String value", NodeTypes.NETWORK.toString());
+			stat.indexValue(rootKey, NodeTypes.CITY.toString(),
+					"String value", NodeTypes.CITY.toString());
+			stat.updateTypeCount(rootKey, NodeTypes.CITY.toString(), 1);
+			stat.indexValue(rootKey, NodeTypes.CITY.toString(),
+					"String value", NodeTypes.CITY.toString());
 			
 			stat.updateTypeCount(rootKey, NodeTypes.NETWORK.toString(), 1);
 			stat.indexValue(rootKey, NodeTypes.NETWORK.toString(),
@@ -229,7 +229,7 @@ public class StatisticTests extends AbstractAWETest {
 
 		} finally {
 			tx.finish();
-			LOGGER.info("<  Creation of rootNode end >");
+			LOGGER.info("<   Test range distributionend >");
 		}
 
 	}
