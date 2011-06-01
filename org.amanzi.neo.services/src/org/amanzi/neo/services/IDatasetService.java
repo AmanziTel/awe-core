@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.services;
 
+import java.util.List;
+
 import org.neo4j.graphdb.Node;
 
 /**
@@ -32,5 +34,16 @@ public interface IDatasetService {
      * @param structureProperty the structure - array of type id
      */
     void setStructure(Node root, String[] structureProperty);
+
+
+    /**
+     * Gets the property list of sector root.
+     *
+     * @param sector the sector
+     * @param sectorLabelTypeId the type id of sector or  sector child
+     * @param propertyName the property name
+     * @return the property list of sector root
+     */
+    List<String> getPropertyListOfSectorRoot(Node sector, String sectorLabelTypeId, String propertyName);
 
 }

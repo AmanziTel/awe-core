@@ -13,7 +13,13 @@
 
 package org.amanzi.awe.neostyle;
 
+import static org.junit.Assert.assertEquals;
+
+import java.util.ArrayList;
+
+import org.amanzi.neo.services.IDatasetService;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.integration.junit4.JUnit4Mockery;
 import org.junit.Test;
@@ -29,12 +35,50 @@ import org.neo4j.graphdb.Node;
 public class NetworkNeoStyleTest {
     private Mockery context=new JUnit4Mockery();
     @Test
-    public  final void  ckeckSectorLabelTextOnEmptyOrNullPrperty(){
+    public  final void  getSectorLabelTextTypeSectorOnNullPrperty(){
         NetworkNeoStyle style=createDefaultNetworkStyle();
         style.setSectorLabelTypeId(NodeTypes.SECTOR.getId());
         style.setSectorLabelProperty("property1");
-        Node sector=context.mock(Node.class);
-        
+        final Node sector=context.mock(Node.class);
+        final IDatasetService service=context.mock(IDatasetService.class);
+        context.checking(new Expectations(){{
+            oneOf(service).getPropertyListOfSectorRoot(sector,NodeTypes.SECTOR.getId(),"property1");will(returnValue(new ArrayList<String>()));
+        }});
+        String label=style.getSectorLabel(sector,service);
+        assertEquals("",label);
+    }
+    @Test
+    public  final void  getSectorLabelTextTypeSectorOnFillProperty(){
+        NetworkNeoStyle style=createDefaultNetworkStyle();
+        style.setSectorLabelTypeId(NodeTypes.SECTOR.getId());
+        style.setSectorLabelProperty("property1");
+        final Node sector=context.mock(Node.class);
+        final IDatasetService service=context.mock(IDatasetService.class);
+        final ArrayList<String> expectedResult = new ArrayList<String>();
+        expectedResult.add("12.7");
+        context.checking(new Expectations(){{
+            oneOf(service).getPropertyListOfSectorRoot(sector,NodeTypes.SECTOR.getId(),"property1");
+            will(returnValue(expectedResult));
+        }});
+        String label=style.getSectorLabel(sector,service);
+        assertEquals(String.valueOf(12.7),label);
+    }
+    @Test
+    public  final void  getSectorLabelTextTypeTRXOnFillProperty(){
+        NetworkNeoStyle style=createDefaultNetworkStyle();
+        style.setSectorLabelTypeId(NodeTypes.TRX.getId());
+        style.setSectorLabelProperty("property2");
+        final Node sector=context.mock(Node.class);
+        final IDatasetService service=context.mock(IDatasetService.class);
+        final ArrayList<String> expectedResult = new ArrayList<String>();
+        expectedResult.add("12.7");
+        expectedResult.add("ddd");
+        context.checking(new Expectations(){{
+            oneOf(service).getPropertyListOfSectorRoot(sector,NodeTypes.TRX.getId(),"property2");
+            will(returnValue(expectedResult));
+        }});
+        String label=style.getSectorLabel(sector,service);
+        assertEquals("12.7, ddd",label);
     }
 
     /**

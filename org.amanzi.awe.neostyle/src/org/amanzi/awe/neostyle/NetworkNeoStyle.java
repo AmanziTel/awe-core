@@ -15,6 +15,10 @@ package org.amanzi.awe.neostyle;
 
 import java.awt.Color;
 import java.io.Serializable;
+import java.util.List;
+
+import org.amanzi.neo.services.IDatasetService;
+import org.neo4j.graphdb.Node;
 
 /**
  * <p>
@@ -24,7 +28,6 @@ import java.io.Serializable;
  * @since 1.0.0
  */
 public class NetworkNeoStyle extends BaseNeoStyle implements Serializable{
-
     /** long serialVersionUID field */
     private static final long serialVersionUID = -7312398919809416135L;
     private Color line;
@@ -327,5 +330,21 @@ public class NetworkNeoStyle extends BaseNeoStyle implements Serializable{
     public void setDrawCorrelations(boolean drawCorrelations) {
         System.out.println("Set correlation "+drawCorrelations+" for "+this);
         this.drawCorrelations = drawCorrelations;
+    }
+
+
+    public String getSectorLabel(Node sector, IDatasetService service) {
+        List<String>properties=service.getPropertyListOfSectorRoot(sector,getSectorLabelTypeId(),getSectorLabelProperty());
+        if (properties.size()==1){
+            return properties.iterator().next();
+        }else if (properties.isEmpty()){
+            return "";
+        }
+        String delim = ", ";
+        StringBuilder result=new StringBuilder();
+        for (String propertyValue:properties){
+            result.append(delim).append(propertyValue);
+        }
+        return result.substring(delim.length());
     }
 }

@@ -76,8 +76,6 @@ import com.vividsolutions.jts.util.Assert;
  */
 public class DatasetService extends AbstractService implements IDatasetService {
     private final Map<String, INodeType> registeredTypes = Collections.synchronizedMap(new HashMap<String, INodeType>());
-    
-    
 
     /**
      * should be used NeoServiceFactory for getting instance of DatasetService
@@ -85,7 +83,7 @@ public class DatasetService extends AbstractService implements IDatasetService {
     public DatasetService() {
         super();
     }
-    
+
     public DatasetService(GraphDatabaseService service) {
         super(service);
     }
@@ -122,7 +120,8 @@ public class DatasetService extends AbstractService implements IDatasetService {
         Node datasetNode = findRoot(projectName, datasetName);
         if (datasetNode != null) {
             if (!rootTypeId.equals(getTypeId(datasetNode))) {
-                throw new IllegalArgumentException(String.format("Wrong types of found node. Expected type: %s, real type: %s", rootTypeId, datasetNode));
+                throw new IllegalArgumentException(String.format("Wrong types of found node. Expected type: %s, real type: %s",
+                        rootTypeId, datasetNode));
             }
         }
         if (datasetNode == null) {
@@ -164,7 +163,6 @@ public class DatasetService extends AbstractService implements IDatasetService {
             tx.finish();
         }
     }
-
 
     /**
      * Gets the node type.
@@ -306,7 +304,8 @@ public class DatasetService extends AbstractService implements IDatasetService {
      */
     public GpehStatisticModel getGpehStatistics(Node datasetNode) {
         if (datasetNode.hasRelationship(DatasetRelationshipTypes.GPEH_STATISTICS, Direction.OUTGOING)) {
-            Node statNode = datasetNode.getSingleRelationship(DatasetRelationshipTypes.GPEH_STATISTICS, Direction.OUTGOING).getEndNode();
+            Node statNode = datasetNode.getSingleRelationship(DatasetRelationshipTypes.GPEH_STATISTICS, Direction.OUTGOING)
+                    .getEndNode();
             return new GpehStatisticModel(datasetNode, statNode, databaseService);
         } else {
             Node statNode = databaseService.createNode();
@@ -328,7 +327,8 @@ public class DatasetService extends AbstractService implements IDatasetService {
             @Override
             public boolean accept(Path paramT) {
                 return rootname.equals(paramT.endNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, ""))
-                        && projectName.equals(paramT.lastRelationship().getStartNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, ""));
+                        && projectName.equals(paramT.lastRelationship().getStartNode()
+                                .getProperty(INeoConstants.PROPERTY_NAME_NAME, ""));
             }
         });
         Iterator<Node> it = td.traverse(databaseService.getReferenceNode()).nodes().iterator();
@@ -445,7 +445,8 @@ public class DatasetService extends AbstractService implements IDatasetService {
         Transaction tx = databaseService.beginTx();
         try {
             String type = getTypeId(node);
-            String indexName = new StringBuilder("Id").append(rootId).append("@").append(type).append("@").append(propertyName).toString();
+            String indexName = new StringBuilder("Id").append(rootId).append("@").append(type).append("@").append(propertyName)
+                    .toString();
             getIndexService().index(node, indexName, node.getProperty(propertyName));
             tx.success();
         } finally {
@@ -461,7 +462,8 @@ public class DatasetService extends AbstractService implements IDatasetService {
      * @throws IOException Signals that an I/O exception has occurred.
      */
     public MultiPropertyIndex< ? > getLocationIndexProperty(String rootname) throws IOException {
-        return new MultiPropertyIndex<Double>(Utils.getLocationIndexName(rootname), new String[] {INeoConstants.PROPERTY_LAT_NAME, INeoConstants.PROPERTY_LON_NAME},
+        return new MultiPropertyIndex<Double>(Utils.getLocationIndexName(rootname), new String[] {INeoConstants.PROPERTY_LAT_NAME,
+                INeoConstants.PROPERTY_LON_NAME},
                 new org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiDoubleConverter(0.001), 10);
     }
 
@@ -496,10 +498,11 @@ public class DatasetService extends AbstractService implements IDatasetService {
         Iterator<Node> it = td.traverse(parent).nodes().iterator();
         return it.hasNext() ? it.next() : null;
     };
-    
-    public TraversalDescription getChildrenTraversal(Evaluator ... filters) {
-        TraversalDescription description = Traversal.description().depthFirst().relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
-        
+
+    public TraversalDescription getChildrenTraversal(Evaluator... filters) {
+        TraversalDescription description = Traversal.description().depthFirst()
+                .relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
+
         if (filters != null) {
             for (Evaluator singleFilter : filters) {
                 if (singleFilter != null) {
@@ -507,7 +510,7 @@ public class DatasetService extends AbstractService implements IDatasetService {
                 }
             }
         }
-        
+
         return description;
     }
 
@@ -535,7 +538,8 @@ public class DatasetService extends AbstractService implements IDatasetService {
             }
         });
         filter.addFilter(additionalFilter);
-        return Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).filter(filter).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
+        return Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).filter(filter)
+                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
                 .relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).prune(new PruneEvaluator() {
 
                     @Override
@@ -613,6 +617,7 @@ public class DatasetService extends AbstractService implements IDatasetService {
         return createNode(NodeTypes.FILE, fileName);
 
     }
+
     /**
      * Creates the new node
      * 
@@ -622,6 +627,7 @@ public class DatasetService extends AbstractService implements IDatasetService {
     public Node createNode(INodeType type) {
         return createNode(type.getId());
     }
+
     /**
      * Creates the new node
      * 
@@ -632,18 +638,21 @@ public class DatasetService extends AbstractService implements IDatasetService {
     public Node createNode(INodeType type, String name) {
         return createNode(type.getId(), INeoConstants.PROPERTY_NAME_NAME, name);
     }
+
     /**
      * Creates the new node
-     *
+     * 
      * @param type
      * @param name
      * @param time
      * @return the created node
      */
     public Node createNode(INodeType type, String name, String time, String domain) {
-       
-        return createNode(type.getId(), INeoConstants.PROPERTY_NAME_NAME, name, INeoConstants.PROPERTY_TIME_NAME, time,INeoConstants.PROPERTY_DOMAIN_NAME,domain);
+
+        return createNode(type.getId(), INeoConstants.PROPERTY_NAME_NAME, name, INeoConstants.PROPERTY_TIME_NAME, time,
+                INeoConstants.PROPERTY_DOMAIN_NAME, domain);
     }
+
     /**
      * Creates the node
      * 
@@ -659,7 +668,7 @@ public class DatasetService extends AbstractService implements IDatasetService {
             setType(node, typeId);
             if (additionalProperties != null) {
                 for (int i = 0; i < additionalProperties.length - 1; i += 2) {
-                   
+
                     node.setProperty(String.valueOf(additionalProperties[i]), additionalProperties[i + 1]);
                 }
             }
@@ -711,8 +720,8 @@ public class DatasetService extends AbstractService implements IDatasetService {
     public Node getVirtualDataset(Node rootNode, DriveTypes type) {
         Node result = findVirtualDataset(rootNode, type);
         if (result == null) {
-            result = createNode(NodeTypes.DATASET.getId(), INeoConstants.PROPERTY_NAME_NAME, type.getFullDatasetName(getName(rootNode)), INeoConstants.DRIVE_TYPE, type
-                    .getId());
+            result = createNode(NodeTypes.DATASET.getId(), INeoConstants.PROPERTY_NAME_NAME,
+                    type.getFullDatasetName(getName(rootNode)), INeoConstants.DRIVE_TYPE, type.getId());
             Transaction tx = databaseService.beginTx();
             try {
                 rootNode.createRelationshipTo(result, GeoNeoRelationshipTypes.VIRTUAL_DATASET);
@@ -732,14 +741,15 @@ public class DatasetService extends AbstractService implements IDatasetService {
      * @return the node or null if node do not found
      */
     public Node findVirtualDataset(Node rootNode, final DriveTypes type) {
-        TraversalDescription td = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).prune(Traversal.pruneAfterDepth(1)).relationships(
-                GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).filter(new Predicate<Path>() {
+        TraversalDescription td = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE)
+                .prune(Traversal.pruneAfterDepth(1)).relationships(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING)
+                .filter(new Predicate<Path>() {
 
-            @Override
-            public boolean accept(Path item) {
-                return item.length() == 1 && type == DriveTypes.getNodeType(item.endNode());
-            }
-        });
+                    @Override
+                    public boolean accept(Path item) {
+                        return item.length() == 1 && type == DriveTypes.getNodeType(item.endNode());
+                    }
+                });
         Iterator<Node> it = td.traverse(rootNode).nodes().iterator();
         return it.hasNext() ? it.next() : null;
     }
@@ -819,16 +829,16 @@ public class DatasetService extends AbstractService implements IDatasetService {
         if (rel == null) {
             Transaction tx = databaseService.beginTx();
             try {
-                Node globalPropertiesNode = createNode(NodeTypes.GLOBAL_PROPERTIES.getId(), INeoConstants.PROPERTY_NAME_NAME, "Global properties", DYNAMIC_TYPES,
-                        new String[0]);
+                Node globalPropertiesNode = createNode(NodeTypes.GLOBAL_PROPERTIES.getId(), INeoConstants.PROPERTY_NAME_NAME,
+                        "Global properties", DYNAMIC_TYPES, new String[0]);
                 refNode.createRelationshipTo(globalPropertiesNode, DatasetRelationshipTypes.GLOBAL_PROPERTIES);
-                
+
                 rel = refNode.getSingleRelationship(DatasetRelationshipTypes.GLOBAL_PROPERTIES, Direction.OUTGOING);
-                
+
                 tx.success();
             } finally {
                 tx.finish();
-            }            
+            }
         }
         NeoServiceProvider.getProvider().commit();
         return rel.getEndNode();
@@ -860,7 +870,8 @@ public class DatasetService extends AbstractService implements IDatasetService {
 
             @Override
             public boolean accept(Path paramT) {
-                return projectName.equals(paramT.lastRelationship().getStartNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, ""));
+                return projectName.equals(paramT.lastRelationship().getStartNode()
+                        .getProperty(INeoConstants.PROPERTY_NAME_NAME, ""));
             }
         });
         return td.traverse(databaseService.getReferenceNode());
@@ -874,15 +885,16 @@ public class DatasetService extends AbstractService implements IDatasetService {
      */
     @Deprecated
     public org.neo4j.graphdb.traversal.Traverser getRootsDepr(final Node projectNode, final Predicate<Path> additionalFilter) {
-        Evaluator ev=additionalFilter==null?null:new Evaluator() {
-            
+        Evaluator ev = additionalFilter == null ? null : new Evaluator() {
+
             @Override
             public Evaluation evaluate(Path paramPath) {
                 return Evaluation.of(additionalFilter.accept(paramPath), true);
             }
         };
-        return getRoots(projectNode,ev);
+        return getRoots(projectNode, ev);
     }
+
     /**
      * Gets the traverser by all child of necessary project
      * 
@@ -891,20 +903,20 @@ public class DatasetService extends AbstractService implements IDatasetService {
      */
     public org.neo4j.graphdb.traversal.Traverser getRoots(final Node projectNode, Evaluator additionalFilter) {
         TraversalDescription td = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).evaluator(new Evaluator() {
-            
+
             @Override
             public Evaluation evaluate(Path paramPath) {
-                boolean includes=paramPath.length()==1;
-                boolean continues=paramPath.length()<1;
+                boolean includes = paramPath.length() == 1;
+                boolean continues = paramPath.length() < 1;
                 return Evaluation.of(includes, continues);
             }
-        }).relationships(
-                GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING);
-        if (additionalFilter!=null){
+        }).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING);
+        if (additionalFilter != null) {
             td.evaluator(additionalFilter);
         }
         return td.traverse(projectNode);
     }
+
     /**
      * Gets the node type.
      * 
@@ -934,7 +946,6 @@ public class DatasetService extends AbstractService implements IDatasetService {
         }
         setStructure(root, structureProperty);
     }
-
 
     @Override
     public void setStructure(Node root, String[] structureProperty) {
@@ -970,7 +981,7 @@ public class DatasetService extends AbstractService implements IDatasetService {
 
     public String[] getSructureTypesId(Node sourceNode) {
         Node networkNode = Utils.getParentNode(sourceNode, NodeTypes.NETWORK.getId());
-       
+
         return (String[])networkNode.getProperty(INeoConstants.PROPERTY_STRUCTURE_NAME, new String[0]);
     }
 
@@ -998,15 +1009,17 @@ public class DatasetService extends AbstractService implements IDatasetService {
      * @return the path traverser
      */
     public Traverser findProjectByChild(Node node) {
-        TraversalDescription trd = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst().relationships(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING)
-                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).relationships(DatasetRelationshipTypes.PLAN_ENTRY, Direction.BOTH).relationships(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.INCOMING).filter(
-                        new Predicate<Path>() {
+        TraversalDescription trd = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst()
+                .relationships(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING)
+                .relationships(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING)
+                .relationships(DatasetRelationshipTypes.PLAN_ENTRY, Direction.BOTH)
+                .relationships(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.INCOMING).filter(new Predicate<Path>() {
 
-                            @Override
-                            public boolean accept(Path item) {
-                                return NodeTypes.AWE_PROJECT.checkNode(item.endNode());
-                            }
-                        });
+                    @Override
+                    public boolean accept(Path item) {
+                        return NodeTypes.AWE_PROJECT.checkNode(item.endNode());
+                    }
+                });
         if (NodeTypes.GIS.checkNode(node)) {
             return trd.traverse(node.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode());
         }
@@ -1112,12 +1125,12 @@ public class DatasetService extends AbstractService implements IDatasetService {
         }
         assert rootNode != null && (ci != null || name != null) && index != null;
         String indexName = null;
-        IndexHits<Node> nodesCi =null;
-        if (ci!=null){
-             indexName = Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR);
-             nodesCi = index.getNodes(indexName, ci);
+        IndexHits<Node> nodesCi = null;
+        if (ci != null) {
+            indexName = Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR);
+            nodesCi = index.getNodes(indexName, ci);
         }
-        if (ci == null||nodesCi.size()==0) {
+        if (ci == null || nodesCi.size() == 0) {
             indexName = Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR);
             IndexHits<Node> nodesName = index.getNodes(indexName, name);
             Node sector = nodesName.size() > 0 ? nodesName.next() : null;
@@ -1226,17 +1239,18 @@ public class DatasetService extends AbstractService implements IDatasetService {
         if (rootNode == null || StringUtils.isEmpty(neighbourName)) {
             return null;
         }
-        TraversalDescription td = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst().prune(Traversal.pruneAfterDepth(1)).relationships(
-                NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING).filter(new Predicate<Path>() {
+        TraversalDescription td = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst()
+                .prune(Traversal.pruneAfterDepth(1)).relationships(NetworkRelationshipTypes.NEIGHBOUR_DATA, Direction.OUTGOING)
+                .filter(new Predicate<Path>() {
 
-            @Override
-            public boolean accept(Path item) {
-                if (item.length() == 1 && NodeTypes.NEIGHBOUR.checkNode(item.endNode())) {
-                    return neighbourName.equals(getName(item.endNode()));
-                }
-                return false;
-            }
-        });
+                    @Override
+                    public boolean accept(Path item) {
+                        if (item.length() == 1 && NodeTypes.NEIGHBOUR.checkNode(item.endNode())) {
+                            return neighbourName.equals(getName(item.endNode()));
+                        }
+                        return false;
+                    }
+                });
         Iterator<Node> it = td.traverse(rootNode).nodes().iterator();
         return it.hasNext() ? it.next() : null;
     }
@@ -1252,17 +1266,18 @@ public class DatasetService extends AbstractService implements IDatasetService {
         if (rootNode == null || StringUtils.isEmpty(transmissionName)) {
             return null;
         }
-        TraversalDescription td = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst().prune(Traversal.pruneAfterDepth(1)).relationships(
-                NetworkRelationshipTypes.TRANSMISSION_DATA, Direction.OUTGOING).filter(new Predicate<Path>() {
+        TraversalDescription td = Traversal.description().uniqueness(Uniqueness.NONE).depthFirst()
+                .prune(Traversal.pruneAfterDepth(1)).relationships(NetworkRelationshipTypes.TRANSMISSION_DATA, Direction.OUTGOING)
+                .filter(new Predicate<Path>() {
 
-            @Override
-            public boolean accept(Path item) {
-                if (item.length() == 1 && NodeTypes.TRANSMISSION.checkNode(item.endNode())) {
-                    return transmissionName.equals(getName(item.endNode()));
-                }
-                return false;
-            }
-        });
+                    @Override
+                    public boolean accept(Path item) {
+                        if (item.length() == 1 && NodeTypes.TRANSMISSION.checkNode(item.endNode())) {
+                            return transmissionName.equals(getName(item.endNode()));
+                        }
+                        return false;
+                    }
+                });
         Iterator<Node> it = td.traverse(rootNode).nodes().iterator();
         return it.hasNext() ? it.next() : null;
     }
@@ -1276,11 +1291,12 @@ public class DatasetService extends AbstractService implements IDatasetService {
      */
     public NodeResult getNeighbourProxy(Node neighbourRoot, Node sector) {
         String proxySectorName = getName(neighbourRoot) + PROXY_NAME_SEPARATOR + getName(sector);
-        String luceneIndexKeyByProperty = Utils.getLuceneIndexKeyByProperty(neighbourRoot, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SECTOR_SECTOR_RELATIONS);
+        String luceneIndexKeyByProperty = Utils.getLuceneIndexKeyByProperty(neighbourRoot, INeoConstants.PROPERTY_NAME_NAME,
+                NodeTypes.SECTOR_SECTOR_RELATIONS);
         Node proxySector = null;
         for (Node node : getIndexService().getNodes(luceneIndexKeyByProperty, proxySectorName)) {
             Relationship singleRelationship = node.getSingleRelationship(NetworkRelationshipTypes.NEIGHBOURS, Direction.INCOMING);
-            if (singleRelationship==null){
+            if (singleRelationship == null) {
                 System.err.println("sss");
             }
             if (singleRelationship.getOtherNode(node).equals(sector)) {
@@ -1293,7 +1309,7 @@ public class DatasetService extends AbstractService implements IDatasetService {
             Transaction tx = databaseService.beginTx();
             try {
                 proxySector = createNode(NodeTypes.SECTOR_SECTOR_RELATIONS, proxySectorName);
-                sector.createRelationshipTo(proxySector,NetworkRelationshipTypes.NEIGHBOURS);
+                sector.createRelationshipTo(proxySector, NetworkRelationshipTypes.NEIGHBOURS);
                 getIndexService().index(proxySector, luceneIndexKeyByProperty, proxySectorName);
                 isCreated = true;
                 // TODO check documentation
@@ -1308,11 +1324,10 @@ public class DatasetService extends AbstractService implements IDatasetService {
 
     /**
      * The Interface NodeResult. - wrapper of Node which contains result of operation: Node was
-     * found, or node was created
-     * 
-     * Use WrNode, NodeResult is not fully correct, because neo4j NodeImpl.class have not fully correct equals method
+     * found, or node was created Use WrNode, NodeResult is not fully correct, because neo4j
+     * NodeImpl.class have not fully correct equals method
      */
-    @Deprecated 
+    @Deprecated
     public interface NodeResult extends Node {
 
         /**
@@ -1369,10 +1384,12 @@ public class DatasetService extends AbstractService implements IDatasetService {
      */
     public Node findSite(Node rootNode, String name, String site_no) {
         if (StringUtils.isNotEmpty(name)) {
-            return getIndexService().getSingleNode(Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), name);
+            return getIndexService().getSingleNode(
+                    Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE), name);
         }
         if (StringUtils.isNotEmpty(site_no)) {
-            return getIndexService().getSingleNode(Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_SITE_NO, NodeTypes.SITE), site_no);
+            return getIndexService().getSingleNode(
+                    Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_SITE_NO, NodeTypes.SITE), site_no);
         }
         return null;
     }
@@ -1386,10 +1403,12 @@ public class DatasetService extends AbstractService implements IDatasetService {
      */
     public NodeResult getTransmissionProxy(Node transmissionRoot, Node site) {
         String proxySiteName = getName(transmissionRoot) + PROXY_NAME_SEPARATOR + getName(site);
-        String luceneIndexKeyByProperty = Utils.getLuceneIndexKeyByProperty(transmissionRoot, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE_SITE_RELATIONS);
+        String luceneIndexKeyByProperty = Utils.getLuceneIndexKeyByProperty(transmissionRoot, INeoConstants.PROPERTY_NAME_NAME,
+                NodeTypes.SITE_SITE_RELATIONS);
         Node proxySite = null;
         for (Node node : getIndexService().getNodes(luceneIndexKeyByProperty, proxySiteName)) {
-            if (node.getSingleRelationship(NetworkRelationshipTypes.TRANSMISSIONS, Direction.INCOMING).getOtherNode(node).equals(site)) {
+            if (node.getSingleRelationship(NetworkRelationshipTypes.TRANSMISSIONS, Direction.INCOMING).getOtherNode(node)
+                    .equals(site)) {
                 proxySite = node;
                 break;
             }
@@ -1446,8 +1465,9 @@ public class DatasetService extends AbstractService implements IDatasetService {
             return null;
         }
 
-        return Traversal.description().breadthFirst().prune(Traversal.pruneAfterDepth(1)).relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).filter(
-                Traversal.returnAllButStartNode()).traverse(site);
+        return Traversal.description().breadthFirst().prune(Traversal.pruneAfterDepth(1))
+                .relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).filter(Traversal.returnAllButStartNode())
+                .traverse(site);
     }
 
     /**
@@ -1462,7 +1482,8 @@ public class DatasetService extends AbstractService implements IDatasetService {
             @Override
             public boolean accept(Path item) {
                 return item.endNode().hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
-                        &&( item.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.DATASET.getId())||item.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.OSS.getId()));
+                        && (item.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.DATASET.getId()) || item
+                                .endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.OSS.getId()));
             }
         }).traverse(databaseService.getReferenceNode());
     }
@@ -1479,8 +1500,8 @@ public class DatasetService extends AbstractService implements IDatasetService {
             @Override
             public boolean accept(Path item) {
                 return item.endNode().hasProperty(INeoConstants.PROPERTY_TYPE_NAME)
-                        && (item.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.DATASET.getId()) || item.endNode().getProperty(
-                                INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.NETWORK.getId()));
+                        && (item.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.DATASET.getId()) || item
+                                .endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.NETWORK.getId()));
             }
         }).traverse(databaseService.getReferenceNode());
     }
@@ -1513,7 +1534,8 @@ public class DatasetService extends AbstractService implements IDatasetService {
      */
     public Map<String, String> getOriginalFileHeaders(Node sourceNode) {
         Node networkNode = Utils.getParentNode(sourceNode, NodeTypes.NETWORK.getId());
-        Relationship singleRelationship = networkNode.getSingleRelationship(NetworkRelationshipTypes.FILE_PROPERTIES, Direction.OUTGOING);
+        Relationship singleRelationship = networkNode.getSingleRelationship(NetworkRelationshipTypes.FILE_PROPERTIES,
+                Direction.OUTGOING);
         HashMap<String, String> result = new HashMap<String, String>();
         if (singleRelationship == null)
             return result;
@@ -1525,27 +1547,27 @@ public class DatasetService extends AbstractService implements IDatasetService {
         return result;
     }
 
-	
     /**
      * Adds the original headers.
-     *
+     * 
      * @param sourceNode the source node
      * @param headersMap the headers map
      */
-    public void addOriginalHeaders(Node sourceNode, Map<String,String> headersMap) {
+    public void addOriginalHeaders(Node sourceNode, Map<String, String> headersMap) {
         Node networkNode = Utils.getParentNode(sourceNode, NodeTypes.NETWORK.getId());
-		Relationship singleRelationship = networkNode.getSingleRelationship(NetworkRelationshipTypes.FILE_PROPERTIES, Direction.OUTGOING);
+        Relationship singleRelationship = networkNode.getSingleRelationship(NetworkRelationshipTypes.FILE_PROPERTIES,
+                Direction.OUTGOING);
         Node filePropertiesNode = null;
-        if (singleRelationship == null){
-        	filePropertiesNode = databaseService.createNode();
-        	networkNode.createRelationshipTo(filePropertiesNode, NetworkRelationshipTypes.FILE_PROPERTIES);
-        }else{
-        	filePropertiesNode = singleRelationship.getEndNode();
+        if (singleRelationship == null) {
+            filePropertiesNode = databaseService.createNode();
+            networkNode.createRelationshipTo(filePropertiesNode, NetworkRelationshipTypes.FILE_PROPERTIES);
+        } else {
+            filePropertiesNode = singleRelationship.getEndNode();
         }
-		 for(Map.Entry<String, String> prop : headersMap.entrySet()){
-			 filePropertiesNode.setProperty(prop.getKey(), prop.getValue());
-		 }
-	}
+        for (Map.Entry<String, String> prop : headersMap.entrySet()) {
+            filePropertiesNode.setProperty(prop.getKey(), prop.getValue());
+        }
+    }
 
     public NetworkSelectionModel getNetworkSelectionModel(Node sourceNode) {
         Node networkNode = Utils.getParentNode(sourceNode, NodeTypes.NETWORK.getId());
@@ -1569,7 +1591,8 @@ public class DatasetService extends AbstractService implements IDatasetService {
     public void addSelection(Node selectionNode, Node selectedNode) {
         Transaction tx = databaseService.beginTx();
         try {
-            selectionNode.setProperty(INeoConstants.PROPERTY_COUNT_NAME, (Integer)selectionNode.getProperty(INeoConstants.PROPERTY_COUNT_NAME, 0) + 1);
+            selectionNode.setProperty(INeoConstants.PROPERTY_COUNT_NAME,
+                    (Integer)selectionNode.getProperty(INeoConstants.PROPERTY_COUNT_NAME, 0) + 1);
             selectionNode.createRelationshipTo(selectedNode, NetworkRelationshipTypes.SELECTED);
             tx.success();
         } finally {
@@ -1607,7 +1630,7 @@ public class DatasetService extends AbstractService implements IDatasetService {
             tx.finish();
         }
     }
-    
+
     public List<Relationship> getRelationships(Node relationshipNode, List<Node> selectedNodes, Direction direction) {
         ArrayList<Relationship> relationships = new ArrayList<Relationship>();
         for (Node selected : selectedNodes) {
@@ -1625,7 +1648,6 @@ public class DatasetService extends AbstractService implements IDatasetService {
         }
         return relationships;
     }
-
 
     public void deleteAggregateCharts(Object... properties) {
         Assert.isTrue(properties != null);
@@ -1656,7 +1678,7 @@ public class DatasetService extends AbstractService implements IDatasetService {
             } while (nextNode != null);
         } finally {
             tx.finish();
-        }       
+        }
     }
 
     public Set<Node> findAggregationNodes(Object... properties) {
@@ -1690,7 +1712,6 @@ public class DatasetService extends AbstractService implements IDatasetService {
         return result;
     }
 
-
     private Map<String, Object> formPropertyMap(Object[] properties) {
         Map<String, Object> result = new HashMap<String, Object>();
         for (int i = 0; i < properties.length; i += 2) {
@@ -1698,40 +1719,63 @@ public class DatasetService extends AbstractService implements IDatasetService {
         }
         return result;
     }
-    
+
     protected TraversalDescription getAllRootTraverser(Evaluator... evaluators) {
-        TraversalDescription description = Traversal.description().depthFirst().
-                                    relationships(DatasetRelationshipTypes.AWE_PROJECT, Direction.OUTGOING).
-                                    relationships(DatasetRelationshipTypes.CHILD, Direction.OUTGOING);
-        
+        TraversalDescription description = Traversal.description().depthFirst()
+                .relationships(DatasetRelationshipTypes.AWE_PROJECT, Direction.OUTGOING)
+                .relationships(DatasetRelationshipTypes.CHILD, Direction.OUTGOING);
+
         for (Evaluator singleEvaluator : evaluators) {
             description = description.evaluator(singleEvaluator);
         }
-        
+
         return description;
     }
 
     /**
-     *
      * @param node
      * @param filter
      * @return
      */
     public boolean isChildOf(Node node, Node root) {
-        if (node.equals(root)){
+        if (node.equals(root)) {
             return true;
         }
         Traverser traverser = findProjectByChild(node);
         Iterator<Path> rel = traverser.iterator();
         if (rel.hasNext()) {
             Path path = rel.next();
-            for (Node rootNode:path.nodes()){
-                if (rootNode.equals(root)){
+            for (Node rootNode : path.nodes()) {
+                if (rootNode.equals(root)) {
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    @Override
+    public List<String> getPropertyListOfSectorRoot(Node sector, final String sectorLabelTypeId, String propertyName) {
+        List<String> result = new ArrayList<String>();
+        if (NodeTypes.SECTOR.getId().equals(sectorLabelTypeId)) {
+            result.add(String.valueOf(sector.getProperty(propertyName, "")));
+        } else {
+            TraversalDescription trd = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE)
+                    .relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
+                    .relationships(DatasetRelationshipTypes.PLAN_ENTRY, Direction.OUTGOING).evaluator(new Evaluator() {
+
+                        @Override
+                        public Evaluation evaluate(Path arg0) {
+                            Node node = arg0.endNode();
+                            boolean includes = sectorLabelTypeId.equals(getTypeId(node));
+                            return Evaluation.of(includes, !includes);
+                        }
+                    });
+            for (Node candidate : trd.traverse(sector).nodes()) {
+                result.add(String.valueOf(candidate.getProperty(propertyName, "")));
+            }
+        }
+        return result;
     }
 
 }
