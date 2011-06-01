@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Testing
+Bundle-SymbolicName: org.amanzi.awe.neostyle.testing
+Bundle-Version: 1.0.0.qualifier
+Fragment-Host: org.amanzi.awe.neostyle;bundle-version="1.0.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: org.junit4,
+ org.amanzi.testing;bundle-version="1.0.0"
