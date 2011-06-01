@@ -369,6 +369,10 @@ public class NetworkModel implements IDistributionalModel, INetworkTraversableMo
         return datasetHandler;
     }
 
+    @Override
+    public void init() {
+    }
+
 
 
 }
