@@ -27,4 +27,5 @@ public interface IModel {
     public String getName();
     
     public Node getRootNode();
+    public void init();
 }

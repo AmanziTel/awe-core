@@ -34,14 +34,12 @@ public abstract class DefaultRange implements IRange {
     private String numRange;
     private String strRange;
     private Filter filt;
-   
 
     DefaultRange(Filter filter) {
-        this.filt=filter;
-       
+        this.filt = filter;
+
     }
 
-    
     @Override
     public boolean includes(Node checkNode) {
         boolean res;

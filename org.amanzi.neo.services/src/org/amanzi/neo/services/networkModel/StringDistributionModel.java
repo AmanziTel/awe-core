@@ -75,4 +75,8 @@ public class StringDistributionModel implements IDistributionModel {
     public Node getRootNode() {
         return statisticNode;
     }
+
+    @Override
+    public void init() {
+    }
 }

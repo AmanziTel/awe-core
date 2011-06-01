@@ -17,7 +17,6 @@ import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.filters.Filter;
 import org.amanzi.neo.services.filters.FilterType;
-import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of
@@ -30,13 +29,15 @@ import org.neo4j.graphdb.Node;
 public class StringRange extends DefaultRange {
     private String strRangeValue;
     private static Filter filter;
-    protected static Filter init(){
+
+    protected static Filter init(String range) {
         filter = new Filter(FilterType.LIKE);
-        filter.setExpression(NodeTypes.SITE, INeoConstants.PROPERTY_NAME_NAME, ".*val.*");
+        filter.setExpression(NodeTypes.SITE, INeoConstants.PROPERTY_NAME_NAME, range);
         return filter;
     }
+
     public StringRange(String rangeValue) {
-        super(init());
+        super(init(rangeValue));
         strRangeValue = rangeValue;
     }
 
