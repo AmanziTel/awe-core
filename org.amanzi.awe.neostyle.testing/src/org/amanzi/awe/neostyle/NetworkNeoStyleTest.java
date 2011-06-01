@@ -14,7 +14,10 @@
 package org.amanzi.awe.neostyle;
 
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.jmock.Mockery;
+import org.jmock.integration.junit4.JUnit4Mockery;
 import org.junit.Test;
+import org.neo4j.graphdb.Node;
 
 /**
  * <p>
@@ -24,12 +27,14 @@ import org.junit.Test;
  * @since 1.0.0
  */
 public class NetworkNeoStyleTest {
-//    private Mockery context=new JUnit4Mockery();
+    private Mockery context=new JUnit4Mockery();
     @Test
     public  final void  ckeckSectorLabelTextOnEmptyOrNullPrperty(){
         NetworkNeoStyle style=createDefaultNetworkStyle();
         style.setSectorLabelTypeId(NodeTypes.SECTOR.getId());
         style.setSectorLabelProperty("property1");
+        Node sector=context.mock(Node.class);
+        
     }
 
     /**

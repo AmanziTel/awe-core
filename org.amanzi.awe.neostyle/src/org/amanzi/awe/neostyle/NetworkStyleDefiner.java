@@ -149,7 +149,7 @@ public class NetworkStyleDefiner extends ViewPart {
         cSecondaryFontSize.setText(String.valueOf(curStyle.getSecondaryFontSize()));
         cSecondaryProperty.setItems(getSecondaryPropertyChoices());
         cMainProperty.setItems(getMainPropertyChoices());
-        cSecondaryProperty.setText(curStyle.getSecondaryProperty());
+        cSecondaryProperty.setText(curStyle.getSectorLabelProperty());
         cMainProperty.setText(curStyle.getMainProperty());
         if (isProbe) {
             changeToProbeNetworkStyle();
@@ -176,7 +176,7 @@ public class NetworkStyleDefiner extends ViewPart {
         curStyle.setMaximumSymbolSize(sMaxSymSize.getSelection());
         curStyle.setDefaultBeamwidth(sDefBeamwidth.getSelection());
         curStyle.setMainProperty(cMainProperty.getText());
-        curStyle.setSecondaryProperty(cSecondaryProperty.getText());
+        curStyle.setSectorLabelProperty(cSecondaryProperty.getText());
         curStyle.setIgnoreTransparency(bTransp.getSelection());
         curStyle.setDrawCorrelations(bCorrelation.getSelection());
     }

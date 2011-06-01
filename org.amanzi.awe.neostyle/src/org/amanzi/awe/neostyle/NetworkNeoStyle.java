@@ -44,7 +44,8 @@ public class NetworkNeoStyle extends BaseNeoStyle implements Serializable{
     private Integer fontSize;
     private Integer secondaryFontSize;
     private String mainProperty;
-    private String secondaryProperty;
+    private String sectorLabelProperty;
+    private String sectorLabelTypeId;
 
 
     /**
@@ -52,6 +53,14 @@ public class NetworkNeoStyle extends BaseNeoStyle implements Serializable{
      */
     public String getMainProperty() {
         return mainProperty ;
+    }
+
+    public String getSectorLabelTypeId() {
+        return sectorLabelTypeId;
+    }
+
+    public void setSectorLabelTypeId(String sectorLabelType) {
+        this.sectorLabelTypeId = sectorLabelType;
     }
 
     /**
@@ -64,15 +73,15 @@ public class NetworkNeoStyle extends BaseNeoStyle implements Serializable{
     /**
      * @return Returns the secondary property to use for labelling.
      */
-    public String getSecondaryProperty() {
-        return secondaryProperty;
+    public String getSectorLabelProperty() {
+        return sectorLabelProperty;
     }
 
     /**
      * @param name The secondary property to use for labelling.
      */
-    public void setSecondaryProperty(String name) {
-        this.secondaryProperty = name;
+    public void setSectorLabelProperty(String name) {
+        this.sectorLabelProperty = name;
     }
 
     /**

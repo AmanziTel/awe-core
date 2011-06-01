@@ -23,6 +23,7 @@ import net.refractions.udig.project.StyleContent;
 
 import org.amanzi.awe.catalog.neo.NeoGeoResource;
 import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.IMemento;
@@ -55,6 +56,7 @@ public class NetworkNeoStyleContent extends StyleContent{
         public static final Color DEF_COLOR_FILL = new Color(255, 255, 128);
         public static final String DEF_NONE = "";
         public static final String DEF_SECONDARY_PROPERTY = DEF_NONE;
+        public static final String DEF_SECTOR_LABEL_TYPE_ID = NodeTypes.SECTOR.getId();
         public static final String DEF_MAIN_PROPERTY = "name";
         /** Network site font size */
         public static final Integer DEF_FONT_SIZE = 10;
@@ -82,6 +84,7 @@ public class NetworkNeoStyleContent extends StyleContent{
         private static final String FONT_SIZE_SECTOR = "NET_FONT_SIZE_SECTOR";
         private static final String SITE_NAME = "NET_SITE_NAME";
         private static final String SECTOR_NAME = "NET_SECTOR_NAME";
+        private static final String SECTOR_LABEL_TYPE = "NET_SECTOR_LABEL_TYPE";
 
 
         public NetworkNeoStyleContent() {
@@ -117,7 +120,8 @@ public class NetworkNeoStyleContent extends StyleContent{
             result.setFontSize(DEF_FONT_SIZE);
             result.setSectorFontSize(DEF_FONT_SIZE_SECTOR);
             result.setMainProperty(DEF_MAIN_PROPERTY);
-            result.setSecondaryProperty(DEF_SECONDARY_PROPERTY);
+            result.setSectorLabelProperty(DEF_SECONDARY_PROPERTY);
+            result.setSectorLabelTypeId(DEF_SECTOR_LABEL_TYPE_ID);
             result.setIgnoreTransparency(IGNORE_TRANSPARENCY);
             return result;
         }
@@ -146,7 +150,9 @@ public class NetworkNeoStyleContent extends StyleContent{
             result.setFontSize(memento.getInteger(FONT_SIZE));
             result.setSectorFontSize(memento.getInteger(FONT_SIZE_SECTOR));
             result.setMainProperty((memento.getString(SITE_NAME)));
-            result.setSecondaryProperty((memento.getString(SECTOR_NAME)));
+            result.setSectorLabelProperty((memento.getString(SECTOR_NAME)));
+            result.setSectorLabelTypeId((memento.getString(SECTOR_LABEL_TYPE)));
+            
             String filters = memento.getString(FILTERS);
             if (StringUtils.isNotEmpty(filters)){
                 result.setFilterMap(Arrays.asList(filters.split("\n")));
@@ -185,7 +191,8 @@ public class NetworkNeoStyleContent extends StyleContent{
             memento.putInteger(FONT_SIZE, style.getFontSize());
             memento.putInteger(FONT_SIZE_SECTOR, style.getSecondaryFontSize());
             memento.putString(SITE_NAME, style.getMainProperty());
-            memento.putString(SECTOR_NAME, style.getSecondaryProperty());
+            memento.putString(SECTOR_NAME, style.getSectorLabelProperty());
+            memento.putString(SECTOR_LABEL_TYPE, style.getSectorLabelTypeId());
             StringBuilder sb=new StringBuilder();
             String del="\n";
             for (String name:style.getFilterNames()){

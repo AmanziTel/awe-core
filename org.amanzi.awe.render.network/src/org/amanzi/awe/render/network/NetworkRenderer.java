@@ -241,7 +241,7 @@ public class NetworkRenderer extends RendererImpl {
                     sectorFontSize = neostyle.getSecondaryFontSize();
                     defaultBeamwidth = neostyle.getDefaultBeamwidth();
                     siteName = neostyle.getMainProperty();
-                    sectorName = neostyle.getSecondaryProperty();
+                    sectorName = neostyle.getSectorLabelProperty();
                 } catch (Exception e) {
                     // TODO: we can get here if an old style exists, and we have added new fields
                 }
