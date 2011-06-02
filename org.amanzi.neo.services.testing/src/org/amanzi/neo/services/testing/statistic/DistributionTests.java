@@ -22,6 +22,8 @@ import org.amanzi.neo.services.networkModel.IDistributionalModel;
 import org.amanzi.neo.services.networkModel.IRange;
 import org.amanzi.neo.services.networkModel.NumberRange;
 import org.amanzi.neo.services.networkModel.StringRange;
+import org.amanzi.neo.services.statistic.IStatistic;
+import org.amanzi.neo.services.statistic.StatisticManager;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
@@ -43,7 +45,8 @@ public class DistributionTests extends AbstractAWETest {
 	private static CommonConfigData config;
 	private static ILoader<?, CommonConfigData> loader;
 	private static Node rootNode;
-
+	private static String ROOTKEY = "rootNode";
+	private static String ROOT_NODE_NAME="rootNode";
 	// private static AfpService afpService;
 
 	@BeforeClass
@@ -52,6 +55,7 @@ public class DistributionTests extends AbstractAWETest {
 		LOGGER.info("Set up Distribution Test");
 		long before = 0;
 		long after = 0;
+		clearDb();
 		initializeDb();
 		initPreferences();
 
@@ -101,7 +105,7 @@ public class DistributionTests extends AbstractAWETest {
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		stopDb();
-		// clearDb();
+		//
 
 		long duration = System.currentTimeMillis() - startTimestamp;
 		int milliseconds = (int) (duration % 1000);
@@ -112,7 +116,13 @@ public class DistributionTests extends AbstractAWETest {
 				+ " minutes " + seconds + " seconds " + milliseconds
 				+ " milliseconds");
 	}
-
+	
+	private void rootNodeCreation(){
+		rootNode = graphDatabaseService.createNode();
+		rootNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, ROOT_NODE_NAME);
+		NodeTypes.getEnumById(NodeTypes.NETWORK.getId()).setNodeType(
+				rootNode, graphDatabaseService);
+	}
 	/**
 	 * create NetworkModel test
 	 */
@@ -278,7 +288,7 @@ public class DistributionTests extends AbstractAWETest {
 
 	}
 
-	
+
 
 	
 
