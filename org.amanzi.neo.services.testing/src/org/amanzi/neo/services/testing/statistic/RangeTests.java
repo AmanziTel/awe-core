@@ -86,7 +86,7 @@ public class RangeTests extends AbstractAWETest {
 			NodeTypes.getEnumById(NodeTypes.SITE.getId()).setNodeType(
 					checkNode, graphDatabaseService);
 
-			IRange strRange = new StringRange("value 1");
+			IRange strRange = new StringRange("value 1",NodeTypes.SITE);
 			Assert.assertTrue(strRange.includes(checkNode));
 			checkNode.delete();
 			tx.success();
@@ -194,7 +194,7 @@ public class RangeTests extends AbstractAWETest {
 			childNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, "");
 			NodeTypes.CITY.setNodeType(childNode, graphDatabaseService);
 			childNode.setProperty(INeoConstants.PROPERTY_NAME_NAME,
-					"child node name");
+					"City 1");
 			rootNode.createRelationshipTo(childNode,
 					NetworkRelationshipTypes.CHILD);
 			
@@ -226,7 +226,8 @@ public class RangeTests extends AbstractAWETest {
 			
 
 			Assert.assertEquals("Incorrect expected value",2,stringDistrib.getRangeList().size());
-
+			Assert.assertTrue(stringDistrib.getRangeList().get(0).includes(childNode));
+			
 			tx.success();
 
 		} catch (Exception e) {
