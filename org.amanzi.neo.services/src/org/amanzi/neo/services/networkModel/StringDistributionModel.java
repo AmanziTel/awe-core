@@ -85,7 +85,7 @@ public class StringDistributionModel extends DefaultDistribution {
                 .getValueMap();
         IRange valueRange;
         for (Object value : map.keySet()) {
-            valueRange = new StringRange((String)value);
+            valueRange = new StringRange((String)value,type);
             rangeList.add(valueRange);
            
         }
