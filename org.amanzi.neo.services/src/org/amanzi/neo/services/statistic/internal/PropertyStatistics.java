@@ -14,6 +14,7 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.helpers.Predicate;
 import org.neo4j.kernel.Traversal;
@@ -26,7 +27,7 @@ public class PropertyStatistics implements ISinglePropertyStat {
 
     /** The Constant PROPERTYS. */
     private static final TraversalDescription PROPERTYS = Traversal.description().depthFirst().relationships(StatisticRelationshipTypes.PROPERTY, Direction.OUTGOING)
-            .uniqueness(Uniqueness.NONE).filter(Traversal.returnAllButStartNode()).prune(Traversal.pruneAfterDepth(1));
+            .uniqueness(Uniqueness.NONE).evaluator(Evaluators.excludeStartPosition());
 
     /** The property name. */
     private final String propertyName;
@@ -455,6 +456,7 @@ public class PropertyStatistics implements ISinglePropertyStat {
             return false;
         }
         deleteValue(oldValue);
+        
         return   addNewValue(newValue, 1);
     }
 
@@ -473,6 +475,7 @@ public class PropertyStatistics implements ISinglePropertyStat {
             return false;
         }
         isChanged = true;
+        count--;
         countV--;
         int c = 0;
         if (countV == 0) {
