@@ -13,6 +13,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 
+
 import org.junit.Test;
 
 import org.neo4j.graphdb.Node;
@@ -39,6 +40,7 @@ public class StatisticTests extends AbstractAWETest{
         startTimestamp = System.currentTimeMillis();
         LOGGER.info("Set up Statistic Test");
 
+
         try {
             initializeDb();
             initPreferences();
@@ -49,6 +51,7 @@ public class StatisticTests extends AbstractAWETest{
             e.printStackTrace();
         }
     }
+
 
     /**
      * @throws java.lang.Exception
@@ -121,6 +124,7 @@ public class StatisticTests extends AbstractAWETest{
     	Transaction tx = graphDatabaseService.beginTx();
         try {
 
+
             Node rootNode = graphDatabaseService.createNode();
             DatasetStatistic datasetStatistic = new DatasetStatistic(rootNode);
             datasetStatistic.indexValue(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1, PROPERTY_VALUE_1);
@@ -138,5 +142,7 @@ public class StatisticTests extends AbstractAWETest{
             LOGGER.info("< updateValueTrueTest end >");
         }
     }
+
 	
+
 }
