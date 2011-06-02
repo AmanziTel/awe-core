@@ -14,7 +14,7 @@
 package org.amanzi.neo.services.networkModel;
 
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.filters.Filter;
 import org.amanzi.neo.services.filters.FilterType;
 
@@ -27,24 +27,19 @@ import org.amanzi.neo.services.filters.FilterType;
  * @since 1.0.0
  */
 public class NumberRange extends DefaultRange {
-    private static Number minimum;
-    private static Number maximum;
-    private static Filter filter;
-    private static Filter filterAddition;
 
-    protected static Filter init(Number min, Number max) {
+    private  void setFilter(Number min, Number max, INodeType type) {
         filter = new Filter(FilterType.MORE_OR_EQUALS);
-        filter.setExpression(NodeTypes.SITE, INeoConstants.PROPERTY_NAME_MIN_VALUE, min);
+        filter.setExpression(type, INeoConstants.PROPERTY_NAME_MIN_VALUE, min);
         filterAddition = new Filter(FilterType.LESS_OR_EQUALS);
-        filterAddition.setExpression(NodeTypes.SITE, INeoConstants.PROPERTY_NAME_MAX_VALUE, max);
+        filterAddition.setExpression(type, INeoConstants.PROPERTY_NAME_MAX_VALUE, max);
         filter.addFilter(filterAddition);
-        return filter;
+     
     }
 
-    public NumberRange(Number min, Number max) {
-        super(init(min, max));
-        minimum = min;
-        maximum = max;
+    public NumberRange(Number min, Number max, INodeType type) {
+        super();
+        setFilter(min, max, type);
 
     }
 

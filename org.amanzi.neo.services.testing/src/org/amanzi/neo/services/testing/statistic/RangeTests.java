@@ -27,17 +27,19 @@ public class RangeTests extends AbstractAWETest {
 
 	private static long startTimestamp;
 	private static Node rootNode;
-	private static String ROOTKEY = "rootNode";
-	private static String ROOT_NODE_NAME="rootNode";
-
-
-	// private static AfpService afpService;
+	private static String ROOT_KEY = "rootNode";
+	private static String ROOT_NODE_NAME = "rootNode";
+	private static Double NODE_MIN_VALUE = 5.0;
+	private static Double NODE_MAX_VALUE = 12.0;
+	private static String NODE_NAME_VALUE = "value 1";
+	private static String NODE_NAME_CITY1 = "City 1";
+	private static String NODE_NAME_CITY2 = "City 2";
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		startTimestamp = System.currentTimeMillis();
 		LOGGER.info("Set up Distribution Test");
-		
+
 		clearDb();
 		initializeDb();
 		initPreferences();
@@ -50,7 +52,7 @@ public class RangeTests extends AbstractAWETest {
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		stopDb();
-		// 
+		//
 
 		long duration = System.currentTimeMillis() - startTimestamp;
 		int milliseconds = (int) (duration % 1000);
@@ -61,15 +63,14 @@ public class RangeTests extends AbstractAWETest {
 				+ " minutes " + seconds + " seconds " + milliseconds
 				+ " milliseconds");
 	}
-	/**
-	 * Creation of rootNode
-	 */
-	private void rootNodeCreation(){
+
+	private void rootNodeCreation() {
 		rootNode = graphDatabaseService.createNode();
 		rootNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, ROOT_NODE_NAME);
-		NodeTypes.getEnumById(NodeTypes.NETWORK.getId()).setNodeType(
-				rootNode, graphDatabaseService);
+		NodeTypes.getEnumById(NodeTypes.NETWORK.getId()).setNodeType(rootNode,
+				graphDatabaseService);
 	}
+
 	/**
 	 * Check correct String Range
 	 */
@@ -82,17 +83,17 @@ public class RangeTests extends AbstractAWETest {
 		try {
 
 			Node checkNode = graphDatabaseService.createNode();
-			checkNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, "value 1");
+			checkNode.setProperty(INeoConstants.PROPERTY_NAME_NAME,
+					NODE_NAME_VALUE);
 			NodeTypes.getEnumById(NodeTypes.SITE.getId()).setNodeType(
 					checkNode, graphDatabaseService);
 
-			IRange strRange = new StringRange("value 1",NodeTypes.SITE);
+			IRange strRange = new StringRange(NODE_NAME_VALUE, NodeTypes.SITE);
 			Assert.assertTrue(strRange.includes(checkNode));
-			checkNode.delete();
-			tx.success();
+
+			tx.failure();
 		} catch (Exception e) {
-			e.printStackTrace();
-			Assert.fail("Exception " + e.getMessage());
+			Assert.fail("Exception " + e.getLocalizedMessage());
 
 		} finally {
 			tx.finish();
@@ -113,18 +114,18 @@ public class RangeTests extends AbstractAWETest {
 		try {
 
 			Node checkNode = graphDatabaseService.createNode();
-			checkNode.setProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE, 12.0);
-			checkNode.setProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, 5.0);
-			NodeTypes.getEnumById(NodeTypes.SITE.getId()).setNodeType(
-					checkNode, graphDatabaseService);
+			checkNode.setProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE,
+					NODE_MAX_VALUE);
+			checkNode.setProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE,
+					NODE_MIN_VALUE);
+			NodeTypes.SITE.setNodeType(checkNode, graphDatabaseService);
 
-			IRange numRange = new NumberRange(5.0, 13.0);
+			IRange numRange = new NumberRange(5.0, 13.0, NodeTypes.SITE);
 			Assert.assertTrue(numRange.includes(checkNode));
-			checkNode.delete();
-			tx.success();
+
+			tx.failure();
 		} catch (Exception e) {
-			e.printStackTrace();
-			Assert.fail("Exception " + e.getMessage());
+			Assert.fail("Exception " + e.getLocalizedMessage());
 
 		} finally {
 			tx.finish();
@@ -132,6 +133,40 @@ public class RangeTests extends AbstractAWETest {
 		}
 
 	}
+
+	/**
+	 * Check incorrect Number Range
+	 */
+	@Test
+	public void checkIncorrectNumberRange() {
+		LOGGER.info("< Check Incorrect Number Range begin >");
+
+		Transaction tx = graphDatabaseService.beginTx();
+
+		try {
+
+			Node checkNode = graphDatabaseService.createNode();
+			checkNode.setProperty(INeoConstants.PROPERTY_NAME_MAX_VALUE,
+					NODE_MAX_VALUE);
+			checkNode.setProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE,
+					NODE_MIN_VALUE);
+			NodeTypes.SITE.setNodeType(checkNode, graphDatabaseService);
+
+			IRange numRange = new NumberRange(7.0, 8.0, NodeTypes.SITE);
+			Assert.assertFalse("Wrong diapason expected ",
+					numRange.includes(checkNode));
+
+			tx.failure();
+		} catch (Exception e) {
+			Assert.fail("Exception " + e.getLocalizedMessage());
+
+		} finally {
+			tx.finish();
+			LOGGER.info("< Check Incorrect Number Range end >");
+		}
+
+	}
+
 	@Test
 	public void creationOfStatisticTest() {
 		LOGGER.info("<  Test statistic creation begin >");
@@ -144,32 +179,33 @@ public class RangeTests extends AbstractAWETest {
 
 			IStatistic stat = StatisticManager.getStatistic(rootNode);
 
-			stat.indexValue(ROOTKEY, NodeTypes.NETWORK.toString(),
-					"String value", NodeTypes.NETWORK.toString());
-			stat.updateTypeCount(ROOTKEY, NodeTypes.NETWORK.toString(), 1);
-			stat.indexValue(ROOTKEY, NodeTypes.NETWORK.toString(),
-					"String value", NodeTypes.NETWORK.toString());
+			stat.indexValue(ROOT_KEY, NodeTypes.NETWORK.toString(),
+					INeoConstants.PROPERTY_NAME_NAME,
+					NodeTypes.NETWORK.toString());
+			stat.updateTypeCount(ROOT_KEY, NodeTypes.NETWORK.toString(), 1);
+			stat.indexValue(ROOT_KEY, NodeTypes.NETWORK.toString(),
+					INeoConstants.PROPERTY_NAME_NAME,
+					NodeTypes.NETWORK.toString());
 
-			stat.updateTypeCount(ROOTKEY, NodeTypes.NETWORK.toString(), 1);
-			stat.indexValue(ROOTKEY, NodeTypes.NETWORK.toString(),
-					"Double value", 1);
-			stat.updateTypeCount(ROOTKEY, NodeTypes.NETWORK.toString(), 1);
-			stat.indexValue(ROOTKEY, NodeTypes.NETWORK.toString(),
-					"Double value", 2);
-			stat.updateTypeCount(ROOTKEY, NodeTypes.NETWORK.toString(), 1);
-			stat.indexValue(ROOTKEY, NodeTypes.NETWORK.toString(),
-					"Double value", 3);
-			stat.updateTypeCount(ROOTKEY, NodeTypes.NETWORK.toString(), 1);
+			stat.updateTypeCount(ROOT_KEY, NodeTypes.NETWORK.toString(), 1);
+			stat.indexValue(ROOT_KEY, NodeTypes.NETWORK.toString(),
+					INeoConstants.PROPERTY_NAME_NAME, 1);
+			stat.updateTypeCount(ROOT_KEY, NodeTypes.NETWORK.toString(), 1);
+			stat.indexValue(ROOT_KEY, NodeTypes.NETWORK.toString(),
+					INeoConstants.PROPERTY_NAME_NAME, 2);
+			stat.updateTypeCount(ROOT_KEY, NodeTypes.NETWORK.toString(), 1);
+			stat.indexValue(ROOT_KEY, NodeTypes.NETWORK.toString(),
+					INeoConstants.PROPERTY_NAME_NAME, 3);
+			stat.updateTypeCount(ROOT_KEY, NodeTypes.NETWORK.toString(), 1);
 			stat.save();
 
 			Assert.assertTrue(
 					"Lost values ",
-					stat.getTotalCount(ROOTKEY, NodeTypes.NETWORK.toString()) == 5);
+					stat.getTotalCount(ROOT_KEY, NodeTypes.NETWORK.toString()) == 5);
 			tx.failure();
 
 		} catch (Exception e) {
-			e.printStackTrace();
-			Assert.fail("Exception  " + e.getMessage());
+			Assert.fail("Exception " + e.getLocalizedMessage());
 
 		} finally {
 			tx.finish();
@@ -182,8 +218,8 @@ public class RangeTests extends AbstractAWETest {
 	 * Test range distribution
 	 */
 	@Test
-	public void rangeDistributionTest() {
-		LOGGER.info("<   Test range distribution begin >");
+	public void stringRangeDistributionTest() {
+		LOGGER.info("<   Test String range distribution begin >");
 
 		Transaction tx = graphDatabaseService.beginTx();
 
@@ -194,51 +230,50 @@ public class RangeTests extends AbstractAWETest {
 			childNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, "");
 			NodeTypes.CITY.setNodeType(childNode, graphDatabaseService);
 			childNode.setProperty(INeoConstants.PROPERTY_NAME_NAME,
-					"City 1");
+					NODE_NAME_CITY1);
 			rootNode.createRelationshipTo(childNode,
 					NetworkRelationshipTypes.CHILD);
-			
+
 			IStatistic stat = StatisticManager.getStatistic(rootNode);
 
-			stat.indexValue(ROOTKEY, NodeTypes.CITY.getId(),
-					INeoConstants.PROPERTY_NAME_NAME, "City 2");
-			stat.indexValue(ROOTKEY, NodeTypes.CITY.getId(),
-					INeoConstants.PROPERTY_NAME_NAME, "City 1");
+			stat.indexValue(ROOT_KEY, NodeTypes.CITY.getId(),
+					INeoConstants.PROPERTY_NAME_NAME, NODE_NAME_CITY1);
+			stat.indexValue(ROOT_KEY, NodeTypes.CITY.getId(),
+					INeoConstants.PROPERTY_NAME_NAME, NODE_NAME_CITY2);
 
-			
-			stat.indexValue(ROOTKEY,NodeTypes.CITY.getId(),
+			stat.indexValue(ROOT_KEY, NodeTypes.CITY.getId(),
 					INeoConstants.COUNT_TYPE_NAME, 1);
-			stat.indexValue(ROOTKEY,NodeTypes.CITY.getId(),
+			stat.indexValue(ROOT_KEY, NodeTypes.CITY.getId(),
 					INeoConstants.COUNT_TYPE_NAME, 2);
-			stat.indexValue(ROOTKEY,NodeTypes.CITY.getId(),
+			stat.indexValue(ROOT_KEY, NodeTypes.CITY.getId(),
 					INeoConstants.COUNT_TYPE_NAME, 3);
-	
-			stat.updateTypeCount(ROOTKEY, NodeTypes.NETWORK.getId(), 5);
 
-			
+			stat.updateTypeCount(ROOT_KEY, NodeTypes.NETWORK.getId(), 5);
+
 			stat.save();
 
 			IDistributionalModel networkModel = new NetworkModel(rootNode);
-			
+
 			IDistributionModel stringDistrib = networkModel.getModel(
 					INeoConstants.PROPERTY_NAME_NAME, NodeTypes.CITY);
-			LOGGER.info("RanageList size "+stringDistrib.getRangeList().size());
-			
+			LOGGER.info("RanageList size "
+					+ stringDistrib.getRangeList().size());
 
-			Assert.assertEquals("Incorrect expected value",2,stringDistrib.getRangeList().size());
-			Assert.assertTrue(stringDistrib.getRangeList().get(0).includes(childNode));
-			
+			Assert.assertEquals("Incorrect expected value ", 2, stringDistrib
+					.getRangeList().size());
+			Assert.assertTrue("Wrong Filter",
+					stringDistrib.getRangeList().get(0).includes(childNode));
+
 			tx.success();
 
 		} catch (Exception e) {
-			e.printStackTrace();
-			Assert.fail("Exception  " + e.getMessage());
+			Assert.fail("Exception " + e.getLocalizedMessage());
 
 		} finally {
 			tx.finish();
-			LOGGER.info("<   Test range distributionend >");
+			LOGGER.info("<   Test String range distribution end >");
 		}
 
 	}
-	
+
 }

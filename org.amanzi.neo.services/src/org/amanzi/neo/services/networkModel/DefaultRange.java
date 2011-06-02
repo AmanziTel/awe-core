@@ -27,18 +27,18 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public abstract class DefaultRange implements IRange {
-    private Filter filt;
-
-    DefaultRange(Filter filter) {
-        this.filt = filter;
-
+    protected  Filter filter;
+    protected  Filter filterAddition;
+    DefaultRange() {
+        filter=null;
+        filterAddition=null;
     }
 
     @Override
     public boolean includes(Node checkNode) {
         boolean res;
         try {
-            res = filt.check(checkNode);
+            res = filter.check(checkNode);
         } catch (NotComparebleException e) {
             // TODO Handle NotComparebleException
             throw (RuntimeException)new RuntimeException().initCause(e);
