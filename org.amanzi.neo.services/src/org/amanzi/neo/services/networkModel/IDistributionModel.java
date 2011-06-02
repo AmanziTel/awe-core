@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.services.networkModel;
 
+import java.util.List;
+
 import org.amanzi.neo.services.enums.INodeType;
 
 /**
@@ -25,4 +27,5 @@ import org.amanzi.neo.services.enums.INodeType;
  */
 public interface IDistributionModel extends IModel {
     public INodeType getType();
+    public List<IRange> getRangeList();
 }

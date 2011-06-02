@@ -31,7 +31,7 @@ public class StringRange extends DefaultRange {
     private static Filter filter;
 
     protected static Filter init(String range) {
-        filter = new Filter(FilterType.LIKE);
+        filter = new Filter(FilterType.EQUALS);
         filter.setExpression(NodeTypes.SITE, INeoConstants.PROPERTY_NAME_NAME, range);
         return filter;
     }

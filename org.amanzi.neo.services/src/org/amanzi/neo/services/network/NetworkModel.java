@@ -34,6 +34,7 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.networkModel.IDistributionModel;
 import org.amanzi.neo.services.networkModel.IDistributionalModel;
+import org.amanzi.neo.services.networkModel.IRange;
 import org.amanzi.neo.services.networkModel.PropertyEvaluator;
 import org.amanzi.neo.services.networkModel.StringDistributionModel;
 import org.amanzi.neo.services.networkselection.SelectionModel;
@@ -78,7 +79,7 @@ public class NetworkModel implements IDistributionalModel, INetworkTraversableMo
         this.rootNode = rootNode;
         ds = NeoServiceFactory.getInstance().getDatasetService();
         networkService = NeoServiceFactory.getInstance().getNetworkService();
-        datasetHandler=new DatasetStructureHandler(rootNode, networkService);
+        datasetHandler = new DatasetStructureHandler(rootNode, networkService);
         n2nserrvice = NeoServiceFactory.getInstance().getNodeToNodeRelationService();
     }
 
@@ -284,7 +285,7 @@ public class NetworkModel implements IDistributionalModel, INetworkTraversableMo
     @Override
     public Iterable<Node> getAllElementsByType(Evaluator filter, INodeType... nodeTypes) {
         return networkService.getNetworkElementTraversal(filter, nodeTypes).traverse(rootNode).nodes();
-   
+
     }
 
     public boolean listNameExists(String name) {
@@ -340,39 +341,29 @@ public class NetworkModel implements IDistributionalModel, INetworkTraversableMo
         return rootNode;
     }
 
-    
-   
-/**
- * @property Node property name
- * @type Node type
- * 
- */
-        
+    /**
+     * @property Node property name
+     * @type Node type
+     */
+
     @Override
     public IDistributionModel getModel(String property, INodeType type) {
         IStatistic stat = StatisticManager.getStatistic(rootNode);
 
-        ISinglePropertyStat propertyType = stat.findPropertyStatistic(rootNode.getProperty(INeoConstants.PROPERTY_NAME_NAME)
-                .toString(), type.getId(), property);
+        ISinglePropertyStat propertyType = stat.findPropertyStatistic(rootNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString(),
+                type.getId(), property);
 
         IDistributionModel model = null;
         if (propertyType.getType() == String.class) {
-            model = new StringDistributionModel(property, NodeTypes.STATISTICS_ROOT, this);
+            model = new StringDistributionModel(property, type, this);
 
         }
         return model;
     }
 
    
-
     public DatasetStructureHandler getDatasetStructureHandler() {
         return datasetHandler;
     }
-
-    @Override
-    public void init() {
-    }
-
-
 
 }

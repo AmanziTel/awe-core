@@ -13,6 +13,9 @@
 
 package org.amanzi.neo.services.networkModel;
 
+import java.util.List;
+import java.util.Map;
+
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NetworkService;
@@ -30,15 +33,15 @@ import org.neo4j.graphdb.traversal.Evaluator;
  * @author Kondratenko_V
  * @since 1.0.0
  */
-public class StringDistributionModel implements IDistributionModel {
+public class StringDistributionModel extends DefaultDistribution {
     private IDistributionalModel model;
-
     private final NetworkService networkService;
     private String propertyName;
     private INodeType type;
     private Node statisticNode;
 
     public StringDistributionModel(String propertyName, INodeType type, IDistributionalModel model) {
+        super(model, type.getId(), propertyName);
         networkService = NeoServiceFactory.getInstance().getNetworkService();
         this.model = model;
         this.propertyName = propertyName;
@@ -49,17 +52,16 @@ public class StringDistributionModel implements IDistributionModel {
 
     private void setRootDistributionNode() {
         Evaluator ev = new PropertyEvaluator(propertyName, getName());
-        Iterable<Node> networkNodes = this.model.getAllElementsByType(ev, type);
+        Iterable<Node> networkNodes = this.model.getAllElementsByType(ev, NodeTypes.STATISTICS_ROOT);
         if (!networkNodes.iterator().hasNext()
-                && !model.getRootNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(getType())) {
-            statisticNode = networkService.createNode(getType(), getName());
+                && !model.getRootNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).equals(NodeTypes.STATISTICS_ROOT)) {
+            statisticNode = networkService.createNode(NodeTypes.STATISTICS_ROOT, getName());
             model.getRootNode().createRelationshipTo(statisticNode, NetworkRelationshipTypes.CHILD);
-        }else{
+        } else {
             statisticNode = networkNodes.iterator().next();
         }
 
     }
-
 
     @Override
     public String getName() {
@@ -68,7 +70,7 @@ public class StringDistributionModel implements IDistributionModel {
 
     @Override
     public INodeType getType() {
-        return NodeTypes.STATISTICS_ROOT;
+        return null;
     }
 
     @Override
@@ -77,6 +79,21 @@ public class StringDistributionModel implements IDistributionModel {
     }
 
     @Override
-    public void init() {
+    protected void init() {
+        Map<Object, Long> map = stat.findPropertyStatistic(
+                distributionalModel.getRootNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString(), nType, pName)
+                .getValueMap();
+        IRange valueRange;
+        for (Object value : map.keySet()) {
+            valueRange = new StringRange((String)value);
+            rangeList.add(valueRange);
+           
+        }
+
+    }
+
+    @Override
+    public List<IRange> getRangeList() {
+        return rangeList;
     }
 }
