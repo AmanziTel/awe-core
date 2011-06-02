@@ -34,8 +34,6 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.networkModel.IDistributionModel;
 import org.amanzi.neo.services.networkModel.IDistributionalModel;
-import org.amanzi.neo.services.networkModel.IRange;
-import org.amanzi.neo.services.networkModel.PropertyEvaluator;
 import org.amanzi.neo.services.networkModel.StringDistributionModel;
 import org.amanzi.neo.services.networkselection.SelectionModel;
 import org.amanzi.neo.services.node2node.INodeToNodeType;
