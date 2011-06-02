@@ -40,7 +40,7 @@ public class DistributionTests extends AbstractAWETest {
 	private static CommonConfigData config;
 	private static ILoader<?, CommonConfigData> loader;
 	private static Node rootNode;
-	private static String ROOTKEY = "rootNode";
+	private static String ROOT_KEY = "rootNode";
 	private static String ROOT_NODE_NAME="rootNode";
 	private static String PROJECT_NAME="project";
 	// private static AfpService afpService;
@@ -61,7 +61,7 @@ public class DistributionTests extends AbstractAWETest {
 			config = new CommonConfigData();
 			File file = new File("./files/afp_engine/germany/Network");
 			config.setRoot(file);
-			config.setDbRootName(ROOTKEY);
+			config.setDbRootName(ROOT_KEY);
 			config.setProjectName(PROJECT_NAME);
 
 			loader = getNetworkLoader();
@@ -78,7 +78,7 @@ public class DistributionTests extends AbstractAWETest {
 
 			tx.success();
 		} catch (Exception e) {
-			e.printStackTrace();
+ 
 		} finally {
 			tx.finish();
 			LOGGER.info("Loading finished in " + (after - before)
@@ -122,7 +122,7 @@ public class DistributionTests extends AbstractAWETest {
 		Transaction tx = graphDatabaseService.beginTx();
 		try {
 
-			rootNode = datasetService.findRoot(PROJECT_NAME, "rootNode");
+			rootNode = datasetService.findRoot(PROJECT_NAME, ROOT_NODE_NAME);
 
 			IDistributionalModel nm = new NetworkModel(rootNode);
 
@@ -132,8 +132,8 @@ public class DistributionTests extends AbstractAWETest {
 
 			tx.success();
 		} catch (Exception e) {
-			e.printStackTrace();
-			Assert.fail("Exception " + e.getMessage());
+ 
+			Assert.fail("Exception " + e.getLocalizedMessage());
 
 		} finally {
 			tx.finish();
@@ -163,8 +163,8 @@ public class DistributionTests extends AbstractAWETest {
 
 			tx.success();
 		} catch (Exception e) {
-			e.printStackTrace();
-			Assert.fail("Exception " + e.getMessage());
+ 
+			Assert.fail("Exception " + e.getLocalizedMessage());
 		} finally {
 			tx.finish();
 			LOGGER.info("< Distribution test if Statistic root not Exist end >");
@@ -199,8 +199,8 @@ public class DistributionTests extends AbstractAWETest {
 
 			tx.success();
 		} catch (Exception e) {
-			e.printStackTrace();
-			Assert.fail("Exception " + e.getMessage());
+ 
+			Assert.fail("Exception " + e.getLocalizedMessage());
 		} finally {
 			tx.finish();
 			LOGGER.info("< Prepare test finish >");
@@ -239,8 +239,8 @@ public class DistributionTests extends AbstractAWETest {
 
 			tx.success();
 		} catch (Exception e) {
-			e.printStackTrace();
-			Assert.fail("Exception " + e.getMessage());
+ 
+			Assert.fail("Exception " + e.getLocalizedMessage());
 
 		} finally {
 			tx.finish();
@@ -268,8 +268,8 @@ public class DistributionTests extends AbstractAWETest {
 
 			tx.success();
 		} catch (Exception e) {
-			e.printStackTrace();
-			Assert.fail("Exception " + e.getMessage());
+ 
+			Assert.fail("Exception " + e.getLocalizedMessage());
 
 		} finally {
 			tx.finish();
