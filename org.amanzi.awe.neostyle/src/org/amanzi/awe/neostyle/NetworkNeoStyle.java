@@ -18,6 +18,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.amanzi.neo.services.IDatasetService;
+import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -334,6 +335,9 @@ public class NetworkNeoStyle extends BaseNeoStyle implements Serializable{
 
 
     public String getSectorLabel(Node sector, IDatasetService service) {
+        if (StringUtils.isEmpty(getSectorLabelProperty())||StringUtils.isEmpty(getSectorLabelTypeId())){
+            return "";
+        }
         List<String>properties=service.getPropertyListOfSectorRoot(sector,getSectorLabelTypeId(),getSectorLabelProperty());
         if (properties.size()==1){
             return properties.iterator().next();
