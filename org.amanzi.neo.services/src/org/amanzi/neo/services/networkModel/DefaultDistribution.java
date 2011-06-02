@@ -17,13 +17,9 @@ package org.amanzi.neo.services.networkModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.statistic.IStatistic;
 import org.amanzi.neo.services.statistic.StatisticManager;
-import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of 

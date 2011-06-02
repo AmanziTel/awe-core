@@ -13,11 +13,7 @@
 
 package org.amanzi.neo.services.networkModel;
 
-import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.enums.NodeTypes;
-import org.amanzi.neo.services.filters.ExpressionType;
 import org.amanzi.neo.services.filters.Filter;
-import org.amanzi.neo.services.filters.FilterType;
 import org.amanzi.neo.services.filters.exceptions.NotComparebleException;
 import org.amanzi.neo.services.filters.exceptions.NullValueException;
 import org.neo4j.graphdb.Node;
@@ -31,8 +27,6 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public abstract class DefaultRange implements IRange {
-    private String numRange;
-    private String strRange;
     private Filter filt;
 
     DefaultRange(Filter filter) {
