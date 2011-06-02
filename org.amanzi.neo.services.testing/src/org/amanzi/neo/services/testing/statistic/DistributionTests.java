@@ -19,11 +19,6 @@ import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.network.NetworkModel;
 import org.amanzi.neo.services.networkModel.IDistributionModel;
 import org.amanzi.neo.services.networkModel.IDistributionalModel;
-import org.amanzi.neo.services.networkModel.IRange;
-import org.amanzi.neo.services.networkModel.NumberRange;
-import org.amanzi.neo.services.networkModel.StringRange;
-import org.amanzi.neo.services.statistic.IStatistic;
-import org.amanzi.neo.services.statistic.StatisticManager;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
@@ -47,6 +42,7 @@ public class DistributionTests extends AbstractAWETest {
 	private static Node rootNode;
 	private static String ROOTKEY = "rootNode";
 	private static String ROOT_NODE_NAME="rootNode";
+	private static String PROJECT_NAME="project";
 	// private static AfpService afpService;
 
 	@BeforeClass
@@ -65,8 +61,8 @@ public class DistributionTests extends AbstractAWETest {
 			config = new CommonConfigData();
 			File file = new File("./files/afp_engine/germany/Network");
 			config.setRoot(file);
-			config.setDbRootName("rootNode");
-			config.setProjectName("project");
+			config.setDbRootName(ROOTKEY);
+			config.setProjectName(PROJECT_NAME);
 
 			loader = getNetworkLoader();
 			loader.setup(DatabaseAccessType.EMBEDDED, config);
@@ -78,7 +74,7 @@ public class DistributionTests extends AbstractAWETest {
 
 			datasetService = NeoServiceFactory.getInstance()
 					.getDatasetService();
-			rootNode = datasetService.findRoot("project", "rootNode");
+			rootNode = datasetService.findRoot(PROJECT_NAME, ROOT_NODE_NAME);
 
 			tx.success();
 		} catch (Exception e) {
@@ -117,12 +113,6 @@ public class DistributionTests extends AbstractAWETest {
 				+ " milliseconds");
 	}
 	
-	private void rootNodeCreation(){
-		rootNode = graphDatabaseService.createNode();
-		rootNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, ROOT_NODE_NAME);
-		NodeTypes.getEnumById(NodeTypes.NETWORK.getId()).setNodeType(
-				rootNode, graphDatabaseService);
-	}
 	/**
 	 * create NetworkModel test
 	 */
@@ -132,7 +122,7 @@ public class DistributionTests extends AbstractAWETest {
 		Transaction tx = graphDatabaseService.beginTx();
 		try {
 
-			rootNode = datasetService.findRoot("project", "rootNode");
+			rootNode = datasetService.findRoot(PROJECT_NAME, "rootNode");
 
 			IDistributionalModel nm = new NetworkModel(rootNode);
 

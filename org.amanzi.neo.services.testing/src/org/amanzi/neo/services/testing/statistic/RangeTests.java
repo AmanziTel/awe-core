@@ -1,9 +1,6 @@
 package org.amanzi.neo.services.testing.statistic;
 
 //import org.amanzi.awe.afp.services.AfpService;
-import org.amanzi.neo.loader.core.CommonConfigData;
-import org.amanzi.neo.loader.core.ILoader;
-import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
@@ -29,9 +26,6 @@ public class RangeTests extends AbstractAWETest {
 	private static Logger LOGGER = Logger.getLogger(DistributionTests.class);
 
 	private static long startTimestamp;
-	private static DatasetService datasetService;
-	private static CommonConfigData config;
-	private static ILoader<?, CommonConfigData> loader;
 	private static Node rootNode;
 	private static String ROOTKEY = "rootNode";
 	private static String ROOT_NODE_NAME="rootNode";
