@@ -13,5 +13,4 @@ Require-Bundle: org.amanzi.neo.services;bundle-version="1.0.0",
 Export-Package: org.amanzi.neo.services,
  org.amanzi.neo.services.node2node.testing,
  org.amanzi.neo.services.testing.filters
-Import-Package: org.amanzi.awe.afp.testing.engine,
- org.amanzi.neo.loader.core
+Import-Package: org.amanzi.neo.loader.core
