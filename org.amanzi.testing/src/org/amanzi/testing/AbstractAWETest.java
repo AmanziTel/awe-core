@@ -19,7 +19,10 @@ import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.loader.ui.preferences.DataLoadPreferenceInitializer;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.apache.log4j.Logger;
+import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 /**
@@ -66,6 +69,7 @@ public abstract class AbstractAWETest {
      * Clears Database Directory
      */
     protected static void clearDb() {
+       
         deleteDirectory(new File(getDbLocation()));
     }
     
@@ -80,5 +84,14 @@ public abstract class AbstractAWETest {
             }
             directory.delete();
         }
+    }
+    
+    protected  Node createNodeWithType(String typeid) {
+        Node node=graphDatabaseService.createNode();
+        node.setProperty("type",typeid);
+        return node;
+    }
+    protected Relationship createRelation(Node parent, Node child, String relationName) {
+        return parent.createRelationshipTo(child, DynamicRelationshipType.withName(relationName));
     }
 }

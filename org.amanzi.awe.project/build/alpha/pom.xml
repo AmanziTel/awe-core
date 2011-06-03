@@ -237,6 +237,7 @@
 	  <module>org.amanzi.neo.services.ui</module>	  	 
 	  <module>org.amanzi.awe.ui</module>	
 	  <module>org.amanzi.neo.loader.core.testing</module>  	 
+	  <module>org.amanzi.awe.neostyle.testing</module>
 	  <module>org.amanzi.neo.services.testing</module>
     </modules>
     <build>
