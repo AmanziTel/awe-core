@@ -132,7 +132,8 @@ public class DistributionTests extends AbstractAWETest {
 
 			tx.success();
 		} catch (Exception e) {
- 
+
+			LOGGER.info("Exception " + e.getLocalizedMessage());
 			Assert.fail("Exception " + e.getLocalizedMessage());
 
 		} finally {
@@ -163,7 +164,7 @@ public class DistributionTests extends AbstractAWETest {
 
 			tx.success();
 		} catch (Exception e) {
- 
+ 			LOGGER.info("Exception " + e.getLocalizedMessage());
 			Assert.fail("Exception " + e.getLocalizedMessage());
 		} finally {
 			tx.finish();
@@ -199,7 +200,7 @@ public class DistributionTests extends AbstractAWETest {
 
 			tx.success();
 		} catch (Exception e) {
- 
+			LOGGER.info("Exception " + e.getLocalizedMessage());
 			Assert.fail("Exception " + e.getLocalizedMessage());
 		} finally {
 			tx.finish();
@@ -240,6 +241,7 @@ public class DistributionTests extends AbstractAWETest {
 			tx.success();
 		} catch (Exception e) {
  
+			LOGGER.info("Exception " + e.getLocalizedMessage());
 			Assert.fail("Exception " + e.getLocalizedMessage());
 
 		} finally {
@@ -269,6 +271,7 @@ public class DistributionTests extends AbstractAWETest {
 			tx.success();
 		} catch (Exception e) {
  
+			LOGGER.info("Exception " + e.getLocalizedMessage());
 			Assert.fail("Exception " + e.getLocalizedMessage());
 
 		} finally {

@@ -13,7 +13,6 @@
 
 package org.amanzi.neo.services.networkModel;
 
-import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.filters.Filter;
 import org.amanzi.neo.services.filters.FilterType;
@@ -28,15 +27,15 @@ import org.amanzi.neo.services.filters.FilterType;
  */
 public class StringRange extends DefaultRange {
 
-    private void setFilter(String range, INodeType type) {
+    private void setFilter(String range, INodeType type,String propertyName) {
         filter = new Filter(FilterType.EQUALS);
-        filter.setExpression(type, INeoConstants.PROPERTY_NAME_NAME, range);
+        filter.setExpression(type, propertyName, range);
        
     }
 
-    public StringRange(String rangeValue, INodeType type) {
+    public StringRange(String rangeValue, INodeType type,String propertyName) {
         super();
-        setFilter(rangeValue, type);
+        setFilter(rangeValue,type,propertyName);
     }
 
 }
