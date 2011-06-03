@@ -31,11 +31,11 @@ import org.amanzi.neo.services.statistic.StatisticManager;
  */
 public abstract class DefaultDistribution  implements IDistributionModel {
 
-    protected static String nType;
-    protected static String pName;
-    protected static IDistributionalModel distributionalModel;
+    protected String nType;
+    protected String pName;
+    protected IDistributionalModel distributionalModel;
     protected static IStatistic stat ;
-    protected static List<IRange> rangeList;
+    protected List<IRange> rangeList;
     
 
 
