@@ -55,7 +55,9 @@ import org.amanzi.awe.ui.IGraphModel;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
+import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.GisTypes;
@@ -116,6 +118,7 @@ public class NetworkRenderer extends RendererImpl {
     private NetworkNeoStyle style;
     private Collection<IFilterWrapper> siteFilters=new HashSet<IFilterWrapper>();
     private Collection<IFilterWrapper> sectorFilters=new HashSet<IFilterWrapper>();
+    private DatasetService datasetService=NeoServiceFactory.getInstance().getDatasetService();
 
     private void setCrsTransforms(CoordinateReferenceSystem dataCrs) throws FactoryException {
         boolean lenient = true; // needs to be lenient to work on uDIG 1.1 (otherwise we get error:
@@ -836,7 +839,9 @@ public class NetworkRenderer extends RendererImpl {
      * @return
      */
     private String getSectorName(Node sector) {
-        return sector.getProperty(drawHints.sectorName, "").toString();
+        //TODO use filter style! But in current structure it is not fast
+        return style.getSectorLabel(sector, datasetService);
+//        return sector.getProperty(drawHints.sectorName, "").toString();
     }
 
     /**

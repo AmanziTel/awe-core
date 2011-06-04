@@ -53,6 +53,8 @@ public class Messages extends NLS {
     public static String Ignore_transsparency;
     public static String Draw_correlation;
 
+    public static String NetworkStyleDefiner_SectorLabelType;
+
     public static String getFormattedString(String key, String ... args) {
         return MessageFormat.format(key, (Object[])args);
     }

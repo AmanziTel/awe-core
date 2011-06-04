@@ -14,16 +14,14 @@
 package org.amanzi.awe.neostyle;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import net.refractions.udig.project.ui.internal.dialogs.ColorEditor;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NetworkTypes;
-import org.amanzi.neo.services.statistic.PropertyHeader;
-import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -40,7 +38,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.ui.part.ViewPart;
-import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of 
@@ -103,6 +100,9 @@ public class NetworkStyleDefiner extends ViewPart {
     private Label lSecondaryFontSize;
 
     private Label lSecondaryProperty;
+    
+    private Label lSectorLabelTypeId;
+    private Combo cSectorLabelTypeId;
 
     private Button bTransp;
 
@@ -126,6 +126,7 @@ public class NetworkStyleDefiner extends ViewPart {
     }
 
     public void refresh(){
+        cSecondaryFontSize.setItems(getDefaultFontItem());
         cEdFill.setColorValue(rgbFromColor(curStyle.getFill()));
         cEdLabel.setColorValue(rgbFromColor(curStyle.getLabel()));
         cEdLine.setColorValue(rgbFromColor(curStyle.getLine()));
@@ -139,6 +140,7 @@ public class NetworkStyleDefiner extends ViewPart {
             rButton1.setSelection(true);
         }
 
+        cSectorLabelTypeId.setItems(getDefaultSectorType());
         tSymbolSize.setSelection(curStyle.getSymbolSize());
         tTransparency.setSelection(curStyle.getSymbolTransparency());
         bTransp.setSelection(curStyle.isIgnoreTransparency());
@@ -146,8 +148,9 @@ public class NetworkStyleDefiner extends ViewPart {
         sMaxSymSize.setSelection(curStyle.getMaximumSymbolSize());
         sDefBeamwidth.setSelection(curStyle.getDefaultBeamwidth());
         cFontSize.setText(String.valueOf(curStyle.getFontSize()));
+        cSectorLabelTypeId.setText(curStyle.getSectorLabelTypeId());
+        setSectorLabelProperty(curStyle.getSectorLabelTypeId());
         cSecondaryFontSize.setText(String.valueOf(curStyle.getSecondaryFontSize()));
-        cSecondaryProperty.setItems(getSecondaryPropertyChoices());
         cMainProperty.setItems(getMainPropertyChoices());
         cSecondaryProperty.setText(curStyle.getSectorLabelProperty());
         cMainProperty.setText(curStyle.getMainProperty());
@@ -176,6 +179,7 @@ public class NetworkStyleDefiner extends ViewPart {
         curStyle.setMaximumSymbolSize(sMaxSymSize.getSelection());
         curStyle.setDefaultBeamwidth(sDefBeamwidth.getSelection());
         curStyle.setMainProperty(cMainProperty.getText());
+        curStyle.setSectorLabelTypeId(cSectorLabelTypeId.getText());
         curStyle.setSectorLabelProperty(cSecondaryProperty.getText());
         curStyle.setIgnoreTransparency(bTransp.getSelection());
         curStyle.setDrawCorrelations(bCorrelation.getSelection());
@@ -267,17 +271,19 @@ public class NetworkStyleDefiner extends ViewPart {
         cFontSize = new Combo(labelsGroup, SWT.DROP_DOWN | SWT.RIGHT);
         cFontSize.setItems(getDefaultFontItem());
         cFontSize.setLayoutData(new GridData(SWT.FILL | GridData.FILL_HORIZONTAL));
-
+        lSectorLabelTypeId= new Label(labelsGroup, SWT.NONE);
+        lSectorLabelTypeId.setText(Messages.NetworkStyleDefiner_SectorLabelType);
+        cSectorLabelTypeId = new Combo(labelsGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+        cSectorLabelTypeId.setLayoutData(new GridData(SWT.FILL | GridData.FILL_HORIZONTAL));
         lSecondaryProperty = new Label(labelsGroup, SWT.NONE);
         lSecondaryProperty.setText(Messages.Sector_Property);
         lSecondaryProperty.setLayoutData(new GridData(SWT.LEFT));
-        cSecondaryProperty = new Combo(labelsGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+        cSecondaryProperty = new Combo(labelsGroup, SWT.DROP_DOWN /*| SWT.READ_ONLY*/);
         cSecondaryProperty.setLayoutData(new GridData(SWT.FILL | GridData.FILL_HORIZONTAL));
         lSecondaryFontSize = new Label(labelsGroup, SWT.NONE);
         lSecondaryFontSize.setText(Messages.Font_Size_Sector);
         lSecondaryFontSize.setLayoutData(new GridData(SWT.LEFT));
         cSecondaryFontSize = new Combo(labelsGroup, SWT.DROP_DOWN | SWT.RIGHT);
-        cSecondaryFontSize.setItems(getDefaultFontItem());
         cSecondaryFontSize.setLayoutData(new GridData(SWT.FILL | GridData.FILL_HORIZONTAL));
 
         // formData = new FormData();
@@ -464,22 +470,57 @@ public class NetworkStyleDefiner extends ViewPart {
                 widgetSelected(e);
             }
         });
+        cSectorLabelTypeId.addSelectionListener(new SelectionListener() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                setSectorLabelProperty(cSectorLabelTypeId.getText());
+            }
+            
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
 
     }
     /**
+     *
+     */
+    public void setSectorLabelProperty(String typeId) {
+        cSecondaryProperty.setItems(getSecondaryPropertyChoices(typeId));
+    }
+    /**
+     *
+     * @return
+     */
+    private String[] getDefaultSectorType() {
+        String[] result=new String[]{NodeTypes.SECTOR.getId(),NodeTypes.TRX.getId(),NodeTypes.FREQUENCY_PLAN.getId()};
+        return result;
+    }
+    /**
      * get array of sector names
+     * @param typeId 
      * 
      * @return array
      */
-    private String[] getSecondaryPropertyChoices() {
+    private String[] getSecondaryPropertyChoices(String typeId) {
         List<String> result = new ArrayList<String>();
         result.add(NetworkNeoStyleContent.DEF_NONE);
-            Node datasetNode = NeoUtils.getDatasetNodeByGis(resource.getMainGisNode());
-            String[] allFields = PropertyHeader.getPropertyStatistic(datasetNode).getAllFields("sector");
-            if (allFields != null) {
-                result.addAll(Arrays.asList(allFields));
-            }
-            Collections.sort(result);
+        if (NodeTypes.SECTOR.getId().equals(typeId)){
+            result.add(INeoConstants.PROPERTY_NAME_NAME);
+            result.add(INeoConstants.PROPERTY_SECTOR_CI);
+            result.add(INeoConstants.PROPERTY_SECTOR_LAC);
+            result.add("vendor");
+        }else if (NodeTypes.TRX.getId().equals(typeId)){
+            result.add("band");
+            result.add(INeoConstants.PROPERTY_BCCH_NAME);
+            result.add("hopping_type");
+        }else{
+            result.add(INeoConstants.PROPERTY_SECTOR_ARFCN);
+            result.add("hsn");
+            result.add(INeoConstants.PROPERTY_MAIO);       
+        }
             return result.toArray(new String[0]);
     }
     /**
