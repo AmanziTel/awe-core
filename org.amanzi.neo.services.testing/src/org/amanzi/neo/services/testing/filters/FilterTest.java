@@ -592,9 +592,13 @@ public class FilterTest extends AbstractAWETest {
 
     		LOGGER.info("----FilterType is 'MORE' ");
     		Exception exc = null;
+    		
+    		final class NotComparebleClass implements Serializable{	
+    		}
+    		
     		try{
-    			Object object = new Object();
-    			afpFilter.setExpression(null, "property", (Serializable)object);
+    			NotComparebleClass object = new NotComparebleClass();
+    			afpFilter.setExpression(null, "property", object);
     		}
     		catch (Exception e){
     			exc = e;
@@ -759,7 +763,7 @@ public class FilterTest extends AbstractAWETest {
            
             LOGGER.info("----FilterType is 'LESS_OR_EQUALS' ");
            
-            afpFilter.setExpression(null, "intValue", 6);
+            afpFilter.setExpression(null, "intValue", 5);
             Assert.assertTrue("propertyValue isn't LESS_OR_EQUALS then value ",afpFilter.check(node));
             tx.success();
             
