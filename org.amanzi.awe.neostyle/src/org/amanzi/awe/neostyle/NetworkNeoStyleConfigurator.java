@@ -29,6 +29,7 @@ import org.amanzi.neo.services.filters.Filter;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
+import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -187,7 +188,7 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
             }
         });
         viewer.getTable().setHeaderVisible(true);
-        // ColumnViewerToolTipSupport.enableFor(viewer);
+         ColumnViewerToolTipSupport.enableFor(viewer);
         createNew = new Button(filterMain, SWT.PUSH);
         createNew.setText("Create filter");
         createNew.addSelectionListener(new SelectionListener() {

@@ -177,9 +177,14 @@ public class NetworkFilterDefiner extends AbstractDialog<IFilterWrapper> {
 //        bOk.setEnabled(false);
         addListeners();
         top1.setMinSize(top.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-
     }
-
+@Override
+protected void changeShellSize(Shell shell, Shell parentShell) {
+    int x = Math.min(parentShell.getSize().x-100, shell.getSize().x);
+    int y = Math.min(parentShell.getSize().y-100, shell.getSize().y);
+    shell.setSize(x,y);
+    
+}
     /**
      * Before open.
      */
