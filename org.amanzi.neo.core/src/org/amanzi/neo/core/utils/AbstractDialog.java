@@ -48,7 +48,7 @@ public abstract class AbstractDialog<E> extends Dialog {
 
         createContents(shell);
         shell.pack();
-
+        changeShellSize(shell,parentShell);
         // calculate location
         Point size = parentShell.getSize();
         int dlgWidth = shell.getSize().x;
@@ -73,6 +73,14 @@ public abstract class AbstractDialog<E> extends Dialog {
         }
         dispose();
         return status;
+    }
+
+    /**
+     *
+     * @param shell
+     * @param parentShell
+     */
+    protected void changeShellSize(Shell shell, Shell parentShell) {
     }
 
     /**
