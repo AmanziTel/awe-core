@@ -4,7 +4,11 @@ package org.amanzi.neo.services.testing.statistic;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.statistic.ChangeClassRule;
 import org.amanzi.neo.services.statistic.internal.DatasetStatistic;
+import org.amanzi.neo.services.statistic.internal.PropertyStatistics;
+import org.amanzi.neo.services.statistic.internal.Vault;
 
 
 import org.amanzi.testing.AbstractAWETest;
@@ -59,7 +63,7 @@ public class StatisticTests extends AbstractAWETest{
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
         stopDb();
-        clearDb();
+        //clearDb();
 
         long duration = System.currentTimeMillis() - startTimestamp;
         int milliseconds = (int)(duration % 1000);
@@ -98,10 +102,7 @@ public class StatisticTests extends AbstractAWETest{
     	LOGGER.info("< totalCountFalseTest begin >");
     	Transaction tx = graphDatabaseService.beginTx();
         try {
-
-
-
-            Node rootNode = graphDatabaseService.createNode();
+        	Node rootNode = graphDatabaseService.createNode();
             DatasetStatistic datasetStatistic = new DatasetStatistic(rootNode);
             
             datasetStatistic.updateTypeCount(ROOT_KEY, NODE_TYPE_1, 10);
@@ -116,8 +117,95 @@ public class StatisticTests extends AbstractAWETest{
             LOGGER.info("< totalCountFalseTest end >");
         }
     }
+    @Test
+    public void indexValueTrueTest(){
+    	LOGGER.info("< indexValueTrueTest begin >");
+    	Transaction tx = graphDatabaseService.beginTx();
+        try {
+        	Node rootNode = graphDatabaseService.createNode();
+            DatasetStatistic datasetStatistic = new DatasetStatistic(rootNode);
+            Assert.assertTrue("value not index", datasetStatistic.indexValue(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1, PROPERTY_VALUE_1));
+            
+            tx.success();
+            
+        } catch (Exception e) {
+        	LOGGER.error(e.toString());
+                       
+        }finally{
+            tx.finish();
+            LOGGER.info("< indexValueTrueTest end >");
+        }
+    	
+    }
+    @Test
+    public void indexValueFalseTest(){
+    	LOGGER.info("< indexValueFalseTest begin >");
+    	Transaction tx = graphDatabaseService.beginTx();
+        try {
+        	Node rootNode = graphDatabaseService.createNode();
+            DatasetStatistic datasetStatistic = new DatasetStatistic(rootNode);
+            Assert.assertFalse("null value  index", datasetStatistic.indexValue(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1, null));
+            
+            tx.success();
+            
+        } catch (Exception e) {
+        	LOGGER.error(e.toString());
+                       
+        }finally{
+            tx.finish();
+            LOGGER.info("< indexValueFalseTest end >");
+        }
+    	
+    }
+    @Test
+    public void indexValueRuleFalseTest(){
+    	LOGGER.info("< indexValueRuleFalseTest begin >");
+    	Transaction tx = graphDatabaseService.beginTx();
+        try {
+        	Node rootNode = graphDatabaseService.createNode();
+            DatasetStatistic datasetStatistic = new DatasetStatistic(rootNode);
+            datasetStatistic.indexValue(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1, PROPERTY_VALUE_1);
+            datasetStatistic.save();
+            PropertyStatistics ps = (PropertyStatistics)datasetStatistic.findPropertyStatistic(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1);
+            ps.register(ps.getKlass(), ChangeClassRule.IGNORE_NEW_CLASS);
+                       
+            Assert.assertFalse("new class value index, but filter is IGNORE_NEW_CLASS", datasetStatistic.indexValue(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1, 5));
+            
+            tx.success();
+            
+        } catch (Exception e) {
+        	LOGGER.error(e.toString());
+                       
+        }finally{
+            tx.finish();
+            LOGGER.info("< indexValueRuleFalseTest end >");
+        }
+    	
+    }
+    @Test
+    public void indexValueRuleTrueTest(){
+    	LOGGER.info("< indexValueRuleTrueTest begin >");
+    	Transaction tx = graphDatabaseService.beginTx();
+        try {
+        	Node rootNode = graphDatabaseService.createNode();
+            DatasetStatistic datasetStatistic = new DatasetStatistic(rootNode);
+            datasetStatistic.indexValue(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1, PROPERTY_VALUE_1);
+                       
+            Assert.assertTrue("new class value not index, but filter is REMOVE_OLD_CLASS", datasetStatistic.indexValue(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1, 5));
+            
+            tx.success();
+            
+        } catch (Exception e) {
+        	LOGGER.error(e.toString());
+                       
+        }finally{
+            tx.finish();
+            LOGGER.info("< indexValueRuleTrueTest end >");
+        }
+    	
+    }
     
-   
+    
     @Test
     public void updateValueTrueTest(){
     	LOGGER.info("< updateValueTrueTest begin >");
