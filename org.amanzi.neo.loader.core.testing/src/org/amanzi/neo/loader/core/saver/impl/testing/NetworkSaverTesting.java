@@ -48,7 +48,12 @@ import org.neo4j.kernel.EmbeddedGraphDatabase;
 public class NetworkSaverTesting {
     private NetworkSaver networkSaver;
     private ArrayList<BaseTransferData> listOfBTD;
-    private static final String PATH_TO_BASE = "c://database";
+    private static String PATH_TO_BASE = "";
+    static
+    {
+    		PATH_TO_BASE = System.getProperty("user.home") + "/database";
+    }
+    
     private HashMap<String, String> hashMap = null;
     private GraphDatabaseService graphDatabaseService = null;
     private String projectName = "projectName";
@@ -109,6 +114,9 @@ public class NetworkSaverTesting {
     @Test
     public void correctWorkOfStatisticTest() {
         Relationship relation = networkSaver.getRootNode().getSingleRelationship(StatisticRelationshipTypes.STATISTIC_PROP, Direction.OUTGOING);
+        for (Relationship rel : networkSaver.getRootNode().getRelationships()) {
+        	System.out.println(rel.getType());
+        }
         assertTrue(relation != null);
     }
     
