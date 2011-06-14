@@ -49,9 +49,15 @@ public class StatisticService extends AbstractService{
     public Node findOrCreateStatRoot(Node root){
         Node statRoot = findStatRoot(root);
         if (statRoot == null){
-            statRoot=databaseService.createNode();
-            statRoot.setProperty(StatisticProperties.KEY, "PROPERTIES");
-            root.createRelationshipTo(statRoot, StatisticRelationshipTypes.STATISTIC_PROP);
+            Transaction tx = databaseService.beginTx();
+            try {
+                statRoot=databaseService.createNode();
+                statRoot.setProperty(StatisticProperties.KEY, "PROPERTIES");
+                root.createRelationshipTo(statRoot, StatisticRelationshipTypes.STATISTIC_PROP);
+                tx.success();
+            } finally {
+                tx.finish();
+            }
         }
         return statRoot;
     }

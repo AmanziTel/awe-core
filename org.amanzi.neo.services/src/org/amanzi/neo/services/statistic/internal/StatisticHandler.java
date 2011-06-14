@@ -75,8 +75,10 @@ public class StatisticHandler {
     public StatisticHandler(Node root){
         statisticService = NeoServiceFactory.getInstance().getStatisticService();
         this.root = root;
+        statisticService.findOrCreateStatRoot(this.root);
     }
 
+    
     /**
      * Load statistic.
      *
