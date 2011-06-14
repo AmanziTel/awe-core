@@ -1,6 +1,8 @@
 package org.amanzi.neo.services.testing.statistic;
 
 
+import java.util.ArrayList;
+
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 
@@ -230,6 +232,62 @@ public class StatisticTests extends AbstractAWETest{
             LOGGER.info("< updateValueTrueTest end >");
         }
     }
+    @Test
+    public void getPropertyNameCollectionTrueTest(){
+    	LOGGER.info("< getPropertyNameCollectionTrueTest begin >");
+    	Transaction tx = graphDatabaseService.beginTx();
+        try {
+            Node rootNode = graphDatabaseService.createNode();
+            DatasetStatistic datasetStatistic = new DatasetStatistic(rootNode);
+            ArrayList<String> col = new ArrayList<String>();
+            col.add(PROPERTY_NAME_1);
+            datasetStatistic.indexValue(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1, PROPERTY_VALUE_1);
+            Assert.assertTrue("collection of propertyName is wrong", col.equals(datasetStatistic.getPropertyNameCollection(ROOT_KEY, NODE_TYPE_1,  new Comparable<Class>() {
+
+                @Override
+                public int compareTo(Class o) {
+                    return Comparable.class.isAssignableFrom(o) ? 0 : -1;
+                }
+            })));
+            tx.success();
+            
+        } catch (Exception e) {
+        	LOGGER.error(e.toString());
+                       
+        }finally{
+            tx.finish();
+            LOGGER.info("< getPropertyNameCollectionTrueTest end >");
+        }
+    }
+    @Test
+    public void getPropertyNameCollectionFalseTest(){
+    	LOGGER.info("< getPropertyNameCollectionFalseTest begin >");
+    	Transaction tx = graphDatabaseService.beginTx();
+        try {
+            Node rootNode = graphDatabaseService.createNode();
+            DatasetStatistic datasetStatistic = new DatasetStatistic(rootNode);
+            ArrayList<String> col = new ArrayList<String>();
+            col.add(PROPERTY_NAME_1);
+            datasetStatistic.indexValue(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1, PROPERTY_VALUE_1);
+            datasetStatistic.indexValue(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_2, PROPERTY_VALUE_1);
+            Assert.assertFalse("collection of propertyName is wrong", col.equals(datasetStatistic.getPropertyNameCollection(ROOT_KEY, NODE_TYPE_1,  new Comparable<Class>() {
+
+                @Override
+                public int compareTo(Class o) {
+                    return Comparable.class.isAssignableFrom(o) ? 0 : -1;
+                }
+            })));
+            tx.success();
+            
+        } catch (Exception e) {
+        	LOGGER.error(e.toString());
+                       
+        }finally{
+            tx.finish();
+            LOGGER.info("< getPropertyNameCollectionFalseTest end >");
+        }
+    }
+    
 
 	
 
