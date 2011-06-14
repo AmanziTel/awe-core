@@ -219,7 +219,7 @@ public class StatisticTests extends AbstractAWETest{
             DatasetStatistic datasetStatistic = new DatasetStatistic(rootNode);
             datasetStatistic.indexValue(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1, PROPERTY_VALUE_1);
             datasetStatistic.updateValue(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1, PROPERTY_VALUE_2, PROPERTY_VALUE_1);
-            datasetStatistic.save();
+
             Assert.assertTrue("value isn't update",datasetStatistic.findPropertyStatistic(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1).getValueMap().containsKey(PROPERTY_VALUE_2)
             		&& !datasetStatistic.findPropertyStatistic(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1).getValueMap().containsKey(PROPERTY_VALUE_1) );
             tx.success();
@@ -231,6 +231,131 @@ public class StatisticTests extends AbstractAWETest{
             tx.finish();
             LOGGER.info("< updateValueTrueTest end >");
         }
+    }
+    @Test
+    public void updateValueNewNullTest(){
+    	LOGGER.info("< updateValueNewNullTest begin >");
+    	Transaction tx = graphDatabaseService.beginTx();
+        try {
+
+            Node rootNode = graphDatabaseService.createNode();
+            DatasetStatistic datasetStatistic = new DatasetStatistic(rootNode);
+            datasetStatistic.indexValue(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1, PROPERTY_VALUE_1);
+            datasetStatistic.updateValue(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1, null, PROPERTY_VALUE_1);
+
+            Assert.assertTrue("value isn't update",datasetStatistic.findPropertyStatistic(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1).getCount()==0);
+            tx.success();
+            
+        } catch (Exception e) {
+        	LOGGER.error(e.toString());
+                       
+        }finally{
+            tx.finish();
+            LOGGER.info("< updateValueNewNullTest end >");
+        }
+    }
+    @Test
+    public void updateValueOldNullTest(){
+    	LOGGER.info("< updateValueOldNullTest begin >");
+    	Transaction tx = graphDatabaseService.beginTx();
+        try {
+
+            Node rootNode = graphDatabaseService.createNode();
+            DatasetStatistic datasetStatistic = new DatasetStatistic(rootNode);
+            
+            datasetStatistic.updateValue(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1, PROPERTY_VALUE_1, null);
+
+            Assert.assertTrue("value isn't update",datasetStatistic.findPropertyStatistic(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1).getValueMap().containsKey(PROPERTY_VALUE_1));
+            tx.success();
+            
+        } catch (Exception e) {
+        	LOGGER.error(e.toString());
+                       
+        }finally{
+            tx.finish();
+            LOGGER.info("< updateValueOldNullTest end >");
+        }
+    }
+    @Test
+    public void parseValueTrueTest(){
+    	LOGGER.info("< parseValueTrueTest begin >");
+    	Transaction tx = graphDatabaseService.beginTx();
+    	try {
+    		Node rootNode = graphDatabaseService.createNode();
+    		DatasetStatistic datasetStatistic = new DatasetStatistic(rootNode);
+    		datasetStatistic.indexValue(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1, 5l);
+    		
+    		Assert.assertTrue("value incorrect parse",datasetStatistic.parseValue(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1, "5").getClass().equals(Long.class));
+    		
+    		tx.success();
+
+    	} catch (Exception e) {
+    		LOGGER.error(e.toString());
+
+    	}finally{
+    		tx.finish();
+    		LOGGER.info("< parseValueTrueTest end >");
+    	}
+    }
+    @Test
+    public void avtoParseValueFloatTest(){
+    	LOGGER.info("< avtoParseValueFloatTest begin >");
+    	Transaction tx = graphDatabaseService.beginTx();
+    	try {
+    		Node rootNode = graphDatabaseService.createNode();
+    		DatasetStatistic datasetStatistic = new DatasetStatistic(rootNode);
+    		
+    		Assert.assertTrue("value incorrect parse",datasetStatistic.parseValue(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1, "5.5").getClass().equals(Float.class));
+    		
+    		tx.success();
+
+    	} catch (Exception e) {
+    		LOGGER.error(e.toString());
+
+    	}finally{
+    		tx.finish();
+    		LOGGER.info("< avtoParseValueFloatTest end >");
+    	}
+    }
+    @Test
+    public void avtoParseValueIntegerTest(){
+    	LOGGER.info("< avtoParseValueIntegerTest begin >");
+    	Transaction tx = graphDatabaseService.beginTx();
+    	try {
+    		Node rootNode = graphDatabaseService.createNode();
+    		DatasetStatistic datasetStatistic = new DatasetStatistic(rootNode);
+    		
+    		Assert.assertTrue("value incorrect parse",datasetStatistic.parseValue(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1, "5").getClass().equals(Integer.class));
+    		
+    		tx.success();
+
+    	} catch (Exception e) {
+    		LOGGER.error(e.toString());
+
+    	}finally{
+    		tx.finish();
+    		LOGGER.info("< avtoParseValueIntegerTest end >");
+    	}
+    }
+    @Test
+    public void avtoParseValueStringTest(){
+    	LOGGER.info("< avtoParseValueStringTest begin >");
+    	Transaction tx = graphDatabaseService.beginTx();
+    	try {
+    		Node rootNode = graphDatabaseService.createNode();
+    		DatasetStatistic datasetStatistic = new DatasetStatistic(rootNode);
+    		
+    		Assert.assertTrue("value incorrect parse",datasetStatistic.parseValue(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1, "5,5").getClass().equals(String.class));
+    		
+    		tx.success();
+
+    	} catch (Exception e) {
+    		LOGGER.error(e.toString());
+
+    	}finally{
+    		tx.finish();
+    		LOGGER.info("< avtoParseValueStringTest end >");
+    	}
     }
     @Test
     public void getPropertyNameCollectionTrueTest(){
@@ -288,7 +413,43 @@ public class StatisticTests extends AbstractAWETest{
         }
     }
     
+    @Test
+    public void findPropertyStatisticNullTest(){
+    	LOGGER.info("< findPropertyStatisticNullTest begin >");
+    	Transaction tx = graphDatabaseService.beginTx();
+    	try {
+    		Node rootNode = graphDatabaseService.createNode();
+    		DatasetStatistic datasetStatistic = new DatasetStatistic(rootNode);         
+    		Assert.assertNull("find propertyStatistic", datasetStatistic.findPropertyStatistic(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1));
+    		tx.success();
 
+    	} catch (Exception e) {
+        	LOGGER.error(e.toString());
+                       
+        }finally{
+            tx.finish();
+            LOGGER.info("< findPropertyStatisticNullTest end >");
+        }
+    }
+    @Test
+    public void findPropertyStatisticNotNullTest(){
+    	LOGGER.info("< findPropertyStatisticNotNullTest begin >");
+    	Transaction tx = graphDatabaseService.beginTx();
+    	try {
+    		Node rootNode = graphDatabaseService.createNode();
+    		DatasetStatistic datasetStatistic = new DatasetStatistic(rootNode); 
+    		datasetStatistic.indexValue(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1, PROPERTY_VALUE_1);
+    		Assert.assertNotNull("don't find propertyStatistic", datasetStatistic.findPropertyStatistic(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1));
+    		tx.success();
+
+    	} catch (Exception e) {
+        	LOGGER.error(e.toString());
+                       
+        }finally{
+            tx.finish();
+            LOGGER.info("< findPropertyStatisticNotNullTest end >");
+        }
+    }
 	
 
 }
