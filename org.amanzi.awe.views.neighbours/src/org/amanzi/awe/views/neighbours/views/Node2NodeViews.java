@@ -51,7 +51,7 @@ import org.amanzi.awe.catalog.neo.upd_layers.events.ChangeSelectionEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEventTypes;
 import org.amanzi.awe.ui.AweUiPlugin;
 import org.amanzi.awe.ui.IGraphModel;
-import org.amanzi.awe.views.neighbours.LegendRelations;
+
 import org.amanzi.awe.views.neighbours.NeighboursPlugin;
 import org.amanzi.awe.views.neighbours.PreferenceInitializer;
 import org.amanzi.neo.services.DatasetService;
@@ -759,7 +759,9 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
                 model = createOutgoingInterferenceModel(node, "co");
                 mode=0;
                 fireModel(model);
+                System.out.println("!!!!!! remove");
                 removeLegend();
+                System.out.println("!!!!!! add");
                 addLegend();
  
             }
@@ -857,7 +859,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         List<ILayer> toRemove = new ArrayList<ILayer>();
 
         for( ILayer layer : layers ) {
-            if (layer.hasResource(LegendRelations.class)) {
+            if (layer.hasResource(org.amanzi.awe.neighbours.legend.LegendRelations.class)) {
                 toRemove.add(layer);
             }
         }
@@ -883,6 +885,9 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
                 model = createOutgoingInterferenceModel(node, "co");
                 mode=0;
                 fireModel(model);
+                
+                removeLegend();
+                addLegend();
                            }
             @Override
             public ImageDescriptor getImageDescriptor() {
@@ -896,6 +901,8 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
                 mode=1;
                 model = createOutgoingInterferenceModel(node, "adj");
                 fireModel(model);
+                removeLegend();
+                addLegend();
             }
             @Override
             public ImageDescriptor getImageDescriptor() {
@@ -911,6 +918,8 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
                 model = createIncomigInterferenceModel(node, "co");
                 mode=2;
                 fireModel(model);
+                removeLegend();
+                addLegend();
             }
             @Override
             public ImageDescriptor getImageDescriptor() {
@@ -924,6 +933,8 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
                 model = createIncomigInterferenceModel(node, "adj");
                 mode=3;
                 fireModel(model);
+                removeLegend();
+                addLegend();
             }
             @Override
             public ImageDescriptor getImageDescriptor() {
