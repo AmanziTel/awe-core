@@ -50,6 +50,8 @@ import org.amanzi.awe.filters.experimental.GroupFilter;
 import org.amanzi.awe.filters.experimental.IFilter;
 import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
+import org.amanzi.awe.neostyle.NetworkNeoStyle;
+import org.amanzi.awe.neostyle.NetworkNeoStyleContent;
 import org.amanzi.awe.neostyle.ShapeType;
 import org.amanzi.neo.core.utils.DriveEvents;
 import org.amanzi.neo.services.INeoConstants;
@@ -1201,7 +1203,11 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     if (isVisible) {
                         try {
                             IStyleBlackboard style = layer.getStyleBlackboard();
-                            NeoStyle neostyle = (NeoStyle)style.get(NeoStyleContent.ID);
+                             /**
+                             * In order to fix # 2684, hongqiang in the May 31, 2011 to replace the 1210 line 1209 line, and import the appropriate package
+                             */
+                           // NeoStyle neostyle = (NeoStyle)style.get(NeoStyleContent.ID);
+                            NetworkNeoStyle neostyle = (NetworkNeoStyle)style.get(NetworkNeoStyleContent.ID);
                             if (neostyle != null) {
                                 if(!neostyle.isDrawCorrelations()) {
                                     isVisible = false;
@@ -1277,7 +1283,11 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             if (azimuth == Double.NaN) {
                 return pSite;
             }
-            double angdeg = -90 + azimuth;
+            /**
+             * In order to fix # 2684, hongqiang in the May 31, 2011 to replace the 1300-1308 line 1290-1299 line, 
+             * and import the appropriate package
+             */
+            /*double angdeg = -90 + azimuth;
             AffineTransform transform2 = new AffineTransform(g.getTransform());
             transform2.translate(pSite.x, pSite.y);
             transform2.rotate(Math.toRadians(angdeg), 0, 0);
@@ -1286,7 +1296,16 @@ public class TemsRenderer extends RendererImpl implements Renderer {
             transform2.concatenate(g.getTransform());
             int x = (int)(transform2.getScaleX() * xLoc + transform2.getShearX() * yLoc + transform2.getTranslateX());
             int y = (int)(transform2.getShearY() * xLoc + transform2.getScaleY() * yLoc + transform2.getTranslateY());
-            return new Point(x, y);
+            return new Point(x, y);*/
+            double CDOriginAngle = java.lang.Math.PI / 2;
+            double CD360Angle = java.lang.Math.PI + java.lang.Math.PI; 
+            double rangle=CDOriginAngle-java.lang.Math.toRadians(azimuth);            
+            if (rangle < 0)
+            	rangle+= CD360Angle;            
+            double sectorRadius = networkDrawSize;
+            Double x=pSite.x+sectorRadius*java.lang.Math.cos(rangle);
+            Double y=pSite.y-sectorRadius*java.lang.Math.sin(rangle);            
+            return new Point(x.intValue(), y.intValue());    
         }
 
     }
