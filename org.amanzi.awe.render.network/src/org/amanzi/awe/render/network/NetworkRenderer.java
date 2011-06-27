@@ -1112,31 +1112,24 @@ public class NetworkRenderer extends RendererImpl {
         g.setTransform(base_transform);
         // g.translate(p.x, p.y);
         // int draw2 = drawSize + 3;
-        double h = (double)drawHints.drawSize / 2;
+        double h = (double)drawHints.drawSize;
         double r1 = 0.0;
         int i = 0;
         double angle1 = 90 - azimuth - beamwidth / 2.0;
         double angle2 = angle1 + beamwidth;
         Arc2D a = null;
 
-        for (Color color : colorsToFill) {
-
-            double r2 = r1 + 2d / (2 + i) * h;
-            i++;
-
-            GeneralPath path = new GeneralPath();
-            a = new Arc2D.Double();
-            a.setArcByCenter(p.x, p.y, r1, angle2, -beamwidth, Arc2D.OPEN);
-            path.append(a.getPathIterator(null), true);
-            a.setArcByCenter(p.x, p.y, r2, angle1, beamwidth, Arc2D.OPEN);
-            path.append(a.getPathIterator(null), true);
-            path.closePath();
-            g.setColor(color);
-            g.fill(path);
-            g.setColor(borderColor);
-            g.draw(path);
-            r1 = r2;
-        }
+        // fix for #2684 by wuhongqiang 2011-6-20
+        if(colorsToFill.size()>1) {
+			for (Color color : colorsToFill) {
+				double r2 = r1 + 2d / (2 + i) * h / 2;
+				i++;
+				a = drawSectorRadioSymbol(g, p, beamwidth, borderColor, r1, angle1, angle2, color, r2);
+				r1 = r2;
+			}
+		} else {
+			a = drawSectorRadioSymbol(g, p, beamwidth, borderColor, 0, angle1, angle2, colorsToFill.iterator().next(), h);
+		}
         g.setColor(oldColor);
         java.awt.Point right = new java.awt.Point();
         right.setLocation(a.getStartPoint().getX(), a.getStartPoint().getY());
@@ -1186,7 +1179,23 @@ public class NetworkRenderer extends RendererImpl {
         // }
         // return result;
     }
-
+    private Arc2D drawSectorRadioSymbol(Graphics2D g, java.awt.Point p,
+			double beamwidth, Color borderColor, double r1, double angle1,
+			double angle2, Color color, double r2) {
+		Arc2D a;
+		GeneralPath path = new GeneralPath();
+		a = new Arc2D.Double();
+		a.setArcByCenter(p.x, p.y, r1, angle2, -beamwidth, Arc2D.OPEN);
+		path.append(a.getPathIterator(null), true);
+		a.setArcByCenter(p.x, p.y, r2, angle1, beamwidth, Arc2D.OPEN);
+		path.append(a.getPathIterator(null), true);
+		path.closePath();
+		g.setColor(color);
+		g.fill(path);
+		g.setColor(borderColor);
+		g.draw(path);
+		return a;
+	}
     /**
      * This one is very simple, just draw a circle at the site location.
      * 
