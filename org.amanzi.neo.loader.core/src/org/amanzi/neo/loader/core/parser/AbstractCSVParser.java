@@ -43,9 +43,10 @@ public abstract class AbstractCSVParser<T extends BaseTransferData> extends Comm
     protected String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
     protected Character delimeters;
     private T initdata;
-    private int minSize = 2;
+    private final int minSize = 2;
     protected String charSetName;
     private Character quoteCharacter;
+    protected int lineNumber;
 
     @Override
     protected T getFinishData() {
@@ -59,9 +60,9 @@ public abstract class AbstractCSVParser<T extends BaseTransferData> extends Comm
         if (charSetName == null) {
             charSetName = Charset.defaultCharset().name();
         }
-        quoteCharacter=properties.getQuoteChar();
-        if (quoteCharacter==null){
-            quoteCharacter=0;
+        quoteCharacter = properties.getQuoteChar();
+        if (quoteCharacter == null) {
+            quoteCharacter = 0;
         }
     }
 
@@ -69,7 +70,7 @@ public abstract class AbstractCSVParser<T extends BaseTransferData> extends Comm
     protected boolean parseElement(FileElement element) {
         BufferedReader reader = null;
         char delim = getDelimiters(element.getFile());
-        long line = 0;
+        lineNumber = 0;
         try {
             CountingFileInputStream is = new CountingFileInputStream(element.getFile());
             reader = new BufferedReader(new InputStreamReader(is, charSetName));
@@ -80,29 +81,25 @@ public abstract class AbstractCSVParser<T extends BaseTransferData> extends Comm
 
             // TODO define all necessary parameters?
 
-            CSVParser parser = new CSVParser(delim,quoteCharacter , '\\',false,true);
-            
+            CSVParser parser = new CSVParser(delim, quoteCharacter, '\\', false, true);
+
+            header = parseHeader(reader,parser);
+            if (header == null) {
+                error("Header for element " + element.getFile().getName() + " is not found");
+                return false;
+            }
+
             while ((lineStr = reader.readLine()) != null) {
                 try {
                     nextLine = parser.parseLine(lineStr);
-                    line++;
-                    if (header == null) {
-                        if (nextLine.length < minSize) {
-                            continue;
-                        }
-                        header = nextLine;
-                        if ("true".equals(initdata.get("cleanHeaders"))) {
-                            cleanHeader(header);
-                        }
-                        continue;
-                    }
+                    lineNumber++;
 
                     if (header.length != nextLine.length) {
-                        error(String.format("File %s, line %s:incorrect data: Header length=%s,data length=%s. Data was skipped", element.getFile().getName(), line, header.length,
-                                nextLine.length));
+                        error(String.format("File %s, line %s:incorrect data: Header length=%s,data length=%s. Data was skipped", element.getFile().getName(), lineNumber, header.length, nextLine.length));
                         continue;
                     }
-                    T data = createTransferData(element, header, nextLine, line);
+                    
+                    T data = createTransferData(element, header, nextLine, lineNumber);
                     getSaver().save(data);
                 } finally {
                     int persentage = is.percentage();
@@ -116,11 +113,38 @@ public abstract class AbstractCSVParser<T extends BaseTransferData> extends Comm
             }
 
         } catch (IOException e) {
-            exception(String.format("File: %s; line %s",element.getFile().getName(),line),e);
+            exception(String.format("File: %s; line %s", element.getFile().getName(), lineNumber), e);
         } finally {
             closeStream(reader);
         }
         return false;
+    }
+
+    /**
+     * Parses the header.
+     *
+     * @param reader the reader
+     * @param parser the parser
+     * @return the header or null if header is not found
+     * @throws IOException Signals that an I/O exception has occurred.
+     */
+    protected String[] parseHeader(BufferedReader reader, CSVParser parser) throws IOException {
+        String lineStr;
+        String[] nextLine;
+        String[] header = null;
+        while ((lineStr = reader.readLine()) != null) {
+            nextLine = parser.parseLine(lineStr);
+            lineNumber++;
+            if (nextLine.length < minSize) {
+                continue;
+            }
+            header = nextLine;
+            if ("true".equals(initdata.get("cleanHeaders"))) {
+                cleanHeader(header);
+            }
+            return header;
+        }
+        return null;
     }
 
     /**

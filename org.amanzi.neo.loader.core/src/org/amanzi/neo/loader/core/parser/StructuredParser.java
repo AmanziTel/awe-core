@@ -31,21 +31,24 @@ import org.amanzi.neo.loader.core.saver.IStructuredSaver;
 public abstract class StructuredParser<S extends IStructuredElement, T extends IDataElement, C extends IConfigurationData> extends AbstractParser<T, C> {
     protected double percentage;
     protected double percentageParser;
-    
+
     protected long totalLen;
-public void init(C properties, org.amanzi.neo.loader.core.saver.ISaver<T> saver) {
-    super.init(properties, saver);
-    percentageParser=formsParserPercent(properties);
-    
-};
+
+    @Override
+    public void init(C properties, org.amanzi.neo.loader.core.saver.ISaver<T> saver) {
+        super.init(properties, saver);
+        percentageParser = formsParserPercent(properties);
+
+    };
+
     /**
- *
- * @param properties
- * @return
- */
-protected double formsParserPercent(C properties) {
-    return 1d;
-}
+     * @param properties
+     * @return
+     */
+    protected double formsParserPercent(C properties) {
+        return 1d;
+    }
+
     @SuppressWarnings({"unchecked"})
     @Override
     public void parce() {
@@ -61,23 +64,23 @@ protected double formsParserPercent(C properties) {
                     return;
                 }
                 if (getSaver() instanceof IStructuredSaver) {
-                    if (((IStructuredSaver)getSaver()).beforeSaveNewElement(getStartupElement(element))){
+                    if (((IStructuredSaver)getSaver()).beforeSaveNewElement(getStartupElement(element))) {
                         continue;
                     }
-                    try{
+                    try {
                         if (parseElement(element)) {
                             return;
                         }
-                    }finally{
+                    } finally {
                         ((IStructuredSaver)getSaver()).finishSaveNewElement(getFinishElement(element));
-                       
+
                     }
                 } else {
                     if (parseElement(element)) {
                         return;
                     }
                 }
-                percentage += (double)element.getSize() / totalLen*percentageParser;
+                percentage += (double)element.getSize() / totalLen * percentageParser;
                 ProgressEventImpl event2 = new ProgressEventImpl(element.getDescription(), percentage);
                 if (fireProgressEvent(event2)) {
                     return;
@@ -99,7 +102,7 @@ protected double formsParserPercent(C properties) {
      * @param event the event
      */
     protected boolean fireSubProgressEvent(S element, final IProgressEvent event) {
-        return fireProgressEvent(new ProgressEventImpl(event.getProcessName(), percentage + (double)event.getPercentage() * element.getSize() / totalLen*percentageParser));
+        return fireProgressEvent(new ProgressEventImpl(event.getProcessName(), percentage + event.getPercentage() * element.getSize() / totalLen * percentageParser));
     }
 
     /**
@@ -132,10 +135,12 @@ protected double formsParserPercent(C properties) {
      */
     protected abstract T getFinishData();
 
+
     /**
      * Parses the element.
-     * 
+     *
      * @param element the element
+     * @return true, if loading must be breacked. false if next element can be loaded
      */
     protected abstract boolean parseElement(S element);
 
