@@ -119,11 +119,7 @@ public class LoaderUiUtils extends LoaderUtils{
             }
             CSVParser parser = new CSVParser(fieldSepRegex.charAt(0));
             List<String> headers = parser.parse(line);
-            for (String header : getPossibleHeaders(DataLoadPreferences.PR_NAME)) {
-                if (headers.contains(header)) {
-                    return new Pair<NetworkFileType, Exception>(NetworkFileType.PROBE, null);
-                }
-            }
+            
             for (String header : getPossibleHeaders(DataLoadPreferences.NE_NBR_NAME)) {
                 if (headers.contains(header)) {
                     return new Pair<NetworkFileType, Exception>(header.matches(".*nterfer.*") ? NetworkFileType.INTERFERENCE

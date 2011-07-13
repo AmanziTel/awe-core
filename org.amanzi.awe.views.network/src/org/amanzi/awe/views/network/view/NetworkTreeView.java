@@ -63,7 +63,6 @@ import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
-import org.amanzi.neo.services.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.services.events.ShowPreparedViewEvent;
 import org.amanzi.neo.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.services.events.UpdateDrillDownEvent;
@@ -662,15 +661,7 @@ public class NetworkTreeView extends ViewPart {
         if (nodeType.equals(NodeTypes.FILE)) {
             return node;
         }
-        if (nodeType.equals(NodeTypes.CALL)) {
-            Iterator<Node> events = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    return NeoUtils.isDriveMNode(currentPos.currentNode());
-                }
-            }, ProbeCallRelationshipType.CALL_M, Direction.OUTGOING).iterator();
-            return events.hasNext() ? getFileNodeForSubNode(events.next(), NodeTypes.M) : null;
-        }
+       
         // TODO Support this for any node with a file node in the parent tree (depth max 3).
         return getFileNodeForSubNode(node, nodeType);
     }
@@ -880,9 +871,9 @@ public class NetworkTreeView extends ViewPart {
                     || NodeTypes.DELTA_SECTOR.getId().equals(nodeType) || NodeTypes.MISSING_SITES.getId().equals(nodeType)
                     || NodeTypes.MISSING_SECTORS.getId().equals(nodeType) || NodeTypes.MISSING_SITE.getId().equals(nodeType)
                     || NodeTypes.MISSING_SECTOR.getId().equals(nodeType) || NodeTypes.M.getId().equalsIgnoreCase(nodeType)
-                    || NodeTypes.PROBE.getId().equalsIgnoreCase(nodeType) || NodeTypes.MP.getId().equalsIgnoreCase(nodeType)
+                    || NodeTypes.MP.getId().equalsIgnoreCase(nodeType)
                     || NodeTypes.FILE.getId().equalsIgnoreCase(nodeType) || NodeTypes.DATASET.getId().equalsIgnoreCase(nodeType)
-                    || NodeTypes.CALL.getId().equals(nodeType) || NodeTypes.S_CELL.getId().equals(nodeType) || NodeTypes.S_ROW.getId().equals(nodeType);
+                    || NodeTypes.S_CELL.getId().equals(nodeType) || NodeTypes.S_ROW.getId().equals(nodeType);
         }
 
     }

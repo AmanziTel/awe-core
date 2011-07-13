@@ -93,74 +93,6 @@ public enum DriveEvents {
             return "unknown neutral event";
         }
     },
-    // call blocked
-    CALL_BLOCKED {
-        @Override
-        public EventIcons getEventIcon() {
-            return EventIcons.CALL_BLOCKED;
-        }
-
-        @Override
-        public boolean haveEvents(String aProperty) {
-            return aProperty != null && aProperty.toLowerCase().contains("blocked");
-        }
-
-        @Override
-        public String getDescription() {
-            return "call blocked";
-        }
-    },
-    // call dropped
-    CALL_DROPPED {
-        @Override
-        public EventIcons getEventIcon() {
-            return EventIcons.CALL_DROPPED;
-        }
-
-        @Override
-        public boolean haveEvents(String aProperty) {
-            return aProperty != null && aProperty.toLowerCase().contains("dropped");
-        }
-
-        @Override
-        public String getDescription() {
-            return "call dropped";
-        }
-    },
-    // call failure
-    CALL_FAILURE {
-        @Override
-        public EventIcons getEventIcon() {
-            return EventIcons.CALL_FAILURE;
-        }
-
-        @Override
-        public boolean haveEvents(String aProperty) {
-            return aProperty != null && aProperty.toLowerCase().contains("no service");
-        }
-
-        @Override
-        public String getDescription() {
-            return "call failure";
-        }
-    },
-    // call success
-    CALL_SUCCESS {
-        @Override
-        public EventIcons getEventIcon() {
-            return EventIcons.CALL_SUCCESS;
-        }
-
-        @Override
-        public boolean haveEvents(String aProperty) {
-            return aProperty != null && aProperty.toLowerCase().contains("good");
-        }
-
-        @Override
-        public String getDescription() {
-            return "call success";
-        }
-    },
     // HANDOVER_FAILURE
     HANDOVER_FAILURE {
         @Override
@@ -364,15 +296,7 @@ public enum DriveEvents {
         if (events.contains(HANDOVER_FAILURE)) {
             return HANDOVER_FAILURE;
         }
-        if (events.contains(CALL_FAILURE)) {
-            return CALL_FAILURE;
-        }
-        if (events.contains(CALL_DROPPED)) {
-            return CALL_DROPPED;
-        }
-        if (events.contains(CALL_BLOCKED)) {
-            return CALL_BLOCKED;
-        }
+        
         if (events.contains(UNKNOWN_BAD)) {
             return UNKNOWN_BAD;
         }

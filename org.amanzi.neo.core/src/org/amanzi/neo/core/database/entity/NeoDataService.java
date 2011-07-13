@@ -51,7 +51,6 @@ public class NeoDataService {
     private static Map<String, Class< ? extends Base>> typeMap = new HashMap<String, Class< ? extends Base>>();
     static {
         typeMap.put(NodeTypes.GIS.getId(), Gis.class);
-        typeMap.put(NodeTypes.PROBE.getId(), Probe.class);
         typeMap.put(NodeTypes.NETWORK.getId(), Network.class);
     }
 
@@ -82,50 +81,14 @@ public class NeoDataService {
             if (klass == Network.class) {
                 NetworkTypes netType = NetworkTypes.getNodeType(node);
                 switch (netType) {
-                case PROBE:
-                    klass = RadioNetwork.class;
-                    break;
+                
                 case RADIO:
-                    klass = ProbeNetwork.class;
+                    klass = RadioNetwork.class;
                 default:
                     throw new AssertionFailedException("Node should fave correct type: " + node);
                 }
             }
             return createNewEntity(klass, node);
-        } finally {
-            tx.finish();
-        }
-    }
-
-    /**
-     * @param network
-     * @param probeName
-     * @return
-     */
-    public Probe findOrCreateProbe(ProbeNetwork network, final String probeName) {
-        Transaction tx = beginTx();
-        try {
-            Iterator<Node> iterator = asNode(network).traverse(Order.DEPTH_FIRST, StopEvaluator.DEPTH_ONE, new ReturnableEvaluator() {
-
-                @Override
-                public boolean isReturnableNode(TraversalPosition currentPos) {
-                    if (currentPos.isStartNode()) {
-                        return false;
-                    }
-                    Base wrapper = getInstance(currentPos.currentNode());
-                    return ((wrapper instanceof Probe) && (probeName.equals(wrapper.getName())));
-                }
-            }, GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).iterator();
-            if (iterator.hasNext()) {
-                return (Probe)getInstance(iterator.next());
-            } else {
-                Probe result = new Probe();
-                result.setRoot(network);
-                result.setName(probeName);
-                result.createAndSave(this);
-                tx.success();
-                return result;
-            }
         } finally {
             tx.finish();
         }

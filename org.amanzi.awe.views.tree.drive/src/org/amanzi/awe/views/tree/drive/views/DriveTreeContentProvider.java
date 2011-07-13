@@ -33,89 +33,100 @@ import org.neo4j.graphdb.Transaction;
  * @since 1.0.0
  */
 public class DriveTreeContentProvider extends NetworkTreeContentProvider {
-    /**
-     * Constructor
-     * 
-     * @param neoProvider neoServiceProvider for this ContentProvider
-     */
-    public DriveTreeContentProvider(NeoServiceProviderUi neoProvider) {
-        super(neoProvider);
-    }
+	/**
+	 * Constructor
+	 * 
+	 * @param neoProvider
+	 *            neoServiceProvider for this ContentProvider
+	 */
+	public DriveTreeContentProvider(NeoServiceProviderUi neoProvider) {
+		super(neoProvider);
+	}
 
-    @Override
-    public Object getParent(Object element) {
-        Transaction tx = neoServiceProvider.getService().beginTx();
-        try {
-            if (element instanceof Node) {
-                element = new DriveNeoNode((Node)element, 0);
-            }
-            if (element instanceof IAdaptable) {
-                if (element instanceof StatisticSelectionNode) {
-                    IAdaptable adapter = (IAdaptable)element;
-                    Pair< ? , ? > pair = (Pair< ? , ? >)adapter.getAdapter(Pair.class);
-                    if (pair.getLeft() instanceof Node && pair.getRight() instanceof Node) {
-                        StatisticsNeoNode elem = new StatisticsNeoNode((Node)pair.getLeft(), 0);
-                        return elem.getParent();
-                    }
-                } else if(element instanceof DistributionSelectionNode){
-                    Node selected = ((DistributionSelectionNode)element).getSelected();
-                    DistributeNeoNode neoNode = new DistributeNeoNode(selected, 0);
-                    return neoNode.getParent();
-                }
-            }
+	@Override
+	public Object getParent(Object element) {
+		Transaction tx = neoServiceProvider.getService().beginTx();
+		try {
+			if (element instanceof Node) {
+				element = new DriveNeoNode((Node) element, 0);
+			}
+			if (element instanceof IAdaptable) {
+				if (element instanceof StatisticSelectionNode) {
+					IAdaptable adapter = (IAdaptable) element;
+					Pair<?, ?> pair = (Pair<?, ?>) adapter
+							.getAdapter(Pair.class);
+					if (pair.getLeft() instanceof Node
+							&& pair.getRight() instanceof Node) {
+						StatisticsNeoNode elem = new StatisticsNeoNode(
+								(Node) pair.getLeft(), 0);
+						return elem.getParent();
+					}
+				} else if (element instanceof DistributionSelectionNode) {
+					Node selected = ((DistributionSelectionNode) element)
+							.getSelected();
+					DistributeNeoNode neoNode = new DistributeNeoNode(selected,
+							0);
+					return neoNode.getParent();
+				}
+			}
 
-            if (element instanceof NeoNode) {
-                NeoNode neoNode = (NeoNode)element;
-                int curNum = neoNode.getNumber();
-                if(curNum>NeoNode.MAX_CHILDREN_COUNT){
-                    return null;
-                }
-                Node node = neoNode.getNode();
-                for (NeoNode child : getRoot().getChildren()) {
-                    if (child.getNode().equals(node)) {
-                        return getRoot();
-                    }
-                }
-                if (element instanceof CallAnalyzisNeoNode) {
-                    return ((CallAnalyzisNeoNode)element).getParent();
-                }
-                if (element instanceof DistributeNeoNode) {
-                    return ((DistributeNeoNode)element).getParent();
-                }
-                if (element instanceof StatisticsNeoNode) {
-                    return ((StatisticsNeoNode)element).getParent();
-                }
-                return findParent(new DriveNeoNode(NeoUtils.getParent(null, node),curNum+1), node);
-            } else {
-                return super.getParent(element);
-            }
-        } finally {
-            tx.finish();
-        }
-}
+			if (element instanceof NeoNode) {
+				NeoNode neoNode = (NeoNode) element;
+				int curNum = neoNode.getNumber();
+				if (curNum > NeoNode.MAX_CHILDREN_COUNT) {
+					return null;
+				}
+				Node node = neoNode.getNode();
+				for (NeoNode child : getRoot().getChildren()) {
+					if (child.getNode().equals(node)) {
+						return getRoot();
+					}
+				}
 
-    /**
-     * Finds parent node
-     * 
-     * @param parent parent root
-     * @param node node
-     * @return parent node
-     */
-    private NeoNode findParent(NeoNode parent, Node node) {
-        NeoNode[] child = parent.getChildren();
-        for (NeoNode neoNode : child) {
-            if (neoNode.getNode().equals(node)) {
-                return parent;
-            }
-            if (neoNode instanceof AggregatesNode) {
-                return findParent(neoNode, node);
-            }
-        }
-        return null;
-    }
+				if (element instanceof DistributeNeoNode) {
+					return ((DistributeNeoNode) element).getParent();
+				}
+				if (element instanceof StatisticsNeoNode) {
+					return ((StatisticsNeoNode) element).getParent();
+				}
+				if (NeoUtils.getParent(null, node) != null) {
+					return findParent(
+							new DriveNeoNode(NeoUtils.getParent(null, node),
+									curNum + 1), node);
+				}
+				else return null;
+			} else {
+				return super.getParent(element);
+			}
+		} finally {
+			tx.finish();
+		}
+	}
 
-    @Override
-    protected Root getRoot() {
-        return new DriveRoot(neoServiceProvider);
-    }
+	/**
+	 * Finds parent node
+	 * 
+	 * @param parent
+	 *            parent root
+	 * @param node
+	 *            node
+	 * @return parent node
+	 */
+	private NeoNode findParent(NeoNode parent, Node node) {
+		NeoNode[] child = parent.getChildren();
+		for (NeoNode neoNode : child) {
+			if (neoNode.getNode().equals(node)) {
+				return parent;
+			}
+			if (neoNode instanceof AggregatesNode) {
+				return findParent(neoNode, node);
+			}
+		}
+		return null;
+	}
+
+	@Override
+	protected Root getRoot() {
+		return new DriveRoot(neoServiceProvider);
+	}
 }

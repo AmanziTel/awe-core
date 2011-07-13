@@ -1431,32 +1431,7 @@ public class DatasetService extends AbstractService implements IDatasetService {
 
     }
 
-    /**
-     * get Probe node
-     * 
-     * @param rootNode root node
-     * @param probeName - probe name
-     * @return the probe node
-     */
-    public NodeResult getProbe(Node rootNode, String probeName) {
-        String indName = Utils.getLuceneIndexKeyByProperty(rootNode, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.PROBE);
-        boolean isCreated = false;
-        Node result = getIndexService().getSingleNode(indName, probeName);
-        if (result == null) {
-            Transaction tx = databaseService.beginTx();
-            try {
-                isCreated = true;
-                result = createNode(NodeTypes.PROBE, probeName);
-                getIndexService().index(result, indName, probeName);
-                isCreated = true;
-                rootNode.createRelationshipTo(result, GeoNeoRelationshipTypes.CHILD);
-                tx.success();
-            } finally {
-                tx.finish();
-            }
-        }
-        return new NodeResultImpl(result, isCreated);
-    }
+   
 
     public Traverser getSectorsOfSite(Node site) {
         // check node on Sector type

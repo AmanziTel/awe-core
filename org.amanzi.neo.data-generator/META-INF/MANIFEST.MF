@@ -7,8 +7,6 @@ Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.neo.data_generator,
  org.amanzi.neo.data_generator.data,
- org.amanzi.neo.data_generator.data.calls,
- org.amanzi.neo.data_generator.data.calls.csv,
  org.amanzi.neo.data_generator.data.nemo,
  org.amanzi.neo.data_generator.data.nokia,
  org.amanzi.neo.data_generator.generate,

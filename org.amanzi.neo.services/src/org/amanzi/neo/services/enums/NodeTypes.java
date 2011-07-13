@@ -104,38 +104,6 @@ public enum NodeTypes implements INodeType{
     RNC("rnc"),
     NEIGHBOUR("neighbours"),
     MM("mm"),
-    CALL("call"){
-        @Override
-        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
-            boolean isLinkOut = isLinkOut(aNode, cameFrom);
-            DeletableRelationshipType linkType = getLinkType(cameFrom);
-            if(linkType.equals(GeoNeoRelationshipTypes.CHILD)){
-                if(isLinkOut){
-                    return NodeDeletableTypes.UNLINK;
-                }
-                else {
-                    return NodeDeletableTypes.DELETE_LINE;
-                }
-            }
-            if(linkType.equals(GeoNeoRelationshipTypes.NEXT)){
-                return NodeDeletableTypes.RELINK;
-            }
-            if(linkType.equals(ProbeCallRelationshipType.CALLER)
-               ||linkType.equals(ProbeCallRelationshipType.CALLEE)){
-                return NodeDeletableTypes.UNLINK;
-            }
-            if(linkType.equals(GeoNeoRelationshipTypes.SOURCE)){
-                return NodeDeletableTypes.UNLINK;
-            }
-            throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
-        }
-        @Override
-        protected List<NodeTypes> getParentTypes() {
-            ArrayList<NodeTypes> res = new ArrayList<NodeTypes>();
-            res.add(DATASET);
-            return res;
-        }
-    },
     GIS_PROPERTIES("properties"){
         @Override
         protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
@@ -188,65 +156,8 @@ public enum NodeTypes implements INodeType{
         }
     },
     HILBERT_INDEX("hilbert_index",false),
-    CALLS("calls"){
-        @Override
-        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
-            DeletableRelationshipType linkType = getLinkType(cameFrom);
-            if(linkType.equals(ProbeCallRelationshipType.PROBE_DATASET)){
-                return NodeDeletableTypes.DELETE;
-            }
-            if(linkType.equals(ProbeCallRelationshipType.CALLEE)){
-                return NodeDeletableTypes.UNLINK;
-            }
-            if(linkType.equals(ProbeCallRelationshipType.CALLER)){
-                return NodeDeletableTypes.UNLINK;
-            }
-            if(linkType.equals(ProbeCallRelationshipType.CALLS)){
-                return NodeDeletableTypes.DELETE;
-            }
-            throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
-        }
-        @Override
-        protected boolean isGoodLink(Node aNode, Relationship cameFrom, Relationship link){
-            return false;
-        }
-        @Override
-        protected List<NodeTypes> getParentTypes() {
-            return null;
-        }
-    },
     NTPQS("ntpqs"),
     ROOT_SECTOR_DRIVE("root_sector_site"),
-    PROBE("probe"){
-        @Override
-        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
-            DeletableRelationshipType linkType = getLinkType(cameFrom);
-            if(linkType.equals(GeoNeoRelationshipTypes.CHILD)){
-                return NodeDeletableTypes.DELETE;
-            }
-            if(linkType.equals(GeoNeoRelationshipTypes.LOCATION)){
-                return NodeDeletableTypes.UNLINK;
-            }
-            if(linkType.equals(GeoNeoRelationshipTypes.SOURCE)){
-                return NodeDeletableTypes.UNLINK;
-            }
-            if(linkType.equals(ProbeCallRelationshipType.CALLS)){
-                return NodeDeletableTypes.UNLINK;
-            }
-            if(linkType.equals(ProbeCallRelationshipType.NTPQS)){
-                return NodeDeletableTypes.UNLINK;
-            }
-            throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
-        }
-        @Override
-        protected boolean isGoodLink(Node aNode, Relationship cameFrom, Relationship link){
-            return false;
-        }
-        @Override
-        protected List<NodeTypes> getParentTypes() {
-            return null;
-        }
-    },
     SPREADSHEET("spreadsheet"),
     SPLASH_FORMAT("splash_format"),
     SCRIPT("ruby_script"),
@@ -352,9 +263,7 @@ public enum NodeTypes implements INodeType{
             if(linkType.equals(GeoNeoRelationshipTypes.CHILD)){
                 return NodeDeletableTypes.UNLINK;
             }
-            if(linkType.equals(ProbeCallRelationshipType.CALL_ANALYSIS)){
-                return NodeDeletableTypes.UNLINK;
-            }
+            
             throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
         }
         @Override
@@ -399,30 +308,6 @@ public enum NodeTypes implements INodeType{
     HEADER_MS("ms"),
     AGGREGATION("aggregation"),
     COUNT("count"),
-    CALL_ANALYSIS("call analysis"){
-        @Override
-        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
-            DeletableRelationshipType linkType = getLinkType(cameFrom);
-            if(linkType.equals(GeoNeoRelationshipTypes.CHILD)){
-                if(isLinkOut(aNode, cameFrom)){
-                    return NodeDeletableTypes.UNLINK;
-                }
-                else{
-                    return NodeDeletableTypes.DELETE;
-                }
-            }
-            if(linkType.equals(GeoNeoRelationshipTypes.SOURCE)){
-                return NodeDeletableTypes.UNLINK;
-            }
-            throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
-        }
-        @Override
-        protected List<NodeTypes> getParentTypes() {
-            ArrayList<NodeTypes> res = new ArrayList<NodeTypes>();
-            res.add(CALL_ANALYSIS_ROOT);
-            return res;
-        }
-    },
     S_ROW("s_row"){
         @Override
         protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
@@ -446,7 +331,7 @@ public enum NodeTypes implements INodeType{
         @Override
         protected List<NodeTypes> getParentTypes() {
             ArrayList<NodeTypes> res = new ArrayList<NodeTypes>();
-            res.add(CALL_ANALYSIS);
+            
             res.add(S_GROUP);
             return res;
         }
@@ -460,27 +345,6 @@ public enum NodeTypes implements INodeType{
             }
             if(linkType.equals(GeoNeoRelationshipTypes.NEXT)){
                 return NodeDeletableTypes.DELETE;
-            }
-            throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
-        }
-        @Override
-        protected boolean isGoodLink(Node aNode, Relationship cameFrom, Relationship link){
-            return false;
-        }
-        @Override
-        protected List<NodeTypes> getParentTypes() {
-            return null;
-        }
-    },
-    CALL_ANALYSIS_ROOT("call analysis root"){
-        @Override
-        protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
-            DeletableRelationshipType linkType = getLinkType(cameFrom);
-            if(linkType.equals(ProbeCallRelationshipType.CALL_ANALYSIS)){
-                return NodeDeletableTypes.DELETE;
-            }
-            if(linkType.equals(GeoNeoRelationshipTypes.CHILD)){
-                return NodeDeletableTypes.UNLINK;
             }
             throw new IllegalArgumentException("Unknown link type <"+linkType.name()+">.");
         }

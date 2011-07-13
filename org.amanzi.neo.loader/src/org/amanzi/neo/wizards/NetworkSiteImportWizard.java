@@ -22,7 +22,7 @@ import org.amanzi.neo.loader.NeighbourLoader;
 import org.amanzi.neo.loader.NetworkLoader;
 import org.amanzi.neo.loader.NetworkSiteLoader;
 import org.amanzi.neo.loader.NokiaTopologyLoader;
-import org.amanzi.neo.loader.ProbeLoader;
+
 import org.amanzi.neo.loader.TransmissionLoader;
 import org.amanzi.neo.loader.UTRANLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
@@ -97,13 +97,7 @@ public class NetworkSiteImportWizard extends Wizard implements IImportWizard {
                         networkLoader.addLayersToMap();
                         handleSelect(monitor,networkLoader.getRootNodes());
                         break;
-                    case PROBE:
-                        ProbeLoader loader = new ProbeLoader(mainPage.getNetworkName(), mainPage.getFileName(), display);
-                        loader.run(monitor);
-                        NetworkLoader.addDataToCatalog();
-                        loader.addLayersToMap();      
-                        handleSelect(monitor,loader.getRootNodes());
-                        break;
+                    
                     case INTERFERENCE:
                     case NEIGHBOUR:
                         NeighbourLoader neighbourLoader;

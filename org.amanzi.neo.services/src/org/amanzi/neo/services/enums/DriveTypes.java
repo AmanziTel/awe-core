@@ -32,18 +32,8 @@ import org.neo4j.graphdb.Transaction;
  */
 public enum DriveTypes {
     TEMS("tems", "fmt", "TEMS Drive Test Export (*.FMT)"), ROMES("romes", "asc", "Romes drive test export (*.ASC)"), GPS("gps", "gps", "GPS truecoverage data export (*.GPS)"), NEMO2(
-            "nemo2", "nmf", "Nemo drive test export (*.nmf)"), NEMO1("nemo1", "dt1", "Nemo drive test export (*.dt1)"), AMS("ams", "log", ""), PROBE("probe", "", ""), DING_LI(
-            "dingli", "log", "DingLi(*.LOG)"), AMS_CALLS("ams calls", "", "") {
-        @Override
-        public boolean isVirtual() {
-            return true;
-        }
-
-        @Override
-        public String getFullDatasetName(String datasetName) {
-            return datasetName + " Calls";
-        }
-    },
+            "nemo2", "nmf", "Nemo drive test export (*.nmf)"), NEMO1("nemo1", "dt1", "Nemo drive test export (*.dt1)"),  DING_LI(
+            "dingli", "log", "DingLi(*.LOG)"),
     MS("ms", "", "") {
         @Override
         public boolean isVirtual() {

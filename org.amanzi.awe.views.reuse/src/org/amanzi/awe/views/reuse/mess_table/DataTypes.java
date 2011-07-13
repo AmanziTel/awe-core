@@ -33,8 +33,6 @@ public enum DataTypes {
     ROMES(DriveTypes.ROMES,NodeTypes.M),
     NEMO1(DriveTypes.NEMO1,NodeTypes.M),
     NEMO2(DriveTypes.NEMO2,NodeTypes.M),
-    AMS(DriveTypes.AMS,NodeTypes.M),
-    AMS_CALLS(DriveTypes.AMS_CALLS,NodeTypes.CALL),
     TEMS(DriveTypes.TEMS,NodeTypes.M),
     MS(DriveTypes.MS,NodeTypes.M),
     OSS(null,NodeTypes.GPEH_EVENT),

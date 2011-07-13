@@ -17,7 +17,6 @@ import java.io.IOException;
 
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.loader.NetworkLoader;
-import org.amanzi.neo.loader.ProbeLoader;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.enums.NetworkFileType;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -64,13 +63,10 @@ public class NetworkImportWizard extends Wizard implements IImportWizard {
                         networkLoader.printStats(false);
                         NetworkLoader.finishUpGis();
                         networkLoader.addLayersToMap();
-                    } else {
-                        ProbeLoader loader = new ProbeLoader(new File(mainPage.getFileName()).getName(),mainPage.getFileName(), display);
-                        loader.run(monitor);
-                        // TODO add to layer after changing NetworkRenderer
+                    
                     }
-
-                } catch (IOException e) {
+                }
+                 catch (IOException e) {
                     NeoCorePlugin.error("Error loading Network file", e);
                     return new Status(Status.ERROR, "org.amanzi.neo.loader", e.getMessage());
                 }

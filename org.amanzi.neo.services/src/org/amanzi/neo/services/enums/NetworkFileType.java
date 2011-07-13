@@ -33,7 +33,7 @@ public enum NetworkFileType {
     RADIO_SECTOR("Sectors (antenna configuration)",5),
     TRANSMISSION("Transmission (site to site)",10),
     NEIGHBOUR("Neighbours (sector to sector)",15),
-    PROBE("Probes (measurement devices)",20),
+    
     UTRAN("Ericsson Topology Data",25),
     NOKIA_TOPOLOGY("Nokia Topology Data",30),
     INTERFERENCE("Interference (sector to sector)",35);

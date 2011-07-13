@@ -35,13 +35,8 @@ public enum NetworkTypes {
             return fileType != null
                     && (fileType == NetworkFileType.NEIGHBOUR || fileType == NetworkFileType.INTERFERENCE || fileType == NetworkFileType.RADIO_SECTOR || fileType == NetworkFileType.RADIO_SITE || fileType == NetworkFileType.TRANSMISSION||fileType==NetworkFileType.UTRAN||fileType==NetworkFileType.NOKIA_TOPOLOGY);
         }
-    },
-    PROBE("probe") {
-        @Override
-        public boolean isCorrectFileType(NetworkFileType fileType) {
-            return fileType != null && fileType == NetworkFileType.PROBE;
-        }
     };
+    
     public static final String PROPERTY_NAME = "network_type";
     private final String id;
 

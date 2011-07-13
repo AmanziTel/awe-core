@@ -1579,7 +1579,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                     @Override
                     public boolean isReturnableNode(TraversalPosition currentPos) {
                        Node curr = currentPos.currentNode();
-                        return NeoUtils.isCallNode(curr)||NeoUtils.isDriveMNode(curr);
+                        return NeoUtils.isDriveMNode(curr);
                     }
                 }, GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING);
                 ColoredFlags flag = ColoredFlags.NONE;
@@ -1590,7 +1590,7 @@ public class TemsRenderer extends RendererImpl implements Renderer {
                         coloredNode = curr;
                     }
                 }
-            } else if(NeoUtils.isDriveMNode(node)||NeoUtils.isCallNode(node)){
+            } else if(NeoUtils.isDriveMNode(node)){
                 coloredNode = node;
             }
             if (coloredNode!=null) {

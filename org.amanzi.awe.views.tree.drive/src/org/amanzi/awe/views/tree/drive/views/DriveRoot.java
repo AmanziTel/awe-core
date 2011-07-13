@@ -14,21 +14,12 @@ package org.amanzi.awe.views.tree.drive.views;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.enums.DriveTypes;
-import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.services.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
-import org.amanzi.neo.services.ui.NeoUtils;
-import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 
 /**

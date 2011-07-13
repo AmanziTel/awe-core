@@ -105,7 +105,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
     private Group grScale;
 
     private boolean isNetwork;
-    private boolean isProbe;
+
 
     private Combo cFontSize;
 
@@ -494,9 +494,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
             if(isNetwork){
                 lIconOffset.setVisible(false);
                 sIconOffset.setVisible(false);
-                if (isProbe){
-                    changeToProbeNetworkStyle();
-                }
+                
             } else {
                 changeToDriveStyle();
             }
@@ -553,19 +551,11 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         try {
             GeoNeo geoNeo = layer1.findGeoResource(NeoGeoResource.class).resolve(GeoNeo.class, null);
             isNetwork = geoNeo.getGisType() == GisTypes.NETWORK;
-            if (isNetwork) {
-                GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
-                //TODO now we store network type in gis node.
-//                Node mainNode = NeoUtils.getMainNodeFromGis(geoNeo.getMainGisNode(), service);
-                isProbe = NetworkTypes.PROBE.checkType(geoNeo.getMainGisNode());
-            } else {
-                isProbe = false;
-            }
+            
         } catch (IOException e) {
             // TODO Handle IOException
             e.printStackTrace();
-            isNetwork = true;
-            isProbe = false;
+            isNetwork = true;           
         }
         super.focus(layer1);
     }

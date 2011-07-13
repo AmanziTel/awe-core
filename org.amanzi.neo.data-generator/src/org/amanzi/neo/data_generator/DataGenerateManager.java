@@ -25,23 +25,8 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
-
-import org.amanzi.neo.data_generator.data.calls.GeneratedCallsData;
 import org.amanzi.neo.data_generator.generate.IDataGenerator;
-import org.amanzi.neo.data_generator.generate.calls.CsvDataGenerator;
-import org.amanzi.neo.data_generator.generate.calls.log_data.GroupCallsGenerator;
-import org.amanzi.neo.data_generator.generate.calls.log_data.ITSIAttachDataGenerator;
-import org.amanzi.neo.data_generator.generate.calls.log_data.IndividualCallsGenerator;
-import org.amanzi.neo.data_generator.generate.calls.log_data.SDSDataGenerator;
-import org.amanzi.neo.data_generator.generate.calls.log_data.TSMDataGenerator;
-import org.amanzi.neo.data_generator.generate.calls.xml_data.EmergencyXMLDataGenerator;
-import org.amanzi.neo.data_generator.generate.calls.xml_data.GroupCallXmlDataGenerator;
-import org.amanzi.neo.data_generator.generate.calls.xml_data.HoCcXmlDataGenerator;
-import org.amanzi.neo.data_generator.generate.calls.xml_data.IndividualCallXmlDataGenerator;
-import org.amanzi.neo.data_generator.generate.calls.xml_data.ItsiAttachXmlDataGenerator;
-import org.amanzi.neo.data_generator.generate.calls.xml_data.SDSXmlDataGenerator;
-import org.amanzi.neo.data_generator.generate.calls.xml_data.TSMXmlDataGenerator;
-import org.amanzi.neo.data_generator.generate.nemo.NemoDataGenerator;
+
 import org.amanzi.neo.data_generator.generate.nokia.NokiaTopologyGenerator;
 import org.amanzi.neo.data_generator.utils.NeoDataUtils;
 import org.neo4j.graphdb.Direction;
@@ -63,216 +48,14 @@ import org.xml.sax.helpers.AttributesImpl;
  */
 public class DataGenerateManager {
 
-    /**
-     * Returns AMS data generator for individual calls.
-     * 
-     * @param aDirectory String (path to save data)
-     * @param aHours Integer (count of hours)
-     * @param aHourDrift Integer (drift of start time)
-     * @param aCallsPerHour Integer (call count in hour)
-     * @param aCallPerHourVariance Integer (call variance in hour)
-     * @param aProbes Integer (probes count)
-     * @return AmsDataGenerator.
-     */
-    public static IDataGenerator getIndividualAmsGenerator(String aDirectory, Integer aHours, Integer aHourDrift,
-            Integer aCallsPerHour, Integer aCallPerHourVariance, Integer aProbes) {
-        return new IndividualCallsGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
-    }
     
-    /**
-     * Returns AMS data generator for individual calls (xml).
-     * 
-     * @param aDirectory String (path to save data)
-     * @param aHours Integer (count of hours)
-     * @param aHourDrift Integer (drift of start time)
-     * @param aCallsPerHour Integer (call count in hour)
-     * @param aCallPerHourVariance Integer (call variance in hour)
-     * @param aProbes Integer (probes count)
-     * @return AmsDataGenerator.
-     */
-    public static IDataGenerator getXmlIndividualAmsGenerator(String aDirectory, Integer aHours, Integer aHourDrift,
-            Integer aCallsPerHour, Integer aCallPerHourVariance, Integer aProbes) {
-        return new IndividualCallXmlDataGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
-    }
     
-    /**
-     * Returns AMS data generator for Handover/Cell change calls (xml).
-     * 
-     * @param aDirectory String (path to save data)
-     * @param aHours Integer (count of hours)
-     * @param aHourDrift Integer (drift of start time)
-     * @param aCallsPerHour Integer (call count in hour)
-     * @param aCallPerHourVariance Integer (call variance in hour)
-     * @param aProbes Integer (probes count)
-     * @return AmsDataGenerator.
-     */
-    public static IDataGenerator getXmlHoCcAmsGenerator(String aDirectory, Integer aHours, Integer aHourDrift,
-            Integer aCallsPerHour, Integer aCallPerHourVariance, Integer aProbes) {
-        return new HoCcXmlDataGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
-    }
+    
+    
 
-    /**
-     * Returns AMS data generator for group calls.
-     * 
-     * @param aDirectory String (path to save data)
-     * @param aHours Integer (count of hours)
-     * @param aHourDrift Integer (drift of start time)
-     * @param aCallsPerHour Integer (call count in hour)
-     * @param aCallPerHourVariance Integer (call variance in hour)
-     * @param aProbes Integer (probes count)
-     * @param aMaxGroupSize the a max group size
-     * @return AmsDataGenerator.
-     */
-    public static IDataGenerator getGroupAmsGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour,
-            Integer aCallPerHourVariance, Integer aProbes, Integer aMaxGroupSize) {
-        return new GroupCallsGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes, aMaxGroupSize);
-    }
+   
     
-    /**
-     * Returns AMS data generator for group calls (xml).
-     * 
-     * @param aDirectory String (path to save data)
-     * @param aHours Integer (count of hours)
-     * @param aHourDrift Integer (drift of start time)
-     * @param aCallsPerHour Integer (call count in hour)
-     * @param aCallPerHourVariance Integer (call variance in hour)
-     * @param aProbes Integer (probes count)
-     * @param aMaxGroupSize the a max group size
-     * @return AmsDataGenerator.
-     */
-    public static IDataGenerator getXmlGroupAmsGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour,
-            Integer aCallPerHourVariance, Integer aProbes, Integer aMaxGroupSize) {
-        return new GroupCallXmlDataGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes, aMaxGroupSize);
-    }
     
-    /**
-     * Returns AMS data generator for EC1 calls (xml).
-     * 
-     * @param aDirectory String (path to save data)
-     * @param aHours Integer (count of hours)
-     * @param aHourDrift Integer (drift of start time)
-     * @param aCallsPerHour Integer (call count in hour)
-     * @param aCallPerHourVariance Integer (call variance in hour)
-     * @param aProbes Integer (probes count)
-     * @param aMaxGroupSize the a max group size
-     * @return AmsDataGenerator.
-     */
-    public static IDataGenerator getXmlEmergencyAmsGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour,
-            Integer aCallPerHourVariance, Integer aProbes, Integer aMaxGroupSize) {
-        return new EmergencyXMLDataGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes, aMaxGroupSize);
-    }
-    
-    /**
-     * Returns AMS data generator for SDS messages.
-     * 
-     * @param aDirectory String (path to save data)
-     * @param aHours Integer (count of hours)
-     * @param aHourDrift Integer (drift of start time)
-     * @param aCallsPerHour Integer (call count in hour)
-     * @param aCallPerHourVariance Integer (call variance in hour)
-     * @param aProbes Integer (probes count)
-     * @return AmsDataGenerator.
-     */
-    public static IDataGenerator getSDSMessagesGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour,
-            Integer aCallPerHourVariance, Integer aProbes) {
-        return new SDSDataGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
-    }
-    
-    /**
-     * Returns AMS data generator for SDS messages (xml).
-     * 
-     * @param aDirectory String (path to save data)
-     * @param aHours Integer (count of hours)
-     * @param aHourDrift Integer (drift of start time)
-     * @param aCallsPerHour Integer (call count in hour)
-     * @param aCallPerHourVariance Integer (call variance in hour)
-     * @param aProbes Integer (probes count)
-     * @return AmsDataGenerator.
-     */
-    public static IDataGenerator getXmlSDSMessagesGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour,
-            Integer aCallPerHourVariance, Integer aProbes) {
-        return new SDSXmlDataGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
-    }
-    
-    /**
-     * Returns AMS data generator for TSM messages.
-     * 
-     * @param aDirectory String (path to save data)
-     * @param aHours Integer (count of hours)
-     * @param aHourDrift Integer (drift of start time)
-     * @param aCallsPerHour Integer (call count in hour)
-     * @param aCallPerHourVariance Integer (call variance in hour)
-     * @param aProbes Integer (probes count)
-     * @return AmsDataGenerator.
-     */
-    public static IDataGenerator getTSMMessagesGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour,
-            Integer aCallPerHourVariance, Integer aProbes) {
-        return new TSMDataGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
-    }
-    
-    /**
-     * Returns AMS data generator for TSM messages (xml).
-     * 
-     * @param aDirectory String (path to save data)
-     * @param aHours Integer (count of hours)
-     * @param aHourDrift Integer (drift of start time)
-     * @param aCallsPerHour Integer (call count in hour)
-     * @param aCallPerHourVariance Integer (call variance in hour)
-     * @param aProbes Integer (probes count)
-     * @return AmsDataGenerator.
-     */
-    public static IDataGenerator getXmlTSMMessagesGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour,
-            Integer aCallPerHourVariance, Integer aProbes) {
-        return new TSMXmlDataGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
-    }
-    
-    /**
-     * Returns AMS data generator for ITSI attach data.
-     * 
-     * @param aDirectory String (path to save data)
-     * @param aHours Integer (count of hours)
-     * @param aHourDrift Integer (drift of start time)
-     * @param aCallsPerHour Integer (call count in hour)
-     * @param aCallPerHourVariance Integer (call variance in hour)
-     * @param aProbes Integer (probes count)
-     * @return AmsDataGenerator.
-     */
-    public static IDataGenerator getItsiAttachGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour,
-            Integer aCallPerHourVariance, Integer aProbes) {
-        return new ITSIAttachDataGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
-    }
-    
-    /**
-     * Returns AMS data generator for ITSI attach data (xml).
-     * 
-     * @param aDirectory String (path to save data)
-     * @param aHours Integer (count of hours)
-     * @param aHourDrift Integer (drift of start time)
-     * @param aCallsPerHour Integer (call count in hour)
-     * @param aCallPerHourVariance Integer (call variance in hour)
-     * @param aProbes Integer (probes count)
-     * @return AmsDataGenerator.
-     */
-    public static IDataGenerator getXmlItsiAttachGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour,
-            Integer aCallPerHourVariance, Integer aProbes) {
-        return new ItsiAttachXmlDataGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes);
-    }
-    
-    /**
-     * Returns AMS data generator for Csv statistics data.
-     * 
-     * @param aDirectory String (path to save data)
-     * @param aHours Integer (count of hours)
-     * @param aHourDrift Integer (drift of start time)
-     * @param aCallsPerHour Integer (call count in hour)
-     * @param aCallPerHourVariance Integer (call variance in hour)
-     * @param aProbes Integer (probes count)
-     * @return AmsDataGenerator.
-     */
-    public static IDataGenerator getCsvStatisticsGenerator(String aDirectory, Integer aHours, Integer aHourDrift, Integer aCallsPerHour,
-            Integer aCallPerHourVariance, Integer aProbes, boolean needDuplicates) {
-        return new CsvDataGenerator(aDirectory, aHours, aHourDrift, aCallsPerHour, aCallPerHourVariance, aProbes,needDuplicates);
-    }
 
     /**
      * Returns Nokia Topology data generator.
@@ -292,17 +75,7 @@ public class DataGenerateManager {
         return new NokiaTopologyGenerator(aPath, aFileName, bscs, sites, sectors, extUmtsCount, latBorders, lonBorders);
     }
 
-    /**
-     * Returns generator for ams data.
-     * 
-     * @param data IDataGenerator generated ams data
-     * @param aDirectory the a directory
-     * @param aFileName the a file name
-     * @return the nemo data generator
-     */
-    public static IDataGenerator getNemoDataGenerator(GeneratedCallsData data, String aDirectory, String aFileName) {
-        return new NemoDataGenerator(data.getData(), aDirectory, aFileName);
-    }
+    
 
     /**
      * Creates the etalon network.

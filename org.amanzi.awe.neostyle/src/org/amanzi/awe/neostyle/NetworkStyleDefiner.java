@@ -81,8 +81,6 @@ public class NetworkStyleDefiner extends ViewPart {
 
     private Group grScale;
 
-    private boolean isProbe;
-
     private Combo cFontSize;
 
     private Combo cMainProperty;
@@ -154,9 +152,7 @@ public class NetworkStyleDefiner extends ViewPart {
         cMainProperty.setItems(getMainPropertyChoices());
         cSecondaryProperty.setText(curStyle.getSectorLabelProperty());
         cMainProperty.setText(curStyle.getMainProperty());
-        if (isProbe) {
-            changeToProbeNetworkStyle();
-        }       
+              
     }
     private void changeToProbeNetworkStyle() {
         lMainProperty.setText("Probe property"); //$NON-NLS-1$
@@ -632,7 +628,7 @@ public class NetworkStyleDefiner extends ViewPart {
      */
     public void setGeoNeo(GeoNeo resource) {
         this.resource = resource;
-        isProbe = NetworkTypes.PROBE.checkType(resource.getMainGisNode());
+        
     }
     public GeoNeo getGeoNeo(){
         return resource;

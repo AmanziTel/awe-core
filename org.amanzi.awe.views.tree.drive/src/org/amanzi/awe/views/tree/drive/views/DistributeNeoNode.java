@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.services.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
@@ -53,9 +52,7 @@ public class DistributeNeoNode extends DriveNeoNode{
         if (NeoUtils.isCountNode(node)) {
             traverse = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, 
                     NetworkRelationshipTypes.AGGREGATE, Direction.OUTGOING);
-        }else if (NeoUtils.isCallNode(node)) {
-            traverse = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, 
-                    ProbeCallRelationshipType.CALL_M, Direction.OUTGOING);
+        
         }else if (NeoUtils.isDrivePointNode(node)) {
             traverse = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, 
                     GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING);
@@ -74,9 +71,7 @@ public class DistributeNeoNode extends DriveNeoNode{
         if (NeoUtils.isCountNode(node)) {
             return node.hasRelationship(NetworkRelationshipTypes.AGGREGATE, Direction.OUTGOING);
         }
-        if (NeoUtils.isCallNode(node)) {
-            return node.hasRelationship(ProbeCallRelationshipType.CALL_M, Direction.OUTGOING);
-        }
+        
         if (NeoUtils.isDrivePointNode(node)) {
             return node.hasRelationship(GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING);
         }
@@ -98,10 +93,7 @@ public class DistributeNeoNode extends DriveNeoNode{
         if(parentLink!=null){
             return new DistributeNeoNode(parentLink.getOtherNode(node), nextNum);
         }
-        if(NeoUtils.isDriveMNode(node)){
-            parentLink = node.getSingleRelationship(ProbeCallRelationshipType.CALL_M, Direction.INCOMING);
-            return new DistributeNeoNode(parentLink.getOtherNode(node), nextNum);
-        }
+        
         return new DistributeNeoNode(NeoUtils.getParent(null, node), nextNum);
     }
 

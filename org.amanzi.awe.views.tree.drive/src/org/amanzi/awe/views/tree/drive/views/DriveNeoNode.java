@@ -19,9 +19,7 @@ import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
-import org.amanzi.neo.services.enums.ProbeCallRelationshipType;
 import org.amanzi.neo.services.ui.NeoUtils;
-import org.amanzi.neo.services.ui.enums.ColoredFlags;
 import org.eclipse.swt.graphics.Color;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
@@ -39,119 +37,124 @@ import org.neo4j.graphdb.Traverser.Order;
  * @since 1.0.0
  */
 public class DriveNeoNode extends NeoNode {
-    /** int TRUNCATE_NODE field */
-    protected static final int TRUNCATE_NODE =20 ;
+	/** int TRUNCATE_NODE field */
+	protected static final int TRUNCATE_NODE = 20;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param node
+	 *            node
+	 */
+	public DriveNeoNode(Node node, int number) {
+		super(node, number);
+	}
 
-    /**
-     * Constructor
-     * 
-     * @param node node
-     */
-    public DriveNeoNode(Node node, int number) {
-        super(node,number);
-    }
-    /**
-     * Constructor
-     * 
-     * @param node node
-     */
-    public DriveNeoNode(Node node,String name, int number) {
-        super(node,name,number);
-    }
+	/**
+	 * Constructor
+	 * 
+	 * @param node
+	 *            node
+	 */
+	public DriveNeoNode(Node node, String name, int number) {
+		super(node, name, number);
+	}
 
-    @Override
-    public NeoNode[] getChildren() {
-        ArrayList<NeoNode> children = new ArrayList<NeoNode>();
-        Traverser traverse;
-        int i = 0;
-        int nextNum = number+1;
-        if(NeoUtils.isDatasetNode(node)){
-            traverse = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, 
-                                     NetworkRelationshipTypes.AGGREGATION, Direction.OUTGOING);
-            for (Node node : traverse) {
-                children.add(new DistributeNeoNode(node,nextNum++));
-            }
-        }
-        nextNum = addStatisticsNodes(children, nextNum);
-        if (NeoUtils.isCallNode(node)) {
-            traverse = node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, 
-                                     ProbeCallRelationshipType.CALL_M, Direction.OUTGOING);
-        }
-        else {
-            traverse = NeoUtils.getChildTraverser(node);
-        }        
-        for (Node node : traverse) {
-            if (++i <= TRUNCATE_NODE) {
-                children.add(new DriveNeoNode(node,nextNum++));
-            } else {
-                children.add(new AggregatesNode(node, nextNum++));
-                break;
-            }
-        }        
-        return children.toArray(NO_NODES);
-    }
-    /**
-     * Obtains all statistics root nodes
-     * @param children
-     * @param nextNum
-     * @return
-     */
-    private int addStatisticsNodes(ArrayList<NeoNode> children, int nextNum) {
-        Traverser traverse= node.traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE, ReturnableEvaluator.ALL_BUT_START_NODE, 
-                GeoNeoRelationshipTypes.ANALYSIS, Direction.OUTGOING);
-        for (Node node : traverse) {
-            children.add(new StatisticsNeoNode(node,nextNum++));
-        }
-        return nextNum;
-    }
+	@Override
+	public NeoNode[] getChildren() {
+		ArrayList<NeoNode> children = new ArrayList<NeoNode>();
+		Traverser traverse;
+		int i = 0;
+		int nextNum = number + 1;
+		if (NeoUtils.isDatasetNode(node)) {
+			traverse = node.traverse(Order.BREADTH_FIRST,
+					StopEvaluator.DEPTH_ONE,
+					ReturnableEvaluator.ALL_BUT_START_NODE,
+					NetworkRelationshipTypes.AGGREGATION, Direction.OUTGOING);
+			for (Node node : traverse) {
+				children.add(new DistributeNeoNode(node, nextNum++));
+			}
+		}
+		nextNum = addStatisticsNodes(children, nextNum);
 
-    /**
-     * Return true if current node has type 'DATASET'
-     * 
-     * @return
-     */
-    private boolean isDatasetNode() {
-        return node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.DATASET.getId());
+		traverse = NeoUtils.getChildTraverser(node);
 
-    }
+		for (Node node : traverse) {
+			if (++i <= TRUNCATE_NODE) {
+				children.add(new DriveNeoNode(node, nextNum++));
+			} else {
+				children.add(new AggregatesNode(node, nextNum++));
+				break;
+			}
+		}
+		return children.toArray(NO_NODES);
+	}
 
-    @Override
-    public boolean hasChildren() {
-        return node.hasRelationship(NetworkRelationshipTypes.CHILD, Direction.OUTGOING) || 
-               ((isFileNode() || isDatasetNode() || isDirectoryNode()) && 
-               node.hasRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING)) ||  
-               node.hasRelationship(ProbeCallRelationshipType.CALL_M, Direction.OUTGOING);
-    }
-    
-    @Override
-    public String getImageKey() {
-        if (NeoUtils.isCallNode(node)) {
-            ColoredFlags flag = ColoredFlags.getFlagById((String)node.getProperty(INeoConstants.PROPERTY_FLAGGED_NAME, ColoredFlags.NONE.getId()));
-            if(!flag.equals(ColoredFlags.NONE)){
-                return getType()+"_"+flag.getId();
-            }
-        }
-        return super.getImageKey();
-    }
+	/**
+	 * Obtains all statistics root nodes
+	 * 
+	 * @param children
+	 * @param nextNum
+	 * @return
+	 */
+	private int addStatisticsNodes(ArrayList<NeoNode> children, int nextNum) {
+		Traverser traverse = node.traverse(Order.BREADTH_FIRST,
+				StopEvaluator.DEPTH_ONE,
+				ReturnableEvaluator.ALL_BUT_START_NODE,
+				GeoNeoRelationshipTypes.ANALYSIS, Direction.OUTGOING);
+		for (Node node : traverse) {
+			children.add(new StatisticsNeoNode(node, nextNum++));
+		}
+		return nextNum;
+	}
 
-    /**
-     * Gets text color
-     * @return null
-     */
-    public Color getTextColor() {
-        return null;
-    }
-    /**
-     * Return true if current node has type 'File'
-     * 
-     * @return
-     */
-    private boolean isFileNode() {
-        return node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.FILE.getId());
-    }
-    
-    private boolean isDirectoryNode() {
-    	return node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.DIRECTORY.getId());
-    }
+	/**
+	 * Return true if current node has type 'DATASET'
+	 * 
+	 * @return
+	 */
+	private boolean isDatasetNode() {
+		return node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(
+				NodeTypes.DATASET.getId());
+
+	}
+
+	@Override
+	public boolean hasChildren() {
+		return node.hasRelationship(NetworkRelationshipTypes.CHILD,
+				Direction.OUTGOING)
+				|| ((isFileNode() || isDatasetNode() || isDirectoryNode()) && node
+						.hasRelationship(GeoNeoRelationshipTypes.NEXT,
+								Direction.OUTGOING));
+	}
+
+	@Override
+	public String getImageKey() {
+
+		return super.getImageKey();
+	}
+
+	/**
+	 * Gets text color
+	 * 
+	 * @return null
+	 */
+	public Color getTextColor() {
+		return null;
+	}
+
+	/**
+	 * Return true if current node has type 'File'
+	 * 
+	 * @return
+	 */
+	private boolean isFileNode() {
+		return node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(
+				NodeTypes.FILE.getId());
+	}
+
+	private boolean isDirectoryNode() {
+		return node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(
+				NodeTypes.DIRECTORY.getId());
+	}
 }
