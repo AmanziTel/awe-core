@@ -31,7 +31,8 @@ import org.neo4j.graphdb.Node;
 
 /**
  * <p>
- * Handle root node and provide necessary  ISelectionInformation models for analyse this data set.
+ * Handle root node and provide necessary ISelectionInformation models for
+ * analyse this data set.
  * </p>
  * 
  * @author TsAr
@@ -39,104 +40,148 @@ import org.neo4j.graphdb.Node;
  */
 public class InformationProvider {
 
-    private IStatistic statistic;
-    private DatasetService ds;
-    private final Node root;
-    private String name;
+	private IStatistic statistic;
+	private DatasetService ds;
+	private final Node root;
+	private String name;
 
+	/**
+	 * Instantiates a new information provider.
+	 * 
+	 * @param root
+	 *            the root
+	 */
+	public InformationProvider(Node root) {
+		this.root = root;
+		statistic = StatisticManager.getStatistic(root);
+		ds = NeoServiceFactory.getInstance().getDatasetService();
+		name = ds.getNodeName(root);
 
-    /**
-     * Instantiates a new information provider.
-     *
-     * @param root the root
-     */
-    public InformationProvider(Node root) {
-        this.root = root;
-        statistic = StatisticManager.getStatistic(root);
-        ds = NeoServiceFactory.getInstance().getDatasetService();
-        name = ds.getNodeName(root);
+	}
 
-    }
+	/**
+	 * Gets the statistic map.
+	 * 
+	 * @return the statistic map
+	 */
+	public Map<String, ISelectionInformation> getStatisticMap() {
+		HashMap<String, ISelectionInformation> result = new HashMap<String, ISelectionInformation>();
+		Set<String> rootKey = statistic.getRootKey();
 
+		if (rootKey.isEmpty()) {
+			return result;
+		}
 
-    /**
-     * Gets the statistic map.
-     *
-     * @return the statistic map
-     */
-    public Map<String, ISelectionInformation> getStatisticMap() {
-        HashMap<String, ISelectionInformation> result = new HashMap<String, ISelectionInformation>();
-        Set<String> rootKey = statistic.getRootKey();
+		if (NodeTypes.NETWORK.checkNode(root)) {
+			Set<String> nodeTypeKey = statistic.getNodeTypeKey(name);
+			if (nodeTypeKey.isEmpty()) {
+				return result;
+			}
+			for (String nodeType : nodeTypeKey) {
+				ISelectionInformation inf = new BaseNetworkSelectionInformation(
+						root, statistic, name, nodeType);
+				if (!inf.getPropertySet().isEmpty()) {
+					result.put(inf.getDescription(), inf);
+				}
+			}
+			NetworkModel networkModel = new NetworkModel(root);
+			Set<NodeToNodeRelationModel> models = networkModel
+					.findAllNode2NodeRoot();
+			for (NodeToNodeRelationModel model : models) {
+				String key = model.getName();
+				nodeTypeKey = statistic.getNodeTypeKey(key);
+				if (!nodeTypeKey.isEmpty()) {
+					for (String nodeType : nodeTypeKey) {
+						ISelectionInformation inf = new Node2NodeSelectionInformation(
+								root, statistic, model, nodeType,
+								getNode2NodeDescripttion(name, model));
+						if (!inf.getPropertySet().isEmpty()) {
+							result.put(inf.getDescription(), inf);
+						}
+					}
+				}
+			}
+		} else if (NodeTypes.DATASET.checkNode(root)) {
 
-        if (rootKey.isEmpty()) {
-            return result;
-        }
+			Set<String> nodeTypeKey = statistic.getNodeTypeKey(name);
+			if (nodeTypeKey.isEmpty()) {
+				return result;
+			}
+			for (String nodeType : nodeTypeKey) {
+				ISelectionInformation inf = new BaseDatasetSelectionInforamation(
+						root, statistic, name, nodeType);
+				if (!inf.getPropertySet().isEmpty()) {
+					result.put(inf.getDescription(), inf);
+				}
+			}
+			NetworkModel networkModel = new NetworkModel(root);
+			Set<NodeToNodeRelationModel> models = networkModel
+					.findAllNode2NodeRoot();
+			for (NodeToNodeRelationModel model : models) {
+				String key = model.getName();
+				nodeTypeKey = statistic.getNodeTypeKey(key);
+				if (!nodeTypeKey.isEmpty()) {
+					for (String nodeType : nodeTypeKey) {
+						ISelectionInformation inf = new Node2NodeSelectionInformation(
+								root, statistic, model, nodeType,
+								getNode2NodeDescripttion(name, model));
+						if (!inf.getPropertySet().isEmpty()) {
+							result.put(inf.getDescription(), inf);
+						}
+					}
+				}
+			}
+		}
 
-        if (NodeTypes.NETWORK.checkNode(root)) {
-            Set<String> nodeTypeKey = statistic.getNodeTypeKey(name);
-            if (nodeTypeKey.isEmpty()) {
-                return result;
-            }
-            for (String nodeType : nodeTypeKey) {
-                ISelectionInformation inf = new BaseNetworkSelectionInformation(root, statistic, name, nodeType);
-                if (!inf.getPropertySet().isEmpty()) {
-                    result.put(inf.getDescription(), inf);
-                }
-            }
-            NetworkModel networkModel = new NetworkModel(root);
-            Set<NodeToNodeRelationModel> models = networkModel.findAllNode2NodeRoot();
-            for (NodeToNodeRelationModel model : models) {
-                String key = model.getName();
-                nodeTypeKey = statistic.getNodeTypeKey(key);
-                if (!nodeTypeKey.isEmpty()) {
-                    for (String nodeType : nodeTypeKey) {
-                        ISelectionInformation inf = new Node2NodeSelectionInformation(root, statistic, model, nodeType, getNode2NodeDescripttion(name, model));
-                        if (!inf.getPropertySet().isEmpty()) {
-                            result.put(inf.getDescription(), inf);
-                        }
-                    }
-                }
-            }
-        } else {
-            // TODO implement
-        }
-        return result;
-    }
+		return result;
+	}
 
+	/**
+	 * Gets the node 2 node descripttion.
+	 * 
+	 * @param networkName
+	 *            the network name
+	 * @param model
+	 *            the model
+	 * @return the node2 node descripttion
+	 */
+	private String getNode2NodeDescripttion(String networkName,
+			NodeToNodeRelationModel model) {
+		return model.getDescription();
+		// return String.format("Network %s %s %s", networkName,
+		// model.getName(), model.getType().name());
+	}
 
-    /**
-     * Gets the node 2 node descripttion.
-     *
-     * @param networkName the network name
-     * @param model the model
-     * @return the node2 node descripttion
-     */
-    private String getNode2NodeDescripttion(String networkName, NodeToNodeRelationModel model) {
-        return model.getDescription();
-//        return String.format("Network %s %s %s", networkName, model.getName(), model.getType().name());
-    }
-
-
-    /**
-     *
-     * @return
-     */
-    public Map<String, ISelectionInformation> getFrequencyStatisticMap() {
-        HashMap<String, ISelectionInformation> result = new HashMap<String, ISelectionInformation>();
-        Set<String> rootKey = statistic.getRootKey();
-        if (rootKey.isEmpty()) {
-            return result;
-        }
-        if (NodeTypes.NETWORK.checkNode(root)) {
-            NetworkModel networkModel = new NetworkModel(root);
-            for (FrequencyPlanModel model:networkModel.findAllFrqModel()){
-                ISelectionInformation inf = new FreqPlanSelectionInformation(statistic,root, model);
-                if (!inf.getPropertySet().isEmpty()) {
-                    result.put(inf.getDescription(), inf);
-                }
-            }
-        } 
-        return result;
-    }
+	/**
+	 * 
+	 * @return
+	 */
+	public Map<String, ISelectionInformation> getFrequencyStatisticMap() {
+		HashMap<String, ISelectionInformation> result = new HashMap<String, ISelectionInformation>();
+		Set<String> rootKey = statistic.getRootKey();
+		if (rootKey.isEmpty()) {
+			return result;
+		}
+		if (NodeTypes.NETWORK.checkNode(root)) {
+			NetworkModel networkModel = new NetworkModel(root);
+			for (FrequencyPlanModel model : networkModel.findAllFrqModel()) {
+				ISelectionInformation inf = new FreqPlanSelectionInformation(
+						statistic, root, model);
+				if (!inf.getPropertySet().isEmpty()) {
+					result.put(inf.getDescription(), inf);
+				}
+			}
+		}else if(NodeTypes.DATASET.checkNode(root)){
+			NetworkModel networkModel = new NetworkModel(root);
+			for (FrequencyPlanModel model : networkModel.findAllFrqModel()) {
+				ISelectionInformation inf = new FreqPlanSelectionInformation(
+						statistic, root, model);
+				if (!inf.getPropertySet().isEmpty()) {
+					result.put(inf.getDescription(), inf);
+				}
+			}
+		}
+		return result;
+	}
 
 }
