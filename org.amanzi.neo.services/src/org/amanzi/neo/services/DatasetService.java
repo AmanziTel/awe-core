@@ -308,9 +308,10 @@ public class DatasetService extends AbstractService implements IDatasetService {
                     .getEndNode();
             return new GpehStatisticModel(datasetNode, statNode, databaseService);
         } else {
-            Node statNode = databaseService.createNode();
-            datasetNode.createRelationshipTo(statNode, DatasetRelationshipTypes.GPEH_STATISTICS);
-            return new GpehStatisticModel(datasetNode, statNode, databaseService);
+            // Node statNode = databaseService.createNode();
+            // datasetNode.createRelationshipTo(statNode, DatasetRelationshipTypes.GPEH_STATISTICS);
+            // return new GpehStatisticModel(datasetNode, statNode, databaseService);
+            return new GpehStatisticModel(datasetNode, datasetNode, databaseService);
         }
     }
 
