@@ -18,6 +18,7 @@ import java.util.Iterator;
 
 import org.amanzi.awe.afp.models.AfpModelNew;
 import org.amanzi.awe.afp.models.FrequencyDomain;
+import org.amanzi.awe.afp.models.IAfpConstants;
 import org.amanzi.awe.afp.models.parameters.ChannelType;
 import org.amanzi.awe.afp.models.parameters.FrequencyBand;
 import org.amanzi.awe.afp.models.parameters.OptimizationType;
@@ -268,8 +269,8 @@ public class AfpModelTest extends AbstractAfpTest {
     private int getSectorCount(NetworkModel network, FrequencyBand frequencyBand) {
         int result = 0;
         for (Node sector : network.getAllElementsByType(null, NodeTypes.SECTOR)) {
-            String band = (String)sector.getProperty(INeoConstants.AFP_PROPERTY_FREQUENCY_BAND_NAME, "");
-            String layer = (String)sector.getProperty(INeoConstants.AFP_PROPERTY_LAYER_NAME, "");
+            String band = (String)sector.getProperty(IAfpConstants.AFP_PROPERTY_FREQUENCY_BAND_NAME, "");
+            String layer = (String)sector.getProperty(IAfpConstants.AFP_PROPERTY_LAYER_NAME, "");
             
             if (band.matches(frequencyBand.getRegExp()) ||
                 layer.matches(frequencyBand.getRegExp())) {
@@ -283,7 +284,7 @@ public class AfpModelTest extends AbstractAfpTest {
     private int getTrxCount(NetworkModel network, FrequencyBand frequencyBand) {
         int result = 0;
         for (Node trx : network.getAllElementsByType(null, NodeTypes.TRX)) {
-            String band = (String)trx.getProperty(INeoConstants.AFP_PROPERTY_FREQUENCY_BAND_NAME, "");
+            String band = (String)trx.getProperty(IAfpConstants.AFP_PROPERTY_FREQUENCY_BAND_NAME, "");
             
             if (band.matches(frequencyBand.getRegExp())) {
                 result++;
@@ -296,7 +297,7 @@ public class AfpModelTest extends AbstractAfpTest {
     private int getTrxCount(NetworkModel network, ChannelType channelType) {
         int result = 0;
         for (Node trx : network.getAllElementsByType(null, NodeTypes.TRX)) {
-            String band = (String)trx.getProperty(INeoConstants.AFP_PROPERTY_FREQUENCY_BAND_NAME, "");
+            String band = (String)trx.getProperty(IAfpConstants.AFP_PROPERTY_FREQUENCY_BAND_NAME, "");
             
             boolean toContinue = true;
             for (FrequencyBand frequencyBand : FrequencyBand.values()) {
@@ -336,7 +337,7 @@ public class AfpModelTest extends AbstractAfpTest {
     private int getTrxCount(NetworkModel network, FrequencyBand frequencyBand, ChannelType channelType) {
         int result = 0;
         for (Node trx : network.getAllElementsByType(null, NodeTypes.TRX)) {
-            String band = (String)trx.getProperty(INeoConstants.AFP_PROPERTY_FREQUENCY_BAND_NAME, "");
+            String band = (String)trx.getProperty(IAfpConstants.AFP_PROPERTY_FREQUENCY_BAND_NAME, "");
             
             if (!band.matches(frequencyBand.getRegExp())) {
                 continue;

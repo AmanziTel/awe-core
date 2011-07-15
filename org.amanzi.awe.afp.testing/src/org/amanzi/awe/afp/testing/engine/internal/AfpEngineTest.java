@@ -25,6 +25,7 @@ import junit.framework.Assert;
 
 import org.amanzi.awe.afp.exporters.AfpExporter;
 import org.amanzi.awe.afp.models.AfpModel;
+import org.amanzi.awe.afp.models.AfpNodeTypes;
 import org.amanzi.awe.afp.testing.engine.AbstractAfpTest;
 import org.amanzi.awe.afp.testing.engine.internal.AfpModelFactory.AfpScenario;
 import org.amanzi.neo.services.INeoConstants;
@@ -193,7 +194,7 @@ public class AfpEngineTest extends AbstractAfpTest {
 					boolean includes = true;
 					boolean continues = true;
 					if (arg0.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, null)
-							.equals(NodeTypes.AFP.getId()) ||
+							.equals(AfpNodeTypes.AFP.getId()) ||
 							arg0.endNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, null)
 							.equals("Fake"))
 						includes = false;
@@ -247,7 +248,7 @@ public class AfpEngineTest extends AbstractAfpTest {
 					.equals(NodeTypes.FREQUENCY_PLAN.getId()))
 						continues = false;
 					if (arg0.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "")
-							.equals(NodeTypes.AFP.getId()) ||
+							.equals(AfpNodeTypes.AFP.getId()) ||
 							arg0.endNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, "")
 							.equals("Fake"))
 						includes = false;
