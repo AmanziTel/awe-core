@@ -66,8 +66,8 @@ public class AfpDomainModel {
 			model.setName(name);
 
 			try {
-				String filter = (String) n.getProperty(INeoConstants.AFP_PROPERTY_FILTERS_NAME);
-				int trxCount = (Integer) n.getProperty(INeoConstants.AFP_PROPERTY_TRX_COUNT_NAME);
+				String filter = (String) n.getProperty(IAfpConstants.AFP_PROPERTY_FILTERS_NAME);
+				int trxCount = (Integer) n.getProperty(IAfpConstants.AFP_PROPERTY_TRX_COUNT_NAME);
 				model.setFilters(filter);
 				model.setNumTRX(trxCount);
 			} catch(Exception e) {

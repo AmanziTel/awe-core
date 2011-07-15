@@ -26,6 +26,7 @@ import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.afp.AfpNeighbourSubType;
 import org.amanzi.awe.afp.files.ControlFile;
+import org.amanzi.awe.afp.models.IAfpConstants;
 import org.amanzi.awe.afp.providers.AbstractTxFileHandler;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.core.utils.importer.CommonImporter;
@@ -577,7 +578,7 @@ public class AfpLoader {
                                 statistic.indexValue(planModel.getName(), NodeTypes.FREQUENCY_PLAN.getId(), "arfcn", frq.get(0));
                             }
                         }
-                        planNode.setProperty(INeoConstants.AFP_PROPERTY_ORIGINAL_NAME, false);
+                        planNode.setProperty(IAfpConstants.AFP_PROPERTY_ORIGINAL_NAME, false);
                         // }
 
                         tx.success();
@@ -668,7 +669,7 @@ public class AfpLoader {
                             Node planNode = planModel.getPlanNode(trxNode);
                             planNode.setProperty("arfcn", frq);
                             statistic.indexValue(planModel.getName(), NodeTypes.FREQUENCY_PLAN.getId(), "arfcn", frq);
-                            planNode.setProperty(INeoConstants.AFP_PROPERTY_ORIGINAL_NAME, false);
+                            planNode.setProperty(IAfpConstants.AFP_PROPERTY_ORIGINAL_NAME, false);
                         }
                         // Traverser traverser = Utils.getTrxTraverser(sector);
                         // int j = 0;

@@ -311,13 +311,13 @@ public class AfpModelNew {
         FrequencyDomain domain = new FrequencyDomain(band.getText(), true);
 
         Filter domainFilter = new Filter(FilterType.LIKE, ExpressionType.OR);
-        domainFilter.setExpression(NodeTypes.TRX, INeoConstants.AFP_PROPERTY_FREQUENCY_BAND_NAME, band.getRegExp());
+        domainFilter.setExpression(NodeTypes.TRX, IAfpConstants.AFP_PROPERTY_FREQUENCY_BAND_NAME, band.getRegExp());
         
         Filter sectorBandFilter = new Filter(FilterType.LIKE, ExpressionType.OR);
-        sectorBandFilter.setExpression(NodeTypes.SECTOR, INeoConstants.AFP_PROPERTY_FREQUENCY_BAND_NAME, band.getRegExp());
+        sectorBandFilter.setExpression(NodeTypes.SECTOR, IAfpConstants.AFP_PROPERTY_FREQUENCY_BAND_NAME, band.getRegExp());
         
         Filter sectorLayerFilter = new Filter(FilterType.LIKE);
-        sectorLayerFilter.setExpression(NodeTypes.SECTOR, INeoConstants.AFP_PROPERTY_LAYER_NAME, band.getRegExp());
+        sectorLayerFilter.setExpression(NodeTypes.SECTOR, IAfpConstants.AFP_PROPERTY_LAYER_NAME, band.getRegExp());
         
         sectorBandFilter.addFilter(sectorLayerFilter);
         domainFilter.addFilter(sectorBandFilter);

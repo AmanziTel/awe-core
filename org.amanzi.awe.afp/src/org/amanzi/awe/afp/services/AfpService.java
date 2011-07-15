@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.amanzi.awe.afp.models.AfpNodeTypes;
 import org.amanzi.awe.afp.models.parameters.ChannelType;
 import org.amanzi.awe.afp.models.parameters.FrequencyBand;
 import org.amanzi.awe.afp.models.parameters.OptimizationType;
@@ -64,7 +65,7 @@ public class AfpService extends AbstractService {
         
         Node result = null;
         try {
-            result = datasetService.createNode(NodeTypes.AFP);
+            result = datasetService.createNode(AfpNodeTypes.AFP);
             result.setProperty(INeoConstants.PROPERTY_NAME_NAME, scenarioName);
             
             networkNode.createRelationshipTo(result, DatasetRelationshipTypes.CHILD);
@@ -86,7 +87,7 @@ public class AfpService extends AbstractService {
         
         ArrayList<Node> result = new ArrayList<Node>();
         
-        for (Node afpNode : networkService.getNetworkElementTraversal(Evaluators.atDepth(1), NodeTypes.AFP).
+        for (Node afpNode : networkService.getNetworkElementTraversal(Evaluators.atDepth(1), AfpNodeTypes.AFP).
                                            traverse(networkNode).nodes()) {
             result.add(afpNode);
         }

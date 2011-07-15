@@ -1,6 +1,7 @@
 package org.amanzi.awe.afp.services;
 
 import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
+import org.amanzi.awe.afp.models.IAfpConstants;
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
@@ -101,27 +102,27 @@ public class DomainService extends AbstractService{
         Node frequencyNode = findFrequencyNode(frequencyDomainsNode, domainModel.getName());
         if (frequencyNode==null){
             frequencyNode = databaseService.createNode();
-            NodeTypes.AFP_DOMAIN.setNodeType(frequencyNode, databaseService);
+            NodeTypes.DOMAIN.setNodeType(frequencyNode, databaseService);
             NeoUtils.setNodeName(frequencyNode, domainModel.getName(), databaseService);
-            frequencyNode.setProperty(INeoConstants.AFP_PROPERTY_DOMAIN_NAME, INeoConstants.AFP_DOMAIN_NAME_FREQUENCY);
+            frequencyNode.setProperty(IAfpConstants.AFP_PROPERTY_DOMAIN_NAME, IAfpConstants.AFP_DOMAIN_NAME_FREQUENCY);
             frequencyNode.setProperty("order", order);
             if (domainModel.getFilters() != null) {
-                frequencyNode.setProperty(INeoConstants.AFP_PROPERTY_FILTERS_NAME, domainModel.getFilters());
+                frequencyNode.setProperty(IAfpConstants.AFP_PROPERTY_FILTERS_NAME, domainModel.getFilters());
             }
-            frequencyNode.setProperty(INeoConstants.AFP_PROPERTY_FREQUENCY_BAND_NAME, domainModel.getBand());
-            frequencyNode.setProperty(INeoConstants.AFP_PROPERTY_FREQUENCIES_NAME, domainModel.getFrequencies());
-            frequencyNode.setProperty(INeoConstants.AFP_PROPERTY_TRX_COUNT_NAME, domainModel.getNumTRX());
+            frequencyNode.setProperty(IAfpConstants.AFP_PROPERTY_FREQUENCY_BAND_NAME, domainModel.getBand());
+            frequencyNode.setProperty(IAfpConstants.AFP_PROPERTY_FREQUENCIES_NAME, domainModel.getFrequencies());
+            frequencyNode.setProperty(IAfpConstants.AFP_PROPERTY_TRX_COUNT_NAME, domainModel.getNumTRX());
          
             getLastFreqDomainNode(frequencyDomainsNode, DomainRelations.NEXT)
             .createRelationshipTo(frequencyNode, DomainRelations.NEXT);
         }
         else {
             if (domainModel.getFilters() != null) {
-                frequencyNode.setProperty(INeoConstants.AFP_PROPERTY_FILTERS_NAME, domainModel.getFilters());
+                frequencyNode.setProperty(IAfpConstants.AFP_PROPERTY_FILTERS_NAME, domainModel.getFilters());
             }
-            frequencyNode.setProperty(INeoConstants.AFP_PROPERTY_FREQUENCY_BAND_NAME, domainModel.getBand());
-            frequencyNode.setProperty(INeoConstants.AFP_PROPERTY_FREQUENCIES_NAME, domainModel.getFrequencies());
-            frequencyNode.setProperty(INeoConstants.AFP_PROPERTY_TRX_COUNT_NAME, domainModel.getNumTRX());
+            frequencyNode.setProperty(IAfpConstants.AFP_PROPERTY_FREQUENCY_BAND_NAME, domainModel.getBand());
+            frequencyNode.setProperty(IAfpConstants.AFP_PROPERTY_FREQUENCIES_NAME, domainModel.getFrequencies());
+            frequencyNode.setProperty(IAfpConstants.AFP_PROPERTY_TRX_COUNT_NAME, domainModel.getNumTRX());
 
         }
 

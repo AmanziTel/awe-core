@@ -5,6 +5,7 @@ import java.util.Collection;
 import org.amanzi.awe.afp.models.AfpDomainModel;
 import org.amanzi.awe.afp.models.AfpFrequencyDomainModel;
 import org.amanzi.awe.afp.models.AfpModel;
+import org.amanzi.awe.afp.models.IAfpConstants;
 import org.amanzi.awe.afp.services.DomainRelations;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -357,14 +358,14 @@ public class AfpFrequencySelector extends AfpDomainSelector{
                         Transaction tx = NeoUtils.beginTx(domainNode.getGraphDatabase());
                         try{
                             if (domainNode.hasRelationship(DomainRelations.ASSIGNED_NEXT, Direction.OUTGOING)){
-                                domainNode.removeProperty(INeoConstants.AFP_PROPERTY_FILTERS_NAME);
+                                domainNode.removeProperty(IAfpConstants.AFP_PROPERTY_FILTERS_NAME);
                                 domainNode.getSingleRelationship(DomainRelations.ASSIGNED_NEXT, Direction.INCOMING).getStartNode()
                                 .createRelationshipTo(domainNode.getSingleRelationship(DomainRelations.ASSIGNED_NEXT, Direction.OUTGOING).getEndNode(), DomainRelations.ASSIGNED_NEXT);
                                 domainNode.getSingleRelationship(DomainRelations.ASSIGNED_NEXT, Direction.INCOMING).delete();
                                 domainNode.getSingleRelationship(DomainRelations.ASSIGNED_NEXT, Direction.OUTGOING).delete();
                             }
                             else if (domainNode.hasRelationship(DomainRelations.ASSIGNED_NEXT,Direction.INCOMING)){
-                                domainNode.removeProperty(INeoConstants.AFP_PROPERTY_FILTERS_NAME);
+                                domainNode.removeProperty(IAfpConstants.AFP_PROPERTY_FILTERS_NAME);
                                 domainNode.getSingleRelationship(DomainRelations.ASSIGNED_NEXT, Direction.INCOMING).delete();
                             }
                             tx.success();

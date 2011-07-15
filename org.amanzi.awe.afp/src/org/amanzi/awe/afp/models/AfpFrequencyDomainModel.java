@@ -18,8 +18,8 @@ public class AfpFrequencyDomainModel extends AfpDomainModel {
 			
 			AfpDomainModel.getModel(model, n);
 
-			String band = (String) n.getProperty(INeoConstants.AFP_PROPERTY_FREQUENCY_BAND_NAME);
-			String[] frequencies = (String[]) n.getProperty(INeoConstants.AFP_PROPERTY_FREQUENCIES_NAME);
+			String band = (String) n.getProperty(IAfpConstants.AFP_PROPERTY_FREQUENCY_BAND_NAME);
+			String[] frequencies = (String[]) n.getProperty(IAfpConstants.AFP_PROPERTY_FREQUENCIES_NAME);
 			
 			model.setBand(band);
 			model.setFrequencies(frequencies);

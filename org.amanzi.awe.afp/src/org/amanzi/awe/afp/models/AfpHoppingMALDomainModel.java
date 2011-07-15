@@ -240,7 +240,7 @@ public class AfpHoppingMALDomainModel extends AfpDomainModel{
 			
 			AfpDomainModel.getModel(model, n);
 
-			int[] malsize = (int[]) n.getProperty(INeoConstants.AFP_PROPERTY_MAL_SIZE_NAME);
+			int[] malsize = (int[]) n.getProperty(IAfpConstants.AFP_PROPERTY_MAL_SIZE_NAME);
 			
 			model.setMALSize(malsize);
 		
