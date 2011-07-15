@@ -22,42 +22,23 @@ import org.neo4j.graphdb.Direction;
  */
 
 public enum NetworkRelationshipTypes implements DeletableRelationshipType {
-    AGGREGATION(null,null),
-    CHILD(RelationDeletableTypes.DELETE_WITH_LINKED,RelationDeletableTypes.DELETE_ONLY_LINK),
-    SIBLING(null,null),
-    INTERFERS(null,null),
-    DELTA_REPORT(null,null),
-    MISSING(null,null),
-    NEIGHBOUR(null,null), 
-    TRANSMISSION(null,null),
-    TRANSMISSIONS(null,null),
-    DIFFERENT(null,null), 
-    NEIGHBOUR_DATA(null,null), 
-    TRANSMISSION_DATA(null,null),
-    AGGREGATE(null,null),
-    MULTI_AGGREGATE(null, null),
-    NEXT(null, null),
-    NEIGHBOURS(null, null),
-    INTERFERENCE_DATA(null, null), 
-    INTERFERENCE(null, null),
-    EXCEPTION_DATA(null, null),
-    EXCEPTION(null, null),
-    EXCEPTIONS(null, null),
- SELECTION(null, null), SELECTED(null, null),
-    FILE_PROPERTIES(null, null),
-    DOMAIN(null,null);
-    
-  
-    
+    AGGREGATION(null, null), CHILD(RelationDeletableTypes.DELETE_WITH_LINKED, RelationDeletableTypes.DELETE_ONLY_LINK), SIBLING(
+            null, null), INTERFERS(null, null), DELTA_REPORT(null, null), MISSING(null, null), NEIGHBOUR(null, null), TRANSMISSION(
+            null, null), TRANSMISSIONS(null, null), DIFFERENT(null, null), NEIGHBOUR_DATA(null, null), TRANSMISSION_DATA(null, null), AGGREGATE(
+            null, null), MULTI_AGGREGATE(null, null), NEXT(null, null), NEIGHBOURS(null, null), INTERFERENCE_DATA(null, null), INTERFERENCE(
+            null, null), EXCEPTION_DATA(null, null), EXCEPTION(null, null), EXCEPTIONS(null, null), SELECTION(null, null), SELECTED(
+            null, null), FILE_PROPERTIES(null, null), DOMAIN(null, null);
+
     private RelationDeletableTypes deletableOut;
     private RelationDeletableTypes deletableIn;
-    
+
     /**
      * Constructor.
+     * 
      * @param aDeletableIn (if link is incoming)
      * @param aDeletableOut (if link is outgoing)
      */
-    private NetworkRelationshipTypes(RelationDeletableTypes aDeletableIn, RelationDeletableTypes aDeletableOut){
+    private NetworkRelationshipTypes(RelationDeletableTypes aDeletableIn, RelationDeletableTypes aDeletableOut) {
         deletableIn = aDeletableIn;
         deletableOut = aDeletableOut;
     }
@@ -71,7 +52,7 @@ public enum NetworkRelationshipTypes implements DeletableRelationshipType {
     public RelationDeletableTypes getDeletableTypeOut() {
         return deletableOut;
     }
-    
+
     @Override
     public RelationDeletableTypes getDeletableType(Direction aDirection) {
         switch (aDirection) {
@@ -80,7 +61,7 @@ public enum NetworkRelationshipTypes implements DeletableRelationshipType {
         case OUTGOING:
             return deletableOut;
         default:
-            throw new IllegalArgumentException("Unknown direction <"+aDirection+">.");
+            throw new IllegalArgumentException("Unknown direction <" + aDirection + ">.");
         }
     }
 }

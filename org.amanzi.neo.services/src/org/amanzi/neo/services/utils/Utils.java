@@ -656,7 +656,7 @@ public class Utils {
             public boolean isReturnableNode(TraversalPosition currentPos) {
                 Node node = currentPos.currentNode();
                 // TODO optimize - get all childs of project like root node!
-                if (!(NodeTypes.NETWORK.checkNode(node) || NodeTypes.AFP.checkNode(node) || isDatasetNode(node) || isOssNode(node))) {
+                if (!(NodeTypes.NETWORK.checkNode(node)|| isDatasetNode(node) || isOssNode(node))) {
                     return false;
                 }
                 return additionalReturnableEvaluator == null || additionalReturnableEvaluator.isReturnableNode(currentPos);

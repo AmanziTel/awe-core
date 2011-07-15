@@ -554,9 +554,9 @@ public enum NodeTypes implements INodeType{
             return null;
         }
     },
-    AFP("afp"),
-    AFP_CELL("afp_cell"),
-    AFP_DOMAIN("domain"),
+   // AFP("afp"),
+    
+    DOMAIN("domain"),
     SITE_SITE_RELATIONS("site_site_relations"),
     SECTOR_SECTOR_RELATIONS("sector_sector_relations"),
     NODE_NODE_RELATIONS("node_node_relations"),
@@ -611,7 +611,7 @@ public enum NodeTypes implements INodeType{
     UTRAN_DATA("utran_data"), GLOBAL_PROPERTIES("global_properties"),
     ROOT_PROXY("root_proxy"),
     PROXY("proxy"), TRX("carrier"), FREQ("freq"),
-    FREQUENCY_PLAN("frequency_plan"),SY_GROUP("sy_group"),FREQUENCY_ROOT("frq_root"), FR_SPECTRUM("fr_spectrum"), AFP_SF("afp_scaling_factor"),
+    FREQUENCY_PLAN("frequency_plan"),SY_GROUP("sy_group"),FREQUENCY_ROOT("frq_root"), FR_SPECTRUM("fr_spectrum"), 
     SELECTION_LIST("selection_list");
     
     

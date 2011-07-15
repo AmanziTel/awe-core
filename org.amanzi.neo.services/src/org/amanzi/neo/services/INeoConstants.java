@@ -159,10 +159,7 @@ public interface INeoConstants {
     public static final String MAX_VALUE = "max value";
     
     public static final String COMMAND_PROPERTY_NAME = "command";
-    
-    
-    public static final String PROBE_LA = "LA";
-    public static final String PROBE_F = "Frequency";
+
     public static final String PROPERTY_SITE_NO = "site_no";
     public static final String GPEH_FILE_VER = "file ver.";
     public static final String GPEH_DAY = "day";
@@ -178,7 +175,7 @@ public interface INeoConstants {
     public static final String SECTOR_TYPE = "sector_type";
     
     public static final String M_EVENT_TYPE = "m_type";
-    public static final String M_PROBE_ID = "probe_id";
+
     public static final String PRIMARY_TYPE_ID = "primary_type";
     public static final String PROPERTY_IS_INCONCLUSIVE = "is_inconclusive";
     public static final String PROPERTY_INCONCLUSIVE_STATE = "inconclusive_state";
@@ -210,46 +207,14 @@ public interface INeoConstants {
     
     public static final String PROPERTY_TEMPLATE_NAME = "template";
     
-    public static final String AFP_OPTIMIZATION_PARAMETERS = "optimization_parameters";
-    public static final String AFP_FREQUENCY_BAND = "frequency_band";
-    public static final String AFP_CHANNEL_TYPE = "channel_type";
-    public static final String AFP_ANALYZE_CURRENT = "analyze_current";
-    public static final String AFP_AVAILABLE_FREQUENCIES_900 = "available_frequencies_900";
-    public static final String AFP_AVAILABLE_FREQUENCIES_1800 = "available_frequencies_1800";
-    public static final String AFP_AVAILABLE_FREQUENCIES_850 = "available_frequencies_850";
-    public static final String AFP_AVAILABLE_FREQUENCIES_1900 = "available_frequencies_1900";
-    public static final String AFP_AVAILABLE_NCCS = "available_nccs";
-    public static final String AFP_AVAILABLE_BCCS = "available_bccs";
-    public static final String AFP_SECTOR_SCALING_RULES = "sector_scaling_rules";
-    public static final String AFP_SITE_SCALING_RULES = "site_scaling_rules";
     
-//    public static final String AFP_CO_INTERFERENCE_VALUES = "co_interference";
-//    public static final String AFP_ADJ_INTERFERENCE_VALUES = "adj_interference";
-//    public static final String AFP_CO_NEIGHBOR_VALUES = "co_neighbor";
-//    public static final String AFP_ADJ_NEIGHBOR_VALUES = "adj_neighbor";
-//    public static final String AFP_CO_TRIANGULATION_VALUES = "co_triangulation";
-//    public static final String AFP_ADJ_TRIANGULATION_VALUES = "adj_triangulation";
-//    public static final String AFP_CO_SHADOWING_VALUES = "co_shadowing";
-//    public static final String AFP_ADJ_SHADOWING_VALUES = "adj_shadowing";
     
-    public static final String AFP_PROPERTY_DOMAIN_NAME = "domain";
-    public static final String AFP_DOMAIN_NAME_FREQUENCY = "frequency";
-    public static final String AFP_DOMAIN_NAME_MAL = "MAL";
-    public static final String AFP_DOMAIN_NAME_SITE_SEPARATION = "site_separation";
-    public static final String AFP_DOMAIN_NAME_SECTOR_SEPARATION = "sector_separation";
-    public static final String AFP_PROPERTY_FREQUENCY_BAND_NAME = "band";
-    public static final String AFP_PROPERTY_FREQUENCIES_NAME = "frequencies";
-    public static final String AFP_PROPERTY_TRX_COUNT_NAME = "trx_count";
-    public static final String AFP_PROPERTY_MAL_SIZE_NAME = "mal_size";
-    public static final String AFP_PROPERTY_SEPARATIONS_NAME = "separations";
-    public static final String AFP_PROPERTY_FILTERS_NAME = "filters";
-    public static final String AFP_PROPERTY_ORIGINAL_NAME = "original";
     public static final String PROPERTY_USED_NODES = "used nodes";
     public static final String PROPERTY_TOTAL_NODES = "total nodes";
     public static final String PROPERTY_FIXED_COLOR = "fixed_color";
     public static final String INDEX_REL_MULTY = "multy-aggregate";
     public static final String PROPERTY_MAIO = "maio";
     
-    public static final String AFP_PROPERTY_LAYER_NAME = "layer";
+    
 
 }

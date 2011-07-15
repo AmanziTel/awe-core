@@ -846,7 +846,7 @@ CHANNEL_TRX,
                      boolean continues;
                      
                      if (arg0.endNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, "").equals(domain)
-                             &&arg0.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.AFP_DOMAIN.getId())){
+                             &&arg0.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.DOMAIN.getId())){
                          includes = true;
                      }
                      continues =(arg0.length()<2)&&(!includes);
