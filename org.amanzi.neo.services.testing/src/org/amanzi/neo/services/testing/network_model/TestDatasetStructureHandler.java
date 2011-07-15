@@ -112,7 +112,7 @@ public class TestDatasetStructureHandler {
         checkingMockGetProperty(baseNode,"structure",new String[]{NodeTypes.NETWORK.getId(),NodeTypes.BSC.getId(),NodeTypes.SECTOR.getId()});
         DatasetStructureHandler handler = new DatasetStructureHandler(baseNode,service);
         assertTrue(handler.contain(NodeTypes.NETWORK));
-        assertFalse(handler.contain(NodeTypes.AFP));
+        
     }
     public void checkingMockGetProperty(final Node baseNode,final  String propertyName,final  Object propertyValue) {
         mockContext.checking(new Expectations() {
