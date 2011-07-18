@@ -1634,7 +1634,7 @@ public class GpehStatisticModel {
                     if (entryCache.getValue() == null) {
                         continue;
                     }
-                    // RelationshipType relt = getCellRelation(entryCache.getKey());
+                     RelationshipType relt = getCellRelation(entryCache.getKey());
                     // if (relt == null || entryCache.getKey() == null) {
                     // System.err.println("Null rel");
                     // }
@@ -1643,7 +1643,7 @@ public class GpehStatisticModel {
                         if (!currentNode.hasRelationship(Direction.OUTGOING)) {
                             pscRoot = service.createNode();
                             pscRoot.setProperty("type", NodeTypes.M.getId());
-                            pscRoot.setProperty("name", entry.getKey().getCi() + "_" + entry.getKey().getRnc());
+                            pscRoot.setProperty("name",relt.name());
                             currentNode.createRelationshipTo(pscRoot, NetworkRelationshipTypes.NEXT);
                             currentNode = pscRoot;
                         } else {
