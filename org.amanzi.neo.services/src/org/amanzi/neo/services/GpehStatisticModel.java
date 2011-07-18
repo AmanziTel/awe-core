@@ -1423,8 +1423,8 @@ public class GpehStatisticModel {
                         rscpCount = 0;
 
                     }
-                     cellRoot.setProperty(String.format("%srscp%s", beginTimestamp, rscp),
-                     cell.rscpEcno[rscp]);
+             //        cellRoot.setProperty(String.format("%srscp%s", beginTimestamp, rscp),
+              //       cell.rscpEcno[rscp]);
                 }
                 // ecno sum
                 for (int ecno = 0; ecno < 50; ecno++) {
@@ -1478,7 +1478,7 @@ public class GpehStatisticModel {
                     statistic.indexValue(root_key, NodeTypes.M.getId(), paramInterEcnoList.get(i), pool.interPool.ecno[i]);
 
                 }
-                node.setProperty("interRscp" + beginTimestamp, pool.interPool.rscp);
+                //node.setProperty("interRscp" + beginTimestamp, pool.interPool.rscp);
                 for (int i = 0; i < (paramInterRSCPECNO14.size() + paramInterRSCPECNO10.size()); i++) {
                     if (i < paramInterRSCPECNO14.size()) {
                         node.setProperty(paramInterRSCPECNO14.get(i), pool.interPool.rscp[i]);
@@ -1502,13 +1502,13 @@ public class GpehStatisticModel {
                     statistic.indexValue(root_key, NodeTypes.M.getId(), paramIntraEcnoListDelta.get(i), pool.intraPool.ecnoD[i]);
                 }
 
-                node.setProperty("intraRscpD" + beginTimestamp, pool.intraPool.rscpD);
+               // node.setProperty("intraRscpD" + beginTimestamp, pool.intraPool.rscpD);
                 for (int i = 0; i < paramIntraRSCPListDelta.size(); i++) {
                     node.setProperty(paramIntraRSCPListDelta.get(i), pool.intraPool.rscpD[i]);
                     statistic.indexValue(root_key, NodeTypes.M.getId(), paramIntraRSCPListDelta.get(i), pool.intraPool.rscpD[i]);
                 }
 
-                node.setProperty("positions", pool.intraPool.position);
+               // node.setProperty("positions", pool.intraPool.position);
                 for (int i = 0; i < paramPositionList.size(); i++) {
                     node.setProperty(paramPositionList.get(i), pool.intraPool.position[i]);
                     statistic.indexValue(root_key, NodeTypes.M.getId(), paramPositionList.get(i), pool.intraPool.position[i]);
