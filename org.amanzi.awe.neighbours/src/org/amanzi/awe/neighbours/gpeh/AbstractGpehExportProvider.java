@@ -14,10 +14,12 @@
 package org.amanzi.awe.neighbours.gpeh;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.amanzi.awe.statistics.CallTimePeriods;
 import org.amanzi.neo.core.utils.export.IExportProvider;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.neo.services.utils.Pair;
 import org.neo4j.graphdb.Direction;
@@ -53,6 +55,7 @@ public abstract class AbstractGpehExportProvider implements IExportProvider {
             LuceneIndexService luceneService) {
         tx = NeoUtils.beginTx(service);
         try {
+    
             this.dataset = dataset;
             this.network = network;
             this.statRelation = statRelation;
@@ -80,8 +83,8 @@ public abstract class AbstractGpehExportProvider implements IExportProvider {
      * @return the node
      */
     protected Node defineStatRoot() {// TODO check on existing statistics
-        Node statMain = dataset.getSingleRelationship(GpehRelationshipType.GPEH_STATISTICS, Direction.OUTGOING).getOtherNode(dataset);
-        Relationship rel = statMain.getSingleRelationship(statRelation, Direction.OUTGOING);
+        Node statMain = dataset.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.OUTGOING).getEndNode();
+        Relationship rel = dataset.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.OUTGOING);
         return rel == null ? null : rel.getOtherNode(statMain);
     }
 

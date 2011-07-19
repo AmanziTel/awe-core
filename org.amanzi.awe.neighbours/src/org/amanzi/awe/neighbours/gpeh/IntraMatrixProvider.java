@@ -69,7 +69,7 @@ public class IntraMatrixProvider extends AbstractGpehExportProvider {
      * Define row iterator.
      */
     protected void defineRowIterator() {
-        rowIter = new RowIterator(statRoot);
+        rowIter = new RowIterator(statRelation.name(),statRoot);
     }
 
 

@@ -69,6 +69,7 @@ public class RrcModel<M extends RrcModelHandler> {
      * @param checkRule 
      */
     public RrcModel(M modelHandler, boolean checkRule) {
+    	
         this.modelHandler = modelHandler;
         this.checkRule = checkRule;
     }

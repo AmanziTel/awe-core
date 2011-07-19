@@ -14,6 +14,7 @@
 package org.amanzi.awe.neighbours.gpeh;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -71,17 +72,20 @@ public class InterModelHandler extends IntraModelHandler {
       String value = String.valueOf("N/A");
       data.add(value);
       // # of MR for best cell
-      data.add(computeValue(bestCell.getCellSectorInfo(),"numMrForBestCellInter%s",timestamps));
+      data.add(computeValue(bestCell.getCellSectorInfo(),NUM_INTER_MES_BEST_CELL,timestamps));
       // # of MR for Interfering cell
-      data.add(computeValue(interfCell.getCellSectorInfo(),"interMr%s",timestamps));
+      data.add(computeValue(interfCell.getCellSectorInfo(),NUM_INTER_MES,timestamps));
+
+
       // EcNo 1-5
       int[]values=new int[5];
-      computeArrayValue(values,interfCell.getCellSectorInfo(),"interEcno%s",timestamps);
+      computeArrayValue(values,interfCell.getCellSectorInfo(),paramInterEcnoList,timestamps);
       for (int i = 0; i < 5; i++) {
           data.add(values[i]);
       }
       values=new int[10];
-      computeArrayValue(values,interfCell.getCellSectorInfo(),"interRscp%s",timestamps);
+      paramInterRSCPECNO14.addAll(paramInterRSCPECNO10);
+      computeArrayValue(values,interfCell.getCellSectorInfo(),paramInterRSCPECNO14,timestamps);
       for (int i = 0; i < 10; i++) {
           data.add(values[i]);
       }

@@ -82,7 +82,7 @@ public class CellCorrelationProvider extends IntraMatrixProvider {
 
     @Override
     protected void defineRowIterator() {
-        rowIter = new BestCellIterator(statRoot);
+        rowIter = new BestCellIterator(statRelation.name(),statRoot);
     }
 
     @Override

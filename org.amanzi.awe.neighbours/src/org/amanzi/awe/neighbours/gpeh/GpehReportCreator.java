@@ -98,7 +98,7 @@ public class GpehReportCreator {
         minMax = NeoUtils.getMinMaxTimeOfDataset(gpeh);
         extension=".txt";
     }
-
+    
     /**
      * Gets the extension.
      *
