@@ -87,12 +87,7 @@
             id="org.amanzi.neo.loader.LoadNetworkSite"
                    tooltip="Load Network Data">
              </command>
-             <command
-                   commandId="org.amanzi.neo.loader.commands.LoadGPEHHandler"
-            icon="icons/16/delta_network.png"
-            id="org.amanzi.neo.loader.LoadGPEH"
-                   tooltip="Load OSS Data">
-             </command>
+             
              <command
                    commandId="org.amanzi.neo.loader.commands.LoadDrive"
             icon="icons/16/drive.png"
@@ -132,16 +127,7 @@
  				Import one or more drive data log files into the project database
           </description>
        </wizard>
-        <wizard
-             category="org.amanzi.load"
-             class="org.amanzi.neo.wizards.GPEHImportWizard"
-             icon="icons/16/delta_network.png"
-             id="org.amanzi.neo.wizards.GPEHImportWizard"
-             name="Import Drive data">
-          <description>
- 				Import one or more drive data log files into the project database
-          </description>
-       </wizard>
+        
     </extension>
    <extension
          point="net.refractions.udig.ui.newObjectAction">
