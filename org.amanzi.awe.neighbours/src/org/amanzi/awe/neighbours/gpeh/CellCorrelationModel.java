@@ -15,7 +15,8 @@ package org.amanzi.awe.neighbours.gpeh;
 
 import java.util.Iterator;
 
-import org.amanzi.neo.core.utils.GpehReportUtil;
+
+import org.amanzi.awe.neighbours.GpehReportUtil;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.neo4j.graphdb.GraphDatabaseService;

@@ -53,13 +53,6 @@ public class Template {
             public String getTypeName() {
                 return OssType.GRID.getId();
             }
-        },
-        GPEH {
-
-            @Override
-            public String getTypeName() {
-                return OssType.GPEH.getId();
-            }
         };
         public String getTypeName() {
             return name().toLowerCase();

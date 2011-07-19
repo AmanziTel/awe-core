@@ -57,7 +57,9 @@ public abstract class AbstractService implements IDatabaseChangeListener {
         this.databaseService = databaseService;
         updateService = false;
     }
-    
+    public GraphDatabaseService getGraphDatabaseService(){
+        return databaseService;
+    }
     public void onDatabaseAccessChange() {
         if (updateService) {
             this.databaseService = DatabaseManager.getInstance().getCurrentDatabaseService();

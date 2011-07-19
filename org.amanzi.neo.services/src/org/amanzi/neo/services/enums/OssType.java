@@ -27,7 +27,7 @@ import org.neo4j.graphdb.Transaction;
  * @since 1.0.0
  */
 public enum OssType {
-    GPEH("GPEH Data"), COUNTER("RNC Counters Data"), PERFORMANCE_COUNTER("Performance counter"),GRID("Grid counter");
+    COUNTER("RNC Counters Data"), PERFORMANCE_COUNTER("Performance counter"),GRID("Grid counter");
 
     public static final String PROPERTY_NAME = "oss_type";
     private final String id;

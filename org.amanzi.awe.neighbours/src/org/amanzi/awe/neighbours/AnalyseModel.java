@@ -22,7 +22,7 @@ import java.util.Set;
 
 import org.amanzi.neo.core.enums.gpeh.Events;
 import org.amanzi.neo.core.enums.gpeh.Parameters;
-import org.amanzi.neo.core.utils.GpehReportUtil;
+
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
@@ -244,7 +244,7 @@ public class AnalyseModel {
             @Override
             public boolean isReturnableNode(TraversalPosition currentPos) {
                 Node currentNode=currentPos.currentNode();
-                if (!NodeTypes.GPEH_EVENT.checkNode(currentNode)){
+                if (!GpehNodeTypes.GPEH_EVENT.checkNode(currentNode)){
                     return false;
                 }
                 Integer id=(Integer)currentNode.getProperty(INeoConstants.PROPERTY_EVENT_ID,null);

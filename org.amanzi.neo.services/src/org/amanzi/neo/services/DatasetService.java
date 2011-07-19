@@ -296,25 +296,7 @@ public class DatasetService extends AbstractService implements IDatasetService {
         return findChildByName(datasetNode, fileName);
     }
 
-    /**
-     * Gets the gpeh statistics - if node not found, the necessary node was created
-     * 
-     * @param datasetNode the dataset node
-     * @return the gpeh statistics
-     */
-    public GpehStatisticModel getGpehStatistics(Node datasetNode) {
-        if (datasetNode.hasRelationship(DatasetRelationshipTypes.GPEH_STATISTICS, Direction.OUTGOING)) {
-            Node statNode = datasetNode.getSingleRelationship(DatasetRelationshipTypes.GPEH_STATISTICS, Direction.OUTGOING)
-                    .getEndNode();
-            return new GpehStatisticModel(datasetNode, statNode, databaseService);
-        } else {
-            // Node statNode = databaseService.createNode();
-            // datasetNode.createRelationshipTo(statNode, DatasetRelationshipTypes.GPEH_STATISTICS);
-            // return new GpehStatisticModel(datasetNode, statNode, databaseService);
-            return new GpehStatisticModel(datasetNode, datasetNode, databaseService);
-        }
-    }
-
+    
     /**
      * Find root node by name - root node it is child of project node (network,dataset,oss)
      * 

@@ -346,34 +346,7 @@ public class LoaderUiUtils extends LoaderUtils{
         return oss;
     }
 
-    /**
-     *find or create Cell root node
-     * @param ossRoot oss_gpeh root node
-     * @param neo neoservice
-     * @return Pair<cell_root node, last child or null if no child found>
-     */
-    public static Pair<Node, Node> findOrCreateGPEHCellRootNode(Node ossRoot, GraphDatabaseService neo) {
-        Transaction tx = neo.beginTx();
-        try {
-            Relationship relation = ossRoot.getSingleRelationship(GeoNeoRelationshipTypes.CELLS, Direction.OUTGOING);
-            Node cellNode;
-            if (relation!=null){
-                cellNode=relation.getOtherNode(ossRoot); 
-            }else{
-                cellNode=neo.createNode();
-                //TODO check name
-                cellNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, "CELL ROOT");
-                NodeTypes.GPEH_CELL_ROOT.setNodeType(cellNode, neo);
-                ossRoot.createRelationshipTo(cellNode,GeoNeoRelationshipTypes.CELLS);
-            }
-            Node child=NeoUtils.findLastChild(cellNode, neo);
-            tx.success();
-            return new Pair<Node,Node>(cellNode,child);
-        } finally {
-            tx.finish();
-        }
-    }
-
+    
     
     /**
      * Gets the selected nodes.

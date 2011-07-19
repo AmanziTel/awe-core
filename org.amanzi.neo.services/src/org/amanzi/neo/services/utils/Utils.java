@@ -34,7 +34,6 @@ import java.util.Set;
 
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.db.manager.NeoServiceProvider;
-import org.amanzi.neo.services.GpehReportUtil;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 
@@ -100,6 +99,9 @@ public class Utils {
     private static final String LOCATION_INDEX_NAME = "Index-location-";
 
     private static final String PROXY_NAME_SEPARATOR = "/";
+    
+    /** The Constant RNC_ID. */
+    private static final String RNC_ID = "rncId";
 
     protected Utils() {
         // hide constructor
@@ -2280,7 +2282,7 @@ public class Utils {
             String indexName = getLuceneIndexKeyByProperty(baseNode, INeoConstants.PROPERTY_SECTOR_CI, NodeTypes.SECTOR);
             IndexHits<Node> nodesCi = luceneService.getNodes(indexName, ci);
             for (Node node : nodesCi) {
-                Object rncId = node.getProperty(GpehReportUtil.RNC_ID, null);
+                Object rncId = node.getProperty(RNC_ID, null);
                 if (rnc.equals(rncId)) {
                     return node;
                 }

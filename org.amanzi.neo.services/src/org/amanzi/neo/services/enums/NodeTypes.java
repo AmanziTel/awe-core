@@ -168,8 +168,6 @@ public enum NodeTypes implements INodeType{
     CHART("spreadsheet_chart"),
     CHART_ITEM("spreadsheet_chart_item"),
     CELL("spreadsheet_cell"),
-    GPEH_CELL_ROOT("cell_root"),
-    GPEH_CELL("gpeh_cell"),
     AWE_PROJECT("awe_project"){
         @Override
         protected NodeDeletableTypes checkDeletableByType(Node aNode, Relationship cameFrom){
@@ -554,14 +552,13 @@ public enum NodeTypes implements INodeType{
             return null;
         }
     },
-   // AFP("afp"),
-    
+     
     DOMAIN("domain"),
     SITE_SITE_RELATIONS("site_site_relations"),
     SECTOR_SECTOR_RELATIONS("sector_sector_relations"),
     NODE_NODE_RELATIONS("node_node_relations"),
     OSS("oss"), 
-    GPEH_EVENT("gpeh_event"), 
+    
     OSS_MAIN("oss_main"),
 //    URBAN_CONFIG("urban_config"),
     FILTER("filter"){

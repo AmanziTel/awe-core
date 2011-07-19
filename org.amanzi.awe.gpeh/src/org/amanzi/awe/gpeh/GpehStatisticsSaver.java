@@ -25,16 +25,17 @@ import org.amanzi.awe.gpeh.parser.internal.GPEHEvent.Event;
 import org.amanzi.awe.l3messages.AsnParserEvent;
 import org.amanzi.awe.l3messages.IAsnParserListener;
 import org.amanzi.awe.l3messages.MessageDecoder;
+import org.amanzi.awe.neighbours.GpehReportUtil;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.loader.core.DatasetInfo;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.loader.core.saver.MetaData;
 import org.amanzi.neo.services.DatasetService;
-import org.amanzi.neo.services.GpehReportUtil;
-import org.amanzi.neo.services.GpehStatisticModel;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.RrcMeasurement;
+import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
@@ -163,7 +164,18 @@ public class GpehStatisticsSaver implements ISaver<GpehTransferData> {
      */
     public synchronized GpehStatisticModel getStatisticReport() {
         if (statmodel == null) {
-            statmodel = datasetService.getGpehStatistics(datasetNode);
+            
+            
+            if (datasetNode.hasRelationship(DatasetRelationshipTypes.STATISTICS, Direction.OUTGOING)) {
+                Node statNode = datasetNode.getSingleRelationship(DatasetRelationshipTypes.STATISTICS, Direction.OUTGOING)
+                        .getEndNode();
+                return new GpehStatisticModel(datasetNode, statNode, datasetService.getGraphDatabaseService());
+            } else {
+                // Node statNode = databaseService.createNode();
+                // datasetNode.createRelationshipTo(statNode, DatasetRelationshipTypes.GPEH_STATISTICS);
+                // return new GpehStatisticModel(datasetNode, statNode, databaseService);
+                return new GpehStatisticModel(datasetNode, datasetNode, datasetService.getGraphDatabaseService());
+            }
         }
         return statmodel;
     }

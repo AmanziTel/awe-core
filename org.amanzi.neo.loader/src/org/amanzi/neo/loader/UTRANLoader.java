@@ -30,7 +30,6 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.amanzi.neo.core.utils.GpehReportUtil;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.sax_parsers.AbstractTag;
 import org.amanzi.neo.loader.sax_parsers.IXmlTag;
@@ -86,6 +85,8 @@ public class UTRANLoader extends AbstractLoader {
     
     private static final String FORMAT_STR = "Node %s. Property %s. Old valus %s. New value %s not saved";
     private static final String UTRAN_SEC_TYPE = "utran";
+    private static final String RNC_ID = "rncId";
+    private static final String PRIMARY_SCR_CODE = "primaryScramblingCode";
     
     /** The Constant KEY_EVENT. */
     private static final int KEY_EVENT = 1;
@@ -240,7 +241,7 @@ public class UTRANLoader extends AbstractLoader {
         gis = findOrCreateGISNode(basename, GisTypes.NETWORK.getHeader(), NetworkTypes.RADIO);
         updateTx();
         network = findOrCreateNetworkNode(gis);
-        scrCodeIndName=NeoUtils.getLuceneIndexKeyByProperty(network, GpehReportUtil.PRIMARY_SCR_CODE, NodeTypes.SECTOR);
+        scrCodeIndName=NeoUtils.getLuceneIndexKeyByProperty(network, PRIMARY_SCR_CODE, NodeTypes.SECTOR);
         updateTx();
         perc = 0;
         idMap.clear();
@@ -1454,7 +1455,7 @@ public class UTRANLoader extends AbstractLoader {
                 }
                 
                 storeProperty(sector, map);
-                sector.setProperty(GpehReportUtil.RNC_ID, ((RncFunction)parent).getRncId());
+                sector.setProperty(RNC_ID, ((RncFunction)parent).getRncId());
             } finally {
                 tx.finish();
             }
@@ -1476,7 +1477,7 @@ public class UTRANLoader extends AbstractLoader {
                     String value = entry.getValue();
                     if (!node.hasProperty(key)) {
                         if (key.equals("primaryScramblingCode")){
-                            node.setProperty(GpehReportUtil.PRIMARY_SCR_CODE, value); 
+                            node.setProperty(PRIMARY_SCR_CODE, value); 
                             index.index(node, scrCodeIndName, value);
                         }else{
                         setIndexPropertyNotParcedValue(headers, node, key, value);

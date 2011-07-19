@@ -250,7 +250,7 @@ public class OSSImportWizardPage extends WizardPage {
                 return false;
             }
             // GPEH & RNC handle only directories
-            if (file.isFile() && (ossDirType.left() == OssType.GPEH || ossDirType.left() == OssType.COUNTER)) {
+            if (file.isFile() && (ossDirType.left() == OssType.COUNTER)) {
                 return false;
             }
             if (!file.isFile() && (ossDirType.left() == OssType.PERFORMANCE_COUNTER)) {
@@ -306,10 +306,7 @@ public class OSSImportWizardPage extends WizardPage {
             if (!(file.isAbsolute() && file.exists())) {
                 return false;
             }
-            // GPEH & RNC handle only directories
-            if (ossDirType.left() == OssType.GPEH && !file.isFile()) {
-                return true;
-            }
+            
             return false;
         } catch (Exception e) {
             e.printStackTrace();

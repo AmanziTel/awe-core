@@ -70,549 +70,681 @@ import org.neo4j.graphdb.Traverser.Order;
  * @since 1.0.0
  */
 public class StatisticsBuilder {
-    private static final Logger LOGGER = Logger.getLogger(StatisticsBuilder.class);
-    private GraphDatabaseService neo;
-    private IDatasetService dsService;
-    private Node dataset;
-    private Ruby ruby;
-    private Transaction mainTx;
-    private DatasetStatistics datasetStatistics;
+	private static final Logger LOGGER = Logger
+			.getLogger(StatisticsBuilder.class);
+	private GraphDatabaseService neo;
+	private IDatasetService dsService;
+	private Node dataset;
+	private Ruby ruby;
+	private Transaction mainTx;
+	private DatasetStatistics datasetStatistics;
 
-    /**
-     * @param neo
-     * @param dataset
-     * @param ruby TODO
-     */
-    public StatisticsBuilder(GraphDatabaseService neo, Node dataset, Ruby ruby) {
-        this.neo = neo;
-        this.ruby = ruby;
-        this.dataset = dataset;
+	/**
+	 * @param neo
+	 * @param dataset
+	 * @param ruby
+	 *            TODO
+	 */
+	public StatisticsBuilder(GraphDatabaseService neo, Node dataset, Ruby ruby) {
+		this.neo = neo;
+		this.ruby = ruby;
+		this.dataset = dataset;
 
-    }
-    /**
-     * @param neo
-     * @param dataset
-     * @param ruby TODO
-     */
-    public StatisticsBuilder(GraphDatabaseService neo, Node dataset) {
-        this.neo = neo;
-        this.ruby = KPIPlugin.getDefault().getRubyRuntime();
-        this.dataset = dataset;
-        
-    }
+	}
 
-    /**
-     * Builds a 3-dimensional statistics for a given dataset, network level and time period based on
-     * a template
-     * 
-     * @param template statistics template
-     * @param networkLevelName network level
-     * @param timeLevelName time period/level
-     * @param monitor progress monitor
-     * @param dataset the dataset node
-     */
-    public Statistics buildStatistics(Template template, String networkLevelName, CallTimePeriods timeLevelName,
-            IProgressMonitor monitor) {
-        // validate(dataset, template);
-        mainTx = neo.beginTx();
-        try {
-            dsService = getDatasetService(dataset);
-//            monitor.beginTask("Building statistics", /(Integer)dataset.getProperty(INeoConstants.PROPERTY_COUNT_NAME,IProgressMonitor.UNKNOWN));
-            monitor.beginTask("Building statistics", IProgressMonitor.UNKNOWN);
-            datasetStatistics = findOrCreateStatisticsRoot(dataset, template);
-            Dimension networkDimension = datasetStatistics.getNetworkDimension();
-            Dimension timeDimension = datasetStatistics.getTimeDimension();
-            Level nLevel = findOrCreateLevel(networkLevelName, networkDimension);
+	/**
+	 * @param neo
+	 * @param dataset
+	 * @param ruby
+	 *            TODO
+	 */
+	public StatisticsBuilder(GraphDatabaseService neo, Node dataset) {
+		this.neo = neo;
+		this.ruby = KPIPlugin.getDefault().getRubyRuntime();
+		this.dataset = dataset;
 
-            Statistics levelStatistics = nLevel.getStatistics(timeLevelName.getId());
-            if (levelStatistics == null) {
-                long start = System.currentTimeMillis();
-                long minTime = (Long)dataset.getProperty(INeoConstants.MIN_TIMESTAMP);
-                long maxTime = (Long)dataset.getProperty(INeoConstants.MAX_TIMESTAMP);
-                levelStatistics = buildStatisticsForPeriod(template, minTime, maxTime, timeLevelName, networkLevelName,
-                        networkDimension, timeDimension, monitor);
-                final String debugInfo = timeLevelName.getId() + "/" + networkLevelName + ": total time in seconds: "
-                        + (System.currentTimeMillis() - start) / 1000;
-                System.out.println(debugInfo);
-                LOGGER.debug(debugInfo);
-            }
+	}
 
-            return levelStatistics;
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            monitor.done();
-            commit(false);
-        }
-        return null;
-    }
+	/**
+	 * Builds a 3-dimensional statistics for a given dataset, network level and
+	 * time period based on a template
+	 * 
+	 * @param template
+	 *            statistics template
+	 * @param networkLevelName
+	 *            network level
+	 * @param timeLevelName
+	 *            time period/level
+	 * @param monitor
+	 *            progress monitor
+	 * @param dataset
+	 *            the dataset node
+	 */
+	public Statistics buildStatistics(Template template,
+			String networkLevelName, CallTimePeriods timeLevelName,
+			IProgressMonitor monitor) {
+		// validate(dataset, template);
+		mainTx = neo.beginTx();
+		try {
+			dsService = getDatasetService(dataset);
+			// monitor.beginTask("Building statistics",
+			// /(Integer)dataset.getProperty(INeoConstants.PROPERTY_COUNT_NAME,IProgressMonitor.UNKNOWN));
+			monitor.beginTask("Building statistics", IProgressMonitor.UNKNOWN);
+			datasetStatistics = findOrCreateStatisticsRoot(dataset, template);
+			Dimension networkDimension = datasetStatistics
+					.getNetworkDimension();
+			Dimension timeDimension = datasetStatistics.getTimeDimension();
+			Level nLevel = findOrCreateLevel(networkLevelName, networkDimension);
 
-    protected void commit(boolean restart) {
-        if (mainTx != null) {
-            mainTx.success();
-            mainTx.finish();
-            if (restart) {
-                mainTx = neo.beginTx();
-            } else {
-                mainTx = null;
-            }
-        }
-    }
+			Statistics levelStatistics = nLevel.getStatistics(timeLevelName
+					.getId());
+			if (levelStatistics == null) {
+				long start = System.currentTimeMillis();
+				long minTime = (Long) dataset
+						.getProperty(INeoConstants.MIN_TIMESTAMP);
+				long maxTime = (Long) dataset
+						.getProperty(INeoConstants.MAX_TIMESTAMP);
+				levelStatistics = buildStatisticsForPeriod(template, minTime,
+						maxTime, timeLevelName, networkLevelName,
+						networkDimension, timeDimension, monitor);
+				final String debugInfo = timeLevelName.getId() + "/"
+						+ networkLevelName + ": total time in seconds: "
+						+ (System.currentTimeMillis() - start) / 1000;
+				System.out.println(debugInfo);
+				LOGGER.debug(debugInfo);
+			}
 
-    private IDatasetService getDatasetService(Node dataset) {
-        String type = (String)dataset.getProperty(INeoConstants.PROPERTY_TYPE_NAME);
-        if (dataset.hasProperty(INeoConstants.DRIVE_TYPE) && dataset.getProperty(INeoConstants.DRIVE_TYPE).equals("romes")) {
-            return new RomesService(neo, dataset);
-        }
-        return new IDENService(neo, dataset);
-    }
+			return levelStatistics;
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			monitor.done();
+			commit(false);
+		}
+		return null;
+	}
 
-    /**
-     * Validates if a dataset matches a template
-     * 
-     * @param dataset the dataset to be validated
-     * @param template the template
-     * @throws IncorrectInputException if input dataset does not match template
-     */
-    private void validate(Node dataset, Template template) throws IncorrectInputException {
-        DataType type = template.getType();
-        String typeName = type.getTypeName();
-        switch (type) {
-        case NEMO1:
-        case NEMO2:
-        case ROMES:
-        case TEMS:
-            String driveType = dataset.getProperty(INeoConstants.DRIVE_TYPE).toString();
-            checkTypes(typeName, driveType);
-            break;
-        case GPEH:
-        case RNC_COUNTERS:
-        case PERFORMANCE_COUNTERS:
-            String ossType = dataset.getProperty(OssType.PROPERTY_NAME).toString();
-            checkTypes(typeName, ossType);
-            break;
-        }
-    }
+	protected void commit(boolean restart) {
+		if (mainTx != null) {
+			mainTx.success();
+			mainTx.finish();
+			if (restart) {
+				mainTx = neo.beginTx();
+			} else {
+				mainTx = null;
+			}
+		}
+	}
 
-    /**
-     * @param templateType
-     * @param driveType
-     * @throws IncorrectInputException
-     */
-    private void checkTypes(String templateType, String driveType) throws IncorrectInputException {
-        if (!templateType.equalsIgnoreCase(driveType)) {
-            throw new IncorrectInputException("The dataset type ('" + driveType + "') does not match the template type ('"
-                    + templateType.toLowerCase() + "')");
-        }
-    }
+	private IDatasetService getDatasetService(Node dataset) {
+		String type = (String) dataset
+				.getProperty(INeoConstants.PROPERTY_TYPE_NAME);
+		if (dataset.hasProperty(INeoConstants.DRIVE_TYPE)
+				&& dataset.getProperty(INeoConstants.DRIVE_TYPE)
+						.equals("romes")) {
+			return new RomesService(neo, dataset);
+		}
+		return new IDENService(neo, dataset);
+	}
 
-    private DatasetStatistics findOrCreateStatisticsRoot(Node dataset, Template template) {
-        for (Relationship rel : dataset.getRelationships(GeoNeoRelationshipTypes.ANALYSIS, Direction.OUTGOING)) {
-            String templateName = rel.getEndNode().getProperty("template").toString();
-            if (templateName.equals(template.getTemplateName())) {
-                return new DatasetStatistics(rel.getEndNode());
-            }
-        }
-        return StatisticsEntityFactory.createStatisticsRoot(neo, template, dataset);
-    }
+	/**
+	 * Validates if a dataset matches a template
+	 * 
+	 * @param dataset
+	 *            the dataset to be validated
+	 * @param template
+	 *            the template
+	 * @throws IncorrectInputException
+	 *             if input dataset does not match template
+	 */
+	private void validate(Node dataset, Template template)
+			throws IncorrectInputException {
+		DataType type = template.getType();
+		String typeName = type.getTypeName();
+		switch (type) {
+		case NEMO1:
+		case NEMO2:
+		case ROMES:
+		case TEMS:
+			String driveType = dataset.getProperty(INeoConstants.DRIVE_TYPE)
+					.toString();
+			checkTypes(typeName, driveType);
+			break;
+		case RNC_COUNTERS:
+		case PERFORMANCE_COUNTERS:
+			String ossType = dataset.getProperty(OssType.PROPERTY_NAME)
+					.toString();
+			checkTypes(typeName, ossType);
+			break;
+		}
+	}
 
-    /**
-     * Finds appropriated network element for a given dataset node if any.
-     * 
-     * @param sourceNode a dataset node
-     * @param networkLevel a network level
-     * @return the node found or null if it was not found
-     */
-    private Node findNetworkNode(Node sourceNode, final String networkLevel) {
-        Iterator<Relationship> iterator = sourceNode.getRelationships(CorrelationRelationshipTypes.CORRELATED, Direction.INCOMING)
-                .iterator();
-        if (iterator.hasNext()) {
-            Node sectorProxyNode = iterator.next().getStartNode();// correlated sector proxy node
-            Relationship rel = sectorProxyNode.getSingleRelationship(CorrelationRelationshipTypes.CORRELATION, Direction.OUTGOING);
-            if (rel != null) {
-                Node sectorNode = rel.getEndNode();
-                Iterator<Node> iter = sectorNode.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
+	/**
+	 * @param templateType
+	 * @param driveType
+	 * @throws IncorrectInputException
+	 */
+	private void checkTypes(String templateType, String driveType)
+			throws IncorrectInputException {
+		if (!templateType.equalsIgnoreCase(driveType)) {
+			throw new IncorrectInputException("The dataset type ('" + driveType
+					+ "') does not match the template type ('"
+					+ templateType.toLowerCase() + "')");
+		}
+	}
 
-                    @Override
-                    public boolean isStopNode(TraversalPosition currentPos) {
-                        String type = (String)currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME);
-                        if (networkLevel.equals(type)) {
-                            return true;
-                        }
-                        if (NodeTypes.NETWORK.getId().equals(type)) {
-                            return true;
-                        }
-                        return false;
-                    }
+	private DatasetStatistics findOrCreateStatisticsRoot(Node dataset,
+			Template template) {
+		for (Relationship rel : dataset.getRelationships(
+				GeoNeoRelationshipTypes.ANALYSIS, Direction.OUTGOING)) {
+			String templateName = rel.getEndNode().getProperty("template")
+					.toString();
+			if (templateName.equals(template.getTemplateName())) {
+				return new DatasetStatistics(rel.getEndNode());
+			}
+		}
+		return StatisticsEntityFactory.createStatisticsRoot(neo, template,
+				dataset);
+	}
 
-                }, new ReturnableEvaluator() {
+	/**
+	 * Finds appropriated network element for a given dataset node if any.
+	 * 
+	 * @param sourceNode
+	 *            a dataset node
+	 * @param networkLevel
+	 *            a network level
+	 * @return the node found or null if it was not found
+	 */
+	private Node findNetworkNode(Node sourceNode, final String networkLevel) {
+		Iterator<Relationship> iterator = sourceNode.getRelationships(
+				CorrelationRelationshipTypes.CORRELATED, Direction.INCOMING)
+				.iterator();
+		if (iterator.hasNext()) {
+			Node sectorProxyNode = iterator.next().getStartNode();// correlated
+																	// sector
+																	// proxy
+																	// node
+			Relationship rel = sectorProxyNode.getSingleRelationship(
+					CorrelationRelationshipTypes.CORRELATION,
+					Direction.OUTGOING);
+			if (rel != null) {
+				Node sectorNode = rel.getEndNode();
+				Iterator<Node> iter = sectorNode
+						.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
 
-                    @Override
-                    public boolean isReturnableNode(TraversalPosition currentPos) {
-                        String type = (String)currentPos.currentNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME);
-                        return networkLevel.equals(type);
-                    }
+							@Override
+							public boolean isStopNode(
+									TraversalPosition currentPos) {
+								String type = (String) currentPos
+										.currentNode()
+										.getProperty(
+												INeoConstants.PROPERTY_TYPE_NAME);
+								if (networkLevel.equals(type)) {
+									return true;
+								}
+								if (NodeTypes.NETWORK.getId().equals(type)) {
+									return true;
+								}
+								return false;
+							}
 
-                }, GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).iterator();
-                if (iter.hasNext()) {
-                    return iter.next();
-                }
-            }
-        }
-        return null;
+						}, new ReturnableEvaluator() {
 
-    }
+							@Override
+							public boolean isReturnableNode(
+									TraversalPosition currentPos) {
+								String type = (String) currentPos
+										.currentNode()
+										.getProperty(
+												INeoConstants.PROPERTY_TYPE_NAME);
+								return networkLevel.equals(type);
+							}
 
-    private Statistics buildStatisticsForPeriod(Template template, long startTime, long endTime, CallTimePeriods period,
-            String networkLevel, Dimension networkDimension, Dimension timeDimension, IProgressMonitor monitor) {
+						}, GeoNeoRelationshipTypes.CHILD, Direction.INCOMING)
+						.iterator();
+				if (iter.hasNext()) {
+					return iter.next();
+				}
+			}
+		}
+		return null;
 
-        final CallTimePeriods underlyingPeriod = period.getUnderlyingPeriod();
-        if (underlyingPeriod != null) {
-            Level nLevel = findOrCreateLevel(networkLevel, networkDimension);
+	}
 
-            Statistics uStatistics = nLevel.getStatistics(underlyingPeriod.getId());
-            if (uStatistics == null) {
-                uStatistics = buildStatisticsForPeriod(template, startTime, endTime, underlyingPeriod, networkLevel,
-                        networkDimension, timeDimension, monitor);
-            }
-            final String task = "Building stats for " + period.getId() + "/" + networkLevel;
-            LOGGER.debug(task);
-            monitor.subTask(task);
-            Statistics statistics = buildHighLevelPeriodStatistics(template, startTime, endTime, period, networkLevel,
-                    networkDimension, timeDimension, uStatistics);
-            updateFlags(statistics);
-            return statistics;
+	private Statistics buildStatisticsForPeriod(Template template,
+			long startTime, long endTime, CallTimePeriods period,
+			String networkLevel, Dimension networkDimension,
+			Dimension timeDimension, IProgressMonitor monitor) {
 
-        } else {
-            final String task = "Building stats for " + period.getId() + "/" + networkLevel;
-            LOGGER.debug(task);
-            monitor.subTask(task);
-            Level tLevel = findOrCreateLevel(period.getId(), timeDimension);
-            Statistics statistics = StatisticsEntityFactory.createStatistics(neo, networkDimension.getLevelByKey(networkLevel),
-                    tLevel, datasetStatistics);
-            Map<String, StatisticsRow> summaries = new HashMap<String, StatisticsRow>();
+		final CallTimePeriods underlyingPeriod = period.getUnderlyingPeriod();
+		if (underlyingPeriod != null) {
+			Level nLevel = findOrCreateLevel(networkLevel, networkDimension);
 
-            String hash = createScriptForTemplate(template);
-            long noUsedNodes=0;
-            long currentStartTime = period.getFirstTime(startTime);
-            long nextStartTime = getNextStartDate(period, endTime, currentStartTime);
-            long count = 0;
-            int nodesCount = 0;
-            int comm = 0;
-            do {
-                if (comm > 500) {
-                    commit(true);
-                    comm = 0;
-                }
-                long startForPeriod = System.currentTimeMillis();
-                String debugInfo = "currentStartTime=" + currentStartTime + "\tnextStartTime=" + nextStartTime + "\tendTime="
-                        + endTime;
-                LOGGER.debug(debugInfo);
-                // if(monitor.isCanceled()){
-                // break;
-                // }
+			Statistics uStatistics = nLevel.getStatistics(underlyingPeriod
+					.getId());
+			if (uStatistics == null) {
+				uStatistics = buildStatisticsForPeriod(template, startTime,
+						endTime, underlyingPeriod, networkLevel,
+						networkDimension, timeDimension, monitor);
+			}
+			final String task = "Building stats for " + period.getId() + "/"
+					+ networkLevel;
+			LOGGER.debug(task);
+			monitor.subTask(task);
+			Statistics statistics = buildHighLevelPeriodStatistics(template,
+					startTime, endTime, period, networkLevel, networkDimension,
+					timeDimension, uStatistics);
+			updateFlags(statistics);
+			return statistics;
 
-                long t = System.currentTimeMillis();
-                Collection<Node> nodes = dsService.getNodes(currentStartTime, nextStartTime);
-                nodesCount=nodes.size();
-                count += nodesCount;
-                long cellCalcTime=0L;
-                long startFindGroup=0L;
-                for (Node node : nodes) {
-                    boolean isUsed=false;
-                    final String EVALUATE = "Neo4j::load_node(%s).instance_eval {%s}";
-                    String script = String.format(EVALUATE, node.getId(), hash);
-                    RubyHash result = (RubyHash)ruby.evalScriptlet(script);
+		} else {
+			final String task = "Building stats for " + period.getId() + "/"
+					+ networkLevel;
+			LOGGER.debug(task);
+			monitor.subTask(task);
+			Level tLevel = findOrCreateLevel(period.getId(), timeDimension);
+			Statistics statistics = StatisticsEntityFactory.createStatistics(
+					neo, networkDimension.getLevelByKey(networkLevel), tLevel,
+					datasetStatistics);
+			Map<String, StatisticsRow> summaries = new HashMap<String, StatisticsRow>();
 
-                    Node networkNode = findNetworkNode(node, networkLevel);
-                    // TODO use key property instead of key node name for non-correlated datasets
-                    // String keyProperty = dsService.getKeyProperty(node);
-                    StatisticsGroup group;
-                   startFindGroup=System.currentTimeMillis();
-                    if (networkNode != null) {
-                        group = findOrCreateGroup(statistics, networkNode);
-                    } else {
-                        group = findOrCreateGroup(statistics, node.getProperty(networkLevel, "unknown").toString());
-                    }
-                    startFindGroup=System.currentTimeMillis()-startFindGroup;
-                    // add summary row first
-                    StatisticsRow summaryRow = findOrCreateSummaryRow(group, summaries);
-                    StatisticsRow row = findOrCreateRow(group, currentStartTime, period);
-                    long startCalcTime=System.currentTimeMillis();
-                    for (Object key : result.keySet()) {
-                        comm++;
-                        TemplateColumn column = template.getColumnByName(key.toString());
-                        StatisticsCell cell = findOrCreateCell(row, column);
-                        StatisticsCell summaryCell = findOrCreateCell(summaryRow, column);
-                        Object object = result.get(key);
-                        Number value = null;
-                        if (object instanceof Number) {
-                            value = (Number)object;
-                        } else if (object instanceof RubyNumeric) {
-                            value = ((RubyNumeric)object).getDoubleValue();
-                        }else if (object instanceof String){
-                            try{
-                            value=new DecimalFormat("0.#").parse((String)object);
-                            }catch (ParseException e) {
-                                // TODO: handle exception
-                            }
-                        }
-                        if (cell.update(value)) {
-                            isUsed=true;
-                            cell.addSourceNode(node);
-                        }
-                        if (summaryCell.update(value)) {
-                            isUsed=true;
-                            summaryCell.addSourceNode(node);
-                        }
-                        checkThreshold(group, summaryRow, row, column, cell, summaryCell);
-                    }
-                    cellCalcTime+=(System.currentTimeMillis()-startCalcTime);
-                    if (isUsed){
-                        
-                        noUsedNodes++;
-                    }
-                }
+			String hash = createScriptForTemplate(template);
+			long noUsedNodes = 0;
+			long currentStartTime = period.getFirstTime(startTime);
+			long nextStartTime = getNextStartDate(period, endTime,
+					currentStartTime);
+			long count = 0;
+			int nodesCount = 0;
+			int comm = 0;
+			do {
+				if (comm > 500) {
+					commit(true);
+					comm = 0;
+				}
+				long startForPeriod = System.currentTimeMillis();
+				String debugInfo = "currentStartTime=" + currentStartTime
+						+ "\tnextStartTime=" + nextStartTime + "\tendTime="
+						+ endTime;
+				LOGGER.debug(debugInfo);
+				// if(monitor.isCanceled()){
+				// break;
+				// }
 
-                currentStartTime = nextStartTime;
-                nextStartTime = getNextStartDate(period, endTime, currentStartTime);
-                debugInfo="Total no. of nodes processed: " + count + "\tCalc time for period=" + (System.currentTimeMillis() - startForPeriod)+
-                "\tTime to update cells: "+cellCalcTime+"\tTime to find a group:"+startFindGroup;
-                LOGGER.debug(debugInfo);
-                monitor.worked(1);
-//                monitor.worked(nodesCount);
-            } while (currentStartTime < endTime);
-            datasetStatistics.setUsedNodes(noUsedNodes);
-            datasetStatistics.setTotalNodes(count);
-            updateFlags(statistics);
-            return statistics;
-        }
-    }
+				long t = System.currentTimeMillis();
+				Collection<Node> nodes = dsService.getNodes(currentStartTime,
+						nextStartTime);
+				nodesCount = nodes.size();
+				count += nodesCount;
+				long cellCalcTime = 0L;
+				long startFindGroup = 0L;
+				for (Node node : nodes) {
+					boolean isUsed = false;
+					final String EVALUATE = "Neo4j::load_node(%s).instance_eval {%s}";
+					String script = String.format(EVALUATE, node.getId(), hash);
+					RubyHash result = (RubyHash) ruby.evalScriptlet(script);
 
-    /**
-     * Checks if alert should be generated or not
-     * @param group
-     * @param summaryRow
-     * @param row
-     * @param column
-     * @param cell
-     * @param summaryCell
-     */
-    private void checkThreshold(StatisticsGroup group, StatisticsRow summaryRow, StatisticsRow row, TemplateColumn column,
-            StatisticsCell cell, StatisticsCell summaryCell) {
-        Threshold threshold = column.getThreshold();
-        if (threshold != null) {
-            Number thresholdValue = threshold.getThresholdValue();
-            Condition condition = threshold.getCondition();
-            switch (condition) {
-            case LT:
-                cell.setFlagged(cell.getValue()!=null && thresholdValue.doubleValue() >= cell.getValue().doubleValue());
-                summaryCell.setFlagged(summaryCell.getValue()!=null && thresholdValue.doubleValue() >= summaryCell.getValue().doubleValue());
-                break;
-            case LE:
-                cell.setFlagged(cell.getValue()!=null && thresholdValue.doubleValue() > cell.getValue().doubleValue());
-                summaryCell.setFlagged(summaryCell.getValue()!=null && thresholdValue.doubleValue() > summaryCell.getValue().doubleValue());
-                break;
-            case GT:
-                cell.setFlagged(cell.getValue()!=null && thresholdValue.doubleValue() <= cell.getValue().doubleValue());
-                summaryCell.setFlagged(summaryCell.getValue()!=null && thresholdValue.doubleValue() <= summaryCell.getValue().doubleValue());
-                break;
-            case GE:
-                cell.setFlagged(cell.getValue()!=null && thresholdValue.doubleValue() < cell.getValue().doubleValue());
-                summaryCell.setFlagged(summaryCell.getValue()!=null && thresholdValue.doubleValue() < summaryCell.getValue().doubleValue());
-                break;
-            default:
-            }
-        }
-    }
+					Node networkNode = findNetworkNode(node, networkLevel);
+					// TODO use key property instead of key node name for
+					// non-correlated datasets
+					// String keyProperty = dsService.getKeyProperty(node);
+					StatisticsGroup group;
+					startFindGroup = System.currentTimeMillis();
+					if (networkNode != null) {
+						group = findOrCreateGroup(statistics, networkNode);
+					} else {
+						group = findOrCreateGroup(statistics,
+								node.getProperty(networkLevel, "unknown")
+										.toString());
+					}
+					startFindGroup = System.currentTimeMillis()
+							- startFindGroup;
+					// add summary row first
+					StatisticsRow summaryRow = findOrCreateSummaryRow(group,
+							summaries);
+					StatisticsRow row = findOrCreateRow(group,
+							currentStartTime, period);
+					long startCalcTime = System.currentTimeMillis();
+					for (Object key : result.keySet()) {
+						comm++;
+						TemplateColumn column = template.getColumnByName(key
+								.toString());
+						StatisticsCell cell = findOrCreateCell(row, column);
+						StatisticsCell summaryCell = findOrCreateCell(
+								summaryRow, column);
+						Object object = result.get(key);
+						Number value = null;
+						if (object instanceof Number) {
+							value = (Number) object;
+						} else if (object instanceof RubyNumeric) {
+							value = ((RubyNumeric) object).getDoubleValue();
+						} else if (object instanceof String) {
+							try {
+								value = new DecimalFormat("0.#")
+										.parse((String) object);
+							} catch (ParseException e) {
+								// TODO: handle exception
+							}
+						}
+						if (cell.update(value)) {
+							isUsed = true;
+							cell.addSourceNode(node);
+						}
+						if (summaryCell.update(value)) {
+							isUsed = true;
+							summaryCell.addSourceNode(node);
+						}
+						checkThreshold(group, summaryRow, row, column, cell,
+								summaryCell);
+					}
+					cellCalcTime += (System.currentTimeMillis() - startCalcTime);
+					if (isUsed) {
 
-    private void updateFlags(Statistics statistics) {
-        Collection<StatisticsGroup> groups = statistics.getGroups().values();
-        for (StatisticsGroup group : groups) {
-            Collection<StatisticsRow> rows = group.getRows().values();
-            for (StatisticsRow row : rows) {
-                Collection<StatisticsCell> cells = row.getCells().values();
-                for (StatisticsCell cell : cells) {
-                    if (cell.isFlagged()) {
-                        row.setFlagged(true);
-                    }
-                }
-                if (row.isFlagged()) {
-                    group.setFlagged(true);
-                }
-            }
-        }
+						noUsedNodes++;
+					}
+				}
 
-    }
+				currentStartTime = nextStartTime;
+				nextStartTime = getNextStartDate(period, endTime,
+						currentStartTime);
+				debugInfo = "Total no. of nodes processed: " + count
+						+ "\tCalc time for period="
+						+ (System.currentTimeMillis() - startForPeriod)
+						+ "\tTime to update cells: " + cellCalcTime
+						+ "\tTime to find a group:" + startFindGroup;
+				LOGGER.debug(debugInfo);
+				monitor.worked(1);
+				// monitor.worked(nodesCount);
+			} while (currentStartTime < endTime);
+			datasetStatistics.setUsedNodes(noUsedNodes);
+			datasetStatistics.setTotalNodes(count);
+			updateFlags(statistics);
+			return statistics;
+		}
+	}
 
-    /**
-     * Creates a script that includes all KPIs from template
-     * 
-     * @param template the template
-     * @return script as string
-     */
-    private String createScriptForTemplate(Template template) {
-        final String hash_pattern = "\"%s\"=>%s(self),\n";
-        StringBuffer sb = new StringBuffer("{");
-        for (TemplateColumn column : template.getColumns()) {
-            KpiBasedHeader header = (KpiBasedHeader)column.getHeader();
-            sb.append(String.format(hash_pattern, header.getName(), header.getKpiName()));
-        }
-        sb.append("}\n");
-        String hash = sb.toString();
-        return hash;
-    }
+	/**
+	 * Checks if alert should be generated or not
+	 * 
+	 * @param group
+	 * @param summaryRow
+	 * @param row
+	 * @param column
+	 * @param cell
+	 * @param summaryCell
+	 */
+	private void checkThreshold(StatisticsGroup group,
+			StatisticsRow summaryRow, StatisticsRow row, TemplateColumn column,
+			StatisticsCell cell, StatisticsCell summaryCell) {
+		Threshold threshold = column.getThreshold();
+		if (threshold != null) {
+			Number thresholdValue = threshold.getThresholdValue();
+			Condition condition = threshold.getCondition();
+			switch (condition) {
+			case LT:
+				cell.setFlagged(cell.getValue() != null
+						&& thresholdValue.doubleValue() >= cell.getValue()
+								.doubleValue());
+				summaryCell.setFlagged(summaryCell.getValue() != null
+						&& thresholdValue.doubleValue() >= summaryCell
+								.getValue().doubleValue());
+				break;
+			case LE:
+				cell.setFlagged(cell.getValue() != null
+						&& thresholdValue.doubleValue() > cell.getValue()
+								.doubleValue());
+				summaryCell.setFlagged(summaryCell.getValue() != null
+						&& thresholdValue.doubleValue() > summaryCell
+								.getValue().doubleValue());
+				break;
+			case GT:
+				cell.setFlagged(cell.getValue() != null
+						&& thresholdValue.doubleValue() <= cell.getValue()
+								.doubleValue());
+				summaryCell.setFlagged(summaryCell.getValue() != null
+						&& thresholdValue.doubleValue() <= summaryCell
+								.getValue().doubleValue());
+				break;
+			case GE:
+				cell.setFlagged(cell.getValue() != null
+						&& thresholdValue.doubleValue() < cell.getValue()
+								.doubleValue());
+				summaryCell.setFlagged(summaryCell.getValue() != null
+						&& thresholdValue.doubleValue() < summaryCell
+								.getValue().doubleValue());
+				break;
+			default:
+			}
+		}
+	}
 
-    /**
-     * Builds statistics based on underlying period statistics
-     * 
-     * @param template the template
-     * @param startTime start time
-     * @param endTime end time
-     * @param period period
-     * @param networkLevel network level
-     * @param networkDimension network dimension
-     * @param timeDimension time dimension
-     * @param uStatistics underlying statistics
-     * @return statistics built
-     */
-    private Statistics buildHighLevelPeriodStatistics(Template template, long startTime, long endTime, CallTimePeriods period,
-            String networkLevel, Dimension networkDimension, Dimension timeDimension, Statistics uStatistics) {
-        Level tLevel = findOrCreateLevel(period.getId(), timeDimension);
-        Statistics statistics = StatisticsEntityFactory.createStatistics(neo, networkDimension.getLevelByKey(networkLevel), tLevel, datasetStatistics);
-        Map<String, StatisticsRow> summaries = new HashMap<String, StatisticsRow>();
+	private void updateFlags(Statistics statistics) {
+		Collection<StatisticsGroup> groups = statistics.getGroups().values();
+		for (StatisticsGroup group : groups) {
+			Collection<StatisticsRow> rows = group.getRows().values();
+			for (StatisticsRow row : rows) {
+				Collection<StatisticsCell> cells = row.getCells().values();
+				for (StatisticsCell cell : cells) {
+					if (cell.isFlagged()) {
+						row.setFlagged(true);
+					}
+				}
+				if (row.isFlagged()) {
+					group.setFlagged(true);
+				}
+			}
+		}
 
-        for (Entry<String, StatisticsGroup> groupWithKey : uStatistics.getGroups().entrySet()) {
-            final String keyProperty = groupWithKey.getKey();
-            StatisticsGroup uGroup = groupWithKey.getValue();
-            StatisticsGroup group = findOrCreateGroup(statistics, keyProperty);
+	}
 
-            long currentStartTime = period.getFirstTime(startTime);
-            long nextStartTime = getNextStartDate(period, endTime, currentStartTime);
+	/**
+	 * Creates a script that includes all KPIs from template
+	 * 
+	 * @param template
+	 *            the template
+	 * @return script as string
+	 */
+	private String createScriptForTemplate(Template template) {
+		final String hash_pattern = "\"%s\"=>%s(self),\n";
+		StringBuffer sb = new StringBuffer("{");
+		for (TemplateColumn column : template.getColumns()) {
+			KpiBasedHeader header = (KpiBasedHeader) column.getHeader();
+			sb.append(String.format(hash_pattern, header.getName(),
+					header.getKpiName()));
+		}
+		sb.append("}\n");
+		String hash = sb.toString();
+		return hash;
+	}
 
-            if (startTime > currentStartTime) {
-                currentStartTime = startTime;
-            }
+	/**
+	 * Builds statistics based on underlying period statistics
+	 * 
+	 * @param template
+	 *            the template
+	 * @param startTime
+	 *            start time
+	 * @param endTime
+	 *            end time
+	 * @param period
+	 *            period
+	 * @param networkLevel
+	 *            network level
+	 * @param networkDimension
+	 *            network dimension
+	 * @param timeDimension
+	 *            time dimension
+	 * @param uStatistics
+	 *            underlying statistics
+	 * @return statistics built
+	 */
+	private Statistics buildHighLevelPeriodStatistics(Template template,
+			long startTime, long endTime, CallTimePeriods period,
+			String networkLevel, Dimension networkDimension,
+			Dimension timeDimension, Statistics uStatistics) {
+		Level tLevel = findOrCreateLevel(period.getId(), timeDimension);
+		Statistics statistics = StatisticsEntityFactory.createStatistics(neo,
+				networkDimension.getLevelByKey(networkLevel), tLevel,
+				datasetStatistics);
+		Map<String, StatisticsRow> summaries = new HashMap<String, StatisticsRow>();
 
-            int comm = 0;
-            do {
-                final String debugInfo = "Period " + currentStartTime + " - " + nextStartTime;
-                System.out.println(debugInfo);
-                LOGGER.debug(debugInfo);
-                if (comm > 500) {
-                    commit(true);
-                    comm = 0;
-                }
-                StatisticsRow summaryRow = findOrCreateSummaryRow(group, summaries);
-                for (Entry<String, StatisticsRow> rowWithKey : uGroup.getRows().entrySet()) {
-                    final StatisticsRow uRow = rowWithKey.getValue();
-                    if (!uRow.isSummaryNode()) {
-                        Long uPeriod = uRow.getPeriod();
-                        if (uPeriod >= currentStartTime && uPeriod < nextStartTime) {
-                            StatisticsRow row = findOrCreateRow(group, currentStartTime, period);
-                            row.addSourceRow(uRow);
-                            List<TemplateColumn> columns = template.getColumns();
-                            for (TemplateColumn column : columns) {
-                                comm++;
-                                StatisticsCell uCell = uRow.getCellByKey(column.getName());
+		for (Entry<String, StatisticsGroup> groupWithKey : uStatistics
+				.getGroups().entrySet()) {
+			final String keyProperty = groupWithKey.getKey();
+			StatisticsGroup uGroup = groupWithKey.getValue();
+			StatisticsGroup group = findOrCreateGroup(statistics, keyProperty);
 
-                                if (uCell != null) {
-                                    StatisticsCell cell = findOrCreateCell(row, column);
-                                    StatisticsCell summaryCell = findOrCreateCell(summaryRow, column);
+			long currentStartTime = period.getFirstTime(startTime);
+			long nextStartTime = getNextStartDate(period, endTime,
+					currentStartTime);
 
-                                    Number value = uCell.getValue();
-                                    cell.update(value);
-                                    cell.addSourceNode(uCell.getNode());
+			if (startTime > currentStartTime) {
+				currentStartTime = startTime;
+			}
 
-                                    summaryCell.update(value);
-                                    summaryCell.addSourceNode(uCell.getNode());
-                                    checkThreshold(group, summaryRow, row, column, cell, summaryCell);
-                                }
-                                
-                            }
-                        } else {
-                            continue;
-                        }
-                    }
-                }
-                currentStartTime = nextStartTime;
-                nextStartTime = getNextStartDate(period, endTime, currentStartTime);
-            } while (currentStartTime < endTime);
-        }
+			int comm = 0;
+			do {
+				final String debugInfo = "Period " + currentStartTime + " - "
+						+ nextStartTime;
+				System.out.println(debugInfo);
+				LOGGER.debug(debugInfo);
+				if (comm > 500) {
+					commit(true);
+					comm = 0;
+				}
+				StatisticsRow summaryRow = findOrCreateSummaryRow(group,
+						summaries);
+				for (Entry<String, StatisticsRow> rowWithKey : uGroup.getRows()
+						.entrySet()) {
+					final StatisticsRow uRow = rowWithKey.getValue();
+					if (!uRow.isSummaryNode()) {
+						Long uPeriod = uRow.getPeriod();
+						if (uPeriod >= currentStartTime
+								&& uPeriod < nextStartTime) {
+							StatisticsRow row = findOrCreateRow(group,
+									currentStartTime, period);
+							row.addSourceRow(uRow);
+							List<TemplateColumn> columns = template
+									.getColumns();
+							for (TemplateColumn column : columns) {
+								comm++;
+								StatisticsCell uCell = uRow.getCellByKey(column
+										.getName());
 
-        return statistics;
-    }
+								if (uCell != null) {
+									StatisticsCell cell = findOrCreateCell(row,
+											column);
+									StatisticsCell summaryCell = findOrCreateCell(
+											summaryRow, column);
 
-    private StatisticsGroup findOrCreateGroup(Statistics statistics, Node keyNode) {
-        StatisticsGroup group = statistics.getGroupByKey(keyNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString());
-        if (group == null) {
-            group = StatisticsEntityFactory.createStatisticsGroup(neo);
-            group.setKeyNode(keyNode);
-            statistics.addGroup(group);
-        }
-        return group;
-    }
+									Number value = uCell.getValue();
+									cell.update(value);
+									cell.addSourceNode(uCell.getNode());
 
-    private StatisticsGroup findOrCreateGroup(Statistics statistics, String keyProperty) {
-        StatisticsGroup group = statistics.getGroupByKey(keyProperty);
-        if (group == null) {
-            group = StatisticsEntityFactory.createStatisticsGroup(neo);
-            group.setGroupName(keyProperty);
-            statistics.addGroup(group);
-        }
-        return group;
-    }
+									summaryCell.update(value);
+									summaryCell.addSourceNode(uCell.getNode());
+									checkThreshold(group, summaryRow, row,
+											column, cell, summaryCell);
+								}
 
-    private StatisticsRow findOrCreateRow(StatisticsGroup group, long startDate, CallTimePeriods period) {
-        String periodName = NeoUtils.getFormatDateStringForSrow(startDate, period.addPeriod(startDate), "HH:mm", period.getId());
-        StatisticsRow row = group.getRowByKey(periodName);
-        if (row == null) {
-            row = StatisticsEntityFactory.createStatisticsRow(neo, group,startDate, period);
-            group.addRow(row);
-        }
-        return row;
-    }
+							}
+						} else {
+							continue;
+						}
+					}
+				}
+				currentStartTime = nextStartTime;
+				nextStartTime = getNextStartDate(period, endTime,
+						currentStartTime);
+			} while (currentStartTime < endTime);
+		}
 
-    private StatisticsRow findRow(StatisticsGroup group, long startDate, CallTimePeriods period) {
-        String periodName = NeoUtils.getFormatDateStringForSrow(startDate, period.addPeriod(startDate), "HH:mm", period.getId());
-        return group.getRowByKey(periodName);
-    }
+		return statistics;
+	}
 
-    private Level findOrCreateLevel(String levelKey, Dimension dimension) {
-        Level level = dimension.getLevelByKey(levelKey);
-        if (level == null) {
-            level = StatisticsEntityFactory.createStatisticsLevel(neo, levelKey, datasetStatistics);
-            dimension.addLevel(level);
-        }
-        return level;
-    }
+	private StatisticsGroup findOrCreateGroup(Statistics statistics,
+			Node keyNode) {
+		StatisticsGroup group = statistics.getGroupByKey(keyNode.getProperty(
+				INeoConstants.PROPERTY_NAME_NAME).toString());
+		if (group == null) {
+			group = StatisticsEntityFactory.createStatisticsGroup(neo);
+			group.setKeyNode(keyNode);
+			statistics.addGroup(group);
+		}
+		return group;
+	}
 
-    private StatisticsRow findOrCreateSummaryRow(StatisticsGroup group, Map<String, StatisticsRow> summaries) {
-        String groupName = group.getGroupName();
-        StatisticsRow summaryRow = summaries.get(groupName);
-        if (summaryRow == null) {
-            summaryRow = StatisticsEntityFactory.createSummaryRow(neo,group);
-            summaries.put(groupName, summaryRow);
-            group.addRow(summaryRow);
-        }
-        return summaryRow;
-    }
+	private StatisticsGroup findOrCreateGroup(Statistics statistics,
+			String keyProperty) {
+		StatisticsGroup group = statistics.getGroupByKey(keyProperty);
+		if (group == null) {
+			group = StatisticsEntityFactory.createStatisticsGroup(neo);
+			group.setGroupName(keyProperty);
+			statistics.addGroup(group);
+		}
+		return group;
+	}
 
-    private StatisticsCell findOrCreateCell(StatisticsRow row, TemplateColumn column) {
-        StatisticsCell cell = row.getCellByKey(column.getName());
-        if (cell == null) {
-            cell = StatisticsEntityFactory.createStatisticsCell(neo, row,column);
-            row.addCell(cell);
-        }
-        return cell;
-    }
+	private StatisticsRow findOrCreateRow(StatisticsGroup group,
+			long startDate, CallTimePeriods period) {
+		String periodName = NeoUtils.getFormatDateStringForSrow(startDate,
+				period.addPeriod(startDate), "HH:mm", period.getId());
+		StatisticsRow row = group.getRowByKey(periodName);
+		if (row == null) {
+			row = StatisticsEntityFactory.createStatisticsRow(neo, group,
+					startDate, period);
+			group.addRow(row);
+		}
+		return row;
+	}
 
-    // copied from CallStatisticsUtills
-    public static long getNextStartDate(CallTimePeriods period, long endDate, long currentStartDate) {
-        long nextStartDate = period.addPeriod(currentStartDate);
-        if (!period.equals(CallTimePeriods.HOURLY) && (nextStartDate > endDate)) {
-            nextStartDate = endDate;
-        }
-        return nextStartDate;
-    }
+	private StatisticsRow findRow(StatisticsGroup group, long startDate,
+			CallTimePeriods period) {
+		String periodName = NeoUtils.getFormatDateStringForSrow(startDate,
+				period.addPeriod(startDate), "HH:mm", period.getId());
+		return group.getRowByKey(periodName);
+	}
+
+	private Level findOrCreateLevel(String levelKey, Dimension dimension) {
+		Level level = dimension.getLevelByKey(levelKey);
+		if (level == null) {
+			level = StatisticsEntityFactory.createStatisticsLevel(neo,
+					levelKey, datasetStatistics);
+			dimension.addLevel(level);
+		}
+		return level;
+	}
+
+	private StatisticsRow findOrCreateSummaryRow(StatisticsGroup group,
+			Map<String, StatisticsRow> summaries) {
+		String groupName = group.getGroupName();
+		StatisticsRow summaryRow = summaries.get(groupName);
+		if (summaryRow == null) {
+			summaryRow = StatisticsEntityFactory.createSummaryRow(neo, group);
+			summaries.put(groupName, summaryRow);
+			group.addRow(summaryRow);
+		}
+		return summaryRow;
+	}
+
+	private StatisticsCell findOrCreateCell(StatisticsRow row,
+			TemplateColumn column) {
+		StatisticsCell cell = row.getCellByKey(column.getName());
+		if (cell == null) {
+			cell = StatisticsEntityFactory.createStatisticsCell(neo, row,
+					column);
+			row.addCell(cell);
+		}
+		return cell;
+	}
+
+	// copied from CallStatisticsUtills
+	public static long getNextStartDate(CallTimePeriods period, long endDate,
+			long currentStartDate) {
+		long nextStartDate = period.addPeriod(currentStartDate);
+		if (!period.equals(CallTimePeriods.HOURLY) && (nextStartDate > endDate)) {
+			nextStartDate = endDate;
+		}
+		return nextStartDate;
+	}
 }

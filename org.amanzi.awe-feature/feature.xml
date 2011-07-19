@@ -319,12 +319,7 @@ PURPOSE.
          version="1.0.0.qualifier"
          unpack="false"/>
 
-   <plugin
-         id="org.amanzi.awe.neighbours"
-         download-size="0"
-         install-size="0"
-         version="1.0.0.qualifier"
-         unpack="false"/>
+   
 
    <plugin
          id="org.apache.log4j"
@@ -347,19 +342,7 @@ PURPOSE.
          version="1.1.1"
          unpack="false"/>
 
-   <plugin
-         id="org.amanzi.awe.wizards"
-         download-size="0"
-         install-size="0"
-         version="1.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.awe.report.o2"
-         download-size="0"
-         install-size="0"
-         version="1.0.0"
-         unpack="false"/>
+   
 
    <plugin
          id="org.amanzi.awe.console"
