@@ -187,7 +187,6 @@ PURPOSE.
          version="1.0.0.qualifier"
          unpack="false"/>
 
-   
    <plugin
          id="org.amanzi.awe.startup.splash"
          download-size="0"
@@ -321,8 +320,6 @@ PURPOSE.
          version="0.0.0"
          unpack="false"/>
 
-   
-
    <plugin
          id="org.amanzi.awe.statistics.view"
          download-size="0"
@@ -335,6 +332,13 @@ PURPOSE.
          download-size="0"
          install-size="0"
          version="1.0.0.qualifier"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.awe.views.neighbours"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
          unpack="false"/>
 
 </feature>

@@ -54,6 +54,7 @@ import org.amanzi.awe.ui.IGraphModel;
 
 import org.amanzi.awe.views.neighbours.NeighboursPlugin;
 import org.amanzi.awe.views.neighbours.PreferenceInitializer;
+import org.amanzi.awe.views.neighbours.legend.LegendRelations;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NetworkService;
@@ -859,7 +860,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         List<ILayer> toRemove = new ArrayList<ILayer>();
 
         for( ILayer layer : layers ) {
-            if (layer.hasResource(org.amanzi.awe.neighbours.legend.LegendRelations.class)) {
+            if (layer.hasResource(LegendRelations.class)) {
                 toRemove.add(layer);
             }
         }

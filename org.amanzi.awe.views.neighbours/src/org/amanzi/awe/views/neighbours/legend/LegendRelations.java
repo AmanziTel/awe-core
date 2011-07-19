@@ -1,4 +1,4 @@
-package org.amanzi.awe.neighbours.legend;
+package org.amanzi.awe.views.neighbours.legend;
 
 import net.refractions.udig.mapgraphic.MapGraphic;
 import net.refractions.udig.mapgraphic.MapGraphicContext;

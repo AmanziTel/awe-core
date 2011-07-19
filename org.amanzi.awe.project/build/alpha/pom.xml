@@ -55,6 +55,7 @@
       <module>org.amanzi.awe.ui.operation.shape_export</module>
       <module>org.amanzi.awe.views.drive</module>
       <module>org.amanzi.awe.views.kpi</module>
+      <module>org.amanzi.awe.views.neighbours</module>
      
       <module>org.amanzi.awe.views.network</module>
       <module>org.amanzi.awe.views.reuse</module>
@@ -175,6 +176,7 @@
       <module>org.amanzi.awe.render.drive</module>
       <module>org.amanzi.awe.render.network</module>
       <module>org.amanzi.awe.report</module>
+      <module>org.amanzi.awe.views.neighbours</module>
       
       <module>org.amanzi.awe.script</module>
       <module>org.amanzi.awe.script.jirb</module>
@@ -318,6 +320,7 @@
       <module>org.amanzi.awe.render.drive</module>
       <module>org.amanzi.awe.render.network</module>
       <module>org.amanzi.awe.report</module>
+      <module>org.amanzi.awe.views.neighbours</module>
       
       <module>org.amanzi.awe.script</module>
       <module>org.amanzi.awe.script.jirb</module>

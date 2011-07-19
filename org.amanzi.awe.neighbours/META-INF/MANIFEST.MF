@@ -14,7 +14,6 @@ Require-Bundle: org.eclipse.ui,
  org.amanzi.neo.loader;bundle-version="1.0.0",
  org.amanzi.neo.services;bundle-version="1.0.0",
  net.refractions.udig.libs;bundle-version="1.1.1",
- net.refractions.udig.mapgraphic;bundle-version="1.1.1",
  net.refractions.udig.project.ui;bundle-version="1.1.1"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Eclipse-LazyStart: true
@@ -25,5 +24,4 @@ Export-Package: au.com.bytecode.opencsv,
  org.amanzi.awe.neighbours,
  org.amanzi.awe.neighbours.dialog,
  org.amanzi.awe.neighbours.gpeh,
- org.amanzi.awe.neighbours.legend,
  org.amanzi.awe.neighbours.views

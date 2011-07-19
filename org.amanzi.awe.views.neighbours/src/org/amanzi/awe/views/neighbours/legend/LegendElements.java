@@ -1,4 +1,4 @@
-package org.amanzi.awe.neighbours.legend;
+package org.amanzi.awe.views.neighbours.legend;
 
 public enum LegendElements {
 	OTHERS {
