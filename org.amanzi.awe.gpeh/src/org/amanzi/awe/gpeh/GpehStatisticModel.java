@@ -22,17 +22,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.awe.neighbours.GpehReportUtil;
-import org.amanzi.neo.services.RrcMeasurement;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.RrcMeasurement;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.services.enums.NetworkTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.statistic.internal.StatisticHandler;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 
 /**
