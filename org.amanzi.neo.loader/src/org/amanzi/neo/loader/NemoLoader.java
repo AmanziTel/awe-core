@@ -156,7 +156,6 @@ public class NemoLoader extends DriveLoader {
             NeoLoaderPlugin.error(e.getLocalizedMessage());
             return 0;
         }
-
         String eventId = event.eventId;
         createMNode(event);
         if ("GPS".equalsIgnoreCase(eventId)) {
@@ -267,6 +266,7 @@ public class NemoLoader extends DriveLoader {
     }
 
     protected void createSubNodes(Event event, long timestamp) {
+    	
         if (subNodes == null) {
             return;
         }

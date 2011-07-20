@@ -740,7 +740,9 @@ public class DriveDialog {
                     driveLoader = new NemoLoader(time, filePath, display, datasetName);
                 } else if (extension.toLowerCase().equals("dt1")) {
                     driveLoader = new OldNemoVersionLoader(time, filePath, display, datasetName);
-                } else if (extension.toLowerCase().equals("log")) {
+                } else if (extension.toLowerCase().equals("dt2")) {
+                    driveLoader = new NemoLoader(time, filePath, display, datasetName);
+                } else if (extension.toLowerCase().equals("dtlog")) {
                     driveLoader = new DingLiLoader( filePath, display, datasetName);
                 } else {
 			        NeoLoaderPlugin.error("Unsupported file extension: "+extension);

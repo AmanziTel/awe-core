@@ -1191,7 +1191,7 @@ public abstract class AbstractLoader {
     protected void flushIndexes() {
         for (Entry<String, ArrayList<MultiPropertyIndex< ? >>> entry : indexes.entrySet()) {
 
-            for (MultiPropertyIndex< ? > index : entry.getValue()) {
+            for (MultiPropertyIndex< ? > index : entry.getValue()) { 
                 try {
                     index.flush();
                 } catch (IOException e) {

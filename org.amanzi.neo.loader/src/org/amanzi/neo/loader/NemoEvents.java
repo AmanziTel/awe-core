@@ -1201,7 +1201,8 @@ public enum NemoEvents {
                         if (!parameters.hasNext()) {
                             break;
                         };
-                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
+//                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
+                        Integer cellType = getIntegerValue(parameters);
                         String postfix = " (Cell " + (i + 1) + ")";
                         parsedParameters.put("Cell type" + postfix, cellType);
                         postfix = " (Cell " + (i + 1) + " - " + cellType + ")";
@@ -1230,9 +1231,9 @@ public enum NemoEvents {
                         if (!parameters.hasNext()) {
                             break;
                         };
-                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
+                        Integer cellType = getIntegerValue(parameters);
                         String postfix = " (Cell " + (i + 1) + ")";
-                        parsedParameters.put("Cell type" + postfix, cellType);
+                        parsedParameters.put("Cell type" + postfix,cellType);
                         postfix = " (Cell " + (i + 1) + " - " + cellType + ")";
                         parsedParameters.put("Band" + postfix, getIntegerValue(parameters));
                         parsedParameters.put("ARFCN" + postfix, getIntegerValue(parameters));
@@ -1262,7 +1263,11 @@ public enum NemoEvents {
                         if (!parameters.hasNext()) {
                             break;
                         };
-                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
+//                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
+//                        String postfix = " (Cell " + (i + 1) + ")";
+//                        parsedParameters.put("Cell type" + postfix, cellType);
+//                        postfix = " (Cell " + (i + 1) + " - " + cellType + ")";
+                        Integer cellType = getIntegerValue(parameters);
                         String postfix = " (Cell " + (i + 1) + ")";
                         parsedParameters.put("Cell type" + postfix, cellType);
                         postfix = " (Cell " + (i + 1) + " - " + cellType + ")";
@@ -1305,7 +1310,11 @@ public enum NemoEvents {
                         if (!parameters.hasNext()) {
                             break;
                         };
-                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
+//                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
+//                        String postfix = " (Cell " + (i + 1) + ")";
+//                        parsedParameters.put("Cell type" + postfix, cellType);
+//                        postfix = " (Cell " + (i + 1) + " - " + cellType + ")";
+                        Integer cellType = getIntegerValue(parameters);
                         String postfix = " (Cell " + (i + 1) + ")";
                         parsedParameters.put("Cell type" + postfix, cellType);
                         postfix = " (Cell " + (i + 1) + " - " + cellType + ")";
@@ -1343,9 +1352,13 @@ public enum NemoEvents {
                         if (!parameters.hasNext()) {
                             break;
                         };
-                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), false);
+//                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), false);
+//                        String postfix = " (Cell " + (i + 1) + ")";
+//                        parsedParameters.put("Set" + postfix, cellType);
+//                        postfix = " (Cell " + (i + 1) + " - " + cellType + ")";
+                        Integer cellType = getIntegerValue(parameters);
                         String postfix = " (Cell " + (i + 1) + ")";
-                        parsedParameters.put("Set" + postfix, cellType);
+                        parsedParameters.put("Cell type" + postfix, cellType);
                         postfix = " (Cell " + (i + 1) + " - " + cellType + ")";
                         parsedParameters.put("Band" + postfix, getIntegerValue(parameters));
                         parsedParameters.put("Ch" + postfix, getIntegerValue(parameters));
@@ -1399,7 +1412,11 @@ public enum NemoEvents {
                         if (!parameters.hasNext()) {
                             break;
                         };
-                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
+//                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
+//                        String postfix = " (Cell " + (i + 1) + ")";
+//                        parsedParameters.put("Cell type" + postfix, cellType);
+//                        postfix = " (Cell " + (i + 1) + " - " + cellType + ")";
+                        Integer cellType = getIntegerValue(parameters);
                         String postfix = " (Cell " + (i + 1) + ")";
                         parsedParameters.put("Cell type" + postfix, cellType);
                         postfix = " (Cell " + (i + 1) + " - " + cellType + ")";
@@ -1421,7 +1438,11 @@ public enum NemoEvents {
                         if (!parameters.hasNext()) {
                             break;
                         };
-                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
+//                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
+//                        String postfix = " (Cell " + (i + 1) + ")";
+//                        parsedParameters.put("Cell type" + postfix, cellType);
+//                        postfix = " (Cell " + (i + 1) + " - " + cellType + ")";
+                        Integer cellType = getIntegerValue(parameters);
                         String postfix = " (Cell " + (i + 1) + ")";
                         parsedParameters.put("Cell type" + postfix, cellType);
                         postfix = " (Cell " + (i + 1) + " - " + cellType + ")";
@@ -1441,7 +1462,11 @@ public enum NemoEvents {
                         if (!parameters.hasNext()) {
                             break;
                         };
-                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
+//                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
+//                        String postfix = " (Cell " + (i + 1) + ")";
+//                        parsedParameters.put("Cell type" + postfix, cellType);
+//                        postfix = " (Cell " + (i + 1) + " - " + cellType + ")";
+                        Integer cellType = getIntegerValue(parameters);
                         String postfix = " (Cell " + (i + 1) + ")";
                         parsedParameters.put("Cell type" + postfix, cellType);
                         postfix = " (Cell " + (i + 1) + " - " + cellType + ")";
@@ -1463,7 +1488,11 @@ public enum NemoEvents {
                         if (!parameters.hasNext()) {
                             break;
                         };
-                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
+//                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
+//                        String postfix = " (Cell " + (i + 1) + ")";
+//                        parsedParameters.put("Cell type" + postfix, cellType);
+//                        postfix = " (Cell " + (i + 1) + " - " + cellType + ")";
+                        Integer cellType = getIntegerValue(parameters);
                         String postfix = " (Cell " + (i + 1) + ")";
                         parsedParameters.put("Cell type" + postfix, cellType);
                         postfix = " (Cell " + (i + 1) + " - " + cellType + ")";
@@ -1481,7 +1510,11 @@ public enum NemoEvents {
                         if (!parameters.hasNext()) {
                             break;
                         };
-                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
+//                        String cellType = getParamTypeOrSet(getIntegerValue(parameters), true);
+//                        String postfix = " (Cell " + (i + 1) + ")";
+//                        parsedParameters.put("Cell type" + postfix, cellType);
+//                        postfix = " (Cell " + (i + 1) + " - " + cellType + ")";
+                        Integer cellType = getIntegerValue(parameters);
                         String postfix = " (Cell " + (i + 1) + ")";
                         parsedParameters.put("Cell type" + postfix, cellType);
                         postfix = " (Cell " + (i + 1) + " - " + cellType + ")";
@@ -5047,38 +5080,48 @@ public enum NemoEvents {
             Iterator<String> parameters = params.iterator();
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
-                String key = "#Header params";
-                parsedParameters.put(key, getIntegerValue(parameters));
-                // TODO not correct implementation, must to be fixed
-                // key = "Nlist status";
-                // parsedParameters.put(key, getIntegerValue(parameters));
+                parsedParameters.put("#Header params", getIntegerValue(parameters));
+                parsedParameters.put("Nlist status", getIntegerValue(parameters));
+
                 Integer groupCount = getIntegerValue(parameters);
-                getIntegerValue(parameters); // not need parameters count
-                Integer systemKey = getIntegerValue(parameters);
-                if (systemKey == null) {
-                    return parsedParameters;
-                }
-                TechnologySystems system = TechnologySystems.getSystemById(systemKey);
-                parsedParameters.put("System", system.getName());
+//                getIntegerValue(parameters); // not need parameters count
+//                Integer systemKey = getIntegerValue(parameters);
+//                if (systemKey == null) {
+//                    return parsedParameters;
+//                }
+//                TechnologySystems system = TechnologySystems.getSystemById(systemKey);
+//                parsedParameters.put("System", system.getName());
                 List<Map<String, Object>> subNodes = new LinkedList<Map<String, Object>>();
                 parsedParameters.put(SUB_NODES, subNodes);
-                for (int i = 0; i < groupCount; i++) {
-                    if (!parameters.hasNext()) {
-                        break;
-                    };
-                    Map<String, Object> parsedSbParameters = new HashMap<String, Object>();
-                    subNodes.add(parsedSbParameters);
-                    if (system.equals(TechnologySystems.GSM)) {
-                        parsedSbParameters.put("ARFCN", getIntegerValue(parameters));
-                        parsedSbParameters.put("BSIC", getIntegerValue(parameters));
-                    } else if (system.equals(TechnologySystems.UMTS_FDD)) {
-                        parsedSbParameters.put("UARFCN", getIntegerValue(parameters));
-                        parsedSbParameters.put("SC", getIntegerValue(parameters));
-                    } else if (system.equals(TechnologySystems.UMTS_TD_SCDMA)) {
-                        parsedSbParameters.put("UARFCN", getIntegerValue(parameters));
-                        parsedSbParameters.put("UARFCN ch", getIntegerValue(parameters));
-                    }
-                }
+				for (int i = 0; i < groupCount; i++) {
+					if (!parameters.hasNext()) {
+						break;
+					}
+					;
+					Map<String, Object> parsedSbParameters = new HashMap<String, Object>();
+					subNodes.add(parsedSbParameters);
+					parsedSbParameters.put("#Params",getIntegerValue(parameters));
+					parsedSbParameters.put("System",getIntegerValue(parameters));
+					parsedSbParameters.put("ARFCN", getIntegerValue(parameters));
+					parsedSbParameters.put("BSIC", getIntegerValue(parameters));
+					// if (system.equals(TechnologySystems.GSM)) {
+					// parsedSbParameters.put("ARFCN",
+					// getIntegerValue(parameters));
+					// parsedSbParameters.put("BSIC",
+					// getIntegerValue(parameters));
+					// } else if (system.equals(TechnologySystems.UMTS_FDD)) {
+					// parsedSbParameters.put("UARFCN",
+					// getIntegerValue(parameters));
+					// parsedSbParameters.put("SC",
+					// getIntegerValue(parameters));
+					// } else if
+					// (system.equals(TechnologySystems.UMTS_TD_SCDMA)) {
+					// parsedSbParameters.put("UARFCN",
+					// getIntegerValue(parameters));
+					// parsedSbParameters.put("UARFCN ch",
+					// getIntegerValue(parameters));
+					// }
+				}
             } else if ("1.86".equals(version)) {
                 parsedParameters.put("#Header params", getIntegerValue(parameters));
                 parsedParameters.put("Nlist status", getIntegerValue(parameters));
@@ -7020,8 +7063,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "System";
-                final TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
-                parsedParameters.put(key, system.getName());
+                Integer SystemId = getIntegerValue(parameters);
+                final TechnologySystems system = TechnologySystems.getSystemById(SystemId);
+                parsedParameters.put(key, SystemId);
                 if (system.equals(TechnologySystems.GSM)) {
                     parsedParameters.put("BLER", getFloatValue(parameters));
                     parsedParameters.put("#RLC blocks", getIntegerValue(parameters));

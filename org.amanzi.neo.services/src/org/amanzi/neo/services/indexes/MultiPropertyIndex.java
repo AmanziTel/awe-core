@@ -534,7 +534,7 @@ public class MultiPropertyIndex<E extends Object> {
         if (values != null) {
             boolean valid = true;
             for (E value : values) {
-                if (value == null) {
+                if (value == null || value.equals("")) {
                     valid = false;
                     break;
                 }
