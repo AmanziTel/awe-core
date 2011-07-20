@@ -206,9 +206,9 @@ public class ExportProvider3GPP extends AbstractGpehExportProvider {
 					long time = (Long) bestCellNode.getProperty(propertyName);
 					if (period.compareByPeriods(computeTime, time) == 0) {
 						int[] values;
-						if (propertyName.equals("Range size")) {
+						if (bestCellNode.hasProperty("Range size")) {
 							values = new int[(Integer) bestCellNode
-									.getProperty(propertyName)];
+									.getProperty("Range size")];
 							for (int i = 0; i < values.length; i++) {
 								if (bestCellNode.hasProperty(statRelation
 										.name() + " " + i)) {

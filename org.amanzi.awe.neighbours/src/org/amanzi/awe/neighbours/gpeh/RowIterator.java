@@ -93,23 +93,23 @@ public class RowIterator implements Iterator<CellInfo> {
 		statRoot = statRoot.getSingleRelationship(
 				NetworkRelationshipTypes.CHILD, Direction.OUTGOING)
 				.getEndNode();
-//		String name = statRoot.getProperty(INeoConstants.PROPERTY_NAME_NAME)
-//				.toString();
-//		statList.add(statRoot);
-//		while (statRoot.hasRelationship(NetworkRelationshipTypes.NEXT,
-//				Direction.OUTGOING)) {
-//			if (statRoot.hasProperty("statistic property type")
-//					&& statRoot.getProperty("statistic property type").equals(
-//							reltype)
-//					&& statRoot.getProperty(INeoConstants.PROPERTY_NAME_NAME)
-//							.toString().indexOf("_") > -1) {
-//				statList.add(statRoot);
-//			}
-//
-//			statRoot = statRoot.getSingleRelationship(
-//					NetworkRelationshipTypes.NEXT, Direction.OUTGOING)
-//					.getEndNode();
-//		}
+		// String name = statRoot.getProperty(INeoConstants.PROPERTY_NAME_NAME)
+		// .toString();
+		// statList.add(statRoot);
+		// while (statRoot.hasRelationship(NetworkRelationshipTypes.NEXT,
+		// Direction.OUTGOING)) {
+		// if (statRoot.hasProperty("statistic property type")
+		// && statRoot.getProperty("statistic property type").equals(
+		// reltype)
+		// && statRoot.getProperty(INeoConstants.PROPERTY_NAME_NAME)
+		// .toString().indexOf("_") > -1) {
+		// statList.add(statRoot);
+		// }
+		//
+		// statRoot = statRoot.getSingleRelationship(
+		// NetworkRelationshipTypes.NEXT, Direction.OUTGOING)
+		// .getEndNode();
+		// }
 		// bestCellIterator =
 		// statRoot.getRelationships(Direction.OUTGOING).iterator();
 		Traverser td = Traversal
@@ -148,6 +148,7 @@ public class RowIterator implements Iterator<CellInfo> {
 	protected void defineIterator() {
 		List<Node> inteftList = new LinkedList<Node>();
 		Node temp;
+		String type = null;
 		// while (!interferenceCellIterator.hasNext() &&
 		// bestCellIterator.hasNext()) {
 		// bestCellRel = bestCellIterator.next();
@@ -162,15 +163,15 @@ public class RowIterator implements Iterator<CellInfo> {
 			bestCellRel = bestCellIterator.next();
 			name = bestCellRel.getProperty(INeoConstants.PROPERTY_NAME_NAME)
 					.toString();
+			type = bestCellRel.getProperty("statistic property type")
+					.toString();
 			temp = bestCellRel;
 			while (temp.hasRelationship(Direction.OUTGOING)
-					&& temp.getProperty(INeoConstants.PROPERTY_NAME_NAME)
-							.toString().indexOf("_") > -1) {
+					&& temp.getProperty("statistic property type").equals(type)) {
 				Node n = temp.getSingleRelationship(
 						NetworkRelationshipTypes.NEXT, Direction.OUTGOING)
 						.getEndNode();
-				if (temp.getProperty(INeoConstants.PROPERTY_NAME_NAME)
-						.toString().indexOf("_") > -1) {
+				if (temp.getProperty("statistic property type").equals(type)) {
 					inteftList.add(n);
 				}
 

@@ -20,16 +20,15 @@ public class BestCellEvaluator extends Evaluators implements Evaluator {
 	@Override
 	public Evaluation evaluate(Path arg0) {
 		Node node = arg0.endNode();
-
+		includes = false;
 		String typeId = node.getProperty("statistic property type").toString();
 
 		includes = typeId != null
 				&& typeId.equals(checkType)
-				&& node.getProperty(INeoConstants.PROPERTY_NAME_NAME)
-						.toString().indexOf("_") > -1&&NodeTypes.M.checkNode(node);
-						
+				&& node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString().indexOf("_") > -1
+				&& NodeTypes.M.checkNode(node);
+
 		if (includes) {
-			includes = false;
 			return Evaluation.INCLUDE_AND_CONTINUE;
 		} else
 			return Evaluation.EXCLUDE_AND_CONTINUE;
