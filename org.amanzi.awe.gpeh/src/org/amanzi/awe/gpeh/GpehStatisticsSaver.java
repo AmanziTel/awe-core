@@ -169,12 +169,14 @@ public class GpehStatisticsSaver implements ISaver<GpehTransferData> {
             if (datasetNode.hasRelationship(DatasetRelationshipTypes.STATISTICS, Direction.OUTGOING)) {
                 Node statNode = datasetNode.getSingleRelationship(DatasetRelationshipTypes.STATISTICS, Direction.OUTGOING)
                         .getEndNode();
+                statmodel=new GpehStatisticModel(datasetNode, statNode, datasetService.getGraphDatabaseService());
                 return new GpehStatisticModel(datasetNode, statNode, datasetService.getGraphDatabaseService());
             } else {
                 // Node statNode = databaseService.createNode();
                 // datasetNode.createRelationshipTo(statNode, DatasetRelationshipTypes.GPEH_STATISTICS);
                 // return new GpehStatisticModel(datasetNode, statNode, databaseService);
-                return new GpehStatisticModel(datasetNode, datasetNode, datasetService.getGraphDatabaseService());
+            	 statmodel=new GpehStatisticModel(datasetNode, datasetNode, datasetService.getGraphDatabaseService());
+                return statmodel;
             }
         }
         return statmodel;

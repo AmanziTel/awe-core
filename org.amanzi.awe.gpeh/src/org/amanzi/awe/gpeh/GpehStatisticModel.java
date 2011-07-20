@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.awe.neighbours.GpehReportUtil;
-import org.amanzi.awe.neighbours.gpeh.RrcMeasurement;
+import org.amanzi.neo.services.RrcMeasurement;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkTypes;
@@ -645,14 +645,20 @@ public class GpehStatisticModel {
 
             clearValues();
             beginTimestamp = startTime;
+            Node checkNode = root;
             if (currentNode != null) {
                 // for (Relationship rel : root.getRelationships(Direction.OUTGOING)) {
-                BestCell cell = formBestCell(currentNode);
-                if (cell != null) {
-                    NbapPool pool = loadPool(startTime, currentNode);
-                     cellCache.put(cell, pool);
+                while (checkNode.hasRelationship(Direction.OUTGOING)) {
+                    if (checkNode.getProperty(STATISTIC_PROPERTY_TYPE).equals(statType)
+                            && checkNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString().indexOf("_") > -1) {
+                        BestCell cell = formBestCell(checkNode);
+                        if (cell != null) {
+                            NbapPool pool = loadPool(startTime, checkNode);
+                            cellCache.put(cell, pool);
+                        }
+                    }
+                    checkNode = checkNode.getSingleRelationship(NetworkRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode();
                 }
-                // }
             }
 
         }
@@ -664,7 +670,7 @@ public class GpehStatisticModel {
          */
         protected NbapPool loadPool(long startTime, Node statNode) {
             NbapPool result = new NbapPool();
-            
+
             if (statNode.hasProperty("Range size")
                     && startTime == (Long)statNode.getProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, null)) {
                 // result.values = (int[])statNode.getProperty("value", null);
@@ -703,14 +709,14 @@ public class GpehStatisticModel {
                     result = service.createNode();
                     result.setProperty("type", NodeTypes.M.getId());
 
-                    result.setProperty("name", entry.getKey().getCi() + "_" + entry.getKey().getRnc());
+                    result.setProperty("name",reltype.name());
                     currentNode.createRelationshipTo(result, NetworkRelationshipTypes.CHILD);
                     currentNode = result;
 
                 } else {
                     result = service.createNode();
                     result.setProperty("type", NodeTypes.M.getId());
-                    result.setProperty("name", entry.getKey().getCi() + "_" + entry.getKey().getRnc());
+                    result.setProperty("name", reltype.name());
                     currentNode.createRelationshipTo(result, NetworkRelationshipTypes.NEXT);
                     currentNode = result;
                 }
@@ -737,7 +743,8 @@ public class GpehStatisticModel {
                 for (int i = 0; i < nbapPool.values.length; i++) {
                     if (nbapPool.values[i] != 0) {
                         statNode.setProperty(String.format("%s %d", statType, i), nbapPool.values[i]);
-                        statistic.indexValue(root_key, NodeTypes.M.getId(), String.format("%s %d", statType, i), nbapPool.values[i]);
+                        statistic
+                                .indexValue(root_key, NodeTypes.M.getId(), String.format("%s %d", statType, i), nbapPool.values[i]);
                     }
                 }
                 statNode.setProperty("Range size", nbapPool.values.length);
@@ -1296,28 +1303,50 @@ public class GpehStatisticModel {
         public void load(long startTime, GraphDatabaseService service) {
             clearValues();
             beginTimestamp = startTime;
-
-            for (Relationship rel : root.getRelationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
-                BestCell cell = formBestCell(rel.getEndNode());
+            Node startNode;
+            if (currentNode != null) {
+                startNode = currentNode;
+            } else {
+                startNode = root;
+            }
+            // for (Relationship rel : root.getRelationships(NetworkRelationshipTypes.CHILD,
+            // Direction.OUTGOING)) {
+            while (startNode.hasRelationship(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)
+                    || startNode.hasRelationship(NetworkRelationshipTypes.NEXT, Direction.OUTGOING)) {
+                BestCell cell = formBestCell(startNode);
                 if (cell != null) {
-                    Node cellRoot = rel.getEndNode();
-                    RrcBestCellPool bestCell = loadBestCellStat(cellRoot);
+                    Node cellRoot = startNode;
+                    if (cellRoot.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString().indexOf("_") > -1
+                            && cellRoot.getProperty(STATISTIC_PROPERTY_TYPE).equals(statType)) {
+                        RrcBestCellPool bestCell = loadBestCellStat(cellRoot);
+                        mainCache.put(cell, bestCell);
 
-                    mainCache.put(cell, bestCell);
-
-                    Map<String, Pool> cache = getCacheMap(cell);
-
-                    while (cellRoot.hasRelationship(NetworkRelationshipTypes.NEXT, Direction.OUTGOING)) {
-
-                        Pool pool = loadPoolFromNode(cellRoot.getSingleRelationship(NetworkRelationshipTypes.NEXT,
-                                Direction.OUTGOING).getEndNode());
+                    } else if (cellRoot.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString().indexOf("_") <= -1
+                            && cellRoot.getProperty(STATISTIC_PROPERTY_TYPE).equals(statType)) {
+                        Map<String, Pool> cache = getCacheMap(cell);
+                        Pool pool = loadPoolFromNode(cellRoot);
                         cache.put(statType, pool);
-
-                        cellRoot = cellRoot.getSingleRelationship(NetworkRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode();
-
                     }
+
+                    if (startNode.hasRelationship(NetworkRelationshipTypes.NEXT, Direction.OUTGOING)) {
+                        startNode = startNode.getSingleRelationship(NetworkRelationshipTypes.NEXT, Direction.OUTGOING).getEndNode();
+                    }
+
+                    // while (cellRoot.hasRelationship(NetworkRelationshipTypes.NEXT,
+                    // Direction.OUTGOING)) {
+                    //
+                    // Pool pool =
+                    // loadPoolFromNode(cellRoot.getSingleRelationship(NetworkRelationshipTypes.NEXT,
+                    // Direction.OUTGOING).getEndNode());
+                    // cache.put(statType, pool);
+                    //
+                    // cellRoot = cellRoot.getSingleRelationship(NetworkRelationshipTypes.NEXT,
+                    // Direction.OUTGOING).getEndNode();
+                    //
+                    // }
                 }
             }
+
         }
 
         /**
@@ -1328,6 +1357,7 @@ public class GpehStatisticModel {
          */
         private RrcBestCellPool loadBestCellStat(Node cellRoot) {
             RrcBestCellPool result = new RrcBestCellPool();
+
             result.numMrForBestCellInter = (Integer)cellRoot.getProperty(RRCCache.NUM_INTER_MES_BEST_CELL, 0);
             result.numMrForBestCellIntra = (Integer)cellRoot.getProperty(RRCCache.NUM_INTRA_MES_BEST_CELL, 0);
             result.numMrForBestCellIrat = (Integer)cellRoot.getProperty(RRCCache.NUM_IRAT_MES_BEST_CELL, 0);
@@ -1382,7 +1412,12 @@ public class GpehStatisticModel {
             statistic.indexValue(root_key, NodeTypes.M.getId(), INeoConstants.PROPERTY_TIMESTAMP_NAME, beginTimestamp);
             String ecnoParamName;
             String rspcParamName;
+
             if (cell.rscpEcno != null) {
+                // for (int rscp = 0; rscp <= 91; rscp++) {
+                // cellRoot.setProperty(String.format("%srscp%s", beginTimestamp, rscp),
+                // cell.rscpEcno[rscp]);
+                // }
                 Integer rscpCount = 0;
                 Integer ecnoCount = 0;
                 // rscp count
@@ -1473,7 +1508,7 @@ public class GpehStatisticModel {
             if (pool.intraPool != null) {
                 node.setProperty(NUM_INTRA_MES, pool.intraPool.numMeasurements);
                 statistic.indexValue(root_key, NodeTypes.M.getId(), NUM_INTER_MES, pool.intraPool.numMeasurements);
-                // node.setProperty("intraEcnoD" + beginTimestamp, pool.intraPool.ecnoD);
+               // node.setProperty("intraEcnoD" + beginTimestamp, pool.intraPool.ecnoD);
                 for (int i = 0; i < paramIntraEcnoListDelta.size(); i++) {
                     node.setProperty(paramIntraEcnoListDelta.get(i), pool.intraPool.ecnoD[i]);
                     statistic.indexValue(root_key, NodeTypes.M.getId(), paramIntraEcnoListDelta.get(i), pool.intraPool.ecnoD[i]);
@@ -1508,6 +1543,7 @@ public class GpehStatisticModel {
             String ekno = "interEcno" + beginTimestamp;
             String rscp = "interRscp" + beginTimestamp;
             String numMr = "interMr" + beginTimestamp;
+
             // if (node.hasProperty(ekno)) {
             // InterPool inter = result.formInterPool();
             // inter.ecno = (int[])node.getProperty(ekno);
@@ -1515,7 +1551,7 @@ public class GpehStatisticModel {
             // inter.numMeasurements = (Integer)node.getProperty(numMr);
             // }
 
-            if (node.hasProperty(NUM_INTER_MES) && node.hasProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME)) {
+            if (node.hasProperty(NUM_INTER_MES)) {
                 InterPool inter = result.formInterPool();
                 inter.numMeasurements = (Integer)node.getProperty(NUM_INTER_MES);
                 for (int i = 0; i < paramInterEcnoList.size(); i++) {
@@ -1533,11 +1569,11 @@ public class GpehStatisticModel {
                         inter.rscp[i] = (Integer)node.getProperty(paramInterRSCPECNO10.get(i - paramInterRSCPECNO10.size()));
                     }
                 }
-                result.interPool=inter;
-               
+                result.interPool = inter;
+
             }
 
-            if (node.hasProperty(NUM_INTRA_MES) && node.hasProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME)) {
+            if (node.hasProperty(NUM_INTRA_MES)) {
                 IntraPool intra = result.formIntraPool();
                 intra.numMeasurements = (Integer)node.getProperty(NUM_INTRA_MES);
                 for (int i = 0; i < paramIntraEcnoListDelta.size(); i++) {
@@ -1559,9 +1595,9 @@ public class GpehStatisticModel {
                         intra.position[i] = (Integer)node.getProperty(paramPositionList.get(i));
                     }
                 }
-                result.intraPool=intra;
+                result.intraPool = intra;
             }
-            
+
             // String intraKey = "intraEcnoD" + beginTimestamp;
             // numMr = "intraMr" + beginTimestamp;
             // if (node.hasProperty(intraKey)) {
@@ -1610,7 +1646,7 @@ public class GpehStatisticModel {
                     if (entryCache.getValue() == null) {
                         continue;
                     }
-                    // RelationshipType relt = getCellRelation(entryCache.getKey());
+                    RelationshipType relt = getCellRelation(entryCache.getKey());
                     // if (relt == null || entryCache.getKey() == null) {
                     // System.err.println("Null rel");
                     // }
@@ -1619,13 +1655,13 @@ public class GpehStatisticModel {
                         if (!currentNode.hasRelationship(Direction.OUTGOING)) {
                             pscRoot = service.createNode();
                             pscRoot.setProperty("type", NodeTypes.M.getId());
-                            pscRoot.setProperty("name", entry.getKey().getCi() + "_" + entry.getKey().getRnc());
+                            pscRoot.setProperty("name", relt.name());
                             currentNode.createRelationshipTo(pscRoot, NetworkRelationshipTypes.NEXT);
                             currentNode = pscRoot;
                         } else {
                             pscRoot = service.createNode();
                             pscRoot.setProperty("type", NodeTypes.M.getId());
-                            pscRoot.setProperty("name", entry.getKey().getCi() + "_" + entry.getKey().getRnc());
+                            pscRoot.setProperty("name", relt.name());
                             currentNode.createRelationshipTo(pscRoot, NetworkRelationshipTypes.NEXT);
                             currentNode = pscRoot;
                         }
@@ -1735,3 +1771,4 @@ public class GpehStatisticModel {
         }
     }
 }
+
