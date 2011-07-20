@@ -14,13 +14,21 @@
 package org.amanzi.neo.services;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author grigoreva_a
  * @since 1.0.0
  */
 public class IllegalNodeDataException extends IllegalArgumentException {
     static final long serialVersionUID = 1;
+
+    public IllegalNodeDataException() {
+        super();
+    }
+
+    public IllegalNodeDataException(String message) {
+        super(message);
+    }
 }
