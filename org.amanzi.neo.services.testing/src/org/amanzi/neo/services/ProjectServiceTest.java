@@ -22,7 +22,7 @@ import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 public class ProjectServiceTest {
 	private static Logger LOGGER = Logger.getLogger(ProjectServiceTest.class);
-	
+
 	private static ProjectService projectService;
 	private static GraphDatabaseService graphDb;
 	private static final String prName = "Project";
@@ -72,29 +72,28 @@ public class ProjectServiceTest {
 		// check that it's attached to the reference node and relation type is
 		// correct
 		assertProjectRelatedToRefNode(project);
-		// check exception
-		try {
-			projectService.createProject("");
-			fail("Exception not thrown on empty string argument");
-		} catch (IllegalNodeDataException e) {
-		}
-		try {
-			projectService.createProject(null);
-			fail("Exception not thrown on null argument");
-		} catch (IllegalNodeDataException e) {
-		}
-		try {
-			projectService.createProject(prName);
-			fail("Exception not thrown when trying to create a project with the same name");
-		} catch (Exception e) {
-		}
 		LOGGER.info("testCreateProject() finished");
+	}
+
+	@Test(expected = IllegalNodeDataException.class)
+	public void testCreateProjectEmptyName() {
+		projectService.createProject("");
+	}
+
+	@Test(expected = IllegalNodeDataException.class)
+	public void testCreateProjectNullName() {
+		projectService.createProject(null);
+	}
+
+	@Test(expected = IllegalDBOperationException.class)
+	public void testCreateProjectExisting() {
+		projectService.createProject(prName);
 	}
 
 	@Test
 	public void testFindProject() {
 		LOGGER.info("testFindProject() started");
-		// TODO: check that the node with defined name is found, of project type
+		// check that the node with defined name is found, of project type
 		// and connected to ref node
 		Node project = projectService.createProject(prName + "1");
 		graphDb.createNode().setProperty(INeoConstants.PROPERTY_NAME_NAME,
@@ -104,21 +103,24 @@ public class ProjectServiceTest {
 				found.getProperty(INeoConstants.PROPERTY_NAME_NAME));
 		Assert.assertEquals(project, found); // TODO: shall it work?
 		assertProjectRelatedToRefNode(found);
-		// null is returned if not found
-		found = projectService.findProject(prName + "2");
-		Assert.assertNull(found);
-		// check exception
-		try {
-			projectService.findProject("");
-			fail("Exception not thrown on empty string argument");
-		} catch (IllegalNodeDataException e) {
-		}
-		try {
-			projectService.findProject(null);
-			fail("Exception not thrown on null argument");
-		} catch (IllegalNodeDataException e) {
-		}
 		LOGGER.info("testFindProject() finished");
+	}
+
+	@Test
+	public void testFindProjectNotFound() {
+		// null is returned if not found
+		Node found = projectService.findProject(prName + "2");
+		Assert.assertNull(found);
+	}
+
+	@Test(expected = IllegalNodeDataException.class)
+	public void testFindProjectEmptyName() {
+		projectService.findProject("");
+	}
+
+	@Test(expected = IllegalNodeDataException.class)
+	public void testFindProjectNullName() {
+		projectService.findProject(null);
 	}
 
 	@Test
@@ -142,12 +144,35 @@ public class ProjectServiceTest {
 
 	@Test
 	public void testGetProject() {
-		LOGGER.info("testGetProject() started");
-		// TODO: check that the returned node is not recreated if already exists
-		Node project = projectService.createProject(prName + "2");
-		Node got = projectService.createProject(prName + "2");
+		// check that the node is created, it has the defined name
+		// check that type is 'project'
+		// check that it's attached to the reference node and relation type is
+		// correct
+		Node got = projectService.getProject(prName + "2");
+		Assert.assertNotNull(got);
+		Assert.assertEquals(prName + "2",
+				got.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+		assertProjectRelatedToRefNode(got);
+	}
+
+	@Test
+	public void testGetProjectNotRecreated() {
+		LOGGER.info("testGetProjectNotRecreated() started");
+		// check that the returned node is not recreated if already exists
+		Node project = projectService.createProject(prName + "3");
+		Node got = projectService.getProject(prName + "3");
 		Assert.assertEquals(project, got);
-		LOGGER.info("testGetProject() finished");
+		LOGGER.info("testGetProjectNotRecreated() finished");
+	}
+
+	@Test(expected = IllegalNodeDataException.class)
+	public void testGetProjectEmptyName() {
+		projectService.getProject("");
+	}
+
+	@Test(expected = IllegalNodeDataException.class)
+	public void testGetProjectNullName() {
+		projectService.getProject(null);
 	}
 
 	private void assertProjectRelatedToRefNode(Node node) {
