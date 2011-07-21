@@ -13,29 +13,49 @@
 
 package org.amanzi.neo.services;
 
+import org.apache.log4j.Logger;
+import org.neo4j.examples.server.Relationship;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.Transaction;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author grigoreva_a
  * @since 1.0.0
  */
 public abstract class NewAbstractService {
+    private static Logger LOGGER = Logger.getLogger(NewAbstractService.class);
+
     protected GraphDatabaseService graphDb;
-    public NewAbstractService(){    
+    private Transaction tx;
+
+    public NewAbstractService() {
         // TODO: get database service
     }
-    public NewAbstractService(GraphDatabaseService graphDb){
-        
+
+    public NewAbstractService(GraphDatabaseService graphDb) {
+        this.graphDb = graphDb;
     }
-    protected Node createNode(){
-        // TODO: create node =)
-        return null;
+
+    protected Node createNode(Node startNode, RelationshipType relType) {
+        Node result = null;
+        tx = graphDb.beginTx();
+        try {
+            result = graphDb.createNode();
+            startNode.createRelationshipTo(result, relType);
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not create node.", e);
+        } finally {
+            tx.finish();
+        }
+        return result;
     }
-    
+
     // TODO: add some basic traversers
 }

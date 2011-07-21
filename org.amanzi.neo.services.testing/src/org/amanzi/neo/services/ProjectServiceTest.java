@@ -1,16 +1,12 @@
 package org.amanzi.neo.services;
 
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.neo4j.graphdb.Direction;
@@ -26,8 +22,9 @@ public class ProjectServiceTest {
 	private static ProjectService projectService;
 	private static GraphDatabaseService graphDb;
 	private static final String prName = "Project";
-	private static final String databasePath = System.getProperty("user.home")
-			+ File.separator + ".amanzi" + File.separator + "test";
+	private static final String databasePath = "z:\\test";
+	// System.getProperty("user.home") + File.separator + ".amanzi" +
+	// File.separator + "test";
 	private static Transaction tx;
 
 	@BeforeClass
@@ -45,21 +42,6 @@ public class ProjectServiceTest {
 		}
 	}
 
-	@Before
-	public void setUp() throws Exception {
-		tx = graphDb.beginTx();
-		LOGGER.info("Begin database transaction...");
-	}
-
-	@After
-	public void tearDown() throws Exception {
-		if (tx != null) {
-			tx.success();
-			tx.finish();
-			LOGGER.info("Finish database transaction...");
-		}
-	}
-
 	@Test
 	public void testCreateProject() {
 		LOGGER.info("testCreateProject() started");
@@ -67,7 +49,7 @@ public class ProjectServiceTest {
 		Node project = projectService.createProject(prName);
 		Assert.assertNotNull(project);
 		Assert.assertEquals(prName,
-				project.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+				project.getProperty(INeoConstants.PROPERTY_NAME_NAME, null));
 		// check that type is 'project'
 		// check that it's attached to the reference node and relation type is
 		// correct
@@ -77,17 +59,23 @@ public class ProjectServiceTest {
 
 	@Test(expected = IllegalNodeDataException.class)
 	public void testCreateProjectEmptyName() {
+		LOGGER.info("testCreateProjectEmptyName() started");
 		projectService.createProject("");
+		LOGGER.info("testCreateProjectEmptyName() finished");
 	}
 
 	@Test(expected = IllegalNodeDataException.class)
 	public void testCreateProjectNullName() {
+		LOGGER.info("testCreateProjectNullName() started");
 		projectService.createProject(null);
+		LOGGER.info("testCreateProjectNullName() finished");
 	}
 
 	@Test(expected = IllegalDBOperationException.class)
 	public void testCreateProjectExisting() {
+		LOGGER.info("testCreateProjectExisting() started");
 		projectService.createProject(prName);
+		LOGGER.info("testCreateProjectExisting() finished");
 	}
 
 	@Test
@@ -96,11 +84,17 @@ public class ProjectServiceTest {
 		// check that the node with defined name is found, of project type
 		// and connected to ref node
 		Node project = projectService.createProject(prName + "1");
+
+		// create a node of another type with the same name
+		tx = graphDb.beginTx();
 		graphDb.createNode().setProperty(INeoConstants.PROPERTY_NAME_NAME,
 				prName + "1");
+		tx.success();
+		tx.finish();
+
 		Node found = projectService.findProject(prName + "1");
 		Assert.assertEquals(prName + "1",
-				found.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+				found.getProperty(INeoConstants.PROPERTY_NAME_NAME, null));
 		Assert.assertEquals(project, found); // TODO: shall it work?
 		assertProjectRelatedToRefNode(found);
 		LOGGER.info("testFindProject() finished");
@@ -108,19 +102,25 @@ public class ProjectServiceTest {
 
 	@Test
 	public void testFindProjectNotFound() {
+		LOGGER.info("testFindProjectNotFound() started");
 		// null is returned if not found
 		Node found = projectService.findProject(prName + "2");
 		Assert.assertNull(found);
+		LOGGER.info("testFindProjectNotFound() finished");
 	}
 
 	@Test(expected = IllegalNodeDataException.class)
 	public void testFindProjectEmptyName() {
+		LOGGER.info("testFindProjectEmptyName() started");
 		projectService.findProject("");
+		LOGGER.info("testFindProjectEmptyName() finished");
 	}
 
 	@Test(expected = IllegalNodeDataException.class)
 	public void testFindProjectNullName() {
+		LOGGER.info("testFindProjectNullName() started");
 		projectService.findProject(null);
+		LOGGER.info("testFindProjectNullName() finished");
 	}
 
 	@Test
@@ -134,8 +134,8 @@ public class ProjectServiceTest {
 
 		for (Node node : projectService.findAllProjects()) {
 			count++;
-			Assert.assertTrue(projectNames.contains(node
-					.getProperty(INeoConstants.PROPERTY_NAME_NAME)));
+			Assert.assertTrue(projectNames.contains(node.getProperty(
+					INeoConstants.PROPERTY_NAME_NAME, null)));
 			assertProjectRelatedToRefNode(node);
 		}
 		Assert.assertTrue(2 == count);
@@ -144,6 +144,7 @@ public class ProjectServiceTest {
 
 	@Test
 	public void testGetProject() {
+		LOGGER.info("testGetProject() started");
 		// check that the node is created, it has the defined name
 		// check that type is 'project'
 		// check that it's attached to the reference node and relation type is
@@ -151,8 +152,9 @@ public class ProjectServiceTest {
 		Node got = projectService.getProject(prName + "2");
 		Assert.assertNotNull(got);
 		Assert.assertEquals(prName + "2",
-				got.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+				got.getProperty(INeoConstants.PROPERTY_NAME_NAME, null));
 		assertProjectRelatedToRefNode(got);
+		LOGGER.info("testGetProject() finished");
 	}
 
 	@Test
@@ -167,20 +169,25 @@ public class ProjectServiceTest {
 
 	@Test(expected = IllegalNodeDataException.class)
 	public void testGetProjectEmptyName() {
+		LOGGER.info("testGetProjectEmptyName() started");
 		projectService.getProject("");
+		LOGGER.info("testGetProjectEmptyName() finished");
 	}
 
 	@Test(expected = IllegalNodeDataException.class)
 	public void testGetProjectNullName() {
+		LOGGER.info("testGetProjectNullName() started");
 		projectService.getProject(null);
+		LOGGER.info("testGetProjectNullName() finished");
 	}
 
 	private void assertProjectRelatedToRefNode(Node node) {
-		Assert.assertEquals(ProjectService.PROJECT_NODE_TYPE,
-				node.getProperty(INeoConstants.PROPERTY_TYPE_NAME));
+		Assert.assertEquals(ProjectService.ProjectNodeType.PROJECT.getId(),
+				node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, null));
 		Node refNode = graphDb.getReferenceNode();
 		for (Relationship rel : node.getRelationships(
-				ProjectService.RelType.PROJECT, Direction.INCOMING)) {
+				ProjectService.ProjectRelationshipType.PROJECT,
+				Direction.INCOMING)) {
 			Assert.assertTrue(rel.getOtherNode(node).equals(refNode));
 		}
 	}
