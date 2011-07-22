@@ -24,6 +24,7 @@ import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Traverser;
 import org.neo4j.kernel.Traversal;
 
@@ -149,6 +150,13 @@ public class RowIterator implements Iterator<CellInfo> {
 		List<Node> inteftList = new LinkedList<Node>();
 		Node temp;
 		String type = null;
+		Iterator<Node> iter;
+		TraversalDescription td = Traversal
+				.description()
+				.depthFirst()				
+				.relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING);
+		Node n;
+		boolean endNodeFlag=false;
 		// while (!interferenceCellIterator.hasNext() &&
 		// bestCellIterator.hasNext()) {
 		// bestCellRel = bestCellIterator.next();
@@ -158,27 +166,29 @@ public class RowIterator implements Iterator<CellInfo> {
 		// String[] ciRnc = bestCellRel.getType().name().split("_");
 		// ci = Integer.valueOf(ciRnc[0]);
 		// rnc = Integer.valueOf(ciRnc[1]);
-		while (!interferenceCellIterator.hasNext()
-				&& bestCellIterator.hasNext()) {
+		while (!interferenceCellIterator.hasNext()&& bestCellIterator.hasNext()) {
+			endNodeFlag=false;
 			bestCellRel = bestCellIterator.next();
 			name = bestCellRel.getProperty(INeoConstants.PROPERTY_NAME_NAME)
 					.toString();
 			type = bestCellRel.getProperty("statistic property type")
 					.toString();
-			temp = bestCellRel;
-			while (temp.hasRelationship(Direction.OUTGOING)
-					&& temp.getProperty("statistic property type").equals(type)) {
-				Node n = temp.getSingleRelationship(
-						NetworkRelationshipTypes.NEXT, Direction.OUTGOING)
-						.getEndNode();
-				if (temp.getProperty("statistic property type").equals(type)) {
-					inteftList.add(n);
-				}
-
-				temp = n;
-
-			}
-			interferenceCellIterator = inteftList.iterator();
+//			temp = bestCellRel;
+//			while (temp.hasRelationship(Direction.OUTGOING)
+//					&& temp.getProperty("statistic property type").equals(type)&&!endNodeFlag) {
+//				
+//				endNodeFlag=temp.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString().indexOf("_")<0;
+//				if (endNodeFlag) {
+//					inteftList.add(temp);
+//					
+//				}
+//				n = temp.getSingleRelationship(NetworkRelationshipTypes.NEXT, Direction.OUTGOING)
+//						.getEndNode();
+//				temp = n;
+//
+//			}
+		
+			interferenceCellIterator=td.evaluator(new InterfCellsEvaluator(type)).traverse(bestCellRel).nodes().iterator();
 		}
 
 		String[] ciRnc = bestCellRel
