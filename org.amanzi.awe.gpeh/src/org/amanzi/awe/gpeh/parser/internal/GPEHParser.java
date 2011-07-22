@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.gpeh.parser.internal;
 
+import static org.amanzi.awe.gpeh.parser.Parameters.EVENT_PARAM_IMSI;
+
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,6 +26,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
+import org.amanzi.awe.gpeh.parser.EventType;
 import org.amanzi.awe.gpeh.parser.Events;
 import org.amanzi.awe.gpeh.parser.GPEHFileNameWrapper;
 import org.amanzi.awe.gpeh.parser.Parameters;

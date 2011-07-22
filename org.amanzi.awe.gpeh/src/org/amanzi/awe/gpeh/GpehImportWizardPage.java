@@ -131,6 +131,13 @@ public class GpehImportWizardPage extends LoaderPage<CommonConfigData> {
         
         eventConfig.addEventGroup(eventGroup2);
         
+        EventGroup eventGroup3=new EventGroup();
+        eventGroup3.setEventGroupName("IMSI Reports");
+        eventGroup3.addSupportedEvent(Events.findById(384));
+       
+        eventConfig.addEventGroup(eventGroup3);
+        
+        
         return eventConfig;
     }
     

@@ -31,9 +31,11 @@ import org.amanzi.neo.loader.core.DatasetInfo;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.loader.core.saver.MetaData;
 import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.RrcMeasurement;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
@@ -50,18 +52,22 @@ import org.neo4j.graphdb.Transaction;
 public class GpehStatisticsSaver implements ISaver<GpehTransferData> {
     protected DatasetService datasetService;
     private Node datasetNode;
-    private DatasetInfo datasetInfo;
-    private String eventIndexName;
+    private DatasetInfo datasetInfoStatistic;
+    private DatasetInfo datasetInfoEvent;
+    private String eventIndexNameStatistic;
+    private String eventIndexNameEvent;
     private final HashMap<String, Object> asnDataMap = new HashMap<String, Object>();
     private final AsnEventListener asnListener = new AsnEventListener();
     private final List<RrcMeasurement> meas = new LinkedList<RrcMeasurement>();
     private RrcMeasurement lastMeasurement;
     private GpehStatisticModel statmodel;
+    private GpehStatisticModel statmodelEvent;
     private Transaction tx;
     private long oldTimestamp;
     private PrintStream outputStream;
     private final MetaData metadata;
-    
+    private Node datasetStatistic;
+    private Node datasetEvent;
     /**
      * Instantiates a new gpeh saver.
      */
@@ -71,7 +77,8 @@ public class GpehStatisticsSaver implements ISaver<GpehTransferData> {
 
     @Override
     public void save(GpehTransferData dataElement) {
-        if (dataElement == null) {
+        boolean isIMSI=false;
+    	if (dataElement == null) {
             return;
         }
         Event event = (Event)dataElement.get(GpehTransferData.EVENT);
@@ -102,28 +109,56 @@ public class GpehStatisticsSaver implements ISaver<GpehTransferData> {
             }
         }
         long fullTime = event.getFullTime(timestamp);
-        datasetInfo.updateTimestamp(fullTime);
+        
         switch (event.getType()) {
         case RRC_MEASUREMENT_REPORT:
+            datasetNode=datasetStatistic;
+        	datasetInfoStatistic.updateTimestamp(fullTime);
             processRrcMeasurementReport(dataElement, fullTime);
+            
             break;
         case INTERNAL_RADIO_QUALITY_MEASUREMENTS_RNH:
+            datasetInfoStatistic.updateTimestamp(fullTime);
+        	
             processNbapMeasurementReport(dataElement, fullTime);
+            
             break;
+        case INTERNAL_IMSI:
+            datasetInfoEvent.updateTimestamp(fullTime);
+            isIMSI=true;
+        	processIMSIReport(dataElement,fullTime);
+        	
+        	break;
         default:
             break;
         }
-        if (Math.abs(fullTime-oldTimestamp)>15*60*1000){
+        if ((Math.abs(fullTime-oldTimestamp)>15*60*1000)&&!isIMSI){
             if (oldTimestamp!=0){
+            	statmodel.saveCacheStatistic();
                 tx.success();
                 tx.finish();
                 tx=DatabaseManager.getInstance().getCurrentDatabaseService().beginTx();
             }
             oldTimestamp=fullTime;
+        }else if(isIMSI){
+        	 if (Math.abs(fullTime-oldTimestamp)>3*60*1000){
+        		 if(oldTimestamp!=0){
+        			 statmodelEvent.saveEventStatistic();
+        			 tx.success();
+        			 tx.finish();
+        			 tx=DatabaseManager.getInstance().getCurrentDatabaseService().beginTx();
+        		 }
+        		 oldTimestamp=fullTime;
+        	 }
         }
     }
 
-    /**
+    private void processIMSIReport(GpehTransferData dataElement, long timestamp) {
+    	  GpehStatisticModel model = getStatisticReportEvent();
+          model.processIMSIEvent(dataElement, timestamp);
+	}
+
+	/**
      * Process nbap measurement report.
      * 
      * @param dataElement the data element
@@ -144,16 +179,26 @@ public class GpehStatisticsSaver implements ISaver<GpehTransferData> {
     public void init(GpehTransferData element) {
         datasetService = NeoServiceFactory.getInstance().getDatasetService();
         String projectName = (String)element.get(GpehTransferData.PROJECT);
-        String datasetName = (String)element.get(GpehTransferData.DATASET);
+        String datasetNameStat = (String)element.get(GpehTransferData.DATASET)+" Statistic";
+        String datasetNameEvent = (String)element.get(GpehTransferData.DATASET)+" Event";
          tx = DatabaseManager.getInstance().getCurrentDatabaseService().beginTx();
             Node projectNode = datasetService.findOrCreateAweProject(projectName);
-            datasetNode = datasetService.getRootNode(projectName, datasetName, NodeTypes.DATASET);
-            datasetNode.setProperty("drive_type", "oss");
-            datasetNode.setProperty("min_timestamp", 0L);
-            datasetNode.setProperty("max_timestamp", 0L);
-        datasetInfo = new DatasetInfo(datasetNode);
-
-        eventIndexName = new StringBuilder("Id").append(datasetNode.getId()).append("@").append("gpeh_event").append("@").append("name").toString();
+            datasetStatistic = datasetService.getRootNode(projectName, datasetNameStat, NodeTypes.DATASET);
+            datasetStatistic.setProperty("drive_type", "oss");
+            datasetStatistic.setProperty("min_timestamp", 0L);
+            datasetStatistic.setProperty("max_timestamp", 0L);
+            
+         
+            datasetEvent=datasetService.createNode(NodeTypes.DATASET);
+            datasetEvent.setProperty(INeoConstants.PROPERTY_NAME_NAME, datasetNameEvent);
+            datasetEvent.setProperty("drive_type", "oss");
+            datasetEvent.setProperty("min_timestamp", 0L);
+            datasetEvent.setProperty("max_timestamp", 0L);
+            datasetStatistic.createRelationshipTo(datasetEvent, GeoNeoRelationshipTypes.VIRTUAL_DATASET);
+        datasetInfoStatistic = new DatasetInfo(datasetStatistic);
+        eventIndexNameStatistic = new StringBuilder("Id").append(datasetStatistic.getId()).append("@").append("gpeh_event").append("@").append("name").toString();
+        datasetInfoEvent = new DatasetInfo(datasetEvent);
+        eventIndexNameEvent = new StringBuilder("Id").append(datasetEvent.getId()).append("@").append("gpeh_event").append("@").append("name").toString();
 
     }
 
@@ -164,35 +209,55 @@ public class GpehStatisticsSaver implements ISaver<GpehTransferData> {
      */
     public synchronized GpehStatisticModel getStatisticReport() {
         if (statmodel == null) {
-            
-            
-            if (datasetNode.hasRelationship(DatasetRelationshipTypes.STATISTICS, Direction.OUTGOING)) {
-                Node statNode = datasetNode.getSingleRelationship(DatasetRelationshipTypes.STATISTICS, Direction.OUTGOING)
+            if (datasetStatistic.hasRelationship(DatasetRelationshipTypes.STATISTICS, Direction.OUTGOING)) {
+                Node statNode = datasetStatistic.getSingleRelationship(DatasetRelationshipTypes.STATISTICS, Direction.OUTGOING)
                         .getEndNode();
-                statmodel=new GpehStatisticModel(datasetNode, statNode, datasetService.getGraphDatabaseService());
-                return new GpehStatisticModel(datasetNode, statNode, datasetService.getGraphDatabaseService());
+                statmodel=new GpehStatisticModel(datasetStatistic, statNode, datasetService.getGraphDatabaseService());
+                return new GpehStatisticModel(datasetStatistic, statNode, datasetService.getGraphDatabaseService());
             } else {
                 // Node statNode = databaseService.createNode();
                 // datasetNode.createRelationshipTo(statNode, DatasetRelationshipTypes.GPEH_STATISTICS);
                 // return new GpehStatisticModel(datasetNode, statNode, databaseService);
-            	 statmodel=new GpehStatisticModel(datasetNode, datasetNode, datasetService.getGraphDatabaseService());
+            	 statmodel=new GpehStatisticModel(datasetStatistic, datasetStatistic, datasetService.getGraphDatabaseService());
                 return statmodel;
             }
         }
         return statmodel;
     }
-
+    public synchronized GpehStatisticModel getStatisticReportEvent() {
+        if (statmodelEvent == null) {
+            if (datasetEvent.hasRelationship(DatasetRelationshipTypes.STATISTICS, Direction.OUTGOING)) {
+                Node statNode = datasetEvent.getSingleRelationship(DatasetRelationshipTypes.STATISTICS, Direction.OUTGOING)
+                        .getEndNode();
+                statmodelEvent=new GpehStatisticModel(datasetEvent, statNode, datasetService.getGraphDatabaseService());
+                return new GpehStatisticModel(datasetEvent, statNode, datasetService.getGraphDatabaseService());
+            } else {
+                // Node statNode = databaseService.createNode();
+                // datasetNode.createRelationshipTo(statNode, DatasetRelationshipTypes.GPEH_STATISTICS);
+                // return new GpehStatisticModel(datasetNode, statNode, databaseService);
+            	statmodelEvent=new GpehStatisticModel(datasetEvent, datasetEvent, datasetService.getGraphDatabaseService());
+                return statmodelEvent;
+            }
+        }
+        return statmodelEvent;
+    }
     @Override
     public void finishUp(GpehTransferData element) {
         try {
             getStatisticReport().flush();
             // TODO remove it after fixing bug in batch inserter
-            datasetNode = DatabaseManager.getInstance().getCurrentDatabaseService().getNodeById(datasetNode.getId());
+            datasetStatistic = DatabaseManager.getInstance().getCurrentDatabaseService().getNodeById(datasetStatistic.getId());
+            datasetEvent = DatabaseManager.getInstance().getCurrentDatabaseService().getNodeById(datasetEvent.getId());
             try {
-                System.out.println(String.format("min_timestamp %s", datasetInfo.getMinTimestamp()));
-                datasetNode.setProperty("min_timestamp", datasetInfo.getMinTimestamp());
-                System.out.println(String.format("max_timestamp %s", datasetInfo.getMaxTimestamp()));
-                datasetNode.setProperty("max_timestamp", datasetInfo.getMaxTimestamp());
+                System.out.println(String.format("min_timestamp %s", datasetInfoStatistic.getMinTimestamp()));
+                datasetStatistic.setProperty("min_timestamp", datasetInfoStatistic.getMinTimestamp());
+                System.out.println(String.format("max_timestamp %s", datasetInfoStatistic.getMaxTimestamp()));
+                datasetStatistic.setProperty("max_timestamp", datasetInfoStatistic.getMaxTimestamp());
+               
+                System.out.println(String.format("min_timestamp %s", datasetInfoEvent.getMinTimestamp()));
+                datasetEvent.setProperty("min_timestamp", datasetInfoEvent.getMinTimestamp());
+                System.out.println(String.format("max_timestamp %s", datasetInfoEvent.getMaxTimestamp()));
+                datasetEvent.setProperty("max_timestamp", datasetInfoEvent.getMaxTimestamp());
                 tx.success();
             } finally {
                 tx.finish();
