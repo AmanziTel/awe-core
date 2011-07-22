@@ -14,11 +14,14 @@
 package org.amanzi.awe.views.reuse.views;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.network.FrequencyPlanModel;
 import org.amanzi.neo.services.network.NetworkModel;
@@ -27,7 +30,9 @@ import org.amanzi.neo.services.node2node.NodeToNodeRelationModel;
 import org.amanzi.neo.services.statistic.ISelectionInformation;
 import org.amanzi.neo.services.statistic.IStatistic;
 import org.amanzi.neo.services.statistic.StatisticManager;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 
 /**
  * <p>
@@ -113,21 +118,18 @@ public class InformationProvider {
 				if (!inf.getPropertySet().isEmpty()) {
 					result.put(inf.getDescription(), inf);
 				}
-			}
-			NetworkModel networkModel = new NetworkModel(root);
-			Set<NodeToNodeRelationModel> models = networkModel
-					.findAllNode2NodeRoot();
-			for (NodeToNodeRelationModel model : models) {
-				String key = model.getName();
-				nodeTypeKey = statistic.getNodeTypeKey(key);
-				if (!nodeTypeKey.isEmpty()) {
-					for (String nodeType : nodeTypeKey) {
-						ISelectionInformation inf = new Node2NodeSelectionInformation(
-								root, statistic, model, nodeType,
-								getNode2NodeDescripttion(name, model));
-						if (!inf.getPropertySet().isEmpty()) {
-							result.put(inf.getDescription(), inf);
-						}
+				Iterable<Relationship> iterVirtual = root.getRelationships(
+						GeoNeoRelationshipTypes.VIRTUAL_DATASET,
+						Direction.OUTGOING);
+				for (Relationship rel : iterVirtual) {
+					IStatistic statisticVirtual = StatisticManager
+							.getStatistic(rel.getEndNode());
+					String nameV = ds.getNodeName(rel.getEndNode());
+					ISelectionInformation infVirtual = new BaseDatasetSelectionInforamation(
+							rel.getEndNode(), statisticVirtual, nameV, nodeType);
+					if (!infVirtual.getPropertySet().isEmpty()) {
+						result.put(infVirtual.getDescription(), infVirtual);
+
 					}
 				}
 			}
@@ -163,15 +165,6 @@ public class InformationProvider {
 			return result;
 		}
 		if (NodeTypes.NETWORK.checkNode(root)) {
-			NetworkModel networkModel = new NetworkModel(root);
-			for (FrequencyPlanModel model : networkModel.findAllFrqModel()) {
-				ISelectionInformation inf = new FreqPlanSelectionInformation(
-						statistic, root, model);
-				if (!inf.getPropertySet().isEmpty()) {
-					result.put(inf.getDescription(), inf);
-				}
-			}
-		}else if(NodeTypes.DATASET.checkNode(root)){
 			NetworkModel networkModel = new NetworkModel(root);
 			for (FrequencyPlanModel model : networkModel.findAllFrqModel()) {
 				ISelectionInformation inf = new FreqPlanSelectionInformation(
