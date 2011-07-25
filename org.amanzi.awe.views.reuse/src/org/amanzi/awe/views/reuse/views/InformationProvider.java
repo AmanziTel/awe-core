@@ -73,7 +73,7 @@ public class InformationProvider {
 		HashMap<String, ISelectionInformation> result = new HashMap<String, ISelectionInformation>();
 		Set<String> rootKey = statistic.getRootKey();
 
-		if (rootKey.isEmpty()) {
+		if (rootKey.isEmpty() && !NodeTypes.DATASET.checkNode(root)) {
 			return result;
 		}
 
@@ -109,27 +109,33 @@ public class InformationProvider {
 		} else if (NodeTypes.DATASET.checkNode(root)) {
 
 			Set<String> nodeTypeKey = statistic.getNodeTypeKey(name);
-			if (nodeTypeKey.isEmpty()) {
-				return result;
-			}
+			// if (nodeTypeKey.isEmpty()) {
+			// return result;
+			// }
 			for (String nodeType : nodeTypeKey) {
 				ISelectionInformation inf = new BaseDatasetSelectionInforamation(
 						root, statistic, name, nodeType);
 				if (!inf.getPropertySet().isEmpty()) {
 					result.put(inf.getDescription(), inf);
 				}
-				Iterable<Relationship> iterVirtual = root.getRelationships(
-						GeoNeoRelationshipTypes.VIRTUAL_DATASET,
-						Direction.OUTGOING);
-				for (Relationship rel : iterVirtual) {
-					IStatistic statisticVirtual = StatisticManager
-							.getStatistic(rel.getEndNode());
-					String nameV = ds.getNodeName(rel.getEndNode());
-					ISelectionInformation infVirtual = new BaseDatasetSelectionInforamation(
-							rel.getEndNode(), statisticVirtual, nameV, nodeType);
-					if (!infVirtual.getPropertySet().isEmpty()) {
-						result.put(infVirtual.getDescription(), infVirtual);
 
+			}
+			Iterable<Relationship> iterVirtual = root
+					.getRelationships(GeoNeoRelationshipTypes.VIRTUAL_DATASET,
+							Direction.OUTGOING);
+			for (Relationship rel : iterVirtual) {
+
+				IStatistic statisticVirtual = StatisticManager.getStatistic(rel
+						.getEndNode());
+				String nameV = ds.getNodeName(rel.getEndNode());
+				Set<String> nodeTypeKeyVirtual = statisticVirtual
+						.getNodeTypeKey(nameV);
+
+				for (String nodeType : nodeTypeKeyVirtual) {
+					ISelectionInformation statInf = new BaseDatasetSelectionInforamation(
+							rel.getEndNode(), statisticVirtual, nameV, nodeType);
+					if (!statInf.getPropertySet().isEmpty()) {
+						result.put(statInf.getDescription(), statInf);
 					}
 				}
 			}
