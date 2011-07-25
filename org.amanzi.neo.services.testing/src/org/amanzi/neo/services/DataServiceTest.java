@@ -402,7 +402,7 @@ public class DataServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
-	 * @throws DublicateDatasetException 
+	 * @throws DublicateDatasetException
 	 */
 	@Test
 	public void createDatasetWithDriveTypeTest()
@@ -437,7 +437,7 @@ public class DataServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
-	 * @throws DublicateDatasetException 
+	 * @throws DublicateDatasetException
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void createDatasetWithDriveTypeExeptionNameTest()
@@ -453,7 +453,7 @@ public class DataServiceTest extends AbstractAWETest {
 	 * driveType, Node projectNode) when parameter type == NETWORK
 	 * 
 	 * @throws DatasetTypeParameterException
-	 * @throws DublicateDatasetException 
+	 * @throws DublicateDatasetException
 	 */
 	@Test(expected = DatasetTypeParameterException.class)
 	public void createDatasetWithDriveTypeExeptionDatasetTypeTest()
@@ -470,7 +470,7 @@ public class DataServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
-	 * @throws DublicateDatasetException 
+	 * @throws DublicateDatasetException
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void createDatasetWithDriveTypeExeptionTypeTest()
@@ -486,7 +486,7 @@ public class DataServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws DatasetTypeParameterException
 	 * @throws InvalidDatasetParameterException
-	 * @throws DublicateDatasetException 
+	 * @throws DublicateDatasetException
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void createDatasetWithDriveTypeExeptionProjectNodeTest()
@@ -503,7 +503,7 @@ public class DataServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws DatasetTypeParameterException
 	 * @throws InvalidDatasetParameterException
-	 * @throws DublicateDatasetException 
+	 * @throws DublicateDatasetException
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void createDatasetWithDriveTypeExeptionEmptyNameTest()
@@ -511,6 +511,26 @@ public class DataServiceTest extends AbstractAWETest {
 			DatasetTypeParameterException, DublicateDatasetException {
 		service.createDataset(projectNode, "", DatasetTypes.DRIVE,
 				DriveTypes.NEMO_V1);
+
+	}
+
+	/**
+	 * testing method createDataset(String name, DatasetTypes type, DriveTypes
+	 * driveType, Node projectNode) when parameter name dublicate name existing
+	 * dataset node
+	 * 
+	 * @throws InvalidDatasetParameterException
+	 * @throws DatasetTypeParameterException
+	 * @throws DublicateDatasetException
+	 */
+	@Test(expected = DublicateDatasetException.class)
+	public void createDatasetWithDriveTypeExeptionDublicateNameTest()
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
+
+		initDatasetNode(NAME_1, DatasetTypes.NETWORK, null);
+		service.createDataset(projectNode, NAME_1, DatasetTypes.DRIVE,
+				DriveTypes.ROMES);
 
 	}
 
@@ -619,6 +639,24 @@ public class DataServiceTest extends AbstractAWETest {
 			throws InvalidDatasetParameterException,
 			DatasetTypeParameterException, DublicateDatasetException {
 		service.createDataset(projectNode, "", DatasetTypes.NETWORK);
+
+	}
+
+	/**
+	 * testing method createDataset(String name, DatasetTypes type, Node
+	 * projectNode) when parameter name dublicate name existing dataset node
+	 * 
+	 * @throws InvalidDatasetParameterException
+	 * @throws DatasetTypeParameterException
+	 * @throws DublicateDatasetException
+	 */
+	@Test(expected = DublicateDatasetException.class)
+	public void createDatasetExeptionDublicateNameTest()
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
+
+		initDatasetNode(NAME_1, DatasetTypes.NETWORK, null);
+		service.createDataset(projectNode, NAME_1, DatasetTypes.NETWORK);
 
 	}
 
@@ -756,7 +794,7 @@ public class DataServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws DatasetTypeParameterException
 	 * @throws InvalidDatasetParameterException
-	 * @throws DublicateDatasetException 
+	 * @throws DublicateDatasetException
 	 */
 	@Test
 	public void getDatasetWithDriveTypeFindTest()
@@ -780,7 +818,7 @@ public class DataServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
-	 * @throws DublicateDatasetException 
+	 * @throws DublicateDatasetException
 	 */
 	@Test
 	public void getDatasetWithDriveTypeCreateTest()
@@ -815,7 +853,7 @@ public class DataServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws DatasetTypeParameterException
 	 * @throws InvalidDatasetParameterException
-	 * @throws DublicateDatasetException 
+	 * @throws DublicateDatasetException
 	 */
 	@Test(expected = DatasetTypeParameterException.class)
 	public void getDatasetWithDriveTypeNetworkTest()
@@ -832,7 +870,7 @@ public class DataServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws DatasetTypeParameterException
 	 * @throws InvalidDatasetParameterException
-	 * @throws DublicateDatasetException 
+	 * @throws DublicateDatasetException
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void getDatasetWithDriveTypeExeptionNameTest()
@@ -849,7 +887,7 @@ public class DataServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws DatasetTypeParameterException
 	 * @throws InvalidDatasetParameterException
-	 * @throws DublicateDatasetException 
+	 * @throws DublicateDatasetException
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void getDatasetWithDriveTypeExeptionTypeTest()
@@ -865,7 +903,7 @@ public class DataServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws DatasetTypeParameterException
 	 * @throws InvalidDatasetParameterException
-	 * @throws DublicateDatasetException 
+	 * @throws DublicateDatasetException
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void getDatasetWithDriveTypeExeptionDriveTypeTest()
@@ -881,7 +919,7 @@ public class DataServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws DatasetTypeParameterException
 	 * @throws InvalidDatasetParameterException
-	 * @throws DublicateDatasetException 
+	 * @throws DublicateDatasetException
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void getDatasetWithDriveTypeExeptionProjectNodeTest()
@@ -897,7 +935,7 @@ public class DataServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws DatasetTypeParameterException
 	 * @throws InvalidDatasetParameterException
-	 * @throws DublicateDatasetException 
+	 * @throws DublicateDatasetException
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void getDatasetWithDriveTypeExeptionEmptyNameTest()
