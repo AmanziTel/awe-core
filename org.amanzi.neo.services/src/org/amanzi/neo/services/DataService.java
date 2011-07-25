@@ -13,8 +13,12 @@
 
 package org.amanzi.neo.services;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import org.amanzi.neo.services.exceptions.InvalidParameterException;
-import org.amanzi.neo.services.exceptions.NetworkTypeParameterException;
+import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -76,27 +80,31 @@ public class DataService extends AbstractService {
      * @param type
      * @return datasetNode
      */
-    public Node findDataset(final String name, final DatasetTypes type, Node projectNode) throws InvalidParameterException {
+    public Node findDataset(final String name, final DatasetTypes type, Node projectNode) throws InvalidParameterException,
+            DatasetTypeParameterException {
 
         if (name == "" || name == null || type == null || projectNode == null)
             throw new InvalidParameterException();
+        if (type != DatasetTypes.NETWORK)
+            throw new DatasetTypeParameterException();
 
         Traverser tr = Traversal.description().relationships(DatasetRelationTypes.DATASET, Direction.OUTGOING)
-                .evaluator(Evaluators.includingDepths(1, 1)).evaluator(new Evaluator() {
+                .evaluator(Evaluators.excludeStartPosition()).evaluator(Evaluators.toDepth(1)).evaluator(new Evaluator() {
 
                     @Override
                     public Evaluation evaluate(Path arg0) {
                         boolean includes = false;
                         boolean continues;
-                        if (arg0.endNode().getProperty(NAME).equals(name) && arg0.endNode().getProperty(TYPE).equals(type)) {
+                        if (name.equals(arg0.endNode().getProperty(NAME, ""))
+                                && type.name().equals(arg0.endNode().getProperty(TYPE, ""))) {
                             includes = true;
                         }
                         continues = !includes;
                         return Evaluation.of(includes, continues);
                     }
                 }).traverse(projectNode);
-
-        if (tr.nodes().iterator().hasNext()) {
+        Iterator<Node> iter = tr.nodes().iterator();
+        if (iter.hasNext()) {
             return tr.nodes().iterator().next();
         }
         return null;
@@ -110,21 +118,24 @@ public class DataService extends AbstractService {
      * @return datasetNode
      */
     public Node findDataset(final String name, final DatasetTypes type, final DriveTypes driveType, Node projectNode)
-            throws InvalidParameterException, NetworkTypeParameterException {
+            throws InvalidParameterException, DatasetTypeParameterException {
         if (name == "" || name == null || type == null || driveType == null || projectNode == null)
             throw new InvalidParameterException();
         if (type == DatasetTypes.NETWORK)
-            throw new NetworkTypeParameterException();
+            throw new DatasetTypeParameterException();
 
         Traverser tr = Traversal.description().relationships(DatasetRelationTypes.DATASET, Direction.OUTGOING)
-                .evaluator(Evaluators.includingDepths(1, 1)).evaluator(new Evaluator() {
+                .evaluator(Evaluators.excludeStartPosition()).evaluator(new Evaluator() {
 
                     @Override
                     public Evaluation evaluate(Path arg0) {
+
                         boolean includes = false;
                         boolean continues;
-                        if (arg0.endNode().getProperty(NAME).equals(name) && arg0.endNode().getProperty(TYPE).equals(type)
-                                && arg0.endNode().getProperty(DRIVE_TYPE).equals(driveType)) {
+
+                        if (arg0.endNode().getProperty(NAME, "").equals(name)
+                                && arg0.endNode().getProperty(TYPE, "").equals(type.name())
+                                && arg0.endNode().getProperty(DRIVE_TYPE, "").equals(driveType.name())) {
                             includes = true;
                         }
                         continues = !includes;
@@ -144,9 +155,44 @@ public class DataService extends AbstractService {
      * @param name
      * @param type
      * @return dataset node
+     * @throws DatasetTypeParameterException
      */
-    public Node createDataset(String name, DatasetTypes type, Node projectNode) throws InvalidParameterException {
-        return null;
+    public Node createDataset(String name, DatasetTypes type, Node projectNode) throws InvalidParameterException,
+            DatasetTypeParameterException {
+        if (name == null || type == null || projectNode == null || name == "")
+            throw new InvalidParameterException();
+        if (type != DatasetTypes.NETWORK)
+            throw new DatasetTypeParameterException();
+        Node datasetNode = databaseService.createNode();
+        projectNode.createRelationshipTo(datasetNode, DatasetRelationTypes.DATASET);
+        datasetNode.setProperty(NAME, name);
+        datasetNode.setProperty(TYPE, type.name());
+        return datasetNode;
+    }
+
+    /**
+     * create dataset node
+     * 
+     * @param name
+     * @param type
+     * @param driveType
+     * @param projectNode
+     * @return dataset node
+     * @throws InvalidParameterException
+     * @throws DatasetTypeParameterException
+     */
+    public Node createDataset(String name, DatasetTypes type, DriveTypes driveType, Node projectNode)
+            throws InvalidParameterException, DatasetTypeParameterException {
+        if (name == null || type == null || driveType == null || projectNode == null || name == "")
+            throw new InvalidParameterException();
+        if (type == DatasetTypes.NETWORK)
+            throw new DatasetTypeParameterException();
+        Node datasetNode = databaseService.createNode();
+        projectNode.createRelationshipTo(datasetNode, DatasetRelationTypes.DATASET);
+        datasetNode.setProperty(NAME, name);
+        datasetNode.setProperty(TYPE, type.name());
+        datasetNode.setProperty(DRIVE_TYPE, driveType.name());
+        return datasetNode;
     }
 
     /**
@@ -155,10 +201,94 @@ public class DataService extends AbstractService {
      * 
      * @param name
      * @param type
-     * @return dataset node
+     * @param projectNode
+     * @return
+     * @throws InvalidParameterException
+     * @throws DatasetTypeParameterException
      */
-    public Node getDataset(String name, DatasetTypes type) {
-        return null;
+    public Node getDataset(String name, DatasetTypes type, Node projectNode) throws InvalidParameterException,
+            DatasetTypeParameterException {
+        if (name == null || type == null || projectNode == null || name == "")
+            throw new InvalidParameterException();
+        if (type != DatasetTypes.NETWORK)
+            throw new DatasetTypeParameterException();
+        Node datasetNode = findDataset(name, type, projectNode);
+        if (datasetNode == null)
+            return createDataset(name, type, projectNode);
+
+        return datasetNode;
+    }
+
+    /**
+     * get dataset node - find dataset node by name, type and driveType, and if not found then
+     * create dataset
+     * 
+     * @param name
+     * @param type
+     * @param driveType
+     * @param projectNode
+     * @return
+     * @throws InvalidParameterException
+     * @throws DatasetTypeParameterException
+     */
+    public Node getDataset(String name, DatasetTypes type, DriveTypes driveType, Node projectNode)
+            throws InvalidParameterException, DatasetTypeParameterException {
+        if (name == null || type == null || driveType == null || projectNode == null || name == "")
+            throw new InvalidParameterException();
+        if (type == DatasetTypes.NETWORK)
+            throw new DatasetTypeParameterException();
+
+        Node datasetNode = findDataset(name, type, driveType, projectNode);
+        if (datasetNode == null)
+            return createDataset(name, type, driveType, projectNode);
+
+        return datasetNode;
+    }
+
+    /**
+     * this method find all dataset nodes in project
+     * 
+     * @param projectNode
+     * @return List<Node> list of dataset nodes
+     * @throws InvalidParameterException
+     */
+    public List<Node> findAllDatasets(Node projectNode) throws InvalidParameterException {
+        if (projectNode == null)
+            throw new InvalidParameterException();
+        List<Node> datasetList = new ArrayList<Node>();
+        Traverser tr = Traversal.description().relationships(DatasetRelationTypes.DATASET, Direction.OUTGOING)
+                .evaluator(Evaluators.excludeStartPosition()).traverse(projectNode);
+        for (Node dataset : tr.nodes())
+            datasetList.add(dataset);
+        return datasetList;
+    }
+
+    /**
+     * this method find all dataset nodes by type in project
+     * 
+     * @param type
+     * @param projectNode
+     * @return List<Node> list of dataset nodes
+     * @throws InvalidParameterException
+     */
+    public List<Node> findAllDatasetsByType(final DatasetTypes type, Node projectNode) throws InvalidParameterException {
+        if (type == null || projectNode == null)
+            throw new InvalidParameterException();
+        List<Node> datasetList = new ArrayList<Node>();
+        Traverser tr = Traversal.description().relationships(DatasetRelationTypes.DATASET, Direction.OUTGOING)
+                .evaluator(Evaluators.excludeStartPosition()).evaluator(new Evaluator() {
+
+                    @Override
+                    public Evaluation evaluate(Path arg0) {
+                        boolean includes = false;
+                        if (arg0.endNode().getProperty(TYPE, "").equals(type.name()))
+                            includes = true;
+                        return Evaluation.ofIncludes(includes);
+                    }
+                }).traverse(projectNode);
+        for (Node dataset : tr.nodes())
+            datasetList.add(dataset);
+        return datasetList;
     }
 
 }

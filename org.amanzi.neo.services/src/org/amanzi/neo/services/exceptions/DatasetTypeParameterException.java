@@ -21,7 +21,7 @@ package org.amanzi.neo.services.exceptions;
  * @author kruglik_a
  * @since 1.0.0
  */
-public class NetworkTypeParameterException extends AWEException{
+public class DatasetTypeParameterException extends AWEException{
 
     /** long serialVersionUID field */
     private static final long serialVersionUID = -6533027214827170224L;
