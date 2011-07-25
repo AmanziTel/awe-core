@@ -21,7 +21,7 @@ package org.amanzi.neo.services.exceptions;
  * @author kruglik_a
  * @since 1.0.0
  */
-public class AWEException extends Exception{
+public abstract class AWEException extends Exception{
 
     /** long serialVersionUID field */
     private static final long serialVersionUID = 8622675133900807087L;
