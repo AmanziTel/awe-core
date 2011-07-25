@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services;
 
+import org.amanzi.neo.services.enums.INodeType;
 import org.apache.log4j.Logger;
 import org.neo4j.examples.server.Relationship;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -40,6 +41,21 @@ public abstract class NewAbstractService {
 
     public NewAbstractService(GraphDatabaseService graphDb) {
         this.graphDb = graphDb;
+    }
+    
+    protected Node createNode(INodeType nodeType) {
+        Node result = null;
+        tx = graphDb.beginTx();
+        try {
+            result = graphDb.createNode();
+            result.setProperty(DataService.TYPE, nodeType);
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not create node.", e);
+        } finally {
+            tx.finish();
+        }
+        return result;
     }
 
     protected Node createNode(Node startNode, RelationshipType relType) {
